@@ -7,7 +7,6 @@ import * as sinon from "sinon";
 const AdmZip = require("adm-zip");
 import * as path from "path";
 
-import { PluginNames, TeamsBot } from "../../../../../src";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { ProgrammingLanguage } from "../../../../../src/plugins/resource/bot/enums/programmingLanguage";
@@ -30,6 +29,8 @@ import { DotnetBotImpl } from "../../../../../src/plugins/resource/bot/dotnet/pl
 import { FuncHostedDeployMgr } from "../../../../../src/plugins/resource/bot/functionsHostedBot/deployMgr";
 import { AzureOperations } from "../../../../../src/common/azure-hosting/azureOps";
 import { HostType } from "../../../../../src/plugins/resource/bot/v2/enum";
+import { TeamsBot } from "../../../../../src/plugins/resource/bot";
+import { PluginNames } from "../../../../../src/plugins/solution/fx-solution/constants";
 
 describe("Teams Bot Resource Plugin", () => {
   describe("Test plugin implementation dispatching", () => {

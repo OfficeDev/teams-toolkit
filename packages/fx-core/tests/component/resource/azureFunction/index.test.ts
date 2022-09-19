@@ -14,7 +14,6 @@ import {
   Platform,
   ResourceContextV3,
 } from "@microsoft/teamsfx-api";
-import { newEnvInfoV3 } from "../../../../src";
 import path from "path";
 import fs from "fs-extra";
 import * as os from "os";
@@ -33,6 +32,7 @@ import {
   WebSiteManagementClient,
 } from "@azure/arm-appservice";
 import * as appService from "@azure/arm-appservice";
+import { newEnvInfoV3 } from "../../../../src/core/environment";
 
 chai.use(chaiAsPromised);
 

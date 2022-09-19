@@ -5,7 +5,7 @@ import * as util from "util";
 import * as vscode from "vscode";
 
 import { SubscriptionInfo } from "@microsoft/teamsfx-api";
-import { isValidProject } from "@microsoft/teamsfx-core";
+import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 import { workspaceUri } from "../../globalVariables";
 import { localize } from "../../utils/localizeUtils";

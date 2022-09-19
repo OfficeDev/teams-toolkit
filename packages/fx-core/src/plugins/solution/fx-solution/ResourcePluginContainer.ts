@@ -10,7 +10,6 @@ import {
 import "reflect-metadata";
 import { Container } from "typedi";
 import { SolutionError, SolutionSource } from "./constants";
-
 export const ResourcePlugins = {
   SpfxPlugin: "SpfxPlugin",
   FrontendPlugin: "FrontendPlugin",

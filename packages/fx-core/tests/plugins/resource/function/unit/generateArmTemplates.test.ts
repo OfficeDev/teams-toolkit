@@ -8,7 +8,7 @@ import fs from "fs-extra";
 import * as path from "path";
 
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
-import { FunctionPlugin } from "../../../../../src";
+import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
 import {
   ConstantString,
   mockSolutionGenerateArmTemplates,

@@ -14,7 +14,7 @@ import {
   TokenProvider,
 } from "@microsoft/teamsfx-api";
 import path from "path";
-import { environmentManager } from "../../../src";
+import { environmentManager } from "../../../src/core/environment";
 import { LocalCrypto } from "../../../src/core/crypto";
 import { v4 as uuid } from "uuid";
 import { ArmTemplateResult } from "../../../src/common/armInterface";

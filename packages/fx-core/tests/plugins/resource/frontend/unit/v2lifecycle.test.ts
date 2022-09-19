@@ -14,7 +14,7 @@ import { Container } from "typedi";
 import * as uuid from "uuid";
 import { ArmTemplateResult } from "../../../../../src/common/armInterface";
 import "../../../../../src/index";
-import { setTools } from "../../../../../src/index";
+import { setTools } from "../../../../../src/core/globalVars";
 import { TabLanguage } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { FrontendPluginV2 } from "../../../../../src/plugins/resource/frontend/v2/index";
 import {

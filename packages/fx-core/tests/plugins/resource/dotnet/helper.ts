@@ -9,7 +9,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { v4 as uuid } from "uuid";
 import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/dotnet/constants";
-import { newEnvInfo } from "../../../../src";
+import { newEnvInfo } from "../../../../src/core/environment";
 import { LocalCrypto } from "../../../../src/core/crypto";
 import { DotnetPluginInfo as PluginInfo } from "../../../../src/plugins/resource/frontend/dotnet/constants";
 import { MyTokenCredential } from "../bot/unit/utils";

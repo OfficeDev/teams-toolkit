@@ -9,7 +9,6 @@ import {
 } from "@azure/arm-resources";
 import {
   AzureAccountProvider,
-  AzureSolutionSettings,
   ConfigFolderName,
   EnvInfo,
   EnvNamePlaceholder,
@@ -24,7 +23,6 @@ import {
   UserError,
   v2,
   v3,
-  Void,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import os from "os";
@@ -44,11 +42,11 @@ import {
   SUBSCRIPTION_ID,
 } from "./constants";
 import { environmentManager } from "../../../core/environment";
-import { compileHandlebarsTemplateString, isVSProject } from "../../../common";
 import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../common/armInterface";
 import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
 import { executeCommand } from "../../../common/cpUtils";
 import {
+  compileHandlebarsTemplateString,
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
   getUuid,
@@ -62,8 +60,8 @@ import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/uti
 import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../../../common/utils";
-import { isV3 } from "../../../core";
 import { convertManifestTemplateToV3, pluginName2ComponentName } from "../../../component/migrate";
+import { isVSProject } from "../../../common/projectSettingsHelper";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";
@@ -616,16 +614,17 @@ function syncArmOutput(envInfo: EnvInfo | v3.EnvInfoV3, armOutput: any) {
           if (pluginOutput instanceof Object) {
             let pluginId = pluginOutput[TEAMS_FX_RESOURCE_ID_KEY];
             if (pluginId) {
-              if (isV3()) {
-                pluginId = pluginName2ComponentName(pluginId);
-              }
+              pluginId = pluginName2ComponentName(pluginId);
               const pluginOutputKeys = Object.keys(pluginOutput);
               for (const pluginOutputKey of pluginOutputKeys) {
                 if (pluginOutputKey != TEAMS_FX_RESOURCE_ID_KEY) {
                   if (envInfo.state instanceof Map) {
-                    (envInfo.state as Map<string, any>)
-                      .get(pluginId)
-                      ?.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
+                    let configMap = envInfo.state.get(pluginId);
+                    if (!configMap) {
+                      configMap = new Map<string, any>();
+                      envInfo.state.set(pluginId, configMap);
+                    }
+                    configMap.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
                   } else {
                     if (!envInfo.state[pluginId]) envInfo.state[pluginId] = {};
                     envInfo.state[pluginId][pluginOutputKey] = pluginOutput[pluginOutputKey];

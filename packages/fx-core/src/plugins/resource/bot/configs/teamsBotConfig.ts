@@ -14,7 +14,7 @@ import { PluginActRoles } from "../enums/pluginActRoles";
 import { DeployConfig } from "./deployConfig";
 import * as utils from "../utils/common";
 import { AzureSolutionQuestionNames } from "../../../solution/fx-solution/question";
-import { isBotNotificationEnabled } from "../../../../common";
+import { isBotNotificationEnabled } from "../../../../common/featureFlags";
 
 export class TeamsBotConfig {
   public scaffold: ScaffoldConfig = new ScaffoldConfig();

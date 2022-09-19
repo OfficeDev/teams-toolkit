@@ -13,7 +13,7 @@ import { FunctionPluginInfo } from "../../../../../src/plugins/resource/function
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function/index";
 import { FxResult } from "../../../../../src/plugins/resource/function/result";
 import { QuestionKey } from "../../../../../src/plugins/resource/function/enums";
-import { getTemplatesFolder } from "../../../../../src";
+import { getTemplatesFolder } from "../../../../../src/folder";
 import { Platform } from "@microsoft/teamsfx-api";
 import { MockContext } from "../helper";
 

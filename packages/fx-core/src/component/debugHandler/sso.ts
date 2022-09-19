@@ -47,7 +47,6 @@ import { errorSource, InvalidSSODebugArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 const ssoDebugMessages = {
-  validatingArgs: "Validating the arguments ...",
   registeringAAD: "Registering an AAD app for SSO ...",
   configuringAAD: "Configuring AAD app for SSO ...",
   buildingAndSavingAADManifest: "Building and saving AAD manifest ...",
@@ -104,10 +103,6 @@ export class SSODebugHandler {
   public getActions(): DebugAction[] {
     const actions: DebugAction[] = [];
     actions.push({
-      startMessage: ssoDebugMessages.validatingArgs,
-      run: this.validateArgs.bind(this),
-    });
-    actions.push({
       startMessage: ssoDebugMessages.registeringAAD,
       run: this.registerAAD.bind(this),
     });
@@ -142,6 +137,11 @@ export class SSODebugHandler {
 
   private async registerAAD(): Promise<Result<string[], FxError>> {
     try {
+      const result = await this.validateArgs();
+      if (result.isErr()) {
+        return err(result.error);
+      }
+
       const projectSettingsResult = await loadProjectSettingsByProjectPath(this.projectPath, true);
       if (projectSettingsResult.isErr()) {
         return err(projectSettingsResult.error);

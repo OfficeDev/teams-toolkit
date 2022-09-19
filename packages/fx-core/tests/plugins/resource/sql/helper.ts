@@ -1,5 +1,5 @@
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { ARM_TEMPLATE_OUTPUT, newEnvInfo } from "../../../../src";
+import { newEnvInfo } from "../../../../src/core/environment";
 import { Constants } from "../../../../src/plugins/resource/sql/constants";
 import { MockUserInteraction } from "../../../core/utils";
 import { MyTokenCredential } from "../bot/unit/utils";

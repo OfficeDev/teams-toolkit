@@ -9,6 +9,7 @@ import {
   ContextV3,
   PluginContext,
   ProjectSettings,
+  ProjectSettingsV3,
   TokenProvider,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -398,6 +399,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     const context = await TestHelper.pluginContext(config, true, false, false);
     context.root = "./";
     (context.projectSettings!.solutionSettings as any).capabilities.push("Bot");
+    (context.projectSettings! as ProjectSettingsV3).components.push({ name: "teams-bot" });
     sinon.stub(fs, "pathExists").resolves(true);
 
     const fakeManifest = {
@@ -439,6 +441,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     context.root = "./";
     context.projectSettings!.programmingLanguage = "csharp";
     (context.projectSettings!.solutionSettings as AzureSolutionSettings).capabilities = ["Bot"];
+    (context.projectSettings! as ProjectSettingsV3).components = [{ name: "teams-bot" }];
     sinon.stub(fs, "pathExists").resolves(true);
 
     const fakeManifest = {

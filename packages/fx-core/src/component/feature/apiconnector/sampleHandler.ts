@@ -6,11 +6,11 @@ import * as fs from "fs-extra";
 import { Constants, LanguageType, FileType } from "./constants";
 import { getTemplatesFolder } from "../../../folder";
 import { FileChange, FileChangeType, ResultFactory } from "./result";
-import { compileHandlebarsTemplateString } from "../../../common";
 import { ConstantString } from "../../../common/constants";
 import { ApiConnectorConfiguration } from "./config";
 import { ErrorMessage } from "./errors";
 import { getSampleDirPath } from "./utils";
+import { compileHandlebarsTemplateString } from "../../../common/tools";
 export class SampleHandler {
   private readonly projectRoot: string;
   private readonly languageExt: FileType;

@@ -29,8 +29,8 @@ import { AadOwner, ResourcePermission } from "../../../common/permissionInterfac
 import "./v2";
 import "./v3";
 import { AppUser } from "../appstudio/interfaces/appUser";
-import { isAADEnabled } from "../../../common";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { isAADEnabled } from "../../../common/tools";
 @Service(ResourcePlugins.AadPlugin)
 export class AadAppForTeamsPlugin implements Plugin {
   name = "fx-resource-aad-app-for-teams";

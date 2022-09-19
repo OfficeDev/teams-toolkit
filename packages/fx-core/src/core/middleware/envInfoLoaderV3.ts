@@ -14,11 +14,10 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import { ComponentNames } from "../../component/constants";
-import { BuiltInFeaturePluginNames } from "../../plugins/solution/fx-solution/v3/constants";
 import { LocalCrypto } from "../crypto";
 import { environmentManager, newEnvInfoV3 } from "../environment";
 import { NoProjectOpenedError, ProjectSettingsUndefinedError } from "../error";
-import { globalVars, isV3 } from "../globalVars";
+import { globalVars } from "../globalVars";
 import { CoreHookContext } from "../types";
 import {
   getTargetEnvName,
@@ -71,9 +70,7 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
     upgradeDefaultFunctionName(ctx.envInfoV3.state, ctx.projectSettings);
 
     // set globalVars for teamsAppId and m365TenantId
-    const appManifestKey = isV3()
-      ? ComponentNames.AppManifest
-      : BuiltInFeaturePluginNames.appStudio;
+    const appManifestKey = ComponentNames.AppManifest;
     globalVars.teamsAppId = ctx.envInfoV3.state?.[appManifestKey]?.teamsAppId;
     globalVars.m365TenantId = ctx.envInfoV3.state?.[appManifestKey]?.m365TenantId;
     await next();

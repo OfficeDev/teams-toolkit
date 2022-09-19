@@ -20,7 +20,7 @@ import { FunctionDeploy } from "../../../../../src/plugins/resource/function/ops
 import { FunctionLanguage } from "../../../../../src/plugins/resource/function/enums";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
 import { Platform } from "@microsoft/teamsfx-api";
-import { newEnvInfo } from "../../../../../src";
+import { newEnvInfo } from "../../../../../src/core/environment";
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
 
 class MyTokenCredential implements TokenCredential {
@@ -34,6 +34,7 @@ class MyTokenCredential implements TokenCredential {
     };
   }
 }
+
 const context: any = {
   envInfo: newEnvInfo(
     undefined,

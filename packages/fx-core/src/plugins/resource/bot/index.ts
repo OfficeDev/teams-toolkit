@@ -19,18 +19,11 @@ import { ProgressBarFactory } from "./progressBars";
 import { CustomizedTasks, LifecycleFuncNames, ProgressBarConstants } from "./constants";
 import { runWithExceptionCatching } from "./errors";
 import { Logger } from "./logger";
-import { BotOptionItem, MessageExtensionItem } from "../../solution";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
 import { DotnetBotImpl } from "./dotnet/plugin";
 import { PluginImpl } from "./interface";
-import {
-  isVSProject,
-  BotHostTypes,
-  isBotNotificationEnabled,
-  isCLIDotNetEnabled,
-} from "../../../common";
 import { FunctionsHostedBotImpl } from "./functionsHostedBot/plugin";
 import { ScaffoldConfig } from "./configs/scaffoldConfig";
 import {
@@ -40,6 +33,10 @@ import {
 } from "./question";
 import { Runtime } from "./v2/enum";
 import { getPlatformRuntime } from "./v2/mapping";
+import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/question";
+import { isVSProject } from "../../../common/projectSettingsHelper";
+import { isBotNotificationEnabled, isCLIDotNetEnabled } from "../../../common/featureFlags";
+import { BotHostTypes } from "../../../common/local/constants";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {

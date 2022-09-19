@@ -15,7 +15,10 @@ import { BicepComponent } from "../bicep";
 import { AzureSqlResource } from "../resource/azureSql";
 import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { cloneDeep } from "lodash";
-import { AzureResourceFunction, AzureResourceSQL } from "../../plugins";
+import {
+  AzureResourceFunction,
+  AzureResourceSQL,
+} from "../../plugins/solution/fx-solution/question";
 
 @Service("sql")
 export class Sql {

@@ -9,7 +9,7 @@ import chaiAsPromised from "chai-as-promised";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
 import * as projectSettingsHelper from "../../../../../../fx-core/src/common/projectSettingsHelper";
-import { FrontendPlugin as WebappPlugin } from "../../../../../src";
+import { FrontendPlugin as WebappPlugin } from "../../../../../src/plugins/resource/frontend";
 import { mockSolutionGenerateArmTemplates, ResourcePlugins } from "../../util";
 import {
   HostTypeOptionAzure,

@@ -64,7 +64,7 @@ import {
   TabOptionItem,
   MessageExtensionItem,
 } from "../plugins/solution/fx-solution/question";
-import { isV3, TOOLS } from "../core/globalVars";
+import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";
@@ -568,10 +568,9 @@ export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): b
 // 2. Not minimal app
 export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Promise<boolean> {
   // Not include `Add CICD Workflows` in minimal app case.
-  const isExistingApp = !isV3()
-    ? isExistingTabApp(ctx.projectSetting)
-    : ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id &&
-      isMiniApp(ctx.projectSetting as ProjectSettingsV3);
+  const isExistingApp =
+    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id &&
+    isMiniApp(ctx.projectSetting as ProjectSettingsV3);
   if (isExistingApp) {
     return false;
   }

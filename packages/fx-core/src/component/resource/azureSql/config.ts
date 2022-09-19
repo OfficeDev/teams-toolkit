@@ -5,7 +5,7 @@ import { v3 } from "@microsoft/teamsfx-api";
 import {
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
-} from "../../../common";
+} from "../../../common/tools";
 import { Constants } from "./constants";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";

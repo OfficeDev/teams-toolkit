@@ -43,10 +43,8 @@ import {
   TaskConfig,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
-import { newEnvInfo } from "../../../../../src";
+import { newEnvInfo } from "../../../../../src/core/environment";
 import { LocalCrypto } from "../../../../../src/core/crypto";
-import faker from "faker";
-import sinon from "sinon";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { QuestionNames } from "../../../../../src/plugins/resource/bot/constants";
 import { FunctionsHttpTriggerOptionItem } from "../../../../../src/plugins/resource/bot/question";

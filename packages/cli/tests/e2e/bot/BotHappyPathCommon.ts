@@ -17,7 +17,7 @@ import {
   getUniqueAppName,
   readContextMultiEnv,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 import { Runtime, CliCapabilities, CliTriggerType } from "../../commonlib/constants";
 

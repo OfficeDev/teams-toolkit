@@ -14,7 +14,7 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
-import { GraphScopes } from "../../../common";
+import { GraphScopes } from "../../../common/tools";
 import { ISolutionConfig, SolutionConfig } from "./config";
 import { AadDefaultValues, TeamsToolkitComponent } from "./constants";
 import { AssertNotEmpty, BuildError, NotImplemented } from "./error";

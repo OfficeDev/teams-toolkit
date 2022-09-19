@@ -3,7 +3,7 @@
 
 import { CliConfigEnvChecker, CliConfigOptions, UserSettings } from "../../../userSetttings";
 import CLIUIInstance from "../../../userInteraction";
-import { DepsCheckerEvent } from "@microsoft/teamsfx-core";
+import { DepsCheckerEvent } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { cliEnvCheckerTelemetry } from "./cliTelemetry";
 import * as os from "os";
 

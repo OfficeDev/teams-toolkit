@@ -24,7 +24,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import { isVSProject } from "../common/projectSettingsHelper";
-import { HelpLinks } from "../common/constants";
+import { HelpLinks, ResourcePlugins } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import {
   hasAAD,
@@ -72,7 +72,6 @@ import {
   TabSPFxNewUIItem,
   WorkflowOptionItem,
 } from "../plugins/solution/fx-solution/question";
-import { getPluginCLIName } from "../plugins/solution/fx-solution/v2/getQuestions";
 import { checkWetherProvisionSucceeded } from "../plugins/solution/fx-solution/v2/utils";
 import { NoCapabilityFoundError } from "../core/error";
 import { ProgrammingLanguageQuestion } from "../core/question";
@@ -88,11 +87,7 @@ import { buildQuestionNode } from "./resource/azureSql/questions";
 import { functionNameQuestion } from "../plugins/resource/function/question";
 import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
-import {
-  frameworkQuestion,
-  versionCheckQuestion,
-  webpartNameQuestion,
-} from "../plugins/resource/spfx/utils/questions";
+import { webpartNameQuestion } from "../plugins/resource/spfx/utils/questions";
 import { manifestUtils } from "./resource/appManifest/utils";
 import { Constants } from "../plugins/resource/aad/constants";
 import { getQuestionsForDeployAPIM } from "./resource/apim";
@@ -516,4 +511,15 @@ export async function getNotificationTriggerQuestionNode(
   }
   res.condition = showNotificationTriggerCondition;
   return ok(res);
+}
+
+export function getPluginCLIName(name: string): string {
+  const pluginPrefix = "fx-resource-";
+  if (name === ResourcePlugins.Aad) {
+    return "aad-manifest";
+  } else if (name === ResourcePlugins.AppStudio) {
+    return "manifest";
+  } else {
+    return name.replace(pluginPrefix, "");
+  }
 }

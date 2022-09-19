@@ -590,7 +590,9 @@ export function deleteFolder(filePath?: string): void {
         fs.unlinkSync(nextFilePath);
       }
     });
-    fs.rmdirSync(filePath);
+    try {
+      fs.rmdirSync(filePath);
+    } catch (e) {}
   }
 }
 

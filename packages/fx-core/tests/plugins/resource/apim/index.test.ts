@@ -17,6 +17,7 @@ import {
   QuestionConstants,
   TeamsToolkitComponent,
   OpenApiSchemaVersion,
+  TeamsToolkitComponentV3,
 } from "../../../../src/component/resource/apim/constants";
 import { AadService } from "../../../../src/component/resource/apim/services/aadService";
 import { AadManager } from "../../../../src/component/resource/apim/managers/aadManager";
@@ -165,12 +166,12 @@ function updateConfig(
   answer?: Inputs
 ) {
   if (aadConfig) {
-    ctx.envInfo.state.set(TeamsToolkitComponent.AadPlugin, new Map(Object.entries(aadConfig)));
+    ctx.envInfo.state.set(TeamsToolkitComponentV3.AadPlugin, new Map(Object.entries(aadConfig)));
   }
 
   if (functionConfig) {
     ctx.envInfo.state.set(
-      TeamsToolkitComponent.FunctionPlugin,
+      TeamsToolkitComponentV3.FunctionPlugin,
       new Map(Object.entries(functionConfig))
     );
   }

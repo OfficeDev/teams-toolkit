@@ -5,8 +5,8 @@ import { err, ResourceContextV3, Result, SystemError, ok, FxError } from "@micro
 import path from "path";
 import { AadAppOutputs, BotServiceOutputs, ComponentNames } from "../constants";
 import fs from "fs-extra";
-import { SolutionError, SolutionSource } from "../../plugins";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { SolutionError, SolutionSource } from "../../plugins/solution/fx-solution/constants";
 
 export class AppSettingConstants {
   static DevelopmentFileName = "appsettings.Development.json";

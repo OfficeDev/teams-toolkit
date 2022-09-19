@@ -19,7 +19,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { ComponentNames } from "../../../../src/component/constants";
 import { Constants } from "../../../../src/component/resource/azureSql/constants";
-import { newEnvInfoV3 } from "../../../../src";
+import { newEnvInfoV3 } from "../../../../src/core/environment";
 import path from "path";
 import * as os from "os";
 import faker from "faker";

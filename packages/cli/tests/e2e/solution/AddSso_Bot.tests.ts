@@ -36,81 +36,79 @@ describe("Add SSO", () => {
       mockedEnvRestore();
     }
   });
-  for (const v3flag of ["false"]) {
-    it(`Add SSO to non SSO Bot project (v3=${v3flag})`, async () => {
-      mockedEnvRestore = mockedEnv({
-        TEAMSFX_APIV3: v3flag,
-        TEAMSFX_AAD_MANIFEST: "true",
-        TEAMSFX_CONFIG_UNIFY: "true",
-      });
-      appName = getUniqueAppName();
-      projectPath = path.resolve(testFolder, appName);
-      // Arrange
-      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 
-      // Assert
-      {
-        const projectSettings = await fs.readJSON(
-          path.join(projectPath, TestFilePath.configFolder, TestFilePath.projectSettingsFileName)
-        );
-        const activeResourcePlugins =
-          projectSettings[ProjectSettingKey.solutionSettings][
-            ProjectSettingKey.activeResourcePlugins
-          ];
-        const capabilities =
-          projectSettings[ProjectSettingKey.solutionSettings][ProjectSettingKey.capabilities];
-        expect(activeResourcePlugins.includes(PluginId.Aad)).to.be.false;
-        expect(capabilities.includes(Capability.BotSso)).to.be.false;
-      }
+  it(`Add SSO to non SSO Bot project`, async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_AAD_MANIFEST: "true",
+      TEAMSFX_CONFIG_UNIFY: "true",
+    });
+    appName = getUniqueAppName();
+    projectPath = path.resolve(testFolder, appName);
+    // Arrange
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 
-      // Act
+    // Assert
+    {
+      const projectSettings = await fs.readJSON(
+        path.join(projectPath, TestFilePath.configFolder, TestFilePath.projectSettingsFileName)
+      );
+      const activeResourcePlugins =
+        projectSettings[ProjectSettingKey.solutionSettings][
+          ProjectSettingKey.activeResourcePlugins
+        ];
+      const capabilities =
+        projectSettings[ProjectSettingKey.solutionSettings][ProjectSettingKey.capabilities];
+      expect(activeResourcePlugins.includes(PluginId.Aad)).to.be.false;
+      expect(capabilities.includes(Capability.BotSso)).to.be.false;
+    }
+
+    // Act
+    await execAsync(`teamsfx add sso`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+
+    // Assert
+    {
+      const projectSettings = await fs.readJSON(
+        path.join(projectPath, TestFilePath.configFolder, TestFilePath.projectSettingsFileName)
+      );
+      const activeResourcePlugins =
+        projectSettings[ProjectSettingKey.solutionSettings][
+          ProjectSettingKey.activeResourcePlugins
+        ];
+      const capabilities =
+        projectSettings[ProjectSettingKey.solutionSettings][ProjectSettingKey.capabilities];
+      expect(activeResourcePlugins.includes(PluginId.Aad)).to.be.true;
+      expect(capabilities.includes(Capability.BotSso)).to.be.true;
+
+      const readmeFilePath = path.join(projectPath, "auth", "bot", "README.md");
+      const readmeExists = await fs.pathExists(readmeFilePath);
+      expect(readmeExists).to.be.true;
+    }
+
+    await setBotSkuNameToB1Bicep(projectPath, "dev");
+    await CliHelper.provisionProject(projectPath, "");
+
+    const context = await readContextMultiEnv(projectPath, "dev");
+    // Validate Aad App
+    const aad = AadValidator.init(context, false, M365Login);
+    await AadValidator.validate(aad);
+
+    // Validate Bot Provision
+    const bot = new BotValidator(context, projectPath, "dev");
+    await bot.validateProvision();
+
+    // Act
+    try {
       await execAsync(`teamsfx add sso`, {
         cwd: projectPath,
         env: process.env,
         timeout: 0,
       });
-
-      // Assert
-      {
-        const projectSettings = await fs.readJSON(
-          path.join(projectPath, TestFilePath.configFolder, TestFilePath.projectSettingsFileName)
-        );
-        const activeResourcePlugins =
-          projectSettings[ProjectSettingKey.solutionSettings][
-            ProjectSettingKey.activeResourcePlugins
-          ];
-        const capabilities =
-          projectSettings[ProjectSettingKey.solutionSettings][ProjectSettingKey.capabilities];
-        expect(activeResourcePlugins.includes(PluginId.Aad)).to.be.true;
-        expect(capabilities.includes(Capability.BotSso)).to.be.true;
-
-        const readmeFilePath = path.join(projectPath, "auth", "bot", "README.md");
-        const readmeExists = await fs.pathExists(readmeFilePath);
-        expect(readmeExists).to.be.true;
-      }
-
-      await setBotSkuNameToB1Bicep(projectPath, "dev");
-      await CliHelper.provisionProject(projectPath, "");
-
-      const context = await readContextMultiEnv(projectPath, "dev");
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, M365Login);
-      await AadValidator.validate(aad);
-
-      // Validate Bot Provision
-      const bot = new BotValidator(context, projectPath, "dev");
-      await bot.validateProvision();
-
-      // Act
-      try {
-        await execAsync(`teamsfx add sso`, {
-          cwd: projectPath,
-          env: process.env,
-          timeout: 0,
-        });
-      } catch (error) {
-        expect(error.toString()).to.contains("SsoEnabled");
-      }
-    });
-  }
+    } catch (error) {
+      expect(error.toString()).to.contains("SsoEnabled");
+    }
+  });
 });

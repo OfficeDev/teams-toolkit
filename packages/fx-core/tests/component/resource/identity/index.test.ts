@@ -6,7 +6,7 @@ import { MockTools, randomAppName } from "../../../core/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import sinon from "sinon";
 import { ContextV3, InputsWithProjectPath, Platform } from "@microsoft/teamsfx-api";
-import { newEnvInfoV3 } from "../../../../src";
+import { newEnvInfoV3 } from "../../../../src/core/environment";
 import path from "path";
 import * as os from "os";
 import { IdentityResource } from "../../../../src/component/resource/identity";

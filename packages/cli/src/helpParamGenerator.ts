@@ -19,8 +19,8 @@ import {
   MultiSelectQuestion,
   StringValidation,
 } from "@microsoft/teamsfx-api";
-
-import { FxCore, isCLIDotNetEnabled, isM365AppEnabled } from "@microsoft/teamsfx-core";
+import { isCLIDotNetEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { isM365AppEnabled } from "@microsoft/teamsfx-core/build/common/tools";
 import AzureAccountManager from "./commonlib/azureLogin";
 import M365TokenProvider from "./commonlib/m365Login";
 import CLILogProvider from "./commonlib/log";
@@ -35,6 +35,7 @@ import {
   sqlPasswordConfirmQuestionName,
 } from "./constants";
 import { NoInitializedHelpGenerator } from "./error";
+import { FxCore } from "@microsoft/teamsfx-core";
 
 export class HelpParamGenerator {
   private core: FxCore;

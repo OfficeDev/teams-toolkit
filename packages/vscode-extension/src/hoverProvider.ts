@@ -2,11 +2,9 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import {
-  getPropertyByPath,
-  environmentManager,
-  convertManifestTemplateToV3,
-} from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { convertManifestTemplateToV3 } from "@microsoft/teamsfx-core/build/component/migrate";
+import { getPropertyByPath } from "@microsoft/teamsfx-core/build/common/tools";
 import { manifestConfigDataRegex, manifestStateDataRegex } from "./constants";
 import { core, getSystemInputs } from "./handlers";
 import { getProvisionSucceedFromEnv } from "./utils/commonUtils";

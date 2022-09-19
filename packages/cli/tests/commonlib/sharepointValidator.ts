@@ -6,7 +6,11 @@ import * as chai from "chai";
 
 import MockM365TokenProvider from "../../src/commonlib/m365LoginUserPassword";
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
-import { getSPFxTenant, GraphReadUserScopes, SPFxScopes } from "@microsoft/teamsfx-core";
+import {
+  getSPFxTenant,
+  GraphReadUserScopes,
+  SPFxScopes,
+} from "@microsoft/teamsfx-core/build/common/tools";
 
 export class SharepointValidator {
   public static provider: M365TokenProvider;

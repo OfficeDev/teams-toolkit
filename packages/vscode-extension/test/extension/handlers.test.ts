@@ -21,12 +21,9 @@ import {
   Void,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
-import {
-  CollaborationState,
-  CoreHookContext,
-  DepsManager,
-  DepsType,
-} from "@microsoft/teamsfx-core";
+import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
+import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 

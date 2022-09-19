@@ -1,5 +1,5 @@
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { newEnvInfo } from "../../../../src";
+import { newEnvInfo } from "../../../../src/core/environment";
 import { Constants } from "../../../../src/plugins/resource/identity/constants";
 import { MyTokenCredential } from "../bot/unit/utils";
 

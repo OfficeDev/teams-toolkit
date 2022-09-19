@@ -3,13 +3,12 @@
 import { ConfigMap, LocalSettings, PluginContext } from "@microsoft/teamsfx-api";
 import faker from "faker";
 import { Constants } from "../../../../src/plugins/resource/simpleauth/constants";
-import { newEnvInfo } from "../../../../src";
+import { newEnvInfo } from "../../../../src/core/environment";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../src/common/localSettingsConstants";
 import { MyTokenCredential } from "../bot/unit/utils";
-
 export class TestHelper {
   static async pluginContext(): Promise<PluginContext> {
     const mockEndpoint = "https://endpoint.mock";

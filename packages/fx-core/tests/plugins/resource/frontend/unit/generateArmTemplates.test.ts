@@ -9,7 +9,7 @@ import * as path from "path";
 
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
-import { FrontendPlugin } from "../../../../../src";
+import { FrontendPlugin } from "../../../../../src/plugins/resource/frontend";
 import { ConstantString, mockSolutionGenerateArmTemplates, ResourcePlugins } from "../../util";
 import {
   HostTypeOptionAzure,

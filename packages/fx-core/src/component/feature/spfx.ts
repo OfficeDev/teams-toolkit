@@ -16,10 +16,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
-import { TabSPFxNewUIItem } from "../../plugins";
 import {
   frameworkQuestion,
   versionCheckQuestion,
@@ -29,17 +27,11 @@ import { SPFxTabCodeProvider } from "../code/spfxTabCode";
 import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { addFeatureNotify, scaffoldRootReadme } from "../utils";
-import { isSPFxMultiTabEnabled } from "../../common";
+import { isSPFxMultiTabEnabled } from "../../common/featureFlags";
+import { TabSPFxNewUIItem } from "../../plugins/solution/fx-solution/question";
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {
   name = ComponentNames.SPFxTab;
-  // @hooks([
-  //   ActionExecutionMW({
-  //     question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-  //       return ok(getSPFxScaffoldQuestion());
-  //     },
-  //   }),
-  // ])
   async add(
     context: ContextV3,
     inputs: InputsWithProjectPath

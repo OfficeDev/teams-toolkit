@@ -35,7 +35,7 @@ import { genUUID } from "../../plugins/resource/bot/utils/common";
 import { ResourceNameFactory } from "../../plugins/resource/bot/utils/resourceNameFactory";
 import { ComponentNames } from "../constants";
 import { DebugAction } from "./common";
-import { errorSource, DebugArgumentEmptyError } from "./error";
+import { errorSource, DebugArgumentEmptyError, InvalidExistingBotArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 const botDebugMessages = {
@@ -119,6 +119,12 @@ export class BotDebugHandler {
     }
     if (this.args.botPassword !== undefined && this.args.botPassword.trim().length === 0) {
       return err(DebugArgumentEmptyError("botPassword"));
+    }
+
+    const existing = this.args.botId || this.args.botPassword;
+    const missing = !this.args.botId || !this.args.botPassword;
+    if (existing && missing) {
+      return err(InvalidExistingBotArgsError());
     }
 
     return ok([]);

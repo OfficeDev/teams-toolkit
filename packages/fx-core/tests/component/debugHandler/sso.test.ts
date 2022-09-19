@@ -19,7 +19,11 @@ import {
 
 import { getAllowedAppIds } from "../../../src/common/tools";
 import { ComponentNames } from "../../../src/component/constants";
-import { errorSource, InvalidSSODebugArgsError } from "../../../src/component/debugHandler/error";
+import {
+  errorSource,
+  DebugArgumentEmptyError,
+  InvalidExistingAADArgsError,
+} from "../../../src/component/debugHandler/error";
 import {
   LocalEnvKeys,
   LocalEnvProvider,
@@ -43,7 +47,22 @@ describe("SSODebugHandler", () => {
       sinon.restore();
     });
 
-    it("invalid args", async () => {
+    it("invalid args: empty objectId", async () => {
+      const args: SSODebugArgs = {
+        clientId: "11111111-1111-1111-1111-111111111111",
+        clientSecret: "xxx",
+        objectId: "",
+      };
+      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.deepEqual(result.error.name, DebugArgumentEmptyError("objectId").name);
+      }
+    });
+
+    it("invalid args: missing objectId for existing AAD", async () => {
       const args: SSODebugArgs = {
         clientId: "11111111-1111-1111-1111-111111111111",
         clientSecret: "xxx",
@@ -53,7 +72,7 @@ describe("SSODebugHandler", () => {
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
-        chai.assert.deepEqual(result.error.name, InvalidSSODebugArgsError().name);
+        chai.assert.deepEqual(result.error.message, InvalidExistingAADArgsError().message);
       }
     });
 

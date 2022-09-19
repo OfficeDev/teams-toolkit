@@ -43,7 +43,7 @@ import { TokenProvider } from "../../plugins/resource/aad/utils/tokenProvider";
 import { ComponentNames } from "../constants";
 import { convertEnvStateV3ToV2 } from "../migrate";
 import { DebugAction } from "./common";
-import { errorSource, DebugArgumentEmptyError } from "./error";
+import { errorSource, DebugArgumentEmptyError, InvalidExistingAADArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 const ssoDebugMessages = {
@@ -132,6 +132,12 @@ export class SSODebugHandler {
     }
     if (this.args.clientSecret !== undefined && this.args.clientSecret.trim().length === 0) {
       return err(DebugArgumentEmptyError("clientSecret"));
+    }
+
+    const existing = this.args.objectId || this.args.clientId || this.args.clientSecret;
+    const missing = !this.args.objectId || !this.args.clientId || !this.args.clientSecret;
+    if (existing && missing) {
+      return err(InvalidExistingAADArgsError());
     }
 
     return ok([]);

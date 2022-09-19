@@ -42,6 +42,24 @@ export function DebugArgumentEmptyError(argument: string): UserError {
   );
 }
 
+export function InvalidExistingAADArgsError(): UserError {
+  return new UserError(
+    errorSource,
+    "InvalidDebugArgsError",
+    getDefaultString("error.debugHandler.InvalidExistingAADArgsError"),
+    getLocalizedString("error.debugHandler.InvalidExistingAADArgsError")
+  );
+}
+
+export function InvalidExistingBotArgsError(): UserError {
+  return new UserError(
+    errorSource,
+    "InvalidDebugArgsError",
+    getDefaultString("error.debugHandler.InvalidExistingBotArgsError"),
+    getLocalizedString("error.debugHandler.InvalidExistingBotArgsError")
+  );
+}
+
 export function InvalidTabBaseUrlError(): UserError {
   return new UserError(
     errorSource,

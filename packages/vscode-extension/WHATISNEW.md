@@ -1,3 +1,4 @@
+- [4.0.6 - Sep 20 2022](#406---sep-20-2022)
 - [4.0.5 - Aug 22 2022](#405---aug-22-2022)
 - [4.0.4 - Aug 09 2022](#404---aug-09-2022)
 - [4.0.3 - Jul 26 2022](#403---jul-26-2022)
@@ -20,6 +21,19 @@
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
 
 # Changelog
+
+## 4.0.6 - Sep 20, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fix, enhancements and new features.
+
+New sample:
+- Stock Update: Keep up to date with the latest stock price in Microsoft Teams
+
+    ![Stock Update](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/stock_update.png)
+
+SDK:
+- Simplified single sign-on implementation for message extension with TeamsFx SDK. Take a look at the [sample code](https://aka.ms/teamsfx-me-sso-sample).
+- Simplified single sign-on implementation for command bot with TeamsFx SDK. Take a look at the [sample code](https://aka.ms/teamsfx-command-bot-sso).
 
 ## 4.0.5 - Aug 22, 2022
 

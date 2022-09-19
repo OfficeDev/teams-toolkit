@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.0.6 - Sep 20, 2022
+
+Incremental version for Teams Toolkit with multiple bugs fix, enhancements and new features.
+
+New sample:
+- Stock Update: Keep up to date with the latest stock price in Microsoft Teams
+
+SDK:
+- Simplified single sign-on implementation for message extension with TeamsFx SDK. Take a look at the [sample code](https://aka.ms/teamsfx-me-sso-sample).
+- Simplified single sign-on implementation for command bot with TeamsFx SDK. Take a look at the [sample code](https://aka.ms/teamsfx-command-bot-sso).
+
 ## 4.0.5 - Aug 22, 2022
 
 Incremental version for Teams Toolkit with multiple bugs fix, enhancements and a new feature to allow switch Microsoft 365 tenant and Azure subscription for local debugging and cloud provision.

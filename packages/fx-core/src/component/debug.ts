@@ -64,9 +64,8 @@ import {
   useNewTasks,
   useTransparentTasks,
 } from "../plugins/solution/fx-solution/debug/scaffolding";
-import { isV3, TOOLS } from "../core";
+import { TOOLS } from "../core/globalVars";
 import { getComponent } from "./workflow";
-import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { CommentObject } from "comment-json";
 
 export interface LocalEnvConfig {
@@ -135,12 +134,10 @@ export async function setupLocalEnvironmentCommon(
   config: LocalEnvConfig,
   envInfo: v3.EnvInfoV3
 ): Promise<Result<undefined, FxError>> {
-  const API_STATE_KEY = isV3() ? ComponentNames.TeamsApi : BuiltInFeaturePluginNames.function;
-  const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
-  const BOT_STATE_KEY = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
-  const SIMPLE_AUTH_STATE_KEY = isV3()
-    ? ComponentNames.SimpleAuth
-    : BuiltInFeaturePluginNames.simpleAuth;
+  const API_STATE_KEY = ComponentNames.TeamsApi;
+  const TAB_STATE_KEY = ComponentNames.TeamsTab;
+  const BOT_STATE_KEY = ComponentNames.TeamsBot;
+  const SIMPLE_AUTH_STATE_KEY = ComponentNames.SimpleAuth;
 
   const vscEnv = inputs.vscodeEnv;
   const includeTab = config.hasAzureTab;
@@ -278,16 +275,12 @@ export async function configLocalEnvironmentCommon(
   config: LocalEnvConfig,
   envInfo: v3.EnvInfoV3
 ): Promise<Result<undefined, FxError>> {
-  const API_STATE_KEY = isV3() ? ComponentNames.TeamsApi : BuiltInFeaturePluginNames.function;
-  const AAD_STATE_KEY = isV3() ? ComponentNames.AadApp : BuiltInFeaturePluginNames.aad;
-  const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
-  const BOT_STATE_KEY = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
-  const SIMPLE_AUTH_STATE_KEY = isV3()
-    ? ComponentNames.SimpleAuth
-    : BuiltInFeaturePluginNames.simpleAuth;
-  const APP_MANIFEST_KEY = isV3()
-    ? ComponentNames.AppManifest
-    : BuiltInFeaturePluginNames.appStudio;
+  const API_STATE_KEY = ComponentNames.TeamsApi;
+  const AAD_STATE_KEY = ComponentNames.AadApp;
+  const TAB_STATE_KEY = ComponentNames.TeamsTab;
+  const BOT_STATE_KEY = ComponentNames.TeamsBot;
+  const SIMPLE_AUTH_STATE_KEY = ComponentNames.SimpleAuth;
+  const APP_MANIFEST_KEY = ComponentNames.AppManifest;
 
   const includeTab = config.hasAzureTab;
   const includeBackend = config.hasApi;

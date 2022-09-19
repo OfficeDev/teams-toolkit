@@ -5,16 +5,19 @@ import * as chai from "chai";
 const fs = require("fs-extra");
 import * as sinon from "sinon";
 import * as tool from "../../../../../../src/common/tools";
-import { BotOptionItem, BotSsoItem, TeamsBot } from "../../../../../../src";
 import { DotnetBotImpl } from "../../../../../../src/plugins/resource/bot/dotnet/plugin";
 import * as testUtils from "../utils";
 import { ResourcePlugins } from "../../../../../../src/common/constants";
 import { ConfigKeys } from "../../../../../../src/plugins/resource/bot/constants";
 import { BOT_ID } from "../../../../../../src/plugins/resource/appstudio/constants";
 import { AzureSolutionSettings, ok } from "@microsoft/teamsfx-api";
-import { AppStudio } from "../../../../../../src/plugins/resource/bot/appStudio/appStudio";
 import { PluginAAD } from "../../../../../../src/plugins/resource/bot/resources/strings";
 import { RetryHandler } from "../../../../../../src/plugins/resource/bot/utils/retryHandler";
+import { TeamsBot } from "../../../../../../src/plugins/resource";
+import {
+  BotOptionItem,
+  BotSsoItem,
+} from "../../../../../../src/plugins/solution/fx-solution/question";
 
 describe("Bot plugin for dotnet", () => {
   describe("Test PostLocalDebug", () => {

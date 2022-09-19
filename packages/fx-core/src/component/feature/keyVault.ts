@@ -14,7 +14,7 @@ import {
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { convertToAlphanumericOnly } from "../../common/utils";
-import { AzureResourceKeyVault } from "../../plugins";
+import { AzureResourceKeyVault } from "../../plugins/solution/fx-solution/question";
 import { BicepComponent } from "../bicep";
 import "../connection/azureWebAppConfig";
 import { ComponentNames } from "../constants";

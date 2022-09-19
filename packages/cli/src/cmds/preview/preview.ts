@@ -29,28 +29,28 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   DepsType,
-  FolderName,
-  FxCore,
+  DepsManager,
+  NodeNotSupportedError,
+  DepsCheckerError,
+  validationSettingsHelpLink,
+} from "@microsoft/teamsfx-core/build/common/deps-checker";
+import {
   ITaskDefinition,
   loadTeamsFxDevScript,
   LocalEnvManager,
   ProjectSettingsHelper,
   TaskDefinition,
   ProgrammingLanguage,
-  environmentManager,
-  DepsManager,
-  getSideloadingStatus,
-  NodeNotSupportedError,
-  DepsCheckerError,
-  isExistingTabApp as isExistingTabAppCore,
-  isM365AppEnabled,
-  validationSettingsHelpLink,
-  AppStudioScopes,
-  TelemetryContext,
-  isV3,
   getProjectComponents,
-} from "@microsoft/teamsfx-core";
-
+  TelemetryContext,
+} from "@microsoft/teamsfx-core/build/common/local";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import {
+  AppStudioScopes,
+  getSideloadingStatus,
+  isM365AppEnabled,
+} from "@microsoft/teamsfx-core/build/common/tools";
+import { isExistingTabApp as isExistingTabAppCore } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { YargsCommand } from "../../yargsCommand";
 import * as utils from "../../utils";
 import * as commonUtils from "./commonUtils";
@@ -82,6 +82,8 @@ import { NotM365Project } from "./errors";
 import * as util from "util";
 import { openHubWebClient } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
+import { FolderName } from "@microsoft/teamsfx-core/build/common/local/constants";
+import { FxCore } from "@microsoft/teamsfx-core";
 
 enum Checker {
   M365Account = "Microsoft 365 Account",
@@ -784,7 +786,7 @@ export default class Preview extends YargsCommand {
       ?.get(constants.teamsAppTenantIdConfigKey) as string;
 
     const remoteTeamsAppId: string = config?.config
-      ?.get(isV3() ? "app-manifest" : constants.appstudioPluginName)
+      ?.get("app-manifest")
       ?.get(constants.remoteTeamsAppIdConfigKey);
     if (remoteTeamsAppId === undefined || remoteTeamsAppId.length === 0) {
       return err(errors.PreviewWithoutProvision());

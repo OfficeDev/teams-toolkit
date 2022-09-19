@@ -8,11 +8,11 @@ import { Argv, Options } from "yargs";
 import { FxError, err, ok, Result, Stage, LogLevel } from "@microsoft/teamsfx-api";
 
 import { YargsCommand } from "../yargsCommand";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import {
-  environmentManager,
   InvalidEnvNameError,
   ProjectEnvAlreadyExistError,
-} from "@microsoft/teamsfx-core";
+} from "@microsoft/teamsfx-core/build/core/error";
 import * as process from "process";
 import * as os from "os";
 import CLILogProvider from "../commonlib/log";

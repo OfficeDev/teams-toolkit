@@ -12,7 +12,7 @@ import cliLogger from "../../commonlib/log";
 import * as constants from "./constants";
 import { openHubWebClient, openUrlWithNewProfile } from "./launch";
 import open from "open";
-import { GraphScopes } from "@microsoft/teamsfx-core";
+import { GraphScopes } from "@microsoft/teamsfx-core/build/common/tools";
 
 const installOptionItem: OptionItem = {
   id: installApp.installInTeams,

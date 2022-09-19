@@ -35,12 +35,13 @@ import {
   CapabilityAddWorkflow,
 } from "./capability";
 import {
+  isSPFxMultiTabEnabled,
+  isWorkflowBotEnabled,
+} from "@microsoft/teamsfx-core/build/common/featureFlags";
+import {
   isAadManifestEnabled,
   isApiConnectEnabled,
-  isWorkflowBotEnabled,
-  isSPFxMultiTabEnabled,
-} from "@microsoft/teamsfx-core";
-
+} from "@microsoft/teamsfx-core/build/common/tools";
 export class AddCICD extends YargsCommand {
   public readonly commandHead = `cicd`;
   public readonly command = this.commandHead;

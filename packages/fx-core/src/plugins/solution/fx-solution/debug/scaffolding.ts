@@ -18,7 +18,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as os from "os";
-import { isLocalDebugTransparencyEnabled } from "../../../../common";
+import { isLocalDebugTransparencyEnabled } from "../../../../common/featureFlags";
 import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
 import { generateLocalDebugSettingsCommon, LocalEnvConfig } from "../../../../component/debug";

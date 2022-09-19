@@ -17,19 +17,21 @@ import {
   err,
   assembleError,
 } from "@microsoft/teamsfx-api";
-import { Correlator, FolderName, LocalEnvManager } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import {
+  FolderName,
+  LocalEnvManager,
+  ITaskDefinition,
+  ProgrammingLanguage,
+  TaskDefinition,
+} from "@microsoft/teamsfx-core/build/common/local";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import VsCodeLogInstance from "../commonlib/log";
 import { detectVsCodeEnv, showError } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import {
-  DepsType,
-  ITaskDefinition,
-  ProgrammingLanguage,
-  TaskDefinition,
-} from "@microsoft/teamsfx-core";
+import { DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";

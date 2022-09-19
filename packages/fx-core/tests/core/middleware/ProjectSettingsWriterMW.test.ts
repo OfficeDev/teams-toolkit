@@ -18,8 +18,9 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { setTools } from "../../../src";
-import { ContextInjectorMW, ProjectSettingsWriterMW } from "../../../src/core/middleware";
+import { setTools } from "../../../src/core/globalVars";
+import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
+import { ProjectSettingsWriterMW } from "../../../src/core/middleware/projectSettingsWriter";
 import { CoreHookContext } from "../../../src/core/types";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 

@@ -5,7 +5,6 @@
 import * as fs from "fs-extra";
 import { CryptoProvider, v3, v2 } from "@microsoft/teamsfx-api";
 import { environmentManager } from "../core/environment";
-import { isV3 } from "../core";
 
 export class LocalStateProvider {
   public readonly projectPath: string;
@@ -22,7 +21,7 @@ export class LocalStateProvider {
         this.projectPath,
         cryptoProvider!,
         environmentManager.getLocalEnvName(),
-        isV3()
+        true
       );
       if (envDataResult.isOk()) {
         const envData = envDataResult.value as v3.EnvInfoV3;

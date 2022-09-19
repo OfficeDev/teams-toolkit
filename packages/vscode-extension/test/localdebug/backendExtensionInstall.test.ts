@@ -3,7 +3,11 @@
 
 import * as chai from "chai";
 import * as sinon from "sinon";
-import { DepsTelemetry, DepsLogger, DepsType } from "@microsoft/teamsfx-core";
+import {
+  DepsTelemetry,
+  DepsLogger,
+  DepsType,
+} from "@microsoft/teamsfx-core/build/common/deps-checker";
 
 const expect = chai.expect;
 

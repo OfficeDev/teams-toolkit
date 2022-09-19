@@ -16,10 +16,9 @@ import { AppDefinition } from "./../../../../../src/plugins/resource/appstudio/i
 import { mockTokenProviderM365 } from "./../../aad/helper";
 import { getAzureProjectRoot, MockUserInteraction } from "./../helper";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
-import { newEnvInfo } from "../../../../../src";
-import * as core from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { Constants } from "../../../../../src/plugins/resource/appstudio/constants";
+import { newEnvInfo } from "../../../../../src/core/environment";
 
 describe("Publish Teams app with Azure", () => {
   let plugin: AppStudioPlugin;

@@ -64,7 +64,7 @@ describe("config", () => {
       chai
         .expect(() => apimPluginConfig.versionSetId)
         .to.throw(
-          "Project configuration 'versionSetId' of 'fx-resource-apim' is invalid. The value cannot contain any characters in '*#&+:<>?'"
+          "Project configuration 'versionSetId' of 'apim' is invalid. The value cannot contain any characters in '*#&+:<>?'"
         );
     });
     it("Property with value", () => {
@@ -74,7 +74,7 @@ describe("config", () => {
       chai
         .expect(() => apimPluginConfig.checkAndGet(ApimPluginConfigKeys.apiPath))
         .to.throw(
-          `Project configuration 'apiPath' of 'fx-resource-apim' is missing in 'state.dev.json'. Retry deploy to the cloud or set the value manually.`
+          `Project configuration 'apiPath' of 'apim' is missing in 'state.dev.json'. Retry deploy to the cloud or set the value manually.`
         );
     });
     it("Check and get error type property", () => {

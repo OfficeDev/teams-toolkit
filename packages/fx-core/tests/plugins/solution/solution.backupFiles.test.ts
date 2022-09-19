@@ -6,7 +6,7 @@ import fs from "fs-extra";
 import { backupFiles } from "../../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { expect } from "chai";
 import { MockTools } from "../../core/utils";
-import { setTools } from "../../../src/core";
+import { setTools } from "../../../src/core/globalVars";
 
 describe("update Azure parameters", async () => {
   const parameterFileNameTemplate = (env: string) => `azure.parameters.${env}.json`;

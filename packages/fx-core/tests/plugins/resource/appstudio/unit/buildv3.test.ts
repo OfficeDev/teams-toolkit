@@ -6,7 +6,7 @@ import * as chai from "chai";
 import sinon from "sinon";
 import { v4 as uuid } from "uuid";
 import { v2, v3, ProjectSettings, Platform } from "@microsoft/teamsfx-api";
-import { newEnvInfoV3 } from "../../../../../src";
+import { newEnvInfoV3 } from "../../../../../src/core/environment";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { MockedLogProvider, MockedTelemetryReporter } from "../../../solution/util";
 import { MockUserInteraction, getAzureProjectRoot } from "../helper";

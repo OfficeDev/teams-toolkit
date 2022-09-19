@@ -22,14 +22,16 @@ import { convertToAlphanumericOnly } from "../../common/utils";
 import { sendErrorTelemetryThenReturnError } from "../../core/telemetry";
 import {
   AddSsoParameters,
-  AzureSolutionQuestionNames,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
+} from "../../plugins/solution/fx-solution/constants";
+import {
+  AzureSolutionQuestionNames,
   TabOptionItem,
-} from "../../plugins";
+} from "../../plugins/solution/fx-solution/question";
 import "../connection/azureWebAppConfig";
 import { ComponentNames, TelemetryConstants } from "../constants";
 import { generateLocalDebugSettings } from "../debug";

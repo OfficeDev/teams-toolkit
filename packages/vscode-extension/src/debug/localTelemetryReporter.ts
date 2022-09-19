@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError } from "@microsoft/teamsfx-api";
-import { LocalTelemetryReporter } from "@microsoft/teamsfx-core";
+import { LocalTelemetryReporter } from "@microsoft/teamsfx-core/build/common/local";
 import { performance } from "perf_hooks";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {

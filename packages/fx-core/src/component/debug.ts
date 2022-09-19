@@ -2,9 +2,11 @@
 // Licensed under the MIT license.
 
 import {
+  ConfigFolderName,
   ContextV3,
   err,
   FxError,
+  InputConfigsFolderName,
   InputsWithProjectPath,
   ok,
   Platform,
@@ -59,6 +61,7 @@ import * as TasksTransparency from "../plugins/solution/fx-solution/debug/util/t
 import * as Settings from "../plugins/solution/fx-solution/debug/util/settings";
 import fs from "fs-extra";
 import {
+  updateNgrokConfigFile,
   updateCommentJson,
   updateJson,
   useNewTasks,
@@ -71,6 +74,7 @@ import { CoreQuestionNames } from "../core/question";
 import { QuestionKey } from "../plugins/resource/function/enums";
 import { DefaultValues } from "../plugins/resource/function/constants";
 import { CommentObject } from "comment-json";
+import * as path from "path";
 
 export interface LocalEnvConfig {
   vscodeEnv?: VsCodeEnv;
@@ -551,6 +555,16 @@ export async function generateLocalDebugSettingsCommon(
             `${inputs.projectPath}/.vscode/tasks.json`,
             tasksJson as CommentObject,
             TasksTransparency.mergeTasksJson
+          );
+
+          await updateNgrokConfigFile(
+            includeBot,
+            path.join(
+              inputs.projectPath,
+              `.${ConfigFolderName}`,
+              InputConfigsFolderName,
+              "ngrok.yml"
+            )
           );
         } else {
           const launchConfigurations = isM365

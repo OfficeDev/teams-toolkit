@@ -4,29 +4,33 @@
 import "mocha";
 import sinon from "sinon";
 import * as chai from "chai";
-import * as path from "path";
-import { SpfxPlugin } from "../../../../../src/plugins/resource/spfx";
-import { SPFxPluginImpl } from "../../../../../src/plugins/resource/spfx/plugin";
 import * as Utils from "../../../../../src/plugins/resource/spfx/utils/utils";
-import { ok, PluginContext } from "@microsoft/teamsfx-api";
-import { TestHelper, MockUserInteraction } from "../helper";
+import { InputsWithProjectPath, ok, Platform, ResourceContextV3 } from "@microsoft/teamsfx-api";
 import { SPOClient } from "../../../../../src/plugins/resource/spfx/spoClient";
 import * as tools from "../../../../../src/common/tools";
+import { SpfxResource } from "../../../../../src/component/resource/spfx";
+import { createContextV3 } from "../../../../../src/component/utils";
+import { newEnvInfoV3 } from "../../../../../src/core/environment";
+import { MockTools } from "../../../../core/utils";
+import { setTools } from "../../../../../src/core/globalVars";
 
 describe("SPFxDeploy", function () {
-  let plugin: SpfxPlugin;
-  let pluginContext: PluginContext;
+  let plugin: SpfxResource;
+  let context: ResourceContextV3;
   const sandbox = sinon.createSandbox();
-
+  const inputs: InputsWithProjectPath = {
+    platform: Platform.VSCode,
+    projectPath: ".",
+  };
   beforeEach(async () => {
-    plugin = new SpfxPlugin();
-    pluginContext = TestHelper.getFakePluginContext(
-      "spfxdeploy1019",
-      path.resolve("./tests/plugins/resource/spfx/resources/"),
-      "none"
-    );
-    sandbox.stub(SPFxPluginImpl.prototype, "buildSPPackage" as any).returns(ok(undefined));
-    sandbox.stub(SPFxPluginImpl.prototype, "getTenant" as any).returns(ok("TENANT_URL"));
+    plugin = new SpfxResource();
+    const gtools = new MockTools();
+    setTools(gtools);
+    context = createContextV3() as ResourceContextV3;
+    context.envInfo = newEnvInfoV3();
+    context.tokenProvider = gtools.tokenProvider;
+    sandbox.stub(SpfxResource.prototype, "buildSPPackage" as any).returns(ok(undefined));
+    sandbox.stub(SpfxResource.prototype, "getTenant" as any).returns(ok("TENANT_URL"));
     sandbox.stub(tools, "getSPFxTenant").returns(Promise.resolve("tenant"));
     sandbox.stub(tools, "getSPFxToken").returns(Promise.resolve("fakeToken"));
   });
@@ -34,12 +38,11 @@ describe("SPFxDeploy", function () {
   afterEach(() => {
     sandbox.restore();
   });
-
   it("deploy successfully", async function () {
     sandbox.stub(SPOClient, "getAppCatalogSite").resolves("APP_CATALOG");
     sandbox.stub(SPOClient, "uploadAppPackage").resolves();
     sandbox.stub(SPOClient, "deployAppPackage").resolves();
-    const result = await plugin.deploy(pluginContext);
+    const result = await plugin.deploy(context, inputs);
     chai.assert.isTrue(result.isOk());
   });
 
@@ -51,7 +54,7 @@ describe("SPFxDeploy", function () {
       },
     };
     sandbox.stub(SPOClient, "uploadAppPackage").throws(error);
-    const result = await plugin.deploy(pluginContext);
+    const result = await plugin.deploy(context, inputs);
     chai.assert.isTrue(result.isErr());
   });
 
@@ -59,8 +62,7 @@ describe("SPFxDeploy", function () {
     sandbox.stub(SPOClient, "getAppCatalogSite").resolves(undefined);
     sandbox.stub(SPOClient, "createAppCatalog").resolves();
     sandbox.stub(Utils, "sleep" as any).resolves();
-    pluginContext.ui = new MockUserInteraction();
-    const result = await plugin.deploy(pluginContext);
+    const result = await plugin.deploy(context, inputs);
     chai.assert.isTrue(result.isErr());
   });
 });

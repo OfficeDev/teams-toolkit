@@ -1,0 +1,4 @@
+tunnels:
+  bot:
+    addr: 3978
+    proto: http

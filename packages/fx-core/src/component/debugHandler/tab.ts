@@ -28,9 +28,9 @@ import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 const tabDebugMessages = {
   savingStates: "Saving the states for Tab ...",
-  settingEnvs: "Setting the environment variables for Tab ...",
+  settingEnvs: "Saving the environment variables for Tab ...",
   statesSaved: "The states for Tab are saved in %s",
-  envsSet: "The environment variables for Tab are set in %s",
+  envsSet: "The environment variables for Tab are saved in %s",
 };
 
 export interface TabDebugArgs {

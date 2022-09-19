@@ -18,6 +18,7 @@
     },
     "dependencies": {
         "@microsoft/teamsfx": "^1.0.0",
+        "adaptivecards": "~2.10.0",
         "restify": "^8.5.1"
     },
     "devDependencies": {

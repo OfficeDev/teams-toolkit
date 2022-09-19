@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@microsoft/adaptivecards-tools": "^1.0.0",
+    "adaptivecards": "~2.10.0",
     "botbuilder": "~4.14.0",
     "botbuilder-dialogs": "~4.14.0",
     "isomorphic-fetch": "^3.0.0",

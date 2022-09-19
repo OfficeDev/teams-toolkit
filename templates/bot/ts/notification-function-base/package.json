@@ -22,6 +22,7 @@
     "dependencies": {
         "@microsoft/adaptivecards-tools": "^1.0.0",
         "@microsoft/teamsfx": "^1.0.0",
+        "adaptivecards": "~2.10.0",
         "botbuilder": "~4.15.0"
     },
     "devDependencies": {

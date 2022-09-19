@@ -16,6 +16,7 @@
         "url": "https://github.com"
     },
     "dependencies": {
+        "adaptivecards": "~2.10.0",
         "@microsoft/adaptivecards-tools": "^1.0.0",
         "@microsoft/teamsfx": "^1.0.0",
         "botbuilder": "^4.17.0"

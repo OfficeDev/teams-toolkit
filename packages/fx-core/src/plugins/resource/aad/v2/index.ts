@@ -33,6 +33,7 @@ import {
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
+import "../index";
 
 @Service(ResourcePluginsV2.AadPlugin)
 export class AadPluginV2 implements v2.ResourcePlugin {

@@ -28,16 +28,15 @@ import {
 } from "../../telemetry/cliTelemetryEvents";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
-import {
-  AppStudioScopes,
-  environmentManager,
-  getResourceGroupInPortal,
-  LocalEnvManager,
-} from "@microsoft/teamsfx-core";
 import { getColorizedString } from "../../utils";
 import { isWindows } from "./depsChecker/cliUtils";
 import { CliConfigAutomaticNpmInstall, CliConfigOptions, UserSettings } from "../../userSetttings";
-
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import {
+  AppStudioScopes,
+  getResourceGroupInPortal,
+} from "@microsoft/teamsfx-core/build/common/tools";
+import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
 export async function openBrowser(
   browser: constants.Browser,
   url: string,

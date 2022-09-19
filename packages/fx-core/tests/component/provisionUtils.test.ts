@@ -4,7 +4,7 @@ import * as sinon from "sinon";
 import { ComponentNames } from "../../src/component/constants";
 import { provisionUtils } from "../../src/component/provisionUtils";
 import { createContextV3 } from "../../src/component/utils";
-import { SolutionError } from "../../src/plugins/solution";
+import { SolutionError } from "../../src/plugins/solution/fx-solution/constants";
 import { resourceGroupHelper } from "../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import {
   MockAzureAccountProvider,

@@ -15,17 +15,7 @@ chai.use(chaiAsPromised);
 
 describe("DebugComponent", () => {
   const tools = new MockTools();
-  let mockedEnvRestore: () => void;
   setTools(tools);
-  before(() => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_APIV3: "true",
-    });
-  });
-
-  after(async () => {
-    mockedEnvRestore();
-  });
   describe("setup", () => {
     afterEach(async () => await fs.remove(path.resolve(__dirname, "./data")));
     it("happy path", async () => {

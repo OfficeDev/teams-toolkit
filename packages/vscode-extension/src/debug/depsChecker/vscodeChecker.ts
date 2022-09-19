@@ -11,7 +11,7 @@ import {
   DepsTelemetry,
   DepsType,
   Messages,
-} from "@microsoft/teamsfx-core";
+} from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as os from "os";
 import { vscodeHelper } from "./vscodeHelper";
 

@@ -57,30 +57,30 @@ import {
   Void,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
+import { AddSsoParameters } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
 import {
-  AddSsoParameters,
-  AppStudioScopes,
   askSubscription,
-  CollaborationState,
-  Correlator,
-  DepsManager,
-  DepsType,
-  environmentManager,
-  FolderName,
-  FxCore,
+  AppStudioScopes,
   getAppDirectory,
   getFixedCommonProjectSettings,
   getHashedEnv,
-  globalStateGet,
-  globalStateUpdate,
-  InvalidProjectError,
   isExistingTabAppEnabled,
   isUserCancelError,
-  isValidProject,
-  LocalEnvManager,
-  ProjectSettingsHelper,
-  UserTaskFunctionName,
-} from "@microsoft/teamsfx-core";
+} from "@microsoft/teamsfx-core/build/common/tools";
+import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { FolderName } from "@microsoft/teamsfx-core/build/common/local";
+import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { LocalEnvManager, ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local";
+import {
+  globalStateUpdate,
+  globalStateGet,
+} from "@microsoft/teamsfx-core/build/common/globalState";
+import { UserTaskFunctionName } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
+import { FxCore } from "@microsoft/teamsfx-core";
+import { InvalidProjectError } from "@microsoft/teamsfx-core/build/core/error";
 
 import M365TokenInstance from "./commonlib/m365Login";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -112,7 +112,6 @@ import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./debug/tea
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
-import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { VS_CODE_UI } from "./extension";
 import * as globalVariables from "./globalVariables";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";

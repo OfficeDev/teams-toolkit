@@ -45,7 +45,7 @@ import { VS_CODE_UI } from "../extension";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as commonUtils from "../debug/commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { getSubscriptionInfoFromEnv } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as globalVariables from "../globalVariables";

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError } from "@microsoft/teamsfx-api";
-import { LocalTelemetryReporter } from "@microsoft/teamsfx-core";
+import { LocalTelemetryReporter } from "@microsoft/teamsfx-core/build/common/local";
 import cliTelemetry from "../../telemetry/cliTelemetry";
 
 // Cannot directly refer to a global function which will cause unit test mock to fail

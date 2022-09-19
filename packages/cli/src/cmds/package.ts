@@ -16,7 +16,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import HelpParamGenerator from "../helpParamGenerator";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 export default class Package extends YargsCommand {
   public readonly commandHead = `package`;

@@ -7,7 +7,7 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { setTools } from "../../../src";
+import { setTools } from "../../../src/core/globalVars";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { ProjectVersionCheckerMW } from "../../../src/core/middleware/projectVersionChecker";

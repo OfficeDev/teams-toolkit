@@ -22,7 +22,6 @@ import {
 import M365Login from "../../../src/commonlib/m365Login";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
-import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Create single tab", function () {
   const testFolder = getTestFolder();
@@ -36,73 +35,49 @@ describe("Create single tab", function () {
     await cleanUp(appName, projectPath, true, false, false);
   });
   describe("feature flags for API v3", async function () {
-    // TODO: fix api v3
-    const envs = [{ TEAMSFX_APIV3: "false" }, { TEAMSFX_APIV3: "true" }];
-    // const envs = [{ TEAMSFX_APIV3: "false" }];
-    let mockedEnvRestore: RestoreFn;
-    for (const envParam of envs) {
-      beforeEach(() => {
-        mockedEnvRestore = mockedEnv(envParam);
+    it(`Create react app without Azure Function`, { testPlanCaseId: 9426074 }, async () => {
+      // new a project ( tab only )
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+      {
+        // Validate scaffold
+        await FrontendValidator.validateScaffold(projectPath, "javascript");
+      }
+    });
+
+    it(`Provision Resource: React app without function`, { testPlanCaseId: 10298738 }, async () => {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+
+      await CliHelper.setSubscription(subscription, projectPath);
+
+      await CliHelper.provisionProject(projectPath);
+
+      // Validate provision
+      // Get context
+      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+
+      // Validate Aad App
+      const aad = AadValidator.init(context, false, M365Login);
+      await AadValidator.validate(aad);
+
+      // Validate Tab Frontend
+      const frontend = FrontendValidator.init(context);
+      await FrontendValidator.validateProvision(frontend);
+    });
+
+    it(`Deploy react app without Azure Function and SQL`, { testPlanCaseId: 9454296 }, async () => {
+      // deploy
+      await execAsyncWithRetry(`teamsfx deploy`, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
       });
-      afterEach(() => {
-        mockedEnvRestore();
-      });
-      it(
-        `Create react app without Azure Function, API V3: ${envParam.TEAMSFX_APIV3}`,
-        { testPlanCaseId: 9426074 },
-        async () => {
-          // new a project ( tab only )
-          await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
-          {
-            // Validate scaffold
-            await FrontendValidator.validateScaffold(projectPath, "javascript");
-          }
-        }
-      );
 
-      it(
-        `Provision Resource: React app without function, API V3: ${envParam.TEAMSFX_APIV3}`,
-        { testPlanCaseId: 10298738 },
-        async () => {
-          await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      // Validate deployment
+      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-          await CliHelper.setSubscription(subscription, projectPath);
-
-          await CliHelper.provisionProject(projectPath);
-
-          // Validate provision
-          // Get context
-          const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
-
-          // Validate Aad App
-          const aad = AadValidator.init(context, false, M365Login);
-          await AadValidator.validate(aad);
-
-          // Validate Tab Frontend
-          const frontend = FrontendValidator.init(context);
-          await FrontendValidator.validateProvision(frontend);
-        }
-      );
-
-      it(
-        `Deploy react app without Azure Function and SQL, API V3: ${envParam.TEAMSFX_APIV3}`,
-        { testPlanCaseId: 9454296 },
-        async () => {
-          // deploy
-          await execAsyncWithRetry(`teamsfx deploy`, {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0,
-          });
-
-          // Validate deployment
-          const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
-
-          // Validate Tab Frontend
-          const frontend = FrontendValidator.init(context);
-          await FrontendValidator.validateDeploy(frontend);
-        }
-      );
-    }
+      // Validate Tab Frontend
+      const frontend = FrontendValidator.init(context);
+      await FrontendValidator.validateDeploy(frontend);
+    });
   });
 });

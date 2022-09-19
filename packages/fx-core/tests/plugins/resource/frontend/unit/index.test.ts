@@ -21,7 +21,7 @@ import { FrontendConfigInfo } from "../../../../../src/plugins/resource/frontend
 import { FrontendPlugin } from "../../../../../src/plugins/resource/frontend/";
 import { TestHelper } from "../helper";
 import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
-import { getTemplatesFolder } from "../../../../../src";
+import { getTemplatesFolder } from "../../../../../src/folder";
 import mock from "mock-fs";
 import * as path from "path";
 

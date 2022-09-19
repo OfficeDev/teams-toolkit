@@ -1,5 +1,5 @@
 import { Result, FxError, err, ok, UserError } from "@microsoft/teamsfx-api";
-import { isValidProject } from "@microsoft/teamsfx-core";
+import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as globalVariables from "../globalVariables";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import * as vscode from "vscode";

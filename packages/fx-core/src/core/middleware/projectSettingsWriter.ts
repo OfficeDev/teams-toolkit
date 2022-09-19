@@ -18,7 +18,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { convertProjectSettingsV3ToV2 } from "../../component/migrate";
 import { WriteFileError } from "../error";
-import { isV3, TOOLS } from "../globalVars";
+import { TOOLS } from "../globalVars";
 import { CoreHookContext } from "../types";
 import { shouldIgnored } from "./projectSettingsLoader";
 
@@ -41,9 +41,7 @@ export const ProjectSettingsWriterMW: Middleware = async (
       return;
     let projectSettings = ctx.projectSettings;
     if (projectSettings === undefined) return;
-    if (isV3()) {
-      projectSettings = convertProjectSettingsV3ToV2(projectSettings as ProjectSettingsV3);
-    }
+    projectSettings = convertProjectSettingsV3ToV2(projectSettings as ProjectSettingsV3);
     try {
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
       const solutionSettings = projectSettings.solutionSettings;

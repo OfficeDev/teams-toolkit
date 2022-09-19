@@ -5,7 +5,7 @@
  * @author Zhiyu You <zhiyou@microsoft.com>
  */
 
-import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 import { expect } from "chai";
 
 import { execAsync } from "../commonUtils";

@@ -6,7 +6,7 @@ import "mocha";
 import { Duplex } from "stream";
 import sinon from "sinon";
 import ServerTelemetryReporter from "../../src/providers/telemetry";
-import { Correlator } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { NotificationTypes } from "../../src/apis";
 import { createMessageConnection } from "vscode-jsonrpc";
 

@@ -29,7 +29,7 @@ describe("Existing Tab test for v3", () => {
   const fx = Container.get<TeamsfxCore>("fx");
   let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true", TEAMSFX_INIT_APP: "true" });
+    mockedEnvRestore = mockedEnv({ TEAMSFX_INIT_APP: "true" });
   });
 
   afterEach(() => {

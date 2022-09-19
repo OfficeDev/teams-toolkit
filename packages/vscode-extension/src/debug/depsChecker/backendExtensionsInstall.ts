@@ -8,7 +8,7 @@ import {
   DepsType,
   installExtension,
   Messages,
-} from "@microsoft/teamsfx-core";
+} from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { VSCodeDepsChecker } from "./vscodeChecker";
 
 export async function installBackendExtension(

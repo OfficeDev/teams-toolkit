@@ -4,12 +4,6 @@
 "use strict";
 
 import { LogLevel } from "@microsoft/teamsfx-api";
-import {
-  ITaskDefinition,
-  LocalEnvManager,
-  ProjectSettingsHelper,
-  TaskDefinition,
-} from "@microsoft/teamsfx-core";
 import { spawn } from "child_process";
 import cliLogger from "../../commonlib/log";
 import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
@@ -21,6 +15,12 @@ import {
 import * as constants from "./constants";
 import { NpmInstallFailed } from "./errors";
 import { getAutomaticNpmInstallSetting } from "./commonUtils";
+import { ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local/projectSettingsHelper";
+import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
+import {
+  ITaskDefinition,
+  TaskDefinition,
+} from "@microsoft/teamsfx-core/build/common/local/taskDefinition";
 
 export async function automaticNpmInstallHandler(
   workspaceFolder: string,

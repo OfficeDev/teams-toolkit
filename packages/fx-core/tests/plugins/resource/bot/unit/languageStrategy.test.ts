@@ -15,7 +15,6 @@ import {
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { Messages } from "./messages";
 import { PluginError } from "../../../../../src/plugins/resource/bot/errors";
-import { getTemplatesFolder } from "../../../../../../fx-core/src";
 import AdmZip from "adm-zip";
 import { TeamsBotConfig } from "../../../../../src/plugins/resource/bot/configs/teamsBotConfig";
 import {
@@ -27,6 +26,7 @@ import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pl
 import { NotificationTriggers } from "../../../../../src/plugins/resource/bot/resources/strings";
 import { BotNotificationTriggers } from "../../../../../src/plugins/solution/fx-solution/question";
 import { HostType } from "../../../../../src/plugins/resource/bot/v2/enum";
+import { getTemplatesFolder } from "../../../../../src/folder";
 
 describe("Language Strategy", () => {
   describe("getTemplateProject", () => {

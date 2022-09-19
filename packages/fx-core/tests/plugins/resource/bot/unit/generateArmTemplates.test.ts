@@ -10,7 +10,6 @@ import {
   mockSolutionUpdateArmTemplates,
   ResourcePlugins,
 } from "../../util";
-import { TeamsBot } from "../../../../../src";
 import * as featureFlags from "../../../../../src/common/featureFlags";
 import * as projectSettingsHelper from "../../../../../../fx-core/src/common/projectSettingsHelper";
 import * as testUtils from "./utils";
@@ -22,6 +21,7 @@ import {
   AzureResourceKeyVault,
 } from "../../../../../src/plugins/solution/fx-solution/question";
 import * as sinon from "sinon";
+import { TeamsBot } from "../../../../../src/plugins/resource";
 
 describe("Bot Generates Arm Templates", () => {
   let botPlugin: TeamsBot;

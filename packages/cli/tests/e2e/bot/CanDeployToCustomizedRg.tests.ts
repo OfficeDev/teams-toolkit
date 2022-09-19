@@ -18,7 +18,7 @@ import {
   deleteResourceGroupByName,
   setBotSkuNameToB1Bicep,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, ResourceToDeploy } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";

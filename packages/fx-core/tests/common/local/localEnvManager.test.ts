@@ -13,8 +13,6 @@ import * as tools from "../../../src/common/tools";
 import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
 import { DepsType } from "../../../src/common/deps-checker/depsChecker";
 import sinon from "sinon";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import { environmentManager } from "../../../src";
 import {
   LocalEnvProvider,
   LocalEnvs,
@@ -24,6 +22,8 @@ import {
   LocalCertificate,
   LocalCertificateManager,
 } from "../../../src/common/local/localCertificateManager";
+import { environmentManager } from "../../../src/core/environment";
+import { convertProjectSettingsV2ToV3 } from "../../../src/component/migrate";
 
 chai.use(chaiAsPromised);
 
@@ -214,7 +214,7 @@ describe("LocalEnvManager", () => {
         name: "fx-solution-azure",
         hostType: "Azure",
         capabilities: ["Tab"],
-        activeResourcePlugins: ["fx-resource-simple-auth"],
+        activeResourcePlugins: ["fx-resource-simple-auth", "fx-resource-frontend-hosting"],
       },
       depsTypes: [DepsType.AzureNode, DepsType.Dotnet],
     },
@@ -224,6 +224,7 @@ describe("LocalEnvManager", () => {
         name: "fx-solution-azure",
         hostType: "Azure",
         capabilities: ["Tab"],
+        activeResourcePlugins: ["fx-resource-frontend-hosting"],
       },
       depsTypes: [DepsType.AzureNode],
     },
@@ -234,7 +235,11 @@ describe("LocalEnvManager", () => {
         hostType: "Azure",
         capabilities: ["Tab"],
         azureResources: ["function"],
-        activeResourcePlugins: ["fx-resource-simple-auth"],
+        activeResourcePlugins: [
+          "fx-resource-simple-auth",
+          "fx-resource-frontend-hosting",
+          "fx-resource-function",
+        ],
       },
       depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.FuncCoreTools],
     },
@@ -244,6 +249,7 @@ describe("LocalEnvManager", () => {
         name: "fx-solution-azure",
         hostType: "Azure",
         capabilities: ["Bot"],
+        activeResourcePlugins: ["fx-resource-bot"],
       },
       depsTypes: [DepsType.AzureNode, DepsType.Ngrok],
     },
@@ -253,7 +259,11 @@ describe("LocalEnvManager", () => {
         name: "fx-solution-azure",
         hostType: "Azure",
         capabilities: ["Tab", "Bot"],
-        activeResourcePlugins: ["fx-resource-simple-auth"],
+        activeResourcePlugins: [
+          "fx-resource-simple-auth",
+          "fx-resource-frontend-hosting",
+          "fx-resource-bot",
+        ],
       },
       depsTypes: [DepsType.AzureNode, DepsType.Dotnet, DepsType.Ngrok],
     },
@@ -264,7 +274,12 @@ describe("LocalEnvManager", () => {
         hostType: "Azure",
         capabilities: ["Tab", "Bot", "MessagingExtension"],
         azureResources: ["function"],
-        activeResourcePlugins: ["fx-resource-simple-auth"],
+        activeResourcePlugins: [
+          "fx-resource-simple-auth",
+          "fx-resource-frontend-hosting",
+          "fx-resource-bot",
+          "fx-resource-function",
+        ],
       },
       depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.Ngrok, DepsType.FuncCoreTools],
     },
@@ -273,6 +288,7 @@ describe("LocalEnvManager", () => {
       solutionSettings: {
         name: "fx-solution-azure",
         hostType: "SPFx",
+        activeResourcePlugins: ["fx-resource-spfx"],
       },
       depsTypes: [DepsType.SpfxNode],
     },
@@ -282,6 +298,7 @@ describe("LocalEnvManager", () => {
         name: "fx-solution-azure",
         hostType: "Azure",
         capabilities: ["Bot"],
+        activeResourcePlugins: ["fx-resource-bot"],
       },
       pluginSettings: {
         "fx-resource-bot": {
@@ -296,6 +313,7 @@ describe("LocalEnvManager", () => {
         name: "fx-solution-azure",
         hostType: "Azure",
         capabilities: ["Bot"],
+        activeResourcePlugins: ["fx-resource-bot"],
       },
       pluginSettings: {
         "fx-resource-bot": {
@@ -308,16 +326,12 @@ describe("LocalEnvManager", () => {
 
   describe("getActiveDependencies()", () => {
     const sandbox = sinon.createSandbox();
-    let mockedEnvRestore: RestoreFn;
-
     beforeEach(() => {
       sandbox.restore();
-      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
     });
 
     afterEach(() => {
       sandbox.restore();
-      mockedEnvRestore();
     });
 
     testData.forEach((data) => {
@@ -328,7 +342,8 @@ describe("LocalEnvManager", () => {
           solutionSettings: data.solutionSettings,
           pluginSettings: data.pluginSettings,
         };
-        const result = localEnvManager.getActiveDependencies(projectSettings);
+        const projectSettingsV3 = convertProjectSettingsV2ToV3(projectSettings, ".");
+        const result = localEnvManager.getActiveDependencies(projectSettingsV3);
         chai.assert.sameDeepMembers(data.depsTypes, result);
       });
     });
@@ -348,10 +363,14 @@ describe("LocalEnvManager", () => {
           name: "fx-solution-azure",
           hostType: "Azure",
           capabilities: ["Tab", "Bot"],
+          activeResourcePlugins: ["fx-resource-frontend-hosting", "fx-resource-bot"],
         },
       };
 
-      const ports = await localEnvManager.getPortsFromProject(projectPath, projectSettings);
+      const ports = await localEnvManager.getPortsFromProject(
+        projectPath,
+        convertProjectSettingsV2ToV3(projectSettings, ".")
+      );
       chai.assert.sameMembers(
         ports,
         [53000, 3978, 9239],
@@ -362,16 +381,12 @@ describe("LocalEnvManager", () => {
 
   describe("getLocalEnvInfo()", () => {
     const sandbox = sinon.createSandbox();
-    let mockedEnvRestore: RestoreFn;
-
     beforeEach(() => {
       sandbox.restore();
-      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
     });
 
     afterEach(() => {
       sandbox.restore();
-      mockedEnvRestore();
     });
 
     it("getLocalEnvInfo() happy path", async () => {

@@ -37,7 +37,7 @@ import { AppManifest } from "../resource/appManifest/appManifest";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { hooks } from "@feathersjs/hooks/lib";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { isVSProject } from "../../common";
+import { isVSProject } from "../../common/projectSettingsHelper";
 
 @Service("teams-tab")
 export class TeamsTab {

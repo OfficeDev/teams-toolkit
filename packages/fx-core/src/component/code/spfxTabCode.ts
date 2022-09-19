@@ -23,7 +23,7 @@ import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import * as util from "util";
-import { isSPFxMultiTabEnabled } from "../../common";
+import { isSPFxMultiTabEnabled } from "../../common/featureFlags";
 import { getAppDirectory, isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../plugins/resource/appstudio/constants";

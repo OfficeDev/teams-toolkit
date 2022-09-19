@@ -17,10 +17,10 @@ import mock from "mock-fs";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import AdmZip from "adm-zip";
-import { getTemplatesFolder } from "../../../../../../src";
 import * as utils from "../../../../../../src/plugins/resource/bot/utils/common";
 import { AzureHostingFactory } from "../../../../../../src/common/azure-hosting/hostingFactory";
 import { ServiceType } from "../../../../../../src/common/azure-hosting/interfaces";
+import { getTemplatesFolder } from "../../../../../../src/folder";
 
 const fs = require("fs-extra");
 

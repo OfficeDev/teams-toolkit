@@ -27,7 +27,7 @@ import {
   NoProjectOpenedError,
   PathNotExistError,
 } from "../../../src/core/error";
-import { ConcurrentLockerMW } from "../../../src/core/middleware";
+import { ConcurrentLockerMW } from "../../../src/core/middleware/concurrentLocker";
 import { randomAppName } from "../utils";
 import * as tools from "../../../src/common/tools";
 

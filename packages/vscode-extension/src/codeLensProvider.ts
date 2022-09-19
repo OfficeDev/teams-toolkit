@@ -9,18 +9,14 @@ import { Mutex } from "async-mutex";
 import {
   AdaptiveCardsFolderName,
   ProjectConfigV3,
-  Json,
   TemplateFolderName,
   AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
-import {
-  getPermissionMap,
-  getAllowedAppMaps,
-  environmentManager,
-  getPropertyByPath,
-  convertManifestTemplateToV3,
-} from "@microsoft/teamsfx-core";
+import { getPermissionMap } from "@microsoft/teamsfx-core/build/plugins/resource/aad";
+import { getAllowedAppMaps, getPropertyByPath } from "@microsoft/teamsfx-core/build/common/tools";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { convertManifestTemplateToV3 } from "@microsoft/teamsfx-core/build/component/migrate";
 import { localize } from "./utils/localizeUtils";
 import { core, getSystemInputs } from "./handlers";
 import isUUID from "validator/lib/isUUID";

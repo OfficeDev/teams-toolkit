@@ -11,7 +11,6 @@ import {
   configLocalEnvironment,
 } from "../../../../src/plugins/solution/fx-solution/debug/provisionLocal";
 import * as path from "path";
-import mockedEnv from "mocked-env";
 import { MockTools } from "../../../core/utils";
 import { setTools } from "../../../../src/core/globalVars";
 chai.use(chaiAsPromised);
@@ -19,16 +18,6 @@ chai.use(chaiAsPromised);
 describe("solution.debug.provisionLocal", () => {
   const tools = new MockTools();
   setTools(tools);
-  let mockedEnvRestore: () => void;
-  before(() => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_APIV3: "false",
-    });
-  });
-
-  after(async () => {
-    mockedEnvRestore();
-  });
   describe("setupLocalDebugSettings", () => {
     it("happy path", async () => {
       const projectSetting = {
@@ -41,6 +30,7 @@ describe("solution.debug.provisionLocal", () => {
           azureResources: ["function"],
           activeResourcePlugins: ["fx-resource-simple-auth"],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-api" }, { name: "simple-auth" }],
         programmingLanguage: "typescript",
       };
       const inputs = {
@@ -67,6 +57,12 @@ describe("solution.debug.provisionLocal", () => {
           azureResources: ["function"],
           activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
         },
+        components: [
+          { name: "teams-tab" },
+          { name: "teams-api" },
+          { name: "simple-auth" },
+          { name: "aad-app" },
+        ],
         programmingLanguage: "typescript",
       };
       const inputs = {
@@ -97,6 +93,7 @@ describe("solution.debug.provisionLocal", () => {
           activeResourcePlugins: [],
         },
         programmingLanguage: "typescript",
+        components: [],
       };
       const inputs = {
         platform: Platform.VSCode,
@@ -126,6 +123,7 @@ describe("solution.debug.provisionLocal", () => {
           azureResources: ["function"],
           capabilities: ["Tab", "Bot", "MessagingExtension"],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-api" }, { name: "teams-bot" }],
         programmingLanguage: "typescript",
       };
       const inputs = {
@@ -166,6 +164,7 @@ describe("solution.debug.provisionLocal", () => {
           azureResources: ["function"],
           capabilities: ["Tab", "Bot", "MessagingExtension"],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-api" }, { name: "teams-bot" }],
         programmingLanguage: "typescript",
       };
       const inputs = {

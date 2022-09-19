@@ -305,7 +305,7 @@ function validateAndInstallPrerequisites(
     prerequisites.push("ngrok");
     comments.push("3978, // bot service port", "9239, // bot debug port");
   }
-  prerequisites.push("ports");
+  prerequisites.push("portOccupancy");
   const comment = `
   [
     ${comments.join("\n  ")}
@@ -318,7 +318,7 @@ function validateAndInstallPrerequisites(
     command: "debug-check-prerequisites",
     args: {
       prerequisites,
-      ports: commentJson.parse(comment),
+      portOccupancy: commentJson.parse(comment),
     },
   };
 }

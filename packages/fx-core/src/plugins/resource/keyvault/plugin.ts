@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, PluginContext, Result, AzureSolutionSettings } from "@microsoft/teamsfx-api";
+import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { getTemplatesFolder } from "../../..";
 import { ArmTemplateResult } from "../../../common/armInterface";
-import { Bicep, ConstantString } from "../../../common/constants";
+import { Bicep } from "../../../common/constants";
 import { Constants } from "./constants";
 import { ResultFactory } from "./result";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile } from "../../../common/tools";
+import { getTemplatesFolder } from "../../../folder";
 
 export class KeyVaultPluginImpl {
   public async generateArmTemplates(

@@ -18,9 +18,12 @@ import os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import * as uuid from "uuid";
-import { CollaborationState, hasAAD, hasAzureResource, hasSPFx, SolutionError } from "../../src";
-import { checkPermission, grantPermission, listCollaborator } from "../../src/core/collaborator";
-import { CollaborationUtil } from "../../src/plugins/solution/fx-solution/v2/collaborationUtil";
+import {
+  checkPermission,
+  CollaborationUtil,
+  grantPermission,
+  listCollaborator,
+} from "../../src/core/collaborator";
 import {
   BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
@@ -35,6 +38,9 @@ import { Container } from "typedi";
 import { AadAppForTeamsPluginV3 } from "../../src/plugins/resource/aad/v3";
 import { AppManifest } from "../../src/component/resource/appManifest/appManifest";
 import { ComponentNames } from "../../src/component/constants";
+import { hasAAD, hasAzureResource, hasSPFx } from "../../src/common/projectSettingsHelper";
+import { CollaborationState } from "../../src/common/permissionInterface";
+import { SolutionError } from "../../src/plugins/solution/fx-solution/constants";
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
   const projectSettings: ProjectSettingsV3 = {

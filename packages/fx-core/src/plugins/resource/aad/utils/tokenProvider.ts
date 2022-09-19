@@ -4,7 +4,7 @@
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import { ResultFactory } from "../results";
 import { GetTokenError, TenantNotExistError } from "../errors";
-import { AppStudioScopes, GraphScopes } from "../../../../common";
+import { AppStudioScopes, GraphScopes } from "../../../../common/tools";
 
 export enum TokenAudience {
   Graph = "graph",

@@ -33,13 +33,10 @@ import {
   MANIFEST_TEMPLATE_CONSOLIDATE,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
 } from "../../../../../src/plugins/resource/appstudio/constants";
-import { isVSProject, newEnvInfo } from "../../../../../src";
-import * as commonTools from "../../../../../src/common/tools";
+import { newEnvInfo } from "../../../../../src/core/environment";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "../helper";
 import * as path from "path";
-import { getManifestTemplatePath } from "../../../../../src/plugins/resource/appstudio/manifestTemplate";
-import { createManifest } from "../../../../../src/plugins/resource/appstudio/plugin";
 import { getProjectTemplatesFolderPath } from "../../../../../src/common/utils";
 
 function getRemoteManifestPath(projectRoot: string): string {

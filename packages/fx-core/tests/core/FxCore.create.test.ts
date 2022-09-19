@@ -4,12 +4,10 @@
 import { Inputs, ok, Platform, Stage, v3 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { Container } from "typedi";
-import { environmentManager, FxCore, setTools } from "../../src";
+import { FxCore } from "../../src";
 import {
   CoreQuestionNames,
   ScratchOptionNoVSC,
@@ -20,21 +18,22 @@ import {
   TabOptionItem,
   TabSPFxItem,
 } from "../../src/plugins/solution/fx-solution/question";
-import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
 import { SPFXQuestionNames } from "../../src/plugins/resource/spfx/utils/questions";
+import { setTools } from "../../src/core/globalVars";
+import { environmentManager } from "../../src/core/environment";
+import * as templateActions from "../../src/common/template-utils/templatesActions";
+
 describe("Core basic APIs for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   let appName = randomAppName();
   let projectPath = path.resolve(os.tmpdir(), appName);
-  let mockedEnvRestore: RestoreFn;
   beforeEach(() => {
     sandbox.restore();
     setTools(tools);
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
     sandbox
       .stub<any, any>(axios, "get")
       .callsFake(async (url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
@@ -50,14 +49,14 @@ describe("Core basic APIs for v3", () => {
       });
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+    sandbox.stub<any, any>(templateActions, "scaffoldFromTemplates").resolves();
   });
 
   afterEach(() => {
-    mockedEnvRestore();
     sandbox.restore();
     deleteFolder(projectPath);
   });
-  it("create + provision (VSC, Tab)", async () => {
+  it("create from new (VSC, Tab)", async () => {
     appName = randomAppName();
     const inputs: Inputs = {
       platform: Platform.VSCode,

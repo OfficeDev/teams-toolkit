@@ -16,15 +16,16 @@ import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
 import { SPFxTabCodeProvider } from "../../../../../src/component/code/spfxTabCode";
+import { ComponentNames } from "../../../../../src/component/constants";
 import { DefaultManifestProvider } from "../../../../../src/component/resource/appManifest/manifestProvider";
-import { createContextV3 } from "../../../../../src/component/utils";
+import { createContextV3, newProjectSettingsV3 } from "../../../../../src/component/utils";
 import { setTools } from "../../../../../src/core/globalVars";
 import { GeneratorChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/yoChecker";
 import { SPFXQuestionNames } from "../../../../../src/plugins/resource/spfx/utils/questions";
 import { Utils } from "../../../../../src/plugins/resource/spfx/utils/utils";
 import { cpUtils } from "../../../../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
-import { MockTools } from "../../../../core/utils";
+import { MockTools, MockUserInteraction } from "../../../../core/utils";
 
 describe("SPFxScaffold", function () {
   const testFolder = path.resolve("./tmp");
@@ -36,8 +37,16 @@ describe("SPFxScaffold", function () {
     component = new SPFxTabCodeProvider();
     const gtools = new MockTools();
     setTools(gtools);
-    context = createContextV3();
-
+    context = createContextV3(newProjectSettingsV3());
+    context.projectSetting.components = [
+      {
+        name: "teams-tab",
+        hosting: ComponentNames.SPFx,
+        deploy: true,
+        folder: "SPFx",
+        build: true,
+      },
+    ];
     await fs.ensureDir(testFolder);
     sinon.stub(Utils, "configure");
     sinon.stub(fs, "stat").resolves();
@@ -64,9 +73,11 @@ describe("SPFxScaffold", function () {
 
   it("scaffold SPFx project without framework", async function () {
     const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       projectPath: testFolder,
       [SPFXQuestionNames.framework_type]: "none",
+      [SPFXQuestionNames.webpart_desp]: "test",
+      [SPFXQuestionNames.webpart_name]: "hello",
     };
     const result = await component.generate(context, inputs);
     if (result.isErr()) console.log(result.error);
@@ -75,9 +86,11 @@ describe("SPFxScaffold", function () {
 
   it("scaffold SPFx project with react framework", async function () {
     const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       projectPath: testFolder,
       [SPFXQuestionNames.framework_type]: "react",
+      [SPFXQuestionNames.webpart_desp]: "test",
+      [SPFXQuestionNames.webpart_name]: "hello",
     };
     const result = await component.generate(context, inputs);
     if (result.isErr()) console.log(result.error);
@@ -86,7 +99,7 @@ describe("SPFxScaffold", function () {
 
   it("scaffold SPFx project with minimal framework", async function () {
     const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       projectPath: testFolder,
       [SPFXQuestionNames.framework_type]: "minimal",
       [SPFXQuestionNames.webpart_desp]: "test",
@@ -99,7 +112,7 @@ describe("SPFxScaffold", function () {
 
   it("scaffold SPFx project with extremely long webpart name", async function () {
     const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       projectPath: testFolder,
       [SPFXQuestionNames.framework_type]: "react",
       [SPFXQuestionNames.webpart_name]:
@@ -114,11 +127,12 @@ describe("SPFxScaffold", function () {
   it("add webpart to SPFx project framework", async function () {
     const mockedEnvRestore = mockedEnv({ TEAMSFX_SPFX_MULTI_TAB: "true" });
     const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       projectPath: testFolder,
       [SPFXQuestionNames.framework_type]: "react",
       stage: Stage.addFeature,
     };
+    context.userInteraction = new MockUserInteraction();
     context.manifestProvider = manifestProvider;
     fakedAddCapability = sinon.stub(manifestProvider, "addCapabilities").resolves(ok(Void));
     const result = await component.generate(context, inputs);

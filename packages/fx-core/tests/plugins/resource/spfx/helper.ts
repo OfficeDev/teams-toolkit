@@ -118,7 +118,7 @@ export class MockUserInteraction implements UserInteraction {
   }
 }
 
-function mockM365TokenProvider(): M365TokenProvider {
+export function mockM365TokenProvider(): M365TokenProvider {
   const provider = <M365TokenProvider>{};
   const mockTokenObject = {
     tid: faker.datatype.uuid(),

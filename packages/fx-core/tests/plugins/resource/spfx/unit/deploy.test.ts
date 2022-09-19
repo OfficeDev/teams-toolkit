@@ -13,18 +13,21 @@ import { createContextV3 } from "../../../../../src/component/utils";
 import { newEnvInfoV3 } from "../../../../../src/core/environment";
 import { MockTools } from "../../../../core/utils";
 import { setTools } from "../../../../../src/core/globalVars";
+import * as path from "path";
+import { mockM365TokenProvider, MockUserInteraction } from "../helper";
 
 describe("SPFxDeploy", function () {
-  let plugin: SpfxResource;
+  let component: SpfxResource;
   let context: ResourceContextV3;
   const sandbox = sinon.createSandbox();
   const inputs: InputsWithProjectPath = {
     platform: Platform.VSCode,
-    projectPath: ".",
+    projectPath: path.resolve("./tests/plugins/resource/spfx/resources/"),
   };
   beforeEach(async () => {
-    plugin = new SpfxResource();
+    component = new SpfxResource();
     const gtools = new MockTools();
+    gtools.tokenProvider.m365TokenProvider = mockM365TokenProvider();
     setTools(gtools);
     context = createContextV3() as ResourceContextV3;
     context.envInfo = newEnvInfoV3();
@@ -42,7 +45,7 @@ describe("SPFxDeploy", function () {
     sandbox.stub(SPOClient, "getAppCatalogSite").resolves("APP_CATALOG");
     sandbox.stub(SPOClient, "uploadAppPackage").resolves();
     sandbox.stub(SPOClient, "deployAppPackage").resolves();
-    const result = await plugin.deploy(context, inputs);
+    const result = await component.deploy(context, inputs);
     chai.assert.isTrue(result.isOk());
   });
 
@@ -54,7 +57,7 @@ describe("SPFxDeploy", function () {
       },
     };
     sandbox.stub(SPOClient, "uploadAppPackage").throws(error);
-    const result = await plugin.deploy(context, inputs);
+    const result = await component.deploy(context, inputs);
     chai.assert.isTrue(result.isErr());
   });
 
@@ -62,7 +65,8 @@ describe("SPFxDeploy", function () {
     sandbox.stub(SPOClient, "getAppCatalogSite").resolves(undefined);
     sandbox.stub(SPOClient, "createAppCatalog").resolves();
     sandbox.stub(Utils, "sleep" as any).resolves();
-    const result = await plugin.deploy(context, inputs);
+    context.userInteraction = new MockUserInteraction();
+    const result = await component.deploy(context, inputs);
     chai.assert.isTrue(result.isErr());
   });
 });

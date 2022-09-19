@@ -43,7 +43,6 @@ import {
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 const botDebugMessages = {
-  validatingArgs: "Validating the arguments ...",
   registeringAAD: "Registering an AAD app for bot ...",
   registeringBot: "Registering a bot in bot framework developer portal ...",
   updatingBotMessagingEndpoint: "Updating the bot messaging endpoint ...",
@@ -98,10 +97,6 @@ export class BotDebugHandler {
   public getActions(): DebugAction[] {
     const actions: DebugAction[] = [];
     actions.push({
-      startMessage: botDebugMessages.validatingArgs,
-      run: this.validateArgs.bind(this),
-    });
-    actions.push({
       startMessage: botDebugMessages.registeringAAD,
       run: this.registerAAD.bind(this),
     });
@@ -143,6 +138,11 @@ export class BotDebugHandler {
 
   private async registerAAD(): Promise<Result<string[], FxError>> {
     try {
+      const result = await this.validateArgs();
+      if (result.isErr()) {
+        return err(result.error);
+      }
+
       const projectSettingsResult = await loadProjectSettingsByProjectPath(this.projectPath, true);
       if (projectSettingsResult.isErr()) {
         return err(projectSettingsResult.error);

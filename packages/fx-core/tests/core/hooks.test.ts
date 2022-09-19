@@ -44,7 +44,6 @@ import { ConstantString } from "../../src/common/constants";
 import { CoreHookContext } from "../../src/core/types";
 import { getProjectTemplatesFolderPath } from "../../src/common/utils";
 import { setTools } from "../../src/core/globalVars";
-import "../../src/plugins/resource/spfx/v2";
 
 let mockedEnvRestore: () => void;
 describe("Middleware - others", () => {

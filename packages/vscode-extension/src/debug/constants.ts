@@ -112,33 +112,40 @@ export type DisplayMessages = {
   errorMessageCommand: string;
 };
 
-const basePrerequisiteCheckDisplayMessages: DisplayMessages = {
+const basePrerequisiteCheckDisplayMessages = {
   taskName: "Prerequisites Check",
-  title: "Prerequisites Check",
-  // check:
-  //   "Teams Toolkit is checking if all required prerequisites are installed and will install them if not. A summary will be generated for your reference.",
   checkNumber:
     "(Totally @number steps) Teams Toolkit is checking if all required prerequisites are installed and will install them if not.",
-  summary: "Prerequisites Check Summary:",
-  learnMore: "Visit @Link to learn more about prerequisites check.",
-  learnMoreHelpLink: defaultHelpLink,
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
   errorMessageCommand: openOutputPanelCommand,
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
-  errorHelpLink: "https://aka.ms/teamsfx-envchecker-help",
 };
 
 export const prerequisiteCheckDisplayMessages: DisplayMessages = Object.assign(
   {
+    title: "Prerequisites Check",
+    summary: "Prerequisites Check Summary:",
+    learnMore: "Visit @Link to learn more about prerequisites check.",
+    learnMoreHelpLink: defaultHelpLink,
+    errorHelpLink: "https://aka.ms/teamsfx-envchecker-help",
     launchServices:
       "Services will be launched locally, please check your terminal window for details.",
   },
   basePrerequisiteCheckDisplayMessages
 );
 
-export const prerequisiteCheckForGetStartedDisplayMessages = basePrerequisiteCheckDisplayMessages;
+export const prerequisiteCheckForGetStartedDisplayMessages: DisplayMessages = Object.assign(
+  {
+    title: "Get Started Prerequisites Check",
+    summary: "Get Started Prerequisites Check Summary:",
+    learnMore: "Visit @Link to learn more about get started prerequisites check.",
+    learnMoreHelpLink: defaultHelpLink,
+    errorHelpLink: "https://aka.ms/teamsfx-envchecker-help",
+  },
+  basePrerequisiteCheckDisplayMessages
+);
 
 export const prerequisiteCheckTaskDisplayMessages: DisplayMessages = Object.assign(
   {

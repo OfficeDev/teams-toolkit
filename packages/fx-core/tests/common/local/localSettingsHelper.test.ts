@@ -75,22 +75,8 @@ describe("localSettingsHelper", () => {
     it("happy path without AAD plugin", async () => {
       await fs.ensureDir(projectPath);
       await fs.emptyDir(projectPath);
-
-      const projectSettings = {
-        appName: "unit-test0",
-        projectId: "11111111-1111-1111-1111-111111111111",
-        version: "2.0.0",
-        programmingLanguage: "javascript",
-        solutionSettings: {
-          name: "fx-solution-azure",
-          version: "1.0.0",
-          hostType: "Azure",
-          azureResources: [] as string[],
-          capabilities: ["Tab"],
-          activeResourcePlugins: ["fx-resource-frontend-hosting"],
-        },
-        components: [{ name: "teams-tab", sso: true }],
-      };
+      const projectSettings = cloneDeep(projectSettings0);
+      projectSettings.components = [{ name: "teams-tab", sso: true }];
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettings, localSettings0);
 
       chai.assert.isDefined(localEnvs);
@@ -145,26 +131,13 @@ describe("localSettingsHelper", () => {
       const botEnvPath = path.resolve(projectPath, "bot/.env.teamsfx.local");
       fs.ensureFileSync(botEnvPath);
       fs.writeFileSync(botEnvPath, "FOO=BOT");
-      const projectSettings = {
-        appName: "unit-test0",
-        projectId: "11111111-1111-1111-1111-111111111111",
-        version: "2.0.0",
-        programmingLanguage: "javascript",
-        solutionSettings: {
-          name: "fx-solution-azure",
-          version: "1.0.0",
-          hostType: "Azure",
-          azureResources: [] as string[],
-          capabilities: ["Tab"],
-          activeResourcePlugins: ["fx-resource-frontend-hosting", "fx-resource-aad-app-for-teams"],
-        },
-        components: [
-          { name: "teams-tab", sso: true },
-          { name: "aad-app", provision: true },
-          { name: "teams-bot" },
-          { name: "teams-api" },
-        ],
-      };
+      const projectSettings = cloneDeep(projectSettings0) as ProjectSettingsV3;
+      projectSettings.components = [
+        { name: "teams-tab", sso: true },
+        { name: "aad-app", provision: true },
+        { name: "teams-bot" },
+        { name: "teams-api" },
+      ];
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettings, undefined);
 
       chai.assert.isDefined(localEnvs);

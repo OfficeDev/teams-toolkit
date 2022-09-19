@@ -4,7 +4,7 @@
 import { commands, MessageItem, Uri, window, workspace, WorkspaceConfiguration } from "vscode";
 import { hasTeamsfxBackend, hasTeamsfxBot } from "../commonUtils";
 import { vscodeTelemetry } from "./vscodeTelemetry";
-import { DepsCheckerEvent } from "@microsoft/teamsfx-core";
+import { DepsCheckerEvent } from "@microsoft/teamsfx-core/build/common/deps-checker";
 const configurationPrefix = "fx-extension";
 
 class VSCodeHelper {

@@ -30,13 +30,13 @@ import {
   DEFAULT_PERMISSION_REQUEST,
   ARM_TEMPLATE_OUTPUT,
 } from "../../../../src/plugins/solution/fx-solution/constants";
-import { newEnvInfo } from "../../../../src";
 import { AppUser } from "../../../../src/plugins/resource/appstudio/interfaces/appUser";
 import { SOLUTION } from "../../../../src/plugins/resource/appstudio/constants";
 import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../src/common/localSettingsConstants";
+import { newEnvInfo } from "../../../../src/core/environment";
 
 const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
 const permissionsWrong =
@@ -172,6 +172,7 @@ export class TestHelper {
           azureResources: [],
           activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
+        components: [{ name: "teams-tab" }, { name: "aad-app" }],
       },
       permissionRequestProvider: mockPermissionRequestProvider,
     } as unknown as PluginContext;

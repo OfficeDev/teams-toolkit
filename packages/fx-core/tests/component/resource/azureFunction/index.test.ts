@@ -14,7 +14,6 @@ import {
   Platform,
   ResourceContextV3,
 } from "@microsoft/teamsfx-api";
-import { newEnvInfoV3 } from "../../../../src";
 import path from "path";
 import fs from "fs-extra";
 import * as os from "os";
@@ -25,6 +24,7 @@ import * as hostingUtils from "../../../../src/common/azure-hosting/utils";
 import { AzureOperations } from "../../../../src/common/azure-hosting/azureOps";
 import * as botUtils from "../../../../src/plugins/resource/bot/utils/common";
 import { APIMOutputs, ComponentNames, Scenarios } from "../../../../src/component/constants";
+import { newEnvInfoV3 } from "../../../../src/core/environment";
 
 chai.use(chaiAsPromised);
 

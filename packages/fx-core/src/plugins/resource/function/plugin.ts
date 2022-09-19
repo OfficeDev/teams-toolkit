@@ -61,15 +61,15 @@ import { TelemetryHelper } from "./utils/telemetry-helper";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep } from "../../../common/constants";
-import {
-  getResourceGroupNameFromResourceId,
-  getSiteNameFromResourceId,
-  getSubscriptionIdFromResourceId,
-} from "../../../common";
 import { functionNameQuestion } from "./question";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile } from "../../../common/tools";
+import {
+  generateBicepFromFile,
+  getResourceGroupNameFromResourceId,
+  getSiteNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+} from "../../../common/tools";
 
 type Site = WebSiteManagementModels.Site;
 

@@ -19,7 +19,6 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { setTools } from "../../../src";
 import { ProjectConsolidateMW } from "../../../src/core/middleware/consolidateLocalRemote";
 import { CoreHookContext } from "../../../src/core/types";
 import {
@@ -31,7 +30,8 @@ import {
 } from "../utils";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import * as projectMigrator from "../../../src/core/middleware/projectMigrator";
-import { environmentManager } from "../../../src";
+import { setTools } from "../../../src/core/globalVars";
+import { environmentManager } from "../../../src/core/environment";
 
 describe("Middleware - ProjectSettingsWriterMW", () => {
   const sandbox = sinon.createSandbox();

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { defaultHelpLink } from "@microsoft/teamsfx-core";
+import { defaultHelpLink } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { ExtensionErrors } from "../error";
 
 export const openWenClientCommand = "launch Teams web client";

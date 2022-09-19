@@ -26,13 +26,14 @@ import { getTemplatesFolder } from "../../../folder";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
-import {
-  getResourceGroupNameFromResourceId,
-  getSubscriptionIdFromResourceId,
-} from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile, getUuid } from "../../../common/tools";
+import {
+  generateBicepFromFile,
+  getResourceGroupNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+  getUuid,
+} from "../../../common/tools";
 import { ManagementClient, SqlMgrClient } from "./managementClient";
 
 export class SqlPluginImpl {

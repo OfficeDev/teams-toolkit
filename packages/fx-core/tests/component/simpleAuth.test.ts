@@ -28,14 +28,8 @@ describe("Simple auth component V3", () => {
   const projectPath = path.join(os.homedir(), "TeamsApps", appName);
   const context = createContextV3();
   const fx = Container.get<TeamsfxCore>("fx");
-  let mockedEnvRestore: RestoreFn;
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
-  });
-
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   after(async () => {

@@ -7,7 +7,7 @@ import * as chai from "chai";
 import MockM365TokenProvider from "../../src/commonlib/m365LoginUserPassword";
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import { IAppStudioObject } from "./interfaces/IAADDefinition";
-import { AppStudioScopes } from "@microsoft/teamsfx-core";
+import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
 
 const appStudioPluginName = "fx-resource-appstudio";
 

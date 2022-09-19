@@ -1,6 +1,6 @@
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { newEnvInfo } from "../../../../src";
+import { newEnvInfo } from "../../../../src/core/environment";
 import { Constants } from "../../../../src/plugins/resource/identity/constants";
 
 export class TestHelper {

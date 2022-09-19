@@ -25,7 +25,7 @@ import { Constants } from "../../../../../src/plugins/resource/appstudio/constan
 import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
 import { AppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
 import { manifestUtils } from "../../../../../src/component/resource/appManifest/utils";
-import { newEnvInfoV3 } from "../../../../../src";
+import { newEnvInfoV3 } from "../../../../../src/core/environment";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { setTools } from "../../../../../src/core/globalVars";
 import {

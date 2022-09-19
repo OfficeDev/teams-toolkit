@@ -4,15 +4,16 @@
 import {
   globalStateGet,
   globalStateUpdate,
+} from "@microsoft/teamsfx-core/build/common/globalState";
+import {
   LocalEnvManager,
   ProjectSettingsHelper,
   TaskDefinition,
-} from "@microsoft/teamsfx-core";
+} from "@microsoft/teamsfx-core/build/common/local";
 import * as vscode from "vscode";
 import { ConfigurationKey } from "../constants";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { getConfiguration } from "../utils/commonUtils";
 import { runTask } from "./teamsfxTaskHandler";
 import { createTask } from "./teamsfxTaskProvider";
 import VsCodeLogInstance from "../commonlib/log";

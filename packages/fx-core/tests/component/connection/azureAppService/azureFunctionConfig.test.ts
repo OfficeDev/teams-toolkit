@@ -8,12 +8,12 @@ import { createContextV3 } from "../../../../src/component/utils";
 import { MockTools, randomAppName } from "../../../core/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import sinon from "sinon";
-import { ContextV3, FunctionAction, InputsWithProjectPath, Platform } from "@microsoft/teamsfx-api";
-import { newEnvInfoV3 } from "../../../../src";
+import { ContextV3, InputsWithProjectPath, Platform } from "@microsoft/teamsfx-api";
 import path from "path";
 import * as os from "os";
 import { AzureFunctionsConfig } from "../../../../src/component/connection/azureFunctionConfig";
 import { ComponentNames } from "../../../../src/component/constants";
+import { newEnvInfoV3 } from "../../../../src/core/environment";
 
 chai.use(chaiAsPromised);
 

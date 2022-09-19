@@ -7,7 +7,7 @@ import * as vscode from "vscode";
 
 import { AzureSolutionSettings, ok, ProjectSettings } from "@microsoft/teamsfx-api";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
-import { LocalEnvManager } from "@microsoft/teamsfx-core";
+import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local";
 
 import * as commonUtils from "../../src/utils/commonUtils";
 import * as extension from "../../src/extension";

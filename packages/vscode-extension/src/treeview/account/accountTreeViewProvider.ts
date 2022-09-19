@@ -8,7 +8,7 @@ import { DynamicNode } from "../dynamicNode";
 import envTreeProviderInstance from "../environmentTreeViewProvider";
 import { AzureAccountNode } from "./azureNode";
 import { M365AccountNode } from "./m365Node";
-import { AppStudioScopes } from "@microsoft/teamsfx-core";
+import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { isSPFxProject } from "../../globalVariables";
 
 export class AccountTreeViewProvider implements vscode.TreeDataProvider<DynamicNode> {

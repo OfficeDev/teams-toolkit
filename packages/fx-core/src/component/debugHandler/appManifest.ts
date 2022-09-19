@@ -37,7 +37,6 @@ import {
 } from "./error";
 
 const appManifestDebugMessages = {
-  validatingArgs: "Validating the arguments ...",
   buildingAndSavingAppManifest: "Building and saving Teams app manifest ...",
   uploadingAppPackage: "Uploading Teams app manifest package to Teams developer portal ...",
   savingStates: "Saving the states for Teams app manifest ...",
@@ -86,10 +85,6 @@ export class AppManifestDebugHandler {
   public getActions(): DebugAction[] {
     const actions: DebugAction[] = [];
     actions.push({
-      startMessage: appManifestDebugMessages.validatingArgs,
-      run: this.validateArgs.bind(this),
-    });
-    actions.push({
       startMessage: appManifestDebugMessages.buildingAndSavingAppManifest,
       run: this.buildAndSaveAppManifest.bind(this),
     });
@@ -122,6 +117,11 @@ export class AppManifestDebugHandler {
 
   private async buildAndSaveAppManifest(): Promise<Result<string[], FxError>> {
     try {
+      const result = await this.validateArgs();
+      if (result.isErr()) {
+        return err(result.error);
+      }
+
       if (this.args.manifestPackagePath) {
         return ok([appManifestDebugMessages.useExistingAppManifest]);
       }
@@ -148,18 +148,21 @@ export class AppManifestDebugHandler {
         this.envInfoV3.state[ComponentNames.AppManifest] || {};
 
       // build
-      const result = await buildTeamsAppPackage(
+      const packagePathResult = await buildTeamsAppPackage(
         this.projectSettingsV3,
         this.projectPath,
         this.envInfoV3
       );
-      if (result.isErr()) {
-        return err(result.error);
+      if (packagePathResult.isErr()) {
+        return err(packagePathResult.error);
       }
-      this.args.manifestPackagePath = result.value;
+      this.args.manifestPackagePath = packagePathResult.value;
 
       return ok([
-        util.format(appManifestDebugMessages.appManifestSaved, path.normalize(result.value)),
+        util.format(
+          appManifestDebugMessages.appManifestSaved,
+          path.normalize(packagePathResult.value)
+        ),
       ]);
     } catch (error: unknown) {
       return err(assembleError(error, errorSource));

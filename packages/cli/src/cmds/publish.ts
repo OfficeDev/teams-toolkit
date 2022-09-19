@@ -15,7 +15,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import HelpParamGenerator from "../helpParamGenerator";
-import { getHashedEnv } from "@microsoft/teamsfx-core";
+import { getHashedEnv } from "@microsoft/teamsfx-core/build/common/tools";
 
 export default class Publish extends YargsCommand {
   public readonly commandHead = `publish`;

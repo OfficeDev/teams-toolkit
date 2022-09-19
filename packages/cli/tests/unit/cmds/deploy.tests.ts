@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 import sinon from "sinon";
-import yargs, { Options, PositionalOptions } from "yargs";
+import yargs, { Options } from "yargs";
 
-import { err, Func, FxError, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
+import { err, FxError, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 
 import Deploy from "../../../src/cmds/deploy";
@@ -16,7 +16,6 @@ import { expect } from "../utils";
 import { NotSupportedProjectType } from "../../../src/error";
 import UI from "../../../src/userInteraction";
 import LogProvider from "../../../src/commonlib/log";
-import { iteratee } from "lodash";
 
 describe("Deploy Command Tests", function () {
   const sandbox = sinon.createSandbox();

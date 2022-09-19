@@ -1201,6 +1201,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.appSettingsUtil.FailedToResetAppSettingsDevelopment" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to reset values in appsettings.Development.json.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法重置 appsettings.Development.json 中的值。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.backupFiles.FailedToBackupFiles" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to backup %s.]]></Val>
@@ -3145,6 +3154,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.NgrokConfigError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Load ngrok config %s failed. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[加载 ngrok 配置 %s 失败。%s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.NgrokTunnelNotConnected" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Ngrok tunnel is not connected. Check your network settings and try again.]]></Val>
@@ -3481,6 +3499,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.aad.CreateAppForbiddenError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to create an app in Azure Active Directory. This problem can be resolved by login using a Microsoft 365 developer account, you can apply for a free account by joining Microsoft 365 Developer Program(https://developer.microsoft.com/en-us/microsoft-365/dev-program).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法在 Azure Active Directory 中创建应用。可以通过使用 Microsoft 365 开发人员帐户登录来解决此问题，你可以通过加入 Microsoft 365 开发人员计划(https://developer.microsoft.com/zh-cn/microsoft-365/dev-program)申请免费帐户。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.aad.CreateSecretError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[`Failed to create an application secret in Azure Active Directory.`]]></Val>
@@ -3648,6 +3675,15 @@
           <Val><![CDATA[Failed to update application in Azure Active Directory: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[无法更新 Azure Active Directory 中的应用程序 ID URI: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.UpdateAadAppUsingManifestError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to update application in Azure Active Directory. Please make sure 'templates/appPackage/aad.template.json' is valid: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法在 Azure Active Directory 中更新应用程序。请确保 “templates/appPackage/aad.template.json” 有效: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4246,6 +4282,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.appstudio.teamsAppCreateConflict" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to create Teams app with 409 Conflict error. That may come from your app id is conflicting with another app in your tenant. Click Get Help to learn more.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[创建 Teams 应用失败，出现 409 冲突错误。这可能因为你的应用 ID 与租户中的另一个应用冲突。单击“获取帮助”以了解详细信息。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.appstudio.teamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to create Teams app in Developer Portal, due to %s]]></Val>
@@ -4351,11 +4396,29 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.debugHandler.AppManifestPackageNotExistError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[manifestPackagePath %s does not exist.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[manifestPackagePath %s 不存在。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.debugHandler.BotMessagingEndpointMissingError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[botMessagingEndpoint is required.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[botMessagingEndpoint 是必需的。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.InvalidAppManifestPackageFileFormatError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[manifestPackagePath must be .zip file path.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[manifestPackagePath 必须是 .zip 文件路径。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -6376,6 +6439,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.bot.BotRegistrationNotFoundWith" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Bot registration was not found with botId %s. Click 'Get Help' button to learn more about how to check bot registrations.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[未找到 botId 为 %s 的机器人注册。单击“获取帮助”按钮以了解有关如何检查机器人注册的详细信息。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.bot.BotResourceExists" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Bot resource already existed on %s, skip creating Bot resource.]]></Val>
@@ -6606,10 +6678,13 @@
       </Item>
       <Item ItemId=";plugins.bot.FailedUpdateMessageEndpoint" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to update message endpoint with %s]]></Val>
+          <Val><![CDATA[Failed to update message endpoint with %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[无法使用 %s 更新消息终结点]]></Val>
+            <Val><![CDATA[无法使用 %s 更新消息终结点。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to update message endpoint with %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

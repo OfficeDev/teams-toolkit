@@ -20,7 +20,7 @@ import {
   UserCancelError,
   v3,
 } from "@microsoft/teamsfx-api";
-import { globalVars, isV3, TOOLS } from "../globalVars";
+import { globalVars, TOOLS } from "../globalVars";
 import {
   NoProjectOpenedError,
   ProjectEnvNotExistError,
@@ -45,7 +45,6 @@ import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
 import { CoreHookContext } from "../types";
 import { objectToMap } from "../../common/tools";
 import { ComponentNames } from "../../component/constants";
-import { BuiltInFeaturePluginNames } from "../../plugins/solution/fx-solution/v3/constants";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
@@ -104,9 +103,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, state };
 
     // set globalVars for teamsAppId and m365TenantId
-    const appManifestKey = isV3()
-      ? ComponentNames.AppManifest
-      : BuiltInFeaturePluginNames.appStudio;
+    const appManifestKey = ComponentNames.AppManifest;
     globalVars.teamsAppId = ctx.envInfoV2.state?.[appManifestKey]?.teamsAppId;
     globalVars.m365TenantId = ctx.envInfoV2.state?.[appManifestKey]?.m365TenantId;
     await next();

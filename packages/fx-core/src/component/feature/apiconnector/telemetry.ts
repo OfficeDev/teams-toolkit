@@ -1,5 +1,5 @@
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
-import { globalVars } from "../../../core";
+import { globalVars } from "../../../core/globalVars";
 
 export class Telemetry {
   static readonly componentName = "fx-resource-api-connector";

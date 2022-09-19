@@ -9,6 +9,7 @@ import {
   Inputs,
   ok,
   Platform,
+  ProjectSettings,
   ProjectSettingsFileName,
   Result,
   Stage,
@@ -19,10 +20,12 @@ import * as os from "os";
 import * as path from "path";
 import fs from "fs-extra";
 import "mocha";
-import { NoProjectOpenedError, PathNotExistError, setTools } from "../../../src";
-import { ContextInjectorMW, ProjectSettingsLoaderMW } from "../../../src/core/middleware";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
+import { ProjectSettingsLoaderMW } from "../../../src/core/middleware/projectSettingsLoader";
+import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
+import { NoProjectOpenedError, PathNotExistError } from "../../../src/core/error";
+import { setTools } from "../../../src/core/globalVars";
 
 describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 1", () => {
   class MyClass {
@@ -94,13 +97,8 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
   setTools(tools);
   class MyClass {
     tools = tools;
-    async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-      assert.isTrue(ctx !== undefined);
-      if (ctx) {
-        assert.deepEqual(projectSettings, ctx.projectSettings);
-        assert.isTrue(ctx.contextV2 !== undefined);
-      }
-      return ok("");
+    async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<ProjectSettings, FxError>> {
+      return ok(ctx!.projectSettings!);
     }
   }
   hooks(MyClass, {
@@ -109,6 +107,6 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
   it(`success to load project settings`, async () => {
     const my = new MyClass();
     const res = await my.other(inputs);
-    assert.isTrue(res.isOk() && res.value === "");
+    assert.isTrue(res.isOk() && res.value !== undefined && res.value.appName === appName);
   });
 });

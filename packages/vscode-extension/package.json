@@ -806,13 +806,13 @@
                           "title": "%teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle%"
                         },
                         {
-                          "const": "ports",
+                          "const": "portOccupancy",
                           "title": "%teamstoolkit.taskDefinitions.args.prerequisites.portsTitle%"
                         }
                       ]
                     }
                   },
-                  "ports": {
+                  "portOccupancy": {
                     "type": "array",
                     "items": {
                       "type": "number"
@@ -824,20 +824,20 @@
                   "properties": {
                     "prerequisites": {
                       "contains": {
-                        "const": "ports"
+                        "const": "portOccupancy"
                       }
                     }
                   }
                 },
                 "then": {
                   "required": [
-                    "ports"
+                    "portOccupancy"
                   ]
                 },
                 "else": {
                   "not": {
                     "required": [
-                      "ports"
+                      "portOccupancy"
                     ]
                   }
                 },
@@ -982,6 +982,11 @@
                     "type": "boolean",
                     "description": "%teamstoolkit.taskDefinitions.args.reuse.title%",
                     "default": false
+                  },
+                  "tunnelName":{
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.tunnelName.title%",
+                    "default": "bot"
                   }
                 },
                 "additionalProperties": false

@@ -14,7 +14,7 @@ import CliTelemetryInstance, { CliTelemetry } from "./telemetry/cliTelemetry";
 import { CliTelemetryReporter } from "./commonlib/telemetry";
 import { readFileSync } from "fs";
 import path from "path";
-import { Correlator } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import Progress from "./console/progress";
 import { getColorizedString, getSystemInputs } from "./utils";
 import UI from "./userInteraction";

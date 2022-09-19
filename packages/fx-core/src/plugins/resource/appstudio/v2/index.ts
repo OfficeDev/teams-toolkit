@@ -27,7 +27,7 @@ import {
   ResourcePlugin,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
-import { isDeployManifestEnabled } from "../../../../common";
+import { isDeployManifestEnabled } from "../../../../common/tools";
 import {
   ResourcePlugins,
   ResourcePluginsV2,

@@ -380,7 +380,7 @@ function startLocalTunnel(): Record<string, unknown> {
     command: "debug-start-local-tunnel",
     args: {
       configFile: ".fx/configs/ngrok.yml",
-      binFolder: "${teamsfx:ngrokBinFolder}",
+      useGlobalNgrok: false,
       reuse: false,
     },
     isBackground: true,

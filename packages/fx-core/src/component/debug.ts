@@ -66,6 +66,10 @@ import {
 } from "../plugins/solution/fx-solution/debug/scaffolding";
 import { TOOLS } from "../core/globalVars";
 import { getComponent } from "./workflow";
+import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
+import { CoreQuestionNames } from "../core/question";
+import { QuestionKey } from "../plugins/resource/function/enums";
+import { DefaultValues } from "../plugins/resource/function/constants";
 import { CommentObject } from "comment-json";
 
 export interface LocalEnvConfig {
@@ -89,6 +93,18 @@ function convertToConfig(context: ContextV3, inputs: InputsWithProjectPath): Loc
   const settings = context.projectSetting;
   const bot = getComponent(settings, ComponentNames.TeamsBot);
   const botCapabilities = bot?.capabilities || [];
+  const api = getComponent(settings, ComponentNames.TeamsApi);
+  let defaultFuncName;
+  if (api) {
+    if (api.functionNames && api.functionNames.length > 0) {
+      defaultFuncName = api.functionNames[0];
+    }
+    defaultFuncName =
+      defaultFuncName ||
+      settings.defaultFunctionName ||
+      inputs[QuestionKey.functionName] ||
+      DefaultValues.functionName;
+  }
   const config: LocalEnvConfig = {
     hasAzureTab: hasAzureTab(settings),
     hasSPFxTab: hasSPFxTab(settings),
@@ -98,8 +114,9 @@ function convertToConfig(context: ContextV3, inputs: InputsWithProjectPath): Loc
     hasSimpleAuth: hasSimpleAuth(settings),
     hasFunctionBot: hasFunctionBot(settings),
     botCapabilities: botCapabilities,
-    defaultFunctionName: settings.defaultFunctionName!,
-    programmingLanguage: settings.programmingLanguage! || "",
+    defaultFunctionName: defaultFuncName,
+    programmingLanguage:
+      settings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage] || "javascript",
     isM365: settings.isM365,
     skipNgrok: inputs.checkerInfo?.skipNgrok as boolean,
     vscodeEnv: inputs.vscodeEnv,

@@ -14,10 +14,10 @@ import { GenerateContext } from "./generateContext";
 import {
   genFileDataRenderReplaceFn,
   genFileNameRenderReplaceFn,
-  getOutsideSampleRelativePath,
-  getOutsideSampleUrl,
+  getExternalSampleRelativePath,
+  getExternalSampleUrl,
   getValidSampleDestination,
-  isSampleFromOutside,
+  isSampleExternal,
   sampleDefaultOnActionError,
   templateDefaultOnActionError,
 } from "./utils";
@@ -62,9 +62,9 @@ export class Generator {
       logProvider: ctx.logProvider,
       onActionError: sampleDefaultOnActionError,
     };
-    if (isSampleFromOutside(sampleName)) {
-      generateContext.zipUrl = getOutsideSampleUrl(sampleName);
-      generateContext.relativePath = getOutsideSampleRelativePath(sampleName);
+    if (isSampleExternal(sampleName)) {
+      generateContext.zipUrl = getExternalSampleUrl(sampleName);
+      generateContext.relativePath = getExternalSampleRelativePath(sampleName);
     }
     this.generate(generateContext, SampleActionSeq);
   }

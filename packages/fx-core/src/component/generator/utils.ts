@@ -129,17 +129,17 @@ export async function getValidSampleDestination(
   return sampleDestination;
 }
 
-export function isSampleFromOutside(sampleName: string): boolean {
+export function isSampleExternal(sampleName: string): boolean {
   //TODO
   return false;
 }
 
-export function getOutsideSampleRelativePath(sampleName: string): string {
+export function getExternalSampleRelativePath(sampleName: string): string {
   //TODO
   return "";
 }
 
-export function getOutsideSampleUrl(sampleName: string): string {
+export function getExternalSampleUrl(sampleName: string): string {
   //TODO
   return "";
 }

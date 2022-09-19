@@ -402,7 +402,7 @@ function setUpTab(): Record<string, unknown> {
 function setUpBot(): Record<string, unknown> {
   const comment = `
   {
-    /* Enter you own bot information if using the existing bot. */
+    //// Enter you own bot information if using the existing bot. ////
     // "botId": "",
     // "botPassword": "",
   }
@@ -421,7 +421,7 @@ function setUpBot(): Record<string, unknown> {
 function setUpSSO(): Record<string, unknown> {
   const comment = `
   {
-    /* Enter you own AAD app information if using the existing AAD app. */
+    //// Enter you own AAD app information if using the existing AAD app. ////
     // "objectId": "",
     // "clientId": "",
     // "clientSecret": "",
@@ -440,7 +440,7 @@ function setUpSSO(): Record<string, unknown> {
 function buildAndUploadTeamsManifest(): Record<string, unknown> {
   const comment = `
   {
-    /* Enter your own Teams manifest app package path if using the existing Teams manifest app package. */
+    //// Enter your own Teams manifest app package path if using the existing Teams manifest app package. ////
     // "manifestPackagePath": ""
   }
   `;

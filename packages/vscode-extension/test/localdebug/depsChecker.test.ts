@@ -10,7 +10,7 @@ import {
   DepsType,
   DepsCheckerError,
   defaultHelpLink,
-} from "@microsoft/teamsfx-core";
+} from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as os from "os";
 
 const expect = chai.expect;

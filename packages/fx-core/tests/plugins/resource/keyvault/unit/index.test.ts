@@ -8,13 +8,8 @@ import * as path from "path";
 import { TestHelper } from "../helper";
 import * as fs from "fs-extra";
 import { PluginContext } from "@microsoft/teamsfx-api";
-import {
-  ConstantString,
-  mockSolutionGenerateArmTemplates,
-  mockSolutionUpdateArmTemplates,
-} from "../../util";
-import { KeyVaultPlugin } from "../../../../../src";
-import { Constants } from "../../../../../src/plugins/resource/keyvault/constants";
+import { ConstantString, mockSolutionGenerateArmTemplates } from "../../util";
+import { KeyVaultPlugin } from "../../../../../src/plugins/resource";
 
 chai.use(chaiAsPromised);
 

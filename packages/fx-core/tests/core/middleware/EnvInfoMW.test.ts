@@ -22,22 +22,22 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { environmentManager, newEnvInfo, newEnvInfoV3, setTools } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
-import {
-  ContextInjectorMW,
-  EnvInfoLoaderMW,
-  EnvInfoWriterMW,
-  ErrorHandlerMW,
-  newSolutionContext,
-  ProjectSettingsLoaderMW,
-  ProjectSettingsWriterMW,
-} from "../../../src/core/middleware";
 import { EnvInfoLoaderMW_V3 } from "../../../src/core/middleware/envInfoLoaderV3";
 import { CoreHookContext } from "../../../src/core/types";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import * as envInfoLoader from "../../../src/core/middleware/envInfoLoader";
 import { newProjectSettingsV3 } from "../../../src/component/utils";
+import {
+  newSolutionContext,
+  ProjectSettingsLoaderMW,
+} from "../../../src/core/middleware/projectSettingsLoader";
+import { setTools } from "../../../src/core/globalVars";
+import { environmentManager, newEnvInfo, newEnvInfoV3 } from "../../../src/core/environment";
+import { ErrorHandlerMW } from "../../../src/core/middleware/errorHandler";
+import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
+import { ProjectSettingsWriterMW } from "../../../src/core/middleware/projectSettingsWriter";
+import { EnvInfoWriterMW } from "../../../src/core/middleware/envInfoWriter";
 
 describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
   const sandbox = sinon.createSandbox();
@@ -59,7 +59,7 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
 
     const solutionContext = await newSolutionContext(tools, inputs);
     const configMap = new ConfigMap();
-    const pluginName = "fx-resource-aad-app-for-teams";
+    const pluginName = "aad-app";
     const secretName = "clientSecret";
     const secretText = "test";
     configMap.set(secretName, secretText);
@@ -119,7 +119,7 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
       getContext: [
         ErrorHandlerMW,
         ProjectSettingsLoaderMW,
-        EnvInfoLoaderMW(false),
+        envInfoLoader.EnvInfoLoaderMW(false),
         ContextInjectorMW,
       ],
     });
@@ -144,7 +144,7 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
     const content = fileMap.get(userdataFile);
     assert.isTrue(content !== undefined);
     const userdata = dotenv.parse(content);
-    const secretValue = userdata[`${pluginName}.${secretName}`];
+    const secretValue = userdata["fx-resource-aad-app-for-teams.clientSecret"];
     assert.isTrue(secretValue.startsWith("crypto_"));
     const decryptedRes = cryptoProvider.decrypt(secretValue);
     assert.isTrue(decryptedRes.isOk() && decryptedRes.value === secretText);

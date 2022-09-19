@@ -806,13 +806,13 @@
                           "title": "%teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle%"
                         },
                         {
-                          "const": "ports",
+                          "const": "portOccupancy",
                           "title": "%teamstoolkit.taskDefinitions.args.prerequisites.portsTitle%"
                         }
                       ]
                     }
                   },
-                  "ports": {
+                  "portOccupancy": {
                     "type": "array",
                     "items": {
                       "type": "number"
@@ -824,20 +824,20 @@
                   "properties": {
                     "prerequisites": {
                       "contains": {
-                        "const": "ports"
+                        "const": "portOccupancy"
                       }
                     }
                   }
                 },
                 "then": {
                   "required": [
-                    "ports"
+                    "portOccupancy"
                   ]
                 },
                 "else": {
                   "not": {
                     "required": [
-                      "ports"
+                      "portOccupancy"
                     ]
                   }
                 },
@@ -973,17 +973,10 @@
                       {}
                     ]
                   },
-                  "binFolder": {
-                    "type": "string",
-                    "title": "%teamstoolkit.taskDefinitions.args.binFolder.title%",
-                    "description": "%teamstoolkit.taskDefinitions.args.binFolder.title%",
-                    "anyOf": [
-                      {
-                        "const": "${teamsfx:ngrokBinFolder}",
-                        "description": "%teamstoolkit.taskDefinitions.args.binFolder.default.description%"
-                      },
-                      {}
-                    ]
+                  "useGlobalNgrok": {
+                    "type": "boolean",
+                    "description": "%teamstoolkit.taskDefinitions.args.useGlobalNgrok.title%",
+                    "default": false
                   },
                   "reuse":{
                     "type": "boolean",

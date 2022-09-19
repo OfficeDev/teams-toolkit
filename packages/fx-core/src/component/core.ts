@@ -106,16 +106,16 @@ import {
 } from "./questionV3";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "./middleware/actionExecutionMW";
-import { getQuestionsForCreateProjectV2 } from "../core/middleware";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { getComponent } from "./workflow";
-import { ensureBasicFolderStructure } from "../core";
 import { environmentManager } from "../core/environment";
 import { Constants } from "../plugins/resource/aad/constants";
 import { deployUtils } from "./deployUtils";
 import { provisionUtils } from "./provisionUtils";
 import { getTemplatesFolder } from "../folder";
-import { SolutionTelemetryProperty } from "../plugins";
+import { ensureBasicFolderStructure } from "../core/FxCore";
+import { SolutionTelemetryProperty } from "../plugins/solution/fx-solution/constants";
+import { getQuestionsForCreateProjectV2 } from "../core/middleware/questionModel";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";

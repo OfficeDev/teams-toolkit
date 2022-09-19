@@ -6,7 +6,10 @@
 import * as vscode from "vscode";
 
 import { assembleError, err, FxError, Result, Void } from "@microsoft/teamsfx-api";
-import { BotDebugArgs, BotDebugHandler } from "@microsoft/teamsfx-core";
+import {
+  BotDebugArgs,
+  BotDebugHandler,
+} from "@microsoft/teamsfx-core/build/component/debugHandler";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";

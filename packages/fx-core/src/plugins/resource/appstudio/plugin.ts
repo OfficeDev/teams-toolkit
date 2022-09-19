@@ -66,7 +66,6 @@ import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
 import path from "path";
 import * as util from "util";
-import { AppStudioScopes, getAppDirectory, isAADEnabled, isSPFxProject } from "../../../common";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
@@ -80,6 +79,12 @@ import { environmentManager } from "../../../core/environment";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
 import { PluginBot } from "../../resource/bot/resources/strings";
+import {
+  AppStudioScopes,
+  getAppDirectory,
+  isAADEnabled,
+  isSPFxProject,
+} from "../../../common/tools";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};

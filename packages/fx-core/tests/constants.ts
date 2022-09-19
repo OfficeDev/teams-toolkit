@@ -5,7 +5,18 @@ import {
 } from "../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { Plugin } from "@microsoft/teamsfx-api";
 import { ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
-
+import "../src/plugins/resource/frontend";
+import "../src/plugins/resource/simpleauth";
+import "../src/plugins/resource/identity";
+import "../src/plugins/resource/spfx";
+import "../src/plugins/resource/aad";
+import "../src/plugins/resource/bot";
+import "../src/plugins/resource/bot/v2";
+import "../src/plugins/resource/localdebug";
+import "../src/plugins/resource/appstudio";
+import "../src/plugins/resource/sql";
+import "../src/plugins/resource/function";
+import "../src/plugins/resource/apim";
 export class PluginId {
   static readonly Aad = "fx-resource-aad-app-for-teams";
   static readonly FrontendHosting = "fx-resource-frontend-hosting";

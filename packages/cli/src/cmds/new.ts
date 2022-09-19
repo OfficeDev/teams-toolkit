@@ -3,28 +3,11 @@
 
 "use strict";
 
-import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import path from "path";
-import { Argv, Options } from "yargs";
+import { Argv } from "yargs";
 
-import {
-  FxError,
-  err,
-  ok,
-  Result,
-  Question,
-  LogLevel,
-  Stage,
-  OptionItem,
-} from "@microsoft/teamsfx-api";
-import {
-  downloadSampleHook,
-  fetchCodeZip,
-  isM365AppEnabled,
-  sampleProvider,
-  saveFilesRecursively,
-} from "@microsoft/teamsfx-core";
+import { FxError, err, ok, Result, Question, LogLevel, Stage } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";

@@ -16,27 +16,28 @@ import {
   PathNotExistError,
 } from "@microsoft/teamsfx-api";
 import {
-  AppStudioScopes,
   checkNpmDependencies,
+  FolderName,
+  LocalEnvManager,
+  baseNpmInstallCommand,
+  defaultNpmInstallArg,
+  ProjectSettingsHelper,
+  TelemetryContext,
+} from "@microsoft/teamsfx-core/build/common/local";
+import {
   DependencyStatus,
   DepsCheckerError,
   DepsManager,
   DepsType,
   EmptyLogger,
-  FolderName,
-  getSideloadingStatus,
   installExtension,
-  LocalEnvManager,
   NodeNotFoundError,
   NodeNotSupportedError,
-  baseNpmInstallCommand,
-  defaultNpmInstallArg,
-  PluginNames,
-  ProjectSettingsHelper,
-  TelemetryContext,
   validationSettingsHelpLink,
-  LocalEnvProvider,
-} from "@microsoft/teamsfx-core";
+} from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { LocalEnvProvider } from "@microsoft/teamsfx-core/build/component/debugHandler";
+import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
+import { PluginNames } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
 
 import * as fs from "fs-extra";
 import * as os from "os";
@@ -1357,7 +1358,7 @@ async function getOrderedCheckersForTask(
     checkers.push({ info: { checker: orderedDeps[orderedDeps.length - 1] }, fastFail: true });
   }
 
-  if (prerequisites.includes(Prerequisite.ports)) {
+  if (prerequisites.includes(Prerequisite.portOccupancy)) {
     checkers.push({ info: { checker: Checker.Ports, ports: ports }, fastFail: false });
   }
   return checkers;

@@ -3,7 +3,6 @@
 import { Inputs, SingleSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { CoreQuestionNames, handleSelectionConflict } from "../../../core/question";
 import {
   AzureSolutionQuestionNames,
   NotificationOptionItem,
@@ -118,7 +117,7 @@ export const showNotificationTriggerCondition = {
 export function getConditionOfNotificationTriggerQuestion(runtime: Runtime) {
   return {
     validFunc: async (input: unknown, inputs?: Inputs) => {
-      if (inputs?.[CoreQuestionNames.Runtime] === runtime) {
+      if (inputs?.["runtime"] === runtime) {
         return undefined;
       } else {
         return `runtime is not ${runtime}`;

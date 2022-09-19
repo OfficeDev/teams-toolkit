@@ -23,7 +23,6 @@ import { createContextV3 } from "../../../../src/component/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
 import { AppStudioError } from "../../../../src/plugins/resource/appstudio/errors";
-import { newEnvInfoV3 } from "../../../../src";
 import { ComponentNames } from "../../../../src/component/constants";
 import { AppStudioClient } from "../../../../src/plugins/resource/appstudio/appStudio";
 import { Constants } from "../../../../src/plugins/resource/appstudio/constants";
@@ -33,6 +32,7 @@ import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper"
 import { manifestUtils } from "../../../../src/component/resource/appManifest/utils";
 import { TEAMS_APP_MANIFEST_TEMPLATE } from "../../../../src/component/resource/appManifest/constants";
 import * as uuid from "uuid";
+import { newEnvInfoV3 } from "../../../../src/core/environment";
 
 describe("App-manifest Component", () => {
   const sandbox = sinon.createSandbox();

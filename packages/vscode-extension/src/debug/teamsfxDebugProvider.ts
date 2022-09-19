@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AppStudioScopes, Correlator, environmentManager } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import * as vscode from "vscode";
 
 import M365TokenInstance from "../commonlib/m365Login";

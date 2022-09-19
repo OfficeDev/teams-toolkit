@@ -14,7 +14,8 @@ import * as globalVariables from "../../globalVariables";
 import { ProgressHandler } from "../../progressHandler";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { DepsManager, DepsType, LocalEnvManager } from "@microsoft/teamsfx-core";
+import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local";
 import { vscodeLogger } from "../depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "../depsChecker/vscodeTelemetry";
 import { openTerminalCommand, localTunnelDisplayMessages } from "../constants";
@@ -42,7 +43,7 @@ type EndpointInfo = {
 
 export interface LocalTunnelArgs {
   configFile?: string;
-  binFolder?: string;
+  useGlobalNgrok?: boolean;
   tunnelName?: string;
   reuse?: boolean;
 }
@@ -112,10 +113,8 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       BaseTaskTerminal.resolveTeamsFxVariables(this.args.configFile)
     );
 
-    const binFolder = this.args.binFolder
-      ? await LocalTunnelTaskTerminal.resolveBinFolder(
-          BaseTaskTerminal.resolveTeamsFxVariables(this.args.binFolder)
-        )
+    const binFolder = !this.args.useGlobalNgrok
+      ? await LocalTunnelTaskTerminal.getNgrokBinFolder()
       : undefined;
 
     const tunnelName = this.args.tunnelName ?? defaultNgrokTunnelName;

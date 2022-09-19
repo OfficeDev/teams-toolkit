@@ -27,11 +27,10 @@ import { errorSource, InvalidTabDebugArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 const tabDebugMessages = {
-  validatingArgs: "Validating the arguments ...",
   savingStates: "Saving the states for Tab ...",
-  settingEnvs: "Setting the environment variables for Tab ...",
+  settingEnvs: "Saving the environment variables for Tab ...",
   statesSaved: "The states for Tab are saved in %s",
-  envsSet: "The environment variables for Tab are set in %s",
+  envsSet: "The environment variables for Tab are saved in %s",
 };
 
 export interface TabDebugArgs {
@@ -53,10 +52,6 @@ export class TabDebugHandler {
 
   public getActions(): DebugAction[] {
     const actions: DebugAction[] = [];
-    actions.push({
-      startMessage: tabDebugMessages.validatingArgs,
-      run: this.validateArgs.bind(this),
-    });
     actions.push({
       startMessage: tabDebugMessages.savingStates,
       run: this.saveStates.bind(this),
@@ -82,6 +77,11 @@ export class TabDebugHandler {
 
   private async saveStates(): Promise<Result<string[], FxError>> {
     try {
+      const result = await this.validateArgs();
+      if (result.isErr()) {
+        return err(result.error);
+      }
+
       const projectSettingsResult = await loadProjectSettingsByProjectPath(this.projectPath, true);
       if (projectSettingsResult.isErr()) {
         return err(projectSettingsResult.error);

@@ -1,29 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  EnvInfo,
-  Json,
-  PluginConfig,
-  ReadonlyPluginConfig,
-  ReadonlySolutionConfig,
-  v3,
-} from "@microsoft/teamsfx-api";
-import { isV3 } from "../../../core";
+import { EnvInfo, Json, PluginConfig, ReadonlySolutionConfig, v3 } from "@microsoft/teamsfx-api";
 import {
   TeamsToolkitComponent,
   SolutionConfigKeys,
   AadPluginConfigKeys,
   FunctionPluginConfigKeys,
   ApimPluginConfigKeys,
-  ProjectConstants,
-  ConfigRetryOperations,
   ComponentRetryOperations,
   TeamsToolkitComponentV3,
 } from "./constants";
 import {
   AssertConfigNotEmpty,
   BuildError,
-  EmptyConfigValue,
   InvalidConfigValue,
   InvalidPropertyType,
   NoPluginConfig,
@@ -71,7 +60,7 @@ export class ApimPluginConfig implements IApimPluginConfig {
   private readonly envName: string;
   constructor(config: PluginConfig | Json, envName: string) {
     if (!config) {
-      const cname = isV3() ? TeamsToolkitComponentV3.AadPlugin : TeamsToolkitComponent.ApimPlugin;
+      const cname = TeamsToolkitComponentV3.AadPlugin;
       throw BuildError(NoPluginConfig, cname, ComponentRetryOperations[cname]);
     }
     this.config = config;
@@ -163,12 +152,7 @@ export class ApimPluginConfig implements IApimPluginConfig {
     if (namingRule && value) {
       const message = NamingRules.validate(value, namingRule);
       if (message) {
-        throw BuildError(
-          InvalidConfigValue,
-          isV3() ? TeamsToolkitComponentV3.ApimPlugin : TeamsToolkitComponent.ApimPlugin,
-          key,
-          message
-        );
+        throw BuildError(InvalidConfigValue, TeamsToolkitComponentV3.ApimPlugin, key, message);
       }
     }
     return value;
@@ -180,7 +164,7 @@ export class ApimPluginConfig implements IApimPluginConfig {
 
   public checkAndGet(key: string): string {
     const value = AssertConfigNotEmpty(
-      isV3() ? TeamsToolkitComponentV3.ApimPlugin : TeamsToolkitComponent.ApimPlugin,
+      TeamsToolkitComponentV3.ApimPlugin,
       key,
       this.getValue(key),
       this.envName
@@ -204,7 +188,7 @@ export class FunctionPluginConfig implements IFunctionPluginConfig {
   private checkAndGet(key: string): string {
     return checkAndGetOtherPluginConfig(
       this.configOfOtherPlugins,
-      isV3() ? TeamsToolkitComponentV3.FunctionPlugin : TeamsToolkitComponent.FunctionPlugin,
+      TeamsToolkitComponentV3.FunctionPlugin,
       key,
       this.envName
     );
@@ -235,7 +219,7 @@ export class AadPluginConfig implements IAadPluginConfig {
   private checkAndGet(key: string): string {
     return checkAndGetOtherPluginConfig(
       this.configOfOtherPlugins,
-      isV3() ? TeamsToolkitComponentV3.AadPlugin : TeamsToolkitComponent.AadPlugin,
+      TeamsToolkitComponentV3.AadPlugin,
       key,
       this.envName
     );

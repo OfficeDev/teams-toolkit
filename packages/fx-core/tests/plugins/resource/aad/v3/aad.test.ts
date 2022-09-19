@@ -9,7 +9,6 @@ import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
 import sinon from "sinon";
-import { createV2Context, newProjectSettings, setTools } from "../../../../../src";
 import {
   GetConfigError,
   GetSkipAppConfigError,
@@ -32,6 +31,9 @@ import {
 import { deleteFolder, MockTools, randomAppName } from "../../../../core/utils";
 import * as uuid from "uuid";
 import { ComponentNames } from "../../../../../src/component/constants";
+import { setTools } from "../../../../../src/core/globalVars";
+import { newProjectSettings } from "../../../../../src/common/projectSettingsHelper";
+import { createV2Context } from "../../../../../src/common/tools";
 describe("AAD resource plugin V3", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {

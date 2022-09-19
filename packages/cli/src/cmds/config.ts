@@ -7,7 +7,6 @@ import { Argv } from "yargs";
 import * as path from "path";
 import { YargsCommand } from "../yargsCommand";
 import { FxError, Question, Result, ok, err, LogLevel } from "@microsoft/teamsfx-api";
-import { dataNeedEncryption } from "@microsoft/teamsfx-core";
 import { UserSettings, CliConfigOptions } from "../userSetttings";
 import CLILogProvider from "../commonlib/log";
 import {
@@ -27,6 +26,7 @@ import activate from "../activate";
 import { NonTeamsFxProjectFolder, ConfigNameNotFound, EnvNotSpecified } from "../error";
 
 import * as constants from "../constants";
+import { dataNeedEncryption } from "@microsoft/teamsfx-core/build/common/tools";
 
 const GlobalOptions = new Set([
   CliConfigOptions.Telemetry as string,

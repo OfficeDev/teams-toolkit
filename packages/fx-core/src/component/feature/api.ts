@@ -26,7 +26,6 @@ import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
-import { AzureResourceFunction } from "../../plugins";
 import {
   DefaultValues,
   FunctionPluginPathInfo,
@@ -36,6 +35,7 @@ import { FunctionLanguage, QuestionKey } from "../../plugins/resource/function/e
 import { FunctionScaffold } from "../../plugins/resource/function/ops/scaffold";
 import { functionNameQuestion } from "../../plugins/resource/function/question";
 import { ErrorMessages } from "../../plugins/resource/function/resources/message";
+import { AzureResourceFunction } from "../../plugins/solution/fx-solution/question";
 import { BicepComponent } from "../bicep";
 import { ApiCodeProvider } from "../code/apiCode";
 import { ComponentNames, ProgrammingLanguage, Scenarios } from "../constants";

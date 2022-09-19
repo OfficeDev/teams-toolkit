@@ -40,9 +40,9 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import path from "path";
 import fs from "fs-extra";
 import { SPOClient } from "../../../plugins/resource/spfx/spoClient";
-import { getSPFxToken, GraphScopes } from "../../../common";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import axios from "axios";
+import { getSPFxToken, GraphScopes } from "../../../common/tools";
 
 @Service(ComponentNames.SPFx)
 export class SpfxResource implements CloudResource {

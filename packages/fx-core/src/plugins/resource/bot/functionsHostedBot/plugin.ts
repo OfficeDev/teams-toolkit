@@ -17,12 +17,6 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../../../folder";
 import { Bicep, ConstantString } from "../../../../common/constants";
-import {
-  generateBicepFromFile,
-  getResourceGroupNameFromResourceId,
-  getSiteNameFromResourceId,
-  getSubscriptionIdFromResourceId,
-} from "../../../../common";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import { FuncHostedDeployMgr } from "./deployMgr";
 import * as appService from "@azure/arm-appservice";
@@ -34,6 +28,12 @@ import {
   DeployConfigsConstants,
 } from "../../../../common/azure-hosting/hostingConstant";
 import { HostType } from "../v2/enum";
+import {
+  generateBicepFromFile,
+  getResourceGroupNameFromResourceId,
+  getSiteNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+} from "../../../../common/tools";
 
 export class FunctionsHostedBotImpl extends TeamsBotImpl {
   public async scaffold(context: PluginContext): Promise<FxResult> {

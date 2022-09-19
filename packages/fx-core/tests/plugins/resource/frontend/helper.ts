@@ -17,8 +17,9 @@ import {
 } from "../../../../src/plugins/resource/frontend/constants";
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
 import { StorageAccountsCreateResponse } from "@azure/arm-storage/esm/models";
-import { ARM_TEMPLATE_OUTPUT, newEnvInfo } from "../../../../src";
 import { LocalCrypto } from "../../../../src/core/crypto";
+import { newEnvInfo } from "../../../../src/core/environment";
+import { ARM_TEMPLATE_OUTPUT } from "../../../../src/plugins/solution/fx-solution/constants";
 
 export class TestHelper {
   static appName = "app-test";

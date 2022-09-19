@@ -19,14 +19,10 @@ import {
   StatesFolderName,
   UserError,
 } from "@microsoft/teamsfx-api";
-import {
-  environmentManager,
-  EnvStateFiles,
-  FxCore,
-  PathNotExistError,
-  ProjectSettingsHelper,
-} from "@microsoft/teamsfx-core";
-
+import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
+import { ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local";
+import { PathNotExistError } from "@microsoft/teamsfx-core/build/core/error";
+import { EnvStateFiles } from "@microsoft/teamsfx-core/build/core/environment";
 import { ResourceAddApim, ResourceAddFunction, ResourceAddSql } from "../../../src/cmds/resource";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import HelpParamGenerator from "../../../src/helpParamGenerator";

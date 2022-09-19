@@ -5,12 +5,12 @@ import { ResourceTemplate, TokenProvider, Void } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import * as fs from "fs-extra";
 import path from "path";
-import { generateBicepFromFile } from "..";
 import { Bicep } from "../constants";
 import { getTemplatesFolder } from "../../folder";
 import { BicepContext, Logger, ServiceType } from "./interfaces";
 import { Messages } from "./messages";
 import { getHandlebarContext } from "./utils";
+import { generateBicepFromFile } from "../tools";
 
 export abstract class AzureHosting {
   abstract hostType: ServiceType;

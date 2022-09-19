@@ -12,7 +12,6 @@ import {
 import * as utils from "../../../../src/plugins/resource/bot/utils/common";
 import * as fs from "fs-extra";
 import path from "path";
-import { getTemplatesFolder } from "../../../../src";
 import Mustache from "mustache";
 import { ProviderKind, TemplateKind } from "../../../../src/component/feature/cicd/provider/enums";
 import { CICDProviderFactory } from "../../../../src/component/feature/cicd/provider/factory";
@@ -30,6 +29,7 @@ import {
 import { convertToAlphanumericOnly } from "../../../../src/common/utils";
 import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 import sinon from "sinon";
+import { getTemplatesFolder } from "../../../../src/folder";
 
 describe("Add ci cd workflow", () => {
   const cicdPlugin: CICDImpl = new CICDImpl();

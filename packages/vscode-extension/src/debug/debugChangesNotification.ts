@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LocalEnvManager } from "@microsoft/teamsfx-core";
+import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import VsCodeLogInstance from "../commonlib/log";
 import * as globalVariables from "../globalVariables";

@@ -12,7 +12,7 @@ import {
   cleanUp,
   readContextMultiEnv,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 import { it } from "../../commonlib/it";
 import { Runtime } from "../../commonlib/constants";

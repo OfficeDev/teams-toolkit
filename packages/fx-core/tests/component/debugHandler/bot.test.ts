@@ -17,7 +17,6 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 
-import { BotDebugArgs, BotDebugHandler } from "../../../src";
 import { ComponentNames } from "../../../src/component/constants";
 import { BotMessagingEndpointMissingError } from "../../../src/component/debugHandler/error";
 import {
@@ -31,7 +30,7 @@ import { AADRegistration } from "../../../src/plugins/resource/bot/aadRegistrati
 import { AppStudio } from "../../../src/plugins/resource/bot/appStudio/appStudio";
 import { BotAuthCredential } from "../../../src/plugins/resource/bot/botAuthCredential";
 import { MockM365TokenProvider, runDebugActions } from "./utils";
-
+import { BotDebugArgs, BotDebugHandler } from "../../../src/component/debugHandler";
 describe("TabDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
   const tenantId = "11111111-1111-1111-1111-111111111111";

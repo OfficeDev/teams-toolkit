@@ -7,7 +7,7 @@ import path from "path";
 import { Argv } from "yargs";
 
 import { err, FxError, ok, Platform, ProjectSettings, Result } from "@microsoft/teamsfx-api";
-import { AzureSolutionQuestionNames as Names, isV3 } from "@microsoft/teamsfx-core";
+import { AzureSolutionQuestionNames as Names } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/question";
 import { FeatureId } from "@microsoft/teamsfx-core/build/component/questionV3";
 
 import activate from "../activate";
@@ -21,7 +21,7 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import { automaticNpmInstallHandler } from "./preview/npmInstallHandler";
 import { AddFeatureFunc, CLIHelpInputs, EmptyQTreeNode, RootFolderNode } from "../constants";
-import { filterQTreeNode, toYargsOptionsGroup } from "../questionUtils";
+import { toYargsOptionsGroup } from "../questionUtils";
 
 export abstract class FeatureAddBase extends YargsCommand {
   abstract readonly telemetryStartEvent: TelemetryEvent;
@@ -41,16 +41,12 @@ export abstract class FeatureAddBase extends YargsCommand {
     }
     const core = result.value;
     {
-      const result = isV3()
-        ? await core.getQuestionsForAddFeature(this.featureId, CLIHelpInputs)
-        : await core.getQuestionsForUserTask(AddFeatureFunc, CLIHelpInputs);
+      const result = await core.getQuestionsForAddFeature(this.featureId, CLIHelpInputs);
       if (result.isErr()) {
         throw result.error;
       }
       const node = result.value ?? EmptyQTreeNode;
-      const filteredNode = isV3()
-        ? node
-        : await filterQTreeNode(node, Names.Features, this.featureId);
+      const filteredNode = node;
       const nodes = flattenNodes(filteredNode).concat([RootFolderNode]);
       this.params = toYargsOptionsGroup(nodes);
     }

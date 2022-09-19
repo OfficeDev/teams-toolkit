@@ -17,7 +17,6 @@ import {
 } from "../../../src/telemetry/cliTelemetryEvents";
 import * as constants from "../../../src/constants";
 import LogProvider from "../../../src/commonlib/log";
-import * as Utils from "../../../src/utils";
 import { expect } from "../utils";
 import { NotSupportedProjectType } from "../../../src/error";
 

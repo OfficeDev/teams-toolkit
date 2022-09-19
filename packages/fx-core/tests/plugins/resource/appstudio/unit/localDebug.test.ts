@@ -30,7 +30,6 @@ import {
 import * as uuid from "uuid";
 import sinon from "sinon";
 import fs from "fs-extra";
-import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import {
   LocalSettingsAuthKeys,
@@ -40,6 +39,7 @@ import {
 } from "../../../../../src/common/localSettingsConstants";
 import { getAzureProjectRoot, MockedM365TokenProvider } from "../helper";
 import { ResourcePlugins } from "../../../../../src/common/constants";
+import { newEnvInfo } from "../../../../../src/core/environment";
 
 describe("Post Local Debug", () => {
   let plugin: AppStudioPlugin;

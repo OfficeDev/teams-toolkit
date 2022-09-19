@@ -30,7 +30,6 @@ import {
   TelemetryProperty,
 } from "../../common/telemetry";
 import { createV2Context } from "../../common/tools";
-import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { LocalCrypto } from "../crypto";
 import { newEnvInfo } from "../environment";
 import {
@@ -39,7 +38,7 @@ import {
   PathNotExistError,
   ReadFileError,
 } from "../error";
-import { globalVars, isV3 } from "../globalVars";
+import { globalVars } from "../globalVars";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { CoreHookContext } from "../types";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
@@ -109,17 +108,8 @@ export async function loadProjectSettingsByProjectPath(
         [TelemetryProperty.ProjectId]: projectSettings.projectId,
       });
     }
-    if (
-      !isV3() &&
-      projectSettings.solutionSettings &&
-      projectSettings.solutionSettings.activeResourcePlugins &&
-      !projectSettings.solutionSettings.activeResourcePlugins.includes(PluginNames.APPST)
-    ) {
-      projectSettings.solutionSettings.activeResourcePlugins.push(PluginNames.APPST);
-    }
     globalVars.isVS = isVSProject(projectSettings);
-    if (isV3()) return ok(convertProjectSettingsV2ToV3(projectSettings, projectPath));
-    return ok(projectSettings);
+    return ok(convertProjectSettingsV2ToV3(projectSettings, projectPath));
   } catch (e) {
     return err(ReadFileError(e));
   }

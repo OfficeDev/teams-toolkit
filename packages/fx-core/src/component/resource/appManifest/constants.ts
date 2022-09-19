@@ -2,14 +2,12 @@
 // Licensed under the MIT license.
 
 import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsoft/teamsfx-api";
-import { isV3 } from "../../../core/globalVars";
-import { BuiltInFeaturePluginNames } from "../../../plugins/solution/fx-solution/v3/constants";
 import { ComponentNames } from "../../constants";
 
-const AAD_STATE_KEY = isV3() ? ComponentNames.AadApp : BuiltInFeaturePluginNames.aad;
-const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
-const BOT_STATE_KEY = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
-const APP_MANIFEST_KEY = isV3() ? ComponentNames.AppManifest : BuiltInFeaturePluginNames.appStudio;
+const AAD_STATE_KEY = ComponentNames.AadApp;
+const TAB_STATE_KEY = ComponentNames.TeamsTab;
+const BOT_STATE_KEY = ComponentNames.TeamsBot;
+const APP_MANIFEST_KEY = ComponentNames.AppManifest;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",

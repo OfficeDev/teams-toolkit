@@ -4,9 +4,10 @@
 
 import Reporter from "../telemetry/telemetryReporter";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
-import { Correlator, getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core/build/common/tools";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
-import { getAllFeatureFlags, getProjectId } from "../utils";
+import { getAllFeatureFlags } from "../utils";
 import { CliConfigOptions } from "../userSetttings";
 import { tryDetectCICDPlatform } from "./common/cicdPlatformDetector";
 

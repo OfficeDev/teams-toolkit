@@ -16,7 +16,7 @@ import {
   setBotSkuNameToB1Bicep,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { ApimValidator } from "../../commonlib";

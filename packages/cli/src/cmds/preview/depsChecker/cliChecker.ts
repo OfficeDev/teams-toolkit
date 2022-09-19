@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DepsType } from "@microsoft/teamsfx-core";
+import { DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import {
   isNodeCheckerEnabled,
   isDotnetCheckerEnabled,

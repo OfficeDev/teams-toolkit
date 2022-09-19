@@ -4,7 +4,7 @@ import { PluginContext } from "@microsoft/teamsfx-api";
 import faker from "faker";
 import * as uuid from "uuid";
 import { Constants } from "../../../../src/plugins/resource/keyvault/constants";
-import { newEnvInfo } from "../../../../src";
+import { newEnvInfo } from "../../../../src/core/environment";
 import {
   HostTypeOptionAzure,
   AzureResourceKeyVault,

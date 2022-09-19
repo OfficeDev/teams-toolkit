@@ -6,17 +6,6 @@ import * as chai from "chai";
 import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { Inputs } from "@microsoft/teamsfx-api";
 import { newInputV2, newPluginContextV2 } from "../utils";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import {
-  AzureSolutionQuestionNames,
-  BotOptionItem,
-  CommandAndResponseOptionItem,
-  M365SearchAppOptionItem,
-  MessageExtensionNewUIItem,
-  NotificationOptionItem,
-  WorkflowOptionItem,
-} from "../../../../../../src";
 import {
   QuestionNames,
   TemplateProjectsScenarios,
@@ -34,6 +23,15 @@ import {
   resolveBotCapabilities,
 } from "../../../../../../src/plugins/resource/bot/v2/common";
 import { BotCapabilities } from "../../../../../../src/plugins/resource/bot/resources/strings";
+import {
+  AzureSolutionQuestionNames,
+  BotOptionItem,
+  CommandAndResponseOptionItem,
+  M365SearchAppOptionItem,
+  MessageExtensionNewUIItem,
+  NotificationOptionItem,
+  WorkflowOptionItem,
+} from "../../../../../../src/plugins/solution/fx-solution/question";
 
 const fs = require("fs-extra");
 

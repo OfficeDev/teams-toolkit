@@ -32,7 +32,6 @@ import { DepsManager } from "../deps-checker/depsManager";
 import { LocalStateProvider } from "../localStateProvider";
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
-import { isV3 } from "../../core";
 import { convertEnvStateV3ToV2 } from "../../component/migrate";
 import { getNgrokHttpUrl } from "../../plugins/solution/fx-solution/debug/util/ngrok";
 import * as yaml from "js-yaml";
@@ -139,9 +138,7 @@ export class LocalEnvManager {
       const envInfo = await localStateProvider.loadV2(crypto);
       if (envInfo) {
         // for v3, this envInfo is exported to outside of fx-core, we need to revert it into old pattern
-        if (isV3()) {
-          envInfo.state = convertEnvStateV3ToV2(envInfo.state);
-        }
+        envInfo.state = convertEnvStateV3ToV2(envInfo.state);
       }
       return envInfo;
     });

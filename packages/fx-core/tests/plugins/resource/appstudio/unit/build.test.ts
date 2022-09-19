@@ -19,7 +19,7 @@ import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import AdmZip from "adm-zip";
-import { newEnvInfo } from "../../../../../src";
+import { newEnvInfo } from "../../../../../src/core/environment";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "../helper";
 import { v4 as uuid } from "uuid";

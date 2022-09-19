@@ -9,7 +9,7 @@ import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import { ConfigMap, PluginContext, ok, Plugin, ManifestUtil } from "@microsoft/teamsfx-api";
-import { newEnvInfo } from "../../../../../src";
+import { newEnvInfo } from "../../../../../src/core/environment";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "./../helper";
 

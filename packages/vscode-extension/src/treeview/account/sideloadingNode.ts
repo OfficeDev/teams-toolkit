@@ -3,7 +3,7 @@
 
 import * as vscode from "vscode";
 
-import { getSideloadingStatus } from "@microsoft/teamsfx-core";
+import { getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
 
 import { checkSideloadingCallback } from "../../handlers";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";

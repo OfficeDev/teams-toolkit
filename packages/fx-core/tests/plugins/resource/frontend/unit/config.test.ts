@@ -15,7 +15,7 @@ import {
   UnauthenticatedError,
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
 import { TestHelper } from "../helper";
-import { newEnvInfo } from "../../../../../src";
+import { newEnvInfo } from "../../../../../src/core/environment";
 
 chai.use(chaiAsPromised);
 

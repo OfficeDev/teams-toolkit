@@ -9,6 +9,7 @@
     },
     "dependencies": {
         "@microsoft/teamsfx": "^1.0.0",
+        "adaptivecards": "~2.10.0",
         "isomorphic-fetch": "^3.0.0"
     },
     "devDependencies": {

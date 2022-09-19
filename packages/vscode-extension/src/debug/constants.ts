@@ -98,7 +98,7 @@ export const openTerminalCommand = "command:workbench.action.terminal.focus";
 
 export type DisplayMessages = {
   taskName: string;
-  check: string;
+  title: string;
   checkNumber: string;
   summary: string;
   learnMore: string;
@@ -114,9 +114,11 @@ export type DisplayMessages = {
 
 const basePrerequisiteCheckDisplayMessages: DisplayMessages = {
   taskName: "Prerequisites Check",
-  check:
-    "Teams Toolkit is checking if all required prerequisites are installed and will install them if not. A summary will be generated for your reference.",
-  checkNumber: "We are checking total @number of prerequisites for you.",
+  title: "Prerequisites Check",
+  // check:
+  //   "Teams Toolkit is checking if all required prerequisites are installed and will install them if not. A summary will be generated for your reference.",
+  checkNumber:
+    "(Totally @number steps) Teams Toolkit is checking if all required prerequisites are installed and will install them if not.",
   summary: "Prerequisites Check Summary:",
   learnMore: "Visit @Link to learn more about prerequisites check.",
   learnMoreHelpLink: defaultHelpLink,
@@ -137,15 +139,25 @@ export const prerequisiteCheckDisplayMessages: DisplayMessages = Object.assign(
 );
 
 export const prerequisiteCheckForGetStartedDisplayMessages = basePrerequisiteCheckDisplayMessages;
-export const prerequisiteCheckTaskDisplayMessages = basePrerequisiteCheckDisplayMessages;
+
+export const prerequisiteCheckTaskDisplayMessages: DisplayMessages = Object.assign(
+  {
+    title: 'Running "Validate & Install Prerequisites" Visual Studio Code task.',
+    summary: "Validate & Install Prerequisites Summary:",
+    learnMore: 'Visit @Link to learn more about "Validate & Install Prerequisites" task.',
+    learnMoreHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task", // TODO: update npm install help link
+    errorHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task", // TODO: update npm install help link
+  },
+  basePrerequisiteCheckDisplayMessages
+);
 
 export const npmInstallDisplayMessages: DisplayMessages = {
-  taskName: "NPM Package Install",
-  check:
-    "Teams Toolkit is checking if all the NPM packages are installed and will install them if not. A summary will be generated for your reference.",
-  checkNumber: "We are checking total @number of projects for you.",
-  summary: "NPM Package Installation Summary:",
-  learnMore: "Visit @Link to learn more about NPM package install task.",
+  taskName: "Install NPM packages",
+  title: 'Running "Install NPM packages" Visual Studio Code task.',
+  checkNumber:
+    "(Totally @number steps) Teams Toolkit is checking if all the NPM packages are installed and will install them if not.",
+  summary: "Install NPM Packages Summary:",
+  learnMore: 'Visit @Link to learn more about "Install NPM packages" task.',
   learnMoreHelpLink: "https://aka.ms/teamsfx-npm-package-task", // TODO: update npm install help link
   errorName: ExtensionErrors.PrerequisitesInstallPackagesError,
   errorMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
@@ -156,14 +168,15 @@ export const npmInstallDisplayMessages: DisplayMessages = {
 };
 
 export const localTunnelDisplayMessages = Object.freeze({
-  taskName: "Local Tunnel Service",
+  taskName: "Start local tunnel",
+  title: 'Running "Start local tunnel" Visual Studio Code task.',
   check:
-    "Teams Toolkit is starting the local tunnel service. It will tunnel local ports to public URLs and inspect traffic. A summary will be generated for your reference.",
+    "Teams Toolkit is starting the local tunnel service. It will tunnel local ports to public URLs and inspect traffic.",
   stepMessage: (tunnelName: string, configFile: string) =>
     `Starting ${tunnelName} tunnel using configuration file '${configFile}'`,
-  summary: "Local Tunnel Service Summary:",
+  summary: "Start Local Tunnel Summary:",
   successSummary: (src: string, dist: string) => `Tunneling ${src} -> ${dist}`,
-  learnMore: (link: string) => `Visit ${link} to learn more about local tunnel task.`,
+  learnMore: (link: string) => `Visit ${link} to learn more about "Start local tunnel" task.`,
   learnMoreHelpLink: "https://aka.ms/teamsfx-local-tunnel-task", // TODO: update local tunnel help link
   startMessage: "Starting local tunnel service.",
   successMessage: "Local tunnel service is started successfully.",
@@ -172,11 +185,10 @@ export const localTunnelDisplayMessages = Object.freeze({
 
 export const setUpTabDisplayMessages: DisplayMessages = {
   taskName: "Set up Tab",
-  check:
-    "Teams Toolkit is setting up Tab for debugging. A summary will be generated for your reference.",
-  checkNumber: "We are running total @number of steps for you.",
+  title: 'Running "Set up Tab" Visual Studio Code task.',
+  checkNumber: "(Totally @number steps) Teams Toolkit is setting up Tab for debugging.",
   summary: "Set up Tab Summary:",
-  learnMore: "Visit @Link to learn more about Set up Tab task.",
+  learnMore: 'Visit @Link to learn more about "Set up Tab" task.',
   learnMoreHelpLink: "https://aka.ms/teamsfx-debug-set-up-tab",
   errorName: ExtensionErrors.SetUpTabError,
   errorMessageKey: "teamstoolkit.localDebug.setUpTabFailure",
@@ -188,11 +200,10 @@ export const setUpTabDisplayMessages: DisplayMessages = {
 
 export const setUpBotDisplayMessages: DisplayMessages = {
   taskName: "Set up Bot",
-  check:
-    "Teams Toolkit is setting up Bot for debugging. A summary will be generated for your reference.",
-  checkNumber: "We are running total @number of steps for you.",
+  title: 'Running "Set up Bot" Visual Studio Code task.',
+  checkNumber: "(Totally @number steps) Teams Toolkit is setting up Bot for debugging.",
   summary: "Set up Bot Summary:",
-  learnMore: "Visit @Link to learn more about Set up Bot task.",
+  learnMore: 'Visit @Link to learn more about "Set up Bot" task.',
   learnMoreHelpLink: "https://aka.ms/teamsfx-debug-set-up-bot",
   errorName: ExtensionErrors.SetUpBotError,
   errorMessageKey: "teamstoolkit.localDebug.setUpBotFailure",
@@ -204,11 +215,10 @@ export const setUpBotDisplayMessages: DisplayMessages = {
 
 export const setUpSSODisplayMessages: DisplayMessages = {
   taskName: "Set up SSO",
-  check:
-    "Teams Toolkit is setting up SSO for debugging. A summary will be generated for your reference.",
-  checkNumber: "We are running total @number of steps for you.",
+  title: 'Running "Set up SSO" Visual Studio Code task.',
+  checkNumber: "(Totally @number steps) Teams Toolkit is setting up SSO for debugging.",
   summary: "Set up SSO Summary:",
-  learnMore: "Visit @Link to learn more about Set up SSO task.",
+  learnMore: 'Visit @Link to learn more about "Set up SSO" task.',
   learnMoreHelpLink: "https://aka.ms/teamsfx-debug-set-up-sso",
   errorName: ExtensionErrors.SetUpSSOError,
   errorMessageKey: "teamstoolkit.localDebug.setUpSSOFailure",
@@ -220,11 +230,11 @@ export const setUpSSODisplayMessages: DisplayMessages = {
 
 export const prepareManifestDisplayMessages: DisplayMessages = {
   taskName: "Build and upload Teams manifest",
-  check:
-    "Teams Toolkit is building and uploading Teams manifest for debugging. A summary will be generated for your reference.",
-  checkNumber: "We are running total @number of steps for you.",
-  summary: "Build and upload Teams manifest Summary:",
-  learnMore: "Visit @Link to learn more about Build and upload Teams manifest task.",
+  title: 'Running "Build and upload Teams manifest" Visual Studio Code task.',
+  checkNumber:
+    "(Totally @number steps) Teams Toolkit is building and uploading Teams manifest for debugging.",
+  summary: "Build and Upload Teams Manifest Summary:",
+  learnMore: 'Visit @Link to learn more about "Build and upload Teams manifest" task.',
   learnMoreHelpLink: "https://aka.ms/teamsfx-debug-prepare-manifest",
   errorName: ExtensionErrors.PrepareManifestError,
   errorMessageKey: "teamstoolkit.localDebug.prepareManifestFailure",
@@ -233,8 +243,6 @@ export const prepareManifestDisplayMessages: DisplayMessages = {
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
   errorHelpLink: "https://aka.ms/teamsfx-debug-prepare-manifest",
 };
-
-export const taskNamePrefix = "[Task Started] ";
 
 export const TaskCommand = Object.freeze({
   checkPrerequisites: "debug-check-prerequisites",

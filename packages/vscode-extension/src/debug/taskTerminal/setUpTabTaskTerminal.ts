@@ -10,7 +10,7 @@ import { TabDebugArgs, TabDebugHandler } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";
-import { setUpTabDisplayMessages, taskNamePrefix } from "../constants";
+import { setUpTabDisplayMessages } from "../constants";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { handleDebugActions } from "./common";
 
@@ -24,8 +24,7 @@ export class SetUpTabTaskTerminal extends BaseTaskTerminal {
 
   async do(): Promise<Result<Void, FxError>> {
     VsCodeLogInstance.outputChannel.show();
-    VsCodeLogInstance.info(`${taskNamePrefix}${setUpTabDisplayMessages.taskName}`);
-    VsCodeLogInstance.outputChannel.appendLine(setUpTabDisplayMessages.check);
+    VsCodeLogInstance.info(setUpTabDisplayMessages.title);
 
     const workspacePath: string = workspaceUri?.fsPath as string;
     const handler = new TabDebugHandler(workspacePath, this.args);

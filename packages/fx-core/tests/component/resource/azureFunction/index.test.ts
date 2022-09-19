@@ -25,6 +25,7 @@ import * as hostingUtils from "../../../../src/common/azure-hosting/utils";
 import { AzureOperations } from "../../../../src/common/azure-hosting/azureOps";
 import * as botUtils from "../../../../src/plugins/resource/bot/utils/common";
 import { APIMOutputs, ComponentNames, Scenarios } from "../../../../src/component/constants";
+import { PreconditionError } from "../../../../src/component/error";
 
 chai.use(chaiAsPromised);
 
@@ -204,5 +205,33 @@ describe("Azure-Function Component", () => {
     const res = restartWebAppStub.calledOnce;
     chai.assert.isTrue(res);
     chai.assert.isTrue(deployAction.isOk());
+  });
+
+  it("deploy bot precondition error", async function () {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const restartWebAppStub = sandbox.stub(AzureOperations, "restartWebApp").resolves();
+    sandbox.stub(botUtils, "zipFolderAsync").resolves({} as any);
+    sandbox.stub(hostingUtils, "azureWebSiteDeploy").resolves({} as any);
+    assign(inputs, {
+      componentId: ComponentNames.TeamsBot,
+      hosting: inputs.hosting,
+      scenario: Scenarios.Bot,
+      folder: "bot",
+      artifactFolder: "bot",
+    });
+    assign(context.envInfo, {
+      state: {
+        [ComponentNames.TeamsBot]: {},
+      },
+    });
+
+    let foundError = false;
+    try {
+      await component.deploy(context as ResourceContextV3, inputs);
+    } catch (e) {
+      chai.assert.isTrue(e instanceof PreconditionError);
+      foundError = true;
+    }
+    chai.assert.isTrue(foundError);
   });
 });

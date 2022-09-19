@@ -103,7 +103,7 @@ export type DisplayMessages = {
   summary: string;
   learnMore: string;
   learnMoreHelpLink: string;
-  launchServices: string;
+  launchServices?: string;
   errorName: string;
   errorMessageKey: string;
   errorDisplayMessageKey: string;
@@ -112,7 +112,7 @@ export type DisplayMessages = {
   errorMessageCommand: string;
 };
 
-export const prerequisiteCheckDisplayMessages: DisplayMessages = {
+const basePrerequisiteCheckDisplayMessages: DisplayMessages = {
   taskName: "Prerequisites Check",
   check:
     "Teams Toolkit is checking if all required prerequisites are installed and will install them if not. A summary will be generated for your reference.",
@@ -120,8 +120,6 @@ export const prerequisiteCheckDisplayMessages: DisplayMessages = {
   summary: "Prerequisites Check Summary:",
   learnMore: "Visit @Link to learn more about prerequisites check.",
   learnMoreHelpLink: defaultHelpLink,
-  launchServices:
-    "Services will be launched locally, please check your terminal window for details.",
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
@@ -129,6 +127,17 @@ export const prerequisiteCheckDisplayMessages: DisplayMessages = {
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
   errorHelpLink: "https://aka.ms/teamsfx-envchecker-help",
 };
+
+export const prerequisiteCheckDisplayMessages: DisplayMessages = Object.assign(
+  {
+    launchServices:
+      "Services will be launched locally, please check your terminal window for details.",
+  },
+  basePrerequisiteCheckDisplayMessages
+);
+
+export const prerequisiteCheckForGetStartedDisplayMessages = basePrerequisiteCheckDisplayMessages;
+export const prerequisiteCheckTaskDisplayMessages = basePrerequisiteCheckDisplayMessages;
 
 export const npmInstallDisplayMessages: DisplayMessages = {
   taskName: "NPM Package Install",
@@ -138,7 +147,6 @@ export const npmInstallDisplayMessages: DisplayMessages = {
   summary: "NPM Package Installation Summary:",
   learnMore: "Visit @Link to learn more about NPM package install task.",
   learnMoreHelpLink: "https://aka.ms/teamsfx-npm-package-task", // TODO: update npm install help link
-  launchServices: "",
   errorName: ExtensionErrors.PrerequisitesInstallPackagesError,
   errorMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
@@ -152,7 +160,7 @@ export const localTunnelDisplayMessages = Object.freeze({
   check:
     "Teams Toolkit is starting the local tunnel service. It will tunnel local ports to public URLs and inspect traffic. A summary will be generated for your reference.",
   stepMessage: (tunnelName: string, configFile: string) =>
-    `Starting ${tunnelName} tunnel in the configuration file '${configFile}'`,
+    `Starting ${tunnelName} tunnel using configuration file '${configFile}'`,
   summary: "Local Tunnel Service Summary:",
   successSummary: (src: string, dist: string) => `Tunneling ${src} -> ${dist}`,
   learnMore: (link: string) => `Visit ${link} to learn more about local tunnel task.`,
@@ -170,7 +178,6 @@ export const setUpTabDisplayMessages: DisplayMessages = {
   summary: "Set up Tab Summary:",
   learnMore: "Visit @Link to learn more about Set up Tab task.",
   learnMoreHelpLink: "https://aka.ms/teamsfx-debug-set-up-tab",
-  launchServices: "",
   errorName: ExtensionErrors.SetUpTabError,
   errorMessageKey: "teamstoolkit.localDebug.setUpTabFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.setUpTabFailure",
@@ -187,7 +194,6 @@ export const setUpBotDisplayMessages: DisplayMessages = {
   summary: "Set up Bot Summary:",
   learnMore: "Visit @Link to learn more about Set up Bot task.",
   learnMoreHelpLink: "https://aka.ms/teamsfx-debug-set-up-bot",
-  launchServices: "",
   errorName: ExtensionErrors.SetUpBotError,
   errorMessageKey: "teamstoolkit.localDebug.setUpBotFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.setUpBotFailure",
@@ -204,7 +210,6 @@ export const setUpSSODisplayMessages: DisplayMessages = {
   summary: "Set up SSO Summary:",
   learnMore: "Visit @Link to learn more about Set up SSO task.",
   learnMoreHelpLink: "https://aka.ms/teamsfx-debug-set-up-sso",
-  launchServices: "",
   errorName: ExtensionErrors.SetUpSSOError,
   errorMessageKey: "teamstoolkit.localDebug.setUpSSOFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.setUpSSOFailure",
@@ -221,7 +226,6 @@ export const prepareManifestDisplayMessages: DisplayMessages = {
   summary: "Build and upload Teams manifest Summary:",
   learnMore: "Visit @Link to learn more about Build and upload Teams manifest task.",
   learnMoreHelpLink: "https://aka.ms/teamsfx-debug-prepare-manifest",
-  launchServices: "",
   errorName: ExtensionErrors.PrepareManifestError,
   errorMessageKey: "teamstoolkit.localDebug.prepareManifestFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prepareManifestFailure",
@@ -229,6 +233,8 @@ export const prepareManifestDisplayMessages: DisplayMessages = {
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
   errorHelpLink: "https://aka.ms/teamsfx-debug-prepare-manifest",
 };
+
+export const taskNamePrefix = "[Task Started] ";
 
 export const TaskCommand = Object.freeze({
   checkPrerequisites: "debug-check-prerequisites",

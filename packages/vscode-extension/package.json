@@ -989,6 +989,11 @@
                     "type": "boolean",
                     "description": "%teamstoolkit.taskDefinitions.args.reuse.title%",
                     "default": false
+                  },
+                  "tunnelName":{
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.tunnelName.title%",
+                    "default": "bot"
                   }
                 },
                 "additionalProperties": false
@@ -1180,6 +1185,7 @@
         "properties": {
           "fx-extension.prerequisiteCheck": {
             "type": "object",
+            "markdownDescription": "**[Obsolete]** Only work for `${command:fx-extension.validate-local-prerequisites}`",
             "properties": {
               "node": {
                 "type": "boolean",

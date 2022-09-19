@@ -5,6 +5,7 @@ namespace Microsoft.TeamsFx.Conversation
 {
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Teams;
+    using Microsoft.Bot.Schema.Teams;
     using Microsoft.Rest;
     using System.Net;
 
@@ -75,8 +76,7 @@ namespace Microsoft.TeamsFx.Conversation
                 (
                     _botAppId,
                     reference,
-                    async (context, ct) =>
-                    {
+                    async (context, ct) => {
                         try
                         {
                             // try get member to see if the installation is still valid
@@ -113,6 +113,176 @@ namespace Microsoft.TeamsFx.Conversation
             }
 
             return installations.ToArray();
+        }
+
+        /// <summary>
+        /// Returns the first <see cref="Member"/> where predicate is true, and undefined otherwise.
+        /// </summary>
+        /// <param name="predicate">
+        /// Find calls predicate once for each member of the installation, 
+        /// until it finds one where predicate returns true. If such a member is found, 
+        /// find immediately returns that member.Otherwise, find returns undefined.
+        /// </param>
+        /// <param name="scope">The scope to find members from the installations. 
+        /// (personal chat, group chat, Teams channel)
+        /// </param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The first <see cref="Member"/> where predicate is true, and undefined otherwise.</returns>
+        /// <exception cref="ArgumentNullException">Throws when predicate is null.</exception>
+        public async Task<Member> FindMemberAsync(
+            Func<Member, Task<bool>> predicate,
+            SearchScope scope = SearchScope.All,
+            CancellationToken cancellationToken = default)
+        {
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
+            var installations = await GetInstallationsAsync(cancellationToken).ConfigureAwait(false);
+            foreach (var target in installations)
+            {
+                if (MatchSearchScope(target, scope))
+                {
+                    var members = await target.GetMembersAsync(cancellationToken).ConfigureAwait(false);
+                    foreach (var member in members)
+                    {
+                        if (await predicate(member).ConfigureAwait(false))
+                        {
+                            return member;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns all <see cref="Member"/> where predicate is true, and empty array otherwise.
+        /// </summary>
+        /// <param name="predicate">Find calls predicate for each member of the installation.</param>
+        /// <param name="scope">The scope to find members from the installations. 
+        /// (personal chat, group chat, Teams channel)
+        /// </param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>An array of <see cref="Member"/> where predicate is true, and empty array otherwise.</returns>
+        /// <exception cref="ArgumentNullException">Throws when predicate is null.</exception>
+        public async Task<Member[]> FindAllMembersAsync(
+            Func<Member, Task<bool>> predicate,
+            SearchScope scope = SearchScope.All,
+            CancellationToken cancellationToken = default)
+        {
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
+            var result = new List<Member>();
+            var installations = await GetInstallationsAsync(cancellationToken).ConfigureAwait(false);
+            foreach (var target in installations)
+            {
+                if (MatchSearchScope(target, scope))
+                {
+                    var members = await target.GetMembersAsync(cancellationToken).ConfigureAwait(false);
+                    foreach (var member in members)
+                    {
+                        if (await predicate(member).ConfigureAwait(false))
+                        {
+                            result.Add(member);
+                        }
+                    }
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        /// <summary>
+        /// Returns the first <see cref="Channel"/> where predicate is true, and undefined otherwise.
+        /// </summary>
+        /// <param name="predicate">
+        /// Find calls predicate once for each channel of the installation, 
+        /// until it finds one where predicate returns true. If such a channel is found, 
+        /// find immediately returns that channel.Otherwise, find returns undefined.
+        /// </param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The first <see cref="Channel"/> where predicate is true, and undefined otherwise.</returns>
+        /// <exception cref="ArgumentNullException">Throws when predicate is null.</exception>
+        public async Task<Channel> FindChannelAsync(
+            Func<Channel, TeamDetails, Task<bool>> predicate,
+            CancellationToken cancellationToken = default)
+        {
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
+            var installations = await GetInstallationsAsync(cancellationToken).ConfigureAwait(false);
+            foreach (var target in installations)
+            {
+                if (target.Type == NotificationTargetType.Channel)
+                {
+                    var teamDetails = await target.GetTeamDetailsAsync(cancellationToken).ConfigureAwait(false);
+                    var channels = await target.GetChannelsAsync(cancellationToken).ConfigureAwait(false);
+                    foreach (var channel in channels)
+                    {
+                        if (await predicate(channel, teamDetails).ConfigureAwait(false))
+                        {
+                            return channel;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns all <see cref="Channel"/> where predicate is true, and empty array otherwise.
+        /// </summary>
+        /// <param name="predicate">Predicate find calls predicate for each channel of the installation.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>An array of <see cref="Channel"/> where predicate is true, and empty array otherwise.</returns>
+        /// <exception cref="ArgumentNullException">Throws when predicate is null.</exception>
+        public async Task<Channel[]> FindAllChannelsAsync(
+            Func<Channel, TeamDetails, Task<bool>> predicate,
+            CancellationToken cancellationToken = default)
+        {
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
+            var result = new List<Channel>();
+            var installations = await GetInstallationsAsync(cancellationToken).ConfigureAwait(false);
+            foreach (var target in installations)
+            {
+                if (target.Type == NotificationTargetType.Channel)
+                {
+                    var teamDetails = await target.GetTeamDetailsAsync(cancellationToken).ConfigureAwait(false);
+                    var channels = await target.GetChannelsAsync(cancellationToken).ConfigureAwait(false);
+                    foreach (var channel in channels)
+                    {
+                        if (await predicate(channel, teamDetails).ConfigureAwait(false))
+                        {
+                            result.Add(channel);
+                        }
+                    }
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        private static bool MatchSearchScope(TeamsBotInstallation target, SearchScope scope = SearchScope.All)
+        {
+            return target.Type switch {
+                NotificationTargetType.Channel => scope.HasFlag(SearchScope.Channel),
+                NotificationTargetType.Person => scope.HasFlag(SearchScope.Person),
+                NotificationTargetType.Group => scope.HasFlag(SearchScope.Group),
+                _ => false,
+            };
         }
     }
 }

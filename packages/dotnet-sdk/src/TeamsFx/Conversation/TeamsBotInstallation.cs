@@ -129,6 +129,12 @@ namespace Microsoft.TeamsFx.Conversation
         /// <returns>An array of channels if bot is installed into a team, otherwise returns an empty array.</returns>
         public async Task<Channel[]> GetChannelsAsync(CancellationToken cancellationToken = default)
         {
+            var channels = new List<Channel>();
+            if (Type != NotificationTargetType.Channel)
+            {
+                return channels.ToArray();
+            }
+
             IList<ChannelInfo> teamsChannels = null;
             await Adapter.ContinueConversationAsync
             (
@@ -144,7 +150,6 @@ namespace Microsoft.TeamsFx.Conversation
                 cancellationToken
             ).ConfigureAwait(false);
 
-            var channels = new List<Channel>();
             if (teamsChannels != null)
             {
                 foreach (var teamChannel in teamsChannels)
@@ -182,6 +187,36 @@ namespace Microsoft.TeamsFx.Conversation
             ).ConfigureAwait(false);
 
             return members.ToArray();
+        }
+
+        /// <summary>
+        /// Get team details from this bot installation
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The team details if bot is installed into a team, otherwise returns undefined.</returns>
+        public async Task<TeamDetails> GetTeamDetailsAsync(CancellationToken cancellationToken = default)
+        {
+            if (Type != NotificationTargetType.Channel)
+            {
+                return null;
+            }
+
+            TeamDetails teamDetails = null;
+            await Adapter.ContinueConversationAsync
+            (
+                BotAppId,
+                ConversationReference,
+                async (context, ct) => {
+                    var teamId = context.GetTeamsBotInstallationId();
+                    if (teamId != null)
+                    {
+                        teamDetails = await TeamsInfo.GetTeamDetailsAsync(context, teamId, ct).ConfigureAwait(false);
+                    }
+                },
+                cancellationToken
+            ).ConfigureAwait(false);
+
+            return teamDetails;
         }
     }
 }

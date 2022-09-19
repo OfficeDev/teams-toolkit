@@ -103,3 +103,13 @@ export class FindFunctionAppError extends ResourceNotFoundError {
     super(source, "error.function.FindAppError");
   }
 }
+
+export class InvalidFeature extends UserError {
+  constructor() {
+    super({
+      source: "fx",
+      message: getDefaultString("error.InvalidFeature"),
+      displayMessage: getLocalizedString("error.InvalidFeature"),
+    });
+  }
+}

@@ -13,7 +13,7 @@ import * as commentJson from "comment-json";
 describe("tasksTransparency", () => {
   describe("generateTasks", () => {
     it("frontend without sso (js)", () => {
-      const tasks = generateTasks(true, false, false, false, false, "javascript");
+      const tasks = generateTasks(true, false, false, false, false, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
@@ -27,7 +27,7 @@ describe("tasksTransparency", () => {
     });
 
     it("frontend with sso (js)", () => {
-      const tasks = generateTasks(true, false, false, false, true, "javascript");
+      const tasks = generateTasks(true, false, false, false, true, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
@@ -42,7 +42,7 @@ describe("tasksTransparency", () => {
     });
 
     it("frontend + backend with sso (js)", () => {
-      const tasks = generateTasks(true, true, false, false, true, "javascript");
+      const tasks = generateTasks(true, true, false, false, true, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
@@ -59,7 +59,7 @@ describe("tasksTransparency", () => {
     });
 
     it("frontend + backend with sso (ts)", () => {
-      const tasks = generateTasks(true, true, false, false, true, "typescript");
+      const tasks = generateTasks(true, true, false, false, true, "typescript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
@@ -77,7 +77,7 @@ describe("tasksTransparency", () => {
     });
 
     it("bot without sso (js)", () => {
-      const tasks = generateTasks(false, false, true, false, false, "javascript");
+      const tasks = generateTasks(false, false, true, false, false, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
@@ -92,7 +92,7 @@ describe("tasksTransparency", () => {
     });
 
     it("bot with sso (js)", () => {
-      const tasks = generateTasks(false, false, true, false, true, "javascript");
+      const tasks = generateTasks(false, false, true, false, true, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
@@ -108,7 +108,7 @@ describe("tasksTransparency", () => {
     });
 
     it("frontend + bot without sso (js)", () => {
-      const tasks = generateTasks(true, false, true, false, false, "javascript");
+      const tasks = generateTasks(true, false, true, false, false, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
@@ -125,7 +125,7 @@ describe("tasksTransparency", () => {
     });
 
     it("frontend + backend + bot with sso (js)", () => {
-      const tasks = generateTasks(true, true, true, false, true, "javascript");
+      const tasks = generateTasks(true, true, true, false, true, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
@@ -145,7 +145,7 @@ describe("tasksTransparency", () => {
     });
 
     it("frontend + backend + bot with sso (ts)", () => {
-      const tasks = generateTasks(true, true, true, false, true, "typescript");
+      const tasks = generateTasks(true, true, true, false, true, "typescript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
@@ -166,7 +166,7 @@ describe("tasksTransparency", () => {
     });
 
     it("func hosted bot without (ts)", () => {
-      const tasks = generateTasks(false, false, true, true, false, "typescript");
+      const tasks = generateTasks(false, false, true, true, false, "typescript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
@@ -185,7 +185,7 @@ describe("tasksTransparency", () => {
 
   describe("generateM365Tasks", () => {
     it("m365 frontend with sso (js)", () => {
-      const tasks = generateM365Tasks(true, false, false, false, true, "javascript");
+      const tasks = generateM365Tasks(true, false, false, false, true, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
@@ -202,7 +202,7 @@ describe("tasksTransparency", () => {
     });
 
     it("m365 bot without sso (js)", () => {
-      const tasks = generateM365Tasks(false, false, true, false, false, "javascript");
+      const tasks = generateM365Tasks(false, false, true, false, false, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");

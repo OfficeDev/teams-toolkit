@@ -155,7 +155,7 @@ import {
   sendDebugAllStartEvent,
 } from "./debug/localTelemetryReporter";
 import { compare } from "./utils/versionUtil";
-import { getSPFxVersion } from "@microsoft/teamsfx-core";
+import { getSPFxVersion } from "@microsoft/teamsfx-core/build/common/tools";
 
 export let core: FxCore;
 export let tools: Tools;

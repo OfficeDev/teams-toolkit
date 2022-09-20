@@ -8,7 +8,6 @@ import {
   MockCardActionHandler,
   MockCardActionHandlerWithErrorResponse,
 } from "./testUtils";
-import { IAdaptiveCard } from "adaptivecards";
 import { InvokeResponseErrorCode } from "../../../../src/conversation/interface";
 
 describe("Card Action Handler - Node", () => {
@@ -23,7 +22,7 @@ describe("Card Action Handler - Node", () => {
   });
 
   it("handler should send adaptive card response correctly", async () => {
-    const responseCard: IAdaptiveCard = {
+    const responseCard = {
       version: "1.0.0",
       type: "AdaptiveCard",
       body: [

@@ -1,4 +1,3 @@
-import { IAdaptiveCard } from "adaptivecards";
 import { InvokeResponse, StatusCodes } from "botbuilder";
 import { InvokeResponseErrorCode } from "./interface";
 
@@ -23,7 +22,7 @@ export enum InvokeResponseType {
  *
  * ```typescript
  *
- * const myCard: IAdaptiveCard = {
+ * const myCard = {
  *    type: "AdaptiveCard",
  *    body: [
  *     {
@@ -77,7 +76,7 @@ export class InvokeResponseFactory {
    *
    * @returns {InvokeResponse} An InvokeResponse object.
    */
-  public static adaptiveCard(card: IAdaptiveCard): InvokeResponse {
+  public static adaptiveCard(card: unknown): InvokeResponse {
     if (!card) {
       throw new Error("The adaptive card content cannot be null or undefined");
     }

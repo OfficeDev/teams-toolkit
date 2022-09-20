@@ -35,11 +35,7 @@ import { genUUID } from "../../plugins/resource/bot/utils/common";
 import { ResourceNameFactory } from "../../plugins/resource/bot/utils/resourceNameFactory";
 import { ComponentNames } from "../constants";
 import { DebugAction } from "./common";
-import {
-  BotMessagingEndpointMissingError,
-  errorSource,
-  InvalidExistingBotArgsError,
-} from "./error";
+import { errorSource, DebugArgumentEmptyError, InvalidExistingBotArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 const botDebugMessages = {
@@ -71,8 +67,6 @@ export class BotDebugHandler {
   private readonly logger?: LogProvider;
   private readonly telemetry?: TelemetryReporter;
   private readonly ui?: UserInteraction;
-
-  private existing = false;
 
   private projectSettingsV3?: ProjectSettingsV3;
   private cryptoProvider?: CryptoProvider;
@@ -120,18 +114,18 @@ export class BotDebugHandler {
   }
 
   private async validateArgs(): Promise<Result<string[], FxError>> {
-    // TODO: allow botPassword to be set in other places (like env) instead of tasks.json
-    if (this.args.botId && this.args.botPassword) {
-      this.existing = true;
-    } else if (this.args.botId || this.args.botPassword) {
+    if (this.args.botId !== undefined && this.args.botId.trim().length === 0) {
+      return err(DebugArgumentEmptyError("botId"));
+    }
+    if (this.args.botPassword !== undefined && this.args.botPassword.trim().length === 0) {
+      return err(DebugArgumentEmptyError("botPassword"));
+    }
+
+    const existing = this.args.botId || this.args.botPassword;
+    const missing = !this.args.botId || !this.args.botPassword;
+    if (existing && missing) {
       return err(InvalidExistingBotArgsError());
     }
-
-    if (!this.args.botMessagingEndpoint || this.args.botMessagingEndpoint.trim().length === 0) {
-      return err(BotMessagingEndpointMissingError());
-    }
-
-    this.args.botMessagingEndpoint = this.args.botMessagingEndpoint.trim();
 
     return ok([]);
   }
@@ -164,7 +158,7 @@ export class BotDebugHandler {
       this.envInfoV3.state[ComponentNames.TeamsBot] =
         this.envInfoV3.state[ComponentNames.TeamsBot] || {};
 
-      if (this.existing) {
+      if (this.args.botId) {
         // use existing bot
         // set botId, botPassword from args to state
         this.envInfoV3.state[ComponentNames.TeamsBot].botId = this.args.botId;

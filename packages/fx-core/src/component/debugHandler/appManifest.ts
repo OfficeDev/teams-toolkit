@@ -32,6 +32,7 @@ import { buildTeamsAppPackage } from "../resource/appManifest/appStudio";
 import { DebugAction } from "./common";
 import {
   AppManifestPackageNotExistError,
+  DebugArgumentEmptyError,
   errorSource,
   InvalidAppManifestPackageFileFormatError,
 } from "./error";
@@ -100,6 +101,13 @@ export class AppManifestDebugHandler {
   }
 
   private async validateArgs(): Promise<Result<string[], FxError>> {
+    if (
+      this.args.manifestPackagePath !== undefined &&
+      this.args.manifestPackagePath.trim().length === 0
+    ) {
+      return err(DebugArgumentEmptyError("manifestPackagePath"));
+    }
+
     if (this.args.manifestPackagePath) {
       this.args.manifestPackagePath = this.args.manifestPackagePath.trim();
       if (this.args.manifestPackagePath.length > 0) {

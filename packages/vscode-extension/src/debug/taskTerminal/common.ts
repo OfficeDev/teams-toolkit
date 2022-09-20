@@ -72,7 +72,9 @@ export async function handleDebugActions(
   }
 
   if (error) {
-    VsCodeLogInstance.outputChannel.appendLine(`${doctorConstant.Cross} ${error.message}`);
+    VsCodeLogInstance.outputChannel.appendLine(
+      `${doctorConstant.Cross} ${error.name}: ${error.message}`
+    );
     VsCodeLogInstance.outputChannel.appendLine("");
   }
 

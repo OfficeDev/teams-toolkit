@@ -43,7 +43,7 @@ import { TokenProvider } from "../../plugins/resource/aad/utils/tokenProvider";
 import { ComponentNames } from "../constants";
 import { convertEnvStateV3ToV2 } from "../migrate";
 import { DebugAction } from "./common";
-import { errorSource, InvalidSSODebugArgsError } from "./error";
+import { errorSource, DebugArgumentEmptyError, InvalidExistingAADArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 const ssoDebugMessages = {
@@ -77,8 +77,6 @@ export class SSODebugHandler {
   private readonly logger?: LogProvider;
   private readonly telemetry?: TelemetryReporter;
   private readonly ui?: UserInteraction;
-
-  private existing = false;
 
   private projectSettingsV3?: ProjectSettingsV3;
   private cryptoProvider?: CryptoProvider;
@@ -126,12 +124,28 @@ export class SSODebugHandler {
   }
 
   private async validateArgs(): Promise<Result<string[], FxError>> {
-    // TODO: allow clientSecret to be set in other places (like env) instead of tasks.json
-    if (this.args.objectId && this.args.clientId && this.args.clientSecret) {
-      this.existing = true;
-    } else if (this.args.objectId || this.args.clientId || this.args.clientSecret) {
-      return err(InvalidSSODebugArgsError());
+    if (this.args.objectId !== undefined && this.args.objectId.trim().length === 0) {
+      return err(DebugArgumentEmptyError("objectId"));
     }
+    if (this.args.clientId !== undefined && this.args.clientId.trim().length === 0) {
+      return err(DebugArgumentEmptyError("clientId"));
+    }
+    if (this.args.clientSecret !== undefined && this.args.clientSecret.trim().length === 0) {
+      return err(DebugArgumentEmptyError("clientSecret"));
+    }
+    if (
+      this.args.accessAsUserScopeId !== undefined &&
+      this.args.accessAsUserScopeId.trim().length === 0
+    ) {
+      return err(DebugArgumentEmptyError("accessAsUserScopeId"));
+    }
+
+    const existing = this.args.objectId || this.args.clientId || this.args.clientSecret;
+    const missing = !this.args.objectId || !this.args.clientId || !this.args.clientSecret;
+    if (existing && missing) {
+      return err(InvalidExistingAADArgsError());
+    }
+
     return ok([]);
   }
 
@@ -165,7 +179,7 @@ export class SSODebugHandler {
         this.envInfoV3.state[ComponentNames.AadApp] || {};
 
       // use existing AAD
-      if (this.existing) {
+      if (this.args.clientId) {
         // set objectId, clientId, clientSecret, oauth2PermissionScopeId from args to state
         this.envInfoV3.state[ComponentNames.AadApp].objectId = this.args.objectId;
         this.envInfoV3.state[ComponentNames.AadApp].clientId = this.args.clientId;

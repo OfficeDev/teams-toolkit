@@ -413,7 +413,7 @@ function setUpBot(): Record<string, unknown> {
     type: "teamsfx",
     command: "debug-set-up-bot",
     args: commentJson.assign(commentJson.parse(comment), {
-      botMessagingEndpoint: "${teamsfx:botTunnelEndpoint}/api/messages",
+      botMessagingEndpoint: "/api/messages",
     }),
   };
 }

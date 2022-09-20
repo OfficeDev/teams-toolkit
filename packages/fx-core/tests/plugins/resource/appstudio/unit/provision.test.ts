@@ -13,8 +13,8 @@ import { ConfigMap, PluginContext, Platform } from "@microsoft/teamsfx-api";
 import { getAzureProjectRoot } from "./../helper";
 import { newEnvInfo } from "../../../../../src/core/environment";
 import { LocalCrypto } from "../../../../../src/core/crypto";
-import { mockTokenProviderM365 } from "./../../aad/helper";
 import { v4 as uuid } from "uuid";
+import { mockTokenProviderM365 } from "../../../../component/resource/aadApp/helper";
 
 describe("Provision Teams app with Azure", () => {
   const sandbox = sinon.createSandbox();

@@ -18,13 +18,7 @@ import {
   M365TokenProvider,
 } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
-import {
-  ConfigKeys,
-  ConfigKeysOfOtherPlugin,
-  Plugins,
-} from "../../../../src/plugins/resource/aad/constants";
 import jwt_decode from "jwt-decode";
-import { Utils } from "../../../../src/plugins/resource/aad/utils/configs";
 import { MockUserInteraction } from "../../../core/utils";
 import {
   DEFAULT_PERMISSION_REQUEST,
@@ -37,6 +31,12 @@ import {
   LocalSettingsFrontendKeys,
 } from "../../../../src/common/localSettingsConstants";
 import { newEnvInfo } from "../../../../src/core/environment";
+import {
+  ConfigKeys,
+  ConfigKeysOfOtherPlugin,
+  Plugins,
+} from "../../../../src/component/resource/aadApp/constants";
+import { Utils } from "../../../../src/component/resource/aadApp/utils/configs";
 
 const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
 const permissionsWrong =

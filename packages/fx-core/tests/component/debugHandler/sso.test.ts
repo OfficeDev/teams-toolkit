@@ -32,10 +32,10 @@ import {
 import { SSODebugArgs, SSODebugHandler } from "../../../src/component/debugHandler/sso";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
-import { AadAppClient } from "../../../src/plugins/resource/aad/aadAppClient";
-import { AadAppManifestManager } from "../../../src/plugins/resource/aad/aadAppManifestManager";
-import { TokenProvider } from "../../../src/plugins/resource/aad/utils/tokenProvider";
 import { MockM365TokenProvider, runDebugActions } from "./utils";
+import { AadAppManifestManager } from "../../../src/component/resource/aadApp/aadAppManifestManager";
+import { AadAppClient } from "../../../src/component/resource/aadApp/aadAppClient";
+import { TokenProvider } from "../../../src/component/resource/aadApp/utils/tokenProvider";
 
 describe("SSODebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");

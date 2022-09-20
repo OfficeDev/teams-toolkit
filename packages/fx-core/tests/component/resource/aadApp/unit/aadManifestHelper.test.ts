@@ -3,10 +3,10 @@
 
 import "mocha";
 import * as chai from "chai";
-import { AadManifestHelper } from "../../../../../src/plugins/resource/aad/utils/aadManifestHelper";
-import { AADManifest } from "../../../../../src/plugins/resource/aad/interfaces/AADManifest";
-import { AadManifestErrorMessage } from "../../../../../src/plugins/resource/aad/errors";
 import * as util from "util";
+import { AadManifestHelper } from "../../../../../src/component/resource/aadApp/utils/aadManifestHelper";
+import { AadManifestErrorMessage } from "../../../../../src/component/resource/aadApp/errors";
+import { AADManifest } from "../../../../../src/component/resource/aadApp/interfaces/AADManifest";
 
 describe("AAD manifest helper Test", () => {
   it("manifestToApplication", async () => {

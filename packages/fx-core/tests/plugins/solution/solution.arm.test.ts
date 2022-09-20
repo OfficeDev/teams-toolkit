@@ -99,7 +99,6 @@ describe("Generate ARM Template for project", () => {
       capabilities: [TabOptionItem.id],
     };
     TestHelper.mockedFehostGenerateArmTemplates(mocker);
-    TestHelper.mockedAadGenerateArmTemplates(mocker);
     TestHelper.mockedIdentityGenerateArmTemplates(mocker);
 
     // Action
@@ -195,7 +194,6 @@ Mocked identity provision orchestration content. Module path: './provision/ident
         resourceBaseName: `${TestHelper.resourceBaseName}`,
         FrontendParameter: `${TestFileContent.feHostParameterValue}`,
         IdentityParameter: `${TestFileContent.identityParameterValue}`,
-        AadParameter: `${TestFileContent.aadParameterValue}`,
       })
     );
   });
@@ -209,7 +207,6 @@ Mocked identity provision orchestration content. Module path: './provision/ident
       capabilities: [TabOptionItem.id],
     };
     TestHelper.mockedFehostGenerateArmTemplates(mocker);
-    TestHelper.mockedAadGenerateArmTemplates(mocker);
     TestHelper.mockedIdentityGenerateArmTemplates(mocker);
     const botGenerateArmTemplatesStub = TestHelper.mockedBotGenerateArmTemplates(mocker);
 
@@ -238,7 +235,6 @@ Mocked identity provision orchestration content. Module path: './provision/ident
         resourceBaseName: `${TestHelper.resourceBaseName}`,
         FrontendParameter: `${TestFileContent.feHostParameterValue}`,
         IdentityParameter: `${TestFileContent.identityParameterValue}`,
-        AadParameter: `${TestFileContent.aadParameterValue}`,
       })
     );
     expect(await fs.pathExists(path.join(projectArmTemplateFolder, TestFilePath.configFileName))).to
@@ -284,7 +280,6 @@ Mocked identity provision orchestration content. Module path: './provision/ident
         resourceBaseName: `${TestHelper.resourceBaseName}`,
         FrontendParameter: `${TestFileContent.feHostParameterValue}`,
         IdentityParameter: `${TestFileContent.identityParameterValue}`,
-        AadParameter: `${TestFileContent.aadParameterValue}`,
         BotParameter: `${TestFileContent.botParameterValue}`,
       })
     );
@@ -492,7 +487,6 @@ Mocked bot configuration orchestration content. Module path: './teamsFx/botConfi
       capabilities: [BotOptionItem.id],
     };
     TestHelper.mockedFehostGenerateArmTemplates(mocker);
-    TestHelper.mockedAadGenerateArmTemplates(mocker);
     TestHelper.mockedIdentityGenerateArmTemplates(mocker);
     TestHelper.mockedBotGenerateArmTemplates(mocker);
     TestHelper.mockedBotUpdateArmTemplates(mocker);

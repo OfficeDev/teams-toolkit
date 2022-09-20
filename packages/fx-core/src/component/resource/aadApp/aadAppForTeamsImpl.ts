@@ -3,15 +3,16 @@
 
 import {
   AzureSolutionSettings,
+  ContextV3,
   FxError,
   LogProvider,
   PluginContext,
   Result,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
-  CheckGrantPermissionConfig,
-  ConfigUtils,
+  getPermissionErrorMessage,
   PostProvisionConfig,
   ProvisionConfig,
   SetApplicationInContextConfig,
@@ -30,7 +31,6 @@ import {
   GetConfigError,
   ConfigErrorMessages,
   AadManifestMissingObjectId,
-  AadManifestMissingReplyUrlsWithType,
   AadManifestMissingIdentifierUris,
   AadManifestMissingName,
   CannotGenerateIdentifierUrisError,
@@ -47,7 +47,6 @@ import {
   ProgressDetail,
   ProgressTitle,
   Telemetry,
-  TemplatePathInfo,
 } from "./constants";
 import { IPermission } from "./interfaces/IPermission";
 import {
@@ -56,23 +55,13 @@ import {
   ResourceAccess,
 } from "./interfaces/IAADDefinition";
 import { validate as uuidValidate } from "uuid";
-import * as path from "path";
-import * as fs from "fs-extra";
-import * as os from "os";
-import { ArmTemplateResult } from "../../../common/armInterface";
-import { Bicep, ConstantString, HelpLinks } from "../../../common/constants";
-import { getTemplatesFolder } from "../../../folder";
+import { HelpLinks } from "../../../common/constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
-import { AppUser } from "../appstudio/interfaces/appUser";
+import { AppUser } from "../../../plugins/resource/appstudio/interfaces/appUser";
 import { isAadManifestEnabled } from "../../../common/tools";
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";
-import { AADManifest, ReplyUrlsWithType } from "./interfaces/AADManifest";
-import {
-  BotOptionItem,
-  MessageExtensionItem,
-  TabOptionItem,
-} from "../../solution/fx-solution/question";
+import { AADManifest } from "./interfaces/AADManifest";
 import { format, Formats } from "./utils/format";
 import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
 import { isVSProject } from "../../../common/projectSettingsHelper";
@@ -80,7 +69,8 @@ import {
   PluginNames,
   REMOTE_AAD_ID,
   SOLUTION_PROVISION_SUCCEEDED,
-} from "../../solution/fx-solution/constants";
+} from "../../../plugins/solution/fx-solution/constants";
+import { ComponentNames } from "../../constants";
 
 export class AadAppForTeamsImpl {
   public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
@@ -443,52 +433,25 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success();
   }
 
-  public async generateArmTemplates(ctx: PluginContext): Promise<AadResult> {
-    TelemetryUtils.init(ctx);
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
-
-    const solutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-    const capabilities = solutionSettings.capabilities;
-    let result: ArmTemplateResult | undefined = undefined;
-
-    if (
-      capabilities.includes(TabOptionItem.id) ||
-      capabilities.includes(BotOptionItem.id) ||
-      capabilities.includes(MessageExtensionItem.id)
-    ) {
-      result = {
-        Parameters: JSON.parse(
-          await fs.readFile(
-            path.join(
-              getTemplatesFolder(),
-              TemplatePathInfo.BicepTemplateRelativeDir,
-              Bicep.ParameterFileName
-            ),
-            ConstantString.UTF8Encoding
-          )
-        ),
-      };
-    }
-
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
-    return ResultFactory.Success(result);
-  }
-
   public async checkPermission(
-    ctx: PluginContext,
+    ctx: ContextV3,
     userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
-    TelemetryUtils.init(ctx);
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartCheckPermission);
-
-    await TokenProvider.init({ m365: ctx.m365TokenProvider }, TokenAudience.Graph);
-    const config = new CheckGrantPermissionConfig();
-    await config.restoreConfigFromContext(ctx);
+    ctx.logProvider.info(Messages.StartCheckPermission.log);
+    await TokenProvider.init({ m365: ctx.tokenProvider?.m365TokenProvider }, TokenAudience.Graph);
+    const aadState = ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp;
+    const objectId = aadState.objectId;
+    if (!objectId) {
+      const params = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
+      const msgs0 = getPermissionErrorMessage(params[0], false);
+      const msgs1 = getPermissionErrorMessage(params[1], false);
+      throw ResultFactory.SystemError(GetConfigError.name, [msgs0, msgs1]);
+    }
 
     const userObjectId = userInfo.aadId;
     const isAadOwner = await AadAppClient.checkPermission(
       Messages.EndCheckPermission.telemetry,
-      config.objectId!,
+      objectId,
       userObjectId
     );
 
@@ -497,58 +460,58 @@ export class AadAppForTeamsImpl {
         name: Constants.permissions.name,
         type: Constants.permissions.type,
         roles: isAadOwner ? [Constants.permissions.owner] : [Constants.permissions.noPermission],
-        resourceId: config.objectId!,
+        resourceId: objectId,
       },
     ];
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndCheckPermission);
+    ctx.logProvider.info(Messages.EndCheckPermission.log);
     return ResultFactory.Success(result);
   }
 
-  public async listCollaborator(ctx: PluginContext): Promise<Result<AadOwner[], FxError>> {
-    TelemetryUtils.init(ctx);
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartListCollaborator);
-
-    await TokenProvider.init({ m365: ctx.m365TokenProvider }, TokenAudience.Graph);
-
-    const objectId = ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, false);
+  public async listCollaborator(ctx: ContextV3): Promise<Result<AadOwner[], FxError>> {
+    ctx.logProvider.info(Messages.StartListCollaborator.log);
+    await TokenProvider.init({ m365: ctx.tokenProvider?.m365TokenProvider }, TokenAudience.Graph);
+    const aadState = ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp;
+    const objectId = aadState.objectId;
     if (!objectId) {
-      throw ResultFactory.SystemError(
-        GetConfigError.name,
-        ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
-      );
+      const msgs = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
+      throw ResultFactory.SystemError(GetConfigError.name, msgs);
     }
 
     const owners = await AadAppClient.listCollaborator(
       Messages.EndListCollaborator.telemetry,
       objectId
     );
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndListCollaborator);
-    return ResultFactory.Success(owners);
+    ctx.logProvider.info(Messages.EndListCollaborator.log);
+    return ResultFactory.Success(owners || []);
   }
 
   public async grantPermission(
-    ctx: PluginContext,
+    ctx: ContextV3,
     userInfo: AppUser
   ): Promise<Result<ResourcePermission[], FxError>> {
-    TelemetryUtils.init(ctx);
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);
-
-    await TokenProvider.init({ m365: ctx.m365TokenProvider }, TokenAudience.Graph);
-    const config = new CheckGrantPermissionConfig(true);
-    await config.restoreConfigFromContext(ctx);
+    ctx.logProvider.info(Messages.StartGrantPermission.log);
+    await TokenProvider.init({ m365: ctx.tokenProvider?.m365TokenProvider }, TokenAudience.Graph);
+    const aadState = ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp;
+    const objectId = aadState.objectId;
+    if (!objectId) {
+      const params = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
+      const msg0 = getPermissionErrorMessage(params[0], true);
+      const msg1 = getPermissionErrorMessage(params[1], true);
+      throw ResultFactory.SystemError(GetConfigError.name, [msg0, msg1]);
+    }
 
     const userObjectId = userInfo.aadId;
-    await AadAppClient.grantPermission(ctx, config.objectId!, userObjectId);
+    await AadAppClient.grantPermission(ctx, objectId, userObjectId);
 
     const result = [
       {
         name: Constants.permissions.name,
         type: Constants.permissions.type,
         roles: [Constants.permissions.owner],
-        resourceId: config.objectId!,
+        resourceId: objectId,
       },
     ];
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGrantPermission);
+    ctx.logProvider.info(Messages.EndGrantPermission.log);
     return ResultFactory.Success(result);
   }
 

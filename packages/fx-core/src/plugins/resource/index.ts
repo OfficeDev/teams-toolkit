@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 "use strict";
 
-export * from "./aad";
 export * from "./apim";
 export * from "./appstudio";
 export * from "./bot";

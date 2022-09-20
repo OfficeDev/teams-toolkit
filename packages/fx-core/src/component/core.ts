@@ -109,13 +109,13 @@ import { ActionExecutionMW } from "./middleware/actionExecutionMW";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { getComponent } from "./workflow";
 import { environmentManager } from "../core/environment";
-import { Constants } from "../plugins/resource/aad/constants";
 import { deployUtils } from "./deployUtils";
 import { provisionUtils } from "./provisionUtils";
 import { getTemplatesFolder } from "../folder";
 import { ensureBasicFolderStructure } from "../core/FxCore";
 import { SolutionTelemetryProperty } from "../plugins/solution/fx-solution/constants";
 import { getQuestionsForCreateProjectV2 } from "../core/middleware/questionModel";
+import { Constants } from "./resource/aadApp/constants";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";

@@ -6,7 +6,7 @@ import { IAADPassword } from "./interfaces/IAADApplication";
 import { IAADDefinition } from "./interfaces/IAADDefinition";
 
 import axios from "axios";
-import { getAppStudioEndpoint } from "../../../component/resource/appManifest/constants";
+import { getAppStudioEndpoint } from "../appManifest/constants";
 const baseUrl = getAppStudioEndpoint();
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

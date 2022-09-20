@@ -16,7 +16,7 @@
     "test:function": "nyc mocha \"tests/plugins/resource/function/**/*.test.ts\"",
     "test:localdebug": "nyc mocha \"tests/plugins/resource/localdebug/**/*.test.ts\"",
     "test:frontend": "nyc mocha \"tests/plugins/resource/frontend/**/*.test.ts\"",
-    "test:aad": "nyc mocha \"tests/plugins/resource/aad/**/*.test.ts\"",
+    "test:aad": "nyc mocha \"tests/component/resource/aadApp/**/*.test.ts\"",
     "test:simpleauth": "nyc mocha \"tests/plugins/resource/simpleauth/**/*.test.ts\"",
     "test:azuresql": "nyc mocha \"tests/component/resource/azuresql/**/*.test.ts\"",
     "test:identity": "nyc mocha \"tests/plugins/resource/identity/**/*.test.ts\"",

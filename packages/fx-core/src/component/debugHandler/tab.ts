@@ -27,10 +27,11 @@ import { errorSource, InvalidTabDebugArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 const tabDebugMessages = {
-  savingStates: "Saving the states for Tab ...",
-  settingEnvs: "Saving the environment variables for Tab ...",
-  statesSaved: "The states for Tab are saved in %s",
-  envsSet: "The environment variables for Tab are saved in %s",
+  savingStates: "Saving the states of tab to configure manifest and AAD app ...",
+  settingEnvs:
+    "Saving the environment variables of tab to set up the development environment and start the local server ...",
+  statesSaved: "The states of tab are saved in %s",
+  envsSet: "The environment variables of tab are saved in %s",
 };
 
 export interface TabDebugArgs {

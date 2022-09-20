@@ -40,6 +40,7 @@ export class SetUpBotTaskTerminal extends BaseTaskTerminal {
 
     VsCodeLogInstance.outputChannel.show();
     VsCodeLogInstance.info(setUpBotDisplayMessages.title);
+    VsCodeLogInstance.outputChannel.appendLine("");
 
     const workspacePath: string = workspaceUri?.fsPath as string;
     const handler = new BotDebugHandler(

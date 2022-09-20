@@ -29,6 +29,7 @@ export class SetUpSSOTaskTerminal extends BaseTaskTerminal {
   async do(): Promise<Result<Void, FxError>> {
     VsCodeLogInstance.outputChannel.show();
     VsCodeLogInstance.info(setUpSSODisplayMessages.title);
+    VsCodeLogInstance.outputChannel.appendLine("");
 
     const workspacePath: string = workspaceUri?.fsPath as string;
     const handler = new SSODebugHandler(

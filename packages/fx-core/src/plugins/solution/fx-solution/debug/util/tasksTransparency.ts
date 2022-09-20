@@ -71,14 +71,14 @@ export function generateTasks(
    *   - Start Teams App Locally
    *
    * Referenced inside tasks.json
-   *   - Validate & Install prerequisites
-   *   - Install NPM packages
+   *   - Validate & install prerequisites
+   *   - Install npm packages
    *   - Install Azure Functions binding extensions
    *   - Start local tunnel
-   *   - Set up Tab
-   *   - Set up Bot
+   *   - Set up tab
+   *   - Set up bot
    *   - Set up SSO
-   *   - Build & Upload Teams manifest
+   *   - Build & upload Teams manifest
    *   - Start services
    *   - Start frontend
    *   - Start backend
@@ -160,14 +160,14 @@ export function generateM365Tasks(
    *   - Start Teams App Locally & Install App
    *
    * Referenced inside tasks.json
-   *   - Validate & Install prerequisites
-   *   - Install NPM packages
+   *   - Validate & install prerequisites
+   *   - Install npm packages
    *   - Install Azure Functions binding extensions
    *   - Start local tunnel
-   *   - Set up Tab
-   *   - Set up Bot
+   *   - Set up tab
+   *   - Set up bot
    *   - Set up SSO
-   *   - Build & Upload Teams manifest
+   *   - Build & upload Teams manifest
    *   - Start services
    *   - Start frontend
    *   - Start backend
@@ -246,7 +246,7 @@ function startTeamsAppLocally(
 ): Record<string, unknown> {
   const result = {
     label: "Start Teams App Locally",
-    dependsOn: ["Validate & Install prerequisites", "Install NPM packages"],
+    dependsOn: ["Validate & install prerequisites", "Install npm packages"],
     dependsOrder: "sequence",
   };
   if (includeBackend) {
@@ -256,15 +256,15 @@ function startTeamsAppLocally(
     result.dependsOn.push("Start local tunnel");
   }
   if (includeFrontend) {
-    result.dependsOn.push("Set up Tab");
+    result.dependsOn.push("Set up tab");
   }
   if (includeBot) {
-    result.dependsOn.push("Set up Bot");
+    result.dependsOn.push("Set up bot");
   }
   if (includeSSO) {
     result.dependsOn.push("Set up SSO");
   }
-  result.dependsOn.push("Build & Upload Teams manifest", "Start services");
+  result.dependsOn.push("Build & upload Teams manifest", "Start services");
 
   return result;
 }
@@ -313,7 +313,7 @@ function validateAndInstallPrerequisites(
   `;
 
   return {
-    label: "Validate & Install prerequisites",
+    label: "Validate & install prerequisites",
     type: "teamsfx",
     command: "debug-check-prerequisites",
     args: {
@@ -329,7 +329,7 @@ function installNPMpackages(
   includeBot: boolean
 ): Record<string, unknown> {
   const result = {
-    label: "Install NPM packages",
+    label: "Install npm packages",
     type: "teamsfx",
     command: "debug-npm-install",
     args: {
@@ -394,7 +394,7 @@ function startLocalTunnel(): Record<string, unknown> {
 
 function setUpTab(): Record<string, unknown> {
   return {
-    label: "Set up Tab",
+    label: "Set up tab",
     type: "teamsfx",
     command: "debug-set-up-tab",
     args: {
@@ -413,7 +413,7 @@ function setUpBot(): Record<string, unknown> {
   `;
 
   return {
-    label: "Set up Bot",
+    label: "Set up bot",
     type: "teamsfx",
     command: "debug-set-up-bot",
     args: commentJson.assign(commentJson.parse(comment), {
@@ -450,7 +450,7 @@ function buildAndUploadTeamsManifest(): Record<string, unknown> {
   `;
 
   return {
-    label: "Build & Upload Teams manifest",
+    label: "Build & upload Teams manifest",
     type: "teamsfx",
     command: "debug-prepare-manifest",
     args: commentJson.parse(comment),

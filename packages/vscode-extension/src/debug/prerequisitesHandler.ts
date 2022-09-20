@@ -84,13 +84,14 @@ import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { Prerequisite } from "./taskTerminal/prerequisiteTaskTerminal";
+import { Step } from "./commonUtils";
 
 enum Checker {
-  NpmInstall = "NPM package installation",
+  NpmInstall = "npm package installation",
   M365Account = "Microsoft 365 Account",
-  LocalCertificate = "Development certificate for localhost",
+  LocalCertificate = "development certificate for localhost",
   AzureFunctionsExtension = "Azure Functions binding extension",
-  Ports = "Ports",
+  Ports = "ports occupancy",
 }
 
 const DepsDisplayName = {
@@ -141,8 +142,10 @@ const ProgressMessage = Object.freeze({
   [Checker.M365Account]: `Checking ${Checker.M365Account}`,
   [Checker.AzureFunctionsExtension]: `Installing ${Checker.AzureFunctionsExtension}`,
   [Checker.LocalCertificate]: `Checking ${Checker.LocalCertificate}`,
-  [Checker.NpmInstall]: (displayName: string) =>
-    `Checking and installing NPM packages for ${displayName}`,
+  [Checker.NpmInstall]: (displayName: string | undefined, cwd: string) =>
+    displayName
+      ? `Checking and installing npm packages for ${displayName}`
+      : `Checking and installing npm packages in directory ${cwd}`,
   [Checker.Ports]: `Checking ${Checker.Ports}`,
   [DepsType.FunctionNode]: `Checking ${DepsDisplayName[DepsType.FunctionNode]}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
@@ -158,7 +161,7 @@ type NpmInstallCheckerInfo = {
   args: string[];
   forceUpdate?: boolean;
   component: string;
-  displayName: string;
+  displayName?: string;
 };
 type PortCheckerInfo = { checker: Checker.Ports; ports: number[] };
 type PrerequisiteCheckerInfo = { checker: Checker | DepsType; [key: string]: any };
@@ -167,19 +170,6 @@ type PrerequisiteOrderedChecker = {
   info: PrerequisiteCheckerInfo | PrerequisiteCheckerInfo[];
   fastFail: boolean;
 };
-
-export class Step {
-  private currentStep: number;
-  public readonly totalSteps: number;
-  constructor(totalSteps: number) {
-    this.currentStep = 1;
-    this.totalSteps = totalSteps;
-  }
-
-  getPrefix(): string {
-    return `(${this.currentStep++}/${this.totalSteps})`;
-  }
-}
 
 async function runWithCheckResultTelemetry(
   eventName: string,
@@ -406,7 +396,6 @@ export async function checkAndInstallNpmPackagesForTask(
       args: p.args ?? [],
       forceUpdate: p.forceUpdate,
       component: cwdBaseName,
-      displayName: p.cwd,
     };
   });
 
@@ -441,27 +430,26 @@ async function _checkAndInstall(
 
     VsCodeLogInstance.outputChannel.show();
     VsCodeLogInstance.info(displayMessages.title);
+    VsCodeLogInstance.outputChannel.appendLine("");
 
     // Get deps
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
 
     const step = new Step(enabledCheckers.length);
 
-    VsCodeLogInstance.outputChannel.appendLine(
-      displayMessages.checkNumber.split("@number").join(`${step.totalSteps}`)
-    );
+    VsCodeLogInstance.outputChannel.appendLine(displayMessages.checkNumber(step.totalSteps));
     progressHelper = new ProgressHelper(
       new ProgressHandler(displayMessages.taskName, step.totalSteps)
     );
 
     await progressHelper.start(
       enabledCheckers.map((v) => {
+        const n = v as NpmInstallCheckerInfo;
         return {
-          key:
-            v.checker === Checker.NpmInstall ? (v as NpmInstallCheckerInfo).displayName : v.checker,
+          key: v.checker === Checker.NpmInstall ? n.displayName ?? n.cwd : v.checker,
           detail:
             v.checker === Checker.NpmInstall
-              ? ProgressMessage[Checker.NpmInstall]((v as NpmInstallCheckerInfo).displayName)
+              ? ProgressMessage[Checker.NpmInstall](n.displayName, n.cwd)
               : ProgressMessage[v.checker],
         };
       })
@@ -1001,7 +989,7 @@ function handleNodeNotSupportedError(
 
 function checkNpmInstall(
   component: string,
-  displayName: string,
+  displayName: string | undefined,
   prefix: string,
   folder: string,
   args: string[],
@@ -1013,15 +1001,15 @@ function checkNpmInstall(
     { [TelemetryProperty.DebugNpmInstallName]: taskName },
     async (ctx: TelemetryContext) => {
       VsCodeLogInstance.outputChannel.appendLine(
-        `${prefix} ${ProgressMessage[Checker.NpmInstall](displayName)} ...`
+        `${prefix} ${ProgressMessage[Checker.NpmInstall](displayName, folder)} ...`
       );
 
       if (!(await fs.pathExists(folder))) {
         return {
           checker: Checker.NpmInstall,
           result: ResultStatus.warn,
-          successMsg: doctorConstant.NpmInstallSuccess.split("@app").join(displayName),
-          failureMsg: doctorConstant.NpmInstallFailure.split("@app").join(displayName),
+          successMsg: doctorConstant.NpmInstallSuccess(displayName, folder),
+          failureMsg: doctorConstant.NpmInstallFailure(displayName, folder),
           error: new PathNotExistError(ExtensionSource, folder),
         };
       }
@@ -1099,8 +1087,8 @@ function checkNpmInstall(
       return {
         checker: Checker.NpmInstall,
         result: result,
-        successMsg: doctorConstant.NpmInstallSuccess.split("@app").join(displayName),
-        failureMsg: doctorConstant.NpmInstallFailure.split("@app").join(displayName),
+        successMsg: doctorConstant.NpmInstallSuccess(displayName, folder),
+        failureMsg: doctorConstant.NpmInstallFailure(displayName, folder),
         error: error,
       };
     }
@@ -1149,15 +1137,14 @@ async function handleCheckResults(
     outputCheckResultError(result, output);
   }
   output.appendLine("");
-  output.appendLine(
-    displayMessages.learnMore.split("@Link").join(displayMessages.learnMoreHelpLink)
-  );
+  output.appendLine(displayMessages.learnMore(displayMessages.learnMoreHelpLink));
+  output.appendLine("");
 
   if (fromLocalDebug) {
     if (!shouldStop) {
       if (displayMessages.launchServices) {
-        output.appendLine("");
         output.appendLine(displayMessages.launchServices);
+        output.appendLine("");
       }
       await progressHelper?.stop(true);
     }

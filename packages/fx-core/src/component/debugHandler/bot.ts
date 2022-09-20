@@ -39,19 +39,19 @@ import { errorSource, DebugArgumentEmptyError, InvalidExistingBotArgsError } fro
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 const botDebugMessages = {
-  registeringAAD: "Registering an AAD app for bot ...",
-  registeringBot: "Registering a bot in bot framework developer portal ...",
+  registeringAAD: "Registering the AAD app which is required to create the bot ...",
+  registeringBot: "Registering the bot in Bot Framework Portal ...",
   updatingBotMessagingEndpoint: "Updating the bot messaging endpoint ...",
-  savingStates: "Saving the states for bot ...",
-  settingEnvs: "Saving the environment variables for bot ...",
-  AADRegistered: "AAD app is registered: %s",
+  savingStates: "Saving the states of bot ...",
+  settingEnvs: "Saving the environment variables of bot ...",
+  AADRegistered: "AAD app is registered (%s)",
   useExistingAAD: "Skip registering AAD app but use the existing AAD app from args: %s",
-  AADAlreadyRegistered: "Skip registering AAD app as it has already been registered before: %s",
+  AADAlreadyRegistered: "Skip registering AAD app (%s) as it has already been registered before",
   botRegistered: "Bot is registered",
   botAlreadyRegistered: "Skip registering bot as it has already been registered before",
   botMessagingEndpointUpdated: "Bot messaging endpoint is updated to %s",
-  statesSaved: "The states for bot are saved in %s",
-  envsSet: "The environment variables for bot are saved in %s",
+  statesSaved: "The states of bot are saved in %s",
+  envsSet: "The environment variables of bot are saved in %s",
 };
 
 export interface BotDebugArgs {

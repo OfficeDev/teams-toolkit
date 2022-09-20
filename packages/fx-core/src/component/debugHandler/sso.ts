@@ -50,17 +50,17 @@ const ssoDebugMessages = {
   registeringAAD: "Registering an AAD app for SSO ...",
   configuringAAD: "Configuring AAD app for SSO ...",
   buildingAndSavingAADManifest: "Building and saving AAD manifest ...",
-  savingStates: "Saving the states for SSO ...",
+  savingStates: "Saving the states of SSO ...",
   settingEnvs: "Saving the environment variables for SSO ...",
-  AADRegistered: "AAD app is registered: %s",
+  AADRegistered: "AAD app is registered (%s)",
   useExistingAAD: "Skip registering AAD app but use the existing AAD app from args: %s",
   AADAlreadyRegistered: "Skip registering AAD app as it has already been registered before: %s",
   AADConfigured: "AAD app is configured",
   AADManifestSaved: "AAD app manifest is saved in %s",
   statesSaved: "The states for SSO are saved in %s",
-  tabEnvsSet: "The SSO environment variables for Tab are saved in %s",
-  botEnvsSet: "The SSO environment variables for bot are saved in %s",
-  backendEnvsSet: "The SSO environment variables for backend are saved in %s",
+  tabEnvsSet: "The SSO environment variables of tab are saved in %s",
+  botEnvsSet: "The SSO environment variables of bot are saved in %s",
+  backendEnvsSet: "The SSO environment variables of backend are saved in %s",
 };
 
 export interface SSODebugArgs {

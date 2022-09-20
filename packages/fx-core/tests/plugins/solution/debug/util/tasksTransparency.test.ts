@@ -17,10 +17,10 @@ describe("tasksTransparency", () => {
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks.length, count);
@@ -31,11 +31,11 @@ describe("tasksTransparency", () => {
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks.length, count);
@@ -46,12 +46,12 @@ describe("tasksTransparency", () => {
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start backend");
@@ -63,12 +63,12 @@ describe("tasksTransparency", () => {
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start backend");
@@ -81,11 +81,11 @@ describe("tasksTransparency", () => {
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start bot");
       chai.assert.equal(tasks.length, count);
@@ -96,12 +96,12 @@ describe("tasksTransparency", () => {
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start bot");
       chai.assert.equal(tasks.length, count);
@@ -112,12 +112,12 @@ describe("tasksTransparency", () => {
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start bot");
@@ -129,14 +129,14 @@ describe("tasksTransparency", () => {
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start backend");
@@ -149,14 +149,14 @@ describe("tasksTransparency", () => {
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start backend");
@@ -170,11 +170,11 @@ describe("tasksTransparency", () => {
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start bot");
       chai.assert.equal(tasks[count++].label, "Start Azurite emulator");
@@ -190,11 +190,11 @@ describe("tasksTransparency", () => {
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally & Install App");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "install app in Teams");
@@ -207,11 +207,11 @@ describe("tasksTransparency", () => {
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally & Install App");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start bot");
       chai.assert.equal(tasks[count++].label, "install app in Teams");
@@ -238,20 +238,20 @@ const expected = `// This file is automatically generated by Teams Toolkit.
         {
             "label": "Start Teams App Locally",
             "dependsOn": [
-                "Validate & Install prerequisites",
-                "Install NPM packages",
+                "Validate & install prerequisites",
+                "Install npm packages",
                 "Install Azure Functions binding extensions",
                 "Start local tunnel",
-                "Set up Tab",
-                "Set up Bot",
+                "Set up tab",
+                "Set up bot",
                 "Set up SSO",
-                "Build & Upload Teams manifest",
+                "Build & upload Teams manifest",
                 "Start services"
             ],
             "dependsOrder": "sequence"
         },
         {
-            "label": "Validate & Install prerequisites",
+            "label": "Validate & install prerequisites",
             "type": "teamsfx",
             "command": "debug-check-prerequisites",
             "args": {
@@ -274,7 +274,7 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             }
         },
         {
-            "label": "Install NPM packages",
+            "label": "Install npm packages",
             "type": "teamsfx",
             "command": "debug-npm-install",
             "args": {
@@ -326,7 +326,7 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             "problemMatcher": "\$teamsfx-local-tunnel-watch"
         },
         {
-            "label": "Set up Tab",
+            "label": "Set up tab",
             "type": "teamsfx",
             "command": "debug-set-up-tab",
             "args": {
@@ -334,7 +334,7 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             }
         },
         {
-            "label": "Set up Bot",
+            "label": "Set up bot",
             "type": "teamsfx",
             "command": "debug-set-up-bot",
             "args": {
@@ -357,7 +357,7 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             }
         },
         {
-            "label": "Build & Upload Teams manifest",
+            "label": "Build & upload Teams manifest",
             "type": "teamsfx",
             "command": "debug-prepare-manifest",
             "args": {

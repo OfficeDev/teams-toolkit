@@ -35,6 +35,7 @@ export class PrepareManifestTaskTerminal extends BaseTaskTerminal {
 
     VsCodeLogInstance.outputChannel.show();
     VsCodeLogInstance.info(prepareManifestDisplayMessages.title);
+    VsCodeLogInstance.outputChannel.appendLine("");
 
     const workspacePath: string = workspaceUri?.fsPath as string;
     const handler = new AppManifestDebugHandler(

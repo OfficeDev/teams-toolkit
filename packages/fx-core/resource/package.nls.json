@@ -462,7 +462,7 @@
   "error.function.ConfigFunctionAppError": "Failed to retrieve or update function app settings.",
   "error.function.FunctionAppOpError": "Failed to execute '%s' on the function app.",
   "error.function.InstallTeamsFxBindingError": "Failed to install Azure Functions bindings.",
-  "error.function.InstallNpmPackageError": "Failed to install NPM packages.",
+  "error.function.InstallNpmPackageError": "Failed to install npm packages.",
   "error.function.InitAzureSDKError": "Failed to initialize Azure SDK Client.",
   "error.function.ZipError": "Failed to generate zip package.",
   "error.function.PublishCredentialError": "Failed to retrieve publish credential.",

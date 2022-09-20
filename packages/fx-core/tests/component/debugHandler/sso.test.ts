@@ -47,6 +47,36 @@ describe("SSODebugHandler", () => {
       sinon.restore();
     });
 
+    it("invalid args: empty clientId", async () => {
+      const args: SSODebugArgs = {
+        clientId: "",
+        clientSecret: "xxx",
+        objectId: "11111111-1111-1111-1111-111111111111",
+      };
+      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.deepEqual(result.error.name, DebugArgumentEmptyError("clientId").name);
+      }
+    });
+
+    it("invalid args: empty clientSecret", async () => {
+      const args: SSODebugArgs = {
+        clientId: "11111111-1111-1111-1111-111111111111",
+        clientSecret: "",
+        objectId: "11111111-1111-1111-1111-111111111111",
+      };
+      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.deepEqual(result.error.name, DebugArgumentEmptyError("clientSecret").name);
+      }
+    });
+
     it("invalid args: empty objectId", async () => {
       const args: SSODebugArgs = {
         clientId: "11111111-1111-1111-1111-111111111111",
@@ -59,6 +89,25 @@ describe("SSODebugHandler", () => {
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
         chai.assert.deepEqual(result.error.name, DebugArgumentEmptyError("objectId").name);
+      }
+    });
+
+    it("invalid args: empty accessAsUserScopeId", async () => {
+      const args: SSODebugArgs = {
+        clientId: "11111111-1111-1111-1111-111111111111",
+        clientSecret: "xxx",
+        objectId: "11111111-1111-1111-1111-111111111111",
+        accessAsUserScopeId: "",
+      };
+      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.deepEqual(
+          result.error.name,
+          DebugArgumentEmptyError("accessAsUserScopeId").name
+        );
       }
     });
 

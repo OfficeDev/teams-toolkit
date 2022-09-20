@@ -133,6 +133,12 @@ export class SSODebugHandler {
     if (this.args.clientSecret !== undefined && this.args.clientSecret.trim().length === 0) {
       return err(DebugArgumentEmptyError("clientSecret"));
     }
+    if (
+      this.args.accessAsUserScopeId !== undefined &&
+      this.args.accessAsUserScopeId.trim().length === 0
+    ) {
+      return err(DebugArgumentEmptyError("accessAsUserScopeId"));
+    }
 
     const existing = this.args.objectId || this.args.clientId || this.args.clientSecret;
     const missing = !this.args.objectId || !this.args.clientId || !this.args.clientSecret;

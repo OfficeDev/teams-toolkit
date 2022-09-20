@@ -45,6 +45,20 @@ describe("TabDebugHandler", () => {
       sinon.restore();
     });
 
+    it("invalid args: empty botId", async () => {
+      const args: BotDebugArgs = {
+        botId: "",
+        botPassword: "xxx",
+      };
+      const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.equal(result.error.message, DebugArgumentEmptyError("botId").message);
+      }
+    });
+
     it("invalid args: empty botPassword", async () => {
       const args: BotDebugArgs = {
         botId: "xxx",

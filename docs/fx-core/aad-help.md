@@ -56,32 +56,19 @@ After provision, you can find the default domain from `fx-resource-frontend-host
 
 #### Action 3 Update Frontend Info
 1. Update `domain` and `endpoint`
-    * For Visual Studio Code
-        1. Open `templates\azure\provision\azureStorageTab.bicep` file, and find the following two lines:
-            ```
-            output endpoint string = 'https://${siteDomain}'
-            output domain string = siteDomain
-            ```
+     1. Open `templates\azure\provision\azureStorageTab.bicep` file, and find the following two lines:
+         ```
+         output endpoint string = 'https://${siteDomain}'
+         output domain string = siteDomain
+         ```
 
-        1. Replace `siteDomain` with your CDN endpoint as following. Note you need to use your CDN endpoint copied above.
-            ```
-            output endpoint string = 'https://sample.azureedge.net'
-            output domain string = 'sample.azureedge.net'
-            ```
-    * For Visual Studio
-        1. Open `templates\azure\provision\webapp.bicep` file, and find the following two lines:
-            ```
-            output endpoint string = 'https://${siteDomain}'
-            output domain string = siteDomain
-            ```
+     2. Replace `siteDomain` with your CDN endpoint as following. Note you need to use your CDN endpoint copied above.
+         ```
+         output endpoint string = 'https://sample.azureedge.net'
+         output domain string = 'sample.azureedge.net'
+         ```
 
-        1. Replace `siteDomain` with your CDN endpoint as following. Note you need to use your CDN endpoint copied above.
-        ```
-        output endpoint string = 'https://sample.azureedge.net'
-        output domain string = 'sample.azureedge.net'
-        ```
-
-1. `Provision` and `Deploy`
+2. `Provision` and `Deploy`
     * [Visual Studio Code] Run "Teams - Provision in the cloud" and "Teams - Deploy to the cloud" or press F5 to start local debug.
     * [Visual Studio] Click "Project" -> "Teams Toolkit" -> "Provision in the cloud" and "Deploy to the cloud" or click "Project" -> "Teams Toolkit" -> "Prepare Teams App Dependencies".
 

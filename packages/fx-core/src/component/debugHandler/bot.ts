@@ -43,12 +43,12 @@ import {
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 const botDebugMessages = {
-  registeringAAD: "Creating the AAD app which is required to create the bot ...",
+  registeringAAD: "Registering the AAD app which is required to create the bot ...",
   registeringBot: "Registering the bot in Bot Framework Portal ...",
   updatingBotMessagingEndpoint: "Updating the bot messaging endpoint ...",
   savingStates: "Saving the states of bot ...",
   settingEnvs: "Saving the environment variables of bot ...",
-  AADRegistered: "AAD app is created (%s)",
+  AADRegistered: "AAD app is registered (%s)",
   useExistingAAD: "Skip registering AAD app but use the existing AAD app from args: %s",
   AADAlreadyRegistered: "Skip registering AAD app (%s) as it has already been registered before",
   botRegistered: "Bot is registered",

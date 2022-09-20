@@ -214,7 +214,7 @@ export const setUpTabDisplayMessages: DisplayMessages = {
   title: "Running 'Set up tab' Visual Studio Code task.",
   checkNumber: (n: number) => `${stepPrefix(n)} Teams Toolkit is setting up tab for debugging.`,
   summary: "Summary:",
-  learnMore: (link: string) => `Visit ${link} @Link to learn more about 'Set up tab' task.`,
+  learnMore: (link: string) => `Visit ${link} to learn more about 'Set up tab' task.`,
   learnMoreHelpLink: "https://aka.ms/teamsfx-debug-set-up-tab",
   errorName: ExtensionErrors.SetUpTabError,
   errorMessageKey: "teamstoolkit.localDebug.setUpTabFailure",

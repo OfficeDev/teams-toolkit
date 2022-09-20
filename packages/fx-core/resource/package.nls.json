@@ -378,7 +378,7 @@
   "error.FailedToParseResourceIdError": "Failed to get '%s' from resource id: '%s'",
   "error.M365AccountNotMatch": "The signed in Microsoft 365 account does not match the Microsoft 365 tenant in config file for '%s' environment. Please sign out and sign in with the correct Microsoft 365 account.",
   "error.MissingStep": "Step \"%s\" is required before %s. Run the required step first.",
-  "error.MissingSubscriptionInConfig": "Please provide the subscrpition id of the resource group (%s) in (%s)",
+  "error.MissingSubscriptionInConfig": "Please provide the subscription id of the resource group (%s) in (%s)",
   "error.NoSubscriptionFound": "User canceled. For Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store.",
   "error.TrustCertificateCancelError": "Failed to find a subscription.",
   "error.ResourceGroupNotFound1": "Resource group '%s' does not exist, please specify an existing resource group.",

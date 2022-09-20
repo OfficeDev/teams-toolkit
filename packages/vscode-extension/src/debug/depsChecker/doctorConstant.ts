@@ -18,12 +18,17 @@ export const doctorConstant = {
   BypassNode12AndFunction: `To continue to local debug using Node.js v12, go to Visual Studio Code Settings, under Teams Toolkit, Prerequisite Check, uncheck "Ensure Node.js is installed. (node)" and "Ensure Azure Functions Core Tools is installed. (funcCoreTools)". Also make sure you install the Azure Functions Core Tools v3. https://github.com/Azure/azure-functions-core-tools`,
   Node12MatchFunction:
     "If you have your own Azure Functions Core Tools installed, make sure it works with new Node.js version. See (https://docs.microsoft.com/azure/azure-functions/functions-versions#languages) for Azure Functions supported Node versions.",
-  SignInSuccess: `Microsoft 365 Account (@account) is logged in and sideloading enabled`,
-  SignInSuccessWithNewAccount: `You are now using a different Microsoft 365 tenant. Microsoft 365 Account (@account) is logged in and sideloading enabled.`,
+  SignInSuccess: `Microsoft 365 Account (@account) is logged in and sideloading permission is enabled`,
+  SignInSuccessWithNewAccount: `You are now using a different Microsoft 365 tenant. Microsoft 365 Account (@account) is logged in and sideloading permission is enabled`,
   Cert: "Development certificate for localhost",
   CertSuccess: "Development certificate for localhost is installed",
-  NpmInstallSuccess: "NPM packages for @app are installed",
-  NpmInstallFailure: "NPM Install for @app",
+  NpmInstallSuccess: (displayName: string | undefined, cwd: string) =>
+    displayName
+      ? `npm packages for ${displayName} are installed`
+      : `npm packages in directory ${cwd} are installed`,
+  NpmInstallFailure: (displayName: string | undefined, cwd: string) =>
+    displayName ? `npm packages for ${displayName}` : `npm packages in directory ${cwd}`,
   HelpLink: `Please refer to @Link for more information.`,
-  PortSuccess: "Port (@port)",
+  PortSuccess: "Ports (@port) are not occupied",
+  DepsSuccess: `@depsName is installed at @binFolder`,
 };

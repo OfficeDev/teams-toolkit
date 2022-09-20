@@ -65,27 +65,27 @@ export function generateTasks(
   includeFuncHostedBot: boolean,
   includeSSO: boolean,
   programmingLanguage: string
-): Record<string, unknown>[] {
+): (Record<string, unknown> | CommentJSONValue)[] {
   /**
    * Referenced by launch.json
    *   - Start Teams App Locally
    *
    * Referenced inside tasks.json
-   *   - Validate & Install prerequisites
-   *   - Install NPM packages
+   *   - Validate & install prerequisites
+   *   - Install npm packages
    *   - Install Azure Functions binding extensions
    *   - Start local tunnel
-   *   - Set up Tab
-   *   - Set up Bot
+   *   - Set up tab
+   *   - Set up bot
    *   - Set up SSO
-   *   - Build & Upload Teams manifest
+   *   - Build & upload Teams manifest
    *   - Start services
    *   - Start frontend
    *   - Start backend
    *   - Watch backend
    *   - Start bot
    */
-  const tasks: Record<string, unknown>[] = [
+  const tasks: (Record<string, unknown> | CommentJSONValue)[] = [
     startTeamsAppLocally(includeFrontend, includeBackend, includeBot, includeSSO),
     validateAndInstallPrerequisites(
       includeFrontend,
@@ -153,21 +153,21 @@ export function generateM365Tasks(
   includeFuncHostedBot: boolean,
   includeSSO: boolean,
   programmingLanguage: string
-): Record<string, unknown>[] {
+): (Record<string, unknown> | CommentJSONValue)[] {
   /**
    * Referenced by launch.json
    *   - Start Teams App Locally
    *   - Start Teams App Locally & Install App
    *
    * Referenced inside tasks.json
-   *   - Validate & Install prerequisites
-   *   - Install NPM packages
+   *   - Validate & install prerequisites
+   *   - Install npm packages
    *   - Install Azure Functions binding extensions
    *   - Start local tunnel
-   *   - Set up Tab
-   *   - Set up Bot
+   *   - Set up tab
+   *   - Set up bot
    *   - Set up SSO
-   *   - Build & Upload Teams manifest
+   *   - Build & upload Teams manifest
    *   - Start services
    *   - Start frontend
    *   - Start backend
@@ -246,7 +246,7 @@ function startTeamsAppLocally(
 ): Record<string, unknown> {
   const result = {
     label: "Start Teams App Locally",
-    dependsOn: ["Validate & Install prerequisites", "Install NPM packages"],
+    dependsOn: ["Validate & install prerequisites", "Install npm packages"],
     dependsOrder: "sequence",
   };
   if (includeBackend) {
@@ -256,15 +256,15 @@ function startTeamsAppLocally(
     result.dependsOn.push("Start local tunnel");
   }
   if (includeFrontend) {
-    result.dependsOn.push("Set up Tab");
+    result.dependsOn.push("Set up tab");
   }
   if (includeBot) {
-    result.dependsOn.push("Set up Bot");
+    result.dependsOn.push("Set up bot");
   }
   if (includeSSO) {
     result.dependsOn.push("Set up SSO");
   }
-  result.dependsOn.push("Build & Upload Teams manifest", "Start services");
+  result.dependsOn.push("Build & upload Teams manifest", "Start services");
 
   return result;
 }
@@ -313,7 +313,7 @@ function validateAndInstallPrerequisites(
   `;
 
   return {
-    label: "Validate & Install prerequisites",
+    label: "Validate & install prerequisites",
     type: "teamsfx",
     command: "debug-check-prerequisites",
     args: {
@@ -329,7 +329,7 @@ function installNPMpackages(
   includeBot: boolean
 ): Record<string, unknown> {
   const result = {
-    label: "Install NPM packages",
+    label: "Install npm packages",
     type: "teamsfx",
     command: "debug-npm-install",
     args: {
@@ -359,8 +359,11 @@ function installNPMpackages(
   return result;
 }
 
-function installAzureFunctionsBindingExtensions(): Record<string, unknown> {
-  return {
+function installAzureFunctionsBindingExtensions(): CommentJSONValue {
+  const comment = `{
+    // TeamsFx Azure Functions project depends on extra Azure Functions binding extensions for HTTP trigger authorization.
+  }`;
+  const task = {
     label: "Install Azure Functions binding extensions",
     type: "shell",
     command: "dotnet build extensions.csproj -o ./bin --ignore-failed-sources",
@@ -371,6 +374,7 @@ function installAzureFunctionsBindingExtensions(): Record<string, unknown> {
       },
     },
   };
+  return commentJson.assign(commentJson.parse(comment), task);
 }
 
 function startLocalTunnel(): Record<string, unknown> {
@@ -380,7 +384,7 @@ function startLocalTunnel(): Record<string, unknown> {
     command: "debug-start-local-tunnel",
     args: {
       configFile: ".fx/configs/ngrok.yml",
-      binFolder: "${teamsfx:ngrokBinFolder}",
+      useGlobalNgrok: false,
       reuse: false,
     },
     isBackground: true,
@@ -390,7 +394,7 @@ function startLocalTunnel(): Record<string, unknown> {
 
 function setUpTab(): Record<string, unknown> {
   return {
-    label: "Set up Tab",
+    label: "Set up tab",
     type: "teamsfx",
     command: "debug-set-up-tab",
     args: {
@@ -402,18 +406,18 @@ function setUpTab(): Record<string, unknown> {
 function setUpBot(): Record<string, unknown> {
   const comment = `
   {
-    /* Enter you own bot information if using the existing bot. */
+    //// Enter you own bot information if using the existing bot. ////
     // "botId": "",
     // "botPassword": "",
   }
   `;
 
   return {
-    label: "Set up Bot",
+    label: "Set up bot",
     type: "teamsfx",
     command: "debug-set-up-bot",
     args: commentJson.assign(commentJson.parse(comment), {
-      botMessagingEndpoint: "${teamsfx:botTunnelEndpoint}/api/messages",
+      botMessagingEndpoint: "/api/messages",
     }),
   };
 }
@@ -421,7 +425,7 @@ function setUpBot(): Record<string, unknown> {
 function setUpSSO(): Record<string, unknown> {
   const comment = `
   {
-    /* Enter you own AAD app information if using the existing AAD app. */
+    //// Enter you own AAD app information if using the existing AAD app. ////
     // "objectId": "",
     // "clientId": "",
     // "clientSecret": "",
@@ -440,13 +444,13 @@ function setUpSSO(): Record<string, unknown> {
 function buildAndUploadTeamsManifest(): Record<string, unknown> {
   const comment = `
   {
-    /* Enter your own Teams manifest app package path if using the existing Teams manifest app package. */
+    //// Enter your own Teams manifest app package path if using the existing Teams manifest app package. ////
     // "manifestPackagePath": ""
   }
   `;
 
   return {
-    label: "Build & Upload Teams manifest",
+    label: "Build & upload Teams manifest",
     type: "teamsfx",
     command: "debug-prepare-manifest",
     args: commentJson.parse(comment),

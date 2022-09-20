@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
@@ -38,6 +39,18 @@ export namespace AdaptiveCards {
           : data
           ? renderWithData<D>(template, data)
           : template;
+      },
+      refresh(verb: string, userIds: string[], data?: D) {
+        template.refresh = {
+          action: {
+            type: "Action.Execute",
+            title: verb,
+            verb,
+            data,
+          },
+          userIds,
+        };
+        return this;
       },
       renderToHtmlElement(data?: D): HTMLElement | undefined {
         const ac = new AC();

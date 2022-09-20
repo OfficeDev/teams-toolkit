@@ -22,7 +22,7 @@ import { ProgressHandler } from "../../progressHandler";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { DisplayMessages } from "../constants";
 import { doctorConstant } from "../depsChecker/doctorConstant";
-import { Step } from "../prerequisitesHandler";
+import { Step } from "../commonUtils";
 
 export async function handleDebugActions(
   actions: DebugAction[],
@@ -30,9 +30,7 @@ export async function handleDebugActions(
 ): Promise<Result<Void, FxError>> {
   const step = new Step(actions.length);
 
-  VsCodeLogInstance.outputChannel.appendLine(
-    displayMessages.checkNumber.split("@number").join(`${step.totalSteps}`)
-  );
+  VsCodeLogInstance.outputChannel.appendLine(displayMessages.checkNumber(step.totalSteps));
   VsCodeLogInstance.outputChannel.appendLine("");
 
   let error: FxError | undefined = undefined;
@@ -72,13 +70,16 @@ export async function handleDebugActions(
   }
 
   if (error) {
-    VsCodeLogInstance.outputChannel.appendLine(`${doctorConstant.Cross} ${error.message}`);
+    VsCodeLogInstance.outputChannel.appendLine(
+      `${doctorConstant.Cross} ${error.name}: ${error.message}`
+    );
     VsCodeLogInstance.outputChannel.appendLine("");
   }
 
   VsCodeLogInstance.outputChannel.appendLine(
-    displayMessages.learnMore.split("@Link").join(displayMessages.learnMoreHelpLink)
+    displayMessages.learnMore(displayMessages.learnMoreHelpLink)
   );
+  VsCodeLogInstance.outputChannel.appendLine("");
 
   if (error) {
     const message = util.format(

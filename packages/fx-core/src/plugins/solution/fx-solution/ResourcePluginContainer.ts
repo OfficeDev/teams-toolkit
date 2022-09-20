@@ -13,7 +13,6 @@ import { SolutionError, SolutionSource } from "./constants";
 export const ResourcePlugins = {
   FrontendPlugin: "FrontendPlugin",
   IdentityPlugin: "IdentityPlugin",
-  SqlPlugin: "SqlPlugin",
   BotPlugin: "BotPlugin",
   AadPlugin: "AadPlugin",
   FunctionPlugin: "FunctionPlugin",
@@ -27,7 +26,6 @@ export const ResourcePlugins = {
 export const ResourcePluginsV2 = {
   FrontendPlugin: "FrontendPluginV2",
   IdentityPlugin: "IdentityPluginV2",
-  SqlPlugin: "SqlPluginV2",
   BotPlugin: "BotPluginV2",
   AadPlugin: "AadPluginV2",
   FunctionPlugin: "FunctionPluginV2",

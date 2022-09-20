@@ -42,6 +42,5 @@ describe("Resource plugin container", () => {
     const plugins = getActivatedResourcePlugins(solutionSettings);
     const names = plugins.map((p) => p.name);
     assert.isTrue(names.includes(Container.get<Plugin>(ResourcePlugins.FrontendPlugin).name));
-    assert.isTrue(names.includes(Container.get<Plugin>(ResourcePlugins.SqlPlugin).name));
   });
 });

@@ -94,6 +94,7 @@ import { getQuestionsForDeployAPIM } from "./resource/apim";
 import { canAddSso } from "./feature/sso";
 import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { addCicdQuestion } from "./feature/cicd/cicd";
+import { InvalidFeature } from "./error";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -357,6 +358,10 @@ export async function getQuestionsForAddFeatureV3(
       ],
     };
     addFeatureNode.addChild(programmingLanguage);
+  }
+  const SelectedFeature: string = inputs[AzureSolutionQuestionNames.Features];
+  if (SelectedFeature && !options.map((op) => op.id).includes(SelectedFeature)) {
+    return err(new InvalidFeature());
   }
   return ok(addFeatureNode);
 }

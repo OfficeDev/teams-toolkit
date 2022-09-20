@@ -11,5 +11,4 @@ export * from "./function";
 export * from "./identity";
 export * from "./localdebug";
 export * from "./simpleauth";
-export * from "./sql";
 export * from "./keyvault";

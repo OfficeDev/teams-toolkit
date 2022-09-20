@@ -99,8 +99,8 @@
 /packages/fx-core/src/plugins/resource/identity @xzf0587 @adashen @blackchoey
 /packages/fx-core/tests/plugins/resource/identity @xzf0587 @adashen @blackchoey
 
-/packages/fx-core/src/plugins/resource/sql @xzf0587 @adashen @blackchoey
-/packages/fx-core/tests/plugins/resource/sql @xzf0587 @adashen @blackchoey
+/packages/fx-core/src/component/resource/azureSql @xzf0587 @adashen @blackchoey
+/packages/fx-core/tests/component/resource/azureSql @xzf0587 @adashen @blackchoey
 
 /packages/fx-core/src/plugins/resource/localdebug @swatDong @kuojianlu
 /packages/fx-core/tests/plugins/resource/localdebug @swatDong @kuojianlu

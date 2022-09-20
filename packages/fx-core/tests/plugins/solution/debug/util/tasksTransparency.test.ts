@@ -13,45 +13,45 @@ import * as commentJson from "comment-json";
 describe("tasksTransparency", () => {
   describe("generateTasks", () => {
     it("frontend without sso (js)", () => {
-      const tasks = generateTasks(true, false, false, false, false, "javascript");
+      const tasks = generateTasks(true, false, false, false, false, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks.length, count);
     });
 
     it("frontend with sso (js)", () => {
-      const tasks = generateTasks(true, false, false, false, true, "javascript");
+      const tasks = generateTasks(true, false, false, false, true, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks.length, count);
     });
 
     it("frontend + backend with sso (js)", () => {
-      const tasks = generateTasks(true, true, false, false, true, "javascript");
+      const tasks = generateTasks(true, true, false, false, true, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start backend");
@@ -59,16 +59,16 @@ describe("tasksTransparency", () => {
     });
 
     it("frontend + backend with sso (ts)", () => {
-      const tasks = generateTasks(true, true, false, false, true, "typescript");
+      const tasks = generateTasks(true, true, false, false, true, "typescript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start backend");
@@ -77,47 +77,47 @@ describe("tasksTransparency", () => {
     });
 
     it("bot without sso (js)", () => {
-      const tasks = generateTasks(false, false, true, false, false, "javascript");
+      const tasks = generateTasks(false, false, true, false, false, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start bot");
       chai.assert.equal(tasks.length, count);
     });
 
     it("bot with sso (js)", () => {
-      const tasks = generateTasks(false, false, true, false, true, "javascript");
+      const tasks = generateTasks(false, false, true, false, true, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start bot");
       chai.assert.equal(tasks.length, count);
     });
 
     it("frontend + bot without sso (js)", () => {
-      const tasks = generateTasks(true, false, true, false, false, "javascript");
+      const tasks = generateTasks(true, false, true, false, false, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start bot");
@@ -125,18 +125,18 @@ describe("tasksTransparency", () => {
     });
 
     it("frontend + backend + bot with sso (js)", () => {
-      const tasks = generateTasks(true, true, true, false, true, "javascript");
+      const tasks = generateTasks(true, true, true, false, true, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start backend");
@@ -145,18 +145,18 @@ describe("tasksTransparency", () => {
     });
 
     it("frontend + backend + bot with sso (ts)", () => {
-      const tasks = generateTasks(true, true, true, false, true, "typescript");
+      const tasks = generateTasks(true, true, true, false, true, "typescript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start backend");
@@ -166,15 +166,15 @@ describe("tasksTransparency", () => {
     });
 
     it("func hosted bot without (ts)", () => {
-      const tasks = generateTasks(false, false, true, true, false, "typescript");
+      const tasks = generateTasks(false, false, true, true, false, "typescript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start bot");
       chai.assert.equal(tasks[count++].label, "Start Azurite emulator");
@@ -185,16 +185,16 @@ describe("tasksTransparency", () => {
 
   describe("generateM365Tasks", () => {
     it("m365 frontend with sso (js)", () => {
-      const tasks = generateM365Tasks(true, false, false, false, true, "javascript");
+      const tasks = generateM365Tasks(true, false, false, false, true, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally & Install App");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
-      chai.assert.equal(tasks[count++].label, "Set up Tab");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
+      chai.assert.equal(tasks[count++].label, "Set up tab");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "install app in Teams");
@@ -202,16 +202,16 @@ describe("tasksTransparency", () => {
     });
 
     it("m365 bot without sso (js)", () => {
-      const tasks = generateM365Tasks(false, false, true, false, false, "javascript");
+      const tasks = generateM365Tasks(false, false, true, false, false, "javascript") as any;
       chai.assert.isDefined(tasks);
       let count = 0;
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally & Install App");
-      chai.assert.equal(tasks[count++].label, "Validate & Install prerequisites");
-      chai.assert.equal(tasks[count++].label, "Install NPM packages");
+      chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
+      chai.assert.equal(tasks[count++].label, "Install npm packages");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
-      chai.assert.equal(tasks[count++].label, "Set up Bot");
-      chai.assert.equal(tasks[count++].label, "Build & Upload Teams manifest");
+      chai.assert.equal(tasks[count++].label, "Set up bot");
+      chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start bot");
       chai.assert.equal(tasks[count++].label, "install app in Teams");
@@ -238,20 +238,20 @@ const expected = `// This file is automatically generated by Teams Toolkit.
         {
             "label": "Start Teams App Locally",
             "dependsOn": [
-                "Validate & Install prerequisites",
-                "Install NPM packages",
+                "Validate & install prerequisites",
+                "Install npm packages",
                 "Install Azure Functions binding extensions",
                 "Start local tunnel",
-                "Set up Tab",
-                "Set up Bot",
+                "Set up tab",
+                "Set up bot",
                 "Set up SSO",
-                "Build & Upload Teams manifest",
+                "Build & upload Teams manifest",
                 "Start services"
             ],
             "dependsOrder": "sequence"
         },
         {
-            "label": "Validate & Install prerequisites",
+            "label": "Validate & install prerequisites",
             "type": "teamsfx",
             "command": "debug-check-prerequisites",
             "args": {
@@ -274,7 +274,7 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             }
         },
         {
-            "label": "Install NPM packages",
+            "label": "Install npm packages",
             "type": "teamsfx",
             "command": "debug-npm-install",
             "args": {
@@ -302,6 +302,7 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             }
         },
         {
+            // TeamsFx Azure Functions project depends on extra Azure Functions binding extensions for HTTP trigger authorization.
             "label": "Install Azure Functions binding extensions",
             "type": "shell",
             "command": "dotnet build extensions.csproj -o ./bin --ignore-failed-sources",
@@ -318,14 +319,14 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             "command": "debug-start-local-tunnel",
             "args": {
                 "configFile": ".fx/configs/ngrok.yml",
-                "binFolder": "\${teamsfx:ngrokBinFolder}",
+                "useGlobalNgrok": false,
                 "reuse": false
             },
             "isBackground": true,
             "problemMatcher": "\$teamsfx-local-tunnel-watch"
         },
         {
-            "label": "Set up Tab",
+            "label": "Set up tab",
             "type": "teamsfx",
             "command": "debug-set-up-tab",
             "args": {
@@ -333,14 +334,14 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             }
         },
         {
-            "label": "Set up Bot",
+            "label": "Set up bot",
             "type": "teamsfx",
             "command": "debug-set-up-bot",
             "args": {
-                /* Enter you own bot information if using the existing bot. */
+                //// Enter you own bot information if using the existing bot. ////
                 // "botId": "",
                 // "botPassword": "",
-                "botMessagingEndpoint": "\${teamsfx:botTunnelEndpoint}/api/messages"
+                "botMessagingEndpoint": "/api/messages"
             }
         },
         {
@@ -348,7 +349,7 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             "type": "teamsfx",
             "command": "debug-set-up-sso",
             "args": {
-                /* Enter you own AAD app information if using the existing AAD app. */
+                //// Enter you own AAD app information if using the existing AAD app. ////
                 // "objectId": "",
                 // "clientId": "",
                 // "clientSecret": "",
@@ -356,11 +357,11 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             }
         },
         {
-            "label": "Build & Upload Teams manifest",
+            "label": "Build & upload Teams manifest",
             "type": "teamsfx",
             "command": "debug-prepare-manifest",
             "args": {
-                /* Enter your own Teams manifest app package path if using the existing Teams manifest app package. */
+                //// Enter your own Teams manifest app package path if using the existing Teams manifest app package. ////
                 // "manifestPackagePath": ""
             }
         },

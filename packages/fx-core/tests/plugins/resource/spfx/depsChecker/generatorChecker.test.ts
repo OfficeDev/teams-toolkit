@@ -119,6 +119,19 @@ describe("generator checker", () => {
       chai.expect(result.isOk()).is.false;
     });
 
+    it("ensure deps -  install", async () => {
+      const generatorChecker = new GeneratorChecker(new StubLogger());
+      const pluginContext = TestHelper.getFakePluginContext("test", "./", "");
+      stub(generatorChecker, "isInstalled").callsFake(async () => {
+        return false;
+      });
+
+      stub(generatorChecker, "install");
+
+      const result = await generatorChecker.ensureDependency(pluginContext);
+      chai.expect(result.isOk()).is.true;
+    });
+
     it("is installed", async () => {
       const generatorChecker = new GeneratorChecker(new StubLogger());
       stub(fs, "pathExists").callsFake(async () => {
@@ -133,6 +146,31 @@ describe("generator checker", () => {
 
       const result = await generatorChecker.isInstalled();
       chai.expect(result).is.true;
+    });
+
+    it("install", async () => {
+      const generatorChecker = new GeneratorChecker(new StubLogger());
+      const cleanStub = stub(GeneratorChecker.prototype, <any>"cleanup").callsFake(async () => {
+        console.log("stub cleanup");
+        return;
+      });
+      const installStub = stub(GeneratorChecker.prototype, <any>"installGenerator").callsFake(
+        async () => {
+          console.log("stub installyo");
+          return;
+        }
+      );
+      const validateStub = stub(GeneratorChecker.prototype, <any>"validate").callsFake(async () => {
+        console.log("stub validate");
+        return false;
+      });
+
+      try {
+        await generatorChecker.install();
+      } catch {
+        chai.expect(installStub.callCount).equal(1);
+        chai.expect(cleanStub.callCount).equal(2);
+      }
     });
   });
 });

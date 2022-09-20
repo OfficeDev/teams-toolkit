@@ -1143,8 +1143,8 @@ async function handleCheckResults(
   if (fromLocalDebug) {
     if (!shouldStop) {
       if (displayMessages.launchServices) {
-        output.appendLine("");
         output.appendLine(displayMessages.launchServices);
+        output.appendLine("");
       }
       await progressHelper?.stop(true);
     }

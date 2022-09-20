@@ -50,7 +50,7 @@ const botDebugMessages = {
   settingEnvs: "Saving the environment variables of bot ...",
   AADRegistered: "AAD app is created (%s)",
   useExistingAAD: "Skip registering AAD app but use the existing AAD app from args: %s",
-  AADAlreadyRegistered: "Skip registering AAD app as it has already been registered before: %s",
+  AADAlreadyRegistered: "Skip registering AAD app (%s) as it has already been registered before",
   botRegistered: "Bot is registered",
   botAlreadyRegistered: "Skip registering bot as it has already been registered before",
   botMessagingEndpointUpdated: "Bot messaging endpoint is updated to %s",

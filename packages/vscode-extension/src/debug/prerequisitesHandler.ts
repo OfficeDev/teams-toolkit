@@ -89,7 +89,7 @@ import { Step } from "./commonUtils";
 enum Checker {
   NpmInstall = "npm package installation",
   M365Account = "Microsoft 365 Account",
-  LocalCertificate = "Development certificate for localhost",
+  LocalCertificate = "development certificate for localhost",
   AzureFunctionsExtension = "Azure Functions binding extension",
   Ports = "ports occupancy",
 }

@@ -55,7 +55,7 @@ After provision, you can find the default domain from `fx-resource-frontend-host
 1. Navigate to your created CDN endpoint and copy the endpoint hostname. For example, "https://sample.azureedge.net"
 
 #### Action 3 Update Frontend Info
-1. Open `templates\azure\provision\frontendHosting.bicep` file, and find the following two lines:
+1. Open `templates\azure\provision\azureStorageTab.bicep` file, and find the following two lines:
     ```
     output endpoint string = 'https://${siteDomain}'
     output domain string = siteDomain

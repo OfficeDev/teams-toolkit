@@ -44,6 +44,12 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
 
   protected async stop(error?: any): Promise<void> {
     if (error) {
+      if (error.message === "Debug session exists") {
+        // use a specical exit code to indicate this task is terminated as expected
+        this.closeEmitter.fire(-1);
+        return;
+      }
+
       // TODO: add color
       this.writeEmitter.fire(`${error?.displayMessage ?? error?.message}\r\n`);
       showError(assembleError(error));

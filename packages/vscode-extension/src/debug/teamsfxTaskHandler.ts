@@ -307,7 +307,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       [TelemetryProperty.DebugServiceName]: task.name,
       [TelemetryProperty.DebugServiceExitCode]: event.exitCode + "",
     });
-    if (isTeamsFxTransparentTask(task) && event.exitCode !== 0) {
+    if (isTeamsFxTransparentTask(task) && event.exitCode !== 0 && event.exitCode != -1) {
       terminateAllRunningTeamsfxTasks();
     }
   } else if (isNpmInstallTask(task)) {

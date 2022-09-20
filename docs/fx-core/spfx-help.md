@@ -30,7 +30,7 @@ Teams Toolkit also checks if NPM is installed.
 
 ### Remediation
 
-Check your npm and Node.js version. Supported Node.js versions for [SPFx v1.15.0](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs) and SPFx v1.16.0-beta.1 are:
+Check your npm and Node.js version. The SharePoint Framework [v1.15.0](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs) and v1.16-beta.1 is supported on the following Node.js versions respectively:
 
 - Node.js v14.15.0+ (_Fermium_)
 - Node.js v16.15.0+ (Gallium)

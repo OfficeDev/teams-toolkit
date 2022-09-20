@@ -170,6 +170,7 @@ describe("generator checker", () => {
       } catch {
         chai.expect(installStub.callCount).equal(1);
         chai.expect(cleanStub.callCount).equal(2);
+        chai.expect(validateStub.callCount).equal(1);
       }
     });
   });

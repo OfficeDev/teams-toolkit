@@ -782,7 +782,9 @@ export default class Preview extends YargsCommand {
       ?.get(constants.solutionPluginName)
       ?.get(constants.teamsAppTenantIdConfigKey) as string;
 
-    const remoteTeamsAppId: string = config?.config?.get(constants.remoteTeamsAppIdConfigKey);
+    const remoteTeamsAppId: string = config?.config
+      ?.get(constants.appstudioPluginName)
+      ?.get(constants.remoteTeamsAppIdConfigKey);
     if (remoteTeamsAppId === undefined || remoteTeamsAppId.length === 0) {
       return err(errors.PreviewWithoutProvision());
     }

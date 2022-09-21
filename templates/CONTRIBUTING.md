@@ -28,9 +28,9 @@ Welcome and thank you for your interest in contributing to TeamsFx templates! Be
 ## Folder Structure
 
 * `assets`  contains the template assets that compose a template.
-* `definitions` contains the yaml files that define templates.
+* `definitions` contains template definition files. The definition file name will be the template name.
 * `scenarios` contains the output of template builder, each sub folder containing a complete template source code. Each template will be zipped and released by CD pipeline. A final template can be composed of several assets.
-* `src` contains the source code of template builder. Template owners can run the command in the src folder to generate their template source code in scenarios folder. The definition filename will be the template name. You do not need to edit any file in `src` if you just want to add a template.
+* `src` contains the source code of template builder. You do not need to edit any file in `src` if you just want to add a template.
 
 ## How to add a new template?
 
@@ -39,14 +39,13 @@ Welcome and thank you for your interest in contributing to TeamsFx templates! Be
     For example, you may need to add CSharp code for command-and-response bot. Then go to `assets/code/csharp` folder, create a new folder named `command-and-response` and put your source code in it. Finally, refer to your new assets in your template definition:
     ```
     assets:
-      # Copy application code
-      - copy: code/csharp/command-and-response     # Relative path to 'assets'.
-        to: .                                      # Relative path to the destination folder. 'to' can be omitted if it is '.'.
+      # Application code
+      - copyFrom: code/csharp/command-and-response     # Relative path to 'assets'.
+        to: .                                          # Relative path to the destination folder. 'to' can be omitted if it is '.'.
     ```
 1. Generate template source code with Template Builder.
     ```
-    > cd src
-    > npm run generate ../definitions/<your-definition-file>
+    > npm run generate ./definitions/<your-definition-file>
     ```
 1. Check the output template source code and ensure it works as expected. Go [How to debug templates?](#how-to-debug-templates) for more details.
 1. Commit both your definition file and the template source code.
@@ -58,7 +57,6 @@ Assuming each template asset is referenced by at least one template. When updati
 1. Add your changes to existing template asset file.
 1. You have no need to figure out which template should be updated. Run the following command to re-generate all templates:
     ```
-    > cd src
     > npm run generate:all
     ```
 1. Commit both your asset changes and template changes.

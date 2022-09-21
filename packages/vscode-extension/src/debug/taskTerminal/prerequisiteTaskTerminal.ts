@@ -7,6 +7,7 @@ import * as vscode from "vscode";
 import { checkAndInstallForTask } from "../prerequisitesHandler";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import * as commonUtils from "../commonUtils";
+import { DebugSessionExists } from "../constants";
 
 export interface PrerequisiteArgs {
   prerequisites?: string[];
@@ -33,7 +34,7 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
 
   async do(): Promise<Result<Void, FxError>> {
     if (commonUtils.checkAndSkipDebugging()) {
-      throw new Error("Debug session exists");
+      throw new Error(DebugSessionExists);
     }
     return await checkAndInstallForTask(this.args.prerequisites ?? [], this.args.portOccupancy);
   }

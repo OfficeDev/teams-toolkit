@@ -280,3 +280,5 @@ export const TaskCommand = Object.freeze({
   setUpSSO: "debug-set-up-sso",
   prepareManifest: "debug-prepare-manifest",
 });
+
+export const DebugSessionExists = "Debug session exists";

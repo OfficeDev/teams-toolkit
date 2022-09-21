@@ -116,6 +116,20 @@ describe("Account Command Tests", function () {
       .returns(Promise.resolve(undefined))
       .onCall(6)
       .returns(Promise.resolve(undefined));
+    sandbox
+      .stub(AzureTokenProvider, "getJsonObject")
+      .onFirstCall()
+      .returns(Promise.resolve({}))
+      .onSecondCall()
+      .returns(Promise.resolve({}))
+      .onThirdCall()
+      .returns(Promise.resolve({}))
+      .onCall(4)
+      .returns(Promise.resolve(undefined))
+      .onCall(5)
+      .returns(Promise.resolve(undefined))
+      .onCall(6)
+      .returns(Promise.resolve(undefined));
     sandbox.stub(AzureTokenProvider, "listSubscriptions").returns(Promise.resolve([]));
     sandbox
       .stub(AzureTokenProvider, "readSubscription")

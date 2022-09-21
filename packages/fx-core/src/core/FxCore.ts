@@ -151,6 +151,7 @@ import { createEnvWithName } from "../component/envManager";
 import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils";
 import { preCheck } from "../component/core";
+import { convertEnvStateMapV3ToV2, convertEnvStateV3ToV2 } from "../component/migrate";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -1026,9 +1027,11 @@ export class FxCore implements v3.ICore {
     if (!ctx) return err(new ObjectIsUndefinedError("getProjectConfig input stuff"));
     inputs.stage = Stage.getProjectConfig;
     setCurrentStage(Stage.getProjectConfig);
+    let envState = ctx!.solutionContext?.envInfo.state;
+    if (envState) envState = convertEnvStateMapV3ToV2(envState);
     return ok({
       settings: ctx!.projectSettings,
-      config: ctx!.solutionContext?.envInfo.state,
+      config: envState,
       localSettings: ctx!.solutionContext?.localSettings,
     });
   }
@@ -1070,7 +1073,9 @@ export class FxCore implements v3.ICore {
       if (result.isErr()) {
         return err(result.error);
       }
-      config.envInfos[env] = result.value;
+      const envInfo = result.value;
+      envInfo.state = convertEnvStateV3ToV2(envInfo.state) as v3.ResourceStates;
+      config.envInfos[env] = envInfo;
     }
     return ok(config);
   }

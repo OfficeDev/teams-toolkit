@@ -37,7 +37,7 @@ import {
   TestFilePath,
   ProjectSettingKey,
 } from "../commonlib/constants";
-import { AzureScopes, environmentManager } from "@microsoft/teamsfx-core";
+import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import m365Login from "../../src/commonlib/m365Login";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getWebappServicePlan } from "../commonlib/utilities";

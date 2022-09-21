@@ -11,7 +11,7 @@ import dotenv from "dotenv";
 import { AzureAccountProvider, SubscriptionInfo, UserError } from "@microsoft/teamsfx-api";
 
 import * as cfg from "./common/userPasswordConfig";
-import { AzureScopes, ConvertTokenToJson } from "@microsoft/teamsfx-core";
+import { AzureScopes, ConvertTokenToJson } from "@microsoft/teamsfx-core/build/common/tools";
 
 dotenv.config();
 

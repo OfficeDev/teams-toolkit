@@ -19,7 +19,7 @@ import CLILogProvider from "./log";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
 import * as os from "os";
 import { AzureSpCrypto } from "./cacheAccess";
-import { AzureScopes, ConvertTokenToJson } from "@microsoft/teamsfx-core";
+import { AzureScopes, ConvertTokenToJson } from "@microsoft/teamsfx-core/build/common/tools";
 
 /**
  * Prepare for service principal login, not fully implemented

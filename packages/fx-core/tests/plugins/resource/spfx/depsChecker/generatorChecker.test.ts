@@ -7,13 +7,13 @@ import rewire from "rewire";
 import fs from "fs-extra";
 import * as chai from "chai";
 import { stub, restore } from "sinon";
-import { GeneratorChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/generatorChecker";
-import { telemetryHelper } from "../../../../../src/plugins/resource/spfx/utils/telemetry-helper";
+import { GeneratorChecker } from "../../../../../src/component/resource/spfx/depsChecker/generatorChecker";
+import { telemetryHelper } from "../../../../../src/component/resource/spfx/utils/telemetry-helper";
 import { Colors, LogLevel, LogProvider } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
 
 const rGeneratorChecker = rewire(
-  "../../../../../src/plugins/resource/spfx/depsChecker/generatorChecker"
+  "../../../../../src/component/resource/spfx/depsChecker/generatorChecker"
 );
 
 class StubLogger implements LogProvider {

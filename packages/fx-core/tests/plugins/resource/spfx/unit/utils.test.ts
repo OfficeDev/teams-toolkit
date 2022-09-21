@@ -6,7 +6,11 @@ import * as sinon from "sinon";
 import fs from "fs-extra";
 import * as path from "path";
 import { getLocalizedString } from "../../../../../src/common/localizeUtils";
-import { versionCheckQuestion, webpartNameQuestion } from "../../../../../src/component/resource/spfx/utils/questions";
+import {
+  versionCheckQuestion,
+  webpartNameQuestion,
+} from "../../../../../src/component/resource/spfx/utils/questions";
+import { Utils } from "../../../../../src/component/resource/spfx/utils/utils";
 
 describe("utils", () => {
   describe("webpart name", () => {

@@ -23,7 +23,7 @@ import {
 } from "./utils";
 
 export class Generator {
-  public static async generateFromTemplates(
+  public static async generateTemplate(
     templateName: string,
     language: string,
     destinationPath: string,
@@ -48,7 +48,32 @@ export class Generator {
     this.generate(generateContext, TemplateActionSeq);
   }
 
-  public static async generateFromSamples(
+  public static async addBuildingblock(
+    buildingblockName: string,
+    language: string,
+    destinationPath: string,
+    ctx: ContextV3
+  ): Promise<void> {
+    const appName = ctx.projectSetting?.appName;
+    const projectId = ctx.projectSetting?.projectId;
+    const generateContext: GenerateContext = {
+      type: "buildingblock",
+      name: `${buildingblockName}_${language}`,
+      destination: destinationPath,
+      logProvider: ctx.logProvider,
+      fileDataReplaceFn: genFileDataRenderReplaceFn({
+        appName: appName,
+        projectId: projectId,
+      }),
+      fileNameReplaceFn: genFileNameRenderReplaceFn({
+        appName: appName,
+      }),
+      onActionError: templateDefaultOnActionError,
+    };
+    this.generate(generateContext, TemplateActionSeq);
+  }
+
+  public static async generateSample(
     sampleName: string,
     destinationPath: string,
     ctx: ContextV3

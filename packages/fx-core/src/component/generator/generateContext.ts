@@ -6,7 +6,7 @@ import AdmZip from "adm-zip";
 import { GenerateAction } from "./generateAction";
 
 export interface GenerateContext {
-  type: "template" | "sample";
+  type: "template" | "sample" | "buildingblock";
   name: string;
   destination: string;
   logProvider: LogProvider;

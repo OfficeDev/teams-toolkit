@@ -116,6 +116,6 @@ describe("Migration test for v3", () => {
     const envStateMap = new Map<string, any>();
     envStateMap.set("app-manifest", new Map<string, any>());
     const res = convertEnvStateMapV3ToV2(envStateMap);
-    assert.isTrue(res.has("rx-resource-appstudio"));
+    assert.isTrue(res.has("fx-resource-appstudio"));
   });
 });

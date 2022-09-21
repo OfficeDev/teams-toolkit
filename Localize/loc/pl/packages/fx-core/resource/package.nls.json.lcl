@@ -3031,6 +3031,12 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.InvalidFeature" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This feature is not applicable for your project.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.InvalidInputError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to update context: %s]]></Val>
@@ -3129,10 +3135,13 @@
       </Item>
       <Item ItemId=";error.MissingSubscriptionInConfig" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Please provide the subscrpition id of the resource group (%s) in (%s)]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Please provide the subscription id of the resource group (%s) in (%s)]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[Podaj identyfikator subskrypcji grupy zasobów (%s) w lokalizacji (%s)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Please provide the subscrpition id of the resource group (%s) in (%s)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4291,6 +4300,12 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.appstudio.teamsAppCreateConflictWithPublishedApp" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A Teams app with that id already exists in your organization's app store. Please manually update the app id and try again.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.appstudio.teamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to create Teams app in Developer Portal, due to %s]]></Val>
@@ -4405,12 +4420,9 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.debugHandler.BotMessagingEndpointMissingError" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.debugHandler.DebugArgumentEmptyError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[botMessagingEndpoint is required.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Element botMessagingEndpoint jest wymagany.]]></Val>
-          </Tgt>
+          <Val><![CDATA[Debug argument '%s' is empty.]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4419,6 +4431,15 @@
           <Val><![CDATA[manifestPackagePath must be .zip file path.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Element manifestPackagePath musi być ścieżką pliku zip.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.InvalidExistingAADArgsError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Wszystkie elementy objectId, clientId i clientSecret są wymagane, jeśli do logowania jednokrotnego jest używana istniejąca aplikacja usługi AAD.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4432,21 +4453,9 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.debugHandler.InvalidSSODebugArgsError" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.debugHandler.InvalidTabBaseUrlError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Wszystkie elementy objectId, clientId i clientSecret są wymagane, jeśli do logowania jednokrotnego jest używana istniejąca aplikacja usługi AAD.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.debugHandler.InvalidTabDebugArgsError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[baseUrl is required and must be in the format of 'https://localhost:{port}'.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Element baseUrl jest wymagany i musi mieć format „https://localhost:{port}”.]]></Val>
-          </Tgt>
+          <Val><![CDATA[baseUrl must be in the format of 'https://localhost:{port}'.]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4794,10 +4803,13 @@
       </Item>
       <Item ItemId=";error.function.InstallNpmPackageError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to install NPM packages.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[Failed to install npm packages.]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[Nie można zainstalować pakietów NPM.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to install NPM packages.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

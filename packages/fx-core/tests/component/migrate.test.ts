@@ -3,6 +3,7 @@
 import "mocha";
 import { assert } from "chai";
 import {
+  convertEnvStateMapV3ToV2,
   convertProjectSettingsV2ToV3,
   convertProjectSettingsV3ToV2,
 } from "../../src/component/migrate";
@@ -109,5 +110,12 @@ describe("Migration test for v3", () => {
     };
     const v2 = convertProjectSettingsV3ToV2(projectSettings);
     assert.isTrue(v2.solutionSettings !== undefined);
+  });
+
+  it("convertEnvStateMapV3ToV2", async () => {
+    const envStateMap = new Map<string, any>();
+    envStateMap.set("app-manifest", new Map<string, any>());
+    const res = convertEnvStateMapV3ToV2(envStateMap);
+    assert.isTrue(res.has("rx-resource-appstudio"));
   });
 });

@@ -47,6 +47,7 @@ import CLIUIInstance from "../userInteraction";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { isWorkspaceSupported } from "../utils";
+import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 
 const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
@@ -564,7 +565,6 @@ async function listAll<T>(
 
 import AzureAccountProviderUserPassword from "./azureLoginUserPassword";
 import AzureLoginCI from "./azureLoginCI";
-import { AzureScopes } from "@microsoft/teamsfx-core";
 
 const ciEnabled = process.env.CI_ENABLED;
 // todo delete ciEnabled

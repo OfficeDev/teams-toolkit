@@ -8,18 +8,11 @@ import {
 import {
   StorageManagementClient,
   StorageAccount,
-  StorageAccountListResult,
   StorageAccountListKeysResult,
   StorageAccountCreateParameters,
 } from "@azure/arm-storage";
 import { TokenCredential } from "@azure/core-http";
-import {
-  WebSiteManagementClient,
-  Site,
-  AppServicePlan,
-  AppServicePlanCollection,
-  WebAppCollection,
-} from "@azure/arm-appservice";
+import { WebSiteManagementClient, Site, AppServicePlan } from "@azure/arm-appservice";
 
 import { InfoMessages } from "../resources/message";
 import { Logger } from "./logger";

@@ -39,6 +39,7 @@ describe("DefaultTediousConnection Tests - Node", () => {
   });
   afterEach(function () {
     restore();
+    sinon.restore();
   });
 
   it("getConfig should success with username and password", async function () {
@@ -72,7 +73,7 @@ describe("DefaultTediousConnection Tests - Node", () => {
     identityManager_GetToken.callsFake(async () => {
       return new Promise<AccessToken>((resolve) => {
         resolve({
-          token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
+          token: "fake_token",
           expiresOnTimestamp: 12345678,
         });
       });

@@ -1073,9 +1073,7 @@ export class FxCore implements v3.ICore {
       if (result.isErr()) {
         return err(result.error);
       }
-      const envInfo = result.value;
-      envInfo.state = convertEnvStateV3ToV2(envInfo.state) as v3.ResourceStates;
-      config.envInfos[env] = envInfo;
+      config.envInfos[env] = result.value;
     }
     return ok(config);
   }

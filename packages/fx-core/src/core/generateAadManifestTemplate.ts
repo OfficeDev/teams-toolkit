@@ -33,7 +33,6 @@ export async function generateAadManifestTemplate(
   const aadManifestTemplate = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
   await fs.ensureDir(appDir);
 
-  const azureSolutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
   const isVs = isVSProject(projectSettings);
 
   const aadManifestPath = `${appDir}/${Constants.aadManifestTemplateName}`;
@@ -110,12 +109,19 @@ export async function generateAadManifestTemplate(
     ) {
       projectSettings.solutionSettings.capabilities.push("TabSSO");
     }
-
     if (
       projectSettings.solutionSettings.capabilities.includes("Bot") &&
       !projectSettings.solutionSettings.capabilities.includes("BotSSO")
     ) {
       projectSettings.solutionSettings.capabilities.push("BotSSO");
+    }
+    const tabConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
+    if (tabConfig) {
+      tabConfig.sso = true;
+    }
+    const botConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
+    if (botConfig) {
+      botConfig.sso = true;
     }
   }
 

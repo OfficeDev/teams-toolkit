@@ -103,6 +103,8 @@ export class AzureFunctionResource extends AzureAppService {
       if (!state[resourceIdKey]) {
         if (state["resourceId"]) {
           resourceIdKey = "resourceId";
+        } else if (state["botWebAppResourceId"]) {
+          resourceIdKey = "botWebAppResourceId";
         }
       }
     }

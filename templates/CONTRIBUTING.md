@@ -1,25 +1,36 @@
 # Contributing
-Welcome and thank you for your interest in contributing to TeamsFx templates! Before contributing to this project, please review this document for policies and procedures which will ease the contribution and review process for everyone. If you have questions, please raise your issue on github.
 
-## Built the project
+Welcome and thank you for your interest in contributing to TeamsFx templates! Before contributing to this project, please review this document for policies and procedures which will ease the contribution and review process for everyone. If you have any question, please raise your issue on github.
 
-1. Clone this repo locally. (git clone https://github.com/OfficeDev/TeamsFx.git)
-1. Open a terminal and move into your local copy. (cd TeamsFx)
-1. Build the Template Builder package. (cd templates/src && npm install && npm run build)
+## Build the project
+
+1. Clone this repo locally.
+    ```
+    > git clone https://github.com/OfficeDev/TeamsFx.git
+    ```
+1. Open a terminal and move into your local copy.
+    ```
+    > cd TeamsFx
+    ```
+1. Build the Template Builder package.
+    ```
+    > cd templates && npm install && npm run build
+    ```
 
 ## Terminology
 
-Template: A template is the final output of Template Builder. Each template will be packed into a zip file and be released. Teams Toolkit downloads the zip file for scaffolding.
-Template Definition File: A template definition file in yaml format defines the template.
-Template Assets: A set of reusable files that compose of template.
+| Terminology | Description |
+|---|---|
+| Template | A template is the final output of Template Builder. Usually each template identifies one specific app scenario or feature. Each template will be packed into a zip file and be released. Teams Toolkit downloads the zip file for scaffolding. |
+| Template Definition File | A template definition file in yaml format defines how to build template. |
+| Template Assets | A set of reusable files that can be shared between different templates, e.g. BICEP file |
 
 ## Folder Structure
 
 * `assets`  contains the template assets that compose a template.
 * `definitions` contains the yaml files that define templates.
-* `scenarios` contains the output of template builder, each sub folder containing a complete template source code. Each template will be zipped and released by CD. A final template can be composed of several assets.
-* `src` contains the source code of template builder. Template owners can run the command in the src folder to generate their template source code in scenarios folder. The definition filename will be the template name.
-
+* `scenarios` contains the output of template builder, each sub folder containing a complete template source code. Each template will be zipped and released by CD pipeline. A final template can be composed of several assets.
+* `src` contains the source code of template builder. Template owners can run the command in the src folder to generate their template source code in scenarios folder. The definition filename will be the template name. You do not need to edit any file in `src` if you just want to add a template.
 
 ## How to add a new template?
 
@@ -28,8 +39,8 @@ Template Assets: A set of reusable files that compose of template.
     For example, you may need to add CSharp code for command-and-response bot. Then go to `assets/code/csharp` folder, create a new folder named `command-and-response` and put your source code in it. Finally, refer to your new assets in your template definition:
     ```
     assets:
-      # Application code
-      - from: code/csharp/command-and-response     # Relative path to 'assets'.
+      # Copy application code
+      - copy: code/csharp/command-and-response     # Relative path to 'assets'.
         to: .                                      # Relative path to the destination folder. 'to' can be omitted if it is '.'.
     ```
 1. Generate template source code with Template Builder.
@@ -37,20 +48,20 @@ Template Assets: A set of reusable files that compose of template.
     > cd src
     > npm run generate ../definitions/<your-definition-file>
     ```
-1. Commit both your definition file and your template source code.
+1. Check the output template source code and ensure it works as expected. Go [How to debug templates?](#how-to-debug-templates) for more details.
+1. Commit both your definition file and the template source code.
 
 ## How to synchronize template asset changes to templates?
 
-Assuming every template assets are referred by at least one template. When updating a template asset, you must synchronize the changes to those templates that refer to this asset.
+Assuming each template asset is referenced by at least one template. When updating a template asset, you must apply the change to related templates.
 
-1. Add your changes to existing asset.
-1. You have no need to figure out which template should be updated. Re-generate all templates:
+1. Add your changes to existing template asset file.
+1. You have no need to figure out which template should be updated. Run the following command to re-generate all templates:
     ```
     > cd src
     > npm run generate:all
     ```
 1. Commit both your asset changes and template changes.
-
 
 ## How to scaffold from pre-release templates?
 

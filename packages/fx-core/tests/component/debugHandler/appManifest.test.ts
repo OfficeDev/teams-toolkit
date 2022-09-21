@@ -17,6 +17,7 @@ import {
 } from "../../../src/component/debugHandler/appManifest";
 import {
   AppManifestPackageNotExistError,
+  DebugArgumentEmptyError,
   InvalidAppManifestPackageFileFormatError,
 } from "../../../src/component/debugHandler/error";
 import * as appstudio from "../../../src/component/resource/appManifest/appStudio";
@@ -33,6 +34,26 @@ describe("AppManifestDebugHandler", () => {
 
   describe("prepare", () => {
     afterEach(() => {
+      sinon.restore();
+    });
+
+    it("invalid args: empty manifestPackagePath", async () => {
+      sinon.stub(fs, "pathExists").callsFake(async () => {
+        return false;
+      });
+      const args: AppManifestDebugArgs = {
+        manifestPackagePath: "",
+      };
+      const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.equal(
+          result.error.message,
+          DebugArgumentEmptyError("manifestPackagePath").message
+        );
+      }
       sinon.restore();
     });
 

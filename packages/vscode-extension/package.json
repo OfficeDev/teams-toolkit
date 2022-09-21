@@ -973,17 +973,10 @@
                       {}
                     ]
                   },
-                  "binFolder": {
-                    "type": "string",
-                    "title": "%teamstoolkit.taskDefinitions.args.binFolder.title%",
-                    "description": "%teamstoolkit.taskDefinitions.args.binFolder.title%",
-                    "anyOf": [
-                      {
-                        "const": "${teamsfx:ngrokBinFolder}",
-                        "description": "%teamstoolkit.taskDefinitions.args.binFolder.default.description%"
-                      },
-                      {}
-                    ]
+                  "useGlobalNgrok": {
+                    "type": "boolean",
+                    "description": "%teamstoolkit.taskDefinitions.args.useGlobalNgrok.title%",
+                    "default": false
                   },
                   "reuse":{
                     "type": "boolean",

@@ -18,7 +18,10 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import { ComponentNames } from "../../../src/component/constants";
-import { InvalidTabDebugArgsError } from "../../../src/component/debugHandler/error";
+import {
+  DebugArgumentEmptyError,
+  InvalidTabBaseUrlError,
+} from "../../../src/component/debugHandler/error";
 import {
   LocalEnvKeys,
   LocalEnvProvider,
@@ -38,14 +41,14 @@ describe("TabDebugHandler", () => {
       sinon.restore();
     });
 
-    it("invalid args", async () => {
+    it("invalid args: undefined baseUrl", async () => {
       const args: TabDebugArgs = {};
       const handler = new TabDebugHandler(projectPath, args);
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
-        chai.assert.equal(result.error.name, InvalidTabDebugArgsError().name);
+        chai.assert.equal(result.error.message, DebugArgumentEmptyError("baseUrl").message);
       }
     });
 
@@ -58,7 +61,7 @@ describe("TabDebugHandler", () => {
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
-        chai.assert.equal(result.error.name, InvalidTabDebugArgsError().name);
+        chai.assert.equal(result.error.message, InvalidTabBaseUrlError().message);
       }
     });
 

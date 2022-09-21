@@ -18,9 +18,10 @@ import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps
 import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local";
 import { vscodeLogger } from "../depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "../depsChecker/vscodeTelemetry";
-import { openTerminalCommand, localTunnelDisplayMessages, taskNamePrefix } from "../constants";
+import { openTerminalCommand, localTunnelDisplayMessages } from "../constants";
 import VsCodeLogInstance from "../../commonlib/log";
 import { doctorConstant } from "../depsChecker/doctorConstant";
+import { Step } from "../commonUtils";
 
 const ngrokTimeout = 1 * 60 * 1000;
 const defaultNgrokTunnelName = "bot";
@@ -43,7 +44,7 @@ type EndpointInfo = {
 
 export interface LocalTunnelArgs {
   configFile?: string;
-  binFolder?: string;
+  useGlobalNgrok?: boolean;
   tunnelName?: string;
   reuse?: boolean;
 }
@@ -60,6 +61,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   private readonly args: LocalTunnelArgs;
   private readonly status: LocalTunnelTaskStatus;
   private readonly progressHandler: ProgressHandler;
+  private readonly step: Step;
 
   constructor(taskDefinition: vscode.TaskDefinition) {
     super(taskDefinition);
@@ -67,6 +69,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     this.taskTerminalId = uuidv4();
     this.isOutputSummary = false;
     this.progressHandler = new ProgressHandler(localTunnelDisplayMessages.taskName, 1);
+    this.step = new Step(1);
 
     for (const task of LocalTunnelTaskTerminal.ngrokTaskTerminals.values()) {
       task.terminal.close();
@@ -113,10 +116,8 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       BaseTaskTerminal.resolveTeamsFxVariables(this.args.configFile)
     );
 
-    const binFolder = this.args.binFolder
-      ? await LocalTunnelTaskTerminal.resolveBinFolder(
-          BaseTaskTerminal.resolveTeamsFxVariables(this.args.binFolder)
-        )
+    const binFolder = !this.args.useGlobalNgrok
+      ? await LocalTunnelTaskTerminal.getNgrokBinFolder()
       : undefined;
 
     const tunnelName = this.args.tunnelName ?? defaultNgrokTunnelName;
@@ -285,8 +286,11 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   private outputStartMessage(): void {
-    VsCodeLogInstance.info(`${taskNamePrefix}${localTunnelDisplayMessages.taskName}`);
-    VsCodeLogInstance.outputChannel.appendLine(localTunnelDisplayMessages.check);
+    VsCodeLogInstance.info(localTunnelDisplayMessages.title);
+    VsCodeLogInstance.outputChannel.appendLine("");
+    VsCodeLogInstance.outputChannel.appendLine(
+      localTunnelDisplayMessages.checkNumber(this.step.totalSteps)
+    );
     VsCodeLogInstance.outputChannel.appendLine("");
 
     this.writeEmitter.fire(`${localTunnelDisplayMessages.startMessage}\r\n\r\n`);
@@ -294,7 +298,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
 
   private async outputStepMessage(configFile: string, tunnelName: string): Promise<void> {
     const stepMessage = localTunnelDisplayMessages.stepMessage(tunnelName, configFile);
-    VsCodeLogInstance.outputChannel.appendLine(`${stepMessage} ... `);
+    VsCodeLogInstance.outputChannel.appendLine(`${this.step.getPrefix()} ${stepMessage} ... `);
     VsCodeLogInstance.outputChannel.appendLine("");
 
     this.writeEmitter.fire(`${this.command(configFile, tunnelName)}\r\n\r\n`);
@@ -317,6 +321,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     VsCodeLogInstance.outputChannel.appendLine(
       localTunnelDisplayMessages.learnMore(localTunnelDisplayMessages.learnMoreHelpLink)
     );
+    VsCodeLogInstance.outputChannel.appendLine("");
 
     this.writeEmitter.fire(`\r\n${localTunnelDisplayMessages.successMessage}\r\n`);
 
@@ -335,6 +340,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     VsCodeLogInstance.outputChannel.appendLine(
       localTunnelDisplayMessages.learnMore(localTunnelDisplayMessages.learnMoreHelpLink)
     );
+    VsCodeLogInstance.outputChannel.appendLine("");
 
     this.writeEmitter.fire(`\r\n${localTunnelDisplayMessages.errorMessage}\r\n`);
 

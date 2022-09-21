@@ -18,7 +18,10 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import { ComponentNames } from "../../../src/component/constants";
-import { BotMessagingEndpointMissingError } from "../../../src/component/debugHandler/error";
+import {
+  DebugArgumentEmptyError,
+  InvalidExistingBotArgsError,
+} from "../../../src/component/debugHandler/error";
 import {
   LocalEnvKeys,
   LocalEnvProvider,
@@ -31,6 +34,7 @@ import { AppStudio } from "../../../src/plugins/resource/bot/appStudio/appStudio
 import { BotAuthCredential } from "../../../src/plugins/resource/bot/botAuthCredential";
 import { MockM365TokenProvider, runDebugActions } from "./utils";
 import { BotDebugArgs, BotDebugHandler } from "../../../src/component/debugHandler";
+
 describe("TabDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
   const tenantId = "11111111-1111-1111-1111-111111111111";
@@ -41,16 +45,44 @@ describe("TabDebugHandler", () => {
       sinon.restore();
     });
 
-    it("invalid args", async () => {
+    it("invalid args: empty botId", async () => {
       const args: BotDebugArgs = {
-        botMessagingEndpoint: "",
+        botId: "",
+        botPassword: "xxx",
       };
       const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
-        chai.assert.equal(result.error.name, BotMessagingEndpointMissingError().name);
+        chai.assert.equal(result.error.message, DebugArgumentEmptyError("botId").message);
+      }
+    });
+
+    it("invalid args: empty botPassword", async () => {
+      const args: BotDebugArgs = {
+        botId: "xxx",
+        botPassword: "",
+      };
+      const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.equal(result.error.message, DebugArgumentEmptyError("botPassword").message);
+      }
+    });
+
+    it("invalid args: missing botPassword for existing bot", async () => {
+      const args: BotDebugArgs = {
+        botId: "xxx",
+      };
+      const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.equal(result.error.message, InvalidExistingBotArgsError().message);
       }
     });
 

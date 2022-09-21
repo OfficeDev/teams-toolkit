@@ -287,7 +287,7 @@ describe("Core component test for v3", () => {
     if (res.isErr()) {
       console.log(res.error);
     }
-    assert.isTrue(res.isOk());
+    assert.isTrue(res.isErr());
   });
 
   describe("provision", async () => {

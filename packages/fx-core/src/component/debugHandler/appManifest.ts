@@ -32,20 +32,22 @@ import { buildTeamsAppPackage } from "../resource/appManifest/appStudio";
 import { DebugAction } from "./common";
 import {
   AppManifestPackageNotExistError,
+  DebugArgumentEmptyError,
   errorSource,
   InvalidAppManifestPackageFileFormatError,
 } from "./error";
 
 const appManifestDebugMessages = {
-  buildingAndSavingAppManifest: "Building and saving Teams app manifest ...",
-  uploadingAppPackage: "Uploading Teams app manifest package to Teams developer portal ...",
-  savingStates: "Saving the states for Teams app manifest ...",
-  appManifestSaved: "Teams app manifest is saved in %s",
+  buildingAndSavingAppManifest:
+    "Resolving manifest template and generating the Teams app package ...",
+  uploadingAppPackage: "Uploading Teams app package via Teams Developer Portal ...",
+  savingStates: "Saving the states of Teams app ...",
+  appManifestSaved: "Teams app manifest is resolved and app package is saved in %s",
   useExistingAppManifest:
     "Skip building Teams app manifest but use the existing Teams app manifest package from args",
-  statesSaved: "The states for Teams app manifest are saved in %s",
+  statesSaved: "The states of Teams app manifest are saved in %s",
   skipSavingStates: "Skip saving the states for Teams app manifest",
-  appPackageUploaded: "Teams app manifest package is uploaded",
+  appPackageUploaded: "Teams app package is uploaded",
 };
 
 export interface AppManifestDebugArgs {
@@ -100,6 +102,13 @@ export class AppManifestDebugHandler {
   }
 
   private async validateArgs(): Promise<Result<string[], FxError>> {
+    if (
+      this.args.manifestPackagePath !== undefined &&
+      this.args.manifestPackagePath.trim().length === 0
+    ) {
+      return err(DebugArgumentEmptyError("manifestPackagePath"));
+    }
+
     if (this.args.manifestPackagePath) {
       this.args.manifestPackagePath = this.args.manifestPackagePath.trim();
       if (this.args.manifestPackagePath.length > 0) {

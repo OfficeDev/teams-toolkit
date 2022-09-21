@@ -36,7 +36,7 @@ import { getResourceFolder } from "../../folder";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrator";
 import * as util from "util";
-import { ManifestTemplate } from "../../plugins/resource/spfx/utils/constants";
+import { ManifestTemplate } from "../../component/resource/spfx/utils/constants";
 import { generateAadManifest, needMigrateToAadManifest } from "./MigrationUtils";
 
 const upgradeButton = "Upgrade";

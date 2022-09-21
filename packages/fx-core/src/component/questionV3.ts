@@ -87,7 +87,7 @@ import { buildQuestionNode } from "./resource/azureSql/questions";
 import { functionNameQuestion } from "../plugins/resource/function/question";
 import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
-import { webpartNameQuestion } from "../plugins/resource/spfx/utils/questions";
+import { webpartNameQuestion } from "../component/resource/spfx/utils/questions";
 import { manifestUtils } from "./resource/appManifest/utils";
 import { Constants } from "../plugins/resource/aad/constants";
 import { getQuestionsForDeployAPIM } from "./resource/apim";

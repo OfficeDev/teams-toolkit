@@ -27,19 +27,15 @@ import {
   InsufficientPermissionError,
   NoSPPackageError,
   UploadAppPackageFailedError,
-} from "../../../plugins/resource/spfx/error";
-import {
-  Constants,
-  DeployProgressMessage,
-  PreDeployProgressMessage,
-} from "../../../plugins/resource/spfx/utils/constants";
-import { ProgressHelper } from "../../../plugins/resource/spfx/utils/progress-helper";
-import { sleep, Utils } from "../../../plugins/resource/spfx/utils/utils";
+} from "./error";
+import { Constants, DeployProgressMessage, PreDeployProgressMessage } from "./utils/constants";
+import { ProgressHelper } from "./utils/progress-helper";
+import { sleep, Utils } from "./utils/utils";
 import { ComponentNames } from "../../constants";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import path from "path";
 import fs from "fs-extra";
-import { SPOClient } from "../../../plugins/resource/spfx/spoClient";
+import { SPOClient } from "./spoClient";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import axios from "axios";
 import { getSPFxToken, GraphScopes } from "../../../common/tools";

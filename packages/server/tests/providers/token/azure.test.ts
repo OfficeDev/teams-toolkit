@@ -27,7 +27,7 @@ describe("azure", () => {
   const down = new TestStream();
   const msgConn = createMessageConnection(up as any, down as any);
 
-  after(() => {
+  afterEach(() => {
     sandbox.restore();
   });
 
@@ -42,6 +42,15 @@ describe("azure", () => {
     res.then((data) => {
       chai.assert.isUndefined(data);
     });
+  });
+
+  it("getIdentityCredentialAsync2", async () => {
+    const azure = new ServerAzureAccountProvider(msgConn);
+    const promise = Promise.resolve(ok("a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c"));
+    const stub = sandbox.stub(msgConn, "sendRequest").returns(promise);
+    const identity = await azure.getIdentityCredentialAsync();
+    const res = await identity?.getToken("test");
+    chai.assert.isNotNull(res);
   });
 
   it("signout", async () => {

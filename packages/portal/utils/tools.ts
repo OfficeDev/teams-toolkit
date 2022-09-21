@@ -49,7 +49,7 @@ export const getEnv = (key: string) => {
     return Deno.env.get(key) as string;
   } else {
     config({
-      path: '.env',
+      path: './portal/.env',
       export: true,
     });
     return Deno.env.get(key) as string;

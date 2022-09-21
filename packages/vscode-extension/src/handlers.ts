@@ -93,6 +93,7 @@ import {
   CLI_FOR_M365,
   GlobalKey,
   SpfxManageSiteAdminUrl,
+  SUPPORTED_SPFX_PRERELEASE_VERSION,
   SUPPORTED_SPFX_VERSION,
 } from "./constants";
 import { PanelType } from "./controls/PanelType";
@@ -154,6 +155,7 @@ import {
   sendDebugAllStartEvent,
 } from "./debug/localTelemetryReporter";
 import { compare } from "./utils/versionUtil";
+import { getSPFxVersion } from "@microsoft/teamsfx-core/build/common/tools";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -1658,9 +1660,17 @@ export async function promptSPFxUpgrade() {
 
     if (projectSPFxVersion) {
       const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
-      if (cmp === 1 || cmp === -1) {
-        const args: string[] =
-          cmp === 1 ? [SUPPORTED_SPFX_VERSION] : [SUPPORTED_SPFX_VERSION, SUPPORTED_SPFX_VERSION];
+      const cmpPrerelease = compare(projectSPFxVersion, SUPPORTED_SPFX_PRERELEASE_VERSION);
+
+      if (cmp === 0 || cmpPrerelease === 0) {
+        return;
+      }
+      if (cmp === cmpPrerelease) {
+        const spfxVersion =
+          getSPFxVersion() === "1.15.0"
+            ? SUPPORTED_SPFX_VERSION
+            : SUPPORTED_SPFX_PRERELEASE_VERSION;
+        const args: string[] = cmp === 1 ? [spfxVersion] : [spfxVersion, spfxVersion];
         VS_CODE_UI.showMessage(
           "warn",
           util.format(

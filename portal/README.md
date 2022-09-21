@@ -1,6 +1,6 @@
 # teamsfx portal
 
-first install deno
+## first install deno
 Shell (Mac, Linux):
 ```bash
 curl -fsSL https://deno.land/install.sh | sh
@@ -14,6 +14,7 @@ Homebrew (Mac):
 brew install deno
 ```
 
+## run server
 ```bash
 deno task dev
 ```

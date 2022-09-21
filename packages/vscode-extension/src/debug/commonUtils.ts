@@ -22,6 +22,9 @@ import {
   GLOBAL_CONFIG,
 } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
+import { ExtensionErrors, ExtensionSource } from "../error";
+import { localize } from "../utils/localizeUtils";
+import * as util from "util";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -126,7 +129,17 @@ export async function getDebugConfig(
       const envInfo = config.envInfos["local"];
       if (!envInfo)
         throw new UserError("extension", "EnvConfigNotExist", "Local Env config not exist");
-      const appId = envInfo.state["app-manifest"].teamsAppId as string;
+      const appId = envInfo.state["app-manifest"]?.teamsAppId;
+      if (!appId) {
+        throw new UserError(
+          ExtensionSource,
+          ExtensionErrors.TeamsAppIdNotFoundError,
+          util.format(
+            localize("teamstoolkit.handlers.teamsAppIdNotFound"),
+            environmentManager.getLocalEnvName()
+          )
+        );
+      }
       return { appId: appId, env: "local" };
     } else {
       if (env === undefined) {
@@ -145,7 +158,14 @@ export async function getDebugConfig(
       const envInfo = config.envInfos[env];
       if (!envInfo)
         throw new UserError("extension", "EnvConfigNotExist", `Env '${env} ' config not exist`);
-      const appId = envInfo.state["app-manifest"].teamsAppId as string;
+      const appId = envInfo.state["app-manifest"]?.teamsAppId;
+      if (!appId) {
+        throw new UserError({
+          name: "MissingTeamsAppId",
+          message: `No teams app found in ${env} environment. Run Provision to ensure teams app is created.`,
+          source: "preview",
+        });
+      }
       return { appId: appId, env: env };
     }
   } catch (error: any) {

@@ -1,28 +1,52 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import "mocha";
-import fs from "fs-extra";
-import * as path from "path";
+import {
+  ContextV3,
+  InputsWithProjectPath,
+  ok,
+  Platform,
+  Stage,
+  Void,
+} from "@microsoft/teamsfx-api";
 import { expect } from "chai";
-import { SpfxPlugin } from "../../../../../src/plugins/resource/spfx";
-import * as sinon from "sinon";
-import { Utils } from "../../../../../src/plugins/resource/spfx/utils/utils";
-import { TestHelper } from "../helper";
-import { YoChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/yoChecker";
-import { GeneratorChecker } from "../../../../../src/plugins/resource/spfx/depsChecker/generatorChecker";
-import { cpUtils } from "../../../../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
-import * as uuid from "uuid";
-import { ok, Stage, Void } from "@microsoft/teamsfx-api";
-import { DefaultManifestProvider } from "../../../../../src/component/resource/appManifest/manifestProvider";
+import fs from "fs-extra";
+import "mocha";
 import mockedEnv from "mocked-env";
+import * as path from "path";
+import * as sinon from "sinon";
+import * as uuid from "uuid";
+import { SPFxTabCodeProvider } from "../../../../../src/component/code/spfxTabCode";
+import { ComponentNames } from "../../../../../src/component/constants";
+import { DefaultManifestProvider } from "../../../../../src/component/resource/appManifest/manifestProvider";
+import { createContextV3, newProjectSettingsV3 } from "../../../../../src/component/utils";
+import { setTools } from "../../../../../src/core/globalVars";
+import { GeneratorChecker } from "../../../../../src/component/resource/spfx/depsChecker/generatorChecker";
+import { YoChecker } from "../../../../../src/component/resource/spfx/depsChecker/yoChecker";
+import { SPFXQuestionNames } from "../../../../../src/component/resource/spfx/utils/questions";
+import { Utils } from "../../../../../src/component/resource/spfx/utils/utils";
+import { cpUtils } from "../../../../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
+import { MockTools, MockUserInteraction } from "../../../../core/utils";
 
 describe("SPFxScaffold", function () {
   const testFolder = path.resolve("./tmp");
-  const appName = "spfxApp";
-  let plugin: SpfxPlugin;
-
+  let fakedAddCapability;
+  let component: SPFxTabCodeProvider;
+  let context: ContextV3;
+  const manifestProvider = new DefaultManifestProvider();
   beforeEach(async () => {
-    plugin = new SpfxPlugin();
+    component = new SPFxTabCodeProvider();
+    const gtools = new MockTools();
+    setTools(gtools);
+    context = createContextV3(newProjectSettingsV3());
+    context.projectSetting.components = [
+      {
+        name: "teams-tab",
+        hosting: ComponentNames.SPFx,
+        deploy: true,
+        folder: "SPFx",
+        build: true,
+      },
+    ];
     await fs.ensureDir(testFolder);
     sinon.stub(Utils, "configure");
     sinon.stub(fs, "stat").resolves();
@@ -48,46 +72,70 @@ describe("SPFxScaffold", function () {
   });
 
   it("scaffold SPFx project without framework", async function () {
-    const pluginContext = TestHelper.getFakePluginContext(appName, testFolder, "none");
-    const result = await plugin.postScaffold(pluginContext);
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      [SPFXQuestionNames.framework_type]: "none",
+      [SPFXQuestionNames.webpart_desp]: "test",
+      [SPFXQuestionNames.webpart_name]: "hello",
+    };
+    const result = await component.generate(context, inputs);
     if (result.isErr()) console.log(result.error);
     expect(result.isOk()).to.eq(true);
   });
 
   it("scaffold SPFx project with react framework", async function () {
-    const pluginContext = TestHelper.getFakePluginContext(appName, testFolder, "react");
-    const result = await plugin.postScaffold(pluginContext);
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      [SPFXQuestionNames.framework_type]: "react",
+      [SPFXQuestionNames.webpart_desp]: "test",
+      [SPFXQuestionNames.webpart_name]: "hello",
+    };
+    const result = await component.generate(context, inputs);
     if (result.isErr()) console.log(result.error);
     expect(result.isOk()).to.eq(true);
   });
 
   it("scaffold SPFx project with minimal framework", async function () {
-    const pluginContext = TestHelper.getFakePluginContext(appName, testFolder, "minimal");
-    const result = await plugin.postScaffold(pluginContext);
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      [SPFXQuestionNames.framework_type]: "minimal",
+      [SPFXQuestionNames.webpart_desp]: "test",
+      [SPFXQuestionNames.webpart_name]: "hello",
+    };
+    const result = await component.generate(context, inputs);
     if (result.isErr()) console.log(result.error);
     expect(result.isOk()).to.eq(true);
   });
 
   it("scaffold SPFx project with extremely long webpart name", async function () {
-    const pluginContext = TestHelper.getFakePluginContext(
-      appName,
-      testFolder,
-      "react",
-      "extremelylongextremelylongextremelylongextremelylongspfxwebpartname"
-    );
-    const result = await plugin.postScaffold(pluginContext);
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      [SPFXQuestionNames.framework_type]: "react",
+      [SPFXQuestionNames.webpart_name]:
+        "extremelylongextremelylongextremelylongextremelylongspfxwebpartname",
+      [SPFXQuestionNames.webpart_desp]: "test",
+    };
+    const result = await component.generate(context, inputs);
     if (result.isErr()) console.log(result.error);
     expect(result.isOk()).to.eq(true);
   });
 
   it("add webpart to SPFx project framework", async function () {
     const mockedEnvRestore = mockedEnv({ TEAMSFX_SPFX_MULTI_TAB: "true" });
-    const fakedAddCapability = sinon
-      .stub(DefaultManifestProvider.prototype, "addCapabilities")
-      .resolves(ok(Void));
-    const pluginContext = TestHelper.getFakePluginContext(appName, testFolder, undefined);
-    pluginContext.answers!["stage"] = Stage.addFeature;
-    const result = await plugin.postScaffold(pluginContext);
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      [SPFXQuestionNames.framework_type]: "react",
+      stage: Stage.addFeature,
+    };
+    context.userInteraction = new MockUserInteraction();
+    context.manifestProvider = manifestProvider;
+    fakedAddCapability = sinon.stub(manifestProvider, "addCapabilities").resolves(ok(Void));
+    const result = await component.generate(context, inputs);
     if (result.isErr()) console.log(result.error);
     expect(result.isOk()).to.eq(true);
     expect(fakedAddCapability.calledOnce).to.eq(true);

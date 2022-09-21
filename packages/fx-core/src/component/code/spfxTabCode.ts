@@ -27,17 +27,17 @@ import { isSPFxMultiTabEnabled } from "../../common/featureFlags";
 import { getAppDirectory, isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../plugins/resource/appstudio/constants";
-import { GeneratorChecker } from "../../plugins/resource/spfx/depsChecker/generatorChecker";
-import { YoChecker } from "../../plugins/resource/spfx/depsChecker/yoChecker";
-import { DependencyInstallError, ScaffoldError } from "../../plugins/resource/spfx/error";
+import { GeneratorChecker } from "../../component/resource/spfx/depsChecker/generatorChecker";
+import { YoChecker } from "../../component/resource/spfx/depsChecker/yoChecker";
+import { DependencyInstallError, ScaffoldError } from "../../component/resource/spfx/error";
 import {
   ManifestTemplate,
   PlaceHolders,
   ScaffoldProgressMessage,
-} from "../../plugins/resource/spfx/utils/constants";
-import { ProgressHelper } from "../../plugins/resource/spfx/utils/progress-helper";
-import { SPFXQuestionNames } from "../../plugins/resource/spfx/utils/questions";
-import { Utils } from "../../plugins/resource/spfx/utils/utils";
+} from "../../component/resource/spfx/utils/constants";
+import { ProgressHelper } from "../../component/resource/spfx/utils/progress-helper";
+import { SPFXQuestionNames } from "../../component/resource/spfx/utils/questions";
+import { isOfficialSPFx, Utils } from "../../component/resource/spfx/utils/utils";
 import { convert2Context } from "../../plugins/resource/utils4v2";
 import { cpUtils } from "../../plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import { ComponentNames } from "../constants";
@@ -229,7 +229,10 @@ export async function scaffoldSPFx(
     // update readme
     if (!isAddSpfx || !yoPersisted) {
       await fs.copyFile(
-        path.resolve(templateFolder, "./solution/README.md"),
+        path.resolve(
+          templateFolder,
+          isOfficialSPFx() ? "./solution/README.md" : "./solution/prereleaseREADME.md"
+        ),
         `${outputFolderPath}/README.md`
       );
     }

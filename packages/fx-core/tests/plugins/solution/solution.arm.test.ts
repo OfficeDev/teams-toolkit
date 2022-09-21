@@ -43,10 +43,8 @@ import {
   fehostPlugin,
   fileEncoding,
   identityPlugin,
-  PluginId,
   simpleAuthPlugin,
   SOLUTION_CONFIG_NAME,
-  spfxPlugin,
   TestFileContent,
   TestFilePath,
 } from "../../constants";
@@ -86,12 +84,12 @@ describe("Generate ARM Template for project", () => {
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionSPFx.id,
       name: "spfx",
-      activeResourcePlugins: [spfxPlugin.name],
+      activeResourcePlugins: [],
       capabilities: [TabOptionItem.id],
     };
 
     // Action
-    const result = await generateArmTemplate(mockedCtx, [spfxPlugin]);
+    const result = await generateArmTemplate(mockedCtx, []);
 
     // Assert
     expect(result.isOk()).to.be.true;

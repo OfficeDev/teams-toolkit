@@ -7,6 +7,7 @@ import { exec, execSync } from "child_process";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance } from "axios";
 import { cpUtils, DebugLogger } from "../../../../common/deps-checker/util/cpUtils";
+import { getSPFxVersion } from "../../../../common/tools";
 
 export class Utils {
   static async configure(configurePath: string, map: Map<string, string>): Promise<void> {
@@ -143,4 +144,8 @@ export class Utils {
 
 export async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function isOfficialSPFx(): boolean {
+  return getSPFxVersion() === "1.15.0";
 }

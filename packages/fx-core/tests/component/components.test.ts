@@ -32,16 +32,16 @@ import { TestHelper } from "../plugins/resource/frontend/helper";
 import arm from "../../src/plugins/solution/fx-solution/arm";
 import { FrontendDeployment } from "../../src/plugins/resource/frontend/ops/deploy";
 import { newEnvInfoV3 } from "../../src/core/environment";
-import { Utils } from "../../src/plugins/resource/spfx/utils/utils";
-import { YoChecker } from "../../src/plugins/resource/spfx/depsChecker/yoChecker";
-import { GeneratorChecker } from "../../src/plugins/resource/spfx/depsChecker/generatorChecker";
+import { Utils } from "../../src/component/resource/spfx/utils/utils";
+import { YoChecker } from "../../src/component/resource/spfx/depsChecker/yoChecker";
+import { GeneratorChecker } from "../../src/component/resource/spfx/depsChecker/generatorChecker";
 import { cpUtils } from "../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import * as uuid from "uuid";
 import * as aadManifest from "../../src/core/generateAadManifestTemplate";
 import {
   SPFXQuestionNames,
   versionCheckQuestion,
-} from "../../src/plugins/resource/spfx/utils/questions";
+} from "../../src/component/resource/spfx/utils/questions";
 import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
 import { ComponentNames } from "../../src/component/constants";
 import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";

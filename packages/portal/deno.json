@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "dom.extras",
+      "deno.ns"
+    ],
+    "types": [
+      "https://deno.land/x/aleph@1.0.0-beta.7/types.d.ts"
+    ],
+    "jsx": "react-jsx",
+    "jsxImportSource": "https://esm.sh/react@18.2.0"
+  },
+  "importMap": "import_map.json",
+  "tasks": {
+    "dev": "deno run -A -q dev.ts",
+    "start": "deno run -A server.ts",
+    "opt": "deno run -A server.ts --optimize"
+  },
+  "fmt": {
+    "options": {
+      "singleQuote": true,
+      "indentWidth": 2,
+      "useTabs": false
+    }
+  },
+  "lint": {
+    "rules": {
+      "tags": [
+        "recommended"
+      ],
+      "exclude": [
+        "no-explicit-any"
+      ]
+    }
+  }
+}

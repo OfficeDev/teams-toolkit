@@ -9,7 +9,6 @@ import { DotnetBotImpl } from "../../../../../../src/plugins/resource/bot/dotnet
 import * as testUtils from "../utils";
 import { ResourcePlugins } from "../../../../../../src/common/constants";
 import { ConfigKeys } from "../../../../../../src/plugins/resource/bot/constants";
-import { BOT_ID } from "../../../../../../src/plugins/resource/appstudio/constants";
 import { AzureSolutionSettings, ok } from "@microsoft/teamsfx-api";
 import { PluginAAD } from "../../../../../../src/plugins/resource/bot/resources/strings";
 import { RetryHandler } from "../../../../../../src/plugins/resource/bot/utils/retryHandler";
@@ -18,6 +17,7 @@ import {
   BotOptionItem,
   BotSsoItem,
 } from "../../../../../../src/plugins/solution/fx-solution/question";
+import { BOT_ID } from "../../../../../../src/component/resource/appManifest/constants";
 
 describe("Bot plugin for dotnet", () => {
   describe("Test PostLocalDebug", () => {

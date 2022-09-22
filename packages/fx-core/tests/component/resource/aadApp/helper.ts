@@ -24,8 +24,8 @@ import {
   DEFAULT_PERMISSION_REQUEST,
   ARM_TEMPLATE_OUTPUT,
 } from "../../../../src/plugins/solution/fx-solution/constants";
-import { AppUser } from "../../../../src/plugins/resource/appstudio/interfaces/appUser";
-import { SOLUTION } from "../../../../src/plugins/resource/appstudio/constants";
+import { AppUser } from "../../../../src/component/resource/appManifest/interfaces/appUser";
+import { SOLUTION } from "../../../../src/component/resource/appManifest/constants";
 import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,

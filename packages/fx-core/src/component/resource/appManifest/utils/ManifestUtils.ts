@@ -14,20 +14,19 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import "reflect-metadata";
-import { getProjectTemplatesFolderPath } from "../../../common/utils";
-import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../migrate";
-import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
-import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
+import { getProjectTemplatesFolderPath } from "../../../../common/utils";
+import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
+import { AppStudioError } from "../errors";
+import { AppStudioResultFactory } from "../results";
 import { cloneDeep } from "lodash";
 import {
   BOTS_TPL_EXISTING_APP,
   COMPOSE_EXTENSIONS_TPL_EXISTING_APP,
   CONFIGURABLE_TABS_TPL_EXISTING_APP,
   DEFAULT_DEVELOPER,
+  MANIFEST_TEMPLATE_CONSOLIDATE,
   STATIC_TABS_MAX_ITEMS,
   STATIC_TABS_TPL_EXISTING_APP,
-} from "../../../plugins/resource/appstudio/constants";
-import {
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
   BOTS_TPL_FOR_NOTIFICATION_V3,
   BOTS_TPL_V3,
@@ -36,21 +35,21 @@ import {
   CONFIGURABLE_TABS_TPL_V3,
   STATIC_TABS_TPL_V3,
   WEB_APPLICATION_INFO_V3,
-} from "./constants";
+} from "../constants";
 import {
   BotScenario,
   CommandAndResponseOptionItem,
   NotificationOptionItem,
   WorkflowOptionItem,
-} from "../../../plugins/solution/fx-solution/question";
-import { getCustomizedKeys } from "../../../plugins/resource/appstudio/utils/utils";
-import { TelemetryPropertyKey } from "../../../plugins/resource/appstudio/utils/telemetry";
+} from "../../../../plugins/solution/fx-solution/question";
+import { getCustomizedKeys } from "./utils";
+import { TelemetryPropertyKey } from "./telemetry";
 import Mustache from "mustache";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { HelpLinks } from "../../../common/constants";
-import { ComponentNames } from "../../constants";
-import { compileHandlebarsTemplateString } from "../../../common/tools";
-import { hasTab } from "../../../common/projectSettingsHelperV3";
+import { getLocalizedString } from "../../../../common/localizeUtils";
+import { HelpLinks } from "../../../../common/constants";
+import { ComponentNames } from "../../../constants";
+import { compileHandlebarsTemplateString, getAppDirectory } from "../../../../common/tools";
+import { hasTab } from "../../../../common/projectSettingsHelperV3";
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
     const filePath = await this.getTeamsAppManifestPath(projectPath);
@@ -377,8 +376,9 @@ export class ManifestUtils {
         return manifest.composeExtensions !== undefined && manifest.composeExtensions!.length >= 1;
       case "WebApplicationInfo":
         return false;
+      default:
+        return false;
     }
-    return false;
   }
   _getCapabilities(template: TeamsAppManifest): Result<string[], FxError> {
     const capabilities: string[] = [];
@@ -565,6 +565,11 @@ export function resolveManifestTemplate(
   }
   const result = compileHandlebarsTemplateString(templateString, view);
   return result;
+}
+
+export async function getManifestTemplatePath(projectRoot: string): Promise<string> {
+  const appDir = await getAppDirectory(projectRoot);
+  return `${appDir}/${MANIFEST_TEMPLATE_CONSOLIDATE}`;
 }
 
 export const manifestUtils = new ManifestUtils();

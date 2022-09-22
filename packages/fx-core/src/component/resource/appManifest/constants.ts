@@ -226,3 +226,131 @@ export function getAppStudioEndpoint(): string {
 }
 
 export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
+
+export class Constants {
+  public static readonly MANIFEST_FILE = "manifest.json";
+  public static readonly PLUGIN_NAME = "AppStudioPlugin";
+  public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
+  public static readonly INCLUDE_APP_MANIFEST = "include-app-manifest";
+  public static readonly READ_MORE = "Read more";
+  public static readonly VIEW_DEVELOPER_PORTAL = "View in Developer Portal";
+  public static readonly DEVELOPER_PORTAL_APP_PACKAGE_URL =
+    "https://dev.teams.microsoft.com/apps/%s/app-package";
+  public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";
+  public static readonly TEAMS_ADMIN_PORTAL = "https://aka.ms/teamsfx-mtac";
+  public static readonly TEAMS_MANAGE_APP_DOC = "https://aka.ms/teamsfx-mtac-doc";
+  public static readonly TEAMS_APP_ID = "teamsAppId";
+  public static readonly TEAMS_APP_UPDATED_AT = "teamsAppUpdatedAt";
+
+  public static readonly PERMISSIONS = {
+    name: "Teams App",
+    noPermission: "No permission",
+    admin: "Administrator",
+    operative: "Operative",
+    type: "M365",
+  };
+
+  // HTTP headers are case insensitive. Axios lowercases all headers.
+  public static readonly CORRELATION_ID = "x-correlation-id";
+}
+
+export class ErrorMessages {
+  static readonly GetConfigError = (configName: string, plugin: string) =>
+    `Failed to get configuration value "${configName}" for ${plugin}.`;
+  static readonly GrantPermissionFailed = "Response is empty or user is not added.";
+  static readonly TeamsAppNotFound = (teamsAppId: string) =>
+    `Cannot find Teams App with id: ${teamsAppId}. Maybe your current M365 account doesn't not have permission, or the Teams App has already been deleted.`;
+}
+
+export class APP_STUDIO_API_NAMES {
+  public static readonly CREATE_APP = "create-app";
+  public static readonly GET_APP = "get-app";
+  public static readonly PUBLISH_APP = "publish-app";
+  public static readonly GET_PUBLISHED_APP = "get-published-app";
+  public static readonly UPDATE_PUBLISHED_APP = "update-published-app";
+  public static readonly UPDATE_OWNER = "update-owner";
+  public static readonly EXISTS_IN_TENANTS = "exists-in-tenant";
+}
+
+/**
+ * Config keys that are useful for generating remote teams app manifest
+ */
+export const REMOTE_MANIFEST = "manifest.source.json";
+export const MANIFEST_TEMPLATE = "manifest.remote.template.json";
+export const MANIFEST_LOCAL = "manifest.local.template.json";
+export const MANIFEST_TEMPLATE_CONSOLIDATE = "manifest.template.json";
+export const FRONTEND_ENDPOINT = "endpoint";
+export const FRONTEND_DOMAIN = "domain";
+export const FRONTEND_INDEX_PATH = "indexPath";
+export const BOT_ID = "botId";
+export const LOCAL_BOT_ID = "localBotId";
+export const COLOR_TEMPLATE = "plugins/resource/appstudio/defaultIcon.png";
+export const OUTLINE_TEMPLATE = "plugins/resource/appstudio/defaultOutline.png";
+export const DEFAULT_COLOR_PNG_FILENAME = "color.png";
+export const DEFAULT_OUTLINE_PNG_FILENAME = "outline.png";
+export const MANIFEST_RESOURCES = "resources";
+
+// Default values for the developer fields in manifest.
+export const DEFAULT_DEVELOPER = {
+  name: "Teams App, Inc.",
+  websiteUrl: "https://www.example.com",
+  privacyUrl: "https://www.example.com/termofuse",
+  termsOfUseUrl: "https://www.example.com/privacy",
+};
+
+export const BOTS_TPL_EXISTING_APP: IBot[] = [
+  {
+    botId: "{{config.manifest.botId}}",
+    scopes: ["personal", "team", "groupchat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+    commandLists: [
+      {
+        scopes: ["personal", "team", "groupchat"],
+        commands: [],
+      },
+    ],
+  },
+];
+
+export const COMPOSE_EXTENSIONS_TPL_EXISTING_APP: IComposeExtension[] = [
+  {
+    botId: "{{config.manifest.botId}}",
+    commands: [],
+    messageHandlers: [
+      {
+        type: "link",
+        value: {
+          domains: ["*.botframework.com"],
+        },
+      },
+    ],
+  },
+];
+
+export const CONFIGURABLE_TABS_TPL_EXISTING_APP: IConfigurableTab[] = [
+  {
+    configurationUrl: "{{config.manifest.tabConfigurationUrl}}",
+    canUpdateConfiguration: true,
+    scopes: ["team", "groupchat"],
+  },
+];
+
+export const STATIC_TABS_TPL_EXISTING_APP: IStaticTab[] = [
+  {
+    entityId: "index",
+    name: "Personal Tab",
+    contentUrl: "{{config.manifest.tabContentUrl}}",
+    websiteUrl: "{{config.manifest.tabWebsiteUrl}}",
+    scopes: ["personal"],
+  },
+];
+
+export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
+export const STATIC_TABS_MAX_ITEMS = 16;
+
+/**
+ * Config Keys that are useful for remote collaboration
+ */
+export const SOLUTION = "solution";
+export const SOLUTION_USERINFO = "userinfo";

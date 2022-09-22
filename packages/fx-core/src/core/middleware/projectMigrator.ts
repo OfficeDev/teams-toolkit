@@ -57,8 +57,8 @@ import {
   MANIFEST_LOCAL,
   MANIFEST_TEMPLATE,
   REMOTE_MANIFEST,
-} from "../../plugins/resource/appstudio/constants";
-import { getLocalAppName } from "../../plugins/resource/appstudio/utils/utils";
+} from "../../component/resource/appManifest/constants";
+import { getLocalAppName } from "../../component/resource/appManifest/utils/utils";
 import {
   Component,
   ProjectMigratorGuideStatus,

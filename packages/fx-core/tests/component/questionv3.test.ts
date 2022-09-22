@@ -25,7 +25,7 @@ import {
   TabNonSsoItem,
   WorkflowOptionItem,
 } from "../../src/plugins/solution/fx-solution/question";
-import { manifestUtils } from "../../src/component/resource/appManifest/utils";
+import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
 import {
   Inputs,
   InputsWithProjectPath,

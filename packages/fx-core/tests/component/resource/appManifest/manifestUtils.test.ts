@@ -26,11 +26,11 @@ import {
   TEAMS_APP_MANIFEST_TEMPLATE,
 } from "../../../../src/component/resource/appManifest/constants";
 import { DefaultManifestProvider } from "../../../../src/component/resource/appManifest/manifestProvider";
-import { manifestUtils } from "../../../../src/component/resource/appManifest/utils";
+import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
 import { createContextV3 } from "../../../../src/component/utils";
 import { setTools } from "../../../../src/core/globalVars";
-import { CONFIGURABLE_TABS_TPL_EXISTING_APP } from "../../../../src/plugins/resource/appstudio/constants";
-import { AppStudioError } from "../../../../src/plugins/resource/appstudio/errors";
+import { CONFIGURABLE_TABS_TPL_EXISTING_APP } from "../../../../src/component/resource/appManifest/constants";
+import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { QuestionNames } from "../../../../src/plugins/resource/bot/constants";
 import { AppServiceOptionItem } from "../../../../src/plugins/resource/bot/question";
 import {

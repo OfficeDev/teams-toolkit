@@ -15,7 +15,7 @@ import { mockProvisionResult, TestHelper, mockSkipFlag, mockTokenProviderM365 } 
 import sinon from "sinon";
 import { getAppStudioToken, getGraphToken } from "../tokenProvider";
 import faker from "faker";
-import { AppUser } from "../../../../../src/plugins/resource/appstudio/interfaces/appUser";
+import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
 import { BuiltInSolutionNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
 import { MockedV2Context } from "../../../../plugins/solution/util";

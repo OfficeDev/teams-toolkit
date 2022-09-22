@@ -17,7 +17,6 @@ export const ResourcePlugins = {
   FunctionPlugin: "FunctionPlugin",
   LocalDebugPlugin: "LocalDebugPlugin",
   ApimPlugin: "ApimPlugin",
-  AppStudioPlugin: "AppStudioPlugin",
 };
 
 export const ResourcePluginsV2 = {
@@ -27,7 +26,6 @@ export const ResourcePluginsV2 = {
   FunctionPlugin: "FunctionPluginV2",
   LocalDebugPlugin: "LocalDebugPluginV2",
   ApimPlugin: "ApimPluginV2",
-  AppStudioPlugin: "AppStudioPluginV2",
 };
 
 /**

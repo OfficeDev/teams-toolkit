@@ -568,7 +568,10 @@ async function previewLocal(progressBar: IProgressHandler): Promise<Result<null,
     const error = new UserError(
       ExtensionSource,
       ExtensionErrors.TeamsAppIdNotFoundError,
-      localize("teamstoolkit.handlers.teamsAppIdNotFound")
+      util.format(
+        localize("teamstoolkit.handlers.teamsAppIdNotFound"),
+        environmentManager.getLocalEnvName()
+      )
     );
     return err(error);
   }
@@ -587,7 +590,7 @@ async function previewRemote(
       const error = new UserError(
         ExtensionSource,
         ExtensionErrors.TeamsAppIdNotFoundError,
-        localize("teamstoolkit.handlers.teamsAppIdNotFound")
+        util.format(localize("teamstoolkit.handlers.teamsAppIdNotFound"), env)
       );
       return err(error);
     }

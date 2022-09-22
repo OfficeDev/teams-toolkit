@@ -47,12 +47,14 @@ const botDebugMessages = {
   AADRegistered: "AAD app is registered (%s)",
   useExistingAAD: "Skip registering AAD app but use the existing AAD app from args: %s",
   AADAlreadyRegistered: "Skip registering AAD app (%s) as it has already been registered before",
-  botRegistered: "Bot is registered",
-  botAlreadyRegistered: "Skip registering bot as it has already been registered before",
+  botRegistered: "Bot is registered (%s)",
+  botAlreadyRegistered: "Skip registering bot as it has already been registered before (%s)",
   botMessagingEndpointUpdated: "Bot messaging endpoint is updated to %s",
   statesSaved: "The states of bot are saved in %s",
   envsSet: "The environment variables of bot are saved in %s",
 };
+
+const botUrl = "https://dev.botframework.com/bots?id=";
 
 export interface BotDebugArgs {
   botId?: string;
@@ -221,7 +223,12 @@ export class BotDebugHandler {
         this.envInfoV3!.state[ComponentNames.TeamsBot].botId
       );
       if (result) {
-        return ok([botDebugMessages.botAlreadyRegistered]);
+        return ok([
+          util.format(
+            botDebugMessages.botAlreadyRegistered,
+            `${botUrl}${this.envInfoV3!.state[ComponentNames.TeamsBot].botId}`
+          ),
+        ]);
       }
 
       const botReg: IBotRegistration = {
@@ -237,7 +244,12 @@ export class BotDebugHandler {
 
       await AppStudio.createBotRegistration(tokenResult.value, botReg);
 
-      return ok([botDebugMessages.botRegistered]);
+      return ok([
+        util.format(
+          botDebugMessages.botRegistered,
+          `${botUrl}${this.envInfoV3!.state[ComponentNames.TeamsBot].botId}`
+        ),
+      ]);
     } catch (error: unknown) {
       return err(assembleError(error, errorSource));
     }

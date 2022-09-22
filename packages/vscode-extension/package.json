@@ -950,9 +950,9 @@
               {
                 "type": "object",
                 "properties": {
-                  "manifestPackagePath": {
+                  "appPackagePath": {
                     "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.manifest.manifestPackagePathTitle%"
+                    "description": "%teamstoolkit.taskDefinitions.args.manifest.appPackagePathTitle%"
                   }
                 },
                 "additionalProperties": false

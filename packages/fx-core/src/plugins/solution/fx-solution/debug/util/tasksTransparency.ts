@@ -444,8 +444,8 @@ function setUpSSO(): Record<string, unknown> {
 function buildAndUploadTeamsManifest(): Record<string, unknown> {
   const comment = `
   {
-    //// Enter your own Teams manifest app package path if using the existing Teams manifest app package. ////
-    // "manifestPackagePath": ""
+    //// Enter your own Teams app package path if using the existing Teams manifest. ////
+    // "appPackagePath": ""
   }
   `;
 

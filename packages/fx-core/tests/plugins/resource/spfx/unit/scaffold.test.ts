@@ -59,12 +59,7 @@ describe("SPFxScaffold", function () {
     sinon.stub(fs, "rename").resolves();
     sinon.stub(fs, "copyFile").resolves();
     sinon.stub(fs, "remove").resolves();
-    sinon.stub(fs, "pathExists").callsFake(async (directory) => {
-      if (directory.includes(".yo-rc.json")) {
-        return false;
-      }
-      return true;
-    });
+    sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readJson").resolves({});
     sinon.stub(fs, "ensureFile").resolves();
     sinon.stub(fs, "writeJSON").resolves();

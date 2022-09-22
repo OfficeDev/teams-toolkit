@@ -1,4 +1,4 @@
-- [4.0.6 - Sep 20 2022](#406---sep-23-2022)
+- [4.0.6 - Sep 23 2022](#406---sep-23-2022)
 - [4.0.5 - Aug 22 2022](#405---aug-22-2022)
 - [4.0.4 - Aug 09 2022](#404---aug-09-2022)
 - [4.0.3 - Jul 26 2022](#403---jul-26-2022)
@@ -22,7 +22,7 @@
 
 # Changelog
 
-## 4.0.6 - Sep 20, 2022
+## 4.0.6 - Sep 23, 2022
 
 Incremental version for Teams Toolkit with multiple bugs fix, enhancements and new features.
 

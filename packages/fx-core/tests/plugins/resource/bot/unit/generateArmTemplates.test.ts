@@ -233,7 +233,6 @@ describe("Bot Generates Arm Templates", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.notExists(compiledResult.Provision);
-      //chai.assert.strictEqual(compiledResult.Configuration!.Modules!.bot, configModuleFile);
       chai.assert.notExists(compiledResult.Configuration!.Orchestration);
       chai.assert.notExists(compiledResult.Parameters);
       chai.assert.exists(compiledResult.Reference!.resourceId);

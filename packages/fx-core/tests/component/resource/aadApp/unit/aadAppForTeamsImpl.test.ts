@@ -174,6 +174,8 @@ describe("AadAppForTeamsPlugin: CI", () => {
     chai.assert.isTrue(postProvision.isOk());
   });
 
+  it("update permissions", async function () {});
+
   it("setApplicationInContext: using manifest", async function () {
     sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
     context = await TestHelper.pluginContext(new Map(), true, true, false);

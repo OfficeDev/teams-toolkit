@@ -16,7 +16,6 @@ import {
   PostProvisionConfig,
   ProvisionConfig,
   SetApplicationInContextConfig,
-  UpdatePermissionConfig,
   Utils,
 } from "./utils/configs";
 import { TelemetryUtils } from "./utils/telemetry";
@@ -393,46 +392,6 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success();
   }
 
-  public async updatePermission(ctx: PluginContext): Promise<AadResult> {
-    TelemetryUtils.init(ctx);
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartUpdatePermission);
-    const skip: boolean = ctx.config.get(ConfigKeys.skip) as boolean;
-    if (skip) {
-      ctx.logProvider?.info(Messages.SkipProvision);
-      Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndUpdatePermission);
-      return ResultFactory.Success();
-    }
-
-    DialogUtils.init(ctx.ui, ProgressTitle.UpdatePermission, ProgressTitle.UpdatePermissionSteps);
-
-    const configs = await AadAppForTeamsImpl.getUpdatePermissionConfigs(ctx);
-    if (!configs) {
-      return ResultFactory.Success();
-    }
-
-    await TokenProvider.init({ m365: ctx.m365TokenProvider });
-
-    const permissions = AadAppForTeamsImpl.parsePermission(
-      configs[0].permissionRequest as string,
-      ctx.logProvider
-    );
-
-    await DialogUtils.progress?.start(ProgressDetail.Starting);
-    await DialogUtils.progress?.next(ProgressDetail.UpdatePermission);
-    for (const config of configs) {
-      await AadAppClient.updateAadAppPermission(
-        Messages.EndUpdatePermission.telemetry,
-        config.objectId as string,
-        permissions
-      );
-    }
-    ctx.logProvider?.info(Messages.getLog(Messages.UpdatePermissionSuccess));
-
-    await DialogUtils.progress?.end(true);
-    DialogUtils.show(Messages.UpdatePermissionSuccessMessage);
-    return ResultFactory.Success();
-  }
-
   public async checkPermission(
     ctx: ContextV3,
     userInfo: AppUser
@@ -544,52 +503,6 @@ export class AadAppForTeamsImpl {
     }
 
     return redirectUris;
-  }
-
-  private static async getUpdatePermissionConfigs(
-    ctx: PluginContext
-  ): Promise<UpdatePermissionConfig[] | undefined> {
-    let azureAad = false;
-    let localAad = false;
-    if (ctx.config.get(ConfigKeys.objectId)) {
-      azureAad = true;
-    }
-    if (ctx.config.get(Utils.addLocalDebugPrefix(true, ConfigKeys.objectId))) {
-      localAad = true;
-    }
-
-    if (azureAad && localAad) {
-      const ans = ctx.answers![Constants.AskForEnvName];
-      if (!ans) {
-        ctx.logProvider?.info(Messages.UserCancelled);
-        return undefined;
-      }
-      if (ans === Envs.Azure) {
-        localAad = false;
-      } else if (ans === Envs.LocalDebug) {
-        azureAad = false;
-      }
-    }
-
-    if (!azureAad && !localAad) {
-      await DialogUtils.show(Messages.NoSelection, "info");
-      return undefined;
-    }
-
-    const configs: UpdatePermissionConfig[] = [];
-    if (azureAad) {
-      const config: UpdatePermissionConfig = new UpdatePermissionConfig();
-      await config.restoreConfigFromContext(ctx);
-      configs.push(config);
-    }
-
-    if (localAad) {
-      const config: UpdatePermissionConfig = new UpdatePermissionConfig(true);
-      await config.restoreConfigFromContext(ctx);
-      configs.push(config);
-    }
-
-    return configs;
   }
 
   public static parsePermission(

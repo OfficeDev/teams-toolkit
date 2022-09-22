@@ -26,11 +26,7 @@ async function retry(id, fn, retryIntervalInMs = 5000, maxAttemptCount = 5) {
   let exception = undefined;
   for (let attempted = 0; attempted < maxAttemptCount; ++attempted) {
     try {
-      if (attempted > 0) {
-        // Increase the retry interval for each failure.
-        await sleep(retryIntervalInMs * attempted);
-      }
-      return await fn();
+      return await delay(fn, retryIntervalInMs * attempted);
     } catch (e) {
       console.log(e.toString());
       console.log(`step ${id} failed, retrying ${attempted}.`);
@@ -42,8 +38,8 @@ async function retry(id, fn, retryIntervalInMs = 5000, maxAttemptCount = 5) {
   }
 }
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function delay(fn, ms) {
+  return new Promise((resolve) => setTimeout(() => resolve(fn()), ms));
 }
 
 async function getTemplateMetadata(tag) {

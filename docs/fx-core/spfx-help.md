@@ -2,6 +2,7 @@
 
 1. [Node.js and NPM compatiblity issues](#compatibility)
 2. [Failure to install prerequisites](#prerequisites)
+3. [Failure to add additional SPFx tab](#addfeature)
 
 
 ## 1. Node.js and NPM compatiblity issues<a name="compatibility"></a>
@@ -117,3 +118,38 @@ Install the SPFx generator version that Teams Toolkit supports, say `1.14`:
 ```sh
 npm install @microsoft/generator-sharepoint@1.14 -g
 ```
+
+## 3. Failure to add additional SPFx tab<a name="addfeature"></a>
+
+Multi-tab SPFx project is supported in Teams Toolkit. To add an additional SPFx tab, you can try "Add features" and select "SPFx tab". Behind the scenes, Yeoman generator is executed according to configuration file(.yo-rc.json) in current solution.
+
+If .yo-rc.json file doesn't exist in your SPFx project, adding SPFx tab might fail with potential issues. 
+
+#### SPFx.NoConfigurationFile
+![image](../images/fx-core/spfx/spfx-no-configuration-file.png)
+
+Please follow the instructions here to continue:
+
+- If your project is created by Teams Toolkit lower than v3.7.0, please create SPFx project with latest Teams Toolkit and migrate your codes.
+- If your project is downloaded from Todo-list-SPFx sample app, please add the following configuration file to `SPFx` subfolder in your project:
+
+```
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "version": ${SPFx_versioin},
+    "libraryName": "todo-list-sp-fx",
+    "libraryId": "c314487b-f51c-474d-823e-a2c3ec82b1ff",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "todo-list-sp-fx",
+    "solutionShortDescription": "todo-list-sp-fx description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart",
+    "template": "react"
+  }
+}
+```
+Note: Replace `SPFx_version` with the SPFx version used in your project.

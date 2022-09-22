@@ -22,20 +22,22 @@ async function step(desc, fn) {
   }
 }
 
-async function retry(id, fn, retryIntervalInMs = 5000, maxAttemptCount = 5) {
-  let exception = undefined;
-  for (let attempted = 0; attempted < maxAttemptCount; ++attempted) {
+async function retry(id, fn, retryIntervalInMs = 5000, maxAttempts = 5) {
+  const execute = async (attempt) => {
     try {
-      return await delay(fn, retryIntervalInMs * attempted);
+      return await fn();
     } catch (e) {
-      console.log(e.toString());
-      console.log(`step ${id} failed, retrying ${attempted}.`);
-      exception = e;
+      if (attempt < maxAttempts) {
+        // Increase retry interval for each failure
+        const delayInMs = retryIntervalInMs * attempt;
+        console.log(e.toString());
+        console.log(`step ${id} failed, retrying after ${delayInMs} milliseconds.`);
+        return delay(() => execute(attempt + 1), delayInMs);
+      }
+      throw e;
     }
-  }
-  if (exception) {
-    throw exception;
-  }
+  };
+  return execute(1);
 }
 
 function delay(fn, ms) {

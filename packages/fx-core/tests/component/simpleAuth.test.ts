@@ -18,7 +18,7 @@ import "../../src/component/resource/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { newEnvInfoV3 } from "../../src/core/environment";
 import { setTools } from "../../src/core/globalVars";
-import { Utils } from "../../src/plugins/resource/simpleauth/utils/common";
+import { Utils } from "../../src/component/resource/simpleAuth/utils/common";
 import { deleteFolder, MockTools, randomAppName } from "../core/utils";
 describe("Simple auth component V3", () => {
   const sandbox = sinon.createSandbox();

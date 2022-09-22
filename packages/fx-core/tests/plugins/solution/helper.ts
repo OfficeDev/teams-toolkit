@@ -20,11 +20,9 @@ import { ArmTemplateResult } from "../../../src/common/armInterface";
 import sinon from "sinon";
 import {
   aadPlugin,
-  botPlugin,
   botPluginV2,
   fehostPlugin,
   identityPlugin,
-  simpleAuthPlugin,
   SOLUTION_CONFIG_NAME,
   TestFileContent,
 } from "../../constants";
@@ -130,53 +128,53 @@ export class TestHelper {
     });
   }
 
-  static mockedSimpleAuthGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(simpleAuthPlugin, "generateArmTemplates")
-      .callsFake(async (ctx: PluginContext) => {
-        const res: ArmTemplateResult = {
-          Provision: {
-            Orchestration:
-              "Mocked simple auth provision orchestration content. Module path: '{{fx-resource-simple-auth.Provision.simpleAuthProvision.path}}'.",
-            Modules: {
-              simpleAuthProvision: TestFileContent.simpleAuthProvisionModule,
-            },
-          },
-          Configuration: {
-            Orchestration:
-              "Mocked simple auth configuration orchestration content. Module path: '{{fx-resource-simple-auth.Configuration.simpleAuthConfig.path}}'.",
-            Modules: {
-              simpleAuthConfig: TestFileContent.simpleAuthConfigurationModule,
-            },
-          },
-          Reference: {
-            simpleAuthOutputKey: TestFileContent.simpleAuthReferenceValue,
-          },
-          Parameters: {
-            SimpleAuthParameter: TestFileContent.simpleAuthParameterValue,
-          },
-        };
-        return ok(res);
-      });
-  }
+  // static mockedSimpleAuthGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
+  //   return mocker
+  //     .stub(simpleAuthPlugin, "generateArmTemplates")
+  //     .callsFake(async (ctx: PluginContext) => {
+  //       const res: ArmTemplateResult = {
+  //         Provision: {
+  //           Orchestration:
+  //             "Mocked simple auth provision orchestration content. Module path: '{{fx-resource-simple-auth.Provision.simpleAuthProvision.path}}'.",
+  //           Modules: {
+  //             simpleAuthProvision: TestFileContent.simpleAuthProvisionModule,
+  //           },
+  //         },
+  //         Configuration: {
+  //           Orchestration:
+  //             "Mocked simple auth configuration orchestration content. Module path: '{{fx-resource-simple-auth.Configuration.simpleAuthConfig.path}}'.",
+  //           Modules: {
+  //             simpleAuthConfig: TestFileContent.simpleAuthConfigurationModule,
+  //           },
+  //         },
+  //         Reference: {
+  //           simpleAuthOutputKey: TestFileContent.simpleAuthReferenceValue,
+  //         },
+  //         Parameters: {
+  //           SimpleAuthParameter: TestFileContent.simpleAuthParameterValue,
+  //         },
+  //       };
+  //       return ok(res);
+  //     });
+  // }
 
-  static mockedSimpleAuthUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(simpleAuthPlugin, "updateArmTemplates")
-      .callsFake(async (ctx: PluginContext) => {
-        const res: ArmTemplateResult = {
-          Reference: {
-            simpleAuthOutputKey2: TestFileContent.simpleAuthReferenceValue2,
-          },
-          Configuration: {
-            Modules: {
-              simpleAuthConfig: TestFileContent.simpleAuthUpdatedConfigurationModule,
-            },
-          },
-        };
-        return ok(res);
-      });
-  }
+  // static mockedSimpleAuthUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
+  //   return mocker
+  //     .stub(simpleAuthPlugin, "updateArmTemplates")
+  //     .callsFake(async (ctx: PluginContext) => {
+  //       const res: ArmTemplateResult = {
+  //         Reference: {
+  //           simpleAuthOutputKey2: TestFileContent.simpleAuthReferenceValue2,
+  //         },
+  //         Configuration: {
+  //           Modules: {
+  //             simpleAuthConfig: TestFileContent.simpleAuthUpdatedConfigurationModule,
+  //           },
+  //         },
+  //       };
+  //       return ok(res);
+  //     });
+  // }
 
   static mockedAadGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
     return mocker.stub(aadPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {

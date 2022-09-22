@@ -12,15 +12,15 @@ import {
 import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { LocalSettingsSimpleAuthKeys } from "../../common/localSettingsConstants";
-import { LocalStateSimpleAuthKeys } from "../../common/localStateConstants";
-import { getAllowedAppIds } from "../../common/tools";
-import { Constants, Messages } from "../../plugins/resource/simpleauth/constants";
-import { EndpointInvalidError, NoConfigError } from "../../plugins/resource/simpleauth/errors";
-import { ResultFactory } from "../../plugins/resource/simpleauth/result";
-import { Utils } from "../../plugins/resource/simpleauth/utils/common";
-import { ComponentNames } from "../constants";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { LocalSettingsSimpleAuthKeys } from "../../../common/localSettingsConstants";
+import { LocalStateSimpleAuthKeys } from "../../../common/localStateConstants";
+import { getAllowedAppIds } from "../../../common/tools";
+import { Constants, Messages } from "./constants";
+import { EndpointInvalidError, NoConfigError } from "./errors";
+import { ResultFactory } from "./result";
+import { Utils } from "./utils/common";
+import { ComponentNames } from "../../constants";
+import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 
 @Service(ComponentNames.SimpleAuth)
 export class SimpleAuth {

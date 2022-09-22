@@ -59,7 +59,7 @@
   .box3, .box7, .box11, .box15, .box19 {
     grid-column: 7/10;
   }
-  .box4, .box8, .box12, .box16 {
+  .box4, .box8, .box12, .box16, .box20 {
     grid-column: 10/13;
   }
 
@@ -213,7 +213,7 @@
     .box1, .box4, .box7, .box10, .box13, .box16, .box19 {
       grid-column: 1/5;
     }
-    .box2, .box5, .box8, .box11, .box14, .box17 {
+    .box2, .box5, .box8, .box11, .box14, .box17, .box20 {
       grid-column: 5/9;
     }
 
@@ -228,7 +228,7 @@
     .box1, .box3, .box5, .box7, .box9, .box11, .box13, .box15, .box17, .box19 {
       grid-column: 1/7;
     }
-    .box2, .box4,.box6,.box8, .box10,.box12, .box14, .box16, .box18 {
+    .box2, .box4,.box6,.box8, .box10,.box12, .box14, .box16, .box18, .box20 {
       grid-column: 7/13;
     }
   }
@@ -244,7 +244,7 @@
   .sample-gallery {
     min-width: 320px;
 
-  .box1, .box2, .box3, .box4, .box5, .box6, .box7, .box8, .box9, .box10, .box11, .box12, .box13, .box14, .box15, .box16, .box17, .box18, .box19 {
+  .box1, .box2, .box3, .box4, .box5, .box6, .box7, .box8, .box9, .box10, .box11, .box12, .box13, .box14, .box15, .box16, .box17, .box18, .box19, .box20 {
       grid-column: 1/13;
     }
   }

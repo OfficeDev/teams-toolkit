@@ -950,9 +950,9 @@
               {
                 "type": "object",
                 "properties": {
-                  "manifestPackagePath": {
+                  "appPackagePath": {
                     "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.manifest.manifestPackagePathTitle%"
+                    "description": "%teamstoolkit.taskDefinitions.args.manifest.appPackagePathTitle%"
                   }
                 },
                 "additionalProperties": false
@@ -978,12 +978,12 @@
                     "description": "%teamstoolkit.taskDefinitions.args.useGlobalNgrok.title%",
                     "default": false
                   },
-                  "reuse":{
+                  "reuse": {
                     "type": "boolean",
                     "description": "%teamstoolkit.taskDefinitions.args.reuse.title%",
                     "default": false
                   },
-                  "tunnelName":{
+                  "tunnelName": {
                     "type": "string",
                     "description": "%teamstoolkit.taskDefinitions.args.tunnelName.title%",
                     "default": "bot"
@@ -1239,10 +1239,13 @@
               "sharepointYeomanGenerator": true
             }
           },
-          "fx-extension.SPFxVersion":{
+          "fx-extension.SPFxVersion": {
             "type": "string",
             "description": "Select what version of SPFx to use. (Requires reload of VS Code)",
-            "enum": ["1.15.0", "1.16.0-beta.1"],
+            "enum": [
+              "1.15.0",
+              "1.16.0-beta.1"
+            ],
             "default": "1.15.0"
           }
         }

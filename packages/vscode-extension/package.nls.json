@@ -416,5 +416,5 @@
     "teamstoolkit.taskDefinitions.args.sso.clientIdTitle": "The AAD app client id for SSO",
     "teamstoolkit.taskDefinitions.args.sso.clientSecretTitle": "The AAD app client secret for SSO",
     "teamstoolkit.taskDefinitions.args.sso.accessAsUserScopeIdTitle": "The AAD app access_as_user scope id for SSO",
-    "teamstoolkit.taskDefinitions.args.manifest.manifestPackagePathTitle": "Teams manifest app package path"
+    "teamstoolkit.taskDefinitions.args.manifest.appPackagePathTitle": "Teams app package path"
 }

@@ -86,7 +86,7 @@ export class SimpleAuth {
 
   getWebAppConfig(envInfo: EnvInfoV3): { [propertyName: string]: string } {
     const clientId = envInfo.state[ComponentNames.AadApp].clientId;
-    const clientSecret = envInfo.state[ComponentNames.AadApp].clientId;
+    const clientSecret = envInfo.state[ComponentNames.AadApp].clientSecret;
     const oauthAuthority = envInfo.state[ComponentNames.AadApp].oauthAuthority;
     const applicationIdUris = envInfo.state[ComponentNames.AadApp].applicationIdUris;
     const endpoint = envInfo.state[ComponentNames.TeamsTab].endpoint as string;

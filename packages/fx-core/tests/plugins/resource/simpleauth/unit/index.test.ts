@@ -76,7 +76,7 @@ describe("simpleAuthPlugin", () => {
         oauthAuthority: "https://login.microsoftonline.com/mock-teamsAppTenantId",
       },
       [ComponentNames.TeamsTab]: {
-        endpoint: "https://11111.com",
+        endpoint: "https://endpoint.mock",
       },
     };
   });

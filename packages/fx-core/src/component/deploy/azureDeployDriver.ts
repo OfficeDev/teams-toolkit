@@ -19,7 +19,7 @@ import { Base64 } from "js-base64";
 import * as appService from "@azure/arm-appservice";
 import { DeployConstant } from "../constant/deployConstant";
 import { default as axios } from "axios";
-import { waitSeconds } from "../../common";
+import { waitSeconds } from "../../common/tools";
 
 export abstract class AzureDeployDriver extends BaseDeployDriver {
   protected managementClient: appService.WebSiteManagementClient | undefined;

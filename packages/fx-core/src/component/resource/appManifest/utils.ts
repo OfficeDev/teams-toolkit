@@ -32,6 +32,7 @@ import {
   BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3,
   BOTS_TPL_FOR_NOTIFICATION_V3,
   BOTS_TPL_V3,
+  COMPOSE_EXTENSIONS_TPL_M365_V3,
   COMPOSE_EXTENSIONS_TPL_V3,
   CONFIGURABLE_TABS_TPL_V3,
   STATIC_TABS_TPL_V3,
@@ -51,6 +52,7 @@ import { HelpLinks } from "../../../common/constants";
 import { ComponentNames } from "../../constants";
 import { compileHandlebarsTemplateString } from "../../../common/tools";
 import { hasTab } from "../../../common/projectSettingsHelperV3";
+import { FAILSAFE_SCHEMA } from "js-yaml";
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
     const filePath = await this.getTeamsAppManifestPath(projectPath);
@@ -87,7 +89,8 @@ export class ManifestUtils {
 
   async addCapabilities(
     inputs: InputsWithProjectPath,
-    capabilities: v3.ManifestCapability[]
+    capabilities: v3.ManifestCapability[],
+    isM365 = false
   ): Promise<Result<undefined, FxError>> {
     const appManifestRes = await this.readAppManifest(inputs.projectPath);
     if (appManifestRes.isErr()) return err(appManifestRes.error);
@@ -193,8 +196,9 @@ export class ManifestUtils {
                 COMPOSE_EXTENSIONS_TPL_EXISTING_APP
               );
             } else {
-              appManifest.composeExtensions =
-                appManifest.composeExtensions.concat(COMPOSE_EXTENSIONS_TPL_V3);
+              appManifest.composeExtensions = appManifest.composeExtensions.concat(
+                isM365 ? COMPOSE_EXTENSIONS_TPL_M365_V3 : COMPOSE_EXTENSIONS_TPL_V3
+              );
             }
           }
           break;

@@ -34,7 +34,7 @@ import {
   hasTab,
 } from "../common/projectSettingsHelperV3";
 import { canAddCICDWorkflows } from "../common/tools";
-import { ComponentNames } from "./constants";
+import { ComponentNames, Runtime } from "./constants";
 import { ComponentName2pluginName } from "./migrate";
 import { getComponent } from "./workflow";
 import { STATIC_TABS_MAX_ITEMS, Constants as Constants1 } from "./resource/appManifest/constants";
@@ -42,7 +42,7 @@ import {
   createHostTypeTriggerQuestion,
   getConditionOfNotificationTriggerQuestion,
   showNotificationTriggerCondition,
-} from "../plugins/resource/bot/question";
+} from "./feature/bot/question";
 import {
   ApiConnectionOptionItem,
   AskSubscriptionQuestion,
@@ -76,8 +76,6 @@ import {
   isSPFxMultiTabEnabled,
   isWorkflowBotEnabled,
 } from "../common/featureFlags";
-import { Runtime } from "../plugins/resource/bot/v2/enum";
-import { getPlatformRuntime } from "../plugins/resource/bot/v2/mapping";
 import { buildQuestionNode } from "./resource/azureSql/questions";
 import { functionNameQuestion } from "../plugins/resource/function/question";
 import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
@@ -522,4 +520,23 @@ export function getPluginCLIName(name: string): string {
   } else {
     return name.replace(pluginPrefix, "");
   }
+}
+
+const PlatformRuntimeMap: Map<Platform, Runtime> = new Map<Platform, Runtime>([
+  [Platform.VS, Runtime.dotnet],
+  [Platform.VSCode, Runtime.nodejs],
+  [Platform.CLI, Runtime.nodejs],
+  [Platform.CLI_HELP, Runtime.nodejs],
+]);
+
+function getKeyNotFoundInMapErrorMsg(key: any) {
+  return `The key ${key} is not found in map.`;
+}
+
+export function getPlatformRuntime(platform: Platform): Runtime {
+  const runtime = PlatformRuntimeMap.get(platform);
+  if (runtime) {
+    return runtime;
+  }
+  throw new Error(getKeyNotFoundInMapErrorMsg(platform));
 }

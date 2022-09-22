@@ -26,7 +26,6 @@ import {
 } from "../../common/template-utils/templatesActions";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { CoreQuestionNames } from "../../core/question";
-import { TemplateZipFallbackError } from "../../plugins/resource/bot/v3/error";
 import {
   Constants,
   FrontendPathInfo,
@@ -51,7 +50,6 @@ import {
 } from "../../plugins/resource/frontend/env";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { DotnetCommands } from "../../plugins/resource/frontend/dotnet/constants";
-import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 import { ScaffoldProgress } from "../../plugins/resource/frontend/resources/steps";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
@@ -62,6 +60,7 @@ import {
   TabOptionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { BadComponent } from "../error";
+import { CommandExecutionError, TemplateZipFallbackError } from "./error";
 import { AppSettingConstants, replaceBlazorAppSettings } from "./appSettingUtils";
 import baseAppSettings from "./appSettings/baseAppSettings.json";
 import ssoBlazorAppSettings from "./appSettings/ssoBlazorAppSettings.json";
@@ -121,7 +120,7 @@ export class TabCodeProvider {
             ctx.logProvider.info(Messages.FailedFetchTemplate);
             break;
           case ScaffoldActionName.FetchTemplateZipFromLocal:
-            throw new TemplateZipFallbackError();
+            throw new TemplateZipFallbackError("FE");
           case ScaffoldActionName.Unzip:
             throw new UnzipTemplateError();
           default:

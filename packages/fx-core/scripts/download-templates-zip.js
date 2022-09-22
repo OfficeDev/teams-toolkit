@@ -22,12 +22,13 @@ async function step(desc, fn) {
   }
 }
 
-async function retry(id, fn, retryIntervalInMs = 5000, maxAttemptCount = 3) {
+async function retry(id, fn, retryIntervalInMs = 5000, maxAttemptCount = 5) {
   let exception = undefined;
   for (let attempted = 0; attempted < maxAttemptCount; ++attempted) {
     try {
       if (attempted > 0) {
-        await sleep(retryIntervalInMs);
+        // Increase the retry interval for each failure.
+        await sleep(retryIntervalInMs * attempted);
       }
       return await fn();
     } catch (e) {

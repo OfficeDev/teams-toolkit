@@ -13,13 +13,36 @@ async function step(desc, fn) {
   const id = ++stepId;
   try {
     console.log(`step ${id} start: ${desc}`);
-    const ret = await fn();
+    const ret = await retry(id, fn);
     return ret;
   } catch (e) {
     console.log(e.toString());
     console.log(`step ${id} failed`);
     process.exit(-1);
   }
+}
+
+async function retry(id, fn, retryIntervalInMs = 5000, maxAttemptCount = 3) {
+  let exception = undefined;
+  for (let attempted = 0; attempted < maxAttemptCount; ++attempted) {
+    try {
+      if (attempted > 0) {
+        await sleep(retryIntervalInMs);
+      }
+      return await fn();
+    } catch (e) {
+      console.log(e.toString());
+      console.log(`step ${id} failed, retrying ${attempted}.`);
+      exception = e;
+    }
+  }
+  if (exception) {
+    throw exception;
+  }
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function getTemplateMetadata(tag) {

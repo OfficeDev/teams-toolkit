@@ -52,7 +52,6 @@ import { HelpLinks } from "../../../common/constants";
 import { ComponentNames } from "../../constants";
 import { compileHandlebarsTemplateString } from "../../../common/tools";
 import { hasTab } from "../../../common/projectSettingsHelperV3";
-import { FAILSAFE_SCHEMA } from "js-yaml";
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
     const filePath = await this.getTeamsAppManifestPath(projectPath);

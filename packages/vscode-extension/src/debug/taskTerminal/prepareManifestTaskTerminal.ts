@@ -27,10 +27,8 @@ export class PrepareManifestTaskTerminal extends BaseTaskTerminal {
   }
 
   async do(): Promise<Result<Void, FxError>> {
-    if (this.args.manifestPackagePath) {
-      this.args.manifestPackagePath = BaseTaskTerminal.resolveTeamsFxVariables(
-        this.args.manifestPackagePath
-      );
+    if (this.args.appPackagePath) {
+      this.args.appPackagePath = BaseTaskTerminal.resolveTeamsFxVariables(this.args.appPackagePath);
     }
 
     VsCodeLogInstance.outputChannel.show();

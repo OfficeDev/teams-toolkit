@@ -44,14 +44,14 @@ const appManifestDebugMessages = {
   savingStates: "Saving the states of Teams app ...",
   appManifestSaved: "Teams app manifest is resolved and app package is saved in %s",
   useExistingAppManifest:
-    "Skip building Teams app manifest but use the existing Teams app manifest package from args",
+    "Skip building Teams app manifest but use the existing Teams app package from args",
   statesSaved: "The states of Teams app manifest are saved in %s",
   skipSavingStates: "Skip saving the states for Teams app manifest",
   appPackageUploaded: "Teams app package is uploaded",
 };
 
 export interface AppManifestDebugArgs {
-  manifestPackagePath?: string;
+  appPackagePath?: string;
 }
 
 export class AppManifestDebugHandler {
@@ -102,20 +102,17 @@ export class AppManifestDebugHandler {
   }
 
   private async validateArgs(): Promise<Result<string[], FxError>> {
-    if (
-      this.args.manifestPackagePath !== undefined &&
-      this.args.manifestPackagePath.trim().length === 0
-    ) {
-      return err(DebugArgumentEmptyError("manifestPackagePath"));
+    if (this.args.appPackagePath !== undefined && this.args.appPackagePath.trim().length === 0) {
+      return err(DebugArgumentEmptyError("appPackagePath"));
     }
 
-    if (this.args.manifestPackagePath) {
-      this.args.manifestPackagePath = this.args.manifestPackagePath.trim();
-      if (this.args.manifestPackagePath.length > 0) {
-        if (!(await fs.pathExists(this.args.manifestPackagePath))) {
-          return err(AppManifestPackageNotExistError(this.args.manifestPackagePath));
+    if (this.args.appPackagePath) {
+      this.args.appPackagePath = this.args.appPackagePath.trim();
+      if (this.args.appPackagePath.length > 0) {
+        if (!(await fs.pathExists(this.args.appPackagePath))) {
+          return err(AppManifestPackageNotExistError(this.args.appPackagePath));
         }
-        if (path.extname(this.args.manifestPackagePath) != ".zip") {
+        if (path.extname(this.args.appPackagePath) != ".zip") {
           return err(InvalidAppManifestPackageFileFormatError());
         }
         this.existing = true;
@@ -131,7 +128,7 @@ export class AppManifestDebugHandler {
         return err(result.error);
       }
 
-      if (this.args.manifestPackagePath) {
+      if (this.args.appPackagePath) {
         return ok([appManifestDebugMessages.useExistingAppManifest]);
       }
 
@@ -165,7 +162,7 @@ export class AppManifestDebugHandler {
       if (packagePathResult.isErr()) {
         return err(packagePathResult.error);
       }
-      this.args.manifestPackagePath = packagePathResult.value;
+      this.args.appPackagePath = packagePathResult.value;
 
       return ok([
         util.format(
@@ -188,7 +185,7 @@ export class AppManifestDebugHandler {
         return err(tokenResult.error);
       }
 
-      const archivedFile = await fs.readFile(this.args.manifestPackagePath!);
+      const archivedFile = await fs.readFile(this.args.appPackagePath!);
       const appdefinition = await AppStudioClient.importApp(
         archivedFile,
         tokenResult.value,

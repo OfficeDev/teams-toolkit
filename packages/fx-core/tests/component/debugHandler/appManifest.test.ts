@@ -37,22 +37,19 @@ describe("AppManifestDebugHandler", () => {
       sinon.restore();
     });
 
-    it("invalid args: empty manifestPackagePath", async () => {
+    it("invalid args: empty appPackagePath", async () => {
       sinon.stub(fs, "pathExists").callsFake(async () => {
         return false;
       });
       const args: AppManifestDebugArgs = {
-        manifestPackagePath: "",
+        appPackagePath: "",
       };
       const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
-        chai.assert.equal(
-          result.error.message,
-          DebugArgumentEmptyError("manifestPackagePath").message
-        );
+        chai.assert.equal(result.error.message, DebugArgumentEmptyError("appPackagePath").message);
       }
       sinon.restore();
     });
@@ -61,16 +58,16 @@ describe("AppManifestDebugHandler", () => {
       sinon.stub(fs, "pathExists").callsFake(async () => {
         return false;
       });
-      const manifestPackagePath = "xxx";
+      const appPackagePath = "xxx";
       const args: AppManifestDebugArgs = {
-        manifestPackagePath,
+        appPackagePath,
       };
       const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
-        const error = AppManifestPackageNotExistError(manifestPackagePath);
+        const error = AppManifestPackageNotExistError(appPackagePath);
         chai.assert.equal(result.error.name, error.name);
         chai.assert.equal(result.error.message, error.message);
       }
@@ -81,9 +78,9 @@ describe("AppManifestDebugHandler", () => {
       sinon.stub(fs, "pathExists").callsFake(async () => {
         return true;
       });
-      const manifestPackagePath = "xxx.rar";
+      const appPackagePath = "xxx.rar";
       const args: AppManifestDebugArgs = {
-        manifestPackagePath,
+        appPackagePath,
       };
       const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
       const result = await runDebugActions(handler.getActions());

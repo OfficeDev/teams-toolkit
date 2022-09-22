@@ -10,34 +10,23 @@ import {
   PluginContext,
   ProjectSettings,
   ProjectSettingsV3,
-  TokenProvider,
-  v3,
 } from "@microsoft/teamsfx-api";
-import { AadAppForTeamsPlugin } from "../../../../../src/plugins/resource/aad/index";
 import { mockProvisionResult, TestHelper, mockSkipFlag, mockTokenProviderM365 } from "../helper";
 import sinon from "sinon";
-import { AadAppClient } from "../../../../../src/plugins/resource/aad/aadAppClient";
 import { getAppStudioToken, getGraphToken } from "../tokenProvider";
-import { ConfigKeys } from "../../../../../src/plugins/resource/aad/constants";
-import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/configs";
 import faker from "faker";
 import { AppUser } from "../../../../../src/plugins/resource/appstudio/interfaces/appUser";
-import { AadAppForTeamsPluginV3 } from "../../../../../src/plugins/resource/aad/v3";
-import {
-  BuiltInFeaturePluginNames,
-  BuiltInSolutionNames,
-} from "../../../../../src/plugins/solution/fx-solution/v3/constants";
-import { Container } from "typedi";
+import { BuiltInSolutionNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
-import {
-  MockedAzureAccountProvider,
-  MockedM365Provider,
-  MockedV2Context,
-} from "../../../solution/util";
+import { MockedV2Context } from "../../../../plugins/solution/util";
 import * as tool from "../../../../../src/common/tools";
 import fs from "fs-extra";
-import { AadAppManifestManager } from "../../../../../src/plugins/resource/aad/aadAppManifestManager";
-import { ComponentNames } from "../../../../../src/component/constants";
+import { AadAppForTeamsImpl } from "../../../../../src/component/resource/aadApp/aadAppForTeamsImpl";
+import { AadAppClient } from "../../../../../src/component/resource/aadApp/aadAppClient";
+import { ProvisionConfig } from "../../../../../src/component/resource/aadApp/utils/configs";
+import { AadAppManifestManager } from "../../../../../src/component/resource/aadApp/aadAppManifestManager";
+import { ConfigKeys } from "../../../../../src/component/resource/aadApp/constants";
+import { SOLUTION_PROVISION_SUCCEEDED } from "../../../../../src/plugins/solution/fx-solution/constants";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
@@ -62,16 +51,12 @@ const projectSettings: ProjectSettings = {
   },
 };
 const ctx = new MockedV2Context(projectSettings) as ContextV3;
-const tokenProvider: TokenProvider = {
-  azureAccountProvider: new MockedAzureAccountProvider(),
-  m365TokenProvider: new MockedM365Provider(),
-};
 describe("AadAppForTeamsPlugin: CI", () => {
-  let plugin: AadAppForTeamsPlugin;
+  let plugin: AadAppForTeamsImpl;
   let context: PluginContext;
 
   beforeEach(async () => {
-    plugin = new AadAppForTeamsPlugin();
+    plugin = new AadAppForTeamsImpl();
     sinon.stub(AadAppClient, "createAadApp").resolves();
     sinon.stub(AadAppClient, "createAadAppSecret").resolves();
     sinon.stub(AadAppClient, "updateAadAppRedirectUri").resolves();
@@ -141,8 +126,14 @@ describe("AadAppForTeamsPlugin: CI", () => {
     chai.assert.isTrue(provision.isOk());
 
     mockProvisionResult(context, false, false);
-    const setAppId = plugin.setApplicationInContext(context);
-    chai.assert.isTrue(setAppId.isErr());
+    let isExceptionThrown = false;
+    try {
+      const setAppId = plugin.setApplicationInContext(context);
+      chai.assert.isTrue(setAppId.isErr());
+    } catch (e) {
+      isExceptionThrown = true;
+    }
+    chai.assert.isTrue(isExceptionThrown);
 
     context = await TestHelper.pluginContext(context.config, true, false, false);
     context.m365TokenProvider = mockTokenProviderM365();
@@ -203,157 +194,6 @@ describe("AadAppForTeamsPlugin: CI", () => {
       context.envInfo.state.get("fx-resource-aad-app-for-teams").botEndpoint,
       context.envInfo.state.get("fx-resource-bot").siteEndpoint
     );
-  });
-
-  it("local debug: tab and bot", async function () {
-    context = await TestHelper.pluginContext(new Map(), true, true, true);
-    context.m365TokenProvider = mockTokenProviderM365();
-
-    const provision = await plugin.localDebug(context);
-    chai.assert.isTrue(provision.isOk());
-
-    mockProvisionResult(context, true);
-    const setAppId = plugin.setApplicationInContext(context, true);
-    chai.assert.isTrue(setAppId.isOk());
-
-    const postProvision = await plugin.postLocalDebug(context);
-    chai.assert.isTrue(postProvision.isOk());
-  });
-
-  it("local debug: skip local debug", async function () {
-    context = await TestHelper.pluginContext(new Map(), true, false, true);
-    context.m365TokenProvider = mockTokenProviderM365();
-    mockSkipFlag(context, true);
-
-    const localDebug = await plugin.localDebug(context);
-    chai.assert.isTrue(localDebug.isOk());
-  });
-
-  it("check permission", async function () {
-    const config = new Map();
-    config.set(ConfigKeys.objectId, faker.datatype.uuid());
-    context = await TestHelper.pluginContext(config, true, false, false);
-    context.m365TokenProvider = mockTokenProviderM365();
-
-    const checkPermission = await plugin.checkPermission(context, userList);
-    chai.assert.isTrue(checkPermission.isOk());
-  });
-
-  it("check permission V3", async function () {
-    ctx.projectSetting.components = [
-      {
-        name: "teams-app",
-        hosting: "azure-storage",
-        sso: true,
-      },
-      {
-        name: "aad-app",
-        provision: true,
-      },
-      {
-        name: "identity",
-        provision: true,
-      },
-    ];
-    const envInfo: v3.EnvInfoV3 = {
-      envName: "dev",
-      state: {
-        solution: { provisionSucceeded: true },
-        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
-        [ComponentNames.AadApp]: { objectId: faker.datatype.uuid() },
-      },
-      config: {},
-    };
-    const plugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
-    const res = await plugin.checkPermission(ctx, envInfo, tokenProvider, userList);
-    chai.assert.isTrue(res.isOk());
-  });
-
-  it("grant permission", async function () {
-    const config = new Map();
-    config.set(ConfigKeys.objectId, faker.datatype.uuid());
-    context = await TestHelper.pluginContext(config, true, false, false);
-    context.m365TokenProvider = mockTokenProviderM365();
-
-    const grantPermission = await plugin.grantPermission(context, userList);
-    chai.assert.isTrue(grantPermission.isOk());
-  });
-
-  it("grant permission V3", async function () {
-    ctx.projectSetting.components = [
-      {
-        name: "teams-app",
-        hosting: "azure-storage",
-        sso: true,
-      },
-      {
-        name: "aad-app",
-        provision: true,
-      },
-      {
-        name: "identity",
-        provision: true,
-      },
-    ];
-    const envInfo: v3.EnvInfoV3 = {
-      envName: "dev",
-      state: {
-        solution: { provisionSucceeded: true },
-        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
-        [ComponentNames.AadApp]: { objectId: faker.datatype.uuid() },
-      },
-      config: {},
-    };
-    const plugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
-    const res = await plugin.grantPermission(ctx, envInfo, tokenProvider, userList);
-    chai.assert.isTrue(res.isOk());
-  });
-
-  it("list collaborator", async function () {
-    const config = new Map();
-    config.set(ConfigKeys.objectId, faker.datatype.uuid());
-    context = await TestHelper.pluginContext(config, true, false, false);
-    context.m365TokenProvider = mockTokenProviderM365();
-    mockProvisionResult(context, false);
-
-    const listCollaborator = await plugin.listCollaborator(context);
-    chai.assert.isTrue(listCollaborator.isOk());
-    if (listCollaborator.isOk()) {
-      chai.assert.equal(listCollaborator.value[0].userObjectId, "id");
-    }
-  });
-
-  it("list collaborator V3", async function () {
-    ctx.projectSetting.components = [
-      {
-        name: "teams-app",
-        hosting: "azure-storage",
-        sso: true,
-      },
-      {
-        name: "aad-app",
-        provision: true,
-      },
-      {
-        name: "identity",
-        provision: true,
-      },
-    ];
-    const envInfo: v3.EnvInfoV3 = {
-      envName: "dev",
-      state: {
-        solution: { provisionSucceeded: true },
-        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
-        [ComponentNames.AadApp]: { objectId: faker.datatype.uuid() },
-      },
-      config: {},
-    };
-    const plugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
-    const res = await plugin.listCollaborator(ctx, envInfo, tokenProvider);
-    chai.assert.isTrue(res.isOk());
-    if (res.isOk()) {
-      chai.assert.equal(res.value[0].userObjectId, "id");
-    }
   });
 
   it("scaffold without bot", async function () {
@@ -474,13 +314,15 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
     const config = new Map();
     const context = await TestHelper.pluginContext(config, true, false, false);
+
+    context.envInfo.state.get("solution").set(SOLUTION_PROVISION_SUCCEEDED, true);
     context.m365TokenProvider = mockTokenProviderM365();
     await plugin.deploy(context);
   });
 });
 
 describe("AadAppForTeamsPlugin: Azure", () => {
-  let plugin: AadAppForTeamsPlugin;
+  let plugin: AadAppForTeamsImpl;
   let context: PluginContext;
   let appStudioToken: string | undefined;
   let graphToken: string | undefined;
@@ -498,7 +340,7 @@ describe("AadAppForTeamsPlugin: Azure", () => {
   });
 
   beforeEach(() => {
-    plugin = new AadAppForTeamsPlugin();
+    plugin = new AadAppForTeamsImpl();
   });
 
   afterEach(() => {

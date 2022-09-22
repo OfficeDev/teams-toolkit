@@ -13,12 +13,12 @@ import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appst
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { PublishingState } from "./../../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
 import { AppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
-import { mockTokenProviderM365 } from "./../../aad/helper";
 import { getAzureProjectRoot, MockUserInteraction } from "./../helper";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { Constants } from "../../../../../src/plugins/resource/appstudio/constants";
 import { newEnvInfo } from "../../../../../src/core/environment";
+import { mockTokenProviderM365 } from "../../../../component/resource/aadApp/helper";
 
 describe("Publish Teams app with Azure", () => {
   let plugin: AppStudioPlugin;

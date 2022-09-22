@@ -35,16 +35,16 @@ import { getAllowedAppIds, objectToMap } from "../../common/tools";
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
-import { AadAppClient } from "../../plugins/resource/aad/aadAppClient";
-import { AadAppManifestManager } from "../../plugins/resource/aad/aadAppManifestManager";
-import { Constants } from "../../plugins/resource/aad/constants";
-import { ProvisionConfig } from "../../plugins/resource/aad/utils/configs";
-import { TokenProvider } from "../../plugins/resource/aad/utils/tokenProvider";
 import { ComponentNames } from "../constants";
 import { convertEnvStateV3ToV2 } from "../migrate";
 import { DebugAction } from "./common";
 import { errorSource, DebugArgumentEmptyError, InvalidExistingAADArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
+import { AadAppClient } from "../resource/aadApp/aadAppClient";
+import { TokenProvider } from "../resource/aadApp/utils/tokenProvider";
+import { ProvisionConfig } from "../resource/aadApp/utils/configs";
+import { AadAppManifestManager } from "../resource/aadApp/aadAppManifestManager";
+import { Constants } from "../resource/aadApp/constants";
 
 const ssoDebugMessages = {
   registeringAAD: "Registering an AAD app for SSO ...",

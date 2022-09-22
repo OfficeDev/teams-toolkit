@@ -36,11 +36,7 @@ describe("Bot Generates Arm Templates", () => {
 
   it("generate bicep arm templates: without key vault plugin", async () => {
     sinon.stub(featureFlags, "isBotNotificationEnabled").returns(false);
-    const activeResourcePlugins = [
-      ResourcePlugins.Aad,
-      ResourcePlugins.Bot,
-      ResourcePlugins.Identity,
-    ];
+    const activeResourcePlugins = [ResourcePlugins.Bot, ResourcePlugins.Identity];
     const settings: AzureSolutionSettings = {
       hostType: HostTypeOptionAzure.id,
       name: "azure",
@@ -48,13 +44,16 @@ describe("Bot Generates Arm Templates", () => {
       capabilities: [BotOptionItem.id],
     } as AzureSolutionSettings;
 
-    await testGenerateArmTemplates(settings, "botConfig.result.bicep", "config.result.bicep");
+    await testGenerateArmTemplates(
+      settings,
+      "botConfigWithoutAadPlugin.result.bicep",
+      "configWithoutAadPlugin.result.bicep"
+    );
   });
 
   it("generate bicep arm templates: with key vault plugin", async () => {
     sinon.stub(featureFlags, "isBotNotificationEnabled").returns(false);
     const activeResourcePlugins = [
-      ResourcePlugins.Aad,
       ResourcePlugins.Bot,
       ResourcePlugins.Identity,
       ResourcePlugins.KeyVault,
@@ -186,11 +185,7 @@ describe("Bot Generates Arm Templates", () => {
   it("Update bicep arm templates", async () => {
     sinon.stub(featureFlags, "isBotNotificationEnabled").returns(false);
     // Arrange
-    const activeResourcePlugins = [
-      ResourcePlugins.Aad,
-      ResourcePlugins.Bot,
-      ResourcePlugins.Identity,
-    ];
+    const activeResourcePlugins = [ResourcePlugins.Bot, ResourcePlugins.Identity];
     const pluginContext: PluginContext = testUtils.newPluginContext();
     const azureSolutionSettings = pluginContext.projectSettings!
       .solutionSettings! as AzureSolutionSettings;
@@ -202,7 +197,7 @@ describe("Bot Generates Arm Templates", () => {
 
     // Assert
     const provisionModuleFileName = "botProvision.result.bicep";
-    const configurationModuleFileName = "botConfig.result.bicep";
+    const configurationModuleFileName = "botConfigWithoutAadPlugin.result.bicep";
     const mockedSolutionDataContext = {
       Plugins: {
         "fx-resource-bot": {
@@ -238,7 +233,6 @@ describe("Bot Generates Arm Templates", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.notExists(compiledResult.Provision);
-      chai.assert.strictEqual(compiledResult.Configuration!.Modules!.bot, configModuleFile);
       chai.assert.notExists(compiledResult.Configuration!.Orchestration);
       chai.assert.notExists(compiledResult.Parameters);
       chai.assert.exists(compiledResult.Reference!.resourceId);

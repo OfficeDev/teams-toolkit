@@ -21,16 +21,21 @@ import { AadAppOutputs, ComponentNames } from "../../constants";
 import * as path from "path";
 import fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
-import { AadAppForTeamsImpl } from "../../../plugins/resource/aad/plugin";
 import { convertContext, createAuthFiles } from "./utils";
 import { convertProjectSettingsV3ToV2 } from "../../migrate";
 import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
-import { DialogUtils } from "../../../plugins/resource/aad/utils/dialog";
-import { TelemetryUtils } from "../../../plugins/resource/aad/utils/telemetry";
-import { Messages, Telemetry } from "../../../plugins/resource/aad/constants";
-import { UnhandledError } from "../../../plugins/resource/aad/errors";
-import { AadResult, ResultFactory } from "../../../plugins/resource/aad/results";
 import { isVSProject } from "../../../common/projectSettingsHelper";
+import { AadAppForTeamsImpl } from "./aadAppForTeamsImpl";
+import { Messages, Telemetry } from "./constants";
+import { AadResult, ResultFactory } from "./results";
+import { TelemetryUtils } from "./utils/telemetry";
+import { DialogUtils } from "./utils/dialog";
+import { UnhandledError } from "./errors";
+import { hooks } from "@feathersjs/hooks/lib";
+import { CommonErrorHandlerMW } from "../../../core/middleware/CommonErrorHandlerMW";
+import { BuiltInFeaturePluginNames } from "../../../plugins/solution/fx-solution/v3/constants";
+import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
+import { AppUser } from "../../../plugins/resource/appstudio/interfaces/appUser";
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";
@@ -159,6 +164,57 @@ export class AadApp implements CloudResource {
     return res;
   }
 
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: { component: BuiltInFeaturePluginNames.aad },
+    }),
+  ])
+  async listCollaborator(ctx: ContextV3): Promise<Result<AadOwner[], FxError>> {
+    const aadAppImplement = new AadAppForTeamsImpl();
+    const res = await this.runWithExceptionCatchingAsync(
+      async () => aadAppImplement.listCollaborator(ctx),
+      ctx,
+      Messages.EndListCollaborator.telemetry
+    );
+    return res;
+  }
+
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: { component: BuiltInFeaturePluginNames.aad },
+    }),
+  ])
+  async grantPermission(
+    ctx: ContextV3,
+    userInfo: AppUser
+  ): Promise<Result<ResourcePermission[], FxError>> {
+    const aadAppImplement = new AadAppForTeamsImpl();
+    const res = await this.runWithExceptionCatchingAsync(
+      async () => aadAppImplement.grantPermission(ctx, userInfo),
+      ctx,
+      Messages.EndGrantPermission.telemetry
+    );
+    return res;
+  }
+
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: { component: BuiltInFeaturePluginNames.aad },
+    }),
+  ])
+  async checkPermission(
+    ctx: ContextV3,
+    userInfo: AppUser
+  ): Promise<Result<ResourcePermission[], FxError>> {
+    const aadAppImplement = new AadAppForTeamsImpl();
+    const res = await this.runWithExceptionCatchingAsync(
+      async () => aadAppImplement.checkPermission(ctx, userInfo),
+      ctx,
+      Messages.EndCheckPermission.telemetry
+    );
+    return res;
+  }
+
   private setState(convertCtx: PluginContext, context: ResourceContextV3) {
     const convertState = convertCtx.envInfo.state.get("fx-resource-aad-app-for-teams");
     convertState.forEach((v: any, k: string) => {
@@ -168,7 +224,7 @@ export class AadApp implements CloudResource {
 
   private async runWithExceptionCatchingAsync(
     fn: () => Promise<AadResult>,
-    ctx: PluginContext,
+    ctx: PluginContext | ContextV3,
     stage: string
   ): Promise<AadResult> {
     try {
@@ -178,7 +234,7 @@ export class AadApp implements CloudResource {
     }
   }
 
-  private returnError(e: any, ctx: PluginContext, stage: string): AadResult {
+  private returnError(e: any, ctx: PluginContext | ContextV3, stage: string): AadResult {
     if (e instanceof SystemError || e instanceof UserError) {
       let errorMessage = e.message;
       // For errors contains innerError, e.g. failures when calling Graph API

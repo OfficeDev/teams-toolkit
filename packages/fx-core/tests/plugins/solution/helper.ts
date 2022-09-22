@@ -176,17 +176,6 @@ export class TestHelper {
   //     });
   // }
 
-  static mockedAadGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker.stub(aadPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      const res: ArmTemplateResult = {
-        Parameters: {
-          AadParameter: TestFileContent.aadParameterValue,
-        },
-      };
-      return ok(res);
-    });
-  }
-
   static mockedIdentityGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
     return mocker
       .stub(identityPlugin, "generateArmTemplates")

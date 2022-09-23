@@ -47,8 +47,8 @@ describe("Start a new project", function () {
     });
     expect(result.stderr).to.eq("");
     const config = await fs.readJson(`${projectPath}/SPFx/config/config.json`);
-    chai.expect(config["bundles"]["helloworld-web-part"]).exist;
-    chai.expect(config["bundles"]["secondwebpart-web-part"]).exist;
+    expect(config["bundles"]["helloworld-web-part"]).exist;
+    expect(config["bundles"]["secondwebpart-web-part"]).exist;
     console.log(
       `[Successfully] add feature, stdout: '${result.stdout}', stderr: '${result.stderr}'`
     );

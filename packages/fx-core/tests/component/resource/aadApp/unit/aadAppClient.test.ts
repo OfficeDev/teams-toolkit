@@ -5,36 +5,35 @@ import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
 import faker from "faker";
-import { AadAppClient } from "../../../../../src/plugins/resource/aad/aadAppClient";
-import { ProvisionConfig, Utils } from "../../../../../src/plugins/resource/aad/utils/configs";
+import { AadAppClient } from "../../../../../src/component/resource/aadApp/aadAppClient";
+import { ProvisionConfig, Utils } from "../../../../../src/component/resource/aadApp/utils/configs";
 import { TestHelper } from "../helper";
 import { PluginContext, UserError, SystemError } from "@microsoft/teamsfx-api";
 import {
   GraphAndAppStudioTokenProvider,
   TokenAudience,
   TokenProvider,
-} from "../../../../../src/plugins/resource/aad/utils/tokenProvider";
-import { GraphClient } from "../../../../../src/plugins/resource/aad/graph";
+} from "../../../../../src/component/resource/aadApp/utils/tokenProvider";
+import { GraphClient } from "../../../../../src/component/resource/aadApp/graph";
 import {
   IAADDefinition,
   RequiredResourceAccess,
-} from "../../../../../src/plugins/resource/aad/interfaces/IAADDefinition";
-import { AppStudio } from "../../../../../src/plugins/resource/aad/appStudio";
+} from "../../../../../src/component/resource/aadApp/interfaces/IAADDefinition";
+import { AppStudio } from "../../../../../src/component/resource/aadApp/appStudio";
 import {
   CreateAppError,
   CreateAppForbiddenError,
   CreateSecretError,
   GetAppConfigError,
   GetAppError,
-  UpdateAadAppError,
   UpdateAppIdUriError,
   UpdatePermissionError,
   UpdateRedirectUriError,
-} from "../../../../../src/plugins/resource/aad/errors";
-import { ConfigKeys, Constants } from "../../../../../src/plugins/resource/aad/constants";
+} from "../../../../../src/component/resource/aadApp/errors";
+import { ConfigKeys, Constants } from "../../../../../src/component/resource/aadApp/constants";
 import { MockM365TokenProvider, MockTools } from "../../../../core/utils";
 import { setTools } from "../../../../../src/core/globalVars";
-import { AadAppManifestManager } from "../../../../../src/plugins/resource/aad/aadAppManifestManager";
+import { AadAppManifestManager } from "../../../../../src/component/resource/aadApp/aadAppManifestManager";
 import * as tool from "../../../../../src/common/tools";
 
 describe("AAD App Client Test", () => {

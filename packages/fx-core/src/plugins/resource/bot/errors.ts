@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { GraphErrorCodes } from "../aad/errorCodes";
-import { CreateAppError, CreateSecretError } from "../aad/errors";
+import { GraphErrorCodes } from "../../../component/resource/aadApp/errorCodes";
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
@@ -12,6 +11,7 @@ import { Logger } from "./logger";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { CommonHostingError } from "../../../common/azure-hosting/hostingError";
 import { ProgressBarFactory } from "./progressBars";
+import { CreateAppError, CreateSecretError } from "../../../component/resource/aadApp/errors";
 
 export const ErrorType = {
   USER: "User",

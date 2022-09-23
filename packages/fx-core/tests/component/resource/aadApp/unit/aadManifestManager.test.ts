@@ -1,12 +1,12 @@
 import "mocha";
 import * as chai from "chai";
-import { AadAppManifestManager } from "../../../../../src/plugins/resource/aad/aadAppManifestManager";
 import { v4 as uuidv4 } from "uuid";
-import { AADManifest } from "../../../../../src/plugins/resource/aad/interfaces/AADManifest";
 import sinon from "sinon";
 import axios from "axios";
-import { AadManifestHelper } from "../../../../../src/plugins/resource/aad/utils/aadManifestHelper";
 import fs from "fs-extra";
+import { AadManifestHelper } from "../../../../../src/component/resource/aadApp/utils/aadManifestHelper";
+import { AadAppManifestManager } from "../../../../../src/component/resource/aadApp/aadAppManifestManager";
+import { AADManifest } from "../../../../../src/component/resource/aadApp/interfaces/AADManifest";
 
 describe("AAD manifest manager test", () => {
   const sandbox = sinon.createSandbox();

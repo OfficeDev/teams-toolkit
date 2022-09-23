@@ -57,8 +57,8 @@
 /packages/fx-core/src/plugins/solution/fx-solution/utils/depsChecker @a1exwang @kimizhu @qinezh
 /packages/fx-core/src/plugins/solution/fx-solution/debug @kimizhu @swatDong @kuojianlu @XiaofuHuang
 
-/packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen @SLdragon
-/packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen @SLdragon
+/packages/fx-core/src/component/resource/aadApp @KennethBWSong @adashen @SLdragon
+/packages/fx-core/tests/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 
 /packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
 /packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu

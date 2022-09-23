@@ -6,8 +6,8 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import faker from "faker";
 import axios from "axios";
-import { AppStudio } from "../../../../../src/plugins/resource/aad/appStudio";
-import { AppStudioErrorMessage } from "../../../../../src/plugins/resource/aad/errors";
+import { AppStudio } from "../../../../../src/component/resource/aadApp/appStudio";
+import { AppStudioErrorMessage } from "../../../../../src/component/resource/aadApp/errors";
 
 describe("App Studio API Test", () => {
   afterEach(() => {

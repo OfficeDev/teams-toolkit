@@ -7,13 +7,15 @@ import { Plugin } from "@microsoft/teamsfx-api";
 import { ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import "../src/plugins/resource/frontend";
 import "../src/plugins/resource/identity";
-import "../src/plugins/resource/aad";
 import "../src/plugins/resource/bot";
 import "../src/plugins/resource/bot/v2";
 import "../src/plugins/resource/localdebug";
 import "../src/plugins/resource/appstudio";
 import "../src/plugins/resource/function";
 import "../src/plugins/resource/apim";
+import "../src/component/resource/aadApp/aadApp";
+import { ComponentNames } from "../src/component/constants";
+import { AadApp } from "../src/component/resource/aadApp/aadApp";
 export class PluginId {
   static readonly Aad = "fx-resource-aad-app-for-teams";
   static readonly FrontendHosting = "fx-resource-frontend-hosting";
@@ -28,7 +30,8 @@ export class PluginId {
 
 export const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin;
 export const identityPlugin = Container.get<Plugin>(ResourcePlugins.IdentityPlugin) as Plugin;
-export const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin;
+export const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+
 export const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin) as Plugin;
 export const botPluginV2 = Container.get<ResourcePlugin>(
   ResourcePluginsV2.BotPlugin

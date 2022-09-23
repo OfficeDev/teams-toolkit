@@ -89,12 +89,12 @@ import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { webpartNameQuestion } from "../component/resource/spfx/utils/questions";
 import { manifestUtils } from "./resource/appManifest/utils";
-import { Constants } from "../plugins/resource/aad/constants";
 import { getQuestionsForDeployAPIM } from "./resource/apim";
 import { canAddSso } from "./feature/sso";
 import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { addCicdQuestion } from "./feature/cicd/cicd";
 import { InvalidFeature } from "./error";
+import { Constants } from "./resource/aadApp/constants";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,

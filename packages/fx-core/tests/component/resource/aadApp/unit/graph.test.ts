@@ -6,8 +6,8 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import faker from "faker";
 import axios from "axios";
-import { GraphClient } from "../../../../../src/plugins/resource/aad/graph";
-import { GraphClientErrorMessage } from "../../../../../src/plugins/resource/aad/errors";
+import { GraphClient } from "../../../../../src/component/resource/aadApp/graph";
+import { GraphClientErrorMessage } from "../../../../../src/component/resource/aadApp/errors";
 
 describe("Graph API Test", () => {
   afterEach(() => {

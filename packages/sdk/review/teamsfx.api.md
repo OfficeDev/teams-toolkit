@@ -26,7 +26,6 @@ import { DialogContext } from 'botbuilder-dialogs';
 import { DialogTurnResult } from 'botbuilder-dialogs';
 import { GetTokenOptions } from '@azure/identity';
 import { HeroCard } from 'botbuilder';
-import { IAdaptiveCard } from 'adaptivecards';
 import { InvokeResponse } from 'botbuilder';
 import { MessagingExtensionResponse } from 'botbuilder';
 import { O365ConnectorCard } from 'botbuilder';
@@ -294,7 +293,7 @@ export enum InvokeResponseErrorCode {
 
 // @public
 export class InvokeResponseFactory {
-    static adaptiveCard(card: IAdaptiveCard): InvokeResponse;
+    static adaptiveCard(card: unknown): InvokeResponse;
     static createInvokeResponse(statusCode: StatusCodes, body?: unknown): InvokeResponse;
     static errorResponse(errorCode: InvokeResponseErrorCode, errorMessage: string): InvokeResponse;
     static textMessage(message: string): InvokeResponse;

@@ -105,12 +105,19 @@ export async function generateAadManifestTemplate(
     ) {
       projectSettings.solutionSettings.capabilities.push("TabSSO");
     }
-
     if (
       projectSettings.solutionSettings.capabilities.includes("Bot") &&
       !projectSettings.solutionSettings.capabilities.includes("BotSSO")
     ) {
       projectSettings.solutionSettings.capabilities.push("BotSSO");
+    }
+    const tabConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
+    if (tabConfig) {
+      tabConfig.sso = true;
+    }
+    const botConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
+    if (botConfig) {
+      botConfig.sso = true;
     }
   }
 

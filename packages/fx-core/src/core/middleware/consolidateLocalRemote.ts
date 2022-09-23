@@ -340,9 +340,7 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
     }
 
     if (needMigrateAadManifest) {
-      const projectSettingsJson = await fs.readJson(projectSettingsPath);
-
-      await generateAadManifest(inputs.projectPath!, projectSettingsJson);
+      await generateAadManifest(inputs.projectPath!, projectSettings);
       const aadManifestPath = path.join(
         inputs.projectPath as string,
         "templates",
@@ -350,8 +348,7 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
         "aad.template.json"
       );
       fileList.push(aadManifestPath);
-
-      await fs.writeJSON(projectSettingsPath, projectSettingsJson, { spaces: 4, EOL: os.EOL });
+      await fs.writeJSON(projectSettingsPath, projectSettings, { spaces: 4, EOL: os.EOL });
 
       moveFiles += "projectSettings.json,";
       await fs.ensureDir(path.join(backupPath, ".fx", "configs"));

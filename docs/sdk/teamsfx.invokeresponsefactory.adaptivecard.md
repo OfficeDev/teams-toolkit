@@ -11,14 +11,14 @@ The type of the invoke response is `application/vnd.microsoft.card.adaptive` ind
 <b>Signature:</b>
 
 ```typescript
-static adaptiveCard(card: IAdaptiveCard): InvokeResponse;
+static adaptiveCard(card: unknown): InvokeResponse;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  card | IAdaptiveCard | The adaptive card JSON payload. |
+|  card | unknown | The adaptive card JSON payload. |
 
 <b>Returns:</b>
 

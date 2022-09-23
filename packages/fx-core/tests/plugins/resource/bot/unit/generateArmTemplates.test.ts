@@ -51,38 +51,6 @@ describe("Bot Generates Arm Templates", () => {
     );
   });
 
-  it("generate bicep arm templates: with key vault plugin", async () => {
-    sinon.stub(featureFlags, "isBotNotificationEnabled").returns(false);
-    const activeResourcePlugins = [
-      ResourcePlugins.Bot,
-      ResourcePlugins.Identity,
-      ResourcePlugins.KeyVault,
-    ];
-    const settings: AzureSolutionSettings = {
-      hostType: HostTypeOptionAzure.id,
-      name: "azure",
-      activeResourcePlugins: activeResourcePlugins,
-      azureResources: [AzureResourceKeyVault.id],
-      capabilities: [BotOptionItem.id],
-    } as AzureSolutionSettings;
-
-    await testGenerateArmTemplates(
-      settings,
-      "botConfigWithKeyVaultPlugin.result.bicep",
-      "configWithKeyVaultPlugin.result.bicep",
-      {
-        "fx-resource-key-vault": {
-          References: {
-            m365ClientSecretReference:
-              "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference",
-            botClientSecretReference:
-              "provisionOutputs.keyVaultOutput.value.botClientSecretReference",
-          },
-        },
-      }
-    );
-  });
-
   it("generate bicep arm tempalte: withoud aad plugin", async () => {
     sinon.stub(featureFlags, "isBotNotificationEnabled").returns(false);
     const activeResourcePlugins = [ResourcePlugins.Bot, ResourcePlugins.Identity];

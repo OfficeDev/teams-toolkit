@@ -9,4 +9,3 @@ export * from "./frontend";
 export * from "./function";
 export * from "./identity";
 export * from "./localdebug";
-export * from "./keyvault";

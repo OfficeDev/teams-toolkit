@@ -27,10 +27,6 @@ const ngrokTimeout = 1 * 60 * 1000;
 const defaultNgrokTunnelName = "bot";
 const ngrokEndpointRegex = (tunnelName: string) =>
   new RegExp(`obj=tunnels name=${tunnelName} addr=(?<src>.*) url=(?<endpoint>.*)`);
-// Background task cannot resolve variables in VSC. https://github.com/microsoft/vscode/issues/157224
-// TODO: remove one after decide to use which placeholder
-const defaultNgrokBinFolderPlaceholder = "${teamsfx:ngrokBinFolder}";
-const defaultNgrokBinFolderCommand = "${command:fx-extension.get-ngrok-path}";
 
 type LocalTunnelTaskStatus = {
   endpoint?: EndpointInfo;
@@ -46,7 +42,7 @@ export interface LocalTunnelArgs {
   configFile?: string;
   useGlobalNgrok?: boolean;
   tunnelName?: string;
-  reuse?: boolean;
+  keepAlive?: boolean;
 }
 
 export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
@@ -323,6 +319,9 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     );
     VsCodeLogInstance.outputChannel.appendLine("");
 
+    this.writeEmitter.fire(
+      `\r\n${localTunnelDisplayMessages.forwardingUrl(ngrokTunnel.src, ngrokTunnel.dist)}\r\n`
+    );
     this.writeEmitter.fire(`\r\n${localTunnelDisplayMessages.successMessage}\r\n`);
 
     await this.progressHandler.end(true);
@@ -394,21 +393,9 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
 
   public static async stopAll(): Promise<void> {
     for (const task of LocalTunnelTaskTerminal.ngrokTaskTerminals.values()) {
-      if (!task.terminal.args?.reuse) {
+      if (!task.terminal.args?.keepAlive) {
         task.terminal.close();
       }
     }
-  }
-
-  private static async resolveBinFolder(str: string): Promise<string> {
-    if (
-      str.includes(defaultNgrokBinFolderPlaceholder) ||
-      str.includes(defaultNgrokBinFolderCommand)
-    ) {
-      const ngrokPath = await this.getNgrokBinFolder();
-      str = str.replace(defaultNgrokBinFolderPlaceholder, ngrokPath);
-      str = str.replace(defaultNgrokBinFolderCommand, ngrokPath);
-    }
-    return str;
   }
 }

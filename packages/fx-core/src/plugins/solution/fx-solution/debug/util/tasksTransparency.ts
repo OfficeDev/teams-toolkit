@@ -384,8 +384,7 @@ function startLocalTunnel(): Record<string, unknown> {
     command: "debug-start-local-tunnel",
     args: {
       configFile: ".fx/configs/ngrok.yml",
-      useGlobalNgrok: false,
-      reuse: false,
+      keepAlive: false,
     },
     isBackground: true,
     problemMatcher: "$teamsfx-local-tunnel-watch",

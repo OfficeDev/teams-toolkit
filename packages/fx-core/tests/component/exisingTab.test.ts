@@ -14,7 +14,7 @@ import "../../src/component/core";
 import { TeamsfxCore } from "../../src/component/core";
 import "../../src/component/feature/bot";
 import "../../src/component/feature/sql";
-import "../../src/component/resource/botService";
+import "../../src/component/resource/botService/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { setTools } from "../../src/core/globalVars";
 import { CoreQuestionNames } from "../../src/core/question";

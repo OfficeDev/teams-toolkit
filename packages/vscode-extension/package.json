@@ -978,9 +978,9 @@
                     "description": "%teamstoolkit.taskDefinitions.args.useGlobalNgrok.title%",
                     "default": false
                   },
-                  "reuse": {
+                  "keepAlive": {
                     "type": "boolean",
-                    "description": "%teamstoolkit.taskDefinitions.args.reuse.title%",
+                    "description": "%teamstoolkit.taskDefinitions.args.keepAlive.title%",
                     "default": false
                   },
                   "tunnelName": {
@@ -1141,7 +1141,7 @@
           }
         ],
         "background": {
-          "beginsPattern": "Local tunnel service is started successfully",
+          "beginsPattern": "Forwarding URL https?://.* to https?://.*",
           "endsPattern": "Local tunnel service is started successfully"
         }
       },

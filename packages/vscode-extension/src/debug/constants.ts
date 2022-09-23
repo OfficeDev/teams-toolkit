@@ -205,6 +205,7 @@ export const localTunnelDisplayMessages = Object.freeze({
   learnMoreHelpLink: "https://aka.ms/teamsfx-local-tunnel-task", // TODO: update local tunnel help link
   successSummary: (src: string, dist: string) => `Forwarding ngrok URL ${dist} to ${src}`,
   startMessage: "Starting local tunnel service.",
+  forwardingUrl: (src: string, dist: string) => `Forwarding URL ${dist} to ${src}`,
   successMessage: "Local tunnel service is started successfully.",
   errorMessage: "Failed to start local tunnel service.",
 });

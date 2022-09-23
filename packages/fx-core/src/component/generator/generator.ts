@@ -14,10 +14,8 @@ import { GenerateContext } from "./generateContext";
 import {
   genFileDataRenderReplaceFn,
   genFileNameRenderReplaceFn,
-  getExternalSampleRelativePath,
-  getExternalSampleUrl,
+  getSampleInfoFromName,
   getValidSampleDestination,
-  isSampleExternal,
   sampleDefaultOnActionError,
   templateDefaultOnActionError,
 } from "./utils";
@@ -87,9 +85,10 @@ export class Generator {
       logProvider: ctx.logProvider,
       onActionError: sampleDefaultOnActionError,
     };
-    if (isSampleExternal(sampleName)) {
-      generateContext.zipUrl = getExternalSampleUrl(sampleName);
-      generateContext.relativePath = getExternalSampleRelativePath(sampleName);
+    const sample = getSampleInfoFromName(sampleName);
+    if (sample.link) {
+      generateContext.zipUrl = sample.link;
+      generateContext.relativePath = sample.relativePath;
     }
     this.generate(generateContext, SampleActionSeq);
   }

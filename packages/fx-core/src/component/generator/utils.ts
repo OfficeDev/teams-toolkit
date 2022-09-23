@@ -22,6 +22,7 @@ import { GenerateAction, GenerateActionName } from "./generateAction";
 import { GenerateContext } from "./generateContext";
 import AdmZip from "adm-zip";
 import { EOL } from "os";
+import { SampleInfo, sampleProvider } from "./sample";
 
 export async function fetchZipUrl(
   name: string,
@@ -128,19 +129,25 @@ export async function getValidSampleDestination(
   return sampleDestination;
 }
 
-export function isSampleExternal(sampleName: string): boolean {
-  //TODO
-  return false;
-}
+// export function isSampleExternal(sampleName: string): boolean {
+//   const samples = sampleProvider.SampleCollection.samples.filter(
+//     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
+//   );
+//   if (samples.length == 0) {
+//     throw Error(`invalid sample id: '${sampleName}'`);
+//   }
+//   const sample = samples[0];
+//   return sample.link !== undefined;
+// }
 
-export function getExternalSampleRelativePath(sampleName: string): string {
-  //TODO
-  return "";
-}
-
-export function getExternalSampleUrl(sampleName: string): string {
-  //TODO
-  return "";
+export function getSampleInfoFromName(sampleName: string): SampleInfo {
+  const samples = sampleProvider.SampleCollection.samples.filter(
+    (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
+  );
+  if (samples.length == 0) {
+    throw Error(`invalid sample id: '${sampleName}'`);
+  }
+  return samples[0];
 }
 
 export async function templateDefaultOnActionError(

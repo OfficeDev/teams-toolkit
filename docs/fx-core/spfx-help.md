@@ -121,12 +121,14 @@ npm install @microsoft/generator-sharepoint@1.14 -g
 
 ## 3. Failure to add additional SPFx tab<a name="addfeature"></a>
 
-Multi-tab SPFx project is supported in Teams Toolkit. To add an additional SPFx tab, you can try "Add features" and select "SPFx tab". Behind the scenes, Yeoman generator is executed according to configuration file(.yo-rc.json) in current solution.
+Multi-tab SPFx project is supported in Teams Toolkit. To add an additional SPFx tab, you can try "Add features" and select "SPFx tab". Behind the scenes, Yeoman Generator is executed according to the configuration file (.yo-rc.json) in the current solution.
 
-If .yo-rc.json file doesn't exist in your SPFx project, adding SPFx tab might fail with potential issues. 
+If .yo-rc.json file doesn't exist in your SPFx project, adding SPFx tab will fail with the following error:
 
 #### SPFx.NoConfigurationFile
 ![image](../images/fx-core/spfx/spfx-no-configuration-file.png)
+
+### Remediation
 
 Please follow the instructions here to continue:
 

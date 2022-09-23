@@ -3,7 +3,7 @@
 import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
-import { newEnvInfoV3 } from "../../../src";
+import { newEnvInfoV3 } from "../../../src/core/environment";
 import { TabCodeProvider } from "../../../src/component/code/tabCode";
 import { ComponentNames } from "../../../src/component/constants";
 import { createContextV3, newProjectSettingsV3 } from "../../../src/component/utils";

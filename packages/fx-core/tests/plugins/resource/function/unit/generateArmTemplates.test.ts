@@ -50,37 +50,6 @@ describe("FunctionGenerateArmTemplates", () => {
     await testGenerateArmTemplates(settings, "functionConfig.result.bicep", "config.result.bicep");
   });
 
-  it("generate bicep arm templates: with key vault plugin", async () => {
-    const activeResourcePlugins = [
-      ResourcePlugins.Aad,
-      ResourcePlugins.SimpleAuth,
-      ResourcePlugins.FrontendHosting,
-      ResourcePlugins.Function,
-      ResourcePlugins.KeyVault,
-    ];
-    const settings: AzureSolutionSettings = {
-      hostType: HostTypeOptionAzure.id,
-      name: "azure",
-      activeResourcePlugins: activeResourcePlugins,
-      azureResources: [AzureResourceKeyVault.id],
-      capabilities: [TabOptionItem.id],
-    } as AzureSolutionSettings;
-
-    await testGenerateArmTemplates(
-      settings,
-      "functionConfigWithKeyVaultPlugin.result.bicep",
-      "configWithKeyVaultPlugin.result.bicep",
-      {
-        "fx-resource-key-vault": {
-          References: {
-            m365ClientSecretReference:
-              "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference",
-          },
-        },
-      }
-    );
-  });
-
   async function testGenerateArmTemplates(
     solutionSettings: AzureSolutionSettings,
     testConfigurationModuleFileName: string,

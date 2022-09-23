@@ -18,7 +18,6 @@ export const ResourcePlugins = {
   LocalDebugPlugin: "LocalDebugPlugin",
   ApimPlugin: "ApimPlugin",
   AppStudioPlugin: "AppStudioPlugin",
-  KeyVaultPlugin: "KeyVaultPlugin",
 };
 
 export const ResourcePluginsV2 = {
@@ -29,7 +28,6 @@ export const ResourcePluginsV2 = {
   LocalDebugPlugin: "LocalDebugPluginV2",
   ApimPlugin: "ApimPluginV2",
   AppStudioPlugin: "AppStudioPluginV2",
-  KeyVaultPlugin: "KeyVaultPluginV2",
 };
 
 /**

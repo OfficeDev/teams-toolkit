@@ -73,6 +73,7 @@ describe("Add api-connector Command Tests", () => {
       "command-and-response",
       "sso-tab",
       "tab",
+      "spfx-tab",
       "bot",
       "message-extension",
       "azure-function",

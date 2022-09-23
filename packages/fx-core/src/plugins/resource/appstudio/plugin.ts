@@ -14,6 +14,7 @@ import {
   BuildFolderName,
   ManifestUtil,
   UserError,
+  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import { AppDefinition } from "./interfaces/appDefinition";
@@ -222,7 +223,7 @@ export class AppStudioPluginImpl {
   public async updateManifest(
     ctx: PluginContext,
     isLocalDebug: boolean
-  ): Promise<Result<string, FxError>> {
+  ): Promise<Result<any, FxError>> {
     const teamsAppId = await this.getTeamsAppId(ctx);
     let manifest: any;
     let manifestString: string;
@@ -299,17 +300,13 @@ export class AppStudioPluginImpl {
         "Preview and update"
       );
 
-      const error = AppStudioResultFactory.UserError(
-        AppStudioError.UpdateManifestCancelError.name,
-        AppStudioError.UpdateManifestCancelError.message(manifest.name.short)
-      );
       if (res?.isOk() && res.value === "Preview only") {
-        this.buildTeamsAppPackage(ctx, isLocalDebug);
-        return err(error);
+        const result = await this.buildTeamsAppPackage(ctx, isLocalDebug);
+        return ok(result);
       } else if (res?.isOk() && res.value === "Preview and update") {
         this.buildTeamsAppPackage(ctx, isLocalDebug);
       } else {
-        return err(error);
+        return err(UserCancelError);
       }
     }
 
@@ -336,11 +333,7 @@ export class AppStudioPluginImpl {
           );
 
           if (!(res?.isOk() && res.value === "Overwrite and update")) {
-            const error = AppStudioResultFactory.UserError(
-              AppStudioError.UpdateManifestCancelError.name,
-              AppStudioError.UpdateManifestCancelError.message(manifest.name.short)
-            );
-            return err(error);
+            return err(UserCancelError);
           }
         }
       }

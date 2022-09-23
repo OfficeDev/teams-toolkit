@@ -144,7 +144,7 @@ export async function createBotAAD(ctx: ResourceContextV3): Promise<Result<any, 
         }
       : ctx.envInfo.state[ComponentNames.TeamsBot];
 
-  const botAADCreated = botConfig?.botId !== undefined && botConfig?.botPassword !== undefined;
+  const botAADCreated = botConfig?.botId && botConfig?.botPassword;
   if (!botAADCreated) {
     const solutionConfig = ctx.envInfo.state.solution as v3.AzureSolutionConfig;
     const resourceNameSuffix = solutionConfig.resourceNameSuffix

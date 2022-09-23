@@ -480,19 +480,26 @@ export class TeamsfxCore {
 
     // 6.
     if (ctx.envInfo.envName === "local") {
-      // 6.1 config local env
       const localConfigResult = await configLocalEnvironment(ctx, inputs);
       if (localConfigResult.isErr()) {
         return err(localConfigResult.error);
       }
-    } else {
-      // 6.2 show message for remote azure provision
+    }
+
+    // 7. update teams app
+    {
+      const res = await appManifest.configure(ctx, inputs);
+      if (res.isErr()) return err(res.error);
+    }
+
+    // 8. show message and set state
+    if (ctx.envInfo.envName !== "local") {
       const url = getResourceGroupInPortal(
         ctx.envInfo.state.solution.subscriptionId,
         ctx.envInfo.state.solution.tenantId,
         ctx.envInfo.state.solution.resourceGroupName
       );
-      const msg = getLocalizedString("core.provision.successAzure");
+      const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
       if (url) {
         const title = "View Provisioned Resources";
         ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
@@ -504,18 +511,6 @@ export class TeamsfxCore {
       } else {
         ctx.userInteraction.showMessage("info", msg, false);
       }
-    }
-
-    // 7. update teams app
-    {
-      const res = await appManifest.configure(ctx, inputs);
-      if (res.isErr()) return err(res.error);
-    }
-
-    // 8. show and set state
-    if (ctx.envInfo.envName !== "local") {
-      const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
-      ctx.userInteraction.showMessage("info", msg, false);
       ctx.logProvider.info(msg);
     }
     merge(actionContext?.telemetryProps, {

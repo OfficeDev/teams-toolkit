@@ -117,7 +117,28 @@ export const BOTS_TPL_V3: IBot[] = [
     ],
   },
 ];
-
+export const COMPOSE_EXTENSIONS_TPL_M365_V3: IComposeExtension[] = [
+  {
+    botId: BOT_ID_PLACEHOLDER,
+    commands: [
+      {
+        id: "searchQuery",
+        context: ["compose", "commandBox"],
+        description: "Test command to run query",
+        title: "Search",
+        type: "query",
+        parameters: [
+          {
+            name: "searchQuery",
+            title: "Search Query",
+            description: "Your search query",
+            inputType: "text",
+          },
+        ],
+      },
+    ],
+  },
+];
 export const COMPOSE_EXTENSIONS_TPL_V3: IComposeExtension[] = [
   {
     botId: BOT_ID_PLACEHOLDER,

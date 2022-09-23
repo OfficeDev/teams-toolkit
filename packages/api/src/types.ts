@@ -289,6 +289,8 @@ export interface ContextV3 extends Context {
   envInfo?: EnvInfoV3;
   tokenProvider?: TokenProvider;
   projectPath?: string;
+  templateReplace?: { [key: string]: string };
+  isAddFeature?: boolean;
 }
 export interface ResourceContextV3 extends ContextV3 {
   envInfo: EnvInfoV3;

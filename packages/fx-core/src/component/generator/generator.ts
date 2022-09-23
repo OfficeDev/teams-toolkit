@@ -16,6 +16,7 @@ import {
   genFileNameRenderReplaceFn,
   getSampleInfoFromName,
   getValidSampleDestination,
+  mergeReplaceMap,
   sampleDefaultOnActionError,
   templateDefaultOnActionError,
 } from "./utils";
@@ -29,43 +30,27 @@ export class Generator {
   ): Promise<void> {
     const appName = ctx.projectSetting?.appName;
     const projectId = ctx.projectSetting?.projectId;
+    const dataReplace = mergeReplaceMap(
+      {
+        appName: appName,
+        projectId: projectId,
+      },
+      ctx.templateReplace
+    );
+    const nameReplace = mergeReplaceMap(
+      {
+        appName: appName,
+      },
+      ctx.templateReplace
+    );
+    const destination = ctx.isAddFeature ? destinationPath : path.join(destinationPath, appName);
     const generateContext: GenerateContext = {
       type: "template",
       name: `${templateName}_${language}`,
-      destination: path.join(destinationPath, appName),
+      destination: destination,
       logProvider: ctx.logProvider,
-      fileDataReplaceFn: genFileDataRenderReplaceFn({
-        appName: appName,
-        projectId: projectId,
-      }),
-      fileNameReplaceFn: genFileNameRenderReplaceFn({
-        appName: appName,
-      }),
-      onActionError: templateDefaultOnActionError,
-    };
-    this.generate(generateContext, TemplateActionSeq);
-  }
-
-  public static async addBuildingblock(
-    buildingblockName: string,
-    language: string,
-    destinationPath: string,
-    ctx: ContextV3
-  ): Promise<void> {
-    const appName = ctx.projectSetting?.appName;
-    const projectId = ctx.projectSetting?.projectId;
-    const generateContext: GenerateContext = {
-      type: "buildingblock",
-      name: `${buildingblockName}_${language}`,
-      destination: destinationPath,
-      logProvider: ctx.logProvider,
-      fileDataReplaceFn: genFileDataRenderReplaceFn({
-        appName: appName,
-        projectId: projectId,
-      }),
-      fileNameReplaceFn: genFileNameRenderReplaceFn({
-        appName: appName,
-      }),
+      fileDataReplaceFn: genFileDataRenderReplaceFn(dataReplace),
+      fileNameReplaceFn: genFileNameRenderReplaceFn(nameReplace),
       onActionError: templateDefaultOnActionError,
     };
     this.generate(generateContext, TemplateActionSeq);
@@ -77,19 +62,17 @@ export class Generator {
     ctx: ContextV3
   ): Promise<void> {
     const destination = await getValidSampleDestination(sampleName, destinationPath);
+    const sample = getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
     const generateContext: GenerateContext = {
       type: "sample",
       name: sampleName,
       destination: destination,
       logProvider: ctx.logProvider,
+      zipUrl: sample.link,
+      relativePath: sample.relativePath,
       onActionError: sampleDefaultOnActionError,
     };
-    const sample = getSampleInfoFromName(sampleName);
-    if (sample.link) {
-      generateContext.zipUrl = sample.link;
-      generateContext.relativePath = sample.relativePath;
-    }
     this.generate(generateContext, SampleActionSeq);
   }
 

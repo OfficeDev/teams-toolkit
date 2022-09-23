@@ -503,11 +503,17 @@ export interface ContextV3 extends Context_2 {
     // (undocumented)
     envInfo?: EnvInfoV3;
     // (undocumented)
+    isAddFeature?: boolean;
+    // (undocumented)
     manifestProvider: AppManifestProvider;
     // (undocumented)
     projectPath?: string;
     // (undocumented)
     projectSetting: ProjectSettingsV3;
+    // (undocumented)
+    templateReplace?: {
+        [key: string]: string;
+    };
     // (undocumented)
     tokenProvider?: TokenProvider;
 }

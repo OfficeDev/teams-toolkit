@@ -129,17 +129,6 @@ export async function getValidSampleDestination(
   return sampleDestination;
 }
 
-// export function isSampleExternal(sampleName: string): boolean {
-//   const samples = sampleProvider.SampleCollection.samples.filter(
-//     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
-//   );
-//   if (samples.length == 0) {
-//     throw Error(`invalid sample id: '${sampleName}'`);
-//   }
-//   const sample = samples[0];
-//   return sample.link !== undefined;
-// }
-
 export function getSampleInfoFromName(sampleName: string): SampleInfo {
   const samples = sampleProvider.SampleCollection.samples.filter(
     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
@@ -148,6 +137,19 @@ export function getSampleInfoFromName(sampleName: string): SampleInfo {
     throw Error(`invalid sample id: '${sampleName}'`);
   }
   return samples[0];
+}
+
+export function mergeReplaceMap(
+  obj: { [key: string]: string },
+  obj2?: { [key: string]: string }
+): { [key: string]: string } {
+  const result = { ...obj };
+  if (obj2) {
+    for (const key in obj2) {
+      result[key] = obj2[key];
+    }
+  }
+  return result;
 }
 
 export async function templateDefaultOnActionError(

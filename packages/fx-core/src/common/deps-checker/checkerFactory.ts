@@ -5,7 +5,7 @@ import { DotnetChecker } from "./internal/dotnetChecker";
 import { DepsLogger } from "./depsLogger";
 import { DepsTelemetry } from "./depsTelemetry";
 import { DepsChecker } from "./depsChecker";
-import { AzureNodeChecker, FunctionNodeChecker, SPFxNodeChecker } from "./internal/nodeChecker";
+import { AzureNodeChecker, SPFxNodeChecker } from "./internal/nodeChecker";
 import { FuncToolChecker } from "./internal/funcToolChecker";
 import { NgrokChecker } from "./internal/ngrokChecker";
 import { DepsType } from "./depsChecker";
@@ -19,8 +19,9 @@ export class CheckerFactory {
     switch (type) {
       case DepsType.AzureNode:
         return new AzureNodeChecker(logger, telemetry);
+      // TODO: remove DepsType.FunctionNode in DepsType
       case DepsType.FunctionNode:
-        return new FunctionNodeChecker(logger, telemetry);
+        return new AzureNodeChecker(logger, telemetry);
       case DepsType.SpfxNode:
         return new SPFxNodeChecker(logger, telemetry);
       case DepsType.Dotnet:

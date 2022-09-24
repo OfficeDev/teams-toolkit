@@ -52,22 +52,14 @@ describe("NodeChecker E2E Test", async () => {
       this.skip();
     }
 
-    const functionNodeChecker = CheckerFactory.createChecker(
-      DepsType.FunctionNode,
-      new TestLogger(),
-      new TestTelemetry()
-    );
     const azureNodeChecker = CheckerFactory.createChecker(
       DepsType.AzureNode,
       new TestLogger(),
       new TestTelemetry()
     );
 
-    const functionRes = await functionNodeChecker.resolve();
     const azureRes = await azureNodeChecker.resolve();
-    chai.assert.isFalse(functionRes.isInstalled);
     chai.assert.isFalse(azureRes.isInstalled);
-    chai.assert.isFalse((await functionNodeChecker.getInstallationInfo()).isInstalled);
     chai.assert.isFalse((await azureNodeChecker.getInstallationInfo()).isInstalled);
   });
 });

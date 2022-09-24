@@ -194,7 +194,7 @@ describe("Capability Questions", () => {
   });
 });
 
-describe("App name question", async () => {
+describe.only("App name question", async () => {
   const question = createAppNameQuestion();
   const validFunc = (question.validation as FuncValidation<string>).validFunc;
 
@@ -277,6 +277,13 @@ describe("App name question", async () => {
 
   it("app name containing invalid character", async () => {
     const input = "app<>123";
+    const result = await validFunc(input);
+
+    chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+  });
+
+  it("invalid app name containing &", async () => {
+    const input = "app&123";
     const result = await validFunc(input);
 
     chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));

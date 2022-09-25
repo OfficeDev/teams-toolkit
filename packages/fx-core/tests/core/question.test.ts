@@ -194,7 +194,7 @@ describe("Capability Questions", () => {
   });
 });
 
-describe.only("App name question", async () => {
+describe("App name question", async () => {
   const question = createAppNameQuestion();
   const validFunc = (question.validation as FuncValidation<string>).validFunc;
 

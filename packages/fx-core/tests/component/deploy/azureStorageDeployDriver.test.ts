@@ -12,8 +12,7 @@ import { expect, use as chaiUse } from "chai";
 import chaiAsPromised = require("chai-as-promised");
 import { StorageAccounts, StorageManagementClient } from "@azure/arm-storage";
 import { StorageAccountsListAccountSASResponse } from "@azure/arm-storage/esm/models";
-import { BlobDeleteResponse, BlobServiceClient, ContainerClient } from "@azure/storage-blob";
-import { PagedAsyncIterableIterator } from "@azure/core-paging";
+import { BlobDeleteResponse, ContainerClient } from "@azure/storage-blob";
 chaiUse(chaiAsPromised);
 
 describe("Azure Storage Deploy Driver test", () => {

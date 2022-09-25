@@ -19,11 +19,11 @@ export class DotnetBuildDriver implements StepDriver {
 
 export class DotnetBuildDriverImpl extends BaseBuildDriver {
   private static readonly emptyMap = new Map<string, string>();
-  private static readonly DOTNET_BUILD_COMMAND_PREFIX = "dotnet ";
+  private static readonly DOTNET_BUILD_COMMAND_PREFIX = "dotnet";
 
   async run(): Promise<Map<string, string>> {
     const args = this.toBuildArgs();
-    const commandSuffix = checkMissingArgs("BuildCommand", args.buildCommand);
+    const commandSuffix = checkMissingArgs("BuildCommand", args.buildCommand).trim();
     const command = `${DotnetBuildDriverImpl.DOTNET_BUILD_COMMAND_PREFIX} ${commandSuffix}`;
     try {
       const output = await execute(command, args.src, this.context.logProvider);

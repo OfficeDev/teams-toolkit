@@ -19,11 +19,11 @@ export class NpmBuildDriver implements StepDriver {
 
 export class NpmBuildDriverImpl extends BaseBuildDriver {
   private static readonly emptyMap = new Map<string, string>();
-  private static readonly NPM_BUILD_COMMAND_PREFIX = "npm ";
+  private static readonly NPM_BUILD_COMMAND_PREFIX = "npm";
 
   async run(): Promise<Map<string, string>> {
     const args = this.toBuildArgs();
-    const commandSuffix = checkMissingArgs("BuildCommand", args.buildCommand);
+    const commandSuffix = checkMissingArgs("BuildCommand", args.buildCommand).trim();
     const command = `${NpmBuildDriverImpl.NPM_BUILD_COMMAND_PREFIX} ${commandSuffix}`;
     try {
       const output = await execute(command, args.src, this.context.logProvider);

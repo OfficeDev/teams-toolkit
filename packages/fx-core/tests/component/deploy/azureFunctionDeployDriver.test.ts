@@ -75,7 +75,6 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
     const res = await deploy.run(args, context);
     expect(res.size).to.equal(0);
   });

@@ -20,6 +20,7 @@ import * as appService from "@azure/arm-appservice";
 import { DeployConstant } from "../constant/deployConstant";
 import { default as axios } from "axios";
 import { waitSeconds } from "../../common/tools";
+import { HttpStatusCode } from "../constant/commonConstant";
 
 export abstract class AzureDeployDriver extends BaseDeployDriver {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -66,7 +67,10 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
   protected parseResourceId(resourceId: string): AzureResourceInfo {
     const result = resourceId.trim().match(this.pattern);
     if (!result || result.length != 4) {
-      throw PrerequisiteError.somethingIllegal("resourceId", "error.FailedToParseResourceIdError");
+      throw PrerequisiteError.somethingIllegal("resourceId", "plugins.bot.InvalidValue", [
+        "resourceId",
+        resourceId,
+      ]);
     }
     return {
       subscriptionId: resourceId[1].trim(),
@@ -242,6 +246,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
       throw PrerequisiteError.somethingIllegal(
         "azureCredential",
         "plugin.hosting.FailRetrieveAzureCredentials",
+        undefined,
         "plugin.hosting.LoginToAzure"
       );
     }

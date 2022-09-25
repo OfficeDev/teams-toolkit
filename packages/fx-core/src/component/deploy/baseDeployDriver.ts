@@ -5,8 +5,8 @@ import { DeployArgs, DeployContext, DeployStepArgs } from "../interface/buildAnd
 import { BaseComponentInnerError } from "../error/componentError";
 import ignore, { Ignore } from "ignore";
 import { DeployConstant } from "../constant/deployConstant";
-import path from "path";
-import fs from "fs-extra";
+import * as path from "path";
+import * as fs from "fs-extra";
 import { zipFolderAsync } from "../utils/fileOperation";
 import { asFactory, asOptional, asString } from "../utils/common";
 import { BaseStepDriver } from "./baseStepDriver";

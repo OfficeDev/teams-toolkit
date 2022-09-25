@@ -17,7 +17,7 @@ export class AzureAppServiceDeployDriver implements StepDriver {
 
 export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
   pattern =
-    /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/sites\/([^\/]*)/i;
+    /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/serverFarms\/([^\/]*)/i;
 
   async azureDeploy(
     args: DeployStepArgs,

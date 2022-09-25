@@ -152,11 +152,16 @@ export class PrerequisiteError extends BaseComponentInnerError {
     super("UserError", name, messageKey, messageParams, suggestionKey, undefined, helpLink);
   }
 
-  static somethingIllegal(name: string, messageKey: string, helpLink?: string): PrerequisiteError {
+  static somethingIllegal(
+    name: string,
+    messageKey: string,
+    messageParams?: string[],
+    helpLink?: string
+  ): PrerequisiteError {
     return new PrerequisiteError(
       "Illegal" + PrerequisiteError.toCamel(name),
       messageKey,
-      undefined,
+      messageParams,
       undefined,
       helpLink
     );

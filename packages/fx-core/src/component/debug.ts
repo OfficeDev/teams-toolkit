@@ -484,7 +484,7 @@ export async function generateLocalDebugSettingsCommon(
         // Only generate launch.json and tasks.json for SPFX
         const launchConfigurations = Launch.generateSpfxConfigurations();
         const launchCompounds = Launch.generateSpfxCompounds();
-        const tasks = Tasks.generateSpfxTasks();
+        const tasks = TasksTransparency.generateSpfxTasks();
         const tasksInputs = Tasks.generateInputs();
 
         await fs.ensureDir(`${inputs.projectPath}/.vscode/`);

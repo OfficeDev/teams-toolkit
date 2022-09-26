@@ -1185,7 +1185,7 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
     [TelemetryProperty.DebugProjectComponents]: (await commonUtils.getProjectComponents()) + "",
   });
 
-  const nodeType = (await vscodeHelper.hasFunction()) ? DepsType.FunctionNode : DepsType.AzureNode;
+  const nodeType = DepsType.AzureNode;
   const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
@@ -1401,9 +1401,9 @@ export async function getDotnetPathHandler(): Promise<string> {
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
     const dotnetStatus = (await depsManager.getStatus([DepsType.Dotnet]))?.[0];
     if (dotnetStatus?.isInstalled && dotnetStatus?.details?.binFolders !== undefined) {
-      return `${path.delimiter}${dotnetStatus.details.binFolders.join(path.delimiter)}${
-        path.delimiter
-      }`;
+      return `${path.delimiter}${dotnetStatus.details.binFolders
+        .map((f: string) => path.dirname(f))
+        .join(path.delimiter)}${path.delimiter}`;
     }
   } catch (error: any) {
     showError(assembleError(error));

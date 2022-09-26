@@ -59,9 +59,8 @@ export class LocalEnvManager {
 
     // NodeJS
     if (isSPFx) {
+      // TODO: add spfx 1.16.0 node
       depsTypes.push(DepsType.SpfxNode);
-    } else if (includeBackend || includeFuncHostedBot) {
-      depsTypes.push(DepsType.FunctionNode);
     } else {
       depsTypes.push(DepsType.AzureNode);
     }

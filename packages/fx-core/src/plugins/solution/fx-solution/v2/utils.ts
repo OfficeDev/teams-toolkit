@@ -20,7 +20,6 @@ import {
   TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 import { AppStudioScopes, isAadManifestEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,

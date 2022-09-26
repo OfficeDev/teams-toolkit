@@ -25,7 +25,7 @@ import "../../src/component/feature/sql";
 import "../../src/component/resource/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { deleteFolder, MockTools, randomAppName } from "../core/utils";
-import { AppStudioClient } from "../../src/plugins/resource/appstudio/appStudio";
+import { AppStudioClient } from "../../src/component/resource/appManifest/appStudioClient";
 import * as clientFactory from "../../src/plugins/resource/bot/clientFactory";
 import { AADRegistration } from "../../src/plugins/resource/bot/aadRegistration";
 import { TestHelper } from "../plugins/resource/frontend/helper";
@@ -54,7 +54,6 @@ import * as armFunctions from "../../src/plugins/solution/fx-solution/arm";
 import { apiConnectorImpl } from "../../src/component/feature/apiconnector/apiConnector";
 import * as backup from "../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
-import { Constants } from "../../src/plugins/resource/aad/constants";
 import { CoreQuestionNames } from "../../src/core/question";
 import * as questionV3 from "../../src/component/questionV3";
 import { provisionUtils } from "../../src/component/provisionUtils";
@@ -66,6 +65,7 @@ import {
 } from "../../src/plugins/solution/fx-solution/question";
 import { AddSsoParameters } from "../../src/plugins/solution/fx-solution/constants";
 import { BuiltInFeaturePluginNames } from "../../src/plugins/solution/fx-solution/v3/constants";
+import { Constants } from "../../src/component/resource/aadApp/constants";
 describe("Core component test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();

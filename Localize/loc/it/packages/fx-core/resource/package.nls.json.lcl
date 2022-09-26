@@ -3034,6 +3034,9 @@
       <Item ItemId=";error.InvalidFeature" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[This feature is not applicable for your project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Questa funzionalità non è applicabile per il progetto.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3136,7 +3139,7 @@
       <Item ItemId=";error.MissingSubscriptionInConfig" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please provide the subscription id of the resource group (%s) in (%s)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Specificare l'ID abbonamento del gruppo di risorse (%s) in (%s)]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -4303,6 +4306,9 @@
       <Item ItemId=";error.appstudio.teamsAppCreateConflictWithPublishedApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A Teams app with that id already exists in your organization's app store. Please manually update the app id and try again.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Un'app di Teams con l'ID specificato esiste già nell'App Store dell'organizzazione. Aggiornare manualmente l'ID app e riprovare.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4423,6 +4429,9 @@
       <Item ItemId=";error.debugHandler.DebugArgumentEmptyError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Debug argument '%s' is empty.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[L'argomento di debug '%s' è vuoto.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4456,6 +4465,9 @@
       <Item ItemId=";error.debugHandler.InvalidTabBaseUrlError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[baseUrl must be in the format of 'https://localhost:{port}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[baseUrl deve essere nel formato 'https://localhost:{port}'.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4804,8 +4816,8 @@
       <Item ItemId=";error.function.InstallNpmPackageError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to install npm packages.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Non è stato possibile installare i pacchetti NPM.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Non è stato possibile installare i pacchetti npm.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to install NPM packages.]]></Val>

@@ -2,8 +2,6 @@
 // Licensed under the MIT license.
 
 import { Storage, StoreItems, TurnContext } from "botbuilder";
-import { IAdaptiveCard } from "adaptivecards";
-
 import { Activity, InvokeResponse, StatusCodes } from "botframework-schema";
 import {
   AdaptiveCardResponse,
@@ -115,7 +113,7 @@ export class MockCardActionHandler implements TeamsFxAdaptiveCardActionHandler {
   invokeResponse: InvokeResponse;
   actionData: any;
 
-  constructor(verb: string, response?: string | IAdaptiveCard) {
+  constructor(verb: string, response?: any) {
     this.triggerVerb = verb;
     if (!response) {
       this.invokeResponse = InvokeResponseFactory.textMessage("Your response was sent to the app");

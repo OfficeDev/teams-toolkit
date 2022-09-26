@@ -9,7 +9,7 @@ import {
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import * as templatesAction from "../../../src/common/template-utils/templatesActions";
-import { manifestUtils } from "../../../src/component/resource/appManifest/utils";
+import { manifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { assert } from "chai";
 import "mocha";

@@ -2542,6 +2542,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.localDebug.failedCheckers" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to check: [%s]5D;. ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[[%s]5D; を確認できませんでした。 ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.localDebug.howToFixIssues" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[How to fix the issues]]></Val>
@@ -2722,6 +2731,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.localDebug.ngrokTimeoutError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Timeout waiting for starting ngrok.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[タイムアウトで ngrok の開始を待機しています。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.localDebug.ngrokTunnelAddrNotFoundError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The addr of %s tunnel can not be found in the ngrok config file '%s'.]]></Val>
@@ -2751,10 +2769,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.npmInstallFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[NPM Package Install Task Failed. Please check the %s to see the details.]]></Val>
+          <Val><![CDATA[Install npm packages task failed. Please check the %s to see the details.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[NPM パッケージのインストール タスクが失敗しました。%s をチェックして、詳細を確認してください。]]></Val>
+            <Val><![CDATA[npm パッケージのインストール タスクに失敗しました。%s をチェックして、詳細を確認してください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[NPM Package Install Task Failed. Please check the %s to see the details.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2805,10 +2826,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.prepareManifestFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Prepare manifest Task Failed. Please check the %s to see the details.]]></Val>
+          <Val><![CDATA[Build & upload Teams manifest task failed. Please check the %s to see the details.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[マニフェスト タスクを準備できませんでした。%s をチェックして、詳細を確認してください。]]></Val>
+            <Val><![CDATA[Teams マニフェスト タスクのビルドとアップロードに失敗しました。%s をチェックして、詳細を確認してください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Prepare manifest Task Failed. Please check the %s to see the details.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2824,30 +2848,48 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.localDebug.prerequisitesCheckTaskFailure" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Validate & install prerequisites failed. Please check the %s to see the details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[前提条件の検証とインストールに失敗しました。%s をチェックして、詳細を確認してください。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.localDebug.setUpBotFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Set up Bot Task Failed. Please check the %s to see the details.]]></Val>
+          <Val><![CDATA[Set up bot fask failed. Please check the %s to see the details.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[ボット タスクを設定できませんでした。%s をチェックして、詳細を確認してください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Set up Bot Task Failed. Please check the %s to see the details.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.setUpSSOFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Set up SSO Task Failed. Please check the %s to see the details.]]></Val>
+          <Val><![CDATA[Set up SSO task failed. Please check the %s to see the details.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[SSO タスクを設定できませんでした。%s をチェックして、詳細を確認してください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Set up SSO Task Failed. Please check the %s to see the details.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.localDebug.setUpTabFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Set up Tab Task Failed. Please check the %s to see the details.]]></Val>
+          <Val><![CDATA[Set up tab task failed. Please check the %s to see the details.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[タブ タスクを設定できませんでした。%s をチェックして、詳細を確認してください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Set up Tab Task Failed. Please check the %s to see the details.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2874,6 +2916,15 @@
           <Val><![CDATA[terminal]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[ターミナル]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.localDebug.tunnelEndpointNotFoundError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to find the tunnel url.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[トンネル URL が見つかりませんでした。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3310,24 +3361,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.binFolder.default.description" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[${teamsfx:ngrokBinFolder}: Use the ngrok installed by TeamsFx.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[${teamsfx:ngrokBinFolder}: TeamsFx でインストールされた ngrok を使用します。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";teamstoolkit.taskDefinitions.args.binFolder.title" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The ngrok bin folder.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[ngrok bin フォルダー。]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.bot.botIdTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The AAD app client id for bot]]></Val>
@@ -3411,66 +3444,84 @@
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.devCertTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Install localhost SSL certificate]]></Val>
+          <Val><![CDATA[Install localhost SSL certificate. It's used to serve the development sites over HTTPS to debug the Tab app in Teams.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[localhost SSL 証明書のインストール]]></Val>
+            <Val><![CDATA[localhost SSL 証明書をインストールします。これは、HTTPS 経由で開発サイトを提供し、Teams でタブ アプリをデバッグするために使用されます。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Install localhost SSL certificate]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Install .NET]]></Val>
+          <Val><![CDATA[Ensure .NET Core SDK is installed. TeamsFx Azure Functions project depends on extra .NET binding extensions for HTTP trigger authorization.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[.NET のインストール]]></Val>
+            <Val><![CDATA[.NET Core SDK がインストールされていることを確認してください。TeamsFx Azure Functions プロジェクトは、HTTP トリガー承認のための余分な .NET バインド拡張機能に依存しています。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Install .NET]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.funcTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Install Azure Functions Core Tools]]></Val>
+          <Val><![CDATA[Install Azure Functions Core Tools. It's used to serve Azure Functions hosted project locally.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Azure Functions Core Tools のインストール]]></Val>
+            <Val><![CDATA[Azure Functions Core Tools をインストールします。これは、Azure Functions でホストされたプロジェクトをローカルで提供するために使用します。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Install Azure Functions Core Tools]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.m365AccountTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Validate M365 account]]></Val>
+          <Val><![CDATA[Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[M365 アカウントの検証]]></Val>
+            <Val><![CDATA[Microsoft 365 アカウントのサインイン プロンプトが表示され、アカウントでサイドローディングのアクセス許可が有効かどうかを検証します。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Validate M365 account]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.ngrokTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Install Ngrok]]></Val>
+          <Val><![CDATA[Install Ngrok. Bot project requires a public message endpoint, and ngrok can help create public tunnel for your local service.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Ngrok のインストール]]></Val>
+            <Val><![CDATA[ngrok をインストールします。ボット プロジェクトにはパブリック メッセージ エンドポイントが必要です。ngrok はローカル サービス用のパブリック トンネルの作成に役立ちます。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Install Ngrok]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.nodejsTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Validate Node.js]]></Val>
+          <Val><![CDATA[Validate if Node.js is installed.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Node.js の検証]]></Val>
+            <Val><![CDATA[Node.js がインストールされているかどうかを検証します。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Validate Node.js]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.portsTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Validate available ports.]]></Val>
+          <Val><![CDATA[Validate available ports to ensure those local debug ones are not occupied.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[使用可能なポートを検証します。]]></Val>
+            <Val><![CDATA[利用可能なポートを検証して、それらのローカル デバッグ ポートが使用されていないことを確認してください。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Validate available ports]]></Val>
+            <Val><![CDATA[Validate available ports.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -3507,6 +3558,15 @@
           <Val><![CDATA[The npm installation projects.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[npm インストール プロジェクト。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.reuse.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Reuse the task when the debug session is closed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[デバッグ セッションの終了時にタスクを再利用します。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3556,12 +3616,33 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.tunnelName.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The ngrok tunnel name which need to start.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[開始する必要がある ngrok トンネル名。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.taskDefinitions.args.useGlobalNgrok.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[If true, use global ngrok from PATH instead of the Teams Toolkit built-in one.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[true の場合、Teams ツールキットの組み込みパスの代わりに、PATH からのグローバル ngrok を使用します。]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.command.bot.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Set up Bot.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot for how to customize following args.]]></Val>
+          <Val><![CDATA[Set up bot.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot for how to customize following args.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[ボットを設定します。]A; 次の引数をカスタマイズする方法については、https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot を参照してください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Set up Bot.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot for how to customize following args.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3576,10 +3657,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.command.npmInstall.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Install NPM Packages.]A; See https://aka.ms/teamsfx-debug-tasks#debug-npm-install for how to customize following args.]]></Val>
+          <Val><![CDATA[Install npm packages.]A; See https://aka.ms/teamsfx-debug-tasks#debug-npm-install for how to customize following args.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[NPM パッケージをインストールします。]A; 次の引数をカスタマイズする方法については、https://aka.ms/teamsfx-debug-tasks#debug-npm-install を参照してください。]]></Val>
+            <Val><![CDATA[npm パッケージをインストールします。]A; 次の引数をカスタマイズする方法については、https://aka.ms/teamsfx-debug-tasks#debug-npm-install を参照してください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Install NPM Packages.]A; See https://aka.ms/teamsfx-debug-tasks#debug-npm-install for how to customize following args.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3612,10 +3696,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.command.tab.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Set up Tab.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab for how to customize following args.]]></Val>
+          <Val><![CDATA[Set up tab.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab for how to customize following args.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[タブを設定します。]A; 次の引数をカスタマイズする方法については、https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab を参照してください。]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Set up Tab.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab for how to customize following args.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

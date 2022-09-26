@@ -777,8 +777,7 @@ export default class Preview extends YargsCommand {
       if (!this.sharepointSiteUrl) {
         return err(errors.NoUrlForSPFxRemotePreview());
       }
-      const spfxRoot = path.join(workspaceFolder, FolderName.SPFx);
-      return this.spfxPreview(spfxRoot, browser, this.sharepointSiteUrl, browserArguments);
+      return this.spfxPreview(workspaceFolder, browser, this.sharepointSiteUrl, browserArguments);
     }
 
     const tenantId = config?.config
@@ -786,7 +785,7 @@ export default class Preview extends YargsCommand {
       ?.get(constants.teamsAppTenantIdConfigKey) as string;
 
     const remoteTeamsAppId: string = config?.config
-      ?.get("app-manifest")
+      ?.get(constants.appstudioPluginName)
       ?.get(constants.remoteTeamsAppIdConfigKey);
     if (remoteTeamsAppId === undefined || remoteTeamsAppId.length === 0) {
       return err(errors.PreviewWithoutProvision());

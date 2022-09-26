@@ -13,7 +13,7 @@ import {
   AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
-import { getPermissionMap } from "@microsoft/teamsfx-core/build/plugins/resource/aad";
+import { getPermissionMap } from "@microsoft/teamsfx-core/build/component/resource/aadApp/permissions";
 import { getAllowedAppMaps, getPropertyByPath } from "@microsoft/teamsfx-core/build/common/tools";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { convertManifestTemplateToV3 } from "@microsoft/teamsfx-core/build/component/migrate";

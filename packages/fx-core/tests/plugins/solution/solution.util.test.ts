@@ -66,7 +66,6 @@ describe("util: fillInSolutionSettings() with AAD manifest enabled", async () =>
 
     const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
     expect(solutionSettings?.capabilities?.includes(TabSsoItem.id)).to.be.true;
-    expect(solutionSettings?.activeResourcePlugins?.includes(PluginNames.AAD)).to.be.true;
   });
 
   it("Tab without SSO", async () => {
@@ -79,7 +78,6 @@ describe("util: fillInSolutionSettings() with AAD manifest enabled", async () =>
 
     const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
     expect(solutionSettings?.capabilities?.includes(TabSsoItem.id)).to.be.false;
-    expect(solutionSettings?.activeResourcePlugins?.includes(PluginNames.AAD)).to.be.false;
   });
 
   it("M365 SSO Tab", async () => {
@@ -91,7 +89,6 @@ describe("util: fillInSolutionSettings() with AAD manifest enabled", async () =>
     const res = fillInSolutionSettings(projectSettings, mockInput);
     const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
     expect(solutionSettings?.capabilities?.includes(TabSsoItem.id)).to.be.true;
-    expect(solutionSettings?.activeResourcePlugins?.includes(PluginNames.AAD)).to.be.true;
   });
 });
 

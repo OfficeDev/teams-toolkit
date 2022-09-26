@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -450,11 +450,6 @@
       {
         "command": "fx-extension.createFromWalkthrough",
         "title": "Teams - Create Project",
-        "enablement": "never"
-      },
-      {
-        "command": "fx-extension.debug",
-        "title": "Teams - Preview your Teams app",
         "enablement": "never"
       },
       {
@@ -978,12 +973,12 @@
                     "description": "%teamstoolkit.taskDefinitions.args.useGlobalNgrok.title%",
                     "default": false
                   },
-                  "reuse":{
+                  "keepAlive": {
                     "type": "boolean",
-                    "description": "%teamstoolkit.taskDefinitions.args.reuse.title%",
+                    "description": "%teamstoolkit.taskDefinitions.args.keepAlive.title%",
                     "default": false
                   },
-                  "tunnelName":{
+                  "tunnelName": {
                     "type": "string",
                     "description": "%teamstoolkit.taskDefinitions.args.tunnelName.title%",
                     "default": "bot"
@@ -1141,9 +1136,8 @@
           }
         ],
         "background": {
-          "activeOnStart": true,
-          "beginsPattern": "Starting local tunnel service",
-          "endsPattern": "Local tunnel service is started successfully|Failed to start local tunnel service"
+          "beginsPattern": "Forwarding URL https?://.* to https?://.*",
+          "endsPattern": "Local tunnel service is started successfully"
         }
       },
       {
@@ -1239,10 +1233,13 @@
               "sharepointYeomanGenerator": true
             }
           },
-          "fx-extension.SPFxVersion":{
+          "fx-extension.SPFxVersion": {
             "type": "string",
             "description": "Select what version of SPFx to use. (Requires reload of VS Code)",
-            "enum": ["1.15.0", "1.16.0-beta.1"],
+            "enum": [
+              "1.15.0",
+              "1.16.0-beta.1"
+            ],
             "default": "1.15.0"
           }
         }
@@ -1441,8 +1438,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.20.5",
-    "@microsoft/teamsfx-core": "^1.15.0",
+    "@microsoft/teamsfx-api": "^0.20.6",
+    "@microsoft/teamsfx-core": "^1.16.2",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",

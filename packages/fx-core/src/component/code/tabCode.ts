@@ -198,7 +198,7 @@ export class TabCodeProvider {
     });
     return ok(undefined);
   }
-  private collectEnvs(ctx: ContextV3): { [key: string]: string } {
+  collectEnvs(ctx: ContextV3): { [key: string]: string } {
     const envs: { [key: string]: string } = {};
     const addToEnvs = (key: string, value: string | undefined) => {
       // Check for both null and undefined, add to envs when value is "", 0 or false.
@@ -220,7 +220,13 @@ export class TabCodeProvider {
       addToEnvs(EnvKeys.ClientID, ctx.envInfo?.state?.[ComponentNames.AadApp]?.clientId as string);
       addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
-
+    const simpleAuth = getComponent(ctx.projectSetting, ComponentNames.SimpleAuth);
+    if (simpleAuth) {
+      addToEnvs(
+        EnvKeys.RuntimeEndpoint,
+        ctx.envInfo?.state?.[ComponentNames.SimpleAuth]?.endpoint as string
+      );
+    }
     return envs;
   }
   private async doBlazorBuild(tabPath: string, logger?: LogProvider): Promise<string> {

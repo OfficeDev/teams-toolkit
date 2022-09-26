@@ -575,7 +575,7 @@ async function previewLocal(progressBar: IProgressHandler): Promise<Result<null,
     );
     return err(error);
   }
-  progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+  await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
   await openHubWebClient(true, debugConfig.appId, constants.Hub.teams);
   return ok(null);
 }
@@ -625,7 +625,7 @@ async function previewRemote(
     }
 
     if (hub === constants.Hub.teams) {
-      progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+      await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
       await openHubWebClient(includeFrontend, debugConfig.appId, hub);
     } else {
       const shouldContinue = await showInstallAppInTeamsMessage(env, debugConfig.appId);
@@ -635,7 +635,7 @@ async function previewRemote(
 
       const internalId = await getTeamsAppInternalId(debugConfig.appId);
       if (internalId !== undefined) {
-        progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+        await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
         await openHubWebClient(includeFrontend, internalId, hub);
       }
     }

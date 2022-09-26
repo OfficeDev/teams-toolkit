@@ -3034,6 +3034,9 @@
       <Item ItemId=";error.InvalidFeature" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[This feature is not applicable for your project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[此功能不適用於您的專案。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3136,7 +3139,7 @@
       <Item ItemId=";error.MissingSubscriptionInConfig" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please provide the subscription id of the resource group (%s) in (%s)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[請提供 (%s) 中資源群組 (%s) 的訂用帳戶識別碼]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -4303,6 +4306,9 @@
       <Item ItemId=";error.appstudio.teamsAppCreateConflictWithPublishedApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A Teams app with that id already exists in your organization's app store. Please manually update the app id and try again.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[具有該識別碼的 Teams 應用程式已存在於貴組織的 App Store 中。請手動更新應用程式識別碼，然後再試一次。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4423,6 +4429,9 @@
       <Item ItemId=";error.debugHandler.DebugArgumentEmptyError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Debug argument '%s' is empty.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[偵錯引數 '%s' 是空的。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4456,6 +4465,9 @@
       <Item ItemId=";error.debugHandler.InvalidTabBaseUrlError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[baseUrl must be in the format of 'https://localhost:{port}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[baseUrl 的格式必須為 'https://localhost:{port}'。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4804,8 +4816,8 @@
       <Item ItemId=";error.function.InstallNpmPackageError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to install npm packages.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[無法安裝 NPM 套件。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[無法安裝 npm 套件。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to install NPM packages.]]></Val>

@@ -26,7 +26,7 @@ import { AppStudioScopes } from "../../common/tools";
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
-import { AppStudioClient } from "../../plugins/resource/appstudio/appStudio";
+import { AppStudioClient } from "../resource/appManifest/appStudioClient";
 import { ComponentNames } from "../constants";
 import { buildTeamsAppPackage } from "../resource/appManifest/appStudio";
 import { DebugAction } from "./common";

@@ -44,7 +44,7 @@ import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constant
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { PluginImpl } from "./interface";
-import { BOT_ID } from "../appstudio/constants";
+import { BOT_ID } from "../../../component/resource/appManifest/constants";
 import { AzureOperations } from "../../../common/azure-hosting/azureOps";
 import { AzureUploadConfig } from "../../../common/azure-hosting/interfaces";
 import { HostType } from "./v2/enum";

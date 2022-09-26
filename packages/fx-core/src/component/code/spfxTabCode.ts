@@ -29,7 +29,11 @@ import { getTemplatesFolder } from "../../folder";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../resource/appManifest/constants";
 import { GeneratorChecker } from "../resource/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../resource/spfx/depsChecker/yoChecker";
-import { DependencyInstallError, ScaffoldError } from "../resource/spfx/error";
+import {
+  DependencyInstallError,
+  NoConfigurationError,
+  ScaffoldError,
+} from "../resource/spfx/error";
 import {
   ManifestTemplate,
   PlaceHolders,

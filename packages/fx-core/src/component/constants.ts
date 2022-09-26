@@ -293,4 +293,8 @@ export const FunctionAppSetting = {
 
 export const PathConstants = {
   botWorkingDir: "bot",
+  apiWorkingDir: "api",
+  npmPackageFolderName: "node_modules",
+  functionExtensionsFolderName: "bin",
+  functionExtensionsFileName: "extensions.csproj",
 };

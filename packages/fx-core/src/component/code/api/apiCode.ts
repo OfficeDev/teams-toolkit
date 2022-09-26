@@ -7,6 +7,7 @@ import {
   ContextV3,
   FxError,
   InputsWithProjectPath,
+  LogProvider,
   ok,
   ProjectSettingsV3,
   Result,
@@ -14,27 +15,24 @@ import {
 import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
-import { DepsChecker, DepsType } from "../../common/deps-checker/depsChecker";
-import { CheckerFactory } from "../../common/deps-checker/checkerFactory";
-import { CoreQuestionNames } from "../../core/question";
-import { DefaultValues, FunctionPluginPathInfo } from "../../plugins/resource/function/constants";
-import { FunctionLanguage, QuestionKey } from "../../plugins/resource/function/enums";
-import { FunctionDeploy } from "../../plugins/resource/function/ops/deploy";
-import { FunctionScaffold } from "../../plugins/resource/function/ops/scaffold";
-import { funcDepsHelper } from "../../plugins/resource/function/utils/depsChecker/funcHelper";
-import { ComponentNames } from "../constants";
-import { BadComponent, invalidProjectSettings } from "../error";
-import { ErrorMessage, ProgressMessages, ProgressTitles } from "../messages";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { getComponent } from "../workflow";
-import { TelemetryHelper } from "../../plugins/resource/function/utils/telemetry-helper";
-import { Logger } from "../../plugins/resource/function/utils/logger";
-import { funcDepsLogger } from "../../plugins/resource/function/utils/depsChecker/funcPluginLogger";
-import { funcDepsTelemetry } from "../../plugins/resource/function/utils/depsChecker/funcPluginTelemetry";
-import { LinuxNotSupportedError } from "../../common/deps-checker/depsError";
-import { InfoMessages } from "../../plugins/resource/function/resources/message";
-import { LanguageStrategyFactory } from "../../plugins/resource/function/language-strategy";
-import { execute } from "./utils";
+import { DepsChecker, DepsType } from "../../../common/deps-checker/depsChecker";
+import { CheckerFactory } from "../../../common/deps-checker/checkerFactory";
+import { CoreQuestionNames } from "../../../core/question";
+import { FunctionScaffold } from "./scaffold";
+import { funcDepsHelper } from "./depsChecker/funcHelper";
+import { ComponentNames, PathConstants, ProgrammingLanguage } from "../../constants";
+import { BadComponent, invalidProjectSettings } from "../../error";
+import { ErrorMessage, LogMessages, ProgressMessages, ProgressTitles } from "../../messages";
+import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { getComponent } from "../../workflow";
+import { LinuxNotSupportedError } from "../../../common/deps-checker/depsError";
+import { LanguageStrategyFactory } from "./language-strategy";
+import { execute } from "../utils";
+import { ApiConstants } from "../constants";
+import { DepsManager } from "../../../common/deps-checker";
+import { funcDepsTelemetry } from "./depsChecker/funcPluginTelemetry";
+import { QuestionKey } from "./enums";
+import { FuncPluginLogger } from "./depsChecker/funcPluginLogger";
 /**
  * api scaffold
  */
@@ -57,7 +55,7 @@ export class ApiCodeProvider {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
     const appName = projectSettings.appName;
     const language = inputs[CoreQuestionNames.ProgrammingLanguage];
-    const folder = inputs.folder || FunctionPluginPathInfo.solutionFolderName;
+    const folder = inputs.folder || PathConstants.apiWorkingDir;
     const workingDir = path.join(inputs.projectPath, folder);
     const functionName = inputs[QuestionKey.functionName];
     const variables = {
@@ -68,9 +66,10 @@ export class ApiCodeProvider {
     await FunctionScaffold.scaffoldFunction(
       workingDir,
       language,
-      DefaultValues.functionTriggerType,
+      ApiConstants.functionTriggerType,
       functionName,
-      variables
+      variables,
+      context.logProvider
     );
     return ok(undefined);
   }
@@ -90,13 +89,17 @@ export class ApiCodeProvider {
     if (!teamsApi) return ok(undefined);
     if (teamsApi.folder == undefined) throw new BadComponent("api", this.name, "folder");
     const language = context.projectSetting.programmingLanguage;
-    if (!language || !Object.values(FunctionLanguage).includes(language as FunctionLanguage))
+    if (!language || !Object.values(ProgrammingLanguage).includes(language as ProgrammingLanguage))
       throw new invalidProjectSettings(ErrorMessage.programmingLanguageInvalid);
     const buildPath = path.resolve(inputs.projectPath, teamsApi.folder);
 
     await this.handleDotnetChecker(context, inputs);
     try {
-      await FunctionDeploy.installFuncExtensions(buildPath, language as FunctionLanguage);
+      await this.installFuncExtensions(
+        buildPath,
+        language as ProgrammingLanguage,
+        context.logProvider
+      );
     } catch (error: unknown) {
       if (error instanceof Error) {
         // wrap the original error to UserError so the extensibility model will pop-up a dialog correctly
@@ -107,7 +110,7 @@ export class ApiCodeProvider {
     }
 
     await actionContext?.progressBar?.next(ProgressMessages.buildingApi);
-    for (const commandItem of LanguageStrategyFactory.getStrategy(language as FunctionLanguage)
+    for (const commandItem of LanguageStrategyFactory.getStrategy(language as ProgrammingLanguage)
       .buildCommands) {
       const command: string = commandItem.command;
       const relativePath: string = commandItem.relativePath;
@@ -118,8 +121,7 @@ export class ApiCodeProvider {
   }
 
   private async handleDotnetChecker(ctx: ContextV3, inputs: InputsWithProjectPath): Promise<void> {
-    Logger.setLogger(ctx.logProvider);
-    TelemetryHelper.setContext(ctx);
+    const funcDepsLogger = new FuncPluginLogger(ctx.logProvider);
     const dotnetChecker: DepsChecker = CheckerFactory.createChecker(
       DepsType.Dotnet,
       funcDepsLogger,
@@ -135,7 +137,7 @@ export class ApiCodeProvider {
         return;
       }
       if (error instanceof Error) {
-        funcDepsLogger.error(InfoMessages.failedToInstallDotnet(error));
+        funcDepsLogger.error(LogMessages.failedToInstallDotnet(error));
         await funcDepsLogger.printDetailLog();
         throw funcDepsHelper.transferError(error);
       } else {
@@ -144,5 +146,27 @@ export class ApiCodeProvider {
     } finally {
       funcDepsLogger.cleanup();
     }
+  }
+
+  private async installFuncExtensions(
+    componentPath: string,
+    language: ProgrammingLanguage,
+    logger: LogProvider
+  ): Promise<void> {
+    if (LanguageStrategyFactory.getStrategy(language).skipFuncExtensionInstall) {
+      return;
+    }
+    const funcDepsLogger = new FuncPluginLogger(logger);
+    const binPath = path.join(componentPath, PathConstants.functionExtensionsFolderName);
+    const depsManager = new DepsManager(funcDepsLogger, funcDepsTelemetry);
+    const dotentStatus = (await depsManager.getStatus([DepsType.Dotnet]))[0];
+
+    await funcDepsHelper.installFuncExtension(
+      componentPath,
+      dotentStatus.command,
+      funcDepsLogger,
+      PathConstants.functionExtensionsFileName,
+      binPath
+    );
   }
 }

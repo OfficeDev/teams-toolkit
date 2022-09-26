@@ -39,6 +39,15 @@ export class ProgressMessages {
 export class LogMessages {
   static readonly updateFunctionAppSettings = "Updating Azure Function app settings.";
   static readonly enableStaticWebsite = "Enabling static website feature for Azure Storage.";
+  public static readonly getTemplateFrom = (url: string): string =>
+    getLocalizedString("plugins.function.getTemplateFrom", url);
+  public static readonly getTemplateFromLocal = getLocalizedString(
+    "plugins.function.getTemplateFromLocal"
+  );
+  public static readonly projectScaffoldAt = (basePath: string): string =>
+    getLocalizedString("plugins.function.projectScaffoldAt", basePath);
+  public static readonly failedToInstallDotnet = (error: Error): string =>
+    getLocalizedString("plugins.function.failedToInstallDotnet", error);
 }
 
 export interface LocalizedMessage {

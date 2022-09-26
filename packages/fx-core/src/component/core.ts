@@ -31,7 +31,7 @@ import {
 } from "../core/question";
 import { isValidProject, isVSProject, newProjectSettings } from "./../common/projectSettingsHelper";
 import "./bicep";
-import "./code/apiCode";
+import "./code/api/apiCode";
 import "./code/botCode";
 import "./code/spfxTabCode";
 import "./code/tabCode";

@@ -37,7 +37,7 @@ import { functionNameQuestion } from "../../plugins/resource/function/question";
 import { ErrorMessages } from "../../plugins/resource/function/resources/message";
 import { AzureResourceFunction } from "../../plugins/solution/fx-solution/question";
 import { BicepComponent } from "../bicep";
-import { ApiCodeProvider } from "../code/apiCode";
+import { ApiCodeProvider } from "../code/api/apiCode";
 import { ComponentNames, ProgrammingLanguage, Scenarios } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";

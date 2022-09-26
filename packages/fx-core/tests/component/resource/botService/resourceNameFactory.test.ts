@@ -3,7 +3,7 @@
 import "mocha";
 import * as chai from "chai";
 
-import { ResourceNameFactory } from "../../../../../../src/plugins/resource/bot/utils/resourceNameFactory";
+import { ResourceNameFactory } from "../../../../src/component/resource/botService/resourceNameFactory";
 
 describe("Resource Name Factory", () => {
   describe("createCommonName", () => {

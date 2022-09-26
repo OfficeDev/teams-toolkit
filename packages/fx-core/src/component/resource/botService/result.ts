@@ -45,8 +45,4 @@ export class FxBotPluginResultFactory {
       })
     );
   }
-
-  public static Success(result?: any): FxResult {
-    return ok(result);
-  }
 }

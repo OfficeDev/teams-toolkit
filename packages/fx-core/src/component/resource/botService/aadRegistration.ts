@@ -6,15 +6,12 @@ import { AxiosInstance, default as axios } from "axios";
 import { AADRegistrationConstants } from "./constants";
 import { IAADDefinition } from "./appStudio/interfaces/IAADDefinition";
 import { AppStudio } from "./appStudio/appStudio";
-import {
-  checkAndThrowIfMissing,
-  CreateAADAppError,
-  CreateAADSecretError,
-  ProvisionError,
-} from "./errors";
+import { CreateAADAppError, CreateAADSecretError, ProvisionError } from "./errors";
 import { CommonStrings } from "./strings";
 import { BotAuthCredential } from "./botAuthCredential";
 import { RetryHandler } from "./retryHandler";
+import { CheckThrowSomethingMissing } from "../../error";
+import { FxBotPluginResultFactory } from "./result";
 
 export class AADRegistration {
   public static async registerAADAppAndGetSecretByGraph(
@@ -50,8 +47,16 @@ export class AADRegistration {
       result.clientId = regResponse.data.appId;
       result.objectId = regResponse.data.id;
     } else {
-      result.objectId = checkAndThrowIfMissing("objectId", objectId);
-      result.clientId = checkAndThrowIfMissing("msAppId", msAppId);
+      result.objectId = CheckThrowSomethingMissing(
+        FxBotPluginResultFactory.source,
+        "objectId",
+        objectId
+      );
+      result.clientId = CheckThrowSomethingMissing(
+        FxBotPluginResultFactory.source,
+        "msAppId",
+        msAppId
+      );
     }
 
     // 2. Generate client secret.
@@ -96,8 +101,16 @@ export class AADRegistration {
       result.clientId = app.appId;
       result.objectId = app.id;
     } else {
-      result.objectId = checkAndThrowIfMissing("objectId", objectId);
-      result.clientId = checkAndThrowIfMissing("msAppId", msAppId);
+      result.objectId = CheckThrowSomethingMissing(
+        FxBotPluginResultFactory.source,
+        "objectId",
+        objectId
+      );
+      result.clientId = CheckThrowSomethingMissing(
+        FxBotPluginResultFactory.source,
+        "msAppId",
+        msAppId
+      );
     }
 
     // create password for this AAD

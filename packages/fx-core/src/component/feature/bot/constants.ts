@@ -2,6 +2,17 @@
 // Licensed under the MIT license.
 import { BotNotificationTriggers } from "../../../plugins/solution/fx-solution/question";
 
+export const BotCapabilities = {
+  NOTIFICATION: "notification",
+  COMMAND_AND_RESPONSE: "command-response",
+  WORKFLOW: "workflow",
+  BOT: "bot",
+  MESSAGE_EXTENSION: "message-extension",
+  M365_SEARCH_APP: "m365-search-app",
+} as const;
+
+export type BotCapability = typeof BotCapabilities[keyof typeof BotCapabilities];
+
 export enum TemplateProjectsScenarios {
   DEFAULT_SCENARIO_NAME = "default",
   NOTIFICATION_RESTIFY_SCENARIO_NAME = "notification-restify",

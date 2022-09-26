@@ -12,22 +12,24 @@ import {
   ConfigUpdatingError,
   MessageEndpointUpdatingError,
   ProvisionError,
-  SomethingMissingError,
 } from "../errors";
 import { CommonStrings, ConfigNames } from "../strings";
 import { RetryHandler } from "../retryHandler";
 import { Messages } from "../messages";
 import { getAppStudioEndpoint } from "../../../../component/resource/appManifest/constants";
 import { LogProvider } from "@microsoft/teamsfx-api";
+import { CheckThrowSomethingMissing } from "../../../error";
+import { FxBotPluginResultFactory } from "../result";
 
 export class AppStudio {
   private static baseUrl = getAppStudioEndpoint();
 
   private static newAxiosInstance(accessToken: string): AxiosInstance {
-    if (!accessToken) {
-      throw new SomethingMissingError(ConfigNames.APPSTUDIO_TOKEN);
-    }
-
+    accessToken = CheckThrowSomethingMissing(
+      FxBotPluginResultFactory.source,
+      ConfigNames.APPSTUDIO_TOKEN,
+      accessToken
+    );
     const instance = axios.create({
       headers: {
         post: {

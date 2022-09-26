@@ -31,8 +31,8 @@ import { createContextV3 } from "../../../../src/component/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import { CONFIGURABLE_TABS_TPL_EXISTING_APP } from "../../../../src/component/resource/appManifest/constants";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
-import { QuestionNames } from "../../../../src/plugins/resource/bot/constants";
-import { AppServiceOptionItem } from "../../../../src/plugins/resource/bot/question";
+import { QuestionNames } from "../../../../src/component/feature/bot/constants";
+import { AppServiceOptionItem } from "../../../../src/component/feature/bot/question";
 import {
   AzureSolutionQuestionNames,
   BotScenario,

@@ -29,6 +29,7 @@ import axios, { AxiosInstance } from "axios";
 import { IAadInfo } from "../../../../src/component/resource/apim/interfaces/IAadResource";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { newEnvInfo } from "../../../../src/core/environment";
+import { ServiceClientCredentials } from "@azure/ms-rest-js";
 
 export type StubbedClass<T> = SinonStubbedInstance<T> & T;
 
@@ -486,4 +487,12 @@ export function mockContext(): PluginContext {
     projectSettings: { appName: "hello-app" },
   } as unknown as PluginContext;
   return pluginContext;
+}
+
+export function generateFakeServiceClientCredentials(): ServiceClientCredentials {
+  return {
+    signRequest: (anything) => {
+      return Promise.resolve(anything);
+    },
+  };
 }

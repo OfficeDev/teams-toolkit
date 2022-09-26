@@ -23,7 +23,7 @@ import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../../common/utils";
 import { globalVars } from "../../../core/globalVars";
 import { CoreQuestionNames } from "../../../core/question";
-import { QuestionNames, TemplateProjectsScenarios } from "./constants";
+import { BotCapabilities, QuestionNames, TemplateProjectsScenarios } from "./constants";
 import {
   AppServiceOptionItem,
   AppServiceOptionItemForVS,
@@ -289,12 +289,12 @@ export class TeamsBot {
  *     group=bot, host=app-service, scenario=default
  */
 const featureToCapability: Map<string, string> = new Map([
-  [BotOptionItem.id, "bot"],
-  [MessageExtensionItem.id, "message-extension"],
-  [M365SearchAppOptionItem.id, "message-extension"],
-  [CommandAndResponseOptionItem.id, "command-response"],
-  [NotificationOptionItem.id, "notification"],
-  [WorkflowOptionItem.id, "workflow"],
+  [BotOptionItem.id, BotCapabilities.BOT],
+  [MessageExtensionItem.id, BotCapabilities.MESSAGE_EXTENSION],
+  [M365SearchAppOptionItem.id, BotCapabilities.M365_SEARCH_APP],
+  [CommandAndResponseOptionItem.id, BotCapabilities.COMMAND_AND_RESPONSE],
+  [NotificationOptionItem.id, BotCapabilities.NOTIFICATION],
+  [WorkflowOptionItem.id, BotCapabilities.WORKFLOW],
 ]);
 
 const featureToScenario: Map<string, (triggers?: string) => TemplateProjectsScenarios[]> = new Map([

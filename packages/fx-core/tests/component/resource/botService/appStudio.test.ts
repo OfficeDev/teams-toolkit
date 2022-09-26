@@ -3,13 +3,13 @@
 import "mocha";
 import * as chai from "chai";
 
-import { AppStudio } from "../../../../../../src/plugins/resource/bot/appStudio/appStudio";
-import { RetryHandler } from "../../../../../../src/plugins/resource/bot/utils/retryHandler";
-import { Messages } from "../messages";
+import { AppStudio } from "../../../../src/component/resource/botService/appStudio/appStudio";
+import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
 import * as sinon from "sinon";
-import { IBotRegistration } from "../../../../../../src/plugins/resource/bot/appStudio/interfaces/IBotRegistration";
-import { PluginError, PreconditionError } from "../../../../../../src/plugins/resource/bot/errors";
-import { default as axios } from "axios";
+import { IBotRegistration } from "../../../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";
+import { PluginError } from "../../../../src/component/resource/botService/errors";
+import { Messages } from "./messages";
+import { UserError } from "@microsoft/teamsfx-api";
 
 describe("Test AppStudio APIs", () => {
   afterEach(() => {
@@ -254,7 +254,7 @@ describe("Test AppStudio APIs", () => {
       try {
         await AppStudio.getBotRegistration("", "anything");
       } catch (e) {
-        chai.assert.isTrue(e instanceof PluginError);
+        chai.assert.isTrue(e instanceof UserError);
         return;
       }
     });

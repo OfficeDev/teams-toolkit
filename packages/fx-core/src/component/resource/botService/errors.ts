@@ -116,25 +116,6 @@ export class PluginError extends Error {
   }
 }
 
-export class PreconditionError extends PluginError {
-  constructor(message: [string, string], suggestions: string[]) {
-    super(ErrorType.USER, ErrorNames.PRECONDITION_ERROR, message, suggestions);
-  }
-}
-
-export class SomethingMissingError extends PreconditionError {
-  constructor(something: string) {
-    super(Messages.SomethingIsMissing(something), [Messages.RetryTheCurrentStep]);
-  }
-}
-
-export function checkAndThrowIfMissing<T>(name: string, value: T | null | undefined): T {
-  if (!value) {
-    throw new SomethingMissingError(name);
-  }
-  return value;
-}
-
 export class AADAppCheckingError extends PluginError {
   constructor(innerError?: InnerError) {
     super(

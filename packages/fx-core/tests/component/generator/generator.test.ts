@@ -29,35 +29,6 @@ describe("Generator utils", () => {
     }
   });
 
-  it("unzip all", async () => {
-    const projectName = "unzipTest";
-    const zip = new AdmZip(path.join(__dirname, "zip/unzip_all.zip"));
-    const dstPath = path.join(tmpDir, projectName);
-    const expectedPath = path.join(__dirname, `expected/${projectName}`);
-    const fileDataReplaceFn = genFileDataRenderReplaceFn({
-      appName: "testAppName",
-      projectId: "testProjectId",
-    });
-    const fileNameReplaceFn = genFileNameRenderReplaceFn({});
-    await unzip(zip, dstPath, undefined, fileNameReplaceFn, fileDataReplaceFn);
-    assert.isTrue(compareDirs(dstPath, expectedPath));
-  });
-
-  it("unzip partial", async () => {
-    const projectName = "unzipTest";
-    const zip = new AdmZip(path.join(__dirname, "zip/unzip_partial.zip"));
-    const dstPath = path.join(tmpDir, projectName);
-    const relativePath = "template";
-    const expectedPath = path.join(__dirname, `expected/${projectName}`);
-    const fileDataReplaceFn = genFileDataRenderReplaceFn({
-      appName: "testAppName",
-      projectId: "testProjectId",
-    });
-    const fileNameReplaceFn = genFileNameRenderReplaceFn({});
-    await unzip(zip, dstPath, relativePath, fileNameReplaceFn, fileDataReplaceFn);
-    assert.isTrue(compareDirs(dstPath, expectedPath));
-  });
-
   it("fetch zip url", async () => {
     const url = await fetchZipUrl("bot.csharp.default", templateDownloadBaseUrl);
     assert.isNotEmpty(url);

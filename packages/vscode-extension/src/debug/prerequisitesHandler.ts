@@ -1042,20 +1042,20 @@ function checkNpmInstall(
               }
             });
           } else {
-            exitCode = await runTask(
-              new vscode.Task(
-                {
-                  type: "shell",
-                  command: taskName,
-                },
-                vscode.workspace.workspaceFolders![0],
-                taskName,
-                ProductName,
-                new vscode.ShellExecution([baseNpmInstallCommand, ...args].join(" "), {
-                  cwd: folder,
-                })
-              )
+            const task = new vscode.Task(
+              {
+                type: "shell",
+                command: taskName,
+              },
+              vscode.workspace.workspaceFolders![0],
+              taskName,
+              ProductName,
+              new vscode.ShellExecution([baseNpmInstallCommand, ...args].join(" "), {
+                cwd: folder,
+              })
             );
+            task.presentationOptions.reveal = vscode.TaskRevealKind.Never;
+            exitCode = await runTask(task);
           }
           ctx.properties[TelemetryProperty.DebugNpmInstallExitCode] = `${exitCode}`;
 

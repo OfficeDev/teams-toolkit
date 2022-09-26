@@ -144,9 +144,10 @@ export class AppManifest implements CloudResource {
   ])
   async addCapability(
     inputs: InputsWithProjectPath,
-    capabilities: v3.ManifestCapability[]
+    capabilities: v3.ManifestCapability[],
+    isM365 = false
   ): Promise<Result<undefined, FxError>> {
-    return manifestUtils.addCapabilities(inputs, capabilities);
+    return manifestUtils.addCapabilities(inputs, capabilities, isM365);
   }
   @hooks([
     ActionExecutionMW({

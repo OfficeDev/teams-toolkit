@@ -2,6 +2,7 @@ import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
+import { stubInterface } from "ts-sinon";
 import * as util from "util";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
@@ -11,6 +12,7 @@ import {
   err,
   FxError,
   Inputs,
+  IProgressHandler,
   ok,
   Platform,
   ProjectSettings,
@@ -22,10 +24,10 @@ import {
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
-import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
-import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
 
 import * as StringResources from "../../package.nls.json";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
@@ -33,11 +35,14 @@ import M365TokenInstance from "../../src/commonlib/m365Login";
 import { SUPPORTED_SPFX_VERSION } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
+import * as debugCommonUtils from "../../src/debug/commonUtils";
 import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
+import * as debugProvider from "../../src/debug/teamsfxDebugProvider";
 import { ExtensionErrors } from "../../src/error";
 import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
+import { VsCodeUI } from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "../../src/treeview/account/accountTreeViewProvider";
@@ -179,6 +184,39 @@ describe("handlers", () => {
       sinon.assert.calledOnceWithExactly(executeCommandStub, "workbench.action.debug.start");
       sinon.assert.calledOnce(sendTelemetryEventStub);
       sinon.restore();
+    });
+
+    it("treeViewPreviewHandler()", async () => {
+      sinon.stub(localizeUtils, "localize").returns("");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(debugCommonUtils, "getDebugConfig").resolves({ appId: "appId" });
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+
+      let ignoreEnvInfo: boolean | undefined = undefined;
+      let localDebugCalled = 0;
+      sinon
+        .stub(handlers.core, "localDebug")
+        .callsFake(
+          async (
+            inputs: Inputs,
+            ctx?: CoreHookContext | undefined
+          ): Promise<Result<Void, FxError>> => {
+            ignoreEnvInfo = inputs.ignoreEnvInfo;
+            localDebugCalled += 1;
+            return ok({});
+          }
+        );
+      const mockProgressHandler = stubInterface<IProgressHandler>();
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon.stub(VsCodeUI.prototype, "createProgressBar").returns(mockProgressHandler);
+      sinon.stub(VsCodeUI.prototype, "openUrl");
+      sinon.stub(debugProvider, "generateAccountHint");
+
+      const result = await handlers.treeViewPreviewHandler("local");
+
+      chai.assert.isTrue(result.isOk());
     });
   });
 

@@ -85,12 +85,13 @@ export class TeamsBot {
       inputs[CoreQuestionNames.ProgrammingLanguage] ||
       "javascript";
     globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
+    const isM365 = context.projectSetting.isM365 === true;
     let botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
     // bot can only add once
     if (botConfig) {
       if (!botConfig.capabilities?.includes(botCapability)) {
         botConfig.capabilities.push(botCapability);
-        const res = await this.addBotCapability(inputs);
+        const res = await this.addBotCapability(inputs, isM365);
         if (res.isErr()) return err(res.error);
         effects.push("add bot capability in app manifest");
       }
@@ -218,7 +219,7 @@ export class TeamsBot {
 
     // 5. app-manifest.addCapability
     {
-      const res = await this.addBotCapability(inputs);
+      const res = await this.addBotCapability(inputs, isM365);
       if (res.isErr()) return err(res.error);
       effects.push("add bot capability in app manifest");
     }
@@ -248,7 +249,8 @@ export class TeamsBot {
     return ok(undefined);
   }
   private async addBotCapability(
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    isM365 = false
   ): Promise<Result<undefined, FxError>> {
     {
       const manifestCapability: v3.ManifestCapability = {
@@ -263,7 +265,7 @@ export class TeamsBot {
         validDomain: `{{state.${ComponentNames.TeamsBot}.domain}}`,
       };
       const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
-      return await appManifest.addCapability(clonedInputs, [manifestCapability]);
+      return await appManifest.addCapability(clonedInputs, [manifestCapability], isM365);
     }
   }
 }

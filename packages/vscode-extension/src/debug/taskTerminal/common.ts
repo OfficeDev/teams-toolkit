@@ -37,7 +37,7 @@ export async function handleDebugActions(
   const messagesArr: string[][] = [];
 
   const progressHandler = new ProgressHandler(displayMessages.taskName, step.totalSteps);
-  progressHandler.start();
+  await progressHandler.start();
 
   for (const action of actions) {
     await progressHandler.next(action.startMessage);

@@ -501,7 +501,9 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
 export function terminateAllRunningTeamsfxTasks(): void {
   for (const task of allRunningTeamsfxTasks) {
     try {
-      process.kill(task[1], "SIGTERM");
+      if (task[1] > 0) {
+        process.kill(task[1], "SIGTERM");
+      }
     } catch (e) {
       // ignore and keep killing others
     }

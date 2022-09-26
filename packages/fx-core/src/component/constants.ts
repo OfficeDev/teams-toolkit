@@ -298,3 +298,7 @@ export const PathConstants = {
   functionExtensionsFolderName: "bin",
   functionExtensionsFileName: "extensions.csproj",
 };
+
+export const RegularExpr = {
+  validFunctionNamePattern: /^[a-zA-Z][\w-]{0,126}$/,
+};

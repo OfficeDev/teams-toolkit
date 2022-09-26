@@ -19,6 +19,7 @@ export const TemplateGroup = {
 
 export const ApiConstants = {
   functionTriggerType: "HTTPTrigger",
+  baseScenarioName: "default",
 };
 
 export const ReplaceTemplateFileNamePlaceholder = /entryname/g;

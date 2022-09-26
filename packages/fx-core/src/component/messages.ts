@@ -48,6 +48,9 @@ export class LogMessages {
     getLocalizedString("plugins.function.projectScaffoldAt", basePath);
   public static readonly failedToInstallDotnet = (error: Error): string =>
     getLocalizedString("plugins.function.failedToInstallDotnet", error);
+  public static readonly askFunctionName: string = getLocalizedString(
+    "plugins.function.askFunctionName"
+  );
 }
 
 export interface LocalizedMessage {
@@ -87,6 +90,12 @@ export class ErrorMessage {
     getLocalizedMessage("plugins.bot.SomethingNotExisting", something);
   public static readonly WorkingDirIsMissing: LocalizedMessage = getLocalizedMessage(
     "plugins.bot.WorkingDirMissing"
+  );
+  public static readonly invalidFunctionName: string = getLocalizedString(
+    "plugins.function.invalidFunctionName"
+  );
+  public static readonly functionAlreadyExists: string = getLocalizedString(
+    "plugins.function.functionAlreadyExists"
   );
 
   // Suggestions

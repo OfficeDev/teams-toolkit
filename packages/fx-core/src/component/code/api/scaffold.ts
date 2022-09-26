@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as fs from "fs-extra";
+import path from "path";
 import { TemplateZipFallbackError, UnzipError } from "../error";
 import {
   genTemplateRenderReplaceFn,
@@ -14,7 +15,8 @@ import { ProgrammingLanguage } from "../../constants";
 import { invalidProjectSettings } from "../../error";
 import { ErrorMessage, LogMessages } from "../../messages";
 import { LogProvider } from "@microsoft/teamsfx-api";
-import { ReplaceTemplateFileNamePlaceholder, TemplateGroup } from "../constants";
+import { ApiConstants, ReplaceTemplateFileNamePlaceholder, TemplateGroup } from "../constants";
+import { LanguageStrategyFactory } from "./language-strategy";
 
 export type TemplateVariables = { [key: string]: string };
 
@@ -28,6 +30,16 @@ export class FunctionScaffold {
       default:
         throw new invalidProjectSettings(ErrorMessage.programmingLanguageInvalid);
     }
+  }
+
+  public static async doesFunctionPathExist(
+    componentPath: string,
+    language: ProgrammingLanguage,
+    entryName: string
+  ): Promise<boolean> {
+    const entryFileOrFolderName: string =
+      LanguageStrategyFactory.getStrategy(language).getFunctionEntryFileOrFolderName(entryName);
+    return fs.pathExists(path.join(componentPath, entryFileOrFolderName));
   }
 
   private static async scaffoldFromZipPackage(
@@ -112,7 +124,7 @@ export class FunctionScaffold {
       componentPath,
       TemplateGroup.apiBase,
       language,
-      "default",
+      ApiConstants.baseScenarioName,
       variables
     );
   }

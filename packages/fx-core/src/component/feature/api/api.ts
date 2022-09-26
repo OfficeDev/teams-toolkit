@@ -21,30 +21,32 @@ import { assign, cloneDeep, merge } from "lodash";
 import * as path from "path";
 import "reflect-metadata";
 import Container, { Service } from "typedi";
-import { isVSProject } from "../../common/projectSettingsHelper";
-import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { convertToAlphanumericOnly } from "../../common/utils";
-import { globalVars } from "../../core/globalVars";
-import { CoreQuestionNames } from "../../core/question";
+import { isVSProject } from "../../../common/projectSettingsHelper";
+import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
+import { convertToAlphanumericOnly } from "../../../common/utils";
+import { globalVars } from "../../../core/globalVars";
+import { CoreQuestionNames } from "../../../core/question";
+import { AzureResourceFunction } from "../../../plugins/solution/fx-solution/question";
+import { BicepComponent } from "../../bicep";
+import { ApiCodeProvider } from "../../code/api/apiCode";
+import { QuestionKey } from "../../code/api/enums";
+import { FunctionScaffold } from "../../code/api/scaffold";
 import {
-  DefaultValues,
-  FunctionPluginPathInfo,
+  ComponentNames,
+  PathConstants,
+  ProgrammingLanguage,
   RegularExpr,
-} from "../../plugins/resource/function/constants";
-import { FunctionLanguage, QuestionKey } from "../../plugins/resource/function/enums";
-import { FunctionScaffold } from "../../plugins/resource/function/ops/scaffold";
-import { functionNameQuestion } from "../../plugins/resource/function/question";
-import { ErrorMessages } from "../../plugins/resource/function/resources/message";
-import { AzureResourceFunction } from "../../plugins/solution/fx-solution/question";
-import { BicepComponent } from "../bicep";
-import { ApiCodeProvider } from "../code/api/apiCode";
-import { ComponentNames, ProgrammingLanguage, Scenarios } from "../constants";
-import { generateLocalDebugSettings } from "../debug";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { AzureFunctionResource } from "../resource/azureAppService/azureFunction";
-import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
-import { getComponent } from "../workflow";
-import { SSO } from "./sso";
+  Scenarios,
+} from "../../constants";
+import { generateLocalDebugSettings } from "../../debug";
+import { ErrorMessage } from "../../messages";
+import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { AzureFunctionResource } from "../../resource/azureAppService/azureFunction";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../../utils";
+import { getComponent } from "../../workflow";
+import { SSO } from "../sso";
+import { DefaultValues } from "./constants";
+import { functionNameQuestion } from "./question";
 
 @Service(ComponentNames.TeamsApi)
 export class TeamsApi {
@@ -82,11 +84,10 @@ export class TeamsApi {
 
     // 1. scaffold function
     {
-      inputs[QuestionKey.functionName] =
-        inputs[QuestionKey.functionName] || DefaultValues.functionName;
+      inputs[QuestionKey.functionName] ||= DefaultValues.functionName;
       const clonedInputs = cloneDeep(inputs);
       assign(clonedInputs, {
-        folder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
+        folder: inputs.folder || PathConstants.apiWorkingDir,
       });
       const apiCodeComponent = Container.get<ApiCodeProvider>(ComponentNames.ApiCode);
       const res = await apiCodeComponent.generate(context, clonedInputs);
@@ -109,8 +110,8 @@ export class TeamsApi {
       functionNames: [inputs[QuestionKey.functionName]],
       deploy: true,
       build: true,
-      folder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
-      artifactFolder: inputs.folder || FunctionPluginPathInfo.solutionFolderName,
+      folder: inputs.folder || PathConstants.apiWorkingDir,
+      artifactFolder: inputs.folder || PathConstants.apiWorkingDir,
     });
     addedComponents.push(ComponentNames.TeamsApi);
     effects.push("config teams-api");
@@ -193,23 +194,20 @@ export class TeamsApi {
 
 const getFunctionNameQuestionValidation = (context: ContextV3, inputs: InputsWithProjectPath) => ({
   validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-    const workingPath: string = path.join(
-      inputs.projectPath,
-      FunctionPluginPathInfo.solutionFolderName
-    );
+    const workingPath: string = path.join(inputs.projectPath, PathConstants.apiWorkingDir);
     const name = input as string;
     if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
-      return ErrorMessages.invalidFunctionName;
+      return ErrorMessage.invalidFunctionName;
     }
     if (inputs.stage === Stage.create) {
       return undefined;
     }
-    const language: FunctionLanguage =
-      (inputs[QuestionKey.programmingLanguage] as FunctionLanguage) ??
-      (context.projectSetting.programmingLanguage as FunctionLanguage);
+    const language: ProgrammingLanguage =
+      (inputs[QuestionKey.programmingLanguage] as ProgrammingLanguage) ??
+      (context.projectSetting.programmingLanguage as ProgrammingLanguage);
     // If language is unknown, skip checking and let scaffold handle the error.
     if (language && (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))) {
-      return ErrorMessages.functionAlreadyExists;
+      return ErrorMessage.functionAlreadyExists;
     }
   },
 });

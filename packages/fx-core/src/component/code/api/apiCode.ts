@@ -159,11 +159,11 @@ export class ApiCodeProvider {
     const funcDepsLogger = new FuncPluginLogger(logger);
     const binPath = path.join(componentPath, PathConstants.functionExtensionsFolderName);
     const depsManager = new DepsManager(funcDepsLogger, funcDepsTelemetry);
-    const dotentStatus = (await depsManager.getStatus([DepsType.Dotnet]))[0];
+    const dotnetStatus = (await depsManager.getStatus([DepsType.Dotnet]))[0];
 
     await funcDepsHelper.installFuncExtension(
       componentPath,
-      dotentStatus.command,
+      dotnetStatus.command,
       funcDepsLogger,
       PathConstants.functionExtensionsFileName,
       binPath

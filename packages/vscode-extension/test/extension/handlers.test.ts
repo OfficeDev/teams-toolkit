@@ -825,7 +825,7 @@ describe("handlers", () => {
             isLinuxSupported: false,
             installVersion: "",
             supportedVersions: [],
-            binFolders: ["dotnet-bin-folder"],
+            binFolders: ["dotnet-bin-folder/dotnet"],
           },
         },
       ]);

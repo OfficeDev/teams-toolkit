@@ -619,6 +619,24 @@ export function getSPFxVersion(): string {
   return flag ?? "1.15.0";
 }
 
+export async function getAppSPFxVersion(root: string): Promise<string | undefined> {
+  let projectSPFxVersion = undefined;
+  const yoInfoPath = path.join(root, "SPFx", ".yo-rc.json");
+  if (await fs.pathExists(yoInfoPath)) {
+    const yoInfo = await fs.readJson(yoInfoPath);
+    projectSPFxVersion = yoInfo["@microsoft/generator-sharepoint"]?.version;
+  }
+
+  if (!projectSPFxVersion || projectSPFxVersion === "") {
+    const packagePath = path.join(root, "SPFx", "package.json");
+    if (await fs.pathExists(packagePath)) {
+      const packageInfo = await fs.readJSON(packagePath);
+      projectSPFxVersion = packageInfo.dependencies["@microsoft/sp-webpart-base"];
+    }
+  }
+  return projectSPFxVersion;
+}
+
 export async function generateBicepFromFile(
   templateFilePath: string,
   context: any

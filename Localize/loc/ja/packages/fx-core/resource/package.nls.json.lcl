@@ -3034,6 +3034,9 @@
       <Item ItemId=";error.InvalidFeature" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[This feature is not applicable for your project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[この機能はお客様のプロジェクトには適用できません。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3136,7 +3139,7 @@
       <Item ItemId=";error.MissingSubscriptionInConfig" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please provide the subscription id of the resource group (%s) in (%s)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[リソース グループ (%s) のサブスクリプション ID を (%s) で指定してください]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -4303,6 +4306,9 @@
       <Item ItemId=";error.appstudio.teamsAppCreateConflictWithPublishedApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A Teams app with that id already exists in your organization's app store. Please manually update the app id and try again.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[その ID を使用する Teams アプリは、組織のアプリ ストアに既に存在します。アプリ ID を手動で更新してから、もう一度お試しください。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4423,6 +4429,9 @@
       <Item ItemId=";error.debugHandler.DebugArgumentEmptyError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Debug argument '%s' is empty.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[デバッグ引数 '%s' が空です。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4456,6 +4465,9 @@
       <Item ItemId=";error.debugHandler.InvalidTabBaseUrlError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[baseUrl must be in the format of 'https://localhost:{port}'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[baseUrl は 'https://localhost:{port}' の形式でなければなりません。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4804,7 +4816,7 @@
       <Item ItemId=";error.function.InstallNpmPackageError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to install npm packages.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[NPM パッケージをインストールできませんでした。]]></Val>
           </Tgt>
           <Prev Cat="Text">

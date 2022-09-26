@@ -15,7 +15,6 @@ import { DependencyStatus, DepsChecker, DepsType } from "../depsChecker";
 import { Messages } from "../constant/message";
 import {
   nodeNotFoundHelpLink,
-  nodeNotSupportedForFunctionsHelpLink,
   nodeNotSupportedForSPFxHelpLink,
   nodeNotSupportedForAzureHelpLink,
 } from "../constant/helpLink";

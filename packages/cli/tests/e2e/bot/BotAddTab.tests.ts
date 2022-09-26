@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Di Lin <dilin@microsoft.com>
+ * @author Zhaofeng Xu <zhaofengxu@microsoft.com>
  */
 
 import path from "path";
@@ -16,7 +16,8 @@ import {
   setBotSkuNameToB1Bicep,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
-import { environmentManager, isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import { BotValidator } from "../../commonlib";

@@ -2,19 +2,18 @@
 // Licensed under the MIT license.
 
 import { getTemplatesFolder } from "../folder";
-import { Constants } from "../plugins/resource/aad/constants";
 import * as fs from "fs-extra";
 import * as os from "os";
-import {
-  ReplyUrlsWithType,
-  RequiredResourceAccess,
-} from "../plugins/resource/aad/interfaces/AADManifest";
-import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { getAppDirectory } from "../common/tools";
 import { ComponentNames } from "../component/constants";
 import { getComponent } from "../component/workflow";
 import { ProjectSettingsHelper } from "../common/local/projectSettingsHelper";
-import { isVSProject } from "../common";
+import { isVSProject } from "../common/projectSettingsHelper";
+import { Constants } from "../component/resource/aadApp/constants";
+import {
+  ReplyUrlsWithType,
+  RequiredResourceAccess,
+} from "../component/resource/aadApp/interfaces/AADManifest";
 
 interface Permission {
   resource: string;
@@ -33,7 +32,6 @@ export async function generateAadManifestTemplate(
   const aadManifestTemplate = `${templatesFolder}/${Constants.aadManifestTemplateFolder}/${Constants.aadManifestTemplateName}`;
   await fs.ensureDir(appDir);
 
-  const azureSolutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
   const isVs = isVSProject(projectSettings);
 
   const aadManifestPath = `${appDir}/${Constants.aadManifestTemplateName}`;
@@ -54,9 +52,6 @@ export async function generateAadManifestTemplate(
     aadJson.requiredResourceAccess = requiredResourceAccess;
   }
 
-  // if (isV3()) {
-  //   updateRedirectUrlV3(aadJson, projectSettings);
-  // } else {
   const hasTab = ProjectSettingsHelper.includeFrontend(projectSettings);
   if (hasTab) {
     const tabRedirectUrl1 =
@@ -110,12 +105,19 @@ export async function generateAadManifestTemplate(
     ) {
       projectSettings.solutionSettings.capabilities.push("TabSSO");
     }
-
     if (
       projectSettings.solutionSettings.capabilities.includes("Bot") &&
       !projectSettings.solutionSettings.capabilities.includes("BotSSO")
     ) {
       projectSettings.solutionSettings.capabilities.push("BotSSO");
+    }
+    const tabConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
+    if (tabConfig) {
+      tabConfig.sso = true;
+    }
+    const botConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
+    if (botConfig) {
+      botConfig.sso = true;
     }
   }
 

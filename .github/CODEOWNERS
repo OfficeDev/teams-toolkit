@@ -43,8 +43,8 @@
 /packages/api @jayzhang @1yefuwang1 @LongOddCode @nliu-ms
 /packages/api/src/schemas @dooriya @qinezh @a1exwang @kimizhu
 
-/packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms @yiqing-zhao
-/packages/sdk/src/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya
+/packages/sdk @tecton @blackchoey @SLdragon @wenytang-ms @yiqing-zhao
+/packages/sdk/src/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya @SLdragon
 /packages/sdk/test/unit/node/conversation @kimizhu @swatDong @a1exwang @XiaofuHuang @dooriya
 
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms @xzf0587 @hund030
@@ -57,14 +57,14 @@
 /packages/fx-core/src/plugins/solution/fx-solution/utils/depsChecker @a1exwang @kimizhu @qinezh
 /packages/fx-core/src/plugins/solution/fx-solution/debug @kimizhu @swatDong @kuojianlu @XiaofuHuang
 
-/packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen @SLdragon
-/packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen @SLdragon
+/packages/fx-core/src/component/resource/aadApp @KennethBWSong @adashen @SLdragon
+/packages/fx-core/tests/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 
 /packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
 /packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
 
-/packages/fx-core/src/plugins/resource/appstudio @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
-/packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
+/packages/fx-core/src/component/resource/appManifest @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
+/packages/fx-core/tests/component/resource/appManifest @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
 
 /packages/fx-core/src/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
@@ -99,8 +99,8 @@
 /packages/fx-core/src/plugins/resource/identity @xzf0587 @adashen @blackchoey
 /packages/fx-core/tests/plugins/resource/identity @xzf0587 @adashen @blackchoey
 
-/packages/fx-core/src/plugins/resource/sql @xzf0587 @adashen @blackchoey
-/packages/fx-core/tests/plugins/resource/sql @xzf0587 @adashen @blackchoey
+/packages/fx-core/src/component/resource/azureSql @xzf0587 @adashen @blackchoey
+/packages/fx-core/tests/component/resource/azureSql @xzf0587 @adashen @blackchoey
 
 /packages/fx-core/src/plugins/resource/localdebug @swatDong @kuojianlu
 /packages/fx-core/tests/plugins/resource/localdebug @swatDong @kuojianlu
@@ -111,15 +111,15 @@
 /packages/fx-core/src/plugins/resource/keyvault @adashen @formulahendry @xzf0587
 /packages/fx-core/tests/plugins/resource/keyvault @adashen @formulahendry @xzf0587
 
-/packages/fx-core/src/plugins/solution/arm.ts @blackchoey @xzf0587 @dilin-MS @wenytang-ms @adashen
-/packages/fx-core/src/common/armInterface.ts @blackchoey @xzf0587 @dilin-MS @wenytang-ms @adashen
+/packages/fx-core/src/plugins/solution/arm.ts @blackchoey @xzf0587 @wenytang-ms @adashen
+/packages/fx-core/src/common/armInterface.ts @blackchoey @xzf0587 @wenytang-ms @adashen
 
 /packages/fx-core/src/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /packages/fx-core/tests/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 
 /packages/simpleauth @adashen @blackchoey @wenytang-ms
 
-/packages/function-extension @adashen @blackchoey @dilin-MS
+/packages/function-extension @adashen @blackchoey
 
 /packages/dotnet-sdk @tecton @JerryYangKai @yiqing-zhao
 /packages/dotnet-sdk/src/TeamsFx/Conversation @swatDong @dooriya @kimizhu

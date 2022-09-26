@@ -10,7 +10,7 @@ import {
   TelemetryErrorType,
 } from "./cliTelemetryEvents";
 import { FxError, Inputs, UserError } from "@microsoft/teamsfx-api";
-import { getHashedEnv } from "@microsoft/teamsfx-core";
+import { getHashedEnv } from "@microsoft/teamsfx-core/build/common/tools";
 import { getIsM365, getSettingsVersion, getTeamsAppTelemetryInfoByEnv } from "../utils";
 
 export function makeEnvRelatedProperty(

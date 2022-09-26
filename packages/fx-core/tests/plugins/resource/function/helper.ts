@@ -1,5 +1,5 @@
 import path from "path";
-import { newEnvInfo } from "../../../../src";
+import { newEnvInfo } from "../../../../src/core/environment";
 import { DependentPluginInfo } from "../../../../src/plugins/resource/function/constants";
 
 export function MockContext(): any {

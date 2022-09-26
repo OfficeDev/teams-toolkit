@@ -4,27 +4,16 @@ import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
-import * as path from "path";
-import { TestHelper } from "../helper";
-import * as fs from "fs-extra";
-import { PluginContext } from "@microsoft/teamsfx-api";
-import {
-  ConstantString,
-  mockSolutionGenerateArmTemplates,
-  mockSolutionUpdateArmTemplates,
-} from "../../util";
-import { KeyVaultPlugin } from "../../../../../src";
-import { Constants } from "../../../../../src/plugins/resource/keyvault/constants";
+import { InputsWithProjectPath, Platform } from "@microsoft/teamsfx-api";
+import { KeyVaultResource } from "../../../../../src/component/resource/keyVault";
+import { createContextV3, newProjectSettingsV3 } from "../../../../../src/component/utils";
 
 chai.use(chaiAsPromised);
 
 describe("keyVaultPlugin", () => {
-  let keyVaultPlugin: KeyVaultPlugin;
-  let pluginContext: PluginContext;
-
+  let keyVaultPlugin: KeyVaultResource;
   beforeEach(async () => {
-    keyVaultPlugin = new KeyVaultPlugin();
-    pluginContext = await TestHelper.pluginContext();
+    keyVaultPlugin = new KeyVaultResource();
   });
 
   afterEach(() => {
@@ -33,71 +22,16 @@ describe("keyVaultPlugin", () => {
 
   it("generate arm templates", async function () {
     // Act
-    const generateArmTemplatesResult = await keyVaultPlugin.generateArmTemplates(pluginContext);
-
-    // Assert
-    const testModuleFileName = "keyVaultProvision.result.bicep";
-    const mockedSolutionDataContext = {
-      Plugins: {
-        "fx-resource-key-vault": {
-          Provision: {
-            keyVault: {
-              path: `./${testModuleFileName}`,
-            },
-          },
-        },
-        "fx-resource-identity": {
-          References: {
-            identityPrincipalId: "userAssignedIdentityProvision.outputs.identityPrincipalId",
-          },
-        },
-      },
+    const projectSettings = newProjectSettingsV3();
+    projectSettings.programmingLanguage = "javascript";
+    const context = createContextV3(projectSettings);
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
     };
-
-    chai.assert.isTrue(generateArmTemplatesResult.isOk());
-    if (generateArmTemplatesResult.isOk()) {
-      const result = mockSolutionGenerateArmTemplates(
-        mockedSolutionDataContext,
-        generateArmTemplatesResult.value
-      );
-
-      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
-      const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
-      const moduleFile = await fs.readFile(expectedModuleFilePath, ConstantString.UTF8Encoding);
-      chai.assert.strictEqual(result.Provision!.Modules!.keyVault, moduleFile);
-
-      const expectedPrvosionSnippetFilePath = path.join(
-        expectedBicepFileDirectory,
-        "provision.result.bicep"
-      );
-      const orchestrationProvisionFile = await fs.readFile(
-        expectedPrvosionSnippetFilePath,
-        ConstantString.UTF8Encoding
-      );
-      chai.assert.strictEqual(result.Provision!.Orchestration, orchestrationProvisionFile);
-    }
-  });
-
-  it("update arm templates", async function () {
-    // Act
-    const generateArmTemplatesResult = await keyVaultPlugin.updateArmTemplates(pluginContext);
-    // Assert
-    chai.assert.isTrue(generateArmTemplatesResult.isOk());
-    if (generateArmTemplatesResult.isOk()) {
-      const result = generateArmTemplatesResult.value;
-      chai.assert.exists(result.Reference!.m365ClientSecretReference);
-      chai.assert.exists(result.Reference!.botClientSecretReference);
-      chai.assert.notExists(result.Parameters);
-      chai.assert.notExists(result.Configuration);
-      chai.assert.notExists(result.Provision);
-      chai.assert.strictEqual(
-        result.Reference!.m365ClientSecretReference,
-        "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference"
-      );
-      chai.assert.strictEqual(
-        result.Reference!.botClientSecretReference,
-        "provisionOutputs.keyVaultOutput.value.botClientSecretReference"
-      );
-    }
+    const generateArmTemplatesResult = await keyVaultPlugin.generateBicep(context, inputs);
+    chai.assert.isTrue(
+      generateArmTemplatesResult.isOk() && generateArmTemplatesResult.value.length > 0
+    );
   });
 });

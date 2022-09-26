@@ -22,7 +22,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   setSimpleAuthSkuNameToB1,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { it } from "../../commonlib/it";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";

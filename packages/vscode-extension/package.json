@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -453,11 +453,6 @@
         "enablement": "never"
       },
       {
-        "command": "fx-extension.debug",
-        "title": "Teams - Preview your Teams app",
-        "enablement": "never"
-      },
-      {
         "command": "fx-extension.openDeploymentTreeview",
         "title": "Teams - Open Deployment Treeview",
         "enablement": "never"
@@ -512,7 +507,7 @@
       {
         "command": "fx-extension.addFeature",
         "title": "%teamstoolkit.commands.addFeature.title%",
-        "enablement": "fx-extension.isTeamsFx && !fx-extension.isSPFx",
+        "enablement": "fx-extension.isTeamsFx",
         "category": "Teams"
       },
       {
@@ -742,6 +737,28 @@
                 "description": "%teamstoolkit.taskDefinitions.command.prerequisites.description%"
               },
               {
+                "const": "debug-npm-install",
+                "description": "%teamstoolkit.taskDefinitions.command.npmInstall.description%"
+              },
+              {
+                "const": "debug-start-local-tunnel",
+                "description": "%teamstoolkit.taskDefinitions.command.startLocalTunnel.description%"
+              },
+              {
+                "const": "debug-set-up-tab",
+                "description": "%teamstoolkit.taskDefinitions.command.tab.description%"
+              },
+              {
+                "const": "debug-set-up-bot",
+                "description": "%teamstoolkit.taskDefinitions.command.bot.description%"
+              },
+              {
+                "const": "debug-set-up-sso",
+                "description": "%teamstoolkit.taskDefinitions.command.sso.description%"
+              },
+              {
+                "const": "debug-prepare-manifest",
+                "description": "%teamstoolkit.taskDefinitions.command.manifest.description%"
               }
             ]
           },
@@ -755,6 +772,7 @@
                 "properties": {
                   "prerequisites": {
                     "type": "array",
+                    "description": "%teamstoolkit.taskDefinitions.args.prerequisites.title%",
                     "items": {
                       "type": "string",
                       "anyOf": [
@@ -783,32 +801,188 @@
                           "title": "%teamstoolkit.taskDefinitions.args.prerequisites.dotnetTitle%"
                         },
                         {
-                          "const": "ports",
+                          "const": "portOccupancy",
                           "title": "%teamstoolkit.taskDefinitions.args.prerequisites.portsTitle%"
                         }
                       ]
                     }
                   },
-                  "ports": {
+                  "portOccupancy": {
                     "type": "array",
                     "items": {
                       "type": "number"
-                    }
+                    },
+                    "description": "%teamstoolkit.taskDefinitions.args.ports.title%"
                   }
                 },
                 "if": {
                   "properties": {
                     "prerequisites": {
                       "contains": {
-                        "const": "ports"
+                        "const": "portOccupancy"
                       }
                     }
                   }
                 },
                 "then": {
                   "required": [
-                    "ports"
+                    "portOccupancy"
                   ]
+                },
+                "else": {
+                  "not": {
+                    "required": [
+                      "portOccupancy"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "projects"
+                ],
+                "properties": {
+                  "projects": {
+                    "type": "array",
+                    "description": "%teamstoolkit.taskDefinitions.args.projects.title%",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "cwd"
+                      ],
+                      "properties": {
+                        "cwd": {
+                          "type": "string",
+                          "description": "%teamstoolkit.taskDefinitions.args.projects.cwd.title%"
+                        },
+                        "npmInstallArgs": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "description": "%teamstoolkit.taskDefinitions.args.projects.npmInstallArgs.title%"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "forceUpdate": {
+                    "type": "boolean",
+                    "title": "%teamstoolkit.taskDefinitions.args.forceUpdate.title%",
+                    "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.title%",
+                    "default": false,
+                    "oneOf": [
+                      {
+                        "const": false,
+                        "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.false.description%"
+                      },
+                      {
+                        "const": true,
+                        "description": "%teamstoolkit.taskDefinitions.args.forceUpdate.true.description%"
+                      }
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "baseUrl"
+                ],
+                "properties": {
+                  "baseUrl": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.tab.baseUrlTitle%"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "botMessagingEndpoint"
+                ],
+                "properties": {
+                  "botId": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.bot.botIdTitle%"
+                  },
+                  "botPassword": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.bot.botPasswordTitle%"
+                  },
+                  "botMessagingEndpoint": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.bot.botMessagingEndpointTitle%"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "objectId": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.sso.objectIdTitle%"
+                  },
+                  "clientId": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.sso.clientIdTitle%"
+                  },
+                  "clientSecret": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.sso.clientSecretTitle%"
+                  },
+                  "accessAsUserScopeId": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.sso.accessAsUserScopeIdTitle%"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "appPackagePath": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.manifest.appPackagePathTitle%"
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "configFile"
+                ],
+                "properties": {
+                  "configFile": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.configFile.title%",
+                    "anyOf": [
+                      {
+                        "const": "${teamsfx:workspaceFolder}/.fx/configs/ngrok.yml"
+                      },
+                      {}
+                    ]
+                  },
+                  "useGlobalNgrok": {
+                    "type": "boolean",
+                    "description": "%teamstoolkit.taskDefinitions.args.useGlobalNgrok.title%",
+                    "default": false
+                  },
+                  "keepAlive": {
+                    "type": "boolean",
+                    "description": "%teamstoolkit.taskDefinitions.args.keepAlive.title%",
+                    "default": false
+                  },
+                  "tunnelName": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.tunnelName.title%",
+                    "default": "bot"
+                  }
                 },
                 "additionalProperties": false
               }
@@ -944,6 +1118,29 @@
         }
       },
       {
+        "name": "teamsfx-local-tunnel-watch",
+        "label": "TeamsFx Local Tunnel Problems",
+        "owner": "Teams Toolkit",
+        "source": "teamsfx",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": [
+          {
+            "regexp": "^.*$",
+            "file": 0,
+            "location": 1,
+            "message": 2
+          }
+        ],
+        "background": {
+          "beginsPattern": "Forwarding URL https?://.* to https?://.*",
+          "endsPattern": "Local tunnel service is started successfully"
+        }
+      },
+      {
         "name": "teamsfx-bot-watch",
         "label": "TeamsFx Bot Problems",
         "owner": "Teams Toolkit",
@@ -975,6 +1172,7 @@
         "properties": {
           "fx-extension.prerequisiteCheck": {
             "type": "object",
+            "markdownDescription": "**[Obsolete]** Only work for `${command:fx-extension.validate-local-prerequisites}`",
             "properties": {
               "node": {
                 "type": "boolean",
@@ -1014,7 +1212,7 @@
         }
       },
       {
-        "title": "SPFx Prerequisite Check",
+        "title": "SPFx Configuration",
         "order": 2,
         "properties": {
           "fx-extension.SPFxPrerequisiteCheck": {
@@ -1034,6 +1232,15 @@
               "yo": true,
               "sharepointYeomanGenerator": true
             }
+          },
+          "fx-extension.SPFxVersion": {
+            "type": "string",
+            "description": "Select what version of SPFx to use. (Requires reload of VS Code)",
+            "enum": [
+              "1.15.0",
+              "1.16.0-beta.1"
+            ],
+            "default": "1.15.0"
           }
         }
       }
@@ -1231,8 +1438,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.20.5",
-    "@microsoft/teamsfx-core": "^1.15.0",
+    "@microsoft/teamsfx-api": "^0.20.6",
+    "@microsoft/teamsfx-core": "^1.16.2",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",
@@ -1248,6 +1455,7 @@
     "open": "^8.4.0",
     "read-package-json-fast": "^2.0.3",
     "sudo-prompt": "^9.2.1",
+    "tree-kill": "^1.2.2",
     "underscore": "^1.12.1",
     "validator": "^13.7.0",
     "vscode-tas-client": "^0.1.47"

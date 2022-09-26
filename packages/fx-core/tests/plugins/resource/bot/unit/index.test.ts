@@ -7,7 +7,6 @@ import * as sinon from "sinon";
 const AdmZip = require("adm-zip");
 import * as path from "path";
 
-import { PluginNames, TeamsBot } from "../../../../../src";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { ProgrammingLanguage } from "../../../../../src/plugins/resource/bot/enums/programmingLanguage";
@@ -23,13 +22,15 @@ import { Func, ok, Stage } from "@microsoft/teamsfx-api";
 import { BuiltInSolutionNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import { ResourcePlugins } from "../../../../../src/common/constants";
 import { ConfigKeys } from "../../../../../src/plugins/resource/bot/constants";
-import { BOT_ID } from "../../../../../src/plugins/resource/appstudio/constants";
+import { BOT_ID } from "../../../../../src/component/resource/appManifest/constants";
 import { FunctionsHostedBotImpl } from "../../../../../src/plugins/resource/bot/functionsHostedBot/plugin";
 import { ScaffoldConfig } from "../../../../../src/plugins/resource/bot/configs/scaffoldConfig";
 import { DotnetBotImpl } from "../../../../../src/plugins/resource/bot/dotnet/plugin";
 import { FuncHostedDeployMgr } from "../../../../../src/plugins/resource/bot/functionsHostedBot/deployMgr";
 import { AzureOperations } from "../../../../../src/common/azure-hosting/azureOps";
 import { HostType } from "../../../../../src/plugins/resource/bot/v2/enum";
+import { TeamsBot } from "../../../../../src/plugins/resource/bot";
+import { PluginNames } from "../../../../../src/plugins/solution/fx-solution/constants";
 
 describe("Teams Bot Resource Plugin", () => {
   describe("Test plugin implementation dispatching", () => {

@@ -15,7 +15,10 @@ import { BicepComponent } from "../bicep";
 import { AzureSqlResource } from "../resource/azureSql";
 import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
 import { cloneDeep } from "lodash";
-import { AzureResourceFunction, AzureResourceSQL } from "../../plugins";
+import {
+  AzureResourceFunction,
+  AzureResourceSQL,
+} from "../../plugins/solution/fx-solution/question";
 
 @Service("sql")
 export class Sql {
@@ -34,11 +37,14 @@ export class Sql {
       addedResources.push(AzureResourceFunction.id);
     }
     const projectSettings = context.projectSetting;
-    const remarks: string[] = ["config 'azure-sql' in projectSettings"];
-    projectSettings.components.push({
-      name: "azure-sql",
-      provision: true,
-    });
+    const remarks: string[] = [];
+    if (!sqlComponent) {
+      remarks.push("config 'azure-sql' in projectSettings");
+      projectSettings.components.push({
+        name: "azure-sql",
+        provision: true,
+      });
+    }
 
     // generate bicep
     // bicep.init

@@ -2,11 +2,14 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import * as util from "util";
 import * as vscode from "vscode";
-import { assembleError, FxError, Result } from "@microsoft/teamsfx-api";
+import { assembleError, FxError, Result, UserError, Void } from "@microsoft/teamsfx-api";
+import * as globalVariables from "../../globalVariables";
 import { showError } from "../../handlers";
+import { ExtensionErrors, ExtensionSource } from "../../error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { outputPanelCommand } from "../constants";
+import { DebugSessionExists } from "../constants";
 
 const ControlCodes = {
   CtrlC: "\u0003",
@@ -40,26 +43,37 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
     }
   }
 
-  protected stop(error?: any): void {
+  protected async stop(error?: any): Promise<void> {
     if (error) {
-      // TODO: add color
-      const defaultOutputPanel = getDefaultString("teamstoolkit.localDebug.outputPanel");
-      const localizeOutputPanel = localize("teamstoolkit.localDebug.outputPanel");
-      const errorMessage = error?.message?.replace(
-        `[${defaultOutputPanel}](${outputPanelCommand})`,
-        defaultOutputPanel
-      );
-      const displayErrorMessage = error?.displayMessage?.replace(
-        `[${localizeOutputPanel}](${outputPanelCommand})`,
-        localizeOutputPanel
-      );
+      if (error.message === DebugSessionExists) {
+        // use a specical exit code to indicate this task is terminated as expected
+        this.closeEmitter.fire(-1);
+        return;
+      }
 
-      this.writeEmitter.fire(`${displayErrorMessage ?? errorMessage}\r\n`);
+      // TODO: add color
+      this.writeEmitter.fire(`${error?.displayMessage ?? error?.message}\r\n`);
       showError(assembleError(error));
       this.closeEmitter.fire(1);
     }
     this.closeEmitter.fire(0);
   }
 
-  protected abstract do(): Promise<Result<void, FxError>>;
+  protected abstract do(): Promise<Result<Void, FxError>>;
+
+  public static resolveTeamsFxVariables(str: string): string {
+    // Background task cannot resolve variables in VSC.
+    // Here Teams Toolkit resolve the workspaceFolder.
+    str = str.replace("${workspaceFolder}", globalVariables.workspaceUri?.fsPath ?? "");
+    return str;
+  }
+
+  public static taskDefinitionError(argName: string): UserError {
+    return new UserError(
+      ExtensionSource,
+      ExtensionErrors.TaskDefinitionError,
+      util.format(getDefaultString("teamstoolkit.localDebug.taskDefinitionError"), argName),
+      util.format(localize("teamstoolkit.localDebug.taskDefinitionError"), argName)
+    );
+  }
 }

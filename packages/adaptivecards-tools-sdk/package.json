@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/adaptivecards-tools",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Microsoft sdk for Adaptive Cards",
   "main": "lib/index.js",
   "types": "types/index.d.ts",
@@ -12,6 +12,7 @@
     "lint:staged": "lint-staged",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
     "precommit": "npm run check-sensitive && lint-staged",
+    "check-format": "prettier --list-different \"src/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config ./.prettierrc.js --ignore-path ./.prettierignore \"src/**/*.ts\" \"*.{js,json}\""
   },
   "repository": "https://github.com/OfficeDev/TeamsFx",
@@ -32,6 +33,7 @@
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
     "lint-staged": "^11.2.6",
+    "prettier": "^2.4.1",
     "rimraf": "^3.0.0",
     "rollup": "^2.41.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
@@ -42,7 +44,7 @@
   "dependencies": {
     "@types/react": "^17.0.14",
     "adaptive-expressions": "^4.15.0",
-    "adaptivecards": "^2.10.0",
+    "adaptivecards": "~2.10.0",
     "adaptivecards-templating": "^2.1.0",
     "markdown-it": "^12.2.0",
     "react": "^17.0.2"

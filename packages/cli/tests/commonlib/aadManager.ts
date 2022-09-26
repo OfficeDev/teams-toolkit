@@ -8,7 +8,7 @@ import axios, { AxiosInstance } from "axios";
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
 
 import MockM365TokenProvider from "../../src/commonlib/m365LoginUserPassword";
-import { GraphScopes } from "@microsoft/teamsfx-core";
+import { GraphScopes } from "@microsoft/teamsfx-core/build/common/tools";
 
 interface IAadAppInfo {
   displayName: string;

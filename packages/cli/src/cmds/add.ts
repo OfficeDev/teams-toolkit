@@ -29,16 +29,19 @@ import {
   CapabilityAddCommandAndResponse,
   CapabilityAddMessageExtension,
   CapabilityAddNotification,
+  CapabilityAddSPFxTab,
   CapabilityAddSSOTab,
   CapabilityAddTab,
+  CapabilityAddWorkflow,
 } from "./capability";
 import {
-  isBotNotificationEnabled,
+  isSPFxMultiTabEnabled,
+  isWorkflowBotEnabled,
+} from "@microsoft/teamsfx-core/build/common/featureFlags";
+import {
   isAadManifestEnabled,
   isApiConnectEnabled,
-  isPreviewFeaturesEnabled,
-} from "@microsoft/teamsfx-core";
-
+} from "@microsoft/teamsfx-core/build/common/tools";
 export class AddCICD extends YargsCommand {
   public readonly commandHead = `cicd`;
   public readonly command = this.commandHead;
@@ -222,24 +225,21 @@ export default class Add extends YargsCommand {
   public readonly description = "Adds features to your Teams application.";
 
   public readonly subCommands: YargsCommand[] = [
-    ...(isPreviewFeaturesEnabled()
-      ? [
-          // Category 1: Add Teams Capability
-          ...(isBotNotificationEnabled()
-            ? [new CapabilityAddNotification(), new CapabilityAddCommandAndResponse()]
-            : []),
-          new CapabilityAddSSOTab(),
-          new CapabilityAddTab(),
-          new CapabilityAddBot(),
-          new CapabilityAddMessageExtension(),
+    // Category 1: Add Teams Capability
+    new CapabilityAddNotification(),
+    new CapabilityAddCommandAndResponse(),
+    ...(isWorkflowBotEnabled() ? [new CapabilityAddWorkflow()] : []),
+    new CapabilityAddSSOTab(),
+    new CapabilityAddTab(),
+    ...(isSPFxMultiTabEnabled() ? [new CapabilityAddSPFxTab()] : []),
+    new CapabilityAddBot(),
+    new CapabilityAddMessageExtension(),
 
-          // Category 2: Add Cloud Resources
-          new ResourceAddFunction(),
-          new ResourceAddApim(),
-          new ResourceAddSql(),
-          new ResourceAddKeyVault(),
-        ]
-      : []),
+    // Category 2: Add Cloud Resources
+    new ResourceAddFunction(),
+    new ResourceAddApim(),
+    new ResourceAddSql(),
+    new ResourceAddKeyVault(),
 
     // Category 3: Standalone features
     ...(isAadManifestEnabled() ? [new AddSso()] : []),

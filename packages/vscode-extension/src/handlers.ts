@@ -57,29 +57,30 @@ import {
   Void,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
+import { AddSsoParameters } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
 import {
-  AddSsoParameters,
-  AppStudioScopes,
   askSubscription,
-  CollaborationState,
-  Correlator,
-  DepsType,
-  environmentManager,
-  FolderName,
-  FxCore,
+  AppStudioScopes,
   getAppDirectory,
   getFixedCommonProjectSettings,
   getHashedEnv,
-  globalStateGet,
-  globalStateUpdate,
-  InvalidProjectError,
   isExistingTabAppEnabled,
   isUserCancelError,
-  isValidProject,
-  LocalEnvManager,
-  ProjectSettingsHelper,
-  UserTaskFunctionName,
-} from "@microsoft/teamsfx-core";
+} from "@microsoft/teamsfx-core/build/common/tools";
+import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { FolderName } from "@microsoft/teamsfx-core/build/common/local";
+import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { LocalEnvManager, ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local";
+import {
+  globalStateUpdate,
+  globalStateGet,
+} from "@microsoft/teamsfx-core/build/common/globalState";
+import { UserTaskFunctionName } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
+import { FxCore } from "@microsoft/teamsfx-core";
+import { InvalidProjectError } from "@microsoft/teamsfx-core/build/core/error";
 
 import M365TokenInstance from "./commonlib/m365Login";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -92,6 +93,7 @@ import {
   CLI_FOR_M365,
   GlobalKey,
   SpfxManageSiteAdminUrl,
+  SUPPORTED_SPFX_PRERELEASE_VERSION,
   SUPPORTED_SPFX_VERSION,
 } from "./constants";
 import { PanelType } from "./controls/PanelType";
@@ -111,7 +113,6 @@ import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./debug/tea
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
-import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { VS_CODE_UI } from "./extension";
 import * as globalVariables from "./globalVariables";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
@@ -154,6 +155,7 @@ import {
   sendDebugAllStartEvent,
 } from "./debug/localTelemetryReporter";
 import { compare } from "./utils/versionUtil";
+import { getSPFxVersion } from "@microsoft/teamsfx-core/build/common/tools";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -224,7 +226,6 @@ export function activate(): Result<Void, FxError> {
       expServiceProvider: exp.getExpService(),
     };
     core = new FxCore(tools);
-    accountTreeViewProviderInstance.subscribeToStatusChanges(tools.tokenProvider);
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
       const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
@@ -567,11 +568,14 @@ async function previewLocal(progressBar: IProgressHandler): Promise<Result<null,
     const error = new UserError(
       ExtensionSource,
       ExtensionErrors.TeamsAppIdNotFoundError,
-      localize("teamstoolkit.handlers.teamsAppIdNotFound")
+      util.format(
+        localize("teamstoolkit.handlers.teamsAppIdNotFound"),
+        environmentManager.getLocalEnvName()
+      )
     );
     return err(error);
   }
-  progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+  await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
   await openHubWebClient(true, debugConfig.appId, constants.Hub.teams);
   return ok(null);
 }
@@ -586,7 +590,7 @@ async function previewRemote(
       const error = new UserError(
         ExtensionSource,
         ExtensionErrors.TeamsAppIdNotFoundError,
-        localize("teamstoolkit.handlers.teamsAppIdNotFound")
+        util.format(localize("teamstoolkit.handlers.teamsAppIdNotFound"), env)
       );
       return err(error);
     }
@@ -621,7 +625,7 @@ async function previewRemote(
     }
 
     if (hub === constants.Hub.teams) {
-      progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+      await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
       await openHubWebClient(includeFrontend, debugConfig.appId, hub);
     } else {
       const shouldContinue = await showInstallAppInTeamsMessage(env, debugConfig.appId);
@@ -631,7 +635,7 @@ async function previewRemote(
 
       const internalId = await getTeamsAppInternalId(debugConfig.appId);
       if (internalId !== undefined) {
-        progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+        await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
         await openHubWebClient(includeFrontend, internalId, hub);
       }
     }
@@ -1389,6 +1393,26 @@ export async function getFuncPathHandler(): Promise<string> {
 }
 
 /**
+ * Get dotnet path to be referenced by task definition.
+ * Usage like ${command:...}${env:PATH} so need to include delimiter as well
+ */
+export async function getDotnetPathHandler(): Promise<string> {
+  try {
+    const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
+    const dotnetStatus = (await depsManager.getStatus([DepsType.Dotnet]))?.[0];
+    if (dotnetStatus?.isInstalled && dotnetStatus?.details?.binFolders !== undefined) {
+      return `${path.delimiter}${dotnetStatus.details.binFolders.join(path.delimiter)}${
+        path.delimiter
+      }`;
+    }
+  } catch (error: any) {
+    showError(assembleError(error));
+  }
+
+  return `${path.delimiter}`;
+}
+
+/**
  * call localDebug on core
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
@@ -1639,9 +1663,17 @@ export async function promptSPFxUpgrade() {
 
     if (projectSPFxVersion) {
       const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
-      if (cmp === 1 || cmp === -1) {
-        const args: string[] =
-          cmp === 1 ? [SUPPORTED_SPFX_VERSION] : [SUPPORTED_SPFX_VERSION, SUPPORTED_SPFX_VERSION];
+      const cmpPrerelease = compare(projectSPFxVersion, SUPPORTED_SPFX_PRERELEASE_VERSION);
+
+      if (cmp === 0 || cmpPrerelease === 0) {
+        return;
+      }
+      if (cmp === cmpPrerelease) {
+        const spfxVersion =
+          getSPFxVersion() === "1.15.0"
+            ? SUPPORTED_SPFX_VERSION
+            : SUPPORTED_SPFX_PRERELEASE_VERSION;
+        const args: string[] = cmp === 1 ? [spfxVersion] : [spfxVersion, spfxVersion];
         VS_CODE_UI.showMessage(
           "warn",
           util.format(

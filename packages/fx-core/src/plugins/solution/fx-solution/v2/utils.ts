@@ -20,7 +20,6 @@ import {
   TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 import { AppStudioScopes, isAadManifestEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
@@ -55,6 +54,7 @@ import { PluginsWithContext } from "../types";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { backupFiles } from "../utils/backupFiles";
 import { TelemetryEvent, TelemetryProperty } from "../../../../common/telemetry";
+import { resetAppSettingsDevelopment } from "../../../../component/code/appSettingUtils";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   return getActivatedV2ResourcePlugins(projectSettings);
@@ -205,6 +205,7 @@ export function parseUserName(appStudioToken?: Record<string, unknown>): Result<
 export async function checkWhetherLocalDebugM365TenantMatches(
   envInfo: v3.EnvInfoV3 | EnvInfo | undefined,
   telemetryReporter: TelemetryReporter | undefined,
+  isCSharpProject: boolean,
   localDebugTenantId?: string,
   m365TokenProvider?: M365TokenProvider,
   projectPath?: string,
@@ -262,9 +263,13 @@ export async function checkWhetherLocalDebugM365TenantMatches(
         }
 
         if (projectPath !== undefined) {
-          const backupFilesRes = await backupFiles(envInfo.envName, projectPath!);
+          const backupFilesRes = await backupFiles(envInfo.envName, projectPath!, isCSharpProject);
           if (backupFilesRes.isErr()) {
             return err(backupFilesRes.error);
+          }
+
+          if (isCSharpProject) {
+            await resetAppSettingsDevelopment(projectPath);
           }
         }
       }

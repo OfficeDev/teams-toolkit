@@ -22,5 +22,9 @@ export declare class NotificationBot
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
+|  [findAllChannels(predicate)](./teamsfx.notificationbot.findallchannels.md) |  | Returns all [Channel](./teamsfx.channel.md) where predicate is true, and empty array otherwise. |
+|  [findAllMembers(predicate, scope)](./teamsfx.notificationbot.findallmembers.md) |  | Returns all [Member](./teamsfx.member.md) where predicate is true, and empty array otherwise. |
+|  [findChannel(predicate)](./teamsfx.notificationbot.findchannel.md) |  | Returns the first [Channel](./teamsfx.channel.md) where predicate is true, and undefined otherwise. |
+|  [findMember(predicate, scope)](./teamsfx.notificationbot.findmember.md) |  | Returns the first [Member](./teamsfx.member.md) where predicate is true, and undefined otherwise. |
 |  [installations()](./teamsfx.notificationbot.installations.md) |  | Get all targets where the bot is installed. |
 

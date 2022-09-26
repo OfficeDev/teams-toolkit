@@ -16,7 +16,8 @@ export const Messages = {
   needInstallFuncCoreTool: getLocalizedString("depChecker.needInstallFuncCoreTool"),
   failToInstallFuncCoreTool: getLocalizedString("depChecker.failToInstallFuncCoreTool"),
   failToValidateFuncCoreTool: getLocalizedString("depChecker.failToValidateFuncCoreTool"),
-  funcNodeNotMatched: getLocalizedString("depChecker.funcNodeNotMatched"),
+  globalFuncNodeNotMatched: getLocalizedString("depChecker.globalFuncNodeNotMatched"),
+  portableFuncNodeNotMatched: getLocalizedString("depChecker.portableFuncNodeNotMatched"),
 
   startInstallNgrok: getLocalizedString("depChecker.startInstallNgrok"),
   finishInstallNgrok: getLocalizedString("depChecker.finishInstallNgrok"),
@@ -33,6 +34,7 @@ export const Messages = {
 
   NodeNotFound: getLocalizedString("depChecker.NodeNotFound"),
   NodeNotSupported: getLocalizedString("depChecker.NodeNotSupported"),
+  NodeNotRecommended: getLocalizedString("depChecker.NodeNotRecommended"),
 
   dotnetNotFound: getLocalizedString("depChecker.dotnetNotFound"),
   depsNotFound: getLocalizedString("depChecker.depsNotFound"),

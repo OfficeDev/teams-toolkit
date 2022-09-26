@@ -20,7 +20,11 @@ import { environmentManager } from "./environment";
 import { ConstantString } from "../common/constants";
 import { sampleProvider } from "../common/samples";
 import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
-import { isBotNotificationEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
+import {
+  isBotNotificationEnabled,
+  isPreviewFeaturesEnabled,
+  isWorkflowBotEnabled,
+} from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -67,7 +71,7 @@ export enum CoreQuestionNames {
 }
 
 export const ProjectNamePattern =
-  '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*|\u0000-\u001F]*[^"\\s.<>:\\?/*|\u0000-\u001F]$';
+  '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*&|\u0000-\u001F]*[^"\\s.<>:\\?/*&|\u0000-\u001F]$';
 
 export function createAppNameQuestion(validateProjectPathExistence = true): TextInputQuestion {
   const question: TextInputQuestion = {
@@ -262,8 +266,12 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
   let staticOptions: StaticOptions;
   if (isBotNotificationEnabled()) {
     // new capabilities question order
+    const newBots = isWorkflowBotEnabled()
+      ? [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem]
+      : [NotificationOptionItem, CommandAndResponseOptionItem];
+
     staticOptions = [
-      ...[CommandAndResponseOptionItem, NotificationOptionItem, WorkflowOptionItem],
+      ...newBots,
       ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
       ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
       ...[TabNewUIOptionItem, TabSPFxNewUIItem, MessageExtensionNewUIItem],
@@ -311,10 +319,12 @@ export function createCapabilityForDotNet(): SingleSelectQuestion {
 
 export function createCapabilityQuestionPreview(): SingleSelectQuestion {
   // new capabilities question order
+  const newBots = isWorkflowBotEnabled()
+    ? [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem]
+    : [NotificationOptionItem, CommandAndResponseOptionItem];
+
   const staticOptions: StaticOptions = [
-    NotificationOptionItem,
-    CommandAndResponseOptionItem,
-    WorkflowOptionItem,
+    ...newBots,
     TabNewUIOptionItem,
     TabSPFxNewUIItem,
     TabNonSsoItem,
@@ -325,7 +335,7 @@ export function createCapabilityQuestionPreview(): SingleSelectQuestion {
   ];
 
   if (isExistingTabAppEnabled()) {
-    staticOptions.splice(2, 0, ExistingTabOptionItem);
+    staticOptions.splice(newBots.length, 0, ExistingTabOptionItem);
   }
 
   return {

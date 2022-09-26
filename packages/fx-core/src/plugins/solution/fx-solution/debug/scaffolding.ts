@@ -17,10 +17,15 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
+import * as path from "path";
 import * as os from "os";
+import { isLocalDebugTransparencyEnabled } from "../../../../common/featureFlags";
 import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
 import { generateLocalDebugSettingsCommon, LocalEnvConfig } from "../../../../component/debug";
+import { CommentObject } from "comment-json";
+import * as commentJson from "comment-json";
+import { getTemplatesFolder } from "../../../../folder";
 
 export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
@@ -132,6 +137,21 @@ export async function useNewTasks(projectPath?: string): Promise<boolean> {
   return true;
 }
 
+export async function useTransparentTasks(projectPath?: string): Promise<boolean> {
+  // for new project or project with "debug-check-prerequisites", use transparent tasks content
+  const tasksJsonPath = `${projectPath}/.vscode/tasks.json`;
+  if (await fs.pathExists(tasksJsonPath)) {
+    try {
+      const tasksContent = await fs.readFile(tasksJsonPath, "utf-8");
+      return tasksContent.includes("debug-check-prerequisites");
+    } catch (error) {
+      return false;
+    }
+  }
+
+  return isLocalDebugTransparencyEnabled();
+}
+
 export async function updateJson(
   path: string,
   newData: Record<string, unknown>,
@@ -157,4 +177,37 @@ export async function updateJson(
     spaces: 4,
     EOL: os.EOL,
   });
+}
+
+export async function updateCommentJson(
+  path: string,
+  newData: CommentObject,
+  mergeFunc: (existingData: CommentObject, newData: CommentObject) => CommentObject
+): Promise<void> {
+  let finalData: Record<string, unknown>;
+  if (await fs.pathExists(path)) {
+    try {
+      const content = await fs.readFile(path);
+      const existingData = commentJson.parse(content.toString()) as CommentObject;
+      finalData = mergeFunc(existingData, newData);
+    } catch (error) {
+      // If failed to parse or edit the existing file, just overwrite completely
+      finalData = newData;
+    }
+  } else {
+    finalData = newData;
+  }
+
+  await fs.writeFile(path, commentJson.stringify(finalData, null, 4));
+}
+
+export async function updateNgrokConfigFile(
+  includeBot: boolean,
+  targetFile: string
+): Promise<void> {
+  if (!includeBot || (await fs.pathExists(targetFile))) {
+    return;
+  }
+  const ngrokConfigPath = path.join(getTemplatesFolder(), "debug", "ngrok.yml");
+  await fs.copyFile(ngrokConfigPath, targetFile);
 }

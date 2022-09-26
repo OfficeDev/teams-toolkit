@@ -6,11 +6,11 @@ import path from "path";
 import { isAadManifestEnabled } from "../../common/tools";
 import { CoreHookContext } from "../types";
 import fs from "fs-extra";
-import { PluginNames } from "../../plugins";
-import { RequiredResourceAccess } from "../../plugins/resource/aad/interfaces/AADManifest";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TOOLS } from "../globalVars";
 import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
+import { PluginNames } from "../../plugins/solution/fx-solution/constants";
+import { RequiredResourceAccess } from "../../component/resource/aadApp/interfaces/AADManifest";
 
 export interface Permission {
   resource: string;

@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IAdaptiveCard } from "adaptivecards";
-import { TurnContext } from "botbuilder-core";
+import { Storage, StoreItems, TurnContext } from "botbuilder";
 import { Activity, InvokeResponse, StatusCodes } from "botframework-schema";
 import {
   AdaptiveCardResponse,
@@ -14,9 +13,13 @@ import {
   NotificationTargetType,
   TeamsFxAdaptiveCardActionHandler,
   TeamsFxBotCommandHandler,
+  TeamsFxBotSsoCommandHandler,
   TriggerPatterns,
 } from "../../../../src/conversation/interface";
+
+import { v4 as uuidv4 } from "uuid";
 import { InvokeResponseFactory } from "../../../../src/conversation/invokeResponseFactory";
+import { TeamsBotSsoPromptTokenResponse } from "../../../../src";
 
 export class TestStorage implements NotificationTargetStorage {
   public items: any = {};
@@ -63,6 +66,26 @@ export class TestTarget implements NotificationTarget {
   }
 }
 
+export class TestSsoCommandHandler implements TeamsFxBotSsoCommandHandler {
+  public triggerPatterns: TriggerPatterns;
+  public responseMessage?: string | undefined;
+  constructor(patterns: TriggerPatterns, responseMessage?: string) {
+    this.triggerPatterns = patterns;
+    if (responseMessage) {
+      this.responseMessage = responseMessage;
+    } else {
+      this.responseMessage = "Sample command response";
+    }
+  }
+  async handleCommandReceived(
+    context: TurnContext,
+    message: CommandMessage,
+    ssoToken: TeamsBotSsoPromptTokenResponse
+  ): Promise<string | void | Partial<Activity>> {
+    return this.responseMessage;
+  }
+}
+
 export class TestCommandHandler implements TeamsFxBotCommandHandler {
   public readonly triggerPatterns: TriggerPatterns;
 
@@ -90,7 +113,7 @@ export class MockCardActionHandler implements TeamsFxAdaptiveCardActionHandler {
   invokeResponse: InvokeResponse;
   actionData: any;
 
-  constructor(verb: string, response?: string | IAdaptiveCard) {
+  constructor(verb: string, response?: any) {
     this.triggerVerb = verb;
     if (!response) {
       this.invokeResponse = InvokeResponseFactory.textMessage("Your response was sent to the app");
@@ -128,10 +151,10 @@ export class MockCardActionHandlerWithErrorResponse implements TeamsFxAdaptiveCa
 
 export class MockContext {
   private activity: any;
-  constructor(text: string) {
+  constructor(text: string, type = "message") {
     this.activity = {
       text: text,
-      type: "message",
+      type: type,
       recipient: {
         id: "1",
         name: "test-bot",
@@ -143,6 +166,18 @@ export class MockContext {
     return new Promise((resolve) => {
       resolve();
     });
+  }
+}
+
+export class CustomStorage implements Storage {
+  read(keys: string[]): Promise<StoreItems> {
+    return Promise.resolve({});
+  }
+  write(changes: StoreItems): Promise<void> {
+    return Promise.resolve();
+  }
+  delete(keys: string[]): Promise<void> {
+    return Promise.resolve();
   }
 }
 

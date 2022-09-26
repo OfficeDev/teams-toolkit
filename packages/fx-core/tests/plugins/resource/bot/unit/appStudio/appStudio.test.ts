@@ -8,7 +8,8 @@ import { RetryHandler } from "../../../../../../src/plugins/resource/bot/utils/r
 import { Messages } from "../messages";
 import * as sinon from "sinon";
 import { IBotRegistration } from "../../../../../../src/plugins/resource/bot/appStudio/interfaces/IBotRegistration";
-import { PluginError } from "../../../../../../src/plugins/resource/bot/errors";
+import { PluginError, PreconditionError } from "../../../../../../src/plugins/resource/bot/errors";
+import { default as axios } from "axios";
 
 describe("Test AppStudio APIs", () => {
   afterEach(() => {
@@ -244,6 +245,50 @@ describe("Test AppStudio APIs", () => {
 
       // Assert
       chai.assert.fail(Messages.ShouldNotReachHere);
+    });
+  });
+
+  describe("getBotRegistration", () => {
+    it("Empty Access Token", async () => {
+      // Act
+      try {
+        await AppStudio.getBotRegistration("", "anything");
+      } catch (e) {
+        chai.assert.isTrue(e instanceof PluginError);
+        return;
+      }
+    });
+
+    it("Get Bot Exception", async () => {
+      // Arrange
+      const accessToken = "anything";
+      sinon.stub(AppStudio, "getBotRegistration").resolves({
+        name: "",
+        description: "",
+        iconUrl: "",
+        messagingEndpoint: "",
+        callingEndpoint: "",
+      });
+
+      const error = {
+        response: {
+          status: 500,
+          message: "errorMessage",
+        },
+      };
+      sinon
+        .stub(RetryHandler, "Retry")
+        .callsFake(async (fn: () => unknown, ignoreError = false) => {
+          throw error;
+        });
+
+      // Act
+      try {
+        await AppStudio.getBotRegistration(accessToken, "anything");
+      } catch (e) {
+        chai.assert.isTrue(e instanceof PluginError);
+        return;
+      }
     });
   });
 });

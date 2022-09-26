@@ -3,15 +3,12 @@
 import { ConfigMap, LocalSettings, PluginContext } from "@microsoft/teamsfx-api";
 import faker from "faker";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
-import { Constants } from "../../../../src/plugins/resource/simpleauth/constants";
-import { newEnvInfo } from "../../../../src";
-import { ARM_TEMPLATE_OUTPUT } from "../../../../src";
+import { Constants } from "../../../../src/component/resource/simpleAuth/constants";
+import { newEnvInfo } from "../../../../src/core/environment";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../src/common/localSettingsConstants";
-import { SOLUTION } from "../../../../src/plugins/resource/appstudio/constants";
-import { ConfigKeysOfOtherPlugin } from "../../../../src/plugins/resource/aad/constants";
 
 export class TestHelper {
   static async pluginContext(

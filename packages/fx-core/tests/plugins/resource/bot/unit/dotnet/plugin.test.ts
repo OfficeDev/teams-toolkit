@@ -5,15 +5,19 @@ import * as chai from "chai";
 const fs = require("fs-extra");
 import * as sinon from "sinon";
 import * as tool from "../../../../../../src/common/tools";
-import { BotOptionItem, BotSsoItem, TeamsBot } from "../../../../../../src";
 import { DotnetBotImpl } from "../../../../../../src/plugins/resource/bot/dotnet/plugin";
 import * as testUtils from "../utils";
 import { ResourcePlugins } from "../../../../../../src/common/constants";
 import { ConfigKeys } from "../../../../../../src/plugins/resource/bot/constants";
-import { BOT_ID } from "../../../../../../src/plugins/resource/appstudio/constants";
 import { AzureSolutionSettings, ok } from "@microsoft/teamsfx-api";
-import { AppStudio } from "../../../../../../src/plugins/resource/bot/appStudio/appStudio";
 import { PluginAAD } from "../../../../../../src/plugins/resource/bot/resources/strings";
+import { RetryHandler } from "../../../../../../src/plugins/resource/bot/utils/retryHandler";
+import { TeamsBot } from "../../../../../../src/plugins/resource";
+import {
+  BotOptionItem,
+  BotSsoItem,
+} from "../../../../../../src/plugins/solution/fx-solution/question";
+import { BOT_ID } from "../../../../../../src/component/resource/appManifest/constants";
 
 describe("Bot plugin for dotnet", () => {
   describe("Test PostLocalDebug", () => {
@@ -41,6 +45,7 @@ describe("Bot plugin for dotnet", () => {
         BotSsoItem.id,
       ];
       (pluginContext.projectSettings?.solutionSettings as AzureSolutionSettings).hostType = "Azure";
+      pluginContext.projectSettings!.programmingLanguage = "csharp";
       pluginContext.envInfo.state.set(
         ResourcePlugins.Bot,
         new Map<string, string>([
@@ -67,6 +72,7 @@ describe("Bot plugin for dotnet", () => {
         chai.assert.isTrue((data as string).includes("tenant_id"));
         chai.assert.isTrue((data as string).includes("https://bot.local.endpoint/bot-auth-start"));
       });
+      sinon.stub(RetryHandler, "Retry").resolves({});
 
       // Act
       const result = await botPlugin.postLocalDebug(pluginContext);

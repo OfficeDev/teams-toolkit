@@ -12,28 +12,35 @@ import {
   UnknownError,
   UserError,
   UserErrorOptions,
+  Void,
+  PathNotExistError,
 } from "@microsoft/teamsfx-api";
 import {
-  AppStudioScopes,
   checkNpmDependencies,
-  defaultHelpLink,
+  FolderName,
+  LocalEnvManager,
+  baseNpmInstallCommand,
+  defaultNpmInstallArg,
+  ProjectSettingsHelper,
+  TelemetryContext,
+} from "@microsoft/teamsfx-core/build/common/local";
+import {
   DependencyStatus,
   DepsCheckerError,
   DepsManager,
   DepsType,
   EmptyLogger,
-  FolderName,
-  getSideloadingStatus,
   installExtension,
-  LocalEnvManager,
   NodeNotFoundError,
-  NodeNotSupportedError,
-  npmInstallCommand,
-  ProjectSettingsHelper,
-  TelemetryContext,
   validationSettingsHelpLink,
-} from "@microsoft/teamsfx-core";
+  NodeNotSupportedError,
+  NodeNotRecommendedError,
+} from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { LocalEnvProvider } from "@microsoft/teamsfx-core/build/component/debugHandler";
+import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
+import { PluginNames } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
 
+import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import * as util from "util";
@@ -58,12 +65,18 @@ import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import {
   taskEndEventEmitter,
   trackedTasks,
-  allRunningDebugSessions,
   allRunningTeamsfxTasks,
-  runTask,
   terminateAllRunningTeamsfxTasks,
+  runTask,
 } from "./teamsfxTaskHandler";
-import { trustDevCertHelpLink, outputPanelCommand } from "./constants";
+import {
+  trustDevCertHelpLink,
+  prerequisiteCheckDisplayMessages,
+  npmInstallDisplayMessages,
+  DisplayMessages,
+  prerequisiteCheckTaskDisplayMessages,
+  prerequisiteCheckForGetStartedDisplayMessages,
+} from "./constants";
 import M365TokenInstance from "../commonlib/m365Login";
 import { signedOut } from "../commonlib/common/constant";
 import { ProgressHandler } from "../progressHandler";
@@ -72,16 +85,14 @@ import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { Prerequisite } from "./taskTerminal/prerequisiteTaskTerminal";
+import { Step } from "./commonUtils";
 
 enum Checker {
-  SPFx = "SPFx",
-  Frontend = "frontend",
-  Backend = "backend",
-  Bot = "bot",
+  NpmInstall = "npm package installation",
   M365Account = "Microsoft 365 Account",
-  LocalCertificate = "Development certificate for localhost",
+  LocalCertificate = "development certificate for localhost",
   AzureFunctionsExtension = "Azure Functions binding extension",
-  Ports = "Ports",
+  Ports = "ports occupancy",
 }
 
 const DepsDisplayName = {
@@ -107,32 +118,35 @@ enum ResultStatus {
   failed = "failed",
 }
 
+enum NpmInstallComponent {
+  SPFx = "SPFx",
+  Frontend = "frontend",
+  Backend = "backend",
+  Bot = "bot",
+}
+
 const NpmInstallDisplayName = Object.freeze({
-  [Checker.SPFx]: "tab app (SPFx-based)",
-  [Checker.Frontend]: "tab app (react-based)",
-  [Checker.Bot]: "bot app",
-  [Checker.Backend]: "function app",
+  [NpmInstallComponent.SPFx]: "tab app (SPFx-based)",
+  [NpmInstallComponent.Frontend]: "tab app (react-based)",
+  [NpmInstallComponent.Bot]: "bot app",
+  [NpmInstallComponent.Backend]: "function app",
 });
 
 const ProjectFolderName = Object.freeze({
-  [Checker.SPFx]: FolderName.SPFx,
-  [Checker.Frontend]: FolderName.Frontend,
-  [Checker.Bot]: FolderName.Bot,
-  [Checker.Backend]: FolderName.Function,
+  [NpmInstallComponent.SPFx]: FolderName.SPFx,
+  [NpmInstallComponent.Frontend]: FolderName.Frontend,
+  [NpmInstallComponent.Bot]: FolderName.Bot,
+  [NpmInstallComponent.Backend]: FolderName.Function,
 });
 
-const ProgressMessage: { [key: string]: string } = Object.freeze({
+const ProgressMessage = Object.freeze({
   [Checker.M365Account]: `Checking ${Checker.M365Account}`,
   [Checker.AzureFunctionsExtension]: `Installing ${Checker.AzureFunctionsExtension}`,
   [Checker.LocalCertificate]: `Checking ${Checker.LocalCertificate}`,
-  [Checker.SPFx]: `Checking and installing NPM packages for ${NpmInstallDisplayName[Checker.SPFx]}`,
-  [Checker.Frontend]: `Checking and installing NPM packages for ${
-    NpmInstallDisplayName[Checker.Frontend]
-  }`,
-  [Checker.Bot]: `Checking and installing NPM packages for ${NpmInstallDisplayName[Checker.Bot]}`,
-  [Checker.Backend]: `Checking and installing NPM packages for ${
-    NpmInstallDisplayName[Checker.Backend]
-  }`,
+  [Checker.NpmInstall]: (displayName: string | undefined, cwd: string) =>
+    displayName
+      ? `Checking and installing npm packages for ${displayName}`
+      : `Checking and installing npm packages in directory ${cwd}`,
   [Checker.Ports]: `Checking ${Checker.Ports}`,
   [DepsType.FunctionNode]: `Checking ${DepsDisplayName[DepsType.FunctionNode]}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
@@ -142,6 +156,14 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
   [DepsType.FuncCoreTools]: `Checking and installing ${DepsDisplayName[DepsType.FuncCoreTools]}`,
 });
 
+type NpmInstallCheckerInfo = {
+  checker: Checker.NpmInstall;
+  cwd: string;
+  args: string[];
+  forceUpdate?: boolean;
+  component: string;
+  displayName?: string;
+};
 type PortCheckerInfo = { checker: Checker.Ports; ports: number[] };
 type PrerequisiteCheckerInfo = { checker: Checker | DepsType; [key: string]: any };
 
@@ -149,19 +171,6 @@ type PrerequisiteOrderedChecker = {
   info: PrerequisiteCheckerInfo | PrerequisiteCheckerInfo[];
   fastFail: boolean;
 };
-
-class Step {
-  private currentStep: number;
-  public readonly totalSteps: number;
-  constructor(totalSteps: number) {
-    this.currentStep = 1;
-    this.totalSteps = totalSteps;
-  }
-
-  getPrefix(): string {
-    return `(${this.currentStep++}/${this.totalSteps})`;
-  }
-}
 
 async function runWithCheckResultTelemetry(
   eventName: string,
@@ -266,29 +275,34 @@ async function checkPort(
     async (ctx: TelemetryContext) => {
       VsCodeLogInstance.outputChannel.appendLine(displayMessage);
       const portsInUse = await localEnvManager.getPortsInUse(ports);
+      const formatPortStr = (ports: number[]) =>
+        ports.length > 1 ? ports.join(", ") : `${ports[0]}`;
       if (portsInUse.length > 0) {
         ctx.properties[TelemetryProperty.DebugPortsInUse] = JSON.stringify(portsInUse);
-        let message: string;
-        if (portsInUse.length > 1) {
-          message = util.format(
-            localize("teamstoolkit.localDebug.portsAlreadyInUse"),
-            portsInUse.join(", ")
-          );
-        } else {
-          message = util.format(
-            localize("teamstoolkit.localDebug.portAlreadyInUse"),
-            portsInUse[0]
-          );
-        }
+        const message = util.format(
+          getDefaultString("teamstoolkit.localDebug.portsAlreadyInUse"),
+          formatPortStr(portsInUse)
+        );
+        const displayMessage = util.format(
+          localize("teamstoolkit.localDebug.portsAlreadyInUse"),
+          formatPortStr(portsInUse)
+        );
+
         return {
           checker: Checker.Ports,
           result: ResultStatus.failed,
-          error: new UserError(ExtensionSource, ExtensionErrors.PortAlreadyInUse, message),
+          error: new UserError(
+            ExtensionSource,
+            ExtensionErrors.PortAlreadyInUse,
+            message,
+            displayMessage
+          ),
         };
       }
       return {
         checker: Checker.Ports,
         result: ResultStatus.success,
+        successMsg: doctorConstant.PortSuccess.replace("@port", formatPortStr(ports)),
       };
     }
   );
@@ -297,7 +311,7 @@ async function checkPort(
 export async function checkPrerequisitesForGetStarted(): Promise<Result<void, FxError>> {
   const nodeChecker = await getOrderedCheckersForGetStarted();
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStartedPrerequisitesStart);
-  const res = await _checkAndInstall("Prerequisite Check", nodeChecker);
+  const res = await _checkAndInstall(prerequisiteCheckForGetStartedDisplayMessages, nodeChecker);
   if (res.error) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GetStartedPrerequisites, res.error);
     return err(res.error);
@@ -320,7 +334,7 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
         terminateAllRunningTeamsfxTasks();
       }
 
-      const res = await _checkAndInstall("LocalDebug Prerequisite Check", orderedCheckers);
+      const res = await _checkAndInstall(prerequisiteCheckDisplayMessages, orderedCheckers);
       if (res.error) {
         const debugSession = commonUtils.getLocalDebugSession();
         addCheckResultsForTelemetry(
@@ -339,7 +353,7 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
 export async function checkAndInstallForTask(
   prerequisites: string[],
   ports?: number[]
-): Promise<Result<void, FxError>> {
+): Promise<Result<Void, FxError>> {
   const orderedCheckers = await getOrderedCheckersForTask(prerequisites, ports);
 
   return await localTelemetryReporter.runWithTelemetryProperties(
@@ -352,7 +366,7 @@ export async function checkAndInstallForTask(
         terminateAllRunningTeamsfxTasks();
       }
 
-      const res = await _checkAndInstall("LocalDebug Prerequisite Check", orderedCheckers);
+      const res = await _checkAndInstall(prerequisiteCheckTaskDisplayMessages, orderedCheckers);
       if (res.error) {
         const debugSession = commonUtils.getLocalDebugSession();
         addCheckResultsForTelemetry(
@@ -363,13 +377,45 @@ export async function checkAndInstallForTask(
         addCheckResultsForTelemetry(res.checkResults, ctx.properties, ctx.errorProps);
         return err(res.error);
       }
-      return ok(undefined);
+      return ok(Void);
     }
   );
 }
 
+export async function checkAndInstallNpmPackagesForTask(
+  projectOptions: {
+    cwd: string;
+    args?: string[];
+    forceUpdate?: boolean;
+  }[]
+): Promise<Result<Void, FxError>> {
+  const checkers = projectOptions.map<NpmInstallCheckerInfo>((p) => {
+    const cwdBaseName = path.basename(p.cwd);
+    return {
+      checker: Checker.NpmInstall,
+      cwd: p.cwd,
+      args: p.args ?? [],
+      forceUpdate: p.forceUpdate,
+      component: cwdBaseName,
+    };
+  });
+
+  // TODO: Add telemetry
+  const res = await _checkAndInstall(npmInstallDisplayMessages, [
+    {
+      info: checkers,
+      fastFail: false,
+    },
+  ]);
+  if (res.error) {
+    return err(res.error);
+  }
+
+  return ok(Void);
+}
+
 async function _checkAndInstall(
-  logLabel: string,
+  displayMessages: DisplayMessages,
   orderedCheckers: PrerequisiteOrderedChecker[]
 ): Promise<{ checkResults: CheckResult[]; error?: FxError }> {
   let progressHelper: ProgressHelper | undefined;
@@ -384,24 +430,29 @@ async function _checkAndInstall(
     );
 
     VsCodeLogInstance.outputChannel.show();
-    VsCodeLogInstance.info(logLabel);
-    VsCodeLogInstance.outputChannel.appendLine(doctorConstant.Check);
+    VsCodeLogInstance.info(displayMessages.title);
+    VsCodeLogInstance.outputChannel.appendLine("");
 
     // Get deps
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
 
     const step = new Step(enabledCheckers.length);
 
-    VsCodeLogInstance.outputChannel.appendLine(
-      doctorConstant.CheckNumber.split("@number").join(`${step.totalSteps}`)
-    );
+    VsCodeLogInstance.outputChannel.appendLine(displayMessages.checkNumber(step.totalSteps));
     progressHelper = new ProgressHelper(
-      new ProgressHandler("Prerequisites Check", step.totalSteps)
+      new ProgressHandler(displayMessages.taskName, step.totalSteps)
     );
 
     await progressHelper.start(
       enabledCheckers.map((v) => {
-        return { key: v, detail: ProgressMessage[v] };
+        const n = v as NpmInstallCheckerInfo;
+        return {
+          key: v.checker === Checker.NpmInstall ? n.displayName ?? n.cwd : v.checker,
+          detail:
+            v.checker === Checker.NpmInstall
+              ? ProgressMessage[Checker.NpmInstall](n.displayName, n.cwd)
+              : ProgressMessage[v.checker],
+        };
       })
     );
     VsCodeLogInstance.outputChannel.appendLine("");
@@ -416,13 +467,14 @@ async function _checkAndInstall(
             const checkPromises = [];
             for (const orderedCheckerInfo of orderedCheckerInfoArr) {
               checkPromises.push(
-                getCheckPromise(
-                  orderedCheckerInfo,
-                  enabledCheckers,
-                  depsManager,
-                  localEnvManager,
-                  step
-                ).finally(() => progressHelper?.end(orderedCheckerInfo.checker))
+                getCheckPromise(orderedCheckerInfo, depsManager, localEnvManager, step).finally(
+                  async () =>
+                    await progressHelper?.end(
+                      orderedCheckerInfo.checker === Checker.NpmInstall
+                        ? orderedCheckerInfo.displayName
+                        : orderedCheckerInfo.checker
+                    )
+                )
               );
             }
 
@@ -436,24 +488,30 @@ async function _checkAndInstall(
           }
         );
         if (orderedChecker.fastFail) {
-          await checkFailure(checkResults, progressHelper);
+          await checkFailure(checkResults, displayMessages, progressHelper);
         }
       } else {
         const orderedCheckerInfo = orderedChecker.info as PrerequisiteCheckerInfo;
         const checkResult = await getCheckPromise(
           orderedCheckerInfo,
-          enabledCheckers,
           depsManager,
           localEnvManager,
           step
-        ).finally(() => progressHelper?.end(orderedCheckerInfo.checker));
+        ).finally(
+          async () =>
+            await progressHelper?.end(
+              orderedCheckerInfo.checker === Checker.NpmInstall
+                ? orderedCheckerInfo.displayName
+                : orderedCheckerInfo.checker
+            )
+        );
         checkResults.push(checkResult);
         if (orderedChecker.fastFail) {
-          await checkFailure(checkResults, progressHelper);
+          await checkFailure(checkResults, displayMessages, progressHelper);
         }
       }
     }
-    await handleCheckResults(checkResults, progressHelper);
+    await handleCheckResults(checkResults, displayMessages, progressHelper);
   } catch (error: unknown) {
     const fxError = assembleError(error);
     await progressHelper?.stop(false);
@@ -464,7 +522,6 @@ async function _checkAndInstall(
 
 function getCheckPromise(
   checkerInfo: PrerequisiteCheckerInfo,
-  enabledCheckers: (DepsType | Checker)[],
   depsManager: DepsManager,
   localEnvManager: LocalEnvManager,
   step: Step
@@ -473,7 +530,7 @@ function getCheckPromise(
     case DepsType.AzureNode:
     case DepsType.FunctionNode:
     case DepsType.SpfxNode:
-      return checkNode(checkerInfo.checker, enabledCheckers, depsManager, step.getPrefix());
+      return checkNode(checkerInfo.checker, depsManager, step.getPrefix());
     case Checker.M365Account:
       return checkM365Account(step.getPrefix(), true);
     case Checker.LocalCertificate:
@@ -484,15 +541,15 @@ function getCheckPromise(
       return checkDependency(checkerInfo.checker, depsManager, step.getPrefix());
     case Checker.AzureFunctionsExtension:
       return resolveBackendExtension(depsManager, step.getPrefix());
-    case Checker.SPFx:
-    case Checker.Backend:
-    case Checker.Bot:
-    case Checker.Frontend:
+    case Checker.NpmInstall:
+      const npmInstalChecherInfo = checkerInfo as NpmInstallCheckerInfo;
       return checkNpmInstall(
-        checkerInfo.checker,
-        path.join(globalVariables.workspaceUri!.fsPath, ProjectFolderName[checkerInfo.checker]),
-        NpmInstallDisplayName[checkerInfo.checker],
-        `${step.getPrefix()} ${ProgressMessage[checkerInfo.checker]} ...`
+        npmInstalChecherInfo.component,
+        npmInstalChecherInfo.displayName,
+        step.getPrefix(),
+        npmInstalChecherInfo.cwd,
+        npmInstalChecherInfo.args,
+        npmInstalChecherInfo.forceUpdate
       );
     case Checker.Ports:
       return checkPort(
@@ -503,15 +560,15 @@ function getCheckPromise(
   }
 }
 
-function parseCheckers(orderedCheckers: PrerequisiteOrderedChecker[]): (Checker | DepsType)[] {
-  const parsedCheckers: (Checker | DepsType)[] = [];
+function parseCheckers(orderedCheckers: PrerequisiteOrderedChecker[]): PrerequisiteCheckerInfo[] {
+  const parsedCheckers: PrerequisiteCheckerInfo[] = [];
   for (const orderedChecker of orderedCheckers) {
     if (Array.isArray(orderedChecker.info)) {
       for (const checkerInfo of orderedChecker.info) {
-        parsedCheckers.push(checkerInfo.checker);
+        parsedCheckers.push(checkerInfo);
       }
     } else {
-      parsedCheckers.push(orderedChecker.info.checker);
+      parsedCheckers.push(orderedChecker.info);
     }
   }
   return parsedCheckers;
@@ -641,14 +698,11 @@ function checkM365Account(prefix: string, showLoginPage: boolean): Promise<Check
       );
 
       let hasSwitchedM365Tenant = false;
-      if (
-        localEnvInfo &&
-        localEnvInfo["state"] &&
-        localEnvInfo["state"]["solution"] &&
-        localEnvInfo["state"]["solution"]["teamsAppTenantId"] &&
-        !!tenantId &&
-        localEnvInfo["state"]["solution"]["teamsAppTenantId"] != tenantId
-      ) {
+      const tenantIdFromState: string | undefined =
+        localEnvInfo?.state?.solution?.teamsAppTenantId ||
+        localEnvInfo?.state?.[PluginNames.AAD]?.tenantId ||
+        localEnvInfo?.state?.[PluginNames.APPST]?.tenantId;
+      if (tenantId && tenantIdFromState && tenantIdFromState !== tenantId) {
         hasSwitchedM365Tenant = true;
         showNotification(
           localize("teamstoolkit.localDebug.switchM365AccountWarning"),
@@ -691,7 +745,6 @@ function showNotification(message: string, url: string): void {
 
 async function checkNode(
   nodeDep: DepsType,
-  enabledCheckers: (Checker | DepsType)[],
   depsManager: DepsManager,
   prefix: string
 ): Promise<CheckResult> {
@@ -706,12 +759,16 @@ async function checkNode(
       )[0];
       return {
         checker: nodeStatus.name,
-        result: nodeStatus.isInstalled ? ResultStatus.success : ResultStatus.failed,
+        result: nodeStatus.isInstalled
+          ? nodeStatus.error
+            ? ResultStatus.warn
+            : ResultStatus.success
+          : ResultStatus.failed,
         successMsg: nodeStatus.isInstalled
           ? doctorConstant.NodeSuccess.split("@Version").join(nodeStatus.details.installVersion)
           : nodeStatus.name,
         failureMsg: nodeStatus.name,
-        error: handleDepsCheckerError(nodeStatus.error, nodeStatus, enabledCheckers),
+        error: handleDepsCheckerError(nodeStatus.error, nodeStatus),
       };
     } catch (error: unknown) {
       return {
@@ -773,7 +830,10 @@ async function checkDependency(
           : ResultStatus.success
         : ResultStatus.failed,
       successMsg: dep.details.binFolders
-        ? `${dep.name} (installed at ${dep.details.binFolders?.[0]})`
+        ? doctorConstant.DepsSuccess.replace("@depsName", dep.name).replace(
+            "@binFolder",
+            dep.details.binFolders?.[0]
+          )
         : dep.name,
       error: handleDepsCheckerError(dep.error, dep),
     };
@@ -824,7 +884,12 @@ async function resolveLocalCertificate(
           `${prefix} ${ProgressMessage[Checker.LocalCertificate]} ...`
         );
         const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
-        const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
+        const workspacePath = globalVariables.workspaceUri!.fsPath;
+        const localEnvProvider = new LocalEnvProvider(workspacePath);
+        const localCertResult = await localEnvManager.resolveLocalCertificate(
+          trustDevCert,
+          localEnvProvider
+        );
 
         // trust cert telemetry properties
         ctx.properties[TelemetryProperty.DebugDevCertStatus] = !trustDevCert
@@ -862,17 +927,16 @@ async function resolveLocalCertificate(
   );
 }
 
-function handleDepsCheckerError(
-  error: any,
-  dep?: DependencyStatus,
-  enabledCheckers?: (Checker | DepsType)[]
-): FxError {
+function handleDepsCheckerError(error: any, dep?: DependencyStatus): FxError {
   if (dep) {
     if (error instanceof NodeNotFoundError) {
       handleNodeNotFoundError(error);
     }
     if (error instanceof NodeNotSupportedError) {
-      handleNodeNotSupportedError(error, dep, enabledCheckers);
+      handleNodeNotSupportedError(error, dep);
+    }
+    if (error instanceof NodeNotRecommendedError) {
+      handleNodeNotRecommendedError(error, dep);
     }
   }
   return error instanceof DepsCheckerError
@@ -890,55 +954,65 @@ function handleNodeNotFoundError(error: NodeNotFoundError) {
   error.message = `${doctorConstant.NodeNotFound}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
 }
 
-function handleNodeNotSupportedError(
-  error: NodeNotSupportedError,
-  dep: DependencyStatus,
-  enabledCheckers?: (Checker | DepsType)[]
-) {
-  const node12Version = "v12";
-  const supportedVersions = dep.details.supportedVersions.map((v) => "v" + v).join(" ,");
-  const isNode12Installed = dep.details.installVersion?.includes(node12Version);
+function handleNodeNotSupportedError(error: NodeNotSupportedError, dep: DependencyStatus) {
+  const supportedVersions = dep.details.supportedVersions.map((v) => "v" + v).join(", ");
 
   error.message = `${doctorConstant.NodeNotSupported.split("@CurrentVersion")
     .join(dep.details.installVersion)
     .split("@SupportedVersions")
     .join(supportedVersions)}`;
 
-  // a notification for node 12 with global function installed
-  error.message = isNode12Installed
-    ? `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.Node12MatchFunction}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`
-    : `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
+  error.message = `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
+}
 
-  // a workaround for node 12 user (node12 not in our supported version list for tab and function)
-  if (isNode12Installed) {
-    const bypass = enabledCheckers?.includes(DepsType.FuncCoreTools)
-      ? doctorConstant.BypassNode12AndFunction
-      : doctorConstant.BypassNode12;
-    error.message = `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${bypass}`;
-  }
+function handleNodeNotRecommendedError(error: NodeNotSupportedError, dep: DependencyStatus) {
+  const supportedVersions = dep.details.supportedVersions.map((v) => "v" + v).join(", ");
+
+  error.message = `${doctorConstant.NodeNotRecommended.split("@CurrentVersion")
+    .join(dep.details.installVersion)
+    .split("@SupportedVersions")
+    .join(supportedVersions)}`;
+
+  error.message = `${error.message}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
 }
 
 function checkNpmInstall(
   component: string,
+  displayName: string | undefined,
+  prefix: string,
   folder: string,
-  appName: string,
-  displayMessage: string
+  args: string[],
+  forceUpdate?: boolean
 ): Promise<CheckResult> {
   const taskName = `${component} npm install`;
   return runWithCheckResultTelemetryProperties(
     TelemetryEvent.DebugPrereqsCheckNpmInstall,
     { [TelemetryProperty.DebugNpmInstallName]: taskName },
     async (ctx: TelemetryContext) => {
-      VsCodeLogInstance.outputChannel.appendLine(displayMessage);
+      VsCodeLogInstance.outputChannel.appendLine(
+        `${prefix} ${ProgressMessage[Checker.NpmInstall](displayName, folder)} ...`
+      );
+
+      if (!(await fs.pathExists(folder))) {
+        return {
+          checker: Checker.NpmInstall,
+          result: ResultStatus.warn,
+          successMsg: doctorConstant.NpmInstallSuccess(displayName, folder),
+          failureMsg: doctorConstant.NpmInstallFailure(displayName, folder),
+          error: new PathNotExistError(ExtensionSource, folder),
+        };
+      }
 
       let installed = false;
-      try {
-        installed = await checkNpmDependencies(folder);
-      } catch (error: unknown) {
-        // treat check error as uninstalled
-        await VsCodeLogInstance.warning(`Error when checking npm dependencies: ${error}`);
+      if (!forceUpdate) {
+        try {
+          installed = await checkNpmDependencies(folder);
+        } catch (error: unknown) {
+          // treat check error as uninstalled
+          await VsCodeLogInstance.warning(`Error when checking npm dependencies: ${error}`);
+        }
+        ctx.properties[TelemetryProperty.DebugNpmInstallAlreadyInstalled] = installed.toString();
       }
-      ctx.properties[TelemetryProperty.DebugNpmInstallAlreadyInstalled] = installed.toString();
 
       let result = ResultStatus.success;
       let error = undefined;
@@ -977,7 +1051,9 @@ function checkNpmInstall(
                 vscode.workspace.workspaceFolders![0],
                 taskName,
                 ProductName,
-                new vscode.ShellExecution(npmInstallCommand, { cwd: folder })
+                new vscode.ShellExecution([baseNpmInstallCommand, ...args].join(" "), {
+                  cwd: folder,
+                })
               )
             );
           }
@@ -998,10 +1074,10 @@ function checkNpmInstall(
         error = err;
       }
       return {
-        checker: component,
+        checker: Checker.NpmInstall,
         result: result,
-        successMsg: doctorConstant.NpmInstallSuccess.split("@app").join(appName),
-        failureMsg: doctorConstant.NpmInstallFailure.split("@app").join(appName),
+        successMsg: doctorConstant.NpmInstallSuccess(displayName, folder),
+        failureMsg: doctorConstant.NpmInstallFailure(displayName, folder),
         error: error,
       };
     }
@@ -1010,6 +1086,7 @@ function checkNpmInstall(
 
 async function handleCheckResults(
   results: CheckResult[],
+  displayMessages: DisplayMessages,
   progressHelper?: ProgressHelper,
   fromLocalDebug = true
 ): Promise<void> {
@@ -1024,7 +1101,7 @@ async function handleCheckResults(
   const warnings = results.filter((a) => a.result === ResultStatus.warn);
   output.show();
   output.appendLine("");
-  output.appendLine(doctorConstant.Summary);
+  output.appendLine(displayMessages.summary);
 
   if (failures.length > 0) {
     shouldStop = true;
@@ -1049,31 +1126,43 @@ async function handleCheckResults(
     outputCheckResultError(result, output);
   }
   output.appendLine("");
-  output.appendLine(`${doctorConstant.LearnMore.split("@Link").join(defaultHelpLink)}`);
+  output.appendLine(displayMessages.learnMore(displayMessages.learnMoreHelpLink));
+  output.appendLine("");
 
   if (fromLocalDebug) {
     if (!shouldStop) {
-      output.appendLine("");
-      output.appendLine(`${doctorConstant.LaunchServices}`);
+      if (displayMessages.launchServices) {
+        output.appendLine(displayMessages.launchServices);
+        output.appendLine("");
+      }
       await progressHelper?.stop(true);
     }
 
     if (shouldStop) {
       await progressHelper?.stop(false);
       const message = util.format(
-        getDefaultString("teamstoolkit.localDebug.prerequisitesCheckFailure"),
-        `[${getDefaultString("teamstoolkit.localDebug.outputPanel")}](${outputPanelCommand})`
+        getDefaultString(displayMessages.errorMessageKey),
+        `[${getDefaultString(displayMessages.errorMessageLink)}](${
+          displayMessages.errorMessageCommand
+        })`
       );
-      const displayMessage = util.format(
-        localize("teamstoolkit.localDebug.prerequisitesCheckFailure"),
-        `[${localize("teamstoolkit.localDebug.outputPanel")}](${outputPanelCommand})`
-      );
+
+      // show failure summary in display message
+      const displayMessage =
+        util.format(
+          localize("teamstoolkit.localDebug.failedCheckers"),
+          failures.map((f) => f.failureMsg ?? f.checker).join(", ")
+        ) +
+        util.format(
+          localize(displayMessages.errorDisplayMessageKey),
+          `[${localize(displayMessages.errorMessageLink)}](${displayMessages.errorMessageCommand})`
+        );
       const errorOptions: UserErrorOptions = {
         source: ExtensionSource,
-        name: ExtensionErrors.PrerequisitesValidationError,
-        message: message, //getDefaultString("teamstoolkit.PrerequisitesValidationError"),
-        displayMessage: displayMessage, //localize("teamstoolkit.PrerequisitesValidationError"),
-        helpLink: "https://aka.ms/teamsfx-envchecker-help",
+        name: displayMessages.errorName,
+        message: message,
+        displayMessage: displayMessage,
+        helpLink: displayMessages.errorHelpLink,
       };
       throw new UserError(errorOptions);
     }
@@ -1083,23 +1172,16 @@ async function handleCheckResults(
 function outputCheckResultError(result: CheckResult, output: vscode.OutputChannel) {
   if (result.error) {
     output.appendLine(`${doctorConstant.WhiteSpace}${result.error.message}`);
-
-    if (result.error instanceof UserError) {
-      const userError = result.error as UserError;
-      if (userError.helpLink) {
-        output.appendLine(
-          `${doctorConstant.WhiteSpace}${doctorConstant.HelpLink.split("@Link").join(
-            userError.helpLink
-          )}`
-        );
-      }
-    }
   }
 }
 
-async function checkFailure(checkResults: CheckResult[], progressHelper?: ProgressHelper) {
+async function checkFailure(
+  checkResults: CheckResult[],
+  displayMessages: DisplayMessages,
+  progressHelper?: ProgressHelper
+) {
   if (checkResults.some((r) => r.result === ResultStatus.failed)) {
-    await handleCheckResults(checkResults, progressHelper);
+    await handleCheckResults(checkResults, displayMessages, progressHelper);
   }
 }
 
@@ -1130,18 +1212,42 @@ async function getOrderedCheckers(): Promise<PrerequisiteOrderedChecker[]> {
   }
 
   if (ProjectSettingsHelper.isSpfx(projectSettings)) {
-    parallelCheckers.push({ checker: Checker.SPFx });
+    parallelCheckers.push({
+      checker: Checker.NpmInstall,
+      cwd: path.join(workspacePath, ProjectFolderName[NpmInstallComponent.SPFx]),
+      component: NpmInstallComponent.SPFx,
+      displayName: NpmInstallDisplayName[NpmInstallComponent.SPFx],
+      args: [defaultNpmInstallArg],
+    });
   } else {
     if (ProjectSettingsHelper.includeBackend(projectSettings)) {
       parallelCheckers.push({ checker: Checker.AzureFunctionsExtension });
-      parallelCheckers.push({ checker: Checker.Backend });
+      parallelCheckers.push({
+        checker: Checker.NpmInstall,
+        component: NpmInstallComponent.Backend,
+        displayName: NpmInstallDisplayName[NpmInstallComponent.Backend],
+        cwd: path.join(workspacePath, ProjectFolderName[NpmInstallComponent.Backend]),
+        args: [defaultNpmInstallArg],
+      });
     }
 
     if (ProjectSettingsHelper.includeBot(projectSettings)) {
-      parallelCheckers.push({ checker: Checker.Bot });
+      parallelCheckers.push({
+        checker: Checker.NpmInstall,
+        component: NpmInstallComponent.Bot,
+        displayName: NpmInstallDisplayName[NpmInstallComponent.Bot],
+        cwd: path.join(workspacePath, ProjectFolderName[NpmInstallComponent.Bot]),
+        args: [defaultNpmInstallArg],
+      });
     }
     if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
-      parallelCheckers.push({ checker: Checker.Frontend });
+      parallelCheckers.push({
+        checker: Checker.NpmInstall,
+        component: NpmInstallComponent.Frontend,
+        displayName: NpmInstallDisplayName[NpmInstallComponent.Frontend],
+        cwd: path.join(workspacePath, ProjectFolderName[NpmInstallComponent.Frontend]),
+        args: [defaultNpmInstallArg],
+      });
     }
   }
   checkers.push({ info: parallelCheckers, fastFail: true });
@@ -1178,7 +1284,18 @@ async function getOrderedCheckersForTask(
 ): Promise<PrerequisiteOrderedChecker[]> {
   const checkers: PrerequisiteOrderedChecker[] = [];
   if (prerequisites.includes(Prerequisite.nodejs)) {
-    checkers.push({ info: { checker: DepsType.AzureNode }, fastFail: true });
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(
+      globalVariables.workspaceUri!.fsPath
+    );
+    const nodeDep = getNodeDep(localEnvManager.getActiveDependencies(projectSettings));
+    if (nodeDep) {
+      checkers.push({ info: { checker: nodeDep }, fastFail: true });
+    }
   }
   if (prerequisites.includes(Prerequisite.m365Account)) {
     checkers.push({ info: { checker: Checker.M365Account }, fastFail: false });
@@ -1206,7 +1323,7 @@ async function getOrderedCheckersForTask(
     checkers.push({ info: { checker: orderedDeps[orderedDeps.length - 1] }, fastFail: true });
   }
 
-  if (prerequisites.includes(Prerequisite.ports)) {
+  if (prerequisites.includes(Prerequisite.portOccupancy)) {
     checkers.push({ info: { checker: Checker.Ports, ports: ports }, fastFail: false });
   }
   return checkers;

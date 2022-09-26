@@ -8,19 +8,24 @@ import fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
 
-import { err, ok, ProjectSettings, SystemError, v3 } from "@microsoft/teamsfx-api";
+import { err, ok, ProjectSettings, SystemError, UserError, v3 } from "@microsoft/teamsfx-api";
 
 import { ComponentNames } from "../../../src/component/constants";
 import {
   AppManifestDebugArgs,
   AppManifestDebugHandler,
 } from "../../../src/component/debugHandler/appManifest";
+import {
+  AppManifestPackageNotExistError,
+  DebugArgumentEmptyError,
+  InvalidAppManifestPackageFileFormatError,
+} from "../../../src/component/debugHandler/error";
 import * as appstudio from "../../../src/component/resource/appManifest/appStudio";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
-import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
-import { AppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/appDefinition";
-import { MockM365TokenProvider } from "./utils";
+import { AppStudioClient } from "../../../src/component/resource/appManifest/appStudioClient";
+import { AppDefinition } from "../../../src/component/resource/appManifest/interfaces/appDefinition";
+import { MockM365TokenProvider, runDebugActions } from "./utils";
 
 describe("AppManifestDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
@@ -29,6 +34,61 @@ describe("AppManifestDebugHandler", () => {
 
   describe("prepare", () => {
     afterEach(() => {
+      sinon.restore();
+    });
+
+    it("invalid args: empty appPackagePath", async () => {
+      sinon.stub(fs, "pathExists").callsFake(async () => {
+        return false;
+      });
+      const args: AppManifestDebugArgs = {
+        appPackagePath: "",
+      };
+      const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.equal(result.error.message, DebugArgumentEmptyError("appPackagePath").message);
+      }
+      sinon.restore();
+    });
+
+    it("invalid args: path not exist", async () => {
+      sinon.stub(fs, "pathExists").callsFake(async () => {
+        return false;
+      });
+      const appPackagePath = "xxx";
+      const args: AppManifestDebugArgs = {
+        appPackagePath,
+      };
+      const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        const error = AppManifestPackageNotExistError(appPackagePath);
+        chai.assert.equal(result.error.name, error.name);
+        chai.assert.equal(result.error.message, error.message);
+      }
+      sinon.restore();
+    });
+
+    it("invalid args: invalid format", async () => {
+      sinon.stub(fs, "pathExists").callsFake(async () => {
+        return true;
+      });
+      const appPackagePath = "xxx.rar";
+      const args: AppManifestDebugArgs = {
+        appPackagePath,
+      };
+      const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.equal(result.error.name, InvalidAppManifestPackageFileFormatError().name);
+      }
       sinon.restore();
     });
 
@@ -43,7 +103,7 @@ describe("AppManifestDebugHandler", () => {
         .returns(Promise.resolve(err(error)));
       const args: AppManifestDebugArgs = {};
       const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
-      const result = await handler.prepare();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof SystemError);
@@ -64,7 +124,7 @@ describe("AppManifestDebugHandler", () => {
       sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(err(error)));
       const args: AppManifestDebugArgs = {};
       const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
-      const result = await handler.prepare();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof SystemError);
@@ -106,7 +166,7 @@ describe("AppManifestDebugHandler", () => {
       });
       const args: AppManifestDebugArgs = {};
       const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
-      const result = await handler.prepare();
+      const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert(called);
       chai.assert.equal(envInfoV3.state[ComponentNames.AppManifest].teamsAppId, teamsAppId);

@@ -9,7 +9,7 @@ import chaiAsPromised from "chai-as-promised";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
 import * as projectSettingsHelper from "../../../../../../fx-core/src/common/projectSettingsHelper";
-import { FrontendPlugin as WebappPlugin } from "../../../../../src";
+import { FrontendPlugin as WebappPlugin } from "../../../../../src/plugins/resource/frontend";
 import { mockSolutionGenerateArmTemplates, ResourcePlugins } from "../../util";
 import {
   HostTypeOptionAzure,
@@ -96,22 +96,12 @@ param provisionOutputs object
 param currentAppSettings object
 
 var webappName = split(provisionOutputs.webappOutput.value.webappResourceId, '/')[8]
-var m365ClientId = provisionParameters['m365ClientId']
-var m365ClientSecret = provisionParameters['m365ClientSecret']
-var m365TenantId = provisionParameters['m365TenantId']
-var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
-var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
-var initiateLoginEndpoint = uri(webappEndpoint, 'auth-start.html')
 var webappEndpoint = provisionOutputs.webappOutput.value.endpoint
 
 resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '\${webappName}/appsettings'
   properties: union({
     TAB_APP_ENDPOINT: webappEndpoint
-    TeamsFx__Authentication__ClientId: m365ClientId
-    TeamsFx__Authentication__ClientSecret: m365ClientSecret
-    TeamsFx__Authentication__InitiateLoginEndpoint: initiateLoginEndpoint
-    TeamsFx__Authentication__OAuthAuthority: oauthAuthority
     IDENTITY_ID: provisionOutputs.identityOutput.value.identityClientId
   }, currentAppSettings)
 }
@@ -147,7 +137,7 @@ describe("WebappPlugin", () => {
 
   it("generate bicep arm templates", async () => {
     // Arrange
-    const activeResourcePlugins = [ResourcePlugins.Aad, ResourcePlugins.FrontendHosting];
+    const activeResourcePlugins = [ResourcePlugins.FrontendHosting];
     pluginContext.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
       name: "azure",

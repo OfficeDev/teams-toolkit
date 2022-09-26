@@ -3,7 +3,7 @@
 
 import * as os from "os";
 import cliLogger from "../../../commonlib/log";
-import { DepsLogger } from "@microsoft/teamsfx-core";
+import { DepsLogger } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { LogLevel } from "@microsoft/teamsfx-api";
 
 export class CLILogger implements DepsLogger {

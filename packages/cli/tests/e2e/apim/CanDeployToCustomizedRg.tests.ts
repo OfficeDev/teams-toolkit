@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Di Lin <dilin@microsoft.com>
+ * @author Zhaofeng Xu <zhaofengxu@microsoft.com>
  */
 
 import path from "path";
@@ -21,7 +21,7 @@ import {
   getConfigFileName,
   convertToAlphanumericOnly,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";

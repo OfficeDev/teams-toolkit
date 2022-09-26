@@ -25,6 +25,7 @@ import IncomingWebhook from "../../img/webview/sample/incoming-webhook.gif";
 import AdaptiveCardNotification from "../../img/webview/sample/adaptive-card-notification.gif";
 import SendProactiveMsg from "../../img/webview/sample/send-proactive-messages.gif";
 import StockUpdate from "../../img/webview/sample/stock-update.gif";
+import MsgExtSSO from "../../img/webview/sample/message-extension-sso.gif";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -51,6 +52,7 @@ const imageMapping: { [p: string]: any } = {
   "graph-toolkit-one-productivity-hub": GraphToolkitOneProductivityHub,
   "bot-proactive-messaging-teamsfx": SendProactiveMsg,
   "stocks-update-notification-bot": StockUpdate,
+  "query-org-user-with-message-extension-sso": MsgExtSSO,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

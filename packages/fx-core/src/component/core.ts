@@ -41,10 +41,10 @@ import "./connection/azureWebAppConfig";
 import { configLocalEnvironment, setupLocalEnvironment } from "./debug";
 import { createEnvWithName } from "./envManager";
 import "./feature/api";
-import "./feature/apiConnector";
+import "./feature/apiconnector/apiConnector";
 import "./feature/apim";
 import "./feature/bot";
-import "./feature/cicd";
+import "./feature/cicd/cicd";
 import "./feature/keyVault";
 import "./feature/spfx";
 import "./feature/sql";
@@ -106,15 +106,16 @@ import {
 } from "./questionV3";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "./middleware/actionExecutionMW";
-import { getQuestionsForCreateProjectV2 } from "../core/middleware";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { getComponent } from "./workflow";
-import { ensureBasicFolderStructure } from "../core";
 import { environmentManager } from "../core/environment";
-import { Constants } from "../plugins/resource/aad/constants";
 import { deployUtils } from "./deployUtils";
 import { provisionUtils } from "./provisionUtils";
 import { getTemplatesFolder } from "../folder";
+import { ensureBasicFolderStructure } from "../core/FxCore";
+import { SolutionTelemetryProperty } from "../plugins/solution/fx-solution/constants";
+import { getQuestionsForCreateProjectV2 } from "../core/middleware/questionModel";
+import { Constants } from "./resource/aadApp/constants";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -147,7 +148,7 @@ export class TeamsfxCore {
     const automaticNpmInstall = "automaticNpmInstall";
     if (scratch === ScratchOptionNo.id) {
       // create from sample
-      const downloadRes = await downloadSample(inputs);
+      const downloadRes = await downloadSample(inputs, undefined, context);
       if (downloadRes.isErr()) {
         return err(downloadRes.error);
       }
@@ -479,19 +480,26 @@ export class TeamsfxCore {
 
     // 6.
     if (ctx.envInfo.envName === "local") {
-      // 6.1 config local env
       const localConfigResult = await configLocalEnvironment(ctx, inputs);
       if (localConfigResult.isErr()) {
         return err(localConfigResult.error);
       }
-    } else {
-      // 6.2 show message for remote azure provision
+    }
+
+    // 7. update teams app
+    {
+      const res = await appManifest.configure(ctx, inputs);
+      if (res.isErr()) return err(res.error);
+    }
+
+    // 8. show message and set state
+    if (ctx.envInfo.envName !== "local") {
       const url = getResourceGroupInPortal(
         ctx.envInfo.state.solution.subscriptionId,
         ctx.envInfo.state.solution.tenantId,
         ctx.envInfo.state.solution.resourceGroupName
       );
-      const msg = getLocalizedString("core.provision.successAzure");
+      const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
       if (url) {
         const title = "View Provisioned Resources";
         ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
@@ -503,18 +511,6 @@ export class TeamsfxCore {
       } else {
         ctx.userInteraction.showMessage("info", msg, false);
       }
-    }
-
-    // 7. update teams app
-    {
-      const res = await appManifest.configure(ctx, inputs);
-      if (res.isErr()) return err(res.error);
-    }
-
-    // 8. show and set state
-    if (ctx.envInfo.envName !== "local") {
-      const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
-      ctx.userInteraction.showMessage("info", msg, false);
       ctx.logProvider.info(msg);
     }
     merge(actionContext?.telemetryProps, {
@@ -526,6 +522,18 @@ export class TeamsfxCore {
     return ok(undefined);
   }
 
+  /**
+   * About AAD deploy:
+   * 1. For VS platform, there is no "AAD" option in the deploy plugins selection question.
+   *    "Deploy" command does not include "AAD" resource.
+   * 2. For VS Code platform, there is no "AAD" option in the deploy plugins selection question.
+   *    "Deploy" command does not include "AAD" resource. But there is another command "Deploy aad manifest" in aad manifest's context menu that will trigger the "deploy" lifecycle command in fxcore (with inputs["include-aad-manifest"] === "yes") will trigger "AAD" only deployment.
+   * 3. For CLI platform, there is "AAD" option in the deploy plugins selection question.
+   *    "Deploy" command includes "AAD" resource if the following conditions meet:
+   *      1). inputs["include-aad-manifest"] === "yes" AND
+   *      2). deploy options includes "AAD".
+   *    In such a case "AAD" will be included in the deployment resources and will be deployed together with other resources.
+   */
   @hooks([
     ActionExecutionMW({
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
@@ -541,6 +549,11 @@ export class TeamsfxCore {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
+    merge(actionContext?.telemetryProps, {
+      [SolutionTelemetryProperty.IncludeAadManifest]:
+        inputs[Constants.INCLUDE_AAD_MANIFEST] ?? "no",
+    });
+    // deploy AAD only from VS Code
     const isDeployAADManifestFromVSCode =
       inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" && inputs.platform === Platform.VSCode;
     if (isDeployAADManifestFromVSCode) {
@@ -553,13 +566,11 @@ export class TeamsfxCore {
     );
     const projectSettings = context.projectSetting as ProjectSettingsV3;
     const inputPlugins = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] || [];
-    const inputComponentNames = inputPlugins.map(pluginName2ComponentName) as string[];
-    if (
-      hasAAD(context.projectSetting) &&
-      inputs[Constants.INCLUDE_AAD_MANIFEST] === "yes" &&
-      inputs.platform === Platform.CLI
-    ) {
-      inputComponentNames.push(ComponentNames.AadApp);
+    let inputComponentNames = inputPlugins.map(pluginName2ComponentName) as string[];
+    if (inputComponentNames.includes(ComponentNames.AadApp)) {
+      if (inputs[Constants.INCLUDE_AAD_MANIFEST] != "yes" || inputs.platform !== Platform.CLI) {
+        inputComponentNames = inputComponentNames.filter((c) => c !== ComponentNames.AadApp);
+      }
     }
     const thunks = [];
     let hasAzureResource = false;
@@ -576,7 +587,7 @@ export class TeamsfxCore {
           thunk: async () => {
             const clonedInputs = cloneDeep(inputs);
             clonedInputs.folder = component.folder;
-            clonedInputs.artifactFolder = component.artifactFolder;
+            clonedInputs.artifactFolder = component.artifactFolder || clonedInputs.folder;
             clonedInputs.componentId = component.name;
             if (featureComponent.build) {
               const buildRes = await featureComponent.build(context, clonedInputs);

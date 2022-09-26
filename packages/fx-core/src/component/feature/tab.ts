@@ -27,7 +27,7 @@ import { ComponentNames, Scenarios, StorageOutputs } from "../constants";
 import { Plans } from "../messages";
 import { getComponent, getComponentByScenario } from "../workflow";
 import { assign, cloneDeep, merge } from "lodash";
-import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify, scaffoldRootReadme } from "../utils";
 import { TabCodeProvider } from "../code/tabCode";
 import { BicepComponent } from "../bicep";
 import { convertToAlphanumericOnly } from "../../common/utils";
@@ -37,7 +37,7 @@ import { AppManifest } from "../resource/appManifest/appManifest";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { hooks } from "@feathersjs/hooks/lib";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { isVSProject } from "../../common";
+import { isVSProject } from "../../common/projectSettingsHelper";
 
 @Service("teams-tab")
 export class TeamsTab {
@@ -209,6 +209,7 @@ export class TeamsTab {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Components]: JSON.stringify(addedComponents),
     });
+    await scaffoldRootReadme(context.projectSetting, inputs.projectPath);
     addFeatureNotify(inputs, context.userInteraction, "Capability", [inputs.features]);
     return ok(undefined);
   }

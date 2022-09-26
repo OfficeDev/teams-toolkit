@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { err, FxError, ok, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
-import { manifestUtils } from "./utils";
+import { manifestUtils } from "./utils/ManifestUtils";
 
 export class DefaultManifestProvider implements v3.AppManifestProvider {
   async updateCapability(

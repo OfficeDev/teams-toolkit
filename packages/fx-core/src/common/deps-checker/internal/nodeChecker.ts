@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DepsCheckerError, NodeNotFoundError, NodeNotSupportedError } from "../depsError";
+import {
+  DepsCheckerError,
+  NodeNotFoundError,
+  NodeNotRecommendedError,
+  NodeNotSupportedError,
+} from "../depsError";
 import { cpUtils } from "../util/cpUtils";
 import { DepsCheckerEvent } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
@@ -10,7 +15,6 @@ import { DependencyStatus, DepsChecker, DepsType } from "../depsChecker";
 import { Messages } from "../constant/message";
 import {
   nodeNotFoundHelpLink,
-  nodeNotSupportedForFunctionsHelpLink,
   nodeNotSupportedForSPFxHelpLink,
   nodeNotSupportedForAzureHelpLink,
 } from "../constant/helpLink";
@@ -33,6 +37,8 @@ export abstract class NodeChecker implements DepsChecker {
   protected abstract readonly _type: DepsType;
   protected abstract getSupportedVersions(): Promise<string[]>;
   protected abstract getNodeNotSupportedHelpLink(): Promise<string>;
+  protected abstract readonly _minErrorVersion: number;
+  protected abstract readonly _maxErrorVersion: number;
 
   private readonly _telemetry: DepsTelemetry;
   private readonly _logger: DepsLogger;
@@ -75,16 +81,34 @@ export abstract class NodeChecker implements DepsChecker {
           this._nodeNotSupportedEvent,
           `Node.js ${currentVersion.version} is not supported.`
         );
-        const error = new NodeNotSupportedError(
-          Messages.NodeNotSupported.split("@CurrentVersion")
-            .join(currentVersion.version)
-            .split("@SupportedVersions")
-            .join(supportedVersionsString),
-          await this.getNodeNotSupportedHelpLink()
-        );
-        return await this.getDepsInfo(false, currentVersion.version, error);
+        return NodeChecker.isVersionError(
+          this._minErrorVersion,
+          this._maxErrorVersion,
+          currentVersion
+        )
+          ? await this.getDepsInfo(
+              false,
+              currentVersion.version,
+              new NodeNotSupportedError(
+                Messages.NodeNotSupported.split("@CurrentVersion")
+                  .join(currentVersion.version)
+                  .split("@SupportedVersions")
+                  .join(supportedVersionsString),
+                await this.getNodeNotSupportedHelpLink()
+              )
+            )
+          : await this.getDepsInfo(
+              true,
+              currentVersion.version,
+              new NodeNotRecommendedError(
+                Messages.NodeNotRecommended.split("@CurrentVersion")
+                  .join(currentVersion.version)
+                  .split("@SupportedVersions")
+                  .join(supportedVersionsString),
+                await this.getNodeNotSupportedHelpLink()
+              )
+            );
       }
-
       return await this.getDepsInfo(true, currentVersion.version);
     } catch (error) {
       return await this.getDepsInfo(
@@ -134,6 +158,20 @@ export abstract class NodeChecker implements DepsChecker {
     return supportedVersion.includes(version.majorVersion);
   }
 
+  private static isVersionError(
+    minErrorVersion: number,
+    maxErrorVersion: number,
+    version: NodeVersion
+  ): boolean {
+    const majorVersion = Number.parseInt(version.majorVersion);
+
+    return (
+      !Number.isInteger(majorVersion) ||
+      majorVersion <= minErrorVersion ||
+      majorVersion >= maxErrorVersion
+    );
+  }
+
   public async command(): Promise<string> {
     return "node";
   }
@@ -173,6 +211,8 @@ export class SPFxNodeChecker extends NodeChecker {
   protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
   protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForSPFx;
   protected readonly _type = DepsType.SpfxNode;
+  protected readonly _minErrorVersion = 13;
+  protected readonly _maxErrorVersion = 17;
 
   protected async getNodeNotSupportedHelpLink(): Promise<string> {
     return nodeNotSupportedForSPFxHelpLink;
@@ -187,23 +227,11 @@ export class AzureNodeChecker extends NodeChecker {
   protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
   protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForAzure;
   protected readonly _type = DepsType.AzureNode;
+  protected readonly _minErrorVersion = 11;
+  protected readonly _maxErrorVersion = Number.MAX_SAFE_INTEGER;
 
   protected async getNodeNotSupportedHelpLink(): Promise<string> {
     return nodeNotSupportedForAzureHelpLink;
-  }
-
-  protected async getSupportedVersions(): Promise<string[]> {
-    return ["14", "16"];
-  }
-}
-
-export class FunctionNodeChecker extends NodeChecker {
-  protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
-  protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForAzure;
-  protected readonly _type = DepsType.FunctionNode;
-
-  protected async getNodeNotSupportedHelpLink(): Promise<string> {
-    return nodeNotSupportedForFunctionsHelpLink;
   }
 
   protected async getSupportedVersions(): Promise<string[]> {

@@ -2,7 +2,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 
 import { ok } from "@microsoft/teamsfx-api";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 import * as globalVariables from "../../../src/globalVariables";

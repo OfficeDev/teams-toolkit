@@ -3,6 +3,7 @@
 import "mocha";
 import { assert } from "chai";
 import {
+  convertEnvStateMapV3ToV2,
   convertProjectSettingsV2ToV3,
   convertProjectSettingsV3ToV2,
 } from "../../src/component/migrate";
@@ -43,7 +44,7 @@ describe("Migration test for v3", () => {
       },
       defaultFunctionName: "getUserProfile",
     };
-    const v3 = convertProjectSettingsV2ToV3(projectSettings);
+    const v3 = convertProjectSettingsV2ToV3(projectSettings, ".");
     assert.isTrue(v3.components.length > 0);
   });
   it("convertProjectSettingsV3ToV2", async () => {
@@ -98,10 +99,23 @@ describe("Migration test for v3", () => {
           name: "azure-function",
           connections: ["teams-api"],
         },
+        {
+          name: "simple-auth",
+        },
+        {
+          name: "key-vault",
+        },
       ],
       programmingLanguage: "javascript",
     };
     const v2 = convertProjectSettingsV3ToV2(projectSettings);
     assert.isTrue(v2.solutionSettings !== undefined);
+  });
+
+  it("convertEnvStateMapV3ToV2", async () => {
+    const envStateMap = new Map<string, any>();
+    envStateMap.set("app-manifest", new Map<string, any>());
+    const res = convertEnvStateMapV3ToV2(envStateMap);
+    assert.isTrue(res.has("fx-resource-appstudio"));
   });
 });

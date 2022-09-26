@@ -2,14 +2,16 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { FxError, Result } from "@microsoft/teamsfx-api";
+import { FxError, Result, Void } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 import { checkAndInstallForTask } from "../prerequisitesHandler";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
+import * as commonUtils from "../commonUtils";
+import { DebugSessionExists } from "../constants";
 
 export interface PrerequisiteArgs {
   prerequisites?: string[];
-  ports?: number[];
+  portOccupancy?: number[];
 }
 
 export enum Prerequisite {
@@ -19,7 +21,7 @@ export enum Prerequisite {
   func = "func",
   ngrok = "ngrok",
   dotnet = "dotnet",
-  ports = "ports",
+  portOccupancy = "portOccupancy",
 }
 
 export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
@@ -30,7 +32,10 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
     this.args = taskDefinition.args as PrerequisiteArgs;
   }
 
-  async do(): Promise<Result<void, FxError>> {
-    return await checkAndInstallForTask(this.args.prerequisites ?? [], this.args.ports);
+  async do(): Promise<Result<Void, FxError>> {
+    if (commonUtils.checkAndSkipDebugging()) {
+      throw new Error(DebugSessionExists);
+    }
+    return await checkAndInstallForTask(this.args.prerequisites ?? [], this.args.portOccupancy);
   }
 }

@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { GraphErrorCodes } from "../aad/errorCodes";
-import { CreateAppError, CreateSecretError } from "../aad/errors";
+import { GraphErrorCodes } from "../../../component/resource/aadApp/errorCodes";
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
@@ -12,6 +11,7 @@ import { Logger } from "./logger";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { CommonHostingError } from "../../../common/azure-hosting/hostingError";
 import { ProgressBarFactory } from "./progressBars";
+import { CreateAppError, CreateSecretError } from "../../../component/resource/aadApp/errors";
 
 export const ErrorType = {
   USER: "User",
@@ -246,6 +246,18 @@ export class PackDirExistenceError extends PluginError {
   }
 }
 
+export class BotRegistrationNotFoundError extends PluginError {
+  constructor(botId: string, innerError?: InnerError) {
+    super(
+      ErrorType.USER,
+      ErrorNames.BOT_REGISTRATION_NOTFOUND_ERROR,
+      Messages.BotRegistrationNotFoundWith(botId),
+      [Messages.CheckOutputLogAndTryToFix],
+      innerError
+    );
+  }
+}
+
 export class MessageEndpointUpdatingError extends PluginError {
   constructor(endpoint: string, innerError?: InnerError) {
     super(
@@ -334,8 +346,8 @@ export function wrapError(
     return res;
   }
   if (e instanceof PluginError || e instanceof CommonHostingError) {
-    const message = e.genMessage() + errorMsg;
-    const displayMessage = e.genDisplayMessage() + errorMsg;
+    const message = e.genMessage();
+    const displayMessage = e.genDisplayMessage();
     const result =
       e instanceof PluginError && e.errorType === ErrorType.SYSTEM
         ? ResultFactory.SystemError(e.name, [message, displayMessage], e.innerError)

@@ -1,6 +1,6 @@
 {
     "name": "templates",
-    "version": "1.0.4",
+    "version": "1.1.0",
     "private": "true",
     "license": "MIT",
     "scripts": {
@@ -10,6 +10,7 @@
     },
     "templates": [
         "bot/js/command-and-response",
+        "bot/js/workflow",
         "bot/js/default",
         "bot/js/m365",
         "bot/js/notification-function-base",
@@ -30,6 +31,7 @@
         "bot/csharp/notification-trigger-timer",
         "bot/csharp/notification-webapi",
         "bot/csharp/command-and-response",
+        "bot/csharp/workflow",
         "function-base/js/default",
         "function-base/ts/default",
         "function-triggers/js/HTTPTrigger",

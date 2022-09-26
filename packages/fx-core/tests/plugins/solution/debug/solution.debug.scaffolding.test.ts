@@ -2,27 +2,21 @@ import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as fs from "fs-extra";
-import {
-  ConfigFolderName,
-  InputConfigsFolderName,
-  Inputs,
-  Platform,
-  v2,
-} from "@microsoft/teamsfx-api";
+import { ConfigFolderName, InputConfigsFolderName, Inputs, Platform } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as uuid from "uuid";
 import { MockedV2Context } from "../util";
-import { LocalEnvManager } from "../../../../src/common/local/localEnvManager";
-import { scaffoldLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
+import {
+  scaffoldLocalDebugSettings,
+  updateNgrokConfigFile,
+} from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
 import {
   AzureSolutionQuestionNames,
   BotScenario,
 } from "../../../../src/plugins/solution/fx-solution/question";
 import { BotCapabilities, PluginBot } from "../../../../src/plugins/resource/bot/resources/strings";
-import { BotHostTypes, isAadManifestEnabled } from "../../../../src/common";
-
-const numAADLocalEnvs = 2;
-const numSimpleAuthLocalEnvs = 10;
+import { isAadManifestEnabled } from "../../../../src/common/tools";
+import { BotHostTypes } from "../../../../src/common/local/constants";
 
 chai.use(chaiAsPromised);
 
@@ -43,6 +37,31 @@ describe("solution.debug.scaffolding", () => {
   );
   const expectedSettingsFile = path.resolve(__dirname, "./data/.vscode/settings.json");
   const expectedTasksFile = path.resolve(__dirname, "./data/.vscode/tasks.json");
+  const expectedNgrokConfigFile = path.resolve(
+    __dirname,
+    `./data/.${ConfigFolderName}/${InputConfigsFolderName}/ngrok.yml`
+  );
+
+  describe("updateNgrokConfigFile", () => {
+    beforeEach(() => {
+      fs.emptyDirSync(path.resolve(__dirname, "./data/"));
+      fs.ensureDirSync(
+        path.resolve(__dirname, `./data/.${ConfigFolderName}/${InputConfigsFolderName}`)
+      );
+    });
+
+    it(`happy path: bot`, async () => {
+      await updateNgrokConfigFile(true, expectedNgrokConfigFile);
+      const hasNgrokConfigFile = await fs.pathExists(expectedNgrokConfigFile);
+      chai.assert.isTrue(hasNgrokConfigFile);
+    });
+
+    it(`happy path: tab`, async () => {
+      await updateNgrokConfigFile(false, expectedNgrokConfigFile);
+      const hasNgrokConfigFile = await fs.pathExists(expectedNgrokConfigFile);
+      chai.assert.isFalse(hasNgrokConfigFile);
+    });
+  });
 
   describe("scaffoldLocalDebugSettings", () => {
     let inputs: Inputs;
@@ -84,6 +103,7 @@ describe("solution.debug.scaffolding", () => {
             azureResources: ["function"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
+          components: [{ name: "teams-tab" }, { name: "teams-api" }, { name: "aad-app" }],
           programmingLanguage: parameter.programmingLanguage,
         };
         const v2Context = new MockedV2Context(projectSetting);
@@ -150,6 +170,7 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
+          components: [{ name: "teams-tab" }, { name: "aad-app" }],
           programmingLanguage: parameter.programmingLanguage,
         };
         const v2Context = new MockedV2Context(projectSetting);
@@ -194,6 +215,7 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
           },
+          components: [{ name: "teams-tab" }, { name: "aad-app" }, { name: "simple-auth" }],
           programmingLanguage: parameter.programmingLanguage,
         };
         const v2Context = new MockedV2Context(projectSetting);
@@ -238,6 +260,7 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab"],
             activeResourcePlugins: [],
           },
+          components: [{ name: "teams-tab" }],
           programmingLanguage: parameter.programmingLanguage,
         };
         const v2Context = new MockedV2Context(projectSetting);
@@ -299,6 +322,7 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Bot"],
           },
+          components: [{ name: "teams-bot" }],
           programmingLanguage: parameter.programmingLanguage,
         };
         const v2Context = new MockedV2Context(projectSetting);
@@ -342,6 +366,7 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Bot"],
           },
+          components: [{ name: "teams-bot", hosting: "azure-web-app" }],
           programmingLanguage: parameter.programmingLanguage,
           pluginSettings: {
             [PluginBot.PLUGIN_NAME]: {
@@ -409,6 +434,7 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Bot"],
           },
+          components: [{ name: "teams-bot", hosting: "azure-function" }],
           programmingLanguage: parameter.programmingLanguage,
           pluginSettings: {
             [PluginBot.PLUGIN_NAME]: {
@@ -484,6 +510,12 @@ describe("solution.debug.scaffolding", () => {
             azureResources: ["function"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
+          components: [
+            { name: "teams-bot" },
+            { name: "teams-tab" },
+            { name: "teams-api" },
+            { name: "aad-app" },
+          ],
           programmingLanguage: parameter.programmingLanguage,
         };
         const v2Context = new MockedV2Context(projectSetting);
@@ -550,6 +582,7 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab", "Bot"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
+          components: [{ name: "teams-bot" }, { name: "teams-tab" }, { name: "aad-app" }],
           programmingLanguage: parameter.programmingLanguage,
         };
         const v2Context = new MockedV2Context(projectSetting);
@@ -594,6 +627,12 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab", "Bot"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
           },
+          components: [
+            { name: "teams-bot" },
+            { name: "teams-tab" },
+            { name: "aad-app" },
+            { name: "simple-auth" },
+          ],
           programmingLanguage: parameter.programmingLanguage,
         };
         const v2Context = new MockedV2Context(projectSetting);
@@ -638,6 +677,7 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab", "Bot"],
             activeResourcePlugins: [],
           },
+          components: [{ name: "teams-bot" }, { name: "teams-tab" }],
           programmingLanguage: parameter.programmingLanguage,
         };
         const v2Context = new MockedV2Context(projectSetting);
@@ -701,6 +741,7 @@ describe("solution.debug.scaffolding", () => {
             capabilities: ["Tab"],
             activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
+          components: [{ name: "teams-tab" }, { name: "aad-app" }],
           programmingLanguage: parameter.programmingLanguage,
         };
         const v2Context = new MockedV2Context(projectSetting);
@@ -763,6 +804,7 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Bot"],
           },
+          components: [{ name: "teams-bot" }],
           programmingLanguage: parameter.programmingLanguage,
         };
         const v2Context = new MockedV2Context(projectSetting);
@@ -806,6 +848,7 @@ describe("solution.debug.scaffolding", () => {
           version: "",
           hostType: "SPFx",
         },
+        components: [{ name: "teams-tab", hosting: "spfx" }],
       };
       const v2Context = new MockedV2Context(projectSetting);
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
@@ -846,6 +889,7 @@ describe("solution.debug.scaffolding", () => {
           azureResources: ["function"],
           activeResourcePlugins: [],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-api" }],
       };
       const v2Context = new MockedV2Context(projectSetting);
       const result = await scaffoldLocalDebugSettings(v2Context, inputs);
@@ -866,6 +910,7 @@ describe("solution.debug.scaffolding", () => {
           name: "",
           version: "",
         },
+        components: [],
       };
 
       const v2Context = new MockedV2Context(projectSetting);
@@ -891,6 +936,12 @@ describe("solution.debug.scaffolding", () => {
           azureResources: ["function"],
           activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
+        components: [
+          { name: "teams-tab" },
+          { name: "teams-bot" },
+          { name: "teams-api" },
+          { name: "aad-app" },
+        ],
         programmingLanguage: "javascript",
       };
       const v2Context = new MockedV2Context(projectSetting);
@@ -924,6 +975,7 @@ describe("solution.debug.scaffolding", () => {
           capabilities: ["Tab", "Bot"],
           activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-bot" }, { name: "aad-app" }],
         programmingLanguage: "javascript",
       };
       const v2Context = new MockedV2Context(projectSetting);
@@ -969,6 +1021,7 @@ describe("solution.debug.scaffolding", () => {
           capabilities: ["Tab", "Bot"],
           activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-bot" }, { name: "aad-app" }],
         programmingLanguage: "javascript",
       };
       const v2Context = new MockedV2Context(projectSetting);
@@ -1033,6 +1086,7 @@ describe("solution.debug.scaffolding", () => {
           capabilities: ["Tab", "Bot"],
           activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
+        components: [{ name: "teams-tab" }, { name: "teams-bot" }, { name: "aad-app" }],
         programmingLanguage: "javascript",
       };
       const v2Context = new MockedV2Context(projectSetting);

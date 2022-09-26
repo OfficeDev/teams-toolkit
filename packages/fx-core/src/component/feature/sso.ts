@@ -22,20 +22,22 @@ import { convertToAlphanumericOnly } from "../../common/utils";
 import { sendErrorTelemetryThenReturnError } from "../../core/telemetry";
 import {
   AddSsoParameters,
-  AzureSolutionQuestionNames,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
+} from "../../plugins/solution/fx-solution/constants";
+import {
+  AzureSolutionQuestionNames,
   TabOptionItem,
-} from "../../plugins";
+} from "../../plugins/solution/fx-solution/question";
 import "../connection/azureWebAppConfig";
 import { ComponentNames, TelemetryConstants } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { AadApp } from "../resource/aadApp/aadApp";
 import { AppManifest } from "../resource/appManifest/appManifest";
-import { manifestUtils } from "../resource/appManifest/utils";
+import { manifestUtils } from "../resource/appManifest/utils/ManifestUtils";
 import "../resource/azureSql";
 import "../resource/identity";
 import { generateConfigBiceps, bicepUtils } from "../utils";
@@ -50,6 +52,9 @@ export class SSO {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
 
+    const isCalledByFeature =
+      inputs.stage === Stage.addFeature &&
+      inputs[AzureSolutionQuestionNames.Features] !== TabOptionItem.id;
     const updates = getUpdateComponents(context.projectSetting, inputs.stage === Stage.create);
     // generate manifest
     const aadApp = Container.get<AadApp>(ComponentNames.AadApp);
@@ -104,10 +109,7 @@ export class SSO {
     }
 
     // generate auth files
-    if (
-      inputs.stage === Stage.addFeature &&
-      inputs[AzureSolutionQuestionNames.Features] !== TabOptionItem.id
-    ) {
+    if (isCalledByFeature) {
       const isExistingTabAppRes = await manifestUtils.isExistingTab(inputs, context);
       if (isExistingTabAppRes.isErr()) return err(isExistingTabAppRes.error);
       const res = await aadApp.generateAuthFiles(
@@ -172,7 +174,7 @@ export class SSO {
     }
 
     // show notification
-    if (inputs.platform == Platform.VSCode) {
+    if (inputs.platform == Platform.VSCode && isCalledByFeature) {
       context.userInteraction
         .showMessage(
           "info",
@@ -189,7 +191,7 @@ export class SSO {
             });
           }
         });
-    } else if (inputs.platform == Platform.CLI) {
+    } else if (inputs.platform == Platform.CLI && isCalledByFeature) {
       await context.userInteraction.showMessage(
         "info",
         getLocalizedString("core.addSso.learnMore", AddSsoParameters.LearnMoreUrl),

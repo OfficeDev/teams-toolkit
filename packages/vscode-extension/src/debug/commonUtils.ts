@@ -4,26 +4,27 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-import * as vscode from "vscode";
 import * as constants from "./constants";
 import { ConfigFolderName, InputConfigsFolderName, UserError } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { getTeamsAppTelemetryInfoByEnv } from "../utils/commonUtils";
 import { core, getSystemInputs, showError } from "../handlers";
 import * as globalVariables from "../globalVariables";
 import {
   LocalEnvManager,
   FolderName,
-  isV3,
-  environmentManager,
-  ProjectSettingsHelper,
+  getProjectComponents as coreGetProjectComponents,
+} from "@microsoft/teamsfx-core/build/common/local";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { getResourceGroupInPortal } from "@microsoft/teamsfx-core/build/common/tools";
+import {
   PluginNames,
   GLOBAL_CONFIG,
-  getResourceGroupInPortal,
-  getProjectComponents as coreGetProjectComponents,
-} from "@microsoft/teamsfx-core";
+} from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
+import { ExtensionErrors, ExtensionSource } from "../error";
+import { localize } from "../utils/localizeUtils";
+import * as util from "util";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -119,74 +120,53 @@ export async function getDebugConfig(
   env?: string
 ): Promise<{ appId: string; env?: string } | undefined> {
   try {
-    if (isV3()) {
-      const inputs = getSystemInputs();
-      const getConfigRes = await core.getProjectConfigV3(inputs);
-      if (getConfigRes.isErr()) throw getConfigRes.error;
-      const config = getConfigRes.value;
-      if (!config)
-        throw new UserError("extension", "GetConfigError", "Failed to get project config");
-      if (isLocalSideloadingConfiguration) {
-        const envInfo = config.envInfos["local"];
-        if (!envInfo)
-          throw new UserError("extension", "EnvConfigNotExist", "Local Env config not exist");
-        const appId = envInfo.state["app-manifest"].teamsAppId as string;
-        return { appId: appId, env: "local" };
-      } else {
-        if (env === undefined) {
-          const inputs = getSystemInputs();
-          inputs.ignoreConfigPersist = true;
-          inputs.ignoreEnvInfo = false;
-          const envRes = await core.getSelectedEnv(inputs);
-          if (envRes.isErr()) {
-            VsCodeLogInstance.warning(`No environment selected. ${envRes.error}`);
-            return undefined;
-          }
-          env = envRes.value;
-        }
-        if (!env)
-          throw new UserError(
-            "extension",
-            "GetSelectedEnvError",
-            "Failed to get selected Env name"
-          );
-        const envInfo = config.envInfos[env];
-        if (!envInfo)
-          throw new UserError("extension", "EnvConfigNotExist", `Env '${env} ' config not exist`);
-        const appId = envInfo.state["app-manifest"].teamsAppId as string;
-        return { appId: appId, env: env };
+    const inputs = getSystemInputs();
+    const getConfigRes = await core.getProjectConfigV3(inputs);
+    if (getConfigRes.isErr()) throw getConfigRes.error;
+    const config = getConfigRes.value;
+    if (!config) throw new UserError("extension", "GetConfigError", "Failed to get project config");
+    if (isLocalSideloadingConfiguration) {
+      const envInfo = config.envInfos["local"];
+      if (!envInfo)
+        throw new UserError("extension", "EnvConfigNotExist", "Local Env config not exist");
+      const appId = envInfo.state["app-manifest"]?.teamsAppId;
+      if (!appId) {
+        throw new UserError(
+          ExtensionSource,
+          ExtensionErrors.TeamsAppIdNotFoundError,
+          util.format(
+            localize("teamstoolkit.handlers.teamsAppIdNotFound"),
+            environmentManager.getLocalEnvName()
+          )
+        );
       }
+      return { appId: appId, env: "local" };
     } else {
-      if (isLocalSideloadingConfiguration) {
-        const appInfo = getTeamsAppTelemetryInfoByEnv(environmentManager.getLocalEnvName());
-        return { appId: appInfo?.appId as string, env: env };
-      } else {
-        // select env
-        if (env === undefined) {
-          const inputs = getSystemInputs();
-          inputs.ignoreConfigPersist = true;
-          inputs.ignoreEnvInfo = false;
-          const envRes = await core.getSelectedEnv(inputs);
-          if (envRes.isErr()) {
-            VsCodeLogInstance.warning(`No environment selected. ${envRes.error}`);
-            return undefined;
-          }
-
-          env = envRes.value;
+      if (env === undefined) {
+        const inputs = getSystemInputs();
+        inputs.ignoreConfigPersist = true;
+        inputs.ignoreEnvInfo = false;
+        const envRes = await core.getSelectedEnv(inputs);
+        if (envRes.isErr()) {
+          VsCodeLogInstance.warning(`No environment selected. ${envRes.error}`);
+          return undefined;
         }
-
-        // load env state
-        const appInfo = getTeamsAppTelemetryInfoByEnv(env!);
-        if (appInfo === undefined) {
-          throw new UserError({
-            name: "MissingTeamsAppId",
-            message: `No teams app found in ${env} environment. Run Provision to ensure teams app is created.`,
-            source: "preview",
-          });
-        }
-
-        return { appId: appInfo.appId as string, env: env };
+        env = envRes.value;
       }
+      if (!env)
+        throw new UserError("extension", "GetSelectedEnvError", "Failed to get selected Env name");
+      const envInfo = config.envInfos[env];
+      if (!envInfo)
+        throw new UserError("extension", "EnvConfigNotExist", `Env '${env} ' config not exist`);
+      const appId = envInfo.state["app-manifest"]?.teamsAppId;
+      if (!appId) {
+        throw new UserError({
+          name: "MissingTeamsAppId",
+          message: `No teams app found in ${env} environment. Run Provision to ensure teams app is created.`,
+          source: "preview",
+        });
+      }
+      return { appId: appId, env: env };
     }
   } catch (error: any) {
     showError(error);
@@ -401,4 +381,17 @@ export function checkAndSkipDebugging(): boolean {
 export async function getProjectComponents(): Promise<string | undefined> {
   const projectPath = globalVariables.workspaceUri!.fsPath;
   return coreGetProjectComponents(projectPath, VsCodeLogInstance, ExtTelemetry.reporter);
+}
+
+export class Step {
+  private currentStep: number;
+  public readonly totalSteps: number;
+  constructor(totalSteps: number) {
+    this.currentStep = 1;
+    this.totalSteps = totalSteps;
+  }
+
+  getPrefix(): string {
+    return `(${this.currentStep++}/${this.totalSteps})`;
+  }
 }

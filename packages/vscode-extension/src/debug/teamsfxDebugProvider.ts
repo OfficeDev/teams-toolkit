@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AppStudioScopes, Correlator, environmentManager } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import * as vscode from "vscode";
 
 import M365TokenInstance from "../commonlib/m365Login";
@@ -83,7 +85,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         return debugConfiguration;
       }
 
-      await localTelemetryReporter.runWithTelemetryExceptionProperties(
+      const result = await localTelemetryReporter.runWithTelemetryExceptionProperties(
         TelemetryEvent.DebugProviderResolveDebugConfiguration,
         { [TelemetryProperty.DebugRemote]: (!isSideloadingConfiguration).toString() },
         async () => {
@@ -136,9 +138,13 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
             url = url.replace(accountHintPlaceholder, accountHint);
           }
 
-          debugConfiguration.url = url;
+          return url;
         }
       );
+      if (result === undefined) {
+        return undefined;
+      }
+      debugConfiguration.url = result;
     } catch (error: any) {
       showError(error);
       terminateAllRunningTeamsfxTasks();

@@ -10,7 +10,7 @@ import * as sinon from "sinon";
 import Preview from "../../../../src/cmds/preview/preview";
 import { expect } from "../../utils";
 import { Task, TaskResult } from "../../../../src/cmds/preview/task";
-import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
+import { ProgrammingLanguage } from "@microsoft/teamsfx-core/build/common/local";
 
 describe("sequentialTasks", () => {
   const sequentialTasks = Preview.sequentialTasks;

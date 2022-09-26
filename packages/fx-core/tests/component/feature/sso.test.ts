@@ -8,6 +8,8 @@ import {
   ProjectSettingsV3,
   TeamsAppManifest,
   UserError,
+  Stage,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
@@ -22,6 +24,8 @@ import Container from "typedi";
 import { ComponentNames } from "../../../src/component/constants";
 import * as os from "os";
 import * as telemetry from "../../../src/core/telemetry";
+import { ManifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { AppManifest } from "../../../src/component/resource/appManifest/appManifest";
 
 describe("SSO can add in project", () => {
   const sandbox = createSandbox();
@@ -171,6 +175,22 @@ describe("SSO feature", () => {
     sandbox.restore();
   });
 
+  it("happy path", async () => {
+    sandbox.stub(AppManifest.prototype, "addCapability").resolves(ok(undefined));
+    sandbox.stub(ManifestUtils.prototype, "isExistingTab").resolves(ok(true));
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      language: "typescript",
+      "app-name": appName,
+      stage: Stage.addFeature,
+    };
+
+    const component = Container.get(ComponentNames.SSO) as any;
+    const ssoRes = await component.add(context, inputs);
+    assert.isTrue(ssoRes.isOk());
+  });
+
   it("add sso with generateManifest failed", async () => {
     const aadComponent = Container.get(ComponentNames.AadApp) as any;
     sandbox.stub(aadComponent, "generateManifest").resolves(err(undefined));
@@ -236,8 +256,7 @@ describe("SSO feature", () => {
   });
 
   it("add sso with appManifest failed", async () => {
-    const appManifestComponent = Container.get(ComponentNames.AppManifest) as any;
-    sandbox.stub(appManifestComponent, "addCapability").resolves(err(undefined));
+    sandbox.stub(AppManifest.prototype, "addCapability").resolves(err(undefined as any));
 
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,

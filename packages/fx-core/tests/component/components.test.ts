@@ -25,23 +25,23 @@ import "../../src/component/feature/sql";
 import "../../src/component/resource/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { deleteFolder, MockTools, randomAppName } from "../core/utils";
-import { AppStudioClient } from "../../src/plugins/resource/appstudio/appStudio";
+import { AppStudioClient } from "../../src/component/resource/appManifest/appStudioClient";
 import * as clientFactory from "../../src/plugins/resource/bot/clientFactory";
 import { AADRegistration } from "../../src/plugins/resource/bot/aadRegistration";
 import { TestHelper } from "../plugins/resource/frontend/helper";
 import arm from "../../src/plugins/solution/fx-solution/arm";
 import { FrontendDeployment } from "../../src/plugins/resource/frontend/ops/deploy";
 import { newEnvInfoV3 } from "../../src/core/environment";
-import { Utils } from "../../src/plugins/resource/spfx/utils/utils";
-import { YoChecker } from "../../src/plugins/resource/spfx/depsChecker/yoChecker";
-import { GeneratorChecker } from "../../src/plugins/resource/spfx/depsChecker/generatorChecker";
+import { Utils } from "../../src/component/resource/spfx/utils/utils";
+import { YoChecker } from "../../src/component/resource/spfx/depsChecker/yoChecker";
+import { GeneratorChecker } from "../../src/component/resource/spfx/depsChecker/generatorChecker";
 import { cpUtils } from "../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import * as uuid from "uuid";
 import * as aadManifest from "../../src/core/generateAadManifestTemplate";
 import {
   SPFXQuestionNames,
   versionCheckQuestion,
-} from "../../src/plugins/resource/spfx/utils/questions";
+} from "../../src/component/resource/spfx/utils/questions";
 import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
 import { ComponentNames } from "../../src/component/constants";
 import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";
@@ -49,12 +49,11 @@ import { TeamsfxCore } from "../../src/component/core";
 import { Container } from "typedi";
 import { AzureStorageResource } from "../../src/component/resource/azureStorage";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import { ciOption, githubOption, questionNames } from "../../src/plugins/resource/cicd/questions";
+import { ciOption, githubOption, questionNames } from "../../src/component/feature/cicd/questions";
 import * as armFunctions from "../../src/plugins/solution/fx-solution/arm";
-import { apiConnectorImpl } from "../../src/component/feature/apiConnector";
+import { apiConnectorImpl } from "../../src/component/feature/apiconnector/apiConnector";
 import * as backup from "../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
-import { Constants } from "../../src/plugins/resource/aad/constants";
 import { CoreQuestionNames } from "../../src/core/question";
 import * as questionV3 from "../../src/component/questionV3";
 import { provisionUtils } from "../../src/component/provisionUtils";
@@ -65,6 +64,8 @@ import {
   AzureSolutionQuestionNames,
 } from "../../src/plugins/solution/fx-solution/question";
 import { AddSsoParameters } from "../../src/plugins/solution/fx-solution/constants";
+import { BuiltInFeaturePluginNames } from "../../src/plugins/solution/fx-solution/v3/constants";
+import { Constants } from "../../src/component/resource/aadApp/constants";
 describe("Core component test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -73,16 +74,9 @@ describe("Core component test for v3", () => {
   const projectPath = path.join(os.homedir(), "TeamsApps", appName);
   const context = createContextV3();
   const fx = Container.get<TeamsfxCore>("fx");
-  let mockedEnvRestore: RestoreFn;
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
-  });
-
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
-
   after(async () => {
     deleteFolder(projectPath);
   });
@@ -279,7 +273,7 @@ describe("Core component test for v3", () => {
     if (res.isErr()) {
       console.log(res.error);
     }
-    assert.isTrue(res.isOk());
+    assert.isTrue(res.isErr());
   });
 
   describe("provision", async () => {
@@ -1065,9 +1059,8 @@ describe("Core component test for v3", () => {
 
   it("fx.deploy.cli.withAAD", async () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    mockedEnvRestore = mockedEnv({
+    const mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
-      TEAMSFX_APIV3: "true",
       TEAMSFX_AAD_MANIFEST: "true",
     });
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
@@ -1167,21 +1160,34 @@ describe("Core component test for v3", () => {
     }
     assert.isTrue(provisionRes.isOk());
 
-    inputs[Constants.INCLUDE_AAD_MANIFEST] = "yes";
-    inputs.platform = Platform.CLI;
-    inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [];
-    const deployRes = await fx.deploy(context as ResourceContextV3, inputs);
-    if (deployRes.isErr()) {
-      console.log(deployRes.error);
+    {
+      inputs[Constants.INCLUDE_AAD_MANIFEST] = "yes";
+      inputs.platform = Platform.CLI;
+      inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [BuiltInFeaturePluginNames.aad];
+      const deployRes = await fx.deploy(context as ResourceContextV3, inputs);
+      if (deployRes.isErr()) {
+        console.log(deployRes.error);
+      }
+      assert.isTrue(deployRes.isOk());
     }
-    assert.isTrue(deployRes.isOk());
+    {
+      inputs[Constants.INCLUDE_AAD_MANIFEST] = "no";
+      inputs.platform = Platform.CLI;
+      inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [BuiltInFeaturePluginNames.aad];
+      const deployRes = await fx.deploy(context as ResourceContextV3, inputs);
+      if (deployRes.isErr()) {
+        console.log(deployRes.error);
+      }
+      assert.isTrue(deployRes.isErr());
+    }
+
+    mockedEnvRestore();
   });
 
   it("fx.deployAadFromVscode", async () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    mockedEnvRestore = mockedEnv({
+    const mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
-      TEAMSFX_APIV3: "true",
       TEAMSFX_AAD_MANIFEST: "true",
     });
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
@@ -1286,6 +1292,7 @@ describe("Core component test for v3", () => {
       console.log(deployRes.error);
     }
     assert.isTrue(deployRes.isOk());
+    mockedEnvRestore();
   });
   it("getParameterJsonV3", async () => {
     const str = `{

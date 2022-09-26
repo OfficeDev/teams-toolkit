@@ -4,12 +4,12 @@ import {
   ProjectSettings,
   ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
+import { pathExistsSync } from "fs-extra";
 import { cloneDeep } from "lodash";
+import { join } from "path";
 import { isVSProject } from "../common/projectSettingsHelper";
 import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
-import { isV3 } from "../core/globalVars";
 import { MessageExtensionNewUIItem } from "../plugins/solution/fx-solution/question";
-import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { ComponentNames } from "./constants";
 import { ensureComponentConnections } from "./utils";
 import { getComponent } from "./workflow";
@@ -106,17 +106,13 @@ export const EnvStateMigrationComponentNames = [
   ["fx-resource-simple-auth", ComponentNames.SimpleAuth],
 ];
 
-export const APIM_STATE_KEY = isV3() ? ComponentNames.APIM : BuiltInFeaturePluginNames.apim;
-export const API_STATE_KEY = isV3() ? ComponentNames.TeamsApi : BuiltInFeaturePluginNames.function;
-export const AAD_STATE_KEY = isV3() ? ComponentNames.AadApp : BuiltInFeaturePluginNames.aad;
-export const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
-export const BOT_STATE_KEY = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
-export const SIMPLE_AUTH_STATE_KEY = isV3()
-  ? ComponentNames.SimpleAuth
-  : BuiltInFeaturePluginNames.simpleAuth;
-export const APP_MANIFEST_KEY = isV3()
-  ? ComponentNames.AppManifest
-  : BuiltInFeaturePluginNames.appStudio;
+export const APIM_STATE_KEY = ComponentNames.APIM;
+export const API_STATE_KEY = ComponentNames.TeamsApi;
+export const AAD_STATE_KEY = ComponentNames.AadApp;
+export const TAB_STATE_KEY = ComponentNames.TeamsTab;
+export const BOT_STATE_KEY = ComponentNames.TeamsBot;
+export const SIMPLE_AUTH_STATE_KEY = ComponentNames.SimpleAuth;
+export const APP_MANIFEST_KEY = ComponentNames.AppManifest;
 
 export function pluginName2ComponentName(pluginName: string): string {
   const map = new Map<string, string>();
@@ -153,6 +149,24 @@ export function convertEnvStateV3ToV2(envStateV3: Json): EnvStateV2 {
 }
 
 /**
+ * convert envState Map from V3 key to V2 key
+ */
+export function convertEnvStateMapV3ToV2(envStateV3: Map<string, any>): Map<string, any> {
+  const envStateV2 = new Map<string, any>();
+  const component2plugin = new Map<string, string>();
+  EnvStateMigrationComponentNames.forEach((e) => {
+    component2plugin.set(e[1], e[0]);
+  });
+  for (const componentName of envStateV3.keys()) {
+    const pluginName = component2plugin.get(componentName);
+    if (pluginName) {
+      envStateV2.set(pluginName, envStateV3.get(componentName));
+    }
+  }
+  return envStateV2;
+}
+
+/**
  * convert envState from V2 to V3
  */
 export function convertEnvStateV2ToV3(envStateV2: Json): Json {
@@ -170,7 +184,10 @@ export function convertEnvStateV2ToV3(envStateV2: Json): Json {
   return envStateV3;
 }
 
-export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): ProjectSettingsV3 {
+export function convertProjectSettingsV2ToV3(
+  settingsV2: ProjectSettings,
+  projectPath: string
+): ProjectSettingsV3 {
   const settingsV3 = cloneDeep(settingsV2) as ProjectSettingsV3;
   const solutionSettings = settingsV2.solutionSettings as AzureSolutionSettings;
   if (solutionSettings && (!settingsV3.components || settingsV3.components.length === 0)) {
@@ -181,10 +198,18 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
       settingsV3.components.push({
         name: ComponentNames.AadApp,
         provision: true,
+        deploy: true,
       });
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-frontend-hosting")) {
       const hostingComponent = isVS ? ComponentNames.AzureWebApp : ComponentNames.AzureStorage;
+      const existsAuthStartFile = pathExistsSync(
+        join(projectPath, "tabs", "public", "auth-start.html")
+      );
+      const tabSSO =
+        solutionSettings.capabilities.includes("TabSSO") ||
+        solutionSettings.capabilities.includes("SSO") ||
+        existsAuthStartFile;
       if (isVS) {
         const teamsTab: any = {
           hosting: hostingComponent,
@@ -193,7 +218,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           provision: false,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
-          sso: solutionSettings.capabilities.includes("TabSSO"),
+          sso: tabSSO,
           deploy: true,
         };
         settingsV3.components.push(teamsTab);
@@ -204,7 +229,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
           build: true,
           provision: true,
           folder: "tabs",
-          sso: solutionSettings.capabilities.includes("TabSSO"),
+          sso: tabSSO,
           deploy: true,
         };
         settingsV3.components.push(teamsTab);
@@ -312,6 +337,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
       settingsV3.components.push({
         name: ComponentNames.APIM,
         provision: true,
+        deploy: true,
       });
     }
     if (solutionSettings.activeResourcePlugins.includes("fx-resource-simple-auth")) {
@@ -328,6 +354,7 @@ export function convertProjectSettingsV2ToV3(settingsV2: ProjectSettings): Proje
         build: true,
         folder: "api",
         deploy: true,
+        artifactFolder: "api",
       });
       settingsV3.components.push({
         name: ComponentNames.Function,
@@ -360,13 +387,14 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-api-connector");
     }
     const aad = getComponent(settingsV3, ComponentNames.AadApp);
+    const teamsTab = getComponent(settingsV3, ComponentNames.TeamsTab);
+    const teamsBot = getComponent(settingsV3, ComponentNames.TeamsBot);
     if (aad) {
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-aad-app-for-teams");
-      if (!settingsV2.solutionSettings.capabilities.includes("TabSSO")) {
+      if (!teamsTab && !teamsBot && !settingsV2.solutionSettings.capabilities.includes("TabSSO")) {
         settingsV2.solutionSettings.capabilities.push("TabSSO");
       }
     }
-    const teamsTab = getComponent(settingsV3, ComponentNames.TeamsTab);
     if (teamsTab) {
       settingsV2.solutionSettings.capabilities.push("Tab");
       if (teamsTab.sso) {
@@ -380,12 +408,11 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
         settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-frontend-hosting");
       }
     }
-    const teamsBot = getComponent(settingsV3, ComponentNames.TeamsBot);
     if (teamsBot) {
       const botCapabilities = teamsBot?.capabilities;
       if (
+        (botCapabilities && botCapabilities.length === 0) ||
         botCapabilities?.includes("bot") ||
-        botCapabilities?.includes("notification") ||
         botCapabilities?.includes("command-response")
       ) {
         settingsV2.solutionSettings.capabilities.push("Bot");

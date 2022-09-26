@@ -2,6 +2,7 @@
 
 1. [Node.js and NPM compatiblity issues](#compatibility)
 2. [Failure to install prerequisites](#prerequisites)
+3. [Failure to add additional SPFx tab](#addfeature)
 
 
 ## 1. Node.js and NPM compatiblity issues<a name="compatibility"></a>
@@ -10,9 +11,10 @@ The following table lists SharePoint Framework and compatible versions of common
 |--------------|-----------|------------|-----------|------------|
 | 1.14 | LTS v12, LTS v14 | v5, v6 | v3.9 | v16.13.1 |
 | 1.15 | LTS v14, LTS v16 | v6, v7, v8 | v4.5 | v16.13.1 |
+| 1.16-beta.1 | LTS v16 | v7, v8 | v4.5 | v16.13.1 |
 
 ### Error message
-Teams Toolkit automatically checks Node.js and NPM versions for the latest SharePoint Framework it supports (SPFx v1.15.0 as of writing). You will encounter the following errors during scaffolding if Teams Toolkit detects unsupported Node.js or NPM versions:
+Teams Toolkit automatically checks Node.js and NPM versions for the latest SharePoint Framework it supports (SPFx v1.15.0 for formal release and SPFx v1.16.0-beta.1 for pre-release as of writing). You will encounter the following errors during scaffolding if Teams Toolkit detects unsupported Node.js or NPM versions:
 
 #### SPFx.NodeVersionNotSupported
 
@@ -29,12 +31,16 @@ Teams Toolkit also checks if NPM is installed.
 
 ### Remediation
 
-Check your npm and Node.js version. [Supported Node.js versions for SPFx v1.15.0](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs) are:
+Check your npm and Node.js version. The SharePoint Framework [v1.15.0](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs) and v1.16-beta.1 is supported on the following Node.js versions respectively:
 
 - Node.js v14.15.0+ (_Fermium_)
 - Node.js v16.15.0+ (Gallium)
 
-**Corresponding npm version is v6, v7, v8**. Please make sure you have the right version installed for both npm and Node.js.
+and 
+
+- Node.js v16.15.0+ (Gallium)
+
+**Corresponding npm version is v6, v7, v8 for SPFx v1.15 and v7, v8 for SPFx v1.16-beta.1**. Please make sure you have the right version installed for both npm and Node.js.
 
 ## 2. Failure to install prerequisites<a name="prerequisites"></a>
 
@@ -112,3 +118,40 @@ Install the SPFx generator version that Teams Toolkit supports, say `1.14`:
 ```sh
 npm install @microsoft/generator-sharepoint@1.14 -g
 ```
+
+## 3. Failure to add additional SPFx tab<a name="addfeature"></a>
+
+Multi-tab SPFx project is supported in Teams Toolkit. To add an additional SPFx tab, you can try "Add features" and select "SPFx tab". Behind the scenes, Yeoman Generator is executed according to the configuration file (.yo-rc.json) in the current solution.
+
+If .yo-rc.json file doesn't exist in your SPFx project, adding SPFx tab will fail with the following error:
+
+#### SPFx.NoConfigurationFile
+![image](../images/fx-core/spfx/spfx-no-configuration-file.png)
+
+### Remediation
+
+Please follow the instructions here to continue:
+
+- If your project is created by Teams Toolkit lower than v3.7.0, please create SPFx project with latest Teams Toolkit and migrate your codes.
+- If your project is downloaded from Todo-list-SPFx sample app, please add the following configuration file to `SPFx` subfolder in your project:
+
+```
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "version": ${SPFx_versioin},
+    "libraryName": "todo-list-sp-fx",
+    "libraryId": "c314487b-f51c-474d-823e-a2c3ec82b1ff",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "todo-list-sp-fx",
+    "solutionShortDescription": "todo-list-sp-fx description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart",
+    "template": "react"
+  }
+}
+```
+Note: Replace `SPFx_version` with the SPFx version used in your project.

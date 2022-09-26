@@ -2,11 +2,17 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { cloneDeep } from "lodash";
+import * as path from "path";
+import * as util from "util";
 import { v4 as uuidv4 } from "uuid";
 
 import {
+  AppPackageFolderName,
   assembleError,
+  BuildFolderName,
   ConfigMap,
+  CryptoProvider,
   EnvConfig,
   EnvInfo,
   err,
@@ -20,23 +26,42 @@ import {
   TelemetryReporter,
   UserInteraction,
   v3,
-  Void,
 } from "@microsoft/teamsfx-api";
 
 import { ProjectSettingsHelper } from "../../common/local/projectSettingsHelper";
+import { hasSQL } from "../../common/projectSettingsHelperV3";
 import { TelemetryEvent } from "../../common/telemetry";
-import { objectToMap } from "../../common/tools";
+import { getAllowedAppIds, objectToMap } from "../../common/tools";
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
-import { AadAppClient } from "../../plugins/resource/aad/aadAppClient";
-import { AadAppManifestManager } from "../../plugins/resource/aad/aadAppManifestManager";
-import { Constants } from "../../plugins/resource/aad/constants";
-import { ProvisionConfig } from "../../plugins/resource/aad/utils/configs";
-import { TokenProvider } from "../../plugins/resource/aad/utils/tokenProvider";
 import { ComponentNames } from "../constants";
 import { convertEnvStateV3ToV2 } from "../migrate";
-import { errorSource, InvalidSSODebugArgsError } from "./error";
+import { DebugAction } from "./common";
+import { errorSource, DebugArgumentEmptyError, InvalidExistingAADArgsError } from "./error";
+import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
+import { AadAppClient } from "../resource/aadApp/aadAppClient";
+import { TokenProvider } from "../resource/aadApp/utils/tokenProvider";
+import { ProvisionConfig } from "../resource/aadApp/utils/configs";
+import { AadAppManifestManager } from "../resource/aadApp/aadAppManifestManager";
+import { Constants } from "../resource/aadApp/constants";
+
+const ssoDebugMessages = {
+  registeringAAD: "Registering an AAD app for SSO ...",
+  configuringAAD: "Configuring AAD app for SSO ...",
+  buildingAndSavingAADManifest: "Building and saving AAD manifest ...",
+  savingStates: "Saving the states of SSO ...",
+  settingEnvs: "Saving the environment variables for SSO ...",
+  AADRegistered: "AAD app is registered (%s)",
+  useExistingAAD: "Skip registering AAD app but use the existing AAD app from args: %s",
+  AADAlreadyRegistered: "Skip registering AAD app as it has already been registered before: %s",
+  AADConfigured: "AAD app is configured",
+  AADManifestSaved: "AAD app manifest is saved in %s",
+  statesSaved: "The states for SSO are saved in %s",
+  tabEnvsSet: "The SSO environment variables of tab are saved in %s",
+  botEnvsSet: "The SSO environment variables of bot are saved in %s",
+  backendEnvsSet: "The SSO environment variables of backend are saved in %s",
+};
 
 export interface SSODebugArgs {
   objectId?: string;
@@ -52,6 +77,10 @@ export class SSODebugHandler {
   private readonly logger?: LogProvider;
   private readonly telemetry?: TelemetryReporter;
   private readonly ui?: UserInteraction;
+
+  private projectSettingsV3?: ProjectSettingsV3;
+  private cryptoProvider?: CryptoProvider;
+  private envInfoV3?: v3.EnvInfoV3;
 
   constructor(
     projectPath: string,
@@ -69,12 +98,62 @@ export class SSODebugHandler {
     this.ui = ui;
   }
 
-  // TODO: output message
-  public async setUp(): Promise<Result<Void, FxError>> {
+  public getActions(): DebugAction[] {
+    const actions: DebugAction[] = [];
+    actions.push({
+      startMessage: ssoDebugMessages.registeringAAD,
+      run: this.registerAAD.bind(this),
+    });
+    actions.push({
+      startMessage: ssoDebugMessages.configuringAAD,
+      run: this.configureAAD.bind(this),
+    });
+    actions.push({
+      startMessage: ssoDebugMessages.buildingAndSavingAADManifest,
+      run: this.buildAndSaveAADManifest.bind(this),
+    });
+    actions.push({
+      startMessage: ssoDebugMessages.savingStates,
+      run: this.saveStates.bind(this),
+    });
+    actions.push({
+      startMessage: ssoDebugMessages.settingEnvs,
+      run: this.setEnvs.bind(this),
+    });
+    return actions;
+  }
+
+  private async validateArgs(): Promise<Result<string[], FxError>> {
+    if (this.args.objectId !== undefined && this.args.objectId.trim().length === 0) {
+      return err(DebugArgumentEmptyError("objectId"));
+    }
+    if (this.args.clientId !== undefined && this.args.clientId.trim().length === 0) {
+      return err(DebugArgumentEmptyError("clientId"));
+    }
+    if (this.args.clientSecret !== undefined && this.args.clientSecret.trim().length === 0) {
+      return err(DebugArgumentEmptyError("clientSecret"));
+    }
+    if (
+      this.args.accessAsUserScopeId !== undefined &&
+      this.args.accessAsUserScopeId.trim().length === 0
+    ) {
+      return err(DebugArgumentEmptyError("accessAsUserScopeId"));
+    }
+
+    const existing = this.args.objectId || this.args.clientId || this.args.clientSecret;
+    const missing = !this.args.objectId || !this.args.clientId || !this.args.clientSecret;
+    if (existing && missing) {
+      return err(InvalidExistingAADArgsError());
+    }
+
+    return ok([]);
+  }
+
+  private async registerAAD(): Promise<Result<string[], FxError>> {
     try {
-      const checkArgsResult = await this.checkArgs();
-      if (checkArgsResult.isErr()) {
-        return err(checkArgsResult.error);
+      const result = await this.validateArgs();
+      if (result.isErr()) {
+        return err(result.error);
       }
 
       const projectSettingsResult = await loadProjectSettingsByProjectPath(this.projectPath, true);
@@ -82,12 +161,12 @@ export class SSODebugHandler {
         return err(projectSettingsResult.error);
       }
 
-      const projectSettingsV3: ProjectSettingsV3 = projectSettingsResult.value as ProjectSettingsV3;
-      const cryptoProvider = new LocalCrypto(projectSettingsV3.projectId);
+      this.projectSettingsV3 = projectSettingsResult.value as ProjectSettingsV3;
+      this.cryptoProvider = new LocalCrypto(this.projectSettingsV3.projectId);
 
       const envInfoResult = await environmentManager.loadEnvInfo(
         this.projectPath,
-        cryptoProvider,
+        this.cryptoProvider,
         environmentManager.getLocalEnvName(),
         true
       );
@@ -95,126 +174,260 @@ export class SSODebugHandler {
         return err(envInfoResult.error);
       }
 
-      const envInfoV3: v3.EnvInfoV3 = envInfoResult.value;
-      envInfoV3.state[ComponentNames.AadApp] = envInfoV3.state[ComponentNames.AadApp] || {};
+      this.envInfoV3 = envInfoResult.value;
+      this.envInfoV3.state[ComponentNames.AadApp] =
+        this.envInfoV3.state[ComponentNames.AadApp] || {};
 
-      // set objectId, clientId, clientSecret, oauth2PermissionScopeId from args to state
-      if (checkArgsResult.value) {
-        envInfoV3.state[ComponentNames.AadApp].objectId = this.args.objectId;
-        envInfoV3.state[ComponentNames.AadApp].clientId = this.args.clientId;
-        envInfoV3.state[ComponentNames.AadApp].clientSecret = this.args.clientSecret;
-        envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId =
+      // use existing AAD
+      if (this.args.clientId) {
+        // set objectId, clientId, clientSecret, oauth2PermissionScopeId from args to state
+        this.envInfoV3.state[ComponentNames.AadApp].objectId = this.args.objectId;
+        this.envInfoV3.state[ComponentNames.AadApp].clientId = this.args.clientId;
+        this.envInfoV3.state[ComponentNames.AadApp].clientSecret = this.args.clientSecret;
+        this.envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId =
           this.args.accessAsUserScopeId || uuidv4();
+
+        return ok([util.format(ssoDebugMessages.useExistingAAD, this.args.clientId)]);
       }
 
-      TokenProvider.init({
+      // set oauth2PermissionScopeId to state
+      this.envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId =
+        this.envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId || uuidv4();
+
+      // AAD already registered
+      if (
+        this.envInfoV3.state[ComponentNames.AadApp].objectId &&
+        this.envInfoV3.state[ComponentNames.AadApp].clientId
+      ) {
+        if (!this.envInfoV3.state[ComponentNames.AadApp].clientSecret) {
+          await TokenProvider.init({
+            m365: this.m365TokenProvider,
+          });
+
+          const config = new ProvisionConfig(true, false);
+          config.objectId = this.envInfoV3.state[ComponentNames.AadApp].objectId;
+          config.clientId = this.envInfoV3.state[ComponentNames.AadApp].clientId;
+          await AadAppClient.createAadAppSecret(TelemetryEvent.DebugSetUpSSO, config);
+
+          // set clientSecret to state
+          this.envInfoV3.state[ComponentNames.AadApp].clientSecret = config.password;
+        }
+
+        return ok([
+          util.format(
+            ssoDebugMessages.AADAlreadyRegistered,
+            this.envInfoV3.state[ComponentNames.AadApp].clientId
+          ),
+        ]);
+      }
+
+      await TokenProvider.init({
         m365: this.m365TokenProvider,
       });
 
-      // set oauth2PermissionScopeId to state
-      envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId =
-        envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId || uuidv4();
-
-      // not using exsting AAD app and not yet created
-      if (!envInfoV3.state[ComponentNames.AadApp].objectId) {
-        const context = this.constructPluginContext(envInfoV3, cryptoProvider);
-        const manifest = await AadAppManifestManager.loadAadManifest(context);
-
-        const config = new ProvisionConfig(true, false);
-        await AadAppClient.createAadAppUsingManifest(
-          TelemetryEvent.DebugSetUpSSO,
-          manifest,
-          config
-        );
-        await AadAppClient.createAadAppSecret(TelemetryEvent.DebugSetUpSSO, config);
-
-        // set objectId, clientId, clientSecret to state
-        envInfoV3.state[ComponentNames.AadApp].objectId = config.objectId;
-        envInfoV3.state[ComponentNames.AadApp].clientId = config.clientId;
-        envInfoV3.state[ComponentNames.AadApp].clientSecret = config.password;
-      }
-
-      // set applicationIdUris to state
-      let applicationIdUri = "api://";
-      if (ProjectSettingsHelper.includeFrontend(projectSettingsV3)) {
-        applicationIdUri += "localhost/";
-        if (!ProjectSettingsHelper.includeBot(projectSettingsV3)) {
-          applicationIdUri += envInfoV3.state[ComponentNames.AadApp].clientId;
-        }
-      }
-      if (ProjectSettingsHelper.includeBot(projectSettingsV3)) {
-        applicationIdUri += `botid-${envInfoV3.state[ComponentNames.TeamsBot].botId}`;
-      }
-      envInfoV3.state[ComponentNames.AadApp].applicationIdUris = applicationIdUri;
-
-      // set frontendEndpoint to state
-      if (ProjectSettingsHelper.includeFrontend(projectSettingsV3)) {
-        envInfoV3.state[ComponentNames.AadApp].frontendEndpoint = "https://localhost";
-      }
-
-      // set botId, botEndpoint to state
-      if (ProjectSettingsHelper.includeBot(projectSettingsV3)) {
-        envInfoV3.state[ComponentNames.AadApp].botId =
-          envInfoV3.state[ComponentNames.TeamsBot].botId;
-        envInfoV3.state[ComponentNames.AadApp].botEndpoint =
-          envInfoV3.state[ComponentNames.TeamsBot].siteEndpoint;
-      }
-
-      // set tenantId, oauthHost, oauthAuthority to state
-      envInfoV3.state[ComponentNames.AadApp].tenantId = TokenProvider.tenantId;
-      envInfoV3.state[ComponentNames.AadApp].oauthHost = Constants.oauthAuthorityPrefix;
-      envInfoV3.state[
-        ComponentNames.AadApp
-      ].oauthAuthority = `${Constants.oauthAuthorityPrefix}/${TokenProvider.tenantId}`;
-
-      const context = this.constructPluginContext(envInfoV3, cryptoProvider);
+      const context = this.constructPluginContext(this.envInfoV3, this.cryptoProvider);
       const manifest = await AadAppManifestManager.loadAadManifest(context);
-      await AadAppClient.updateAadAppUsingManifest(TelemetryEvent.DebugSetUpSSO, manifest, false);
 
-      await environmentManager.writeEnvState(
-        envInfoV3.state,
-        this.projectPath,
-        cryptoProvider,
-        environmentManager.getLocalEnvName(),
-        true
-      );
+      const config = new ProvisionConfig(true, false);
+      await AadAppClient.createAadAppUsingManifest(TelemetryEvent.DebugSetUpSSO, manifest, config);
+      await AadAppClient.createAadAppSecret(TelemetryEvent.DebugSetUpSSO, config);
 
-      await AadAppManifestManager.writeManifestFileToBuildFolder(manifest, context);
+      // set objectId, clientId, clientSecret to state
+      this.envInfoV3.state[ComponentNames.AadApp].objectId = config.objectId;
+      this.envInfoV3.state[ComponentNames.AadApp].clientId = config.clientId;
+      this.envInfoV3.state[ComponentNames.AadApp].clientSecret = config.password;
 
-      const result = await this.setEnvs(projectSettingsV3, envInfoV3);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-
-      return ok(Void);
-    } catch (error: any) {
+      return ok([util.format(ssoDebugMessages.AADRegistered, config.objectId)]);
+    } catch (error: unknown) {
       return err(assembleError(error, errorSource));
     }
   }
 
-  private async setEnvs(
-    projectSettingsV3: ProjectSettingsV3,
-    envInfoV3: v3.EnvInfoV3
-  ): Promise<Result<Void, FxError>> {
-    // TODO: set TeamsFx SDK envs
-    return ok(Void);
+  private async configureAAD(): Promise<Result<string[], FxError>> {
+    try {
+      // set applicationIdUris to state
+      let applicationIdUri = "api://";
+      if (ProjectSettingsHelper.includeFrontend(this.projectSettingsV3)) {
+        applicationIdUri += "localhost/";
+        if (!ProjectSettingsHelper.includeBot(this.projectSettingsV3)) {
+          applicationIdUri += this.envInfoV3!.state[ComponentNames.AadApp].clientId;
+        }
+      }
+      if (ProjectSettingsHelper.includeBot(this.projectSettingsV3)) {
+        applicationIdUri += `botid-${this.envInfoV3!.state[ComponentNames.TeamsBot].botId}`;
+      }
+      this.envInfoV3!.state[ComponentNames.AadApp].applicationIdUris = applicationIdUri;
+
+      // set frontendEndpoint to state
+      if (ProjectSettingsHelper.includeFrontend(this.projectSettingsV3)) {
+        this.envInfoV3!.state[ComponentNames.AadApp].frontendEndpoint = "https://localhost";
+      }
+
+      // set botId, botEndpoint to state
+      if (ProjectSettingsHelper.includeBot(this.projectSettingsV3)) {
+        this.envInfoV3!.state[ComponentNames.AadApp].botId =
+          this.envInfoV3!.state[ComponentNames.TeamsBot].botId;
+        this.envInfoV3!.state[ComponentNames.AadApp].botEndpoint =
+          this.envInfoV3!.state[ComponentNames.TeamsBot].siteEndpoint;
+      }
+
+      await TokenProvider.init({
+        m365: this.m365TokenProvider,
+      });
+
+      // set tenantId, oauthHost, oauthAuthority to state
+      this.envInfoV3!.state[ComponentNames.AadApp].tenantId = TokenProvider.tenantId;
+      this.envInfoV3!.state[ComponentNames.AadApp].oauthHost = Constants.oauthAuthorityPrefix;
+      this.envInfoV3!.state[
+        ComponentNames.AadApp
+      ].oauthAuthority = `${Constants.oauthAuthorityPrefix}/${TokenProvider.tenantId}`;
+
+      const context = this.constructPluginContext(this.envInfoV3!, this.cryptoProvider!);
+      const manifest = await AadAppManifestManager.loadAadManifest(context);
+      await AadAppClient.updateAadAppUsingManifest(TelemetryEvent.DebugSetUpSSO, manifest, false);
+
+      return ok([ssoDebugMessages.AADConfigured]);
+    } catch (error: unknown) {
+      return err(assembleError(error, errorSource));
+    }
   }
 
-  // return true if using existing AAD app
-  private async checkArgs(): Promise<Result<boolean, FxError>> {
-    // TODO: allow clientSecret to be set in other places (like env) instead of tasks.json
-    if (this.args.objectId && this.args.clientId && this.args.clientSecret) {
-      return ok(true);
-    } else if (this.args.objectId || this.args.clientId || this.args.clientSecret) {
-      return err(InvalidSSODebugArgsError());
-    } else {
-      return ok(false);
+  private async buildAndSaveAADManifest(): Promise<Result<string[], FxError>> {
+    try {
+      const context = this.constructPluginContext(this.envInfoV3!, this.cryptoProvider!);
+      const manifest = await AadAppManifestManager.loadAadManifest(context);
+      await AadAppManifestManager.writeManifestFileToBuildFolder(manifest, context);
+
+      const aadManifestPath = `${context.root}/${BuildFolderName}/${AppPackageFolderName}/aad.${context.envInfo.envName}.json`;
+      return ok([util.format(ssoDebugMessages.AADManifestSaved, path.normalize(aadManifestPath))]);
+    } catch (error: unknown) {
+      return err(assembleError(error, errorSource));
+    }
+  }
+
+  private async saveStates(): Promise<Result<string[], FxError>> {
+    try {
+      const statePath = await environmentManager.writeEnvState(
+        cloneDeep(this.envInfoV3!.state),
+        this.projectPath,
+        this.cryptoProvider!,
+        environmentManager.getLocalEnvName(),
+        true
+      );
+      if (statePath.isErr()) {
+        return err(statePath.error);
+      }
+
+      return ok([util.format(ssoDebugMessages.statesSaved, path.normalize(statePath.value))]);
+    } catch (error: unknown) {
+      return err(assembleError(error, errorSource));
+    }
+  }
+
+  private async setEnvs(): Promise<Result<string[], FxError>> {
+    try {
+      const messages: string[] = [];
+
+      const localEnvProvider = new LocalEnvProvider(this.projectPath);
+      if (ProjectSettingsHelper.includeFrontend(this.projectSettingsV3)) {
+        const frontendEnvs = await localEnvProvider.loadFrontendLocalEnvs();
+
+        frontendEnvs.teamsfx[LocalEnvKeys.frontend.teamsfx.ClientId] =
+          this.envInfoV3!.state[ComponentNames.AadApp].clientId;
+        frontendEnvs.teamsfx[LocalEnvKeys.frontend.teamsfx.LoginUrl] = `${
+          this.envInfoV3!.state[ComponentNames.TeamsTab].endpoint
+        }/auth-start.html`;
+
+        if (ProjectSettingsHelper.includeBackend(this.projectSettingsV3)) {
+          frontendEnvs.teamsfx[LocalEnvKeys.frontend.teamsfx.FuncEndpoint] =
+            frontendEnvs.teamsfx[LocalEnvKeys.frontend.teamsfx.FuncEndpoint] ||
+            "http://localhost:7071";
+          frontendEnvs.teamsfx[LocalEnvKeys.frontend.teamsfx.FuncName] = this.projectSettingsV3!
+            .defaultFunctionName as string;
+        }
+
+        const envPath = await localEnvProvider.saveFrontendLocalEnvs(frontendEnvs);
+        messages.push(util.format(ssoDebugMessages.tabEnvsSet, path.normalize(envPath)));
+      }
+      if (ProjectSettingsHelper.includeBackend(this.projectSettingsV3)) {
+        const backendEnvs = await localEnvProvider.loadBackendLocalEnvs();
+
+        backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.ClientId] =
+          this.envInfoV3!.state[ComponentNames.AadApp].clientId;
+        backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.ClientSecret] =
+          this.envInfoV3!.state[ComponentNames.AadApp].clientSecret;
+        backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.TenantId] =
+          this.envInfoV3!.state[ComponentNames.AadApp].tenantId;
+        backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.AuthorityHost] =
+          this.envInfoV3!.state[ComponentNames.AadApp].oauthHost;
+        backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.AllowedAppIds] =
+          getAllowedAppIds().join(";");
+
+        if (hasSQL(this.projectSettingsV3!)) {
+          backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlEndpoint] =
+            backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlEndpoint] || "";
+          backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlUserName] =
+            backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlUserName] || "";
+          backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlPassword] =
+            backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlPassword] || "";
+          backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlDbName] =
+            backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlDbName] || "";
+          backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlIdentityId] =
+            backendEnvs.teamsfx[LocalEnvKeys.backend.teamsfx.SqlIdentityId] || "";
+        }
+
+        const envPath = await localEnvProvider.saveBackendLocalEnvs(backendEnvs);
+
+        messages.push(util.format(ssoDebugMessages.backendEnvsSet, path.normalize(envPath)));
+      }
+      if (ProjectSettingsHelper.includeBot(this.projectSettingsV3)) {
+        const botEnvs = await localEnvProvider.loadBotLocalEnvs();
+
+        botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.ClientId] =
+          this.envInfoV3!.state[ComponentNames.AadApp].clientId;
+        botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.ClientSecret] =
+          this.envInfoV3!.state[ComponentNames.AadApp].clientSecret;
+        botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.TenantId] =
+          this.envInfoV3!.state[ComponentNames.AadApp].tenantId;
+        botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.AuthorityHost] =
+          this.envInfoV3!.state[ComponentNames.AadApp].oauthHost;
+        botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.LoginEndpoint] = `${
+          this.envInfoV3!.state[ComponentNames.AadApp].botEndpoint
+        }/auth-start.html`;
+        botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.ApplicationIdUri] =
+          this.envInfoV3!.state[ComponentNames.AadApp].applicationIdUris;
+
+        if (ProjectSettingsHelper.includeBackend(this.projectSettingsV3)) {
+          botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.ApiEndpoint] =
+            botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.ApiEndpoint] || "http://localhost:7071";
+        }
+
+        if (hasSQL(this.projectSettingsV3!)) {
+          botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlEndpoint] =
+            botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlEndpoint] || "";
+          botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlUserName] =
+            botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlUserName] || "";
+          botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlPassword] =
+            botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlPassword] || "";
+          botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlDbName] =
+            botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlDbName] || "";
+          botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlIdentityId] =
+            botEnvs.teamsfx[LocalEnvKeys.bot.teamsfx.SqlIdentityId] || "";
+        }
+
+        const envPath = await localEnvProvider.saveBotLocalEnvs(botEnvs);
+        messages.push(util.format(ssoDebugMessages.botEnvsSet, path.normalize(envPath)));
+      }
+
+      return ok(messages);
+    } catch (error: unknown) {
+      return err(assembleError(error, errorSource));
     }
   }
 
   private constructPluginContext(
     envInfoV3: v3.EnvInfoV3,
-    cryptoProvider: LocalCrypto
+    cryptoProvider: CryptoProvider
   ): PluginContext {
     const envInfo: EnvInfo = {
       envName: envInfoV3.envName,

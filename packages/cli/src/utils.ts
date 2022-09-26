@@ -35,21 +35,16 @@ import {
 import { ConfigNotFoundError, UserdataNotFound, EnvUndefined, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags, SUPPORTED_SPFX_VERSION } from "./constants";
-import {
-  environmentManager,
-  WriteFileError,
-  localSettingsFileName,
-  FxCore,
-  isSPFxProject,
-  PluginNames,
-  isValidProject,
-  ProjectSettingsHelper,
-  LocalEnvManager,
-} from "@microsoft/teamsfx-core";
+import { FxCore } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
 import CLIUIInstance from "./userInteraction";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
 import cliLogger from "./commonlib/log";
+import { WriteFileError } from "@microsoft/teamsfx-core/build/core/error";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
+import { isSPFxProject } from "@microsoft/teamsfx-core/build/common/tools";
+import { ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local/projectSettingsHelper";
 
 export type Json = { [_: string]: any };
 
@@ -335,7 +330,7 @@ export function getTeamsAppTelemetryInfoByEnv(
     if (isWorkspaceSupported(projectDir)) {
       const result = environmentManager.getEnvStateFilesPath(env, projectDir);
       const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
-      const appstudioState = envJson[PluginNames.APPST];
+      const appstudioState = envJson["fx-resource-appstudio"];
       return {
         appId: appstudioState.teamsAppId,
         tenantId: appstudioState.tenantId,
@@ -415,7 +410,7 @@ export function getLocalTeamsAppId(rootfolder: string | undefined): any {
     }
     const localState = result.value;
     try {
-      return localState[PluginNames.APPST].teamsAppId;
+      return localState["fx-resource-appstudio"].teamsAppId;
     } catch (error) {
       return undefined;
     }

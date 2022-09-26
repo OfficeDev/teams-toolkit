@@ -41,23 +41,23 @@ import path from "path";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
-import {
-  getResourceGroupNameFromResourceId,
-  getSiteNameFromResourceId,
-  getSubscriptionIdFromResourceId,
-  isBotNotificationEnabled,
-  generateBicepFromFile,
-  AppStudioScopes,
-  GraphScopes,
-} from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { PluginImpl } from "./interface";
-import { BOT_ID } from "../appstudio/constants";
+import { BOT_ID } from "../../../component/resource/appManifest/constants";
 import { AzureOperations } from "../../../common/azure-hosting/azureOps";
 import { AzureUploadConfig } from "../../../common/azure-hosting/interfaces";
 import { HostType } from "./v2/enum";
 import { convertToAlphanumericOnly } from "../../../common/utils";
+import { isBotNotificationEnabled } from "../../../common/featureFlags";
+import {
+  AppStudioScopes,
+  generateBicepFromFile,
+  getResourceGroupNameFromResourceId,
+  getSiteNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+  GraphScopes,
+} from "../../../common/tools";
 
 export class TeamsBotImpl implements PluginImpl {
   // Made config public, because expect the upper layer to fill inputs.

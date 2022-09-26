@@ -10,36 +10,22 @@ import {
 import "reflect-metadata";
 import { Container } from "typedi";
 import { SolutionError, SolutionSource } from "./constants";
-
 export const ResourcePlugins = {
-  SpfxPlugin: "SpfxPlugin",
   FrontendPlugin: "FrontendPlugin",
   IdentityPlugin: "IdentityPlugin",
-  SqlPlugin: "SqlPlugin",
   BotPlugin: "BotPlugin",
-  AadPlugin: "AadPlugin",
   FunctionPlugin: "FunctionPlugin",
   LocalDebugPlugin: "LocalDebugPlugin",
   ApimPlugin: "ApimPlugin",
-  AppStudioPlugin: "AppStudioPlugin",
-  SimpleAuthPlugin: "SimpleAuthPlugin",
-  KeyVaultPlugin: "KeyVaultPlugin",
 };
 
 export const ResourcePluginsV2 = {
-  SpfxPlugin: "SpfxPluginV2",
   FrontendPlugin: "FrontendPluginV2",
   IdentityPlugin: "IdentityPluginV2",
-  SqlPlugin: "SqlPluginV2",
   BotPlugin: "BotPluginV2",
-  AadPlugin: "AadPluginV2",
   FunctionPlugin: "FunctionPluginV2",
   LocalDebugPlugin: "LocalDebugPluginV2",
   ApimPlugin: "ApimPluginV2",
-  AppStudioPlugin: "AppStudioPluginV2",
-  SimpleAuthPlugin: "SimpleAuthPluginV2",
-  KeyVaultPlugin: "KeyVaultPluginV2",
-  CICDPlugin: "CICDPluginV2",
 };
 
 /**

@@ -52,7 +52,7 @@ import { AppManifest } from "../resource/appManifest/appManifest";
 import "../resource/azureAppService/azureWebApp";
 import { BotService } from "../resource/botService";
 import { IdentityResource } from "../resource/identity";
-import { generateConfigBiceps, bicepUtils, addFeatureNotify } from "../utils";
+import { generateConfigBiceps, bicepUtils, addFeatureNotify, scaffoldRootReadme } from "../utils";
 import { getComponent, getComponentByScenario } from "../workflow";
 @Service(ComponentNames.TeamsBot)
 export class TeamsBot {
@@ -85,12 +85,13 @@ export class TeamsBot {
       inputs[CoreQuestionNames.ProgrammingLanguage] ||
       "javascript";
     globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
+    const isM365 = context.projectSetting.isM365 === true;
     let botConfig = getComponent(projectSettings, ComponentNames.TeamsBot);
     // bot can only add once
     if (botConfig) {
       if (!botConfig.capabilities?.includes(botCapability)) {
         botConfig.capabilities.push(botCapability);
-        const res = await this.addBotCapability(inputs);
+        const res = await this.addBotCapability(inputs, isM365);
         if (res.isErr()) return err(res.error);
         effects.push("add bot capability in app manifest");
       }
@@ -218,7 +219,7 @@ export class TeamsBot {
 
     // 5. app-manifest.addCapability
     {
-      const res = await this.addBotCapability(inputs);
+      const res = await this.addBotCapability(inputs, isM365);
       if (res.isErr()) return err(res.error);
       effects.push("add bot capability in app manifest");
     }
@@ -227,6 +228,7 @@ export class TeamsBot {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Components]: JSON.stringify(addedComponents),
     });
+    await scaffoldRootReadme(context.projectSetting, inputs.projectPath);
     addFeatureNotify(inputs, context.userInteraction, "Capability", [inputs.features]);
     return ok(undefined);
   }
@@ -247,12 +249,14 @@ export class TeamsBot {
     return ok(undefined);
   }
   private async addBotCapability(
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    isM365 = false
   ): Promise<Result<undefined, FxError>> {
     {
       const manifestCapability: v3.ManifestCapability = {
         name:
-          inputs[CoreQuestionNames.Features] === MessageExtensionItem.id
+          inputs[CoreQuestionNames.Features] === MessageExtensionItem.id ||
+          inputs[CoreQuestionNames.Features] === M365SearchAppOptionItem.id
             ? "MessageExtension"
             : "Bot",
       };
@@ -261,7 +265,7 @@ export class TeamsBot {
         validDomain: `{{state.${ComponentNames.TeamsBot}.domain}}`,
       };
       const appManifest = Container.get<AppManifest>(ComponentNames.AppManifest);
-      return await appManifest.addCapability(clonedInputs, [manifestCapability]);
+      return await appManifest.addCapability(clonedInputs, [manifestCapability], isM365);
     }
   }
 }

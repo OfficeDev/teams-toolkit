@@ -14,6 +14,7 @@ import {
   PluginContext,
   ProjectSettingsV3,
   Result,
+  Stage,
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -22,21 +23,25 @@ import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import * as util from "util";
-import { isSPFxMultiTabEnabled } from "../../common";
+import { isSPFxMultiTabEnabled } from "../../common/featureFlags";
 import { getAppDirectory, isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
-import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../plugins/resource/appstudio/constants";
-import { GeneratorChecker } from "../../plugins/resource/spfx/depsChecker/generatorChecker";
-import { YoChecker } from "../../plugins/resource/spfx/depsChecker/yoChecker";
-import { DependencyInstallError, ScaffoldError } from "../../plugins/resource/spfx/error";
+import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../resource/appManifest/constants";
+import { GeneratorChecker } from "../resource/spfx/depsChecker/generatorChecker";
+import { YoChecker } from "../resource/spfx/depsChecker/yoChecker";
+import {
+  DependencyInstallError,
+  NoConfigurationError,
+  ScaffoldError,
+} from "../resource/spfx/error";
 import {
   ManifestTemplate,
   PlaceHolders,
   ScaffoldProgressMessage,
-} from "../../plugins/resource/spfx/utils/constants";
-import { ProgressHelper } from "../../plugins/resource/spfx/utils/progress-helper";
-import { SPFXQuestionNames } from "../../plugins/resource/spfx/utils/questions";
-import { Utils } from "../../plugins/resource/spfx/utils/utils";
+} from "../resource/spfx/utils/constants";
+import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
+import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
+import { isOfficialSPFx, Utils } from "../resource/spfx/utils/utils";
 import { convert2Context } from "../../plugins/resource/utils4v2";
 import { cpUtils } from "../../plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import { ComponentNames } from "../constants";
@@ -81,16 +86,20 @@ export async function scaffoldSPFx(
   const ui = (context as ContextV3).userInteraction || (context as PluginContext).ui;
   const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
   try {
+    const isAddSpfx = inputs.stage === Stage.addFeature && isSPFxMultiTabEnabled();
     const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
-    let framework,
-      solutionName: string | undefined = undefined;
-    const isAddSpfx =
-      inputs[SPFXQuestionNames.framework_type] === undefined && isSPFxMultiTabEnabled();
+    const framework = (inputs[SPFXQuestionNames.framework_type] as string) ?? undefined;
+    let solutionName: string | undefined = undefined;
+
     if (!isAddSpfx) {
-      framework = inputs[SPFXQuestionNames.framework_type] as string;
       solutionName =
         ((context as ContextV3).projectSetting?.appName as string) ||
         ((context as PluginContext).projectSettings?.appName as string);
+    } else {
+      const yorcPath = path.join(inputs.projectPath, "SPFx", ".yo-rc.json");
+      if (!(await fs.pathExists(yorcPath))) {
+        throw NoConfigurationError();
+      }
     }
 
     const componentName = Utils.normalizeComponentName(webpartName);
@@ -215,7 +224,10 @@ export async function scaffoldSPFx(
     // update readme
     if (!isAddSpfx) {
       await fs.copyFile(
-        path.resolve(templateFolder, "./solution/README.md"),
+        path.resolve(
+          templateFolder,
+          isOfficialSPFx() ? "./solution/README.md" : "./solution/prereleaseREADME.md"
+        ),
         `${outputFolderPath}/README.md`
       );
     }

@@ -16,7 +16,6 @@ import * as sinon from "sinon";
 import * as uuid from "uuid";
 import { TabSsoItem } from "../../../src/plugins/solution/fx-solution/question";
 import { fillInSolutionSettings } from "../../../src/plugins/solution/fx-solution/v2/utils";
-import { PluginNames } from "../../../src";
 import mockedEnv from "mocked-env";
 import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import * as backup from "../../../src/plugins/solution/fx-solution/utils/backupFiles";
@@ -26,6 +25,7 @@ import {
   hasBotServiceCreated,
 } from "../../../src/plugins/solution/fx-solution/utils/util";
 import { ComponentNames } from "../../../src/component/constants";
+import { PluginNames } from "../../../src/plugins/solution/fx-solution/constants";
 const tool = require("../../../src/common/tools");
 const expect = chai.expect;
 
@@ -66,7 +66,6 @@ describe("util: fillInSolutionSettings() with AAD manifest enabled", async () =>
 
     const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
     expect(solutionSettings?.capabilities?.includes(TabSsoItem.id)).to.be.true;
-    expect(solutionSettings?.activeResourcePlugins?.includes(PluginNames.AAD)).to.be.true;
   });
 
   it("Tab without SSO", async () => {
@@ -79,7 +78,6 @@ describe("util: fillInSolutionSettings() with AAD manifest enabled", async () =>
 
     const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
     expect(solutionSettings?.capabilities?.includes(TabSsoItem.id)).to.be.false;
-    expect(solutionSettings?.activeResourcePlugins?.includes(PluginNames.AAD)).to.be.false;
   });
 
   it("M365 SSO Tab", async () => {
@@ -91,7 +89,6 @@ describe("util: fillInSolutionSettings() with AAD manifest enabled", async () =>
     const res = fillInSolutionSettings(projectSettings, mockInput);
     const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
     expect(solutionSettings?.capabilities?.includes(TabSsoItem.id)).to.be.true;
-    expect(solutionSettings?.activeResourcePlugins?.includes(PluginNames.AAD)).to.be.true;
   });
 });
 
@@ -118,7 +115,8 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       projectPath,
       false,
       false,
-      true
+      true,
+      false
     );
 
     // Assert
@@ -144,7 +142,8 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       projectPath,
       true,
       true,
-      true
+      true,
+      false
     );
 
     // Assert
@@ -173,6 +172,7 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       projectPath,
       true,
       true,
+      false,
       false
     );
 
@@ -199,6 +199,7 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       projectPath,
       true,
       true,
+      false,
       false
     );
 

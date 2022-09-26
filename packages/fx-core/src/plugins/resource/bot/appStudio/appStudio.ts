@@ -5,6 +5,7 @@ import { IAADDefinition } from "./interfaces/IAADDefinition";
 import { AxiosInstance, AxiosResponse, default as axios } from "axios";
 import {
   AADAppCheckingError,
+  BotRegistrationNotFoundError,
   ConfigUpdatingError,
   MessageEndpointUpdatingError,
   ProvisionError,
@@ -158,6 +159,7 @@ export class AppStudio {
           if (e.response?.status === 404) {
             return e.response;
           } else {
+            e.teamsfxUrlName = "<get-bot-registration>";
             throw e;
           }
         }
@@ -191,6 +193,7 @@ export class AppStudio {
         axiosInstance.post(`${AppStudio.baseUrl}/api/botframework`, registration)
       );
     } catch (e) {
+      e.teamsfxUrlName = "<create-bot-registration>";
       throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION, e);
     }
 
@@ -210,7 +213,7 @@ export class AppStudio {
 
     const botReg = await AppStudio.getBotRegistration(accessToken, botId);
     if (!botReg) {
-      throw new MessageEndpointUpdatingError(endpoint);
+      throw new BotRegistrationNotFoundError(botId);
     }
     botReg.messagingEndpoint = endpoint;
 
@@ -220,6 +223,7 @@ export class AppStudio {
         axiosInstance.post(`${AppStudio.baseUrl}/api/botframework/${botId}`, botReg)
       );
     } catch (e) {
+      e.teamsfxUrlName = "<update-message-endpoint>";
       throw new MessageEndpointUpdatingError(botReg.messagingEndpoint, e);
     }
 

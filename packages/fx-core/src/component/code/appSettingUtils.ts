@@ -1,8 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ResourceContextV3 } from "@microsoft/teamsfx-api";
+import { err, ResourceContextV3, Result, SystemError, ok, FxError } from "@microsoft/teamsfx-api";
+import path from "path";
 import { AadAppOutputs, BotServiceOutputs, ComponentNames } from "../constants";
+import fs from "fs-extra";
+import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { SolutionError, SolutionSource } from "../../plugins/solution/fx-solution/constants";
 
 export class AppSettingConstants {
   static DevelopmentFileName = "appsettings.Development.json";
@@ -92,4 +96,54 @@ function replaceAppSettings(
     );
   }
   return appSettings;
+}
+
+export async function resetAppSettingsDevelopment(
+  projectPath: string
+): Promise<Result<undefined, FxError>> {
+  const appSettingsDevPath = path.join(projectPath, AppSettingConstants.DevelopmentFileName);
+
+  try {
+    if (await fs.pathExists(appSettingsDevPath)) {
+      const appSettings = await fs.readJson(appSettingsDevPath);
+      if (appSettings.TeamsFx) {
+        if (appSettings.TeamsFx.Authentication) {
+          appSettings.TeamsFx.Authentication.ClientId = AppSettingConstants.Placeholders.clientId;
+          appSettings.TeamsFx.Authentication.ClientSecret =
+            AppSettingConstants.Placeholders.clientSecret;
+          appSettings.TeamsFx.Authentication.OAuthAuthority =
+            AppSettingConstants.Placeholders.oauthAuthority;
+          if (appSettings.TeamsFx.Authentication.ApplicationIdUri) {
+            appSettings.TeamsFx.Authentication.ApplicationIdUri =
+              AppSettingConstants.Placeholders.applicationIdUri;
+          }
+
+          if (
+            appSettings.TeamsFx.Authentication.Bot &&
+            appSettings.TeamsFx.Authentication.Bot.InitiateLoginEndpoint
+          ) {
+            appSettings.TeamsFx.Authentication.Bot.InitiateLoginEndpoint =
+              AppSettingConstants.Placeholders.initiateLoginEndpoint;
+          }
+        }
+      }
+      if (appSettings["BOT_ID"]) {
+        appSettings["BOT_ID"] = AppSettingConstants.Placeholders.botId;
+      }
+
+      if (appSettings["BOT_PASSWORD"]) {
+        appSettings["BOT_PASSWORD"] = AppSettingConstants.Placeholders.botPassword;
+      }
+      await fs.writeFile(appSettingsDevPath, JSON.stringify(appSettings, null, "\t"), "utf-8");
+    }
+    return ok(undefined);
+  } catch (e) {
+    const error = new SystemError(
+      SolutionSource,
+      SolutionError.FailedToResetAppSettingsDevelopment,
+      getDefaultString("core.appSettingsUtil.FailedToResetAppSettingsDevelopment"),
+      getLocalizedString("core.appSettingsUtil.FailedToResetAppSettingsDevelopment")
+    );
+    return err(error);
+  }
 }

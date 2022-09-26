@@ -16,8 +16,8 @@ import {
   Result,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
-import { Correlator, isAADEnabled, isValidProject } from "@microsoft/teamsfx-core";
-
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import {
   AadAppTemplateCodeLensProvider,
   AdaptiveCardCodeLensProvider,
@@ -29,6 +29,7 @@ import {
 import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
+import M365TokenInstance from "./commonlib/m365Login";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { localSettingsJsonName } from "./debug/constants";
@@ -45,6 +46,7 @@ import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
+import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import {
   canUpgradeToArmAndMultiEnv,
@@ -55,6 +57,8 @@ import {
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
+import { LocalTunnelTaskTerminal } from "./debug/taskTerminal/localTunnelTaskTerminal";
+import { isAADEnabled } from "@microsoft/teamsfx-core/build/common/tools";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -83,6 +87,10 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.registerAccountMenuCommands(context);
 
     TreeViewManagerInstance.registerTreeViews(context);
+    accountTreeViewProviderInstance.subscribeToStatusChanges({
+      azureAccountProvider: AzureAccountManager,
+      m365TokenProvider: M365TokenInstance,
+    });
 
     registerCodelensAndHoverProviders(context);
 
@@ -223,6 +231,24 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
     Correlator.run(handlers.getFuncPathHandler)
   );
   context.subscriptions.push(getFuncPathCmd);
+
+  const getDotnetPathCmd = vscode.commands.registerCommand("fx-extension.get-dotnet-path", () =>
+    Correlator.run(handlers.getDotnetPathHandler)
+  );
+  context.subscriptions.push(getDotnetPathCmd);
+
+  // TODO: remove one after decide to use which placeholder
+  const getNgrokPathCmd = vscode.commands.registerCommand("fx-extension.get-ngrok-path", () =>
+    Correlator.run(() => LocalTunnelTaskTerminal.getNgrokBinFolder())
+  );
+  context.subscriptions.push(getNgrokPathCmd);
+
+  // TODO: remove one after decide to use which placeholder
+  const getTunnelEndpointCmd = vscode.commands.registerCommand(
+    "fx-extension.get-local-tunnel-endpoint",
+    () => Correlator.run(() => LocalTunnelTaskTerminal.getNgrokEndpoint())
+  );
+  context.subscriptions.push(getTunnelEndpointCmd);
 
   const installAppInTeamsCmd = vscode.commands.registerCommand(
     "fx-extension.install-app-in-teams",

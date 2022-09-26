@@ -18,7 +18,7 @@ import "../../src/component/resource/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { newEnvInfoV3 } from "../../src/core/environment";
 import { setTools } from "../../src/core/globalVars";
-import { Utils } from "../../src/plugins/resource/simpleauth/utils/common";
+import { Utils } from "../../src/component/resource/simpleAuth/utils/common";
 import { deleteFolder, MockTools, randomAppName } from "../core/utils";
 describe("Simple auth component V3", () => {
   const sandbox = sinon.createSandbox();
@@ -28,14 +28,8 @@ describe("Simple auth component V3", () => {
   const projectPath = path.join(os.homedir(), "TeamsApps", appName);
   const context = createContextV3();
   const fx = Container.get<TeamsfxCore>("fx");
-  let mockedEnvRestore: RestoreFn;
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
-  });
-
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   after(async () => {

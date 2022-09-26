@@ -4,7 +4,7 @@
 "use strict";
 
 import { ProjectSettings } from "@microsoft/teamsfx-api";
-import { ProjectSettingsHelper } from "@microsoft/teamsfx-core";
+import { ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local/projectSettingsHelper";
 import { FeatureId } from "@microsoft/teamsfx-core/build/component/questionV3";
 
 import { TelemetryEvent } from "../telemetry/cliTelemetryEvents";
@@ -35,6 +35,22 @@ export class CapabilityAddSSOTab extends CapabilityAddBase {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Teams identity aware webpages embedded in Microsoft Teams";
   public readonly featureId = FeatureId.Tab;
+
+  public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined) {
+    return {
+      excludeFrontend: ProjectSettingsHelper.includeFrontend(settings),
+      excludeBackend: true,
+      excludeBot: true,
+    };
+  }
+}
+
+export class CapabilityAddSPFxTab extends CapabilityAddBase {
+  public readonly commandHead = `spfx-tab`;
+  public readonly command = `${this.commandHead}`;
+  public readonly description =
+    "Teams-aware webpages with SharePoint Framework embedded in Microsoft Teams";
+  public readonly featureId = FeatureId.TabSPFx;
 
   public override getNpmInstallExcludeCaps(settings: ProjectSettings | undefined) {
     return {
@@ -82,4 +98,12 @@ export class CapabilityAddCommandAndResponse extends CapabilityAddBotBase {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Respond to simple commands in Microsoft Teams chat";
   public readonly featureId = FeatureId.CommandAndResponse;
+}
+
+export class CapabilityAddWorkflow extends CapabilityAddBotBase {
+  public readonly commandHead = "workflow";
+  public readonly command = `${this.commandHead}`;
+  public readonly description =
+    "Automate repetitive workflows for common business processes in Microsoft Teams chat";
+  public readonly featureId = FeatureId.Workflow;
 }

@@ -64,16 +64,16 @@ import {
   TabOptionItem,
   MessageExtensionItem,
 } from "../plugins/solution/fx-solution/question";
-import { isV3, TOOLS } from "../core/globalVars";
+import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";
 import _ from "lodash";
 import { BotHostTypeName, BotHostTypes } from "./local/constants";
 import { isExistingTabApp } from "./projectSettingsHelper";
-import { ExistingTemplatesStat } from "../plugins/resource/cicd/utils/existingTemplatesStat";
+import { ExistingTemplatesStat } from "../component/feature/cicd/existingTemplatesStat";
 import { environmentManager } from "../core/environment";
-import { NoProjectOpenedError } from "../plugins/resource/cicd/errors";
+import { NoProjectOpenedError } from "../component/feature/cicd/errors";
 import { getProjectTemplatesFolderPath } from "./utils";
 import * as path from "path";
 import { isMiniApp } from "./projectSettingsHelperV3";
@@ -568,10 +568,9 @@ export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): b
 // 2. Not minimal app
 export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Promise<boolean> {
   // Not include `Add CICD Workflows` in minimal app case.
-  const isExistingApp = !isV3()
-    ? isExistingTabApp(ctx.projectSetting)
-    : ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id &&
-      isMiniApp(ctx.projectSetting as ProjectSettingsV3);
+  const isExistingApp =
+    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id &&
+    isMiniApp(ctx.projectSetting as ProjectSettingsV3);
   if (isExistingApp) {
     return false;
   }
@@ -612,6 +611,12 @@ export function isYoCheckerEnabled(): boolean {
 
 export function isGeneratorCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
+}
+
+export function getSPFxVersion(): string {
+  const flag = process.env[FeatureFlagName.SPFxVersion];
+
+  return flag ?? "1.15.0";
 }
 
 export async function generateBicepFromFile(
@@ -863,7 +868,11 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
             "UnknownValue",
             `AppStudio response code: ${response.status}, body: ${response.data}`
           ),
-          { [TelemetryProperty.CheckSideloadingHttpStatus]: `${response.status}` }
+          {
+            [TelemetryProperty.CheckSideloadingStatusCode]: `${response.status}`,
+            [TelemetryProperty.CheckSideloadingMethod]: "get",
+            [TelemetryProperty.CheckSideloadingUrl]: "<check-sideloading-status>",
+          }
         );
       }
 

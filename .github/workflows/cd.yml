@@ -11,10 +11,6 @@ on:
         description: "release RC version just with lerna publish, skip run lerna version(yes or no)"
         required: false
         default: "no"
-      skip-sync-version-pkg:
-        description: "skip sync up target pkg version. input templates to skip sync up version with sdk; fx-core to skip sync up with simpleauth"
-        required: false
-        default: ""
       pkgs:
         type: string
         required: false
@@ -110,22 +106,16 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && github.ref == 'refs/heads/main' && github.event.inputs.skip-version-rc == 'no'}}
         run: |
           npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-changelog --yes
-        env:
-          SkipSyncup: ${{ github.event.inputs.skip-sync-version-pkg }}
 
       - name: version rc npm packages to npmjs.org on hotfix
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' && startsWith(github.ref, 'refs/heads/hotfix/') && github.event.inputs.skip-version-rc == 'no'}}
         run: |
           npx lerna version --conventional-commits --conventional-prerelease --preid=rc-hotfix --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
-        env:
-          SkipSyncup: ${{ github.event.inputs.skip-sync-version-pkg }}
 
       - name: version stable npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) && github.event.inputs.preid == 'stable' }}
         run: |
           npx lerna version --conventional-commits --conventional-graduate --no-changelog --allow-branch ${GITHUB_REF#refs/*/} --yes
-        env:
-          SkipSyncup: ${{ github.event.inputs.skip-sync-version-pkg }}
 
       - name: version change
         id: version-change
@@ -373,6 +363,7 @@ jobs:
           tag: ${{ steps.version-change.outputs.EXTENSION_VERSION }}
           artifacts: ./packages/**/*.vsix
           artifactErrorsFailBuild: true
+          bodyFile: ./CHANGELOG.md
 
       - name: save release info
         run: |

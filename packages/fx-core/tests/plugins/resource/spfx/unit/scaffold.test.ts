@@ -59,12 +59,6 @@ describe("SPFxScaffold", function () {
     sinon.stub(fs, "rename").resolves();
     sinon.stub(fs, "copyFile").resolves();
     sinon.stub(fs, "remove").resolves();
-    sinon.stub(fs, "pathExists").callsFake(async (directory) => {
-      if (directory.includes(".yo-rc.json")) {
-        return false;
-      }
-      return true;
-    });
     sinon.stub(fs, "readJson").resolves({});
     sinon.stub(fs, "ensureFile").resolves();
     sinon.stub(fs, "writeJSON").resolves();
@@ -72,6 +66,7 @@ describe("SPFxScaffold", function () {
   });
 
   it("scaffold SPFx project without framework", async function () {
+    sinon.stub(fs, "pathExists").resolves(true);
     const inputs: InputsWithProjectPath = {
       platform: Platform.CLI,
       projectPath: testFolder,
@@ -85,6 +80,7 @@ describe("SPFxScaffold", function () {
   });
 
   it("scaffold SPFx project with react framework", async function () {
+    sinon.stub(fs, "pathExists").resolves(true);
     const inputs: InputsWithProjectPath = {
       platform: Platform.CLI,
       projectPath: testFolder,
@@ -98,6 +94,7 @@ describe("SPFxScaffold", function () {
   });
 
   it("scaffold SPFx project with minimal framework", async function () {
+    sinon.stub(fs, "pathExists").resolves(true);
     const inputs: InputsWithProjectPath = {
       platform: Platform.CLI,
       projectPath: testFolder,
@@ -111,6 +108,7 @@ describe("SPFxScaffold", function () {
   });
 
   it("scaffold SPFx project with extremely long webpart name", async function () {
+    sinon.stub(fs, "pathExists").resolves(true);
     const inputs: InputsWithProjectPath = {
       platform: Platform.CLI,
       projectPath: testFolder,
@@ -125,6 +123,7 @@ describe("SPFxScaffold", function () {
   });
 
   it("add webpart to SPFx project framework", async function () {
+    sinon.stub(fs, "pathExists").resolves(true);
     const mockedEnvRestore = mockedEnv({ TEAMSFX_SPFX_MULTI_TAB: "true" });
     const inputs: InputsWithProjectPath = {
       platform: Platform.CLI,
@@ -139,6 +138,31 @@ describe("SPFxScaffold", function () {
     if (result.isErr()) console.log(result.error);
     expect(result.isOk()).to.eq(true);
     expect(fakedAddCapability.calledOnce).to.eq(true);
+    mockedEnvRestore();
+  });
+
+  it("add webpart to SPFx project without configuration file", async function () {
+    sinon.stub(fs, "pathExists").callsFake((directory) => {
+      if (directory.includes(".yo-rc.json")) {
+        return false;
+      }
+      return true;
+    });
+    const mockedEnvRestore = mockedEnv({ TEAMSFX_SPFX_MULTI_TAB: "true" });
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      [SPFXQuestionNames.framework_type]: "react",
+      stage: Stage.addFeature,
+    };
+    context.userInteraction = new MockUserInteraction();
+    context.manifestProvider = manifestProvider;
+    fakedAddCapability = sinon.stub(manifestProvider, "addCapabilities").resolves(ok(Void));
+    try {
+      await component.generate(context, inputs);
+    } catch (e) {
+      chai.expect(e.name).equal("NoConfigurationFile");
+    }
     mockedEnvRestore();
   });
 

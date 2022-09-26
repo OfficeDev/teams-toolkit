@@ -23,8 +23,8 @@ import {
 import * as appstudio from "../../../src/component/resource/appManifest/appStudio";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
-import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStudio";
-import { AppDefinition } from "../../../src/plugins/resource/appstudio/interfaces/appDefinition";
+import { AppStudioClient } from "../../../src/component/resource/appManifest/appStudioClient";
+import { AppDefinition } from "../../../src/component/resource/appManifest/interfaces/appDefinition";
 import { MockM365TokenProvider, runDebugActions } from "./utils";
 
 describe("AppManifestDebugHandler", () => {

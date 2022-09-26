@@ -50,7 +50,7 @@ import {
   WriteFileError,
 } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
-import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
+import { getLocalAppName } from "../component/resource/appManifest/utils/utils";
 import { Container } from "typedi";
 import { pick } from "lodash";
 import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";

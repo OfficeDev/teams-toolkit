@@ -111,7 +111,7 @@ import { AppManifest, publishQuestion } from "../component/resource/appManifest/
 import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
 import { createEnvWithName } from "../component/envManager";
 import { getProjectTemplatesFolderPath } from "../common/utils";
-import { manifestUtils } from "../component/resource/appManifest/utils";
+import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { copyParameterJson } from "../plugins/solution/fx-solution/arm";
 import { convertEnvStateMapV3ToV2 } from "../component/migrate";
 

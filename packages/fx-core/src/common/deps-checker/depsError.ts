@@ -27,6 +27,15 @@ export class NodeNotSupportedError extends DepsCheckerError {
     Object.setPrototypeOf(this, NodeNotSupportedError.prototype);
   }
 }
+
+export class NodeNotRecommendedError extends DepsCheckerError {
+  constructor(message: string, helpLink: string) {
+    super(message, helpLink);
+
+    Object.setPrototypeOf(this, NodeNotRecommendedError.prototype);
+  }
+}
+
 export class LinuxNotSupportedError extends DepsCheckerError {
   constructor(message: string, helpLink: string) {
     super(message, helpLink);
@@ -35,11 +44,19 @@ export class LinuxNotSupportedError extends DepsCheckerError {
   }
 }
 
-export class FuncNodeNotMatchedError extends DepsCheckerError {
+export class PortableFuncNodeNotMatchedError extends DepsCheckerError {
   constructor(message: string, helpLink: string) {
     super(message, helpLink);
 
-    Object.setPrototypeOf(this, FuncNodeNotMatchedError.prototype);
+    Object.setPrototypeOf(this, PortableFuncNodeNotMatchedError.prototype);
+  }
+}
+
+export class GlobalFuncNodeNotMatchedError extends DepsCheckerError {
+  constructor(message: string, helpLink: string) {
+    super(message, helpLink);
+
+    Object.setPrototypeOf(this, GlobalFuncNodeNotMatchedError.prototype);
   }
 }
 

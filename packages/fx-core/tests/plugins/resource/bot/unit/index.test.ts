@@ -22,7 +22,7 @@ import { Func, ok, Stage } from "@microsoft/teamsfx-api";
 import { BuiltInSolutionNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import { ResourcePlugins } from "../../../../../src/common/constants";
 import { ConfigKeys } from "../../../../../src/plugins/resource/bot/constants";
-import { BOT_ID } from "../../../../../src/plugins/resource/appstudio/constants";
+import { BOT_ID } from "../../../../../src/component/resource/appManifest/constants";
 import { FunctionsHostedBotImpl } from "../../../../../src/plugins/resource/bot/functionsHostedBot/plugin";
 import { ScaffoldConfig } from "../../../../../src/plugins/resource/bot/configs/scaffoldConfig";
 import { DotnetBotImpl } from "../../../../../src/plugins/resource/bot/dotnet/plugin";

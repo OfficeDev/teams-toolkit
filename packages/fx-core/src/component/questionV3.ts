@@ -11,7 +11,6 @@ import {
   ok,
   OptionItem,
   Platform,
-  Plugin,
   ProjectSettingsV3,
   QTreeNode,
   ResourceContextV3,
@@ -22,7 +21,6 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import { Container } from "typedi";
 import { isVSProject } from "../common/projectSettingsHelper";
 import { HelpLinks, ResourcePlugins } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -39,10 +37,7 @@ import { canAddCICDWorkflows } from "../common/tools";
 import { ComponentNames } from "./constants";
 import { ComponentName2pluginName } from "./migrate";
 import { getComponent } from "./workflow";
-import {
-  STATIC_TABS_MAX_ITEMS,
-  Constants as Constants1,
-} from "../plugins/resource/appstudio/constants";
+import { STATIC_TABS_MAX_ITEMS, Constants as Constants1 } from "./resource/appManifest/constants";
 import {
   createHostTypeTriggerQuestion,
   getConditionOfNotificationTriggerQuestion,
@@ -88,12 +83,12 @@ import { functionNameQuestion } from "../plugins/resource/function/question";
 import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { webpartNameQuestion } from "../component/resource/spfx/utils/questions";
-import { manifestUtils } from "./resource/appManifest/utils";
 import { getQuestionsForDeployAPIM } from "./resource/apim";
 import { canAddSso } from "./feature/sso";
-import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { addCicdQuestion } from "./feature/cicd/cicd";
 import { InvalidFeature } from "./error";
+import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
+import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { Constants } from "./resource/aadApp/constants";
 
 export async function getQuestionsForProvisionV3(

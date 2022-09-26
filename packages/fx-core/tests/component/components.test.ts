@@ -25,7 +25,7 @@ import "../../src/component/feature/sql";
 import "../../src/component/resource/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { deleteFolder, MockTools, randomAppName } from "../core/utils";
-import { AppStudioClient } from "../../src/plugins/resource/appstudio/appStudio";
+import { AppStudioClient } from "../../src/component/resource/appManifest/appStudioClient";
 import * as clientFactory from "../../src/plugins/resource/bot/clientFactory";
 import { AADRegistration } from "../../src/plugins/resource/bot/aadRegistration";
 import { TestHelper } from "../plugins/resource/frontend/helper";

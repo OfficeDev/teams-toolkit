@@ -369,7 +369,8 @@ export default class Preview extends YargsCommand {
         const envCheckerResult = await this.handleDependences(
           projectSettings,
           localEnvManager,
-          depsManager
+          depsManager,
+          workspaceFolder
         );
         if (envCheckerResult.isErr()) {
           return err(envCheckerResult.error);
@@ -1273,13 +1274,17 @@ export default class Preview extends YargsCommand {
   private async handleDependences(
     projectSettings: ProjectSettings,
     localEnvManager: LocalEnvManager,
-    depsManager: DepsManager
+    depsManager: DepsManager,
+    workspaceFolder: string
   ): Promise<Result<null, FxError>> {
     return localTelemetryReporter.runWithTelemetry(
       TelemetryEvent.PreviewPrereqsCheckDependencies,
       async (ctx: TelemetryContext): Promise<Result<null, FxError>> => {
         let shouldContinue = true;
-        const availableDeps = localEnvManager.getActiveDependencies(projectSettings);
+        const availableDeps = await localEnvManager.getActiveDependencies(
+          projectSettings,
+          workspaceFolder
+        );
         const enabledDeps = await CliDepsChecker.getEnabledDeps(
           availableDeps.filter((dep) => !CliDepsChecker.getNodeDeps().includes(dep))
         );

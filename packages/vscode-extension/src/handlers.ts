@@ -1645,7 +1645,7 @@ export async function openReadMeHandler(args: any[]) {
 export async function promptSPFxUpgrade() {
   if (globalVariables.isSPFxProject) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-    const projectSPFxVersion = getAppSPFxVersion(globalVariables.workspaceUri?.fsPath!);
+    const projectSPFxVersion = await getAppSPFxVersion(globalVariables.workspaceUri?.fsPath!);
 
     if (projectSPFxVersion) {
       const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);

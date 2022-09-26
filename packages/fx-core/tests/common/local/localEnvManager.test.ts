@@ -343,7 +343,10 @@ describe("LocalEnvManager", () => {
           pluginSettings: data.pluginSettings,
         };
         const projectSettingsV3 = convertProjectSettingsV2ToV3(projectSettings, ".");
-        const result = localEnvManager.getActiveDependencies(projectSettingsV3);
+        const result = await localEnvManager.getActiveDependencies(
+          projectSettingsV3,
+          "workspacePath"
+        );
         chai.assert.sameDeepMembers(data.depsTypes, result);
       });
     });

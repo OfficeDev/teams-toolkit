@@ -1191,9 +1191,8 @@ async function getOrderedCheckers(): Promise<PrerequisiteOrderedChecker[]> {
   const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
   const checkers: PrerequisiteOrderedChecker[] = [];
   const parallelCheckers: PrerequisiteCheckerInfo[] = [];
-  const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(
-    localEnvManager.getActiveDependencies(projectSettings)
-  );
+  const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, workspacePath);
+  const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(activeDeps);
   const nodeDeps = getNodeDep(enabledDeps);
   const nonNodeDeps = getNonNodeDeps(enabledDeps);
   if (nodeDeps) {
@@ -1266,9 +1265,8 @@ async function getOrderedCheckersForGetStarted(): Promise<PrerequisiteOrderedChe
       VS_CODE_UI
     );
     const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
-    const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(
-      localEnvManager.getActiveDependencies(projectSettings)
-    );
+    const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, workspacePath);
+    const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(activeDeps);
 
     const nodeDeps = getNodeDep(enabledDeps) ?? DepsType.AzureNode;
     return [{ info: { checker: nodeDeps }, fastFail: false }];
@@ -1289,10 +1287,10 @@ async function getOrderedCheckersForTask(
       ExtTelemetry.reporter,
       VS_CODE_UI
     );
-    const projectSettings = await localEnvManager.getProjectSettings(
-      globalVariables.workspaceUri!.fsPath
-    );
-    const nodeDep = getNodeDep(localEnvManager.getActiveDependencies(projectSettings));
+    const projectPath = globalVariables.workspaceUri!.fsPath;
+    const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+    const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, projectPath);
+    const nodeDep = await getNodeDep(activeDeps);
     if (nodeDep) {
       checkers.push({ info: { checker: nodeDep }, fastFail: true });
     }

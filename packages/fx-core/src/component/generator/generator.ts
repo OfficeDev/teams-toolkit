@@ -53,7 +53,7 @@ export class Generator {
       fileNameReplaceFn: genFileNameRenderReplaceFn(nameReplace),
       onActionError: templateDefaultOnActionError,
     };
-    this.generate(generateContext, TemplateActionSeq);
+    await this.generate(generateContext, TemplateActionSeq);
   }
 
   public static async generateSample(
@@ -73,7 +73,7 @@ export class Generator {
       relativePath: sample.relativePath,
       onActionError: sampleDefaultOnActionError,
     };
-    this.generate(generateContext, SampleActionSeq);
+    await this.generate(generateContext, SampleActionSeq);
   }
 
   private static async generate(

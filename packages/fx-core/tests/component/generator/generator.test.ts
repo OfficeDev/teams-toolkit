@@ -7,12 +7,15 @@ import "mocha";
 import fs from "fs-extra";
 import path from "path";
 import {
+  fetchZipUrl,
   genFileDataRenderReplaceFn,
   genFileNameRenderReplaceFn,
+  getValidSampleDestination,
   unzip,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
 import { compareDirs } from "./utils";
+import { templateDownloadBaseUrl } from "../../../src/component/generator/constant";
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
 
@@ -49,5 +52,19 @@ describe("Generator utils", () => {
     const fileNameReplaceFn = genFileNameRenderReplaceFn({});
     await unzip(zip, dstPath, relativePath, fileNameReplaceFn, fileDataReplaceFn);
     assert.isTrue(compareDirs(dstPath, expectedPath));
+  });
+
+  it("fetch zip url", async () => {
+    const url = await fetchZipUrl("bot.csharp.default", templateDownloadBaseUrl);
+    assert.isNotEmpty(url);
+  });
+
+  it("get valid sample destination with existing folder", async () => {
+    const sampleName = "generator";
+    const dstPath = path.resolve(__dirname, "../");
+    assert.equal(
+      await getValidSampleDestination(sampleName, dstPath),
+      path.join(dstPath, "generator_1")
+    );
   });
 });

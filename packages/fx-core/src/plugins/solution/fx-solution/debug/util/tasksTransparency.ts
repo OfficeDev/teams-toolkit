@@ -699,11 +699,17 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
       },
     },
     {
-      label: "spfx npm install",
-      type: "shell",
-      command: "npm install --no-audit",
-      options: {
-        cwd: "${workspaceFolder}/SPFx",
+      label: "Install npm packages",
+      type: "teamsfx",
+      command: "debug-npm-install",
+      args: {
+        projects: [
+          {
+            cwd: "${workspaceFolder}/SPFx",
+            npmInstallArgs: ["--no-audit"],
+          },
+        ],
+        forceUpdate: false,
       },
     },
     {
@@ -714,7 +720,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
       options: {
         cwd: "${workspaceFolder}/SPFx",
       },
-      dependsOn: "spfx npm install",
+      dependsOn: "Install npm packages",
     },
     {
       label: "gulp serve",
@@ -751,7 +757,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
     },
     {
       label: "prepare dev env",
-      dependsOn: ["dependency check", "prepare local environment", "gulp serve"],
+      dependsOn: ["Validate & install prerequisites", "prepare local environment", "gulp serve"],
       dependsOrder: "sequence",
     },
     {

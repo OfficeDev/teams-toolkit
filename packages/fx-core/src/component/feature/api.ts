@@ -119,6 +119,7 @@ export class TeamsApi {
     const tabComponent = getComponent(projectSettings, ComponentNames.TeamsTab);
     if (!tabComponent?.sso) {
       const ssoComponent = Container.get(ComponentNames.SSO) as SSO;
+      Container.getMany;
       const res = await ssoComponent.add(context, inputs);
       if (res.isErr()) return err(res.error);
     }

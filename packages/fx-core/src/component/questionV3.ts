@@ -312,7 +312,7 @@ export async function getQuestionsForAddFeatureV3(
     if (!hasKeyVault(projectSettingsV3)) {
       options.push(AzureResourceKeyVaultNewUI);
     }
-    if (canAddSso(ctx.projectSetting as ProjectSettingsV3)) {
+    if (canAddSso(ctx.projectSetting as ProjectSettingsV3) === true) {
       options.push(SingleSignOnOptionItem);
     }
     if (hasBot(projectSettingsV3) || hasApi(projectSettingsV3)) {

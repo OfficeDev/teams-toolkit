@@ -2,8 +2,9 @@
   "name": "@microsoft/teamsfx-react",
   "version": "1.0.5",
   "description": "React helper functions for Microsoft TeamsFx",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/cjs/index.d.ts",
   "license": "MIT",
   "keywords": [
     "teamsfx",
@@ -15,7 +16,7 @@
     "build/**/*"
   ],
   "scripts": {
-    "build": "rimraf build && npx tsc -p ./",
+    "build": "rimraf build && npx tsc -p tsconfig.json && npx tsc -p tsconfig.es.json",
     "lint:staged": "lint-staged",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "test": "npm run test:unit",
@@ -29,8 +30,8 @@
     "@fluentui/react-northstar": "^0.60.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@microsoft/microsoft-graph-client": "^3.0.1",
-    "@microsoft/teams-js": "^1.9.0",
-    "@microsoft/teamsfx": "^1.2.0",
+    "@microsoft/teams-js": "^2.0.0",
+    "@microsoft/teamsfx": "2.0.0-beta.0",
     "@testing-library/react-hooks": "^7.0.2",
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.1.0",

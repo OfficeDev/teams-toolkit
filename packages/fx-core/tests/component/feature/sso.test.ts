@@ -57,7 +57,6 @@ describe("SSO can add in project", () => {
           provision: true,
           build: true,
           folder: "tabs",
-          sso: true,
         },
       ],
     };

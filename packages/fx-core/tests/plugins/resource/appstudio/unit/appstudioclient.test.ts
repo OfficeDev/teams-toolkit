@@ -6,14 +6,14 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import axios from "axios";
 import { v4 as uuid } from "uuid";
-import { AppStudioClient } from "../../../../../src/plugins/resource/appstudio/appStudio";
-import { AppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
-import { AppStudioError } from "../../../../../src/plugins/resource/appstudio/errors";
-import { TelemetryUtils } from "../../../../../src/plugins/resource/appstudio/utils/telemetry";
-import { RetryHandler } from "../../../../../src/plugins/resource/appstudio/utils/utils";
+import { AppStudioClient } from "../../../../../src/component/resource/appManifest/appStudioClient";
+import { AppDefinition } from "../../../../../src/component/resource/appManifest/interfaces/appDefinition";
+import { AppStudioError } from "../../../../../src/component/resource/appManifest/errors";
+import { TelemetryUtils } from "../../../../../src/component/resource/appManifest/utils/telemetry";
+import { RetryHandler } from "../../../../../src/component/resource/appManifest/utils/utils";
 import { newEnvInfo } from "../../../../../src/core/environment";
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { PublishingState } from "../../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
+import { PublishingState } from "../../../../../src/component/resource/appManifest/interfaces/IPublishingAppDefinition";
 
 describe("App Studio API Test", () => {
   const appStudioToken = "appStudioToken";

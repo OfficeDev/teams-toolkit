@@ -26,18 +26,18 @@ import * as util from "util";
 import { isSPFxMultiTabEnabled } from "../../common/featureFlags";
 import { getAppDirectory, isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
-import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../plugins/resource/appstudio/constants";
-import { GeneratorChecker } from "../../component/resource/spfx/depsChecker/generatorChecker";
-import { YoChecker } from "../../component/resource/spfx/depsChecker/yoChecker";
-import { DependencyInstallError, ScaffoldError } from "../../component/resource/spfx/error";
+import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../resource/appManifest/constants";
+import { GeneratorChecker } from "../resource/spfx/depsChecker/generatorChecker";
+import { YoChecker } from "../resource/spfx/depsChecker/yoChecker";
+import { DependencyInstallError, ScaffoldError } from "../resource/spfx/error";
 import {
   ManifestTemplate,
   PlaceHolders,
   ScaffoldProgressMessage,
-} from "../../component/resource/spfx/utils/constants";
-import { ProgressHelper } from "../../component/resource/spfx/utils/progress-helper";
-import { SPFXQuestionNames } from "../../component/resource/spfx/utils/questions";
-import { isOfficialSPFx, Utils } from "../../component/resource/spfx/utils/utils";
+} from "../resource/spfx/utils/constants";
+import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
+import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
+import { isOfficialSPFx, Utils } from "../resource/spfx/utils/utils";
 import { convert2Context } from "../../plugins/resource/utils4v2";
 import { cpUtils } from "../../plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import { ComponentNames } from "../constants";

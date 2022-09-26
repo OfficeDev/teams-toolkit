@@ -19,7 +19,7 @@ import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
 import * as os from "os";
 import path from "path";
-import { getLocalAppName } from "../../plugins/resource/appstudio/utils/utils";
+import { getLocalAppName } from "../../component/resource/appManifest/utils/utils";
 import {
   Component,
   ProjectMigratorStatus,
@@ -31,13 +31,13 @@ import {
 import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { getManifestTemplatePath } from "../../plugins/resource/appstudio/manifestTemplate";
 import { getResourceFolder } from "../../folder";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrator";
 import * as util from "util";
 import { ManifestTemplate } from "../../component/resource/spfx/utils/constants";
 import { generateAadManifest, needMigrateToAadManifest } from "./MigrationUtils";
+import { getManifestTemplatePath } from "../../component/resource/appManifest/utils/ManifestUtils";
 
 const upgradeButton = "Upgrade";
 const LearnMore = "Learn More";

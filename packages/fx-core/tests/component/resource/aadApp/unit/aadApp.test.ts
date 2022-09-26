@@ -11,7 +11,7 @@ import { MockedAzureAccountProvider, MockedM365Provider } from "../../../../plug
 import { AadApp } from "../../../../../src/component/resource/aadApp/aadApp";
 import { setTools } from "../../../../../src/core/globalVars";
 import { MockTools } from "../../../../core/utils";
-import { AppUser } from "../../../../../src/plugins/resource/appstudio/interfaces/appUser";
+import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
 import { AadAppClient } from "../../../../../src/component/resource/aadApp/aadAppClient";
 
 describe("aadApp", () => {

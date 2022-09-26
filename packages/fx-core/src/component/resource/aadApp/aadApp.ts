@@ -35,7 +35,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { CommonErrorHandlerMW } from "../../../core/middleware/CommonErrorHandlerMW";
 import { BuiltInFeaturePluginNames } from "../../../plugins/solution/fx-solution/v3/constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
-import { AppUser } from "../../../plugins/resource/appstudio/interfaces/appUser";
+import { AppUser } from "../appManifest/interfaces/appUser";
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";

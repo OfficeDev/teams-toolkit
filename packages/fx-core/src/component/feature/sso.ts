@@ -37,7 +37,7 @@ import { ComponentNames, TelemetryConstants } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { AadApp } from "../resource/aadApp/aadApp";
 import { AppManifest } from "../resource/appManifest/appManifest";
-import { manifestUtils } from "../resource/appManifest/utils";
+import { manifestUtils } from "../resource/appManifest/utils/ManifestUtils";
 import "../resource/azureSql";
 import "../resource/identity";
 import { generateConfigBiceps, bicepUtils } from "../utils";

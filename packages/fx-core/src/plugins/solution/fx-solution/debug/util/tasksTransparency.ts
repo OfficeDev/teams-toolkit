@@ -216,7 +216,7 @@ export function mergeTasksJson(existingData: CommentObject, newData: CommentObje
 
   if (mergedData.inputs === undefined) {
     mergedData.inputs = newData.inputs;
-  } else {
+  } else if (newData.inputs !== undefined) {
     const existingInputs = mergedData.inputs as CommentArray<CommentObject>;
     const newInputs = newData.inputs as CommentArray<CommentObject>;
     const keptInputs = new CommentArray<CommentObject>();

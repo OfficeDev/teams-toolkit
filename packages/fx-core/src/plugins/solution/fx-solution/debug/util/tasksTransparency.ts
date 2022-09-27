@@ -73,7 +73,6 @@ export function generateTasks(
    * Referenced inside tasks.json
    *   - Validate & install prerequisites
    *   - Install npm packages
-   *   - Install Azure Functions binding extensions
    *   - Start local tunnel
    *   - Set up tab
    *   - Set up bot
@@ -82,6 +81,7 @@ export function generateTasks(
    *   - Start services
    *   - Start frontend
    *   - Start backend
+   *   - Install Azure Functions binding extensions
    *   - Watch backend
    *   - Start bot
    */
@@ -95,10 +95,6 @@ export function generateTasks(
     ),
     installNPMpackages(includeFrontend, includeBackend, includeBot),
   ];
-
-  if (includeBackend) {
-    tasks.push(installAzureFunctionsBindingExtensions());
-  }
 
   if (includeBot) {
     tasks.push(startLocalTunnel());
@@ -126,6 +122,7 @@ export function generateTasks(
 
   if (includeBackend) {
     tasks.push(startBackend(programmingLanguage));
+    tasks.push(installAzureFunctionsBindingExtensions());
     if (programmingLanguage === ProgrammingLanguage.typescript) {
       tasks.push(watchBackend());
     }
@@ -162,7 +159,6 @@ export function generateM365Tasks(
    * Referenced inside tasks.json
    *   - Validate & install prerequisites
    *   - Install npm packages
-   *   - Install Azure Functions binding extensions
    *   - Start local tunnel
    *   - Set up tab
    *   - Set up bot
@@ -171,6 +167,7 @@ export function generateM365Tasks(
    *   - Start services
    *   - Start frontend
    *   - Start backend
+   *   - Install Azure Functions binding extensions
    *   - Watch backend
    *   - Start bot
    *   - install app in Teams
@@ -219,7 +216,7 @@ export function mergeTasksJson(existingData: CommentObject, newData: CommentObje
 
   if (mergedData.inputs === undefined) {
     mergedData.inputs = newData.inputs;
-  } else {
+  } else if (newData.inputs !== undefined) {
     const existingInputs = mergedData.inputs as CommentArray<CommentObject>;
     const newInputs = newData.inputs as CommentArray<CommentObject>;
     const keptInputs = new CommentArray<CommentObject>();
@@ -249,9 +246,6 @@ function startTeamsAppLocally(
     dependsOn: ["Validate & install prerequisites", "Install npm packages"],
     dependsOrder: "sequence",
   };
-  if (includeBackend) {
-    result.dependsOn.push("Install Azure Functions binding extensions");
-  }
   if (includeBot) {
     result.dependsOn.push("Start local tunnel");
   }
@@ -372,6 +366,9 @@ function installAzureFunctionsBindingExtensions(): CommentJSONValue {
       env: {
         PATH: "${command:fx-extension.get-dotnet-path}${env:PATH}",
       },
+    },
+    presentation: {
+      reveal: "silent",
     },
   };
   return commentJson.assign(commentJson.parse(comment), task);
@@ -510,10 +507,11 @@ function startBackend(programmingLanguage: string): Record<string, unknown> {
     presentation: {
       reveal: "silent",
     },
+    dependsOn: ["Install Azure Functions binding extensions"],
   } as Record<string, unknown>;
 
   if (programmingLanguage === ProgrammingLanguage.typescript) {
-    result.dependsOn = "Watch backend";
+    (result.dependsOn as string[]).push("Watch backend");
   }
 
   return result;

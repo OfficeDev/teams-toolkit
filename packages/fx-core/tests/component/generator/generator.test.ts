@@ -1,20 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import AdmZip from "adm-zip";
 import _ from "lodash";
 import "mocha";
 import fs from "fs-extra";
 import path from "path";
-import {
-  fetchZipUrl,
-  genFileDataRenderReplaceFn,
-  genFileNameRenderReplaceFn,
-  getValidSampleDestination,
-  unzip,
-} from "../../../src/component/generator/utils";
+import { fetchZipUrl, getValidSampleDestination } from "../../../src/component/generator/utils";
 import { assert } from "chai";
-import { compareDirs } from "./utils";
 import { templateDownloadBaseUrl } from "../../../src/component/generator/constant";
 import { Generator } from "../../../src/component/generator/generator";
 import { createContextV3 } from "../../../src/component/utils";

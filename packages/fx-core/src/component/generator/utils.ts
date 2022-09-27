@@ -173,7 +173,7 @@ export async function sampleDefaultOnActionError(
     case GenerateActionName.FetchSampleUrlWithTag:
       throw new FetchSampleUrlWithTagError();
     case GenerateActionName.FetchZipFromUrl:
-      throw new FetchZipFromUrlError();
+      throw new FetchZipFromUrlError(context.zipUrl!);
     case GenerateActionName.Unzip:
       throw new UnzipError();
     default:

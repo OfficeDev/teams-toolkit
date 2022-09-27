@@ -50,7 +50,7 @@ export const fetchZipFromUrlAction: GenerateAction = {
   name: GenerateActionName.FetchZipFromUrl,
   run: async (context: GenerateContext) => {
     if (!context.zipUrl) {
-      throw new MissKeyError();
+      throw new MissKeyError("zipUrl");
     }
     context.zip = await fetchZipFromUrl(context.zipUrl, defaultTryLimits, defaultTimeoutInMs);
   },
@@ -79,7 +79,7 @@ export const unzipAction: GenerateAction = {
   name: GenerateActionName.Unzip,
   run: async (context: GenerateContext) => {
     if (!context.zip) {
-      throw new MissKeyError();
+      throw new MissKeyError("zip");
     }
     await unzip(
       context.zip,

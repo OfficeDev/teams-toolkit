@@ -1038,7 +1038,7 @@ export async function generateBicepsV3(
       });
       const res = await hostingComponent.generateBicep!(context, clonedInputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 
@@ -1057,7 +1057,7 @@ export async function generateBicepsV3(
         });
         const res = await hostingComponent.generateBicep!(context, clonedInputs);
         if (res.isErr()) return err(res.error);
-        res.value.forEach((b) => biceps.push(b));
+        res.value.forEach((b: Bicep) => biceps.push(b));
       }
       // bot service
       {
@@ -1069,7 +1069,7 @@ export async function generateBicepsV3(
         const botService = Container.get<BotService>(ComponentNames.BotService);
         const res = await botService.generateBicep(context, clonedInputs);
         if (res.isErr()) return err(res.error);
-        res.value.forEach((b) => biceps.push(b));
+        res.value.forEach((b: Bicep) => biceps.push(b));
       }
     }
   }
@@ -1087,7 +1087,7 @@ export async function generateBicepsV3(
       const functionComponent = Container.get<AzureFunctionResource>(ComponentNames.Function);
       const res = await functionComponent.generateBicep(context, clonedInputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 
@@ -1103,7 +1103,7 @@ export async function generateBicepsV3(
       const identityComponent = Container.get<IdentityResource>(ComponentNames.Identity);
       const res = await identityComponent.generateBicep(context, clonedInputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 
@@ -1114,7 +1114,7 @@ export async function generateBicepsV3(
       const resource = Container.get<APIMResource>(ComponentNames.APIM);
       const res = await resource.generateBicep(context, inputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 
@@ -1125,7 +1125,7 @@ export async function generateBicepsV3(
       const resource = Container.get<KeyVaultResource>(ComponentNames.KeyVault);
       const res = await resource.generateBicep(context, inputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 
@@ -1139,7 +1139,7 @@ export async function generateBicepsV3(
       const sqlResource = Container.get<AzureSqlResource>(ComponentNames.AzureSQL);
       const res = await sqlResource.generateBicep(context, clonedInputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 
@@ -1150,7 +1150,7 @@ export async function generateBicepsV3(
       const aadApp = Container.get<AadApp>(ComponentNames.AadApp);
       const res = await aadApp.generateBicep(context, inputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 

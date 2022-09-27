@@ -197,7 +197,7 @@ export const localTunnelDisplayMessages = Object.freeze({
   checkNumber: (n: number) =>
     `${stepPrefix(
       n
-    )} Teams Toolkit is starting the local tunnel service to forward public ngrok URL to local port and inspect traffic. Toolkit uses tunnel named 'bot' to forward the bot traffic, so make sure it is defined in the ngrok.yml, or you can customize it using 'tunnelName' in 'Start local tunnel' task`,
+    )} Teams Toolkit is starting the local tunnel service to forward public ngrok URL to local port and inspect traffic. Toolkit uses tunnel named 'bot' to forward the bot traffic, so make sure it is defined in the ngrok.yml, or you can customize it using 'tunnelName' in 'Start local tunnel' task. Open terminal window to see the running details.`,
   stepMessage: (tunnelName: string, configFile: string) =>
     `Starting tunnel named '${tunnelName}' using configuration file '${configFile}'`,
   summary: "Summary:",

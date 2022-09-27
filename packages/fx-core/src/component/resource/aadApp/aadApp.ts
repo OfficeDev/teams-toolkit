@@ -36,6 +36,8 @@ import { CommonErrorHandlerMW } from "../../../core/middleware/CommonErrorHandle
 import { BuiltInFeaturePluginNames } from "../../../plugins/solution/fx-solution/v3/constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { AppUser } from "../appManifest/interfaces/appUser";
+import { Language } from "../../../plugins/solution/fx-solution/constants";
+import { getComponent } from "../../workflow";
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";
@@ -71,11 +73,25 @@ export class AadApp implements CloudResource {
     needTab: boolean,
     needBot: boolean
   ): Promise<Result<undefined, FxError>> {
+    let needMe = false;
+    if (needBot) {
+      const teamsBotComponent = getComponent(context.projectSetting, ComponentNames.TeamsBot);
+      if (
+        teamsBotComponent!.capabilities &&
+        teamsBotComponent!.capabilities.includes("message-extension")
+      ) {
+        needMe = true;
+        if (teamsBotComponent!.capabilities.length === 1) {
+          needBot = false;
+        }
+      }
+    }
     const res = await createAuthFiles(
       inputs,
-      context,
+      (context.projectSetting.programmingLanguage as string) ?? Language.JavaScript,
       needTab,
       needBot,
+      needMe,
       isVSProject(context.projectSetting)
     );
     if (res.isErr()) return err(res.error);

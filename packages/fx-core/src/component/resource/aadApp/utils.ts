@@ -55,9 +55,10 @@ export function convertContext(context: ContextV3, inputs: InputsWithProjectPath
 
 export async function createAuthFiles(
   input: Inputs,
-  ctx: v2.Context,
+  language: string,
   needTab: boolean,
   needBot: boolean,
+  needMe: boolean,
   isVsProject = false
 ): Promise<Result<unknown, FxError>> {
   const projectPath = input.projectPath;
@@ -70,7 +71,6 @@ export async function createAuthFiles(
     return err(e);
   }
 
-  const language = (ctx.projectSetting.programmingLanguage as string) ?? Language.JavaScript;
   const languageFolderResult = validateAndParseLanguage(language);
   if (languageFolderResult.isErr()) {
     return err(languageFolderResult.error);

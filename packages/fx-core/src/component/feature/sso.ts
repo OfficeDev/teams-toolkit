@@ -253,16 +253,12 @@ function getUpdateComponents(
   let needsBot = false;
   let needsTab = false;
   const teamsBotComponent = getComponent(projectSetting, ComponentNames.TeamsBot);
-  if (teamsBotComponent && !teamsBotComponent.sso) {
-    if (
-      teamsBotComponent.capabilities &&
-      teamsBotComponent.capabilities.length === 1 &&
-      teamsBotComponent.capabilities.includes("message-extension")
-    ) {
-      needsBot = false;
-    } else {
-      needsBot = teamsBotComponent.hosting !== ComponentNames.Function;
-    }
+  if (
+    teamsBotComponent &&
+    !teamsBotComponent.sso &&
+    teamsBotComponent.hosting !== ComponentNames.Function
+  ) {
+    needsBot = true;
   }
   const teamsTabComponent = getComponent(projectSetting, ComponentNames.TeamsTab);
   if (teamsTabComponent && !teamsTabComponent.sso) {
@@ -292,21 +288,6 @@ export function canAddSso(
     const teamsBotComponent = getComponent(projectSettings, ComponentNames.TeamsBot);
 
     if (teamsBotComponent) {
-      if (
-        teamsBotComponent.capabilities &&
-        teamsBotComponent.capabilities.length === 1 &&
-        teamsBotComponent.capabilities.includes("message-extension")
-      ) {
-        return returnError
-          ? err(
-              new SystemError(
-                SolutionSource,
-                SolutionError.AddSsoNotSupported,
-                getLocalizedString("core.addSso.onlyMeNotSupport")
-              )
-            )
-          : false;
-      }
       if (teamsBotComponent.hosting === ComponentNames.Function) {
         return returnError
           ? err(

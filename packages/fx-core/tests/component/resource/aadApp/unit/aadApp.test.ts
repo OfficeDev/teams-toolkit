@@ -10,14 +10,27 @@ import faker from "faker";
 import { MockedAzureAccountProvider, MockedM365Provider } from "../../../../plugins/solution/util";
 import { AadApp } from "../../../../../src/component/resource/aadApp/aadApp";
 import { setTools } from "../../../../../src/core/globalVars";
-import { MockTools } from "../../../../core/utils";
+import { MockTools, randomAppName } from "../../../../core/utils";
 import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
 import { AadAppClient } from "../../../../../src/component/resource/aadApp/aadAppClient";
+import { InputsWithProjectPath, ok, Platform } from "@microsoft/teamsfx-api";
+import path from "path";
+import * as os from "os";
+import * as utils from "../../../../../src/component/resource/aadApp/utils";
 
 describe("aadApp", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
+
+  const appName = `unittest${randomAppName()}`;
+  const projectPath = path.join(os.homedir(), "TeamsApps", appName);
+  const inputs: InputsWithProjectPath = {
+    projectPath: projectPath,
+    platform: Platform.VSCode,
+    language: "typescript",
+    "app-name": appName,
+  };
 
   const userList: AppUser = {
     tenantId: faker.datatype.uuid(),
@@ -258,5 +271,34 @@ describe("aadApp", () => {
     const aadApp = new AadApp();
     const res = await aadApp.grantPermission(ctx, userList);
     chai.assert.isTrue(res.isErr());
+  });
+
+  it("generateAuthFiles with me", async function () {
+    sandbox.stub(utils, "createAuthFiles").resolves(ok(undefined));
+    ctx.projectSetting.components = [
+      {
+        name: "teams-bot",
+        hosting: "azure-web-app",
+        provision: false,
+        deploy: true,
+        capabilities: ["message-extension"],
+        build: true,
+        folder: "bot",
+        sso: true,
+      },
+      {
+        name: "bot-service",
+        provision: true,
+      },
+      {
+        name: "azure-web-app",
+        scenario: "Bot",
+        connections: ["teams-bot"],
+      },
+    ];
+
+    const aadApp = new AadApp();
+    const res = await aadApp.generateAuthFiles(ctx, inputs, false, true);
+    chai.assert.isTrue(res.isOk());
   });
 });

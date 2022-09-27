@@ -56,9 +56,9 @@ export function convertContext(context: ContextV3, inputs: InputsWithProjectPath
 export async function createAuthFiles(
   input: Inputs,
   language: string,
-  needTab: boolean,
-  needBot: boolean,
-  needMe: boolean,
+  tab: boolean,
+  botCapability: boolean,
+  meCapability: boolean,
   isVsProject = false
 ): Promise<Result<unknown, FxError>> {
   const projectPath = input.projectPath;
@@ -96,7 +96,7 @@ export async function createAuthFiles(
       await fs.ensureDir(authFolder);
     }
 
-    if (needTab) {
+    if (tab) {
       const tabFolderExists = await fs.pathExists(tabFolder);
       if (!tabFolderExists) {
         await fs.ensureDir(tabFolder);
@@ -154,7 +154,7 @@ export async function createAuthFiles(
       }
     }
 
-    if (needBot) {
+    if (botCapability) {
       const botFolderExists = await fs.pathExists(botFolder);
       if (!botFolderExists) {
         await fs.ensureDir(botFolder);
@@ -220,10 +220,10 @@ export async function createAuthFiles(
       }
     }
   } catch (error) {
-    if (needTab && (await fs.pathExists(tabFolder))) {
+    if (tab && (await fs.pathExists(tabFolder))) {
       await fs.remove(tabFolder);
     }
-    if (needBot && (await fs.pathExists(botFolder))) {
+    if (botCapability && (await fs.pathExists(botFolder))) {
       await fs.remove(botFolder);
     }
     const e = new SystemError(

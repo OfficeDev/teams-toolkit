@@ -73,16 +73,18 @@ export class AadApp implements CloudResource {
     needTab: boolean,
     needBot: boolean
   ): Promise<Result<undefined, FxError>> {
-    let needMe = false;
+    let botCapability = false;
+    let meCapability = false;
     if (needBot) {
+      botCapability = true;
       const teamsBotComponent = getComponent(context.projectSetting, ComponentNames.TeamsBot);
       if (
         teamsBotComponent!.capabilities &&
         teamsBotComponent!.capabilities.includes("message-extension")
       ) {
-        needMe = true;
+        meCapability = true;
         if (teamsBotComponent!.capabilities.length === 1) {
-          needBot = false;
+          botCapability = false;
         }
       }
     }
@@ -90,8 +92,8 @@ export class AadApp implements CloudResource {
       inputs,
       (context.projectSetting.programmingLanguage as string) ?? Language.JavaScript,
       needTab,
-      needBot,
-      needMe,
+      botCapability,
+      meCapability,
       isVSProject(context.projectSetting)
     );
     if (res.isErr()) return err(res.error);

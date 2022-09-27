@@ -111,6 +111,30 @@ describe("SSO can add in project", () => {
     assert.isTrue(res);
   });
 
+  it("shouldn't AddSso in me project with sso", async () => {
+    const projectSetting: ProjectSettingsV3 = {
+      ...basicProjectSetting,
+      components: [
+        {
+          name: "teams-bot",
+          hosting: "azure-web-app",
+          deploy: true,
+          capabilities: ["message-extension"],
+          build: true,
+          folder: "bot",
+          sso: true,
+        },
+        {
+          name: "aad-app",
+          provision: true,
+          deploy: true,
+        },
+      ],
+    };
+    const res = await canAddSso(projectSetting);
+    assert.isFalse(res);
+  });
+
   it("shouldn't AddSso in bot project with function", async () => {
     const projectSetting: ProjectSettingsV3 = {
       ...basicProjectSetting,
@@ -209,22 +233,6 @@ describe("SSO feature", () => {
   it("add sso with generateBicep failed", async () => {
     const aadComponent = Container.get(ComponentNames.AadApp) as any;
     sandbox.stub(aadComponent, "generateBicep").resolves(err(undefined));
-
-    const inputs: InputsWithProjectPath = {
-      projectPath: projectPath,
-      platform: Platform.VSCode,
-      language: "typescript",
-      "app-name": appName,
-    };
-
-    const component = Container.get(ComponentNames.SSO) as any;
-    const ssoRes = await component.add(context, inputs);
-    assert.isTrue(ssoRes.isErr());
-  });
-
-  it("add sso with generateAuthFiles failed", async () => {
-    const aadComponent = Container.get(ComponentNames.AadApp) as any;
-    sandbox.stub(aadComponent, "generateAuthFiles").resolves(err(undefined));
 
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,

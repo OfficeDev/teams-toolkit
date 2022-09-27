@@ -336,7 +336,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     this.writeEmitter.fire(
       `\r\n${localTunnelDisplayMessages.forwardingUrl(ngrokTunnel.src, ngrokTunnel.dist)}\r\n`
     );
-    this.writeEmitter.fire(`\r\n${localTunnelDisplayMessages.successMessage}\r\n`);
+    this.writeEmitter.fire(`\r\n${localTunnelDisplayMessages.successMessage}\r\n\r\n`);
 
     await this.progressHandler.end(true);
   }

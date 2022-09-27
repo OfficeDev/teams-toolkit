@@ -223,6 +223,22 @@ export class SPFxNodeChecker extends NodeChecker {
   }
 }
 
+export class SPFxNodeCheckerV1_16 extends NodeChecker {
+  protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
+  protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForSPFx;
+  protected readonly _type = DepsType.SpfxNodeV1_16;
+  protected readonly _minErrorVersion = 15;
+  protected readonly _maxErrorVersion = 17;
+
+  protected async getNodeNotSupportedHelpLink(): Promise<string> {
+    return nodeNotSupportedForSPFxHelpLink;
+  }
+
+  protected async getSupportedVersions(): Promise<string[]> {
+    return ["16"];
+  }
+}
+
 export class AzureNodeChecker extends NodeChecker {
   protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
   protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForAzure;

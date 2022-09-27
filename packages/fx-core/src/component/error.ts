@@ -1,6 +1,9 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
-import { ErrorMessage, LocalizedMessage } from "./messages";
+import { concatErrorMessageWithSuggestions, ErrorMessage, LocalizedMessage } from "./messages";
 
 export class ActionNotExist extends SystemError {
   constructor(action: string) {
@@ -44,17 +47,8 @@ export class invalidProjectSettings extends SystemError {
 
 export class PreconditionError extends UserError {
   constructor(source: string, messages: LocalizedMessage, suggestions: LocalizedMessage[]) {
-    const msg0 = getDefaultString(
-      "plugins.baseErrorMessage",
-      messages.default,
-      suggestions.map((suggestion) => suggestion.default).join(" ")
-    );
-    const msg1 = getLocalizedString(
-      "plugins.baseErrorMessage",
-      messages.localized,
-      suggestions.map((suggestion) => suggestion.localized).join(" ")
-    );
-    super(source, new.target.name, msg0, msg1);
+    const msgWithSuggestions = concatErrorMessageWithSuggestions(messages, suggestions);
+    super(source, new.target.name, msgWithSuggestions.default, msgWithSuggestions.localized);
   }
 }
 
@@ -73,28 +67,17 @@ export function CheckThrowSomethingMissing<T>(
 
 export class PackDirectoryExistenceError extends UserError {
   constructor(source: string) {
-    const msg0 = getDefaultString(
-      "plugins.baseErrorMessage",
-      ErrorMessage.SomethingIsNotExisting("pack directory").default,
-      ErrorMessage.RecreateTheProject.default
+    const msgWithSuggestions = concatErrorMessageWithSuggestions(
+      ErrorMessage.SomethingIsNotExisting("pack directory"),
+      [ErrorMessage.RecreateTheProject]
     );
-    const msg1 = getLocalizedString(
-      "plugins.baseErrorMessage",
-      ErrorMessage.SomethingIsNotExisting("pack directory").localized,
-      ErrorMessage.RecreateTheProject.localized
-    );
-    super(source, new.target.name, msg0, msg1);
+    super(source, new.target.name, msgWithSuggestions.default, msgWithSuggestions.localized);
   }
 }
 
 export class ResourceNotFoundError extends SystemError {
   constructor(source: string, message: string) {
-    super(
-      source,
-      new.target.name,
-      getDefaultString("error.function.FindAppError"),
-      getLocalizedString("error.function.FindAppError")
-    );
+    super(source, new.target.name, getDefaultString(message), getLocalizedString(message));
   }
 }
 

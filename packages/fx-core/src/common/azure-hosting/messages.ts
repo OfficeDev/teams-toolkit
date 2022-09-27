@@ -15,4 +15,5 @@ export class Messages {
 
   static deployFailed = (status: number): string =>
     `Deployment is failed with error code: ${status}.`;
+  static zipDeploy = "Uploading application package.";
 }

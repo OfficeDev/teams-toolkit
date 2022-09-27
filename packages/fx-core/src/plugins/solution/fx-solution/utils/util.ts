@@ -18,13 +18,11 @@ import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { SolutionTelemetryComponentName, SolutionTelemetryProperty } from "../constants";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { ComponentNames } from "../../../../component/constants";
+import { ComponentNames, PathConstants } from "../../../../component/constants";
 import { updateAzureParameters } from "../arm";
 import { backupFiles } from "./backupFiles";
 import fs from "fs-extra";
 import path from "path";
-import { CommonStrings } from "../../../resource/bot/resources/strings";
-import { DeployConfigs } from "../../../resource/bot/constants";
 import { DeployConfigsConstants } from "../../../../common/azure-hosting/hostingConstant";
 import { FrontendPathInfo } from "../../../resource/frontend/constants";
 
@@ -147,10 +145,13 @@ export async function handleConfigFilesWhenSwitchAccount(
 
   if (hasSwitchedSubscription) {
     const envName = envInfo.envName;
-    const maybeBotFolder = path.join(projectPath, CommonStrings.BOT_WORKING_DIR_NAME);
+    const maybeBotFolder = path.join(projectPath, PathConstants.botWorkingDir);
     const maybeBotDeploymentFile = path.join(
       maybeBotFolder,
-      path.join(DeployConfigs.DEPLOYMENT_FOLDER, DeployConfigsConstants.DEPLOYMENT_INFO_FILE)
+      path.join(
+        DeployConfigsConstants.DEPLOYMENT_FOLDER,
+        DeployConfigsConstants.DEPLOYMENT_INFO_FILE
+      )
     );
     if (await fs.pathExists(maybeBotDeploymentFile)) {
       try {
@@ -171,7 +172,10 @@ export async function handleConfigFilesWhenSwitchAccount(
     const maybeTabFolder = path.join(projectPath, FrontendPathInfo.WorkingDir);
     const maybeTabDeploymentFile = path.join(
       maybeTabFolder,
-      path.join(DeployConfigs.DEPLOYMENT_FOLDER, DeployConfigsConstants.DEPLOYMENT_INFO_FILE)
+      path.join(
+        DeployConfigsConstants.DEPLOYMENT_FOLDER,
+        DeployConfigsConstants.DEPLOYMENT_INFO_FILE
+      )
     );
     if (await fs.pathExists(maybeTabDeploymentFile)) {
       try {

@@ -290,3 +290,7 @@ export const FunctionAppSetting = {
   },
   allowedAppIdSep: ";",
 };
+
+export const PathConstants = {
+  botWorkingDir: "bot",
+};

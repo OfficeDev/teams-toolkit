@@ -37,11 +37,11 @@ import {
   NotificationOptionItem,
   WorkflowOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
-import { QuestionNames } from "../../../src/plugins/resource/bot/constants";
-import { AppServiceOptionItem } from "../../../src/plugins/resource/bot/question";
 import Container from "typedi";
 import child_process from "child_process";
 import { AppSettingConstants } from "../../../src/component/code/appSettingUtils";
+import { QuestionNames } from "../../../src/component/feature/bot/constants";
+import { AppServiceOptionItem } from "../../../src/component/feature/bot/question";
 describe("Bot Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();

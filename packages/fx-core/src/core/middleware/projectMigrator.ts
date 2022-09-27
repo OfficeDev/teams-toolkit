@@ -1193,12 +1193,10 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
     environmentManager.getDefaultEnvName()
   );
   if (!(await fs.pathExists(path.join(fxConfig, parameterEnvFileName)))) {
-    throw err(
-      new SystemError(
-        CoreSource,
-        "GenerateArmTemplateFailed",
-        `Failed to generate ${parameterEnvFileName} on migration`
-      )
+    throw new SystemError(
+      CoreSource,
+      "GenerateArmTemplateFailed",
+      `Failed to generate ${parameterEnvFileName} on migration`
     );
   }
 }

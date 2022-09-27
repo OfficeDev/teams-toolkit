@@ -24,12 +24,13 @@ import { MockTools, randomAppName } from "../../core/utils";
 import "../../../src/component/core";
 import { environmentManager } from "../../../src/core/environment";
 import { ComponentNames, ProgrammingLanguage } from "../../../src/component/constants";
-import { FunctionScaffold } from "../../../src/plugins/resource/function/ops/scaffold";
+import { FunctionScaffold } from "../../../src/component/code/api/scaffold";
 import { bicepUtils } from "../../../src/component/utils";
 import { Container } from "typedi";
-import { FunctionDeploy } from "../../../src/plugins/resource/function/ops/deploy";
 import child_process from "child_process";
-import { ApiCodeProvider } from "../../../src/component/code/apiCode";
+import { ApiCodeProvider } from "../../../src/component/code/api/apiCode";
+import { DepsManager } from "../../../src/common/deps-checker";
+import { funcDepsHelper } from "../../../src/component/code/api/depsChecker/funcHelper";
 describe("Api Feature", () => {
   const sandbox = createSandbox();
   const tools = new MockTools();
@@ -132,7 +133,8 @@ describe("Api Feature", () => {
       folder: "api",
     });
     const component = Container.get(ComponentNames.TeamsApi) as any;
-    sandbox.stub(FunctionDeploy, "installFuncExtensions").resolves();
+    sandbox.stub(DepsManager.prototype, "getStatus").resolves([{ command: "" } as any]);
+    sandbox.stub(funcDepsHelper, "installFuncExtension").resolves();
     const execStub = sandbox.stub(child_process, "exec").yields();
     sandbox.stub(ApiCodeProvider.prototype, <any>"handleDotnetChecker").resolves();
     const inputs: InputsWithProjectPath = {
@@ -150,9 +152,10 @@ describe("Api Feature", () => {
       folder: "api",
     });
     const component = Container.get(ComponentNames.TeamsApi) as any;
-    sandbox.stub(FunctionDeploy, "installFuncExtensions").resolves();
     const execStub = sandbox.stub(child_process, "exec").yields();
     sandbox.stub(ApiCodeProvider.prototype, <any>"handleDotnetChecker").resolves();
+    sandbox.stub(DepsManager.prototype, "getStatus").resolves([{ command: "" } as any]);
+    sandbox.stub(funcDepsHelper, "installFuncExtension").resolves();
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,

@@ -6,10 +6,7 @@ import { ConfigFolderName, InputConfigsFolderName, Inputs, Platform } from "@mic
 import * as path from "path";
 import * as uuid from "uuid";
 import { MockedV2Context } from "../util";
-import {
-  scaffoldLocalDebugSettings,
-  updateNgrokConfigFile,
-} from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
+import { scaffoldLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
 import {
   AzureSolutionQuestionNames,
   BotScenario,

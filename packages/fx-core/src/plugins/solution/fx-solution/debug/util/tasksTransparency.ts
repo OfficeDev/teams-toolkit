@@ -384,7 +384,7 @@ function startLocalTunnel(): Record<string, unknown> {
     type: "teamsfx",
     command: "debug-start-local-tunnel",
     args: {
-      ngrokArgs: "http 3978",
+      ngrokArgs: "http 3978 --log=stdout --log-format=logfmt",
     },
     isBackground: true,
     problemMatcher: "$teamsfx-local-tunnel-watch",

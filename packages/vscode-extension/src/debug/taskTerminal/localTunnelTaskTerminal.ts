@@ -27,10 +27,8 @@ const ngrokTimeout = 1 * 60 * 1000;
 const ngrokTimeInterval = 10 * 1000;
 const ngrokEndpointRegex =
   /obj=tunnels name=(?<tunnelName>.*) addr=(?<src>.*) url=(?<endpoint>https:\/\/([\S])*)/;
-const ngrokWebServiceRegex =
-  /msg="starting web service" obj=web addr=127.0.0.1:(?<webServicePort>\d+)/;
-const ngrokTunnelApi = (port: string) => `http://127.0.0.1:${port}/api/tunnels`;
-const defaultNgrokWebServicePort = "4040";
+const ngrokWebServiceRegex = /msg="starting web service" obj=web addr=(?<webServiceUrl>([\S])*)/;
+const defaultNgrokWebServiceUrl = "http://127.0.0.1:4040/api/tunnels";
 
 type LocalTunnelTaskStatus = {
   endpoint?: EndpointInfo;
@@ -250,8 +248,8 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     try {
       const matches = data.match(ngrokWebServiceRegex);
       if (matches && matches?.length > 1) {
-        const webServicePort = matches[1];
-        this.status.tunnelInspection = ngrokTunnelApi(webServicePort);
+        const webServiceAddr = matches[1];
+        this.status.tunnelInspection = `http://${webServiceAddr}`;
         return true;
       }
     } catch {
@@ -268,9 +266,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       }
       const localEnvManager = new LocalEnvManager();
       webServiceUrl =
-        this.args.tunnelInspection ??
-        this.status.tunnelInspection ??
-        ngrokTunnelApi(defaultNgrokWebServicePort);
+        this.args.tunnelInspection ?? this.status.tunnelInspection ?? defaultNgrokWebServiceUrl;
       const endpoint = await localEnvManager.getNgrokTunnelFromApi(webServiceUrl);
       if (endpoint) {
         this.isOutputSummary = true;

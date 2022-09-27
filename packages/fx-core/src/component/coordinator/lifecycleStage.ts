@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DriverContext, Step } from "../interface/buildAndDeployArgs";
+import { Step } from "../interface/buildAndDeployArgs";
 import { PrerequisiteError } from "../error/componentError";
 import { StepDriver } from "../interface/stepDriver";
 import { Container } from "typedi";
+import { DriverContext } from "../interface/commonArgs";
 
 /**
  * entrance of the all lifecycle stage

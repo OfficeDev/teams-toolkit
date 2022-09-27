@@ -55,6 +55,28 @@ export async function getNgrokHttpUrl(addr: string | number): Promise<string | u
   return undefined;
 }
 
+// TODO: support http://127.0.0.1:4040/api/tunnels/bot
+export async function getNgrokTunnelFromApi(
+  webServiceUrl: string
+): Promise<{ src: string; dist: string } | undefined> {
+  try {
+    const resp = await axios.get(webServiceUrl);
+    if (resp && resp.data) {
+      const tunnels = (<NgrokApiTunnelsResponse>resp.data).tunnels;
+      // tunnels will be empty if tunnel connection is not completed
+      for (const tunnel of tunnels) {
+        if (tunnel.proto === "https") {
+          return { src: tunnel.config.addr, dist: tunnel.public_url };
+        }
+      }
+    }
+  } catch (err) {
+    // ECONNREFUSED if ngrok is not started
+  }
+
+  return undefined;
+}
+
 function removeTrailingSlash(str: string): string {
   return str.replace(/\/$/, "");
 }

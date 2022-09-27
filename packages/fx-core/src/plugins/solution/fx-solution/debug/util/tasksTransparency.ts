@@ -378,13 +378,13 @@ function installAzureFunctionsBindingExtensions(): CommentJSONValue {
 }
 
 function startLocalTunnel(): Record<string, unknown> {
+  // TODO: add comment
   return {
     label: "Start local tunnel",
     type: "teamsfx",
     command: "debug-start-local-tunnel",
     args: {
-      configFile: ".fx/configs/ngrok.yml",
-      keepAlive: false,
+      ngrokArgs: "http 3978",
     },
     isBackground: true,
     problemMatcher: "$teamsfx-local-tunnel-watch",

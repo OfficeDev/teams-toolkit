@@ -200,14 +200,3 @@ export async function updateCommentJson(
 
   await fs.writeFile(path, commentJson.stringify(finalData, null, 4));
 }
-
-export async function updateNgrokConfigFile(
-  includeBot: boolean,
-  targetFile: string
-): Promise<void> {
-  if (!includeBot || (await fs.pathExists(targetFile))) {
-    return;
-  }
-  const ngrokConfigPath = path.join(getTemplatesFolder(), "debug", "ngrok.yml");
-  await fs.copyFile(ngrokConfigPath, targetFile);
-}

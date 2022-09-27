@@ -42,27 +42,6 @@ describe("solution.debug.scaffolding", () => {
     `./data/.${ConfigFolderName}/${InputConfigsFolderName}/ngrok.yml`
   );
 
-  describe("updateNgrokConfigFile", () => {
-    beforeEach(() => {
-      fs.emptyDirSync(path.resolve(__dirname, "./data/"));
-      fs.ensureDirSync(
-        path.resolve(__dirname, `./data/.${ConfigFolderName}/${InputConfigsFolderName}`)
-      );
-    });
-
-    it(`happy path: bot`, async () => {
-      await updateNgrokConfigFile(true, expectedNgrokConfigFile);
-      const hasNgrokConfigFile = await fs.pathExists(expectedNgrokConfigFile);
-      chai.assert.isTrue(hasNgrokConfigFile);
-    });
-
-    it(`happy path: tab`, async () => {
-      await updateNgrokConfigFile(false, expectedNgrokConfigFile);
-      const hasNgrokConfigFile = await fs.pathExists(expectedNgrokConfigFile);
-      chai.assert.isFalse(hasNgrokConfigFile);
-    });
-  });
-
   describe("scaffoldLocalDebugSettings", () => {
     let inputs: Inputs;
 

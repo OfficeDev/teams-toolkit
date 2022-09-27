@@ -57,7 +57,6 @@ import {
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
-import { LocalTunnelTaskTerminal } from "./debug/taskTerminal/localTunnelTaskTerminal";
 import { isAADEnabled } from "@microsoft/teamsfx-core/build/common/tools";
 
 export let VS_CODE_UI: VsCodeUI;

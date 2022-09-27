@@ -23,7 +23,7 @@ import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { getPortsInUse, getPortsFromProject } from "./portChecker";
 import { getAppSPFxVersion, waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
-import { CoreSource, ReadFileError, NgrokConfigError } from "../../core/error";
+import { CoreSource, ReadFileError } from "../../core/error";
 import { DepsType } from "../deps-checker/depsChecker";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
 import { LocalCertificate, LocalCertificateManager } from "./localCertificateManager";

@@ -32,7 +32,6 @@ import { getResourceFolder } from "../../folder";
 import { globalStateUpdate } from "../../common/globalState";
 import {
   UpgradeCanceledError,
-  SolutionConfigError,
   ProjectSettingError,
   SPFxConfigError,
   NotJsonError,
@@ -45,19 +44,13 @@ import path from "path";
 import os from "os";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { loadProjectSettings } from "./projectSettingsLoader";
-import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
 import {
   BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
 } from "../../plugins/solution/fx-solution/question";
-import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
-import {
-  getActivatedResourcePlugins,
-  getActivatedV2ResourcePlugins,
-} from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
 import {
   MANIFEST_LOCAL,
@@ -77,9 +70,6 @@ import {
 import * as dotenv from "dotenv";
 import { PlaceHolders } from "../../component/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../component/resource/spfx/utils/utils";
-import util from "util";
-import { NamedArmResourcePluginAdaptor } from "../../plugins/solution/fx-solution/v2/adaptor";
-import { setActivatedResourcePluginsV2 } from "../../plugins/solution/fx-solution/v2/utils";
 import { LocalEnvProvider } from "../../common/local/localEnvProvider";
 import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";

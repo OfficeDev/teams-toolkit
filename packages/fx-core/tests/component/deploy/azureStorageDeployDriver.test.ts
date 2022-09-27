@@ -5,8 +5,8 @@ import "mocha";
 import * as sinon from "sinon";
 import * as tools from "../../../src/common/tools";
 import { AzureStorageDeployDriver } from "../../../src/component/deploy/azureStorageDeployDriver";
-import { DeployArgs, DriverContext } from "../../../src/component/interface/buildAndDeployArgs";
-import { TestAzureAccountProvider } from "../util/azureAccountMock";
+import { DeployArgs } from "../../../src/component/interface/buildAndDeployArgs";
+import { FakeTokenCredentials, TestAzureAccountProvider } from "../util/azureAccountMock";
 import { TestLogProvider } from "../util/logProviderMock";
 import { expect, use as chaiUse } from "chai";
 import chaiAsPromised from "chai-as-promised";
@@ -25,6 +25,7 @@ import { BlobDeleteResponse, ContainerClient } from "@azure/storage-blob";
 import { MyTokenCredential } from "../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
 
+import { DriverContext } from "../../../src/component/interface/commonArgs";
 chaiUse(chaiAsPromised);
 
 function getMockStorageAccount1(storageAccount?: StorageAccount) {

@@ -7,7 +7,7 @@ import { ExecuteCommandError } from "../error/componentError";
 import { BaseBuildDriver } from "./baseBuildDriver";
 import { Service } from "typedi";
 import { StepDriver } from "../interface/stepDriver";
-import { DriverContext } from "../interface/buildAndDeployArgs";
+import { DriverContext } from "../interface/commonArgs";
 
 @Service("build/dotnet")
 export class DotnetBuildDriver implements StepDriver {

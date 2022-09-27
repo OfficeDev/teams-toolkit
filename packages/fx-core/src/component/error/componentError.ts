@@ -114,6 +114,33 @@ export class ExternalApiCallError extends BaseComponentInnerError {
     super("UserError", name, message, messageParams, suggestionKey, detail, helpLink);
     this.statusCode = statusCode;
   }
+
+  static getAzureCredentialError(error?: unknown): ExternalApiCallError {
+    error = error ?? "";
+    return new ExternalApiCallError(
+      "GetAzureCredentialError",
+      "plugins.bot.FailRetrieveAzureCredentials",
+      -1,
+      undefined,
+      undefined,
+      typeof error === "string" ? error : JSON.stringify(error)
+    );
+  }
+
+  static getSasTokenError(): ExternalApiCallError {
+    return new ExternalApiCallError(
+      "AzureStorageSASToeknEmpty",
+      "error.frontend.GetContainerError",
+      -1,
+      [DeployConstant.AZURE_STORAGE_CONTAINER_NAME],
+      [
+        "plugins.frontend.checkSystemTimeTip",
+        // eslint-disable-next-line no-secrets/no-secrets
+        "plugins.frontend.checkStoragePermissionsTip",
+        "plugins.frontend.checkNetworkTip",
+      ]
+    );
+  }
 }
 
 export class ExecuteCommandError extends BaseComponentInnerError {

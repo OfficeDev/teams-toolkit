@@ -4,7 +4,8 @@
 import "mocha";
 import * as sinon from "sinon";
 import * as tools from "../../../src/common/tools";
-import { DeployArgs, DriverContext } from "../../../src/component/interface/buildAndDeployArgs";
+import { DeployArgs } from "../../../src/component/interface/buildAndDeployArgs";
+import { FakeTokenCredentials, TestAzureAccountProvider } from "../util/azureAccountMock";
 import { TestAzureAccountProvider } from "../util/azureAccountMock";
 import { TestLogProvider } from "../util/logProviderMock";
 import * as appService from "@azure/arm-appservice";
@@ -16,6 +17,7 @@ import fs from "fs-extra";
 import chaiAsPromised from "chai-as-promised";
 import { AzureFunctionDeployDriver } from "../../../src/component/deploy/azureFunctionDeployDriver";
 import { MyTokenCredential } from "../../plugins/solution/util";
+import { DriverContext } from "../../../src/component/interface/commonArgs";
 chaiUse(chaiAsPromised);
 
 describe("Azure Function Deploy Driver test", () => {

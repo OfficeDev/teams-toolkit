@@ -8,18 +8,6 @@ import { DeployConstant } from "../constant/deployConstant";
  * call external api error when deploy
  */
 export class DeployExternalApiCallError extends ExternalApiCallError {
-  static getAzureCredentialError(error?: unknown): DeployExternalApiCallError {
-    error = error ?? "";
-    return new DeployExternalApiCallError(
-      "GetAzureCredentialError",
-      "plugins.bot.FailRetrieveAzureCredentials",
-      -1,
-      undefined,
-      undefined,
-      typeof error === "string" ? error : JSON.stringify(error)
-    );
-  }
-
   static listPublishingCredentialsError(e?: unknown): DeployExternalApiCallError;
   static listPublishingCredentialsError(
     statusCode = -1,
@@ -65,21 +53,6 @@ export class DeployExternalApiCallError extends ExternalApiCallError {
       [operateName, errorCode?.toString() ?? ""],
       ["plugins.frontend.checkSystemTimeTip", "plugins.frontend.checkNetworkTip"],
       typeof error === "string" ? error : JSON.stringify(error)
-    );
-  }
-
-  static getSasTokenError(): DeployExternalApiCallError {
-    return new DeployExternalApiCallError(
-      "AzureStorageSASToeknEmpty",
-      "error.frontend.GetContainerError",
-      -1,
-      [DeployConstant.AZURE_STORAGE_CONTAINER_NAME],
-      [
-        "plugins.frontend.checkSystemTimeTip",
-        // eslint-disable-next-line no-secrets/no-secrets
-        "plugins.frontend.checkStoragePermissionsTip",
-        "plugins.frontend.checkNetworkTip",
-      ]
     );
   }
 

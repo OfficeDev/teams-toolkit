@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 export class HttpStatusCode {
-  public static readonly HTTP_OK_RESPONSE_CODE = 200;
-  public static readonly HTTP_CREATE_RESPONSE_CODE = 201;
-  public static readonly HTTP_OK_ACCEPT_CODE = 202;
+  public static readonly OK = 200;
+  public static readonly CREATED = 201;
+  public static readonly ACCEPTED = 202;
 }

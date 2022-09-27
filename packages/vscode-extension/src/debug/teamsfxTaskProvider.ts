@@ -48,30 +48,44 @@ const customTasks = Object.freeze({
   [TaskCommand.checkPrerequisites]: {
     createTerminal: (d: vscode.TaskDefinition) => new PrerequisiteTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
   },
   [TaskCommand.npmInstall]: {
     createTerminal: (d: vscode.TaskDefinition) => new NpmInstallTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
   },
   [TaskCommand.startLocalTunnel]: {
     createTerminal: (d: vscode.TaskDefinition) => new LocalTunnelTaskTerminal(d),
-    presentationReveal: vscode.TaskRevealKind.Always,
+    presentationReveal: vscode.TaskRevealKind.Silent,
+    presentationEcho: true,
+    presentationshowReuseMessage: true,
   },
   [TaskCommand.setUpTab]: {
     createTerminal: (d: vscode.TaskDefinition) => new SetUpTabTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
   },
   [TaskCommand.setUpBot]: {
     createTerminal: (d: vscode.TaskDefinition) => new SetUpBotTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
   },
   [TaskCommand.setUpSSO]: {
     createTerminal: (d: vscode.TaskDefinition) => new SetUpSSOTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
   },
   [TaskCommand.prepareManifest]: {
     createTerminal: (d: vscode.TaskDefinition) => new PrepareManifestTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
   },
 });
 
@@ -214,6 +228,8 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     );
 
     newTask.presentationOptions.reveal = customTask.presentationReveal;
+    newTask.presentationOptions.echo = customTask.presentationEcho;
+    newTask.presentationOptions.showReuseMessage = customTask.presentationshowReuseMessage;
     return newTask;
   }
 

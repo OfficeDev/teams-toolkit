@@ -32,7 +32,6 @@ import { getResourceFolder } from "../../folder";
 import { globalStateUpdate } from "../../common/globalState";
 import {
   UpgradeCanceledError,
-  SolutionConfigError,
   ProjectSettingError,
   SPFxConfigError,
   NotJsonError,
@@ -45,19 +44,13 @@ import path from "path";
 import os from "os";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { loadProjectSettings } from "./projectSettingsLoader";
-import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
 import {
   BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
 } from "../../plugins/solution/fx-solution/question";
-import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
-import {
-  getActivatedResourcePlugins,
-  getActivatedV2ResourcePlugins,
-} from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
 import {
   MANIFEST_LOCAL,
@@ -77,27 +70,30 @@ import {
 import * as dotenv from "dotenv";
 import { PlaceHolders } from "../../component/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../component/resource/spfx/utils/utils";
-import util from "util";
-import { NamedArmResourcePluginAdaptor } from "../../plugins/solution/fx-solution/v2/adaptor";
-import { setActivatedResourcePluginsV2 } from "../../plugins/solution/fx-solution/v2/utils";
 import { LocalEnvProvider } from "../../common/local/localEnvProvider";
 import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../../common/utils";
-import Container from "typedi";
+import { Container } from "typedi";
 import { BicepComponent } from "../../component/bicep";
 import { ComponentNames, Scenarios } from "../../component/constants";
 import { getComponent } from "../../component/workflow";
 import { bicepUtils, createContextV3, generateConfigBiceps } from "../../component/utils";
 import { assign, cloneDeep } from "lodash";
 import { IdentityResource } from "../../component/resource/identity";
-import { BotService } from "../../component/resource/botService";
 import { AzureFunctionResource } from "../../component/resource/azureAppService/azureFunction";
 import { APIMResource } from "../../component/resource/apim";
 import { KeyVaultResource } from "../../component/resource/keyVault";
 import { AzureSqlResource } from "../../component/resource/azureSql/azureSql";
 import { AadApp } from "../../component/resource/aadApp/aadApp";
+import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
+import {
+  hasApi,
+  hasAzureTab,
+  hasBot as hasBotV3,
+  hasSPFxTab,
+} from "../../common/projectSettingsHelperV3";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -743,20 +739,18 @@ function getConfigDevJson(appName: string): EnvConfig {
 
 async function queryProjectStatus(fx: string): Promise<any> {
   const settings: ProjectSettings = await fs.readJson(path.join(fx, "settings.json"));
-  const solutionSettings: AzureSolutionSettings =
-    settings.solutionSettings as AzureSolutionSettings;
-  const plugins = getActivatedResourcePlugins(solutionSettings);
+  const settingsV3 = convertProjectSettingsV2ToV3(settings, "");
   const envDefaultJson: { solution: { provisionSucceeded: boolean } } = await fs.readJson(
     path.join(fx, "env.default.json")
   );
-  const hasFrontend = plugins?.some((plugin) => plugin.name === PluginNames.FE);
-  const hasBackend = plugins?.some((plugin) => plugin.name === PluginNames.FUNC);
-  const hasBot = plugins?.some((plugin) => plugin.name === PluginNames.BOT);
-  const hasBotCapability = solutionSettings.capabilities.includes(BotOptionItem.id);
-  const hasMessageExtensionCapability = solutionSettings.capabilities.includes(
+  const hasFrontend = hasAzureTab(settingsV3);
+  const hasBackend = hasApi(settingsV3);
+  const hasBot = hasBotV3(settingsV3);
+  const hasBotCapability = settings.solutionSettings!.capabilities.includes(BotOptionItem.id);
+  const hasMessageExtensionCapability = settings.solutionSettings!.capabilities.includes(
     MessageExtensionItem.id
   );
-  const isSPFx = plugins?.some((plugin) => plugin.name === PluginNames.SPFX);
+  const isSPFx = hasSPFxTab(settingsV3);
   const hasProvision = envDefaultJson.solution?.provisionSucceeded as boolean;
   return {
     hasFrontend,
@@ -1043,7 +1037,7 @@ export async function generateBicepsV3(
       });
       const res = await hostingComponent.generateBicep!(context, clonedInputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 
@@ -1062,7 +1056,7 @@ export async function generateBicepsV3(
         });
         const res = await hostingComponent.generateBicep!(context, clonedInputs);
         if (res.isErr()) return err(res.error);
-        res.value.forEach((b) => biceps.push(b));
+        res.value.forEach((b: Bicep) => biceps.push(b));
       }
       // bot service
       {
@@ -1071,10 +1065,10 @@ export async function generateBicepsV3(
           hosting: hosting,
           scenario: Scenarios.Bot,
         });
-        const botService = Container.get<BotService>(ComponentNames.BotService);
+        const botService = Container.get(ComponentNames.BotService) as any;
         const res = await botService.generateBicep(context, clonedInputs);
         if (res.isErr()) return err(res.error);
-        res.value.forEach((b) => biceps.push(b));
+        (res.value as Bicep[]).forEach((b: Bicep) => biceps.push(b));
       }
     }
   }
@@ -1092,7 +1086,7 @@ export async function generateBicepsV3(
       const functionComponent = Container.get<AzureFunctionResource>(ComponentNames.Function);
       const res = await functionComponent.generateBicep(context, clonedInputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 
@@ -1108,7 +1102,7 @@ export async function generateBicepsV3(
       const identityComponent = Container.get<IdentityResource>(ComponentNames.Identity);
       const res = await identityComponent.generateBicep(context, clonedInputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 
@@ -1119,7 +1113,7 @@ export async function generateBicepsV3(
       const resource = Container.get<APIMResource>(ComponentNames.APIM);
       const res = await resource.generateBicep(context, inputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 
@@ -1130,7 +1124,7 @@ export async function generateBicepsV3(
       const resource = Container.get<KeyVaultResource>(ComponentNames.KeyVault);
       const res = await resource.generateBicep(context, inputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 
@@ -1138,13 +1132,13 @@ export async function generateBicepsV3(
   {
     const config = getComponent(projectSettings, ComponentNames.AzureSQL);
     if (config) {
-      const provisionType = "database";
+      const provisionType = "server";
       const clonedInputs = cloneDeep(inputs);
       clonedInputs.provisionType = provisionType;
       const sqlResource = Container.get<AzureSqlResource>(ComponentNames.AzureSQL);
       const res = await sqlResource.generateBicep(context, clonedInputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 
@@ -1155,7 +1149,7 @@ export async function generateBicepsV3(
       const aadApp = Container.get<AadApp>(ComponentNames.AadApp);
       const res = await aadApp.generateBicep(context, inputs);
       if (res.isErr()) return err(res.error);
-      res.value.forEach((b) => biceps.push(b));
+      res.value.forEach((b: Bicep) => biceps.push(b));
     }
   }
 
@@ -1193,23 +1187,15 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
   const projectSettings = loadRes.value as ProjectSettingsV3;
   const genRes = await generateBicepsV3(projectSettings, inputs);
   if (genRes.isErr()) throw genRes.error;
-  // // generate bicep files.
-  // try {
-  //   await generateArmTemplate(minorCtx.solutionContext, activePlugins);
-  // } catch (error) {
-  //   throw error;
-  // }
   const parameterEnvFileName = parameterFileNameTemplate.replace(
     "@envName",
     environmentManager.getDefaultEnvName()
   );
   if (!(await fs.pathExists(path.join(fxConfig, parameterEnvFileName)))) {
-    throw err(
-      new SystemError(
-        CoreSource,
-        "GenerateArmTemplateFailed",
-        `Failed to generate ${parameterEnvFileName} on migration`
-      )
+    throw new SystemError(
+      CoreSource,
+      "GenerateArmTemplateFailed",
+      `Failed to generate ${parameterEnvFileName} on migration`
     );
   }
 }

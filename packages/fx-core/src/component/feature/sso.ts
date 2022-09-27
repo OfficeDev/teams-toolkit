@@ -18,6 +18,7 @@ import {
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { hasAAD, isMiniApp } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { sendErrorTelemetryThenReturnError } from "../../core/telemetry";
 import {
@@ -225,6 +226,14 @@ export interface updateComponents {
   tab?: boolean;
   aad?: boolean;
 }
+
+/**
+ * Check the components that should be update when add sso based on the project setting.
+ * 1. enabled-sso tab project in create stage. Update tab and aad components.
+ * 2. mini app is an existing tab app. Update aad only.
+ * 3. general project. Check the tab and bot components.
+ *    for bot component, message-extension and function hosting doesnot support sso.
+ */
 function getUpdateComponents(
   projectSetting: ProjectSettingsV3,
   isCreateStage: boolean
@@ -235,9 +244,14 @@ function getUpdateComponents(
       aad: true,
     };
   }
+  const hasAad = hasAAD(projectSetting);
+  if (isMiniApp(projectSetting)) {
+    return {
+      aad: !hasAad,
+    };
+  }
   let needsBot = false;
   let needsTab = false;
-  const aadComponent = getComponent(projectSetting, ComponentNames.AadApp);
   const teamsBotComponent = getComponent(projectSetting, ComponentNames.TeamsBot);
   if (teamsBotComponent && !teamsBotComponent.sso) {
     if (
@@ -257,7 +271,7 @@ function getUpdateComponents(
   return {
     bot: needsBot,
     tab: needsTab,
-    aad: !aadComponent,
+    aad: !hasAad,
   };
 }
 
@@ -265,10 +279,13 @@ export function canAddSso(
   projectSettings: ProjectSettingsV3,
   returnError = false
 ): boolean | Result<Void, FxError> {
-  // TODO: support existing tab app with sso in v3
+  const hasAad = hasAAD(projectSettings);
+  if (isMiniApp(projectSettings)) {
+    return !hasAad;
+  }
 
   const update = getUpdateComponents(projectSettings, false);
-  if (update.tab || update.bot || update.aad) {
+  if (update.tab || update.bot) {
     return true;
   } else {
     const aadComponent = getComponent(projectSettings, ComponentNames.AadApp);

@@ -28,16 +28,8 @@ interface TestParameter {
 describe("solution.debug.scaffolding", () => {
   const expectedLaunchFile = path.resolve(__dirname, "./data/.vscode/launch.json");
   const expectedLocalEnvFile = path.resolve(__dirname, `./data/.${ConfigFolderName}/local.env`);
-  const expectedLocalSettingsFile = path.resolve(
-    __dirname,
-    `./data/.${ConfigFolderName}/${InputConfigsFolderName}/localSettings.json`
-  );
   const expectedSettingsFile = path.resolve(__dirname, "./data/.vscode/settings.json");
   const expectedTasksFile = path.resolve(__dirname, "./data/.vscode/tasks.json");
-  const expectedNgrokConfigFile = path.resolve(
-    __dirname,
-    `./data/.${ConfigFolderName}/${InputConfigsFolderName}/ngrok.yml`
-  );
 
   describe("scaffoldLocalDebugSettings", () => {
     let inputs: Inputs;

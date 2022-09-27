@@ -112,7 +112,7 @@ describe("ngrok", () => {
       expect(result).to.be.undefined;
     });
 
-    it("could get ngrok https url", async () => {
+    it("could not get ngrok http url", async () => {
       stub(axios, "get").callsFake(async () => {
         return {
           data: {
@@ -123,7 +123,22 @@ describe("ngrok", () => {
         };
       });
       const result = await ngrok.getNgrokTunnelFromApi("http://127.0.0.1:4040/api/tunnels");
-      expect(result).equals("xxx");
+      expect(result).equals(undefined);
+    });
+
+    it("could get ngrok https url", async () => {
+      stub(axios, "get").callsFake(async () => {
+        return {
+          data: {
+            tunnels: [
+              { public_url: "xxx", proto: "https", config: { addr: "http://localhost:4041" } },
+            ],
+          },
+        };
+      });
+      const result = await ngrok.getNgrokTunnelFromApi("http://127.0.0.1:4040/api/tunnels");
+      expect(result?.dist).equals("xxx");
+      expect(result?.src).equals("http://localhost:4041");
     });
   });
 });

@@ -434,6 +434,7 @@
   "error.appstudio.invalidManifest": "Failed to parse manifest string, dut to error: %s. This might be caused by invalid configurations. %s",
   "error.appstudio.loadManifest": "Failed to read manifest file. Error: %s.",
   "error.appstudio.getLocalConfigFailed": "Missing configuration data for manifest. You may need to run 'Local debug' first. %s",
+  "error.appstudio.incorrectLocalConfig": "Missing configuration data for manifest.  %s Please remove the state.local.json file and try again.",
   "error.appstudio.getRemoteConfigFailed": "Missing configuration data for manifest. %s",
   "error.appstudio.publishFailed": "Failed to publish Teams app with ID %s.",
   "error.appstudio.publishCancelled": "Publish Teams app with name %s has been cancelled.",

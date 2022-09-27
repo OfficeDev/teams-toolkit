@@ -502,8 +502,8 @@ export class ManifestUtils {
         if (!botDomain) {
           return err(
             AppStudioResultFactory.UserError(
-              AppStudioError.GetLocalDebugConfigFailedError.name,
-              AppStudioError.GetLocalDebugConfigFailedError.message(
+              AppStudioError.IncorrectLocalDebugConfigError.name,
+              AppStudioError.IncorrectLocalDebugConfigError.message(
                 new Error(getLocalizedString("plugins.appstudio.dataRequired", "domain"))
               )
             )

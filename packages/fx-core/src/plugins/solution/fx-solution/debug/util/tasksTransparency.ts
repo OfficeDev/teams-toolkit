@@ -409,6 +409,7 @@ function startLocalTunnel(): Record<string, unknown> {
 function setUpTab(): CommentJSONValue {
   const comment = `{
     // Prepare local launch information for Tab.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab to know the details and how to customize the args.
   }`;
   const task = {
     label: "Set up tab",
@@ -424,6 +425,7 @@ function setUpTab(): CommentJSONValue {
 function setUpBot(): CommentJSONValue {
   const comment = `{
     // Register resources and prepare local launch information for Bot.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot to know the details and how to customize the args.
   }`;
   const existingBot = `
   {
@@ -446,6 +448,7 @@ function setUpBot(): CommentJSONValue {
 function setUpSSO(): CommentJSONValue {
   const comment = `{
     // Register resources and prepare local launch information for SSO functionality.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-set-up-sso to know the details and how to customize the args.
   }`;
   const existingAAD = `
   {
@@ -465,20 +468,25 @@ function setUpSSO(): CommentJSONValue {
   return commentJson.assign(commentJson.parse(comment), task);
 }
 
-function buildAndUploadTeamsManifest(): Record<string, unknown> {
+function buildAndUploadTeamsManifest(): CommentJSONValue {
   const comment = `
+  {
+    // Build and upload Teams manifest.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest to khow the details and how to customize the args.
+  }`;
+  const existingApp = `
   {
     //// Enter your own Teams app package path if using the existing Teams manifest. ////
     // "appPackagePath": ""
   }
   `;
-
-  return {
+  const task = {
     label: "Build & upload Teams manifest",
     type: "teamsfx",
     command: "debug-prepare-manifest",
-    args: commentJson.parse(comment),
+    args: commentJson.parse(existingApp),
   };
+  return commentJson.assign(commentJson.parse(comment), task);
 }
 
 function startFrontend(): Record<string, unknown> {

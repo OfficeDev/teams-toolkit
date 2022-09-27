@@ -92,8 +92,8 @@ enum Checker {
 }
 
 const DepsDisplayName = {
-  [DepsType.FunctionNode]: "Node.js",
   [DepsType.SpfxNode]: "Node.js",
+  [DepsType.SpfxNodeV1_16]: "Node.js",
   [DepsType.AzureNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
   [DepsType.Ngrok]: "Ngrok",
@@ -104,8 +104,8 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
   [Checker.M365Account]: `Checking ${Checker.M365Account}`,
   [Checker.LocalCertificate]: `Checking ${Checker.LocalCertificate}`,
   [Checker.Ports]: `Checking ${Checker.Ports}`,
-  [DepsType.FunctionNode]: `Checking ${DepsDisplayName[DepsType.FunctionNode]}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
+  [DepsType.SpfxNodeV1_16]: `Checking ${DepsDisplayName[DepsType.SpfxNodeV1_16]}`,
   [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
   [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
   [DepsType.Ngrok]: `Checking and installing ${DepsDisplayName[DepsType.Ngrok]}`,
@@ -369,7 +369,8 @@ export default class Preview extends YargsCommand {
         const envCheckerResult = await this.handleDependences(
           projectSettings,
           localEnvManager,
-          depsManager
+          depsManager,
+          workspaceFolder
         );
         if (envCheckerResult.isErr()) {
           return err(envCheckerResult.error);
@@ -1273,13 +1274,17 @@ export default class Preview extends YargsCommand {
   private async handleDependences(
     projectSettings: ProjectSettings,
     localEnvManager: LocalEnvManager,
-    depsManager: DepsManager
+    depsManager: DepsManager,
+    workspaceFolder: string
   ): Promise<Result<null, FxError>> {
     return localTelemetryReporter.runWithTelemetry(
       TelemetryEvent.PreviewPrereqsCheckDependencies,
       async (ctx: TelemetryContext): Promise<Result<null, FxError>> => {
         let shouldContinue = true;
-        const availableDeps = localEnvManager.getActiveDependencies(projectSettings);
+        const availableDeps = await localEnvManager.getActiveDependencies(
+          projectSettings,
+          workspaceFolder
+        );
         const enabledDeps = await CliDepsChecker.getEnabledDeps(
           availableDeps.filter((dep) => !CliDepsChecker.getNodeDeps().includes(dep))
         );
@@ -1368,7 +1373,7 @@ export default class Preview extends YargsCommand {
     hasFuncHostedBot: boolean,
     depsManager: DepsManager
   ): Promise<Result<null, FxError>> {
-    const node = hasBackend || hasFuncHostedBot ? DepsType.FunctionNode : DepsType.AzureNode;
+    const node = DepsType.AzureNode;
     if (!(await CliDepsChecker.isEnabled(node))) {
       return ok(null);
     }

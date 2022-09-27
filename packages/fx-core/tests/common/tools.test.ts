@@ -14,6 +14,7 @@ import {
   getFixedCommonProjectSettings,
   canAddCICDWorkflows,
   getSPFxVersion,
+  getAppSPFxVersion,
 } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
 import {
@@ -379,6 +380,43 @@ describe("tools", () => {
 
       chai.expect(version).equal("1.15.0");
       mockedEnvRestore();
+    });
+  });
+
+  describe("getAppSPFxVersion", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("Returns version from .yo-rc.json", async () => {
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readJson").resolves({
+        "@microsoft/generator-sharepoint": {
+          version: "1.15.0",
+        },
+      });
+
+      const version = await getAppSPFxVersion("");
+
+      chai.expect(version).equals("1.15.0");
+    });
+
+    it("Returns version from package.json when .yo-rc.json not exist", async () => {
+      sinon.stub(fs, "pathExists").callsFake((directory) => {
+        if (directory.includes(".yo-rc.json")) {
+          return false;
+        }
+        return true;
+      });
+      sinon.stub(fs, "readJson").resolves({
+        dependencies: {
+          "@microsoft/sp-webpart-base": "1.14.0",
+        },
+      });
+
+      const version = await getAppSPFxVersion("");
+
+      chai.expect(version).equals("1.14.0");
     });
   });
 });

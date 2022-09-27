@@ -687,3 +687,84 @@ function installAppInTeams(): Record<string, unknown> {
     },
   };
 }
+
+export function generateSpfxTasks(): Record<string, unknown>[] {
+  return [
+    {
+      label: "Validate & install prerequisites",
+      type: "teamsfx",
+      command: "debug-check-prerequisites",
+      args: {
+        prerequisites: ["nodejs"],
+      },
+    },
+    {
+      label: "Install npm packages",
+      type: "teamsfx",
+      command: "debug-npm-install",
+      args: {
+        projects: [
+          {
+            cwd: "${workspaceFolder}/SPFx",
+            npmInstallArgs: ["--no-audit"],
+          },
+        ],
+        forceUpdate: false,
+      },
+    },
+    {
+      label: "gulp trust-dev-cert",
+      type: "process",
+      command: "node",
+      args: ["${workspaceFolder}/SPFx/node_modules/gulp/bin/gulp.js", "trust-dev-cert"],
+      options: {
+        cwd: "${workspaceFolder}/SPFx",
+      },
+      dependsOn: "Install npm packages",
+    },
+    {
+      label: "gulp serve",
+      type: "process",
+      command: "node",
+      args: ["${workspaceFolder}/SPFx/node_modules/gulp/bin/gulp.js", "serve", "--nobrowser"],
+      problemMatcher: [
+        {
+          pattern: [
+            {
+              regexp: ".",
+              file: 1,
+              location: 2,
+              message: 3,
+            },
+          ],
+          background: {
+            activeOnStart: true,
+            beginsPattern: "^.*Starting gulp.*",
+            endsPattern: "^.*Finished subtask 'reload'.*",
+          },
+        },
+      ],
+      isBackground: true,
+      options: {
+        cwd: "${workspaceFolder}/SPFx",
+      },
+      dependsOn: "gulp trust-dev-cert",
+    },
+    {
+      label: "prepare local environment",
+      type: "shell",
+      command: "exit ${command:fx-extension.pre-debug-check}",
+    },
+    {
+      label: "prepare dev env",
+      dependsOn: ["Validate & install prerequisites", "prepare local environment", "gulp serve"],
+      dependsOrder: "sequence",
+    },
+    {
+      label: "Terminate All Tasks",
+      command: "echo ${input:terminate}",
+      type: "shell",
+      problemMatcher: [],
+    },
+  ];
+}

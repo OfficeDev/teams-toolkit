@@ -9,7 +9,7 @@ import {
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
-import * as utils from "../../../../src/plugins/resource/bot/utils/common";
+import * as utils from "../../../../src/component/resource/botService/common";
 import * as fs from "fs-extra";
 import path from "path";
 import Mustache from "mustache";

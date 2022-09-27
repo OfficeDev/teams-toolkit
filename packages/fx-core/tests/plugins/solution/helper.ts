@@ -19,8 +19,6 @@ import { v4 as uuid } from "uuid";
 import { ArmTemplateResult } from "../../../src/common/armInterface";
 import sinon from "sinon";
 import {
-  aadPlugin,
-  botPluginV2,
   fehostPlugin,
   identityPlugin,
   SOLUTION_CONFIG_NAME,
@@ -206,54 +204,6 @@ export class TestHelper {
       .stub(identityPlugin, "updateArmTemplates")
       .callsFake(async (ctx: PluginContext) => {
         return ok({});
-      });
-  }
-
-  static mockedBotGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(botPluginV2, "generateResourceTemplate")
-      .callsFake(async (ctx: Context, inputs: Inputs) => {
-        const res: ArmTemplateResult = {
-          Provision: {
-            Orchestration:
-              "Mocked bot provision orchestration content. Module path: '{{fx-resource-bot.Provision.botProvision.path}}'.",
-            Modules: {
-              botProvision: TestFileContent.botProvisionModule,
-            },
-          },
-          Configuration: {
-            Orchestration:
-              "Mocked bot configuration orchestration content. Module path: '{{fx-resource-bot.Configuration.botConfig.path}}'.",
-            Modules: {
-              botConfig: TestFileContent.botConfigurationModule,
-            },
-          },
-          Reference: {
-            botOutputKey: TestFileContent.botReferenceValue,
-          },
-          Parameters: {
-            BotParameter: TestFileContent.botParameterValue,
-          },
-        };
-        return ok({ kind: "bicep", template: res });
-      });
-  }
-
-  static mockedBotUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(botPluginV2, "updateResourceTemplate")
-      .callsFake(async (ctx: Context, inputs: Inputs) => {
-        const res: ArmTemplateResult = {
-          Configuration: {
-            Modules: {
-              botConfig: TestFileContent.botConfigUpdateModule,
-            },
-          },
-          Reference: {
-            botOutputKey: TestFileContent.botReferenceValue,
-          },
-        };
-        return ok({ kind: "bicep", template: res });
       });
   }
 

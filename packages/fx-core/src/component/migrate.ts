@@ -286,6 +286,7 @@ export function convertProjectSettingsV2ToV3(
           name: "teams-bot",
           hosting: hostingComponent,
           build: true,
+          provision: true,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
           capabilities: botCapabilities,

@@ -1188,12 +1188,6 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
   const projectSettings = loadRes.value as ProjectSettingsV3;
   const genRes = await generateBicepsV3(projectSettings, inputs);
   if (genRes.isErr()) throw genRes.error;
-  // // generate bicep files.
-  // try {
-  //   await generateArmTemplate(minorCtx.solutionContext, activePlugins);
-  // } catch (error) {
-  //   throw error;
-  // }
   const parameterEnvFileName = parameterFileNameTemplate.replace(
     "@envName",
     environmentManager.getDefaultEnvName()

@@ -630,7 +630,7 @@ export async function getAppSPFxVersion(root: string): Promise<string | undefine
   if (!projectSPFxVersion || projectSPFxVersion === "") {
     const packagePath = path.join(root, "SPFx", "package.json");
     if (await fs.pathExists(packagePath)) {
-      const packageInfo = await fs.readJSON(packagePath);
+      const packageInfo = await fs.readJson(packagePath);
       projectSPFxVersion = packageInfo.dependencies["@microsoft/sp-webpart-base"];
     }
   }

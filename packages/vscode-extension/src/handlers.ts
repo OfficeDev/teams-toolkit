@@ -155,7 +155,7 @@ import {
   sendDebugAllStartEvent,
 } from "./debug/localTelemetryReporter";
 import { compare } from "./utils/versionUtil";
-import { getSPFxVersion, getAppSPFxVersion } from "@microsoft/teamsfx-core/build/common/tools";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -1644,8 +1644,9 @@ export async function openReadMeHandler(args: any[]) {
 
 export async function promptSPFxUpgrade() {
   if (globalVariables.isSPFxProject) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-    const projectSPFxVersion = await getAppSPFxVersion(globalVariables.workspaceUri?.fsPath!);
+    const projectSPFxVersion = await commonTools.getAppSPFxVersion(
+      globalVariables.workspaceUri!.fsPath!
+    );
 
     if (projectSPFxVersion) {
       const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
@@ -1656,7 +1657,7 @@ export async function promptSPFxUpgrade() {
       }
       if (cmp === cmpPrerelease) {
         const spfxVersion =
-          getSPFxVersion() === "1.15.0"
+          commonTools.getSPFxVersion() === "1.15.0"
             ? SUPPORTED_SPFX_VERSION
             : SUPPORTED_SPFX_PRERELEASE_VERSION;
         const args: string[] = cmp === 1 ? [spfxVersion] : [spfxVersion, spfxVersion];

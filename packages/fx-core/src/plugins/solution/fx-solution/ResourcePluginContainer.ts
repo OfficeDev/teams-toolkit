@@ -12,7 +12,6 @@ import { Container } from "typedi";
 import { SolutionError, SolutionSource } from "./constants";
 export const ResourcePlugins = {
   FrontendPlugin: "FrontendPlugin",
-  IdentityPlugin: "IdentityPlugin",
   BotPlugin: "BotPlugin",
   FunctionPlugin: "FunctionPlugin",
   LocalDebugPlugin: "LocalDebugPlugin",
@@ -21,7 +20,6 @@ export const ResourcePlugins = {
 
 export const ResourcePluginsV2 = {
   FrontendPlugin: "FrontendPluginV2",
-  IdentityPlugin: "IdentityPluginV2",
   BotPlugin: "BotPluginV2",
   FunctionPlugin: "FunctionPluginV2",
   LocalDebugPlugin: "LocalDebugPluginV2",

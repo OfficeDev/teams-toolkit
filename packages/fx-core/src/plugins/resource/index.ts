@@ -6,5 +6,4 @@ export * from "./apim";
 export * from "./bot";
 export * from "./frontend";
 export * from "./function";
-export * from "./identity";
 export * from "./localdebug";

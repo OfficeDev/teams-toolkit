@@ -38,7 +38,6 @@ import {
   ErrorName,
   fehostPlugin,
   fileEncoding,
-  identityPlugin,
   SOLUTION_CONFIG_NAME,
   TestFileContent,
   TestFilePath,
@@ -95,14 +94,14 @@ describe("Generate ARM Template for project", () => {
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
       name: "azure",
-      activeResourcePlugins: [aadPlugin.name, fehostPlugin.name, identityPlugin.name],
+      activeResourcePlugins: [aadPlugin.name, fehostPlugin.name],
       capabilities: [TabOptionItem.id],
     };
     TestHelper.mockedFehostGenerateArmTemplates(mocker);
-    TestHelper.mockedIdentityGenerateArmTemplates(mocker);
+    // TestHelper.mockedIdentityGenerateArmTemplates(mocker);
 
     // Action
-    const result = await generateArmTemplate(mockedCtx, [aadPlugin, fehostPlugin, identityPlugin]);
+    const result = await generateArmTemplate(mockedCtx, [aadPlugin, fehostPlugin]);
 
     // Assert
     const projectArmTemplateFolder = path.join(
@@ -136,8 +135,7 @@ output provisionOutput object = provision
     ).equals(
       `@secure()
 param provisionParameters object
-Mocked frontend hosting provision orchestration content. Module path: './provision/frontendHostingProvision.bicep'.
-Mocked identity provision orchestration content. Module path: './provision/identityProvision.bicep'.`.replace(
+Mocked frontend hosting provision orchestration content. Module path: './provision/frontendHostingProvision.bicep'`.replace(
         /\r?\n/g,
         os.EOL
       )
@@ -203,19 +201,19 @@ Mocked identity provision orchestration content. Module path: './provision/ident
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
       name: "azure",
-      activeResourcePlugins: [aadPlugin.name, fehostPlugin.name, identityPlugin.name],
+      activeResourcePlugins: [aadPlugin.name, fehostPlugin.name],
       capabilities: [TabOptionItem.id],
     };
     TestHelper.mockedFehostGenerateArmTemplates(mocker);
-    TestHelper.mockedIdentityGenerateArmTemplates(mocker);
+    // TestHelper.mockedIdentityGenerateArmTemplates(mocker);
     const botGenerateArmTemplatesStub = TestHelper.mockedBotGenerateArmTemplates(mocker);
 
     const botUpdateArmTemplatesStub = TestHelper.mockedBotUpdateArmTemplates(mocker);
     TestHelper.mockedFeHostUpdateArmTemplates(mocker);
-    TestHelper.mockedIdentityUpdateArmTemplates(mocker);
+    // TestHelper.mockedIdentityUpdateArmTemplates(mocker);
 
     // Scaffold tab project
-    let result = await generateArmTemplate(mockedCtx, [aadPlugin, fehostPlugin, identityPlugin]);
+    let result = await generateArmTemplate(mockedCtx, [aadPlugin, fehostPlugin]);
     const projectArmTemplateFolder = path.join(
       TestHelper.rootDir,
       TestFilePath.armTemplateBaseFolder
@@ -234,7 +232,6 @@ Mocked identity provision orchestration content. Module path: './provision/ident
       TestHelper.getParameterFileContent({
         resourceBaseName: `${TestHelper.resourceBaseName}`,
         FrontendParameter: `${TestFileContent.feHostParameterValue}`,
-        IdentityParameter: `${TestFileContent.identityParameterValue}`,
       })
     );
     expect(await fs.pathExists(path.join(projectArmTemplateFolder, TestFilePath.configFileName))).to
@@ -483,18 +480,18 @@ Mocked bot configuration orchestration content. Module path: './teamsFx/botConfi
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
       name: "azure",
-      activeResourcePlugins: [aadPlugin.name, botPluginV2.name, identityPlugin.name],
+      activeResourcePlugins: [aadPlugin.name, botPluginV2.name],
       capabilities: [BotOptionItem.id],
     };
     TestHelper.mockedFehostGenerateArmTemplates(mocker);
-    TestHelper.mockedIdentityGenerateArmTemplates(mocker);
+    // TestHelper.mockedIdentityGenerateArmTemplates(mocker);
     TestHelper.mockedBotGenerateArmTemplates(mocker);
     TestHelper.mockedBotUpdateArmTemplates(mocker);
     TestHelper.mockedFeHostUpdateArmTemplates(mocker);
-    TestHelper.mockedIdentityUpdateArmTemplates(mocker);
+    // TestHelper.mockedIdentityUpdateArmTemplates(mocker);
 
     // Action
-    let result = await generateArmTemplate(mockedCtx, [aadPlugin, botPluginV2, identityPlugin]);
+    let result = await generateArmTemplate(mockedCtx, [aadPlugin, botPluginV2]);
 
     // Assert
     const projectArmTemplateFolder = path.join(
@@ -621,7 +618,7 @@ describe("Deploy ARM Template to Azure", () => {
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
       name: "azure",
-      activeResourcePlugins: [aadPlugin.name, fehostPlugin.name, identityPlugin.name],
+      activeResourcePlugins: [aadPlugin.name, fehostPlugin.name],
       capabilities: [TabOptionItem.id],
     };
     (mockedCtx.projectSettings as ProjectSettingsV3).components = [

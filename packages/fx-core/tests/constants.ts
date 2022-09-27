@@ -6,7 +6,6 @@ import {
 import { Plugin } from "@microsoft/teamsfx-api";
 import { ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import "../src/plugins/resource/frontend";
-import "../src/plugins/resource/identity";
 import "../src/plugins/resource/bot";
 import "../src/plugins/resource/bot/v2";
 import "../src/plugins/resource/localdebug";
@@ -28,7 +27,6 @@ export class PluginId {
 }
 
 export const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin;
-export const identityPlugin = Container.get<Plugin>(ResourcePlugins.IdentityPlugin) as Plugin;
 export const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
 
 export const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin) as Plugin;

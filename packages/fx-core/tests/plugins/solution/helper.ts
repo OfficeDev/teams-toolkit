@@ -18,14 +18,7 @@ import { LocalCrypto } from "../../../src/core/crypto";
 import { v4 as uuid } from "uuid";
 import { ArmTemplateResult } from "../../../src/common/armInterface";
 import sinon from "sinon";
-import {
-  aadPlugin,
-  botPluginV2,
-  fehostPlugin,
-  identityPlugin,
-  SOLUTION_CONFIG_NAME,
-  TestFileContent,
-} from "../../constants";
+import { botPluginV2, fehostPlugin, SOLUTION_CONFIG_NAME, TestFileContent } from "../../constants";
 import { MockedLogProvider, MockedTelemetryReporter, MockedUserInteraction } from "./util";
 import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import os from "os";
@@ -176,38 +169,38 @@ export class TestHelper {
   //     });
   // }
 
-  static mockedIdentityGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(identityPlugin, "generateArmTemplates")
-      .callsFake(async (ctx: PluginContext) => {
-        console.log(`mocked identity generate arm templates`);
+  // static mockedIdentityGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
+  //   return mocker
+  //     .stub(identityPlugin, "generateArmTemplates")
+  //     .callsFake(async (ctx: PluginContext) => {
+  //       console.log(`mocked identity generate arm templates`);
 
-        const res: ArmTemplateResult = {
-          Provision: {
-            Orchestration:
-              "Mocked identity provision orchestration content. Module path: '{{fx-resource-identity.Provision.identityProvision.path}}'.",
-            Modules: {
-              identityProvision: TestFileContent.identityProvisionModule,
-            },
-          },
-          Reference: {
-            identityOutputKey: TestFileContent.identityReferenceValue,
-          },
-          Parameters: {
-            IdentityParameter: TestFileContent.identityParameterValue,
-          },
-        };
-        return ok(res);
-      });
-  }
+  //       const res: ArmTemplateResult = {
+  //         Provision: {
+  //           Orchestration:
+  //             "Mocked identity provision orchestration content. Module path: '{{fx-resource-identity.Provision.identityProvision.path}}'.",
+  //           Modules: {
+  //             identityProvision: TestFileContent.identityProvisionModule,
+  //           },
+  //         },
+  //         Reference: {
+  //           identityOutputKey: TestFileContent.identityReferenceValue,
+  //         },
+  //         Parameters: {
+  //           IdentityParameter: TestFileContent.identityParameterValue,
+  //         },
+  //       };
+  //       return ok(res);
+  //     });
+  // }
 
-  static mockedIdentityUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(identityPlugin, "updateArmTemplates")
-      .callsFake(async (ctx: PluginContext) => {
-        return ok({});
-      });
-  }
+  // static mockedIdentityUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
+  //   return mocker
+  //     .stub(identityPlugin, "updateArmTemplates")
+  //     .callsFake(async (ctx: PluginContext) => {
+  //       return ok({});
+  //     });
+  // }
 
   static mockedBotGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
     return mocker

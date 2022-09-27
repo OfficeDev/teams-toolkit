@@ -20,14 +20,13 @@ import sinon from "sinon";
 import { setTools } from "../../src/core/globalVars";
 import * as templateAction from "../../src/common/template-utils/templatesActions";
 import "../../src/component/core";
-import "../../src/component/feature/bot";
+import "../../src/component/feature/bot/bot";
 import "../../src/component/feature/sql";
-import "../../src/component/resource/botService";
+import "../../src/component/resource/botService/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { deleteFolder, MockTools, randomAppName } from "../core/utils";
 import { AppStudioClient } from "../../src/component/resource/appManifest/appStudioClient";
-import * as clientFactory from "../../src/plugins/resource/bot/clientFactory";
-import { AADRegistration } from "../../src/plugins/resource/bot/aadRegistration";
+import { AADRegistration } from "../../src/component/resource/botService/aadRegistration";
 import { TestHelper } from "../plugins/resource/frontend/helper";
 import arm from "../../src/plugins/solution/fx-solution/arm";
 import { FrontendDeployment } from "../../src/plugins/resource/frontend/ops/deploy";
@@ -48,7 +47,7 @@ import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffo
 import { TeamsfxCore } from "../../src/component/core";
 import { Container } from "typedi";
 import { AzureStorageResource } from "../../src/component/resource/azureStorage";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import mockedEnv from "mocked-env";
 import { ciOption, githubOption, questionNames } from "../../src/component/feature/cicd/questions";
 import * as armFunctions from "../../src/plugins/solution/fx-solution/arm";
 import { apiConnectorImpl } from "../../src/component/feature/apiconnector/apiConnector";
@@ -294,8 +293,6 @@ describe("Core component test for v3", () => {
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "00000000-0000-0000-0000-000000000000",
         clientSecret: "mockClientSecret",
@@ -380,8 +377,6 @@ describe("Core component test for v3", () => {
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
@@ -460,8 +455,6 @@ describe("Core component test for v3", () => {
       sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
@@ -537,8 +530,6 @@ describe("Core component test for v3", () => {
         .resolves(TestHelper.fakeCredential);
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
@@ -615,8 +606,6 @@ describe("Core component test for v3", () => {
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
@@ -706,8 +695,6 @@ describe("Core component test for v3", () => {
         .resolves(err(new UserError("Solution", "CancelProvision", "CancelProvision")));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "00000000-0000-0000-0000-000000000000",
         clientSecret: "mockClientSecret",
@@ -824,8 +811,6 @@ describe("Core component test for v3", () => {
         .resolves(err(new UserError("Solution", "error1", "error1")));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "00000000-0000-0000-0000-000000000000",
         clientSecret: "mockClientSecret",
@@ -891,8 +876,6 @@ describe("Core component test for v3", () => {
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
       sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
@@ -954,8 +937,6 @@ describe("Core component test for v3", () => {
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
       sandbox
         .stub(backup, "backupFiles")
@@ -1077,8 +1058,6 @@ describe("Core component test for v3", () => {
     sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
     sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
       clientId: "00000000-0000-0000-0000-000000000000",
       clientSecret: "mockClientSecret",
@@ -1204,8 +1183,6 @@ describe("Core component test for v3", () => {
     sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
     sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
       clientId: "00000000-0000-0000-0000-000000000000",
       clientSecret: "mockClientSecret",

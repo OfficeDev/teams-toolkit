@@ -261,7 +261,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   private async saveNgrokEndpointFromApi(): Promise<Result<boolean, FxError>> {
-    let webServiceUrl: string;
+    let webServiceUrl: string | undefined = undefined;
     try {
       if (this.status.endpoint) {
         return ok(false);

@@ -75,14 +75,13 @@ import { CoreHookContext } from "../types";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../../common/utils";
-import Container from "typedi";
+import { Container } from "typedi";
 import { BicepComponent } from "../../component/bicep";
 import { ComponentNames, Scenarios } from "../../component/constants";
 import { getComponent } from "../../component/workflow";
 import { bicepUtils, createContextV3, generateConfigBiceps } from "../../component/utils";
 import { assign, cloneDeep } from "lodash";
 import { IdentityResource } from "../../component/resource/identity";
-import { BotService } from "../../component/resource/botService";
 import { AzureFunctionResource } from "../../component/resource/azureAppService/azureFunction";
 import { APIMResource } from "../../component/resource/apim";
 import { KeyVaultResource } from "../../component/resource/keyVault";
@@ -1066,10 +1065,10 @@ export async function generateBicepsV3(
           hosting: hosting,
           scenario: Scenarios.Bot,
         });
-        const botService = Container.get<BotService>(ComponentNames.BotService);
+        const botService = Container.get(ComponentNames.BotService) as any;
         const res = await botService.generateBicep(context, clonedInputs);
         if (res.isErr()) return err(res.error);
-        res.value.forEach((b: Bicep) => biceps.push(b));
+        (res.value as Bicep[]).forEach((b: Bicep) => biceps.push(b));
       }
     }
   }

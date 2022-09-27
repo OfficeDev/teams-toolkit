@@ -282,27 +282,45 @@ function validateAndInstallPrerequisites(
   includeBot: boolean,
   includeFuncHostedBot: boolean
 ): Record<string, unknown> {
-  const prerequisites = ["nodejs", "m365Account"];
-  const comments: string[] = [];
+  const prerequisites = [
+    `"nodejs", // Validate if Node.js is installed.`,
+    `"m365Account", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.`,
+  ];
+  const ports: string[] = [];
   if (includeFrontend) {
-    prerequisites.push("devCert");
-    comments.push("53000, // tab service port");
+    prerequisites.push(
+      `"devCert", // Install localhost SSL certificate. It's used to serve the development sites over HTTPS to debug the Tab app in Teams.`
+    );
+    ports.push("53000, // tab service port");
   }
   if (includeBackend) {
-    prerequisites.push("func", "dotnet");
-    comments.push("7071, // backend service port", "9229, // backend debug port");
+    prerequisites.push(
+      `"func", // Install Azure Functions Core Tools. It's used to serve Azure Functions hosted project locally.`,
+      `"dotnet", // Ensure .NET Core SDK is installed. TeamsFx Azure Functions project depends on extra .NET binding extensions for HTTP trigger authorization.`
+    );
+    ports.push("7071, // backend service port", "9229, // backend debug port");
   }
   if (includeFuncHostedBot && !includeBackend) {
-    prerequisites.push("func");
+    prerequisites.push(
+      `"func", // Install Azure Functions Core Tools. It's used to serve Azure Functions hosted project locally.`
+    );
   }
   if (includeBot) {
-    prerequisites.push("ngrok");
-    comments.push("3978, // bot service port", "9239, // bot debug port");
+    prerequisites.push(
+      `"ngrok", // Install Ngrok. Bot project requires a public message endpoint, and ngrok can help create public tunnel for your local service.`
+    );
+    ports.push("3978, // bot service port", "9239, // bot debug port");
   }
-  prerequisites.push("portOccupancy");
-  const comment = `
+  prerequisites.push(
+    `"portOccupancy", // Validate available ports to ensure those local debug ones are not occupied.`
+  );
+  const prerequisitesComment = `
   [
-    ${comments.join("\n  ")}
+    ${prerequisites.join("\n  ")}
+  ]`;
+  const portsComment = `
+  [
+    ${ports.join("\n  ")}
   ]
   `;
 
@@ -311,8 +329,8 @@ function validateAndInstallPrerequisites(
     type: "teamsfx",
     command: "debug-check-prerequisites",
     args: {
-      prerequisites,
-      portOccupancy: commentJson.parse(comment),
+      prerequisites: commentJson.parse(prerequisitesComment),
+      portOccupancy: commentJson.parse(portsComment),
     },
   };
 }
@@ -388,8 +406,12 @@ function startLocalTunnel(): Record<string, unknown> {
   };
 }
 
-function setUpTab(): Record<string, unknown> {
-  return {
+function setUpTab(): CommentJSONValue {
+  const comment = `{
+    // Prepare local launch information for Tab.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab to know the details and how to customize the args.
+  }`;
+  const task = {
     label: "Set up tab",
     type: "teamsfx",
     command: "debug-set-up-tab",
@@ -397,29 +419,38 @@ function setUpTab(): Record<string, unknown> {
       baseUrl: "https://localhost:53000",
     },
   };
+  return commentJson.assign(commentJson.parse(comment), task);
 }
 
-function setUpBot(): Record<string, unknown> {
-  const comment = `
+function setUpBot(): CommentJSONValue {
+  const comment = `{
+    // Register resources and prepare local launch information for Bot.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot to know the details and how to customize the args.
+  }`;
+  const existingBot = `
   {
     //// Enter you own bot information if using the existing bot. ////
     // "botId": "",
     // "botPassword": "",
   }
   `;
-
-  return {
+  const task = {
     label: "Set up bot",
     type: "teamsfx",
     command: "debug-set-up-bot",
-    args: commentJson.assign(commentJson.parse(comment), {
+    args: commentJson.assign(commentJson.parse(existingBot), {
       botMessagingEndpoint: "/api/messages",
     }),
   };
+  return commentJson.assign(commentJson.parse(comment), task);
 }
 
-function setUpSSO(): Record<string, unknown> {
-  const comment = `
+function setUpSSO(): CommentJSONValue {
+  const comment = `{
+    // Register resources and prepare local launch information for SSO functionality.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-set-up-sso to know the details and how to customize the args.
+  }`;
+  const existingAAD = `
   {
     //// Enter you own AAD app information if using the existing AAD app. ////
     // "objectId": "",
@@ -428,29 +459,34 @@ function setUpSSO(): Record<string, unknown> {
     // "accessAsUserScopeId": "
   }
   `;
-
-  return {
+  const task = {
     label: "Set up SSO",
     type: "teamsfx",
     command: "debug-set-up-sso",
-    args: commentJson.parse(comment),
+    args: commentJson.parse(existingAAD),
   };
+  return commentJson.assign(commentJson.parse(comment), task);
 }
 
-function buildAndUploadTeamsManifest(): Record<string, unknown> {
+function buildAndUploadTeamsManifest(): CommentJSONValue {
   const comment = `
+  {
+    // Build and upload Teams manifest.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest to khow the details and how to customize the args.
+  }`;
+  const existingApp = `
   {
     //// Enter your own Teams app package path if using the existing Teams manifest. ////
     // "appPackagePath": ""
   }
   `;
-
-  return {
+  const task = {
     label: "Build & upload Teams manifest",
     type: "teamsfx",
     command: "debug-prepare-manifest",
-    args: commentJson.parse(comment),
+    args: commentJson.parse(existingApp),
   };
+  return commentJson.assign(commentJson.parse(comment), task);
 }
 
 function startFrontend(): Record<string, unknown> {

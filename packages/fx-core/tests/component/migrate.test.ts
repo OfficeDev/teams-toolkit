@@ -202,6 +202,14 @@ describe("Migration test for v3", () => {
           provision: true,
         },
         {
+          name: "apim",
+          provision: true,
+        },
+        {
+          name: "key-vault",
+          provision: true,
+        },
+        {
           name: "teams-api",
           hosting: "azure-function",
           functionNames: ["getUserProfile"],

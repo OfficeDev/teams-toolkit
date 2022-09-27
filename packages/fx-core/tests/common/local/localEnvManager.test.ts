@@ -241,7 +241,7 @@ describe("LocalEnvManager", () => {
           "fx-resource-function",
         ],
       },
-      depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.FuncCoreTools],
+      depsTypes: [DepsType.AzureNode, DepsType.Dotnet, DepsType.FuncCoreTools],
     },
     {
       message: "bot",
@@ -281,7 +281,7 @@ describe("LocalEnvManager", () => {
           "fx-resource-function",
         ],
       },
-      depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.Ngrok, DepsType.FuncCoreTools],
+      depsTypes: [DepsType.AzureNode, DepsType.Dotnet, DepsType.Ngrok, DepsType.FuncCoreTools],
     },
     {
       message: "spfx",
@@ -305,7 +305,7 @@ describe("LocalEnvManager", () => {
           "host-type": "azure-functions",
         },
       },
-      depsTypes: [DepsType.FunctionNode, DepsType.FuncCoreTools, DepsType.Ngrok],
+      depsTypes: [DepsType.AzureNode, DepsType.FuncCoreTools, DepsType.Ngrok],
     },
     {
       message: "app service hosted bot",
@@ -343,7 +343,10 @@ describe("LocalEnvManager", () => {
           pluginSettings: data.pluginSettings,
         };
         const projectSettingsV3 = convertProjectSettingsV2ToV3(projectSettings, ".");
-        const result = localEnvManager.getActiveDependencies(projectSettingsV3);
+        const result = await localEnvManager.getActiveDependencies(
+          projectSettingsV3,
+          "workspacePath"
+        );
         chai.assert.sameDeepMembers(data.depsTypes, result);
       });
     });

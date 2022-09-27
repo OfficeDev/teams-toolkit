@@ -73,7 +73,6 @@ export function generateTasks(
    * Referenced inside tasks.json
    *   - Validate & install prerequisites
    *   - Install npm packages
-   *   - Install Azure Functions binding extensions
    *   - Start local tunnel
    *   - Set up tab
    *   - Set up bot
@@ -82,6 +81,7 @@ export function generateTasks(
    *   - Start services
    *   - Start frontend
    *   - Start backend
+   *   - Install Azure Functions binding extensions
    *   - Watch backend
    *   - Start bot
    */
@@ -95,10 +95,6 @@ export function generateTasks(
     ),
     installNPMpackages(includeFrontend, includeBackend, includeBot),
   ];
-
-  if (includeBackend) {
-    tasks.push(installAzureFunctionsBindingExtensions());
-  }
 
   if (includeBot) {
     tasks.push(startLocalTunnel());
@@ -126,6 +122,7 @@ export function generateTasks(
 
   if (includeBackend) {
     tasks.push(startBackend(programmingLanguage));
+    tasks.push(installAzureFunctionsBindingExtensions());
     if (programmingLanguage === ProgrammingLanguage.typescript) {
       tasks.push(watchBackend());
     }
@@ -162,7 +159,6 @@ export function generateM365Tasks(
    * Referenced inside tasks.json
    *   - Validate & install prerequisites
    *   - Install npm packages
-   *   - Install Azure Functions binding extensions
    *   - Start local tunnel
    *   - Set up tab
    *   - Set up bot
@@ -171,6 +167,7 @@ export function generateM365Tasks(
    *   - Start services
    *   - Start frontend
    *   - Start backend
+   *   - Install Azure Functions binding extensions
    *   - Watch backend
    *   - Start bot
    *   - install app in Teams
@@ -219,7 +216,7 @@ export function mergeTasksJson(existingData: CommentObject, newData: CommentObje
 
   if (mergedData.inputs === undefined) {
     mergedData.inputs = newData.inputs;
-  } else {
+  } else if (newData.inputs !== undefined) {
     const existingInputs = mergedData.inputs as CommentArray<CommentObject>;
     const newInputs = newData.inputs as CommentArray<CommentObject>;
     const keptInputs = new CommentArray<CommentObject>();
@@ -249,9 +246,6 @@ function startTeamsAppLocally(
     dependsOn: ["Validate & install prerequisites", "Install npm packages"],
     dependsOrder: "sequence",
   };
-  if (includeBackend) {
-    result.dependsOn.push("Install Azure Functions binding extensions");
-  }
   if (includeBot) {
     result.dependsOn.push("Start local tunnel");
   }
@@ -288,27 +282,45 @@ function validateAndInstallPrerequisites(
   includeBot: boolean,
   includeFuncHostedBot: boolean
 ): Record<string, unknown> {
-  const prerequisites = ["nodejs", "m365Account"];
-  const comments: string[] = [];
+  const prerequisites = [
+    `"nodejs", // Validate if Node.js is installed.`,
+    `"m365Account", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.`,
+  ];
+  const ports: string[] = [];
   if (includeFrontend) {
-    prerequisites.push("devCert");
-    comments.push("53000, // tab service port");
+    prerequisites.push(
+      `"devCert", // Install localhost SSL certificate. It's used to serve the development sites over HTTPS to debug the Tab app in Teams.`
+    );
+    ports.push("53000, // tab service port");
   }
   if (includeBackend) {
-    prerequisites.push("func", "dotnet");
-    comments.push("7071, // backend service port", "9229, // backend debug port");
+    prerequisites.push(
+      `"func", // Install Azure Functions Core Tools. It's used to serve Azure Functions hosted project locally.`,
+      `"dotnet", // Ensure .NET Core SDK is installed. TeamsFx Azure Functions project depends on extra .NET binding extensions for HTTP trigger authorization.`
+    );
+    ports.push("7071, // backend service port", "9229, // backend debug port");
   }
   if (includeFuncHostedBot && !includeBackend) {
-    prerequisites.push("func");
+    prerequisites.push(
+      `"func", // Install Azure Functions Core Tools. It's used to serve Azure Functions hosted project locally.`
+    );
   }
   if (includeBot) {
-    prerequisites.push("ngrok");
-    comments.push("3978, // bot service port", "9239, // bot debug port");
+    prerequisites.push(
+      `"ngrok", // Install Ngrok. Bot project requires a public message endpoint, and ngrok can help create public tunnel for your local service.`
+    );
+    ports.push("3978, // bot service port", "9239, // bot debug port");
   }
-  prerequisites.push("portOccupancy");
-  const comment = `
+  prerequisites.push(
+    `"portOccupancy", // Validate available ports to ensure those local debug ones are not occupied.`
+  );
+  const prerequisitesComment = `
   [
-    ${comments.join("\n  ")}
+    ${prerequisites.join("\n  ")}
+  ]`;
+  const portsComment = `
+  [
+    ${ports.join("\n  ")}
   ]
   `;
 
@@ -317,8 +329,8 @@ function validateAndInstallPrerequisites(
     type: "teamsfx",
     command: "debug-check-prerequisites",
     args: {
-      prerequisites,
-      portOccupancy: commentJson.parse(comment),
+      prerequisites: commentJson.parse(prerequisitesComment),
+      portOccupancy: commentJson.parse(portsComment),
     },
   };
 }
@@ -373,6 +385,9 @@ function installAzureFunctionsBindingExtensions(): CommentJSONValue {
         PATH: "${command:fx-extension.get-dotnet-path}${env:PATH}",
       },
     },
+    presentation: {
+      reveal: "silent",
+    },
   };
   return commentJson.assign(commentJson.parse(comment), task);
 }
@@ -391,8 +406,12 @@ function startLocalTunnel(): Record<string, unknown> {
   };
 }
 
-function setUpTab(): Record<string, unknown> {
-  return {
+function setUpTab(): CommentJSONValue {
+  const comment = `{
+    // Prepare local launch information for Tab.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab to know the details and how to customize the args.
+  }`;
+  const task = {
     label: "Set up tab",
     type: "teamsfx",
     command: "debug-set-up-tab",
@@ -400,29 +419,38 @@ function setUpTab(): Record<string, unknown> {
       baseUrl: "https://localhost:53000",
     },
   };
+  return commentJson.assign(commentJson.parse(comment), task);
 }
 
-function setUpBot(): Record<string, unknown> {
-  const comment = `
+function setUpBot(): CommentJSONValue {
+  const comment = `{
+    // Register resources and prepare local launch information for Bot.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot to know the details and how to customize the args.
+  }`;
+  const existingBot = `
   {
     //// Enter you own bot information if using the existing bot. ////
     // "botId": "",
     // "botPassword": "",
   }
   `;
-
-  return {
+  const task = {
     label: "Set up bot",
     type: "teamsfx",
     command: "debug-set-up-bot",
-    args: commentJson.assign(commentJson.parse(comment), {
+    args: commentJson.assign(commentJson.parse(existingBot), {
       botMessagingEndpoint: "/api/messages",
     }),
   };
+  return commentJson.assign(commentJson.parse(comment), task);
 }
 
-function setUpSSO(): Record<string, unknown> {
-  const comment = `
+function setUpSSO(): CommentJSONValue {
+  const comment = `{
+    // Register resources and prepare local launch information for SSO functionality.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-set-up-sso to know the details and how to customize the args.
+  }`;
+  const existingAAD = `
   {
     //// Enter you own AAD app information if using the existing AAD app. ////
     // "objectId": "",
@@ -431,29 +459,34 @@ function setUpSSO(): Record<string, unknown> {
     // "accessAsUserScopeId": "
   }
   `;
-
-  return {
+  const task = {
     label: "Set up SSO",
     type: "teamsfx",
     command: "debug-set-up-sso",
-    args: commentJson.parse(comment),
+    args: commentJson.parse(existingAAD),
   };
+  return commentJson.assign(commentJson.parse(comment), task);
 }
 
-function buildAndUploadTeamsManifest(): Record<string, unknown> {
+function buildAndUploadTeamsManifest(): CommentJSONValue {
   const comment = `
+  {
+    // Build and upload Teams manifest.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest to khow the details and how to customize the args.
+  }`;
+  const existingApp = `
   {
     //// Enter your own Teams app package path if using the existing Teams manifest. ////
     // "appPackagePath": ""
   }
   `;
-
-  return {
+  const task = {
     label: "Build & upload Teams manifest",
     type: "teamsfx",
     command: "debug-prepare-manifest",
-    args: commentJson.parse(comment),
+    args: commentJson.parse(existingApp),
   };
+  return commentJson.assign(commentJson.parse(comment), task);
 }
 
 function startFrontend(): Record<string, unknown> {
@@ -510,10 +543,11 @@ function startBackend(programmingLanguage: string): Record<string, unknown> {
     presentation: {
       reveal: "silent",
     },
+    dependsOn: ["Install Azure Functions binding extensions"],
   } as Record<string, unknown>;
 
   if (programmingLanguage === ProgrammingLanguage.typescript) {
-    result.dependsOn = "Watch backend";
+    (result.dependsOn as string[]).push("Watch backend");
   }
 
   return result;
@@ -686,4 +720,85 @@ function installAppInTeams(): Record<string, unknown> {
       reveal: "never",
     },
   };
+}
+
+export function generateSpfxTasks(): Record<string, unknown>[] {
+  return [
+    {
+      label: "Validate & install prerequisites",
+      type: "teamsfx",
+      command: "debug-check-prerequisites",
+      args: {
+        prerequisites: ["nodejs"],
+      },
+    },
+    {
+      label: "Install npm packages",
+      type: "teamsfx",
+      command: "debug-npm-install",
+      args: {
+        projects: [
+          {
+            cwd: "${workspaceFolder}/SPFx",
+            npmInstallArgs: ["--no-audit"],
+          },
+        ],
+        forceUpdate: false,
+      },
+    },
+    {
+      label: "gulp trust-dev-cert",
+      type: "process",
+      command: "node",
+      args: ["${workspaceFolder}/SPFx/node_modules/gulp/bin/gulp.js", "trust-dev-cert"],
+      options: {
+        cwd: "${workspaceFolder}/SPFx",
+      },
+      dependsOn: "Install npm packages",
+    },
+    {
+      label: "gulp serve",
+      type: "process",
+      command: "node",
+      args: ["${workspaceFolder}/SPFx/node_modules/gulp/bin/gulp.js", "serve", "--nobrowser"],
+      problemMatcher: [
+        {
+          pattern: [
+            {
+              regexp: ".",
+              file: 1,
+              location: 2,
+              message: 3,
+            },
+          ],
+          background: {
+            activeOnStart: true,
+            beginsPattern: "^.*Starting gulp.*",
+            endsPattern: "^.*Finished subtask 'reload'.*",
+          },
+        },
+      ],
+      isBackground: true,
+      options: {
+        cwd: "${workspaceFolder}/SPFx",
+      },
+      dependsOn: "gulp trust-dev-cert",
+    },
+    {
+      label: "prepare local environment",
+      type: "shell",
+      command: "exit ${command:fx-extension.pre-debug-check}",
+    },
+    {
+      label: "prepare dev env",
+      dependsOn: ["Validate & install prerequisites", "prepare local environment", "gulp serve"],
+      dependsOrder: "sequence",
+    },
+    {
+      label: "Terminate All Tasks",
+      command: "echo ${input:terminate}",
+      type: "shell",
+      problemMatcher: [],
+    },
+  ];
 }

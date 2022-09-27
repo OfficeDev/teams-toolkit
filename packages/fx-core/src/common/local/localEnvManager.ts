@@ -21,7 +21,7 @@ import * as localStateHelper from "./localStateHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
 import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { getPortsInUse, getPortsFromProject } from "./portChecker";
-import { waitSeconds } from "../tools";
+import { getAppSPFxVersion, waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError, NgrokConfigError } from "../../core/error";
 import { DepsType } from "../deps-checker/depsChecker";
@@ -46,7 +46,10 @@ export class LocalEnvManager {
     this.ui = ui;
   }
 
-  public getActiveDependencies(projectSettings: ProjectSettings): DepsType[] {
+  public async getActiveDependencies(
+    projectSettings: ProjectSettings,
+    projectPath: string
+  ): Promise<DepsType[]> {
     const depsTypes: DepsType[] = [];
     const isSPFx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
@@ -57,9 +60,11 @@ export class LocalEnvManager {
 
     // NodeJS
     if (isSPFx) {
-      depsTypes.push(DepsType.SpfxNode);
-    } else if (includeBackend || includeFuncHostedBot) {
-      depsTypes.push(DepsType.FunctionNode);
+      if ((await getAppSPFxVersion(projectPath))?.startsWith("1.16.0")) {
+        depsTypes.push(DepsType.SpfxNodeV1_16);
+      } else {
+        depsTypes.push(DepsType.SpfxNode);
+      }
     } else {
       depsTypes.push(DepsType.AzureNode);
     }

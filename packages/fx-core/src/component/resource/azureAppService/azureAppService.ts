@@ -12,7 +12,7 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { azureWebSiteDeploy } from "../../../common/azure-hosting/utils";
-import * as utils from "../../../plugins/resource/bot/utils/common";
+import * as utils from "./common";
 import {
   CheckThrowSomethingMissing,
   PackDirectoryExistenceError,

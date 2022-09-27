@@ -21,14 +21,14 @@ export class CliDepsChecker {
   }
 
   public static getNodeDeps(): DepsType[] {
-    return [DepsType.FunctionNode, DepsType.SpfxNode, DepsType.AzureNode];
+    return [DepsType.SpfxNode, DepsType.SpfxNodeV1_16, DepsType.AzureNode];
   }
 
   public static async isEnabled(dep: DepsType): Promise<boolean> {
     switch (dep) {
       case DepsType.AzureNode:
       case DepsType.SpfxNode:
-      case DepsType.FunctionNode:
+      case DepsType.SpfxNodeV1_16:
         return await isNodeCheckerEnabled();
       case DepsType.Dotnet:
         return await isDotnetCheckerEnabled();

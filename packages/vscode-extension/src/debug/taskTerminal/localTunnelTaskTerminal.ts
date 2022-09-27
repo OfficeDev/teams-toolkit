@@ -246,21 +246,28 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     return false;
   }
 
-  private saveNgrokTunnelInspectionFromLog(data: string): void {
-    const matches = data.match(ngrokWebServiceRegex);
-    if (matches && matches?.length > 1) {
-      const webServicePort = matches[1];
-      this.status.tunnelInspection = ngrokTunnelApi(webServicePort);
+  private saveNgrokTunnelInspectionFromLog(data: string): boolean {
+    try {
+      const matches = data.match(ngrokWebServiceRegex);
+      if (matches && matches?.length > 1) {
+        const webServicePort = matches[1];
+        this.status.tunnelInspection = ngrokTunnelApi(webServicePort);
+        return true;
+      }
+    } catch {
+      // Return false
     }
+    return false;
   }
 
   private async saveNgrokEndpointFromApi(): Promise<Result<boolean, FxError>> {
+    let webServiceUrl: string;
     try {
       if (this.status.endpoint) {
         return ok(false);
       }
       const localEnvManager = new LocalEnvManager();
-      const webServiceUrl: string =
+      webServiceUrl =
         this.args.tunnelInspection ??
         this.status.tunnelInspection ??
         ngrokTunnelApi(defaultNgrokWebServicePort);
@@ -278,8 +285,11 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       new UserError(
         ExtensionSource,
         ExtensionErrors.TunnelEndpointNotFoundError,
-        getDefaultString("teamstoolkit.localDebug.tunnelEndpointNotFoundError"),
-        localize("teamstoolkit.localDebug.tunnelEndpointNotFoundError")
+        util.format(
+          getDefaultString("teamstoolkit.localDebug.tunnelEndpointNotFoundError"),
+          webServiceUrl
+        ),
+        util.format(localize("teamstoolkit.localDebug.tunnelEndpointNotFoundError", webServiceUrl))
       )
     );
   }

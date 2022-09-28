@@ -486,7 +486,7 @@ function buildAndUploadTeamsManifest(): CommentJSONValue {
   const comment = `
   {
     // Build and upload Teams manifest.
-    // See https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest to khow the details and how to customize the args.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest to know the details and how to customize the args.
   }`;
   const existingApp = `
   {

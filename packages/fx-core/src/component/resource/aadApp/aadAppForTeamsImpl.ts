@@ -386,7 +386,10 @@ export class AadAppForTeamsImpl {
       Messages.EndPostProvision,
       Messages.EndPostLocalDebug,
       isLocalDebug,
-      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
+      {
+        [Telemetry.signInAudience]: manifest.signInAudience,
+        ...(skip ? { [Telemetry.skip]: Telemetry.yes } : {}),
+      }
     );
 
     return ResultFactory.Success();

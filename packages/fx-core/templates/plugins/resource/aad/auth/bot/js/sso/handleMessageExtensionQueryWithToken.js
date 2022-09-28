@@ -4,7 +4,7 @@ const {
   TeamsFx,
   createMicrosoftGraphClient,
 } = require("@microsoft/teamsfx");
-import "isomorphic-fetch";
+require("isomorphic-fetch");
 
 class TeamsBot extends TeamsActivityHandler {
   constructor() {

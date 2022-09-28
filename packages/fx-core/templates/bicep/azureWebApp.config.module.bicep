@@ -49,7 +49,7 @@ resource webAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     TAB_APP_ENDPOINT: webappEndpoint
         {{/if}}
         {{#if (contains "teams-bot" connections)}}
-    TeamsFx__Authentication__Bot__InitiateLoginEndpoint: uri(provisionOutputs.webAppOutput.value.siteEndpoint, 'bot-auth-start') // The page is used to let users consent required OAuth permissions during bot SSO process
+    TeamsFx__Authentication__Bot__InitiateLoginEndpoint: uri(provisionOutputs.azureWebApp{{scenario}}Output.value.siteEndpoint, 'bot-auth-start') // The page is used to let users consent required OAuth permissions during bot SSO process
     TeamsFx__Authentication__ApplicationIdUri: m365ApplicationIdUri // Application ID URI of AAD application
         {{/if}}
       {{else}}

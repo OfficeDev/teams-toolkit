@@ -271,7 +271,7 @@ function startTeamsAppLocallyAndInstallApp(
 ): Record<string, unknown> {
   const result = startTeamsAppLocally(includeFrontend, includeBackend, includeBot, includeSSO);
   result.label = "Start Teams App Locally & Install App";
-  (result.dependsOn as string[]).push("Install app in Teams");
+  (result.dependsOn as string[]).push("install app in Teams");
 
   return result;
 }

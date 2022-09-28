@@ -26,13 +26,13 @@ import { convertToAlphanumericOnly } from "../../common/utils";
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
-import { AADRegistration } from "../../plugins/resource/bot/aadRegistration";
-import { AppStudio } from "../../plugins/resource/bot/appStudio/appStudio";
-import { IBotRegistration } from "../../plugins/resource/bot/appStudio/interfaces/IBotRegistration";
-import { MaxLengths } from "../../plugins/resource/bot/constants";
-import { PluginLocalDebug } from "../../plugins/resource/bot/resources/strings";
-import { genUUID } from "../../plugins/resource/bot/utils/common";
-import { ResourceNameFactory } from "../../plugins/resource/bot/utils/resourceNameFactory";
+import { AADRegistration } from "../resource/botService/aadRegistration";
+import { AppStudio } from "../resource/botService/appStudio/appStudio";
+import { IBotRegistration } from "../resource/botService/appStudio/interfaces/IBotRegistration";
+import { MaxLengths } from "../resource/botService/constants";
+import { PluginLocalDebug } from "../resource/botService/strings";
+import { genUUID } from "../resource/botService/common";
+import { ResourceNameFactory } from "../resource/botService/resourceNameFactory";
 import { ComponentNames } from "../constants";
 import { DebugAction } from "./common";
 import { errorSource, DebugArgumentEmptyError, InvalidExistingBotArgsError } from "./error";
@@ -47,12 +47,14 @@ const botDebugMessages = {
   AADRegistered: "AAD app is registered (%s)",
   useExistingAAD: "Skip registering AAD app but use the existing AAD app from args: %s",
   AADAlreadyRegistered: "Skip registering AAD app (%s) as it has already been registered before",
-  botRegistered: "Bot is registered",
-  botAlreadyRegistered: "Skip registering bot as it has already been registered before",
+  botRegistered: "Bot is registered (%s)",
+  botAlreadyRegistered: "Skip registering bot as it has already been registered before (%s)",
   botMessagingEndpointUpdated: "Bot messaging endpoint is updated to %s",
   statesSaved: "The states of bot are saved in %s",
   envsSet: "The environment variables of bot are saved in %s",
 };
+
+const botUrl = "https://dev.botframework.com/bots?id=";
 
 export interface BotDebugArgs {
   botId?: string;
@@ -221,7 +223,12 @@ export class BotDebugHandler {
         this.envInfoV3!.state[ComponentNames.TeamsBot].botId
       );
       if (result) {
-        return ok([botDebugMessages.botAlreadyRegistered]);
+        return ok([
+          util.format(
+            botDebugMessages.botAlreadyRegistered,
+            `${botUrl}${this.envInfoV3!.state[ComponentNames.TeamsBot].botId}`
+          ),
+        ]);
       }
 
       const botReg: IBotRegistration = {
@@ -237,7 +244,12 @@ export class BotDebugHandler {
 
       await AppStudio.createBotRegistration(tokenResult.value, botReg);
 
-      return ok([botDebugMessages.botRegistered]);
+      return ok([
+        util.format(
+          botDebugMessages.botRegistered,
+          `${botUrl}${this.envInfoV3!.state[ComponentNames.TeamsBot].botId}`
+        ),
+      ]);
     } catch (error: unknown) {
       return err(assembleError(error, errorSource));
     }

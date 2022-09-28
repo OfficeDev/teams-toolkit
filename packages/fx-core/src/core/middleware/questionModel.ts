@@ -45,7 +45,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1];
   const method = ctx.method;
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
-  if (method === "grantPermissionV3") {
+  if (method === "grantPermission") {
     getQuestionRes = await getQuestionsForGrantPermission(inputs);
   }
 

@@ -29,9 +29,9 @@ import {
 } from "../../../src/component/debugHandler/localEnvProvider";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
-import { AADRegistration } from "../../../src/plugins/resource/bot/aadRegistration";
-import { AppStudio } from "../../../src/plugins/resource/bot/appStudio/appStudio";
-import { BotAuthCredential } from "../../../src/plugins/resource/bot/botAuthCredential";
+import { AADRegistration } from "../../../src/component/resource/botService/aadRegistration";
+import { AppStudio } from "../../../src/component/resource/botService/appStudio/appStudio";
+import { BotAuthCredential } from "../../../src/component/resource/botService/botAuthCredential";
 import { MockM365TokenProvider, runDebugActions } from "./utils";
 import { BotDebugArgs, BotDebugHandler } from "../../../src/component/debugHandler";
 
@@ -208,6 +208,92 @@ describe("TabDebugHandler", () => {
         template: {
           [LocalEnvKeys.bot.template.BotId]: botAuthCredential.clientId as string,
           [LocalEnvKeys.bot.template.BotPassword]: botAuthCredential.clientSecret as string,
+        },
+        teamsfx: {},
+        customized: {},
+      };
+      chai.assert.deepEqual(botEnvs, expected);
+      sinon.restore();
+    });
+
+    it("bot already registered", async () => {
+      const projectSettingV3: ProjectSettingsV3 = {
+        appName: "unit-test",
+        projectId: "11111111-1111-1111-1111-111111111111",
+        solutionSettings: {
+          name: "fx-solution-azure",
+          version: "1.0.0",
+          hostType: "Azure",
+          azureResources: [] as string[],
+          capabilities: ["Bot"],
+          activeResourcePlugins: ["fx-resource-bot", "fx-resource-appstudio"],
+        },
+        components: [{ name: "teams-bot", sso: false }],
+      };
+      sinon
+        .stub(projectSettingsLoader, "loadProjectSettingsByProjectPath")
+        .returns(Promise.resolve(ok(projectSettingV3)));
+      const objectId = "11111111-1111-1111-1111-111111111111";
+      const botId = "22222222-2222-2222-2222-222222222222";
+      const botPassword = "xxx";
+      const envInfoV3: v3.EnvInfoV3 = {
+        envName: environmentManager.getLocalEnvName(),
+        config: {},
+        state: {
+          solution: {},
+          [ComponentNames.TeamsBot]: {
+            objectId,
+            botId,
+            botPassword,
+          },
+        },
+      };
+      sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
+      let registerAADCalled = false;
+      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").callsFake(async () => {
+        registerAADCalled = true;
+        return {};
+      });
+      sinon.stub(AppStudio, "getBotRegistration").callsFake(async (_token, id) => {
+        return id === botId ? ({} as any) : undefined;
+      });
+      let registerBotCalled = false;
+      sinon.stub(AppStudio, "createBotRegistration").callsFake(async () => {
+        registerBotCalled = true;
+      });
+      sinon.stub(AppStudio, "updateMessageEndpoint").callsFake(async () => {});
+      sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
+        return ok("");
+      });
+      let botEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon.stub(LocalEnvProvider.prototype, "loadBotLocalEnvs").returns(Promise.resolve(botEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveBotLocalEnvs").callsFake(async (envs) => {
+        botEnvs = envs;
+        return "";
+      });
+      const domain = "af0e-180-158-57-208.ngrok.io";
+      const botEndpoint = `https://${domain}`;
+      const args: BotDebugArgs = {
+        botMessagingEndpoint: `${botEndpoint}/api/messages`,
+      };
+      const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isOk());
+      chai.assert(!registerAADCalled);
+      chai.assert(!registerBotCalled);
+      chai.assert(envInfoV3.state[ComponentNames.TeamsBot].objectId, objectId);
+      chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].botId, botId);
+      chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].botPassword, botPassword);
+      chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].siteEndpoint, botEndpoint);
+      chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].validDomain, domain);
+      const expected: LocalEnvs = {
+        template: {
+          [LocalEnvKeys.bot.template.BotId]: botId,
+          [LocalEnvKeys.bot.template.BotPassword]: botPassword,
         },
         teamsfx: {},
         customized: {},

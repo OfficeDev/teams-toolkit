@@ -3031,6 +3031,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.InvalidFeature" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This feature is not applicable for your project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Este recurso não se aplica ao seu projeto.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.InvalidInputError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to update context: %s]]></Val>
@@ -3129,10 +3138,13 @@
       </Item>
       <Item ItemId=";error.MissingSubscriptionInConfig" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Please provide the subscrpition id of the resource group (%s) in (%s)]]></Val>
+          <Val><![CDATA[Please provide the subscription id of the resource group (%s) in (%s)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Forneça a id de inscrição do grupo de recursos (%s) em (%s)]]></Val>
+            <Val><![CDATA[Forneça a ID da assinatura do grupo de recursos (%s) em (%s)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Please provide the subscrpition id of the resource group (%s) in (%s)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4291,6 +4303,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.appstudio.teamsAppCreateConflictWithPublishedApp" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A Teams app with that id already exists in your organization's app store. Please manually update the app id and try again.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Um aplicativo do Teams com essa ID já existe na app store da sua organização. Atualize manualmente a ID do aplicativo e tente novamente.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.appstudio.teamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to create Teams app in Developer Portal, due to %s]]></Val>
@@ -4405,11 +4426,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.debugHandler.BotMessagingEndpointMissingError" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.debugHandler.DebugArgumentEmptyError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[botMessagingEndpoint is required.]]></Val>
+          <Val><![CDATA[Debug argument '%s' is empty.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[botMessagingEndpoint é necessário.]]></Val>
+            <Val><![CDATA[O argumento de depuração '%s' está vazio.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4423,6 +4444,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.debugHandler.InvalidExistingAADArgsError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[objectId, clientId e clientSecret são todos necessários se você usar o aplicativo AAD existente para SSO.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.debugHandler.InvalidExistingBotArgsError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[botId and botPassword need to be set together if you use existing bot.]]></Val>
@@ -4432,20 +4462,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.debugHandler.InvalidSSODebugArgsError" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.debugHandler.InvalidTabBaseUrlError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.]]></Val>
+          <Val><![CDATA[baseUrl must be in the format of 'https://localhost:{port}'.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[objectId, clientId e clientSecret são todos necessários se você usar o aplicativo AAD existente para SSO.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.debugHandler.InvalidTabDebugArgsError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[baseUrl is required and must be in the format of 'https://localhost:{port}'.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[baseUrl é necessária e deve estar no formato 'https://localhost:{port}'.]]></Val>
+            <Val><![CDATA[baseUrl deve estar no formato de 'https://localhost:{port}'.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4794,10 +4815,13 @@
       </Item>
       <Item ItemId=";error.function.InstallNpmPackageError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to install NPM packages.]]></Val>
+          <Val><![CDATA[Failed to install npm packages.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Falha ao instalar pacotes NPM.]]></Val>
+            <Val><![CDATA[Falha ao instalar pacotes npm.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to install NPM packages.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

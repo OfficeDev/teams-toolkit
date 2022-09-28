@@ -149,6 +149,24 @@ export function convertEnvStateV3ToV2(envStateV3: Json): EnvStateV2 {
 }
 
 /**
+ * convert envState Map from V3 key to V2 key
+ */
+export function convertEnvStateMapV3ToV2(envStateV3: Map<string, any>): Map<string, any> {
+  const envStateV2 = new Map<string, any>();
+  const component2plugin = new Map<string, string>();
+  EnvStateMigrationComponentNames.forEach((e) => {
+    component2plugin.set(e[1], e[0]);
+  });
+  for (const componentName of envStateV3.keys()) {
+    const pluginName = component2plugin.get(componentName);
+    if (pluginName) {
+      envStateV2.set(pluginName, envStateV3.get(componentName));
+    }
+  }
+  return envStateV2;
+}
+
+/**
  * convert envState from V2 to V3
  */
 export function convertEnvStateV2ToV3(envStateV2: Json): Json {

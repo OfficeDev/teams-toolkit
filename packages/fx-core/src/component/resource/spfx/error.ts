@@ -173,3 +173,13 @@ export function DependencyInstallError(dependency: string): SystemError {
     getLocalizedString("plugins.spfx.error.installDependency", dependency)
   );
 }
+
+export function NoConfigurationError(): SystemError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "NoConfigurationFile",
+    message: getDefaultString("plugins.spfx.error.noConfiguration"),
+    displayMessage: getLocalizedString("plugins.spfx.error.noConfiguration"),
+    helpLink: Constants.SPFX_HELP_LINK,
+  });
+}

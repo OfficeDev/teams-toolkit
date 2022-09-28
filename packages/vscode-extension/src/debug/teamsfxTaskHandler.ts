@@ -307,7 +307,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       [TelemetryProperty.DebugServiceName]: task.name,
       [TelemetryProperty.DebugServiceExitCode]: event.exitCode + "",
     });
-    if (isTeamsFxTransparentTask(task) && event.exitCode !== 0) {
+    if (isTeamsFxTransparentTask(task) && event.exitCode !== 0 && event.exitCode !== -1) {
       terminateAllRunningTeamsfxTasks();
     }
   } else if (isNpmInstallTask(task)) {
@@ -501,7 +501,9 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
 export function terminateAllRunningTeamsfxTasks(): void {
   for (const task of allRunningTeamsfxTasks) {
     try {
-      process.kill(task[1], "SIGTERM");
+      if (task[1] > 0) {
+        process.kill(task[1], "SIGTERM");
+      }
     } catch (e) {
       // ignore and keep killing others
     }

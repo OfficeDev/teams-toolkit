@@ -85,7 +85,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         return debugConfiguration;
       }
 
-      await localTelemetryReporter.runWithTelemetryExceptionProperties(
+      const result = await localTelemetryReporter.runWithTelemetryExceptionProperties(
         TelemetryEvent.DebugProviderResolveDebugConfiguration,
         { [TelemetryProperty.DebugRemote]: (!isSideloadingConfiguration).toString() },
         async () => {
@@ -138,9 +138,13 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
             url = url.replace(accountHintPlaceholder, accountHint);
           }
 
-          debugConfiguration.url = url;
+          return url;
         }
       );
+      if (result === undefined) {
+        return undefined;
+      }
+      debugConfiguration.url = result;
     } catch (error: any) {
       showError(error);
       terminateAllRunningTeamsfxTasks();

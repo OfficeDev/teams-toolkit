@@ -58,6 +58,7 @@ import { LocalCrypto } from "./crypto";
 import { environmentManager, newEnvInfoV3 } from "./environment";
 import {
   CopyFileError,
+  FunctionRouterError,
   InvalidInputError,
   NonExistEnvNameError,
   NotImplementedError,
@@ -110,8 +111,9 @@ import { AppManifest, publishQuestion } from "../component/resource/appManifest/
 import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
 import { createEnvWithName } from "../component/envManager";
 import { getProjectTemplatesFolderPath } from "../common/utils";
-import { manifestUtils } from "../component/resource/appManifest/utils";
+import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { copyParameterJson } from "../plugins/solution/fx-solution/arm";
+import { convertEnvStateMapV3ToV2 } from "../component/migrate";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -130,10 +132,6 @@ export class FxCore implements v3.ICore {
    */
   public on(event: CoreCallbackEvent, callback: CoreCallbackFunc): void {
     return CallbackRegistry.set(event, callback);
-  }
-
-  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
-    return this.createProjectV3(inputs);
   }
 
   async createExistingTabApp(
@@ -169,7 +167,7 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
-  async createProjectV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+  async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
@@ -182,13 +180,6 @@ export class FxCore implements v3.ICore {
     ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;
     return ok(context.projectPath!);
-  }
-
-  /**
-   * switch to different versions of provisionResources
-   */
-  async provisionResources(inputs: Inputs): Promise<Result<Void, FxError>> {
-    return this.provisionResourcesV3(inputs);
   }
 
   @hooks([
@@ -204,10 +195,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
-  async provisionResourcesV3(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createContextV3();
@@ -255,10 +243,6 @@ export class FxCore implements v3.ICore {
     );
   }
 
-  async deployArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
-    return this.deployArtifactsV3(inputs);
-  }
-
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -272,7 +256,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
-  async deployArtifactsV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
     const context = createContextV3();
@@ -287,7 +271,7 @@ export class FxCore implements v3.ICore {
   }
   async localDebug(inputs: Inputs): Promise<Result<Void, FxError>> {
     inputs.env = environmentManager.getLocalEnvName();
-    return this.provisionResourcesV3(inputs);
+    return this.provisionResources(inputs);
   }
 
   @hooks([
@@ -303,42 +287,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
-  async localDebugV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    setCurrentStage(Stage.debug);
-    inputs.stage = Stage.debug;
-    const context = createContextV3();
-    context.envInfo = ctx!.envInfoV3!;
-    context.projectSetting = ctx!.projectSettings! as ProjectSettingsV3;
-    context.tokenProvider = TOOLS.tokenProvider;
-    const fx = Container.get("fx") as any;
-    context.envInfo.config.isLocalDebug = true;
-    const res = await fx.provision(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx!.projectSettings = context.projectSetting;
-    ctx!.envInfoV3 = context.envInfo;
-    return ok(Void);
-  }
-
-  async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
-    return this.publishApplicationV3(inputs);
-  }
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW_V3(),
-  ])
-  async publishApplicationV3(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
     const context = createContextV3();
@@ -350,10 +299,6 @@ export class FxCore implements v3.ICore {
     if (res.isErr()) return err(res.error);
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
-  }
-
-  async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
-    return this.executeUserTaskV3(func, inputs);
   }
 
   @hooks([
@@ -395,7 +340,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
-  async executeUserTaskV3(
+  async executeUserTask(
     func: Func,
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -517,9 +462,11 @@ export class FxCore implements v3.ICore {
     if (!ctx) return err(new ObjectIsUndefinedError("getProjectConfig input stuff"));
     inputs.stage = Stage.getProjectConfig;
     setCurrentStage(Stage.getProjectConfig);
+    let envState = ctx!.solutionContext?.envInfo.state;
+    if (envState) envState = convertEnvStateMapV3ToV2(envState);
     return ok({
       settings: ctx!.projectSettings,
-      config: ctx!.solutionContext?.envInfo.state,
+      config: envState,
       localSettings: ctx!.solutionContext?.localSettings,
     });
   }
@@ -565,9 +512,6 @@ export class FxCore implements v3.ICore {
     }
     return ok(config);
   }
-  async grantPermission(inputs: Inputs): Promise<Result<any, FxError>> {
-    return this.grantPermissionV3(inputs);
-  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -580,7 +524,7 @@ export class FxCore implements v3.ICore {
     QuestionModelMW,
     ContextInjectorMW,
   ])
-  async grantPermissionV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.grantPermission);
     inputs.stage = Stage.grantPermission;
     const projectPath = inputs.projectPath;
@@ -601,10 +545,6 @@ export class FxCore implements v3.ICore {
     return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
   }
 
-  async checkPermission(inputs: Inputs): Promise<Result<any, FxError>> {
-    return this.checkPermissionV3(inputs);
-  }
-
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -616,7 +556,7 @@ export class FxCore implements v3.ICore {
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
   ])
-  async checkPermissionV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.checkPermission);
     inputs.stage = Stage.checkPermission;
     const projectPath = inputs.projectPath;
@@ -637,10 +577,6 @@ export class FxCore implements v3.ICore {
     return err(new ObjectIsUndefinedError("ctx, contextV2, envInfoV3"));
   }
 
-  async listCollaborator(inputs: Inputs): Promise<Result<any, FxError>> {
-    return this.listCollaboratorV3(inputs);
-  }
-
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -652,7 +588,7 @@ export class FxCore implements v3.ICore {
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
   ])
-  async listCollaboratorV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+  async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     setCurrentStage(Stage.listCollaborator);
     inputs.stage = Stage.listCollaborator;
     const projectPath = inputs.projectPath;

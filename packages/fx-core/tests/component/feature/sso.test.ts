@@ -24,7 +24,7 @@ import Container from "typedi";
 import { ComponentNames } from "../../../src/component/constants";
 import * as os from "os";
 import * as telemetry from "../../../src/core/telemetry";
-import { ManifestUtils } from "../../../src/component/resource/appManifest/utils";
+import { ManifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
 import { AppManifest } from "../../../src/component/resource/appManifest/appManifest";
 
 describe("SSO can add in project", () => {
@@ -57,7 +57,6 @@ describe("SSO can add in project", () => {
           provision: true,
           build: true,
           folder: "tabs",
-          sso: true,
         },
       ],
     };

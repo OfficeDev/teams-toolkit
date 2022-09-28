@@ -404,7 +404,7 @@
     "teamstoolkit.taskDefinitions.args.forceUpdate.true.description": "true: always run npm install script.",
     "teamstoolkit.taskDefinitions.args.configFile.title": "The configuration file of the ngrok tunnels.",
     "teamstoolkit.taskDefinitions.args.useGlobalNgrok.title":"If true, use global ngrok from PATH instead of the Teams Toolkit built-in one.",
-    "teamstoolkit.taskDefinitions.args.reuse.title":"Reuse the task when the debug session is closed.",
+    "teamstoolkit.taskDefinitions.args.keepAlive.title":"Keep the task alive when the debug session is closed.",
     "teamstoolkit.taskDefinitions.args.tunnelName.title": "The ngrok tunnel name which need to start.",
     "teamstoolkit.taskDefinitions.command.npmInstall.description": "Install npm packages.\n See https://aka.ms/teamsfx-debug-tasks#debug-npm-install for how to customize following args.",
     "teamstoolkit.taskDefinitions.command.startLocalTunnel.description": "Start the local tunnel service.\n See https://aka.ms/teamsfx-debug-tasks#debug-start-local-tunnel for how to customize following args.",
@@ -416,5 +416,5 @@
     "teamstoolkit.taskDefinitions.args.sso.clientIdTitle": "The AAD app client id for SSO",
     "teamstoolkit.taskDefinitions.args.sso.clientSecretTitle": "The AAD app client secret for SSO",
     "teamstoolkit.taskDefinitions.args.sso.accessAsUserScopeIdTitle": "The AAD app access_as_user scope id for SSO",
-    "teamstoolkit.taskDefinitions.args.manifest.manifestPackagePathTitle": "Teams manifest app package path"
+    "teamstoolkit.taskDefinitions.args.manifest.appPackagePathTitle": "Teams app package path"
 }

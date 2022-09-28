@@ -17,11 +17,11 @@ import {
 import path from "path";
 import fs from "fs-extra";
 import * as os from "os";
-import { assign, merge } from "lodash";
+import { assign } from "lodash";
 import * as hostingUtils from "../../../src/common/azure-hosting/utils";
 import { AzureOperations } from "../../../src/common/azure-hosting/azureOps";
-import * as botUtils from "../../../src/plugins/resource/bot/utils/common";
-import { APIMOutputs, ComponentNames, Scenarios } from "../../../src/component/constants";
+import * as utils from "../../../src/component/resource/azureAppService/common";
+import { ComponentNames, Scenarios } from "../../../src/component/constants";
 import { newEnvInfoV3 } from "../../../src/core/environment";
 import { AzureWebAppResource } from "../../../src/component/resource/azureAppService/azureWebApp";
 
@@ -64,8 +64,8 @@ describe("Azure-Function Component", () => {
   });
   it("deploy happy path", async function () {
     sandbox.stub(fs, "pathExists").resolves(true);
-    const restartWebAppStub = sandbox.stub(AzureOperations, "restartWebApp").resolves();
-    sandbox.stub(botUtils, "zipFolderAsync").resolves({} as any);
+    sandbox.stub(AzureOperations, "restartWebApp").resolves();
+    sandbox.stub(utils, "zipFolderAsync").resolves({} as any);
     sandbox.stub(hostingUtils, "azureWebSiteDeploy").resolves({} as any);
     assign(inputs, {
       componentId: ComponentNames.TeamsBot,

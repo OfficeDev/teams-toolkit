@@ -43,6 +43,7 @@ import { IAadInfo } from "../../../../src/component/resource/apim/interfaces/IAa
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
 import { newEnvInfo } from "../../../../src/core/environment";
+import { ServiceClientCredentials } from "@azure/ms-rest-js";
 
 export type StubbedClass<T> = SinonStubbedInstance<T> & T;
 
@@ -481,4 +482,12 @@ export function mockContext(): PluginContext {
     projectSettings: { appName: "hello-app" },
   } as unknown as PluginContext;
   return pluginContext;
+}
+
+export function generateFakeServiceClientCredentials(): ServiceClientCredentials {
+  return {
+    signRequest: (anything) => {
+      return Promise.resolve(anything);
+    },
+  };
 }

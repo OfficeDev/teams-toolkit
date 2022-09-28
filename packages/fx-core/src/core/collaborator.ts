@@ -31,7 +31,6 @@ import {
   ResourcePermission,
 } from "../common/permissionInterface";
 import { AppStudioScopes, getHashedEnv, GraphScopes } from "../common/tools";
-import { AadAppForTeamsPluginV3 } from "../plugins/resource/aad/v3";
 import {
   AzureRoleAssignmentsHelpLink,
   SharePointManageSiteAdminHelpLink,
@@ -40,8 +39,7 @@ import {
   SolutionTelemetryProperty,
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../plugins/solution/fx-solution/constants";
-import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
-import { AppUser } from "../plugins/resource/appstudio/interfaces/appUser";
+import { AppUser } from "../component/resource/appManifest/interfaces/appUser";
 import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
 import { getUserEmailQuestion } from "../plugins/solution/fx-solution/question";
@@ -50,9 +48,8 @@ import { VSCodeExtensionCommand } from "../common/constants";
 import { ComponentNames } from "../component/constants";
 import { hasAAD, hasAzureResourceV3, hasSPFxTab } from "../common/projectSettingsHelperV3";
 import { AppManifest } from "../component/resource/appManifest/appManifest";
-import "../component/core";
-import "../plugins/resource/aad/v3";
 import axios from "axios";
+import { AadApp } from "../component/resource/aadApp/aadApp";
 
 export class CollaborationUtil {
   static async getCurrentUserInfo(
@@ -106,8 +103,8 @@ export class CollaborationUtil {
 
       const collaborator = res.data.value.find(
         (user: any) =>
-          user.mail.toLowerCase() === email.toLowerCase() ||
-          user.userPrincipalName.toLowerCase() === email.toLowerCase()
+          user.mail?.toLowerCase() === email.toLowerCase() ||
+          user.userPrincipalName?.toLowerCase() === email.toLowerCase()
       );
 
       if (!collaborator) {
@@ -155,7 +152,7 @@ export async function listCollaborator(
   }
   const hasAad = hasAAD(ctx.projectSetting);
   const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-  const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
+  const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
   const appStudioRes = await appStudio.listCollaborator(
     ctx,
     inputs,
@@ -164,7 +161,7 @@ export async function listCollaborator(
   );
   if (appStudioRes.isErr()) return err(appStudioRes.error);
   const teamsAppOwners = appStudioRes.value;
-  const aadRes = hasAad ? await aadPlugin.listCollaborator(ctx, envInfo, tokenProvider) : ok([]);
+  const aadRes = hasAad ? await aadPlugin.listCollaborator(ctx) : ok([]);
   if (aadRes.isErr()) return err(aadRes.error);
   const aadOwners: AadOwner[] = aadRes.value;
   const collaborators: Collaborator[] = [];
@@ -350,7 +347,7 @@ export async function checkPermission(
   }
 
   const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-  const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
+  const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
   const appStudioRes = await appStudio.checkPermission(
     ctx,
     inputs,
@@ -364,7 +361,7 @@ export async function checkPermission(
   const permissions = appStudioRes.value;
   const isAadActivated = hasAAD(ctx.projectSetting);
   if (isAadActivated) {
-    const aadRes = await aadPlugin.checkPermission(ctx, envInfo, tokenProvider, result.value);
+    const aadRes = await aadPlugin.checkPermission(ctx, result.value);
     if (aadRes.isErr()) return err(aadRes.error);
     aadRes.value.forEach((r: ResourcePermission) => {
       permissions.push(r);
@@ -493,7 +490,7 @@ export async function grantPermission(
     }
     const isAadActivated = hasAAD(ctx.projectSetting);
     const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
-    const aadPlugin = Container.get<AadAppForTeamsPluginV3>(BuiltInFeaturePluginNames.aad);
+    const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
     const appStudioRes = await appStudio.grantPermission(
       ctx,
       inputs,
@@ -506,7 +503,7 @@ export async function grantPermission(
     }
     const permissions = appStudioRes.value;
     if (isAadActivated) {
-      const aadRes = await aadPlugin.grantPermission(ctx, envInfo, tokenProvider, result.value);
+      const aadRes = await aadPlugin.grantPermission(ctx, result.value);
       if (aadRes.isErr()) return err(aadRes.error);
       aadRes.value.forEach((r: ResourcePermission) => {
         permissions.push(r);

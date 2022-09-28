@@ -16,7 +16,6 @@ import {
   ResourcePlugins,
 } from "../util";
 import { ConstantString } from "../../../../src/common/constants";
-import { MyTokenCredential } from "../bot/unit/utils";
 import { ApimOutputBicepSnippet } from "../../../../src/component/resource/apim/constants";
 import { ArmTemplateResult } from "../../../../src/common/armInterface";
 import {
@@ -25,7 +24,8 @@ import {
   TabOptionItem,
 } from "../../../../src/plugins/solution/fx-solution/question";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
-import { mockContext } from "./mock";
+import { generateFakeServiceClientCredentials, mockContext } from "./mock";
+import { MyTokenCredential } from "../../solution/util";
 
 describe("apimManager.generateArmTemplates", () => {
   let apimManager: ApimManager;
@@ -211,15 +211,19 @@ describe("apimManager.generateArmTemplates", () => {
 
   async function mockApimManager(): Promise<ApimManager> {
     const openApiProcessor = new OpenApiProcessor();
-    const credential = new MyTokenCredential();
     const identityCredential = new MyTokenCredential();
     const subscriptionId = "test-subscription-id";
-    const apimManagementClient = new ApiManagementClient(credential, subscriptionId);
+    const apimManagementClient = new ApiManagementClient(identityCredential, subscriptionId);
     const resourceProviderClient = new ResourceManagementClient(identityCredential, subscriptionId)
       .providers;
     const lazyApimService = new Lazy<ApimService>(() =>
       Promise.resolve(
-        new ApimService(apimManagementClient, resourceProviderClient, credential, subscriptionId)
+        new ApimService(
+          apimManagementClient,
+          resourceProviderClient,
+          identityCredential,
+          subscriptionId
+        )
       )
     );
     return new ApimManager(lazyApimService, openApiProcessor);

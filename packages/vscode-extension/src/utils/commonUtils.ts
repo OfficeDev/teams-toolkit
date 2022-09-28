@@ -30,6 +30,7 @@ import { CONFIGURATION_PREFIX, ConfigurationKey, UserState } from "../constants"
 import * as commonUtils from "../debug/commonUtils";
 import * as globalVariables from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
+import { getSPFxVersion } from "@microsoft/teamsfx-core/build/common/tools";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -270,6 +271,7 @@ export class FeatureFlags {
   static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
   static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
   static readonly Preview = "TEAMSFX_PREVIEW";
+  static readonly SPFxVersion = "TEAMSFX_SPFX_VERSIOIN";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting
@@ -294,6 +296,8 @@ export function getAllFeatureFlags(): string[] | undefined {
     .map((featureFlag) => {
       return featureFlag;
     });
+
+  result.push(FeatureFlags.SPFxVersion.concat(":", getSPFxVersion()));
 
   return result;
 }

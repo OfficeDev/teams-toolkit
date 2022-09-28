@@ -22,7 +22,7 @@ import { AzureClientFactory } from "../../../../src/component/resource/azureAppS
 import { assign, merge } from "lodash";
 import * as hostingUtils from "../../../../src/common/azure-hosting/utils";
 import { AzureOperations } from "../../../../src/common/azure-hosting/azureOps";
-import * as botUtils from "../../../../src/plugins/resource/bot/utils/common";
+import * as utils from "../../../../src/component/resource/azureAppService/common";
 import { APIMOutputs, ComponentNames, Scenarios } from "../../../../src/component/constants";
 import { MyTokenCredential } from "../../../plugins/resource/bot/unit/utils";
 import {
@@ -33,6 +33,7 @@ import {
 } from "@azure/arm-appservice";
 import * as appService from "@azure/arm-appservice";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
+import { PreconditionError } from "../../../../src/component/error";
 
 chai.use(chaiAsPromised);
 
@@ -148,7 +149,7 @@ describe("Azure-Function Component", () => {
   it("deploy happy path", async function () {
     sandbox.stub(fs, "pathExists").resolves(true);
     const restartWebAppStub = sandbox.stub(AzureOperations, "restartWebApp").resolves();
-    sandbox.stub(botUtils, "zipFolderAsync").resolves({} as any);
+    sandbox.stub(utils, "zipFolderAsync").resolves({} as any);
     sandbox.stub(hostingUtils, "azureWebSiteDeploy").resolves({} as any);
     assign(inputs, {
       componentId: ComponentNames.TeamsApi,
@@ -165,7 +166,7 @@ describe("Azure-Function Component", () => {
   it("deploy happy path for bot", async function () {
     sandbox.stub(fs, "pathExists").resolves(true);
     const restartWebAppStub = sandbox.stub(AzureOperations, "restartWebApp").resolves();
-    sandbox.stub(botUtils, "zipFolderAsync").resolves({} as any);
+    sandbox.stub(utils, "zipFolderAsync").resolves({} as any);
     sandbox.stub(hostingUtils, "azureWebSiteDeploy").resolves({} as any);
     assign(inputs, {
       componentId: ComponentNames.TeamsBot,
@@ -186,5 +187,85 @@ describe("Azure-Function Component", () => {
     const res = restartWebAppStub.calledOnce;
     chai.assert.isTrue(res);
     chai.assert.isTrue(deployAction.isOk());
+  });
+
+  it("deploy happy path with bot web app resource id", async function () {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const restartWebAppStub = sandbox.stub(AzureOperations, "restartWebApp").resolves();
+    sandbox.stub(utils, "zipFolderAsync").resolves({} as any);
+    sandbox.stub(hostingUtils, "azureWebSiteDeploy").resolves({} as any);
+    assign(inputs, {
+      componentId: ComponentNames.TeamsBot,
+      hosting: inputs.hosting,
+      scenario: Scenarios.Bot,
+      folder: "bot",
+      artifactFolder: "bot",
+    });
+    assign(context.envInfo, {
+      state: {
+        [ComponentNames.TeamsBot]: {
+          botWebAppResourceId:
+            "/subscriptions/subs/resourceGroups/rg/providers/Microsoft.Web/sites/siteName/appServices",
+        },
+      },
+    });
+    const deployAction = await component.deploy(context as ResourceContextV3, inputs);
+    const res = restartWebAppStub.calledOnce;
+    chai.assert.isTrue(res);
+    chai.assert.isTrue(deployAction.isOk());
+  });
+
+  it("deploy happy path with output resource id", async function () {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const restartWebAppStub = sandbox.stub(AzureOperations, "restartWebApp").resolves();
+    sandbox.stub(utils, "zipFolderAsync").resolves({} as any);
+    sandbox.stub(hostingUtils, "azureWebSiteDeploy").resolves({} as any);
+    assign(inputs, {
+      componentId: ComponentNames.TeamsBot,
+      hosting: inputs.hosting,
+      scenario: Scenarios.Bot,
+      folder: "bot",
+      artifactFolder: "bot",
+    });
+    assign(context.envInfo, {
+      state: {
+        [ComponentNames.TeamsBot]: {
+          functionAppResourceId:
+            "/subscriptions/subs/resourceGroups/rg/providers/Microsoft.Web/sites/siteName/appServices",
+        },
+      },
+    });
+    const deployAction = await component.deploy(context as ResourceContextV3, inputs);
+    const res = restartWebAppStub.calledOnce;
+    chai.assert.isTrue(res);
+    chai.assert.isTrue(deployAction.isOk());
+  });
+
+  it("deploy bot precondition error", async function () {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(AzureOperations, "restartWebApp").resolves();
+    sandbox.stub(utils, "zipFolderAsync").resolves({} as any);
+    sandbox.stub(hostingUtils, "azureWebSiteDeploy").resolves({} as any);
+    assign(inputs, {
+      componentId: ComponentNames.TeamsBot,
+      hosting: inputs.hosting,
+      scenario: Scenarios.Bot,
+      folder: "bot",
+      artifactFolder: "bot",
+    });
+    assign(context.envInfo, {
+      state: {
+        [ComponentNames.TeamsBot]: {},
+      },
+    });
+
+    let foundError = false;
+    try {
+      await component.deploy(context as ResourceContextV3, inputs);
+    } catch (e) {
+      chai.assert.isTrue(e instanceof PreconditionError);
+      foundError = true;
+    }
+    chai.assert.isTrue(foundError);
   });
 });

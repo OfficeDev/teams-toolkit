@@ -11,10 +11,10 @@ import {
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { globalVars, TOOLS } from "../core/globalVars";
 import { AzureSolutionQuestionNames } from "../plugins/solution/fx-solution/question";
-import { TelemetryKeys } from "../plugins/resource/bot/constants";
+import { TelemetryKeys } from "./resource/botService/constants";
 import { PluginNames } from "../plugins/solution/fx-solution/constants";
 import { ComponentNames, Scenarios, TelemetryConstants } from "./constants";
-import { telemetryHelper } from "../plugins/resource/bot/utils/telemetry-helper";
+import { TelemetryHelper } from "./resource/botService/telemetryHelper";
 
 export type TelemetryProps = { [key: string]: string };
 export function getCommonProperties(): TelemetryProps {
@@ -218,7 +218,7 @@ export function sendMigratedErrorEvent(
     case "BotService":
     case "BT":
       componentName = PluginNames.BOT;
-      telemetryHelper.fillAppStudioErrorProperty(error.innerError, props);
+      TelemetryHelper.fillAppStudioErrorProperty(error.innerError, props);
       break;
   }
   if (componentName) {

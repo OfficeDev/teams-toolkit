@@ -13,27 +13,17 @@ import { SolutionError, SolutionSource } from "./constants";
 export const ResourcePlugins = {
   FrontendPlugin: "FrontendPlugin",
   IdentityPlugin: "IdentityPlugin",
-  BotPlugin: "BotPlugin",
-  AadPlugin: "AadPlugin",
   FunctionPlugin: "FunctionPlugin",
   LocalDebugPlugin: "LocalDebugPlugin",
   ApimPlugin: "ApimPlugin",
-  AppStudioPlugin: "AppStudioPlugin",
-  SimpleAuthPlugin: "SimpleAuthPlugin",
-  KeyVaultPlugin: "KeyVaultPlugin",
 };
 
 export const ResourcePluginsV2 = {
   FrontendPlugin: "FrontendPluginV2",
   IdentityPlugin: "IdentityPluginV2",
-  BotPlugin: "BotPluginV2",
-  AadPlugin: "AadPluginV2",
   FunctionPlugin: "FunctionPluginV2",
   LocalDebugPlugin: "LocalDebugPluginV2",
   ApimPlugin: "ApimPluginV2",
-  AppStudioPlugin: "AppStudioPluginV2",
-  SimpleAuthPlugin: "SimpleAuthPluginV2",
-  KeyVaultPlugin: "KeyVaultPluginV2",
 };
 
 /**

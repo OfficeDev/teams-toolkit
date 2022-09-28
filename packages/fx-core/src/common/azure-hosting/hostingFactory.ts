@@ -3,13 +3,11 @@
 
 import { AzureFunctionHosting } from "./azureFunctionHosting";
 import { AzureHosting } from "./azureHosting";
-import { BotServiceHosting } from "./botServiceHosting";
 import { ServiceType } from "./interfaces";
 import { AzureAppServiceHosting } from "./azureAppServiceHosting";
 
 const HostingMap: { [key: string]: () => AzureHosting } = {
   [ServiceType.Functions]: () => new AzureFunctionHosting(),
-  [ServiceType.BotService]: () => new BotServiceHosting(),
   [ServiceType.AppService]: () => new AzureAppServiceHosting(),
 };
 

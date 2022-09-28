@@ -6,6 +6,10 @@ import {
   APIKeyAuthConfig,
 } from "../../../../src/component/feature/apiconnector/config";
 import { AuthType, KeyLocation } from "../../../../src/component/feature/apiconnector/constants";
+import {
+  RESOURCE_GROUP_NAME,
+  SUBSCRIPTION_ID,
+} from "../../../../src/plugins/solution/fx-solution/constants";
 import { MockUserInteraction } from "../../../core/utils";
 
 export function MockContext(): any {
@@ -14,8 +18,8 @@ export function MockContext(): any {
       envName: "dev",
       state: {
         solution: {
-          ["resourceGroupName"]: "ut",
-          ["subscriptionId"]: "ut",
+          [RESOURCE_GROUP_NAME]: "ut",
+          [SUBSCRIPTION_ID]: "ut",
           ["resourceNameSuffix"]: "ut",
         },
       },

@@ -88,7 +88,7 @@ describe("SSO can add in project", () => {
     assert.isFalse(res);
   });
 
-  it("shouldn't AddSso in me project", async () => {
+  it("should AddSso in me project", async () => {
     const projectSetting: ProjectSettingsV3 = {
       ...basicProjectSetting,
       components: [
@@ -108,7 +108,7 @@ describe("SSO can add in project", () => {
       ],
     };
     const res = await canAddSso(projectSetting);
-    assert.isFalse(res);
+    assert.isTrue(res);
   });
 
   it("shouldn't AddSso in bot project with function", async () => {

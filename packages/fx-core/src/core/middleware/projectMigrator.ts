@@ -319,10 +319,10 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnvStart);
     const projectSettings = await migrateMultiEnv(projectPath, TOOLS.logProvider);
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnv);
-
+    ctx.projectSettings = projectSettings;
     if (!isSPFxProject(projectSettings)) {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArmStart);
-      await migrateArm(projectSettings, ctx);
+      await migrateArm(ctx);
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
@@ -921,8 +921,8 @@ export async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise
   return false;
 }
 
-export async function migrateArm(projectSettings: ProjectSettingsV3, ctx: CoreHookContext) {
-  await generateArmTemplatesFiles(projectSettings, ctx);
+export async function migrateArm(ctx: CoreHookContext) {
+  await generateArmTemplatesFiles(ctx);
   await generateArmParameterJson(ctx);
 }
 
@@ -1172,7 +1172,8 @@ export async function generateBicepsV3(
   return ok(undefined);
 }
 
-async function generateArmTemplatesFiles(projectSettings: ProjectSettingsV3, ctx: CoreHookContext) {
+async function generateArmTemplatesFiles(ctx: CoreHookContext) {
+  const projectSettings = ctx.projectSettings as ProjectSettingsV3;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as InputsWithProjectPath;
   const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
   const fxConfig = path.join(fx, InputConfigsFolderName);

@@ -319,10 +319,6 @@ To make this work in your application:
                 {
                     "id": "User.Read",
                     "type": "Scope"
-                },
-                {
-                    "id": "User.Read.All",
-                    "type": "Scope"
                 }
             ]
         }

@@ -12,7 +12,6 @@ export class TeamsBot extends TeamsActivityHandler {
     super();
   }
 
-  // Search.
   public async handleTeamsMessagingExtensionQuery(context: TurnContext, query: any): Promise<any> {
     /**
      * User Code Here.
@@ -22,7 +21,7 @@ export class TeamsBot extends TeamsActivityHandler {
     return await handleMessageExtensionQueryWithToken(
       context,
       null,
-      ["User.Read.All", "User.Read"],
+      "User.Read",
       async (token: MessageExtensionTokenResponse) => {
         // User Code
         // Init TeamsFx instance with SSO token

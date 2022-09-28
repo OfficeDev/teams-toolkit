@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DriverContext } from "./driverContext";
+import { DriverContext } from "./buildAndDeployArgs";
 
 export interface StepDriver {
   /**

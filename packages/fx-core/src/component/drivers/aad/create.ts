@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { StepDriver } from "../../interface/stepDriver";
-import { DriverContext } from "../../interface/driverContext";
+import { DriverContext } from "../../interface/buildAndDeployArgs";
 import { Service } from "typedi";
 import { CreateAadAppArgs } from "./interface/createAadAppArgs";
 import { AadAppClient } from "./utility/aadAppClient";

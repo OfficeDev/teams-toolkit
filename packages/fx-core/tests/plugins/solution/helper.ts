@@ -17,11 +17,7 @@ import { LocalCrypto } from "../../../src/core/crypto";
 import { v4 as uuid } from "uuid";
 import { ArmTemplateResult } from "../../../src/common/armInterface";
 import sinon from "sinon";
-import {
-  fehostPlugin,
-  SOLUTION_CONFIG_NAME,
-  TestFileContent,
-} from "../../constants";
+import { fehostPlugin, SOLUTION_CONFIG_NAME, TestFileContent } from "../../constants";
 import {
   MockedAzureAccountProvider,
   MockedLogProvider,

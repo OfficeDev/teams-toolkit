@@ -1185,7 +1185,7 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
     throw ProjectSettingError();
   }
   const projectSettings = loadRes.value as ProjectSettingsV3;
-  if (hasAzureResourceV3(projectSettings)) {
+  if (hasAzureResourceV3(projectSettings, true)) {
     if (!getComponent(projectSettings, ComponentNames.Identity)) {
       projectSettings.components.push({ name: ComponentNames.Identity });
     }

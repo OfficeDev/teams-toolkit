@@ -84,10 +84,6 @@ describe("Blazor App", function () {
       response[FrontendWebAppConfig.clientSecret],
       await getExpectedM365ClientSecret(context, projectPath, envName, activeResourcePlugins)
     );
-    chai.assert.include(
-      response[FrontendWebAppConfig.authEndpoint],
-      context[PluginId.FrontendHosting][StateConfigKey.endpoint]
-    );
     chai.assert.equal(
       response[FrontendWebAppConfig.authority],
       context[PluginId.Aad][StateConfigKey.oauthAuthority] as string

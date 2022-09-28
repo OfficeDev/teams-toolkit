@@ -9,15 +9,16 @@ import * as appService from "@azure/arm-appservice";
 import * as tools from "../../../src/common/tools";
 import { TestLogProvider } from "../util/logProviderMock";
 import { use as chaiUse, expect } from "chai";
-import fs = require("fs-extra");
-import chaiAsPromised = require("chai-as-promised");
+import fs from "fs-extra";
+import chaiAsPromised from "chai-as-promised";
 import { PrerequisiteError } from "../../../src/component/error/componentError";
-import { FakeTokenCredentials, TestAzureAccountProvider } from "../util/azureAccountMock";
+import { TestAzureAccountProvider } from "../util/azureAccountMock";
 import * as Models from "@azure/arm-appservice/src/models";
 import { AzureDeployDriver } from "../../../src/component/deploy/azureDeployDriver";
 import { DeployConstant } from "../../../src/component/constant/deployConstant";
 import * as fileOpt from "../../../src/component/utils/fileOperation";
 import { DeployExternalApiCallError } from "../../../src/component/error/deployError";
+import { MyTokenCredential } from "../../plugins/solution/util";
 chaiUse(chaiAsPromised);
 
 describe("Azure App Service Deploy Driver test", () => {
@@ -44,8 +45,9 @@ describe("Azure App Service Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as DriverContext;
-    const fake = new FakeTokenCredentials("x", "y");
-    sandbox.stub(context.azureAccountProvider, "getAccountCredentialAsync").resolves(fake);
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     // ignore file
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake((file) => {
@@ -54,10 +56,9 @@ describe("Azure App Service Deploy Driver test", () => {
       }
       throw new Error("not found");
     });
-    const client = new appService.WebSiteManagementClient(fake, "z");
+    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
-    sandbox.stub(client.webApps, "listPublishingCredentials").resolves({
-      _response: { status: 200 },
+    sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
       publishingUserName: "test-username",
       publishingPassword: "test-password",
     } as Models.WebAppsListPublishingCredentialsResponse);
@@ -120,13 +121,13 @@ describe("Azure App Service Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as DriverContext;
-    const fake = new FakeTokenCredentials("x", "y");
-    sandbox.stub(context.azureAccountProvider, "getAccountCredentialAsync").resolves(fake);
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
 
-    const client = new appService.WebSiteManagementClient(fake, "z");
+    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
-    sandbox.stub(client.webApps, "listPublishingCredentials").resolves({
-      _response: { status: 200 },
+    sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
       publishingUserName: "test-username",
       publishingPassword: "test-password",
     } as Models.WebAppsListPublishingCredentialsResponse);
@@ -161,17 +162,17 @@ describe("Azure App Service Deploy Driver test", () => {
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/serverFarms/some-server-farm",
     } as DeployArgs;
-    const fake = new FakeTokenCredentials("x", "y");
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as DriverContext;
-    sandbox.stub(context.azureAccountProvider, "getAccountCredentialAsync").resolves(fake);
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     // ignore file
     sandbox.stub(fs, "pathExists").resolves(true);
-    const client = new appService.WebSiteManagementClient(fake, "z");
-    sandbox.stub(client.webApps, "listPublishingCredentials").resolves({
-      _response: { status: 200 },
+    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
+    sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
       publishingUserName: "test-username",
       publishingPassword: "test-password",
     } as Models.WebAppsListPublishingCredentialsResponse);

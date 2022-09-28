@@ -3,73 +3,69 @@
 
 import { MessageConnection } from "vscode-jsonrpc";
 import { TokenCredential } from "@azure/core-auth";
-import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nodeauth";
 
 import {
   AzureAccountProvider,
   NotImplementedError,
   SubscriptionInfo,
+  TokenRequest,
 } from "@microsoft/teamsfx-api";
 
 import { RequestTypes } from "../../apis";
 import { env } from "../../constant";
 import { getResponseWithErrorHandling } from "../../utils";
 import { MemoryCache } from "./memoryCache";
+import { AccessToken, GetTokenOptions } from "@azure/identity";
 
-export default class ServerAzureAccountProvider implements AzureAccountProvider {
-  connection: MessageConnection;
+class TeamsFxTokenCredential implements TokenCredential {
+  private connection: MessageConnection;
+
   constructor(connection: MessageConnection) {
     this.connection = connection;
   }
-  async getAccountCredentialAsync(
-    showDialog?: boolean,
-    tenantId?: string
-  ): Promise<TokenCredentialsBase | undefined> {
-    const promise = this.connection.sendRequest(RequestTypes.azure.getAccountCredential);
+
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    let myScopes: string[] = [];
+    if (typeof scopes === "string") {
+      myScopes = [scopes];
+    } else {
+      myScopes = scopes;
+    }
+    const tokenRequest: TokenRequest = { scopes: myScopes };
+    const promise = this.connection.sendRequest(RequestTypes.azure.getAccessToken, tokenRequest);
     const result = await getResponseWithErrorHandling(promise);
     if (result.isErr()) {
-      throw result.error;
+      return null;
+    } else {
+      const accessToken = result.value;
+      const tokenJson = ConvertTokenToJson(accessToken);
+      return {
+        token: accessToken,
+        expiresOnTimestamp: tokenJson.exp * 1000,
+      };
     }
-    const { accessToken, tokenJsonString } = result.value;
-    const tokenJson = JSON.parse(tokenJsonString);
-    const newTokenJson = (function ConvertTokenToJson(token: string) {
-      const array = token!.split(".");
-      const buff = Buffer.from(array[1], "base64");
-      return JSON.parse(buff.toString("utf8"));
-    })(accessToken);
-    const tokenExpiresIn = Math.round(new Date().getTime() / 1000) - (newTokenJson.iat as number);
+  }
+}
 
-    const memoryCache = new (MemoryCache as any)();
-    memoryCache.add(
-      [
-        {
-          tokenType: "Bearer",
-          expiresIn: tokenExpiresIn,
-          expiresOn: {},
-          resource: env.activeDirectoryResourceId,
-          accessToken: accessToken,
-          userId: (newTokenJson as any).upn ?? (newTokenJson as any).unique_name,
-          _clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
-          _authority: env.activeDirectoryEndpointUrl + newTokenJson.tid,
-        },
-      ],
-      function () {
-        const _ = 1;
-      }
-    );
-    const credential = new DeviceTokenCredentials(
-      "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
-      tokenJson.tid,
-      tokenJson.upn ?? tokenJson.unique_name,
-      undefined,
-      env,
-      memoryCache
-    );
-    return Promise.resolve(credential);
+function ConvertTokenToJson(token: string): any {
+  const array = token.split(".");
+  const buff = Buffer.from(array[1], "base64");
+  return JSON.parse(buff.toString("utf8"));
+}
+
+export default class ServerAzureAccountProvider implements AzureAccountProvider {
+  connection: MessageConnection;
+  teamsFxTokenCredential: TeamsFxTokenCredential;
+  constructor(connection: MessageConnection) {
+    this.connection = connection;
+    this.teamsFxTokenCredential = new TeamsFxTokenCredential(this.connection);
   }
 
   async getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined> {
-    return undefined;
+    return this.teamsFxTokenCredential;
   }
 
   async signout(): Promise<boolean> {

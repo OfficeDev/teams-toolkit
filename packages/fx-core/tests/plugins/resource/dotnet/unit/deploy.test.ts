@@ -38,7 +38,7 @@ describe("WebappPlugin", () => {
       sinon.stub(fs, "readFile").resolves("" as any);
       sinon.stub(AzureClientFactory, "getWebSiteManagementClient").returns({
         webApps: {
-          listPublishingCredentials: () => TestHelper.publishingProfile,
+          beginListPublishingCredentialsAndWait: () => TestHelper.publishingProfile,
         },
       } as any);
       sinon.stub(axios, "post").resolves({ status: 200 } as any);

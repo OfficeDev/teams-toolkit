@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { PluginContext, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { TokenCredential } from "@azure/core-http";
 
 import { Constants, DependentPluginInfo, FrontendConfigInfo, RegularExpr } from "./constants";
 import {
@@ -20,7 +20,7 @@ export class FrontendConfig {
   subscriptionId: string;
   resourceGroupName: string;
   location: string;
-  credentials: TokenCredentialsBase;
+  credentials: TokenCredential;
 
   storageName: string;
   storageResourceId?: string;
@@ -32,7 +32,7 @@ export class FrontendConfig {
     resourceGroupName: string,
     location: string,
     storageName: string,
-    credentials: TokenCredentialsBase
+    credentials: TokenCredential
   ) {
     this.subscriptionId = subscriptionId;
     this.resourceGroupName = resourceGroupName;
@@ -42,7 +42,7 @@ export class FrontendConfig {
   }
 
   static async fromPluginContext(ctx: PluginContext): Promise<FrontendConfig> {
-    const credentials = await ctx.azureAccountProvider?.getAccountCredentialAsync();
+    const credentials = await ctx.azureAccountProvider?.getIdentityCredentialAsync();
     if (!credentials) {
       throw new UnauthenticatedError();
     }

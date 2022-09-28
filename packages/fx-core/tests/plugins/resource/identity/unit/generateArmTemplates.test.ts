@@ -5,8 +5,6 @@ import { IdentityPlugin } from "../../../../../src/plugins/resource/identity";
 import * as dotenv from "dotenv";
 import chaiAsPromised from "chai-as-promised";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
-import * as faker from "faker";
 import * as sinon from "sinon";
 import fs from "fs-extra";
 import * as path from "path";
@@ -24,19 +22,12 @@ dotenv.config();
 describe("identityPlugin", () => {
   let identityPlugin: IdentityPlugin;
   let pluginContext: PluginContext;
-  let credentials: msRestNodeAuth.TokenCredentialsBase;
 
-  before(async () => {
-    credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-      faker.datatype.uuid(),
-      faker.internet.url(),
-      faker.internet.password()
-    );
-  });
+  before(async () => {});
 
   beforeEach(async () => {
     identityPlugin = new IdentityPlugin();
-    pluginContext = await TestHelper.pluginContext(credentials);
+    pluginContext = await TestHelper.pluginContext();
   });
 
   afterEach(() => {

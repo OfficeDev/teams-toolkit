@@ -3,7 +3,7 @@
 
 import { ArmTemplateResult } from "../armInterface";
 import { IProgressHandler, TokenProvider } from "@microsoft/teamsfx-api";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { TokenCredential } from "@azure/core-http";
 import * as appService from "@azure/arm-appservice";
 import {
   AzureUploadConfig,
@@ -67,10 +67,8 @@ export function mergeTemplates(templates: ArmTemplateResult[]): ArmTemplateResul
   };
 }
 
-async function getAzureAccountCredential(
-  tokenProvider: TokenProvider
-): Promise<TokenCredentialsBase> {
-  const credential = await tokenProvider.azureAccountProvider.getAccountCredentialAsync();
+async function getAzureAccountCredential(tokenProvider: TokenProvider): Promise<TokenCredential> {
+  const credential = await tokenProvider.azureAccountProvider.getIdentityCredentialAsync();
   if (!credential) {
     throw new PreconditionError(AzureOpsConstant.FAIL_TO_GET_AZURE_CREDENTIALS, [
       AzureOpsConstant.TRY_LOGIN_AZURE,

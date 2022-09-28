@@ -296,8 +296,6 @@ After successfully add SSO in your project, you can also add a new sso command.
 
 <h2 id='3'>Update your business logic for Message Extension</h2>
 
-> Note: please make sure your bot project added message extension.
-
 The sample business logic provides a handler `TeamsBot` extends TeamsActivityHandler and override `handleTeamsMessagingExtensionQuery`. 
 You can update the query logic in the `handleMessageExtensionQueryWithToken` with token which is obtained by using the logged-in Teams user token.
 

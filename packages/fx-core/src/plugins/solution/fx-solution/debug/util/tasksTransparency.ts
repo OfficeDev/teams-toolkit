@@ -445,7 +445,7 @@ function setUpBot(): CommentJSONValue {
   {
     //// Enter you own bot information if using the existing bot. ////
     // "botId": "",
-    // "botPassword": "",
+    // "botPassword": "", // use plain text or environment variable reference like \${env:BOT_PASSWORD}
   }
   `;
   const task = {
@@ -469,7 +469,7 @@ function setUpSSO(): CommentJSONValue {
     //// Enter you own AAD app information if using the existing AAD app. ////
     // "objectId": "",
     // "clientId": "",
-    // "clientSecret": "",
+    // "clientSecret": "", // use plain text or environment variable reference like \${env:CLIENT_SECRET}
     // "accessAsUserScopeId": "
   }
   `;

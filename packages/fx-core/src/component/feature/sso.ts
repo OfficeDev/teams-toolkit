@@ -53,9 +53,7 @@ export class SSO {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
 
-    const isCalledBySsoFeature =
-      inputs.stage === Stage.addFeature &&
-      inputs[AzureSolutionQuestionNames.Features] === SingleSignOnOptionItem.id;
+    const isCalledBySsoFeature = this.isCalledBySsoFeature(inputs);
     const updates = getUpdateComponents(context.projectSetting, isCalledBySsoFeature);
     // generate manifest
     const aadApp = Container.get<AadApp>(ComponentNames.AadApp);
@@ -219,6 +217,20 @@ export class SSO {
       ],
     });
   }
+
+  isCalledBySsoFeature(inputs: InputsWithProjectPath): boolean {
+    let res = true;
+    if (inputs.stage === Stage.create) {
+      res = false;
+    }
+    if (
+      inputs.stage === Stage.addFeature &&
+      inputs[AzureSolutionQuestionNames.Features] !== SingleSignOnOptionItem.id
+    ) {
+      res = false;
+    }
+    return res;
+  }
 }
 
 export interface updateComponents {
@@ -280,7 +292,7 @@ export function canAddSso(
     return !hasAad;
   }
 
-  const update = getUpdateComponents(projectSettings, false);
+  const update = getUpdateComponents(projectSettings, true);
   if (update.tab || update.bot) {
     return true;
   } else {

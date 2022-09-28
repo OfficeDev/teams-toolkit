@@ -90,6 +90,7 @@ import { AadApp } from "../../component/resource/aadApp/aadApp";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
 import {
   hasApi,
+  hasAzureResourceV3,
   hasAzureTab,
   hasBot as hasBotV3,
   hasSPFxTab,
@@ -1172,7 +1173,6 @@ export async function generateBicepsV3(
 }
 
 async function generateArmTemplatesFiles(ctx: CoreHookContext) {
-  const minorCtx: CoreHookContext = { arguments: ctx.arguments };
   const inputs = ctx.arguments[ctx.arguments.length - 1] as InputsWithProjectPath;
   const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
   const fxConfig = path.join(fx, InputConfigsFolderName);
@@ -1185,6 +1185,11 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
     throw ProjectSettingError();
   }
   const projectSettings = loadRes.value as ProjectSettingsV3;
+  if (hasAzureResourceV3(projectSettings)) {
+    if (!getComponent(projectSettings, ComponentNames.Identity)) {
+      projectSettings.components.push({ name: ComponentNames.Identity });
+    }
+  }
   const genRes = await generateBicepsV3(projectSettings, inputs);
   if (genRes.isErr()) throw genRes.error;
   const parameterEnvFileName = parameterFileNameTemplate.replace(

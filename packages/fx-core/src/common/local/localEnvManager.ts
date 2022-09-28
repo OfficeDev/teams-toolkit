@@ -17,14 +17,13 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { convertToLocalEnvs } from "./localSettingsHelper";
 import * as localStateHelper from "./localStateHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
 import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { getPortsInUse, getPortsFromProject } from "./portChecker";
 import { getAppSPFxVersion, waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
-import { CoreSource, ReadFileError, NgrokConfigError } from "../../core/error";
+import { CoreSource, ReadFileError } from "../../core/error";
 import { DepsType } from "../deps-checker/depsChecker";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
 import { LocalCertificate, LocalCertificateManager } from "./localCertificateManager";
@@ -33,8 +32,7 @@ import { LocalStateProvider } from "../localStateProvider";
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import { convertEnvStateV3ToV2 } from "../../component/migrate";
-import { getNgrokHttpUrl } from "../../plugins/solution/fx-solution/debug/util/ngrok";
-import * as yaml from "js-yaml";
+import { getNgrokTunnelFromApi } from "../../plugins/solution/fx-solution/debug/util/ngrok";
 import { LocalEnvKeys, LocalEnvProvider } from "../../component/debugHandler/localEnvProvider";
 
 export class LocalEnvManager {
@@ -118,8 +116,10 @@ export class LocalEnvManager {
     return await getPortsInUse(ports, this.logger);
   }
 
-  public async getNgrokHttpUrl(addr: string | number): Promise<string | undefined> {
-    return await getNgrokHttpUrl(addr);
+  public async getNgrokTunnelFromApi(
+    webServiceUrl: string
+  ): Promise<{ src: string; dist: string } | undefined> {
+    return await getNgrokTunnelFromApi(webServiceUrl);
   }
 
   public async getLocalSettings(
@@ -192,26 +192,6 @@ export class LocalEnvManager {
       await localEnvProvider.saveFrontendLocalEnvs(frontendEnvs);
     }
     return res;
-  }
-
-  public async getNgrokTunnelConfig(configFile: string): Promise<Map<string, string>> {
-    const res = new Map<string, string>();
-    try {
-      const fileContent = await fs.readFile(configFile, "utf8");
-      const config = yaml.load(fileContent) as any;
-      if (config?.tunnels) {
-        for (const [tunnelName, tunnelConfig] of Object.entries(
-          config.tunnels as { [key: string]: any }
-        )) {
-          if (tunnelConfig.addr) {
-            res.set(tunnelName, `${tunnelConfig.addr}`);
-          }
-        }
-      }
-      return res;
-    } catch (e) {
-      throw NgrokConfigError(configFile, e?.message);
-    }
   }
 
   // Retry logic when reading project config files in case of read-write conflict

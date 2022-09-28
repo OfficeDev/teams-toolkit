@@ -955,33 +955,37 @@
               {
                 "type": "object",
                 "required": [
-                  "configFile"
+                  "ngrokArgs"
                 ],
                 "properties": {
-                  "configFile": {
+                  "ngrokArgs": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ],
+                    "description": "%teamstoolkit.taskDefinitions.args.ngrokArgs.title%"
+                  },
+                  "ngrokPath": {
                     "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.configFile.title%",
+                    "description": "%teamstoolkit.taskDefinitions.args.ngrokPath.title%"
+                  },
+                  "tunnelInspection": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.tunnelInspection.title%",
                     "anyOf": [
                       {
-                        "const": "${teamsfx:workspaceFolder}/.fx/configs/ngrok.yml"
+                        "const": "http://127.0.0.1:4040/api/tunnels"
                       },
-                      {}
+                      {
+                      }
                     ]
-                  },
-                  "useGlobalNgrok": {
-                    "type": "boolean",
-                    "description": "%teamstoolkit.taskDefinitions.args.useGlobalNgrok.title%",
-                    "default": false
-                  },
-                  "keepAlive": {
-                    "type": "boolean",
-                    "description": "%teamstoolkit.taskDefinitions.args.keepAlive.title%",
-                    "default": false
-                  },
-                  "tunnelName": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.tunnelName.title%",
-                    "default": "bot"
                   }
                 },
                 "additionalProperties": false

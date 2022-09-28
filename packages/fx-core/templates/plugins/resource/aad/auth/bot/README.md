@@ -346,9 +346,9 @@ Follow this [document](https://aka.ms/teamsfx-aad-manifest#customize-aad-manifes
 
 Follow this [document](https://aka.ms/teamsfx-aad-manifest#How-to-view-the-AAD-app-on-the-Azure-portal) to view your AAD application in Azure Portal.
 
-<h2 id='6'>Trouble Shooting <h2>
+<h2 id='6'>Trouble Shooting </h2>
 
-<h3 id='6.1'>Login page does not pop up after clicking `continue`</h3>
+<h3>Login page does not pop up after clicking `continue`</h3>
 
 First check whether your auth-start page is available by directly go to "{your-bot-endpoint}/auth-start.html" in your browser. You can find your-bot-endpoint in `.fx/states/state.{env}.json`.
 

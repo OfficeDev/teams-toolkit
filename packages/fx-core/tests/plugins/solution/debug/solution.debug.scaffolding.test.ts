@@ -6,10 +6,7 @@ import { ConfigFolderName, InputConfigsFolderName, Inputs, Platform } from "@mic
 import * as path from "path";
 import * as uuid from "uuid";
 import { MockedV2Context } from "../util";
-import {
-  scaffoldLocalDebugSettings,
-  updateNgrokConfigFile,
-} from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
+import { scaffoldLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
 import {
   AzureSolutionQuestionNames,
   BotScenario,
@@ -32,37 +29,8 @@ interface TestParameter {
 describe("solution.debug.scaffolding", () => {
   const expectedLaunchFile = path.resolve(__dirname, "./data/.vscode/launch.json");
   const expectedLocalEnvFile = path.resolve(__dirname, `./data/.${ConfigFolderName}/local.env`);
-  const expectedLocalSettingsFile = path.resolve(
-    __dirname,
-    `./data/.${ConfigFolderName}/${InputConfigsFolderName}/localSettings.json`
-  );
   const expectedSettingsFile = path.resolve(__dirname, "./data/.vscode/settings.json");
   const expectedTasksFile = path.resolve(__dirname, "./data/.vscode/tasks.json");
-  const expectedNgrokConfigFile = path.resolve(
-    __dirname,
-    `./data/.${ConfigFolderName}/${InputConfigsFolderName}/ngrok.yml`
-  );
-
-  describe("updateNgrokConfigFile", () => {
-    beforeEach(() => {
-      fs.emptyDirSync(path.resolve(__dirname, "./data/"));
-      fs.ensureDirSync(
-        path.resolve(__dirname, `./data/.${ConfigFolderName}/${InputConfigsFolderName}`)
-      );
-    });
-
-    it(`happy path: bot`, async () => {
-      await updateNgrokConfigFile(true, expectedNgrokConfigFile);
-      const hasNgrokConfigFile = await fs.pathExists(expectedNgrokConfigFile);
-      chai.assert.isTrue(hasNgrokConfigFile);
-    });
-
-    it(`happy path: tab`, async () => {
-      await updateNgrokConfigFile(false, expectedNgrokConfigFile);
-      const hasNgrokConfigFile = await fs.pathExists(expectedNgrokConfigFile);
-      chai.assert.isFalse(hasNgrokConfigFile);
-    });
-  });
 
   describe("scaffoldLocalDebugSettings", () => {
     let inputs: Inputs;

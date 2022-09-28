@@ -37,6 +37,7 @@ import "../connection/azureWebAppConfig";
 import { ComponentNames, TelemetryConstants } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { AadApp } from "../resource/aadApp/aadApp";
+import { authFileScenario } from "../resource/aadApp/interfaces/models";
 import { AppManifest } from "../resource/appManifest/appManifest";
 import { manifestUtils } from "../resource/appManifest/utils/ManifestUtils";
 import "../resource/azureSql";
@@ -57,6 +58,11 @@ export class SSO {
       inputs.stage === Stage.addFeature &&
       inputs[AzureSolutionQuestionNames.Features] !== TabOptionItem.id;
     const updates = getUpdateComponents(context.projectSetting, inputs.stage === Stage.create);
+    let generateAuthFiles: authFileScenario = {
+      tab: false,
+      bot: false,
+      me: false,
+    };
     // generate manifest
     const aadApp = Container.get<AadApp>(ComponentNames.AadApp);
     {
@@ -113,21 +119,22 @@ export class SSO {
     if (isCalledByFeature) {
       const isExistingTabAppRes = await manifestUtils.isExistingTab(inputs, context);
       if (isExistingTabAppRes.isErr()) return err(isExistingTabAppRes.error);
-      const res = await aadApp.generateAuthFiles(
+      const generateAuthFilesRes = await aadApp.generateAuthFiles(
         context,
         inputs,
         updates.tab! || isExistingTabAppRes.value,
         updates.bot!
       );
-      if (res.isErr()) {
+      if (generateAuthFilesRes.isErr()) {
         return err(
           sendErrorTelemetryThenReturnError(
             SolutionTelemetryEvent.AddSso,
-            res.error,
+            generateAuthFilesRes.error,
             context.telemetryReporter
           )
         );
       }
+      generateAuthFiles = generateAuthFilesRes.value;
     }
 
     // update app manifest
@@ -214,8 +221,9 @@ export class SSO {
     return ok({
       func: AddSsoParameters.AddSso,
       capabilities: [
-        ...(updates.tab ? [AddSsoParameters.Tab] : []),
-        ...(updates.bot ? [AddSsoParameters.Bot] : []),
+        ...(generateAuthFiles.tab ? [AddSsoParameters.Tab] : []),
+        ...(generateAuthFiles.bot ? [AddSsoParameters.Bot] : []),
+        ...(generateAuthFiles.me ? [AddSsoParameters.ME] : []),
       ],
     });
   }

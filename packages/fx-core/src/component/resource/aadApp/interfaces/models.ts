@@ -7,6 +7,12 @@ export interface permissionList {
   roles: Array<string>;
 }
 
+export interface authFileScenario {
+  tab: boolean;
+  bot: boolean;
+  me: boolean;
+}
+
 export enum Envs {
   Azure = "azure",
   LocalDebug = "local",

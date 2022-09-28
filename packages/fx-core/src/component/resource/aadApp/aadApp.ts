@@ -38,6 +38,7 @@ import { AadOwner, ResourcePermission } from "../../../common/permissionInterfac
 import { AppUser } from "../appManifest/interfaces/appUser";
 import { Language } from "../../../plugins/solution/fx-solution/constants";
 import { getComponent } from "../../workflow";
+import { authFileScenario } from "./interfaces/models";
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";
@@ -72,7 +73,7 @@ export class AadApp implements CloudResource {
     inputs: InputsWithProjectPath,
     needTab: boolean,
     needBot: boolean
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<authFileScenario, FxError>> {
     let botCapability = false;
     let meCapability = false;
     if (needBot) {
@@ -97,7 +98,11 @@ export class AadApp implements CloudResource {
       isVSProject(context.projectSetting)
     );
     if (res.isErr()) return err(res.error);
-    return ok(undefined);
+    return ok({
+      tab: needTab,
+      bot: botCapability,
+      me: meCapability,
+    });
   }
   async generateBicep(
     context: ContextV3,

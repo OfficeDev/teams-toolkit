@@ -221,7 +221,7 @@ export function convertProjectSettingsV2ToV3(
           hosting: hostingComponent,
           name: "teams-tab",
           build: true,
-          provision: false,
+          provision: true,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
           sso: tabSSO,

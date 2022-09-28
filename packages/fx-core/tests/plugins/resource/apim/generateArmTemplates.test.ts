@@ -17,7 +17,6 @@ import {
 } from "../util";
 import { ConstantString } from "../../../../src/common/constants";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { generateFakeServiceClientCredentials } from "../bot/unit/utils";
 import { ApimOutputBicepSnippet } from "../../../../src/component/resource/apim/constants";
 import { ArmTemplateResult } from "../../../../src/common/armInterface";
 import {
@@ -26,7 +25,7 @@ import {
   TabOptionItem,
 } from "../../../../src/plugins/solution/fx-solution/question";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
-import { mockContext } from "./mock";
+import { generateFakeServiceClientCredentials, mockContext } from "./mock";
 
 describe("apimManager.generateArmTemplates", () => {
   let apimManager: ApimManager;

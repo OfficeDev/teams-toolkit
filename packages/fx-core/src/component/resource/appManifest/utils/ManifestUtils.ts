@@ -495,7 +495,9 @@ export class ManifestUtils {
         validDomains.push(tabEndpoint.slice(8));
       }
       const botId = envInfo.state[ComponentNames.TeamsBot]?.botId;
-      const botDomain = envInfo.state[ComponentNames.TeamsBot]?.validDomain;
+      const botDomain =
+        envInfo.state[ComponentNames.TeamsBot]?.validDomain ||
+        envInfo.state[ComponentNames.TeamsBot]?.domain;
       if (botId) {
         if (!botDomain) {
           return err(

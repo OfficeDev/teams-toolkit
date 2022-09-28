@@ -29,9 +29,9 @@ import {
 } from "../../../src/component/debugHandler/localEnvProvider";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
-import { AADRegistration } from "../../../src/plugins/resource/bot/aadRegistration";
-import { AppStudio } from "../../../src/plugins/resource/bot/appStudio/appStudio";
-import { BotAuthCredential } from "../../../src/plugins/resource/bot/botAuthCredential";
+import { AADRegistration } from "../../../src/component/resource/botService/aadRegistration";
+import { AppStudio } from "../../../src/component/resource/botService/appStudio/appStudio";
+import { BotAuthCredential } from "../../../src/component/resource/botService/botAuthCredential";
 import { MockM365TokenProvider, runDebugActions } from "./utils";
 import { BotDebugArgs, BotDebugHandler } from "../../../src/component/debugHandler";
 

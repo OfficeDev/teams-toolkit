@@ -27,27 +27,20 @@ import {
 import { convertToLangKey, execute } from "./utils";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { CoreQuestionNames } from "../../core/question";
-import {
-  DEFAULT_DOTNET_FRAMEWORK,
-  TemplateProjectsConstants,
-} from "../../plugins/resource/bot/constants";
-import { CommandExecutionError } from "../../plugins/resource/bot/errors";
-import { Commands, CommonStrings } from "../../plugins/resource/bot/resources/strings";
-import { telemetryHelper } from "../../plugins/resource/bot/utils/telemetry-helper";
-import { TemplateZipFallbackError, UnzipError } from "../../plugins/resource/bot/v3/error";
-import { ComponentNames, ProgrammingLanguage } from "../constants";
+import { Commands, DEFAULT_DOTNET_FRAMEWORK } from "./constants";
+import { ComponentNames, PathConstants, ProgrammingLanguage } from "../constants";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { getComponent } from "../workflow";
 import { BadComponent } from "../error";
+import { CommandExecutionError, TemplateZipFallbackError, UnzipError } from "./error";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { AppSettingConstants, replaceBotAppSettings } from "./appSettingUtils";
 import baseAppSettings from "./appSettings/baseAppSettings.json";
 import botAppSettings from "./appSettings/botAppSettings.json";
 import ssoBotAppSettings from "./appSettings/ssoBotAppSettings.json";
-/**
- * bot scaffold plugin
- */
+
+const errorSource = "BT";
 @Service("bot-code")
 export class BotCodeProvider {
   name = "bot-code";
@@ -56,11 +49,7 @@ export class BotCodeProvider {
       enableProgressBar: true,
       progressTitle: ProgressTitles.scaffoldBot,
       progressSteps: 1,
-      errorSource: "BT",
-      errorHandler: (e, t) => {
-        telemetryHelper.fillAppStudioErrorProperty(e, t);
-        return e as FxError;
-      },
+      errorSource: errorSource,
     }),
   ])
   async generate(
@@ -75,9 +64,7 @@ export class BotCodeProvider {
       context.projectSetting.programmingLanguage ||
       ProgrammingLanguage.JS;
     const botFolder =
-      inputs.folder ??
-      (language === ProgrammingLanguage.CSharp ? "" : CommonStrings.BOT_WORKING_DIR_NAME);
-    const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
+      inputs.folder ?? (language === ProgrammingLanguage.CSharp ? "" : PathConstants.botWorkingDir);
     const lang = convertToLangKey(language);
     const workingDir = path.join(inputs.projectPath, botFolder);
     const safeProjectName =
@@ -86,7 +73,7 @@ export class BotCodeProvider {
     await actionContext?.progressBar?.next(ProgressMessages.scaffoldBot);
     for (const scenario of inputs.scenarios as string[]) {
       await scaffoldFromTemplates({
-        group: group_name,
+        group: "bot",
         lang: lang,
         scenario: scenario,
         dst: workingDir,
@@ -102,9 +89,9 @@ export class BotCodeProvider {
             case ScaffoldActionName.FetchTemplatesZipFromUrl:
               break;
             case ScaffoldActionName.FetchTemplateZipFromLocal:
-              throw new TemplateZipFallbackError();
+              throw new TemplateZipFallbackError(errorSource);
             case ScaffoldActionName.Unzip:
-              throw new UnzipError(context.dst);
+              throw new UnzipError(errorSource, context.dst);
             default:
               throw new Error(error.message);
           }
@@ -115,7 +102,7 @@ export class BotCodeProvider {
   }
   @hooks([
     ActionExecutionMW({
-      errorSource: "BT",
+      errorSource: errorSource,
     }),
   ])
   async configure(
@@ -159,7 +146,7 @@ export class BotCodeProvider {
       enableProgressBar: true,
       progressTitle: ProgressTitles.buildingBot,
       progressSteps: 1,
-      errorSource: "BT",
+      errorSource: errorSource,
     }),
   ])
   async build(
@@ -169,7 +156,7 @@ export class BotCodeProvider {
   ): Promise<Result<undefined, FxError>> {
     const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     if (!teamsBot) return ok(undefined);
-    if (teamsBot.folder == undefined) throw new BadComponent("bot", this.name, "folder");
+    if (teamsBot.folder == undefined) throw new BadComponent(errorSource, this.name, "folder");
     const packDir = path.resolve(inputs.projectPath, teamsBot.folder);
     const language = context.projectSetting.programmingLanguage || ProgrammingLanguage.JS;
 
@@ -177,12 +164,13 @@ export class BotCodeProvider {
     if (language === ProgrammingLanguage.TS) {
       //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
       try {
-        await execute("npm install", packDir, context.logProvider);
-        await execute("npm run build", packDir, context.logProvider);
+        await execute(Commands.NpmInstall, packDir, context.logProvider);
+        await execute(Commands.NpmBuild, packDir, context.logProvider);
         merge(teamsBot, { build: true, artifactFolder: teamsBot.folder });
       } catch (e) {
         throw new CommandExecutionError(
-          `${Commands.NPM_INSTALL}, ${Commands.NPM_BUILD}`,
+          errorSource,
+          `${Commands.NpmInstall}, ${Commands.NpmBuild}`,
           packDir,
           e
         );
@@ -190,17 +178,17 @@ export class BotCodeProvider {
     } else if (language === ProgrammingLanguage.JS) {
       try {
         // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
-        await execute("npm install", packDir, context.logProvider);
+        await execute(Commands.NpmInstall, packDir, context.logProvider);
         merge(teamsBot, { build: true, artifactFolder: teamsBot.folder });
       } catch (e) {
-        throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, packDir, e);
+        throw new CommandExecutionError(errorSource, `${Commands.NpmInstall}`, packDir, e);
       }
     } else if (language === ProgrammingLanguage.CSharp) {
       const projectFileName = `${context.projectSetting.appName}.csproj`;
       const framework = await BotCodeProvider.getFrameworkVersion(
         path.join(packDir, projectFileName)
       );
-      await execute(`dotnet publish --configuration Release`, packDir, context.logProvider);
+      await execute(Commands.DotNetPublish, packDir, context.logProvider);
       const artifactFolder = path.join(".", "bin", "Release", framework, "publish");
       merge(teamsBot, { build: true, artifactFolder: artifactFolder });
     }

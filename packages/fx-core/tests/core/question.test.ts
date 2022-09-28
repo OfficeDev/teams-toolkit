@@ -281,4 +281,11 @@ describe("App name question", async () => {
 
     chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
   });
+
+  it("invalid app name containing &", async () => {
+    const input = "app&123";
+    const result = await validFunc(input);
+
+    chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+  });
 });

@@ -29,7 +29,11 @@ import { getTemplatesFolder } from "../../folder";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../resource/appManifest/constants";
 import { GeneratorChecker } from "../resource/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../resource/spfx/depsChecker/yoChecker";
-import { DependencyInstallError, ScaffoldError } from "../resource/spfx/error";
+import {
+  DependencyInstallError,
+  NoConfigurationError,
+  ScaffoldError,
+} from "../resource/spfx/error";
 import {
   ManifestTemplate,
   PlaceHolders,
@@ -86,7 +90,6 @@ export async function scaffoldSPFx(
     const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
     const framework = (inputs[SPFXQuestionNames.framework_type] as string) ?? undefined;
     let solutionName: string | undefined = undefined;
-    let yoPersisted = true;
 
     if (!isAddSpfx) {
       solutionName =
@@ -95,15 +98,7 @@ export async function scaffoldSPFx(
     } else {
       const yorcPath = path.join(inputs.projectPath, "SPFx", ".yo-rc.json");
       if (!(await fs.pathExists(yorcPath))) {
-        yoPersisted = false;
-        await fs.ensureFile(yorcPath);
-        await fs.writeJSON(yorcPath, {
-          "@microsoft/generator-sharepoint": {
-            solutionName:
-              ((context as ContextV3).projectSetting?.appName as string) ||
-              ((context as PluginContext).projectSettings?.appName as string),
-          },
-        });
+        throw NoConfigurationError();
       }
     }
 
@@ -227,7 +222,7 @@ export async function scaffoldSPFx(
     }
 
     // update readme
-    if (!isAddSpfx || !yoPersisted) {
+    if (!isAddSpfx) {
       await fs.copyFile(
         path.resolve(
           templateFolder,

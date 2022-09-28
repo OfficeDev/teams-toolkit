@@ -22,7 +22,6 @@ import {
   getSubscriptionIdFromResourceId,
 } from "../tools";
 import { Messages } from "./messages";
-import { ProgressBarConstants } from "../../plugins/resource/bot/constants";
 
 export function getHandlebarContext(
   bicepContext: BicepContext,
@@ -138,7 +137,7 @@ export async function azureWebSiteDeploy(
     tokenProvider
   );
   const zipDeployEndpoint: string = getZipDeployEndpoint(siteName);
-  await progress?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
+  await progress?.next(Messages.zipDeploy);
   const statusUrl = await AzureOperations.zipDeployPackage(zipDeployEndpoint, buffer, config);
   await AzureOperations.checkDeployStatus(statusUrl, config);
 

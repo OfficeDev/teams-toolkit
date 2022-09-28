@@ -179,7 +179,7 @@ export const npmInstallDisplayMessages: DisplayMessages = {
   checkNumber: (n: number) =>
     `${stepPrefix(
       n
-    )} Teams Toolkit is checking if all the npm packages are installed and will install them if not.`,
+    )} Teams Toolkit is checking if all the npm packages are installed and will install them if not. It may take several minutes for the first time execution, you can check the TERMINAL window for progress and details`,
   summary: "Summary:",
   learnMore: (link: string) => `Visit ${link} to learn more about 'Install npm packages' task.`,
   learnMoreHelpLink: "https://aka.ms/teamsfx-npm-package-task", // TODO: update npm install help link

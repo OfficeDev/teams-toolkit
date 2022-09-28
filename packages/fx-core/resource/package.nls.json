@@ -929,6 +929,5 @@
   "error.ActionNotExist": "Action not found: %s.",
   "error.ComponentNotExist": "Component not found: %s.",
   "error.BadComponent": "Component '%s' lacks of property: %s.",
-  "error.NgrokConfigError": "Load ngrok config %s failed. %s",
   "error.InvalidFeature": "This feature is not applicable for your project."
 }

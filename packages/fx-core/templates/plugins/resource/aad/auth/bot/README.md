@@ -4,7 +4,19 @@ Microsoft Teams provides a mechanism by which an application can obtain the sign
 
 For a bot application, user can invoke the AAD consent flow to obtain sso token to call Graph and other APIs. 
 
-# Changes to your project
+<h2>Contents </h2>
+
+* [Changes to your project](#1)
+* [Update code to Use SSO for Bot](#2)
+  * [Set up the AAD redirects](#2.1)
+  * [Update your business logic](#2.2)
+  * [(Optional) Add a new sso command to the bot](#2.3)
+* [Update code to Use SSO for Message Extension SSO](#3)
+* [Debug your application](#4)
+* [Customize AAD applications](#5)
+* [Trouble Shooting](#6)
+
+<h2 id='1'>Changes to your project</h2>
 
 When you added the SSO feature to your application, Teams Toolkit updated your project to support SSO:
 
@@ -18,13 +30,13 @@ After you successfully added SSO into your project, Teams Toolkit will create an
 | Create| `aad.template.json` under `templates/appPackage` | The Azure Active Directory application manifest that is used to register the application with AAD. |
 | Create | `auth/bot` | Reference code, redirect pages and a `README.md` file. These files are provided for reference. See below for more information. |
 
-# Update your code to add SSO
+<h2 id='2'>Update your code to add SSO</h2>
 
 As described above, the Teams Toolkit generated some configuration to set up your application for SSO, but you need to update your application business logic to take advantage of the SSO feature as appropriate.
 
 > Note: The following part is for `command and response bot`. For `basic bot`, please refer to the [bot-sso sample](https://aka.ms/bot-sso-sample).
 
-## Set up the AAD redirects
+<h3 id='2.1'>Set up the AAD redirects</h3>
 
 1. Move the `auth/bot/public` folder to `bot/src`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with AAD, AAD will redirect the user to these pages.
 1. Modify your `bot/src/index` to add the appropriate `restify` routes to these pages.
@@ -40,7 +52,7 @@ As described above, the Teams Toolkit generated some configuration to set up you
     );
     ```
 
-## Update your business logic
+<h3 id='2.2'>Update your business logic</h3>
 
 The sample business logic provides a sso command handler `ProfileSsoCommandHandler` that use an AAD token to call Microsoft Graph. This token is obtained by using the logged-in Teams user token. The flow is brought together in a dialog that will display a consent dialog if required.
 
@@ -128,7 +140,7 @@ Please replace the following code to make sso consent flow works:
     }
     ```
 
-## (Optional) Add a new sso command to the bot
+<h3 id='2.3'>(Optional) Add a new sso command to the bot</h3>
 
 After successfully add SSO in your project, you can also add a new sso command.
 
@@ -280,7 +292,45 @@ After successfully add SSO in your project, you can also add a new sso command.
     }
     ```
 
-# Debug your application
+<h2 id='3'>Update your business logic for Message Extension</h2>
+
+> Note: please make sure your bot project added message extension.
+
+The sample business logic provides a handler `TeamsBot` extends TeamsActivityHandler and override `handleTeamsMessagingExtensionQuery`. 
+You can update the query logic in the `handleMessageExtensionQueryWithToken` with token which is obtained by using the logged-in Teams user token.
+
+To make this work in your application:
+1. Override `handleTeamsMessagingExtensionQuery` interface under `bot/src/teamsBot`. you can follow the sample code in the `handleMessageExtensionQueryWithToken` to do your own query logic.
+1. Open `bot/package.json`, ensure that `@microsoft/teamsfx` version >= 1.2.0
+1. Install `isomorphic-fetch` npm packages in your bot project.
+1. (For ts only) Install `copyfiles` npm packages in your bot project, add or update the `build` script in `bot/package.json` as following
+
+    ```json
+    "build": "tsc --build && copyfiles src/public/*.html lib/",
+    ```
+    By doing this, the HTML pages used for auth redirect will be copied when building this bot project.
+
+1. Update `templates/appPackage/aad.template.json` your scopes which used in `handleMessageExtensionQueryWithToken`.
+    ```json
+    "requiredResourceAccess": [
+        {
+            "resourceAppId": "Microsoft Graph",
+            "resourceAccess": [
+                {
+                    "id": "User.Read",
+                    "type": "Scope"
+                },
+                {
+                    "id": "User.Read.All",
+                    "type": "Scope"
+                }
+            ]
+        }
+    ]
+    ```
+
+
+<h2 id='4'>Debug your application </h2>
 
 You can debug your application by pressing F5.
 
@@ -288,7 +338,7 @@ Teams Toolkit will use the AAD manifest file to register a AAD application regis
 
 To learn more about Teams Toolkit local debug functionalities, refer to this [document](https://docs.microsoft.com/microsoftteams/platform/toolkit/debug-local).
 
-# Customize AAD applications
+<h2 id='5'>Customize AAD applications</h2>
 
 The AAD [manifest](https://docs.microsoft.com/azure/active-directory/develop/reference-app-manifest) allows you to customize various aspects of your application registration. You can update the manifest as needed.
 
@@ -296,9 +346,9 @@ Follow this [document](https://aka.ms/teamsfx-aad-manifest#customize-aad-manifes
 
 Follow this [document](https://aka.ms/teamsfx-aad-manifest#How-to-view-the-AAD-app-on-the-Azure-portal) to view your AAD application in Azure Portal.
 
-# Trouble Shooting
+<h2 id='6'>Trouble Shooting <h2>
 
-## Login page does not pop up after clicking `continue`
+<h3 id='6.1'>Login page does not pop up after clicking `continue`</h3>
 
 First check whether your auth-start page is available by directly go to "{your-bot-endpoint}/auth-start.html" in your browser. You can find your-bot-endpoint in `.fx/states/state.{env}.json`.
 

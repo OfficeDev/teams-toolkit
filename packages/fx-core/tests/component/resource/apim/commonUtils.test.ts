@@ -4,7 +4,10 @@ import "mocha";
 import chai from "chai";
 import {
   capitalizeFirstLetter,
+  getApimServiceNameFromResourceId,
+  getAuthServiceNameFromResourceId,
   getFileExtension,
+  getProductNameFromResourceId,
   RetryHandler,
 } from "../../../../src/component/resource/apim/utils/commonUtils";
 import chaiAsPromised from "chai-as-promised";
@@ -100,6 +103,35 @@ describe("Util", () => {
 
     afterEach(() => {
       sinon.restore();
+    });
+  });
+
+  describe("getApimServiceNameFromResourceId", () => {
+    it("vaid resource id", () => {
+      const resourceId =
+        "/subscriptions/subId/resourceGroups/rg/providers/Microsoft.ApiManagementservice/service/apimId";
+      const res = getApimServiceNameFromResourceId(resourceId);
+
+      chai.expect(res).equal("apimId");
+    });
+  });
+
+  describe("getProductNameFromResourceId", () => {
+    it("vaid resource id", () => {
+      const resourceId = "/subscriptions/subId/resourceGroups/rg/providers/products/productId";
+      const res = getProductNameFromResourceId(resourceId);
+
+      chai.expect(res).equal("productId");
+    });
+  });
+
+  describe("getAuthServiceNameFromResourceId", () => {
+    it("vaid resource id", () => {
+      const resourceId =
+        "/subscriptions/subId/resourceGroups/rg/providers/authorizationServers/serverId";
+      const res = getAuthServiceNameFromResourceId(resourceId);
+
+      chai.expect(res).equal("serverId");
     });
   });
 });

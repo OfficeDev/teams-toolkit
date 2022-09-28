@@ -3,17 +3,24 @@
 import "mocha";
 import chai from "chai";
 import {
+  AadPluginConfigKeys,
   ApimPluginConfigKeys,
   SolutionConfigKeys,
   TeamsToolkitComponent,
 } from "../../../../src/component/resource/apim/constants";
-import { ApimPluginConfig, SolutionConfig } from "../../../../src/component/resource/apim/config";
+import {
+  AadPluginConfig,
+  ApimPluginConfig,
+  FunctionPluginConfig,
+  SolutionConfig,
+} from "../../../../src/component/resource/apim/config";
 import {
   ConfigMap,
   ConfigValue,
   EnvInfo,
   PluginIdentity,
   ReadonlyPluginConfig,
+  v3,
 } from "@microsoft/teamsfx-api";
 
 describe("config", () => {
@@ -50,6 +57,11 @@ describe("config", () => {
       [ApimPluginConfigKeys.apiPrefix]: "prefix",
       [ApimPluginConfigKeys.versionSetId]: "error><version?set",
       [ApimPluginConfigKeys.apiDocumentPath]: 1,
+      [ApimPluginConfigKeys.serviceResourceId]: "serviceResourceId",
+      [ApimPluginConfigKeys.productResourceId]: "productResourceId",
+      [ApimPluginConfigKeys.authServerResourceId]: "authServerResourceId",
+      [ApimPluginConfigKeys.publisherEmail]: "email",
+      [ApimPluginConfigKeys.publisherName]: "name",
     });
 
     if (!configContent) {
@@ -82,6 +94,64 @@ describe("config", () => {
     });
     it("Check and get property with value", () => {
       chai.expect(apimPluginConfig.checkAndGet(ApimPluginConfigKeys.apiPrefix)).to.equal("prefix");
+    });
+
+    it("verify property", () => {
+      chai
+        .expect(apimPluginConfig.checkAndGet(ApimPluginConfigKeys.versionSetId))
+        .to.equal("error><version?set");
+      chai
+        .expect(apimPluginConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId))
+        .to.equal("serviceResourceId");
+      chai
+        .expect(apimPluginConfig.checkAndGet(ApimPluginConfigKeys.productResourceId))
+        .to.equal("productResourceId");
+      chai
+        .expect(apimPluginConfig.checkAndGet(ApimPluginConfigKeys.authServerResourceId))
+        .to.equal("authServerResourceId");
+      chai
+        .expect(apimPluginConfig.checkAndGet(ApimPluginConfigKeys.publisherEmail))
+        .to.equal("email");
+      chai
+        .expect(apimPluginConfig.checkAndGet(ApimPluginConfigKeys.publisherName))
+        .to.equal("name");
+    });
+  });
+
+  describe("FunctionPluginConfig", () => {
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      config: { manifest: { appName: { short: "appname" } } },
+      state: { solution: {}, "teams-api": { functionEndpoint: "endpoint" } },
+    };
+    const functionConfig = new FunctionPluginConfig(envInfo);
+
+    it("functionEndpoint", () => {
+      chai.expect(functionConfig.functionEndpoint).to.equal("endpoint");
+    });
+  });
+
+  describe("AadPluginConfig", () => {
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      config: { manifest: { appName: { short: "appname" } } },
+      state: {
+        solution: {},
+        "aad-app": {
+          [AadPluginConfigKeys.objectId]: "objectId",
+          [AadPluginConfigKeys.clientId]: "clientId",
+          [AadPluginConfigKeys.oauth2PermissionScopeId]: "scopeId",
+          [AadPluginConfigKeys.applicationIdUris]: "uri",
+        },
+      },
+    };
+    const aadConfig = new AadPluginConfig(envInfo);
+
+    it("verify config", () => {
+      chai.expect(aadConfig.objectId).to.equal("objectId");
+      chai.expect(aadConfig.clientId).to.equal("clientId");
+      chai.expect(aadConfig.oauth2PermissionScopeId).to.equal("scopeId");
+      chai.expect(aadConfig.applicationIdUris).to.equal("uri");
     });
   });
 });

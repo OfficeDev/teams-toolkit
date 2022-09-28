@@ -21,6 +21,19 @@ import { FunctionLanguage } from "../../../../../src/plugins/resource/function/e
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
 import { Platform } from "@microsoft/teamsfx-api";
 import { newEnvInfo } from "../../../../../src/core/environment";
+import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
+
+class MyTokenCredential implements TokenCredential {
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    return {
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
+      expiresOnTimestamp: 1234,
+    };
+  }
+}
 
 const context: any = {
   envInfo: newEnvInfo(
@@ -91,11 +104,9 @@ const context: any = {
     ],
   ]),
   azureAccountProvider: {
-    getAccountCredentialAsync: async () => ({
-      signRequest: () => {
-        return;
-      },
-    }),
+    getIdentityCredentialAsync: async () => {
+      return new MyTokenCredential();
+    },
     getSelectedSubscription: async () => {
       return {
         subscriptionId: "subscriptionId",
@@ -142,7 +153,7 @@ describe(FunctionPluginInfo.pluginName, () => {
           listApplicationSettings: () => [],
           restart: () => undefined,
           syncFunctionTriggers: () => undefined,
-          listPublishingCredentials: () => ({
+          beginListPublishingCredentialsAndWait: () => ({
             publishingUserName: "ut",
             publishingPassword: "ut",
           }),

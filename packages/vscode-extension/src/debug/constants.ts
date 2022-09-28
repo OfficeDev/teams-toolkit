@@ -197,7 +197,7 @@ export const localTunnelDisplayMessages = Object.freeze({
   checkNumber: (n: number) =>
     `${stepPrefix(
       n
-    )} Teams Toolkit is starting the local tunnel service to forward public ngrok URL to local port and inspect traffic.`,
+    )} Teams Toolkit is starting the local tunnel service to forward public ngrok URL to local port and inspect traffic. Open terminal window to see the running details.`,
   summary: "Summary:",
   learnMore: (link: string) => `Visit ${link} to learn more about 'Start local tunnel' task.`,
   learnMoreHelpLink: "https://aka.ms/teamsfx-local-tunnel-task",

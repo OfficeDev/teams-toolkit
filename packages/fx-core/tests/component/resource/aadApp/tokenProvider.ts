@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { PublicClientApplication, LogLevel, DeviceCodeRequest } from "@azure/msal-node";
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 
 const config = {
   auth: {
@@ -32,13 +31,4 @@ export async function getAppStudioToken(): Promise<string | undefined> {
   } else {
     return res.accessToken;
   }
-}
-
-export async function getGraphToken(): Promise<string | undefined> {
-  const credential = await msRestNodeAuth.interactiveLogin({
-    tokenAudience: "https://graph.microsoft.com/",
-  });
-  const token = await credential.getToken();
-  console.log(token);
-  return token.accessToken;
 }

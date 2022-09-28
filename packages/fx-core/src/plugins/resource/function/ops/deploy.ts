@@ -7,8 +7,7 @@ import AdmZip from "adm-zip";
 import axios from "axios";
 import ignore, { Ignore } from "ignore";
 
-import { WebAppsListPublishingCredentialsResponse } from "@azure/arm-appservice/esm/models";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { WebAppsListPublishingCredentialsResponse } from "@azure/arm-appservice";
 
 import { AzureInfo, CommonConstants, DefaultValues, FunctionPluginPathInfo } from "../constants";
 import {
@@ -163,7 +162,10 @@ export class FunctionDeploy {
           StepGroup.DeployStepGroup,
           DeploySteps.fetchCredential,
           async () =>
-            await client.webApps.listPublishingCredentials(resourceGroupName, functionAppName)
+            await client.webApps.beginListPublishingCredentialsAndWait(
+              resourceGroupName,
+              functionAppName
+            )
         )
     );
 
@@ -201,7 +203,7 @@ export class FunctionDeploy {
                     "Cache-Control": "no-cache",
                   },
                   auth: {
-                    username: username,
+                    username: username!,
                     password: password,
                   },
                   maxContentLength: Infinity,

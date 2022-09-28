@@ -36,6 +36,7 @@ import { CommonErrorHandlerMW } from "../../../core/middleware/CommonErrorHandle
 import { BuiltInFeaturePluginNames } from "../../../plugins/solution/fx-solution/v3/constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { AppUser } from "../appManifest/interfaces/appUser";
+import { Language } from "../../../plugins/solution/fx-solution/constants";
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";
@@ -73,7 +74,7 @@ export class AadApp implements CloudResource {
   ): Promise<Result<undefined, FxError>> {
     const res = await createAuthFiles(
       inputs,
-      context,
+      (context.projectSetting.programmingLanguage as string) ?? Language.JavaScript,
       needTab,
       needBot,
       isVSProject(context.projectSetting)

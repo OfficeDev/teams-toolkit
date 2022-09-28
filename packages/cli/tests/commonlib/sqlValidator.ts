@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import axios from "axios";
-import { SqlManagementClient, SqlManagementModels } from "@azure/arm-sql";
+import { FirewallRule, SqlManagementClient } from "@azure/arm-sql";
 import * as chai from "chai";
 import * as tedious from "tedious";
 
@@ -84,7 +84,7 @@ export class SqlValidator {
     const localIp: string = response.data;
     const startIp: string = localIp.substring(0, localIp.lastIndexOf(".")) + ".1";
     const endIp: string = localIp.substring(0, localIp.lastIndexOf(".")) + ".255";
-    const model: SqlManagementModels.FirewallRule = {
+    const model: FirewallRule = {
       startIpAddress: startIp,
       endIpAddress: endIp,
     };

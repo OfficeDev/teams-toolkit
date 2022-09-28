@@ -258,7 +258,7 @@ export class ProvisionUtils {
     }
 
     // make sure the user is logged in
-    await azureAccountProvider.getAccountCredentialAsync(true);
+    await azureAccountProvider.getIdentityCredentialAsync(true);
     // verify valid subscription (permission)
     const subscriptions = await azureAccountProvider.listSubscriptions();
 
@@ -449,7 +449,7 @@ export class ProvisionUtils {
 
     // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
     // So getting azureToken needs to precede setSubscription.
-    const azureToken = await tokenProvider.azureAccountProvider.getAccountCredentialAsync();
+    const azureToken = await tokenProvider.azureAccountProvider.getIdentityCredentialAsync();
     if (azureToken === undefined) {
       return err(
         new UserError(
@@ -666,8 +666,8 @@ export class ProvisionUtils {
     previousM365TenantId: string,
     previousSubscriptionId?: string
   ): Promise<Result<Void, FxError>> {
-    const azureToken = await azureAccountProvider.getAccountCredentialAsync();
-    const username = (azureToken as any).username || "";
+    const azureTokenJson = await azureAccountProvider.getJsonObject();
+    const username = (azureTokenJson as any).unique_name || "";
     const subscriptionId = envInfo.state.solution?.subscriptionId || "";
     const subscriptionName = envInfo.state.solution?.subscriptionName || "";
     const m365TenantId = envInfo.state.solution?.teamsAppTenantId || "";

@@ -5,16 +5,17 @@ import "mocha";
 import * as sinon from "sinon";
 import * as tools from "../../../src/common/tools";
 import { DeployArgs, DriverContext } from "../../../src/component/interface/buildAndDeployArgs";
-import { FakeTokenCredentials, TestAzureAccountProvider } from "../util/azureAccountMock";
+import { TestAzureAccountProvider } from "../util/azureAccountMock";
 import { TestLogProvider } from "../util/logProviderMock";
 import * as appService from "@azure/arm-appservice";
 import * as Models from "@azure/arm-appservice/src/models";
 import * as fileOpt from "../../../src/component/utils/fileOperation";
 import { AzureDeployDriver } from "../../../src/component/deploy/azureDeployDriver";
 import { expect, use as chaiUse } from "chai";
-import fs = require("fs-extra");
-import chaiAsPromised = require("chai-as-promised");
+import fs from "fs-extra";
+import chaiAsPromised from "chai-as-promised";
 import { AzureFunctionDeployDriver } from "../../../src/component/deploy/azureFunctionDeployDriver";
+import { MyTokenCredential } from "../../plugins/solution/util";
 chaiUse(chaiAsPromised);
 
 describe("Azure Function Deploy Driver test", () => {
@@ -41,8 +42,9 @@ describe("Azure Function Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as DriverContext;
-    const fake = new FakeTokenCredentials("x", "y");
-    sandbox.stub(context.azureAccountProvider, "getAccountCredentialAsync").resolves(fake);
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     // ignore file
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake((file) => {
@@ -51,15 +53,10 @@ describe("Azure Function Deploy Driver test", () => {
       }
       throw new Error("not found");
     });
-    const client = new appService.WebSiteManagementClient(fake, "z");
-    sandbox.stub(client.webApps, "restart").resolves({
-      _response: {
-        status: 200,
-      },
-    });
+    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
+    sandbox.stub(client.webApps, "restart").resolves();
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
-    sandbox.stub(client.webApps, "listPublishingCredentials").resolves({
-      _response: { status: 200 },
+    sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
       publishingUserName: "test-username",
       publishingPassword: "test-password",
     } as Models.WebAppsListPublishingCredentialsResponse);
@@ -92,8 +89,9 @@ describe("Azure Function Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as DriverContext;
-    const fake = new FakeTokenCredentials("x", "y");
-    sandbox.stub(context.azureAccountProvider, "getAccountCredentialAsync").resolves(fake);
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     // ignore file
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake((file) => {
@@ -102,15 +100,10 @@ describe("Azure Function Deploy Driver test", () => {
       }
       throw new Error("not found");
     });
-    const client = new appService.WebSiteManagementClient(fake, "z");
-    sandbox.stub(client.webApps, "restart").resolves({
-      _response: {
-        status: 500,
-      },
-    });
+    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
+    sandbox.stub(client.webApps, "restart").rejects();
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
-    sandbox.stub(client.webApps, "listPublishingCredentials").resolves({
-      _response: { status: 200 },
+    sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
       publishingUserName: "test-username",
       publishingPassword: "test-password",
     } as Models.WebAppsListPublishingCredentialsResponse);
@@ -142,8 +135,9 @@ describe("Azure Function Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
     } as DriverContext;
-    const fake = new FakeTokenCredentials("x", "y");
-    sandbox.stub(context.azureAccountProvider, "getAccountCredentialAsync").resolves(fake);
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     // ignore file
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake((file) => {
@@ -152,11 +146,10 @@ describe("Azure Function Deploy Driver test", () => {
       }
       throw new Error("not found");
     });
-    const client = new appService.WebSiteManagementClient(fake, "z");
+    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(client.webApps, "restart").throws(new Error("test"));
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
-    sandbox.stub(client.webApps, "listPublishingCredentials").resolves({
-      _response: { status: 200 },
+    sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
       publishingUserName: "test-username",
       publishingPassword: "test-password",
     } as Models.WebAppsListPublishingCredentialsResponse);

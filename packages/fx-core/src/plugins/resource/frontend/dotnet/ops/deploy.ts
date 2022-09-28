@@ -91,7 +91,8 @@ export async function zipDeploy(
   ProgressHelper.progressHandler?.next(DeployProgress.steps.fetchCredential);
   const publishCred = await runWithErrorCatchAndThrow(
     new PublishCredentialError(),
-    async () => await client.webApps.listPublishingCredentials(resourceGroupName, webAppName)
+    async () =>
+      await client.webApps.beginListPublishingCredentialsAndWait(resourceGroupName, webAppName)
   );
   const username = publishCred.publishingUserName;
   const password = publishCred.publishingPassword;
@@ -114,7 +115,7 @@ export async function zipDeploy(
               "Cache-Control": "no-cache",
             },
             auth: {
-              username: username,
+              username: username!,
               password: password,
             },
             maxContentLength: Infinity,

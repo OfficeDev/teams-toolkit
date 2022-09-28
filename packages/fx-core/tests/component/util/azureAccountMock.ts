@@ -2,16 +2,24 @@
 // Licensed under the MIT license.
 
 import { AzureAccountProvider, SubscriptionInfo } from "@microsoft/teamsfx-api";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { TokenCredential } from "@azure/core-auth";
-import { TokenResponse } from "adal-node";
+import { AccessToken, GetTokenOptions } from "@azure/identity";
+
+class MyTokenCredential implements TokenCredential {
+  public async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions
+  ): Promise<AccessToken | null> {
+    return {
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
+      expiresOnTimestamp: 1234,
+    };
+  }
+}
 
 export class TestAzureAccountProvider implements AzureAccountProvider {
-  getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
-    throw new Error("getAccountCredentialAsync Method not implemented.");
-  }
-  getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
-    throw new Error("getIdentityCredentialAsync Method not implemented.");
+  async getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
+    return new MyTokenCredential();
   }
   signout(): Promise<boolean> {
     throw new Error("Method not implemented.");
@@ -43,17 +51,5 @@ export class TestAzureAccountProvider implements AzureAccountProvider {
   }
   getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
     throw new Error("Method not implemented.");
-  }
-}
-
-export class FakeTokenCredentials extends TokenCredentialsBase {
-  public async getToken(): Promise<TokenResponse> {
-    return {
-      tokenType: "Bearer",
-      expiresIn: Date.now(),
-      expiresOn: new Date(),
-      resource: "anything",
-      accessToken: "anything",
-    };
   }
 }

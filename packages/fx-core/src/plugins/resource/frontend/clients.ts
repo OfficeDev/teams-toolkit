@@ -10,11 +10,18 @@ import {
   ContainerClient,
   ServiceSetPropertiesResponse,
 } from "@azure/storage-blob";
-import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
+import { ResourceGroups, ResourceManagementClient } from "@azure/arm-resources";
 import {
+  AccountSasParameters,
+  Services,
+  SignedResourceTypes,
+  Permissions,
   StorageAccounts,
   StorageManagementClient,
-  StorageManagementModels,
+  StorageAccountCreateParameters,
+  SkuName,
+  SkuTier,
+  Kind,
 } from "@azure/arm-storage";
 
 import * as mime from "mime";
@@ -38,9 +45,10 @@ export class AzureStorageClient {
     this.storageName = config.storageName;
     this.location = config.location;
 
-    this.resourceGroupClient = new ResourceGroups(
-      new ResourceManagementClientContext(config.credentials, config.subscriptionId)
-    );
+    this.resourceGroupClient = new ResourceManagementClient(
+      config.credentials,
+      config.subscriptionId
+    ).resourceGroups;
     this.storageAccountClient = new StorageManagementClient(
       config.credentials,
       config.subscriptionId
@@ -54,9 +62,14 @@ export class AzureStorageClient {
   }
 
   public async doesStorageAccountExists(): Promise<boolean> {
-    const result = await this.storageAccountClient.listByResourceGroup(this.resourceGroupName);
-    if (result.find((storage) => storage.name === this.storageName)) {
-      return true;
+    for await (const page of this.storageAccountClient
+      .listByResourceGroup(this.resourceGroupName)
+      .byPage({ maxPageSize: 100 })) {
+      for (const storageAccount of page) {
+        if (storageAccount.name === this.storageName) {
+          return true;
+        }
+      }
     }
     return false;
   }
@@ -79,7 +92,7 @@ export class AzureStorageClient {
     Logger.debug(Messages.StartCreateStorageAccount(this.storageName, this.resourceGroupName));
     const parameters = AzureStorageClient.getStorageAccountCreateParams(this.location);
 
-    const response = await this.storageAccountClient.create(
+    const response = await this.storageAccountClient.beginCreateAndWait(
       this.resourceGroupName,
       this.storageName,
       parameters
@@ -204,11 +217,11 @@ export class AzureStorageClient {
     resourceGroupName: string,
     storageName: string
   ): Promise<string> {
-    const accountSasParameters: StorageManagementModels.AccountSasParameters = {
+    const accountSasParameters: AccountSasParameters = {
       // A workaround, to ignore type checking for the services/resourceTypes/permissions are enum type.
-      services: "bf" as StorageManagementModels.Services,
-      resourceTypes: "sco" as StorageManagementModels.SignedResourceTypes,
-      permissions: "rwld" as StorageManagementModels.Permissions,
+      services: "bf" as Services,
+      resourceTypes: "sco" as SignedResourceTypes,
+      permissions: "rwld" as Permissions,
       sharedAccessStartTime: new Date(Date.now() - Constants.SasTokenLifetimePadding),
       sharedAccessExpiryTime: new Date(Date.now() + Constants.SasTokenLifetime),
     };
@@ -222,15 +235,13 @@ export class AzureStorageClient {
     return token;
   }
 
-  static getStorageAccountCreateParams(
-    location: string
-  ): StorageManagementModels.StorageAccountCreateParameters {
+  static getStorageAccountCreateParams(location: string): StorageAccountCreateParameters {
     return {
       sku: {
-        name: Constants.AzureStorageDefaultSku as StorageManagementModels.SkuName,
-        tier: Constants.AzureStorageDefaultTier as StorageManagementModels.SkuTier,
+        name: Constants.AzureStorageDefaultSku as SkuName,
+        tier: Constants.AzureStorageDefaultTier as SkuTier,
       },
-      kind: Constants.AzureStorageDefaultKind as StorageManagementModels.Kind,
+      kind: Constants.AzureStorageDefaultKind as Kind,
       location: location,
       enableHttpsTrafficOnly: true,
       isHnsEnabled: false,

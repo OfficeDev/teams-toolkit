@@ -2,13 +2,16 @@
 // Licensed under the MIT license.
 
 import { ResourceManagementClient } from "@azure/arm-resources";
+import { TokenCredential } from "@azure/identity";
 import {
+  AzureAccountProvider,
   FuncValidation,
   Inputs,
   Json,
   Platform,
   ProjectSettings,
   Stage,
+  SubscriptionInfo,
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -40,8 +43,69 @@ import {
 import { createAppNameQuestion } from "../../src/core/question";
 import { resourceGroupHelper } from "../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { parseTeamsAppTenantId } from "../../src/plugins/solution/fx-solution/v2/utils";
-import { TestHelper } from "../plugins/resource/frontend/helper";
+import { MyTokenCredential } from "../plugins/solution/util";
 import { randomAppName } from "./utils";
+
+export class MockedAzureTokenProvider implements AzureAccountProvider {
+  getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential> {
+    return Promise.resolve(new MyTokenCredential());
+  }
+  signout(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeCallback(
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  removeStatusChangeMap(name: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    return {
+      tid: "222",
+    };
+  }
+  async listSubscriptions(): Promise<SubscriptionInfo[]> {
+    return [
+      {
+        subscriptionName: "mockedSubscriptionName",
+        subscriptionId: "subscriptionId",
+        tenantId: "mockedTenantId",
+      },
+    ];
+  }
+  async setSubscription(subscriptionId: string): Promise<void> {
+    return;
+  }
+  getAccountInfo(): Record<string, string> | undefined {
+    return {};
+  }
+  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
+    const selectedSub = {
+      subscriptionId: "subscriptionId",
+      tenantId: "tenantId",
+      subscriptionName: "subscriptionName",
+    };
+    return Promise.resolve(selectedSub);
+  }
+}
+
 describe("Other test case", () => {
   const sandbox = sinon.createSandbox();
 
@@ -277,10 +341,9 @@ describe("Other test case", () => {
   });
   it("getQuestionsForResourceGroup", async () => {
     const mockSubscriptionId = "mockSub";
-    const mockRmClient = new ResourceManagementClient(
-      TestHelper.fakeCredential,
-      mockSubscriptionId
-    );
+    const accountProvider = new MockedAzureTokenProvider();
+    const mockToken = await accountProvider.getIdentityCredentialAsync();
+    const mockRmClient = new ResourceManagementClient(mockToken, mockSubscriptionId);
     const node = await resourceGroupHelper.getQuestionsForResourceGroup(
       "defaultRG",
       [["g1", "East US"]],

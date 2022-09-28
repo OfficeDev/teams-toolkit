@@ -12,8 +12,8 @@ import {
   Result,
   Stage,
 } from "@microsoft/teamsfx-api";
-import { StringDictionary } from "@azure/arm-appservice/esm/models";
-import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
+import { Site, StringDictionary } from "@azure/arm-appservice";
+import { WebSiteManagementClient } from "@azure/arm-appservice";
 
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
 import {
@@ -70,8 +70,6 @@ import {
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
 } from "../../../common/tools";
-
-type Site = WebSiteManagementModels.Site;
 
 export interface FunctionConfig {
   /* Config from solution */
@@ -320,7 +318,7 @@ export class FunctionPluginImpl {
     const resourceGroupName = this.getFunctionAppResourceGroupName();
     const subscriptionId = this.getFunctionAppSubscriptionId();
     const credential = this.checkAndGet(
-      await ctx.azureAccountProvider?.getAccountCredentialAsync(),
+      await ctx.azureAccountProvider?.getIdentityCredentialAsync(),
       FunctionConfigKey.credential
     );
 
@@ -511,7 +509,7 @@ export class FunctionPluginImpl {
       FunctionConfigKey.functionLanguage
     );
     const credential = this.checkAndGet(
-      await ctx.azureAccountProvider?.getAccountCredentialAsync(),
+      await ctx.azureAccountProvider?.getIdentityCredentialAsync(),
       FunctionConfigKey.credential
     );
 

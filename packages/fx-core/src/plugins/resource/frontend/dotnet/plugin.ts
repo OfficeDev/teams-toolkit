@@ -21,7 +21,6 @@ import {
 } from "./constants";
 import { Messages } from "./resources/messages";
 import { scaffoldFromZipPackage } from "./ops/scaffold";
-import { WebSiteManagementModels } from "@azure/arm-appservice";
 import { AzureClientFactory } from "./utils/azure-client";
 import { DotnetConfigKey as ConfigKey } from "./enum";
 import {
@@ -55,8 +54,8 @@ import { BotOptionItem, TabOptionItem, TabSsoItem } from "../../../solution/fx-s
 import { PluginNames } from "../../../solution/fx-solution/constants";
 import { CoreQuestionNames } from "../../../../core/question";
 import { convertToAlphanumericOnly } from "../../../../common/utils";
+import { Site } from "@azure/arm-appservice";
 
-type Site = WebSiteManagementModels.Site;
 type TeamsFxResult = Result<any, FxError>;
 
 export interface DotnetPluginConfig {
@@ -305,7 +304,7 @@ export class DotnetPluginImpl implements PluginImpl {
     );
     const subscriptionId = this.checkAndGet(config.subscriptionId, ConfigKey.subscriptionId);
     const credential = this.checkAndGet(
-      await ctx.azureAccountProvider?.getAccountCredentialAsync(),
+      await ctx.azureAccountProvider?.getIdentityCredentialAsync(),
       ConfigKey.credential
     );
 

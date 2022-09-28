@@ -66,7 +66,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     this.args = taskDefinition.args as LocalTunnelArgs;
     this.taskTerminalId = uuidv4();
     this.isOutputSummary = false;
-    this.progressHandler = new ProgressHandler(localTunnelDisplayMessages.taskName, 1);
+    this.progressHandler = new ProgressHandler(localTunnelDisplayMessages.taskName, 1, "terminal");
     this.step = new Step(1);
 
     for (const task of LocalTunnelTaskTerminal.ngrokTaskTerminals.values()) {

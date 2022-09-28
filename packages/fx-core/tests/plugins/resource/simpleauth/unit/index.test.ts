@@ -6,7 +6,6 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { InputsWithProjectPath, Platform, ResourceContextV3 } from "@microsoft/teamsfx-api";
 import * as dotenv from "dotenv";
 import * as faker from "faker";
@@ -19,6 +18,7 @@ import { createContextV3, newProjectSettingsV3 } from "../../../../../src/compon
 import { setTools } from "../../../../../src/core/globalVars";
 import { ComponentNames } from "../../../../../src/component/constants";
 import { newEnvInfoV3 } from "../../../../../src/core/environment";
+import { MyTokenCredential } from "../../../solution/util";
 chai.use(chaiAsPromised);
 
 dotenv.config();
@@ -27,28 +27,17 @@ const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
 describe("simpleAuthPlugin", () => {
   const sandbox = sinon.createSandbox();
   let simpleAuthPlugin: SimpleAuth;
-  let credentials: msRestNodeAuth.TokenCredentialsBase;
   const tools = new MockTools();
   const context = createContextV3();
   setTools(tools);
-  before(async () => {
-    if (testWithAzure) {
-      credentials = await msRestNodeAuth.interactiveLogin();
-    } else {
-      credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-        faker.datatype.uuid(),
-        faker.internet.url(),
-        faker.internet.password()
-      );
-    }
-  });
+  before(async () => {});
 
   beforeEach(async () => {
     simpleAuthPlugin = new SimpleAuth();
     context.tokenProvider = tools.tokenProvider;
     sandbox
-      .stub(context.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(credentials);
+      .stub(context.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     sandbox.stub(context.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "subscriptionId",
       tenantId: "tenantId",

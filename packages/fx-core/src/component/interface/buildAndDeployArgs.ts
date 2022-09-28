@@ -32,14 +32,6 @@ export type BuildArgs = {
   buildCommand: string;
 };
 
-export type DriverContext = {
-  azureAccountProvider: AzureAccountProvider;
-  m365TokenProvider: M365TokenProvider;
-  progressBar: IProgressHandler | undefined;
-  logProvider: LogProvider;
-  telemetryReporter: TelemetryReporter;
-};
-
 export type DeployContext = {
   azureAccountProvider: AzureAccountProvider;
   progressBar: IProgressHandler | undefined;

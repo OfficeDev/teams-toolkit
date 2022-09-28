@@ -30,14 +30,14 @@ import * as util from "util";
 import isUUID from "validator/lib/isUUID";
 import { AppStudioScopes, getAppDirectory, isSPFxProject } from "../../../common/tools";
 import { HelpLinks } from "../../../common/constants";
-import { AppStudioClient } from "../../../plugins/resource/appstudio/appStudio";
-import { Constants } from "../../../plugins/resource/appstudio/constants";
-import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
-import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
+import { AppStudioClient } from "./appStudioClient";
+import { AppStudioError } from "./errors";
+import { AppStudioResultFactory } from "./results";
 import { ComponentNames } from "../../constants";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { manifestUtils } from "./utils";
+import { manifestUtils } from "./utils/ManifestUtils";
 import { environmentManager } from "../../../core/environment";
+import { Constants } from "./constants";
 
 /**
  * Create Teams app if not exists

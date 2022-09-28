@@ -37,7 +37,7 @@ import { AppStudioScopes } from "../../../common/tools";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
 import { globalVars } from "../../../core/globalVars";
 import { getTemplatesFolder } from "../../../folder";
-import { AppStudioClient } from "../../../plugins/resource/appstudio/appStudio";
+import { AppStudioClient } from "./appStudioClient";
 import {
   COLOR_TEMPLATE,
   Constants,
@@ -47,19 +47,12 @@ import {
   ErrorMessages,
   MANIFEST_RESOURCES,
   OUTLINE_TEMPLATE,
-} from "../../../plugins/resource/appstudio/constants";
-import { AppStudioError } from "../../../plugins/resource/appstudio/errors";
-import { AppUser } from "../../../plugins/resource/appstudio/interfaces/appUser";
-import {
-  autoPublishOption,
-  manuallySubmitOption,
-} from "../../../plugins/resource/appstudio/questions";
-import { AppStudioResultFactory } from "../../../plugins/resource/appstudio/results";
-import {
-  TelemetryEventName,
-  TelemetryPropertyKey,
-  TelemetryUtils,
-} from "../../../plugins/resource/appstudio/utils/telemetry";
+} from "./constants";
+import { AppStudioError } from "./errors";
+import { AppUser } from "./interfaces/appUser";
+import { autoPublishOption, manuallySubmitOption } from "./questions";
+import { AppStudioResultFactory } from "./results";
+import { TelemetryEventName, TelemetryPropertyKey, TelemetryUtils } from "./utils/telemetry";
 import { ComponentNames } from "../../constants";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import {
@@ -71,7 +64,7 @@ import {
   validateManifest,
 } from "./appStudio";
 import { TEAMS_APP_MANIFEST_TEMPLATE } from "./constants";
-import { manifestUtils } from "./utils";
+import { manifestUtils } from "./utils/ManifestUtils";
 
 @Service("app-manifest")
 export class AppManifest implements CloudResource {

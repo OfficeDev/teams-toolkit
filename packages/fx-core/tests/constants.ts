@@ -7,10 +7,7 @@ import { Plugin } from "@microsoft/teamsfx-api";
 import { ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import "../src/plugins/resource/frontend";
 import "../src/plugins/resource/identity";
-import "../src/plugins/resource/bot";
-import "../src/plugins/resource/bot/v2";
 import "../src/plugins/resource/localdebug";
-import "../src/plugins/resource/appstudio";
 import "../src/plugins/resource/function";
 import "../src/plugins/resource/apim";
 import "../src/component/resource/aadApp/aadApp";
@@ -32,12 +29,8 @@ export const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin
 export const identityPlugin = Container.get<Plugin>(ResourcePlugins.IdentityPlugin) as Plugin;
 export const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
 
-export const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin) as Plugin;
-export const botPluginV2 = Container.get<ResourcePlugin>(
-  ResourcePluginsV2.BotPlugin
-) as ResourcePlugin;
 export const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin) as Plugin;
-export const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin) as Plugin;
+export const appStudioPlugin = Container.get<Plugin>(ComponentNames.AppManifest) as Plugin;
 export const functionPlugin = Container.get<Plugin>(ResourcePlugins.FunctionPlugin) as Plugin;
 export const apimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin) as Plugin;
 

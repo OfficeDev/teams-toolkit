@@ -155,7 +155,7 @@ import {
   sendDebugAllStartEvent,
 } from "./debug/localTelemetryReporter";
 import { compare } from "./utils/versionUtil";
-import { getSPFxVersion } from "@microsoft/teamsfx-core/build/common/tools";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -1185,7 +1185,7 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
     [TelemetryProperty.DebugProjectComponents]: (await commonUtils.getProjectComponents()) + "",
   });
 
-  const nodeType = (await vscodeHelper.hasFunction()) ? DepsType.FunctionNode : DepsType.AzureNode;
+  const nodeType = DepsType.AzureNode;
   const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
@@ -1401,9 +1401,9 @@ export async function getDotnetPathHandler(): Promise<string> {
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
     const dotnetStatus = (await depsManager.getStatus([DepsType.Dotnet]))?.[0];
     if (dotnetStatus?.isInstalled && dotnetStatus?.details?.binFolders !== undefined) {
-      return `${path.delimiter}${dotnetStatus.details.binFolders.join(path.delimiter)}${
-        path.delimiter
-      }`;
+      return `${path.delimiter}${dotnetStatus.details.binFolders
+        .map((f: string) => path.dirname(f))
+        .join(path.delimiter)}${path.delimiter}`;
     }
   } catch (error: any) {
     showError(assembleError(error));
@@ -1644,22 +1644,9 @@ export async function openReadMeHandler(args: any[]) {
 
 export async function promptSPFxUpgrade() {
   if (globalVariables.isSPFxProject) {
-    let projectSPFxVersion = null;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-    const yoInfoPath = path.join(globalVariables.workspaceUri?.fsPath!, "SPFx", ".yo-rc.json");
-    if (await fs.pathExists(yoInfoPath)) {
-      const yoInfo = await fs.readJson(yoInfoPath);
-      projectSPFxVersion = yoInfo["@microsoft/generator-sharepoint"]?.version;
-    }
-
-    if (!projectSPFxVersion) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-      const packagePath = path.join(globalVariables.workspaceUri?.fsPath!, "SPFx", "package.json");
-      if (await fs.pathExists(packagePath)) {
-        const packageInfo = await fs.readJSON(packagePath);
-        projectSPFxVersion = packageInfo.dependencies["@microsoft/sp-webpart-base"];
-      }
-    }
+    const projectSPFxVersion = await commonTools.getAppSPFxVersion(
+      globalVariables.workspaceUri!.fsPath!
+    );
 
     if (projectSPFxVersion) {
       const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
@@ -1670,7 +1657,7 @@ export async function promptSPFxUpgrade() {
       }
       if (cmp === cmpPrerelease) {
         const spfxVersion =
-          getSPFxVersion() === "1.15.0"
+          commonTools.getSPFxVersion() === "1.15.0"
             ? SUPPORTED_SPFX_VERSION
             : SUPPORTED_SPFX_PRERELEASE_VERSION;
         const args: string[] = cmp === 1 ? [spfxVersion] : [spfxVersion, spfxVersion];

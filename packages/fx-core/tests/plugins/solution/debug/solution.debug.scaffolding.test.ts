@@ -14,9 +14,10 @@ import {
   AzureSolutionQuestionNames,
   BotScenario,
 } from "../../../../src/plugins/solution/fx-solution/question";
-import { BotCapabilities, PluginBot } from "../../../../src/plugins/resource/bot/resources/strings";
+import { PluginBot } from "../../../../src/component/resource/botService/strings";
 import { isAadManifestEnabled } from "../../../../src/common/tools";
 import { BotHostTypes } from "../../../../src/common/local/constants";
+import { BotCapabilities } from "../../../../src/component/feature/bot/constants";
 
 chai.use(chaiAsPromised);
 

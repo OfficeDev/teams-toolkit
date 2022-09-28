@@ -56,7 +56,7 @@ import {
 import { validate as uuidValidate } from "uuid";
 import { HelpLinks } from "../../../common/constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
-import { AppUser } from "../../../plugins/resource/appstudio/interfaces/appUser";
+import { AppUser } from "../appManifest/interfaces/appUser";
 import { isAadManifestEnabled } from "../../../common/tools";
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";

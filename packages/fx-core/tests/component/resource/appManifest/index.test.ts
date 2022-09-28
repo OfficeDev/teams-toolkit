@@ -17,23 +17,22 @@ import {
   TeamsAppManifest,
   ok,
   SingleSelectResult,
-  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { randomAppName, MockLogProvider, MockTools } from "../../../core/utils";
 import { createContextV3 } from "../../../../src/component/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
-import { AppStudioError } from "../../../../src/plugins/resource/appstudio/errors";
+import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { ComponentNames } from "../../../../src/component/constants";
-import { AppStudioClient } from "../../../../src/plugins/resource/appstudio/appStudio";
-import { AppDefinition } from "../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
-import { Constants } from "../../../../src/plugins/resource/appstudio/constants";
-import { autoPublishOption } from "../../../../src/plugins/resource/appstudio/questions";
-import { PublishingState } from "../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
+import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
+import { Constants } from "../../../../src/component/resource/appManifest/constants";
+import { autoPublishOption } from "../../../../src/component/resource/appManifest/questions";
+import { PublishingState } from "../../../../src/component/resource/appManifest/interfaces/IPublishingAppDefinition";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
-import { manifestUtils } from "../../../../src/component/resource/appManifest/utils";
+import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
 import * as uuid from "uuid";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
+import { AppDefinition } from "../../../../src/component/resource/appManifest/interfaces/appDefinition";
 
 describe("App-manifest Component", () => {
   const sandbox = sinon.createSandbox();

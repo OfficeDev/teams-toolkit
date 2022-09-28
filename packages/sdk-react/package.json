@@ -1,10 +1,11 @@
 {
   "name": "@microsoft/teamsfx-react",
-  "version": "1.0.5",
+  "version": "2.0.0",
   "description": "React helper functions for Microsoft TeamsFx",
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
   "types": "build/cjs/index.d.ts",
+  "sideEffects": false,
   "license": "MIT",
   "keywords": [
     "teamsfx",
@@ -27,7 +28,7 @@
     "precommit": "npm run check-sensitive && lint-staged"
   },
   "devDependencies": {
-    "@fluentui/react-northstar": "^0.60.1",
+    "@fluentui/react-northstar": "^0.62.0",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@microsoft/microsoft-graph-client": "^3.0.1",
     "@microsoft/teams-js": "^2.0.0",
@@ -48,7 +49,6 @@
     "isomorphic-fetch": "^3.0.0",
     "lint-staged": "^12.3.4",
     "mocha": "^9.2.1",
-    "msteams-react-base-component": "^3.1.1",
     "nyc": "^15.1.0",
     "prettier": "^2.5.1",
     "react": "^16.9.0",
@@ -58,10 +58,9 @@
     "sinon": "^13.0.1"
   },
   "peerDependencies": {
-    "@fluentui/react-northstar": "^0.60.1",
+    "@fluentui/react-northstar": "^0.62.0",
     "@microsoft/microsoft-graph-client": "^3.0.1",
-    "@microsoft/teamsfx": "^1.0.0",
-    "msteams-react-base-component": "^3.1.1",
+    "@microsoft/teamsfx": "2.0.0-beta.0",
     "react": "^16.8.6"
   },
   "publishConfig": {

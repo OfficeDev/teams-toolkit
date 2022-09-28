@@ -13,20 +13,19 @@ import {
 import { ApimService } from "../../../../src/component/resource/apim/services/apimService";
 import {
   Api,
+  ApiContract,
   ApiCreateOrUpdateOptionalParams,
   ApiCreateOrUpdateResponse,
+  ApiListByServiceOptionalParams,
   ApiManagementClient,
-  ApiManagementService,
   ApiManagementServiceCreateOrUpdateOptionalParams,
   ApiManagementServiceCreateOrUpdateResponse,
   ApiManagementServiceGetOptionalParams,
   ApiManagementServiceGetResponse,
-  ApiVersionSet,
   ApiVersionSetCreateOrUpdateOptionalParams,
   ApiVersionSetCreateOrUpdateResponse,
   ApiVersionSetGetOptionalParams,
   ApiVersionSetGetResponse,
-  ProductApi,
   ProductApiCheckEntityExistsOptionalParams,
   ProductApiCheckEntityExistsResponse,
   ProductApiCreateOrUpdateOptionalParams,
@@ -44,6 +43,7 @@ import { PluginContext } from "@microsoft/teamsfx-api";
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
 import { newEnvInfo } from "../../../../src/core/environment";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
+import { PagedAsyncIterableIterator } from "@azure/core-paging";
 
 export type StubbedClass<T> = SinonStubbedInstance<T> & T;
 
@@ -259,6 +259,35 @@ export function mockApi(sandbox: SinonSandbox): any {
         return {
           name: "name2",
         };
+      }
+    },
+    listByService: function (
+      resourceGroupName: string,
+      serviceName: string,
+      options?: ApiListByServiceOptionalParams
+    ): PagedAsyncIterableIterator<ApiContract> {
+      return {
+        next() {
+          throw new Error("Function not implemented.");
+        },
+        [Symbol.asyncIterator]() {
+          throw new Error("Function not implemented.");
+        },
+        byPage: () => {
+          return generator() as any;
+        },
+      };
+
+      function* generator() {
+        return [
+          {
+            id: "id",
+            name: "name",
+            apiVersionSetId: {
+              id: "resourceId",
+            },
+          },
+        ];
       }
     },
   };

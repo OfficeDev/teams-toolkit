@@ -20,9 +20,7 @@ import {
   mockApiVersionSet,
   mockApi,
   mockProductApi,
-  MockTokenCredentials,
 } from "./mock";
-import { createCipheriv } from "crypto";
 
 dotenv.config();
 chai.use(chaiAsPromised);
@@ -81,6 +79,34 @@ describe("ApimService", () => {
       } catch (e) {
         chai.expect(e.name).to.equal("ApimOperationError");
       }
+    });
+  });
+
+  describe("#listApi()", () => {
+    const sandbox = createSandbox();
+    let apimService: ApimService | undefined;
+    let apiManagementClient: StubbedClass<ApiManagementClient> | undefined;
+    let apiManagementServiceStub: any;
+    let apiStub: any;
+    beforeEach(async () => {
+      const res = mockApimService(sandbox);
+      apimService = res.apimService;
+      apiManagementClient = res.apiManagementClient;
+      apiManagementServiceStub = mockApiManagementService(sandbox);
+      apiManagementClient.apiManagementService = apiManagementServiceStub;
+      apiStub = mockApi(sandbox);
+      apiManagementClient.api = apiStub;
+    });
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("happy path", async () => {
+      const res = await apimService!.listApi(
+        DefaultTestInput.resourceGroup.existing,
+        DefaultTestInput.apimServiceName.new
+      );
+      chai.expect(res.length).equal(0);
     });
   });
 

@@ -109,7 +109,7 @@ describe("Util", () => {
   describe("getApimServiceNameFromResourceId", () => {
     it("vaid resource id", () => {
       const resourceId =
-        "/subscriptions/subId/resourceGroups/rg/providers/Microsoft.ApiManagementservice/service/apimId";
+        "/subscriptions/subId/resourceGroups/rg/providers/Microsoft.ApiManagement/service/apimId";
       const res = getApimServiceNameFromResourceId(resourceId);
 
       chai.expect(res).equal("apimId");

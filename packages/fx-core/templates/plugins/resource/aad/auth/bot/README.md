@@ -11,7 +11,7 @@ For a bot application, user can invoke the AAD consent flow to obtain sso token 
   * [Set up the AAD redirects](#2.1)
   * [Update your business logic](#2.2)
   * [(Optional) Add a new sso command to the bot](#2.3)
-* [Update code to Use SSO for Message Extension SSO](#3)
+* [Update code to Use SSO for Message Extension](#3)
 * [Debug your application](#4)
 * [Customize AAD applications](#5)
 * [Trouble Shooting](#6)

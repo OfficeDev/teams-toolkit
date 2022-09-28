@@ -84,6 +84,7 @@ export function generateTasks(
    *   - Install Azure Functions binding extensions
    *   - Watch backend
    *   - Start bot
+   *   - Start Azurite emulator
    */
   const tasks: (Record<string, unknown> | CommentJSONValue)[] = [
     startTeamsAppLocally(includeFrontend, includeBackend, includeBot, includeSSO),
@@ -170,6 +171,7 @@ export function generateM365Tasks(
    *   - Install Azure Functions binding extensions
    *   - Watch backend
    *   - Start bot
+   *   - Start Azurite emulator
    *   - install app in Teams
    */
   const tasks = generateTasks(

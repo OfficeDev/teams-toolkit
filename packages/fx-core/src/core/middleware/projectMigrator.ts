@@ -585,7 +585,19 @@ async function copyManifest(projectPath: string, fx: string, target: string) {
     }
   }
 }
-
+async function migrateProjectSettings(projectPath: string): Promise<ProjectSettingsV3> {
+  const loadRes = await loadProjectSettingsByProjectPath(projectPath, false);
+  if (loadRes.isErr()) {
+    throw ProjectSettingError();
+  }
+  const projectSettings = loadRes.value as ProjectSettingsV3;
+  if (hasAzureResourceV3(projectSettings, true)) {
+    if (!getComponent(projectSettings, ComponentNames.Identity)) {
+      projectSettings.components.push({ name: ComponentNames.Identity });
+    }
+  }
+  return projectSettings;
+}
 async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<ProjectSettingsV3> {
   const { fx, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   const {
@@ -602,16 +614,8 @@ async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<P
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
   await localSettingsProvider.save(localSettingsProvider.init(hasFrontend, hasBackend, hasBot));
 
-  const loadRes = await loadProjectSettingsByProjectPath(projectPath, false);
-  if (loadRes.isErr()) {
-    throw ProjectSettingError();
-  }
-  const projectSettings = loadRes.value as ProjectSettingsV3;
-  if (hasAzureResourceV3(projectSettings, true)) {
-    if (!getComponent(projectSettings, ComponentNames.Identity)) {
-      projectSettings.components.push({ name: ComponentNames.Identity });
-    }
-  }
+  const projectSettings = await migrateProjectSettings(projectPath);
+
   const projectSettingsPath = getProjectSettingsPath(projectPath);
   const configDevJsonFilePath = path.join(fxConfig, "config.dev.json");
   const envDefaultFilePath = path.join(fx, "env.default.json");
@@ -1173,13 +1177,17 @@ export async function generateBicepsV3(
 }
 
 async function generateArmTemplatesFiles(ctx: CoreHookContext) {
-  const projectSettings = ctx.projectSettings as ProjectSettingsV3;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as InputsWithProjectPath;
   const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
   const fxConfig = path.join(fx, InputConfigsFolderName);
   const templateAzure = path.join(inputs.projectPath as string, "templates", "azure");
   await fs.ensureDir(fxConfig);
   await fs.ensureDir(templateAzure);
+
+  let projectSettings = ctx.projectSettings as ProjectSettingsV3;
+  if (!projectSettings) {
+    projectSettings = await migrateProjectSettings(inputs.projectPath);
+  }
   const genRes = await generateBicepsV3(projectSettings, inputs);
   if (genRes.isErr()) throw genRes.error;
   const parameterEnvFileName = parameterFileNameTemplate.replace(

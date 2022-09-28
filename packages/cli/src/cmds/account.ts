@@ -80,7 +80,7 @@ async function outputAzureInfo(
     await AzureTokenCIProvider.init(userName, password, tenantId);
     azureProvider = AzureTokenCIProvider;
   }
-  const result = await azureProvider.getAccountCredentialAsync(true, tenantId);
+  const result = await azureProvider.getJsonObject(true);
   if (result) {
     const subscriptions = await azureProvider.listSubscriptions();
     if (commandType === "login") {
@@ -90,7 +90,7 @@ async function outputAzureInfo(
           color: Colors.BRIGHT_GREEN,
         },
         { content: " Your username is ", color: Colors.BRIGHT_WHITE },
-        { content: (result as any).username, color: Colors.BRIGHT_MAGENTA },
+        { content: (result as any).unique_name, color: Colors.BRIGHT_MAGENTA },
       ];
       CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
       CLILogProvider.necessaryLog(

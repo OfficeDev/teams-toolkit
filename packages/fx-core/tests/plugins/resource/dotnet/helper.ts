@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as faker from "faker";
-import { ApplicationTokenCredentials, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
   AzureAccountProvider,
   ConfigMap,
@@ -13,17 +12,13 @@ import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/d
 import { newEnvInfo } from "../../../../src/core/environment";
 import { LocalCrypto } from "../../../../src/core/crypto";
 import { DotnetPluginInfo as PluginInfo } from "../../../../src/plugins/resource/frontend/dotnet/constants";
+import { MyTokenCredential } from "../../solution/util";
 
 export class TestHelper {
   static appName = "ut";
   static rgName = "app-test-rg";
   static location = "eastus2";
   static rootDir: string = faker.system.directoryPath();
-  static credential: TokenCredentialsBase = new ApplicationTokenCredentials(
-    faker.datatype.uuid(),
-    faker.internet.url(),
-    faker.internet.password()
-  );
   static subscriptionId: string = faker.datatype.uuid();
   static blazorLanguage = "csharp";
   static clientId: string = faker.datatype.uuid();
@@ -36,8 +31,8 @@ export class TestHelper {
   } as any;
 
   static azureAccountProvider: AzureAccountProvider = {
-    getAccountCredentialAsync: async () => {
-      return TestHelper.credential;
+    getIdentityCredentialAsync: async () => {
+      return new MyTokenCredential();
     },
     getSelectedSubscription: async () => {
       return {

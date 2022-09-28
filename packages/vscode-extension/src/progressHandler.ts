@@ -19,23 +19,33 @@ export class ProgressHandler implements IProgressHandler {
   private detail?: string;
   private ended: boolean;
   private mutex: Mutex;
+  private view: string;
 
   private resolve?: any;
 
-  constructor(title: string, totalSteps: number) {
+  constructor(title: string, totalSteps: number, view: "output" | "terminal" = "output") {
     this.totalSteps = totalSteps;
     this.currentStep = 0;
     this.title = title;
     this.ended = false;
     this.mutex = new Mutex();
+    this.view = view;
   }
 
   private generateWholeMessage(): string {
     const head = this.title;
-    const body = `: [${this.currentStep}/${this.totalSteps}] ${util.format(
-      localize("teamstoolkit.progressHandler.showOutputLink"),
-      "command:fx-extension.showOutputChannel"
-    )}`;
+    let body = `: [${this.currentStep}/${this.totalSteps}]`;
+    if (this.view === "output") {
+      body = `${body} ${util.format(
+        localize("teamstoolkit.progressHandler.showOutputLink"),
+        "command:fx-extension.showOutputChannel"
+      )}`;
+    } else if (this.view === "terminal") {
+      body = `${body} ${util.format(
+        localize("teamstoolkit.progressHandler.showTerminalLink"),
+        "command:workbench.action.terminal.focus"
+      )}`;
+    }
     const tail = this.detail
       ? ` ${this.detail}`
       : localize("teamstoolkit.progressHandler.prepareTask");

@@ -281,7 +281,7 @@ function validateAndInstallPrerequisites(
   includeBackend: boolean,
   includeBot: boolean,
   includeFuncHostedBot: boolean
-): Record<string, unknown> {
+): CommentJSONValue {
   const prerequisites = [
     `"nodejs", // Validate if Node.js is installed.`,
     `"m365Account", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.`,
@@ -324,7 +324,12 @@ function validateAndInstallPrerequisites(
   ]
   `;
 
-  return {
+  const comment = `{
+    // Check if all required prerequisites are installed and will install them if not.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-check-prerequisites to know the details and how to customize the args.
+  }`;
+
+  const task = {
     label: "Validate & install prerequisites",
     type: "teamsfx",
     command: "debug-check-prerequisites",
@@ -333,20 +338,25 @@ function validateAndInstallPrerequisites(
       portOccupancy: commentJson.parse(portsComment),
     },
   };
+
+  return commentJson.assign(commentJson.parse(comment), task);
 }
 
 function installNPMpackages(
   includeFrontend: boolean,
   includeBackend: boolean,
   includeBot: boolean
-): Record<string, unknown> {
+): CommentJSONValue {
+  const comment = `{
+    // Check if all the npm packages are installed and will install them if not.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-npm-install to know the details and how to customize the args.
+  }`;
   const result = {
     label: "Install npm packages",
     type: "teamsfx",
     command: "debug-npm-install",
     args: {
       projects: [] as Record<string, unknown>[],
-      forceUpdate: false,
     },
   };
   if (includeFrontend) {
@@ -368,7 +378,7 @@ function installNPMpackages(
     });
   }
 
-  return result;
+  return commentJson.assign(commentJson.parse(comment), result);
 }
 
 function installAzureFunctionsBindingExtensions(): CommentJSONValue {
@@ -392,18 +402,22 @@ function installAzureFunctionsBindingExtensions(): CommentJSONValue {
   return commentJson.assign(commentJson.parse(comment), task);
 }
 
-function startLocalTunnel(): Record<string, unknown> {
-  return {
+function startLocalTunnel(): CommentJSONValue {
+  const comment = `{
+    // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-start-local-tunnel to know the details and how to customize the args.
+  }`;
+  const task = {
     label: "Start local tunnel",
     type: "teamsfx",
     command: "debug-start-local-tunnel",
     args: {
-      configFile: ".fx/configs/ngrok.yml",
-      keepAlive: false,
+      ngrokArgs: "http 3978 --log=stdout --log-format=logfmt",
     },
     isBackground: true,
     problemMatcher: "$teamsfx-local-tunnel-watch",
   };
+  return commentJson.assign(commentJson.parse(comment), task);
 }
 
 function setUpTab(): CommentJSONValue {
@@ -431,7 +445,7 @@ function setUpBot(): CommentJSONValue {
   {
     //// Enter you own bot information if using the existing bot. ////
     // "botId": "",
-    // "botPassword": "",
+    // "botPassword": "", // use plain text or environment variable reference like \${env:BOT_PASSWORD}
   }
   `;
   const task = {
@@ -455,7 +469,7 @@ function setUpSSO(): CommentJSONValue {
     //// Enter you own AAD app information if using the existing AAD app. ////
     // "objectId": "",
     // "clientId": "",
-    // "clientSecret": "",
+    // "clientSecret": "", // use plain text or environment variable reference like \${env:CLIENT_SECRET}
     // "accessAsUserScopeId": "
   }
   `;
@@ -472,7 +486,7 @@ function buildAndUploadTeamsManifest(): CommentJSONValue {
   const comment = `
   {
     // Build and upload Teams manifest.
-    // See https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest to khow the details and how to customize the args.
+    // See https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest to know the details and how to customize the args.
   }`;
   const existingApp = `
   {

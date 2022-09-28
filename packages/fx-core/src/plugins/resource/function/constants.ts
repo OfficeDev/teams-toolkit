@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Kind, SkuName, SkuTier } from "@azure/arm-storage/esm/models";
+import { Kind, SkuName, SkuTier } from "@azure/arm-storage";
 import { getAllowedAppIds } from "../../../common/tools";
 
 import { FunctionConfigKey, FunctionLanguage } from "./enums";

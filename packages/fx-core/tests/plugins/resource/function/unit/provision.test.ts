@@ -5,6 +5,7 @@ import "mocha";
 import { DependentPluginInfo } from "../../../../../src/plugins/resource/function/constants";
 import { Platform } from "@microsoft/teamsfx-api";
 import { newEnvInfo } from "../../../../../src/core/environment";
+import { MyTokenCredential } from "../../../solution/util";
 
 const context: any = {
   envInfo: newEnvInfo(
@@ -78,11 +79,9 @@ const context: any = {
     },
   },
   azureAccountProvider: {
-    getAccountCredentialAsync: async () => ({
-      signRequest: () => {
-        return;
-      },
-    }),
+    getIdentityCredentialAsync: async () => {
+      return new MyTokenCredential();
+    },
     getSelectedSubscription: async () => {
       return {
         subscriptionId: "subscriptionId",

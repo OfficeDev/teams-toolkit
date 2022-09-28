@@ -5,7 +5,6 @@
 "use strict";
 
 import { TokenCredential } from "@azure/core-auth";
-import { DeviceTokenCredentials, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
   AzureAccountProvider,
   UserError,
@@ -16,7 +15,7 @@ import {
   ConfigFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
-import { AzureAccount } from "./azure-account.api";
+import { AzureAccountExtensionApi as AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
@@ -45,6 +44,7 @@ import { VS_CODE_UI } from "../extension";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as commonUtils from "../debug/commonUtils";
+import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { getSubscriptionInfoFromEnv } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
@@ -94,45 +94,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   /**
-   * Async get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
-   */
-  async getAccountCredentialAsync(showDialog = true): Promise<TokenCredentialsBase | undefined> {
-    if (this.isUserLogin()) {
-      return this.doGetAccountCredentialAsync();
-    }
-
-    let cred;
-    try {
-      await this.login(showDialog);
-      cred = await this.doGetAccountCredentialAsync();
-    } catch (e) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Login, e, {
-        [TelemetryProperty.AccountType]: AccountType.Azure,
-        [TelemetryProperty.Success]: TelemetrySuccess.No,
-        [TelemetryProperty.UserId]: "",
-        [TelemetryProperty.Internal]: "",
-        [TelemetryProperty.ErrorType]:
-          e instanceof UserError ? TelemetryErrorType.UserError : TelemetryErrorType.SystemError,
-        [TelemetryProperty.ErrorCode]: `${e.source}.${e.name}`,
-        [TelemetryProperty.ErrorMessage]: `${e.message}`,
-      });
-      throw e;
-    }
-
-    const userid = cred ? cred.clientId : "";
-    const internal = cred
-      ? (cred as DeviceTokenCredentials).username.endsWith("@microsoft.com")
-      : false;
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
-      [TelemetryProperty.AccountType]: AccountType.Azure,
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.UserId]: userid,
-      [TelemetryProperty.Internal]: internal ? "true" : "false",
-    });
-    return cred;
-  }
-
-  /**
    * Async get identity [crendential](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/core/core-auth/src/tokenCredential.ts)
    */
   async getIdentityCredentialAsync(showDialog = true): Promise<TokenCredential | undefined> {
@@ -145,10 +106,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   private async updateLoginStatus(): Promise<void> {
     if (this.isUserLogin() && AzureAccountManager.statusChange !== undefined) {
-      const credential = await this.doGetAccountCredentialAsync();
-      const accessToken = await credential?.getToken();
+      const credential = await this.getIdentityCredentialAsync();
+      const accessToken = await credential?.getToken(AzureScopes);
       const accountJson = await this.getJsonObject();
-      await AzureAccountManager.statusChange("SignedIn", accessToken?.accessToken, accountJson);
+      await AzureAccountManager.statusChange("SignedIn", accessToken?.token, accountJson);
     }
   }
 
@@ -187,46 +148,41 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  private doGetAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
+  private doGetIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
     if (this.isUserLogin()) {
       const azureAccount: AzureAccount =
         vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
-      // Choose one tenant credential when users have multi tenants. (TODO, need to optize after UX design)
+      // Choose one tenant credential when users have multi tenants.)
       // 1. When azure-account-extension has at least one subscription, return the first one credential.
       // 2. When azure-account-extension has no subscription and has at at least one session, return the first session credential.
       // 3. When azure-account-extension has no subscription and no session, return undefined.
-      return new Promise(async (resolve, reject) => {
-        await azureAccount.waitForSubscriptions();
+      return new Promise(async (resolve) => {
         if (azureAccount.subscriptions.length > 0) {
-          let credential2 = azureAccount.subscriptions[0].session.credentials2;
           if (AzureAccountManager.tenantId) {
             for (let i = 0; i < azureAccount.sessions.length; ++i) {
               const item = azureAccount.sessions[i];
               if (item.tenantId == AzureAccountManager.tenantId) {
-                credential2 = item.credentials2;
-                break;
+                const vsCredential = new identity.VisualStudioCodeCredential({
+                  tenantId: AzureAccountManager.tenantId,
+                });
+                resolve(vsCredential);
               }
             }
           }
-          // TODO - If the correct process is always selecting subs before other calls, throw error if selected subs not exist.
-          resolve(credential2);
+          const session = azureAccount.subscriptions[0].session;
+          const vsCredential = new identity.VisualStudioCodeCredential({
+            tenantId: session.tenantId,
+          });
+          resolve(vsCredential);
         } else if (azureAccount.sessions.length > 0) {
-          resolve(azureAccount.sessions[0].credentials2);
+          const session = azureAccount.subscriptions[0].session;
+          const vsCredential = new identity.VisualStudioCodeCredential({
+            tenantId: session.tenantId,
+          });
+          resolve(vsCredential);
         } else {
-          reject(LoginFailureError());
+          Promise.reject(LoginFailureError());
         }
-      });
-    }
-    return Promise.reject(LoginFailureError());
-  }
-
-  private doGetIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
-    if (this.isUserLogin()) {
-      return new Promise(async (resolve) => {
-        const tokenJson = await this.getJsonObject();
-        const tenantId = (tokenJson as any).tid;
-        const vsCredential = new identity.VisualStudioCodeCredential({ tenantId: tenantId });
-        resolve(vsCredential);
       });
     }
     return Promise.reject(LoginFailureError());
@@ -269,10 +225,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
-    const credential = await this.getAccountCredentialAsync(showDialog);
-    const token = await credential?.getToken();
+    const credential = await this.getIdentityCredentialAsync(showDialog);
+    const token = await credential?.getToken("https://management.core.windows.net/.default");
     if (token) {
-      const array = token.accessToken.split(".");
+      const array = token.token.split(".");
       const buff = Buffer.from(array[1], "base64");
       return new Promise((resolve) => {
         resolve(JSON.parse(buff.toString("utf-8")));
@@ -328,7 +284,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * list all subscriptions
    */
   async listSubscriptions(): Promise<SubscriptionInfo[]> {
-    await this.getAccountCredentialAsync();
+    await this.getIdentityCredentialAsync();
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     const arr: SubscriptionInfo[] = [];
@@ -386,25 +342,30 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async getStatus(): Promise<LoginStatus> {
-    const azureAccount = this.getAzureAccount();
-    if (this.isLegacyVersion()) {
-      // add this to make sure Azure Account Extension has fully initialized
-      // this will wait for login finish when version >= 0.10.0, so loggingIn status will be ignored
-      await azureAccount.waitForSubscriptions();
-    }
-    if (azureAccount.status === loggedIn) {
-      const credential = await this.doGetAccountCredentialAsync();
-      const token = await credential?.getToken();
-      const accountJson = await this.getJsonObject();
-      return Promise.resolve({
-        status: signedIn,
-        token: token?.accessToken,
-        accountInfo: accountJson,
-      });
-    } else if (azureAccount.status === loggingIn) {
-      return Promise.resolve({ status: signingIn, token: undefined, accountInfo: undefined });
-    } else {
-      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+    try {
+      const azureAccount = this.getAzureAccount();
+      if (this.isLegacyVersion()) {
+        // add this to make sure Azure Account Extension has fully initialized
+        // this will wait for login finish when version >= 0.10.0, so loggingIn status will be ignored
+        await azureAccount.waitForSubscriptions();
+      }
+      if (azureAccount.status === loggedIn) {
+        const credential = await this.doGetIdentityCredentialAsync();
+        const token = await credential?.getToken("https://management.core.windows.net/.default");
+        const accountJson = await this.getJsonObject();
+        return Promise.resolve({
+          status: signedIn,
+          token: token?.token,
+          accountInfo: accountJson,
+        });
+      } else if (azureAccount.status === loggingIn) {
+        return Promise.resolve({ status: signingIn, token: undefined, accountInfo: undefined });
+      } else {
+        return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+      }
+    } catch (error) {
+      console.log(error);
+      throw error;
     }
   }
 
@@ -413,7 +374,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     AzureAccountManager.currentStatus = azureAccount.status;
     await this.updateSubscriptionInfo();
-    azureAccount.onStatusChanged(async (event) => {
+    azureAccount.onStatusChanged(async (event: string | undefined) => {
       if (this.isLegacyVersion()) {
         if (AzureAccountManager.currentStatus === "Initializing") {
           AzureAccountManager.currentStatus = event;

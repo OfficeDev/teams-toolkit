@@ -3,13 +3,13 @@ import {
   SolutionContext,
   ok,
   Platform,
-  AzureAccountProvider,
   ConfigMap,
   SubscriptionInfo,
   Plugin,
   Result,
   FxError,
   Void,
+  TokenProvider,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import { environmentManager } from "../../../src/core/environment";
@@ -17,12 +17,26 @@ import { LocalCrypto } from "../../../src/core/crypto";
 import { v4 as uuid } from "uuid";
 import { ArmTemplateResult } from "../../../src/common/armInterface";
 import sinon from "sinon";
-import { fehostPlugin, SOLUTION_CONFIG_NAME, TestFileContent } from "../../constants";
-import { MockedLogProvider, MockedTelemetryReporter, MockedUserInteraction } from "./util";
-import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
+import {
+  fehostPlugin,
+  SOLUTION_CONFIG_NAME,
+  TestFileContent,
+} from "../../constants";
+import {
+  MockedAzureAccountProvider,
+  MockedLogProvider,
+  MockedM365Provider,
+  MockedTelemetryReporter,
+  MockedUserInteraction,
+  MyTokenCredential,
+} from "./util";
 import os from "os";
 import * as cpUtils from "../../../src/common/cpUtils";
 
+const mockedTokenProvider: TokenProvider = {
+  azureAccountProvider: new MockedAzureAccountProvider(),
+  m365TokenProvider: new MockedM365Provider(),
+};
 export class TestHelper {
   static appName = "ut_app_name";
   static rootDir = path.join(__dirname, "ut");
@@ -72,7 +86,7 @@ export class TestHelper {
         },
       },
       answers: { platform: Platform.VSCode },
-      azureAccountProvider: Object as any & AzureAccountProvider,
+      azureAccountProvider: mockedTokenProvider.azureAccountProvider,
       ui: new MockedUserInteraction(),
       logProvider: new MockedLogProvider(),
       telemetryReporter: new MockedTelemetryReporter(),
@@ -201,14 +215,8 @@ export class TestHelper {
   // }
 
   static mockArmDeploymentDependencies(mockedCtx: SolutionContext, mocker: sinon.SinonSandbox) {
-    mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
-      const azureToken = new UserTokenCredentials(
-        TestHelper.clientId,
-        TestHelper.domain,
-        TestHelper.username,
-        TestHelper.password
-      );
-      return azureToken;
+    mockedCtx.azureAccountProvider!.getIdentityCredentialAsync = async function () {
+      return new MyTokenCredential();
     };
     mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
       const subscriptionInfo = {

@@ -1,10 +1,8 @@
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { InputsWithProjectPath, Platform } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
-import chaiAsPromised from "chai-as-promised";
 import * as dotenv from "dotenv";
-import * as faker from "faker";
 import "mocha";
+import chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { IdentityResource } from "../../../../../src/component/resource/identity";
 import { createContextV3 } from "../../../../../src/component/utils";
@@ -14,15 +12,8 @@ dotenv.config();
 
 describe("identityPlugin", () => {
   let identityPlugin: IdentityResource;
-  let credentials: msRestNodeAuth.TokenCredentialsBase;
 
-  before(async () => {
-    credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-      faker.datatype.uuid(),
-      faker.internet.url(),
-      faker.internet.password()
-    );
-  });
+  before(async () => {});
 
   beforeEach(async () => {
     identityPlugin = new IdentityResource();

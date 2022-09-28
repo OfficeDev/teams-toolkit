@@ -3210,7 +3210,7 @@ export async function signinAzureCallback(args?: any[]): Promise<Result<null, Fx
       ...triggerFrom,
     });
   }
-  const token = await AzureAccountManager.getAccountCredentialAsync(true);
+  const token = await AzureAccountManager.getIdentityCredentialAsync(true);
   if (token && node) {
     const needSelectSubscription = await node.setSignedIn(
       (token as any).username ? (token as any).username : ""

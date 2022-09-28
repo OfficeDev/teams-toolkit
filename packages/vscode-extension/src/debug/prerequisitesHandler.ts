@@ -109,6 +109,7 @@ interface CheckResult {
   result: ResultStatus;
   error?: FxError;
   successMsg?: string;
+  warnMsg?: string;
   failureMsg?: string;
 }
 
@@ -291,6 +292,7 @@ async function checkPort(
         return {
           checker: Checker.Ports,
           result: ResultStatus.failed,
+          failureMsg: doctorConstant.Port,
           error: new UserError(
             ExtensionSource,
             ExtensionErrors.PortAlreadyInUse,
@@ -920,6 +922,7 @@ async function resolveLocalCertificate(
         checker: Checker.LocalCertificate,
         result: result,
         successMsg: doctorConstant.CertSuccess,
+        warnMsg: doctorConstant.Cert,
         failureMsg: doctorConstant.Cert,
         error: error,
       };
@@ -1116,7 +1119,7 @@ async function handleCheckResults(
 
   for (const result of warnings) {
     output.appendLine("");
-    output.appendLine(`${doctorConstant.Exclamation} ${result.checker} `);
+    output.appendLine(`${doctorConstant.Exclamation} ${result.warnMsg ?? result.checker} `);
     outputCheckResultError(result, output);
   }
 

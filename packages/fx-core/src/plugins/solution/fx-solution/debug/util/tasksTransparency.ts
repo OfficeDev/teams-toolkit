@@ -326,7 +326,7 @@ function validateAndInstallPrerequisites(
 
   const comment = `{
     // Check if all required prerequisites are installed and will install them if not.
-    // See https://aka.ms/teamsfx-debug-tasks#debug-check-prerequisites to know the details and how to customize the args.
+    // See https://aka.ms/teamsfx-check-prerequisites-task to know the details and how to customize the args.
   }`;
 
   const task = {
@@ -349,7 +349,7 @@ function installNPMpackages(
 ): CommentJSONValue {
   const comment = `{
     // Check if all the npm packages are installed and will install them if not.
-    // See https://aka.ms/teamsfx-debug-tasks#debug-npm-install to know the details and how to customize the args.
+    // See https://aka.ms/teamsfx-npm-package-task to know the details and how to customize the args.
   }`;
   const result = {
     label: "Install npm packages",
@@ -405,7 +405,7 @@ function installAzureFunctionsBindingExtensions(): CommentJSONValue {
 function startLocalTunnel(): CommentJSONValue {
   const comment = `{
     // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
-    // See https://aka.ms/teamsfx-debug-tasks#debug-start-local-tunnel to know the details and how to customize the args.
+    // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
   }`;
   const task = {
     label: "Start local tunnel",
@@ -423,7 +423,7 @@ function startLocalTunnel(): CommentJSONValue {
 function setUpTab(): CommentJSONValue {
   const comment = `{
     // Prepare local launch information for Tab.
-    // See https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab to know the details and how to customize the args.
+    // See https://aka.ms/teamsfx-debug-set-up-tab to know the details and how to customize the args.
   }`;
   const task = {
     label: "Set up tab",
@@ -439,7 +439,7 @@ function setUpTab(): CommentJSONValue {
 function setUpBot(): CommentJSONValue {
   const comment = `{
     // Register resources and prepare local launch information for Bot.
-    // See https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot to know the details and how to customize the args.
+    // See https://aka.ms/teamsfx-debug-set-up-bot to know the details and how to customize the args.
   }`;
   const existingBot = `
   {
@@ -462,7 +462,7 @@ function setUpBot(): CommentJSONValue {
 function setUpSSO(): CommentJSONValue {
   const comment = `{
     // Register resources and prepare local launch information for SSO functionality.
-    // See https://aka.ms/teamsfx-debug-tasks#debug-set-up-sso to know the details and how to customize the args.
+    // See https://aka.ms/teamsfx-debug-set-up-sso to know the details and how to customize the args.
   }`;
   const existingAAD = `
   {
@@ -486,7 +486,7 @@ function buildAndUploadTeamsManifest(): CommentJSONValue {
   const comment = `
   {
     // Build and upload Teams manifest.
-    // See https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest to know the details and how to customize the args.
+    // See https://aka.ms/teamsfx-debug-prepare-manifest to know the details and how to customize the args.
   }`;
   const existingApp = `
   {

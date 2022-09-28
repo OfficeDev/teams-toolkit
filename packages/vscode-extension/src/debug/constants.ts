@@ -164,13 +164,13 @@ export const prerequisiteCheckTaskDisplayMessages: DisplayMessages = {
   summary: "Summary:",
   learnMore: (link: string) =>
     `Visit ${link} to learn more about 'Validate & install prerequisites' task.`,
-  learnMoreHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task", // TODO: update npm install help lin
+  learnMoreHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task",
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
   errorMessageCommand: openOutputPanelCommand,
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
-  errorHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task", // TODO: update npm install help link
+  errorHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task",
 };
 
 export const npmInstallDisplayMessages: DisplayMessages = {
@@ -179,16 +179,16 @@ export const npmInstallDisplayMessages: DisplayMessages = {
   checkNumber: (n: number) =>
     `${stepPrefix(
       n
-    )} Teams Toolkit is checking if all the npm packages are installed and will install them if not. It may take several minutes for the first time execution, you can check the TERMINAL window for progress and details`,
+    )} Teams Toolkit is checking if all the npm packages are installed and will install them if not. It may take several minutes for the first time execution, you can check the TERMINAL window for progress and details.`,
   summary: "Summary:",
   learnMore: (link: string) => `Visit ${link} to learn more about 'Install npm packages' task.`,
-  learnMoreHelpLink: "https://aka.ms/teamsfx-npm-package-task", // TODO: update npm install help link
+  learnMoreHelpLink: "https://aka.ms/teamsfx-npm-package-task",
   errorName: ExtensionErrors.PrerequisitesInstallPackagesError,
   errorMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
   errorMessageCommand: openTerminalCommand,
   errorMessageLink: "teamstoolkit.localDebug.terminal",
-  errorHelpLink: "https://aka.ms/teamsfx-npm-package-task", // TODO: update npm install help link
+  errorHelpLink: "https://aka.ms/teamsfx-npm-package-task",
 };
 
 export const localTunnelDisplayMessages = Object.freeze({
@@ -200,7 +200,7 @@ export const localTunnelDisplayMessages = Object.freeze({
     )} Teams Toolkit is starting the local tunnel service to forward public ngrok URL to local port and inspect traffic.`,
   summary: "Summary:",
   learnMore: (link: string) => `Visit ${link} to learn more about 'Start local tunnel' task.`,
-  learnMoreHelpLink: "https://aka.ms/teamsfx-local-tunnel-task", // TODO: update local tunnel help link
+  learnMoreHelpLink: "https://aka.ms/teamsfx-local-tunnel-task",
   successSummary: (src: string, dist: string) => `Forwarding ngrok URL ${dist} to ${src}`,
   startMessage: "Starting local tunnel service.",
   forwardingUrl: (src: string, dist: string) => `Forwarding URL ${dist} to ${src}`,

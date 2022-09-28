@@ -57,7 +57,7 @@ import {
 } from "../../src/plugins/solution/fx-solution/constants";
 import { TeamsAppSolutionNameV2 } from "../../src/plugins/solution/fx-solution/v2/constants";
 import sinon from "sinon";
-import { MyTokenCredential } from "../plugins/resource/bot/unit/utils";
+import { MyTokenCredential } from "../plugins/solution/util";
 
 function solutionSettings(): AzureSolutionSettings {
   return {

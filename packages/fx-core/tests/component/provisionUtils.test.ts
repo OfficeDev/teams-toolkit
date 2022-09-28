@@ -11,8 +11,7 @@ import {
   MockM365TokenProvider,
   MockUserInteraction,
 } from "../core/utils";
-import { MyTokenCredential } from "../plugins/resource/bot/unit/utils";
-import { TestHelper } from "../plugins/resource/frontend/helper";
+import { MyTokenCredential } from "../plugins/solution/util";
 
 const expect = chai.expect;
 

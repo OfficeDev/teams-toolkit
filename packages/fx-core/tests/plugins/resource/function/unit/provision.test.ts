@@ -4,8 +4,8 @@ import "mocha";
 
 import { DependentPluginInfo } from "../../../../../src/plugins/resource/function/constants";
 import { Platform } from "@microsoft/teamsfx-api";
-import { MyTokenCredential } from "../../bot/unit/utils";
 import { newEnvInfo } from "../../../../../src/core/environment";
+import { MyTokenCredential } from "../../../solution/util";
 
 const context: any = {
   envInfo: newEnvInfo(

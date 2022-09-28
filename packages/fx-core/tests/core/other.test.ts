@@ -43,8 +43,7 @@ import {
 import { createAppNameQuestion } from "../../src/core/question";
 import { resourceGroupHelper } from "../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 import { parseTeamsAppTenantId } from "../../src/plugins/solution/fx-solution/v2/utils";
-import { MyTokenCredential } from "../plugins/resource/bot/unit/utils";
-import { TestHelper } from "../plugins/resource/frontend/helper";
+import { MyTokenCredential } from "../plugins/solution/util";
 import { randomAppName } from "./utils";
 
 export class MockedAzureTokenProvider implements AzureAccountProvider {

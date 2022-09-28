@@ -1,4 +1,5 @@
 import { TokenCredential } from "@azure/core-http";
+import { AccessToken, GetTokenOptions } from "@azure/identity";
 import {
   v2,
   FxError,
@@ -37,7 +38,18 @@ import {
   LoginStatus,
 } from "@microsoft/teamsfx-api";
 import { MockPermissionRequestProvider } from "../../core/utils";
-import { MyTokenCredential } from "../resource/bot/unit/utils";
+
+export class MyTokenCredential implements TokenCredential {
+  public async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions
+  ): Promise<AccessToken | null> {
+    return {
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
+      expiresOnTimestamp: 1234,
+    };
+  }
+}
 
 export const validManifest = {
   $schema:

@@ -1,7 +1,7 @@
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { newEnvInfo } from "../../../../src/core/environment";
 import { Constants } from "../../../../src/plugins/resource/identity/constants";
-import { MyTokenCredential } from "../bot/unit/utils";
+import { MyTokenCredential } from "../../solution/util";
 
 export class TestHelper {
   static async pluginContext(): Promise<PluginContext> {

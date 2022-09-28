@@ -15,7 +15,6 @@ import M365TokenProvider from "../../../src/commonlib/m365Login";
 import AzureTokenProvider from "../../../src/commonlib/azureLogin";
 import { signedIn, signedOut } from "../../../src/commonlib/common/constant";
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
-import { MyTokenCredential } from "@microsoft/teamsfx-core/tests/plugins/resource/bot/unit/utils";
 
 class MockTokenCredentials implements TokenCredential {
   public async getToken(

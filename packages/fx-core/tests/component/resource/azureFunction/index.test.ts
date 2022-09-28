@@ -24,7 +24,6 @@ import * as hostingUtils from "../../../../src/common/azure-hosting/utils";
 import { AzureOperations } from "../../../../src/common/azure-hosting/azureOps";
 import * as utils from "../../../../src/component/resource/azureAppService/common";
 import { APIMOutputs, ComponentNames, Scenarios } from "../../../../src/component/constants";
-import { MyTokenCredential } from "../../../plugins/resource/bot/unit/utils";
 import {
   WebAppsListApplicationSettingsOptionalParams,
   WebAppsListApplicationSettingsResponse,
@@ -34,6 +33,7 @@ import {
 import * as appService from "@azure/arm-appservice";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
 import { PreconditionError } from "../../../../src/component/error";
+import { MyTokenCredential } from "../../../plugins/solution/util";
 
 chai.use(chaiAsPromised);
 

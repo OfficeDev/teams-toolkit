@@ -31,11 +31,10 @@ import {
   MockedM365Provider,
   MockedTelemetryReporter,
   MockedUserInteraction,
+  MyTokenCredential,
 } from "./util";
 import os from "os";
 import * as cpUtils from "../../../src/common/cpUtils";
-import { Context } from "@microsoft/teamsfx-api/build/v2";
-import { MyTokenCredential } from "../resource/bot/unit/utils";
 
 const mockedTokenProvider: TokenProvider = {
   azureAccountProvider: new MockedAzureAccountProvider(),

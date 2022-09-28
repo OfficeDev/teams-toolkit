@@ -13,8 +13,6 @@ import { MockTools } from "../core/utils";
 import sinon from "sinon";
 import { deployUtils } from "../../src/component/deployUtils";
 import { assert } from "chai";
-import { TestHelper } from "../plugins/resource/frontend/helper";
-import { MyTokenCredential } from "../plugins/resource/bot/unit/utils";
 import {
   FindFunctionAppError,
   PackDirectoryExistenceError,
@@ -23,6 +21,7 @@ import {
 import { setTools } from "../../src/core/globalVars";
 import { newEnvInfoV3 } from "../../src/core/environment";
 import fs from "fs-extra";
+import { MyTokenCredential } from "../plugins/solution/util";
 describe("resetEnvInfoWhenSwitchM365", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();

@@ -6,7 +6,6 @@ import {
   APIKeyAuthConfig,
 } from "../../../../src/component/feature/apiconnector/config";
 import { AuthType, KeyLocation } from "../../../../src/component/feature/apiconnector/constants";
-import { DependentPluginInfo } from "../../../../src/plugins/resource/function/constants";
 import { MockUserInteraction } from "../../../core/utils";
 
 export function MockContext(): any {
@@ -15,9 +14,9 @@ export function MockContext(): any {
       envName: "dev",
       state: {
         solution: {
-          [DependentPluginInfo.resourceGroupName]: "ut",
-          [DependentPluginInfo.subscriptionId]: "ut",
-          [DependentPluginInfo.resourceNameSuffix]: "ut",
+          ["resourceGroupName"]: "ut",
+          ["subscriptionId"]: "ut",
+          ["resourceNameSuffix"]: "ut",
         },
       },
       config: {

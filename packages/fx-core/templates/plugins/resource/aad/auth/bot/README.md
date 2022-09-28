@@ -1,8 +1,10 @@
 # Enable single sign-on for bot applications
+> Note: This document includes single sign-on instructions applicable for both bot and message extension. Make sure to add the corresponding Teams capability first and then follow the documentation.
 
 Microsoft Teams provides a mechanism by which an application can obtain the signed-in Teams user token to access Microsoft Graph (and other APIs). Teams Toolkit facilitates this interaction by abstracting some of the Azure Active Directory (AAD) flows and integrations behind some simple, high level APIs. This enables you to add single sign-on (SSO) features easily to your Teams application.
 
 For a bot application, user can invoke the AAD consent flow to obtain sso token to call Graph and other APIs. 
+
 
 <h2>Contents </h2>
 
@@ -30,7 +32,7 @@ After you successfully added SSO into your project, Teams Toolkit will create an
 | Create| `aad.template.json` under `templates/appPackage` | The Azure Active Directory application manifest that is used to register the application with AAD. |
 | Create | `auth/bot` | Reference code, redirect pages and a `README.md` file. These files are provided for reference. See below for more information. |
 
-<h2 id='2'>Update your code to add SSO</h2>
+<h2 id='2'>Update your code to Use SSO for Bot</h2>
 
 As described above, the Teams Toolkit generated some configuration to set up your application for SSO, but you need to update your application business logic to take advantage of the SSO feature as appropriate.
 
@@ -300,7 +302,7 @@ The sample business logic provides a handler `TeamsBot` extends TeamsActivityHan
 You can update the query logic in the `handleMessageExtensionQueryWithToken` with token which is obtained by using the logged-in Teams user token.
 
 To make this work in your application:
-1. Override `handleTeamsMessagingExtensionQuery` interface under `bot/src/teamsBot`. you can follow the sample code in the `handleMessageExtensionQueryWithToken` to do your own query logic.
+1. Override `handleTeamsMessagingExtensionQuery` interface under `bot/src/teamsBot`. You can follow the sample code in the `handleMessageExtensionQueryWithToken` to do your own query logic.
 1. Open `bot/package.json`, ensure that `@microsoft/teamsfx` version >= 1.2.0
 1. Install `isomorphic-fetch` npm packages in your bot project.
 1. (For ts only) Install `copyfiles` npm packages in your bot project, add or update the `build` script in `bot/package.json` as following

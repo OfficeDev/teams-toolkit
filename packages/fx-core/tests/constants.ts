@@ -24,12 +24,6 @@ export const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
 
 export const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin) as Plugin;
 export const appStudioPlugin = Container.get<Plugin>(ComponentNames.AppManifest) as Plugin;
-<<<<<<< HEAD
-export const apimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin) as Plugin;
-=======
-export const functionPlugin = Container.get<Plugin>(ResourcePlugins.FunctionPlugin) as Plugin;
->>>>>>> 95eec4893 (chore: draft)
-
 export class TestFilePath {
   static readonly armTemplateBaseFolder = "./templates/azure";
   static readonly configFolder = "./.fx/configs";

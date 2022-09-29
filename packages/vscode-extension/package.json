@@ -113,7 +113,7 @@
         {
           "id": "teamsfx-accounts",
           "name": "Accounts",
-          "when": "fx-extension.isTeamsFx && isWorkspaceTrusted"
+          "when": "fx-extension.isTeamsFx"
         },
         {
           "id": "teamsfx-environment",
@@ -123,18 +123,18 @@
         {
           "id": "teamsfx-development",
           "name": "Development",
-          "when": "fx-extension.isTeamsFx && isWorkspaceTrusted"
+          "when": "fx-extension.isTeamsFx"
         },
         {
           "type": "webview",
           "id": "teamsfx-development-webview",
           "name": "Development",
-          "when": "fx-extension.isTeamsFx && fx-extension.customizedTreeview && isWorkspaceTrusted"
+          "when": "fx-extension.isTeamsFx && fx-extension.customizedTreeview"
         },
         {
           "id": "teamsfx-deployment",
           "name": "Deployment",
-          "when": "fx-extension.isTeamsFx && isWorkspaceTrusted"
+          "when": "fx-extension.isTeamsFx"
         },
         {
           "type": "webview",
@@ -145,13 +145,13 @@
         {
           "id": "teamsfx-help-and-feedback",
           "name": "Help and feedback",
-          "when": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+          "when": "fx-extension.isTeamsFx",
           "visibility": "collapsed"
         },
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv || !isWorkspaceTrusted"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv"
         },
         {
           "id": "teamsfx-empty-project-and-check-upgrade",

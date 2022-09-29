@@ -2,7 +2,6 @@ import Container from "typedi";
 import { ResourcePlugins } from "../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { Plugin } from "@microsoft/teamsfx-api";
 import "../src/plugins/resource/frontend";
-import "../src/plugins/resource/localdebug";
 import "../src/component/resource/aadApp/aadApp";
 import { ComponentNames } from "../src/component/constants";
 import { AadApp } from "../src/component/resource/aadApp/aadApp";
@@ -11,7 +10,6 @@ export class PluginId {
   static readonly FrontendHosting = "fx-resource-frontend-hosting";
   static readonly SimpleAuth = "fx-resource-simple-auth";
   static readonly Bot = "fx-resource-bot";
-  static readonly LocalDebug = "fx-resource-local-debug";
   static readonly AzureSQL = "fx-resource-azure-sql";
   static readonly Function = "fx-resource-function";
   static readonly Identity = "fx-resource-identity";
@@ -20,8 +18,6 @@ export class PluginId {
 
 export const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin;
 export const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-
-export const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin) as Plugin;
 export const appStudioPlugin = Container.get<Plugin>(ComponentNames.AppManifest) as Plugin;
 export class TestFilePath {
   static readonly armTemplateBaseFolder = "./templates/azure";

@@ -3,4 +3,3 @@
 "use strict";
 
 export * from "./frontend";
-export * from "./localdebug";

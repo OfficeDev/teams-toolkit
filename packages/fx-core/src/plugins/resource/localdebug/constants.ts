@@ -2,27 +2,6 @@
 // Licensed under the MIT license.
 "use strict";
 
-export class LocalDebugPluginInfo {
-  public static readonly pluginName: string = "fx-resource-local-debug";
-  public static readonly displayName: string = "LocalDebug Plugin";
-}
-
-export class LaunchBrowser {
-  public static readonly chrome: string = "pwa-chrome";
-  public static readonly edge: string = "pwa-msedge";
-}
-
-export class LocalDebugCertificate {
-  public static readonly CertFileName: string = "localhost.crt";
-  public static readonly KeyFileName: string = "localhost.key";
-  public static readonly FriendlyName: string = "TeamsFx Development Certificate";
-}
-
-export enum ProgrammingLanguage {
-  javascript = "javascript",
-  typescript = "typescript",
-}
-
 /**
  * Config key contract that value is provided by local debug plugin and required by other plugins.
  */
@@ -39,54 +18,9 @@ export class LocalDebugConfigKeys {
   public static readonly LocalBotDomain: string = "localBotDomain";
 }
 
-export class AadPlugin {
-  public static readonly Name: string = "fx-resource-aad-app-for-teams";
-  public static readonly LocalAppIdUri: string = "local_applicationIdUris";
-  public static readonly LocalClientId: string = "local_clientId";
-  public static readonly LocalClientSecret: string = "local_clientSecret";
-  public static readonly TeamsMobileDesktopAppId: string = "teamsMobileDesktopAppId";
-  public static readonly TeamsWebAppId: string = "teamsWebAppId";
-}
-
-export class FunctionPlugin {
-  public static readonly FolderName: string = "api";
-  public static readonly Name: string = "fx-resource-function";
-  public static readonly DefaultFunctionName: string = "defaultFunctionName";
-}
-
-export class RuntimeConnectorPlugin {
-  public static readonly Name: string = "fx-resource-simple-auth";
-  public static readonly FilePath: string = "filePath";
-}
-
-export class SpfxPlugin {
-  public static readonly Name: string = "fx-resource-spfx";
-}
-
-export class SolutionPlugin {
-  public static readonly Name: string = "solution";
-  // public static readonly SelectedPlugins: string = "selectedPlugins";
-  public static readonly LocalTeamsAppId: string = "localDebugTeamsAppId";
-  public static readonly RemoteTeamsAppId: string = "remoteTeamsAppId";
-  public static readonly TeamsAppTenantId: string = "teamsAppTenantId";
-  public static readonly ProgrammingLanguage: string = "programmingLanguage";
-}
-
 export class AppStudioPlugin {
   public static readonly Name: string = "fx-resource-appstudio";
   public static readonly TeamsAppId: string = "teamsAppId";
-}
-
-export class FrontendHostingPlugin {
-  public static readonly FolderName: string = "tabs";
-  public static readonly Name: string = "fx-resource-frontend-hosting";
-}
-
-export class BotPlugin {
-  public static readonly FolderName: string = "bot";
-  public static readonly Name: string = "fx-resource-bot";
-  public static readonly LocalBotId: string = "localBotId";
-  public static readonly LocalBotPassword: string = "localBotPassword";
 }
 
 export const LocalEnvFrontendKeys = Object.freeze({

@@ -76,7 +76,6 @@ export class FeatureFlagName {
   static readonly BotNotification = "BOT_NOTIFICATION_ENABLED";
   static readonly WorkflowBotEnabled = "WORKFLOW_BOT_ENABLED";
   static readonly M365App = "TEAMSFX_M365_APP";
-  static readonly LocalDebugTransparency = "TEAMSFX_LOCAL_DEBUG_TRANSPARENCY";
   static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
   static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
   static readonly SPFxVersion = "TEAMSFX_SPFX_VERSIOIN";

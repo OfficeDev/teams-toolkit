@@ -84,6 +84,7 @@ export function generateTasks(
    *   - Install Azure Functions binding extensions
    *   - Watch backend
    *   - Start bot
+   *   - Start Azurite emulator
    */
   const tasks: (Record<string, unknown> | CommentJSONValue)[] = [
     startTeamsAppLocally(includeFrontend, includeBackend, includeBot, includeSSO),
@@ -170,6 +171,7 @@ export function generateM365Tasks(
    *   - Install Azure Functions binding extensions
    *   - Watch backend
    *   - Start bot
+   *   - Start Azurite emulator
    *   - install app in Teams
    */
   const tasks = generateTasks(
@@ -271,7 +273,7 @@ function startTeamsAppLocallyAndInstallApp(
 ): Record<string, unknown> {
   const result = startTeamsAppLocally(includeFrontend, includeBackend, includeBot, includeSSO);
   result.label = "Start Teams App Locally & Install App";
-  (result.dependsOn as string[]).push("Install app in Teams");
+  (result.dependsOn as string[]).push("install app in Teams");
 
   return result;
 }

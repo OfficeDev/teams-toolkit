@@ -108,16 +108,6 @@
             "suggested": false
         },
         {
-            "id": "faq-plus",
-            "title": "FAQ Plus",
-            "shortDescription": "Conversational Bot which answers common questions, looping human when bots unable to help",
-            "fullDescription": "FAQ Plus is a conversational Q&A bot providing an easy way to answer frequently asked questions by users. One can ask a question and the bot responds with information in the knowledge base. If the answer is not in the knowledge base, the bot submits the question to a pre-configured team of experts who help provide support.",
-            "tags": ["Easy QnA", "Bot", "JS"],
-            "time": "1hr to run",
-            "configuration": "Manual configurations required",
-            "suggested": false
-        },
-        {
             "id": "todo-list-with-Azure-backend-M365",
             "title": "Todo List (Works in Teams, Outlook and Office)",
             "shortDescription": "Todo List app that runs across Microsoft 365 including Teams, Outlook and Office",

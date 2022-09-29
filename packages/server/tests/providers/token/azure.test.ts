@@ -9,8 +9,6 @@ import sinon from "sinon";
 import ServerAzureAccountProvider from "../../../src/providers/token/azure";
 import { createMessageConnection } from "vscode-jsonrpc";
 import { err, ok } from "@microsoft/teamsfx-api";
-import { expect } from "chai";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
 chai.use(chaiAsPromised);
 
@@ -29,7 +27,7 @@ describe("azure", () => {
   const down = new TestStream();
   const msgConn = createMessageConnection(up as any, down as any);
 
-  after(() => {
+  afterEach(() => {
     sandbox.restore();
   });
 
@@ -38,47 +36,39 @@ describe("azure", () => {
     chai.assert.equal(azure["connection"], msgConn);
   });
 
-  describe("getAccountCredentialAsync", () => {
-    const azure = new ServerAzureAccountProvider(msgConn);
-
-    it("getAccountCredentialAsync: error", async () => {
-      const e = new Error("test");
-      const promise = Promise.resolve(err(e));
-      const stub = sandbox.stub(msgConn, "sendRequest").returns(promise);
-      await chai.expect(azure.getAccountCredentialAsync()).to.be.rejected;
-      stub.restore();
-    });
-
-    it("getAccountCredentialAsync: ok", () => {
-      const token =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
-      const jsonstr = JSON.stringify(
-        (function ConvertTokenToJson(token: string) {
-          const array = token!.split(".");
-          const buff = Buffer.from(array[1], "base64");
-          return JSON.parse(buff.toString("utf8"));
-        })(token)
-      );
-      const r = {
-        accessToken: token,
-        tokenJsonString: jsonstr,
-      };
-      const promise = Promise.resolve(ok(r));
-      const stub = sandbox.stub(msgConn, "sendRequest").returns(promise);
-      const res = azure.getAccountCredentialAsync();
-      res.then((data) => {
-        expect(data instanceof TokenCredentialsBase).is.true;
-      });
-      stub.restore();
-    });
-  });
-
   it("getIdentityCredentialAsync", () => {
     const azure = new ServerAzureAccountProvider(msgConn);
     const res = azure.getIdentityCredentialAsync();
     res.then((data) => {
       chai.assert.isUndefined(data);
     });
+  });
+
+  it("getIdentityCredentialAsync2", async () => {
+    const azure = new ServerAzureAccountProvider(msgConn);
+    const promise = Promise.resolve(ok("a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c"));
+    const stub = sandbox.stub(msgConn, "sendRequest").returns(promise);
+    const identity = await azure.getIdentityCredentialAsync();
+    const res = await identity?.getToken("test");
+    chai.assert.isNotNull(res);
+  });
+
+  it("getIdentityCredentialAsync3", async () => {
+    const azure = new ServerAzureAccountProvider(msgConn);
+    const promise = Promise.resolve(ok("a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c"));
+    const stub = sandbox.stub(msgConn, "sendRequest").returns(promise);
+    const identity = await azure.getIdentityCredentialAsync();
+    const res = await identity?.getToken(["test"]);
+    chai.assert.isNotNull(res);
+  });
+
+  it("getIdentityCredentialAsync4", async () => {
+    const azure = new ServerAzureAccountProvider(msgConn);
+    const promise = Promise.resolve(err(new Error("test")));
+    const stub = sandbox.stub(msgConn, "sendRequest").returns(promise);
+    const identity = await azure.getIdentityCredentialAsync();
+    const res = await identity?.getToken(["test"]);
+    chai.assert.isNull(res);
   });
 
   it("signout", async () => {

@@ -67,8 +67,8 @@ import {
 import { TOOLS } from "../core/globalVars";
 import { getComponent } from "./workflow";
 import { CoreQuestionNames } from "../core/question";
-import { QuestionKey } from "../plugins/resource/function/enums";
-import { DefaultValues } from "../plugins/resource/function/constants";
+import { QuestionKey } from "./code/api/enums";
+import { DefaultValues } from "./feature/api/constants";
 import { CommentObject } from "comment-json";
 
 export interface LocalEnvConfig {

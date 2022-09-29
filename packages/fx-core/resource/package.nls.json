@@ -515,7 +515,7 @@
   "error.debugHandler.InvalidExistingAADArgsError": "objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.",
   "error.debugHandler.InvalidExistingBotArgsError": "botId and botPassword need to be set together if you use existing bot.",
   "error.debugHandler.DebugArgumentEmptyError": "Debug argument '%s' is empty.",
-  "error.debugHandler.InvalidTabBaseUrlError": "baseUrl must be in the format of 'https://localhost:{port}'.",
+  "error.debugHandler.InvalidTabBaseUrlError": "baseUrl must be a valid https url.",
   "core.QuestionAppName.validation.pattern": "Application name must start with letters and contain at least two letters or digits. It can not contain some special characters.",
   "core.QuestionAppName.validation.maxlength": "Application name is longer than the maximum length of 30.",
   "core.QuestionAppName.validation.pathExist": "Path exists: %s. Select a different application name.",

@@ -39,6 +39,18 @@ export class ProgressMessages {
 export class LogMessages {
   static readonly updateFunctionAppSettings = "Updating Azure Function app settings.";
   static readonly enableStaticWebsite = "Enabling static website feature for Azure Storage.";
+  public static readonly getTemplateFrom = (url: string): string =>
+    getLocalizedString("plugins.function.getTemplateFrom", url);
+  public static readonly getTemplateFromLocal = getLocalizedString(
+    "plugins.function.getTemplateFromLocal"
+  );
+  public static readonly projectScaffoldAt = (basePath: string): string =>
+    getLocalizedString("plugins.function.projectScaffoldAt", basePath);
+  public static readonly failedToInstallDotnet = (error: Error): string =>
+    getLocalizedString("plugins.function.failedToInstallDotnet", error);
+  public static readonly askFunctionName: string = getLocalizedString(
+    "plugins.function.askFunctionName"
+  );
 }
 
 export interface LocalizedMessage {
@@ -78,6 +90,12 @@ export class ErrorMessage {
     getLocalizedMessage("plugins.bot.SomethingNotExisting", something);
   public static readonly WorkingDirIsMissing: LocalizedMessage = getLocalizedMessage(
     "plugins.bot.WorkingDirMissing"
+  );
+  public static readonly invalidFunctionName: string = getLocalizedString(
+    "plugins.function.invalidFunctionName"
+  );
+  public static readonly functionAlreadyExists: string = getLocalizedString(
+    "plugins.function.functionAlreadyExists"
   );
 
   // Suggestions

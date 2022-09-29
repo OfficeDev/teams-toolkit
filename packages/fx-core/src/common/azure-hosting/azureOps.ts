@@ -21,6 +21,7 @@ import {
   Logger,
 } from "./interfaces";
 import { Messages } from "./messages";
+import { WebAppsListPublishingCredentialsResponse } from "@azure/arm-appservice";
 
 /**
  * operate int azure
@@ -32,10 +33,10 @@ export class AzureOperations {
     webSiteMgmtClient: appService.WebSiteManagementClient,
     resourceGroup: string,
     siteName: string
-  ): Promise<AzurePublishingCredentials> {
-    let listResponse: AzurePublishingCredentials;
+  ): Promise<WebAppsListPublishingCredentialsResponse> {
+    let listResponse: WebAppsListPublishingCredentialsResponse;
     try {
-      listResponse = await webSiteMgmtClient.webApps.listPublishingCredentials(
+      listResponse = await webSiteMgmtClient.webApps.beginListPublishingCredentialsAndWait(
         resourceGroup,
         siteName
       );
@@ -43,7 +44,7 @@ export class AzureOperations {
       throw new ListPublishingCredentialsError(e);
     }
 
-    if (!listResponse || !isHttpCodeOkOrCreated(listResponse._response.status)) {
+    if (!listResponse) {
       throw new ListPublishingCredentialsError();
     }
 
@@ -110,15 +111,10 @@ export class AzureOperations {
     logger?: Logger
   ): Promise<void> {
     logger?.info?.(Messages.restartFunction(siteName));
-    let res: AxiosResponseWithStatusResult;
     try {
-      res = await webSiteMgmtClient.webApps.restart(resourceGroup, siteName);
+      await webSiteMgmtClient.webApps.restart(resourceGroup, siteName);
     } catch (e) {
       throw new RestartWebAppError(e);
-    }
-
-    if (!res || !isHttpCodeOkOrCreated(res?._response.status)) {
-      throw new RestartWebAppError();
     }
   }
 }

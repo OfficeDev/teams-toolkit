@@ -13,7 +13,6 @@ import { checkMissingArgs } from "../utils/common";
 import { PrerequisiteError } from "../error/componentError";
 import { DeployExternalApiCallError, DeployTimeoutError } from "../error/deployError";
 import { AzureAccountProvider, LogProvider } from "@microsoft/teamsfx-api";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { BaseDeployDriver } from "./baseDeployDriver";
 import { Base64 } from "js-base64";
 import * as appService from "@azure/arm-appservice";
@@ -21,6 +20,7 @@ import { DeployConstant } from "../constant/deployConstant";
 import { default as axios } from "axios";
 import { waitSeconds } from "../../common/tools";
 import { HttpStatusCode } from "../constant/commonConstant";
+import { TokenCredential } from "@azure/identity";
 
 export abstract class AzureDeployDriver extends BaseDeployDriver {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -56,7 +56,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
   abstract azureDeploy(
     args: DeployStepArgs,
     azureResource: AzureResourceInfo,
-    azureCredential: TokenCredentialsBase
+    azureCredential: TokenCredential
   ): Promise<void>;
 
   /**
@@ -89,7 +89,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
   protected async zipDeploy(
     args: DeployStepArgs,
     azureResource: AzureResourceInfo,
-    azureCredential: TokenCredentialsBase
+    azureCredential: TokenCredential
   ): Promise<void> {
     const zipBuffer = await this.packageToZip(args, this.context);
     const config = await this.createAzureDeployConfig(azureResource, azureCredential);
@@ -192,7 +192,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
    */
   protected async createAzureDeployConfig(
     azureResource: AzureResourceInfo,
-    azureCredential: TokenCredentialsBase
+    azureCredential: TokenCredential
   ): Promise<AzureUploadConfig> {
     this.managementClient = new appService.WebSiteManagementClient(
       azureCredential,
@@ -200,18 +200,12 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     );
     let listResponse;
     try {
-      listResponse = await this.managementClient.webApps.listPublishingCredentials(
+      listResponse = await this.managementClient.webApps.beginListPublishingCredentialsAndWait(
         azureResource.resourceGroupName,
         azureResource.instanceId
       );
     } catch (e) {
       throw DeployExternalApiCallError.listPublishingCredentialsError(e);
-    }
-
-    if (listResponse._response.status !== 200) {
-      throw DeployExternalApiCallError.listPublishingCredentialsError(
-        listResponse._response.status
-      );
     }
 
     const publishingUserName = listResponse.publishingUserName ?? "";
@@ -234,10 +228,10 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
 
   private async getAzureAccountCredential(
     tokenProvider: AzureAccountProvider
-  ): Promise<TokenCredentialsBase> {
+  ): Promise<TokenCredential> {
     let credential;
     try {
-      credential = await tokenProvider.getAccountCredentialAsync();
+      credential = await tokenProvider.getIdentityCredentialAsync();
     } catch (e) {
       throw DeployExternalApiCallError.getAzureCredentialError(e);
     }

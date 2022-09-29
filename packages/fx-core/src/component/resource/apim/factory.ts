@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ApiManagementClient } from "@azure/arm-apimanagement";
-import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
+import { ResourceManagementClient } from "@azure/arm-resources";
 import {
   AzureAccountProvider,
   EnvInfo,
@@ -159,7 +159,11 @@ export class Factory {
   ): Promise<ApimService> {
     const credential = AssertNotEmpty(
       "credential",
-      await azureAccountProvider?.getAccountCredentialAsync()
+      await azureAccountProvider?.getIdentityCredentialAsync()
+    );
+    const identityCredential = AssertNotEmpty(
+      "identityCredential",
+      await azureAccountProvider?.getIdentityCredentialAsync()
     );
     let subscriptionId;
     if (solutionConfig.subscriptionId) {
@@ -172,13 +176,11 @@ export class Factory {
     }
 
     const apiManagementClient = new ApiManagementClient(credential, subscriptionId);
-    const resourceProviderClient = new Providers(
-      new ResourceManagementClientContext(credential, subscriptionId)
-    );
+    const resourceProviderClient = new ResourceManagementClient(identityCredential, subscriptionId);
 
     return new ApimService(
       apiManagementClient,
-      resourceProviderClient,
+      resourceProviderClient.providers,
       credential,
       subscriptionId,
       telemetryReporter,

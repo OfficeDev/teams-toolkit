@@ -13,7 +13,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { mockProvisionResult, TestHelper, mockSkipFlag, mockTokenProviderM365 } from "../helper";
 import sinon from "sinon";
-import { getAppStudioToken, getGraphToken } from "../tokenProvider";
+import { getAppStudioToken } from "../tokenProvider";
 import faker from "faker";
 import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
 import { BuiltInSolutionNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
@@ -334,9 +334,6 @@ describe("AadAppForTeamsPlugin: Azure", () => {
 
     appStudioToken = await getAppStudioToken();
     chai.assert.isString(appStudioToken);
-
-    graphToken = await getGraphToken();
-    chai.assert.isString(graphToken);
   });
 
   beforeEach(() => {

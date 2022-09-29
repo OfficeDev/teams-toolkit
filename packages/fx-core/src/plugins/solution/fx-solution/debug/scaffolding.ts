@@ -18,7 +18,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as os from "os";
-import { isLocalDebugTransparencyEnabled } from "../../../../common/featureFlags";
 import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
 import { generateLocalDebugSettingsCommon, LocalEnvConfig } from "../../../../component/debug";
@@ -147,7 +146,7 @@ export async function useTransparentTasks(projectPath?: string): Promise<boolean
     }
   }
 
-  return isLocalDebugTransparencyEnabled();
+  return true;
 }
 
 export async function updateJson(

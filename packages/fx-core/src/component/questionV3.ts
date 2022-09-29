@@ -77,7 +77,6 @@ import {
   isWorkflowBotEnabled,
 } from "../common/featureFlags";
 import { buildQuestionNode } from "./resource/azureSql/questions";
-import { functionNameQuestion } from "../plugins/resource/function/question";
 import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { webpartNameQuestion } from "../component/resource/spfx/utils/questions";
@@ -88,6 +87,7 @@ import { InvalidFeature } from "./error";
 import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
 import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { Constants } from "./resource/aadApp/constants";
+import { functionNameQuestion } from "./feature/api/question";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,

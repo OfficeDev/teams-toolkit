@@ -26,6 +26,7 @@ export const doctorConstant = {
   NpmInstallFailure: (displayName: string | undefined, cwd: string) =>
     displayName ? `npm packages for ${displayName}` : `npm packages in directory ${cwd}`,
   HelpLink: `Please refer to @Link for more information.`,
+  Port: "Ports occupancy",
   PortSuccess: "Ports (@port) are not occupied",
   DepsSuccess: `@depsName is installed at @binFolder`,
 };

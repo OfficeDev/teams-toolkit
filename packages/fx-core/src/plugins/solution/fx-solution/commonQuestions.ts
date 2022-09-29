@@ -49,7 +49,7 @@ import {
 } from "../../../core/question";
 import { getHashedEnv } from "../../../common/tools";
 import { desensitize } from "../../../core/middleware/questionModel";
-import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
+import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources";
 import { SolutionPlugin } from "../../resource/localdebug/constants";
 import {
   CustomizeResourceGroupType,
@@ -114,7 +114,7 @@ export async function checkSubscription(
     subscriptionName = `(${subscriptionName})`;
   }
   // make sure the user is logged in
-  await azureAccountProvider.getAccountCredentialAsync(true);
+  await azureAccountProvider.getIdentityCredentialAsync(true);
 
   // verify valid subscription (permission)
   const subscriptions = await azureAccountProvider.listSubscriptions();
@@ -213,9 +213,13 @@ export async function askResourceGroupInfo(
   defaultResourceGroupName: string
 ): Promise<Result<ResourceGroupInfo, FxError>> {
   // TODO: support pagination
-  let resourceGroupResults;
+  const resourceGroupResults = [];
   try {
-    resourceGroupResults = await rmClient.resourceGroups.list();
+    for await (const page of rmClient.resourceGroups.list().byPage({ maxPageSize: 100 })) {
+      for (const resourceGroup of page) {
+        resourceGroupResults.push(resourceGroup);
+      }
+    }
   } catch (error) {
     ctx.logProvider?.error(`Failed to list resource group: error '${error}'`);
     return err(
@@ -291,7 +295,7 @@ async function getLocations(
   azureAccountProvider: AzureAccountProvider,
   rmClient: ResourceManagementClient
 ): Promise<Result<string[], FxError>> {
-  const credential = await azureAccountProvider.getAccountCredentialAsync();
+  const credential = await azureAccountProvider.getIdentityCredentialAsync();
   let subscriptionClient = undefined;
   if (credential) {
     subscriptionClient = new SubscriptionClient(credential);
@@ -303,10 +307,16 @@ async function getLocations(
     );
   }
   const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
-  const listLocations = await subscriptionClient.subscriptions.listLocations(
-    askSubRes!.subscriptionId
-  );
-  const locations = listLocations.map((item) => item.displayName);
+  const locations: string[] = [];
+  for await (const page of subscriptionClient.subscriptions
+    .listLocations(askSubRes!.subscriptionId)
+    .byPage({ maxPageSize: 100 })) {
+    for (const location of page) {
+      if (location.displayName) {
+        locations.push(location.displayName);
+      }
+    }
+  }
   const providerData = await rmClient.providers.get(MsResources);
   const resourceTypeData = providerData.resourceTypes?.find(
     (rt) => rt.resourceType?.toLowerCase() === ResourceGroups.toLowerCase()
@@ -383,9 +393,9 @@ async function askCommonQuestions(
     `[${PluginDisplayName.Solution}] askCommonQuestions, step 1 - check subscriptionId pass!`
   );
 
-  // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
+  // Note setSubscription here will change the token returned by getIdentityCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.
-  const azureToken = await azureAccountProvider?.getAccountCredentialAsync();
+  const azureToken = await azureAccountProvider?.getIdentityCredentialAsync();
   if (azureToken === undefined) {
     return err(
       new UserError(
@@ -603,7 +613,7 @@ export async function createNewResourceGroup(
   location: string,
   logProvider?: LogProvider
 ): Promise<Result<string, FxError>> {
-  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+  const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
   const rmClient = new ResourceManagementClient(azureToken!, subscriptionId);
 
   const maybeExist = await checkResourceGroupExistence(

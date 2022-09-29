@@ -68,7 +68,6 @@ describe("UI Unit Tests", async () => {
         mockQuickPick.selectedItems = [{ id: "default" } as FxQuickPickItem];
         acceptListener();
       });
-      sinon.stub(TreatmentVariableValue, "useFolderSelection").value(true);
       sinon.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
       });
@@ -113,7 +112,6 @@ describe("UI Unit Tests", async () => {
       mockQuickPick.show.callsFake(() => {
         hideListener();
       });
-      sinon.stub(TreatmentVariableValue, "useFolderSelection").value(true);
       sinon.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
       });

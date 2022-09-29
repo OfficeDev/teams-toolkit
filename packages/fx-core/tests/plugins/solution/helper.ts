@@ -3,14 +3,12 @@ import {
   SolutionContext,
   ok,
   Platform,
-  AzureAccountProvider,
   ConfigMap,
   SubscriptionInfo,
   Plugin,
   Result,
   FxError,
   Void,
-  Inputs,
   TokenProvider,
 } from "@microsoft/teamsfx-api";
 import path from "path";
@@ -19,12 +17,7 @@ import { LocalCrypto } from "../../../src/core/crypto";
 import { v4 as uuid } from "uuid";
 import { ArmTemplateResult } from "../../../src/common/armInterface";
 import sinon from "sinon";
-import {
-  fehostPlugin,
-  identityPlugin,
-  SOLUTION_CONFIG_NAME,
-  TestFileContent,
-} from "../../constants";
+import { fehostPlugin, SOLUTION_CONFIG_NAME, TestFileContent } from "../../constants";
 import {
   MockedAzureAccountProvider,
   MockedLogProvider,
@@ -184,38 +177,38 @@ export class TestHelper {
   //     });
   // }
 
-  static mockedIdentityGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(identityPlugin, "generateArmTemplates")
-      .callsFake(async (ctx: PluginContext) => {
-        console.log(`mocked identity generate arm templates`);
+  // static mockedIdentityGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
+  //   return mocker
+  //     .stub(identityPlugin, "generateArmTemplates")
+  //     .callsFake(async (ctx: PluginContext) => {
+  //       console.log(`mocked identity generate arm templates`);
 
-        const res: ArmTemplateResult = {
-          Provision: {
-            Orchestration:
-              "Mocked identity provision orchestration content. Module path: '{{fx-resource-identity.Provision.identityProvision.path}}'.",
-            Modules: {
-              identityProvision: TestFileContent.identityProvisionModule,
-            },
-          },
-          Reference: {
-            identityOutputKey: TestFileContent.identityReferenceValue,
-          },
-          Parameters: {
-            IdentityParameter: TestFileContent.identityParameterValue,
-          },
-        };
-        return ok(res);
-      });
-  }
+  //       const res: ArmTemplateResult = {
+  //         Provision: {
+  //           Orchestration:
+  //             "Mocked identity provision orchestration content. Module path: '{{fx-resource-identity.Provision.identityProvision.path}}'.",
+  //           Modules: {
+  //             identityProvision: TestFileContent.identityProvisionModule,
+  //           },
+  //         },
+  //         Reference: {
+  //           identityOutputKey: TestFileContent.identityReferenceValue,
+  //         },
+  //         Parameters: {
+  //           IdentityParameter: TestFileContent.identityParameterValue,
+  //         },
+  //       };
+  //       return ok(res);
+  //     });
+  // }
 
-  static mockedIdentityUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(identityPlugin, "updateArmTemplates")
-      .callsFake(async (ctx: PluginContext) => {
-        return ok({});
-      });
-  }
+  // static mockedIdentityUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
+  //   return mocker
+  //     .stub(identityPlugin, "updateArmTemplates")
+  //     .callsFake(async (ctx: PluginContext) => {
+  //       return ok({});
+  //     });
+  // }
 
   static mockArmDeploymentDependencies(mockedCtx: SolutionContext, mocker: sinon.SinonSandbox) {
     mockedCtx.azureAccountProvider!.getIdentityCredentialAsync = async function () {

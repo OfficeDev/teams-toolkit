@@ -128,7 +128,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
     const identity = await this.getIdentityCredentialAsync();
-    const token = await identity?.getToken(AzureScopes);
+    const token = await identity?.getToken("https://management.core.windows.net/.default");
     if (token?.token) {
       return ConvertTokenToJson(token?.token);
     } else {

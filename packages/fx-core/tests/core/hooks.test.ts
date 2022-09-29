@@ -119,12 +119,7 @@ describe("Middleware - others", () => {
       );
       assert.isTrue(
         await fs.pathExists(
-          path.join(
-            await getProjectTemplatesFolderPath(projectPath),
-            "azure",
-            "provision",
-            "identity.bicep"
-          )
+          path.join(await getProjectTemplatesFolderPath(projectPath), "azure", "provision")
         )
       );
       // assert.strictEqual(

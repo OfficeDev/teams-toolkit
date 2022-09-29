@@ -55,7 +55,6 @@ import {
   MessageExtensionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { ResourcePlugins } from "../../common/constants";
-import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
 import {
   MANIFEST_LOCAL,
   MANIFEST_TEMPLATE,
@@ -696,7 +695,18 @@ async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<P
   await removeExpiredFields(devState, devUserData);
   return projectSettings;
 }
+export class LocalDebugConfigKeys {
+  public static readonly LocalAuthEndpoint: string = "localAuthEndpoint";
 
+  public static readonly LocalTabEndpoint: string = "localTabEndpoint";
+  public static readonly LocalTabDomain: string = "localTabDomain";
+  public static readonly TrustDevelopmentCertificate: string = "trustDevCert";
+
+  public static readonly LocalFunctionEndpoint: string = "localFunctionEndpoint";
+
+  public static readonly LocalBotEndpoint: string = "localBotEndpoint";
+  public static readonly LocalBotDomain: string = "localBotDomain";
+}
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
   const stateData = await fs.readJson(devState);
   if (stateData[PluginNames.SOLUTION] && stateData[PluginNames.SOLUTION]["remoteTeamsAppId"]) {

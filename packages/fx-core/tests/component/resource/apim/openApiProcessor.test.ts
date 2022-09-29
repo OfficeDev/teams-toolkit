@@ -14,7 +14,7 @@ import {
 import { OpenApiSchemaVersion } from "../../../../src/component/resource/apim/constants";
 chai.use(chaiAsPromised);
 
-const testDataBaseFolder = "./tests/plugins/resource/apim/data/openApiProcessor";
+const testDataBaseFolder = "./tests/component/resource/apim/data/openApiProcessor";
 describe("OpenApiProcessor", () => {
   describe("#loadOpenApiDocument()", () => {
     const testInput: {

@@ -87,7 +87,6 @@ import { bicepUtils, createContextV3, generateConfigBiceps } from "../../compone
 import { assign, cloneDeep } from "lodash";
 import { IdentityResource } from "../../component/resource/identity";
 import { AzureFunctionResource } from "../../component/resource/azureAppService/azureFunction";
-import { APIMResource } from "../../component/resource/apim";
 import { KeyVaultResource } from "../../component/resource/keyVault";
 import { AzureSqlResource } from "../../component/resource/azureSql/azureSql";
 import { AadApp } from "../../component/resource/aadApp/aadApp";
@@ -99,6 +98,7 @@ import {
   hasBot as hasBotV3,
   hasSPFxTab,
 } from "../../common/projectSettingsHelperV3";
+import { APIMResource } from "../../component/resource/apim/apim";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";

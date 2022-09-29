@@ -13,13 +13,11 @@ import { SolutionError, SolutionSource } from "./constants";
 export const ResourcePlugins = {
   FrontendPlugin: "FrontendPlugin",
   LocalDebugPlugin: "LocalDebugPlugin",
-  ApimPlugin: "ApimPlugin",
 };
 
 export const ResourcePluginsV2 = {
   FrontendPlugin: "FrontendPluginV2",
   LocalDebugPlugin: "LocalDebugPluginV2",
-  ApimPlugin: "ApimPluginV2",
 };
 
 /**

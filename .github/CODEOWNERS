@@ -50,6 +50,9 @@
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms @xzf0587 @hund030
 /packages/fx-core/src/core/middleware/projectMigrator.ts @dooriya @qinezh @a1exwang @blackchoey @wenytang-ms
 
+/packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
+/packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
+
 /packages/fx-core/src/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
 /packages/fx-core/tests/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
 
@@ -59,9 +62,6 @@
 
 /packages/fx-core/src/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/component/resource/aadApp @KennethBWSong @adashen @SLdragon
-
-/packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
-/packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
 
 /packages/fx-core/src/component/resource/appManifest @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
 /packages/fx-core/tests/component/resource/appManifest @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
@@ -131,8 +131,6 @@
 
 /Localize @HuihuiWu-Microsoft @tecton
 
-/packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
-/packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/templates/bicep @jayzhang @xzf0587 @hund030 @LongOddCode
 
 /packages/fx-core/src/component/feature/apiconnector @xzf0587 @wenytang-ms @blackchoey
@@ -141,3 +139,6 @@
 /packages/sdk-react @tecton @yiqing-zhao
 
 /packages/fx-core/src/component/debugHandler @swatDong @XiaofuHuang @kuojianlu @kimizhu
+
+/packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
+/packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu

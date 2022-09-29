@@ -50,7 +50,7 @@ import "./feature/spfx";
 import "./feature/sql";
 import "./feature/sso";
 import "./feature/tab";
-import "./resource/apim";
+import "./resource/apim/apim";
 import { AppManifest } from "./resource/appManifest/appManifest";
 import "./resource/azureAppService/azureFunction";
 import "./resource/azureAppService/azureWebApp";

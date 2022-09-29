@@ -3,9 +3,9 @@ import { ResourcePlugins } from "../src/plugins/solution/fx-solution/ResourcePlu
 import { Plugin } from "@microsoft/teamsfx-api";
 import "../src/plugins/resource/frontend";
 import "../src/plugins/resource/localdebug";
-import "../src/plugins/resource/apim";
-import { AadApp } from "../src/component/resource/aadApp/aadApp";
+import "../src/component/resource/aadApp/aadApp";
 import { ComponentNames } from "../src/component/constants";
+import { AadApp } from "../src/component/resource/aadApp/aadApp";
 export class PluginId {
   static readonly Aad = "fx-resource-aad-app-for-teams";
   static readonly FrontendHosting = "fx-resource-frontend-hosting";
@@ -23,8 +23,6 @@ export const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
 
 export const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin) as Plugin;
 export const appStudioPlugin = Container.get<Plugin>(ComponentNames.AppManifest) as Plugin;
-export const apimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin) as Plugin;
-
 export class TestFilePath {
   static readonly armTemplateBaseFolder = "./templates/azure";
   static readonly configFolder = "./.fx/configs";

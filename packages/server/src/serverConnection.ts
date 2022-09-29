@@ -190,7 +190,11 @@ export default class ServerConnection implements IServerConnection {
       func,
       inputs
     );
-    return standardizeResult(res);
+    return standardizeResult(
+      res.map((_) => {
+        return Void;
+      })
+    );
   }
 
   public async customizeLocalFuncRequest(

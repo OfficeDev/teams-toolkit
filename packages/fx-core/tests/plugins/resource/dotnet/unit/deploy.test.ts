@@ -13,7 +13,7 @@ import * as projectSettingsHelper from "../../../../../../fx-core/src/common/pro
 import { TestHelper } from "../helper";
 import { DotnetConfigInfo as ConfigInfo } from "../../../../../src/plugins/resource/frontend/dotnet/constants";
 import { AzureClientFactory } from "../../../../../src/plugins/resource/frontend/dotnet/utils/azure-client";
-import * as dirWalk from "../../../../../src/plugins/resource/function/utils/dir-walk";
+import * as dirWalk from "../../../../../src/component/utils/fileOperation";
 import axios from "axios";
 import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
 
@@ -38,7 +38,7 @@ describe("WebappPlugin", () => {
       sinon.stub(fs, "readFile").resolves("" as any);
       sinon.stub(AzureClientFactory, "getWebSiteManagementClient").returns({
         webApps: {
-          listPublishingCredentials: () => TestHelper.publishingProfile,
+          beginListPublishingCredentialsAndWait: () => TestHelper.publishingProfile,
         },
       } as any);
       sinon.stub(axios, "post").resolves({ status: 200 } as any);

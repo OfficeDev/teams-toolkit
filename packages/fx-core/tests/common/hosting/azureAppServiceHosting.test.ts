@@ -11,9 +11,8 @@ import * as path from "path";
 import { Platform, TokenProvider } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import * as lib from "../../../src/common/azure-hosting/utils";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { TokenResponse } from "adal-node";
 import * as appService from "@azure/arm-appservice";
+import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
 
 describe("azure app service hosting", () => {
   const context: BicepContext = {
@@ -30,14 +29,14 @@ describe("azure app service hosting", () => {
   };
   const pluginId = ResourcePlugins.Bot;
 
-  class FakeTokenCredentials extends TokenCredentialsBase {
-    public async getToken(): Promise<TokenResponse> {
+  class MyTokenCredential implements TokenCredential {
+    async getToken(
+      scopes: string | string[],
+      options?: GetTokenOptions | undefined
+    ): Promise<AccessToken | null> {
       return {
-        tokenType: "Bearer",
-        expiresIn: Date.now(),
-        expiresOn: new Date(),
-        resource: "anything",
-        accessToken: "anything",
+        token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
+        expiresOnTimestamp: 12345,
       };
     }
   }
@@ -119,7 +118,7 @@ describe("azure app service hosting", () => {
     it("deploy success", async () => {
       const hosting = AzureHostingFactory.createHosting(ServiceType.AppService);
       const tokenProvider = {} as TokenProvider;
-      const fake = new FakeTokenCredentials("x", "y");
+      const fake = new MyTokenCredential();
       const client = new appService.WebSiteManagementClient(fake, "z");
 
       sinon.stub(lib, "azureWebSiteDeploy").resolves(client);

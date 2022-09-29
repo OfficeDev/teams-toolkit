@@ -3,7 +3,6 @@ import { Icon, Stack, Image, FontIcon } from "@fluentui/react";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import "./SampleGallery.scss";
 import { Commands } from "./Commands";
-import FAQPlus from "../../img/webview/sample/faq-plus.gif";
 import InMeetingApp from "../../img/webview/sample/in-meeting-app.png";
 import ShareNow from "../../img/webview/sample/share-now.gif";
 import ToDoList from "../../img/webview/sample/to-do-list.gif";
@@ -37,7 +36,6 @@ const imageMapping: { [p: string]: any } = {
   "todo-list-SPFx": ToDoListSharepoint,
   "share-now": ShareNow,
   "hello-world-in-meeting": InMeetingApp,
-  "faq-plus": FAQPlus,
   "todo-list-with-Azure-backend-M365": ToDoListM365,
   "NPM-search-connector-M365": NpmSearchConnectorM365,
   "hello-world-tab": HelloWorldTab,

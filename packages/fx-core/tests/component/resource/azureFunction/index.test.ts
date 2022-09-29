@@ -24,8 +24,16 @@ import * as hostingUtils from "../../../../src/common/azure-hosting/utils";
 import { AzureOperations } from "../../../../src/common/azure-hosting/azureOps";
 import * as utils from "../../../../src/component/resource/azureAppService/common";
 import { APIMOutputs, ComponentNames, Scenarios } from "../../../../src/component/constants";
+import {
+  WebAppsListApplicationSettingsOptionalParams,
+  WebAppsListApplicationSettingsResponse,
+  WebAppsListByResourceGroupOptionalParams,
+  WebSiteManagementClient,
+} from "@azure/arm-appservice";
+import * as appService from "@azure/arm-appservice";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
 import { PreconditionError } from "../../../../src/component/error";
+import { MyTokenCredential } from "../../../plugins/solution/util";
 
 chai.use(chaiAsPromised);
 
@@ -92,18 +100,44 @@ describe("Azure-Function Component", () => {
     });
     context.tokenProvider = {
       azureAccountProvider: {
-        getAccountCredentialAsync: async () => ({} as any),
+        getIdentityCredentialAsync: async () => new MyTokenCredential(),
       } as any,
     } as any;
-    sandbox.stub(AzureClientFactory, "getWebSiteManagementClient").returns({
-      webApps: {
-        listApplicationSettings: (rgName: string, siteName: string) => ({
-          properties: [{ name: "", value: "" }],
-        }),
-        listByResourceGroup: (rgName: string) => [{ name: "siteName" }],
-        update: (rgName: string, siteName: string, site: any) => ({}),
-      } as any,
-    } as any);
+    const webApps = {
+      listApplicationSettings: async function (
+        resourceGroupName: string,
+        name: string,
+        options?: WebAppsListApplicationSettingsOptionalParams
+      ): Promise<WebAppsListApplicationSettingsResponse> {
+        return {
+          properties: { name: "", value: "" },
+        };
+      },
+      listByResourceGroup: function (
+        resourceGroupName: string,
+        options?: WebAppsListByResourceGroupOptionalParams
+      ) {
+        return {
+          next() {
+            throw new Error("Function not implemented.");
+          },
+          [Symbol.asyncIterator]() {
+            throw new Error("Function not implemented.");
+          },
+          byPage: () => {
+            return generator() as any;
+          },
+        };
+
+        function* generator() {
+          yield [{ name: "siteName" }];
+        }
+      },
+      update: async function (rgName: string, siteName: string, site: any) {},
+    };
+    const mockWebSiteManagementClient = new WebSiteManagementClient(new MyTokenCredential(), "sub");
+    mockWebSiteManagementClient.webApps = webApps as any;
+    sandbox.stub(appService, "WebSiteManagementClient").returns(mockWebSiteManagementClient);
     const configureAction = await component.configure(context as ResourceContextV3, inputs);
     chai.assert.isTrue(configureAction.isOk());
   });

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { TokenCredential } from "@azure/core-auth";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
   AzureAccountProvider,
   AzureSolutionSettings,
@@ -58,6 +57,7 @@ import {
 } from "../../src/plugins/solution/fx-solution/constants";
 import { TeamsAppSolutionNameV2 } from "../../src/plugins/solution/fx-solution/v2/constants";
 import sinon from "sinon";
+import { MyTokenCredential } from "../plugins/solution/util";
 
 function solutionSettings(): AzureSolutionSettings {
   return {
@@ -211,12 +211,8 @@ export function randomAppName() {
 }
 
 export class MockAzureAccountProvider implements AzureAccountProvider {
-  getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
-    throw new Error("getAccountCredentialAsync Method not implemented.");
-  }
-
-  getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
-    throw new Error("getIdentityCredentialAsync Method not implemented.");
+  async getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
+    return new MyTokenCredential();
   }
 
   signout(): Promise<boolean> {
@@ -238,8 +234,10 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
     throw new Error("Method not implemented.");
   }
 
-  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    throw new Error("Method not implemented.");
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    return {
+      unique_name: "test",
+    };
   }
 
   listSubscriptions(): Promise<SubscriptionInfo[]> {

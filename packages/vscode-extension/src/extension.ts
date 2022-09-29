@@ -848,13 +848,6 @@ async function runBackgroundAsyncTasks(
       TreatmentVariables.EmbeddedSurvey,
       true
     )) as boolean | undefined;
-  TreatmentVariableValue.useFolderSelection = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.UseFolderSelection,
-      true
-    )) as boolean | undefined;
   if (!TreatmentVariableValue.isEmbeddedSurvey) {
     const survey = ExtensionSurvey.getInstance();
     survey.activate();

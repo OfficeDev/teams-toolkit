@@ -40,7 +40,3 @@ export function isCLIDotNetEnabled(): boolean {
 export function isSPFxMultiTabEnabled(): boolean {
   return true;
 }
-
-export function isLocalDebugTransparencyEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.LocalDebugTransparency, false);
-}

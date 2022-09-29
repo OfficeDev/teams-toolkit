@@ -13,14 +13,10 @@ import {
 } from "../src/utils/login";
 import { assert } from "chai";
 import { TokenCredential } from "@azure/core-auth";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { ok, Result } from "neverthrow";
 import { FxError } from "../src/error";
 
 class TestAzureAccountProvider implements AzureAccountProvider {
-  getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
-    throw new Error("getAccountCredentialAsync Method not implemented.");
-  }
   getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
     throw new Error("getIdentityCredentialAsync Method not implemented.");
   }

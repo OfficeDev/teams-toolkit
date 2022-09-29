@@ -43,7 +43,11 @@ import fs from "fs-extra";
 import path from "path";
 import os from "os";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
-import { loadProjectSettings } from "./projectSettingsLoader";
+import {
+  getProjectSettingsPath,
+  loadProjectSettings,
+  loadProjectSettingsByProjectPath,
+} from "./projectSettingsLoader";
 import {
   BotOptionItem,
   HostTypeOptionAzure,
@@ -90,6 +94,7 @@ import { AadApp } from "../../component/resource/aadApp/aadApp";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
 import {
   hasApi,
+  hasAzureResourceV3,
   hasAzureTab,
   hasBot as hasBotV3,
   hasSPFxTab,
@@ -312,14 +317,9 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     await updateConfig(ctx);
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnvStart);
-    await migrateMultiEnv(projectPath, TOOLS.logProvider);
+    const projectSettings = await migrateMultiEnv(projectPath, TOOLS.logProvider);
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnv);
-
-    const loadRes = await loadProjectSettings(inputs);
-    if (loadRes.isErr()) {
-      throw ProjectSettingError();
-    }
-    const projectSettings = loadRes.value;
+    ctx.projectSettings = projectSettings;
     if (!isSPFxProject(projectSettings)) {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArmStart);
       await migrateArm(ctx);
@@ -585,8 +585,20 @@ async function copyManifest(projectPath: string, fx: string, target: string) {
     }
   }
 }
-
-async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<void> {
+async function migrateProjectSettings(projectPath: string): Promise<ProjectSettingsV3> {
+  const loadRes = await loadProjectSettingsByProjectPath(projectPath, false);
+  if (loadRes.isErr()) {
+    throw ProjectSettingError();
+  }
+  const projectSettings = loadRes.value as ProjectSettingsV3;
+  if (hasAzureResourceV3(projectSettings, true)) {
+    if (!getComponent(projectSettings, ComponentNames.Identity)) {
+      projectSettings.components.push({ name: ComponentNames.Identity });
+    }
+  }
+  return projectSettings;
+}
+async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<ProjectSettingsV3> {
   const { fx, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   const {
     hasFrontend,
@@ -602,14 +614,15 @@ async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<v
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
   await localSettingsProvider.save(localSettingsProvider.init(hasFrontend, hasBackend, hasBot));
 
-  //projectSettings.json
-  const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
+  const projectSettings = await migrateProjectSettings(projectPath);
+
+  const projectSettingsPath = getProjectSettingsPath(projectPath);
   const configDevJsonFilePath = path.join(fxConfig, "config.dev.json");
   const envDefaultFilePath = path.join(fx, "env.default.json");
-  await fs.copy(path.join(fx, "settings.json"), projectSettings);
   await ensureProjectSettings(projectSettings, envDefaultFilePath);
+  await fs.writeFile(projectSettingsPath, JSON.stringify(projectSettings, null, 4));
 
-  const appName = await getAppName(projectSettings);
+  const appName = projectSettings.appName;
   //config.dev.json
   const configDev = getConfigDevJson(appName);
 
@@ -681,6 +694,7 @@ async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<v
     await fs.copy(path.join(fx, "default.userdata"), devUserData);
   }
   await removeExpiredFields(devState, devUserData);
+  return projectSettings;
 }
 
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
@@ -856,10 +870,9 @@ async function removeOldProjectFiles(projectPath: string): Promise<void> {
 }
 
 async function ensureProjectSettings(
-  projectSettingPath: string,
+  settings: ProjectSettingsV3,
   envDefaultPath: string
 ): Promise<void> {
-  const settings: ProjectSettings = await fs.readJson(projectSettingPath);
   if (!settings.programmingLanguage || !settings.defaultFunctionName) {
     const envDefault = await fs.readJson(envDefaultPath);
     settings.programmingLanguage =
@@ -868,14 +881,6 @@ async function ensureProjectSettings(
       settings.defaultFunctionName || envDefault[PluginNames.FUNC]?.[defaultFunctionName];
   }
   settings.version = "2.0.0";
-  await fs.writeFile(projectSettingPath, JSON.stringify(settings, null, 4), {
-    encoding: "UTF-8",
-  });
-}
-
-async function getAppName(projectSettingPath: string): Promise<string> {
-  const settings: ProjectSettings = await fs.readJson(projectSettingPath);
-  return settings.appName;
 }
 
 async function cleanup(projectPath: string, backupFolder: string | undefined): Promise<void> {
@@ -1172,19 +1177,17 @@ export async function generateBicepsV3(
 }
 
 async function generateArmTemplatesFiles(ctx: CoreHookContext) {
-  const minorCtx: CoreHookContext = { arguments: ctx.arguments };
   const inputs = ctx.arguments[ctx.arguments.length - 1] as InputsWithProjectPath;
   const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
   const fxConfig = path.join(fx, InputConfigsFolderName);
   const templateAzure = path.join(inputs.projectPath as string, "templates", "azure");
   await fs.ensureDir(fxConfig);
   await fs.ensureDir(templateAzure);
-  // load old version of settings.json
-  const loadRes = await loadProjectSettings(inputs);
-  if (loadRes.isErr()) {
-    throw ProjectSettingError();
+
+  let projectSettings = ctx.projectSettings as ProjectSettingsV3;
+  if (!projectSettings) {
+    projectSettings = await migrateProjectSettings(inputs.projectPath);
   }
-  const projectSettings = loadRes.value as ProjectSettingsV3;
   const genRes = await generateBicepsV3(projectSettings, inputs);
   if (genRes.isErr()) throw genRes.error;
   const parameterEnvFileName = parameterFileNameTemplate.replace(

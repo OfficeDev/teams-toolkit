@@ -937,6 +937,7 @@ export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWr
 export const GraphScopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
 export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];
 export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`];
+export const AzureScopes = ["https://management.core.windows.net/user_impersonation"];
 
 export async function getSPFxTenant(graphToken: string): Promise<string> {
   const GRAPH_TENANT_ENDPT = "https://graph.microsoft.com/v1.0/sites/root?$select=webUrl";
@@ -964,6 +965,12 @@ export async function getSPFxToken(
     spoToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
   }
   return spoToken;
+}
+
+export function ConvertTokenToJson(token: string): Record<string, unknown> {
+  const array = token.split(".");
+  const buff = Buffer.from(array[1], "base64");
+  return JSON.parse(buff.toString("utf8"));
 }
 
 export function getFixedCommonProjectSettings(rootPath: string | undefined) {

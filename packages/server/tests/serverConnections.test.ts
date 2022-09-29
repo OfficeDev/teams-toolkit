@@ -110,21 +110,22 @@ describe("serverConnections", () => {
     });
   });
 
-  it("deployTeamsAppManifestRequest", () => {
+  it("deployTeamsAppManifestRequest should return {}", async () => {
     const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.returns("test");
+    const fake = sandbox.fake.resolves(ok("test"));
     sandbox.replace(connection["core"], "executeUserTask", fake);
     const inputs = {
       platform: "vs",
     };
     const token = {};
-    const res = connection.deployTeamsAppManifestRequest(
+    const res = await connection.deployTeamsAppManifestRequest(
       inputs as Inputs,
       token as CancellationToken
     );
-    res.then((data) => {
-      assert.equal(data, ok("test"));
-    });
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(res.value, {});
+    }
   });
 
   it("buildArtifactsRequest", () => {

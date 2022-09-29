@@ -3,7 +3,6 @@ import { ResourcePlugins } from "../src/plugins/solution/fx-solution/ResourcePlu
 import { Plugin } from "@microsoft/teamsfx-api";
 import "../src/plugins/resource/frontend";
 import "../src/plugins/resource/localdebug";
-import "../src/plugins/resource/function";
 import "../src/component/resource/aadApp/aadApp";
 import { ComponentNames } from "../src/component/constants";
 import { AadApp } from "../src/component/resource/aadApp/aadApp";

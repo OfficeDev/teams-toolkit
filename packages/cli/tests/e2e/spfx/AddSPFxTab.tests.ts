@@ -19,6 +19,7 @@ import {
 } from "../commonUtils";
 import { AppStudioValidator, SharepointValidator } from "../../commonlib";
 import { environmentManager } from "@microsoft/teamsfx-core";
+import { it } from "../../commonlib/it";
 
 describe("Start a new project", function () {
   let appId: string;
@@ -31,89 +32,97 @@ describe("Start a new project", function () {
     projectPath = path.resolve(testFolder, appName);
   });
 
-  it("Add SPFx tab to existing project, provision and run SPFx project with React framework", async function () {
-    let command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type react --spfx-webpart-name helloworld --programming-language typescript`;
-    let result = await execAsync(command, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
+  it(
+    "Add SPFx tab to existing project, provision and run SPFx project with React framework",
+    { testPlanCaseId: 15675245 },
+    async function () {
+      let command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type react --spfx-webpart-name helloworld --programming-language typescript`;
+      let result = await execAsync(command, {
+        cwd: testFolder,
+        env: process.env,
+        timeout: 0,
+      });
 
-    command = `teamsfx add spfx-tab --spfx-webpart-name secondwebpart`;
-    result = await execAsync(command, {
-      cwd: path.join(testFolder, appName),
-      env: process.env,
-      timeout: 0,
-    });
-    expect(result.stderr).to.eq("");
-    const config = await fs.readJson(`${projectPath}/SPFx/config/config.json`);
-    expect(config["bundles"]["helloworld-web-part"]).exist;
-    expect(config["bundles"]["secondwebpart-web-part"]).exist;
-    console.log(
-      `[Successfully] add feature, stdout: '${result.stdout}', stderr: '${result.stderr}'`
-    );
-
-    // validation succeed without provision
-    command = "teamsfx validate";
-    result = await execAsync(command, {
-      cwd: path.join(testFolder, appName),
-      env: process.env,
-      timeout: 0,
-    });
-    expect(result.stderr).to.eq("");
-
-    // validation local env succeed without local debug
-    command = `teamsfx validate --env ${environmentManager.getLocalEnvName()}`;
-    result = await execAsync(command, {
-      cwd: path.join(testFolder, appName),
-      env: process.env,
-      timeout: 0,
-    });
-    expect(result.stderr).to.eq("");
-
-    // provision
-    result = await execAsyncWithRetry(`teamsfx provision`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] provision, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
-    expect(result.stderr).to.eq("");
-
-    {
-      // Get context
-      const context = await readContextMultiEnv(
-        projectPath,
-        environmentManager.getDefaultEnvName()
+      command = `teamsfx add spfx-tab --spfx-webpart-name secondwebpart`;
+      result = await execAsync(command, {
+        cwd: path.join(testFolder, appName),
+        env: process.env,
+        timeout: 0,
+      });
+      expect(result.stderr).to.eq("");
+      const config = await fs.readJson(`${projectPath}/SPFx/config/config.json`);
+      expect(config["bundles"]["helloworld-web-part"]).exist;
+      expect(config["bundles"]["secondwebpart-web-part"]).exist;
+      console.log(
+        `[Successfully] add feature, stdout: '${result.stdout}', stderr: '${result.stderr}'`
       );
 
-      // Only check Teams App existence
-      const appStudio = AppStudioValidator.init(context);
-      AppStudioValidator.validateTeamsAppExist(appStudio);
+      // validation succeed without provision
+      command = "teamsfx validate";
+      result = await execAsync(command, {
+        cwd: path.join(testFolder, appName),
+        env: process.env,
+        timeout: 0,
+      });
+      expect(result.stderr).to.eq("");
+
+      // validation local env succeed without local debug
+      command = `teamsfx validate --env ${environmentManager.getLocalEnvName()}`;
+      result = await execAsync(command, {
+        cwd: path.join(testFolder, appName),
+        env: process.env,
+        timeout: 0,
+      });
+      expect(result.stderr).to.eq("");
+
+      // provision
+      result = await execAsyncWithRetry(`teamsfx provision`, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      });
+      console.log(
+        `[Successfully] provision, stdout: '${result.stdout}', stderr: '${result.stderr}'`
+      );
+      expect(result.stderr).to.eq("");
+
+      {
+        // Get context
+        const context = await readContextMultiEnv(
+          projectPath,
+          environmentManager.getDefaultEnvName()
+        );
+
+        // Only check Teams App existence
+        const appStudio = AppStudioValidator.init(context);
+        AppStudioValidator.validateTeamsAppExist(appStudio);
+      }
+
+      // deploy
+      result = await execAsyncWithRetry(`teamsfx deploy`, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      });
+      console.log(`[Successfully] deploy, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
+      expect(result.stderr).to.eq("");
+
+      {
+        // Validate sharepoint package
+        const solutionConfig = await fs.readJson(
+          `${projectPath}/SPFx/config/package-solution.json`
+        );
+        const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
+        appId = solutionConfig["solution"]["id"];
+        expect(appId).to.not.be.empty;
+        expect(await fs.pathExists(sharepointPackage)).to.be.true;
+
+        // Check if package exsist in App Catalog
+        SharepointValidator.init();
+        SharepointValidator.validateDeploy(appId);
+      }
     }
-
-    // deploy
-    result = await execAsyncWithRetry(`teamsfx deploy`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] deploy, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
-    expect(result.stderr).to.eq("");
-
-    {
-      // Validate sharepoint package
-      const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
-      const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
-      appId = solutionConfig["solution"]["id"];
-      expect(appId).to.not.be.empty;
-      expect(await fs.pathExists(sharepointPackage)).to.be.true;
-
-      // Check if package exsist in App Catalog
-      SharepointValidator.init();
-      SharepointValidator.validateDeploy(appId);
-    }
-  });
+  );
 
   afterEach(async () => {
     // clean up

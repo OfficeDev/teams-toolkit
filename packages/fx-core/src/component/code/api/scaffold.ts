@@ -1,21 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as fs from "fs-extra";
-import * as path from "path";
-
-import {
-  CommonConstants,
-  FunctionPluginPathInfo as PathInfo,
-  FunctionPluginInfo as PluginInfo,
-  RegularExpr,
-} from "../constants";
-import { FunctionLanguage } from "../enums";
-import { InfoMessages } from "../resources/message";
-import { LanguageStrategyFactory } from "../language-strategy";
-import { Logger } from "../utils/logger";
-import { ScaffoldSteps, StepGroup, step } from "../resources/steps";
-import { TemplateZipFallbackError, UnknownFallbackError, UnzipError } from "../resources/errors";
-import { TelemetryHelper } from "../utils/telemetry-helper";
+import path from "path";
+import { TemplateZipFallbackError, UnzipError } from "../error";
 import {
   genTemplateRenderReplaceFn,
   removeTemplateExtReplaceFn,
@@ -23,23 +10,31 @@ import {
   ScaffoldActionName,
   ScaffoldContext,
   scaffoldFromTemplates,
-} from "../../../../common/template-utils/templatesActions";
+} from "../../../common/template-utils/templatesActions";
+import { ProgrammingLanguage } from "../../constants";
+import { invalidProjectSettings } from "../../error";
+import { ErrorMessage, LogMessages } from "../../messages";
+import { LogProvider } from "@microsoft/teamsfx-api";
+import { ApiConstants, ReplaceTemplateFileNamePlaceholder, TemplateGroup } from "../constants";
+import { LanguageStrategyFactory } from "./language-strategy";
 
 export type TemplateVariables = { [key: string]: string };
 
 export class FunctionScaffold {
-  public static convertTemplateLanguage(language: FunctionLanguage): string {
+  public static convertTemplateLanguage(language: ProgrammingLanguage): string {
     switch (language) {
-      case FunctionLanguage.JavaScript:
+      case ProgrammingLanguage.JS:
         return "js";
-      case FunctionLanguage.TypeScript:
+      case ProgrammingLanguage.TS:
         return "ts";
+      default:
+        throw new invalidProjectSettings(ErrorMessage.programmingLanguageInvalid);
     }
   }
 
   public static async doesFunctionPathExist(
     componentPath: string,
-    language: FunctionLanguage,
+    language: ProgrammingLanguage,
     entryName: string
   ): Promise<boolean> {
     const entryFileOrFolderName: string =
@@ -50,10 +45,11 @@ export class FunctionScaffold {
   private static async scaffoldFromZipPackage(
     componentPath: string,
     group: string,
-    language: FunctionLanguage,
+    language: ProgrammingLanguage,
     scenario: string,
     variables: TemplateVariables,
-    nameReplaceFn?: (filePath: string, data: Buffer) => string
+    nameReplaceFn?: (filePath: string, data: Buffer) => string,
+    logger?: LogProvider
   ): Promise<void> {
     const _nameReplaceFn = (name: string, data: Buffer) => {
       name = nameReplaceFn ? nameReplaceFn(name, data) : name;
@@ -69,23 +65,22 @@ export class FunctionScaffold {
       fileDataReplaceFn: genTemplateRenderReplaceFn(variables),
       onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
         if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
-          Logger.info(InfoMessages.getTemplateFrom(context.zipUrl ?? CommonConstants.emptyString));
+          logger?.info(LogMessages.getTemplateFrom(context.zipUrl ?? ""));
         }
       },
       onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
-        Logger.info(error.toString());
+        logger?.info(error.toString());
         switch (action.name) {
           case ScaffoldActionName.FetchTemplatesUrlWithTag:
           case ScaffoldActionName.FetchTemplatesZipFromUrl:
-            TelemetryHelper.sendScaffoldFallbackEvent(error.message);
-            Logger.info(InfoMessages.getTemplateFromLocal);
+            logger?.info(LogMessages.getTemplateFromLocal);
             break;
           case ScaffoldActionName.FetchTemplateZipFromLocal:
-            throw new TemplateZipFallbackError();
+            throw new TemplateZipFallbackError("BE");
           case ScaffoldActionName.Unzip:
-            throw new UnzipError();
+            throw new UnzipError("BE");
           default:
-            throw new UnknownFallbackError();
+            throw new Error(error.message);
         }
       },
     });
@@ -93,29 +88,20 @@ export class FunctionScaffold {
 
   public static async scaffoldFunction(
     componentPath: string,
-    language: FunctionLanguage,
+    language: ProgrammingLanguage,
     trigger: string,
     entryName: string,
-    variables: TemplateVariables
+    variables: TemplateVariables,
+    logger?: LogProvider
   ): Promise<void> {
-    await step(
-      StepGroup.ScaffoldStepGroup,
-      ScaffoldSteps.ensureFunctionAppProject,
-      async () => await this.ensureFunctionAppProject(componentPath, language, variables)
-    );
-
-    await step(
-      StepGroup.ScaffoldStepGroup,
-      ScaffoldSteps.scaffoldFunction,
-      async () =>
-        await this.scaffoldFromZipPackage(
-          componentPath,
-          PluginInfo.templateTriggerGroupName,
-          language,
-          trigger,
-          variables,
-          (name: string) => name.replace(RegularExpr.replaceTemplateFileNamePlaceholder, entryName)
-        )
+    await this.ensureFunctionAppProject(componentPath, language, variables, logger);
+    await this.scaffoldFromZipPackage(
+      componentPath,
+      TemplateGroup.apiTriggers,
+      language,
+      trigger,
+      variables,
+      (name: string) => name.replace(ReplaceTemplateFileNamePlaceholder, entryName)
     );
   }
 
@@ -124,20 +110,21 @@ export class FunctionScaffold {
    */
   private static async ensureFunctionAppProject(
     componentPath: string,
-    language: FunctionLanguage,
-    variables: TemplateVariables
+    language: ProgrammingLanguage,
+    variables: TemplateVariables,
+    logger?: LogProvider
   ): Promise<void> {
     const exists = await fs.pathExists(componentPath);
     if (exists) {
-      Logger.info(InfoMessages.projectScaffoldAt(componentPath));
+      logger?.info(LogMessages.projectScaffoldAt(componentPath));
       return;
     }
 
     await this.scaffoldFromZipPackage(
       componentPath,
-      PluginInfo.templateBaseGroupName,
+      TemplateGroup.apiBase,
       language,
-      PluginInfo.templateBaseScenarioName,
+      ApiConstants.baseScenarioName,
       variables
     );
   }

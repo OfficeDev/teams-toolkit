@@ -43,7 +43,7 @@ import {
 } from "../../src/component/resource/spfx/utils/questions";
 import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
 import { ComponentNames } from "../../src/component/constants";
-import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";
+import { FunctionScaffold } from "../../src/component/code/api/scaffold";
 import { TeamsfxCore } from "../../src/component/core";
 import { Container } from "typedi";
 import { AzureStorageResource } from "../../src/component/resource/azureStorage";

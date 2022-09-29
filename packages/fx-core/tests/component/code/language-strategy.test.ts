@@ -3,15 +3,14 @@
 import "mocha";
 import * as chai from "chai";
 
-import { FunctionLanguage } from "../../../../../src/plugins/resource/function/enums";
-import { FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
-import { LanguageStrategyFactory } from "../../../../../src/plugins/resource/function/language-strategy";
+import { LanguageStrategyFactory } from "../../../src/component/code/api/language-strategy";
+import { ProgrammingLanguage } from "../../../src/component/constants";
 
-describe(FunctionPluginInfo.pluginName, () => {
+describe("Api function language strategy", () => {
   describe("Function Language Strategy Test", () => {
     it("Test get TypeScript language strategy", async () => {
       // Arrange
-      const language = FunctionLanguage.TypeScript;
+      const language = ProgrammingLanguage.TS;
 
       // Act
       const res = LanguageStrategyFactory.getStrategy(language);
@@ -22,7 +21,7 @@ describe(FunctionPluginInfo.pluginName, () => {
 
     it("Test get JavaScript language strategy", async () => {
       // Arrange
-      const language = FunctionLanguage.JavaScript;
+      const language = ProgrammingLanguage.JS;
 
       // Act
       const res = LanguageStrategyFactory.getStrategy(language);

@@ -13,7 +13,7 @@ import * as projectSettingsHelper from "../../../../../../fx-core/src/common/pro
 import { TestHelper } from "../helper";
 import { DotnetConfigInfo as ConfigInfo } from "../../../../../src/plugins/resource/frontend/dotnet/constants";
 import { AzureClientFactory } from "../../../../../src/plugins/resource/frontend/dotnet/utils/azure-client";
-import * as dirWalk from "../../../../../src/plugins/resource/function/utils/dir-walk";
+import * as dirWalk from "../../../../../src/component/utils/fileOperation";
 import axios from "axios";
 import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
 

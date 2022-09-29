@@ -8,12 +8,12 @@ import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import {
   DepsCheckerEvent,
   TelemetryMessurement,
-} from "../../../../../common/deps-checker/constant/telemetry";
+} from "../../../../common/deps-checker/constant/telemetry";
+import { DepsTelemetry } from "../../../../common/deps-checker/depsTelemetry";
+import { TelemetryKey } from "../enums";
 import { TelemetryHelper } from "../telemetry-helper";
-import { TelemetryKey } from "../../enums";
-import { DepsTelemetry } from "../../../../../common/deps-checker/depsTelemetry";
 
-export class FuncPluginTelemetry implements DepsTelemetry {
+class FuncPluginTelemetry implements DepsTelemetry {
   private readonly _source = "func-envchecker";
 
   private static getCommonProps(): { [key: string]: string } {

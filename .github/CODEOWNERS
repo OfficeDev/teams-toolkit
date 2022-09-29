@@ -78,9 +78,9 @@
 /packages/fx-core/tests/plugins/resource/frontend @hund030 @eriolchan @IvanJobs
 /packages/fx-core/tests/plugins/resource/dotnet @hund030 @eriolchan @IvanJobs
 
-/packages/fx-core/src/plugins/resource/function @eriolchan @hund030 @IvanJobs
-/packages/fx-core/tests/plugins/resource/function @eriolchan @hund030 @IvanJobs
-/packages/fx-core/src/plugins/resource/function/utils/depsChecker @a1exwang @kimizhu @qinezh
+/packages/fx-core/src/component/feature/api @eriolchan @hund030 @IvanJobs
+/packages/fx-core/src/component/code/api @eriolchan @hund030 @IvanJobs
+/packages/fx-core/src/component/code/api/depsChecker @a1exwang @kimizhu @qinezh
 
 /templates/tab @hund030 @eriolchan @IvanJobs
 /templates/function-base @hund030 @eriolchan @IvanJobs

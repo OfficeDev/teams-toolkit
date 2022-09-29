@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as path from "path";
-
-import { Commands, CommonConstants, FunctionPluginPathInfo } from "./constants";
-import { FunctionLanguage } from "./enums";
+import { PathConstants, ProgrammingLanguage } from "../../constants";
+import { invalidProjectSettings } from "../../error";
+import { ErrorMessage } from "../../messages";
+import { Commands } from "../constants";
 
 export interface FunctionLanguageStrategy {
   /* For scaffolding. */
@@ -26,17 +27,17 @@ const NodeJSCommonStrategy: FunctionLanguageStrategy = {
    * Its consistency can be guaranteed by `npm install`.
    */
   hasUpdatedContentFilter: (itemPath: string) =>
-    path.basename(itemPath) !== FunctionPluginPathInfo.npmPackageFolderName,
+    path.basename(itemPath) !== PathConstants.npmPackageFolderName,
   buildCommands: [],
-  deployFolderRelativePath: CommonConstants.emptyString,
+  deployFolderRelativePath: "",
 };
 
 const JavaScriptLanguageStrategy: FunctionLanguageStrategy = {
   ...NodeJSCommonStrategy,
   buildCommands: [
     {
-      command: Commands.npmInstallProd,
-      relativePath: CommonConstants.emptyString,
+      command: Commands.NpmInstallProd,
+      relativePath: "",
     },
   ],
 };
@@ -45,35 +46,25 @@ const TypeScriptLanguageStrategy: FunctionLanguageStrategy = {
   ...NodeJSCommonStrategy,
   buildCommands: [
     {
-      command: Commands.npmInstall,
-      relativePath: CommonConstants.emptyString,
+      command: Commands.NpmInstall,
+      relativePath: "",
     },
     {
-      command: Commands.npmBuild,
-      relativePath: CommonConstants.emptyString,
+      command: Commands.NpmBuild,
+      relativePath: "",
     },
   ],
 };
 
-// const CSharpLanguageStrategy: FunctionLanguageStrategy = {
-//     getFunctionEntryFileOrFolderName: (entryName: string) => `${entryName}.cs`,
-//     skipFuncExtensionInstall: true,
-//     buildCommands: [{
-//         command: Commands.dotnetPublish,
-//         relativePath: CommonConstants.emptyString
-//     }],
-//     deployFolderRelativePath: path.join("bin", "Release", "netcoreapp3.1", "publish")
-// };
-
 export class LanguageStrategyFactory {
-  public static getStrategy(language: FunctionLanguage): FunctionLanguageStrategy {
+  public static getStrategy(language: ProgrammingLanguage): FunctionLanguageStrategy {
     switch (language) {
-      case FunctionLanguage.JavaScript:
+      case ProgrammingLanguage.JS:
         return JavaScriptLanguageStrategy;
-      case FunctionLanguage.TypeScript:
+      case ProgrammingLanguage.TS:
         return TypeScriptLanguageStrategy;
-      // case FunctionLanguage.CSharp:
-      //     return CSharpLanguageStrategy;
+      default:
+        throw new invalidProjectSettings(ErrorMessage.programmingLanguageInvalid);
     }
   }
 }

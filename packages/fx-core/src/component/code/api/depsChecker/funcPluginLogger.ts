@@ -2,11 +2,14 @@
 // Licensed under the MIT license.
 
 import * as os from "os";
-import { Logger } from "../logger";
-import { LogLevel } from "@microsoft/teamsfx-api";
-import { DepsLogger } from "../../../../../common/deps-checker/depsLogger";
+import { LogLevel, LogProvider } from "@microsoft/teamsfx-api";
+import { DepsLogger } from "../../../../common/deps-checker/depsLogger";
 
-class FuncPluginLogger implements DepsLogger {
+export class FuncPluginLogger implements DepsLogger {
+  private logger: LogProvider;
+  constructor(logger: LogProvider) {
+    this.logger = logger;
+  }
   private detailLogLines: string[] = [];
   public debug(message: string): Promise<boolean> {
     this.addToCache(LogLevel.Debug, message);
@@ -15,24 +18,24 @@ class FuncPluginLogger implements DepsLogger {
 
   public info(message: string): Promise<boolean> {
     this.addToCache(LogLevel.Info, message);
-    Logger.info(message);
+    this.logger.info(message);
     return Promise.resolve(true);
   }
 
   public warning(message: string): Promise<boolean> {
     this.addToCache(LogLevel.Warning, message);
-    Logger.warning(message);
+    this.logger.warning(message);
     return Promise.resolve(true);
   }
 
   public async error(message: string): Promise<boolean> {
     this.addToCache(LogLevel.Error, message);
-    Logger.error(message);
+    this.logger.error(message);
     return true;
   }
 
   public async printDetailLog(): Promise<void> {
-    Logger.error(this.detailLogLines.join(os.EOL));
+    this.logger.error(this.detailLogLines.join(os.EOL));
   }
 
   public cleanup(): void {
@@ -49,9 +52,7 @@ class FuncPluginLogger implements DepsLogger {
   }
 
   public async appendLine(message: string): Promise<boolean> {
-    Logger.info(message);
+    this.logger.info(message);
     return true;
   }
 }
-
-export const funcDepsLogger = new FuncPluginLogger();

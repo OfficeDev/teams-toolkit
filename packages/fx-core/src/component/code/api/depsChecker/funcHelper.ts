@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 import { Inputs, UserError } from "@microsoft/teamsfx-api";
-import { DepsCheckerError } from "../../../../../common/deps-checker/depsError";
-import { defaultHelpLink } from "../../../../../common/deps-checker/constant/helpLink";
-import { Messages } from "../../../../../common/deps-checker/constant/message";
-import { installExtension } from "../../../../../common/deps-checker/util/extensionInstaller";
-import { DepsLogger } from "../../../../../common/deps-checker/depsLogger";
+import { DepsCheckerError } from "../../../../common/deps-checker/depsError";
+import { defaultHelpLink } from "../../../../common/deps-checker/constant/helpLink";
+import { Messages } from "../../../../common/deps-checker/constant/message";
+import { installExtension } from "../../../../common/deps-checker/util/extensionInstaller";
+import { DepsLogger } from "../../../../common/deps-checker/depsLogger";
 
 export class FuncHelper {
   private readonly dotnetSettingKey = "function-dotnet-checker-enabled";

@@ -3,7 +3,6 @@ import { ResourcePlugins } from "../src/plugins/solution/fx-solution/ResourcePlu
 import { Plugin } from "@microsoft/teamsfx-api";
 import "../src/plugins/resource/frontend";
 import "../src/plugins/resource/localdebug";
-import "../src/plugins/resource/function";
 import "../src/plugins/resource/apim";
 import { AadApp } from "../src/component/resource/aadApp/aadApp";
 import { ComponentNames } from "../src/component/constants";
@@ -24,7 +23,6 @@ export const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
 
 export const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin) as Plugin;
 export const appStudioPlugin = Container.get<Plugin>(ComponentNames.AppManifest) as Plugin;
-export const functionPlugin = Container.get<Plugin>(ResourcePlugins.FunctionPlugin) as Plugin;
 export const apimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin) as Plugin;
 
 export class TestFilePath {

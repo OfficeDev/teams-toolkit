@@ -354,6 +354,8 @@
     "teamstoolkit.survey.takeSurvey.title": "Take Survey",
     "teamstoolkit.tutorials.addSso.detail": "Develop a single sign-on feature for the Teams Launch pages and bot capability",
     "teamstoolkit.tutorials.addSso.label": "Add Single Sign-On",
+    "teamstoolkit.tutorials.cardActionResponse.label": "Respond to card actions in Teams",
+    "teamstoolkit.tutorials.cardActionResponse.detail": "Automate workflows for common business processes with Adaptive Cards in conversation",
     "teamstoolkit.tutorials.commandAndResponse.detail": "Automate repetitive tasks with a simple command and response in conversation",
     "teamstoolkit.tutorials.commandAndResponse.label": "Build command and response",
     "teamstoolkit.tutorials.connectApi.detail": "Connect to an API with authentication support using TeamsFx SDK",

@@ -3043,6 +3043,12 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         data: "https://aka.ms/teamsfx-create-command",
       },
       {
+        id: "cardActionResponse",
+        label: localize("teamstoolkit.tutorials.cardActionResponse.label"),
+        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
+        data: "https://aka.ms/teamsfx-card-action-response",
+      },
+      {
         id: "addSso",
         label: `${localize("teamstoolkit.tutorials.addSso.label")}`,
         detail: localize("teamstoolkit.tutorials.addSso.detail"),

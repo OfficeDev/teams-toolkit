@@ -24,12 +24,13 @@ export class AzureWebAppResource extends AzureAppService {
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     let resourceIdKey = this.outputs.resourceId.key;
-    if (inputs.componentId === ComponentNames.TeamsBot) {
-      const state = context.envInfo.state[inputs.componentId];
-      if (!state[resourceIdKey]) {
-        if (state["botWebAppResourceId"]) {
-          resourceIdKey = "botWebAppResourceId";
-        }
+    const state = context.envInfo.state[inputs.componentId];
+    if (!state[resourceIdKey]) {
+      if (state["botWebAppResourceId"]) {
+        resourceIdKey = "botWebAppResourceId";
+      }
+      if (state["webAppResourceId"]) {
+        resourceIdKey = "webAppResourceId";
       }
     }
     return await super.deploy(context, inputs, false, resourceIdKey);

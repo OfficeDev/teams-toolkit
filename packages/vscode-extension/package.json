@@ -983,8 +983,7 @@
                       {
                         "const": "http://127.0.0.1:4040/api/tunnels"
                       },
-                      {
-                      }
+                      {}
                     ]
                   }
                 },
@@ -1439,6 +1438,7 @@
     "winston": "^3.3.3"
   },
   "dependencies": {
+    "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/identity": "^1.2.1",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/teamsfx-api": "^0.20.6",

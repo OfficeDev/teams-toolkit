@@ -71,11 +71,7 @@ import { checkWetherProvisionSucceeded } from "../plugins/solution/fx-solution/v
 import { NoCapabilityFoundError } from "../core/error";
 import { ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
-import {
-  isCLIDotNetEnabled,
-  isSPFxMultiTabEnabled,
-  isWorkflowBotEnabled,
-} from "../common/featureFlags";
+import { isCLIDotNetEnabled, isSPFxMultiTabEnabled } from "../common/featureFlags";
 import { buildQuestionNode } from "./resource/azureSql/questions";
 import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
@@ -234,11 +230,7 @@ export async function getQuestionsForAddFeatureV3(
   if (inputs.platform === Platform.CLI_HELP) {
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
-
-    if (isWorkflowBotEnabled()) {
-      options.push(WorkflowOptionItem);
-    }
-
+    options.push(WorkflowOptionItem);
     options.push(BotNewUIOptionItem);
     options.push(TabNewUIOptionItem, TabNonSsoItem);
     options.push(MessageExtensionNewUIItem);
@@ -278,9 +270,7 @@ export async function getQuestionsForAddFeatureV3(
     if (!botExceedLimit && !meExceedLimit) {
       options.push(NotificationOptionItem);
       options.push(CommandAndResponseOptionItem);
-      if (isWorkflowBotEnabled()) {
-        options.push(WorkflowOptionItem);
-      }
+      options.push(WorkflowOptionItem);
     }
     if (canAddTab) {
       if (!hasTab(projectSettingsV3)) {

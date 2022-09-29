@@ -40,7 +40,3 @@ export function isCLIDotNetEnabled(): boolean {
 export function isSPFxMultiTabEnabled(): boolean {
   return true;
 }
-
-export function isWorkflowBotEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.WorkflowBotEnabled, false);
-}

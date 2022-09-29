@@ -15,8 +15,8 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { SolutionTelemetryComponentName, SolutionTelemetryProperty } from "../constants";
+import { TokenCredential } from "@azure/core-auth";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { ComponentNames, PathConstants } from "../../../../component/constants";
 import { updateAzureParameters } from "../arm";
@@ -62,7 +62,7 @@ export function getPluginContextConstructor(
 }
 
 export async function getSubsriptionDisplayName(
-  azureToken: TokenCredentialsBase,
+  azureToken: TokenCredential,
   subscriptionId: string
 ): Promise<string | undefined> {
   const client = new SubscriptionClient(azureToken);

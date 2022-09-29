@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import "mocha";
 import chai from "chai";
-import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
+import { ResourceManagementClient } from "@azure/arm-resources";
 import { Lazy } from "../../../../src/component/resource/apim/utils/commonUtils";
 import { ApimManager } from "../../../../src/component/resource/apim/managers/apimManager";
 import { OpenApiProcessor } from "../../../../src/component/resource/apim/utils/openApiProcessor";
@@ -16,7 +16,6 @@ import {
   ResourcePlugins,
 } from "../util";
 import { ConstantString } from "../../../../src/common/constants";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { ApimOutputBicepSnippet } from "../../../../src/component/resource/apim/constants";
 import { ArmTemplateResult } from "../../../../src/common/armInterface";
 import {
@@ -26,6 +25,7 @@ import {
 } from "../../../../src/plugins/solution/fx-solution/question";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { generateFakeServiceClientCredentials, mockContext } from "./mock";
+import { MyTokenCredential } from "../../solution/util";
 
 describe("apimManager.generateArmTemplates", () => {
   let apimManager: ApimManager;
@@ -211,18 +211,17 @@ describe("apimManager.generateArmTemplates", () => {
 
   async function mockApimManager(): Promise<ApimManager> {
     const openApiProcessor = new OpenApiProcessor();
-    const credential = generateFakeServiceClientCredentials();
+    const identityCredential = new MyTokenCredential();
     const subscriptionId = "test-subscription-id";
-    const apimManagementClient = new ApiManagementClient(credential, subscriptionId);
-    const resourceProviderClient = new Providers(
-      new ResourceManagementClientContext(credential, subscriptionId)
-    );
+    const apimManagementClient = new ApiManagementClient(identityCredential, subscriptionId);
+    const resourceProviderClient = new ResourceManagementClient(identityCredential, subscriptionId)
+      .providers;
     const lazyApimService = new Lazy<ApimService>(() =>
       Promise.resolve(
         new ApimService(
           apimManagementClient,
           resourceProviderClient,
-          credential as TokenCredentialsBase,
+          identityCredential,
           subscriptionId
         )
       )

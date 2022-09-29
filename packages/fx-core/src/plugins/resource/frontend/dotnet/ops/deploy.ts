@@ -21,12 +21,12 @@ import {
   DotnetPluginInfo as PluginInfo,
   RegularExpr,
 } from "../constants";
-import { forEachFileAndDir } from "../../../function/utils/dir-walk";
 import { Logger } from "../../utils/logger";
 import { Messages } from "../resources/messages";
 import { ProgressHelper } from "../../utils/progress-helper";
 import { WebappDeployProgress as DeployProgress } from "../resources/steps";
 import { Utils } from "../../utils";
+import { forEachFileAndDir } from "../../../../../component/utils/fileOperation";
 
 export async function getFrameworkVersion(projectFilePath: string): Promise<string> {
   const content = await fs.readFile(projectFilePath, "utf8");
@@ -91,7 +91,8 @@ export async function zipDeploy(
   ProgressHelper.progressHandler?.next(DeployProgress.steps.fetchCredential);
   const publishCred = await runWithErrorCatchAndThrow(
     new PublishCredentialError(),
-    async () => await client.webApps.listPublishingCredentials(resourceGroupName, webAppName)
+    async () =>
+      await client.webApps.beginListPublishingCredentialsAndWait(resourceGroupName, webAppName)
   );
   const username = publishCred.publishingUserName;
   const password = publishCred.publishingPassword;
@@ -114,7 +115,7 @@ export async function zipDeploy(
               "Cache-Control": "no-cache",
             },
             auth: {
-              username: username,
+              username: username!,
               password: password,
             },
             maxContentLength: Infinity,

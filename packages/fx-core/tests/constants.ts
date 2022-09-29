@@ -1,18 +1,11 @@
 import Container from "typedi";
-import {
-  ResourcePlugins,
-  ResourcePluginsV2,
-} from "../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { ResourcePlugins } from "../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { Plugin } from "@microsoft/teamsfx-api";
-import { ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import "../src/plugins/resource/frontend";
-import "../src/plugins/resource/identity";
 import "../src/plugins/resource/localdebug";
-import "../src/plugins/resource/function";
 import "../src/plugins/resource/apim";
-import "../src/component/resource/aadApp/aadApp";
-import { ComponentNames } from "../src/component/constants";
 import { AadApp } from "../src/component/resource/aadApp/aadApp";
+import { ComponentNames } from "../src/component/constants";
 export class PluginId {
   static readonly Aad = "fx-resource-aad-app-for-teams";
   static readonly FrontendHosting = "fx-resource-frontend-hosting";
@@ -26,12 +19,10 @@ export class PluginId {
 }
 
 export const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin;
-export const identityPlugin = Container.get<Plugin>(ResourcePlugins.IdentityPlugin) as Plugin;
 export const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
 
 export const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin) as Plugin;
 export const appStudioPlugin = Container.get<Plugin>(ComponentNames.AppManifest) as Plugin;
-export const functionPlugin = Container.get<Plugin>(ResourcePlugins.FunctionPlugin) as Plugin;
 export const apimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin) as Plugin;
 
 export class TestFilePath {

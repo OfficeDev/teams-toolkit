@@ -448,84 +448,78 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
-    if (!TreatmentVariableValue.useFolderSelection) {
-      // control group
-      return this.selectFileInQuickPick(config, "folder", config.default);
-    } else {
-      // treatment group
-      const disposables: Disposable[] = [];
-      try {
-        const quickPick = window.createQuickPick<FxQuickPickItem>();
-        quickPick.title = config.title;
-        if (config.step && config.step > 1) {
-          quickPick.buttons = [QuickInputButtons.Back];
-        }
-        quickPick.placeholder = config.placeholder;
-        quickPick.ignoreFocusOut = true;
-        quickPick.matchOnDescription = true;
-        quickPick.matchOnDetail = true;
-        quickPick.canSelectMany = false;
-        return await new Promise<Result<SelectFolderResult, FxError>>(
-          async (resolve): Promise<void> => {
-            // set options
-            quickPick.items = [
-              {
-                id: "default",
-                label: localize("teamstoolkit.qm.defaultFolder"),
-                description: config.default,
-              },
-              {
-                id: "browse",
-                label: `$(folder) ${localize("teamstoolkit.qm.browse")}`,
-              },
-            ];
+    const disposables: Disposable[] = [];
+    try {
+      const quickPick = window.createQuickPick<FxQuickPickItem>();
+      quickPick.title = config.title;
+      if (config.step && config.step > 1) {
+        quickPick.buttons = [QuickInputButtons.Back];
+      }
+      quickPick.placeholder = config.placeholder;
+      quickPick.ignoreFocusOut = true;
+      quickPick.matchOnDescription = true;
+      quickPick.matchOnDetail = true;
+      quickPick.canSelectMany = false;
+      return await new Promise<Result<SelectFolderResult, FxError>>(
+        async (resolve): Promise<void> => {
+          // set options
+          quickPick.items = [
+            {
+              id: "default",
+              label: localize("teamstoolkit.qm.defaultFolder"),
+              description: config.default,
+            },
+            {
+              id: "browse",
+              label: `$(folder) ${localize("teamstoolkit.qm.browse")}`,
+            },
+          ];
 
-            const onDidAccept = async () => {
-              const selectedItems = quickPick.selectedItems;
-              if (selectedItems && selectedItems.length > 0) {
-                const item = selectedItems[0];
-                ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SelectFolder, {
-                  [TelemetryProperty.SelectedOption]: item.id,
+          const onDidAccept = async () => {
+            const selectedItems = quickPick.selectedItems;
+            if (selectedItems && selectedItems.length > 0) {
+              const item = selectedItems[0];
+              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SelectFolder, {
+                [TelemetryProperty.SelectedOption]: item.id,
+              });
+              if (item.id === "default") {
+                resolve(ok({ type: "success", result: config.default }));
+              } else {
+                const uriList: Uri[] | undefined = await window.showOpenDialog({
+                  defaultUri: config.default ? Uri.file(config.default) : undefined,
+                  canSelectFiles: false,
+                  canSelectFolders: true,
+                  canSelectMany: false,
+                  title: config.title,
                 });
-                if (item.id === "default") {
-                  resolve(ok({ type: "success", result: config.default }));
+                if (uriList && uriList.length > 0) {
+                  const result = uriList[0].fsPath;
+                  resolve(ok({ type: "success", result: result }));
                 } else {
-                  const uriList: Uri[] | undefined = await window.showOpenDialog({
-                    defaultUri: config.default ? Uri.file(config.default) : undefined,
-                    canSelectFiles: false,
-                    canSelectFolders: true,
-                    canSelectMany: false,
-                    title: config.title,
-                  });
-                  if (uriList && uriList.length > 0) {
-                    const result = uriList[0].fsPath;
-                    resolve(ok({ type: "success", result: result }));
-                  } else {
-                    resolve(err(UserCancelError));
-                  }
+                  resolve(err(UserCancelError));
                 }
               }
-            };
+            }
+          };
 
-            disposables.push(
-              quickPick.onDidAccept(onDidAccept),
-              quickPick.onDidHide(() => {
-                resolve(err(UserCancelError));
-              }),
-              quickPick.onDidTriggerButton((button) => {
-                if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
-              })
-            );
+          disposables.push(
+            quickPick.onDidAccept(onDidAccept),
+            quickPick.onDidHide(() => {
+              resolve(err(UserCancelError));
+            }),
+            quickPick.onDidTriggerButton((button) => {
+              if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
+            })
+          );
 
-            disposables.push(quickPick);
-            quickPick.show();
-          }
-        );
-      } finally {
-        disposables.forEach((d) => {
-          d.dispose();
-        });
-      }
+          disposables.push(quickPick);
+          quickPick.show();
+        }
+      );
+    } finally {
+      disposables.forEach((d) => {
+        d.dispose();
+      });
     }
   }
 

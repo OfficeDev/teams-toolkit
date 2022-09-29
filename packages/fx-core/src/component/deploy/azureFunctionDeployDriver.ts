@@ -2,12 +2,12 @@
 // Licensed under the MIT license.
 
 import { AzureResourceInfo, DeployStepArgs, DriverContext } from "../interface/buildAndDeployArgs";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { AzureDeployDriver } from "./azureDeployDriver";
 import { DeployExternalApiCallError } from "../error/deployError";
 import { AxiosResponseWithStatusResult } from "../../common/azure-hosting/interfaces";
 import { Service } from "typedi";
 import { StepDriver } from "../interface/stepDriver";
+import { TokenCredential } from "@azure/identity";
 
 @Service("deploy/azureFunction")
 export class AzureFunctionDeployDriver implements StepDriver {
@@ -27,7 +27,7 @@ export class AzureFunctionDeployDriverImpl extends AzureDeployDriver {
   async azureDeploy(
     args: DeployStepArgs,
     azureResource: AzureResourceInfo,
-    azureCredential: TokenCredentialsBase
+    azureCredential: TokenCredential
   ): Promise<void> {
     await this.zipDeploy(args, azureResource, azureCredential);
     await this.restartFunctionApp(azureResource);
@@ -35,17 +35,13 @@ export class AzureFunctionDeployDriverImpl extends AzureDeployDriver {
 
   async restartFunctionApp(azureResource: AzureResourceInfo): Promise<void> {
     await this.context.logProvider.info("Restarting function app...");
-    let res: AxiosResponseWithStatusResult | undefined;
     try {
-      res = await this.managementClient?.webApps?.restart(
+      await this.managementClient?.webApps?.restart(
         azureResource.resourceGroupName,
         azureResource.instanceId
       );
     } catch (e) {
       throw DeployExternalApiCallError.restartWebAppError(e);
-    }
-    if (!res || res?._response.status !== 200) {
-      throw DeployExternalApiCallError.restartWebAppError(res);
     }
   }
 }

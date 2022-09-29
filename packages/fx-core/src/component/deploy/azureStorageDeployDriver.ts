@@ -3,7 +3,6 @@
 
 import { AzureDeployDriver } from "./azureDeployDriver";
 import { AzureResourceInfo, DeployStepArgs, DriverContext } from "../interface/buildAndDeployArgs";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
   BlobDeleteResponse,
   BlobItem,
@@ -13,9 +12,12 @@ import {
   ContainerClient,
 } from "@azure/storage-blob";
 import {
+  AccountSasParameters,
+  Services,
+  SignedResourceTypes,
   StorageAccounts,
   StorageManagementClient,
-  StorageManagementModels,
+  Permissions,
 } from "@azure/arm-storage";
 import { DeployConstant } from "../constant/deployConstant";
 import { DeployExternalApiCallError } from "../error/deployError";
@@ -26,6 +28,7 @@ import * as mime from "mime";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { StepDriver } from "../interface/stepDriver";
+import { TokenCredential } from "@azure/identity";
 
 @Service("deploy/azureStorage")
 export class AzureStorageDeployDriver implements StepDriver {
@@ -45,7 +48,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
   async azureDeploy(
     args: DeployStepArgs,
     azureResource: AzureResourceInfo,
-    azureCredential: TokenCredentialsBase
+    azureCredential: TokenCredential
   ): Promise<void> {
     const containerClient = await AzureStorageDeployDriverImpl.createContainerClient(
       azureResource,
@@ -90,7 +93,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
 
   private static async createContainerClient(
     azureResource: AzureResourceInfo,
-    azureCredential: TokenCredentialsBase
+    azureCredential: TokenCredential
   ): Promise<ContainerClient> {
     const storageAccountClient = new StorageManagementClient(
       azureCredential,
@@ -132,11 +135,11 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
     resourceGroupName: string,
     storageName: string
   ): Promise<string> {
-    const accountSasParameters: StorageManagementModels.AccountSasParameters = {
+    const accountSasParameters: AccountSasParameters = {
       // A workaround, to ignore type checking for the services/resourceTypes/permissions are enum type.
-      services: "bf" as StorageManagementModels.Services,
-      resourceTypes: "sco" as StorageManagementModels.SignedResourceTypes,
-      permissions: "rwld" as StorageManagementModels.Permissions,
+      services: "bf" as Services,
+      resourceTypes: "sco" as SignedResourceTypes,
+      permissions: "rwld" as Permissions,
       sharedAccessStartTime: new Date(Date.now() - DeployConstant.SAS_TOKEN_LIFE_TIME_PADDING),
       sharedAccessExpiryTime: new Date(Date.now() + DeployConstant.SAS_TOKEN_LIFE_TIME),
     };

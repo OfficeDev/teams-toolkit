@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 import { WebSiteManagementClient } from "@azure/arm-appservice";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { TokenCredential } from "@azure/identity";
 
 export class AzureClientFactory {
   static getWebSiteManagementClient(
-    credentials: TokenCredentialsBase,
+    credentials: TokenCredential,
     subscriptionId: string
   ): WebSiteManagementClient {
     return new WebSiteManagementClient(credentials, subscriptionId);

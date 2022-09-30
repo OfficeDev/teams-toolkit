@@ -152,22 +152,6 @@ describe("Generator error", async () => {
   });
 });
 
-// describe("Generator action", async () => {
-//   const tools = new MockTools();
-//   setTools(tools);
-//   const context = createContextV3();
-
-//   it("fetch template url with tag action", async () => {
-//     const url = await fetchTemplateUrlWithTagAction.run(
-//       "bot",
-//       "ts",
-//       templateDownloadBaseUrl,
-//       context
-//     );
-//     assert.isNotEmpty(url);
-//   }
-// });
-
 describe("Generator happy path", async () => {
   const tools = new MockTools();
   setTools(tools);

@@ -21,7 +21,6 @@ import {
 import { GenerateAction, GenerateActionName } from "./generateAction";
 import { GenerateContext } from "./generateContext";
 import AdmZip from "adm-zip";
-import { EOL } from "os";
 import { SampleInfo, sampleProvider } from "./sample";
 
 export async function fetchZipUrl(

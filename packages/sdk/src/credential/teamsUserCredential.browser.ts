@@ -299,7 +299,7 @@ export class TeamsUserCredential implements TokenCredential {
    *
    * @returns SSO token
    */
-  private async getSSOToken(): Promise<AccessToken> {
+  private async getSSOToken(resources?: string[]): Promise<AccessToken> {
     if (this.ssoToken) {
       if (this.ssoToken.expiresOnTimestamp - Date.now() > tokenRefreshTimeSpanInMillisecond) {
         internalLogger.verbose("Get SSO token from memory cache");
@@ -307,7 +307,7 @@ export class TeamsUserCredential implements TokenCredential {
       }
     }
 
-    const params = {} as authentication.AuthTokenRequestParameters;
+    const params = { resources: resources ?? [] } as authentication.AuthTokenRequestParameters;
     let token: string;
     try {
       await app.initialize();

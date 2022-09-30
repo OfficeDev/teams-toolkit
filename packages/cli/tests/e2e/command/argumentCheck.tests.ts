@@ -11,8 +11,8 @@ import { it } from "../../commonlib/it";
 
 import { execAsync } from "../commonUtils";
 
-describe("teamsfx command argument check", { testPlanCaseId: 15685949 }, function () {
-  it(`teamsfx add me`, async function () {
+describe("teamsfx command argument check",  function () {
+  it(`teamsfx add me`, { testPlanCaseId: 15685949 }, async function () {
     try {
       const command = isPreviewFeaturesEnabled() ? `teamsfx add me` : `teamsfx capability add me`;
       await execAsync(command, {

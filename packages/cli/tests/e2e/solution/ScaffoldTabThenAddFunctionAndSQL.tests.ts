@@ -15,7 +15,7 @@ import { Capability, Resource } from "../../commonlib/constants";
 import { it } from "../../commonlib/it";
 
 // test case for bug https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/12836125
-describe("Scaffold Tab then Add Function and SQL", { testPlanCaseId: 15687252 }, function () {
+describe("Scaffold Tab then Add Function and SQL", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
@@ -25,7 +25,7 @@ describe("Scaffold Tab then Add Function and SQL", { testPlanCaseId: 15687252 },
     await cleanUpLocalProject(projectPath);
   });
 
-  it("should generate correct local config file", async () => {
+  it("should generate correct local config file", , { testPlanCaseId: 15687252 }, async () => {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);

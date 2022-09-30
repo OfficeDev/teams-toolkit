@@ -20,13 +20,13 @@ import {
   cleanUp,
 } from "../commonUtils";
 
-describe("teamsfx deploy frontend-hosting", { testPlanCaseId: 15685958 }, function () {
+describe("teamsfx deploy frontend-hosting",  function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
   const subscription = getSubscriptionId();
 
-  it(`in bot project`, async function () {
+  it(`in bot project`, { testPlanCaseId: 15685958 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 
     // Provision

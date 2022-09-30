@@ -33,7 +33,7 @@ describe("Configuration successfully changed when with different plugins", funct
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it(`tab + function + azure sql`, async function () {
+  it(`tab + function + azure sql`, { testPlanCaseId: 15686873 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);

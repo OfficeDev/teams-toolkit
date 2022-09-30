@@ -32,7 +32,7 @@ describe("Error type should be expected", function () {
     await cleanUp(appName, projectPath, true, true, false, env);
   });
 
-  it(`CommandExecutionError should be in UserError`, async function () {
+  it(`CommandExecutionError should be in UserError`,{ testPlanCaseId: 15685624 }, async function () {
     // Create new bot project
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 

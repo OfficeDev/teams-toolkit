@@ -37,7 +37,7 @@ describe("Add SSO", () => {
     }
   });
 
-  it(`Add SSO to non SSO Bot project`, async () => {
+  it(`Add SSO to non SSO Bot project`, { testPlanCaseId: 15687161 }, async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_AAD_MANIFEST: "true",
       TEAMSFX_CONFIG_UNIFY: "true",

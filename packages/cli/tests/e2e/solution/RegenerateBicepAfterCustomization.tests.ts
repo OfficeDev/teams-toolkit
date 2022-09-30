@@ -34,7 +34,7 @@ describe("User can customize Bicep files", function () {
     await cleanUp(appName, projectPath, true, true, false);
   });
 
-  it("Regenerate Bicep will not affect user's customized Bicep code", async () => {
+  it("Regenerate Bicep will not affect user's customized Bicep code", { testPlanCaseId: 15687243 }, async () => {
     // Arrange
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 

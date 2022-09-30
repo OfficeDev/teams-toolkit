@@ -35,7 +35,7 @@ describe("Deploy to customized resource group", function () {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it(`tab + key vault project can deploy keyvault resource to customized resource group and successfully provision`, async function () {
+  it(`tab + key vault project can deploy keyvault resource to customized resource group and successfully provision`, { testPlanCaseId: 15686991 }, async function () {
     // Create new tab + keyvault project
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);

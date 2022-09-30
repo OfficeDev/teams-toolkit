@@ -31,7 +31,7 @@ describe("Add capabilities", function () {
       await cleanUp(appName, projectPath, true, true, false);
     }
   });
-  it(`bot project can add tab capability and provision`, async () => {
+  it(`bot project can add tab capability and provision`, { testPlanCaseId: 15687142 }, async () => {
     appName = getUniqueAppName();
     projectPath = path.resolve(testFolder, appName);
 
@@ -54,7 +54,7 @@ describe("Add capabilities", function () {
     await validateTabAndBotProjectProvision(projectPath, env);
   });
 
-  it(`message extension project can add tab capability and provision`, async () => {
+  it(`message extension project can add tab capability and provision`, { testPlanCaseId: 15687143 }, async () => {
     appName = getUniqueAppName();
     projectPath = path.resolve(testFolder, appName);
 

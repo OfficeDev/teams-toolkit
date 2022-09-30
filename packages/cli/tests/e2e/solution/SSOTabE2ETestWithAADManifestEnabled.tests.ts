@@ -39,7 +39,7 @@ describe("SSO Tab with aad manifest enabled", () => {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it("SSO Tab E2E test with aad manifest enabled", async () => {
+  it("SSO Tab E2E test with aad manifest enabled", { testPlanCaseId: 15687261 }, async () => {
     // Arrange
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
 

@@ -40,7 +40,7 @@ describe("Deploy to customized resource group", function () {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it(`tab project can deploy apim resource to customized resource group and successfully provision / deploy`, async function () {
+  it(`tab project can deploy apim resource to customized resource group and successfully provision / deploy`,{ testPlanCaseId: 15685059 }, async function () {
     // Create new tab project
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureApim);

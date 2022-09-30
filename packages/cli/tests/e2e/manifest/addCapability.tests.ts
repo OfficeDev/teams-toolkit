@@ -30,7 +30,7 @@ describe("Add capabilities", function () {
     await cleanUp(appName, projectPath, false, false, false);
   });
 
-  it("tab project can add tab capability with correct manifest template", async function () {
+  it("tab project can add tab capability with correct manifest template", { testPlanCaseId: 15687024 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     if (isPreviewFeaturesEnabled()) {
@@ -45,7 +45,7 @@ describe("Add capabilities", function () {
     chai.assert.equal(manifest.staticTabs!.length, 2);
   });
 
-  it("tab project can add bot capability with correct manifest template", async function () {
+  it("tab project can add bot capability with correct manifest template", { testPlanCaseId: 15687025 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);

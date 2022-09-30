@@ -8,4 +8,9 @@
 import { Runtime } from "../../commonlib/constants";
 import { happyPathTest } from "./NotificationBotHappyPathCommon";
 
-happyPathTest(Runtime.Dotnet);
+describe("Provision Notification Dotnet", () => {
+    it("Provision Resource: Notification Dotnet", { testPlanCaseId: 15685831 }, async function () {
+        await happyPathTest(Runtime.Dotnet);
+    });
+});
+

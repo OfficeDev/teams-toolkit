@@ -31,7 +31,7 @@ describe("Configuration successfully changed when with different plugins", funct
     await cleanUp(appName, projectPath, true, true, false);
   });
 
-  it(`bot + function`, async function () {
+  it(`bot + function`, { testPlanCaseId: 15685589 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
 

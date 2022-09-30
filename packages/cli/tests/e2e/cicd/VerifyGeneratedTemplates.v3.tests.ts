@@ -23,7 +23,7 @@ describe("Verify generated templates & readme V3", function () {
     await cleanUp(appName, projectPath, false, false, false);
   });
 
-  it(`Verify generated templates & readme`, async function () {
+  it(`Verify generated templates & readme`, { testPlanCaseId: 15685915 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 
     // Add CICD Workflows.

@@ -14,7 +14,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 
 // test case for bug https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/12836125
-describe("Scaffold Tab then Add Function and SQL", function () {
+describe("Scaffold Tab then Add Function and SQL", { testPlanCaseId: 15687252 }, function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);

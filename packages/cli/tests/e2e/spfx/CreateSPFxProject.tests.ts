@@ -32,7 +32,7 @@ describe("Start a new project", function () {
     projectPath = path.resolve(testFolder, appName);
   });
 
-  it("Create, provision and run SPFx project with React framework", async function () {
+  it("Create, provision and run SPFx project with React framework", { testPlanCaseId: 15687302 }, async function () {
     let command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type react --spfx-webpart-name helloworld --programming-language typescript`;
     let result = await execAsync(command, {
       cwd: testFolder,

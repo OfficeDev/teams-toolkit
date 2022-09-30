@@ -10,7 +10,7 @@ import { expect } from "chai";
 
 import { execAsync } from "../commonUtils";
 
-describe("teamsfx command argument check", function () {
+describe("teamsfx command argument check", { testPlanCaseId: 15685949 }, function () {
   it(`teamsfx add me`, async function () {
     try {
       const command = isPreviewFeaturesEnabled() ? `teamsfx add me` : `teamsfx capability add me`;

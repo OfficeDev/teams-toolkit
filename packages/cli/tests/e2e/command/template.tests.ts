@@ -11,7 +11,7 @@ import path from "path";
 
 import { execAsync, getTestFolder, cleanUpLocalProject } from "../commonUtils";
 
-describe("teamsfx new template", function () {
+describe("teamsfx new template", { testPlanCaseId: 15685967 }, function () {
   const testFolder = getTestFolder();
   const sampleName = "todo-list-with-Azure-backend";
   const projectPath = path.resolve(testFolder, sampleName);

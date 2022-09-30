@@ -8,4 +8,8 @@
 import { Runtime } from "../../commonlib/constants";
 import { happyPathTest } from "./CommandBotHappyPathCommon";
 
-happyPathTest(Runtime.Node);
+describe("Provision CommandBot Dotnet", () => {
+    it("Provision Resource: CommandBot Node", { testPlanCaseId: 15685858 }, async function () {
+        await happyPathTest(Runtime.Node);
+    });
+});

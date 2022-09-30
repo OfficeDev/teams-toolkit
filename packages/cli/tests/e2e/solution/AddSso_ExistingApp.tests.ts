@@ -39,7 +39,7 @@ describe("Add SSO", () => {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it("Add SSO to existing app", async () => {
+  it("Add SSO to existing app", { testPlanCaseId: 15687165 }, async () => {
     // Arrange
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.ExistingTab, env);
     await setFrontendDomainToConfig(projectPath, "dev");

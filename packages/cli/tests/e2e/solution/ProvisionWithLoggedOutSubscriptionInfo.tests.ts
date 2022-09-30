@@ -30,7 +30,7 @@ describe("Provision with subscriptionInfo.json that has logged out", () => {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it("Provision Tab project", async () => {
+  it("Provision Tab project", { testPlanCaseId: 15687219 }, async () => {
     // Arrange
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
 

@@ -33,7 +33,7 @@ describe("Create M365 Launch Page", function () {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("happy path", async () => {
+  it("happy path", { testPlanCaseId: 15687005 }, async () => {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.M365SsoLaunchPage);
     await M365Validator.validateProjectSettings(projectPath);
     await M365Validator.validateManifest(projectPath);

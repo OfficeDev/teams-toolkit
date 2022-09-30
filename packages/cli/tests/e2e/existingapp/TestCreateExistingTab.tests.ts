@@ -31,7 +31,7 @@ describe("Create existing tab app", function () {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("Create existing tab app with default endpoint", async () => {
+  it("Create existing tab app with default endpoint", { testPlanCaseId: 15685986 }, async () => {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.ExistingTab);
     // Validate
     await ExistingAppValidator.validateProjectSettings(projectPath);
@@ -39,7 +39,7 @@ describe("Create existing tab app", function () {
     await ExistingAppValidator.validateManifest(projectPath);
   });
 
-  it("Provision existing tab app", async function () {
+  it("Provision existing tab app", { testPlanCaseId: 15685987 }, async function () {
     await CliHelper.provisionProject(projectPath);
     // Validate
     await ExistingAppValidator.validateStateFile(projectPath);

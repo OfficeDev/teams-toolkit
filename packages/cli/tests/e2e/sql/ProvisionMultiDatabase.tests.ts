@@ -22,7 +22,7 @@ describe("Provision to Azure with SQL", function () {
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
 
-  it(`Provision multi databases`, async function () {
+  it(`Provision multi databases`, { testPlanCaseId: 15687476 }, async function () {
     // new a project ( tab + function + sql )
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);

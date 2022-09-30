@@ -33,7 +33,7 @@ describe("User can customize Bicep files", function () {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it("user customized Bicep file is used when provision", async () => {
+  it("user customized Bicep file is used when provision", { testPlanCaseId: 15687187 }, async () => {
     // Arrange
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 

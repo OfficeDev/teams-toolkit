@@ -15,7 +15,7 @@ describe("Start a new project", function () {
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
 
-  it("Create SPFx project with minimal framework", async function () {
+  it("Create SPFx project with minimal framework", { testPlanCaseId: 15687313 }, async function () {
     const command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type minimal --spfx-webpart-name helloworld --programming-language typescript`;
     const result = await execAsync(command, {
       cwd: testFolder,

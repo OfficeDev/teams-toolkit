@@ -34,7 +34,7 @@ describe("Deploy to customized resource group", function () {
     await cleanUp(appName, projectPath, false, true, false);
   });
 
-  it(`bot project can deploy bot resource to customized resource group and successfully provision / deploy`, async function () {
+  it(`bot project can deploy bot resource to customized resource group and successfully provision / deploy`,{ testPlanCaseId: 15685614 }, async function () {
     // Create new bot project
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 

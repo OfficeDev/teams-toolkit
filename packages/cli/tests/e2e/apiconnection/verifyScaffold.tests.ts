@@ -36,7 +36,7 @@ describe("Add Api Connection Tests", function () {
     await cleanUp(appName, projectPath, false, false, false);
   });
 
-  it("scaffold with basic auth", async () => {
+  it("scaffold with basic auth",{ testPlanCaseId: 15685014 }, async () => {
     const basicInputs = "--user-name test123";
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "basic", basicInputs);
@@ -59,7 +59,7 @@ describe("Add Api Connection Tests", function () {
     chai.assert.exists(deps["@microsoft/teamsfx"]);
   });
 
-  it("scaffold with aad auth", async () => {
+  it("scaffold with aad auth",{ testPlanCaseId: 15685003 }, async () => {
     const aadInputs =
       "--tenant-id 00000000-0000-0000-0000-000000000000 --app-id 11111111-1111-1111-1111-111111111111 --app-type custom";
     // action
@@ -90,7 +90,7 @@ describe("Add Api Connection Tests", function () {
     chai.assert.exists(deps["@microsoft/teamsfx"]);
   });
 
-  it("scaffold with apikey auth", async () => {
+  it("scaffold with apikey auth",{ testPlanCaseId: 15685004 }, async () => {
     const apiKeyInputs = "--key-location querystring --key-name fakename";
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "apikey", apiKeyInputs);
@@ -111,7 +111,7 @@ describe("Add Api Connection Tests", function () {
     chai.assert.exists(deps["@microsoft/teamsfx"]);
   });
 
-  it("scaffold with cert auth", async () => {
+  it("scaffold with cert auth",{ testPlanCaseId: 15685005 }, async () => {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "cert");
     // assert
@@ -131,7 +131,7 @@ describe("Add Api Connection Tests", function () {
     chai.assert.exists(deps["@microsoft/teamsfx"]);
   });
 
-  it("scaffold with custom auth", async () => {
+  it("scaffold with custom auth",{ testPlanCaseId: 15685006 }, async () => {
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "custom");
     // assert

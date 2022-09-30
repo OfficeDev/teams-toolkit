@@ -31,7 +31,7 @@ describe("Multi Env Happy Path for SPFx", function () {
   const env = "e2e";
   let appId: string;
 
-  it("Can create/provision/deploy/validate/package/publish an SPFx project", async function () {
+  it("Can create/provision/deploy/validate/package/publish an SPFx project", { testPlanCaseId: 15687128 }, async function () {
     const command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type ${type} --spfx-webpart-name helloworld --programming-language typescript`;
     let result = await execAsync(command, {
       cwd: testFolder,

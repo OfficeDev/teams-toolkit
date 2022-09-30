@@ -6,7 +6,7 @@ import { Runtime } from "../../commonlib/constants";
 import { it } from "../../commonlib/it";
 
 describe("Provision message extension Node", () => {
-  it("Provision Resource: message extension node", async function () {
+  it("Provision Resource: message extension node", { testPlanCaseId: 15685647 }, async function () {
     await happyPathTest(Runtime.Node, "message-extension");
   });
 });

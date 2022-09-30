@@ -6,7 +6,7 @@ import { Runtime } from "../../commonlib/constants";
 import { it } from "../../commonlib/it";
 
 describe("Provision message extension Dotnet", () => {
-  it("Provision Resource: message extension dotnet", async function () {
+  it("Provision Resource: message extension dotnet", { testPlanCaseId: 15685646 }, async function () {
     await happyPathTest(Runtime.Dotnet, "message-extension");
   });
 });

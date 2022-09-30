@@ -39,7 +39,7 @@ describe("Deploy to customized resource group", function () {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it(`tab project can deploy sql resource to customized resource group and successfully provision`, async function () {
+  it(`tab project can deploy sql resource to customized resource group and successfully provision`, { testPlanCaseId: 15687470 }, async function () {
     // Create new tab project
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);

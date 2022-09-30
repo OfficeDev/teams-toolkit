@@ -20,6 +20,7 @@ import {
 } from "../commonUtils";
 import { AppStudioValidator, SharepointValidator } from "../../commonlib";
 import { environmentManager } from "@microsoft/teamsfx-core";
+import { it } from "../../commonlib/it";
 
 describe("Start a new project", function () {
   let appId: string;

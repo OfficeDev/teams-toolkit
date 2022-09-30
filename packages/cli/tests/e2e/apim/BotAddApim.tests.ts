@@ -19,6 +19,7 @@ import { environmentManager } from "@microsoft/teamsfx-core/build/core/environme
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { ApimValidator } from "../../commonlib";
+import { it } from "../../commonlib/it";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import M365Login from "../../../src/commonlib/m365Login";
 

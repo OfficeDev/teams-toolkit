@@ -21,6 +21,7 @@ import "mocha";
 import * as chai from "chai";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
+import { it } from "../../commonlib/it";
 
 describe("User can customize Bicep files", function () {
   const testFolder = getTestFolder();

@@ -22,6 +22,7 @@ import { Capability, PluginId } from "../../commonlib/constants";
 import fs from "fs-extra";
 import { expect } from "chai";
 import { AadValidator } from "../../commonlib";
+import { it } from "../../commonlib/it";
 import M365Login from "../../../src/commonlib/m365Login";
 
 describe("Add SSO", () => {

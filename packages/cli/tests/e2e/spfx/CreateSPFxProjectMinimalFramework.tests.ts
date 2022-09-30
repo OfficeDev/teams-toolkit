@@ -9,6 +9,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
 import { cleanUpLocalProject, execAsync, getTestFolder, getUniqueAppName } from "../commonUtils";
+import { it } from "../../commonlib/it";
 
 describe("Start a new project", function () {
   const testFolder = getTestFolder();

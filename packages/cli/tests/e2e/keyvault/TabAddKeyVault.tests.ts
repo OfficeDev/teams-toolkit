@@ -21,6 +21,7 @@ import { environmentManager } from "@microsoft/teamsfx-core";
 import { KeyVaultValidator } from "../../commonlib/keyVaultValidator";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
+import { it } from "../../commonlib/it";
 
 describe("Test Azure Key Vault", function () {
   const testFolder = getTestFolder();

@@ -7,6 +7,7 @@
 
 import { Runtime } from "../../commonlib/constants";
 import { happyPathTest } from "./CommandBotHappyPathCommon";
+import { it } from "../../commonlib/it";
 
 describe("Provision CommandBot Dotnet", () => {
     it("Provision Resource: CommandBot Node", { testPlanCaseId: 15685858 }, async function () {

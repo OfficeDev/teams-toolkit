@@ -22,6 +22,7 @@ import {
   setProvisionParameterValue,
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
+import { it } from "../../commonlib/it";
 import { Capability, PluginId, StateConfigKey } from "../../commonlib/constants";
 import {
   getExpectedM365ClientSecret,

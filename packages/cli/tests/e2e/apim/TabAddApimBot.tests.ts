@@ -22,6 +22,7 @@ import { Capability, Resource } from "../../commonlib/constants";
 import { ApimValidator } from "../../commonlib";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import M365Login from "../../../src/commonlib/m365Login";
+import { it } from "../../commonlib/it";
 
 describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();

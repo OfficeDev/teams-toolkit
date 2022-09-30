@@ -13,6 +13,7 @@ import * as dotenv from "dotenv";
 import { getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
+import { it } from "../../commonlib/it";
 import * as fs from "fs-extra";
 import mockedEnv from "mocked-env";
 

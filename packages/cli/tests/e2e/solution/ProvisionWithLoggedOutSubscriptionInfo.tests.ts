@@ -18,6 +18,7 @@ import fs from "fs-extra";
 import { expect } from "chai";
 import { SubscriptionInfo } from "@microsoft/teamsfx-api";
 import { FrontendValidator } from "../../commonlib";
+import { it } from "../../commonlib/it";
 
 describe("Provision with subscriptionInfo.json that has logged out", () => {
   const testFolder = getTestFolder();

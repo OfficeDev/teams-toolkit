@@ -19,6 +19,7 @@ import {
 import "mocha";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
+import { it } from "../../commonlib/it";
 describe("Add capabilities", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();

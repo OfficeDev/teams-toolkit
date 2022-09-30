@@ -20,6 +20,7 @@ import { environmentManager } from "@microsoft/teamsfx-core/build/core/environme
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, ResourceToDeploy } from "../../commonlib/constants";
 import { PluginError, ErrorType } from "../../../../fx-core/src/plugins/resource/bot/errors";
+import { it } from "../../commonlib/it";
 
 describe("Error type should be expected", function () {
   const testFolder = getTestFolder();

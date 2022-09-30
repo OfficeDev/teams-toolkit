@@ -8,7 +8,7 @@
 import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
-
+import { it } from "../../commonlib/it";
 import { execAsync, getTestFolder, cleanUpLocalProject } from "../commonUtils";
 
 describe("teamsfx new template", { testPlanCaseId: 15685967 }, function () {

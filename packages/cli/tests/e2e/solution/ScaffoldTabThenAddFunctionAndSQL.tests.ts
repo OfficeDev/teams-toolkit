@@ -12,6 +12,7 @@ import { getTestFolder, getUniqueAppName, cleanUpLocalProject } from "../commonU
 import "mocha";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
+import { it } from "../../commonlib/it";
 
 // test case for bug https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/12836125
 describe("Scaffold Tab then Add Function and SQL", { testPlanCaseId: 15687252 }, function () {

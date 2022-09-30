@@ -21,6 +21,7 @@ import {
 } from "../commonUtils";
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import { AppStudioValidator } from "../../commonlib";
+import { it } from "../../commonlib/it";
 
 describe("Multi Env Happy Path for SPFx", function () {
   const testFolder = getTestFolder();

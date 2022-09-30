@@ -20,6 +20,7 @@ import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { FunctionValidator } from "../../commonlib";
+import { it } from "../../commonlib/it";
 
 describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();

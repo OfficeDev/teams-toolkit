@@ -114,7 +114,7 @@ export class DoSomethingActionHandler implements TeamsFxAdaptiveCardActionHandle
 * The `triggerVerb` is the `verb` property of your action defined in the JSON from the previous step.
 * The `actionData` is the data associated with the action, which may include dynamic user input or some contextual data provided in the `data` property of your action.
 
-You can customize what the action does here, including calling an API, processing some data, etc.
+You can customize what the action does here, including calling an API, processing data, etc.
 
 ### Step 4: Register the new handler
 

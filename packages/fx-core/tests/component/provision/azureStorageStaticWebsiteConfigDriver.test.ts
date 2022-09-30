@@ -5,15 +5,34 @@ import "mocha";
 import * as sinon from "sinon";
 import * as tools from "../../../src/common/tools";
 import { AzureStorageStaticWebsiteConfigDriver } from "../../../src/component/provision/azureStorageStaticWebsiteConfigDriver";
-import { FakeTokenCredentials, TestAzureAccountProvider } from "../util/azureAccountMock";
+import { TestAzureAccountProvider } from "../util/azureAccountMock";
 import { TestLogProvider } from "../util/logProviderMock";
 import { DriverContext } from "../../../src/component/interface/commonArgs";
-import { StorageAccounts } from "@azure/arm-storage";
-import { StorageAccountsListAccountSASResponse } from "@azure/arm-storage/esm/models";
+import { ListAccountSasResponse, StorageManagementClient } from "@azure/arm-storage";
 import { BlobServiceClient, ServiceGetPropertiesResponse } from "@azure/storage-blob";
+import { MyTokenCredential } from "../../plugins/solution/util";
+import * as armStorage from "@azure/arm-storage";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
+
+  function getMockStorageAccount1() {
+    return {
+      // beginCreateAndWait: async function (
+      //   resourceGroupName: string,
+      //   accountName: string,
+      //   parameters: StorageAccountCreateParameters,
+      //   options?: StorageAccountsCreateOptionalParams
+      // ): Promise<StorageAccountsCreateResponse> {
+      //   return storageAccount!;
+      // },
+      listAccountSAS: async function (): Promise<ListAccountSasResponse> {
+        return {
+          accountSasToken: "abc",
+        };
+      },
+    };
+  }
 
   beforeEach(() => {
     sandbox.stub(tools, "waitSeconds").resolves();
@@ -30,13 +49,14 @@ describe("Azure App Service Deploy Driver test", () => {
       logProvider: new TestLogProvider(),
     } as DriverContext;
     // fake azure credentials
-    const fake = new FakeTokenCredentials("x", "y");
-    sandbox.stub(context.azureAccountProvider, "getAccountCredentialAsync").resolves(fake);
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
 
     // fake sas account token
-    sandbox.stub(StorageAccounts.prototype, "listAccountSAS").resolves({
-      accountSasToken: "fakeToken",
-    } as StorageAccountsListAccountSASResponse);
+    const mockStorageManagementClient = new StorageManagementClient(new MyTokenCredential(), "id");
+    mockStorageManagementClient.storageAccounts = getMockStorageAccount1() as any;
+    sandbox.stub(armStorage, "StorageManagementClient").returns(mockStorageManagementClient);
 
     // fake properties
     sandbox.stub(BlobServiceClient.prototype, "getProperties").resolves({
@@ -67,13 +87,14 @@ describe("Azure App Service Deploy Driver test", () => {
       logProvider: new TestLogProvider(),
     } as DriverContext;
     // fake azure credentials
-    const fake = new FakeTokenCredentials("x", "y");
-    sandbox.stub(context.azureAccountProvider, "getAccountCredentialAsync").resolves(fake);
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
 
     // fake sas account token
-    sandbox.stub(StorageAccounts.prototype, "listAccountSAS").resolves({
-      accountSasToken: "fakeToken",
-    } as StorageAccountsListAccountSASResponse);
+    const mockStorageManagementClient = new StorageManagementClient(new MyTokenCredential(), "id");
+    mockStorageManagementClient.storageAccounts = getMockStorageAccount1() as any;
+    sandbox.stub(armStorage, "StorageManagementClient").returns(mockStorageManagementClient);
 
     // fake properties
     sandbox.stub(BlobServiceClient.prototype, "getProperties").resolves({

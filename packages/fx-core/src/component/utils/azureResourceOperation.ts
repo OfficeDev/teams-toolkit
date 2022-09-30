@@ -4,14 +4,10 @@
 import { AzureResourceInfo } from "../interface/commonArgs";
 import { ExternalApiCallError, PrerequisiteError } from "../error/componentError";
 import { AzureAccountProvider } from "@microsoft/teamsfx-api";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { BlobServiceClient } from "@azure/storage-blob";
-import {
-  StorageAccounts,
-  StorageManagementClient,
-  StorageManagementModels,
-} from "@azure/arm-storage";
+import { StorageAccounts, StorageManagementClient, AccountSasParameters } from "@azure/arm-storage";
 import { DeployConstant } from "../constant/deployConstant";
+import { TokenCredential } from "@azure/identity";
 
 /**
  * parse Azure resource id into subscriptionId, resourceGroupName and resourceName
@@ -39,10 +35,10 @@ export function parseAzureResourceId(resourceId: string, pattern: RegExp): Azure
  */
 export async function getAzureAccountCredential(
   tokenProvider: AzureAccountProvider
-): Promise<TokenCredentialsBase> {
+): Promise<TokenCredential> {
   let credential;
   try {
-    credential = await tokenProvider.getAccountCredentialAsync();
+    credential = await tokenProvider.getIdentityCredentialAsync();
   } catch (e) {
     throw ExternalApiCallError.getAzureCredentialError(DeployConstant.DEPLOY_ERROR_TYPE, e);
   }
@@ -66,7 +62,7 @@ export async function getAzureAccountCredential(
  */
 export async function createBlobServiceClient(
   azureResource: AzureResourceInfo,
-  azureCredential: TokenCredentialsBase
+  azureCredential: TokenCredential
 ): Promise<BlobServiceClient> {
   const storageAccountClient = new StorageManagementClient(
     azureCredential,
@@ -86,11 +82,10 @@ async function generateSasToken(
   resourceGroupName: string,
   storageName: string
 ): Promise<string> {
-  const accountSasParameters: StorageManagementModels.AccountSasParameters = {
-    // A workaround, to ignore type checking for the services/resourceTypes/permissions are enum type.
-    services: "bf" as StorageManagementModels.Services,
-    resourceTypes: "sco" as StorageManagementModels.SignedResourceTypes,
-    permissions: "rwld" as StorageManagementModels.Permissions,
+  const accountSasParameters: AccountSasParameters = {
+    services: "bf",
+    resourceTypes: "sco",
+    permissions: "rwld",
     sharedAccessStartTime: new Date(Date.now() - DeployConstant.SAS_TOKEN_LIFE_TIME_PADDING),
     sharedAccessExpiryTime: new Date(Date.now() + DeployConstant.SAS_TOKEN_LIFE_TIME),
   };

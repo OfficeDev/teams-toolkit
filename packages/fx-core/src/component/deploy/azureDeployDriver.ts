@@ -11,8 +11,6 @@ import {
 import { checkMissingArgs } from "../utils/common";
 import { DeployExternalApiCallError, DeployTimeoutError } from "../error/deployError";
 import { LogProvider } from "@microsoft/teamsfx-api";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, LogProvider } from "@microsoft/teamsfx-api";
 import { BaseDeployDriver } from "./baseDeployDriver";
 import { Base64 } from "js-base64";
 import * as appService from "@azure/arm-appservice";
@@ -194,12 +192,6 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
       );
     } catch (e) {
       throw DeployExternalApiCallError.listPublishingCredentialsError(e);
-    }
-
-    if (listResponse._response.status !== HttpStatusCode.OK) {
-      throw DeployExternalApiCallError.listPublishingCredentialsError(
-        listResponse._response.status
-      );
     }
 
     const publishingUserName = listResponse.publishingUserName ?? "";

@@ -6,19 +6,13 @@ import * as sinon from "sinon";
 import * as tools from "../../../src/common/tools";
 import { AzureStorageDeployDriver } from "../../../src/component/deploy/azureStorageDeployDriver";
 import { DeployArgs } from "../../../src/component/interface/buildAndDeployArgs";
-import { FakeTokenCredentials, TestAzureAccountProvider } from "../util/azureAccountMock";
+import { TestAzureAccountProvider } from "../util/azureAccountMock";
 import { TestLogProvider } from "../util/logProviderMock";
 import { expect, use as chaiUse } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import {
-  AccountSasParameters,
   ListAccountSasResponse,
-  StorageAccount,
-  StorageAccountCreateParameters,
   StorageAccounts,
-  StorageAccountsCreateOptionalParams,
-  StorageAccountsCreateResponse,
-  StorageAccountsListAccountSASOptionalParams,
   StorageManagementClient,
 } from "@azure/arm-storage";
 import { BlobDeleteResponse, ContainerClient } from "@azure/storage-blob";
@@ -28,7 +22,7 @@ import * as armStorage from "@azure/arm-storage";
 import { DriverContext } from "../../../src/component/interface/commonArgs";
 chaiUse(chaiAsPromised);
 
-function getMockStorageAccount1(storageAccount?: StorageAccount) {
+function getMockStorageAccount1() {
   return {
     // beginCreateAndWait: async function (
     //   resourceGroupName: string,
@@ -38,12 +32,7 @@ function getMockStorageAccount1(storageAccount?: StorageAccount) {
     // ): Promise<StorageAccountsCreateResponse> {
     //   return storageAccount!;
     // },
-    listAccountSAS: async function (
-      resourceGroupName: string,
-      accountName: string,
-      parameters: AccountSasParameters,
-      options?: StorageAccountsListAccountSASOptionalParams
-    ): Promise<ListAccountSasResponse> {
+    listAccountSAS: async function (): Promise<ListAccountSasResponse> {
       return {
         accountSasToken: "abc",
       };
@@ -81,7 +70,7 @@ describe("Azure Storage Deploy Driver test", () => {
     clientStub.storageAccounts = {} as StorageAccounts;
     const mockStorageManagementClient = new StorageManagementClient(new MyTokenCredential(), "id");
     mockStorageManagementClient.storageAccounts = getMockStorageAccount1() as any;
-    sinon.stub(armStorage, "StorageManagementClient").returns(mockStorageManagementClient);
+    sandbox.stub(armStorage, "StorageManagementClient").returns(mockStorageManagementClient);
     sandbox.stub(ContainerClient.prototype, "exists").resolves(false);
     sandbox.stub(ContainerClient.prototype, "create").resolves();
     sandbox.stub(ContainerClient.prototype, "listBlobsFlat").returns([

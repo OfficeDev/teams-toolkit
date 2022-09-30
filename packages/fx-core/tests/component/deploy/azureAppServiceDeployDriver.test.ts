@@ -9,7 +9,7 @@ import * as appService from "@azure/arm-appservice";
 import * as tools from "../../../src/common/tools";
 import { TestLogProvider } from "../util/logProviderMock";
 import { use as chaiUse, expect } from "chai";
-import fs from "fs-extra";
+import * as fs from "fs-extra";
 import chaiAsPromised from "chai-as-promised";
 import { PrerequisiteError } from "../../../src/component/error/componentError";
 import { TestAzureAccountProvider } from "../util/azureAccountMock";

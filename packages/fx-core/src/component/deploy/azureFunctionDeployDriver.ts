@@ -2,14 +2,12 @@
 // Licensed under the MIT license.
 
 import { DeployStepArgs } from "../interface/buildAndDeployArgs";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { AzureDeployDriver } from "./azureDeployDriver";
 import { DeployExternalApiCallError } from "../error/deployError";
-import { AxiosResponseWithStatusResult } from "../../common/azure-hosting/interfaces";
 import { Service } from "typedi";
 import { StepDriver } from "../interface/stepDriver";
 import { AzureResourceInfo, DriverContext } from "../interface/commonArgs";
-import { HttpStatusCode } from "../constant/commonConstant";
+import { TokenCredential } from "@azure/core-http";
 
 @Service("azureFunctions/deploy")
 export class AzureFunctionDeployDriver implements StepDriver {
@@ -44,9 +42,6 @@ export class AzureFunctionDeployDriverImpl extends AzureDeployDriver {
       );
     } catch (e) {
       throw DeployExternalApiCallError.restartWebAppError(e);
-    }
-    if (!res || res?._response.status !== HttpStatusCode.OK) {
-      throw DeployExternalApiCallError.restartWebAppError(res);
     }
   }
 }

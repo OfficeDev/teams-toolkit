@@ -3,7 +3,6 @@
 
 import { AzureDeployDriver } from "./azureDeployDriver";
 import { DeployStepArgs } from "../interface/buildAndDeployArgs";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
   BlobDeleteResponse,
   BlobItem,
@@ -11,14 +10,6 @@ import {
   BlockBlobParallelUploadOptions,
   ContainerClient,
 } from "@azure/storage-blob";
-import {
-  AccountSasParameters,
-  Services,
-  SignedResourceTypes,
-  StorageAccounts,
-  StorageManagementClient,
-  Permissions,
-} from "@azure/arm-storage";
 import { DeployConstant } from "../constant/deployConstant";
 import { DeployExternalApiCallError } from "../error/deployError";
 import { forEachFileAndDir } from "../utils/fileOperation";

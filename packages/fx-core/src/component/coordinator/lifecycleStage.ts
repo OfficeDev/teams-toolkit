@@ -14,7 +14,7 @@ class LifecycleStage {
   static async runSteps(steps: Step[], context: DriverContext) {
     const drivers = steps.map((it) => Container.get(it.driver) as StepDriver);
     if (drivers.find((it) => !it)) {
-      throw PrerequisiteError.somethingIllegal("DriverName", "");
+      throw PrerequisiteError.somethingIllegal("Deploy", "DriverName", "");
     }
     for (const step of steps) {
       const driver = Container.get(step.driver) as StepDriver;

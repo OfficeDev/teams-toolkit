@@ -32,7 +32,7 @@ import { DriverContext, AzureResourceInfo } from "../interface/commonArgs";
 import { createBlobServiceClient } from "../utils/azureResourceOperation";
 import { TokenCredential } from "@azure/identity";
 
-@Service("deploy/azureStorage")
+@Service("azureStorage/deploy")
 export class AzureStorageDeployDriver implements StepDriver {
   async run(args: unknown, context: DriverContext): Promise<Map<string, string>> {
     const impl = new AzureStorageDeployDriverImpl(args, context);

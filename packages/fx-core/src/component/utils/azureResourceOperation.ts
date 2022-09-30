@@ -21,7 +21,7 @@ import { DeployConstant } from "../constant/deployConstant";
 export function parseAzureResourceId(resourceId: string, pattern: RegExp): AzureResourceInfo {
   const result = resourceId.trim().match(pattern);
   if (!result || result.length != 4) {
-    throw PrerequisiteError.somethingIllegal("resourceId", "plugins.bot.InvalidValue", [
+    throw PrerequisiteError.somethingIllegal("Deploy", "resourceId", "plugins.bot.InvalidValue", [
       "resourceId",
       resourceId,
     ]);
@@ -44,11 +44,12 @@ export async function getAzureAccountCredential(
   try {
     credential = await tokenProvider.getAccountCredentialAsync();
   } catch (e) {
-    throw ExternalApiCallError.getAzureCredentialError(e);
+    throw ExternalApiCallError.getAzureCredentialError(DeployConstant.DEPLOY_ERROR_TYPE, e);
   }
 
   if (!credential) {
     throw PrerequisiteError.somethingIllegal(
+      "Deploy",
       "azureCredential",
       "plugin.hosting.FailRetrieveAzureCredentials",
       undefined,
@@ -97,7 +98,7 @@ async function generateSasToken(
   const token = (await client.listAccountSAS(resourceGroupName, storageName, accountSasParameters))
     .accountSasToken;
   if (!token) {
-    throw ExternalApiCallError.getSasTokenError();
+    throw ExternalApiCallError.getSasTokenError(DeployConstant.DEPLOY_ERROR_TYPE);
   }
   return token;
 }

@@ -8,7 +8,7 @@ import { Service } from "typedi";
 import { DriverContext, AzureResourceInfo } from "../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
 
-@Service("deploy/azureAppService")
+@Service("azureAppService/deploy")
 export class AzureAppServiceDeployDriver implements StepDriver {
   async run(args: unknown, context: DriverContext): Promise<Map<string, string>> {
     const impl = new AzureAppServiceDeployDriverImpl(args, context);

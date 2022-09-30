@@ -11,7 +11,7 @@ import { StepDriver } from "../interface/stepDriver";
 import { AzureResourceInfo, DriverContext } from "../interface/commonArgs";
 import { HttpStatusCode } from "../constant/commonConstant";
 
-@Service("deploy/azureFunction")
+@Service("azureFunctions/deploy")
 export class AzureFunctionDeployDriver implements StepDriver {
   async run(args: unknown, context: DriverContext): Promise<Map<string, string>> {
     const impl = new AzureFunctionDeployDriverImpl(args, context);

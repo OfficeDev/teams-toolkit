@@ -9,8 +9,9 @@ import {
   DeployArgs,
 } from "../interface/buildAndDeployArgs";
 import { checkMissingArgs } from "../utils/common";
-import { PrerequisiteError } from "../error/componentError";
 import { DeployExternalApiCallError, DeployTimeoutError } from "../error/deployError";
+import { LogProvider } from "@microsoft/teamsfx-api";
+import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { AzureAccountProvider, LogProvider } from "@microsoft/teamsfx-api";
 import { BaseDeployDriver } from "./baseDeployDriver";
 import { Base64 } from "js-base64";

@@ -40,8 +40,8 @@ As described above, the Teams Toolkit generated some configuration to set up you
 
 <h3 id='2.1'>Set up the AAD redirects</h3>
 
-1. Move the `auth/bot/public` folder to `bot`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with AAD, AAD will redirect the user to these pages.
-1. Modify your `bot/index` to add the appropriate `restify` routes to these pages.
+1. Move the `auth/bot/public` folder to `bot/src`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with AAD, AAD will redirect the user to these pages.
+1. Modify your `bot/src/index` to add the appropriate `restify` routes to these pages.
 
     ```ts
     const path = require("path");
@@ -300,7 +300,19 @@ The sample business logic provides a handler `TeamsBot` extends TeamsActivityHan
 You can update the query logic in the `handleMessageExtensionQueryWithToken` with token which is obtained by using the logged-in Teams user token.
 
 To make this work in your application:
-1. [Set up the AAD redirects](#2.1)
+1. Move the `auth/bot/public` folder to `bot`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with AAD, AAD will redirect the user to these pages.
+1. Modify your `bot/index` to add the appropriate `restify` routes to these pages.
+
+    ```ts
+    const path = require("path");
+
+    server.get(
+        "/auth-*.html",
+        restify.plugins.serveStatic({
+            directory: path.join(__dirname, "public"),
+        })
+    );
+    ```
 1. Override `handleTeamsMessagingExtensionQuery` interface under `bot/teamsBot`. You can follow the sample code in the `handleMessageExtensionQueryWithToken` to do your own query logic.
 1. Open `bot/package.json`, ensure that `@microsoft/teamsfx` version >= 1.2.0
 1. Install `isomorphic-fetch` npm packages in your bot project.

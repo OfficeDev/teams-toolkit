@@ -29,18 +29,4 @@ describe("Resource plugin container", () => {
     const map = getAllResourcePluginMap();
     assert.isTrue(map.size === num);
   });
-
-  it("getActivatedResourcePlugins", async () => {
-    const solutionSettings: AzureSolutionSettings = {
-      hostType: HostTypeOptionAzure.id,
-      capabilities: [TabOptionItem.id],
-      azureResources: [AzureResourceSQL.id],
-      activeResourcePlugins: [],
-      name: "fx-solution-azure",
-      version: "",
-    };
-    const plugins = getActivatedResourcePlugins(solutionSettings);
-    const names = plugins.map((p) => p.name);
-    assert.isTrue(names.includes(Container.get<Plugin>(ResourcePlugins.FrontendPlugin).name));
-  });
 });

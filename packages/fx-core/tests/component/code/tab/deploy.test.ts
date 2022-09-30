@@ -6,8 +6,7 @@ import chaiAsPromised from "chai-as-promised";
 
 import faker from "faker";
 import mockfs from "mock-fs";
-
-import { FrontendDeployment } from "../../../../../src/plugins/resource/frontend/ops/deploy";
+import { FrontendDeployment } from "../../../../src/component/code/tab/deploy";
 
 chai.use(chaiAsPromised);
 

@@ -4,20 +4,20 @@ import "mocha";
 import * as chai from "chai";
 import * as faker from "faker";
 import chaiAsPromised from "chai-as-promised";
-
-import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
+import { isKvPairEqual } from "../../../../src/component/utils/common";
+import { execute } from "../../../../src/component/code/utils";
 
 chai.use(chaiAsPromised);
 
 describe("FrontendUtils", async () => {
   describe("execute", async () => {
     it("success", async () => {
-      const res = await Utils.execute("echo 1");
+      const res = await execute("echo 1");
       chai.assert.equal(res.trim(), "1");
     });
 
     it("fail", async () => {
-      const res = Utils.execute("deadbeaf");
+      const res = execute("wrong command");
       chai.expect(res).be.rejectedWith(Error);
     });
   });
@@ -37,7 +37,7 @@ describe("FrontendUtils", async () => {
       }
 
       // act
-      const res = Utils.isKvPairEqual(kv1, kv2);
+      const res = isKvPairEqual(kv1, kv2);
 
       // assert
       chai.assert.isTrue(res);
@@ -54,7 +54,7 @@ describe("FrontendUtils", async () => {
       }
 
       // act
-      const res = Utils.isKvPairEqual(kv1, kv2);
+      const res = isKvPairEqual(kv1, kv2);
 
       // assert
       chai.assert.isFalse(res);

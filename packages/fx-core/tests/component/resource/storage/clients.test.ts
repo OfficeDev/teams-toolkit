@@ -12,67 +12,37 @@ import {
   ServiceGetPropertiesResponse,
 } from "@azure/storage-blob";
 import {
-  AccountSasParameters,
   ListAccountSasResponse,
   StorageAccount,
-  StorageAccountCreateParameters,
-  StorageAccountsCreateOptionalParams,
-  StorageAccountsListAccountSASOptionalParams,
   StorageManagementClient,
+  StorageAccountsCreateResponse,
 } from "@azure/arm-storage";
-import { StorageAccountsCreateResponse } from "@azure/arm-storage";
 import chaiAsPromised from "chai-as-promised";
-
-import { AzureStorageClient } from "../../../../../src/plugins/resource/frontend/clients";
-import { TestHelper } from "../helper";
-import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
-import {
-  ResourceGroupsCheckExistenceOptionalParams,
-  ResourceGroupsCheckExistenceResponse,
-  ResourceManagementClient,
-} from "@azure/arm-resources";
-import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
-import * as armResources from "@azure/arm-resources";
+import { AccessToken, TokenCredential } from "@azure/core-auth";
 import * as armStorage from "@azure/arm-storage";
+import { AzureStorageClient } from "../../../../src/component/resource/azureStorage/clients";
+import * as utils from "../../../../src/component/utils/fileOperation";
+import { StorageConfig } from "../../../../src/component/resource/azureStorage/configs";
 
 chai.use(chaiAsPromised);
 
-const mockResourceGroups = {
-  checkExistence: async function (
-    resourceGroupName: string,
-    options?: ResourceGroupsCheckExistenceOptionalParams
-  ): Promise<ResourceGroupsCheckExistenceResponse> {
-    return {
-      body: true,
-    };
-  },
+const getFakeAzureStorageClient = (): AzureStorageClient => {
+  const config = new StorageConfig("subs", "rg", "location", "storage", undefined!);
+  return new AzureStorageClient(config);
 };
 
 class MyTokenCredential implements TokenCredential {
-  getToken(
-    scopes: string | string[],
-    options?: GetTokenOptions | undefined
-  ): Promise<AccessToken | null> {
+  getToken(): Promise<AccessToken | null> {
     throw new Error("Method not implemented.");
   }
 }
 
 function getMockStorageAccount1(storageAccount?: StorageAccount) {
   return {
-    beginCreateAndWait: async function (
-      resourceGroupName: string,
-      accountName: string,
-      parameters: StorageAccountCreateParameters,
-      options?: StorageAccountsCreateOptionalParams
-    ): Promise<StorageAccountsCreateResponse> {
+    beginCreateAndWait: async function (): Promise<StorageAccountsCreateResponse> {
       return storageAccount!;
     },
-    listAccountSAS: async function (
-      resourceGroupName: string,
-      accountName: string,
-      parameters: AccountSasParameters,
-      options?: StorageAccountsListAccountSASOptionalParams
-    ): Promise<ListAccountSasResponse> {
+    listAccountSAS: async function (): Promise<ListAccountSasResponse> {
       return {
         accountSasToken: faker.internet.password(),
       };
@@ -81,61 +51,6 @@ function getMockStorageAccount1(storageAccount?: StorageAccount) {
 }
 
 describe("AzureStorageClient", () => {
-  describe("doesResourceGroupExists", () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("happy path", async () => {
-      const mockResourceManagementClient = new ResourceManagementClient(
-        new MyTokenCredential(),
-        "id"
-      );
-      mockResourceManagementClient.resourceGroups = mockResourceGroups as any;
-      sinon.stub(armResources, "ResourceManagementClient").returns(mockResourceManagementClient);
-      const azureClient = await TestHelper.getFakeAzureStorageClient();
-
-      const result: boolean = await azureClient.doesResourceGroupExists();
-      chai.assert.isTrue(result);
-    });
-  });
-
-  describe("createStorageAccount", () => {
-    const sampleStorageAccount = TestHelper.storageAccount;
-
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("happy path", async () => {
-      const mockStorageManagementClient = new StorageManagementClient(
-        new MyTokenCredential(),
-        "id"
-      );
-      mockStorageManagementClient.storageAccounts = getMockStorageAccount1(
-        sampleStorageAccount
-      ) as any;
-      sinon.stub(armStorage, "StorageManagementClient").returns(mockStorageManagementClient);
-      const azureClient = await TestHelper.getFakeAzureStorageClient();
-      const result = await azureClient.createStorageAccount();
-
-      chai.assert.equal(result, sampleStorageAccount.primaryEndpoints?.web);
-    });
-
-    it("empty endpoint", async () => {
-      const azureClient = await TestHelper.getFakeAzureStorageClient();
-      const emptyResponse = {} as StorageAccountsCreateResponse;
-
-      const mockStorageManagementClient = new StorageManagementClient(
-        new MyTokenCredential(),
-        "id"
-      );
-      mockStorageManagementClient.storageAccounts = getMockStorageAccount1(emptyResponse) as any;
-      sinon.stub(armStorage, "StorageManagementClient").returns(mockStorageManagementClient);
-      await chai.expect(azureClient.createStorageAccount()).to.eventually.be.rejectedWith();
-    });
-  });
-
   describe("enableStaticWebsite", () => {
     let setPropertiesStub: sinon.SinonStub;
     before(() => {
@@ -155,7 +70,7 @@ describe("AzureStorageClient", () => {
     });
 
     it("happy path", async () => {
-      const azureClient = await TestHelper.getFakeAzureStorageClient();
+      const azureClient = getFakeAzureStorageClient();
       const parameters = AzureStorageClient.getStaticWebsiteEnableParams();
 
       await azureClient.enableStaticWebsite();
@@ -176,7 +91,7 @@ describe("AzureStorageClient", () => {
       sinon.stub(ContainerClient.prototype, "deleteBlob").resolves({} as any);
       sinon.stub(ContainerClient.prototype, "create").resolves();
       sinon.stub(ContainerClient.prototype, "exists").resolves(true);
-      sinon.stub(Utils, "listFilePaths").resolves([faker.system.filePath()]);
+      sinon.stub(utils, "listFilePaths").resolves([faker.system.filePath()]);
     });
 
     afterEach(() => {
@@ -184,7 +99,7 @@ describe("AzureStorageClient", () => {
     });
 
     it("happy path", async () => {
-      const azureClient = await TestHelper.getFakeAzureStorageClient();
+      const azureClient = getFakeAzureStorageClient();
 
       const container = await azureClient.getContainer(faker.lorem.word());
       await azureClient.deleteAllBlobs(container);
@@ -202,7 +117,7 @@ describe("AzureStorageClient", () => {
       sinon.stub(ContainerClient.prototype, "create").resolves();
       sinon.stub(ContainerClient.prototype, "exists").resolves(true);
       sinon.stub(BlockBlobClient.prototype, "uploadFile").resolves({} as any);
-      sinon.stub(Utils, "listFilePaths").resolves([faker.system.filePath()]);
+      sinon.stub(utils, "listFilePaths").resolves([faker.system.filePath()]);
     });
 
     afterEach(() => {
@@ -210,7 +125,7 @@ describe("AzureStorageClient", () => {
     });
 
     it("happy path", async () => {
-      const azureClient = await TestHelper.getFakeAzureStorageClient();
+      const azureClient = getFakeAzureStorageClient();
 
       const sourceFolder = faker.system.directoryPath();
       const container = await azureClient.getContainer(faker.lorem.word());
@@ -232,7 +147,7 @@ describe("AzureStorageClient", () => {
       sinon.stub(armStorage, "StorageManagementClient").returns(mockStorageManagementClient);
     });
     beforeEach(async () => {
-      azureClient = await TestHelper.getFakeAzureStorageClient();
+      azureClient = getFakeAzureStorageClient();
       sinon.stub(BlobServiceClient.prototype, "getProperties").resolves(samplePropertiesResponse);
       sinon.stub(ContainerClient.prototype, "exists").resolves(true);
     });

@@ -12,10 +12,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Service } from "typedi";
-import fs from "fs-extra";
 import * as path from "path";
 import { AzureResource } from "../azureResource";
-import { ComponentNames, PathConstants, Scenarios, StorageOutputs } from "../../constants";
+import { ComponentNames, Scenarios, StorageOutputs } from "../../constants";
 import { LogMessages, ProgressMessages, ProgressTitles } from "../../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
@@ -54,7 +53,7 @@ export class AzureStorageResource extends AzureResource {
         inputs.componentId,
         ctx.tokenProvider.azureAccountProvider
       );
-      const client = new AzureStorageClient(config);
+      const client = new AzureStorageClient(config, context.logProvider);
       await client.enableStaticWebsite();
     } else {
       await actionContext?.progressBar?.next("");
@@ -76,52 +75,40 @@ export class AzureStorageResource extends AzureResource {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const ctx = context as ResourceContextV3;
-    const deployDir = path.resolve(inputs.projectPath, inputs.folder);
+    const deployDir = path.resolve(inputs.projectPath, inputs.artifactFolder);
     const config = await StorageConfig.fromEnvInfo(
       ctx.envInfo,
       inputs.componentId,
       ctx.tokenProvider.azureAccountProvider
     );
-    const client = new AzureStorageClient(config);
+    const client = new AzureStorageClient(config, context.logProvider);
     const envName = ctx.envInfo.envName;
-    await this.doDeployment(client, deployDir, envName, actionContext?.progressBar);
+    const needDeploy = await FrontendDeployment.needDeploy(inputs.projectPath, envName);
+    if (!needDeploy) {
+      await actionContext?.progressBar?.next(ProgressMessages.getDeploymentSrcAndDest);
+      await actionContext?.progressBar?.next(ProgressMessages.clearStorageAccount);
+      await actionContext?.progressBar?.next(ProgressMessages.uploadTabToStorage);
+      return ok(undefined);
+    }
+    await this.doDeployment(client, deployDir, actionContext?.progressBar);
+    await FrontendDeployment.saveDeploymentInfo(inputs.projectPath, envName, {
+      lastDeployTime: new Date().toISOString(),
+    });
     return ok(undefined);
   }
 
   private async doDeployment(
     client: AzureStorageClient,
-    componentPath: string,
-    envName: string,
+    deployDir: string,
     progress?: IProgressHandler
   ): Promise<void> {
-    const needDeploy = await FrontendDeployment.needDeploy(componentPath, envName);
-    if (!needDeploy) {
-      await progress?.next(ProgressMessages.getDeploymentSrcAndDest);
-      await progress?.next(ProgressMessages.clearStorageAccount);
-      await progress?.next(ProgressMessages.uploadTabToStorage);
-      return;
-    }
-
     await progress?.next(ProgressMessages.getDeploymentSrcAndDest);
-    const builtPath = await this.getBuiltPath(componentPath);
     const container = await client.getContainer(StorageConstants.azureStorageWebContainer);
 
     await progress?.next(ProgressMessages.clearStorageAccount);
     await client.deleteAllBlobs(container);
 
     await progress?.next(ProgressMessages.uploadTabToStorage);
-    await client.uploadFiles(container, builtPath);
-    await FrontendDeployment.saveDeploymentInfo(componentPath, envName, {
-      lastDeployTime: new Date().toISOString(),
-    });
-  }
-
-  private async getBuiltPath(componentPath: string): Promise<string> {
-    const builtPath = path.join(componentPath, PathConstants.nodeArtifactFolder);
-    const pathExists = await fs.pathExists(builtPath);
-    if (!pathExists) {
-      throw new Error();
-    }
-    return builtPath;
+    await client.uploadFiles(container, deployDir);
   }
 }

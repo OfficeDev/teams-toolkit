@@ -17,7 +17,7 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 
-import { ComponentNames } from "../../../src/component/constants";
+import { ComponentNames, PathConstants } from "../../../src/component/constants";
 import {
   DebugArgumentEmptyError,
   InvalidTabBaseUrlError,
@@ -30,7 +30,6 @@ import {
 import { TabDebugArgs, TabDebugHandler } from "../../../src/component/debugHandler/tab";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
-import { Constants } from "../../../src/plugins/resource/frontend/constants";
 import { runDebugActions } from "./utils";
 
 describe("TabDebugHandler", () => {
@@ -174,7 +173,7 @@ describe("TabDebugHandler", () => {
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsTab].domain, "localhost");
       chai.assert.equal(
         envInfoV3.state[ComponentNames.TeamsTab].indexPath,
-        Constants.FrontendIndexPath
+        PathConstants.reactTabIndexPath
       );
       const expectedEnvs: LocalEnvs = {
         template: {

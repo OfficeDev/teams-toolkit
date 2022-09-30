@@ -9,7 +9,7 @@ import * as os from "os";
 import * as faker from "faker";
 
 import sinon from "sinon";
-import { envFilePath, saveEnvFile } from "../../../../../src/plugins/resource/frontend/env";
+import { envFilePath, saveEnvFile } from "../../../../src/component/code/tab/env";
 
 chai.use(chaiAsPromised);
 
@@ -24,9 +24,7 @@ describe("Frontend Hosting Customize Env", async () => {
   const length = 3;
   const customizeEnvKeys = Array.from(Array(length), () => faker.unique(faker.lorem.word));
   const customizeEnvValues = Array.from(Array(length), () => faker.lorem.word());
-  const customizeEnv = customizeEnvKeys.map((v, i) => {
-    return { [v]: customizeEnvValues[i] };
-  });
+
   const customizeEnvString = customizeEnvKeys
     .map((v, i) => `${v}=${customizeEnvValues[i]}${os.EOL}`)
     .join("");

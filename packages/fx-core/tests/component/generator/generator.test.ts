@@ -19,6 +19,14 @@ import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import AdmZip from "adm-zip";
+import sinon from "sinon";
+import { fetchTemplateUrl } from "../../../src/common/template-utils/templatesUtils";
+import {
+  fetchSampleUrlWithTagAction,
+  fetchTemplateUrlWithTagAction,
+  fetchTemplateZipFromLocalAction,
+  fetchZipFromUrlAction,
+} from "../../../src/component/generator/generateAction";
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
 
@@ -63,7 +71,48 @@ describe("Generator utils", () => {
   });
 });
 
-describe("Generator happy path", () => {
+describe("Generator error", async () => {
+  const tools = new MockTools();
+  setTools(tools);
+  const ctx = createContextV3();
+  const sandbox = sinon.createSandbox();
+  const tmpDir = path.join(__dirname, "tmp");
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+
+  it("fetch sample url with tag error", async () => {
+    sandbox.stub(fetchSampleUrlWithTagAction, "run").throws(new Error("test"));
+    try {
+      await Generator.generateSample("bot-sso", tmpDir, ctx);
+    } catch (e) {
+      assert.equal(e.name, "FetchSampleUrlWithTagError");
+    }
+  });
+
+  it("fetch sample zip from url error", async () => {
+    sandbox.stub(fetchSampleUrlWithTagAction, "run").resolves();
+    sandbox.stub(fetchZipFromUrlAction, "run").throws(new Error("test"));
+    try {
+      await Generator.generateSample("bot-sso", tmpDir, ctx);
+    } catch (e) {
+      assert.equal(e.name, "FetchZipFromUrlError");
+    }
+  });
+
+  it("template fallback error", async () => {
+    sandbox.stub(fetchTemplateUrlWithTagAction, "run").throws(new Error("test"));
+    sandbox.stub(fetchTemplateZipFromLocalAction, "run").throws(new Error("test"));
+    try {
+      await Generator.generateTemplate("bot", "ts", tmpDir, ctx);
+    } catch (e) {
+      assert.equal(e.name, "TemplateZipFallbackError");
+    }
+  });
+});
+
+describe("Generator happy path", async () => {
   const tools = new MockTools();
   setTools(tools);
   const context = createContextV3();

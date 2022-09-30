@@ -4,12 +4,12 @@
 import * as sinon from "sinon";
 import "mocha";
 import { AzureAppServiceDeployDriver } from "../../../src/component/deploy/azureAppServiceDeployDriver";
-import { DeployArgs, DriverContext } from "../../../src/component/interface/buildAndDeployArgs";
+import { DeployArgs } from "../../../src/component/interface/buildAndDeployArgs";
 import * as appService from "@azure/arm-appservice";
 import * as tools from "../../../src/common/tools";
 import { TestLogProvider } from "../util/logProviderMock";
 import { use as chaiUse, expect } from "chai";
-import fs from "fs-extra";
+import * as fs from "fs-extra";
 import chaiAsPromised from "chai-as-promised";
 import { PrerequisiteError } from "../../../src/component/error/componentError";
 import { TestAzureAccountProvider } from "../util/azureAccountMock";
@@ -18,6 +18,7 @@ import { AzureDeployDriver } from "../../../src/component/deploy/azureDeployDriv
 import { DeployConstant } from "../../../src/component/constant/deployConstant";
 import * as fileOpt from "../../../src/component/utils/fileOperation";
 import { DeployExternalApiCallError } from "../../../src/component/error/deployError";
+import { DriverContext } from "../../../src/component/interface/commonArgs";
 import { MyTokenCredential } from "../../plugins/solution/util";
 chaiUse(chaiAsPromised);
 

@@ -9,7 +9,7 @@ import * as utils from "../../../src/component/code/utils";
 import { DotnetBuildDriver } from "../../../src/component/deploy/dotnetBuildDriver";
 import { TestAzureAccountProvider } from "../util/azureAccountMock";
 import { TestLogProvider } from "../util/logProviderMock";
-import { DriverContext } from "../../../src/component/interface/buildAndDeployArgs";
+import { DriverContext } from "../../../src/component/interface/commonArgs";
 import chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 

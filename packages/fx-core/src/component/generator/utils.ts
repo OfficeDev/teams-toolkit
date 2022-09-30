@@ -128,7 +128,7 @@ export function getSampleInfoFromName(sampleName: string): SampleInfo {
     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
   );
   if (samples.length == 0) {
-    throw Error(`invalid sample id: '${sampleName}'`);
+    throw Error(`invalid sample name: '${sampleName}'`);
   }
   return samples[0];
 }

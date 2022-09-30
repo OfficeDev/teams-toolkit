@@ -9,7 +9,9 @@ import {
   fetchZipUrl,
   genFileDataRenderReplaceFn,
   genFileNameRenderReplaceFn,
+  getSampleInfoFromName,
   getValidSampleDestination,
+  mergeReplaceMap,
   unzip,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
@@ -26,6 +28,7 @@ import {
   fetchTemplateUrlWithTagAction,
   fetchTemplateZipFromLocalAction,
   fetchZipFromUrlAction,
+  unzipAction,
 } from "../../../src/component/generator/generateAction";
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -69,6 +72,31 @@ describe("Generator utils", () => {
       path.join(dstPath, "generator_1")
     );
   });
+
+  it("get sample info from name", async () => {
+    const sampleName = "test";
+    try {
+      getSampleInfoFromName(sampleName);
+    } catch (e) {
+      assert.equal(e.message, "invalid sample name: 'test'");
+    }
+  });
+
+  it("merge replace map", async () => {
+    const replaceMap = {
+      a: "a",
+      b: "b",
+    };
+    const replaceMap2 = {
+      c: "c",
+      d: "d",
+    };
+    const merged = mergeReplaceMap(replaceMap, replaceMap2);
+    assert.equal(merged.a, "a");
+    assert.equal(merged.b, "b");
+    assert.equal(merged.c, "c");
+    assert.equal(merged.d, "d");
+  });
 });
 
 describe("Generator error", async () => {
@@ -110,7 +138,35 @@ describe("Generator error", async () => {
       assert.equal(e.name, "TemplateZipFallbackError");
     }
   });
+
+  it("unzip error", async () => {
+    sandbox.stub(fetchTemplateUrlWithTagAction, "run").resolves();
+    sandbox.stub(fetchZipFromUrlAction, "run").resolves();
+    sandbox.stub(fetchTemplateZipFromLocalAction, "run").resolves();
+    sandbox.stub(unzipAction, "run").throws(new Error("test"));
+    try {
+      await Generator.generateTemplate("bot", "ts", tmpDir, ctx);
+    } catch (e) {
+      assert.equal(e.name, "UnzipError");
+    }
+  });
 });
+
+// describe("Generator action", async () => {
+//   const tools = new MockTools();
+//   setTools(tools);
+//   const context = createContextV3();
+
+//   it("fetch template url with tag action", async () => {
+//     const url = await fetchTemplateUrlWithTagAction.run(
+//       "bot",
+//       "ts",
+//       templateDownloadBaseUrl,
+//       context
+//     );
+//     assert.isNotEmpty(url);
+//   }
+// });
 
 describe("Generator happy path", async () => {
   const tools = new MockTools();

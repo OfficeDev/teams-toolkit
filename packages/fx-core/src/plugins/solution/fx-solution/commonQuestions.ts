@@ -50,7 +50,6 @@ import {
 import { getHashedEnv } from "../../../common/tools";
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources";
-import { SolutionPlugin } from "../../resource/localdebug/constants";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
@@ -146,8 +145,8 @@ export async function checkM365Tenant(
 ): Promise<Result<Void, FxError>> {
   const m365TenantId =
     envInfo.version === 1
-      ? envInfo.data.state?.get(PluginNames.SOLUTION)?.get(SolutionPlugin.TeamsAppTenantId)
-      : envInfo.data.state[PluginNames.SOLUTION][SolutionPlugin.TeamsAppTenantId];
+      ? envInfo.data.state?.get(PluginNames.SOLUTION)?.get("teamsAppTenantId")
+      : envInfo.data.state[PluginNames.SOLUTION]["teamsAppTenantId"];
   if (!m365TenantId) {
     return ok(Void);
   }

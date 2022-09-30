@@ -43,10 +43,44 @@ export class Generator {
       },
       ctx.templateReplace
     );
-    const destination = ctx.isAddFeature ? destinationPath : path.join(destinationPath, appName);
+    const destination = path.join(destinationPath, appName);
     const generateContext: GenerateContext = {
       type: "template",
       name: `${templateName}_${language}`,
+      destination: destination,
+      logProvider: ctx.logProvider,
+      fileDataReplaceFn: genFileDataRenderReplaceFn(dataReplace),
+      fileNameReplaceFn: genFileNameRenderReplaceFn(nameReplace),
+      onActionError: templateDefaultOnActionError,
+    };
+    await this.generate(generateContext, TemplateActionSeq);
+  }
+
+  public static async addBuildingBlock(
+    buildingBlockName: string,
+    language: string,
+    destinationPath: string,
+    ctx: ContextV3
+  ): Promise<void> {
+    const appName = ctx.projectSetting?.appName;
+    const projectId = ctx.projectSetting?.projectId;
+    const dataReplace = mergeReplaceMap(
+      {
+        appName: appName,
+        projectId: projectId,
+      },
+      ctx.templateReplace
+    );
+    const nameReplace = mergeReplaceMap(
+      {
+        appName: appName,
+      },
+      ctx.templateReplace
+    );
+    const destination = destinationPath;
+    const generateContext: GenerateContext = {
+      type: "buildingBlock",
+      name: `${buildingBlockName}_${language}`,
       destination: destination,
       logProvider: ctx.logProvider,
       fileDataReplaceFn: genFileDataRenderReplaceFn(dataReplace),

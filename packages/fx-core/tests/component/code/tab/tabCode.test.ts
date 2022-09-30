@@ -7,9 +7,13 @@ import { newEnvInfoV3 } from "../../../../src/core/environment";
 import { TabCodeProvider } from "../../../../src/component/code/tab/tabCode";
 import { ComponentNames } from "../../../../src/component/constants";
 import { createContextV3, newProjectSettingsV3 } from "../../../../src/component/utils";
+import { setTools } from "../../../../src/core/globalVars";
+import { MockTools } from "../../../core/utils";
 
 describe("TabCode", () => {
   const sandbox = sinon.createSandbox();
+  const tools = new MockTools();
+  setTools(tools);
   afterEach(() => {
     sandbox.restore();
   });

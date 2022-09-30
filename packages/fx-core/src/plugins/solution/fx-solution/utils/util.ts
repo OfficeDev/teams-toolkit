@@ -28,7 +28,6 @@ import { backupFiles } from "./backupFiles";
 import fs from "fs-extra";
 import path from "path";
 import { DeployConfigsConstants } from "../../../../common/azure-hosting/hostingConstant";
-import { FrontendPathInfo } from "../../../resource/frontend/constants";
 
 /**
  * A helper function to construct a plugin's context.
@@ -179,7 +178,7 @@ export async function handleConfigFilesWhenSwitchAccount(
       }
     }
 
-    const maybeTabFolder = path.join(inputs.projectPath, FrontendPathInfo.WorkingDir);
+    const maybeTabFolder = path.join(inputs.projectPath, PathConstants.WorkingDir);
     const maybeTabDeploymentFile = path.join(
       maybeTabFolder,
       path.join(

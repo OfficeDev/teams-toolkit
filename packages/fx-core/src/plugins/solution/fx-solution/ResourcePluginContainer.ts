@@ -10,13 +10,9 @@ import {
 import "reflect-metadata";
 import { Container } from "typedi";
 import { SolutionError, SolutionSource } from "./constants";
-export const ResourcePlugins = {
-  FrontendPlugin: "FrontendPlugin",
-};
+export const ResourcePlugins = {};
 
-export const ResourcePluginsV2 = {
-  FrontendPlugin: "FrontendPluginV2",
-};
+export const ResourcePluginsV2 = {};
 
 /**
  * @returns all registered resource plugins

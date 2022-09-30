@@ -3,9 +3,9 @@
 
 import { AzureResourceInfo, DeployStepArgs, DriverContext } from "../interface/buildAndDeployArgs";
 import { AzureDeployDriver } from "./azureDeployDriver";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { StepDriver } from "../interface/stepDriver";
 import { Service } from "typedi";
+import { TokenCredential } from "@azure/identity";
 
 @Service("deploy/azureAppService")
 export class AzureAppServiceDeployDriver implements StepDriver {
@@ -22,7 +22,7 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
   async azureDeploy(
     args: DeployStepArgs,
     azureResource: AzureResourceInfo,
-    azureCredential: TokenCredentialsBase
+    azureCredential: TokenCredential
   ): Promise<void> {
     await this.zipDeploy(args, azureResource, azureCredential);
   }

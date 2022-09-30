@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import axios from "axios";
 import * as chai from "chai";
 import glob from "glob";
@@ -89,8 +90,8 @@ export class FunctionValidator {
     console.log("Start to validate Function Provision.");
 
     const tokenProvider = MockAzureAccountProvider;
-    const tokenCredential = await tokenProvider.getAccountCredentialAsync();
-    const token = (await tokenCredential?.getToken())?.accessToken;
+    const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
+    const token = (await tokenCredential?.getToken(AzureScopes))?.token;
 
     const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
     chai.assert.isArray(activeResourcePlugins);
@@ -154,8 +155,8 @@ export class FunctionValidator {
     console.log("Start to validate Function Deployment.");
 
     // Disable validate deployment since we have too many requests and the test is not stable.
-    const tokenCredential = await MockAzureAccountProvider.getAccountCredentialAsync();
-    const token = (await tokenCredential?.getToken())?.accessToken;
+    const tokenCredential = await MockAzureAccountProvider.getIdentityCredentialAsync();
+    const token = (await tokenCredential?.getToken(AzureScopes))?.token;
 
     const deployments = await this.getDeployments(
       this.subscriptionId,

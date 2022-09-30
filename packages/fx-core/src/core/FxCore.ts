@@ -114,6 +114,7 @@ import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { copyParameterJson } from "../plugins/solution/fx-solution/arm";
 import { convertEnvStateMapV3ToV2 } from "../component/migrate";
+import { ProjectSettingsHelper } from "../common/local";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -700,12 +701,15 @@ export class FxCore implements v3.ICore {
     inputs.sourceEnvName = createEnvCopyInput.sourceEnvName;
     inputs.targetEnvName = createEnvCopyInput.targetEnvName;
 
-    await copyParameterJson(
-      inputs.projectPath!,
-      ctx.projectSettings!.appName,
-      inputs.targetEnvName!,
-      inputs.sourceEnvName!
-    );
+    if (!ProjectSettingsHelper.isSpfx(ctx.projectSettings)) {
+      await copyParameterJson(
+        inputs.projectPath!,
+        ctx.projectSettings!.appName,
+        inputs.targetEnvName!,
+        inputs.sourceEnvName!
+      );
+    }
+
     return ok(Void);
   }
 

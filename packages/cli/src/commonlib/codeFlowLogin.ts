@@ -359,6 +359,52 @@ export class CodeFlowLogin {
     }
   }
 
+  async getTenantTokenByScopes(
+    tenantId: string,
+    scopes: Array<string>
+  ): Promise<Result<string, FxError>> {
+    if (!this.account) {
+      await this.reloadCache();
+    }
+    if (this.account) {
+      try {
+        const res = await this.pca.acquireTokenSilent({
+          authority: env.activeDirectoryEndpointUrl + tenantId,
+          account: this.account,
+          scopes: scopes,
+          forceRefresh: true,
+        });
+        if (res) {
+          return ok(res.accessToken);
+        } else {
+          return err(LoginCodeFlowError(new Error("No token response")));
+        }
+      } catch (error) {
+        if (error.message.indexOf(MFACode) >= 0) {
+          throw error;
+        } else {
+          CliCodeLogInstance.necessaryLog(
+            LogLevel.Error,
+            "[Login] getTenantToken acquireTokenSilent : " + error.message
+          );
+          if (!(await checkIsOnline())) {
+            return err(CheckOnlineError());
+          }
+          const accountList = await this.msalTokenCache?.getAllAccounts();
+          for (let i = 0; i < accountList!.length; ++i) {
+            this.msalTokenCache?.removeAccount(accountList![i]);
+          }
+          this.config.auth.authority = env.activeDirectoryEndpointUrl + tenantId;
+          this.pca = new PublicClientApplication(this.config);
+          const accessToken = await this.login(scopes);
+          return ok(accessToken);
+        }
+      }
+    } else {
+      return err(LoginCodeFlowError(new Error("No account login")));
+    }
+  }
+
   async getTenantToken(tenantId: string): Promise<string | undefined> {
     try {
       if (!this.account) {

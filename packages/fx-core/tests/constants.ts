@@ -1,17 +1,7 @@
 import Container from "typedi";
-import {
-  ResourcePlugins,
-  ResourcePluginsV2,
-} from "../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { ResourcePlugins } from "../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { Plugin } from "@microsoft/teamsfx-api";
-import { ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import "../src/plugins/resource/frontend";
-import "../src/plugins/resource/identity";
-import "../src/plugins/resource/bot";
-import "../src/plugins/resource/bot/v2";
-import "../src/plugins/resource/localdebug";
-import "../src/plugins/resource/function";
-import "../src/plugins/resource/apim";
 import "../src/component/resource/aadApp/aadApp";
 import { ComponentNames } from "../src/component/constants";
 import { AadApp } from "../src/component/resource/aadApp/aadApp";
@@ -20,7 +10,6 @@ export class PluginId {
   static readonly FrontendHosting = "fx-resource-frontend-hosting";
   static readonly SimpleAuth = "fx-resource-simple-auth";
   static readonly Bot = "fx-resource-bot";
-  static readonly LocalDebug = "fx-resource-local-debug";
   static readonly AzureSQL = "fx-resource-azure-sql";
   static readonly Function = "fx-resource-function";
   static readonly Identity = "fx-resource-identity";
@@ -28,18 +17,8 @@ export class PluginId {
 }
 
 export const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin;
-export const identityPlugin = Container.get<Plugin>(ResourcePlugins.IdentityPlugin) as Plugin;
 export const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
-
-export const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin) as Plugin;
-export const botPluginV2 = Container.get<ResourcePlugin>(
-  ResourcePluginsV2.BotPlugin
-) as ResourcePlugin;
-export const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin) as Plugin;
 export const appStudioPlugin = Container.get<Plugin>(ComponentNames.AppManifest) as Plugin;
-export const functionPlugin = Container.get<Plugin>(ResourcePlugins.FunctionPlugin) as Plugin;
-export const apimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin) as Plugin;
-
 export class TestFilePath {
   static readonly armTemplateBaseFolder = "./templates/azure";
   static readonly configFolder = "./.fx/configs";

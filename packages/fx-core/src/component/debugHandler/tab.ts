@@ -68,9 +68,12 @@ export class TabDebugHandler {
     if (!this.args.baseUrl || this.args.baseUrl.trim().length === 0) {
       return err(DebugArgumentEmptyError("baseUrl"));
     }
-    const pattern = /https:\/\/localhost:\d+/;
-    const result = this.args.baseUrl.match(pattern);
-    if (!result) {
+    try {
+      const url = new URL(this.args.baseUrl);
+      if (url.protocol !== "https:") {
+        return err(InvalidTabBaseUrlError());
+      }
+    } catch {
       return err(InvalidTabBaseUrlError());
     }
     return ok([]);

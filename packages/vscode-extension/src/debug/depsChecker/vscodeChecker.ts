@@ -72,7 +72,7 @@ export class VSCodeDepsChecker {
   }
 
   public static getNodeDeps(): DepsType[] {
-    return [DepsType.FunctionNode, DepsType.SpfxNode, DepsType.AzureNode];
+    return [DepsType.SpfxNode, DepsType.SpfxNodeV1_16, DepsType.AzureNode];
   }
 
   public async getDepsStatus(dep: DepsType): Promise<DependencyStatus> {
@@ -135,7 +135,7 @@ export class VSCodeDepsChecker {
     switch (dep) {
       case DepsType.AzureNode:
       case DepsType.SpfxNode:
-      case DepsType.FunctionNode:
+      case DepsType.SpfxNodeV1_16:
         return vscodeHelper.isNodeCheckerEnabled();
       case DepsType.Dotnet:
         return vscodeHelper.isDotnetCheckerEnabled();
@@ -150,7 +150,6 @@ export class VSCodeDepsChecker {
 
   private static async containsFolder(dep: DepsType): Promise<boolean> {
     switch (dep) {
-      case DepsType.FunctionNode:
       case DepsType.FuncCoreTools:
         return await vscodeHelper.hasFunction();
       case DepsType.Ngrok:

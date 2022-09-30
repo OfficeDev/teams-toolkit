@@ -34,10 +34,7 @@ import {
   CapabilityAddTab,
   CapabilityAddWorkflow,
 } from "./capability";
-import {
-  isSPFxMultiTabEnabled,
-  isWorkflowBotEnabled,
-} from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { isSPFxMultiTabEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 import {
   isAadManifestEnabled,
   isApiConnectEnabled,
@@ -228,7 +225,7 @@ export default class Add extends YargsCommand {
     // Category 1: Add Teams Capability
     new CapabilityAddNotification(),
     new CapabilityAddCommandAndResponse(),
-    ...(isWorkflowBotEnabled() ? [new CapabilityAddWorkflow()] : []),
+    new CapabilityAddWorkflow(),
     new CapabilityAddSSOTab(),
     new CapabilityAddTab(),
     ...(isSPFxMultiTabEnabled() ? [new CapabilityAddSPFxTab()] : []),

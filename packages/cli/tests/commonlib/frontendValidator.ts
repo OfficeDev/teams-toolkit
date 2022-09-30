@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import axios from "axios";
 import * as chai from "chai";
 import * as fs from "fs";
@@ -98,8 +99,8 @@ export class FrontendValidator {
     console.log("Start to validate Frontend Provision.");
 
     const tokenProvider = MockAzureAccountProvider;
-    const tokenCredential = await tokenProvider.getAccountCredentialAsync();
-    const token = (await tokenCredential?.getToken())?.accessToken;
+    const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
+    const token = (await tokenCredential?.getToken(AzureScopes))?.token;
     chai.assert.exists(token);
 
     console.log("Validating Storage Container.");
@@ -118,8 +119,8 @@ export class FrontendValidator {
     console.log("Start to validate Frontend Deploy.");
 
     const tokenProvider = MockAzureAccountProvider;
-    const tokenCredential = await tokenProvider.getAccountCredentialAsync();
-    const token = (await tokenCredential?.getToken())?.accessToken;
+    const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
+    const token = (await tokenCredential?.getToken(AzureScopes))?.token;
     chai.assert.exists(token);
 
     const sasToken = await this.getSasToken(

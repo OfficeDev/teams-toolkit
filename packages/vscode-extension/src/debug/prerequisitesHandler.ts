@@ -96,8 +96,8 @@ enum Checker {
 }
 
 const DepsDisplayName = {
-  [DepsType.FunctionNode]: "Node.js",
   [DepsType.SpfxNode]: "Node.js",
+  [DepsType.SpfxNodeV1_16]: "Node.js",
   [DepsType.AzureNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
   [DepsType.Ngrok]: "ngrok",
@@ -109,6 +109,7 @@ interface CheckResult {
   result: ResultStatus;
   error?: FxError;
   successMsg?: string;
+  warnMsg?: string;
   failureMsg?: string;
 }
 
@@ -148,8 +149,8 @@ const ProgressMessage = Object.freeze({
       ? `Checking and installing npm packages for ${displayName}`
       : `Checking and installing npm packages in directory ${cwd}`,
   [Checker.Ports]: `Checking ${Checker.Ports}`,
-  [DepsType.FunctionNode]: `Checking ${DepsDisplayName[DepsType.FunctionNode]}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
+  [DepsType.SpfxNodeV1_16]: `Checking ${DepsDisplayName[DepsType.SpfxNodeV1_16]}`,
   [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
   [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
   [DepsType.Ngrok]: `Checking and installing ${DepsDisplayName[DepsType.Ngrok]}`,
@@ -291,6 +292,7 @@ async function checkPort(
         return {
           checker: Checker.Ports,
           result: ResultStatus.failed,
+          failureMsg: doctorConstant.Port,
           error: new UserError(
             ExtensionSource,
             ExtensionErrors.PortAlreadyInUse,
@@ -528,8 +530,8 @@ function getCheckPromise(
 ): Promise<CheckResult> {
   switch (checkerInfo.checker) {
     case DepsType.AzureNode:
-    case DepsType.FunctionNode:
     case DepsType.SpfxNode:
+    case DepsType.SpfxNodeV1_16:
       return checkNode(checkerInfo.checker, depsManager, step.getPrefix());
     case Checker.M365Account:
       return checkM365Account(step.getPrefix(), true);
@@ -920,6 +922,7 @@ async function resolveLocalCertificate(
         checker: Checker.LocalCertificate,
         result: result,
         successMsg: doctorConstant.CertSuccess,
+        warnMsg: doctorConstant.Cert,
         failureMsg: doctorConstant.Cert,
         error: error,
       };
@@ -1042,20 +1045,20 @@ function checkNpmInstall(
               }
             });
           } else {
-            exitCode = await runTask(
-              new vscode.Task(
-                {
-                  type: "shell",
-                  command: taskName,
-                },
-                vscode.workspace.workspaceFolders![0],
-                taskName,
-                ProductName,
-                new vscode.ShellExecution([baseNpmInstallCommand, ...args].join(" "), {
-                  cwd: folder,
-                })
-              )
+            const task = new vscode.Task(
+              {
+                type: "shell",
+                command: taskName,
+              },
+              vscode.workspace.workspaceFolders![0],
+              taskName,
+              ProductName,
+              new vscode.ShellExecution([baseNpmInstallCommand, ...args].join(" "), {
+                cwd: folder,
+              })
             );
+            task.presentationOptions.reveal = vscode.TaskRevealKind.Never;
+            exitCode = await runTask(task);
           }
           ctx.properties[TelemetryProperty.DebugNpmInstallExitCode] = `${exitCode}`;
 
@@ -1116,7 +1119,7 @@ async function handleCheckResults(
 
   for (const result of warnings) {
     output.appendLine("");
-    output.appendLine(`${doctorConstant.Exclamation} ${result.checker} `);
+    output.appendLine(`${doctorConstant.Exclamation} ${result.warnMsg ?? result.checker} `);
     outputCheckResultError(result, output);
   }
 
@@ -1191,9 +1194,8 @@ async function getOrderedCheckers(): Promise<PrerequisiteOrderedChecker[]> {
   const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
   const checkers: PrerequisiteOrderedChecker[] = [];
   const parallelCheckers: PrerequisiteCheckerInfo[] = [];
-  const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(
-    localEnvManager.getActiveDependencies(projectSettings)
-  );
+  const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, workspacePath);
+  const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(activeDeps);
   const nodeDeps = getNodeDep(enabledDeps);
   const nonNodeDeps = getNonNodeDeps(enabledDeps);
   if (nodeDeps) {
@@ -1266,9 +1268,8 @@ async function getOrderedCheckersForGetStarted(): Promise<PrerequisiteOrderedChe
       VS_CODE_UI
     );
     const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
-    const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(
-      localEnvManager.getActiveDependencies(projectSettings)
-    );
+    const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, workspacePath);
+    const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(activeDeps);
 
     const nodeDeps = getNodeDep(enabledDeps) ?? DepsType.AzureNode;
     return [{ info: { checker: nodeDeps }, fastFail: false }];
@@ -1289,10 +1290,10 @@ async function getOrderedCheckersForTask(
       ExtTelemetry.reporter,
       VS_CODE_UI
     );
-    const projectSettings = await localEnvManager.getProjectSettings(
-      globalVariables.workspaceUri!.fsPath
-    );
-    const nodeDep = getNodeDep(localEnvManager.getActiveDependencies(projectSettings));
+    const projectPath = globalVariables.workspaceUri!.fsPath;
+    const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+    const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, projectPath);
+    const nodeDep = await getNodeDep(activeDeps);
     if (nodeDep) {
       checkers.push({ info: { checker: nodeDep }, fastFail: true });
     }

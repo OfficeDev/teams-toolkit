@@ -52,7 +52,7 @@ export function generateM365Configurations(
   includeBackend: boolean,
   includeBot: boolean
 ): Record<string, unknown>[] {
-  return LaunchNext.generateM365Configurations(includeFrontend, includeFrontend, includeBot);
+  return LaunchNext.generateM365Configurations(includeFrontend, includeBackend, includeBot);
 }
 
 export function generateM365Compounds(

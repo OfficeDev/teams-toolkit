@@ -13,7 +13,6 @@ import { MockTools } from "../core/utils";
 import sinon from "sinon";
 import { deployUtils } from "../../src/component/deployUtils";
 import { assert } from "chai";
-import { TestHelper } from "../plugins/resource/frontend/helper";
 import {
   FindFunctionAppError,
   PackDirectoryExistenceError,
@@ -22,6 +21,7 @@ import {
 import { setTools } from "../../src/core/globalVars";
 import { newEnvInfoV3 } from "../../src/core/environment";
 import fs from "fs-extra";
+import { MyTokenCredential } from "../plugins/solution/util";
 describe("resetEnvInfoWhenSwitchM365", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -163,7 +163,7 @@ describe("resetEnvInfoWhenSwitchM365", () => {
       .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
       .resolves(undefined);
     sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(undefined);
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "listSubscriptions").resolves([
       {
@@ -192,7 +192,7 @@ describe("resetEnvInfoWhenSwitchM365", () => {
       .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
       .resolves(undefined);
     sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(undefined);
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "listSubscriptions").resolves([
       {
@@ -218,8 +218,8 @@ describe("resetEnvInfoWhenSwitchM365", () => {
     };
     const context = createContextV3();
     sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Deploy"));
     const envInfo = newEnvInfoV3();
     envInfo.state.solution.subscriptionId = "mockSubId";

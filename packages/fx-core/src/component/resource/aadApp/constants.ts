@@ -82,6 +82,7 @@ export class Telemetry {
   static methodName = "method-name";
   static appId = "appid";
   static skip = "skip";
+  static signInAudience = "sign-in-audience";
 }
 
 export class Plugins {

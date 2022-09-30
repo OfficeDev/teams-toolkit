@@ -89,7 +89,7 @@ describe("Azure Storage Deploy Driver test", () => {
     await deploy.run(args, context);
   });
 
-  it("get azure account credential", async () => {
+  it("get azure account credential error", async () => {
     const deploy = new AzureStorageDeployDriver();
     const args = {
       src: "./",
@@ -107,6 +107,45 @@ describe("Azure Storage Deploy Driver test", () => {
       .throws(new Error("error"));
     await expect(deploy.run(args, context)).to.be.rejectedWith(
       "Failed to retrieve Azure credentials."
+    );
+  });
+
+  it("clear storage error", async () => {
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+    } as DriverContext;
+    const deploy = new AzureStorageDeployDriver();
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
+    const clientStub = sandbox.createStubInstance(StorageManagementClient);
+    clientStub.storageAccounts = {} as StorageAccounts;
+
+    const mockStorageManagementClient = new StorageManagementClient(new MyTokenCredential(), "id");
+    mockStorageManagementClient.storageAccounts = getMockStorageAccount1() as any;
+    const args = {
+      src: "./",
+      dist: "./",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
+    } as DeployArgs;
+    sandbox.stub(armStorage, "StorageManagementClient").returns(mockStorageManagementClient);
+    sandbox.stub(ContainerClient.prototype, "exists").resolves(false);
+    sandbox.stub(ContainerClient.prototype, "create").resolves();
+    sandbox.stub(ContainerClient.prototype, "listBlobsFlat").returns([
+      {
+        properties: {
+          contentLength: 1,
+        },
+      },
+    ] as any);
+    //sandbox.stub(ContainerClient.prototype, "listBlobsFlat").resolves();
+    sandbox
+      .stub(ContainerClient.prototype, "deleteBlob")
+      .resolves({ errorCode: "403" } as BlobDeleteResponse);
+    await expect(deploy.run(args, context)).to.be.rejectedWith(
+      "Failed to clear Azure Storage Account. delete blob 403"
     );
   });
 });

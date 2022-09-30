@@ -28,6 +28,9 @@ export class ProgressMessages {
   static readonly packingCode = "Creating application package.";
   static readonly enableStaticWebsite = "Enabling Azure Storage account static website.";
   static readonly provisionBot = "Registering bot.";
+  static readonly getDeploymentSrcAndDest = "Retrieving deployment source and destination.";
+  static readonly clearStorageAccount = "Cleaning up Azure Storage account.";
+  static readonly uploadTabToStorage = "Uploading Tab frontend to Azure Storage account.";
 }
 
 export class LogMessages {

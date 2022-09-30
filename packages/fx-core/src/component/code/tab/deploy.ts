@@ -36,6 +36,15 @@ export class FrontendDeployment {
     );
   }
 
+  public static async needDeploy(componentPath: string, envName: string): Promise<boolean> {
+    const lastBuildTime = await FrontendDeployment.getLastBuildTime(componentPath, envName);
+    const lastDeployTime = await FrontendDeployment.getLastDeploymentTime(componentPath, envName);
+    if (!lastBuildTime || !lastDeployTime) {
+      return true;
+    }
+    return lastDeployTime < lastBuildTime;
+  }
+
   private static async hasUpdatedContent(
     componentPath: string,
     referenceTime: Date,
@@ -92,6 +101,16 @@ export class FrontendDeployment {
     );
     return deploymentInfoJson?.lastBuildTime
       ? new Date(deploymentInfoJson.lastBuildTime)
+      : undefined;
+  }
+
+  private static async getLastDeploymentTime(
+    componentPath: string,
+    envName: string
+  ): Promise<Date | undefined> {
+    const deploymentInfoJson = await FrontendDeployment.getDeploymentInfo(componentPath, envName);
+    return deploymentInfoJson?.lastDeployTime
+      ? new Date(deploymentInfoJson.lastDeployTime)
       : undefined;
   }
 

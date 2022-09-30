@@ -20,13 +20,13 @@ export const envFileName = (envName: string): string => envFileNamePrefix + envN
 export const envFilePath = (envName: string, folder: string): string =>
   path.join(folder, envFileName(envName));
 
-export const EnvKeys = Object.freeze({
+export const EnvKeys = {
   FuncEndpoint: "REACT_APP_FUNC_ENDPOINT",
   FuncName: "REACT_APP_FUNC_NAME",
   RuntimeEndpoint: "REACT_APP_TEAMSFX_ENDPOINT",
   StartLoginPage: "REACT_APP_START_LOGIN_PAGE_URL",
   ClientID: "REACT_APP_CLIENT_ID",
-});
+};
 
 export const getEmptyEnvs = (): RemoteEnvs => {
   return {
@@ -38,8 +38,12 @@ export const getEmptyEnvs = (): RemoteEnvs => {
 export async function loadEnvFile(envPath: string, logger?: LogProvider): Promise<RemoteEnvs> {
   try {
     return await _loadEnvFile(envPath);
-  } catch (e: any) {
-    logger?.error(e.toString());
+  } catch (e) {
+    if (e instanceof Error) {
+      logger?.error(e.toString());
+    } else {
+      logger?.error(JSON.stringify(e));
+    }
     logger?.error(LogMessages.FailedLoadEnv(envPath));
   }
   return getEmptyEnvs();

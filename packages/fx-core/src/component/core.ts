@@ -55,7 +55,7 @@ import { AppManifest } from "./resource/appManifest/appManifest";
 import "./resource/azureAppService/azureFunction";
 import "./resource/azureAppService/azureWebApp";
 import "./resource/azureSql";
-import "./resource/azureStorage";
+import "./resource/azureStorage/azureStorage";
 import "./resource/botService/botService";
 import "./resource/keyVault";
 import "./resource/spfx";

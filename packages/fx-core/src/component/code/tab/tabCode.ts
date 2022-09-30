@@ -48,6 +48,7 @@ import baseAppSettings from "../appSettings/baseAppSettings.json";
 import ssoBlazorAppSettings from "../appSettings/ssoBlazorAppSettings.json";
 import { Commands, NpmScripts, TemplateGroup, TemplatePlaceHolders } from "../constants";
 import { TelemetryEvent } from "../../../common/telemetry";
+import { DefaultValues, errorSource } from "./constants";
 /**
  * tab scaffold
  */
@@ -56,7 +57,7 @@ export class TabCodeProvider {
   name = "tab-code";
   @hooks([
     ActionExecutionMW({
-      errorSource: "FE",
+      errorSource: errorSource,
       enableProgressBar: true,
       progressTitle: ProgressTitles.scaffoldTab,
       progressSteps: 1,
@@ -106,9 +107,9 @@ export class TabCodeProvider {
             ctx.logProvider.info(LogMessages.getTemplateFromLocal);
             break;
           case ScaffoldActionName.FetchTemplateZipFromLocal:
-            throw new TemplateZipFallbackError("FE");
+            throw new TemplateZipFallbackError(errorSource);
           case ScaffoldActionName.Unzip:
-            throw new UnzipError("FE", workingDir);
+            throw new UnzipError(errorSource, workingDir);
           default:
             throw new Error(error.message);
         }
@@ -118,7 +119,7 @@ export class TabCodeProvider {
   }
   @hooks([
     ActionExecutionMW({
-      errorSource: "FE",
+      errorSource: errorSource,
     }),
   ])
   async configure(
@@ -159,7 +160,7 @@ export class TabCodeProvider {
       enableProgressBar: true,
       progressTitle: ProgressTitles.buildingTab,
       progressSteps: 1,
-      errorSource: "FE",
+      errorSource: errorSource,
     }),
   ])
   async build(
@@ -170,7 +171,7 @@ export class TabCodeProvider {
     const ctx = context as ResourceContextV3;
     const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     if (!teamsTab) return ok(undefined);
-    if (teamsTab.folder == undefined) throw new BadComponent("FE", this.name, "folder");
+    if (teamsTab.folder == undefined) throw new BadComponent(errorSource, this.name, "folder");
     await actionContext?.progressBar?.next(ProgressMessages.buildingTab);
     const tabPath = path.resolve(inputs.projectPath, teamsTab.folder);
     const artifactFolder = isVSProject(context.projectSetting)
@@ -207,7 +208,7 @@ export class TabCodeProvider {
     }
     if (teamsTab?.sso) {
       addToEnvs(EnvKeys.ClientID, ctx.envInfo?.state?.[ComponentNames.AadApp]?.clientId as string);
-      addToEnvs(EnvKeys.StartLoginPage, "auth-start-html");
+      addToEnvs(EnvKeys.StartLoginPage, DefaultValues.authFileName);
     }
     const simpleAuth = getComponent(ctx.projectSetting, ComponentNames.SimpleAuth);
     if (simpleAuth) {
@@ -219,11 +220,14 @@ export class TabCodeProvider {
     return envs;
   }
   private async doBlazorBuild(tabPath: string, logger?: LogProvider): Promise<string> {
-    const command = Commands.BlazorBuild(PathConstants.dotnetArtifactFolder, "win-x86");
+    const command = Commands.BlazorBuild(
+      PathConstants.dotnetArtifactFolder,
+      DefaultValues.dotnetPlatform
+    );
     try {
       await execute(command, tabPath, logger);
     } catch (e) {
-      throw new CommandExecutionError(command, tabPath, e);
+      throw new CommandExecutionError(errorSource, command, tabPath, e);
     }
     return PathConstants.dotnetArtifactFolder;
   }

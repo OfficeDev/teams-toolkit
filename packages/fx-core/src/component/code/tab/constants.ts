@@ -8,3 +8,10 @@ export const TabDeployIgnoreFolder = [
   PathConstants.npmPackageFolder,
   PathConstants.deploymentInfoFolder,
 ];
+
+export const DefaultValues = {
+  authFileName: "auth-start.html",
+  dotnetPlatform: "win-x86",
+};
+
+export const errorSource = "FE";

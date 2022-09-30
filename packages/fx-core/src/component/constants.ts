@@ -295,6 +295,7 @@ export const PathConstants = {
   botWorkingDir: "bot",
   apiWorkingDir: "api",
   tabWorkingDir: "tabs",
+  dotnetWorkingDir: ".",
   npmPackageFolder: "node_modules",
   nodePackageFile: "package.json",
   functionExtensionsFolder: "bin",
@@ -303,6 +304,8 @@ export const PathConstants = {
   deploymentInfoFile: "deployment.json",
   nodeArtifactFolder: "build",
   dotnetArtifactFolder: "publish",
+  reactTabIndexPath: "/index.html#",
+  blazorTabIndexPath: "/",
 };
 
 export const RegularExpr = {

@@ -26,7 +26,7 @@ import { AzureStorageClient } from "../../plugins/resource/frontend/clients";
 import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
 import { AzureResource } from "./azureResource";
 import { FrontendPluginInfo } from "../../plugins/resource/frontend/constants";
-import { ComponentNames, StorageOutputs } from "../constants";
+import { ComponentNames, Scenarios, StorageOutputs } from "../constants";
 import { LogMessages, ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -79,7 +79,7 @@ export class AzureStorageResource extends AzureResource {
       errorIssueLink: FrontendPluginInfo.IssueLink,
       errorHelpLink: FrontendPluginInfo.HelpLink,
       enableProgressBar: true,
-      progressTitle: ProgressTitles.deployingStorage,
+      progressTitle: ProgressTitles.deploying(ComponentNames.AzureStorage, Scenarios.Tab),
       progressSteps: 3,
     }),
   ])

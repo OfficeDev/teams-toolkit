@@ -28,7 +28,7 @@ import { Plans } from "../messages";
 import { getComponent, getComponentByScenario } from "../workflow";
 import { assign, cloneDeep, merge } from "lodash";
 import { generateConfigBiceps, bicepUtils, addFeatureNotify, scaffoldRootReadme } from "../utils";
-import { TabCodeProvider } from "../code/tabCode";
+import { TabCodeProvider } from "../code/tab/tabCode";
 import { BicepComponent } from "../bicep";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { IdentityResource } from "../resource/identity";

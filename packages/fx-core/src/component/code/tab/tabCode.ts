@@ -19,51 +19,35 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import {
   genTemplateRenderReplaceFn,
+  removeTemplateExtReplaceFn,
   ScaffoldAction,
   ScaffoldActionName,
   ScaffoldContext,
   scaffoldFromTemplates,
-} from "../../common/template-utils/templatesActions";
-import { convertToAlphanumericOnly } from "../../common/utils";
-import { CoreQuestionNames } from "../../core/question";
-import {
-  Constants,
-  FrontendPathInfo,
-  DependentPluginInfo,
-  TelemetryEvent,
-  Commands,
-} from "../../plugins/resource/frontend/constants";
-import { FrontendDeployment } from "../../plugins/resource/frontend/ops/deploy";
-import {
-  UnknownScaffoldError,
-  UnzipTemplateError,
-} from "../../plugins/resource/frontend/resources/errors";
-import { Messages } from "../../plugins/resource/frontend/resources/messages";
-import { ComponentNames, ProgrammingLanguage } from "../constants";
-import { getComponent } from "../workflow";
-import { convertToLangKey, execute } from "./utils";
-import {
-  envFilePath,
-  EnvKeys,
-  loadEnvFile,
-  saveEnvFile,
-} from "../../plugins/resource/frontend/env";
-import { isVSProject } from "../../common/projectSettingsHelper";
-import { DotnetCommands } from "../../plugins/resource/frontend/dotnet/constants";
-import { ScaffoldProgress } from "../../plugins/resource/frontend/resources/steps";
-import { ProgressMessages, ProgressTitles } from "../messages";
+} from "../../../common/template-utils/templatesActions";
+import { convertToAlphanumericOnly } from "../../../common/utils";
+import { CoreQuestionNames } from "../../../core/question";
+import { FrontendDeployment } from "./deploy";
+import { ComponentNames, PathConstants, ProgrammingLanguage } from "../../constants";
+import { getComponent } from "../../workflow";
+import { convertToLangKey, execute } from "../utils";
+import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
+import { isVSProject } from "../../../common/projectSettingsHelper";
+import { LogMessages, ProgressMessages, ProgressTitles } from "../../messages";
 import { hooks } from "@feathersjs/hooks/lib";
-import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import {
   M365SsoLaunchPageOptionItem,
   TabNonSsoItem,
   TabOptionItem,
-} from "../../plugins/solution/fx-solution/question";
-import { BadComponent } from "../error";
-import { CommandExecutionError, TemplateZipFallbackError } from "./error";
-import { AppSettingConstants, replaceBlazorAppSettings } from "./appSettingUtils";
-import baseAppSettings from "./appSettings/baseAppSettings.json";
-import ssoBlazorAppSettings from "./appSettings/ssoBlazorAppSettings.json";
+} from "../../../plugins/solution/fx-solution/question";
+import { BadComponent } from "../../error";
+import { CommandExecutionError, TemplateZipFallbackError, UnzipError } from "../error";
+import { AppSettingConstants, replaceBlazorAppSettings } from "../appSettingUtils";
+import baseAppSettings from "../appSettings/baseAppSettings.json";
+import ssoBlazorAppSettings from "../appSettings/ssoBlazorAppSettings.json";
+import { Commands, NpmScripts, TemplateGroup, TemplatePlaceHolders } from "../constants";
+import { TelemetryEvent } from "../../../common/telemetry";
 /**
  * tab scaffold
  */
@@ -75,7 +59,7 @@ export class TabCodeProvider {
       errorSource: "FE",
       enableProgressBar: true,
       progressTitle: ProgressTitles.scaffoldTab,
-      progressSteps: Object.keys(ScaffoldProgress.steps).length,
+      progressSteps: 1,
     }),
   ])
   async generate(
@@ -83,11 +67,10 @@ export class TabCodeProvider {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<string, FxError>> {
-    inputs.folder =
-      inputs.folder ||
-      (inputs[CoreQuestionNames.ProgrammingLanguage] === ProgrammingLanguage.CSharp
+    inputs.folder ||=
+      inputs[CoreQuestionNames.ProgrammingLanguage] === ProgrammingLanguage.CSharp
         ? ""
-        : FrontendPathInfo.WorkingDir);
+        : PathConstants.tabWorkingDir;
     const langKey = convertToLangKey(inputs[CoreQuestionNames.ProgrammingLanguage]);
     const workingDir = path.join(inputs.projectPath, inputs.folder);
     inputs.safeProjectName =
@@ -100,16 +83,19 @@ export class TabCodeProvider {
     const scenario = featureToScenario.get(inputs[CoreQuestionNames.Features]);
     await actionContext?.progressBar?.next(ProgressMessages.scaffoldTab);
     await scaffoldFromTemplates({
-      group: "tab",
+      group: TemplateGroup.tab,
       lang: langKey,
       scenario: scenario,
       dst: workingDir,
-      fileNameReplaceFn: (name: string, data: Buffer) =>
-        name.replace(/ProjectName/, ctx.projectSetting.appName).replace(/\.tpl/, ""),
+      fileNameReplaceFn: (name: string, data: Buffer): string =>
+        removeTemplateExtReplaceFn(name, data).replace(
+          TemplatePlaceHolders.ProjectFile,
+          ctx.projectSetting.appName
+        ),
       fileDataReplaceFn: genTemplateRenderReplaceFn(variables),
       onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
         if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
-          ctx.logProvider.info(Messages.getTemplateFrom(context.zipUrl ?? Constants.EmptyString));
+          ctx.logProvider.info(LogMessages.getTemplateFrom(context.zipUrl ?? ""));
         }
       },
       onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
@@ -117,14 +103,14 @@ export class TabCodeProvider {
         switch (action.name) {
           case ScaffoldActionName.FetchTemplatesUrlWithTag:
           case ScaffoldActionName.FetchTemplatesZipFromUrl:
-            ctx.logProvider.info(Messages.FailedFetchTemplate);
+            ctx.logProvider.info(LogMessages.getTemplateFromLocal);
             break;
           case ScaffoldActionName.FetchTemplateZipFromLocal:
             throw new TemplateZipFallbackError("FE");
           case ScaffoldActionName.Unzip:
-            throw new UnzipTemplateError();
+            throw new UnzipError("FE", workingDir);
           default:
-            throw new UnknownScaffoldError();
+            throw new Error(error.message);
         }
       },
     });
@@ -160,7 +146,11 @@ export class TabCodeProvider {
     } else if (context.envInfo.envName !== "local") {
       const envFile = envFilePath(context.envInfo.envName, path.join(inputs.projectPath, tabDir));
       const envs = this.collectEnvs(context);
-      await saveEnvFile(envFile, { teamsfxRemoteEnvs: envs, customizedRemoteEnvs: {} });
+      await saveEnvFile(
+        envFile,
+        { teamsfxRemoteEnvs: envs, customizedRemoteEnvs: {} },
+        context.logProvider
+      );
     }
     return ok(undefined);
   }
@@ -180,7 +170,7 @@ export class TabCodeProvider {
     const ctx = context as ResourceContextV3;
     const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
     if (!teamsTab) return ok(undefined);
-    if (teamsTab.folder == undefined) throw new BadComponent("tab", this.name, "folder");
+    if (teamsTab.folder == undefined) throw new BadComponent("FE", this.name, "folder");
     await actionContext?.progressBar?.next(ProgressMessages.buildingTab);
     const tabPath = path.resolve(inputs.projectPath, teamsTab.folder);
     const artifactFolder = isVSProject(context.projectSetting)
@@ -217,7 +207,7 @@ export class TabCodeProvider {
     }
     if (teamsTab?.sso) {
       addToEnvs(EnvKeys.ClientID, ctx.envInfo?.state?.[ComponentNames.AadApp]?.clientId as string);
-      addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
+      addToEnvs(EnvKeys.StartLoginPage, "auth-start-html");
     }
     const simpleAuth = getComponent(ctx.projectSetting, ComponentNames.SimpleAuth);
     if (simpleAuth) {
@@ -229,13 +219,13 @@ export class TabCodeProvider {
     return envs;
   }
   private async doBlazorBuild(tabPath: string, logger?: LogProvider): Promise<string> {
-    const command = DotnetCommands.buildRelease("win-x86");
+    const command = Commands.BlazorBuild(PathConstants.dotnetArtifactFolder, "win-x86");
     try {
       await execute(command, tabPath, logger);
     } catch (e) {
       throw new CommandExecutionError(command, tabPath, e);
     }
-    return "publish";
+    return PathConstants.dotnetArtifactFolder;
   }
   private async doReactBuild(
     tabPath: string,
@@ -243,34 +233,37 @@ export class TabCodeProvider {
     telemetryReporter?: TelemetryReporter,
     logger?: LogProvider
   ): Promise<string> {
-    const needBuild = await FrontendDeployment.needBuild(tabPath, envName);
+    const needBuild = await FrontendDeployment.needBuild(tabPath, envName, telemetryReporter);
     if (!needBuild) {
-      return "build";
+      return PathConstants.nodeArtifactFolder;
     }
 
     const scripts =
-      (await fs.readJSON(path.join(tabPath, FrontendPathInfo.NodePackageFile))).scripts ?? [];
+      (await fs.readJSON(path.join(tabPath, PathConstants.nodePackageFile))).scripts ?? [];
 
-    if (!("install:teamsfx" in scripts)) {
+    if (!(NpmScripts.customizedInstall in scripts)) {
       // * Track legacy projects
       telemetryReporter?.sendTelemetryEvent(TelemetryEvent.InstallScriptNotFound);
     }
 
     await execute(
-      "install:teamsfx" in scripts
-        ? Commands.InstallNodePackages
-        : Commands.DefaultInstallNodePackages,
+      NpmScripts.customizedInstall in scripts
+        ? Commands.NpmRunScript(NpmScripts.customizedInstall)
+        : Commands.NpmInstall,
       tabPath,
       logger
     );
 
-    if ("build:teamsfx" in scripts && (await fs.pathExists(envFilePath(envName, tabPath)))) {
-      await execute(Commands.BuildFrontend, tabPath, logger, {
+    if (
+      NpmScripts.customizedBuild in scripts &&
+      (await fs.pathExists(envFilePath(envName, tabPath)))
+    ) {
+      await execute(Commands.NpmRunScript(NpmScripts.customizedBuild), tabPath, logger, {
         TEAMS_FX_ENV: envName,
       });
     } else {
       const envs = await loadEnvFile(envFilePath(envName, tabPath));
-      await execute(Commands.DefaultBuildFrontend, tabPath, logger, {
+      await execute(Commands.NpmBuild, tabPath, logger, {
         ...envs.customizedRemoteEnvs,
         ...envs.teamsfxRemoteEnvs,
       });
@@ -279,7 +272,7 @@ export class TabCodeProvider {
     await FrontendDeployment.saveDeploymentInfo(tabPath, envName, {
       lastBuildTime: new Date().toISOString(),
     });
-    return "build";
+    return PathConstants.nodeArtifactFolder;
   }
 }
 

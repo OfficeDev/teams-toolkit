@@ -34,7 +34,7 @@ import "./bicep";
 import "./code/api/apiCode";
 import "./code/botCode";
 import "./code/spfxTabCode";
-import "./code/tabCode";
+import "./code/tab/tabCode";
 import "./connection/apimConfig";
 import "./connection/azureFunctionConfig";
 import "./connection/azureWebAppConfig";

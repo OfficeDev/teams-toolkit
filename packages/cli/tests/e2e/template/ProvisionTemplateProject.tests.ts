@@ -37,7 +37,7 @@ describe("teamsfx new template", function () {
     projectPath = path.resolve(testFolder, appName);
   });
 
-  it(`${TemplateProect.HelloWorldTabSSO}`, { testPlanCaseId: 'XXXXXXX' }, async function () {
+  it(`${TemplateProject.HelloWorldTabSSO}`, { testPlanCaseId: 'XXXXXXX' }, async function () {
     await execAsync(`teamsfx new template ${TemplateProject.HelloWorldTabSSO}`, {
       cwd: testFolder,
       env: process.env,

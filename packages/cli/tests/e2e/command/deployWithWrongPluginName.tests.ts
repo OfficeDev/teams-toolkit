@@ -10,7 +10,7 @@ import { expect } from "chai";
 import path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, ResourceToDeploy } from "../../commonlib/constants";
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 
 import {
   getTestFolder,

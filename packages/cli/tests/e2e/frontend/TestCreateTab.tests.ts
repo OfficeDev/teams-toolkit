@@ -5,7 +5,7 @@
  * @author Zhijie Huang <zhijie.huang@microsoft.com>
  */
 
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 import { describe } from "mocha";
 import fs from "fs-extra";
 import path from "path";

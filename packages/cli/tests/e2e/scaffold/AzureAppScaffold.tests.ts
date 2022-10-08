@@ -11,7 +11,7 @@ import { BotValidator, FrontendValidator, FunctionValidator } from "../../common
 import { execAsync, getTestFolder, getUniqueAppName, cleanUpLocalProject } from "../commonUtils";
 
 import { describe } from "mocha";
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 

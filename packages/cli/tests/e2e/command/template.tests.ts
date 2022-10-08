@@ -8,7 +8,7 @@
 import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 import { execAsync, getTestFolder, cleanUpLocalProject } from "../commonUtils";
 
 describe("teamsfx new template",  function () {

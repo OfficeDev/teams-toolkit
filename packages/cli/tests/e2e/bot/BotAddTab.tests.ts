@@ -21,7 +21,7 @@ import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/f
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import { BotValidator } from "../../commonlib";
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();

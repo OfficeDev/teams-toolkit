@@ -22,7 +22,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   setSkipAddingSqlUserToConfig,
 } from "../commonUtils";
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Provision to Azure with SQL", function () {
   const testFolder = getTestFolder();

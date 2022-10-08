@@ -22,7 +22,7 @@ import {
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Provision", function () {
   const testFolder = getTestFolder();

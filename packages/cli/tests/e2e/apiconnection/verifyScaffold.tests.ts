@@ -13,7 +13,7 @@ import * as dotenv from "dotenv";
 import { getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 import * as fs from "fs-extra";
 import mockedEnv from "mocked-env";
 

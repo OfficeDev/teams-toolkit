@@ -25,7 +25,7 @@ import fs from "fs-extra";
 import { expect } from "chai";
 import { AadValidator, BotValidator, FrontendValidator } from "../../commonlib";
 import M365Login from "../../../src/commonlib/m365Login";
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("SSO Tab with aad manifest enabled", () => {
   const testFolder = getTestFolder();

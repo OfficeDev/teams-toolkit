@@ -5,7 +5,7 @@
  * @author Kuojian Lu <kuojianlu@microsoft.com>
  */
 
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 import { describe } from "mocha";
 import path from "path";
 import { getTestFolder, getUniqueAppName, cleanUpLocalProject } from "../commonUtils";

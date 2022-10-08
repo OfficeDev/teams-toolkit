@@ -24,7 +24,7 @@ import { environmentManager } from "@microsoft/teamsfx-core/build/core/environme
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { describe } from "mocha";
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Create a new API Management Service", function () {
   const testProcessEnv = Object.assign({}, process.env);

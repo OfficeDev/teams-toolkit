@@ -16,7 +16,7 @@ import {
   getUniqueAppName,
   cleanUp,
 } from "../commonUtils";
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Regression test for bug 14739454", function () {
   const testFolder = getTestFolder();

@@ -21,7 +21,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { FunctionValidator } from "../../commonlib";
 import { getUuid } from "../../commonlib/utilities";
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();

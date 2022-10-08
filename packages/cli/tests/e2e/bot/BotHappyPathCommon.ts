@@ -18,7 +18,7 @@ import {
   readContextMultiEnv,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 import { Runtime, CliCapabilities, CliTriggerType } from "../../commonlib/constants";
 
 export async function happyPathTest(

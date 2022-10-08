@@ -33,7 +33,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 
-import it from "@microsoft/extra-shot-mocha";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Multi Env Happy Path for Azure", function () {
   const env = "e2e";

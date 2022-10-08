@@ -201,6 +201,14 @@ To add the notification feature to the conversation bot, you can follow the step
 
 To learn more about notification, refer to [the notification document](https://aka.ms/teamsfx-notification).
 
+## Add command and responses to your application
+
+The command and response feature adds the ability for your application to "listen" to commands sent to it via a Teams message. A response (in the form of an Adaptive Card) is sent back to Teams. You can register multiple commands and have individual responses for each command.
+
+To add the command and response feature to the conversation bot, you can follow the steps [here](https://aka.ms/teamsfx-command-response#How-to-add-more-command-and-response).
+
+To learn more about command response, refer to [the command bot document](https://aka.ms/teamsfx-command-response).
+
 ## Access Microsoft Graph
 
 If you are responding to a command that needs access to Microsoft Graph, you can leverage single sign on to leverage the logged-in Teams user token to access their Microsoft Graph data. Read more about how Teams Toolkit can help you [add SSO](https://aka.ms/teamsfx-add-sso) to your application.

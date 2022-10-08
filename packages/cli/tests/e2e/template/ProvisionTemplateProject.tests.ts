@@ -15,10 +15,12 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
-  validateTabAndBotProjectProvision
+  readContextMultiEnv
 } from "../commonUtils";
+import { AadValidator, FrontendValidator } from "../../commonlib"
 import { TemplateProject } from "../../commonlib/constants"
 import { CliHelper } from "../../commonlib/cliHelper";
+import { m365Login } from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
@@ -32,7 +34,7 @@ describe("teamsfx new template", function () {
   beforeEach(async () => {
     testFolder = getTestFolder();
   });
-  
+
   it(`${TemplateProject.HelloWorldTabSSO}`, { testPlanCaseId: 'XXXXXXX' }, async function () {
     projectPath = path.resolve(testFolder, TemplateProject.HelloWorldTabSSO);
     await execAsync(`teamsfx new template ${TemplateProject.HelloWorldTabSSO}`, {
@@ -50,7 +52,14 @@ describe("teamsfx new template", function () {
     await CliHelper.provisionProject(projectPath);
 
     // Validate Provision
-    await validateTabAndBotProjectProvision(projectPath, env);
+    const context = await readContextMultiEnv(projectPath, env);
+    // Validate Aad App
+    const aad = AadValidator.init(context, false, m365Login);
+    await AadValidator.validate(aad);
+
+    // Validate Tab Frontend
+    const frontend = FrontendValidator.init(context);
+    await FrontendValidator.validateProvision(frontend);
 
     // deploy
     await CliHelper.deployAll(projectPath);

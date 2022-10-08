@@ -229,21 +229,7 @@ export function activate(): Result<Void, FxError> {
     core = new FxCore(tools);
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
-      const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
-        "**/unify-config-and-aad-manifest-change-logs.md"
-      );
-
-      unifyConfigWatcher.onDidCreate(async (event) => {
-        await openUnifyConfigMd(workspacePath, event.fsPath);
-      });
-
-      const backupConfigWatcher = vscode.workspace.createFileSystemWatcher(
-        "**/backup-config-change-logs.md"
-      );
-
-      backupConfigWatcher.onDidCreate(async (event) => {
-        await openBackupConfigMd(workspacePath, event.fsPath);
-      });
+      addFileSystemWatcher(workspacePath);
     }
     automaticNpmInstallHandler(false, false, false);
 
@@ -347,6 +333,24 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   if (needRefresh) {
     await envTreeProviderInstance.reloadEnvironments();
   }
+}
+
+export function addFileSystemWatcher(workspacePath: string) {
+  const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/unify-config-and-aad-manifest-change-logs.md"
+  );
+
+  unifyConfigWatcher.onDidCreate(async (event) => {
+    await openUnifyConfigMd(workspacePath, event.fsPath);
+  });
+
+  const backupConfigWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/backup-config-change-logs.md"
+  );
+
+  backupConfigWatcher.onDidCreate(async (event) => {
+    await openBackupConfigMd(workspacePath, event.fsPath);
+  });
 }
 
 async function openUnifyConfigMd(workspacePath: string, filePath: string) {

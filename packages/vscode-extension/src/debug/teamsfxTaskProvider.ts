@@ -43,7 +43,6 @@ import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
 import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskTerminal";
 import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
 import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
-import { TelemetryTaskTerminal } from "./taskTerminal/telemetryTaskTerminal";
 
 const customTasks = Object.freeze({
   [TaskCommand.checkPrerequisites]: {
@@ -207,27 +206,6 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     task: vscode.Task,
     token?: vscode.CancellationToken | undefined
   ): Promise<vscode.Task | undefined> {
-    if (
-      TelemetryTaskTerminal.nameList.includes(task.name) &&
-      typeof task.definition === "undefined"
-    ) {
-      const telemetryTask = new vscode.Task(
-        task.definition,
-        vscode.TaskScope.Workspace,
-        task.name,
-        TeamsfxTaskProvider.type,
-        new vscode.CustomExecution(
-          async (resolvedDefinition: vscode.TaskDefinition): Promise<vscode.Pseudoterminal> =>
-            Promise.resolve(new TelemetryTaskTerminal(resolvedDefinition, task.name))
-        )
-      );
-
-      telemetryTask.presentationOptions.reveal = vscode.TaskRevealKind.Never;
-      telemetryTask.presentationOptions.echo = false;
-      telemetryTask.presentationOptions.showReuseMessage = false;
-      return telemetryTask;
-    }
-
     if (task.definition.type !== TeamsfxTaskProvider.type || !task.definition.command) {
       return undefined;
     }

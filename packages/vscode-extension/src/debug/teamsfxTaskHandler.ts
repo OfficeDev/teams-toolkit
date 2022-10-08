@@ -37,7 +37,11 @@ import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 import { localize } from "../utils/localizeUtils";
 import { VS_CODE_UI } from "../extension";
-import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
+import {
+  localTelemetryReporter,
+  sendDebugAllEvent,
+  sendDebugAllEventWithPrelaunchTask,
+} from "./localTelemetryReporter";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { performance } from "perf_hooks";
 import { LocalTunnelTaskTerminal } from "./taskTerminal/localTunnelTaskTerminal";
@@ -109,11 +113,6 @@ function isTeamsfxTask(task: vscode.Task): boolean {
         task.name.trim().toLocaleLowerCase().endsWith("watch"))
     ) {
       // provided by toolkit
-      return true;
-    }
-
-    const res = isTeamsFxTransparentTask(task);
-    if (res) {
       return true;
     }
 
@@ -307,9 +306,13 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       [TelemetryProperty.DebugServiceName]: task.name,
       [TelemetryProperty.DebugServiceExitCode]: event.exitCode + "",
     });
-    if (isTeamsFxTransparentTask(task) && event.exitCode !== 0 && event.exitCode !== -1) {
-      terminateAllRunningTeamsfxTasks();
-    }
+  } else if (
+    task.scope !== undefined &&
+    isTeamsFxTransparentTask(task) &&
+    event.exitCode !== 0 &&
+    event.exitCode !== -1
+  ) {
+    terminateAllRunningTeamsfxTasks();
   } else if (isNpmInstallTask(task)) {
     try {
       const taskInfo = activeNpmInstallTasks.get(task.name);
@@ -492,7 +495,7 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
           return;
         }
 
-        await sendDebugAllEvent();
+        sendDebugAllEventWithPrelaunchTask(debugConfig.name);
       }
     }
   }

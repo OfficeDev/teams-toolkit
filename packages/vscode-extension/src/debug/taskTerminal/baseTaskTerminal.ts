@@ -44,7 +44,14 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
 
   handleInput(data: string): void {
     if (data.includes(ControlCodes.CtrlC)) {
-      this.stop(BaseTaskTerminal.taskCancelError);
+      this.stop(
+        new UserError(
+          ExtensionSource,
+          ExtensionErrors.TaskCancelError,
+          getDefaultString("teamstoolkit.localDebug.taskCancelError"),
+          localize("teamstoolkit.localDebug.taskCancelError")
+        )
+      );
     }
   }
 
@@ -81,11 +88,4 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
       util.format(localize("teamstoolkit.localDebug.taskDefinitionError"), argName)
     );
   }
-
-  public static taskCancelError = new UserError(
-    ExtensionSource,
-    ExtensionErrors.TaskCancelError,
-    getDefaultString("teamstoolkit.localDebug.taskCancelError"),
-    localize("teamstoolkit.localDebug.taskCancelError")
-  );
 }

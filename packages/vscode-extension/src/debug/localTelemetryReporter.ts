@@ -1,9 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError } from "@microsoft/teamsfx-api";
-import { LocalTelemetryReporter } from "@microsoft/teamsfx-core/build/common/local";
+import * as fs from "fs-extra";
+import * as path from "path";
 import { performance } from "perf_hooks";
+
+import { FxError } from "@microsoft/teamsfx-api";
+import {
+  LocalTelemetryReporter,
+  TaskCommand,
+  TaskLabel,
+} from "@microsoft/teamsfx-core/build/common/local";
+
+import * as globalVariables from "../globalVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -12,6 +21,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
 import { getLocalDebugSession, getProjectComponents } from "./commonUtils";
+import { TeamsfxTaskProvider } from "./teamsfxTaskProvider";
 
 function saveEventTime(eventName: string, time: number) {
   const session = getLocalDebugSession();
@@ -55,6 +65,18 @@ export async function sendDebugAllStartEvent(additionalProperties: {
     session.properties
   );
   localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugAllStart, properties);
+}
+
+export async function sendDebugAllEventWithPrelaunchTask(configName: string): Promise<void> {
+  const preLaunchTaskInfo = await getPreLaunchTaskInfo(configName);
+  const additionalProperties: { [key: string]: string } = {
+    [TelemetryProperty.DebugConfigName]: configName,
+  };
+  if (preLaunchTaskInfo) {
+    additionalProperties[TelemetryProperty.DebugPrelaunchTaskInfo] =
+      JSON.stringify(preLaunchTaskInfo);
+  }
+  await sendDebugAllEvent(undefined, additionalProperties);
 }
 
 export async function sendDebugAllEvent(
@@ -151,4 +173,122 @@ export function maskArrayValue(
   }
 
   return valueArr.map((v) => maskValue(`${v}`, knownValues));
+}
+
+interface ITaskJson {
+  tasks?: ITask[];
+}
+
+interface ITask {
+  label?: string;
+  type?: string;
+  command?: string;
+  dependsOn?: string | string[];
+}
+
+interface ILaunchJson {
+  configurations?: IConfiguration[];
+  compounds?: IConfiguration[];
+}
+
+interface IConfiguration {
+  name?: string;
+  preLaunchTask?: string;
+}
+
+interface IPreLaunchTaskInfo {
+  name: string;
+  dependsOn: {
+    label: string;
+    type: string;
+    command: string;
+  }[];
+}
+
+export async function getPreLaunchTaskInfo(
+  launchConfigName: string
+): Promise<IPreLaunchTaskInfo | undefined> {
+  try {
+    if (!globalVariables.isTeamsFxProject || !globalVariables.workspaceUri?.fsPath) {
+      return undefined;
+    }
+    const launchFilePath = path.resolve(
+      globalVariables.workspaceUri.fsPath,
+      ".vscode",
+      "launch.json"
+    );
+    const taskFilePath = path.resolve(globalVariables.workspaceUri.fsPath, ".vscode", "tasks.json");
+    if (!(await fs.pathExists(launchFilePath)) || !(await fs.pathExists(taskFilePath))) {
+      return undefined;
+    }
+
+    const launchJson = (await fs.readJSON(launchFilePath)) as ILaunchJson;
+    const config = findConfiguration(launchJson, launchConfigName);
+    if (!config?.preLaunchTask) {
+      return undefined;
+    }
+
+    const overallTaskLabel = [TaskLabel.Overall, TaskLabel.M365Overall].find(
+      (name) => name === config.preLaunchTask
+    );
+
+    if (!overallTaskLabel) {
+      return undefined;
+    }
+
+    const taskJson = (await fs.readJSON(taskFilePath)) as ITaskJson;
+    const overallTask = findTask(taskJson, overallTaskLabel);
+    if (!overallTask || !overallTask.dependsOn) {
+      return undefined;
+    }
+
+    const preLaunchTaskInfo: IPreLaunchTaskInfo = {
+      name: overallTaskLabel,
+      dependsOn: [],
+    };
+
+    const labelList: string[] = Array.isArray(overallTask.dependsOn)
+      ? overallTask.dependsOn
+      : typeof overallTask.dependsOn === "string"
+      ? [overallTask.dependsOn]
+      : [];
+
+    for (const label of labelList) {
+      const task = findTask(taskJson, label);
+      const isTeamsFxTask = task?.type === TeamsfxTaskProvider.type;
+
+      // Only send the info scaffold by Teams Toolkit. If user changed some property, the value will be "unknown".
+      preLaunchTaskInfo.dependsOn.push({
+        label: maskValue(label, Object.values(TaskLabel)),
+        type: maskValue(task?.type, [TeamsfxTaskProvider.type]),
+        command: !isTeamsFxTask
+          ? UnknownPlaceholder
+          : maskValue(task?.type, Object.values(TaskCommand)),
+      });
+    }
+    return preLaunchTaskInfo;
+  } catch {}
+
+  // Always return true even if send telemetry failed
+  return undefined;
+}
+
+function findTask(taskJson: ITaskJson, label: string): ITask | undefined {
+  return taskJson?.tasks?.find((task) => task?.label === label);
+}
+
+function findConfiguration(
+  launchJson: ILaunchJson,
+  configName: string
+): IConfiguration | undefined {
+  const compound = launchJson?.compounds?.find((config) => config?.name === configName);
+  if (compound) {
+    return compound;
+  }
+
+  const config = launchJson?.configurations?.find((config) => config?.name === configName);
+  if (config) {
+    return config;
+  }
+  return undefined;
 }

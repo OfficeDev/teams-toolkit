@@ -495,7 +495,7 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
           return;
         }
 
-        sendDebugAllEventWithPrelaunchTask(debugConfig.name);
+        sendDebugAllEventWithPrelaunchTask();
       }
     }
   }

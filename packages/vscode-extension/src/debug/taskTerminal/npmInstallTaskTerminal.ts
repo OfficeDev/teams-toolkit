@@ -51,11 +51,11 @@ export class NpmInstallTaskTerminal extends BaseTaskTerminal {
               ? UndefinedPlaceholder
               : this.args.projects.map((p) => {
                   return {
-                    cwd: maskValue(p.cwd, [
-                      { value: TaskDefaultValue.npmInstall.cwd.tab, mask: "<tab>" },
-                      { value: TaskDefaultValue.npmInstall.cwd.api, mask: "<api>" },
-                      { value: TaskDefaultValue.npmInstall.cwd.bot, mask: "<bot>" },
-                      { value: TaskDefaultValue.npmInstall.cwd.spfx, mask: "<spfx>" },
+                    cwd: maskValue(p.cwd ? path.basename(p.cwd) : p.cwd, [
+                      { value: "tabs", mask: "<tab>" },
+                      { value: "api", mask: "<api>" },
+                      { value: "bot", mask: "<bot>" },
+                      { value: "SPFx", mask: "<spfx>" },
                     ]),
                     npmInstallArgs: maskArrayValue(
                       p.npmInstallArgs,

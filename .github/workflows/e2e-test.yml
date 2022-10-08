@@ -145,7 +145,7 @@ jobs:
           npm run test:e2e:clean
 
       - name: Create new test plan
-        if: ${{ github.ref_name == 'ivanchen/test' && github.event_name != 'pull_request' }}
+        if: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' }}
         run: |
           version=$(node -p -e "require('./packages/cli/package.json').version")
           npx ts-node .github/scripts/testPlan.ts new cli $version

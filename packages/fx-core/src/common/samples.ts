@@ -11,6 +11,7 @@ export interface SampleInfo {
   link: string;
   suggested: boolean;
   url: string;
+  relativePath?: string;
 }
 
 export interface SampleCollection {
@@ -34,6 +35,7 @@ class SampleProvider {
           link: sample.packageLink ?? sampleConfig.defaultPackageLink,
           suggested: sample.suggested,
           url: sample.url ?? sampleConfig.baseUrl,
+          relativePath: sample.relativePath,
         } as SampleInfo;
       });
 

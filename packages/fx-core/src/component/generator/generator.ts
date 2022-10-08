@@ -16,7 +16,6 @@ import {
   genFileNameRenderReplaceFn,
   getSampleInfoFromName,
   getValidSampleDestination,
-  mergeReplaceMap,
   sampleDefaultOnActionError,
   templateDefaultOnActionError,
 } from "./utils";
@@ -30,27 +29,16 @@ export class Generator {
   ): Promise<void> {
     const appName = ctx.projectSetting?.appName;
     const projectId = ctx.projectSetting?.projectId;
-    const dataReplace = mergeReplaceMap(
-      {
-        appName: appName,
-        projectId: projectId,
-      },
-      ctx.templateReplace
-    );
-    const nameReplace = mergeReplaceMap(
-      {
-        appName: appName,
-      },
-      ctx.templateReplace
-    );
+    const nameReplaceMap = { ...{ appName: appName }, ...ctx.templateVariables };
+    const dataReplaceMap = { ...{ projectId: projectId }, ...nameReplaceMap };
     const destination = path.join(destinationPath, appName);
     const generateContext: GenerateContext = {
       type: "template",
       name: `${templateName}_${language}`,
       destination: destination,
       logProvider: ctx.logProvider,
-      fileDataReplaceFn: genFileDataRenderReplaceFn(dataReplace),
-      fileNameReplaceFn: genFileNameRenderReplaceFn(nameReplace),
+      fileDataReplaceFn: genFileDataRenderReplaceFn(dataReplaceMap),
+      fileNameReplaceFn: genFileNameRenderReplaceFn(nameReplaceMap),
       onActionError: templateDefaultOnActionError,
     };
     await this.generate(generateContext, TemplateActionSeq);
@@ -64,27 +52,16 @@ export class Generator {
   ): Promise<void> {
     const appName = ctx.projectSetting?.appName;
     const projectId = ctx.projectSetting?.projectId;
-    const dataReplace = mergeReplaceMap(
-      {
-        appName: appName,
-        projectId: projectId,
-      },
-      ctx.templateReplace
-    );
-    const nameReplace = mergeReplaceMap(
-      {
-        appName: appName,
-      },
-      ctx.templateReplace
-    );
+    const nameReplaceMap = { ...{ appName: appName }, ...ctx.templateVariables };
+    const dataReplaceMap = { ...{ projectId: projectId }, ...nameReplaceMap };
     const destination = destinationPath;
     const generateContext: GenerateContext = {
       type: "buildingBlock",
       name: `${buildingBlockName}_${language}`,
       destination: destination,
       logProvider: ctx.logProvider,
-      fileDataReplaceFn: genFileDataRenderReplaceFn(dataReplace),
-      fileNameReplaceFn: genFileNameRenderReplaceFn(nameReplace),
+      fileDataReplaceFn: genFileDataRenderReplaceFn(dataReplaceMap),
+      fileNameReplaceFn: genFileNameRenderReplaceFn(nameReplaceMap),
       onActionError: templateDefaultOnActionError,
     };
     await this.generate(generateContext, TemplateActionSeq);

@@ -20,8 +20,7 @@ import {
 } from "./error";
 import { GenerateAction, GenerateActionName } from "./generateAction";
 import { GenerateContext } from "./generateContext";
-import AdmZip from "adm-zip";
-import { SampleInfo, sampleProvider } from "./sample";
+import { SampleInfo, sampleProvider } from "../../common/samples";
 
 export async function fetchZipUrl(
   name: string,
@@ -34,17 +33,15 @@ export async function fetchZipUrl(
   if (!selectedTag) {
     throw new Error(`Failed to find valid template for ${name}`);
   }
-  return `${baseUrl}/${selectTag}/${templateZipName(name)}`;
+  return `${baseUrl}/${selectTag}/${name}.zip`;
 }
-
-export const templateZipName = (templateName: string): string => `${templateName}.zip`;
 
 export function renderTemplateFileData(
   fileName: string,
   fileData: Buffer,
   variables?: { [key: string]: string }
 ): string | Buffer {
-  //only mustache files with name ending with .tql
+  //only mustache files with name ending with .tpl
   if (path.extname(fileName) === templateFileExt) {
     return Mustache.render(fileData.toString(), variables);
   }
@@ -57,7 +54,7 @@ export function renderTemplateFileName(
   fileData: Buffer,
   variables?: { [key: string]: string }
 ): string {
-  return Mustache.render(fileName, variables);
+  return Mustache.render(fileName, variables).replace(templateFileExt, "");
 }
 
 export function genFileDataRenderReplaceFn(variables: { [key: string]: string }) {
@@ -67,42 +64,7 @@ export function genFileDataRenderReplaceFn(variables: { [key: string]: string })
 
 export function genFileNameRenderReplaceFn(variables: { [key: string]: string }) {
   return (fileName: string, fileData: Buffer) =>
-    renderTemplateFileName(fileName, fileData, variables).replace(templateFileExt, "");
-}
-
-//the unzip function does the following things:
-//1. unzip the package into dstPath,
-//2. replace the file name and file content with the given replace functions
-//3. if appFolder is provided, only the files within appFolder will be kept. This is used for samples from other repos.
-export async function unzip(
-  zip: AdmZip,
-  dstPath: string,
-  relativePath?: string,
-  nameReplaceFn?: (filePath: string, data: Buffer) => string,
-  dataReplaceFn?: (filePath: string, data: Buffer) => Buffer | string
-): Promise<void> {
-  let entries: AdmZip.IZipEntry[] = zip.getEntries().filter((entry) => !entry.isDirectory);
-  if (relativePath) {
-    entries = entries.filter((entry) => entry.entryName.startsWith(relativePath));
-  }
-
-  for (const entry of entries) {
-    const rawEntryData: Buffer = entry.getData();
-    let entryName: string = nameReplaceFn
-      ? nameReplaceFn(entry.entryName, rawEntryData)
-      : entry.entryName;
-    if (relativePath) {
-      entryName = entryName.replace(relativePath, "");
-    }
-    const entryData: string | Buffer = dataReplaceFn
-      ? dataReplaceFn(entry.name, rawEntryData)
-      : rawEntryData;
-
-    const filePath: string = path.join(dstPath, entryName);
-    const dirPath: string = path.dirname(filePath);
-    await fs.ensureDir(dirPath);
-    await fs.writeFile(filePath, entryData);
-  }
+    renderTemplateFileName(fileName, fileData, variables);
 }
 
 export async function getValidSampleDestination(
@@ -110,14 +72,12 @@ export async function getValidSampleDestination(
   destinationPath: string
 ): Promise<string> {
   let sampleDestination = path.join(destinationPath, sampleName);
-  if (
+  let suffix = 1;
+  while (
     (await fs.pathExists(sampleDestination)) &&
     (await fs.readdir(sampleDestination)).length > 0
   ) {
-    let suffix = 1;
-    while (await fs.pathExists(sampleDestination)) {
-      sampleDestination = path.join(destinationPath, `${sampleName}_${suffix++}`);
-    }
+    sampleDestination = path.join(destinationPath, `${sampleName}_${suffix++}`);
   }
   return sampleDestination;
 }
@@ -126,23 +86,10 @@ export function getSampleInfoFromName(sampleName: string): SampleInfo {
   const samples = sampleProvider.SampleCollection.samples.filter(
     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
   );
-  if (samples.length == 0) {
+  if (!samples.length) {
     throw Error(`invalid sample name: '${sampleName}'`);
   }
   return samples[0];
-}
-
-export function mergeReplaceMap(
-  obj: { [key: string]: string },
-  obj2?: { [key: string]: string }
-): { [key: string]: string } {
-  const result = { ...obj };
-  if (obj2) {
-    for (const key in obj2) {
-      result[key] = obj2[key];
-    }
-  }
-  return result;
 }
 
 export async function templateDefaultOnActionError(

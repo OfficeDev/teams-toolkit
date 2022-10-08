@@ -507,7 +507,7 @@ export interface ContextV3 extends Context_2 {
     // (undocumented)
     projectSetting: ProjectSettingsV3;
     // (undocumented)
-    templateReplace?: {
+    templateVariables?: {
         [key: string]: string;
     };
     // (undocumented)

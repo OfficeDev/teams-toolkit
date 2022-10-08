@@ -11,8 +11,6 @@ import {
   genFileNameRenderReplaceFn,
   getSampleInfoFromName,
   getValidSampleDestination,
-  mergeReplaceMap,
-  unzip,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
 import { templateDownloadBaseUrl } from "../../../src/component/generator/constant";
@@ -22,7 +20,6 @@ import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import AdmZip from "adm-zip";
 import sinon from "sinon";
-import { fetchTemplateUrl } from "../../../src/common/template-utils/templatesUtils";
 import {
   fetchSampleUrlWithTagAction,
   fetchTemplateUrlWithTagAction,
@@ -30,6 +27,7 @@ import {
   fetchZipFromUrlAction,
   unzipAction,
 } from "../../../src/component/generator/generateAction";
+import { unzip } from "../../../src/common/template-utils/templatesUtils";
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
 
@@ -56,7 +54,6 @@ describe("Generator utils", () => {
     await unzip(
       new AdmZip(path.join(tmpDir, "test.zip")),
       outputDir,
-      undefined,
       genFileNameRenderReplaceFn({}),
       genFileDataRenderReplaceFn({ appName: "test" })
     );
@@ -80,22 +77,6 @@ describe("Generator utils", () => {
     } catch (e) {
       assert.equal(e.message, "invalid sample name: 'test'");
     }
-  });
-
-  it("merge replace map", async () => {
-    const replaceMap = {
-      a: "a",
-      b: "b",
-    };
-    const replaceMap2 = {
-      c: "c",
-      d: "d",
-    };
-    const merged = mergeReplaceMap(replaceMap, replaceMap2);
-    assert.equal(merged.a, "a");
-    assert.equal(merged.b, "b");
-    assert.equal(merged.c, "c");
-    assert.equal(merged.d, "d");
   });
 });
 

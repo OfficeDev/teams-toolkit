@@ -4,9 +4,9 @@
 import AdmZip from "adm-zip";
 import path from "path";
 import { GenerateContext } from "./generateContext";
-import { fetchZipUrl, templateZipName, unzip } from "./utils";
+import { fetchZipUrl } from "./utils";
 import fs from "fs-extra";
-import { fetchZipFromUrl } from "../../common/template-utils/templatesUtils";
+import { fetchZipFromUrl, unzip } from "../../common/template-utils/templatesUtils";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,
@@ -67,7 +67,7 @@ export const fetchTemplateZipFromLocalAction: GenerateAction = {
       context.fallbackZipPath = path.join(getTemplatesFolder(), "fallback");
     }
 
-    const fileName: string = templateZipName(context.name);
+    const fileName = `${context.name}.zip`;
     const zipPath: string = path.join(context.fallbackZipPath, fileName);
 
     const data: Buffer = await fs.readFile(zipPath);
@@ -84,9 +84,9 @@ export const unzipAction: GenerateAction = {
     await unzip(
       context.zip,
       context.destination,
-      context.relativePath,
       context.fileNameReplaceFn,
-      context.fileDataReplaceFn
+      context.fileDataReplaceFn,
+      context.relativePath
     );
   },
 };

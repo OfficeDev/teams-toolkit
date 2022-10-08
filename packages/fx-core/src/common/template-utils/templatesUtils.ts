@@ -122,21 +122,28 @@ export async function unzip(
   dstPath: string,
   nameReplaceFn?: (filePath: string, data: Buffer) => string,
   dataReplaceFn?: (filePath: string, data: Buffer) => Buffer | string,
+  relativePath?: string,
   filesInAppendMode = [".gitignore"]
 ): Promise<void> {
-  const entries: AdmZip.IZipEntry[] = zip.getEntries().filter((entry) => !entry.isDirectory);
+  let entries: AdmZip.IZipEntry[] = zip.getEntries().filter((entry) => !entry.isDirectory);
+  if (relativePath) {
+    entries = entries.filter((entry) => entry.entryName.startsWith(relativePath));
+  }
 
   for (const entry of entries) {
     const rawEntryData: Buffer = entry.getData();
-    const entryName: string = nameReplaceFn
+    let entryName: string = nameReplaceFn
       ? nameReplaceFn(entry.entryName, rawEntryData)
       : entry.entryName;
+    if (relativePath) {
+      entryName = entryName.replace(relativePath, "");
+    }
     const entryData: string | Buffer = dataReplaceFn
       ? dataReplaceFn(entry.name, rawEntryData)
       : rawEntryData;
-
     const filePath: string = path.join(dstPath, entryName);
     const dirPath: string = path.dirname(filePath);
+
     await fs.ensureDir(dirPath);
     if (filesInAppendMode.includes(entryName) && (await fs.pathExists(filePath))) {
       await fs.appendFile(filePath, EOL);

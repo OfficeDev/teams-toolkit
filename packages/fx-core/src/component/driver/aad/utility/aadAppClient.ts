@@ -5,7 +5,6 @@ import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance, AxiosError } from "axios";
 import { IAADDefinition } from "../../../resource/aadApp/interfaces/IAADDefinition";
 import { AADApplication } from "../../../resource/aadApp/interfaces/AADApplication";
-import { GraphClientErrorMessage } from "../../../resource/aadApp/errors";
 import { GraphScopes } from "../../../../common/tools";
 import { Constants } from "../../../resource/aadApp/constants";
 import axiosRetry from "axios-retry";
@@ -33,10 +32,8 @@ export class AadAppClient {
       if (!config.headers) {
         config.headers = {};
       }
-      if (!config.headers["Authorization"]) {
-        // If the header is already set, use that value
-        config.headers["Authorization"] = `Bearer ${token}`;
-      }
+      config.headers["Authorization"] = `Bearer ${token}`;
+
       return config;
     });
     // Add retry logic. Retry post request may result in creating additional resources but should be fine in AAD driver.
@@ -54,12 +51,8 @@ export class AadAppClient {
     }; // Create an AAD app without setting anything
 
     const response = await this.axios.post("applications", requestBody);
-    if (response && response.data) {
-      return <AADApplication>response.data;
-    }
-    throw new Error(
-      `${GraphClientErrorMessage.CreateFailed}: ${GraphClientErrorMessage.EmptyResponse}.`
-    );
+
+    return <AADApplication>response.data;
   }
 
   public async generateClientSecret(objectId: string): Promise<string> {
@@ -79,13 +72,8 @@ export class AadAppClient {
           this.isHttpClientError(error), // also retry 4xx (usually 404) error since AAD need sometime to sync created AAD app data
       },
     });
-    if (response && response.data) {
-      return response.data.secretText;
-    }
 
-    throw new Error(
-      `${GraphClientErrorMessage.CreateSecretFailed}: ${GraphClientErrorMessage.EmptyResponse}.`
-    );
+    return response.data.secretText;
   }
 
   // only use it to retry 4xx errors for create client secret requests right after AAD app creation (usually 404)

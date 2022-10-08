@@ -20,7 +20,7 @@ import {
 import { AadValidator, FrontendValidator } from "../../commonlib"
 import { TemplateProject } from "../../commonlib/constants"
 import { CliHelper } from "../../commonlib/cliHelper";
-import { m365Login } from "../../../src/commonlib/m365Login";
+import  m365Login  from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {

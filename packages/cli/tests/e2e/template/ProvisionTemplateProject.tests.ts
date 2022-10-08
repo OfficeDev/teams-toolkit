@@ -13,7 +13,6 @@ import {
   execAsync,
   getTestFolder,
   cleanUp,
-  getUniqueAppName,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
   validateTabAndBotProjectProvision
@@ -26,18 +25,16 @@ describe("teamsfx new template", function () {
   let appId: string;
   let appName: string;
   let testFolder: string;
-  let sampleName: string;
   let projectPath: string;
 
   const env = environmentManager.getDefaultEnvName();
   const subscription = getSubscriptionId();
   beforeEach(async () => {
     testFolder = getTestFolder();
-    appName = getUniqueAppName();
-    projectPath = path.resolve(testFolder, appName);
   });
-
+  
   it(`${TemplateProject.HelloWorldTabSSO}`, { testPlanCaseId: 'XXXXXXX' }, async function () {
+    projectPath = path.resolve(testFolder, TemplateProject.HelloWorldTabSSO);
     await execAsync(`teamsfx new template ${TemplateProject.HelloWorldTabSSO}`, {
       cwd: testFolder,
       env: process.env,

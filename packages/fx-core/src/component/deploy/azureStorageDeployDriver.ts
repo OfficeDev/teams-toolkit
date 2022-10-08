@@ -2,21 +2,14 @@
 // Licensed under the MIT license.
 
 import { AzureDeployDriver } from "./azureDeployDriver";
-import { AzureResourceInfo, DeployStepArgs, DriverContext } from "../interface/buildAndDeployArgs";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { DeployStepArgs } from "../interface/buildAndDeployArgs";
 import {
   BlobDeleteResponse,
   BlobItem,
-  BlobServiceClient,
   BlobUploadCommonResponse,
   BlockBlobParallelUploadOptions,
   ContainerClient,
 } from "@azure/storage-blob";
-import {
-  StorageAccounts,
-  StorageManagementClient,
-  StorageManagementModels,
-} from "@azure/arm-storage";
 import { DeployConstant } from "../constant/deployConstant";
 import { DeployExternalApiCallError } from "../error/deployError";
 import { forEachFileAndDir } from "../utils/fileOperation";
@@ -26,8 +19,11 @@ import * as mime from "mime";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { StepDriver } from "../interface/stepDriver";
+import { DriverContext, AzureResourceInfo } from "../interface/commonArgs";
+import { createBlobServiceClient } from "../utils/azureResourceOperation";
+import { TokenCredential } from "@azure/identity";
 
-@Service("deploy/azureStorage")
+@Service("azureStorage/deploy")
 export class AzureStorageDeployDriver implements StepDriver {
   async run(args: unknown, context: DriverContext): Promise<Map<string, string>> {
     const impl = new AzureStorageDeployDriverImpl(args, context);
@@ -45,7 +41,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
   async azureDeploy(
     args: DeployStepArgs,
     azureResource: AzureResourceInfo,
-    azureCredential: TokenCredentialsBase
+    azureCredential: TokenCredential
   ): Promise<void> {
     const containerClient = await AzureStorageDeployDriverImpl.createContainerClient(
       azureResource,
@@ -81,7 +77,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
       }
     );
     const responses = await Promise.all(tasks);
-    const errorResponse = responses.find((res) => res.errorCode !== undefined);
+    const errorResponse = responses.find((res) => res.errorCode);
     if (errorResponse) {
       throw DeployExternalApiCallError.uploadToStorageError(sourceFolder, errorResponse);
     }
@@ -90,22 +86,9 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
 
   private static async createContainerClient(
     azureResource: AzureResourceInfo,
-    azureCredential: TokenCredentialsBase
+    azureCredential: TokenCredential
   ): Promise<ContainerClient> {
-    const storageAccountClient = new StorageManagementClient(
-      azureCredential,
-      azureResource.subscriptionId
-    ).storageAccounts;
-    const sasToken = await AzureStorageDeployDriverImpl.generateSasToken(
-      storageAccountClient,
-      azureResource.resourceGroupName,
-      azureResource.instanceId
-    );
-    const blobUri = AzureStorageDeployDriverImpl.getBlobUri(azureResource.instanceId);
-    const blobServiceClient = await AzureStorageDeployDriverImpl.getBlobServiceClient(
-      blobUri,
-      sasToken
-    );
+    const blobServiceClient = await createBlobServiceClient(azureResource, azureCredential);
     const container = blobServiceClient.getContainerClient(
       DeployConstant.AZURE_STORAGE_CONTAINER_NAME
     );
@@ -113,41 +96,6 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
       await container.create();
     }
     return container;
-  }
-
-  private static async getBlobServiceClient(
-    blobUri: string,
-    sasToken: string
-  ): Promise<BlobServiceClient> {
-    const connectionString = `BlobEndpoint=${blobUri};SharedAccessSignature=${sasToken}`;
-    return BlobServiceClient.fromConnectionString(connectionString);
-  }
-
-  private static getBlobUri(storageName: string): string {
-    return `https://${storageName}.blob.core.windows.net`;
-  }
-
-  private static async generateSasToken(
-    client: StorageAccounts,
-    resourceGroupName: string,
-    storageName: string
-  ): Promise<string> {
-    const accountSasParameters: StorageManagementModels.AccountSasParameters = {
-      // A workaround, to ignore type checking for the services/resourceTypes/permissions are enum type.
-      services: "bf" as StorageManagementModels.Services,
-      resourceTypes: "sco" as StorageManagementModels.SignedResourceTypes,
-      permissions: "rwld" as StorageManagementModels.Permissions,
-      sharedAccessStartTime: new Date(Date.now() - DeployConstant.SAS_TOKEN_LIFE_TIME_PADDING),
-      sharedAccessExpiryTime: new Date(Date.now() + DeployConstant.SAS_TOKEN_LIFE_TIME),
-    };
-
-    const token = (
-      await client.listAccountSAS(resourceGroupName, storageName, accountSasParameters)
-    ).accountSasToken;
-    if (!token) {
-      throw DeployExternalApiCallError.getSasTokenError();
-    }
-    return token;
   }
 
   private static async deleteAllBlobs(
@@ -167,7 +115,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
     }
 
     const responses = await Promise.all(deleteJobs);
-    const errorResponse = responses.find((res) => res.errorCode !== undefined);
+    const errorResponse = responses.find((res) => res.errorCode);
     if (errorResponse) {
       throw DeployExternalApiCallError.clearStorageError(
         "delete blob",

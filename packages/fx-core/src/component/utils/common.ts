@@ -10,7 +10,7 @@ import { PrerequisiteError } from "../error/componentError";
  */
 export function checkMissingArgs<T>(name: string, value: T | null | undefined): T {
   if (!value) {
-    throw PrerequisiteError.somethingMissing(name);
+    throw PrerequisiteError.somethingMissing("Deploy", name);
   }
   return value;
 }
@@ -28,14 +28,14 @@ export function asString(s: unknown, key: string): string {
   if (typeof s === "string") {
     return s as string;
   }
-  throw PrerequisiteError.somethingMissing(key);
+  throw PrerequisiteError.somethingMissing("Deploy", key);
 }
 
 export function asNumber(s: unknown, key: string): number {
   if (typeof s === "number") {
     return s as number;
   }
-  throw PrerequisiteError.somethingMissing(key);
+  throw PrerequisiteError.somethingMissing("Deploy", key);
 }
 
 type KeyValidators<T> = {
@@ -52,6 +52,6 @@ export function asFactory<T>(keyValidators: KeyValidators<T>) {
       }
       return maybeT;
     }
-    throw PrerequisiteError.somethingIllegal("data", "plugins.bot.InvalidData");
+    throw PrerequisiteError.somethingIllegal("Deploy", "data", "plugins.bot.InvalidData");
   };
 }

@@ -23,6 +23,7 @@ import { DeployConstant } from "../constant/deployConstant";
  * @property detail detail error message, http response, console output, etc..
  */
 export class BaseComponentInnerError extends Error {
+  source: string;
   errorType: "UserError" | "SystemError";
   helpLink?: string;
   displayMessage?: string;
@@ -30,6 +31,7 @@ export class BaseComponentInnerError extends Error {
   detail?: string;
 
   constructor(
+    source: string,
     errorType: "UserError" | "SystemError",
     name: string,
     messageKey?: string,
@@ -45,6 +47,7 @@ export class BaseComponentInnerError extends Error {
           : getDefaultString(messageKey)
         : undefined
     );
+    this.source = source;
     this.errorType = errorType;
     this.name = name;
     this.helpLink = helpLink;
@@ -60,7 +63,7 @@ export class BaseComponentInnerError extends Error {
   toFxError(): FxError {
     if (this.errorType === "UserError") {
       return new UserError({
-        source: "Deploy",
+        source: this.source,
         error: this,
         helpLink: this.helpLink,
         name: this.name,
@@ -69,7 +72,7 @@ export class BaseComponentInnerError extends Error {
       } as UserErrorOptions);
     } else {
       return new SystemError({
-        source: DeployConstant.DEPLOY_ERROR_TYPE,
+        source: this.source,
         name: this.name,
         message: this.message,
         error: this,
@@ -103,6 +106,7 @@ export class ExternalApiCallError extends BaseComponentInnerError {
   statusCode: number;
 
   constructor(
+    source: string,
     name: string,
     message: string,
     statusCode: number,
@@ -111,14 +115,50 @@ export class ExternalApiCallError extends BaseComponentInnerError {
     detail?: string,
     helpLink?: string
   ) {
-    super("UserError", name, message, messageParams, suggestionKey, detail, helpLink);
+    super(source, "UserError", name, message, messageParams, suggestionKey, detail, helpLink);
     this.statusCode = statusCode;
+  }
+
+  static getAzureCredentialError(source: string, error?: unknown): ExternalApiCallError {
+    error = error ?? "";
+    return new ExternalApiCallError(
+      source,
+      "GetAzureCredentialError",
+      "plugins.bot.FailRetrieveAzureCredentials",
+      -1,
+      undefined,
+      undefined,
+      typeof error === "string" ? error : JSON.stringify(error)
+    );
+  }
+
+  static getSasTokenError(source: string): ExternalApiCallError {
+    return new ExternalApiCallError(
+      source,
+      "AzureStorageSASToeknEmpty",
+      "error.frontend.GetContainerError",
+      -1,
+      [DeployConstant.AZURE_STORAGE_CONTAINER_NAME],
+      [
+        "plugins.frontend.checkSystemTimeTip",
+        // eslint-disable-next-line no-secrets/no-secrets
+        "plugins.frontend.checkStoragePermissionsTip",
+        "plugins.frontend.checkNetworkTip",
+      ]
+    );
   }
 }
 
 export class ExecuteCommandError extends BaseComponentInnerError {
-  constructor(name: string, messageKey: string, messageParams: string[], error: string) {
+  constructor(
+    source: string,
+    name: string,
+    messageKey: string,
+    messageParams: string[],
+    error: string
+  ) {
     super(
+      source,
       "UserError",
       name,
       messageKey,
@@ -128,8 +168,9 @@ export class ExecuteCommandError extends BaseComponentInnerError {
     );
   }
 
-  static fromErrorOutput(commands: string[], error: unknown): ExecuteCommandError {
+  static fromErrorOutput(source: string, commands: string[], error: unknown): ExecuteCommandError {
     return new ExecuteCommandError(
+      source,
       "CommandExecutionError",
       "plugins.bot.RunFailedCommand",
       commands,
@@ -143,22 +184,25 @@ export class ExecuteCommandError extends BaseComponentInnerError {
  */
 export class PrerequisiteError extends BaseComponentInnerError {
   constructor(
+    source: string,
     name: string,
     messageKey: string,
     messageParams: string[] | undefined,
     suggestionKey?: string[],
     helpLink?: string
   ) {
-    super("UserError", name, messageKey, messageParams, suggestionKey, undefined, helpLink);
+    super(source, "UserError", name, messageKey, messageParams, suggestionKey, undefined, helpLink);
   }
 
   static somethingIllegal(
+    source: string,
     name: string,
     messageKey: string,
     messageParams?: string[],
     helpLink?: string
   ): PrerequisiteError {
     return new PrerequisiteError(
+      source,
       "Illegal" + PrerequisiteError.toCamel(name),
       messageKey,
       messageParams,
@@ -167,11 +211,14 @@ export class PrerequisiteError extends BaseComponentInnerError {
     );
   }
 
-  static somethingMissing(name: string): PrerequisiteError {
+  static somethingMissing(source: string, name: string): PrerequisiteError {
     return new PrerequisiteError(
+      source,
       PrerequisiteError.toCamel(name) + "IsMissing",
       "plugins.bot.SomethingIsMissing",
-      [name]
+      [name],
+      undefined,
+      undefined
     );
   }
 

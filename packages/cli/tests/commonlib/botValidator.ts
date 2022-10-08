@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import axios from "axios";
 import * as chai from "chai";
 import * as fs from "fs";
@@ -95,8 +96,8 @@ export class BotValidator {
     console.log("Start to validate Bot Provision.");
 
     const tokenProvider = MockAzureAccountProvider;
-    const tokenCredential = await tokenProvider.getAccountCredentialAsync();
-    const token = (await tokenCredential?.getToken())?.accessToken;
+    const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
+    const token = (await tokenCredential?.getToken(AzureScopes))?.token;
 
     const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
     chai.assert.isArray(activeResourcePlugins);

@@ -52,6 +52,19 @@ describe("TabDebugHandler", () => {
       }
     });
 
+    it("invalid args: invalid url", async () => {
+      const args: TabDebugArgs = {
+        baseUrl: "https://",
+      };
+      const handler = new TabDebugHandler(projectPath, args);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.equal(result.error.message, InvalidTabBaseUrlError().message);
+      }
+    });
+
     it("invalid args: http protocol", async () => {
       const args: TabDebugArgs = {
         baseUrl: "http://localhost:53000",

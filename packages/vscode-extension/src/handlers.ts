@@ -156,6 +156,8 @@ import {
 } from "./debug/localTelemetryReporter";
 import { compare } from "./utils/versionUtil";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -2369,7 +2371,7 @@ export async function cmpAccountsHandler(args: any[]) {
     const azureAccount = await AzureAccountManager.getStatus();
     if (azureAccount.status === "SignedIn") {
       const accountInfo = azureAccount.accountInfo;
-      const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+      const email = (accountInfo as any).email || (accountInfo as any).upn;
       if (email !== undefined) {
         signOutAzureOption.label = signOutAzureOption.label.concat(email);
       }
@@ -3043,6 +3045,12 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         data: "https://aka.ms/teamsfx-create-command",
       },
       {
+        id: "cardActionResponse",
+        label: localize("teamstoolkit.tutorials.cardActionResponse.label"),
+        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
+        data: "https://aka.ms/teamsfx-card-action-response",
+      },
+      {
         id: "addSso",
         label: `${localize("teamstoolkit.tutorials.addSso.label")}`,
         detail: localize("teamstoolkit.tutorials.addSso.detail"),
@@ -3210,10 +3218,12 @@ export async function signinAzureCallback(args?: any[]): Promise<Result<null, Fx
       ...triggerFrom,
     });
   }
-  const token = await AzureAccountManager.getAccountCredentialAsync(true);
+  const credential = await AzureAccountManager.getIdentityCredentialAsync(true);
+  const token = await credential?.getToken(AzureScopes);
+  const accountInfo = token?.token ? ConvertTokenToJson(token?.token) : {};
   if (token && node) {
     const needSelectSubscription = await node.setSignedIn(
-      (token as any).username ? (token as any).username : ""
+      (accountInfo as any).email ?? (accountInfo as any).username ?? ""
     );
     if (needSelectSubscription) {
       const solutionSettings = await getAzureSolutionSettings();

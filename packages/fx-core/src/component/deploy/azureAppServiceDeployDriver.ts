@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureResourceInfo, DeployStepArgs, DriverContext } from "../interface/buildAndDeployArgs";
+import { DeployStepArgs } from "../interface/buildAndDeployArgs";
 import { AzureDeployDriver } from "./azureDeployDriver";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { StepDriver } from "../interface/stepDriver";
 import { Service } from "typedi";
+import { DriverContext, AzureResourceInfo } from "../interface/commonArgs";
+import { TokenCredential } from "@azure/identity";
 
-@Service("deploy/azureAppService")
+@Service("azureAppService/deploy")
 export class AzureAppServiceDeployDriver implements StepDriver {
   async run(args: unknown, context: DriverContext): Promise<Map<string, string>> {
     const impl = new AzureAppServiceDeployDriverImpl(args, context);
@@ -22,7 +23,7 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
   async azureDeploy(
     args: DeployStepArgs,
     azureResource: AzureResourceInfo,
-    azureCredential: TokenCredentialsBase
+    azureCredential: TokenCredential
   ): Promise<void> {
     await this.zipDeploy(args, azureResource, azureCredential);
   }

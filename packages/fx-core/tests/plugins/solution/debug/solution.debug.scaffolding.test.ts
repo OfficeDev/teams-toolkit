@@ -2,14 +2,11 @@ import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as fs from "fs-extra";
-import { ConfigFolderName, InputConfigsFolderName, Inputs, Platform } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, Inputs, Platform } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as uuid from "uuid";
 import { MockedV2Context } from "../util";
-import {
-  scaffoldLocalDebugSettings,
-  updateNgrokConfigFile,
-} from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
+import { scaffoldLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
 import {
   AzureSolutionQuestionNames,
   BotScenario,
@@ -18,6 +15,10 @@ import { PluginBot } from "../../../../src/component/resource/botService/strings
 import { isAadManifestEnabled } from "../../../../src/common/tools";
 import { BotHostTypes } from "../../../../src/common/local/constants";
 import { BotCapabilities } from "../../../../src/component/feature/bot/constants";
+import { MockTools } from "../../../core/utils";
+import { setTools } from "../../../../src/core/globalVars";
+import * as commentJson from "comment-json";
+import { CommentObject, CommentArray } from "comment-json";
 
 chai.use(chaiAsPromised);
 
@@ -26,43 +27,16 @@ interface TestParameter {
   numConfigurations: number;
   numCompounds: number;
   numTasks: number;
-  numLocalEnvs: number;
 }
 
 describe("solution.debug.scaffolding", () => {
   const expectedLaunchFile = path.resolve(__dirname, "./data/.vscode/launch.json");
   const expectedLocalEnvFile = path.resolve(__dirname, `./data/.${ConfigFolderName}/local.env`);
-  const expectedLocalSettingsFile = path.resolve(
-    __dirname,
-    `./data/.${ConfigFolderName}/${InputConfigsFolderName}/localSettings.json`
-  );
   const expectedSettingsFile = path.resolve(__dirname, "./data/.vscode/settings.json");
   const expectedTasksFile = path.resolve(__dirname, "./data/.vscode/tasks.json");
-  const expectedNgrokConfigFile = path.resolve(
-    __dirname,
-    `./data/.${ConfigFolderName}/${InputConfigsFolderName}/ngrok.yml`
-  );
 
-  describe("updateNgrokConfigFile", () => {
-    beforeEach(() => {
-      fs.emptyDirSync(path.resolve(__dirname, "./data/"));
-      fs.ensureDirSync(
-        path.resolve(__dirname, `./data/.${ConfigFolderName}/${InputConfigsFolderName}`)
-      );
-    });
-
-    it(`happy path: bot`, async () => {
-      await updateNgrokConfigFile(true, expectedNgrokConfigFile);
-      const hasNgrokConfigFile = await fs.pathExists(expectedNgrokConfigFile);
-      chai.assert.isTrue(hasNgrokConfigFile);
-    });
-
-    it(`happy path: tab`, async () => {
-      await updateNgrokConfigFile(false, expectedNgrokConfigFile);
-      const hasNgrokConfigFile = await fs.pathExists(expectedNgrokConfigFile);
-      chai.assert.isFalse(hasNgrokConfigFile);
-    });
-  });
+  const tools = new MockTools();
+  setTools(tools);
 
   describe("scaffoldLocalDebugSettings", () => {
     let inputs: Inputs;
@@ -80,15 +54,13 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 6,
-        numLocalEnvs: 21,
+        numTasks: 10,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 7,
-        numLocalEnvs: 21,
+        numTasks: 11,
       },
     ];
     parameters1.forEach((parameter: TestParameter) => {
@@ -119,8 +91,10 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(compounds.length, parameter.numCompounds);
 
         //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
+        const tasksAll = commentJson.parse(
+          fs.readFileSync(expectedTasksFile).toString()
+        ) as CommentObject;
+        const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
         chai.assert.equal(tasks.length, parameter.numTasks);
 
         //assert output settings.json
@@ -148,15 +122,13 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 4,
         numCompounds: 2,
-        numTasks: 5,
-        numLocalEnvs: 7,
+        numTasks: 8,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 4,
         numCompounds: 2,
-        numTasks: 5,
-        numLocalEnvs: 7,
+        numTasks: 8,
       },
     ];
     parameters2.forEach((parameter) => {
@@ -186,8 +158,10 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(compounds.length, parameter.numCompounds);
 
         //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
+        const tasksAll = commentJson.parse(
+          fs.readFileSync(expectedTasksFile).toString()
+        ) as CommentObject;
+        const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
         chai.assert.equal(tasks.length, parameter.numTasks);
 
         //assert output settings.json
@@ -231,8 +205,10 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(compounds.length, parameter.numCompounds);
 
         //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
+        const tasksAll = commentJson.parse(
+          fs.readFileSync(expectedTasksFile).toString()
+        ) as CommentObject;
+        const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
         chai.assert.equal(tasks.length, parameter.numTasks);
 
         //assert output settings.json
@@ -249,7 +225,23 @@ describe("solution.debug.scaffolding", () => {
           chai.assert.equal(Object.keys(settings).length, 1);
         }
       });
+    });
 
+    const parameters88: TestParameter[] = [
+      {
+        programmingLanguage: "javascript",
+        numConfigurations: 4,
+        numCompounds: 2,
+        numTasks: 7,
+      },
+      {
+        programmingLanguage: "typescript",
+        numConfigurations: 4,
+        numCompounds: 2,
+        numTasks: 7,
+      },
+    ];
+    parameters88.forEach((parameter) => {
       it(`happy path: tab without function (${parameter.programmingLanguage}) and AAD`, async () => {
         const projectSetting = {
           appName: "",
@@ -276,8 +268,10 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(compounds.length, parameter.numCompounds);
 
         //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
+        const tasksAll = commentJson.parse(
+          fs.readFileSync(expectedTasksFile).toString()
+        ) as CommentObject;
+        const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
         chai.assert.equal(tasks.length, parameter.numTasks);
 
         //assert output settings.json
@@ -301,15 +295,13 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 6,
-        numLocalEnvs: 12,
+        numTasks: 8,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 6,
-        numLocalEnvs: 12,
+        numTasks: 8,
       },
     ];
     parameters3.forEach((parameter) => {
@@ -338,8 +330,10 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(compounds.length, parameter.numCompounds);
 
         //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
+        const tasksAll = commentJson.parse(
+          fs.readFileSync(expectedTasksFile).toString()
+        ) as CommentObject;
+        const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
         chai.assert.equal(tasks.length, parameter.numTasks);
 
         //assert output settings.json
@@ -389,8 +383,10 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(compounds.length, parameter.numCompounds);
 
         //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
+        const tasksAll = commentJson.parse(
+          fs.readFileSync(expectedTasksFile).toString()
+        ) as CommentObject;
+        const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
         chai.assert.equal(tasks.length, parameter.numTasks);
 
         //assert output settings.json
@@ -413,15 +409,13 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 7,
-        numLocalEnvs: 12,
+        numTasks: 9,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 8,
-        numLocalEnvs: 12,
+        numTasks: 10,
       },
     ];
     parameters99.forEach((parameter) => {
@@ -457,8 +451,10 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(compounds.length, parameter.numCompounds);
 
         //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
+        const tasksAll = commentJson.parse(
+          fs.readFileSync(expectedTasksFile).toString()
+        ) as CommentObject;
+        const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
         chai.assert.equal(tasks.length, parameter.numTasks);
 
         //assert output settings.json
@@ -487,15 +483,13 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 6,
         numCompounds: 2,
-        numTasks: 8,
-        numLocalEnvs: 33,
+        numTasks: 13,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 6,
         numCompounds: 2,
-        numTasks: 9,
-        numLocalEnvs: 33,
+        numTasks: 14,
       },
     ];
     parameters4.forEach((parameter) => {
@@ -531,8 +525,10 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(compounds.length, parameter.numCompounds);
 
         //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
+        const tasksAll = commentJson.parse(
+          fs.readFileSync(expectedTasksFile).toString()
+        ) as CommentObject;
+        const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
         chai.assert.equal(tasks.length, parameter.numTasks);
 
         //assert output settings.json
@@ -560,15 +556,13 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 7,
-        numLocalEnvs: 19,
+        numTasks: 11,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 7,
-        numLocalEnvs: 19,
+        numTasks: 11,
       },
     ];
     parameters5.forEach((parameter) => {
@@ -598,8 +592,10 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(compounds.length, parameter.numCompounds);
 
         //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
+        const tasksAll = commentJson.parse(
+          fs.readFileSync(expectedTasksFile).toString()
+        ) as CommentObject;
+        const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
         chai.assert.equal(tasks.length, parameter.numTasks);
 
         //assert output settings.json
@@ -648,8 +644,10 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(compounds.length, parameter.numCompounds);
 
         //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
+        const tasksAll = commentJson.parse(
+          fs.readFileSync(expectedTasksFile).toString()
+        ) as CommentObject;
+        const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
         chai.assert.equal(tasks.length, parameter.numTasks);
 
         //assert output settings.json
@@ -666,8 +664,24 @@ describe("solution.debug.scaffolding", () => {
           chai.assert.equal(Object.keys(settings).length, 1);
         }
       });
+    });
 
-      it(`happy path: tab without function and bot (${parameter.programmingLanguage}) and AAD`, async () => {
+    const parameters77: TestParameter[] = [
+      {
+        programmingLanguage: "javascript",
+        numConfigurations: 5,
+        numCompounds: 2,
+        numTasks: 10,
+      },
+      {
+        programmingLanguage: "typescript",
+        numConfigurations: 5,
+        numCompounds: 2,
+        numTasks: 10,
+      },
+    ];
+    parameters77.forEach((parameter) => {
+      it(`happy path: tab without function and bot (${parameter.programmingLanguage})`, async () => {
         const projectSetting = {
           appName: "",
           projectId: uuid.v4(),
@@ -693,8 +707,10 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(compounds.length, parameter.numCompounds);
 
         //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
+        const tasksAll = commentJson.parse(
+          fs.readFileSync(expectedTasksFile).toString()
+        ) as CommentObject;
+        const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
         chai.assert.equal(tasks.length, parameter.numTasks);
 
         //assert output settings.json
@@ -718,15 +734,13 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 6,
         numCompounds: 6,
-        numTasks: 7,
-        numLocalEnvs: 7,
+        numTasks: 10,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 6,
         numCompounds: 6,
-        numTasks: 7,
-        numLocalEnvs: 7,
+        numTasks: 10,
       },
     ];
     parameters6.forEach((parameter) => {
@@ -757,8 +771,10 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(compounds.length, parameter.numCompounds);
 
         //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
+        const tasksAll = commentJson.parse(
+          fs.readFileSync(expectedTasksFile).toString()
+        ) as CommentObject;
+        const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
         chai.assert.equal(tasks.length, parameter.numTasks);
 
         //assert output settings.json
@@ -782,15 +798,13 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 4,
-        numTasks: 8,
-        numLocalEnvs: 12,
+        numTasks: 10,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 4,
-        numTasks: 8,
-        numLocalEnvs: 12,
+        numTasks: 10,
       },
     ];
     parameters7.forEach((parameter) => {
@@ -820,8 +834,10 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(compounds.length, parameter.numCompounds);
 
         //assert output tasks.json
-        const tasksAll = fs.readJSONSync(expectedTasksFile);
-        const tasks: [] = tasksAll["tasks"];
+        const tasksAll = commentJson.parse(
+          fs.readFileSync(expectedTasksFile).toString()
+        ) as CommentObject;
+        const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
         chai.assert.equal(tasks.length, parameter.numTasks);
 
         //assert output settings.json
@@ -991,8 +1007,10 @@ describe("solution.debug.scaffolding", () => {
       chai.assert.equal(compounds.length, 2);
 
       //assert output tasks.json
-      const tasksAll = fs.readJSONSync(expectedTasksFile);
-      const tasks: [] = tasksAll["tasks"];
+      const tasksAll = commentJson.parse(
+        fs.readFileSync(expectedTasksFile).toString()
+      ) as CommentObject;
+      const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
       chai.assert.equal(tasks.length, 7);
     });
 
@@ -1037,8 +1055,10 @@ describe("solution.debug.scaffolding", () => {
       chai.assert.equal(compounds.length, 2);
 
       //assert output tasks.json
-      const tasksAll = fs.readJSONSync(expectedTasksFile);
-      const tasks: [] = tasksAll["tasks"];
+      const tasksAll = commentJson.parse(
+        fs.readFileSync(expectedTasksFile).toString()
+      ) as CommentObject;
+      const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
       chai.assert.equal(tasks.length, 9);
     });
 

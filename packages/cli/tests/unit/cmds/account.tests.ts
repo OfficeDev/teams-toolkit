@@ -14,6 +14,19 @@ import { NotFoundSubscriptionId } from "../../../src/error";
 import M365TokenProvider from "../../../src/commonlib/m365Login";
 import AzureTokenProvider from "../../../src/commonlib/azureLogin";
 import { signedIn, signedOut } from "../../../src/commonlib/common/constant";
+import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
+
+class MockTokenCredentials implements TokenCredential {
+  public async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions
+  ): Promise<AccessToken | null> {
+    return {
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
+      expiresOnTimestamp: 1234,
+    };
+  }
+}
 
 describe("Account Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -89,13 +102,27 @@ describe("Account Command Tests", function () {
       .onThirdCall()
       .returns(Promise.resolve({ status: signedOut }));
     sandbox
-      .stub(AzureTokenProvider, "getAccountCredentialAsync")
+      .stub(AzureTokenProvider, "getIdentityCredentialAsync")
       .onFirstCall()
-      .returns(Promise.resolve({ username: "Azure@xxx.com" } as any))
+      .returns(Promise.resolve(new MockTokenCredentials()))
       .onSecondCall()
-      .returns(Promise.resolve({ username: "Azure@xxx.com" } as any))
+      .returns(Promise.resolve(new MockTokenCredentials()))
       .onThirdCall()
-      .returns(Promise.resolve({ username: "Azure@xxx.com" } as any))
+      .returns(Promise.resolve(new MockTokenCredentials()))
+      .onCall(4)
+      .returns(Promise.resolve(undefined))
+      .onCall(5)
+      .returns(Promise.resolve(undefined))
+      .onCall(6)
+      .returns(Promise.resolve(undefined));
+    sandbox
+      .stub(AzureTokenProvider, "getJsonObject")
+      .onFirstCall()
+      .returns(Promise.resolve({}))
+      .onSecondCall()
+      .returns(Promise.resolve({}))
+      .onThirdCall()
+      .returns(Promise.resolve({}))
       .onCall(4)
       .returns(Promise.resolve(undefined))
       .onCall(5)

@@ -8,18 +8,6 @@ import { DeployConstant } from "../constant/deployConstant";
  * call external api error when deploy
  */
 export class DeployExternalApiCallError extends ExternalApiCallError {
-  static getAzureCredentialError(error?: unknown): DeployExternalApiCallError {
-    error = error ?? "";
-    return new DeployExternalApiCallError(
-      "GetAzureCredentialError",
-      "plugins.bot.FailRetrieveAzureCredentials",
-      -1,
-      undefined,
-      undefined,
-      typeof error === "string" ? error : JSON.stringify(error)
-    );
-  }
-
   static listPublishingCredentialsError(e?: unknown): DeployExternalApiCallError;
   static listPublishingCredentialsError(
     statusCode = -1,
@@ -27,6 +15,7 @@ export class DeployExternalApiCallError extends ExternalApiCallError {
   ): DeployExternalApiCallError {
     error = error ?? "";
     return new DeployExternalApiCallError(
+      DeployConstant.DEPLOY_ERROR_TYPE,
       "ListPublishingCredentialsError",
       "plugins.bot.FailedListPublishingCredentials",
       statusCode ?? -1,
@@ -38,6 +27,7 @@ export class DeployExternalApiCallError extends ExternalApiCallError {
 
   static zipDeployError(e?: unknown, statusCode?: number): DeployExternalApiCallError {
     return new DeployExternalApiCallError(
+      DeployConstant.DEPLOY_ERROR_TYPE,
       "ZipDeployError",
       "plugins.bot.FailedDeployZipFile",
       statusCode ?? -1
@@ -46,6 +36,7 @@ export class DeployExternalApiCallError extends ExternalApiCallError {
 
   static deployStatusError(e?: unknown, statusCode?: number): DeployExternalApiCallError {
     return new DeployExternalApiCallError(
+      DeployConstant.DEPLOY_ERROR_TYPE,
       "DeployStatusError",
       // eslint-disable-next-line no-secrets/no-secrets
       "plugins.bot.FailedCheckDeployStatus",
@@ -59,6 +50,7 @@ export class DeployExternalApiCallError extends ExternalApiCallError {
     error: unknown
   ): DeployExternalApiCallError {
     return new DeployExternalApiCallError(
+      DeployConstant.DEPLOY_ERROR_TYPE,
       "ClearStorageError",
       "error.frontend.ClearStorageError",
       -1,
@@ -68,23 +60,9 @@ export class DeployExternalApiCallError extends ExternalApiCallError {
     );
   }
 
-  static getSasTokenError(): DeployExternalApiCallError {
-    return new DeployExternalApiCallError(
-      "AzureStorageSASToeknEmpty",
-      "error.frontend.GetContainerError",
-      -1,
-      [DeployConstant.AZURE_STORAGE_CONTAINER_NAME],
-      [
-        "plugins.frontend.checkSystemTimeTip",
-        // eslint-disable-next-line no-secrets/no-secrets
-        "plugins.frontend.checkStoragePermissionsTip",
-        "plugins.frontend.checkNetworkTip",
-      ]
-    );
-  }
-
   static uploadToStorageError(path: string, error?: unknown): DeployExternalApiCallError {
     return new DeployExternalApiCallError(
+      DeployConstant.DEPLOY_ERROR_TYPE,
       "UploadToStorageError",
       "error.frontend.UploadToStorageError",
       -1,
@@ -96,6 +74,7 @@ export class DeployExternalApiCallError extends ExternalApiCallError {
 
   static restartWebAppError(error?: unknown): DeployExternalApiCallError {
     return new DeployExternalApiCallError(
+      DeployConstant.DEPLOY_ERROR_TYPE,
       "RestartWebAppError",
       "plugins.bot.FailedRestartWebApp",
       -1,
@@ -111,7 +90,7 @@ export class DeployExternalApiCallError extends ExternalApiCallError {
  */
 export class DeployTimeoutError extends BaseComponentInnerError {
   constructor(name: string, messageKey: string) {
-    super("UserError", name, messageKey);
+    super(DeployConstant.DEPLOY_ERROR_TYPE, "UserError", name, messageKey);
   }
 
   static checkDeployStatusTimeout(): DeployTimeoutError {

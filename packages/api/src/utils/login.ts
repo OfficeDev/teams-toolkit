@@ -3,7 +3,6 @@
 "use strict";
 
 import { TokenCredential } from "@azure/core-http";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { ok, Result } from "neverthrow";
 import { FxError } from "../error";
 
@@ -12,16 +11,6 @@ import { FxError } from "../error";
  * You can search at [Azure JS SDK](https://docs.microsoft.com/en-us/javascript/api/overview/azure/?view=azure-node-latest) to see which credential you need.
  */
 export interface AzureAccountProvider {
-  /**
-   * Async get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
-   * On login failure or user cancellation, it will throw an exception instead of returning undefined. This method never returns undefined.
-   * @param showDialog Control whether the UI layer displays pop-up windows.
-   * @param tenantId Tenant or directory id
-   */
-  getAccountCredentialAsync(
-    showDialog?: boolean,
-    tenantId?: string
-  ): Promise<TokenCredentialsBase | undefined>;
   /**
    * Async get identity [crendential](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/core/core-auth/src/tokenCredential.ts)
    * @param showDialog Control whether the UI layer displays pop-up windows.

@@ -1,22 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  ApimDefaultValues,
-  ApimOutputBicepSnippet,
-  ApimPathInfo,
-  ApimPluginConfigKeys,
-} from "../constants";
+import { ApimDefaultValues, ApimPluginConfigKeys } from "../constants";
 import { AssertNotEmpty } from "../error";
 import { IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../config";
 import { IAnswer } from "../answer";
-import { LogProvider, PluginContext, TelemetryReporter } from "@microsoft/teamsfx-api";
-import path from "path";
-import { Bicep, ConstantString } from "../../../../common/constants";
-import { ArmTemplateResult } from "../../../../common/armInterface";
-import * as fs from "fs-extra";
+import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
-import { getTemplatesFolder } from "../../../../folder";
-import { generateBicepFromFile } from "../../../../common/tools";
 import { ApimService } from "../services/apimService";
 import {
   getApimServiceNameFromResourceId,
@@ -26,8 +15,6 @@ import {
 } from "../utils/commonUtils";
 import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { NamingRules } from "../utils/namingRules";
-import { getActivatedV2ResourcePlugins } from "../../../../plugins/solution/fx-solution/ResourcePluginContainer";
-import { NamedArmResourcePluginAdaptor } from "../../../../plugins/solution/fx-solution/v2/adaptor";
 
 export class ApimManager {
   private readonly logger: LogProvider | undefined;
@@ -133,73 +120,5 @@ export class ApimManager {
     apimConfig.apiPath = apiPath;
 
     await apimService.addApiToProduct(resourceGroupName, apimServiceName, productId, apiId);
-  }
-
-  public async updateArmTemplates(ctx: PluginContext): Promise<ArmTemplateResult> {
-    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
-      (p) => new NamedArmResourcePluginAdaptor(p)
-    );
-    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
-    const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
-    const configModules = await generateBicepFromFile(
-      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
-      pluginCtx
-    );
-
-    const result: ArmTemplateResult = {
-      Reference: {
-        serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
-      },
-      Configuration: {
-        Modules: { apim: configModules },
-      },
-    };
-
-    return result;
-  }
-
-  public async generateArmTemplates(ctx: PluginContext): Promise<ArmTemplateResult> {
-    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
-      (p) => new NamedArmResourcePluginAdaptor(p)
-    );
-    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
-    const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
-    const provisionOrchestration = await generateBicepFromFile(
-      path.join(bicepTemplateDir, Bicep.ProvisionFileName),
-      pluginCtx
-    );
-    const provisionModules = await generateBicepFromFile(
-      path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleFileName),
-      pluginCtx
-    );
-    const configOrchestration = await generateBicepFromFile(
-      path.join(bicepTemplateDir, Bicep.ConfigFileName),
-      pluginCtx
-    );
-    const configModules = await generateBicepFromFile(
-      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
-      pluginCtx
-    );
-    const result: ArmTemplateResult = {
-      Provision: {
-        Orchestration: provisionOrchestration,
-        Modules: { apim: provisionModules },
-      },
-      Configuration: {
-        Orchestration: configOrchestration,
-        Modules: { apim: configModules },
-      },
-      Reference: {
-        serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
-      },
-      Parameters: JSON.parse(
-        await fs.readFile(
-          path.join(bicepTemplateDir, Bicep.ParameterFileName),
-          ConstantString.UTF8Encoding
-        )
-      ),
-    };
-
-    return result;
   }
 }

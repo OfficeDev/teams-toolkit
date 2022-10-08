@@ -71,23 +71,19 @@ import { checkWetherProvisionSucceeded } from "../plugins/solution/fx-solution/v
 import { NoCapabilityFoundError } from "../core/error";
 import { ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
-import {
-  isCLIDotNetEnabled,
-  isSPFxMultiTabEnabled,
-  isWorkflowBotEnabled,
-} from "../common/featureFlags";
+import { isCLIDotNetEnabled, isSPFxMultiTabEnabled } from "../common/featureFlags";
 import { buildQuestionNode } from "./resource/azureSql/questions";
-import { functionNameQuestion } from "../plugins/resource/function/question";
 import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { webpartNameQuestion } from "../component/resource/spfx/utils/questions";
-import { getQuestionsForDeployAPIM } from "./resource/apim";
+import { getQuestionsForDeployAPIM } from "./resource/apim/apim";
 import { canAddSso } from "./feature/sso";
 import { addCicdQuestion } from "./feature/cicd/cicd";
 import { InvalidFeature } from "./error";
 import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
 import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { Constants } from "./resource/aadApp/constants";
+import { functionNameQuestion } from "./feature/api/question";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -234,11 +230,7 @@ export async function getQuestionsForAddFeatureV3(
   if (inputs.platform === Platform.CLI_HELP) {
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
-
-    if (isWorkflowBotEnabled()) {
-      options.push(WorkflowOptionItem);
-    }
-
+    options.push(WorkflowOptionItem);
     options.push(BotNewUIOptionItem);
     options.push(TabNewUIOptionItem, TabNonSsoItem);
     options.push(MessageExtensionNewUIItem);
@@ -278,9 +270,7 @@ export async function getQuestionsForAddFeatureV3(
     if (!botExceedLimit && !meExceedLimit) {
       options.push(NotificationOptionItem);
       options.push(CommandAndResponseOptionItem);
-      if (isWorkflowBotEnabled()) {
-        options.push(WorkflowOptionItem);
-      }
+      options.push(WorkflowOptionItem);
     }
     if (canAddTab) {
       if (!hasTab(projectSettingsV3)) {

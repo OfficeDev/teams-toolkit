@@ -306,7 +306,6 @@ describe("Capability Command Tests", function () {
   it("Capability Add Workflow Bot Command Running Check", async () => {
     sandbox.stub(process, "env").value({
       BOT_NOTIFICATION_ENABLED: "true",
-      WORKFLOW_BOT_ENABLED: "true",
     });
     const cmd = new CapabilityAddWorkflow();
     const args = {
@@ -320,7 +319,6 @@ describe("Capability Command Tests", function () {
   it("Capability Add Workflow Bot Running Check with Error", async () => {
     sandbox.stub(process, "env").value({
       BOT_NOTIFICATION_ENABLED: "true",
-      WORKFLOW_BOT_ENABLED: "true",
     });
     const cmd = new CapabilityAddWorkflow();
     const args = {

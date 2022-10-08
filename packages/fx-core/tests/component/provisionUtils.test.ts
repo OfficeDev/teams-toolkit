@@ -11,7 +11,7 @@ import {
   MockM365TokenProvider,
   MockUserInteraction,
 } from "../core/utils";
-import { TestHelper } from "../plugins/resource/frontend/helper";
+import { MyTokenCredential } from "../plugins/solution/util";
 
 const expect = chai.expect;
 
@@ -33,8 +33,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
         {
           subscriptionName: "mockSubName",
@@ -69,8 +69,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
         {
           subscriptionName: "mockSubName",
@@ -108,8 +108,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
         {
           subscriptionName: "mockSubName",
@@ -147,8 +147,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
         {
           subscriptionName: "mockSubName",
@@ -187,8 +187,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
         {
           subscriptionName: "mockSubName",
@@ -242,8 +242,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(
         ok({
           createNewResourceGroup: false,
@@ -290,8 +290,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(resourceGroupHelper, "askResourceGroupInfo").resolves(
         ok({
           createNewResourceGroup: false,
@@ -339,8 +339,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(ok(undefined));
       mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
         {
@@ -382,8 +382,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(
         ok({
           createNewResourceGroup: false,
@@ -431,8 +431,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(ok(undefined));
       mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
         {
@@ -474,8 +474,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(ok(undefined));
       mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
         {
@@ -524,8 +524,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(resourceGroupHelper, "checkResourceGroupExistence").resolves(ok(true));
       mocker.stub(azureAccountProvider, "getSelectedSubscription").resolves({
         subscriptionName: "mockSubName",
@@ -581,8 +581,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(
         ok({
           createNewResourceGroup: false,
@@ -644,8 +644,8 @@ describe("preProvision", () => {
       };
       mocker.stub(context.logProvider, "log").resolves(true);
       mocker
-        .stub(azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(
         ok({
           createNewResourceGroup: false,
@@ -711,8 +711,8 @@ describe("preProvision", () => {
         .stub(context.tokenProvider.m365TokenProvider, "getAccessToken")
         .resolves(err(new UserError("fakeError", "fakeName", "message", "message")));
       sandbox
-        .stub(context.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(context.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       const inputs: v2.InputsWithProjectPath = {
         platform: Platform.CLI,
         projectPath: "path",
@@ -754,8 +754,8 @@ describe("preProvision", () => {
         .stub(context.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockTid" }));
       sandbox
-        .stub(context.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(context.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       const inputs: v2.InputsWithProjectPath = {
         platform: Platform.CLI,
         projectPath: "path",
@@ -816,8 +816,8 @@ describe("preProvision", () => {
       context.userInteraction = new MockUserInteraction();
 
       sandbox
-        .stub(context.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(context.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox
         .stub(context.tokenProvider.m365TokenProvider, "getAccessToken")
         .resolves(ok("fakeToken"));
@@ -863,8 +863,8 @@ describe("preProvision", () => {
       };
 
       sandbox
-        .stub(context.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(context.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox
         .stub(context.tokenProvider.m365TokenProvider, "getAccessToken")
         .resolves(ok("fakeToken"));

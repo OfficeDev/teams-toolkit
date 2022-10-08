@@ -18,9 +18,8 @@ import {
   getSubscriptionId,
   validateTabAndBotProjectProvision
 } from "../commonUtils";
-import { TemplateProect } from "../../commonlib/constants"
+import { TemplateProject } from "../../commonlib/constants"
 import { CliHelper } from "../../commonlib/cliHelper";
-import { ApimValidator } from "../../commonlib";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
@@ -39,7 +38,7 @@ describe("teamsfx new template", function () {
   });
 
   it(`${TemplateProect.HelloWorldTabSSO}`, { testPlanCaseId: 'XXXXXXX' }, async function () {
-    await execAsync(`teamsfx new template ${TemplateProect.HelloWorldTabSSO}`, {
+    await execAsync(`teamsfx new template ${TemplateProject.HelloWorldTabSSO}`, {
       cwd: testFolder,
       env: process.env,
       timeout: 0,

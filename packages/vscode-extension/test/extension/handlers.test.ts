@@ -58,14 +58,14 @@ describe("handlers", () => {
     const sandbox = sinon.createSandbox();
     let setStatusChangeMap: any;
 
-    this.beforeEach(() => {
+    beforeEach(() => {
       sandbox.stub(accountTreeViewProviderInstance, "subscribeToStatusChanges");
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
       sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
       sandbox.stub(ExtTelemetry, "dispose");
     });
 
-    this.afterEach(() => {
+    afterEach(() => {
       sandbox.restore();
     });
 
@@ -97,16 +97,17 @@ describe("handlers", () => {
     const workspacePath = "test";
     const filePath = path.join(workspacePath, ".backup", "backup-config-change-logs.md");
 
-    const spy = sinon.stub(vscode.workspace, "openTextDocument").resolves();
-    const executeCommandSpy = sinon.stub(vscode.commands, "executeCommand").resolves();
+    const openTextDocument = sinon.stub(vscode.workspace, "openTextDocument").resolves();
+    const executeCommand = sinon.stub(vscode.commands, "executeCommand").resolves();
 
     await handlers.openBackupConfigMd(workspacePath, filePath);
 
-    chai.assert.isTrue(spy.calledOnce);
+    chai.assert.isTrue(openTextDocument.calledOnce);
     chai.assert.isTrue(
-      executeCommandSpy.calledOnceWithExactly("markdown.showPreview", vscode.Uri.file(filePath))
+      executeCommand.calledOnceWithExactly("markdown.showPreview", vscode.Uri.file(filePath))
     );
-    sinon.restore();
+    openTextDocument.restore();
+    executeCommand.restore();
   });
 
   describe("command handlers", function () {

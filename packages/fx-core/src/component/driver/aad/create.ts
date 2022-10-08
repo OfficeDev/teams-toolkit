@@ -13,7 +13,7 @@ import { Constants } from "../../resource/aadApp/constants";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { MissingEnvUserError } from "./error/missingEnvError";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";

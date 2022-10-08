@@ -237,6 +237,14 @@ export function activate(): Result<Void, FxError> {
       unifyConfigWatcher.onDidCreate(async (event) => {
         await openUnifyConfigMd(workspacePath, event.fsPath);
       });
+
+      const backupConfigWatcher = vscode.workspace.createFileSystemWatcher(
+        "**/backup-config-change-logs.md"
+      );
+
+      backupConfigWatcher.onDidCreate(async (event) => {
+        await openBackupConfigMd(workspacePath, event.fsPath);
+      });
     }
     automaticNpmInstallHandler(false, false, false);
 
@@ -346,6 +354,17 @@ async function openUnifyConfigMd(workspacePath: string, filePath: string) {
   const backupName = ".backup";
   const unifyConfigMD = "unify-config-and-aad-manifest-change-logs.md";
   const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
+  await openPreviewMarkDown(filePath, changeLogsPath);
+}
+
+async function openBackupConfigMd(workspacePath: string, filePath: string) {
+  const backupName = ".backup";
+  const unifyConfigMD = "backup-config-change-logs.md";
+  const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
+  await openPreviewMarkDown(filePath, changeLogsPath);
+}
+
+async function openPreviewMarkDown(filePath: string, changeLogsPath: string) {
   if (changeLogsPath !== filePath) {
     return;
   }

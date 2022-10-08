@@ -361,7 +361,9 @@ export async function checkAndInstallForTask(
 
   return await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPrerequisites,
-    {},
+    {
+      [TelemetryProperty.DebugIsTransparentTask]: "true",
+    },
     async (ctx: TelemetryContext) => {
       // terminate all running teamsfx tasks
       if (allRunningTeamsfxTasks.size > 0) {

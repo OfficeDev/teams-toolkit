@@ -12,6 +12,7 @@ import { ExtensionErrors, ExtensionSource } from "../../error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { sendDebugAllEvent } from "../localTelemetryReporter";
 import * as commonUtils from "../commonUtils";
+import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 
 const ControlCodes = {
   CtrlC: "\u0003",
@@ -56,7 +57,7 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
       this.closeEmitter.fire(1);
 
       if (commonUtils.getLocalDebugSession().id !== commonUtils.DebugNoSessionId) {
-        await sendDebugAllEvent(fxError);
+        await sendDebugAllEvent(fxError, { [TelemetryProperty.DebugIsTransparentTask]: "true" });
         commonUtils.endLocalDebugSession();
       }
     }

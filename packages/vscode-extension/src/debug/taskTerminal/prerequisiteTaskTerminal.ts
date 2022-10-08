@@ -34,7 +34,9 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
 
   do(): Promise<Result<Void, FxError>> {
     return Correlator.runWithId(commonUtils.startLocalDebugSession(), async () => {
-      const additionalProperties: { [key: string]: string } = {};
+      const additionalProperties: { [key: string]: string } = {
+        [TelemetryProperty.DebugIsTransparentTask]: "true",
+      };
       {
         // If we know this session is concurrently running with another session, send that correlationId in `debug-all-start` event.
         // Mostly, this happens when user stops debugging while preLaunchTasks are running and immediately hit F5 again.

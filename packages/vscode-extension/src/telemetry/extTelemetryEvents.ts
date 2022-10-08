@@ -258,6 +258,7 @@ export enum TelemetryProperty {
   DebugIsSideloadingAllowed = "debug-is-sideloading-allowed",
   DebugConcurrentCorrelationId = "debug-concurrent-correlation-id",
   DebugConcurrentLastEventName = "debug-concurrent-last-event-name",
+  DebugIsTransparentTask = "debug-is-transparent-task",
   DebugTaskId = "debug-task-id",
   DebugTaskArgs = "debug-task-args",
   DebugTaskDependsOn = "debug-task-depends-on",

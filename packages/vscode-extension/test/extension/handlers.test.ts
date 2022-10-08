@@ -65,7 +65,7 @@ describe("handlers", () => {
       sandbox.stub(ExtTelemetry, "dispose");
     });
 
-    this.afterAll(() => {
+    this.afterEach(() => {
       sandbox.restore();
     });
 
@@ -91,6 +91,22 @@ describe("handlers", () => {
     const input: Inputs = handlers.getSystemInputs();
 
     chai.expect(input.platform).equals(Platform.VSCode);
+  });
+
+  it("openBackupConfigMd", async () => {
+    const workspacePath = "test";
+    const filePath = path.join(workspacePath, ".backup", "backup-config-change-logs.md");
+
+    const spy = sinon.stub(vscode.workspace, "openTextDocument").resolves();
+    const executeCommandSpy = sinon.stub(vscode.commands, "executeCommand").resolves();
+
+    await handlers.openBackupConfigMd(workspacePath, filePath);
+
+    chai.assert.isTrue(spy.calledOnce);
+    chai.assert.isTrue(
+      executeCommandSpy.calledOnceWithExactly("markdown.showPreview", vscode.Uri.file(filePath))
+    );
+    sinon.restore();
   });
 
   describe("command handlers", function () {

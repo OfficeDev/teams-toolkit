@@ -138,7 +138,6 @@ import {
   anonymizeFilePaths,
   getAppName,
   getM365TenantFromEnv,
-  getProjectId,
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
@@ -357,10 +356,10 @@ async function openUnifyConfigMd(workspacePath: string, filePath: string) {
   await openPreviewMarkDown(filePath, changeLogsPath);
 }
 
-async function openBackupConfigMd(workspacePath: string, filePath: string) {
+export async function openBackupConfigMd(workspacePath: string, filePath: string) {
   const backupName = ".backup";
-  const unifyConfigMD = "backup-config-change-logs.md";
-  const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
+  const backupConfigMD = "backup-config-change-logs.md";
+  const changeLogsPath: string = path.join(workspacePath, backupName, backupConfigMD);
   await openPreviewMarkDown(filePath, changeLogsPath);
 }
 

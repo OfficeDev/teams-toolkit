@@ -110,6 +110,20 @@ describe("handlers", () => {
     executeCommand.restore();
   });
 
+  it("addFileSystemWatcher", async () => {
+    const workspacePath = "test";
+
+    const watcher = {} as vscode.FileSystemWatcher;
+    const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
+    const listener = sinon.stub(watcher, "onDidCreate").resolves();
+
+    handlers.addFileSystemWatcher(workspacePath);
+
+    chai.assert.isTrue(createWatcher.calledTwice);
+    createWatcher.restore();
+    listener.restore();
+  });
+
   describe("command handlers", function () {
     this.afterEach(() => {
       sinon.restore();

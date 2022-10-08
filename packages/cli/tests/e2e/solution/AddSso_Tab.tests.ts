@@ -20,7 +20,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, PluginId } from "../../commonlib/constants";
 import fs from "fs-extra";
 import { expect } from "chai";
-import { it } from "../../commonlib/it";
+import it from "@microsoft/extra-shot-mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Add SSO", () => {

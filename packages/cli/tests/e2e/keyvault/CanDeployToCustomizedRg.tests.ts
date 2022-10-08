@@ -23,7 +23,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 import { KeyVaultValidator } from "../../commonlib/keyVaultValidator";
-import { it } from "../../commonlib/it";
+import it from "@microsoft/extra-shot-mocha";
 
 describe("Deploy to customized resource group", function () {
   const testFolder = getTestFolder();

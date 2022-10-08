@@ -22,7 +22,7 @@ import M365Login from "../../../src/commonlib/m365Login";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { describe } from "mocha";
-import { it } from "../../commonlib/it";
+import it from "@microsoft/extra-shot-mocha";
 
 describe("Test Add Function", function () {
   let testFolder: string;

@@ -12,7 +12,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import * as fs from "fs-extra";
 import { TeamsAppManifest } from "@microsoft/teamsfx-api";
-import { it } from "../../commonlib/it";
+import it from "@microsoft/extra-shot-mocha";
 import * as chai from "chai";
 import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 

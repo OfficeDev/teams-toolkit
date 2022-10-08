@@ -22,7 +22,7 @@ import "mocha";
 import * as chai from "chai";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
-import { it } from "../../commonlib/it";
+import it from "@microsoft/extra-shot-mocha";
 
 describe("User can customize Bicep files", function () {
   const testFolder = getTestFolder();

@@ -7,7 +7,7 @@
 
 import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 import { expect } from "chai";
-import { it } from "../../commonlib/it";
+import it from "@microsoft/extra-shot-mocha";
 import { execAsync } from "../commonUtils";
 
 describe("teamsfx command help", function () {

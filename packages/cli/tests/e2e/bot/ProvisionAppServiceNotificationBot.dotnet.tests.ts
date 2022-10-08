@@ -7,7 +7,7 @@
 
 import { Runtime } from "../../commonlib/constants";
 import { happyPathTest } from "./NotificationBotHappyPathCommon";
-import { it } from "../../commonlib/it";
+import it from "@microsoft/extra-shot-mocha";
 
 describe("Provision Notification Dotnet", () => {
     it("Provision Resource: Notification Dotnet", { testPlanCaseId: 15685831 }, async function () {

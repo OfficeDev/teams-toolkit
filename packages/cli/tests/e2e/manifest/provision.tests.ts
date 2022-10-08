@@ -11,7 +11,7 @@ import * as chai from "chai";
 import { execAsync } from "../commonUtils";
 
 import { AppStudioValidator } from "../../commonlib";
-import { it } from "../../commonlib/it";
+import it from "@microsoft/extra-shot-mocha";
 
 describe("teamsfx provision manifest command", function () {
   const testAppPkgPath = path.resolve(__dirname, "appPackage.dev.zip");

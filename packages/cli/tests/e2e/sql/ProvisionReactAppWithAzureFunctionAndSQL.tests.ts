@@ -14,7 +14,7 @@ import { SqlValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { getUuid } from "../../commonlib/utilities";
-import { it } from "../../commonlib/it";
+import it from "@microsoft/extra-shot-mocha";
 
 import {
   getSubscriptionId,

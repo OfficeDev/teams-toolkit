@@ -3,7 +3,7 @@
 
 import { happyPathTest } from "./BotHappyPathCommon";
 import { Runtime } from "../../commonlib/constants";
-import { it } from "../../commonlib/it";
+import it from "@microsoft/extra-shot-mocha";
 
 describe("Provision message extension Dotnet", () => {
   it("Provision Resource: message extension dotnet", { testPlanCaseId: 15685646 }, async function () {

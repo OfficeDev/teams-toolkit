@@ -21,7 +21,7 @@ import { expect } from "chai";
 import { AadValidator, BotValidator } from "../../commonlib";
 import M365Login from "../../../src/commonlib/m365Login";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import { it } from "../../commonlib/it";
+import it from "@microsoft/extra-shot-mocha";
 
 describe("Add SSO", () => {
   const testFolder = getTestFolder();

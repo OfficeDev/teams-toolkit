@@ -21,7 +21,7 @@ import {
 } from "../commonUtils";
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import { AppStudioValidator } from "../../commonlib";
-import { it } from "../../commonlib/it";
+import it from "@microsoft/extra-shot-mocha";
 
 describe("Multi Env Happy Path for SPFx", function () {
   const testFolder = getTestFolder();

@@ -22,7 +22,7 @@ import { environmentManager } from "@microsoft/teamsfx-core/build/core/environme
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, ResourceToDeploy } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
-import { it } from "../../commonlib/it";
+import it from "@microsoft/extra-shot-mocha";
 
 describe("Deploy to customized resource group", function () {
   const testFolder = getTestFolder();

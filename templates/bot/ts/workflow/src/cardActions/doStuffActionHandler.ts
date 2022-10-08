@@ -1,6 +1,10 @@
 import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 import { TurnContext, InvokeResponse } from "botbuilder";
-import { TeamsFxAdaptiveCardActionHandler, InvokeResponseFactory } from "@microsoft/teamsfx";
+import {
+  AdaptiveCardResponse,
+  TeamsFxAdaptiveCardActionHandler,
+  InvokeResponseFactory,
+} from "@microsoft/teamsfx";
 import responseCard from "../adaptiveCards/doStuffActionResponse.json";
 import { CardData } from "../cardModels";
 
@@ -9,6 +13,10 @@ import { CardData } from "../cardModels";
  * with an Adaptive Card if the user clicks the Adaptive Card action with `triggerVerb`.
  */
 export class DoStuffCardActionHandler implements TeamsFxAdaptiveCardActionHandler {
+  /**
+   * A global unique string associated with the `Action.Execute` action.
+   * The value should be the same as the `verb` property which you define in your adaptive card JSON.
+   */
   triggerVerb = "doStuff";
 
   async handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse> {

@@ -4,6 +4,13 @@ The Adaptive Card action handler feature enables the app to respond to adaptive 
 
 This application is built with the [Microsoft Bot Framework](https://dev.botframework.com/) running on a restify server running on App Service along with the [Azure Bot Service](https://azure.microsoft.com/services/bot-services/).
 
+Here is a screen shot of the application running:
+
+![Responds to command](https://user-images.githubusercontent.com/10163840/192477792-dc447b3a-e304-4cd8-b4df-b1eb9d226292.png)
+
+When you click the `DoStuff` button, the above adaptive card will be updated to a new card as shown below:
+
+![Responds to card action](https://user-images.githubusercontent.com/10163840/192477148-29d9edfc-085b-4d02-b3de-b47b9a456108.png)
 
 # Getting Started
 
@@ -88,6 +95,7 @@ You can use the following 4 steps to add more card action:
 4. [Step 4: register the action handler](#step-4-register-the-action-handler)
 
 ### Step 1: add an action to your Adaptive Card
+User universal action `Action.Execute` to define your action in an adaptive card, which will be rendered as a button in the card.
 
 Here's a sample action with type `Action.Execute`:
 ```json
@@ -110,7 +118,7 @@ Here's a sample action with type `Action.Execute`:
 } 
 ```
 
-`Action.Execute` invoking the bot can return Adaptive Cards as a response, which will replace the existing card in conversation by default.  
+> **_NOTE:_**  the `verb` property is required here so that the TeamsFx conversation SDK can invoke the corresponding action handler when the action is invoked in Teams. You should provide a global unique string for the `verb` property, otherwise you may experience unexpected behavior if you're using a general string that might cause a collision with other bot actions.  
 
 ### Step 2: add adaptive card for action response
 For each action invoke, you can return a new adaptive card to display the response to end user. You can use [adaptive card designer](https://adaptivecards.io/designer/) to design your card layout according to your business needs.
@@ -176,47 +184,21 @@ const conversationBot = new ConversationBot({
 }); 
 ```
 
-For more code snippets and details, refer to [this document](https://aka.ms/teamsfx-card-action-response#).
+For more code snippets and details, refer to [this document](https://aka.ms/teamsfx-card-action-response).
+
+## Create user-specific views
+Adaptive card universal action can also support [user-specific views](https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/user-specific-views), which means your app can provide different views to different users in a Teams channel / group chat.  This can provides powerful scenarios like approvals, poll creator controls, incident management, and so on.
+
+To learn more about how to create user-specific view, refer to [this document](https://aka.ms/teamsfx-card-action-response#Auto-refresh-to-user-specific-view).
 
 ## Add notifications to your application
 
 The notification feature adds the ability for your application to send Adaptive Cards in response to external events. For example, when a message is posted to `Event Hub` your application can respond and send an appropriate Adaptive Card to Teams.
 
-To add the notification feature:
+To add the notification feature to the conversation bot, you can follow the steps [here](https://aka.ms/teamsfx-card-action-response#how-to-extend-workflow-bot-with-notification-feature).
 
-1. Go to `bot\src\internal\initialize.js`
-2. Update your `conversationBot` initialization to enable notification feature:
 
-```javascript
-const conversationBot = new ConversationBot({ 
-  ... 
-  cardAction: { 
-    enabled: true, 
-    actions: [ 
-      new Handler1() 
-    ], 
-  },
-  notification: {
-    enabled: true
-  } 
-}); 
-```
-
-3. To quickly add a sample notification triggered by a HTTP request, you can add the following sample code in `bot\src\index.js`:
-
-    ```javascript
-    server.post("/api/notification", async (req, res) => {
-      for (const target of await conversationBot.notification.installations()) {
-        await target.sendMessage("This is a sample notification message");
-      }
-    
-      res.json({});
-    });
-
-4. Uninstall your previous bot installation from Teams, and press `F5` to start your application.
-5. Send a notification to the bot installation targets (channel/group chat/personal chat) by using a your favorite tool to send a HTTP POST request to `https://localhost:3978/api/notification`.
-
-To learn more, refer to [the notification document](https://aka.ms/teamsfx-notification).
+To learn more about notification, refer to [the notification document](https://aka.ms/teamsfx-notification).
 
 ## Access Microsoft Graph
 

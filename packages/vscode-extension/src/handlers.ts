@@ -353,17 +353,17 @@ export function addFileSystemWatcher(workspacePath: string) {
   });
 }
 
-async function openUnifyConfigMd(workspacePath: string, filePath: string) {
-  const backupName = ".backup";
-  const unifyConfigMD = "unify-config-and-aad-manifest-change-logs.md";
-  const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
-  await openPreviewMarkDown(filePath, changeLogsPath);
-}
-
 export async function openBackupConfigMd(workspacePath: string, filePath: string) {
   const backupName = ".backup";
   const backupConfigMD = "backup-config-change-logs.md";
   const changeLogsPath: string = path.join(workspacePath, backupName, backupConfigMD);
+  await openPreviewMarkDown(filePath, changeLogsPath);
+}
+
+async function openUnifyConfigMd(workspacePath: string, filePath: string) {
+  const backupName = ".backup";
+  const unifyConfigMD = "unify-config-and-aad-manifest-change-logs.md";
+  const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
   await openPreviewMarkDown(filePath, changeLogsPath);
 }
 

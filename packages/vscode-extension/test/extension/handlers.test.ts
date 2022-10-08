@@ -113,13 +113,14 @@ describe("handlers", () => {
   it("addFileSystemWatcher", async () => {
     const workspacePath = "test";
 
-    const watcher = {} as vscode.FileSystemWatcher;
+    const watcher = { onDidCreate: () => ({ dispose: () => undefined }) } as any;
     const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
     const listener = sinon.stub(watcher, "onDidCreate").resolves();
 
     handlers.addFileSystemWatcher(workspacePath);
 
     chai.assert.isTrue(createWatcher.calledTwice);
+    chai.assert.isTrue(listener.calledTwice);
     createWatcher.restore();
     listener.restore();
   });

@@ -117,3 +117,38 @@ export async function sendDebugAllEvent(
     );
   }
 }
+
+export const UnknownPlaceholder = "<unknown>";
+export const UndefinedPlaceholder = "<undefined>";
+export const DefaultPlaceholder = "<default>";
+
+export function maskValue(
+  value: string | undefined,
+  knownValues: (string | { value: string; mask: string })[] = []
+): string {
+  if (typeof value === "undefined") {
+    return UndefinedPlaceholder;
+  }
+  const findValue = knownValues.find((v) =>
+    typeof v === "string" ? v === value : v.value === value
+  );
+
+  if (typeof findValue === "undefined") {
+    return UnknownPlaceholder;
+  } else if (typeof findValue === "string") {
+    return findValue;
+  } else {
+    return findValue.mask;
+  }
+}
+
+export function maskArrayValue(
+  valueArr: string[] | undefined,
+  knownValues: (string | { value: string; mask: string })[] = []
+): string[] | string {
+  if (typeof valueArr === "undefined") {
+    return UndefinedPlaceholder;
+  }
+
+  return valueArr.map((v) => maskValue(`${v}`, knownValues));
+}

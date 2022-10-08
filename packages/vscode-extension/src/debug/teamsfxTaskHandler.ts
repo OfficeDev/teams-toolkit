@@ -18,6 +18,7 @@ import {
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
 import { getHashedEnv } from "@microsoft/teamsfx-core/build/common/tools";
+import { TaskCommand } from "@microsoft/teamsfx-core/build/common/local/constants";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as path from "path";
@@ -28,7 +29,6 @@ import {
   issueLink,
   issueTemplate,
   m365AppsPrerequisitesHelpLink,
-  TaskCommand,
 } from "./constants";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";

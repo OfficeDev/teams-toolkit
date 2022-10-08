@@ -24,6 +24,8 @@ import {
   ProjectSettingsHelper,
   TelemetryContext,
 } from "@microsoft/teamsfx-core/build/common/local";
+import { Prerequisite } from "@microsoft/teamsfx-core/build/common/local/constants";
+
 import {
   DependencyStatus,
   DepsCheckerError,
@@ -84,7 +86,6 @@ import { ProgressHelper } from "./progressHelper";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
-import { Prerequisite } from "./taskTerminal/prerequisiteTaskTerminal";
 import { Step } from "./commonUtils";
 
 enum Checker {

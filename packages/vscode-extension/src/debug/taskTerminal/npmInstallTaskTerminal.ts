@@ -2,12 +2,24 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import * as vscode from "vscode";
 import * as path from "path";
-import { FxError, Result, ok, Void } from "@microsoft/teamsfx-api";
-import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { checkAndInstallNpmPackagesForTask } from "../prerequisitesHandler";
+import * as vscode from "vscode";
+
+import { FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+
 import * as globalVariables from "../../globalVariables";
+import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import * as commonUtils from "../commonUtils";
+import {
+  localTelemetryReporter,
+  maskArrayValue,
+  maskValue,
+  UndefinedPlaceholder,
+} from "../localTelemetryReporter";
+import { checkAndInstallNpmPackagesForTask } from "../prerequisitesHandler";
+import { BaseTaskTerminal } from "./baseTaskTerminal";
+import { TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
 
 export interface NpmInstallArgs {
   projects?: ProjectOptions[];
@@ -27,7 +39,38 @@ export class NpmInstallTaskTerminal extends BaseTaskTerminal {
     this.args = taskDefinition.args as NpmInstallArgs;
   }
 
-  async do(): Promise<Result<Void, FxError>> {
+  do(): Promise<Result<Void, FxError>> {
+    return Correlator.runWithId(commonUtils.getLocalDebugSession().id, () =>
+      localTelemetryReporter.runWithTelemetryProperties(
+        TelemetryEvent.DebugNpmInstallTask,
+        {
+          [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+          [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+            forceUpdate: maskValue(this.args.forceUpdate ? "true" : "false", ["false", "true"]),
+            projects: !this.args.projects
+              ? UndefinedPlaceholder
+              : this.args.projects.map((p) => {
+                  return {
+                    cwd: maskValue(p.cwd, [
+                      { value: TaskDefaultValue.npmInstall.cwd.tab, mask: "<tab>" },
+                      { value: TaskDefaultValue.npmInstall.cwd.api, mask: "<api>" },
+                      { value: TaskDefaultValue.npmInstall.cwd.bot, mask: "<bot>" },
+                      { value: TaskDefaultValue.npmInstall.cwd.spfx, mask: "<spfx>" },
+                    ]),
+                    npmInstallArgs: maskArrayValue(
+                      p.npmInstallArgs,
+                      TaskDefaultValue.npmInstall.npmInstallArgs
+                    ),
+                  };
+                }),
+          }),
+        },
+        () => this._do()
+      )
+    );
+  }
+
+  private async _do(): Promise<Result<Void, FxError>> {
     if (!this.args?.projects || this.args.projects.length === 0) {
       return ok(Void);
     }

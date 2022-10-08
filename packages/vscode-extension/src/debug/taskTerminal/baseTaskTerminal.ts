@@ -4,25 +4,29 @@
  *--------------------------------------------------------------------------------------------*/
 import * as util from "util";
 import * as vscode from "vscode";
+import { v4 as uuidv4 } from "uuid";
 import { assembleError, FxError, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import * as globalVariables from "../../globalVariables";
 import { showError } from "../../handlers";
 import { ExtensionErrors, ExtensionSource } from "../../error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { DebugSessionExists } from "../constants";
+import { sendDebugAllEvent } from "../localTelemetryReporter";
+import * as commonUtils from "../commonUtils";
 
 const ControlCodes = {
   CtrlC: "\u0003",
 };
 
-// TODO: ensure local debug session in teamsfx task
 export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   protected writeEmitter = new vscode.EventEmitter<string>();
   onDidWrite: vscode.Event<string> = this.writeEmitter.event;
   protected closeEmitter = new vscode.EventEmitter<number>();
   onDidClose?: vscode.Event<number> = this.closeEmitter.event;
+  protected readonly taskTerminalId: string;
 
-  constructor(private taskDefinition: vscode.TaskDefinition) {}
+  constructor(private taskDefinition: vscode.TaskDefinition) {
+    this.taskTerminalId = uuidv4();
+  }
 
   open(): void {
     this.do()
@@ -39,22 +43,22 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
 
   handleInput(data: string): void {
     if (data.includes(ControlCodes.CtrlC)) {
-      this.stop();
+      this.stop(BaseTaskTerminal.taskCancelError);
     }
   }
 
   protected async stop(error?: any): Promise<void> {
     if (error) {
-      if (error.message === DebugSessionExists) {
-        // use a specical exit code to indicate this task is terminated as expected
-        this.closeEmitter.fire(-1);
-        return;
-      }
-
       // TODO: add color
       this.writeEmitter.fire(`${error?.displayMessage ?? error?.message}\r\n`);
-      showError(assembleError(error));
+      const fxError = assembleError(error);
+      showError(fxError);
       this.closeEmitter.fire(1);
+
+      if (commonUtils.getLocalDebugSession().id !== commonUtils.DebugNoSessionId) {
+        await sendDebugAllEvent(fxError);
+        commonUtils.endLocalDebugSession();
+      }
     }
     this.closeEmitter.fire(0);
   }
@@ -76,4 +80,11 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
       util.format(localize("teamstoolkit.localDebug.taskDefinitionError"), argName)
     );
   }
+
+  public static taskCancelError = new UserError(
+    ExtensionSource,
+    ExtensionErrors.TaskCancelError,
+    getDefaultString("teamstoolkit.localDebug.taskCancelError"),
+    localize("teamstoolkit.localDebug.taskCancelError")
+  );
 }

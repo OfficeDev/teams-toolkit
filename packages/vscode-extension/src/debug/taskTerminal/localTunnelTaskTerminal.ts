@@ -6,22 +6,35 @@ import * as cp from "child_process";
 import * as path from "path";
 import * as kill from "tree-kill";
 import * as util from "util";
-import { v4 as uuidv4 } from "uuid";
 import * as vscode from "vscode";
-import { FxError, ok, err, Result, UserError, Void } from "@microsoft/teamsfx-api";
+
+import { assembleError, err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
+import {
+  LocalEnvManager,
+  LocalTelemetryReporter,
+  TaskDefaultValue,
+} from "@microsoft/teamsfx-core/build/common/local";
+import { performance } from "perf_hooks";
+
+import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
 import * as globalVariables from "../../globalVariables";
 import { ProgressHandler } from "../../progressHandler";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
-import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local";
+import { getLocalDebugSession, Step } from "../commonUtils";
+import { localTunnelDisplayMessages, openTerminalCommand } from "../constants";
+import { doctorConstant } from "../depsChecker/doctorConstant";
 import { vscodeLogger } from "../depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "../depsChecker/vscodeTelemetry";
-import { openTerminalCommand, localTunnelDisplayMessages } from "../constants";
-import VsCodeLogInstance from "../../commonlib/log";
-import { doctorConstant } from "../depsChecker/doctorConstant";
-import { Step } from "../commonUtils";
+import { DefaultPlaceholder, localTelemetryReporter, maskValue } from "../localTelemetryReporter";
+import { BaseTaskTerminal } from "./baseTaskTerminal";
 
 const ngrokTimeout = 1 * 60 * 1000;
 const ngrokTimeInterval = 10 * 1000;
@@ -55,16 +68,16 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
 
   private childProc: cp.ChildProcess | undefined;
   private isOutputSummary: boolean;
-  private readonly taskTerminalId: string;
+
   private readonly args: LocalTunnelArgs;
   private readonly status: LocalTunnelTaskStatus;
   private readonly progressHandler: ProgressHandler;
   private readonly step: Step;
+  private startTime: number | undefined;
 
   constructor(taskDefinition: vscode.TaskDefinition) {
     super(taskDefinition);
     this.args = taskDefinition.args as LocalTunnelArgs;
-    this.taskTerminalId = uuidv4();
     this.isOutputSummary = false;
     this.progressHandler = new ProgressHandler(localTunnelDisplayMessages.taskName, 1, "terminal");
     this.step = new Step(1);
@@ -92,6 +105,34 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   do(): Promise<Result<Void, FxError>> {
+    return Correlator.runWithId(getLocalDebugSession().id, () =>
+      localTelemetryReporter.runWithTelemetryProperties(
+        TelemetryEvent.DebugStartLocalTunnelTask,
+        {
+          [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+          [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+            ngrokArgs: maskValue(
+              Array.isArray(this.args.ngrokArgs)
+                ? this.args.ngrokArgs.join(" ")
+                : this.args.ngrokArgs,
+              [
+                {
+                  value: TaskDefaultValue.startLocalTunnel.ngrokArgs,
+                  mask: DefaultPlaceholder,
+                },
+              ]
+            ),
+            ngrokPath: maskValue(this.args.ngrokPath, ["ngrok"]),
+            tunnelInspection: maskValue(this.args.tunnelInspection),
+          }),
+        },
+        () => this._do()
+      )
+    );
+  }
+
+  private async _do(): Promise<Result<Void, FxError>> {
+    this.startTime = performance.now();
     this.outputStartMessage();
     return this.resolveArgs().then((v) =>
       this.outputStepMessage(v.ngrokArgs, v.ngrokPath).then(() =>
@@ -335,15 +376,27 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     this.writeEmitter.fire(`\r\n${localTunnelDisplayMessages.successMessage}\r\n\r\n`);
 
     await this.progressHandler.end(true);
+
+    localTelemetryReporter.sendTelemetryEvent(
+      TelemetryEvent.DebugStartLocalTunnelTask,
+      {
+        [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      },
+      {
+        [LocalTelemetryReporter.PropertyDuration]: this.startTime
+          ? (performance.now() - this.startTime) / 1000
+          : -1,
+      }
+    );
   }
 
   private async outputFailureSummary(error?: any): Promise<void> {
+    const fxError = assembleError(error ?? new Error(localTunnelDisplayMessages.errorMessage));
     VsCodeLogInstance.outputChannel.appendLine(localTunnelDisplayMessages.summary);
 
     VsCodeLogInstance.outputChannel.appendLine("");
-    VsCodeLogInstance.outputChannel.appendLine(
-      `${doctorConstant.Cross} ${error?.message ?? localTunnelDisplayMessages.errorMessage}`
-    );
+    VsCodeLogInstance.outputChannel.appendLine(`${doctorConstant.Cross} ${fxError.message}`);
 
     VsCodeLogInstance.outputChannel.appendLine("");
     VsCodeLogInstance.outputChannel.appendLine(
@@ -354,6 +407,20 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     this.writeEmitter.fire(`\r\n${localTunnelDisplayMessages.errorMessage}\r\n`);
 
     await this.progressHandler.end(false);
+
+    localTelemetryReporter.sendTelemetryErrorEvent(
+      TelemetryEvent.DebugStartLocalTunnelTask,
+      fxError,
+      {
+        [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+      },
+      {
+        [LocalTelemetryReporter.PropertyDuration]: this.startTime
+          ? (performance.now() - this.startTime) / 1000
+          : -1,
+      }
+    );
   }
 
   public static async getNgrokEndpoint(): Promise<string> {

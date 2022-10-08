@@ -270,14 +270,4 @@ export const prepareManifestDisplayMessages: DisplayMessages = {
   errorHelpLink: "https://aka.ms/teamsfx-debug-prepare-manifest-task",
 };
 
-export const TaskCommand = Object.freeze({
-  checkPrerequisites: "debug-check-prerequisites",
-  npmInstall: "debug-npm-install",
-  startLocalTunnel: "debug-start-local-tunnel",
-  setUpTab: "debug-set-up-tab",
-  setUpBot: "debug-set-up-bot",
-  setUpSSO: "debug-set-up-sso",
-  prepareManifest: "debug-prepare-manifest",
-});
-
 export const DebugSessionExists = "Debug session exists";

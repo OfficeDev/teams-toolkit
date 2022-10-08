@@ -59,7 +59,7 @@
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": "limited",
-      "description": "The Teams Toolkit extension supports limited untrusted workspaces.",
+      "description": "%teamstoolkit.capabilities.untrustedWorkspaces.description%",
       "restrictedConfigurations": ["fx-extension.SPFxVersion"]
     }
   },

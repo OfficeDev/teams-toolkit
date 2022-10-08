@@ -58,7 +58,7 @@ describe("handlers", () => {
     const sandbox = sinon.createSandbox();
     let setStatusChangeMap: any;
 
-    this.beforeAll(() => {
+    this.beforeEach(() => {
       sandbox.stub(accountTreeViewProviderInstance, "subscribeToStatusChanges");
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
       sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);

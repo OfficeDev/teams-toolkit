@@ -57,16 +57,6 @@ export function renderTemplateFileName(
   return Mustache.render(fileName, variables).replace(templateFileExt, "");
 }
 
-export function genFileDataRenderReplaceFn(variables: { [key: string]: string }) {
-  return (fileName: string, fileData: Buffer) =>
-    renderTemplateFileData(fileName, fileData, variables);
-}
-
-export function genFileNameRenderReplaceFn(variables: { [key: string]: string }) {
-  return (fileName: string, fileData: Buffer) =>
-    renderTemplateFileName(fileName, fileData, variables);
-}
-
 export async function getValidSampleDestination(
   sampleName: string,
   destinationPath: string

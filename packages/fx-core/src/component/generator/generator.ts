@@ -12,10 +12,10 @@ import {
 import { SampleActionSeq, GenerateAction, TemplateActionSeq } from "./generateAction";
 import { GenerateContext } from "./generateContext";
 import {
-  genFileDataRenderReplaceFn,
-  genFileNameRenderReplaceFn,
   getSampleInfoFromName,
   getValidSampleDestination,
+  renderTemplateFileData,
+  renderTemplateFileName,
   sampleDefaultOnActionError,
   templateDefaultOnActionError,
 } from "./utils";
@@ -37,8 +37,10 @@ export class Generator {
       name: `${templateName}_${language}`,
       destination: destination,
       logProvider: ctx.logProvider,
-      fileDataReplaceFn: genFileDataRenderReplaceFn(dataReplaceMap),
-      fileNameReplaceFn: genFileNameRenderReplaceFn(nameReplaceMap),
+      fileNameReplaceFn: (fileName: string, fileData: Buffer) =>
+        renderTemplateFileName(fileName, fileData, nameReplaceMap),
+      fileDataReplaceFn: (fileName: string, fileData: Buffer) =>
+        renderTemplateFileData(fileName, fileData, dataReplaceMap),
       onActionError: templateDefaultOnActionError,
     };
     await this.generate(generateContext, TemplateActionSeq);
@@ -60,8 +62,10 @@ export class Generator {
       name: `${buildingBlockName}_${language}`,
       destination: destination,
       logProvider: ctx.logProvider,
-      fileDataReplaceFn: genFileDataRenderReplaceFn(dataReplaceMap),
-      fileNameReplaceFn: genFileNameRenderReplaceFn(nameReplaceMap),
+      fileNameReplaceFn: (fileName: string, fileData: Buffer) =>
+        renderTemplateFileName(fileName, fileData, nameReplaceMap),
+      fileDataReplaceFn: (fileName: string, fileData: Buffer) =>
+        renderTemplateFileData(fileName, fileData, dataReplaceMap),
       onActionError: templateDefaultOnActionError,
     };
     await this.generate(generateContext, TemplateActionSeq);

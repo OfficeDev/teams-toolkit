@@ -5,13 +5,18 @@ import { BaseComponentInnerError } from "../error/componentError";
 
 export class TemplateZipFallbackError extends BaseComponentInnerError {
   constructor() {
-    super("SystemError", "TemplateZipFallbackError", "error.generator.TemplateZipFallbackError");
+    super(
+      "generate",
+      "SystemError",
+      "TemplateZipFallbackError",
+      "error.generator.TemplateZipFallbackError"
+    );
   }
 }
 
 export class UnzipError extends BaseComponentInnerError {
   constructor() {
-    super("SystemError", "UnzipError", "error.generator.UnzipError", undefined, [
+    super("generate", "SystemError", "UnzipError", "error.generator.UnzipError", undefined, [
       "plugins.frontend.checkFsPermissionsTip",
     ]);
   }
@@ -20,6 +25,7 @@ export class UnzipError extends BaseComponentInnerError {
 export class FetchZipFromUrlError extends BaseComponentInnerError {
   constructor(url: string) {
     super(
+      "generate",
       "SystemError",
       "FetchZipFromUrlError",
       "error.generator.FetchZipFromUrlError",
@@ -32,6 +38,7 @@ export class FetchZipFromUrlError extends BaseComponentInnerError {
 export class FetchSampleUrlWithTagError extends BaseComponentInnerError {
   constructor() {
     super(
+      "generate",
       "SystemError",
       "FetchSampleUrlWithTagError",
       "error.generator.FetchSampleUrlWithTagError",
@@ -43,6 +50,6 @@ export class FetchSampleUrlWithTagError extends BaseComponentInnerError {
 
 export class MissKeyError extends BaseComponentInnerError {
   constructor(keyName: string) {
-    super("SystemError", "MissKeyError", "error.generator.MissKeyError", [keyName]);
+    super("generate", "SystemError", "MissKeyError", "error.generator.MissKeyError", [keyName]);
   }
 }

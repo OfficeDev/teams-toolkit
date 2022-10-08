@@ -7,10 +7,10 @@ import fs from "fs-extra";
 import path from "path";
 import {
   fetchZipUrl,
-  genFileDataRenderReplaceFn,
-  genFileNameRenderReplaceFn,
   getSampleInfoFromName,
   getValidSampleDestination,
+  renderTemplateFileData,
+  renderTemplateFileName,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
 import { templateDownloadBaseUrl } from "../../../src/component/generator/constant";
@@ -54,8 +54,9 @@ describe("Generator utils", () => {
     await unzip(
       new AdmZip(path.join(tmpDir, "test.zip")),
       outputDir,
-      genFileNameRenderReplaceFn({}),
-      genFileDataRenderReplaceFn({ appName: "test" })
+      (fileName: string, fileData: Buffer) => renderTemplateFileName(fileName, fileData, {}),
+      (fileName: string, fileData: Buffer) =>
+        renderTemplateFileData(fileName, fileData, { appName: "test" })
     );
     const content = await fs.readFile(path.join(outputDir, "test.txt"), "utf8");
     assert.equal(content, "test");

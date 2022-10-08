@@ -30,6 +30,7 @@ export function useGraph<T>(
     if (needConsent) {
       try {
         await teamsfx.login(scope);
+        setNeedConsent(false);
         // Important: tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
       } catch (err: unknown) {
         if (err instanceof ErrorWithCode && err.message?.includes("CancelledByUser")) {

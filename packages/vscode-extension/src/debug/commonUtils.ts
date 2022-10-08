@@ -121,6 +121,8 @@ export async function getDebugConfig(
 ): Promise<{ appId: string; env?: string } | undefined> {
   try {
     const inputs = getSystemInputs();
+    // hide core log by default
+    inputs.loglevel = "Debug";
     const getConfigRes = await core.getProjectConfigV3(inputs);
     if (getConfigRes.isErr()) throw getConfigRes.error;
     const config = getConfigRes.value;

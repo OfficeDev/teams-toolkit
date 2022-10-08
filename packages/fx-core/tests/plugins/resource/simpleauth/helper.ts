@@ -2,23 +2,20 @@
 // Licensed under the MIT license.
 import { ConfigMap, LocalSettings, PluginContext } from "@microsoft/teamsfx-api";
 import faker from "faker";
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
-import { Constants } from "../../../../src/component/resource/simpleAuth/constants";
 import { newEnvInfo } from "../../../../src/core/environment";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../src/common/localSettingsConstants";
-
+import { Constants } from "../../../../src/component/resource/simpleAuth/constants";
+import { MyTokenCredential } from "../../solution/util";
 export class TestHelper {
-  static async pluginContext(
-    credentials: msRestNodeAuth.TokenCredentialsBase
-  ): Promise<PluginContext> {
+  static async pluginContext(): Promise<PluginContext> {
     const mockEndpoint = "https://endpoint.mock";
     const pluginContext = {
       azureAccountProvider: {
-        getAccountCredentialAsync() {
-          return credentials;
+        getIdentityCredentialAsync() {
+          return new MyTokenCredential();
         },
         getSelectedSubscription: async () => {
           return {

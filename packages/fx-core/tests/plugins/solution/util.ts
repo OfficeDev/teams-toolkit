@@ -1,6 +1,5 @@
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { TokenResponse } from "adal-node";
 import { TokenCredential } from "@azure/core-http";
+import { AccessToken, GetTokenOptions } from "@azure/identity";
 import {
   v2,
   FxError,
@@ -39,6 +38,18 @@ import {
   LoginStatus,
 } from "@microsoft/teamsfx-api";
 import { MockPermissionRequestProvider } from "../../core/utils";
+
+export class MyTokenCredential implements TokenCredential {
+  public async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions
+  ): Promise<AccessToken | null> {
+    return {
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
+      expiresOnTimestamp: 1234,
+    };
+  }
+}
 
 export const validManifest = {
   $schema:
@@ -242,18 +253,6 @@ export class MockedV2Context implements v2.Context {
   }
 }
 
-class MockedTokenCredentials extends TokenCredentialsBase {
-  public async getToken(): Promise<TokenResponse> {
-    return {
-      tokenType: "Bearer",
-      expiresIn: Date.now(),
-      expiresOn: new Date(),
-      resource: "mock",
-      accessToken: "mock",
-    };
-  }
-}
-
 export class MockedM365Provider implements M365TokenProvider {
   async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
     return ok("fakeToken");
@@ -293,15 +292,8 @@ export class MockedM365Provider implements M365TokenProvider {
 }
 
 export class MockedAzureAccountProvider implements AzureAccountProvider {
-  async getAccountCredentialAsync(
-    showDialog?: boolean,
-    tenantId?: string
-  ): Promise<TokenCredentialsBase> {
-    return new MockedTokenCredentials("mock", "mock");
-  }
-
   async getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined> {
-    return undefined;
+    return new MyTokenCredential();
   }
 
   async signout(): Promise<boolean> {

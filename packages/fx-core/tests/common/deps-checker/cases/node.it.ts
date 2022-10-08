@@ -9,28 +9,10 @@ import { DepsType } from "../../../../src/common/deps-checker/depsChecker";
 import { CheckerFactory } from "../../../../src/common/deps-checker/checkerFactory";
 import "mocha";
 
-const functionsSupportedNodeVersions = ["10", "12", "14"];
 const azureSupportedNodeVersions = ["10", "12", "14", "16"];
 
 describe("NodeChecker E2E Test", async () => {
   it("Node supported version is installed", async function () {
-    const nodeVersion = await nodeUtils.getNodeVersion();
-    if (!(nodeVersion != null && functionsSupportedNodeVersions.includes(nodeVersion))) {
-      this.skip();
-    }
-    const nodeChecker = CheckerFactory.createChecker(
-      DepsType.FunctionNode,
-      new TestLogger(),
-      new TestTelemetry()
-    );
-
-    const res = await nodeChecker.resolve();
-
-    chai.assert.isTrue(res.isInstalled);
-    chai.assert.isTrue((await nodeChecker.getInstallationInfo()).isInstalled);
-  });
-
-  it("Node supported version is installed for tab-only projects", async function () {
     const nodeVersion = await nodeUtils.getNodeVersion();
     if (!(nodeVersion != null && azureSupportedNodeVersions.includes(nodeVersion))) {
       this.skip();

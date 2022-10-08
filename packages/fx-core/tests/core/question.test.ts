@@ -164,7 +164,6 @@ describe("Capability Questions", () => {
       sinon.restore();
       sinon.stub(process, "env").value({
         BOT_NOTIFICATION_ENABLED: "true",
-        WORKFLOW_BOT_ENABLED: "true",
       });
     });
 

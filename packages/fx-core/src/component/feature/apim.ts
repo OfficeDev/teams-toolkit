@@ -25,7 +25,7 @@ import { BicepComponent } from "../bicep";
 import { ComponentNames } from "../constants";
 import { Plans } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { APIMResource } from "../resource/apim";
+import { APIMResource } from "../resource/apim/apim";
 import { buildAnswer } from "../resource/apim/answer";
 import { ApimPluginConfig } from "../resource/apim/config";
 import { PluginLifeCycle, ProgressMessages, ProgressStep } from "../resource/apim/constants";

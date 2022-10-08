@@ -51,6 +51,7 @@ import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
 import * as commonUtils from "../../src/utils/commonUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import { MockCore } from "../mocks/mockCore";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -751,12 +752,9 @@ describe("handlers", () => {
     it("Prompt user to upgrade toolkit when project SPFx version higher than toolkit", async () => {
       sinon.stub(globalVariables, "isSPFxProject").value(true);
       sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
-      sinon.stub(fs, "pathExists").resolves(true);
-      sinon.stub(fs, "readJson").resolves({
-        "@microsoft/generator-sharepoint": {
-          version: `1.${parseInt(SUPPORTED_SPFX_VERSION.split(".")[1]) + 1}.0`,
-        },
-      });
+      sinon
+        .stub(commonTools, "getAppSPFxVersion")
+        .resolves(`1.${parseInt(SUPPORTED_SPFX_VERSION.split(".")[1]) + 1}.0`);
       const stubShowMessage = sinon.stub().resolves(ok({}));
       sinon.stub(extension, "VS_CODE_UI").value({
         showMessage: stubShowMessage,
@@ -772,12 +770,9 @@ describe("handlers", () => {
     it("Prompt user to upgrade project when project SPFx version lower than toolkit", async () => {
       sinon.stub(globalVariables, "isSPFxProject").value(true);
       sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
-      sinon.stub(fs, "pathExists").resolves(true);
-      sinon.stub(fs, "readJson").resolves({
-        "@microsoft/generator-sharepoint": {
-          version: `1.${parseInt(SUPPORTED_SPFX_VERSION.split(".")[1]) - 1}.0`,
-        },
-      });
+      sinon
+        .stub(commonTools, "getAppSPFxVersion")
+        .resolves(`1.${parseInt(SUPPORTED_SPFX_VERSION.split(".")[1]) - 1}.0`);
 
       const stubShowMessage = sinon.stub().resolves(ok({}));
       sinon.stub(extension, "VS_CODE_UI").value({
@@ -794,10 +789,7 @@ describe("handlers", () => {
     it("Dont show notification when project SPFx version is the same with toolkit", async () => {
       sinon.stub(globalVariables, "isSPFxProject").value(true);
       sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
-      sinon.stub(fs, "pathExists").resolves(true);
-      sinon.stub(fs, "readJson").resolves({
-        "@microsoft/generator-sharepoint": { version: SUPPORTED_SPFX_VERSION },
-      });
+      sinon.stub(commonTools, "getAppSPFxVersion").resolves(SUPPORTED_SPFX_VERSION);
       const stubShowMessage = sinon.stub();
       sinon.stub(extension, "VS_CODE_UI").value({
         showMessage: stubShowMessage,
@@ -825,7 +817,7 @@ describe("handlers", () => {
             isLinuxSupported: false,
             installVersion: "",
             supportedVersions: [],
-            binFolders: ["dotnet-bin-folder"],
+            binFolders: ["dotnet-bin-folder/dotnet"],
           },
         },
       ]);

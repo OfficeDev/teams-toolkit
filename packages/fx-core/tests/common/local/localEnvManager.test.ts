@@ -241,7 +241,7 @@ describe("LocalEnvManager", () => {
           "fx-resource-function",
         ],
       },
-      depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.FuncCoreTools],
+      depsTypes: [DepsType.AzureNode, DepsType.Dotnet, DepsType.FuncCoreTools],
     },
     {
       message: "bot",
@@ -281,7 +281,7 @@ describe("LocalEnvManager", () => {
           "fx-resource-function",
         ],
       },
-      depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.Ngrok, DepsType.FuncCoreTools],
+      depsTypes: [DepsType.AzureNode, DepsType.Dotnet, DepsType.Ngrok, DepsType.FuncCoreTools],
     },
     {
       message: "spfx",
@@ -305,7 +305,7 @@ describe("LocalEnvManager", () => {
           "host-type": "azure-functions",
         },
       },
-      depsTypes: [DepsType.FunctionNode, DepsType.FuncCoreTools, DepsType.Ngrok],
+      depsTypes: [DepsType.AzureNode, DepsType.FuncCoreTools, DepsType.Ngrok],
     },
     {
       message: "app service hosted bot",
@@ -343,7 +343,10 @@ describe("LocalEnvManager", () => {
           pluginSettings: data.pluginSettings,
         };
         const projectSettingsV3 = convertProjectSettingsV2ToV3(projectSettings, ".");
-        const result = localEnvManager.getActiveDependencies(projectSettingsV3);
+        const result = await localEnvManager.getActiveDependencies(
+          projectSettingsV3,
+          "workspacePath"
+        );
         chai.assert.sameDeepMembers(data.depsTypes, result);
       });
     });
@@ -404,52 +407,6 @@ describe("LocalEnvManager", () => {
         config: {},
         state: { solution: { key: "value" } },
       });
-    });
-  });
-
-  describe("getNgrokTunnelConfig()", () => {
-    const sandbox = sinon.createSandbox();
-    let files: Record<string, any> = {};
-
-    beforeEach(() => {
-      files = {};
-      sandbox.restore();
-      sandbox.stub(fs, "pathExists").callsFake(async (file: string) => {
-        return Promise.resolve(files[path.resolve(file)] !== undefined);
-      });
-      sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
-        files[path.resolve(file as string)] = data;
-        return Promise.resolve();
-      });
-      sandbox.stub(fs, "readFile").callsFake(async (file: fs.PathLike | number, options?: any) => {
-        return Promise.resolve(files[path.resolve(file as string)]);
-      });
-    });
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("getNgrokTunnelConfig() happy path", async () => {
-      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
-      await fs.writeFile(ngrokConfigFilePath, "tunnels:\n  bot:\n     addr: 53000\n");
-      const res = await localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath);
-      chai.assert.sameDeepOrderedMembers([...res.entries()], [["bot", "53000"]]);
-    });
-
-    it("empty result", async () => {
-      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
-      await fs.writeFile(ngrokConfigFilePath, "");
-      const res = await localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath);
-      chai.assert.equal(res.size, 0);
-    });
-
-    it("error schema", async () => {
-      const ngrokConfigFilePath = path.join(configFolder, "ngrok.yml");
-      await fs.writeFile(ngrokConfigFilePath, "tunnels:\nbot\n-\n");
-      await chai
-        .expect(localEnvManager.getNgrokTunnelConfig(ngrokConfigFilePath))
-        .to.be.rejectedWith();
     });
   });
 

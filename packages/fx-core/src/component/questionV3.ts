@@ -34,7 +34,7 @@ import {
   hasTab,
 } from "../common/projectSettingsHelperV3";
 import { canAddCICDWorkflows } from "../common/tools";
-import { ComponentNames } from "./constants";
+import { ComponentNames, Runtime } from "./constants";
 import { ComponentName2pluginName } from "./migrate";
 import { getComponent } from "./workflow";
 import { STATIC_TABS_MAX_ITEMS, Constants as Constants1 } from "./resource/appManifest/constants";
@@ -42,7 +42,7 @@ import {
   createHostTypeTriggerQuestion,
   getConditionOfNotificationTriggerQuestion,
   showNotificationTriggerCondition,
-} from "../plugins/resource/bot/question";
+} from "./feature/bot/question";
 import {
   ApiConnectionOptionItem,
   AskSubscriptionQuestion,
@@ -71,25 +71,19 @@ import { checkWetherProvisionSucceeded } from "../plugins/solution/fx-solution/v
 import { NoCapabilityFoundError } from "../core/error";
 import { ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
-import {
-  isCLIDotNetEnabled,
-  isSPFxMultiTabEnabled,
-  isWorkflowBotEnabled,
-} from "../common/featureFlags";
-import { Runtime } from "../plugins/resource/bot/v2/enum";
-import { getPlatformRuntime } from "../plugins/resource/bot/v2/mapping";
+import { isCLIDotNetEnabled, isSPFxMultiTabEnabled } from "../common/featureFlags";
 import { buildQuestionNode } from "./resource/azureSql/questions";
-import { functionNameQuestion } from "../plugins/resource/function/question";
 import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import { webpartNameQuestion } from "../component/resource/spfx/utils/questions";
-import { getQuestionsForDeployAPIM } from "./resource/apim";
+import { getQuestionsForDeployAPIM } from "./resource/apim/apim";
 import { canAddSso } from "./feature/sso";
 import { addCicdQuestion } from "./feature/cicd/cicd";
 import { InvalidFeature } from "./error";
 import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
 import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { Constants } from "./resource/aadApp/constants";
+import { functionNameQuestion } from "./feature/api/question";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -236,11 +230,7 @@ export async function getQuestionsForAddFeatureV3(
   if (inputs.platform === Platform.CLI_HELP) {
     options.push(NotificationOptionItem);
     options.push(CommandAndResponseOptionItem);
-
-    if (isWorkflowBotEnabled()) {
-      options.push(WorkflowOptionItem);
-    }
-
+    options.push(WorkflowOptionItem);
     options.push(BotNewUIOptionItem);
     options.push(TabNewUIOptionItem, TabNonSsoItem);
     options.push(MessageExtensionNewUIItem);
@@ -280,9 +270,7 @@ export async function getQuestionsForAddFeatureV3(
     if (!botExceedLimit && !meExceedLimit) {
       options.push(NotificationOptionItem);
       options.push(CommandAndResponseOptionItem);
-      if (isWorkflowBotEnabled()) {
-        options.push(WorkflowOptionItem);
-      }
+      options.push(WorkflowOptionItem);
     }
     if (canAddTab) {
       if (!hasTab(projectSettingsV3)) {
@@ -307,7 +295,7 @@ export async function getQuestionsForAddFeatureV3(
     if (!hasKeyVault(projectSettingsV3)) {
       options.push(AzureResourceKeyVaultNewUI);
     }
-    if (canAddSso(ctx.projectSetting as ProjectSettingsV3)) {
+    if (canAddSso(ctx.projectSetting as ProjectSettingsV3) === true) {
       options.push(SingleSignOnOptionItem);
     }
     if (hasBot(projectSettingsV3) || hasApi(projectSettingsV3)) {
@@ -522,4 +510,23 @@ export function getPluginCLIName(name: string): string {
   } else {
     return name.replace(pluginPrefix, "");
   }
+}
+
+const PlatformRuntimeMap: Map<Platform, Runtime> = new Map<Platform, Runtime>([
+  [Platform.VS, Runtime.dotnet],
+  [Platform.VSCode, Runtime.nodejs],
+  [Platform.CLI, Runtime.nodejs],
+  [Platform.CLI_HELP, Runtime.nodejs],
+]);
+
+function getKeyNotFoundInMapErrorMsg(key: any) {
+  return `The key ${key} is not found in map.`;
+}
+
+export function getPlatformRuntime(platform: Platform): Runtime {
+  const runtime = PlatformRuntimeMap.get(platform);
+  if (runtime) {
+    return runtime;
+  }
+  throw new Error(getKeyNotFoundInMapErrorMsg(platform));
 }

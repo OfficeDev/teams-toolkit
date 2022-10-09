@@ -183,6 +183,7 @@ describe("SSO feature", () => {
       language: "typescript",
       "app-name": appName,
       stage: Stage.addFeature,
+      features: "sso",
     };
 
     const component = Container.get(ComponentNames.SSO) as any;

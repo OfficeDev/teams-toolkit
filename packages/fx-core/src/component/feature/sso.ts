@@ -30,6 +30,7 @@ import {
   SolutionTelemetryProperty,
 } from "../../plugins/solution/fx-solution/constants";
 import {
+  AzureResourceFunctionNewUI,
   AzureSolutionQuestionNames,
   SingleSignOnOptionItem,
 } from "../../plugins/solution/fx-solution/question";
@@ -53,8 +54,8 @@ export class SSO {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
 
-    const isCalledBySsoFeature = this.isCalledBySsoFeature(inputs);
-    const updates = getUpdateComponents(context.projectSetting, isCalledBySsoFeature);
+    const scenario = this.getScenario(inputs);
+    const updates = getUpdateComponents(context.projectSetting, scenario);
     // generate manifest
     const aadApp = Container.get<AadApp>(ComponentNames.AadApp);
     {
@@ -108,7 +109,7 @@ export class SSO {
     }
 
     // generate auth files
-    if (isCalledBySsoFeature) {
+    if (scenario !== SsoScenario.Create) {
       const isExistingTabAppRes = await manifestUtils.isExistingTab(inputs, context);
       if (isExistingTabAppRes.isErr()) return err(isExistingTabAppRes.error);
       const res = await aadApp.generateAuthFiles(
@@ -173,7 +174,7 @@ export class SSO {
     }
 
     // show notification
-    if (inputs.platform == Platform.VSCode && isCalledBySsoFeature) {
+    if (inputs.platform == Platform.VSCode && scenario !== SsoScenario.Create) {
       context.userInteraction
         .showMessage(
           "info",
@@ -190,7 +191,7 @@ export class SSO {
             });
           }
         });
-    } else if (inputs.platform == Platform.CLI && isCalledBySsoFeature) {
+    } else if (inputs.platform == Platform.CLI && scenario !== SsoScenario.Create) {
       await context.userInteraction.showMessage(
         "info",
         getLocalizedString("core.addSso.learnMore", AddSsoParameters.LearnMoreUrl),
@@ -218,16 +219,17 @@ export class SSO {
     });
   }
 
-  isCalledBySsoFeature(inputs: InputsWithProjectPath): boolean {
-    let res = true;
+  getScenario(inputs: InputsWithProjectPath): SsoScenario {
+    let res = SsoScenario.AddSso;
     if (inputs.stage === Stage.create) {
-      res = false;
+      res = SsoScenario.Create;
     }
-    if (
-      inputs.stage === Stage.addFeature &&
-      inputs[AzureSolutionQuestionNames.Features] !== SingleSignOnOptionItem.id
-    ) {
-      res = false;
+    if (inputs.stage === Stage.addFeature) {
+      if (inputs[AzureSolutionQuestionNames.Features] === AzureResourceFunctionNewUI.id) {
+        res = SsoScenario.AddFunction;
+      } else if (inputs[AzureSolutionQuestionNames.Features] === SingleSignOnOptionItem.id) {
+        res = SsoScenario.AddSso;
+      }
     }
     return res;
   }
@@ -241,22 +243,23 @@ export interface updateComponents {
 
 /**
  * Check the components that should be update when add sso based on the project setting.
- * 1. when it is not called by sso feture. It is triggered by enabled-sso tab project. Update tab and aad components.
+ * 1. it is triggered by enabled-sso tab project in create stage. Update tab and aad components.
  * 2. mini app is an existing tab app. Update aad only.
  * 3. general project. Check the tab and bot components.
  *    for bot component, message-extension and function hosting doesnot support sso.
  */
 function getUpdateComponents(
   projectSetting: ProjectSettingsV3,
-  isCalledBySsoFeature: boolean
+  scenario: SsoScenario
 ): updateComponents {
-  if (!isCalledBySsoFeature) {
+  if (scenario === SsoScenario.Create) {
     return {
       tab: true,
       aad: true,
     };
   }
   const hasAad = hasAAD(projectSetting);
+
   if (isMiniApp(projectSetting)) {
     return {
       aad: !hasAad,
@@ -292,7 +295,7 @@ export function canAddSso(
     return !hasAad;
   }
 
-  const update = getUpdateComponents(projectSettings, true);
+  const update = getUpdateComponents(projectSettings, SsoScenario.AddSso);
   if (update.tab || update.bot) {
     return true;
   } else {
@@ -326,4 +329,10 @@ export function canAddSso(
     }
     return false;
   }
+}
+
+export enum SsoScenario {
+  Create = "create",
+  AddFunction = "addFunction",
+  AddSso = "addSso",
 }

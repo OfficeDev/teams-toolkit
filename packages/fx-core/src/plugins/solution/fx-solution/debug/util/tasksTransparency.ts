@@ -179,7 +179,7 @@ export function generateM365Tasks(
    *   - Watch backend
    *   - Start bot
    *   - Start Azurite emulator
-   *   - install app in Teams
+   *   - Install app in Teams
    */
   const tasks = generateTasks(
     includeFrontend,

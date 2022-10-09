@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as fs from "fs-extra";
-import * as path from "path";
 import { performance } from "perf_hooks";
 
 import { FxError } from "@microsoft/teamsfx-api";
@@ -237,9 +235,7 @@ export async function getPreLaunchTaskInfo(): Promise<IPreLaunchTaskInfo | undef
       m365Overall: getDependsOn(TaskLabel.M365Overall),
       overall: getDependsOn(TaskLabel.Overall),
     };
-  } catch (error) {
-    console.log(error);
-  }
+  } catch {}
 
   // Always return true even if send telemetry failed
   return undefined;

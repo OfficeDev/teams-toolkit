@@ -145,6 +145,11 @@ To add the notification feature:
 
 To learn more, refer to [the notification document](https://aka.ms/teamsfx-notification).
 
+## Add adaptive card actions
+The Adaptive Card action handler feature enables the app to respond to adaptive card actions that triggered by end users to complete a sequential workflow. When user gets an Adaptive Card, it can provide one or more buttons in the card to ask for user's input, do something like calling some APIs, and then send another adaptive card in conversation to response to the card action.
+
+To add adaptive card actions to command bot, you can follow the steps [here](https://aka.ms/teamsfx-card-action-response##add-more-card-actions).
+
 ## Accessing Microsoft Graph
 
 If you are responding to a command that needs access to Microsoft Graph, you can leverage single sign on to leverage the logged-in Teams user token to access their Microsoft Graph data. Read more about how Teams Toolkit can help you [add SSO](https://aka.ms/teamsfx-add-sso) to your application.

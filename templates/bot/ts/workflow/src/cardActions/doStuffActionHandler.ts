@@ -1,10 +1,6 @@
 import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 import { TurnContext, InvokeResponse } from "botbuilder";
-import {
-  AdaptiveCardResponse,
-  TeamsFxAdaptiveCardActionHandler,
-  InvokeResponseFactory,
-} from "@microsoft/teamsfx";
+import { TeamsFxAdaptiveCardActionHandler, InvokeResponseFactory } from "@microsoft/teamsfx";
 import responseCard from "../adaptiveCards/doStuffActionResponse.json";
 import { CardData } from "../cardModels";
 

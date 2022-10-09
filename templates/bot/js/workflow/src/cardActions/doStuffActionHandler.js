@@ -1,5 +1,5 @@
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
-const { AdaptiveCardResponse, InvokeResponseFactory } = require("@microsoft/teamsfx");
+const { InvokeResponseFactory } = require("@microsoft/teamsfx");
 const responseCard = require("../adaptiveCards/doStuffActionResponse.json");
 
 class DoStuffActionHandler {

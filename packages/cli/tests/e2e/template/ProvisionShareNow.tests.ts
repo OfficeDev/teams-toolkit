@@ -16,18 +16,18 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
   readContextMultiEnv,
-  getUniqueAppName
+  validateTabAndBotProjectProvision
 } from "../commonUtils";
 import {
-  FrontendValidator,
-  SharepointValidator
+  SqlValidator,
+  FunctionValidator
 } from "../../commonlib"
+import { getUuid } from "../../commonlib/utilities";
 import { TemplateProject } from "../../commonlib/constants"
 import { CliHelper } from "../../commonlib/cliHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
-  let appId: string;
   let appName: string;
   let testFolder: string;
   let projectPath: string;
@@ -38,10 +38,9 @@ describe("teamsfx new template", function () {
     testFolder = getTestFolder();
   });
 
-  it(`${TemplateProject.TodoListSpfx}`, { testPlanCaseId: 15277466 }, async function () {
-    appName = getUniqueAppName();
-    projectPath = path.resolve(testFolder, appName);
-    await execAsync(`teamsfx new template ${TemplateProject.TodoListSpfx}`, {
+  it(`${TemplateProject.ShareNow}`, { testPlanCaseId: 15277467 }, async function () {
+    projectPath = path.resolve(testFolder, TemplateProject.ShareNow);
+    await execAsync(`teamsfx new template ${TemplateProject.ShareNow}`, {
       cwd: testFolder,
       env: process.env,
       timeout: 0,
@@ -53,33 +52,31 @@ describe("teamsfx new template", function () {
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
+    await CliHelper.provisionProject(projectPath,
+      `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`);
 
     // Validate Provision
-    const context = await readContextMultiEnv(projectPath, env);
+    await validateTabAndBotProjectProvision(projectPath, env);
 
-    // Validate Tab Frontend
-    const frontend = FrontendValidator.init(context);
-    await FrontendValidator.validateProvision(frontend);
+    // Validate Function App
+    const functionValidator = new FunctionValidator(context, projectPath, env);
+    await functionValidator.validateProvision();
+    await functionValidator.validateDeploy();
+
+    // Assert
+    {
+      const context = await readContextMultiEnv(projectPath, env);
+
+      // Validate sql
+      await SqlValidator.init(context);
+      await SqlValidator.validateSql();
+    }
 
     // deploy
     await CliHelper.deployAll(projectPath);
 
-    {
-      // Validate sharepoint package
-      const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
-      const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
-      appId = solutionConfig["solution"]["id"];
-      expect(appId).to.not.be.empty;
-      expect(await fs.pathExists(sharepointPackage)).to.be.true;
-
-      // Check if package exsist in App Catalog
-      SharepointValidator.init();
-      SharepointValidator.validateDeploy(appId);
-    }
-
-    await cleanUp(appName, projectPath, true, false, true);
+    await cleanUp(appName, projectPath, true, true, false);
 
   });
-  
+
 });

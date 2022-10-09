@@ -15,19 +15,16 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
-  readContextMultiEnv,
-  getUniqueAppName
+  readContextMultiEnv
 } from "../commonUtils";
 import {
-  FrontendValidator,
-  SharepointValidator
+  BotValidator
 } from "../../commonlib"
 import { TemplateProject } from "../../commonlib/constants"
 import { CliHelper } from "../../commonlib/cliHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
-  let appId: string;
   let appName: string;
   let testFolder: string;
   let projectPath: string;
@@ -38,10 +35,9 @@ describe("teamsfx new template", function () {
     testFolder = getTestFolder();
   });
 
-  it(`${TemplateProject.TodoListSpfx}`, { testPlanCaseId: 15277466 }, async function () {
-    appName = getUniqueAppName();
-    projectPath = path.resolve(testFolder, appName);
-    await execAsync(`teamsfx new template ${TemplateProject.TodoListSpfx}`, {
+  it(`${TemplateProject.FAQPlus}`, { testPlanCaseId: 15277469 }, async function () {
+    projectPath = path.resolve(testFolder, TemplateProject.FAQPlus);
+    await execAsync(`teamsfx new template ${TemplateProject.FAQPlus}`, {
       cwd: testFolder,
       env: process.env,
       timeout: 0,
@@ -58,28 +54,40 @@ describe("teamsfx new template", function () {
     // Validate Provision
     const context = await readContextMultiEnv(projectPath, env);
 
-    // Validate Tab Frontend
-    const frontend = FrontendValidator.init(context);
-    await FrontendValidator.validateProvision(frontend);
+    // Validate Bot Provision
+    const bot = new BotValidator(context, projectPath, env);
+    await bot.validateProvision(false);
 
     // deploy
     await CliHelper.deployAll(projectPath);
 
     {
-      // Validate sharepoint package
-      const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
-      const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
-      appId = solutionConfig["solution"]["id"];
-      expect(appId).to.not.be.empty;
-      expect(await fs.pathExists(sharepointPackage)).to.be.true;
+      // Validate deployment
 
-      // Check if package exsist in App Catalog
-      SharepointValidator.init();
-      SharepointValidator.validateDeploy(appId);
+      // Get context
+      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+
+      // Validate Bot Deploy
+      const bot = new BotValidator(context, projectPath, env);
+      await bot.validateDeploy();
     }
 
-    await cleanUp(appName, projectPath, true, false, true);
+    // test (validate)
+    await execAsync(`teamsfx validate`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+
+    // package
+    await execAsync(`teamsfx package`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+
+    await cleanUp(appName, projectPath, false, true, false);
 
   });
-  
+
 });

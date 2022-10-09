@@ -504,9 +504,6 @@ export class VsCodeUI implements UserInteraction {
 
           disposables.push(
             quickPick.onDidAccept(onDidAccept),
-            quickPick.onDidHide(() => {
-              resolve(err(UserCancelError));
-            }),
             quickPick.onDidTriggerButton((button) => {
               if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
             })

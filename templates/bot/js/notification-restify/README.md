@@ -212,7 +212,7 @@ To add the command and response feature:
 ## Add adaptive card actions
 The Adaptive Card action handler feature enables the app to respond to adaptive card actions that triggered by end users to complete a sequential workflow. When user gets an Adaptive Card, it can provide one or more buttons in the card to ask for user's input, do something like calling some APIs, and then send another adaptive card in conversation to response to the card action.
 
-To add adaptive card actions to notification bot, you can follow the steps [here](https://aka.ms/teamsfx-card-action-response##add-more-card-actions).
+To add adaptive card actions to notification bot, you can follow the steps [here](https://aka.ms/teamsfx-card-action-response#add-more-card-actions).
 
 ## Customize the initialization
 

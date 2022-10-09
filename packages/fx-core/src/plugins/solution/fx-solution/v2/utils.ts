@@ -17,7 +17,6 @@ import {
   M365TokenProvider,
   v3,
   EnvInfo,
-  TelemetryReporter,
   ResourceContextV3,
   InputsWithProjectPath,
   Platform,
@@ -209,14 +208,13 @@ export async function checkWhetherLocalDebugM365TenantMatches(
   envInfo: v3.EnvInfoV3 | EnvInfo | undefined,
   ctx: ResourceContextV3,
   isCSharpProject: boolean,
-  localDebugTenantId?: string,
-  m365TokenProvider?: M365TokenProvider,
-  inputs?: InputsWithProjectPath,
-  isLegacyEnv?: boolean
+  localDebugTenantId: string | undefined,
+  m365TokenProvider: M365TokenProvider,
+  inputs: InputsWithProjectPath
 ): Promise<Result<Void, FxError>> {
   if (localDebugTenantId) {
-    const projectPath = inputs?.projectPath;
-    const appStudioTokenJsonRes = await m365TokenProvider?.getJsonObject({
+    const projectPath = inputs.projectPath;
+    const appStudioTokenJsonRes = await m365TokenProvider.getJsonObject({
       scopes: AppStudioScopes,
     });
     const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
@@ -252,17 +250,11 @@ export async function checkWhetherLocalDebugM365TenantMatches(
           [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
           [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,
         });
-        if (!isLegacyEnv) {
-          const keys = Object.keys(envInfo.state);
-          for (const key of keys) {
-            if (key !== "solution") {
-              delete (envInfo as v3.EnvInfoV3).state[key];
-            }
-          }
-        } else {
-          const keys = (envInfo as EnvInfo).state.keys();
-          for (const key of keys) {
-            (envInfo as EnvInfo).state.delete(key);
+
+        const keys = Object.keys(envInfo.state);
+        for (const key of keys) {
+          if (key !== "solution") {
+            delete (envInfo as v3.EnvInfoV3).state[key];
           }
         }
 

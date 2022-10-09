@@ -105,13 +105,11 @@ describe("userInteraction", () => {
       });
     });
 
-    it("openFile", () => {
+    it("openFile", async () => {
       const path = "path";
-      const res = ui.openFile(path);
-      res.then((data) => {
-        expect(data).equal("test");
-        expect(stub).is.called.with(RequestTypes.ui.openFile, path);
-      });
+      const res = await ui.openFile(path);
+
+      expect(res.isOk()).equal(true);
     });
 
     it("selectFile", () => {

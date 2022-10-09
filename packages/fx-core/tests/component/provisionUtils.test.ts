@@ -15,7 +15,7 @@ import { MyTokenCredential } from "../plugins/solution/util";
 
 const expect = chai.expect;
 
-describe("preProvision", () => {
+describe("provisionUtils", () => {
   describe("checkProvisionSubscription", () => {
     const mocker = sinon.createSandbox();
 

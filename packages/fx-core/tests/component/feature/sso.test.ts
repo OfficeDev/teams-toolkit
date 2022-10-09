@@ -268,4 +268,21 @@ describe("SSO feature", () => {
     const ssoRes = await component.add(context, inputs);
     assert.isTrue(ssoRes.isErr());
   });
+
+  it("happy path for function scenario", async () => {
+    sandbox.stub(AppManifest.prototype, "addCapability").resolves(ok(undefined));
+    sandbox.stub(ManifestUtils.prototype, "isExistingTab").resolves(ok(true));
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      language: "typescript",
+      "app-name": appName,
+      stage: Stage.addFeature,
+      features: "function",
+    };
+
+    const component = Container.get(ComponentNames.SSO) as any;
+    const ssoRes = await component.add(context, inputs);
+    assert.isTrue(ssoRes.isOk());
+  });
 });

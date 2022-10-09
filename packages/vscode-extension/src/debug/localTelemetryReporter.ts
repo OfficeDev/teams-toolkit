@@ -111,10 +111,13 @@ export async function sendDebugAllEvent(
 
   // Transparent task properties
   const preLaunchTaskInfo = await getPreLaunchTaskInfo();
-  if (preLaunchTaskInfo) {
+  if (preLaunchTaskInfo?.m365Overall || preLaunchTaskInfo?.overall) {
     properties[TelemetryProperty.DebugPrelaunchTaskInfo] = JSON.stringify(preLaunchTaskInfo);
     properties[TelemetryProperty.DebugIsTransparentTask] =
       properties[TelemetryProperty.DebugIsTransparentTask] ?? "true";
+  } else {
+    properties[TelemetryProperty.DebugIsTransparentTask] =
+      properties[TelemetryProperty.DebugIsTransparentTask] ?? "false";
   }
 
   const measurements = {

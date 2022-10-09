@@ -329,7 +329,10 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
   return await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPrerequisites,
     // projectComponents is already serialized JSON string
-    { [TelemetryProperty.DebugProjectComponents]: `${projectComponents}` },
+    {
+      [TelemetryProperty.DebugProjectComponents]: `${projectComponents}`,
+      [TelemetryProperty.DebugIsTransparentTask]: "false",
+    },
     async (ctx: TelemetryContext) => {
       // terminate all running teamsfx tasks
       if (allRunningTeamsfxTasks.size > 0) {

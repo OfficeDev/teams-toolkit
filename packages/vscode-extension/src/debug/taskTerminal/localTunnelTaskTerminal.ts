@@ -378,7 +378,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     await this.progressHandler.end(true);
 
     localTelemetryReporter.sendTelemetryEvent(
-      TelemetryEvent.DebugStartLocalTunnelTask,
+      TelemetryEvent.DebugStartLocalTunnelTaskStarted,
       {
         [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -409,7 +409,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     await this.progressHandler.end(false);
 
     localTelemetryReporter.sendTelemetryErrorEvent(
-      TelemetryEvent.DebugStartLocalTunnelTask,
+      TelemetryEvent.DebugStartLocalTunnelTaskStarted,
       fxError,
       {
         [TelemetryProperty.DebugTaskId]: this.taskTerminalId,

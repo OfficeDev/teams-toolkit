@@ -1275,6 +1275,7 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
       // Indicates in which stage (of the first F5) the user hits F5 again.
       additionalProperties[TelemetryProperty.DebugConcurrentLastEventName] =
         localTelemetryReporter.getLastEventName();
+      additionalProperties[TelemetryProperty.DebugIsTransparentTask] = "false";
     }
   }
   return await Correlator.runWithId(commonUtils.startLocalDebugSession(), async () => {

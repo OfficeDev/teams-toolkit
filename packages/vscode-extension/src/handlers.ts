@@ -138,7 +138,6 @@ import {
   anonymizeFilePaths,
   getAppName,
   getM365TenantFromEnv,
-  getProjectId,
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
@@ -230,13 +229,7 @@ export function activate(): Result<Void, FxError> {
     core = new FxCore(tools);
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
-      const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
-        "**/unify-config-and-aad-manifest-change-logs.md"
-      );
-
-      unifyConfigWatcher.onDidCreate(async (event) => {
-        await openUnifyConfigMd(workspacePath, event.fsPath);
-      });
+      addFileSystemWatcher(workspacePath);
     }
     automaticNpmInstallHandler(false, false, false);
 
@@ -342,10 +335,39 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   }
 }
 
+export function addFileSystemWatcher(workspacePath: string) {
+  const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/unify-config-and-aad-manifest-change-logs.md"
+  );
+
+  unifyConfigWatcher.onDidCreate(async (event) => {
+    await openUnifyConfigMd(workspacePath, event.fsPath);
+  });
+
+  const backupConfigWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/backup-config-change-logs.md"
+  );
+
+  backupConfigWatcher.onDidCreate(async (event) => {
+    await openBackupConfigMd(workspacePath, event.fsPath);
+  });
+}
+
+export async function openBackupConfigMd(workspacePath: string, filePath: string) {
+  const backupName = ".backup";
+  const backupConfigMD = "backup-config-change-logs.md";
+  const changeLogsPath: string = path.join(workspacePath, backupName, backupConfigMD);
+  await openPreviewMarkDown(filePath, changeLogsPath);
+}
+
 async function openUnifyConfigMd(workspacePath: string, filePath: string) {
   const backupName = ".backup";
   const unifyConfigMD = "unify-config-and-aad-manifest-change-logs.md";
   const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
+  await openPreviewMarkDown(filePath, changeLogsPath);
+}
+
+async function openPreviewMarkDown(filePath: string, changeLogsPath: string) {
   if (changeLogsPath !== filePath) {
     return;
   }

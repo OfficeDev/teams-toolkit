@@ -17,10 +17,14 @@ import {
   getSubscriptionId,
   readContextMultiEnv
 } from "../commonUtils";
-import { AadValidator, FrontendValidator } from "../../commonlib"
+import {
+  AadValidator,
+  FrontendValidator,
+  FunctionValidator
+} from "../../commonlib"
 import { TemplateProject } from "../../commonlib/constants"
 import { CliHelper } from "../../commonlib/cliHelper";
-import  m365Login  from "../../../src/commonlib/m365Login";
+import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
@@ -35,7 +39,7 @@ describe("teamsfx new template", function () {
     testFolder = getTestFolder();
   });
 
-  it(`${TemplateProject.HelloWorldTabSSO}`, { testPlanCaseId: 'XXXXXXX' }, async function () {
+  it(`${TemplateProject.HelloWorldTabSSO}`, { testPlanCaseId: 15277458 }, async function () {
     projectPath = path.resolve(testFolder, TemplateProject.HelloWorldTabSSO);
     await execAsync(`teamsfx new template ${TemplateProject.HelloWorldTabSSO}`, {
       cwd: testFolder,
@@ -60,6 +64,41 @@ describe("teamsfx new template", function () {
     // Validate Tab Frontend
     const frontend = FrontendValidator.init(context);
     await FrontendValidator.validateProvision(frontend);
+
+    // deploy
+    await CliHelper.deployAll(projectPath);
+
+  });
+
+  it(`${TemplateProject.HelloWorldTabBackEnd}`, { testPlanCaseId: 15277459 }, async function () {
+    projectPath = path.resolve(testFolder, TemplateProject.HelloWorldTabBackEnd);
+    await execAsync(`teamsfx new template ${TemplateProject.HelloWorldTabBackEnd}`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
+
+    expect(fs.pathExistsSync(projectPath)).to.be.true;
+    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
+
+    // Provision
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
+
+    // Validate Provision
+    const context = await readContextMultiEnv(projectPath, env);
+    // Validate Aad App
+    const aad = AadValidator.init(context, false, m365Login);
+    await AadValidator.validate(aad);
+
+    // Validate Tab Frontend
+    const frontend = FrontendValidator.init(context);
+    await FrontendValidator.validateProvision(frontend);
+
+    // Validate Function App
+    const functionValidator = new FunctionValidator(context, projectPath, env);
+    await functionValidator.validateProvision();
 
     // deploy
     await CliHelper.deployAll(projectPath);

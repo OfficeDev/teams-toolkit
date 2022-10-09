@@ -50,7 +50,7 @@ export enum Capability {
 
 export enum TemplateProject {
   HelloWorldTabSSO = "hello-world-tab",
-  HElloWorldTabBackEnd = "hello-world-tab-with-backend",
+  HelloWorldTabBackEnd = "hello-world-tab-with-backend",
   HelloWorldBot = "hello-world-bot",
   ContactExporter = "graph-toolkit-contact-exporter",
   OneProductivityHub = "graph-toolkit-one-productivity-hub",

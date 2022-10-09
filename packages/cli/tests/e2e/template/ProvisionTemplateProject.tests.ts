@@ -23,7 +23,8 @@ import {
   FrontendValidator,
   FunctionValidator,
   BotValidator,
-  SqlValidator
+  SqlValidator,
+  SharepointValidator
 } from "../../commonlib"
 import { TemplateProject } from "../../commonlib/constants"
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -71,6 +72,8 @@ describe("teamsfx new template", function () {
     // deploy
     await CliHelper.deployAll(projectPath);
 
+    await cleanUp(appName, projectPath, true, false, false);
+
   });
 
   it(`${TemplateProject.HelloWorldTabBackEnd}`, { testPlanCaseId: 15277459 }, async function () {
@@ -105,6 +108,8 @@ describe("teamsfx new template", function () {
 
     // deploy
     await CliHelper.deployAll(projectPath);
+
+    await cleanUp(appName, projectPath, true, false, false);
 
   });
 
@@ -159,6 +164,8 @@ describe("teamsfx new template", function () {
       timeout: 0,
     });
 
+    await cleanUp(appName, projectPath, false, true, false);
+
   });
 
   it(`${TemplateProject.ContactExporter}`, { testPlanCaseId: 15277462 }, async function () {
@@ -190,6 +197,8 @@ describe("teamsfx new template", function () {
     // deploy
     await CliHelper.deployAll(projectPath);
 
+    await cleanUp(appName, projectPath, true, false, false);
+
   });
 
   it(`${TemplateProject.OneProductivityHub}`, { testPlanCaseId: 15277463 }, async function () {
@@ -220,6 +229,8 @@ describe("teamsfx new template", function () {
 
     // deploy
     await CliHelper.deployAll(projectPath);
+
+    await cleanUp(appName, projectPath, true, false, false);
 
   });
 
@@ -278,6 +289,8 @@ describe("teamsfx new template", function () {
       timeout: 0,
     });
 
+    await cleanUp(appName, projectPath, true, true, false);
+
   });
 
   it(`${TemplateProject.TodoListBackend}`, { testPlanCaseId: 15277465 }, async function () {
@@ -318,11 +331,51 @@ describe("teamsfx new template", function () {
     // deploy
     await CliHelper.deployAll(projectPath);
 
-  });
-
-
-  afterEach(async () => {
-    // clean up
     await cleanUp(appName, projectPath, true, false, false);
+
   });
+
+  it(`${TemplateProject.TodoListSpfx}`, { testPlanCaseId: 15277466 }, async function () {
+    projectPath = path.resolve(testFolder, TemplateProject.TodoListSpfx);
+    await execAsync(`teamsfx new template ${TemplateProject.TodoListSpfx}`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
+
+    expect(fs.pathExistsSync(projectPath)).to.be.true;
+    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
+
+    // Provision
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
+
+    // Validate Provision
+    const context = await readContextMultiEnv(projectPath, env);
+
+    // Validate Tab Frontend
+    const frontend = FrontendValidator.init(context);
+    await FrontendValidator.validateProvision(frontend);
+
+    // deploy
+    await CliHelper.deployAll(projectPath);
+
+    {
+      // Validate sharepoint package
+      const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
+      const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
+      appId = solutionConfig["solution"]["id"];
+      expect(appId).to.not.be.empty;
+      expect(await fs.pathExists(sharepointPackage)).to.be.true;
+
+      // Check if package exsist in App Catalog
+      SharepointValidator.init();
+      SharepointValidator.validateDeploy(appId);
+    }
+
+    await cleanUp(appName, projectPath, true, false, true);
+
+  });
+
 });

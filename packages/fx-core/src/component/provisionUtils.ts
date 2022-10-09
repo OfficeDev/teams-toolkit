@@ -25,6 +25,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import { snakeCase } from "lodash";
+import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { PluginDisplayName } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -61,6 +62,7 @@ import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/co
 import { ComponentNames } from "./constants";
 import { AppStudioScopes } from "./resource/appManifest/constants";
 import { isCSharpProject, resetEnvInfoWhenSwitchM365 } from "./utils";
+import fs from "fs-extra";
 
 interface M365TenantRes {
   tenantIdInToken: string;
@@ -101,11 +103,11 @@ export class ProvisionUtils {
     } else {
       const res = await checkWhetherLocalDebugM365TenantMatches(
         envInfo,
-        ctx.telemetryReporter,
+        ctx,
         isCSharpProject(ctx.projectSetting.programmingLanguage),
         tenantIdInConfig,
         ctx.tokenProvider.m365TokenProvider,
-        inputs.projectPath
+        inputs
       );
       if (res.isErr()) {
         addShouldSkipWriteEnvInfo(res.error);
@@ -152,8 +154,8 @@ export class ProvisionUtils {
       if (solutionConfigRes.value.hasSwitchedSubscription || hasSwitchedM365Tenant) {
         const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
           envInfo as v3.EnvInfoV3,
-          ctx.projectSetting.appName,
-          inputs.projectPath,
+          ctx,
+          inputs,
           hasSwitchedM365Tenant,
           solutionConfigRes.value.hasSwitchedSubscription,
           hasBotServiceCreatedBefore,
@@ -195,8 +197,8 @@ export class ProvisionUtils {
       }
       const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
         envInfo as v3.EnvInfoV3,
-        ctx.projectSetting.appName,
-        inputs.projectPath,
+        ctx,
+        inputs,
         hasSwitchedM365Tenant,
         false,
         false,

@@ -16,15 +16,16 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
   readContextMultiEnv,
-  validateTabAndBotProjectProvision
+  getUniqueAppName
 } from "../commonUtils";
 import {
-  SqlValidator,
-  FunctionValidator
+  AadValidator,
+  FunctionValidator,
+  FrontendValidator
 } from "../../commonlib"
-import { getUuid } from "../../commonlib/utilities";
 import { TemplateProject } from "../../commonlib/constants"
 import { CliHelper } from "../../commonlib/cliHelper";
+import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
@@ -38,9 +39,10 @@ describe("teamsfx new template", function () {
     testFolder = getTestFolder();
   });
 
-  it(`${TemplateProject.ShareNow}`, { testPlanCaseId: 15277467 }, async function () {
-    projectPath = path.resolve(testFolder, TemplateProject.ShareNow);
-    await execAsync(`teamsfx new template ${TemplateProject.ShareNow}`, {
+  it(`${TemplateProject.TodoListM365}`, { testPlanCaseId: 15277464 }, async function () {
+    appName = getUniqueAppName();
+    projectPath = path.resolve(testFolder, appName);
+    await execAsync(`teamsfx new template ${TemplateProject.TodoListM365}`, {
       cwd: testFolder,
       env: process.env,
       timeout: 0,
@@ -52,29 +54,26 @@ describe("teamsfx new template", function () {
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath,
-      `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`);
+    await CliHelper.provisionProject(projectPath);
 
     // Validate Provision
-    await validateTabAndBotProjectProvision(projectPath, env);
+    const context = await readContextMultiEnv(projectPath, env);
 
-    
-    // Assert
-    {
-      const context = await readContextMultiEnv(projectPath, env);
-      
-      // Validate Function App
-      const functionValidator = new FunctionValidator(context, projectPath, env);
-      await functionValidator.validateProvision();
-      await functionValidator.validateDeploy();
-      
-      // Validate sql
-      await SqlValidator.init(context);
-      await SqlValidator.validateSql();
-    }
+    // Validate Aad App
+    const aad = AadValidator.init(context, false, m365Login);
+    await AadValidator.validate(aad);
+
+    // Validate Function App
+    const functionValidator = new FunctionValidator(context, projectPath, env);
+    await functionValidator.validateProvision();
+
+    // Validate Tab Frontend
+    const frontend = FrontendValidator.init(context);
+    await FrontendValidator.validateProvision(frontend);
 
     // deploy
     await CliHelper.deployAll(projectPath);
+
 
     await cleanUp(appName, projectPath, true, true, false);
 

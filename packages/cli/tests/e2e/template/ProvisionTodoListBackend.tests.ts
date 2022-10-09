@@ -74,7 +74,6 @@ describe("teamsfx new template", function () {
     // Validate Aad App
     await SqlValidator.init(context);
     await SqlValidator.validateSql();
-    await SqlValidator.validateDatabaseCount(2);
 
     // deploy
     await CliHelper.deployAll(projectPath);

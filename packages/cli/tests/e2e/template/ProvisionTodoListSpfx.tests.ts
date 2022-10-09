@@ -15,8 +15,7 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
-  readContextMultiEnv,
-  getUniqueAppName
+  readContextMultiEnv
 } from "../commonUtils";
 import {
   FrontendValidator,
@@ -39,7 +38,7 @@ describe("teamsfx new template", function () {
   });
 
   it(`${TemplateProject.TodoListSpfx}`, { testPlanCaseId: 15277466 }, async function () {
-    appName = getUniqueAppName();
+    appName = 'todo-list-SPFx'
     projectPath = path.resolve(testFolder, appName);
     await execAsync(`teamsfx new template ${TemplateProject.TodoListSpfx}`, {
       cwd: testFolder,

@@ -15,16 +15,15 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
-  readContextMultiEnv,
-  validateTabAndBotProjectProvision
+  readContextMultiEnv
 } from "../commonUtils";
 import {
-  SqlValidator,
-  FunctionValidator
+  AadValidator,
+  BotValidator
 } from "../../commonlib"
-import { getUuid } from "../../commonlib/utilities";
 import { TemplateProject } from "../../commonlib/constants"
 import { CliHelper } from "../../commonlib/cliHelper";
+import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
@@ -38,9 +37,9 @@ describe("teamsfx new template", function () {
     testFolder = getTestFolder();
   });
 
-  it(`${TemplateProject.ShareNow}`, { testPlanCaseId: 15277467 }, async function () {
-    projectPath = path.resolve(testFolder, TemplateProject.ShareNow);
-    await execAsync(`teamsfx new template ${TemplateProject.ShareNow}`, {
+  it(`${TemplateProject.NpmSearch}`, { testPlanCaseId: 15277471 }, async function () {
+    projectPath = path.resolve(testFolder, TemplateProject.NpmSearch);
+    await execAsync(`teamsfx new template ${TemplateProject.NpmSearch}`, {
       cwd: testFolder,
       env: process.env,
       timeout: 0,
@@ -52,29 +51,46 @@ describe("teamsfx new template", function () {
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath,
-      `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`);
+    await CliHelper.provisionProject(projectPath);
 
     // Validate Provision
-    await validateTabAndBotProjectProvision(projectPath, env);
+    const context = await readContextMultiEnv(projectPath, env);
 
-    
-    // Assert
-    {
-      const context = await readContextMultiEnv(projectPath, env);
-      
-      // Validate Function App
-      const functionValidator = new FunctionValidator(context, projectPath, env);
-      await functionValidator.validateProvision();
-      await functionValidator.validateDeploy();
-      
-      // Validate sql
-      await SqlValidator.init(context);
-      await SqlValidator.validateSql();
-    }
+    // Validate Bot Provision
+    const bot = new BotValidator(context, projectPath, env);
+    await bot.validateProvision(false);
 
     // deploy
     await CliHelper.deployAll(projectPath);
+
+    {
+      // Validate deployment
+
+      // Get context
+      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+
+      // Validate Aad App
+      const aad = AadValidator.init(context, false, m365Login);
+      await AadValidator.validate(aad);
+
+      // Validate Bot Deploy
+      const bot = new BotValidator(context, projectPath, env);
+      await bot.validateDeploy();
+    }
+
+    // test (validate)
+    await execAsync(`teamsfx validate`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+
+    // package
+    await execAsync(`teamsfx package`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     await cleanUp(appName, projectPath, true, true, false);
 

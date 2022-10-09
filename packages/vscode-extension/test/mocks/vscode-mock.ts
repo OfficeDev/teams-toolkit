@@ -120,6 +120,7 @@ mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
     return await task({ report: () => {} }, new vscodeMocks.CancellationToken());
   },
   createQuickPick: () => {},
+  showOpenDialog: () => {},
 };
 (mockedVSCode as any).workspace = {
   workspaceFolders: undefined,

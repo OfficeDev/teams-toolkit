@@ -98,23 +98,23 @@ describe("UI Unit Tests", async () => {
 
       const mockQuickPick = stubInterface<QuickPick<FxQuickPickItem>>();
       const mockDisposable = stubInterface<Disposable>();
-      let hideListener: (e: void) => any;
+      let acceptListener: (e: void) => any;
       mockQuickPick.onDidAccept.callsFake((listener: (e: void) => unknown) => {
-        return mockDisposable;
-      });
-      mockQuickPick.onDidHide.callsFake((listener: (e: void) => unknown) => {
-        hideListener = listener;
+        acceptListener = listener;
         return mockDisposable;
       });
       mockQuickPick.onDidTriggerButton.callsFake((listener: (e: QuickInputButton) => unknown) => {
         return mockDisposable;
       });
       mockQuickPick.show.callsFake(() => {
-        hideListener();
+        mockQuickPick.selectedItems = [{ id: "browse" } as FxQuickPickItem];
+        acceptListener();
       });
       sinon.stub(window, "createQuickPick").callsFake(() => {
         return mockQuickPick;
       });
+      sinon.stub(window, "showOpenDialog").resolves(undefined);
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
 
       const result = await ui.selectFolder(config);
 

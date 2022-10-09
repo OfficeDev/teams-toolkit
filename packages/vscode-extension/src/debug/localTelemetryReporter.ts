@@ -66,16 +66,6 @@ export async function sendDebugAllStartEvent(additionalProperties: {
   localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugAllStart, properties);
 }
 
-export async function sendDebugAllEventWithPrelaunchTask(): Promise<void> {
-  const preLaunchTaskInfo = await getPreLaunchTaskInfo();
-  const additionalProperties: { [key: string]: string } = {};
-  if (preLaunchTaskInfo) {
-    additionalProperties[TelemetryProperty.DebugPrelaunchTaskInfo] =
-      JSON.stringify(preLaunchTaskInfo);
-  }
-  await sendDebugAllEvent(undefined, additionalProperties);
-}
-
 export async function sendDebugAllEvent(
   error?: FxError,
   additionalProperties?: { [key: string]: string }
@@ -112,12 +102,20 @@ export async function sendDebugAllEvent(
   const precheckTime = session.eventTimes[TelemetryEvent.DebugPreCheck];
   const servicesGap = precheckTime === undefined ? -1 : (performance.now() - precheckTime) / 1000;
 
-  const properties = {
+  const properties: { [key: string]: string } = {
     [TelemetryProperty.CorrelationId]: session.id,
     [TelemetryProperty.Success]: error === undefined ? TelemetrySuccess.Yes : TelemetrySuccess.No,
     ...session.properties,
     ...additionalProperties,
   };
+
+  // Transparent task properties
+  const preLaunchTaskInfo = await getPreLaunchTaskInfo();
+  if (preLaunchTaskInfo) {
+    properties[TelemetryProperty.DebugPrelaunchTaskInfo] = JSON.stringify(preLaunchTaskInfo);
+    properties[TelemetryProperty.DebugIsTransparentTask] =
+      properties[TelemetryProperty.DebugIsTransparentTask] ?? "true";
+  }
 
   const measurements = {
     [LocalTelemetryReporter.PropertyDuration]: duration,
@@ -204,6 +202,10 @@ export async function getPreLaunchTaskInfo(): Promise<IPreLaunchTaskInfo | undef
     const taskJson = (await localEnvManager.getTaskJson(
       globalVariables.workspaceUri.fsPath
     )) as ITaskJson;
+    if (!taskJson) {
+      return undefined;
+    }
+
     const getDependsOn = (overallTaskLabel: string) => {
       const dependsOnArr: IDependsOn[] = [];
       const overallTask = findTask(taskJson, overallTaskLabel);
@@ -225,7 +227,9 @@ export async function getPreLaunchTaskInfo(): Promise<IPreLaunchTaskInfo | undef
           label: maskValue(label, Object.values(TaskLabel)),
           type: maskValue(task?.type, [TeamsfxTaskProvider.type]),
           command: !isTeamsFxTask
-            ? UnknownPlaceholder
+            ? task?.command
+              ? UnknownPlaceholder
+              : UndefinedPlaceholder
             : maskValue(task?.command, Object.values(TaskCommand)),
         });
       }

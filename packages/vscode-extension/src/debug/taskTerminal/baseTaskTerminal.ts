@@ -63,8 +63,8 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
       showError(fxError);
       this.closeEmitter.fire(1);
 
+      await sendDebugAllEvent(fxError, { [TelemetryProperty.DebugIsTransparentTask]: "true" });
       if (commonUtils.getLocalDebugSession().id !== commonUtils.DebugNoSessionId) {
-        await sendDebugAllEvent(fxError, { [TelemetryProperty.DebugIsTransparentTask]: "true" });
         commonUtils.endLocalDebugSession();
       }
     }

@@ -37,11 +37,7 @@ import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 import { localize } from "../utils/localizeUtils";
 import { VS_CODE_UI } from "../extension";
-import {
-  localTelemetryReporter,
-  sendDebugAllEvent,
-  sendDebugAllEventWithPrelaunchTask,
-} from "./localTelemetryReporter";
+import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { performance } from "perf_hooks";
 import { LocalTunnelTaskTerminal } from "./taskTerminal/localTunnelTaskTerminal";
@@ -495,7 +491,7 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
           return;
         }
 
-        sendDebugAllEventWithPrelaunchTask();
+        sendDebugAllEvent();
       }
     }
   }

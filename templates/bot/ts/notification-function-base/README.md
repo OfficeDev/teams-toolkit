@@ -223,6 +223,11 @@ To add the command and response feature:
    ![enable-command](https://user-images.githubusercontent.com/10163840/165430233-04648a2a-d637-41f0-bb17-b34ddbd609f7.png)
 3. Follow [these instructions](https://aka.ms/teamsfx-command-response#How-to-add-more-command-and-response) to add commands to your application.
 
+## Add adaptive card actions
+The Adaptive Card action handler feature enables the app to respond to adaptive card actions that triggered by end users to complete a sequential workflow. When user gets an Adaptive Card, it can provide one or more buttons in the card to ask for user's input, do something like calling some APIs, and then send another adaptive card in conversation to response to the card action.
+
+To add adaptive card actions to notification bot, you can follow the steps [here](https://aka.ms/teamsfx-card-action-response##add-more-card-actions).
+
 ## Add more triggers
 
 By default, Teams Toolkit scaffolds a single trigger (either a `timer` trigger or a `http` trigger). 

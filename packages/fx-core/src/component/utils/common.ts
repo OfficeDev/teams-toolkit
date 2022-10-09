@@ -58,12 +58,12 @@ export function asFactory<T>(keyValidators: KeyValidators<T>) {
 
 // Expand environment variables in content. The format of referencing environment variable is: ${{ENV_NAME}}
 export function expandEnvironmentVariable(content: string): string {
-  const placeholderRegex = /\${{[a-zA-Z_][a-zA-Z0-9_]*}}/g;
+  const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
   const placeholders = content.match(placeholderRegex);
 
   if (placeholders) {
     for (const placeholder of placeholders) {
-      const envName = placeholder.slice(3, -2); // removes `${{` and `}}`
+      const envName = placeholder.slice(3, -2).trim(); // removes `${{` and `}}`
       const envValue = process.env[envName];
       if (envValue) {
         content = content.replace(placeholder, envValue);

@@ -306,10 +306,22 @@ describe("expandEnvironmentVariable", () => {
   });
 
   it("should do nothing with non valid placeholder", () => {
-    const stringWithNonValidPlaceholder = "placeholder:${{}}";
+    const template = "placeholder:${{}}";
 
-    const result = expandEnvironmentVariable(stringWithNonValidPlaceholder);
+    const result = expandEnvironmentVariable(template);
 
     expect(result).to.equal("placeholder:${{}}");
+  });
+
+  it("should allow leading and trailing whitespaces in environment variable name", () => {
+    const template = "placeholder: ${{ ENV_A }}";
+
+    envRestore = mockedEnv({
+      ENV_A: "A",
+    });
+
+    const result = expandEnvironmentVariable(template);
+
+    expect(result).to.equal("placeholder: A");
   });
 });

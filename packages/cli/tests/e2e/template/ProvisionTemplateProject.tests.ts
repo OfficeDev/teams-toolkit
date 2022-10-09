@@ -15,12 +15,15 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
-  readContextMultiEnv
+  readContextMultiEnv,
+  execAsyncWithRetry
 } from "../commonUtils";
 import {
   AadValidator,
   FrontendValidator,
-  FunctionValidator
+  FunctionValidator,
+  BotValidator,
+  SqlValidator
 } from "../../commonlib"
 import { TemplateProject } from "../../commonlib/constants"
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -104,6 +107,219 @@ describe("teamsfx new template", function () {
     await CliHelper.deployAll(projectPath);
 
   });
+
+  it(`${TemplateProject.HelloWorldBot}`, { testPlanCaseId: 15277461 }, async function () {
+    projectPath = path.resolve(testFolder, TemplateProject.HelloWorldBot);
+    await execAsync(`teamsfx new template ${TemplateProject.HelloWorldBot}`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
+
+    expect(fs.pathExistsSync(projectPath)).to.be.true;
+    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
+
+    // Provision
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
+
+    // Validate Provision
+    const context = await readContextMultiEnv(projectPath, env);
+
+    // Validate Bot Provision
+    const bot = new BotValidator(context, projectPath, env);
+    await bot.validateProvision(false);
+
+    // deploy
+    await CliHelper.deployAll(projectPath);
+
+    {
+      // Validate deployment
+
+      // Get context
+      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+
+      // Validate Bot Deploy
+      const bot = new BotValidator(context, projectPath, env);
+      await bot.validateDeploy();
+    }
+
+    // test (validate)
+    await execAsync(`teamsfx validate`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+
+    // package
+    await execAsync(`teamsfx package`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+
+  });
+
+  it(`${TemplateProject.ContactExporter}`, { testPlanCaseId: 15277462 }, async function () {
+    projectPath = path.resolve(testFolder, TemplateProject.ContactExporter);
+    await execAsync(`teamsfx new template ${TemplateProject.ContactExporter}`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
+
+    expect(fs.pathExistsSync(projectPath)).to.be.true;
+    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
+
+    // Provision
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
+
+    // Validate Provision
+    const context = await readContextMultiEnv(projectPath, env);
+    // Validate Aad App
+    const aad = AadValidator.init(context, false, m365Login);
+    await AadValidator.validate(aad);
+
+    // Validate Tab Frontend
+    const frontend = FrontendValidator.init(context);
+    await FrontendValidator.validateProvision(frontend);
+
+    // deploy
+    await CliHelper.deployAll(projectPath);
+
+  });
+
+  it(`${TemplateProject.OneProductivityHub}`, { testPlanCaseId: 15277463 }, async function () {
+    projectPath = path.resolve(testFolder, TemplateProject.OneProductivityHub);
+    await execAsync(`teamsfx new template ${TemplateProject.OneProductivityHub}`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
+
+    expect(fs.pathExistsSync(projectPath)).to.be.true;
+    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
+
+    // Provision
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
+
+    // Validate Provision
+    const context = await readContextMultiEnv(projectPath, env);
+    // Validate Aad App
+    const aad = AadValidator.init(context, false, m365Login);
+    await AadValidator.validate(aad);
+
+    // Validate Tab Frontend
+    const frontend = FrontendValidator.init(context);
+    await FrontendValidator.validateProvision(frontend);
+
+    // deploy
+    await CliHelper.deployAll(projectPath);
+
+  });
+
+  it(`${TemplateProject.HelloWorldBotSSO}`, { testPlanCaseId: 15277464 }, async function () {
+    projectPath = path.resolve(testFolder, TemplateProject.HelloWorldBotSSO);
+    await execAsync(`teamsfx new template ${TemplateProject.HelloWorldBotSSO}`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
+
+    expect(fs.pathExistsSync(projectPath)).to.be.true;
+    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
+
+    // Provision
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
+
+    // Validate Provision
+    const context = await readContextMultiEnv(projectPath, env);
+
+    // Validate Bot Provision
+    const bot = new BotValidator(context, projectPath, env);
+    await bot.validateProvision(false);
+
+    // deploy
+    await CliHelper.deployAll(projectPath);
+
+    {
+      // Validate deployment
+
+      // Get context
+      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+
+      // Validate Aad App
+      const aad = AadValidator.init(context, false, m365Login);
+      await AadValidator.validate(aad);
+
+      // Validate Bot Deploy
+      const bot = new BotValidator(context, projectPath, env);
+      await bot.validateDeploy();
+    }
+
+    // test (validate)
+    await execAsync(`teamsfx validate`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+
+    // package
+    await execAsync(`teamsfx package`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+
+  });
+
+  it(`${TemplateProject.TodoListBackend}`, { testPlanCaseId: 15277465 }, async function () {
+    projectPath = path.resolve(testFolder, TemplateProject.TodoListBackend);
+    await execAsync(`teamsfx new template ${TemplateProject.TodoListBackend}`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
+
+    expect(fs.pathExistsSync(projectPath)).to.be.true;
+    expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
+
+    // Provision
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
+
+    // Validate Provision
+    const context = await readContextMultiEnv(projectPath, env);
+    // Validate Aad App
+    const aad = AadValidator.init(context, false, m365Login);
+    await AadValidator.validate(aad);
+
+    // Validate Tab Frontend
+    const frontend = FrontendValidator.init(context);
+    await FrontendValidator.validateProvision(frontend);
+
+    // Validate Function App
+    const functionValidator = new FunctionValidator(context, projectPath, env);
+    await functionValidator.validateProvision();
+
+    // Validate Aad App
+    await SqlValidator.init(context);
+    await SqlValidator.validateSql();
+    await SqlValidator.validateDatabaseCount(2);
+
+    // deploy
+    await CliHelper.deployAll(projectPath);
+
+  });
+
 
   afterEach(async () => {
     // clean up

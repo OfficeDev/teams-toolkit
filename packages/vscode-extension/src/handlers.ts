@@ -138,7 +138,6 @@ import {
   anonymizeFilePaths,
   getAppName,
   getM365TenantFromEnv,
-  getProjectId,
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
@@ -156,6 +155,8 @@ import {
 } from "./debug/localTelemetryReporter";
 import { compare } from "./utils/versionUtil";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -228,13 +229,7 @@ export function activate(): Result<Void, FxError> {
     core = new FxCore(tools);
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
-      const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
-        "**/unify-config-and-aad-manifest-change-logs.md"
-      );
-
-      unifyConfigWatcher.onDidCreate(async (event) => {
-        await openUnifyConfigMd(workspacePath, event.fsPath);
-      });
+      addFileSystemWatcher(workspacePath);
     }
     automaticNpmInstallHandler(false, false, false);
 
@@ -340,10 +335,39 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   }
 }
 
+export function addFileSystemWatcher(workspacePath: string) {
+  const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/unify-config-and-aad-manifest-change-logs.md"
+  );
+
+  unifyConfigWatcher.onDidCreate(async (event) => {
+    await openUnifyConfigMd(workspacePath, event.fsPath);
+  });
+
+  const backupConfigWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/backup-config-change-logs.md"
+  );
+
+  backupConfigWatcher.onDidCreate(async (event) => {
+    await openBackupConfigMd(workspacePath, event.fsPath);
+  });
+}
+
+export async function openBackupConfigMd(workspacePath: string, filePath: string) {
+  const backupName = ".backup";
+  const backupConfigMD = "backup-config-change-logs.md";
+  const changeLogsPath: string = path.join(workspacePath, backupName, backupConfigMD);
+  await openPreviewMarkDown(filePath, changeLogsPath);
+}
+
 async function openUnifyConfigMd(workspacePath: string, filePath: string) {
   const backupName = ".backup";
   const unifyConfigMD = "unify-config-and-aad-manifest-change-logs.md";
   const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
+  await openPreviewMarkDown(filePath, changeLogsPath);
+}
+
+async function openPreviewMarkDown(filePath: string, changeLogsPath: string) {
   if (changeLogsPath !== filePath) {
     return;
   }
@@ -2369,7 +2393,7 @@ export async function cmpAccountsHandler(args: any[]) {
     const azureAccount = await AzureAccountManager.getStatus();
     if (azureAccount.status === "SignedIn") {
       const accountInfo = azureAccount.accountInfo;
-      const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+      const email = (accountInfo as any).email || (accountInfo as any).upn;
       if (email !== undefined) {
         signOutAzureOption.label = signOutAzureOption.label.concat(email);
       }
@@ -3043,6 +3067,12 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         data: "https://aka.ms/teamsfx-create-command",
       },
       {
+        id: "cardActionResponse",
+        label: localize("teamstoolkit.tutorials.cardActionResponse.label"),
+        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
+        data: "https://aka.ms/teamsfx-card-action-response",
+      },
+      {
         id: "addSso",
         label: `${localize("teamstoolkit.tutorials.addSso.label")}`,
         detail: localize("teamstoolkit.tutorials.addSso.detail"),
@@ -3210,10 +3240,12 @@ export async function signinAzureCallback(args?: any[]): Promise<Result<null, Fx
       ...triggerFrom,
     });
   }
-  const token = await AzureAccountManager.getIdentityCredentialAsync(true);
+  const credential = await AzureAccountManager.getIdentityCredentialAsync(true);
+  const token = await credential?.getToken(AzureScopes);
+  const accountInfo = token?.token ? ConvertTokenToJson(token?.token) : {};
   if (token && node) {
     const needSelectSubscription = await node.setSignedIn(
-      (token as any).username ? (token as any).username : ""
+      (accountInfo as any).email ?? (accountInfo as any).username ?? ""
     );
     if (needSelectSubscription) {
       const solutionSettings = await getAzureSolutionSettings();

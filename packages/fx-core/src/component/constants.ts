@@ -293,4 +293,12 @@ export const FunctionAppSetting = {
 
 export const PathConstants = {
   botWorkingDir: "bot",
+  apiWorkingDir: "api",
+  npmPackageFolderName: "node_modules",
+  functionExtensionsFolderName: "bin",
+  functionExtensionsFileName: "extensions.csproj",
+};
+
+export const RegularExpr = {
+  validFunctionNamePattern: /^[a-zA-Z][\w-]{0,126}$/,
 };

@@ -55,7 +55,6 @@ import {
   MessageExtensionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { ResourcePlugins } from "../../common/constants";
-import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
 import {
   MANIFEST_LOCAL,
   MANIFEST_TEMPLATE,
@@ -87,7 +86,6 @@ import { bicepUtils, createContextV3, generateConfigBiceps } from "../../compone
 import { assign, cloneDeep } from "lodash";
 import { IdentityResource } from "../../component/resource/identity";
 import { AzureFunctionResource } from "../../component/resource/azureAppService/azureFunction";
-import { APIMResource } from "../../component/resource/apim";
 import { KeyVaultResource } from "../../component/resource/keyVault";
 import { AzureSqlResource } from "../../component/resource/azureSql/azureSql";
 import { AadApp } from "../../component/resource/aadApp/aadApp";
@@ -99,6 +97,7 @@ import {
   hasBot as hasBotV3,
   hasSPFxTab,
 } from "../../common/projectSettingsHelperV3";
+import { APIMResource } from "../../component/resource/apim/apim";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -696,7 +695,18 @@ async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<P
   await removeExpiredFields(devState, devUserData);
   return projectSettings;
 }
+export class LocalDebugConfigKeys {
+  public static readonly LocalAuthEndpoint: string = "localAuthEndpoint";
 
+  public static readonly LocalTabEndpoint: string = "localTabEndpoint";
+  public static readonly LocalTabDomain: string = "localTabDomain";
+  public static readonly TrustDevelopmentCertificate: string = "trustDevCert";
+
+  public static readonly LocalFunctionEndpoint: string = "localFunctionEndpoint";
+
+  public static readonly LocalBotEndpoint: string = "localBotEndpoint";
+  public static readonly LocalBotDomain: string = "localBotDomain";
+}
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
   const stateData = await fs.readJson(devState);
   if (stateData[PluginNames.SOLUTION] && stateData[PluginNames.SOLUTION]["remoteTeamsAppId"]) {

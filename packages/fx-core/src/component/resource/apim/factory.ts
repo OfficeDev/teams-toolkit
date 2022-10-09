@@ -5,18 +5,16 @@ import { ResourceManagementClient } from "@azure/arm-resources";
 import {
   AzureAccountProvider,
   EnvInfo,
-  Json,
   LogProvider,
   M365TokenProvider,
   Platform,
-  ReadonlyPluginConfig,
   TelemetryReporter,
   v3,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { GraphScopes } from "../../../common/tools";
 import { ISolutionConfig, SolutionConfig } from "./config";
-import { AadDefaultValues, TeamsToolkitComponent } from "./constants";
+import { AadDefaultValues } from "./constants";
 import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
 import { AadManager } from "./managers/aadManager";
 import { ApimManager } from "./managers/apimManager";

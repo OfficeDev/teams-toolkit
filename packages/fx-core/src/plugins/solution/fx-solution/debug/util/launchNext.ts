@@ -324,6 +324,7 @@ function attachToBot() {
       group: "all",
       hidden: true,
     },
+    internalConsoleOptions: "neverOpen",
   };
 }
 

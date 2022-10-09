@@ -147,7 +147,7 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
     );
 
     // Assert
-    expect(spy.calledOnceWithExactly(projectPath, appName, "dev", true, true, true));
+    expect(spy.calledOnceWithExactly(projectPath, appName, "dev", true, true, true)).equal(true);
     expect(res.isOk()).equal(true);
   });
 
@@ -177,7 +177,7 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
     );
 
     // Assert
-    expect(spy.calledOnceWithExactly(projectPath, appName, "dev", true, true, false));
+    expect(spy.calledOnceWithExactly(projectPath, appName, "dev", true, true, false)).equal(true);
     expect(res.isErr()).equal(true);
   });
 

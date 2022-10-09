@@ -72,6 +72,7 @@ describe("Add CICD Command Tests", function () {
       "add <feature>",
       "notification",
       "command-and-response",
+      "workflow",
       "sso-tab",
       "tab",
       "spfx-tab",

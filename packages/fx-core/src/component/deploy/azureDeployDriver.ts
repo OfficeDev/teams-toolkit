@@ -3,16 +3,14 @@
 
 import {
   DeployStepArgs,
-  AzureResourceInfo,
   AzureUploadConfig,
   AxiosOnlyStatusResult,
   AxiosZipDeployResult,
   DeployArgs,
 } from "../interface/buildAndDeployArgs";
 import { checkMissingArgs } from "../utils/common";
-import { PrerequisiteError } from "../error/componentError";
 import { DeployExternalApiCallError, DeployTimeoutError } from "../error/deployError";
-import { AzureAccountProvider, LogProvider } from "@microsoft/teamsfx-api";
+import { LogProvider } from "@microsoft/teamsfx-api";
 import { BaseDeployDriver } from "./baseDeployDriver";
 import { Base64 } from "js-base64";
 import * as appService from "@azure/arm-appservice";
@@ -20,6 +18,8 @@ import { DeployConstant } from "../constant/deployConstant";
 import { default as axios } from "axios";
 import { waitSeconds } from "../../common/tools";
 import { HttpStatusCode } from "../constant/commonConstant";
+import { getAzureAccountCredential, parseAzureResourceId } from "../utils/azureResourceOperation";
+import { AzureResourceInfo } from "../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
 
 export abstract class AzureDeployDriver extends BaseDeployDriver {
@@ -38,7 +38,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
 
     const resourceId = checkMissingArgs("resourceId", args.resourceId);
     const azureResource = this.parseResourceId(resourceId);
-    const azureCredential = await this.getAzureAccountCredential(this.context.azureAccountProvider);
+    const azureCredential = await getAzureAccountCredential(this.context.azureAccountProvider);
 
     return await this.azureDeploy(
       { src: src, dist: dist, ignoreFile: args.ignoreFile },
@@ -65,18 +65,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
    * @protected
    */
   protected parseResourceId(resourceId: string): AzureResourceInfo {
-    const result = resourceId.trim().match(this.pattern);
-    if (!result || result.length != 4) {
-      throw PrerequisiteError.somethingIllegal("resourceId", "plugins.bot.InvalidValue", [
-        "resourceId",
-        resourceId,
-      ]);
-    }
-    return {
-      subscriptionId: resourceId[1].trim(),
-      resourceGroupName: resourceId[2].trim(),
-      instanceId: resourceId[3].trim(),
-    };
+    return parseAzureResourceId(resourceId, this.pattern);
   }
 
   /**
@@ -124,7 +113,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
       throw DeployExternalApiCallError.zipDeployError(e);
     }
 
-    if (res?.status !== 200) {
+    if (res?.status !== HttpStatusCode.OK) {
       if (res?.status) {
         await logger?.error(`Deployment is failed with error code: ${res.status}.`);
       }
@@ -156,12 +145,9 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
       }
 
       if (res) {
-        if (res?.status === HttpStatusCode.HTTP_OK_ACCEPT_CODE) {
+        if (res?.status === HttpStatusCode.ACCEPTED) {
           await waitSeconds(DeployConstant.BACKOFF_TIME_S);
-        } else if (
-          res?.status === HttpStatusCode.HTTP_OK_RESPONSE_CODE ||
-          res?.status === HttpStatusCode.HTTP_CREATE_RESPONSE_CODE
-        ) {
+        } else if (res?.status === HttpStatusCode.OK || res?.status === HttpStatusCode.CREATED) {
           return;
         } else {
           if (res.status) {
@@ -224,26 +210,5 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
       maxBodyLength: Infinity,
       timeout: DeployConstant.DEPLOY_TIMEOUT_IN_MS,
     };
-  }
-
-  private async getAzureAccountCredential(
-    tokenProvider: AzureAccountProvider
-  ): Promise<TokenCredential> {
-    let credential;
-    try {
-      credential = await tokenProvider.getIdentityCredentialAsync();
-    } catch (e) {
-      throw DeployExternalApiCallError.getAzureCredentialError(e);
-    }
-
-    if (!credential) {
-      throw PrerequisiteError.somethingIllegal(
-        "azureCredential",
-        "plugin.hosting.FailRetrieveAzureCredentials",
-        undefined,
-        "plugin.hosting.LoginToAzure"
-      );
-    }
-    return credential;
   }
 }

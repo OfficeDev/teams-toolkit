@@ -475,6 +475,7 @@ export class VsCodeUI implements UserInteraction {
             },
           ];
 
+          let hideByDialog = false;
           const onDidAccept = async () => {
             const selectedItems = quickPick.selectedItems;
             if (selectedItems && selectedItems.length > 0) {
@@ -485,6 +486,7 @@ export class VsCodeUI implements UserInteraction {
               if (item.id === "default") {
                 resolve(ok({ type: "success", result: config.default }));
               } else {
+                hideByDialog = true;
                 const uriList: Uri[] | undefined = await window.showOpenDialog({
                   defaultUri: config.default ? Uri.file(config.default) : undefined,
                   canSelectFiles: false,
@@ -504,6 +506,11 @@ export class VsCodeUI implements UserInteraction {
 
           disposables.push(
             quickPick.onDidAccept(onDidAccept),
+            quickPick.onDidHide(() => {
+              if (!hideByDialog) {
+                resolve(err(UserCancelError));
+              }
+            }),
             quickPick.onDidTriggerButton((button) => {
               if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
             })

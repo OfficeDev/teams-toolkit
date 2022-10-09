@@ -103,6 +103,9 @@ describe("UI Unit Tests", async () => {
         acceptListener = listener;
         return mockDisposable;
       });
+      mockQuickPick.onDidHide.callsFake((listener: (e: void) => unknown) => {
+        return mockDisposable;
+      });
       mockQuickPick.onDidTriggerButton.callsFake((listener: (e: QuickInputButton) => unknown) => {
         return mockDisposable;
       });

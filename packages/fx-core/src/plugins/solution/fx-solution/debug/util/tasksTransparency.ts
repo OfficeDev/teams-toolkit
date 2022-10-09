@@ -450,7 +450,7 @@ function setUpBot(): CommentJSONValue {
     //// Enter your own bot information if using the existing bot. ////
     // "botId": "",
     // "botPassword": "", // use plain text or environment variable reference like \${env:BOT_PASSWORD}
-    "botMessagingEndpoint": "api/messages", // use your own routing "any/path", or full URL "https://contoso.com/any/path"
+    "botMessagingEndpoint": "/api/messages", // use your own routing "/any/path", or full URL "https://contoso.com/any/path"
   }
   `;
   const task = {

@@ -1265,7 +1265,9 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  * Check & install required local prerequisites before local debug.
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
-  const additionalProperties: { [key: string]: string } = {};
+  const additionalProperties: { [key: string]: string } = {
+    [TelemetryProperty.DebugIsTransparentTask]: "false",
+  };
   {
     // If we know this session is concurrently running with another session, send that correlationId in `debug-all-start` event.
     // Mostly, this happens when user stops debugging while preLaunchTasks are running and immediately hit F5 again.
@@ -1275,7 +1277,6 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
       // Indicates in which stage (of the first F5) the user hits F5 again.
       additionalProperties[TelemetryProperty.DebugConcurrentLastEventName] =
         localTelemetryReporter.getLastEventName();
-      additionalProperties[TelemetryProperty.DebugIsTransparentTask] = "false";
     }
   }
   return await Correlator.runWithId(commonUtils.startLocalDebugSession(), async () => {

@@ -184,10 +184,6 @@ interface ITask {
   command?: string;
   dependsOn?: string | string[];
 }
-interface IConfiguration {
-  name?: string;
-  preLaunchTask?: string;
-}
 
 interface IDependsOn {
   label: string;

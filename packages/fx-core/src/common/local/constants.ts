@@ -136,12 +136,6 @@ export const TaskDefaultValue = Object.freeze({
     },
   },
   npmInstall: {
-    cwd: {
-      tab: "${workspaceFolder}/tabs",
-      bot: "${workspaceFolder}/bot",
-      api: "${workspaceFolder}/api",
-      spfx: "${workspaceFolder}/SPFx",
-    },
     npmInstallArgs: ["--no-audit"],
   },
   startLocalTunnel: {

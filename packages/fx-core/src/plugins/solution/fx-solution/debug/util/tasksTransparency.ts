@@ -376,19 +376,19 @@ function installNPMpackages(
   };
   if (includeFrontend) {
     result.args.projects.push({
-      cwd: TaskDefaultValue.npmInstall.cwd.tab,
+      cwd: "${workspaceFolder}/tabs",
       npmInstallArgs: TaskDefaultValue.npmInstall.npmInstallArgs,
     });
   }
   if (includeBackend) {
     result.args.projects.push({
-      cwd: TaskDefaultValue.npmInstall.cwd.api,
+      cwd: "${workspaceFolder}/api",
       npmInstallArgs: TaskDefaultValue.npmInstall.npmInstallArgs,
     });
   }
   if (includeBot) {
     result.args.projects.push({
-      cwd: TaskDefaultValue.npmInstall.cwd.bot,
+      cwd: "${workspaceFolder}/bot",
       npmInstallArgs: TaskDefaultValue.npmInstall.npmInstallArgs,
     });
   }
@@ -768,7 +768,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
       args: {
         projects: [
           {
-            cwd: TaskDefaultValue.npmInstall.cwd.spfx,
+            cwd: "${workspaceFolder}/SPFx",
             npmInstallArgs: TaskDefaultValue.npmInstall.npmInstallArgs,
           },
         ],

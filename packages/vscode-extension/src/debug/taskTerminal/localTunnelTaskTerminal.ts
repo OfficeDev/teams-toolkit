@@ -72,7 +72,6 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   private readonly status: LocalTunnelTaskStatus;
   private readonly progressHandler: ProgressHandler;
   private readonly step: Step;
-  private startTime: number | undefined;
 
   constructor(taskDefinition: vscode.TaskDefinition) {
     super(taskDefinition);

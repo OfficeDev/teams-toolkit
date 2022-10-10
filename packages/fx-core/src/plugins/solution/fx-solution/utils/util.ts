@@ -178,7 +178,7 @@ export async function handleConfigFilesWhenSwitchAccount(
       }
     }
 
-    const maybeTabFolder = path.join(inputs.projectPath, PathConstants.WorkingDir);
+    const maybeTabFolder = path.join(inputs.projectPath, PathConstants.tabWorkingDir);
     const maybeTabDeploymentFile = path.join(
       maybeTabFolder,
       path.join(

@@ -24,6 +24,7 @@ import {
   ITaskDefinition,
   ProgrammingLanguage,
   TaskDefinition,
+  TaskCommand,
 } from "@microsoft/teamsfx-core/build/common/local";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
@@ -42,7 +43,6 @@ import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
 import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskTerminal";
 import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
 import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
-import { TaskCommand } from "./constants";
 
 const customTasks = Object.freeze({
   [TaskCommand.checkPrerequisites]: {
@@ -216,6 +216,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     if (!customTask) {
       return undefined;
     }
+
     const newTask = new vscode.Task(
       task.definition,
       vscode.TaskScope.Workspace,

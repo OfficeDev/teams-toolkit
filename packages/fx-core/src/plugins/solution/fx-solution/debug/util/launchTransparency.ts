@@ -3,6 +3,7 @@
 "use strict";
 
 import * as LaunchNext from "./launchNext";
+import { TaskLabel } from "../../../../../common/local/constants";
 
 export function generateLaunchJson(
   includeFrontend: boolean,
@@ -42,8 +43,8 @@ export function generateCompounds(
   includeBot: boolean
 ): Record<string, unknown>[] {
   const result = LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot);
-  result[0].preLaunchTask = "Start Teams App Locally";
-  result[1].preLaunchTask = "Start Teams App Locally";
+  result[0].preLaunchTask = TaskLabel.Overall;
+  result[1].preLaunchTask = TaskLabel.Overall;
   return result;
 }
 
@@ -61,13 +62,13 @@ export function generateM365Compounds(
   includeBot: boolean
 ): Record<string, unknown>[] {
   const result = LaunchNext.generateM365Compounds(includeFrontend, includeBackend, includeBot);
-  result[0].preLaunchTask = "Start Teams App Locally";
-  result[1].preLaunchTask = "Start Teams App Locally";
-  result[2].preLaunchTask = "Start Teams App Locally & Install App";
-  result[3].preLaunchTask = "Start Teams App Locally & Install App";
+  result[0].preLaunchTask = TaskLabel.Overall;
+  result[1].preLaunchTask = TaskLabel.Overall;
+  result[2].preLaunchTask = TaskLabel.M365Overall;
+  result[3].preLaunchTask = TaskLabel.M365Overall;
   if (includeFrontend) {
-    result[4].preLaunchTask = "Start Teams App Locally & Install App";
-    result[5].preLaunchTask = "Start Teams App Locally & Install App";
+    result[4].preLaunchTask = TaskLabel.M365Overall;
+    result[5].preLaunchTask = TaskLabel.M365Overall;
   }
   return result;
 }

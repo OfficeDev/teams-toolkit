@@ -18,6 +18,7 @@ import {
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
 import { getHashedEnv } from "@microsoft/teamsfx-core/build/common/tools";
+import { TaskCommand } from "@microsoft/teamsfx-core/build/common/local/constants";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as path from "path";
@@ -28,7 +29,6 @@ import {
   issueLink,
   issueTemplate,
   m365AppsPrerequisitesHelpLink,
-  TaskCommand,
 } from "./constants";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
@@ -109,11 +109,6 @@ function isTeamsfxTask(task: vscode.Task): boolean {
         task.name.trim().toLocaleLowerCase().endsWith("watch"))
     ) {
       // provided by toolkit
-      return true;
-    }
-
-    const res = isTeamsFxTransparentTask(task);
-    if (res) {
       return true;
     }
 
@@ -307,9 +302,13 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       [TelemetryProperty.DebugServiceName]: task.name,
       [TelemetryProperty.DebugServiceExitCode]: event.exitCode + "",
     });
-    if (isTeamsFxTransparentTask(task) && event.exitCode !== 0 && event.exitCode !== -1) {
-      terminateAllRunningTeamsfxTasks();
-    }
+  } else if (
+    task.scope !== undefined &&
+    isTeamsFxTransparentTask(task) &&
+    event.exitCode !== 0 &&
+    event.exitCode !== -1
+  ) {
+    terminateAllRunningTeamsfxTasks();
   } else if (isNpmInstallTask(task)) {
     try {
       const taskInfo = activeNpmInstallTasks.get(task.name);
@@ -492,7 +491,7 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
           return;
         }
 
-        await sendDebugAllEvent();
+        sendDebugAllEvent();
       }
     }
   }

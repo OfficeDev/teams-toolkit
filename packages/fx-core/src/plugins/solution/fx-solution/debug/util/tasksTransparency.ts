@@ -5,6 +5,12 @@
 import { ProgrammingLanguage } from "../../../../../common/local/constants";
 import { CommentJSONValue, CommentObject, CommentArray } from "comment-json";
 import * as commentJson from "comment-json";
+import {
+  Prerequisite,
+  TaskCommand,
+  TaskDefaultValue,
+  TaskLabel,
+} from "../../../../../common/local/constants";
 
 export function generateTasksJson(
   includeFrontend: boolean,
@@ -173,7 +179,7 @@ export function generateM365Tasks(
    *   - Watch backend
    *   - Start bot
    *   - Start Azurite emulator
-   *   - install app in Teams
+   *   - Install app in Teams
    */
   const tasks = generateTasks(
     includeFrontend,
@@ -245,23 +251,23 @@ function startTeamsAppLocally(
   includeSSO: boolean
 ): Record<string, unknown> {
   const result = {
-    label: "Start Teams App Locally",
-    dependsOn: ["Validate & install prerequisites", "Install npm packages"],
+    label: TaskLabel.Overall,
+    dependsOn: [TaskLabel.PrerequisiteCheck, TaskLabel.InstallNpmPackages],
     dependsOrder: "sequence",
   };
   if (includeBot) {
-    result.dependsOn.push("Start local tunnel");
+    result.dependsOn.push(TaskLabel.StartLocalTunnel);
   }
   if (includeFrontend) {
-    result.dependsOn.push("Set up tab");
+    result.dependsOn.push(TaskLabel.SetUpTab);
   }
   if (includeBot) {
-    result.dependsOn.push("Set up bot");
+    result.dependsOn.push(TaskLabel.SetUpBot);
   }
   if (includeSSO) {
-    result.dependsOn.push("Set up SSO");
+    result.dependsOn.push(TaskLabel.SetUpSSO);
   }
-  result.dependsOn.push("Build & upload Teams manifest", "Start services");
+  result.dependsOn.push(TaskLabel.PrepareManifest, TaskLabel.StartServices);
 
   return result;
 }
@@ -273,8 +279,8 @@ function startTeamsAppLocallyAndInstallApp(
   includeSSO: boolean
 ): Record<string, unknown> {
   const result = startTeamsAppLocally(includeFrontend, includeBackend, includeBot, includeSSO);
-  result.label = "Start Teams App Locally & Install App";
-  (result.dependsOn as string[]).push("install app in Teams");
+  result.label = TaskLabel.M365Overall;
+  (result.dependsOn as string[]).push(TaskLabel.InstallAppInTeams);
 
   return result;
 }
@@ -286,36 +292,42 @@ function validateAndInstallPrerequisites(
   includeFuncHostedBot: boolean
 ): CommentJSONValue {
   const prerequisites = [
-    `"nodejs", // Validate if Node.js is installed.`,
-    `"m365Account", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.`,
+    `"${Prerequisite.nodejs}", // Validate if Node.js is installed.`,
+    `"${Prerequisite.m365Account}", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.`,
   ];
   const ports: string[] = [];
   if (includeFrontend) {
     prerequisites.push(
-      `"devCert", // Install localhost SSL certificate. It's used to serve the development sites over HTTPS to debug the Tab app in Teams.`
+      `"${Prerequisite.devCert}", // Install localhost SSL certificate. It's used to serve the development sites over HTTPS to debug the Tab app in Teams.`
     );
-    ports.push("53000, // tab service port");
+    ports.push(`${TaskDefaultValue.checkPrerequisites.ports.tabService}, // tab service port`);
   }
   if (includeBackend) {
     prerequisites.push(
-      `"func", // Install Azure Functions Core Tools. It's used to serve Azure Functions hosted project locally.`,
-      `"dotnet", // Ensure .NET Core SDK is installed. TeamsFx Azure Functions project depends on extra .NET binding extensions for HTTP trigger authorization.`
+      `"${Prerequisite.func}", // Install Azure Functions Core Tools. It's used to serve Azure Functions hosted project locally.`,
+      `"${Prerequisite.dotnet}", // Ensure .NET Core SDK is installed. TeamsFx Azure Functions project depends on extra .NET binding extensions for HTTP trigger authorization.`
     );
-    ports.push("7071, // backend service port", "9229, // backend debug port");
+    ports.push(
+      `${TaskDefaultValue.checkPrerequisites.ports.backendService}, // backend service port`,
+      `${TaskDefaultValue.checkPrerequisites.ports.backendDebug}, // backend debug port`
+    );
   }
   if (includeFuncHostedBot && !includeBackend) {
     prerequisites.push(
-      `"func", // Install Azure Functions Core Tools. It's used to serve Azure Functions hosted project locally.`
+      `"${Prerequisite.func}", // Install Azure Functions Core Tools. It's used to serve Azure Functions hosted project locally.`
     );
   }
   if (includeBot) {
     prerequisites.push(
-      `"ngrok", // Install Ngrok. Bot project requires a public message endpoint, and ngrok can help create public tunnel for your local service.`
+      `"${Prerequisite.ngrok}", // Install Ngrok. Bot project requires a public message endpoint, and ngrok can help create public tunnel for your local service.`
     );
-    ports.push("3978, // bot service port", "9239, // bot debug port");
+    ports.push(
+      `${TaskDefaultValue.checkPrerequisites.ports.botService}, // bot service port`,
+      `${TaskDefaultValue.checkPrerequisites.ports.botDebug}, // bot debug port`
+    );
   }
   prerequisites.push(
-    `"portOccupancy", // Validate available ports to ensure those local debug ones are not occupied.`
+    `"${Prerequisite.portOccupancy}", // Validate available ports to ensure those local debug ones are not occupied.`
   );
   const prerequisitesComment = `
   [
@@ -333,9 +345,9 @@ function validateAndInstallPrerequisites(
   }`;
 
   const task = {
-    label: "Validate & install prerequisites",
+    label: TaskLabel.PrerequisiteCheck,
     type: "teamsfx",
-    command: "debug-check-prerequisites",
+    command: TaskCommand.checkPrerequisites,
     args: {
       prerequisites: commentJson.parse(prerequisitesComment),
       portOccupancy: commentJson.parse(portsComment),
@@ -355,9 +367,9 @@ function installNPMpackages(
     // See https://aka.ms/teamsfx-npm-package-task to know the details and how to customize the args.
   }`;
   const result = {
-    label: "Install npm packages",
+    label: TaskLabel.InstallNpmPackages,
     type: "teamsfx",
-    command: "debug-npm-install",
+    command: TaskCommand.npmInstall,
     args: {
       projects: [] as Record<string, unknown>[],
     },
@@ -365,19 +377,19 @@ function installNPMpackages(
   if (includeFrontend) {
     result.args.projects.push({
       cwd: "${workspaceFolder}/tabs",
-      npmInstallArgs: ["--no-audit"],
+      npmInstallArgs: TaskDefaultValue.npmInstall.npmInstallArgs,
     });
   }
   if (includeBackend) {
     result.args.projects.push({
       cwd: "${workspaceFolder}/api",
-      npmInstallArgs: ["--no-audit"],
+      npmInstallArgs: TaskDefaultValue.npmInstall.npmInstallArgs,
     });
   }
   if (includeBot) {
     result.args.projects.push({
       cwd: "${workspaceFolder}/bot",
-      npmInstallArgs: ["--no-audit"],
+      npmInstallArgs: TaskDefaultValue.npmInstall.npmInstallArgs,
     });
   }
 
@@ -389,7 +401,7 @@ function installAzureFunctionsBindingExtensions(): CommentJSONValue {
     // TeamsFx Azure Functions project depends on extra Azure Functions binding extensions for HTTP trigger authorization.
   }`;
   const task = {
-    label: "Install Azure Functions binding extensions",
+    label: TaskLabel.InstallAzureFuncBindingExt,
     type: "shell",
     command: "dotnet build extensions.csproj -o ./bin --ignore-failed-sources",
     options: {
@@ -411,11 +423,11 @@ function startLocalTunnel(): CommentJSONValue {
     // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
   }`;
   const task = {
-    label: "Start local tunnel",
+    label: TaskLabel.StartLocalTunnel,
     type: "teamsfx",
-    command: "debug-start-local-tunnel",
+    command: TaskCommand.startLocalTunnel,
     args: {
-      ngrokArgs: "http 3978 --log=stdout --log-format=logfmt",
+      ngrokArgs: TaskDefaultValue.startLocalTunnel.ngrokArgs,
     },
     isBackground: true,
     problemMatcher: "$teamsfx-local-tunnel-watch",
@@ -429,11 +441,11 @@ function setUpTab(): CommentJSONValue {
     // See https://aka.ms/teamsfx-debug-set-up-tab-task to know the details and how to customize the args.
   }`;
   const task = {
-    label: "Set up tab",
+    label: TaskLabel.SetUpTab,
     type: "teamsfx",
-    command: "debug-set-up-tab",
+    command: TaskCommand.setUpTab,
     args: {
-      baseUrl: "https://localhost:53000",
+      baseUrl: TaskDefaultValue.setUpTab.baseUrl,
     },
   };
   return commentJson.assign(commentJson.parse(comment), task);
@@ -453,9 +465,9 @@ function setUpBot(): CommentJSONValue {
   }
   `;
   const task = {
-    label: "Set up bot",
+    label: TaskLabel.SetUpBot,
     type: "teamsfx",
-    command: "debug-set-up-bot",
+    command: TaskCommand.setUpBot,
     args: commentJson.parse(existingBot),
   };
   return commentJson.assign(commentJson.parse(comment), task);
@@ -476,9 +488,9 @@ function setUpSSO(): CommentJSONValue {
   }
   `;
   const task = {
-    label: "Set up SSO",
+    label: TaskLabel.SetUpSSO,
     type: "teamsfx",
-    command: "debug-set-up-sso",
+    command: TaskCommand.setUpSSO,
     args: commentJson.parse(existingAAD),
   };
   return commentJson.assign(commentJson.parse(comment), task);
@@ -497,9 +509,9 @@ function buildAndUploadTeamsManifest(): CommentJSONValue {
   }
   `;
   const task = {
-    label: "Build & upload Teams manifest",
+    label: TaskLabel.PrepareManifest,
     type: "teamsfx",
-    command: "debug-prepare-manifest",
+    command: TaskCommand.prepareManifest,
     args: commentJson.parse(existingApp),
   };
   return commentJson.assign(commentJson.parse(comment), task);
@@ -507,7 +519,7 @@ function buildAndUploadTeamsManifest(): CommentJSONValue {
 
 function startFrontend(): Record<string, unknown> {
   return {
-    label: "Start frontend",
+    label: TaskLabel.StartFrontend,
     type: "shell",
     command: "npm run dev:teamsfx",
     isBackground: true,
@@ -532,7 +544,7 @@ function startFrontend(): Record<string, unknown> {
 
 function startBackend(programmingLanguage: string): Record<string, unknown> {
   const result = {
-    label: "Start backend",
+    label: TaskLabel.StartBackend,
     type: "shell",
     command: "npm run dev:teamsfx",
     isBackground: true,
@@ -559,11 +571,11 @@ function startBackend(programmingLanguage: string): Record<string, unknown> {
     presentation: {
       reveal: "silent",
     },
-    dependsOn: ["Install Azure Functions binding extensions"],
+    dependsOn: [TaskLabel.InstallAzureFuncBindingExt],
   } as Record<string, unknown>;
 
   if (programmingLanguage === ProgrammingLanguage.typescript) {
-    (result.dependsOn as string[]).push("Watch backend");
+    (result.dependsOn as string[]).push(TaskLabel.WatchBackend);
   }
 
   return result;
@@ -571,7 +583,7 @@ function startBackend(programmingLanguage: string): Record<string, unknown> {
 
 function watchBackend(): Record<string, unknown> {
   return {
-    label: "Watch backend",
+    label: TaskLabel.WatchBackend,
     type: "shell",
     command: "npm run watch:teamsfx",
     isBackground: true,
@@ -587,7 +599,7 @@ function watchBackend(): Record<string, unknown> {
 
 function watchFuncHostedBot(): Record<string, unknown> {
   return {
-    label: "Watch bot",
+    label: TaskLabel.WatchBot,
     type: "shell",
     command: "npm run watch:teamsfx",
     isBackground: true,
@@ -603,7 +615,7 @@ function watchFuncHostedBot(): Record<string, unknown> {
 
 function startBot(includeFrontend: boolean): Record<string, unknown> {
   const result: Record<string, unknown> = {
-    label: "Start bot",
+    label: TaskLabel.StartBot,
     type: "shell",
     command: "npm run dev:teamsfx",
     isBackground: true,
@@ -639,7 +651,7 @@ function startFuncHostedBot(
   programmingLanguage: string
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {
-    label: "Start bot",
+    label: TaskLabel.StartBot,
     type: "shell",
     command: "npm run dev:teamsfx",
     isBackground: true,
@@ -669,9 +681,9 @@ function startFuncHostedBot(
     result.presentation = { reveal: "silent" };
   }
 
-  const dependsOn: string[] = ["Start Azurite emulator"];
+  const dependsOn: string[] = [TaskLabel.StartAzuriteEmulator];
   if (programmingLanguage === ProgrammingLanguage.typescript) {
-    dependsOn.push("Watch bot");
+    dependsOn.push(TaskLabel.WatchBot);
   }
   result.dependsOn = dependsOn;
 
@@ -685,23 +697,23 @@ function startServices(
 ): Record<string, unknown> {
   const dependsOn: string[] = [];
   if (includeFrontend) {
-    dependsOn.push("Start frontend");
+    dependsOn.push(TaskLabel.StartFrontend);
   }
   if (includeBackend) {
-    dependsOn.push("Start backend");
+    dependsOn.push(TaskLabel.StartBackend);
   }
   if (includeBot) {
-    dependsOn.push("Start bot");
+    dependsOn.push(TaskLabel.StartBot);
   }
   return {
-    label: "Start services",
+    label: TaskLabel.StartServices,
     dependsOn,
   };
 }
 
 function startAzuriteEmulator(): Record<string, unknown> {
   return {
-    label: "Start Azurite emulator",
+    label: TaskLabel.StartAzuriteEmulator,
     type: "shell",
     command: "npm run prepare-storage:teamsfx",
     isBackground: true,
@@ -729,7 +741,7 @@ function startAzuriteEmulator(): Record<string, unknown> {
 
 function installAppInTeams(): Record<string, unknown> {
   return {
-    label: "install app in Teams",
+    label: TaskLabel.InstallAppInTeams,
     type: "shell",
     command: "exit ${command:fx-extension.install-app-in-teams}",
     presentation: {
@@ -741,22 +753,22 @@ function installAppInTeams(): Record<string, unknown> {
 export function generateSpfxTasks(): Record<string, unknown>[] {
   return [
     {
-      label: "Validate & install prerequisites",
+      label: TaskLabel.PrerequisiteCheck,
       type: "teamsfx",
-      command: "debug-check-prerequisites",
+      command: TaskCommand.checkPrerequisites,
       args: {
-        prerequisites: ["nodejs"],
+        prerequisites: [Prerequisite.nodejs],
       },
     },
     {
-      label: "Install npm packages",
+      label: TaskLabel.InstallNpmPackages,
       type: "teamsfx",
-      command: "debug-npm-install",
+      command: TaskCommand.npmInstall,
       args: {
         projects: [
           {
             cwd: "${workspaceFolder}/SPFx",
-            npmInstallArgs: ["--no-audit"],
+            npmInstallArgs: TaskDefaultValue.npmInstall.npmInstallArgs,
           },
         ],
         forceUpdate: false,
@@ -770,7 +782,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
       options: {
         cwd: "${workspaceFolder}/SPFx",
       },
-      dependsOn: "Install npm packages",
+      dependsOn: TaskLabel.InstallNpmPackages,
     },
     {
       label: "gulp serve",
@@ -807,7 +819,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
     },
     {
       label: "prepare dev env",
-      dependsOn: ["Validate & install prerequisites", "prepare local environment", "gulp serve"],
+      dependsOn: [TaskLabel.PrerequisiteCheck, "prepare local environment", "gulp serve"],
       dependsOrder: "sequence",
     },
     {

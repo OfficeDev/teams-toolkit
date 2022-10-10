@@ -502,12 +502,10 @@ export class ManifestUtils {
         if (!botDomain) {
           return err(
             AppStudioResultFactory.UserError(
-              AppStudioError.GetRemoteConfigFailedError.name,
-              AppStudioError.GetRemoteConfigFailedError.message(
-                getLocalizedString("plugins.appstudio.dataRequired", "validDomain"),
-                isProvisionSucceeded
-              ),
-              HelpLinks.WhyNeedProvision
+              AppStudioError.IncorrectLocalDebugConfigError.name,
+              AppStudioError.IncorrectLocalDebugConfigError.message(
+                new Error(getLocalizedString("plugins.appstudio.dataRequired", "domain"))
+              )
             )
           );
         } else {

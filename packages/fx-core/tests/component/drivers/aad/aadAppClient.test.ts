@@ -11,6 +11,7 @@ import nock from "nock";
 import { MockedM365Provider } from "../../../plugins/solution/util";
 import axiosRetry from "axios-retry";
 import { SystemError, err } from "@microsoft/teamsfx-api";
+import { AADManifest } from "../../../../src/component/resource/aadApp/interfaces/AADManifest";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -237,6 +238,66 @@ describe("AadAppClient", async () => {
       const result = await aadAppClient.generateClientSecret(expectedObjectId);
 
       expect(result).equals(expectedSecretText);
+    });
+  });
+
+  describe("updateAadApp", async () => {
+    let aadAppClient: AadAppClient;
+    let axiosInstance: AxiosInstance;
+    const mockedManifest: AADManifest = {
+      id: expectedObjectId,
+      name: "test",
+      addIns: [],
+      appRoles: [],
+      identifierUris: [],
+      informationalUrls: {},
+      keyCredentials: [],
+      knownClientApplications: [],
+      oauth2AllowIdTokenImplicitFlow: false,
+      oauth2AllowImplicitFlow: false,
+      oauth2Permissions: [],
+      preAuthorizedApplications: [],
+      replyUrlsWithType: [],
+      requiredResourceAccess: [],
+      signInAudience: "",
+      tags: [],
+    };
+
+    beforeEach(() => {
+      axiosInstance = mockAxiosCreate();
+      aadAppClient = new AadAppClient(new MockedM365Provider());
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      nock.cleanAll();
+    });
+
+    it("should success when request success", async () => {
+      nock("https://graph.microsoft.com/v1.0")
+        .patch(`/applications/${expectedObjectId}`)
+        .reply(204);
+
+      await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.not.rejected;
+    });
+
+    it("should throw error when request fail", async () => {
+      const expectedError = {
+        error: {
+          code: "Request_BadRequest",
+          message: `Resource '${expectedObjectId}' does not exist or one of its queried reference-property objects are not present.`,
+        },
+      };
+
+      nock("https://graph.microsoft.com/v1.0")
+        .patch(`/applications/${expectedObjectId}`)
+        .reply(404, expectedError);
+
+      await expect(aadAppClient.updateAadApp(mockedManifest))
+        .to.eventually.be.rejectedWith("Request failed with status code 404")
+        .then((error) => {
+          expect(error.response.data).to.deep.equal(expectedError);
+        });
     });
   });
 });

@@ -238,7 +238,7 @@ describe("tasksTransparency", () => {
       const expectedJson = commentJson.parse(spfxExpected);
       chai.assert.deepEqual(tasksJson, expectedJson);
       const actual = commentJson.stringify(tasksJson, null, 4);
-      chai.assert.equal(actual, expected);
+      chai.assert.equal(actual, spfxExpected);
     });
   });
 

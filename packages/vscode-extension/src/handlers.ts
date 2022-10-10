@@ -1287,7 +1287,9 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  * Check & install required local prerequisites before local debug.
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
-  const additionalProperties: { [key: string]: string } = {};
+  const additionalProperties: { [key: string]: string } = {
+    [TelemetryProperty.DebugIsTransparentTask]: "false",
+  };
   {
     // If we know this session is concurrently running with another session, send that correlationId in `debug-all-start` event.
     // Mostly, this happens when user stops debugging while preLaunchTasks are running and immediately hit F5 again.
@@ -1309,7 +1311,9 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
     const result = await localPrerequisites.checkAndInstall();
     if (result.isErr()) {
       // Only local debug use validate-local-prerequisites command
-      await sendDebugAllEvent(result.error);
+      await sendDebugAllEvent(result.error, {
+        [TelemetryProperty.DebugIsTransparentTask]: "false",
+      });
       commonUtils.endLocalDebugSession();
       // return non-zero value to let task "exit ${command:xxx}" to exit
       showError(result.error);
@@ -1465,7 +1469,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     terminateAllRunningTeamsfxTasks();
     await debug.stopDebugging();
     // only local debug uses pre-debug-check command
-    await sendDebugAllEvent(result.error);
+    await sendDebugAllEvent(result.error, { [TelemetryProperty.DebugIsTransparentTask]: "false" });
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";

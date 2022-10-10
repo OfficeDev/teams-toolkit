@@ -126,6 +126,16 @@ export enum TelemetryEvent {
   DebugPreCheckCoreLocalDebug = "debug-precheck-core-local-debug",
   DebugTaskProvider = "debug-task-provider",
   DebugProviderResolveDebugConfiguration = "debug-provider-resolve-debug-configuration",
+
+  DebugCheckPrerequisitesTask = "debug-check-prerequisites-task",
+  DebugNpmInstallTask = "debug-npm-install-task",
+  DebugStartLocalTunnelTask = "debug-start-local-tunnel-task",
+  DebugStartLocalTunnelTaskStarted = "debug-start-local-tunnel-task-started",
+  DebugSetUpTabTask = "debug-set-up-tab-task",
+  DebugSetUpBotTask = "debug-set-up-bot-task",
+  DebugSetUpSSOTask = "debug-set-up-sso-task",
+  DebugPrepareManifestTask = "debug-prepare-manifest-task",
+
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",
 
@@ -247,6 +257,11 @@ export enum TelemetryProperty {
   DebugIsSideloadingAllowed = "debug-is-sideloading-allowed",
   DebugConcurrentCorrelationId = "debug-concurrent-correlation-id",
   DebugConcurrentLastEventName = "debug-concurrent-last-event-name",
+  DebugIsTransparentTask = "debug-is-transparent-task",
+  DebugTaskId = "debug-task-id",
+  DebugTaskArgs = "debug-task-args",
+  DebugPrelaunchTaskInfo = "debug-prelaunch-task-info",
+  DebugConfigName = "debug-config-name",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",

@@ -199,7 +199,7 @@ describe("tasksTransparency", () => {
       chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
-      chai.assert.equal(tasks[count++].label, "install app in Teams");
+      chai.assert.equal(tasks[count++].label, "Install app in Teams");
       chai.assert.equal(tasks.length, count);
     });
 
@@ -216,7 +216,7 @@ describe("tasksTransparency", () => {
       chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start bot");
-      chai.assert.equal(tasks[count++].label, "install app in Teams");
+      chai.assert.equal(tasks[count++].label, "Install app in Teams");
       chai.assert.equal(tasks.length, count);
     });
   });

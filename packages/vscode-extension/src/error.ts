@@ -35,6 +35,7 @@ export enum ExtensionErrors {
   GrantPermissionNotProvisionError = "GrantPermissionNotProvisionError",
   GetTeamsAppInstallationFailed = "GetTeamsAppInstallationFailed",
   TaskDefinitionError = "TaskDefinitionError",
+  TaskCancelError = "TaskCancelError",
   NoTunnelServiceError = "NoTunnelServiceError",
   MultipleTunnelServiceError = "MultipleTunnelServiceError",
   NgrokStoppedError = "NgrokStoppedError",

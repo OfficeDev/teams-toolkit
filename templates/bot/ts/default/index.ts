@@ -7,13 +7,12 @@ import { BotFrameworkAdapter, TurnContext } from "botbuilder";
 
 // This bot's main dialog.
 import { TeamsBot } from "./teamsBot";
-import config from "./config";
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about adapters.
 const adapter = new BotFrameworkAdapter({
-  appId: config.botId,
-  appPassword: config.botPassword,
+  appId: process.env.BOT_ID,
+  appPassword: process.env.BOT_PASSWORD,
 });
 
 // Catch-all for errors.

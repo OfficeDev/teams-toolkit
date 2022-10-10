@@ -149,7 +149,6 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       }
       debugConfiguration.url = result;
 
-      VsCodeLogInstance.outputChannel.show();
       VsCodeLogInstance.outputChannel.appendLine(
         util.format(launchUrlMessage, debugConfiguration.teamsfxHub, url)
       );

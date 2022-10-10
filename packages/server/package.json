@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-server",
-  "version": "1.0.6",
+  "version": "1.0.7-rc-hotfix.0",
   "author": "Microsoft Corporation",
   "description": "",
   "license": "MIT",
@@ -92,7 +92,7 @@
   "dependencies": {
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@microsoft/teamsfx-api": "^0.20.6",
-    "@microsoft/teamsfx-core": "^1.16.3",
+    "@microsoft/teamsfx-core": "^1.16.4-rc-hotfix.0",
     "fs-extra": "^9.1.0",
     "underscore": "^1.12.1",
     "validator": "^13.7.0",

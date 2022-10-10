@@ -84,6 +84,11 @@ export class SetUpBotTaskTerminal extends BaseTaskTerminal {
     );
     const actions = handler.getActions();
 
-    return await handleDebugActions(actions, setUpBotDisplayMessages);
+    const res = await handleDebugActions(actions, setUpBotDisplayMessages);
+    const duration = this.getDurationInSeconds();
+    if (res.isOk() && duration) {
+      VsCodeLogInstance.info(setUpBotDisplayMessages.durationMessage(duration));
+    }
+    return res;
   }
 }

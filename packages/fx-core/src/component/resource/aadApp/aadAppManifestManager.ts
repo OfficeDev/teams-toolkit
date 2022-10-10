@@ -118,7 +118,12 @@ export namespace AadAppManifestManager {
       }
       return manifest;
     } catch (e: any) {
-      if (e.stack && e.stack.startsWith("SyntaxError")) {
+      if (
+        e.stack &&
+        (e.stack.startsWith("SyntaxError") ||
+          e.stack.indexOf("Unknown resourceAccess") >= 0 ||
+          e.stack.indexOf("Unknown resourceAppId") >= 0)
+      ) {
         throw ResultFactory.UserError(
           AadManifestLoadError.name,
           AadManifestLoadError.message(manifestFilePath, e.message)

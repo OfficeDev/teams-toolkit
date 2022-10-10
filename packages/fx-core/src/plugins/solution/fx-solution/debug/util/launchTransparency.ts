@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import * as Launch from "./launch";
 import * as LaunchNext from "./launchNext";
 import { TaskLabel } from "../../../../../common/local/constants";
 
@@ -70,5 +71,16 @@ export function generateM365Compounds(
     result[4].preLaunchTask = TaskLabel.M365Overall;
     result[5].preLaunchTask = TaskLabel.M365Overall;
   }
+  return result;
+}
+
+export function generateSpfxConfigurations(): Record<string, unknown>[] {
+  return Launch.generateSpfxConfigurations();
+}
+
+export function generateSpfxCompounds(): Record<string, unknown>[] {
+  const result = Launch.generateSpfxCompounds();
+  result[0].preLaunchTask = TaskLabel.Overall;
+  result[1].preLaunchTask = TaskLabel.Overall;
   return result;
 }

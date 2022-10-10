@@ -327,7 +327,7 @@ function validateAndInstallPrerequisites(
     );
   }
   prerequisites.push(
-    `"${Prerequisite.portOccupancy}", // Validate available ports to ensure those local debug ones are not occupied.`
+    `"${Prerequisite.portOccupancy}", // Validate available ports to ensure those debug ones are not occupied.`
   );
   const prerequisitesComment = `
   [

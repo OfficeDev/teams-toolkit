@@ -137,6 +137,14 @@ export class AppStudioError {
     ],
   };
 
+  public static readonly IncorrectLocalDebugConfigError = {
+    name: "IncorrectLocalDebugConfig",
+    message: (error: any): [string, string] => [
+      getDefaultString("error.appstudio.incorrectLocalConfig", error.message),
+      getLocalizedString("error.appstudio.incorrectLocalConfig", error.message),
+    ],
+  };
+
   public static readonly GetRemoteConfigFailedError = {
     name: "GetRemoteConfigFailed",
     message: (errorMessage: string, isProvisionSucceeded: boolean): [string, string] => [

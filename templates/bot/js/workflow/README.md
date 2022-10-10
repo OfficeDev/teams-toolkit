@@ -95,7 +95,7 @@ You can use the following 4 steps to add more card action:
 4. [Step 4: register the action handler](#step-4-register-the-action-handler)
 
 ### Step 1: add an action to your Adaptive Card
-User universal action `Action.Execute` to define your action in an adaptive card, which will be rendered as a button in the card.
+Use universal action `Action.Execute` to define your action in an adaptive card, which will be rendered as a button in the card.
 
 Here's a sample action with type `Action.Execute`:
 ```json

@@ -58,6 +58,8 @@ describe("teamsfx new template", function () {
     // Validate Provision
     await validateTabAndBotProjectProvision(projectPath, env);
 
+    // deploy
+    await CliHelper.deployAll(projectPath);
     
     // Assert
     {
@@ -67,14 +69,12 @@ describe("teamsfx new template", function () {
       const functionValidator = new FunctionValidator(context, projectPath, env);
       await functionValidator.validateProvision();
       await functionValidator.validateDeploy();
-      
+
       // Validate sql
       await SqlValidator.init(context);
       await SqlValidator.validateSql();
     }
 
-    // deploy
-    await CliHelper.deployAll(projectPath);
 
     await cleanUp(appName, projectPath, true, true, false);
 

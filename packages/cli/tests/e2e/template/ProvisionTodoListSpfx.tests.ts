@@ -18,8 +18,7 @@ import {
   readContextMultiEnv
 } from "../commonUtils";
 import {
-  FrontendValidator,
-  SharepointValidator
+  FrontendValidator
 } from "../../commonlib"
 import { TemplateProject } from "../../commonlib/constants"
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -63,19 +62,6 @@ describe("teamsfx new template", function () {
 
     // deploy
     await CliHelper.deployAll(projectPath);
-
-    {
-      // Validate sharepoint package
-      const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
-      const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
-      appId = solutionConfig["solution"]["id"];
-      expect(appId).to.not.be.empty;
-      expect(await fs.pathExists(sharepointPackage)).to.be.true;
-
-      // Check if package exsist in App Catalog
-      SharepointValidator.init();
-      SharepointValidator.validateDeploy(appId);
-    }
 
     await cleanUp(appName, projectPath, true, false, true);
 

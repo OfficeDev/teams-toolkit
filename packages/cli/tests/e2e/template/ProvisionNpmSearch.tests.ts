@@ -38,7 +38,7 @@ describe("teamsfx new template", function () {
   });
 
   it(`${TemplateProject.NpmSearch}`, { testPlanCaseId: 15277471 }, async function () {
-    projectPath = path.resolve(testFolder, TemplateProject.NpmSearch);
+    projectPath = path.resolve(testFolder, 'NPM-search-connector-M365');
     await execAsync(`teamsfx new template ${TemplateProject.NpmSearch}`, {
       cwd: testFolder,
       env: process.env,

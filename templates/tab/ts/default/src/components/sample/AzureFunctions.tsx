@@ -4,9 +4,8 @@ import { useData } from "@microsoft/teamsfx-react";
 import * as axios from "axios";
 import { BearerTokenAuthProvider, createApiClient, TeamsFx } from "@microsoft/teamsfx";
 import { TeamsFxContext } from "../Context";
-import config from "./lib/config";
 
-const functionName = config.apiName || "myFunc";
+const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
 
 async function callFunction(teamsfx?: TeamsFx) {
   if (!teamsfx) {
@@ -14,7 +13,7 @@ async function callFunction(teamsfx?: TeamsFx) {
   }
   try {
     const credential = teamsfx.getCredential();
-    const apiBaseUrl = config.apiEndpoint + "/api/";
+    const apiBaseUrl = teamsfx.getConfig("apiEndpoint") + "/api/";
     // createApiClient(...) creates an Axios instance which uses BearerTokenAuthProvider to inject token to request header
     const apiClient = createApiClient(
       apiBaseUrl,

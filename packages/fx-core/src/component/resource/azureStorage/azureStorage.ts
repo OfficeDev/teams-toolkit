@@ -50,7 +50,7 @@ export class AzureStorageResource extends AzureResource {
       await actionContext?.progressBar?.next(ProgressMessages.enableStaticWebsite);
       const config = await StorageConfig.fromEnvInfo(
         ctx.envInfo,
-        inputs.componentId,
+        ComponentNames.TeamsTab,
         ctx.tokenProvider.azureAccountProvider
       );
       const client = new AzureStorageClient(config, context.logProvider);

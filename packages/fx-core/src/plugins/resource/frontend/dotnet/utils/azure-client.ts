@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
+import { TokenCredential } from "@azure/core-http";
 
 export class AzureClientFactory {
   public static getWebSiteManagementClient(
-    credentials: TokenCredentialsBase,
+    credentials: TokenCredential,
     subscriptionId: string
   ): WebSiteManagementClient {
     return new WebSiteManagementClient(credentials, subscriptionId);

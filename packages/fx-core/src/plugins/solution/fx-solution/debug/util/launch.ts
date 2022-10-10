@@ -271,6 +271,7 @@ function attachToBot(): Record<string, unknown> {
       group: "all",
       hidden: true,
     },
+    internalConsoleOptions: "neverOpen",
   };
 }
 

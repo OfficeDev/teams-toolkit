@@ -2,18 +2,18 @@
 // Licensed under the MIT license.
 
 import { getTemplatesFolder } from "../folder";
-import { Constants } from "../plugins/resource/aad/constants";
 import * as fs from "fs-extra";
 import * as os from "os";
-import {
-  ReplyUrlsWithType,
-  RequiredResourceAccess,
-} from "../plugins/resource/aad/interfaces/AADManifest";
 import { getAppDirectory } from "../common/tools";
 import { ComponentNames } from "../component/constants";
 import { getComponent } from "../component/workflow";
 import { ProjectSettingsHelper } from "../common/local/projectSettingsHelper";
 import { isVSProject } from "../common/projectSettingsHelper";
+import { Constants } from "../component/resource/aadApp/constants";
+import {
+  ReplyUrlsWithType,
+  RequiredResourceAccess,
+} from "../component/resource/aadApp/interfaces/AADManifest";
 
 interface Permission {
   resource: string;
@@ -105,12 +105,19 @@ export async function generateAadManifestTemplate(
     ) {
       projectSettings.solutionSettings.capabilities.push("TabSSO");
     }
-
     if (
       projectSettings.solutionSettings.capabilities.includes("Bot") &&
       !projectSettings.solutionSettings.capabilities.includes("BotSSO")
     ) {
       projectSettings.solutionSettings.capabilities.push("BotSSO");
+    }
+    const tabConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
+    if (tabConfig) {
+      tabConfig.sso = true;
+    }
+    const botConfig = getComponent(projectSettings, ComponentNames.TeamsTab);
+    if (botConfig) {
+      botConfig.sso = true;
     }
   }
 

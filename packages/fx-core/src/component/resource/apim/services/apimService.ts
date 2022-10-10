@@ -21,22 +21,23 @@ import { IName } from "../interfaces/IName";
 import { Telemetry } from "../utils/telemetry";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { LogMessages } from "../log";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { TokenCredential } from "@azure/identity";
 import { OpenAPI } from "openapi-types";
 import { Providers } from "@azure/arm-resources";
+import { AzureScopes, ConvertTokenToJson } from "../../../../common/tools";
 
 export class ApimService {
   private readonly subscriptionId: string;
   private readonly apimClient: ApiManagementClient;
   private readonly telemetryReporter: TelemetryReporter | undefined;
   private readonly logger: LogProvider | undefined;
-  private readonly credential: TokenCredentialsBase;
+  private readonly credential: TokenCredential;
   private readonly resourceProviderClient: Providers;
 
   constructor(
     apimClient: ApiManagementClient,
     resourceProviderClient: Providers,
-    credential: TokenCredentialsBase,
+    credential: TokenCredential,
     subscriptionId: string,
     telemetryReporter?: TelemetryReporter,
     logger?: LogProvider
@@ -93,29 +94,66 @@ export class ApimService {
           versionSetId
         )
       : undefined;
-    const fn = () =>
-      this.apimClient.api.listByService(resourceGroupName, serviceName, {
+    const result = [];
+    for await (const page of this.apimClient.api
+      .listByService(resourceGroupName, serviceName, {
         expandApiVersionSet: true,
-      });
-
-    const apiListResponse = await this.execute(Operation.List, AzureResource.API, undefined, fn);
-    const apiList = AssertNotEmpty("apiListResponse", apiListResponse);
-    const result = apiList.filter((x) => !!resourceId && x.apiVersionSet?.id === resourceId);
-    let nextLink = apiList.nextLink;
-    while (nextLink) {
-      const nextFn = () => this.apimClient.api.listByServiceNext(nextLink!);
-      const nextPageResponse = await this.execute(
-        Operation.ListNextPage,
-        AzureResource.API,
-        undefined,
-        nextFn
-      );
-      const apiNextList = AssertNotEmpty("nextPageResponse", nextPageResponse);
-      result.push(...apiNextList.filter((x) => !!resourceId && x.apiVersionSet?.id === resourceId));
-      nextLink = apiNextList.nextLink;
+      })
+      .byPage({ maxPageSize: 100 })) {
+      for (const item of page) {
+        if (!!resourceId && item.apiVersionSet?.id === resourceId) {
+          result.push(item);
+        }
+      }
     }
-
-    return result;
+    try {
+      this.logger?.info(LogMessages.operationStarts(Operation.List, AzureResource.API, resourceId));
+      Telemetry.sendApimOperationEvent(
+        this.telemetryReporter,
+        Operation.List,
+        AzureResource.API,
+        OperationStatus.Started
+      );
+      for await (const page of this.apimClient.api
+        .listByService(resourceGroupName, serviceName, {
+          expandApiVersionSet: true,
+        })
+        .byPage({ maxPageSize: 100 })) {
+        for (const item of page) {
+          if (!!resourceId && item.apiVersionSet?.id === resourceId) {
+            result.push(item);
+          }
+        }
+      }
+      this.logger?.info(
+        LogMessages.operationSuccess(Operation.List, AzureResource.API, resourceId)
+      );
+      Telemetry.sendApimOperationEvent(
+        this.telemetryReporter,
+        Operation.List,
+        AzureResource.API,
+        OperationStatus.Succeeded
+      );
+      return result;
+    } catch (error: any) {
+      const wrappedError = BuildError(
+        ApimOperationError,
+        error,
+        Operation.List.displayName,
+        AzureResource.API.displayName
+      );
+      this.logger?.warning(
+        LogMessages.operationFailed(Operation.List, AzureResource.API, resourceId)
+      );
+      Telemetry.sendApimOperationEvent(
+        this.telemetryReporter,
+        Operation.List,
+        AzureResource.API,
+        OperationStatus.Failed,
+        wrappedError
+      );
+      throw wrappedError;
+    }
   }
 
   public async importApi(
@@ -145,7 +183,7 @@ export class ApimService {
     };
 
     const fn = () =>
-      this.apimClient.api.createOrUpdate(resourceGroupName, serviceName, apiId, newApi);
+      this.apimClient.api.beginCreateOrUpdateAndWait(resourceGroupName, serviceName, apiId, newApi);
     await this.execute(Operation.Import, AzureResource.API, apiId, fn, validationErrorHandler);
   }
 
@@ -237,12 +275,13 @@ export class ApimService {
   }
 
   public async getUserId(): Promise<string> {
-    const token = await this.credential?.getToken();
-    if (!token?.userId) {
+    const token = (await this.credential?.getToken(AzureScopes))?.token;
+    const tokenJson = token ? (ConvertTokenToJson(token) as any) : undefined;
+    if (!tokenJson?.userId) {
       this.logger?.warning(LogMessages.useDefaultUserId);
       return ApimDefaultValues.userId;
     } else {
-      return token.userId;
+      return tokenJson.userId;
     }
   }
 

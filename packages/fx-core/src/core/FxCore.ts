@@ -58,6 +58,7 @@ import { LocalCrypto } from "./crypto";
 import { environmentManager, newEnvInfoV3 } from "./environment";
 import {
   CopyFileError,
+  FunctionRouterError,
   InvalidInputError,
   NonExistEnvNameError,
   NotImplementedError,
@@ -110,8 +111,10 @@ import { AppManifest, publishQuestion } from "../component/resource/appManifest/
 import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
 import { createEnvWithName } from "../component/envManager";
 import { getProjectTemplatesFolderPath } from "../common/utils";
-import { manifestUtils } from "../component/resource/appManifest/utils";
+import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { copyParameterJson } from "../plugins/solution/fx-solution/arm";
+import { convertEnvStateMapV3ToV2 } from "../component/migrate";
+import { ProjectSettingsHelper } from "../common/local";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -460,9 +463,11 @@ export class FxCore implements v3.ICore {
     if (!ctx) return err(new ObjectIsUndefinedError("getProjectConfig input stuff"));
     inputs.stage = Stage.getProjectConfig;
     setCurrentStage(Stage.getProjectConfig);
+    let envState = ctx!.solutionContext?.envInfo.state;
+    if (envState) envState = convertEnvStateMapV3ToV2(envState);
     return ok({
       settings: ctx!.projectSettings,
-      config: ctx!.solutionContext?.envInfo.state,
+      config: envState,
       localSettings: ctx!.solutionContext?.localSettings,
     });
   }
@@ -696,12 +701,15 @@ export class FxCore implements v3.ICore {
     inputs.sourceEnvName = createEnvCopyInput.sourceEnvName;
     inputs.targetEnvName = createEnvCopyInput.targetEnvName;
 
-    await copyParameterJson(
-      inputs.projectPath!,
-      ctx.projectSettings!.appName,
-      inputs.targetEnvName!,
-      inputs.sourceEnvName!
-    );
+    if (!ProjectSettingsHelper.isSpfx(ctx.projectSettings)) {
+      await copyParameterJson(
+        inputs.projectPath!,
+        ctx.projectSettings!.appName,
+        inputs.targetEnvName!,
+        inputs.sourceEnvName!
+      );
+    }
+
     return ok(Void);
   }
 

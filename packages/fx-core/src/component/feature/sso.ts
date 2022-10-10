@@ -18,6 +18,7 @@ import {
 import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { getLocalizedString } from "../../common/localizeUtils";
+import { hasAAD, isMiniApp } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { sendErrorTelemetryThenReturnError } from "../../core/telemetry";
 import {
@@ -29,15 +30,16 @@ import {
   SolutionTelemetryProperty,
 } from "../../plugins/solution/fx-solution/constants";
 import {
+  AzureResourceFunctionNewUI,
   AzureSolutionQuestionNames,
-  TabOptionItem,
+  SingleSignOnOptionItem,
 } from "../../plugins/solution/fx-solution/question";
 import "../connection/azureWebAppConfig";
 import { ComponentNames, TelemetryConstants } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { AadApp } from "../resource/aadApp/aadApp";
 import { AppManifest } from "../resource/appManifest/appManifest";
-import { manifestUtils } from "../resource/appManifest/utils";
+import { manifestUtils } from "../resource/appManifest/utils/ManifestUtils";
 import "../resource/azureSql";
 import "../resource/identity";
 import { generateConfigBiceps, bicepUtils } from "../utils";
@@ -52,10 +54,8 @@ export class SSO {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
 
-    const isCalledByFeature =
-      inputs.stage === Stage.addFeature &&
-      inputs[AzureSolutionQuestionNames.Features] !== TabOptionItem.id;
-    const updates = getUpdateComponents(context.projectSetting, inputs.stage === Stage.create);
+    const scenario = this.getScenario(inputs);
+    const updates = getUpdateComponents(context.projectSetting, scenario);
     // generate manifest
     const aadApp = Container.get<AadApp>(ComponentNames.AadApp);
     {
@@ -109,7 +109,7 @@ export class SSO {
     }
 
     // generate auth files
-    if (isCalledByFeature) {
+    if (scenario !== SsoScenario.Create) {
       const isExistingTabAppRes = await manifestUtils.isExistingTab(inputs, context);
       if (isExistingTabAppRes.isErr()) return err(isExistingTabAppRes.error);
       const res = await aadApp.generateAuthFiles(
@@ -174,7 +174,7 @@ export class SSO {
     }
 
     // show notification
-    if (inputs.platform == Platform.VSCode && isCalledByFeature) {
+    if (inputs.platform == Platform.VSCode && scenario !== SsoScenario.Create) {
       context.userInteraction
         .showMessage(
           "info",
@@ -191,7 +191,7 @@ export class SSO {
             });
           }
         });
-    } else if (inputs.platform == Platform.CLI && isCalledByFeature) {
+    } else if (inputs.platform == Platform.CLI && scenario !== SsoScenario.Create) {
       await context.userInteraction.showMessage(
         "info",
         getLocalizedString("core.addSso.learnMore", AddSsoParameters.LearnMoreUrl),
@@ -218,6 +218,21 @@ export class SSO {
       ],
     });
   }
+
+  getScenario(inputs: InputsWithProjectPath): SsoScenario {
+    let res = SsoScenario.AddSso;
+    if (inputs.stage === Stage.create) {
+      res = SsoScenario.Create;
+    }
+    if (inputs.stage === Stage.addFeature) {
+      if (inputs[AzureSolutionQuestionNames.Features] === AzureResourceFunctionNewUI.id) {
+        res = SsoScenario.AddFunction;
+      } else if (inputs[AzureSolutionQuestionNames.Features] === SingleSignOnOptionItem.id) {
+        res = SsoScenario.AddSso;
+      }
+    }
+    return res;
+  }
 }
 
 export interface updateComponents {
@@ -225,30 +240,40 @@ export interface updateComponents {
   tab?: boolean;
   aad?: boolean;
 }
+
+/**
+ * Check the components that should be update when add sso based on the project setting.
+ * 1. it is triggered by enabled-sso tab project in create stage. Update tab and aad components.
+ * 2. mini app is an existing tab app. Update aad only.
+ * 3. general project. Check the tab and bot components.
+ *    for bot component, message-extension and function hosting doesnot support sso.
+ */
 function getUpdateComponents(
   projectSetting: ProjectSettingsV3,
-  isCreateStage: boolean
+  scenario: SsoScenario
 ): updateComponents {
-  if (isCreateStage) {
+  if (scenario === SsoScenario.Create) {
     return {
       tab: true,
       aad: true,
     };
   }
+  const hasAad = hasAAD(projectSetting);
+
+  if (isMiniApp(projectSetting)) {
+    return {
+      aad: !hasAad,
+    };
+  }
   let needsBot = false;
   let needsTab = false;
-  const aadComponent = getComponent(projectSetting, ComponentNames.AadApp);
   const teamsBotComponent = getComponent(projectSetting, ComponentNames.TeamsBot);
-  if (teamsBotComponent && !teamsBotComponent.sso) {
-    if (
-      teamsBotComponent.capabilities &&
-      teamsBotComponent.capabilities.length === 1 &&
-      teamsBotComponent.capabilities.includes("message-extension")
-    ) {
-      needsBot = false;
-    } else {
-      needsBot = teamsBotComponent.hosting !== ComponentNames.Function;
-    }
+  if (
+    teamsBotComponent &&
+    !teamsBotComponent.sso &&
+    teamsBotComponent.hosting !== ComponentNames.Function
+  ) {
+    needsBot = true;
   }
   const teamsTabComponent = getComponent(projectSetting, ComponentNames.TeamsTab);
   if (teamsTabComponent && !teamsTabComponent.sso) {
@@ -257,7 +282,7 @@ function getUpdateComponents(
   return {
     bot: needsBot,
     tab: needsTab,
-    aad: !aadComponent,
+    aad: !hasAad,
   };
 }
 
@@ -265,31 +290,19 @@ export function canAddSso(
   projectSettings: ProjectSettingsV3,
   returnError = false
 ): boolean | Result<Void, FxError> {
-  // TODO: support existing tab app with sso in v3
+  const hasAad = hasAAD(projectSettings);
+  if (isMiniApp(projectSettings)) {
+    return !hasAad;
+  }
 
-  const update = getUpdateComponents(projectSettings, false);
-  if (update.tab || update.bot || update.aad) {
+  const update = getUpdateComponents(projectSettings, SsoScenario.AddSso);
+  if (update.tab || update.bot) {
     return true;
   } else {
     const aadComponent = getComponent(projectSettings, ComponentNames.AadApp);
     const teamsBotComponent = getComponent(projectSettings, ComponentNames.TeamsBot);
 
     if (teamsBotComponent) {
-      if (
-        teamsBotComponent.capabilities &&
-        teamsBotComponent.capabilities.length === 1 &&
-        teamsBotComponent.capabilities.includes("message-extension")
-      ) {
-        return returnError
-          ? err(
-              new SystemError(
-                SolutionSource,
-                SolutionError.AddSsoNotSupported,
-                getLocalizedString("core.addSso.onlyMeNotSupport")
-              )
-            )
-          : false;
-      }
       if (teamsBotComponent.hosting === ComponentNames.Function) {
         return returnError
           ? err(
@@ -316,4 +329,10 @@ export function canAddSso(
     }
     return false;
   }
+}
+
+export enum SsoScenario {
+  Create = "create",
+  AddFunction = "addFunction",
+  AddSso = "addSso",
 }

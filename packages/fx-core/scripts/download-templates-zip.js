@@ -13,13 +13,35 @@ async function step(desc, fn) {
   const id = ++stepId;
   try {
     console.log(`step ${id} start: ${desc}`);
-    const ret = await fn();
+    const ret = await retry(id, fn);
     return ret;
   } catch (e) {
     console.log(e.toString());
     console.log(`step ${id} failed`);
     process.exit(-1);
   }
+}
+
+async function retry(id, fn, retryIntervalInMs = 5000, maxAttempts = 5) {
+  const execute = async (attempt) => {
+    try {
+      return await fn();
+    } catch (e) {
+      if (attempt < maxAttempts) {
+        // Increase retry interval for each failure
+        const delayInMs = retryIntervalInMs * attempt;
+        console.log(e.toString());
+        console.log(`step ${id} failed, retrying after ${delayInMs} milliseconds.`);
+        return delay(() => execute(attempt + 1), delayInMs);
+      }
+      throw e;
+    }
+  };
+  return execute(1);
+}
+
+function delay(fn, ms) {
+  return new Promise((resolve) => setTimeout(() => resolve(fn()), ms));
 }
 
 async function getTemplateMetadata(tag) {

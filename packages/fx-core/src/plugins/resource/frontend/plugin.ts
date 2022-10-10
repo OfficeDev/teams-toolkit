@@ -42,7 +42,7 @@ import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/Resour
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile, IsSimpleAuthEnabled } from "../../../common/tools";
 import { PluginImpl } from "./interface";
-import { FRONTEND_INDEX_PATH } from "../appstudio/constants";
+import { FRONTEND_INDEX_PATH } from "../../../component/resource/appManifest/constants";
 
 export class FrontendPluginImpl implements PluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {

@@ -50,8 +50,17 @@ export class ResourceGroupManager {
   public static async searchResourceGroups(contain: string) {
     await ResourceGroupManager.init();
 
-    const groups = await ResourceGroupManager.client!.resourceGroups.list();
-    return groups.filter((group) => group.name?.includes(contain));
+    const groups: any[] = [];
+    for await (const page of ResourceGroupManager.client!.resourceGroups.list().byPage({
+      maxPageSize: 100,
+    })) {
+      for (const group of page) {
+        if (group.name?.includes(contain)) {
+          groups.push(group);
+        }
+      }
+    }
+    return groups;
   }
 
   public static async deleteResourceGroup(name: string, retryTimes = 5): Promise<boolean> {
@@ -59,7 +68,7 @@ export class ResourceGroupManager {
     return new Promise<boolean>(async (resolve) => {
       for (let i = 0; i < retryTimes; ++i) {
         try {
-          await ResourceGroupManager.client!.resourceGroups.deleteMethod(name);
+          await ResourceGroupManager.client!.resourceGroups.beginDeleteAndWait(name);
           return resolve(true);
         } catch (e) {
           await delay(2000);

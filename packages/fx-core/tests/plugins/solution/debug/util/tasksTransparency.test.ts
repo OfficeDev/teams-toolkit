@@ -7,8 +7,10 @@ import {
   generateM365Tasks,
   generateTasks,
   generateTasksJson,
+  mergeTasksJson,
 } from "../../../../../src/plugins/solution/fx-solution/debug/util/tasksTransparency";
 import * as commentJson from "comment-json";
+import { CommentObject } from "comment-json";
 
 describe("tasksTransparency", () => {
   describe("generateTasks", () => {
@@ -48,13 +50,13 @@ describe("tasksTransparency", () => {
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
       chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
       chai.assert.equal(tasks[count++].label, "Install npm packages");
-      chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
       chai.assert.equal(tasks[count++].label, "Set up tab");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
       chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start backend");
+      chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
       chai.assert.equal(tasks.length, count);
     });
 
@@ -65,13 +67,13 @@ describe("tasksTransparency", () => {
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
       chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
       chai.assert.equal(tasks[count++].label, "Install npm packages");
-      chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
       chai.assert.equal(tasks[count++].label, "Set up tab");
       chai.assert.equal(tasks[count++].label, "Set up SSO");
       chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start backend");
+      chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
       chai.assert.equal(tasks[count++].label, "Watch backend");
       chai.assert.equal(tasks.length, count);
     });
@@ -131,7 +133,6 @@ describe("tasksTransparency", () => {
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
       chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
       chai.assert.equal(tasks[count++].label, "Install npm packages");
-      chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
       chai.assert.equal(tasks[count++].label, "Set up tab");
       chai.assert.equal(tasks[count++].label, "Set up bot");
@@ -140,6 +141,7 @@ describe("tasksTransparency", () => {
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start backend");
+      chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
       chai.assert.equal(tasks[count++].label, "Start bot");
       chai.assert.equal(tasks.length, count);
     });
@@ -151,7 +153,6 @@ describe("tasksTransparency", () => {
       chai.assert.equal(tasks[count++].label, "Start Teams App Locally");
       chai.assert.equal(tasks[count++].label, "Validate & install prerequisites");
       chai.assert.equal(tasks[count++].label, "Install npm packages");
-      chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
       chai.assert.equal(tasks[count++].label, "Start local tunnel");
       chai.assert.equal(tasks[count++].label, "Set up tab");
       chai.assert.equal(tasks[count++].label, "Set up bot");
@@ -160,6 +161,7 @@ describe("tasksTransparency", () => {
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
       chai.assert.equal(tasks[count++].label, "Start backend");
+      chai.assert.equal(tasks[count++].label, "Install Azure Functions binding extensions");
       chai.assert.equal(tasks[count++].label, "Watch backend");
       chai.assert.equal(tasks[count++].label, "Start bot");
       chai.assert.equal(tasks.length, count);
@@ -197,7 +199,7 @@ describe("tasksTransparency", () => {
       chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start frontend");
-      chai.assert.equal(tasks[count++].label, "install app in Teams");
+      chai.assert.equal(tasks[count++].label, "Install app in Teams");
       chai.assert.equal(tasks.length, count);
     });
 
@@ -214,7 +216,7 @@ describe("tasksTransparency", () => {
       chai.assert.equal(tasks[count++].label, "Build & upload Teams manifest");
       chai.assert.equal(tasks[count++].label, "Start services");
       chai.assert.equal(tasks[count++].label, "Start bot");
-      chai.assert.equal(tasks[count++].label, "install app in Teams");
+      chai.assert.equal(tasks[count++].label, "Install app in Teams");
       chai.assert.equal(tasks.length, count);
     });
   });
@@ -228,9 +230,62 @@ describe("tasksTransparency", () => {
       chai.assert.equal(actual, expected);
     });
   });
+
+  describe("mergeTasksJson", () => {
+    it("no overlap", () => {
+      const existingData = `// This file is automatically generated by Teams Toolkit.
+// See https://aka.ms/teamsfx-debug-tasks to know the details and how to customize each task.
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "test1",
+            "type": "shell",
+            "command": "echo"
+        }
+    ],
+    "inputs": []
+}`;
+      const newData = `{
+    "tasks": [
+        {
+            "label": "test2",
+            "type": "shell",
+            "command": "echo"
+        }
+    ]
+}`;
+      const merged = `// This file is automatically generated by Teams Toolkit.
+// See https://aka.ms/teamsfx-debug-tasks to know the details and how to customize each task.
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "test1",
+            "type": "shell",
+            "command": "echo"
+        },
+        {
+            "label": "test2",
+            "type": "shell",
+            "command": "echo"
+        }
+    ],
+    "inputs": []
+}`;
+      const result = mergeTasksJson(
+        commentJson.parse(existingData) as CommentObject,
+        commentJson.parse(newData) as CommentObject
+      );
+      chai.assert.deepEqual(result, commentJson.parse(merged));
+      const actual = commentJson.stringify(result, null, 4);
+      chai.assert.equal(actual, merged);
+    });
+  });
 });
 
 const expected = `// This file is automatically generated by Teams Toolkit.
+// The teamsfx tasks defined in this file require Teams Toolkit version >= 4.0.7.
 // See https://aka.ms/teamsfx-debug-tasks to know the details and how to customize each task.
 {
     "version": "2.0.0",
@@ -240,7 +295,6 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             "dependsOn": [
                 "Validate & install prerequisites",
                 "Install npm packages",
-                "Install Azure Functions binding extensions",
                 "Start local tunnel",
                 "Set up tab",
                 "Set up bot",
@@ -251,18 +305,20 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             "dependsOrder": "sequence"
         },
         {
+            // Check if all required prerequisites are installed and will install them if not.
+            // See https://aka.ms/teamsfx-check-prerequisites-task to know the details and how to customize the args.
             "label": "Validate & install prerequisites",
             "type": "teamsfx",
             "command": "debug-check-prerequisites",
             "args": {
                 "prerequisites": [
-                    "nodejs",
-                    "m365Account",
-                    "devCert",
-                    "func",
-                    "dotnet",
-                    "ngrok",
-                    "portOccupancy"
+                    "nodejs", // Validate if Node.js is installed.
+                    "m365Account", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.
+                    "devCert", // Install localhost SSL certificate. It's used to serve the development sites over HTTPS to debug the Tab app in Teams.
+                    "func", // Install Azure Functions Core Tools. It's used to serve Azure Functions hosted project locally.
+                    "dotnet", // Ensure .NET Core SDK is installed. TeamsFx Azure Functions project depends on extra .NET binding extensions for HTTP trigger authorization.
+                    "ngrok", // Install Ngrok. Bot project requires a public message endpoint, and ngrok can help create public tunnel for your local service.
+                    "portOccupancy" // Validate available ports to ensure those local debug ones are not occupied.
                 ],
                 "portOccupancy": [
                     53000, // tab service port
@@ -274,6 +330,8 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             }
         },
         {
+            // Check if all the npm packages are installed and will install them if not.
+            // See https://aka.ms/teamsfx-npm-package-task to know the details and how to customize the args.
             "label": "Install npm packages",
             "type": "teamsfx",
             "command": "debug-npm-install",
@@ -297,35 +355,24 @@ const expected = `// This file is automatically generated by Teams Toolkit.
                             "--no-audit"
                         ]
                     }
-                ],
-                "forceUpdate": false
+                ]
             }
         },
         {
-            // TeamsFx Azure Functions project depends on extra Azure Functions binding extensions for HTTP trigger authorization.
-            "label": "Install Azure Functions binding extensions",
-            "type": "shell",
-            "command": "dotnet build extensions.csproj -o ./bin --ignore-failed-sources",
-            "options": {
-                "cwd": "\${workspaceFolder}/api",
-                "env": {
-                    "PATH": "\${command:fx-extension.get-dotnet-path}\${env:PATH}"
-                }
-            }
-        },
-        {
+            // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+            // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
             "label": "Start local tunnel",
             "type": "teamsfx",
             "command": "debug-start-local-tunnel",
             "args": {
-                "configFile": ".fx/configs/ngrok.yml",
-                "useGlobalNgrok": false,
-                "reuse": false
+                "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt"
             },
             "isBackground": true,
             "problemMatcher": "\$teamsfx-local-tunnel-watch"
         },
         {
+            // Prepare local launch information for Tab.
+            // See https://aka.ms/teamsfx-debug-set-up-tab-task to know the details and how to customize the args.
             "label": "Set up tab",
             "type": "teamsfx",
             "command": "debug-set-up-tab",
@@ -334,17 +381,21 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             }
         },
         {
+            // Register resources and prepare local launch information for Bot.
+            // See https://aka.ms/teamsfx-debug-set-up-bot-task to know the details and how to customize the args.
             "label": "Set up bot",
             "type": "teamsfx",
             "command": "debug-set-up-bot",
             "args": {
                 //// Enter you own bot information if using the existing bot. ////
                 // "botId": "",
-                // "botPassword": "",
+                // "botPassword": "", // use plain text or environment variable reference like \${env:BOT_PASSWORD}
                 "botMessagingEndpoint": "/api/messages"
             }
         },
         {
+            // Register resources and prepare local launch information for SSO functionality.
+            // See https://aka.ms/teamsfx-debug-set-up-sso-task to know the details and how to customize the args.
             "label": "Set up SSO",
             "type": "teamsfx",
             "command": "debug-set-up-sso",
@@ -352,11 +403,13 @@ const expected = `// This file is automatically generated by Teams Toolkit.
                 //// Enter you own AAD app information if using the existing AAD app. ////
                 // "objectId": "",
                 // "clientId": "",
-                // "clientSecret": "",
+                // "clientSecret": "", // use plain text or environment variable reference like \${env:CLIENT_SECRET}
                 // "accessAsUserScopeId": "
             }
         },
         {
+            // Build and upload Teams manifest.
+            // See https://aka.ms/teamsfx-debug-prepare-manifest-task to know the details and how to customize the args.
             "label": "Build & upload Teams manifest",
             "type": "teamsfx",
             "command": "debug-prepare-manifest",
@@ -422,7 +475,25 @@ const expected = `// This file is automatically generated by Teams Toolkit.
             "presentation": {
                 "reveal": "silent"
             },
-            "dependsOn": "Watch backend"
+            "dependsOn": [
+                "Install Azure Functions binding extensions",
+                "Watch backend"
+            ]
+        },
+        {
+            // TeamsFx Azure Functions project depends on extra Azure Functions binding extensions for HTTP trigger authorization.
+            "label": "Install Azure Functions binding extensions",
+            "type": "shell",
+            "command": "dotnet build extensions.csproj -o ./bin --ignore-failed-sources",
+            "options": {
+                "cwd": "\${workspaceFolder}/api",
+                "env": {
+                    "PATH": "\${command:fx-extension.get-dotnet-path}\${env:PATH}"
+                }
+            },
+            "presentation": {
+                "reveal": "silent"
+            }
         },
         {
             "label": "Watch backend",

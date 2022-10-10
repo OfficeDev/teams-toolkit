@@ -26,7 +26,6 @@ import {
 } from "../../common/template-utils/templatesActions";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { CoreQuestionNames } from "../../core/question";
-import { TemplateZipFallbackError } from "../../plugins/resource/bot/v3/error";
 import {
   Constants,
   FrontendPathInfo,
@@ -51,7 +50,6 @@ import {
 } from "../../plugins/resource/frontend/env";
 import { isVSProject } from "../../common/projectSettingsHelper";
 import { DotnetCommands } from "../../plugins/resource/frontend/dotnet/constants";
-import { CommandExecutionError } from "../../plugins/resource/bot/errors";
 import { ScaffoldProgress } from "../../plugins/resource/frontend/resources/steps";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { hooks } from "@feathersjs/hooks/lib";
@@ -62,6 +60,7 @@ import {
   TabOptionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { BadComponent } from "../error";
+import { CommandExecutionError, TemplateZipFallbackError } from "./error";
 import { AppSettingConstants, replaceBlazorAppSettings } from "./appSettingUtils";
 import baseAppSettings from "./appSettings/baseAppSettings.json";
 import ssoBlazorAppSettings from "./appSettings/ssoBlazorAppSettings.json";
@@ -121,7 +120,7 @@ export class TabCodeProvider {
             ctx.logProvider.info(Messages.FailedFetchTemplate);
             break;
           case ScaffoldActionName.FetchTemplateZipFromLocal:
-            throw new TemplateZipFallbackError();
+            throw new TemplateZipFallbackError("FE");
           case ScaffoldActionName.Unzip:
             throw new UnzipTemplateError();
           default:
@@ -198,7 +197,7 @@ export class TabCodeProvider {
     });
     return ok(undefined);
   }
-  private collectEnvs(ctx: ContextV3): { [key: string]: string } {
+  collectEnvs(ctx: ContextV3): { [key: string]: string } {
     const envs: { [key: string]: string } = {};
     const addToEnvs = (key: string, value: string | undefined) => {
       // Check for both null and undefined, add to envs when value is "", 0 or false.
@@ -220,7 +219,13 @@ export class TabCodeProvider {
       addToEnvs(EnvKeys.ClientID, ctx.envInfo?.state?.[ComponentNames.AadApp]?.clientId as string);
       addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
-
+    const simpleAuth = getComponent(ctx.projectSetting, ComponentNames.SimpleAuth);
+    if (simpleAuth) {
+      addToEnvs(
+        EnvKeys.RuntimeEndpoint,
+        ctx.envInfo?.state?.[ComponentNames.SimpleAuth]?.endpoint as string
+      );
+    }
     return envs;
   }
   private async doBlazorBuild(tabPath: string, logger?: LogProvider): Promise<string> {

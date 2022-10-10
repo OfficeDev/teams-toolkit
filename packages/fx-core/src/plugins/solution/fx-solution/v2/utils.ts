@@ -17,10 +17,11 @@ import {
   M365TokenProvider,
   v3,
   EnvInfo,
-  TelemetryReporter,
+  ResourceContextV3,
+  InputsWithProjectPath,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 import { AppStudioScopes, isAadManifestEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
@@ -205,15 +206,15 @@ export function parseUserName(appStudioToken?: Record<string, unknown>): Result<
 
 export async function checkWhetherLocalDebugM365TenantMatches(
   envInfo: v3.EnvInfoV3 | EnvInfo | undefined,
-  telemetryReporter: TelemetryReporter | undefined,
+  ctx: ResourceContextV3,
   isCSharpProject: boolean,
-  localDebugTenantId?: string,
-  m365TokenProvider?: M365TokenProvider,
-  projectPath?: string,
-  isLegacyEnv?: boolean
+  localDebugTenantId: string | undefined,
+  m365TokenProvider: M365TokenProvider,
+  inputs: InputsWithProjectPath
 ): Promise<Result<Void, FxError>> {
   if (localDebugTenantId) {
-    const appStudioTokenJsonRes = await m365TokenProvider?.getJsonObject({
+    const projectPath = inputs.projectPath;
+    const appStudioTokenJsonRes = await m365TokenProvider.getJsonObject({
       scopes: AppStudioScopes,
     });
     const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
@@ -244,27 +245,27 @@ export async function checkWhetherLocalDebugM365TenantMatches(
           new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
         );
       } else if (envInfo) {
-        telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
+        ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
           [TelemetryProperty.HasSwitchedM365Tenant]: "true",
           [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
           [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,
         });
-        if (!isLegacyEnv) {
-          const keys = Object.keys(envInfo.state);
-          for (const key of keys) {
-            if (key !== "solution") {
-              delete (envInfo as v3.EnvInfoV3).state[key];
-            }
-          }
-        } else {
-          const keys = (envInfo as EnvInfo).state.keys();
-          for (const key of keys) {
-            (envInfo as EnvInfo).state.delete(key);
+
+        const keys = Object.keys(envInfo.state);
+        for (const key of keys) {
+          if (key !== "solution") {
+            delete (envInfo as v3.EnvInfoV3).state[key];
           }
         }
 
         if (projectPath !== undefined) {
-          const backupFilesRes = await backupFiles(envInfo.envName, projectPath!, isCSharpProject);
+          const backupFilesRes = await backupFiles(
+            envInfo.envName,
+            projectPath!,
+            isCSharpProject,
+            inputs?.platform === Platform.VS,
+            ctx
+          );
           if (backupFilesRes.isErr()) {
             return err(backupFilesRes.error);
           }
@@ -275,7 +276,7 @@ export async function checkWhetherLocalDebugM365TenantMatches(
         }
       }
     } else {
-      telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
+      ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
         [TelemetryProperty.HasSwitchedM365Tenant]: "false",
         [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
         [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,

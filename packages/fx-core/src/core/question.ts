@@ -20,11 +20,7 @@ import { environmentManager } from "./environment";
 import { ConstantString } from "../common/constants";
 import { sampleProvider } from "../common/samples";
 import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
-import {
-  isBotNotificationEnabled,
-  isPreviewFeaturesEnabled,
-  isWorkflowBotEnabled,
-} from "../common/featureFlags";
+import { isBotNotificationEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -71,7 +67,7 @@ export enum CoreQuestionNames {
 }
 
 export const ProjectNamePattern =
-  '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*|\u0000-\u001F]*[^"\\s.<>:\\?/*|\u0000-\u001F]$';
+  '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*&|\u0000-\u001F]*[^"\\s.<>:\\?/*&|\u0000-\u001F]$';
 
 export function createAppNameQuestion(validateProjectPathExistence = true): TextInputQuestion {
   const question: TextInputQuestion = {
@@ -266,9 +262,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
   let staticOptions: StaticOptions;
   if (isBotNotificationEnabled()) {
     // new capabilities question order
-    const newBots = isWorkflowBotEnabled()
-      ? [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem]
-      : [NotificationOptionItem, CommandAndResponseOptionItem];
+    const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
 
     staticOptions = [
       ...newBots,
@@ -319,9 +313,7 @@ export function createCapabilityForDotNet(): SingleSelectQuestion {
 
 export function createCapabilityQuestionPreview(): SingleSelectQuestion {
   // new capabilities question order
-  const newBots = isWorkflowBotEnabled()
-    ? [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem]
-    : [NotificationOptionItem, CommandAndResponseOptionItem];
+  const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
 
   const staticOptions: StaticOptions = [
     ...newBots,

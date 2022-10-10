@@ -14,17 +14,17 @@ import {
   UserInteraction,
   v2,
 } from "@microsoft/teamsfx-api";
+import * as commentJson from "comment-json";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { convertToLocalEnvs } from "./localSettingsHelper";
 import * as localStateHelper from "./localStateHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
 import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { getPortsInUse, getPortsFromProject } from "./portChecker";
-import { waitSeconds } from "../tools";
+import { getAppSPFxVersion, waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
-import { CoreSource, ReadFileError, NgrokConfigError } from "../../core/error";
+import { CoreSource, ReadFileError } from "../../core/error";
 import { DepsType } from "../deps-checker/depsChecker";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
 import { LocalCertificate, LocalCertificateManager } from "./localCertificateManager";
@@ -33,8 +33,7 @@ import { LocalStateProvider } from "../localStateProvider";
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import { convertEnvStateV3ToV2 } from "../../component/migrate";
-import { getNgrokHttpUrl } from "../../plugins/solution/fx-solution/debug/util/ngrok";
-import * as yaml from "js-yaml";
+import { getNgrokTunnelFromApi } from "../../plugins/solution/fx-solution/debug/util/ngrok";
 import { LocalEnvKeys, LocalEnvProvider } from "../../component/debugHandler/localEnvProvider";
 
 export class LocalEnvManager {
@@ -48,7 +47,10 @@ export class LocalEnvManager {
     this.ui = ui;
   }
 
-  public getActiveDependencies(projectSettings: ProjectSettings): DepsType[] {
+  public async getActiveDependencies(
+    projectSettings: ProjectSettings,
+    projectPath: string
+  ): Promise<DepsType[]> {
     const depsTypes: DepsType[] = [];
     const isSPFx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
@@ -59,9 +61,11 @@ export class LocalEnvManager {
 
     // NodeJS
     if (isSPFx) {
-      depsTypes.push(DepsType.SpfxNode);
-    } else if (includeBackend || includeFuncHostedBot) {
-      depsTypes.push(DepsType.FunctionNode);
+      if ((await getAppSPFxVersion(projectPath))?.startsWith("1.16.0")) {
+        depsTypes.push(DepsType.SpfxNodeV1_16);
+      } else {
+        depsTypes.push(DepsType.SpfxNode);
+      }
     } else {
       depsTypes.push(DepsType.AzureNode);
     }
@@ -113,8 +117,10 @@ export class LocalEnvManager {
     return await getPortsInUse(ports, this.logger);
   }
 
-  public async getNgrokHttpUrl(addr: string | number): Promise<string | undefined> {
-    return await getNgrokHttpUrl(addr);
+  public async getNgrokTunnelFromApi(
+    webServiceUrl: string
+  ): Promise<{ src: string; dist: string } | undefined> {
+    return await getNgrokTunnelFromApi(webServiceUrl);
   }
 
   public async getLocalSettings(
@@ -189,23 +195,13 @@ export class LocalEnvManager {
     return res;
   }
 
-  public async getNgrokTunnelConfig(configFile: string): Promise<Map<string, string>> {
-    const res = new Map<string, string>();
+  public async getTaskJson(projectPath: string): Promise<any> {
     try {
-      const fileContent = await fs.readFile(configFile, "utf8");
-      const config = yaml.load(fileContent) as any;
-      if (config?.tunnels) {
-        for (const [tunnelName, tunnelConfig] of Object.entries(
-          config.tunnels as { [key: string]: any }
-        )) {
-          if (tunnelConfig.addr) {
-            res.set(tunnelName, `${tunnelConfig.addr}`);
-          }
-        }
-      }
-      return res;
-    } catch (e) {
-      throw NgrokConfigError(configFile, e?.message);
+      const taskFilePath = path.resolve(projectPath, ".vscode", "tasks.json");
+      const content = await fs.readFile(taskFilePath, "utf-8");
+      return commentJson.parse(content);
+    } catch {
+      return undefined;
     }
   }
 

@@ -164,7 +164,6 @@ describe("Capability Questions", () => {
       sinon.restore();
       sinon.stub(process, "env").value({
         BOT_NOTIFICATION_ENABLED: "true",
-        WORKFLOW_BOT_ENABLED: "true",
       });
     });
 
@@ -277,6 +276,13 @@ describe("App name question", async () => {
 
   it("app name containing invalid character", async () => {
     const input = "app<>123";
+    const result = await validFunc(input);
+
+    chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+  });
+
+  it("invalid app name containing &", async () => {
+    const input = "app&123";
     const result = await validFunc(input);
 
     chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));

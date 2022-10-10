@@ -33,6 +33,7 @@ import {
   NodeNotSupportedError,
   DepsCheckerError,
   validationSettingsHelpLink,
+  NodeNotRecommendedError,
 } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import {
   ITaskDefinition,
@@ -92,8 +93,8 @@ enum Checker {
 }
 
 const DepsDisplayName = {
-  [DepsType.FunctionNode]: "Node.js",
   [DepsType.SpfxNode]: "Node.js",
+  [DepsType.SpfxNodeV1_16]: "Node.js",
   [DepsType.AzureNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
   [DepsType.Ngrok]: "Ngrok",
@@ -104,8 +105,8 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
   [Checker.M365Account]: `Checking ${Checker.M365Account}`,
   [Checker.LocalCertificate]: `Checking ${Checker.LocalCertificate}`,
   [Checker.Ports]: `Checking ${Checker.Ports}`,
-  [DepsType.FunctionNode]: `Checking ${DepsDisplayName[DepsType.FunctionNode]}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
+  [DepsType.SpfxNodeV1_16]: `Checking ${DepsDisplayName[DepsType.SpfxNodeV1_16]}`,
   [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
   [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
   [DepsType.Ngrok]: `Checking and installing ${DepsDisplayName[DepsType.Ngrok]}`,
@@ -342,7 +343,7 @@ export default class Preview extends YargsCommand {
       TelemetryEvent.PreviewPrerequisites,
       async () => {
         // check node
-        const nodeRes = await this.checkNode(includeBackend, includeFuncHostedBot, depsManager);
+        const nodeRes = await this.checkNode(depsManager);
         if (nodeRes.isErr()) {
           return err(nodeRes.error);
         }
@@ -369,7 +370,8 @@ export default class Preview extends YargsCommand {
         const envCheckerResult = await this.handleDependences(
           projectSettings,
           localEnvManager,
-          depsManager
+          depsManager,
+          workspaceFolder
         );
         if (envCheckerResult.isErr()) {
           return err(envCheckerResult.error);
@@ -777,8 +779,7 @@ export default class Preview extends YargsCommand {
       if (!this.sharepointSiteUrl) {
         return err(errors.NoUrlForSPFxRemotePreview());
       }
-      const spfxRoot = path.join(workspaceFolder, FolderName.SPFx);
-      return this.spfxPreview(spfxRoot, browser, this.sharepointSiteUrl, browserArguments);
+      return this.spfxPreview(workspaceFolder, browser, this.sharepointSiteUrl, browserArguments);
     }
 
     const tenantId = config?.config
@@ -786,7 +787,7 @@ export default class Preview extends YargsCommand {
       ?.get(constants.teamsAppTenantIdConfigKey) as string;
 
     const remoteTeamsAppId: string = config?.config
-      ?.get("app-manifest")
+      ?.get(constants.appstudioPluginName)
       ?.get(constants.remoteTeamsAppIdConfigKey);
     if (remoteTeamsAppId === undefined || remoteTeamsAppId.length === 0) {
       return err(errors.PreviewWithoutProvision());
@@ -1274,13 +1275,17 @@ export default class Preview extends YargsCommand {
   private async handleDependences(
     projectSettings: ProjectSettings,
     localEnvManager: LocalEnvManager,
-    depsManager: DepsManager
+    depsManager: DepsManager,
+    workspaceFolder: string
   ): Promise<Result<null, FxError>> {
     return localTelemetryReporter.runWithTelemetry(
       TelemetryEvent.PreviewPrereqsCheckDependencies,
       async (ctx: TelemetryContext): Promise<Result<null, FxError>> => {
         let shouldContinue = true;
-        const availableDeps = localEnvManager.getActiveDependencies(projectSettings);
+        const availableDeps = await localEnvManager.getActiveDependencies(
+          projectSettings,
+          workspaceFolder
+        );
         const enabledDeps = await CliDepsChecker.getEnabledDeps(
           availableDeps.filter((dep) => !CliDepsChecker.getNodeDeps().includes(dep))
         );
@@ -1354,22 +1359,14 @@ export default class Preview extends YargsCommand {
     );
   }
 
-  private checkNode(
-    hasBackend: boolean,
-    hasFuncHostedBot: boolean,
-    depsManager: DepsManager
-  ): Promise<Result<null, FxError>> {
+  private checkNode(depsManager: DepsManager): Promise<Result<null, FxError>> {
     return localTelemetryReporter.runWithTelemetry(TelemetryEvent.PreviewPrereqsCheckNode, () =>
-      this._checkNode(hasBackend, hasFuncHostedBot, depsManager)
+      this._checkNode(depsManager)
     );
   }
 
-  private async _checkNode(
-    hasBackend: boolean,
-    hasFuncHostedBot: boolean,
-    depsManager: DepsManager
-  ): Promise<Result<null, FxError>> {
-    const node = hasBackend || hasFuncHostedBot ? DepsType.FunctionNode : DepsType.AzureNode;
+  private async _checkNode(depsManager: DepsManager): Promise<Result<null, FxError>> {
+    const node = DepsType.AzureNode;
     if (!(await CliDepsChecker.isEnabled(node))) {
       return ok(null);
     }
@@ -1381,7 +1378,7 @@ export default class Preview extends YargsCommand {
     let result = true;
     let summaryMsg = doctorResult.NodeSuccess;
     let helpLink = undefined;
-    let isNode12Installed = false;
+    let errorMessage = undefined;
 
     try {
       nodeStatus = (
@@ -1394,11 +1391,11 @@ export default class Preview extends YargsCommand {
       if (!nodeStatus.isInstalled) {
         summaryMsg = doctorResult.NodeNotFound;
         result = false;
-        if (nodeStatus.error) {
-          helpLink = nodeStatus.error.helpLink;
-        }
+      }
+      if (nodeStatus.error) {
+        helpLink = nodeStatus.error.helpLink;
+
         if (nodeStatus.error instanceof NodeNotSupportedError) {
-          const node12Version = "v12";
           const supportedVersions = nodeStatus?.details.supportedVersions
             .map((v) => "v" + v)
             .join(" ,");
@@ -1406,17 +1403,18 @@ export default class Preview extends YargsCommand {
             .join(nodeStatus?.details.installVersion)
             .split("@SupportedVersions")
             .join(supportedVersions);
-
-          if (nodeStatus.details.installVersion?.includes(node12Version)) {
-            isNode12Installed = true;
-            const bypass =
-              hasBackend || hasFuncHostedBot
-                ? doctorResult.BypassNode12AndFunction
-                : doctorResult.BypassNode12;
-            summaryMsg = `${summaryMsg}${os.EOL}${bypass
-              .split("@Link")
-              .join(validationSettingsHelpLink)}`;
-          }
+          errorMessage = summaryMsg;
+        } else if (nodeStatus.error instanceof NodeNotRecommendedError) {
+          const supportedVersions = nodeStatus?.details.supportedVersions
+            .map((v) => "v" + v)
+            .join(" ,");
+          summaryMsg = doctorResult.NodeNotRecommended.split("@CurrentVersion")
+            .join(nodeStatus?.details.installVersion)
+            .split("@SupportedVersions")
+            .join(supportedVersions);
+          errorMessage = summaryMsg;
+        } else {
+          errorMessage = nodeStatus.error?.message;
         }
       }
     } catch (err) {
@@ -1426,11 +1424,12 @@ export default class Preview extends YargsCommand {
 
     await nodeBar.next(summaryMsg);
     await nodeBar.end(result);
+
+    if (errorMessage) {
+      cliLogger.necessaryLog(LogLevel.Warning, errorMessage);
+      cliLogger.necessaryLog(LogLevel.Warning, doctorResult.InstallNode);
+    }
     if (!result) {
-      cliLogger.necessaryLog(LogLevel.Info, doctorResult.InstallNode);
-      if (isNode12Installed) {
-        cliLogger.necessaryLog(LogLevel.Info, doctorResult.Node12MatchFunction);
-      }
       return err(errors.PrerequisitesValidationNodejsError("Node.js checker failed.", helpLink));
     }
 

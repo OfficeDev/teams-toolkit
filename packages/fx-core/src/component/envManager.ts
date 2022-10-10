@@ -5,7 +5,7 @@ import { err, FxError, InputsWithProjectPath, ok, Result } from "@microsoft/team
 import "reflect-metadata";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
-import { getLocalAppName } from "../plugins/resource/appstudio/utils/utils";
+import { getLocalAppName } from "./resource/appManifest/utils/utils";
 
 export async function createEnvWithName(
   targetEnvName: string,

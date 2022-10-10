@@ -6,6 +6,7 @@
 import * as vscode from "vscode";
 
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import {
   TabDebugArgs,
   TabDebugHandler,
@@ -13,9 +14,13 @@ import {
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";
+import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import * as commonUtils from "../commonUtils";
 import { setUpTabDisplayMessages } from "../constants";
+import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { handleDebugActions } from "./common";
+import { TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
 
 export class SetUpTabTaskTerminal extends BaseTaskTerminal {
   private readonly args: TabDebugArgs;
@@ -25,7 +30,22 @@ export class SetUpTabTaskTerminal extends BaseTaskTerminal {
     this.args = taskDefinition.args as TabDebugArgs;
   }
 
-  async do(): Promise<Result<Void, FxError>> {
+  do(): Promise<Result<Void, FxError>> {
+    return Correlator.runWithId(commonUtils.getLocalDebugSession().id, () =>
+      localTelemetryReporter.runWithTelemetryProperties(
+        TelemetryEvent.DebugSetUpTabTask,
+        {
+          [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+          [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+            baseUrl: maskValue(this.args.baseUrl, [TaskDefaultValue.setUpTab.baseUrl]),
+          }),
+        },
+        () => this._do()
+      )
+    );
+  }
+
+  private async _do(): Promise<Result<Void, FxError>> {
     VsCodeLogInstance.outputChannel.show();
     VsCodeLogInstance.info(setUpTabDisplayMessages.title);
     VsCodeLogInstance.outputChannel.appendLine("");

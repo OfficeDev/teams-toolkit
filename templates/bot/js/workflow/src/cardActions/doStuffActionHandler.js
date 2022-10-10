@@ -1,10 +1,13 @@
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
-const { AdaptiveCardResponse, InvokeResponseFactory } = require("@microsoft/teamsfx");
+const { InvokeResponseFactory } = require("@microsoft/teamsfx");
 const responseCard = require("../adaptiveCards/doStuffActionResponse.json");
 
 class DoStuffActionHandler {
+  /**
+   * A global unique string associated with the `Action.Execute` action.
+   * The value should be the same as the `verb` property which you define in your adaptive card JSON.
+   */
   triggerVerb = "doStuff";
-  adaptiveCardResponse = AdaptiveCardResponse.ReplaceForInteractor;
 
   async handleActionInvoked(context, message) {
     /**

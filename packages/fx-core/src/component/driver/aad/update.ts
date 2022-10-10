@@ -17,6 +17,7 @@ import { expandEnvironmentVariable } from "../../utils/common";
 import { AadManifestHelper } from "../../resource/aadApp/utils/aadManifestHelper";
 import { AADManifest } from "../../resource/aadApp/interfaces/AADManifest";
 import { MissingFieldInManifestUserError } from "./error/invalidFieldInManifestError";
+import isUUID from "validator/lib/isUUID";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -24,9 +25,6 @@ const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
 // logic from src\component\resource\aadApp\aadAppManifestManager.ts
 @Service(actionName) // DO NOT MODIFY the service name
 export class UpdateAadAppDriver implements StepDriver {
-  private guidRegex =
-    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-
   public async run(args: UpdateAadAppArgs, context: DriverContext): Promise<Map<string, string>> {
     try {
       this.validateArgs(args);
@@ -41,7 +39,7 @@ export class UpdateAadAppDriver implements StepDriver {
         });
       }
 
-      if (!manifest.id || !this.guidRegex.test(manifest.id)) {
+      if (!manifest.id || !isUUID(manifest.id)) {
         throw new MissingFieldInManifestUserError(actionName, "id", helpLink);
       }
 

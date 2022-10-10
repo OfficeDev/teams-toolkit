@@ -545,4 +545,17 @@ describe("getManifest V3", () => {
     chai.assert.isTrue(res1.isErr());
     chai.assert.isTrue(res2.isErr());
   });
+
+  it("getManifest ignoring missing config", async () => {
+    const envInfo = newEnvInfoV3();
+    envInfo.state = {
+      solution: {},
+      "teams-bot": {
+        botId: uuid.v4(),
+      },
+    };
+    envInfo.envName = "local";
+    const res1 = await manifestUtils.getManifest("", envInfo, true);
+    chai.assert.isTrue(res1.isErr());
+  });
 });

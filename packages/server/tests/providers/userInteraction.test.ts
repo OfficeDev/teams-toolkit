@@ -105,6 +105,15 @@ describe("userInteraction", () => {
       });
     });
 
+    it("openFile", () => {
+      const path = "path";
+      const res = ui.openFile(path);
+      res.then((data) => {
+        expect(data).equal("test");
+        expect(stub).is.called.with(RequestTypes.ui.openFile, path);
+      });
+    });
+
     it("selectFile", () => {
       const config = {
         name: "test name",

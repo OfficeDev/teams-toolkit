@@ -23,6 +23,7 @@ import { LocalSettingsProvider } from "../../../../common/localSettingsProvider"
 import { generateLocalDebugSettingsCommon, LocalEnvConfig } from "../../../../component/debug";
 import { CommentObject } from "comment-json";
 import * as commentJson from "comment-json";
+import { TaskCommand } from "../../../../common/local/constants";
 
 export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
@@ -140,7 +141,7 @@ export async function useTransparentTasks(projectPath?: string): Promise<boolean
   if (await fs.pathExists(tasksJsonPath)) {
     try {
       const tasksContent = await fs.readFile(tasksJsonPath, "utf-8");
-      return tasksContent.includes("debug-check-prerequisites");
+      return tasksContent.includes(TaskCommand.checkPrerequisites); // TODO: update the condition
     } catch (error) {
       return false;
     }

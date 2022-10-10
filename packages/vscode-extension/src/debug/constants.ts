@@ -110,6 +110,7 @@ export type DisplayMessages = {
   errorMessageLink: string;
   errorHelpLink: string;
   errorMessageCommand: string;
+  durationMessage: (duration: number) => string;
 };
 
 function stepPrefix(stepNumber: number) {
@@ -134,6 +135,8 @@ export const prerequisiteCheckDisplayMessages: DisplayMessages = {
   errorHelpLink: "https://aka.ms/teamsfx-envchecker-help",
   launchServices:
     "Services will be launched locally, please check your terminal window for details.",
+  durationMessage: (duration: number) =>
+    `Finished prerequisite check in ${duration.toFixed(2)} seconds.`,
 };
 
 export const prerequisiteCheckForGetStartedDisplayMessages: DisplayMessages = {
@@ -152,6 +155,8 @@ export const prerequisiteCheckForGetStartedDisplayMessages: DisplayMessages = {
   errorMessageCommand: openOutputPanelCommand,
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
   errorHelpLink: "https://aka.ms/teamsfx-envchecker-help",
+  durationMessage: (duration: number) =>
+    `Finished prerequisite check in ${duration.toFixed(2)} seconds.`,
 };
 
 export const prerequisiteCheckTaskDisplayMessages: DisplayMessages = {
@@ -171,6 +176,10 @@ export const prerequisiteCheckTaskDisplayMessages: DisplayMessages = {
   errorMessageCommand: openOutputPanelCommand,
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
   errorHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task",
+  durationMessage: (duration: number) =>
+    `Finished 'Validate & install prerequisites' Visual Studio Code task in ${duration.toFixed(
+      2
+    )} seconds.`,
 };
 
 export const npmInstallDisplayMessages: DisplayMessages = {
@@ -189,6 +198,8 @@ export const npmInstallDisplayMessages: DisplayMessages = {
   errorMessageCommand: openTerminalCommand,
   errorMessageLink: "teamstoolkit.localDebug.terminal",
   errorHelpLink: "https://aka.ms/teamsfx-npm-package-task",
+  durationMessage: (duration: number) =>
+    `Finished 'Install npm packages' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
 };
 
 export const localTunnelDisplayMessages = Object.freeze({
@@ -206,6 +217,8 @@ export const localTunnelDisplayMessages = Object.freeze({
   forwardingUrl: (src: string, dist: string) => `Forwarding URL ${dist} to ${src}`,
   successMessage: "Local tunnel service is started successfully.",
   errorMessage: "Failed to start local tunnel service.",
+  durationMessage: (duration: number) =>
+    `Started local tunnel service in ${duration.toFixed(2)} seconds.`,
 });
 
 export const setUpTabDisplayMessages: DisplayMessages = {
@@ -221,6 +234,8 @@ export const setUpTabDisplayMessages: DisplayMessages = {
   errorMessageCommand: "command:fx-extension.showOutputChannel",
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
   errorHelpLink: "https://aka.ms/teamsfx-debug-set-up-tab-task",
+  durationMessage: (duration: number) =>
+    `Finished 'Set up tab' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
 };
 
 export const setUpBotDisplayMessages: DisplayMessages = {
@@ -236,6 +251,8 @@ export const setUpBotDisplayMessages: DisplayMessages = {
   errorMessageCommand: "command:fx-extension.showOutputChannel",
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
   errorHelpLink: "https://aka.ms/teamsfx-debug-set-up-bot-task",
+  durationMessage: (duration: number) =>
+    `Finished 'Set up bot' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
 };
 
 export const setUpSSODisplayMessages: DisplayMessages = {
@@ -251,6 +268,8 @@ export const setUpSSODisplayMessages: DisplayMessages = {
   errorMessageCommand: "command:fx-extension.showOutputChannel",
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
   errorHelpLink: "https://aka.ms/teamsfx-debug-set-up-sso-task",
+  durationMessage: (duration: number) =>
+    `Finished 'Set up SSO' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
 };
 
 export const prepareManifestDisplayMessages: DisplayMessages = {
@@ -268,16 +287,10 @@ export const prepareManifestDisplayMessages: DisplayMessages = {
   errorMessageCommand: "command:fx-extension.showOutputChannel",
   errorMessageLink: "teamstoolkit.localDebug.outputPanel",
   errorHelpLink: "https://aka.ms/teamsfx-debug-prepare-manifest-task",
+  durationMessage: (duration: number) =>
+    `Finished 'Build and upload Teams manifest' Visual Studio Code task in ${duration.toFixed(
+      2
+    )} seconds.`,
 };
-
-export const TaskCommand = Object.freeze({
-  checkPrerequisites: "debug-check-prerequisites",
-  npmInstall: "debug-npm-install",
-  startLocalTunnel: "debug-start-local-tunnel",
-  setUpTab: "debug-set-up-tab",
-  setUpBot: "debug-set-up-bot",
-  setUpSSO: "debug-set-up-sso",
-  prepareManifest: "debug-prepare-manifest",
-});
 
 export const DebugSessionExists = "Debug session exists";

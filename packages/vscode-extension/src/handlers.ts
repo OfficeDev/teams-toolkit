@@ -138,7 +138,6 @@ import {
   anonymizeFilePaths,
   getAppName,
   getM365TenantFromEnv,
-  getProjectId,
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
@@ -230,13 +229,7 @@ export function activate(): Result<Void, FxError> {
     core = new FxCore(tools);
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
-      const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
-        "**/unify-config-and-aad-manifest-change-logs.md"
-      );
-
-      unifyConfigWatcher.onDidCreate(async (event) => {
-        await openUnifyConfigMd(workspacePath, event.fsPath);
-      });
+      addFileSystemWatcher(workspacePath);
     }
     automaticNpmInstallHandler(false, false, false);
 
@@ -342,10 +335,39 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   }
 }
 
+export function addFileSystemWatcher(workspacePath: string) {
+  const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/unify-config-and-aad-manifest-change-logs.md"
+  );
+
+  unifyConfigWatcher.onDidCreate(async (event) => {
+    await openUnifyConfigMd(workspacePath, event.fsPath);
+  });
+
+  const backupConfigWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/backup-config-change-logs.md"
+  );
+
+  backupConfigWatcher.onDidCreate(async (event) => {
+    await openBackupConfigMd(workspacePath, event.fsPath);
+  });
+}
+
+export async function openBackupConfigMd(workspacePath: string, filePath: string) {
+  const backupName = ".backup";
+  const backupConfigMD = "backup-config-change-logs.md";
+  const changeLogsPath: string = path.join(workspacePath, backupName, backupConfigMD);
+  await openPreviewMarkDown(filePath, changeLogsPath);
+}
+
 async function openUnifyConfigMd(workspacePath: string, filePath: string) {
   const backupName = ".backup";
   const unifyConfigMD = "unify-config-and-aad-manifest-change-logs.md";
   const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
+  await openPreviewMarkDown(filePath, changeLogsPath);
+}
+
+async function openPreviewMarkDown(filePath: string, changeLogsPath: string) {
   if (changeLogsPath !== filePath) {
     return;
   }
@@ -1265,7 +1287,9 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  * Check & install required local prerequisites before local debug.
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
-  const additionalProperties: { [key: string]: string } = {};
+  const additionalProperties: { [key: string]: string } = {
+    [TelemetryProperty.DebugIsTransparentTask]: "false",
+  };
   {
     // If we know this session is concurrently running with another session, send that correlationId in `debug-all-start` event.
     // Mostly, this happens when user stops debugging while preLaunchTasks are running and immediately hit F5 again.
@@ -1287,7 +1311,9 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
     const result = await localPrerequisites.checkAndInstall();
     if (result.isErr()) {
       // Only local debug use validate-local-prerequisites command
-      await sendDebugAllEvent(result.error);
+      await sendDebugAllEvent(result.error, {
+        [TelemetryProperty.DebugIsTransparentTask]: "false",
+      });
       commonUtils.endLocalDebugSession();
       // return non-zero value to let task "exit ${command:xxx}" to exit
       showError(result.error);
@@ -1443,7 +1469,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     terminateAllRunningTeamsfxTasks();
     await debug.stopDebugging();
     // only local debug uses pre-debug-check command
-    await sendDebugAllEvent(result.error);
+    await sendDebugAllEvent(result.error, { [TelemetryProperty.DebugIsTransparentTask]: "false" });
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";

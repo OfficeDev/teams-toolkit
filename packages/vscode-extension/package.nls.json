@@ -295,6 +295,7 @@
     "teamstoolkit.localDebug.terminal": "terminal",
     "teamstoolkit.localDebug.switchM365AccountWarning": "You are now using a different Microsoft 365 tenant from what you previously used.",
     "teamstoolkit.localDebug.taskDefinitionError": "The value of '%s' is invalid for the task of type 'teamsfx'",
+    "teamstoolkit.localDebug.taskCancelError": "The task is canceled.",
     "teamstoolkit.localDebug.multipleTunnelServiceError": "There are multiple running local tunnel tasks. Please close the redundant tasks.",
     "teamstoolkit.localDebug.noTunnelServiceError": "There is no running local tunnel tasks. Please start the local tunnel task first.",
     "teamstoolkit.localDebug.ngrokStoppedError": "Ngrok has been stopped with exit code '%s'. Please check the [terminal](%s) for detailed error information.",

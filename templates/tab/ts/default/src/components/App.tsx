@@ -8,17 +8,13 @@ import Tab from "./Tab";
 import "./App.css";
 import TabConfig from "./TabConfig";
 import { TeamsFxContext } from "./Context";
-import config from "./sample/lib/config";
 
 /**
  * The main app which handles the initialization and routing
  * of the app.
  */
 export default function App() {
-  const { loading, theme, themeString, teamsfx } = useTeamsFx({
-    initiateLoginEndpoint: config.initiateLoginEndpoint!,
-    clientId: config.clientId!,
-  });
+  const { loading, theme, themeString, teamsfx } = useTeamsFx();
   return (
     <TeamsFxContext.Provider value={{theme, themeString, teamsfx}}>
       <Provider theme={theme || teamsTheme} styles={{ backgroundColor: "#eeeeee" }}>

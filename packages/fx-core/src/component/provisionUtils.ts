@@ -101,11 +101,11 @@ export class ProvisionUtils {
     } else {
       const res = await checkWhetherLocalDebugM365TenantMatches(
         envInfo,
-        ctx.telemetryReporter,
+        ctx,
         isCSharpProject(ctx.projectSetting.programmingLanguage),
         tenantIdInConfig,
         ctx.tokenProvider.m365TokenProvider,
-        inputs.projectPath
+        inputs
       );
       if (res.isErr()) {
         addShouldSkipWriteEnvInfo(res.error);
@@ -152,8 +152,8 @@ export class ProvisionUtils {
       if (solutionConfigRes.value.hasSwitchedSubscription || hasSwitchedM365Tenant) {
         const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
           envInfo as v3.EnvInfoV3,
-          ctx.projectSetting.appName,
-          inputs.projectPath,
+          ctx,
+          inputs,
           hasSwitchedM365Tenant,
           solutionConfigRes.value.hasSwitchedSubscription,
           hasBotServiceCreatedBefore,
@@ -195,8 +195,8 @@ export class ProvisionUtils {
       }
       const handleConfigFilesWhenSwitchAccountsRes = await handleConfigFilesWhenSwitchAccount(
         envInfo as v3.EnvInfoV3,
-        ctx.projectSetting.appName,
-        inputs.projectPath,
+        ctx,
+        inputs,
         hasSwitchedM365Tenant,
         false,
         false,

@@ -26,6 +26,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/utils/util";
 import { ComponentNames } from "../../../src/component/constants";
 import { PluginNames } from "../../../src/plugins/solution/fx-solution/constants";
+import { MockContext } from "../../component/feature/apiconnector/utils";
 const tool = require("../../../src/common/tools");
 const expect = chai.expect;
 
@@ -94,6 +95,12 @@ describe("util: fillInSolutionSettings() with AAD manifest enabled", async () =>
 
 describe("util: handleConfigFilesWhenSwitchAccount", async () => {
   const mocker = sinon.createSandbox();
+  const context = MockContext();
+  const mockInput = {
+    capabilities: ["Tab"],
+    platform: Platform.VSCode,
+    projectPath: "project-path",
+  };
   afterEach(async () => {
     mocker.restore();
   });
@@ -105,14 +112,12 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       state: { solution: {}, [BuiltInFeaturePluginNames.bot]: { resourceId: "mockResourceId" } },
       config: {},
     };
-    const appName = "app-name";
-    const projectPath = "project-path";
 
     // Act
     const res = await handleConfigFilesWhenSwitchAccount(
       envInfo,
-      appName,
-      projectPath,
+      context,
+      mockInput,
       false,
       false,
       true,
@@ -132,14 +137,14 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       state: { solution: {}, [BuiltInFeaturePluginNames.bot]: { resourceId: "mockResourceId" } },
       config: {},
     };
-    const appName = "app-name";
+    const appName = "ut";
     const projectPath = "project-path";
 
     // Act
     const res = await handleConfigFilesWhenSwitchAccount(
       envInfo,
-      appName,
-      projectPath,
+      context,
+      mockInput,
       true,
       true,
       true,
@@ -162,14 +167,14 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       state: { solution: {} },
       config: {},
     };
-    const appName = "app-name";
+    const appName = "ut";
     const projectPath = "project-path";
 
     // Act
     const res = await handleConfigFilesWhenSwitchAccount(
       envInfo,
-      appName,
-      projectPath,
+      context,
+      mockInput,
       true,
       true,
       false,
@@ -189,14 +194,12 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       state: { solution: {} },
       config: {},
     };
-    const appName = "app-name";
-    const projectPath = "project-path";
 
     // Act
     const res = await handleConfigFilesWhenSwitchAccount(
       envInfo,
-      appName,
-      projectPath,
+      context,
+      mockInput,
       true,
       true,
       false,

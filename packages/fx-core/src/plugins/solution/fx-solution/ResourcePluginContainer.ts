@@ -12,18 +12,10 @@ import { Container } from "typedi";
 import { SolutionError, SolutionSource } from "./constants";
 export const ResourcePlugins = {
   FrontendPlugin: "FrontendPlugin",
-  IdentityPlugin: "IdentityPlugin",
-  FunctionPlugin: "FunctionPlugin",
-  LocalDebugPlugin: "LocalDebugPlugin",
-  ApimPlugin: "ApimPlugin",
 };
 
 export const ResourcePluginsV2 = {
   FrontendPlugin: "FrontendPluginV2",
-  IdentityPlugin: "IdentityPluginV2",
-  FunctionPlugin: "FunctionPluginV2",
-  LocalDebugPlugin: "LocalDebugPluginV2",
-  ApimPlugin: "ApimPluginV2",
 };
 
 /**

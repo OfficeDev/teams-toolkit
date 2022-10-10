@@ -1,0 +1,201 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Teams App Locally",
+            "dependsOn": [
+                "Validate & install prerequisites",
+                "Install npm packages",
+                "Start local tunnel",
+                "Set up tab",
+                "Set up bot",
+                "Set up SSO",
+                "Build & upload Teams manifest",
+                "Start services"
+            ],
+            "dependsOrder": "sequence"
+        },
+        {
+            "label": "Validate & install prerequisites",
+            "type": "teamsfx",
+            "command": "debug-check-prerequisites",
+            "args": {
+                "prerequisites": [
+                    "nodejs",
+                    "m365Account",
+                    "devCert",
+                    "func", 
+                    "ngrok", 
+                    "portOccupancy" 
+                ],
+                "portOccupancy": [
+                    53000,
+                    3978,
+                    9239
+                ]
+            }
+        },
+        {
+            "label": "Install npm packages",
+            "type": "teamsfx",
+            "command": "debug-npm-install",
+            "args": {
+                "projects": [
+                    {
+                        "cwd": "${workspaceFolder}/tabs",
+                        "npmInstallArgs": [
+                            "--no-audit"
+                        ]
+                    },
+                    {
+                        "cwd": "${workspaceFolder}/bot",
+                        "npmInstallArgs": [
+                            "--no-audit"
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "label": "Start local tunnel",
+            "type": "teamsfx",
+            "command": "debug-start-local-tunnel",
+            "args": {
+                "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt"
+            },
+            "isBackground": true,
+            "problemMatcher": "$teamsfx-local-tunnel-watch"
+        },
+        {
+            "label": "Set up tab",
+            "type": "teamsfx",
+            "command": "debug-set-up-tab",
+            "args": {
+                "baseUrl": "https://localhost:53000"
+            }
+        },
+        {
+            "label": "Set up bot",
+            "type": "teamsfx",
+            "command": "debug-set-up-bot",
+            "args": {
+                "botMessagingEndpoint": "/api/messages"
+            }
+        },
+        {
+            "label": "Set up SSO",
+            "type": "teamsfx",
+            "command": "debug-set-up-sso",
+            "args": {
+            }
+        },
+        {
+            "label": "Build & upload Teams manifest",
+            "type": "teamsfx",
+            "command": "debug-prepare-manifest",
+            "args": {
+            }
+        },
+        {
+            "label": "Start services",
+            "dependsOn": [
+                "Start frontend",
+                "Start bot"
+            ]
+        },
+        {
+            "label": "Start frontend",
+            "type": "shell",
+            "command": "npm run dev:teamsfx",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}/tabs"
+            },
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^.*$",
+                    "file": 0,
+                    "location": 1,
+                    "message": 2
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": "Compiled|Failed|compiled|failed"
+                }
+            }
+        },
+        {
+            "label": "Start bot",
+            "type": "shell",
+            "command": "npm run dev:teamsfx",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}/bot",
+                "env": {
+                    "PATH": "${command:fx-extension.get-func-path}${env:PATH}"
+                }
+            },
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^.*$",
+                    "file": 0,
+                    "location": 1,
+                    "message": 2
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*(Job host stopped|signaling restart).*$",
+                    "endsPattern": "^.*(Worker process started and initialized|Host lock lease acquired by instance ID).*$"
+                }
+            },
+            "presentation": {
+                "reveal": "silent"
+            },
+            "dependsOn": [
+                "Start Azurite emulator",
+                "Watch bot"
+            ]
+        },
+        {
+            "label": "Start Azurite emulator",
+            "type": "shell",
+            "command": "npm run prepare-storage:teamsfx",
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": [
+                    {
+                        "regexp": "^.*$",
+                        "file": 0,
+                        "location": 1,
+                        "message": 2
+                    }
+                ],
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "Azurite",
+                    "endsPattern": "successfully listening"
+                }
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/bot"
+            },
+            "presentation": {
+                "reveal": "silent"
+            }
+        },
+        {
+            "label": "Watch bot",
+            "type": "shell",
+            "command": "npm run watch:teamsfx",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}/bot"
+            },
+            "problemMatcher": "$tsc-watch",
+            "presentation": {
+                "reveal": "silent"
+            }
+        }
+    ]
+}

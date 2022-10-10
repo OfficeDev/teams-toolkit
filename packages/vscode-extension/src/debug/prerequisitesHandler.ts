@@ -24,6 +24,8 @@ import {
   ProjectSettingsHelper,
   TelemetryContext,
 } from "@microsoft/teamsfx-core/build/common/local";
+import { Prerequisite } from "@microsoft/teamsfx-core/build/common/local/constants";
+
 import {
   DependencyStatus,
   DepsCheckerError,
@@ -84,7 +86,6 @@ import { ProgressHelper } from "./progressHelper";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
-import { Prerequisite } from "./taskTerminal/prerequisiteTaskTerminal";
 import { Step } from "./commonUtils";
 
 enum Checker {
@@ -109,6 +110,7 @@ interface CheckResult {
   result: ResultStatus;
   error?: FxError;
   successMsg?: string;
+  warnMsg?: string;
   failureMsg?: string;
 }
 
@@ -291,6 +293,7 @@ async function checkPort(
         return {
           checker: Checker.Ports,
           result: ResultStatus.failed,
+          failureMsg: doctorConstant.Port,
           error: new UserError(
             ExtensionSource,
             ExtensionErrors.PortAlreadyInUse,
@@ -326,7 +329,10 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
   return await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPrerequisites,
     // projectComponents is already serialized JSON string
-    { [TelemetryProperty.DebugProjectComponents]: `${projectComponents}` },
+    {
+      [TelemetryProperty.DebugProjectComponents]: `${projectComponents}`,
+      [TelemetryProperty.DebugIsTransparentTask]: "false",
+    },
     async (ctx: TelemetryContext) => {
       // terminate all running teamsfx tasks
       if (allRunningTeamsfxTasks.size > 0) {
@@ -358,7 +364,9 @@ export async function checkAndInstallForTask(
 
   return await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPrerequisites,
-    {},
+    {
+      [TelemetryProperty.DebugIsTransparentTask]: "true",
+    },
     async (ctx: TelemetryContext) => {
       // terminate all running teamsfx tasks
       if (allRunningTeamsfxTasks.size > 0) {
@@ -920,6 +928,7 @@ async function resolveLocalCertificate(
         checker: Checker.LocalCertificate,
         result: result,
         successMsg: doctorConstant.CertSuccess,
+        warnMsg: doctorConstant.Cert,
         failureMsg: doctorConstant.Cert,
         error: error,
       };
@@ -1116,7 +1125,7 @@ async function handleCheckResults(
 
   for (const result of warnings) {
     output.appendLine("");
-    output.appendLine(`${doctorConstant.Exclamation} ${result.checker} `);
+    output.appendLine(`${doctorConstant.Exclamation} ${result.warnMsg ?? result.checker} `);
     outputCheckResultError(result, output);
   }
 

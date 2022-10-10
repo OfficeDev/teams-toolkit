@@ -1,8 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
-import { DeploymentOperation } from "@azure/arm-resources/esm/models";
+import {
+  ResourceManagementClient,
+  DeploymentOperation,
+  Deployment,
+  DeploymentMode,
+} from "@azure/arm-resources";
 import {
   AzureAccountProvider,
   ConfigFolderName,
@@ -222,10 +226,14 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
   while (!deployCtx.finished) {
     await waitSeconds(pollWaitSeconds);
     try {
-      const operations = await deployCtx.client.deploymentOperations.list(
-        deployCtx.resourceGroupName,
-        deployCtx.deploymentName
-      );
+      const operations = [];
+      for await (const page of deployCtx.client.deploymentOperations
+        .list(deployCtx.resourceGroupName, deployCtx.deploymentName)
+        .byPage({ maxPageSize: 100 })) {
+        for (const deploymentOperation of page) {
+          operations.push(deploymentOperation);
+        }
+      }
 
       if (deployCtx.finished) {
         return;
@@ -244,14 +252,18 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
                 let client = deployCtx.client;
                 if (operation.subscriptionId !== deployCtx.client.subscriptionId) {
                   const azureToken =
-                    await deployCtx.ctx.azureAccountProvider?.getAccountCredentialAsync();
+                    await deployCtx.ctx.azureAccountProvider?.getIdentityCredentialAsync();
                   client = new ResourceManagementClient(azureToken!, operation.subscriptionId);
                 }
 
-                const subOperations = await client.deploymentOperations.list(
-                  operation.resourceGroupName,
-                  operation.resourceName
-                );
+                const subOperations = [];
+                for await (const page of client.deploymentOperations
+                  .list(operation.resourceGroupName, operation.resourceName)
+                  .byPage({ maxPageSize: 100 })) {
+                  for (const subOperation of page) {
+                    subOperations.push(subOperation);
+                  }
+                }
                 subOperations.forEach((sub) => {
                   const subOperation = getRequiredOperation(sub, deployCtx);
                   if (subOperation) {
@@ -343,11 +355,11 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     subscriptionId
   );
   const deploymentName = `${PluginDisplayName.Solution}_deployment`.replace(" ", "_").toLowerCase();
-  const deploymentParameters: ResourceManagementModels.Deployment = {
+  const deploymentParameters: Deployment = {
     properties: {
       parameters: parameterJson.parameters,
-      template: armTemplateJson,
-      mode: "Incremental" as ResourceManagementModels.DeploymentMode,
+      template: armTemplateJson as any,
+      mode: "Incremental" as DeploymentMode,
     },
   };
 
@@ -362,7 +374,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
 
   try {
     const result = client.deployments
-      .createOrUpdate(resourceGroupName, deploymentName, deploymentParameters)
+      .beginCreateOrUpdateAndWait(resourceGroupName, deploymentName, deploymentParameters)
       .then((result) => {
         ctx.logProvider?.info(
           getLocalizedString(
@@ -491,11 +503,11 @@ export async function doDeployArmTemplatesV3(
     envState.solution.subscriptionId
   );
   const deploymentName = `${PluginDisplayName.Solution}_deployment`.replace(" ", "_").toLowerCase();
-  const deploymentParameters: ResourceManagementModels.Deployment = {
+  const deploymentParameters: Deployment = {
     properties: {
       parameters: parameterJson.parameters,
-      template: armTemplateJson,
-      mode: "Incremental" as ResourceManagementModels.DeploymentMode,
+      template: armTemplateJson as any,
+      mode: "Incremental" as DeploymentMode,
     },
   };
 
@@ -510,7 +522,7 @@ export async function doDeployArmTemplatesV3(
 
   try {
     const result = client.deployments
-      .createOrUpdate(resourceGroupName, deploymentName, deploymentParameters)
+      .beginCreateOrUpdateAndWait(resourceGroupName, deploymentName, deploymentParameters)
       .then((result) => {
         ctx.logProvider?.info(
           getLocalizedString(
@@ -1290,7 +1302,7 @@ async function getResourceManagementClientForArmDeployment(
   azureAccountProvider: AzureAccountProvider,
   subscriptionId: string
 ): Promise<ResourceManagementClient> {
-  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+  const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
   if (!azureToken) {
     throw new SystemError(
       PluginDisplayName.Solution,
@@ -1649,10 +1661,14 @@ async function getDeploymentError(
   const deploymentError: any = {
     error: deployment.properties?.error,
   };
-  const operations = await deployCtx.client.deploymentOperations.list(
-    resourceGroupName,
-    deploymentName
-  );
+  const operations = [];
+  for await (const page of deployCtx.client.deploymentOperations
+    .list(resourceGroupName, deploymentName)
+    .byPage({ maxPageSize: 100 })) {
+    for (const deploymentOperation of page) {
+      operations.push(deploymentOperation);
+    }
+  }
   for (const operation of operations) {
     if (operation.properties?.statusMessage?.error) {
       if (!deploymentError.subErrors) {

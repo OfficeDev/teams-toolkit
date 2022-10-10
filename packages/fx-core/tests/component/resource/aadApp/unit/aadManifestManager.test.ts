@@ -7,6 +7,7 @@ import fs from "fs-extra";
 import { AadManifestHelper } from "../../../../../src/component/resource/aadApp/utils/aadManifestHelper";
 import { AadAppManifestManager } from "../../../../../src/component/resource/aadApp/aadAppManifestManager";
 import { AADManifest } from "../../../../../src/component/resource/aadApp/interfaces/AADManifest";
+import { UserError } from "@microsoft/teamsfx-api";
 
 describe("AAD manifest manager test", () => {
   const sandbox = sinon.createSandbox();
@@ -69,10 +70,44 @@ describe("AAD manifest manager test", () => {
 
     fakeAadManifest.id = "fake-aad-object-id";
     fakeAadManifest.appId = "fake-aad-client-id";
-    sinon.stub(fs, "readFile").resolves(JSON.stringify(fakeAadManifest) as any);
-    sinon.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves(JSON.stringify(fakeAadManifest) as any);
+    sandbox.stub(fs, "pathExists").resolves(true);
     const loadedManifest = await AadAppManifestManager.loadAadManifest(mockContext);
     chai.expect(loadedManifest).to.be.deep.equal(fakeAadManifest);
+  });
+
+  it("load manifest failed with unknown resource id error should throw user error", async () => {
+    const fakeStateMap: Map<string, any> = new Map();
+    fakeStateMap.set("fx-resource-aad-app-for-teams", {});
+    const mockContext: any = {
+      root: "fake-root",
+      envInfo: {
+        state: fakeStateMap,
+        config: null,
+      },
+    };
+
+    fakeAadManifest.id = "fake-aad-object-id";
+    fakeAadManifest.appId = "fake-aad-client-id";
+    fakeAadManifest.requiredResourceAccess.push({
+      resourceAppId: "00000003-0000-0000-c000-000000000000",
+      resourceAccess: [
+        {
+          id: "invalid-resource-id",
+          type: "Scope",
+        },
+      ],
+    });
+    sandbox.stub(fs, "readFile").resolves(JSON.stringify(fakeAadManifest) as any);
+    sandbox.stub(fs, "pathExists").resolves(true);
+
+    try {
+      await AadAppManifestManager.loadAadManifest(mockContext);
+    } catch (err) {
+      chai.assert.isTrue(err instanceof UserError);
+      return;
+    }
+    throw new Error("Unknown resource id error doesn't throw");
   });
 });
 

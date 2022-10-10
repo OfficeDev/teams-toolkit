@@ -955,33 +955,36 @@
               {
                 "type": "object",
                 "required": [
-                  "configFile"
+                  "ngrokArgs"
                 ],
                 "properties": {
-                  "configFile": {
+                  "ngrokArgs": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ],
+                    "description": "%teamstoolkit.taskDefinitions.args.ngrokArgs.title%"
+                  },
+                  "ngrokPath": {
                     "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.configFile.title%",
+                    "description": "%teamstoolkit.taskDefinitions.args.ngrokPath.title%"
+                  },
+                  "tunnelInspection": {
+                    "type": "string",
+                    "description": "%teamstoolkit.taskDefinitions.args.tunnelInspection.title%",
                     "anyOf": [
                       {
-                        "const": "${teamsfx:workspaceFolder}/.fx/configs/ngrok.yml"
+                        "const": "http://127.0.0.1:4040/api/tunnels"
                       },
                       {}
                     ]
-                  },
-                  "useGlobalNgrok": {
-                    "type": "boolean",
-                    "description": "%teamstoolkit.taskDefinitions.args.useGlobalNgrok.title%",
-                    "default": false
-                  },
-                  "keepAlive": {
-                    "type": "boolean",
-                    "description": "%teamstoolkit.taskDefinitions.args.keepAlive.title%",
-                    "default": false
-                  },
-                  "tunnelName": {
-                    "type": "string",
-                    "description": "%teamstoolkit.taskDefinitions.args.tunnelName.title%",
-                    "default": "bot"
                   }
                 },
                 "additionalProperties": false
@@ -1349,7 +1352,7 @@
     "previewFont": "start ./media/font/teamstoolkit.html"
   },
   "devDependencies": {
-    "@azure/arm-subscriptions": "^3.0.0",
+    "@azure/arm-subscriptions": "^5.0.0",
     "@azure/eslint-plugin-azure-sdk": "^2.0.1",
     "@commitlint/cli": "^14.0.1",
     "@commitlint/config-conventional": "^12.0.1",
@@ -1435,8 +1438,8 @@
     "winston": "^3.3.3"
   },
   "dependencies": {
-    "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.1.1",
+    "@azure/identity": "^1.2.1",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/teamsfx-api": "^0.20.6",
     "@microsoft/teamsfx-core": "^1.16.2",

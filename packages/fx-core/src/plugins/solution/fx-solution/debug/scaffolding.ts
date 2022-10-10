@@ -17,15 +17,13 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import * as path from "path";
 import * as os from "os";
-import { isLocalDebugTransparencyEnabled } from "../../../../common/featureFlags";
 import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
 import { generateLocalDebugSettingsCommon, LocalEnvConfig } from "../../../../component/debug";
 import { CommentObject } from "comment-json";
 import * as commentJson from "comment-json";
-import { getTemplatesFolder } from "../../../../folder";
+import { TaskCommand } from "../../../../common/local/constants";
 
 export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
@@ -143,13 +141,13 @@ export async function useTransparentTasks(projectPath?: string): Promise<boolean
   if (await fs.pathExists(tasksJsonPath)) {
     try {
       const tasksContent = await fs.readFile(tasksJsonPath, "utf-8");
-      return tasksContent.includes("debug-check-prerequisites");
+      return tasksContent.includes(TaskCommand.checkPrerequisites); // TODO: update the condition
     } catch (error) {
       return false;
     }
   }
 
-  return isLocalDebugTransparencyEnabled();
+  return true;
 }
 
 export async function updateJson(
@@ -199,15 +197,4 @@ export async function updateCommentJson(
   }
 
   await fs.writeFile(path, commentJson.stringify(finalData, null, 4));
-}
-
-export async function updateNgrokConfigFile(
-  includeBot: boolean,
-  targetFile: string
-): Promise<void> {
-  if (!includeBot || (await fs.pathExists(targetFile))) {
-    return;
-  }
-  const ngrokConfigPath = path.join(getTemplatesFolder(), "debug", "ngrok.yml");
-  await fs.copyFile(ngrokConfigPath, targetFile);
 }

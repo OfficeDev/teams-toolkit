@@ -43,7 +43,7 @@ import {
 } from "../../src/component/resource/spfx/utils/questions";
 import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
 import { ComponentNames } from "../../src/component/constants";
-import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";
+import { FunctionScaffold } from "../../src/component/code/api/scaffold";
 import { TeamsfxCore } from "../../src/component/core";
 import { Container } from "typedi";
 import { AzureStorageResource } from "../../src/component/resource/azureStorage";
@@ -53,6 +53,7 @@ import * as armFunctions from "../../src/plugins/solution/fx-solution/arm";
 import { apiConnectorImpl } from "../../src/component/feature/apiconnector/apiConnector";
 import * as backup from "../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
+import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
 import { CoreQuestionNames } from "../../src/core/question";
 import * as questionV3 from "../../src/component/questionV3";
 import { provisionUtils } from "../../src/component/provisionUtils";
@@ -65,6 +66,19 @@ import {
 import { AddSsoParameters } from "../../src/plugins/solution/fx-solution/constants";
 import { BuiltInFeaturePluginNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 import { Constants } from "../../src/component/resource/aadApp/constants";
+
+class MyTokenCredential implements TokenCredential {
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    return {
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
+      expiresOnTimestamp: 12345,
+    };
+  }
+}
+
 describe("Core component test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -285,8 +299,8 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox
         .stub(provisionUtils, "fillInAzureConfigs")
         .resolves(ok({ hasSwitchedSubscription: false }));
@@ -369,8 +383,8 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox
         .stub(provisionUtils, "fillInAzureConfigs")
         .resolves(ok({ hasSwitchedSubscription: true }));
@@ -450,8 +464,8 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockSwitchedTid", upn: "mockUpn" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
@@ -526,8 +540,8 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockSwitchedTid", upn: "mockUpn" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
@@ -598,8 +612,8 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockSwitchedTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox
         .stub(provisionUtils, "fillInAzureConfigs")
         .resolves(ok({ hasSwitchedSubscription: true }));
@@ -685,8 +699,8 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox
         .stub(provisionUtils, "fillInAzureConfigs")
         .resolves(ok({ hasSwitchedSubscription: false }));
@@ -753,8 +767,8 @@ describe("Core component test for v3", () => {
         .resolves(ok("fakeToken"));
       sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(undefined);
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       const appName = `unittest${randomAppName()}`;
       const inputs: InputsWithProjectPath = {
         projectPath: projectPath,
@@ -799,8 +813,8 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox
         .stub(provisionUtils, "fillInAzureConfigs")
         .resolves(ok({ hasSwitchedSubscription: true }));
@@ -871,8 +885,8 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
@@ -932,8 +946,8 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
@@ -995,8 +1009,8 @@ describe("Core component test for v3", () => {
     sandbox.stub(FrontendDeployment, "doFrontendDeploymentV3").resolves();
     sandbox.stub(aadManifest, "generateAadManifestTemplate").resolves();
     sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -1050,8 +1064,8 @@ describe("Core component test for v3", () => {
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockTid" }));
     sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     sandbox
       .stub(provisionUtils, "fillInAzureConfigs")
       .resolves(ok({ hasSwitchedSubscription: false }));
@@ -1175,8 +1189,8 @@ describe("Core component test for v3", () => {
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockTid" }));
     sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     sandbox
       .stub(provisionUtils, "fillInAzureConfigs")
       .resolves(ok({ hasSwitchedSubscription: false }));

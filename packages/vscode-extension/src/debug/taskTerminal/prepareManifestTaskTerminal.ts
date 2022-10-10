@@ -65,6 +65,13 @@ export class PrepareManifestTaskTerminal extends BaseTaskTerminal {
     );
     const actions = handler.getActions();
 
-    return await handleDebugActions(actions, prepareManifestDisplayMessages);
+    const res = await handleDebugActions(actions, prepareManifestDisplayMessages);
+
+    const duration = this.getDurationInSeconds();
+    if (res.isOk() && duration) {
+      VsCodeLogInstance.info(prepareManifestDisplayMessages.durationMessage(duration));
+    }
+
+    return res;
   }
 }

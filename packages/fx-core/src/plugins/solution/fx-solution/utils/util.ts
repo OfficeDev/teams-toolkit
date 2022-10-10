@@ -13,6 +13,10 @@ import {
   Result,
   err,
   ok,
+  ContextV3,
+  ResourceContextV3,
+  InputsWithProjectPath,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { SolutionTelemetryComponentName, SolutionTelemetryProperty } from "../constants";
@@ -115,8 +119,8 @@ export function hasBotServiceCreated(envInfo: v3.EnvInfoV3): boolean {
 
 export async function handleConfigFilesWhenSwitchAccount(
   envInfo: v3.EnvInfoV3,
-  appName: string,
-  projectPath: string,
+  context: ResourceContextV3,
+  inputs: InputsWithProjectPath,
   hasSwitchedM365Tenant: boolean,
   hasSwitchedSubscription: boolean,
   hasBotServiceCreatedBefore: boolean,
@@ -126,14 +130,20 @@ export async function handleConfigFilesWhenSwitchAccount(
     return ok(undefined);
   }
 
-  const backupFilesRes = await backupFiles(envInfo.envName, projectPath, isCSharpProject);
+  const backupFilesRes = await backupFiles(
+    envInfo.envName,
+    inputs.projectPath,
+    isCSharpProject,
+    inputs.platform === Platform.VS,
+    context
+  );
   if (backupFilesRes.isErr()) {
     return err(backupFilesRes.error);
   }
 
   const updateAzureParametersRes = await updateAzureParameters(
-    projectPath,
-    appName,
+    inputs.projectPath,
+    context.projectSetting.appName,
     envInfo.envName,
     hasSwitchedM365Tenant,
     hasSwitchedSubscription,
@@ -145,7 +155,7 @@ export async function handleConfigFilesWhenSwitchAccount(
 
   if (hasSwitchedSubscription) {
     const envName = envInfo.envName;
-    const maybeBotFolder = path.join(projectPath, PathConstants.botWorkingDir);
+    const maybeBotFolder = path.join(inputs.projectPath, PathConstants.botWorkingDir);
     const maybeBotDeploymentFile = path.join(
       maybeBotFolder,
       path.join(
@@ -169,7 +179,7 @@ export async function handleConfigFilesWhenSwitchAccount(
       }
     }
 
-    const maybeTabFolder = path.join(projectPath, FrontendPathInfo.WorkingDir);
+    const maybeTabFolder = path.join(inputs.projectPath, FrontendPathInfo.WorkingDir);
     const maybeTabDeploymentFile = path.join(
       maybeTabFolder,
       path.join(

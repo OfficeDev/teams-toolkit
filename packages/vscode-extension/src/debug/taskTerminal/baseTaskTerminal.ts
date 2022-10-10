@@ -24,12 +24,14 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   protected closeEmitter = new vscode.EventEmitter<number>();
   onDidClose?: vscode.Event<number> = this.closeEmitter.event;
   protected readonly taskTerminalId: string;
+  protected startTime: number | undefined;
 
   constructor(private taskDefinition: vscode.TaskDefinition) {
     this.taskTerminalId = uuidv4();
   }
 
   open(): void {
+    this.startTime = performance.now();
     this.do()
       .then((res) => {
         const error = res.isErr() ? res.error : undefined;
@@ -72,6 +74,13 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   }
 
   protected abstract do(): Promise<Result<Void, FxError>>;
+
+  protected getDurationInSeconds(): number | undefined {
+    if (!this.startTime) {
+      return undefined;
+    }
+    return (performance.now() - this.startTime) / 1000;
+  }
 
   public static resolveTeamsFxVariables(str: string): string {
     // Background task cannot resolve variables in VSC.

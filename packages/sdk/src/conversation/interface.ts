@@ -61,19 +61,29 @@ export interface NotificationTarget {
    * Send a plain text message.
    *
    * @param text - the plain text message.
+   * @param onError - an optional error handler that can catch exceptions during message sending.
+   * If not defined, error will be handled by `BotAdapter.onTurnError`.
    *
    * @returns the response of sending message.
    */
-  sendMessage(text: string): Promise<MessageResponse>;
+  sendMessage(
+    text: string,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse>;
 
   /**
    * Send an adaptive card message.
    *
    * @param card - the adaptive card raw JSON.
+   * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
+   * If not defined, error will be handled by `BotAdapter.onTurnError`.
    *
    * @returns the response of sending adaptive card message.
    */
-  sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
+  sendAdaptiveCard(
+    card: unknown,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse>;
 }
 
 /**

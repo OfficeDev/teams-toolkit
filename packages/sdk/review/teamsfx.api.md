@@ -160,9 +160,9 @@ export class Channel implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, info: ChannelInfo);
     readonly info: ChannelInfo;
     readonly parent: TeamsBotInstallation;
-    sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
+    sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     // Warning: (ae-forgotten-export) The symbol "MessageResponse" needs to be exported by the entry point index.d.ts
-    sendMessage(text: string): Promise<MessageResponse>;
+    sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     readonly type: NotificationTargetType;
 }
 
@@ -323,8 +323,8 @@ export class Member implements NotificationTarget {
     constructor(parent: TeamsBotInstallation, account: TeamsChannelAccount);
     readonly account: TeamsChannelAccount;
     readonly parent: TeamsBotInstallation;
-    sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
-    sendMessage(text: string): Promise<MessageResponse>;
+    sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
+    sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     readonly type: NotificationTargetType;
 }
 
@@ -371,8 +371,8 @@ export { NotificationOptions_2 as NotificationOptions }
 
 // @public
 export interface NotificationTarget {
-    sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
-    sendMessage(text: string): Promise<MessageResponse>;
+    sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
+    sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     readonly type?: NotificationTargetType;
 }
 
@@ -413,10 +413,10 @@ export enum SearchScope {
 }
 
 // @public
-export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<MessageResponse>;
+export function sendAdaptiveCard(target: NotificationTarget, card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
 
 // @public
-export function sendMessage(target: NotificationTarget, text: string): Promise<MessageResponse>;
+export function sendMessage(target: NotificationTarget, text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
 
 // @public
 export function setLogFunction(logFunction?: LogFunction): void;
@@ -435,8 +435,8 @@ export class TeamsBotInstallation implements NotificationTarget {
     readonly conversationReference: Partial<ConversationReference>;
     getTeamDetails(): Promise<TeamDetails | undefined>;
     members(): Promise<Member[]>;
-    sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
-    sendMessage(text: string): Promise<MessageResponse>;
+    sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
+    sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     readonly type?: NotificationTargetType;
 }
 

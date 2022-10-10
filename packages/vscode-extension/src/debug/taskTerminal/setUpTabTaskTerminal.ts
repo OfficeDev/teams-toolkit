@@ -54,6 +54,11 @@ export class SetUpTabTaskTerminal extends BaseTaskTerminal {
     const handler = new TabDebugHandler(workspacePath, this.args);
     const actions = handler.getActions();
 
-    return await handleDebugActions(actions, setUpTabDisplayMessages);
+    const res = await handleDebugActions(actions, setUpTabDisplayMessages);
+    const duration = this.getDurationInSeconds();
+    if (res.isOk() && duration) {
+      VsCodeLogInstance.info(setUpTabDisplayMessages.durationMessage(duration));
+    }
+    return res;
   }
 }

@@ -7,7 +7,7 @@ import * as vscode from "vscode";
 
 import { FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-
+import VsCodeLogInstance from "../../commonlib/log";
 import * as globalVariables from "../../globalVariables";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import * as commonUtils from "../commonUtils";
@@ -20,6 +20,7 @@ import {
 import { checkAndInstallNpmPackagesForTask } from "../prerequisitesHandler";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
+import { npmInstallDisplayMessages } from "../constants";
 
 export interface NpmInstallArgs {
   projects?: ProjectOptions[];
@@ -90,6 +91,11 @@ export class NpmInstallTaskTerminal extends BaseTaskTerminal {
       };
     });
 
-    return await checkAndInstallNpmPackagesForTask(npmInstallProjectOptions);
+    const res = await checkAndInstallNpmPackagesForTask(npmInstallProjectOptions);
+    const duration = this.getDurationInSeconds();
+    if (res.isOk() && duration) {
+      VsCodeLogInstance.info(npmInstallDisplayMessages.durationMessage(duration));
+    }
+    return res;
   }
 }

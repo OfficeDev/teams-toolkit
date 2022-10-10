@@ -6,10 +6,10 @@ import * as vscode from "vscode";
 
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-
+import VsCodeLogInstance from "../../commonlib/log";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import * as commonUtils from "../commonUtils";
-import { DebugSessionExists } from "../constants";
+import { DebugSessionExists, prerequisiteCheckTaskDisplayMessages } from "../constants";
 import {
   localTelemetryReporter,
   maskArrayValue,
@@ -70,8 +70,16 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
     });
   }
 
-  private _do(): Promise<Result<Void, FxError>> {
-    return checkAndInstallForTask(this.args.prerequisites ?? [], this.args.portOccupancy);
+  private async _do(): Promise<Result<Void, FxError>> {
+    const res = await checkAndInstallForTask(
+      this.args.prerequisites ?? [],
+      this.args.portOccupancy
+    );
+    const duration = this.getDurationInSeconds();
+    if (res.isOk() && duration) {
+      VsCodeLogInstance.info(prerequisiteCheckTaskDisplayMessages.durationMessage(duration));
+    }
+    return res;
   }
 
   protected async stop(error?: any): Promise<void> {

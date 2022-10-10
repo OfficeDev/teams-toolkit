@@ -16,7 +16,6 @@ import {
   LocalTelemetryReporter,
   TaskDefaultValue,
 } from "@microsoft/teamsfx-core/build/common/local";
-import { performance } from "perf_hooks";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
@@ -73,7 +72,6 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   private readonly status: LocalTunnelTaskStatus;
   private readonly progressHandler: ProgressHandler;
   private readonly step: Step;
-  private startTime: number | undefined;
 
   constructor(taskDefinition: vscode.TaskDefinition) {
     super(taskDefinition);
@@ -132,7 +130,6 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   private async _do(): Promise<Result<Void, FxError>> {
-    this.startTime = performance.now();
     this.outputStartMessage();
     return this.resolveArgs().then((v) =>
       this.outputStepMessage(v.ngrokArgs, v.ngrokPath).then(() =>
@@ -355,6 +352,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   private async outputSuccessSummary(ngrokTunnel: EndpointInfo): Promise<void> {
+    const duration = this.getDurationInSeconds();
     VsCodeLogInstance.outputChannel.appendLine(localTunnelDisplayMessages.summary);
     VsCodeLogInstance.outputChannel.appendLine("");
     VsCodeLogInstance.outputChannel.appendLine(
@@ -369,6 +367,9 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       localTunnelDisplayMessages.learnMore(localTunnelDisplayMessages.learnMoreHelpLink)
     );
     VsCodeLogInstance.outputChannel.appendLine("");
+    if (duration) {
+      VsCodeLogInstance.info(localTunnelDisplayMessages.durationMessage(duration));
+    }
 
     this.writeEmitter.fire(
       `\r\n${localTunnelDisplayMessages.forwardingUrl(ngrokTunnel.src, ngrokTunnel.dist)}\r\n`
@@ -384,9 +385,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       },
       {
-        [LocalTelemetryReporter.PropertyDuration]: this.startTime
-          ? (performance.now() - this.startTime) / 1000
-          : -1,
+        [LocalTelemetryReporter.PropertyDuration]: duration ?? -1,
       }
     );
   }
@@ -416,9 +415,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
         [TelemetryProperty.Success]: TelemetrySuccess.No,
       },
       {
-        [LocalTelemetryReporter.PropertyDuration]: this.startTime
-          ? (performance.now() - this.startTime) / 1000
-          : -1,
+        [LocalTelemetryReporter.PropertyDuration]: this.getDurationInSeconds() ?? -1,
       }
     );
   }

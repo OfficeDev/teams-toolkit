@@ -64,6 +64,11 @@ export class SetUpSSOTaskTerminal extends BaseTaskTerminal {
     );
     const actions = handler.getActions();
 
-    return await handleDebugActions(actions, setUpSSODisplayMessages);
+    const res = await handleDebugActions(actions, setUpSSODisplayMessages);
+    const duration = this.getDurationInSeconds();
+    if (res.isOk() && duration) {
+      VsCodeLogInstance.info(setUpSSODisplayMessages.durationMessage(duration));
+    }
+    return res;
   }
 }

@@ -135,6 +135,7 @@ export const TaskDefaultValue = Object.freeze({
       backendDebug: 9229,
       botService: 3978,
       botDebug: 9239,
+      spfxService: 4321,
     },
   },
   npmInstall: {

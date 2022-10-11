@@ -301,5 +301,13 @@ describe("CommonUtils", () => {
       const res = commonUtils.getAppName();
       expect(res).equal("name");
     });
+
+    it("throw exception", () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(fs, "readFileSync").throws();
+
+      const res = commonUtils.getAppName();
+      expect(res).equal(undefined);
+    });
   });
 });

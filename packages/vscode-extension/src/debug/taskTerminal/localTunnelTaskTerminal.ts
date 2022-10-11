@@ -206,7 +206,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
                 error?.message ?? ""
               ) +
                 " " +
-                openTerminalMessage,
+                openTerminalMessage(),
               util.format(
                 localize("teamstoolkit.localDebug.ngrokProcessError"),
                 error?.message ?? ""
@@ -229,7 +229,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
                 ExtensionErrors.NgrokStoppedError,
                 util.format(getDefaultString("teamstoolkit.localDebug.ngrokStoppedError"), code) +
                   " " +
-                  openTerminalMessage,
+                  openTerminalMessage(),
                 util.format(localize("teamstoolkit.localDebug.ngrokStoppedError"), code) +
                   " " +
                   openTerminalDisplayMessage()

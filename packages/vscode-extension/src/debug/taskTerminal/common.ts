@@ -83,7 +83,7 @@ export async function handleDebugActions(
 
   if (error) {
     const message =
-      getDefaultString(displayMessages.errorMessageKey) + " " + displayMessages.showDetailMessage;
+      getDefaultString(displayMessages.errorMessageKey) + " " + displayMessages.showDetailMessage();
     const displayMessage =
       localize(displayMessages.errorDisplayMessageKey) +
       " " +

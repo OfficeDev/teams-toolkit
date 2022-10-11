@@ -4,7 +4,7 @@ import * as util from "util";
 
 import { defaultHelpLink } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { ExtensionErrors } from "../error";
-import { localize } from "../utils/localizeUtils";
+import { getDefaultString, localize } from "../utils/localizeUtils";
 
 export const openWenClientCommand = "launch Teams web client";
 export const npmRunDevRegex = /npm[\s]+run[\s]+dev/im;
@@ -95,8 +95,18 @@ export const teamsAppIdPlaceholder = "${teamsAppId}";
 export const teamsAppInternalIdPlaceholder = "${teamsAppInternalId}";
 export const accountHintPlaceholder = "${account-hint}";
 
-export const openOutputMessage = "Please check the output to see the details.";
-export const openTerminalMessage = "Please check the terminal to see the details.";
+export const openOutputMessage = () =>
+  util.format(
+    getDefaultString("teamstoolkit.localDebug.showDetail"),
+    getDefaultString("teamstoolkit.localDebug.outputPanel")
+  );
+
+export const openTerminalMessage = () =>
+  util.format(
+    getDefaultString("teamstoolkit.localDebug.showDetail"),
+    getDefaultString("teamstoolkit.localDebug.terminal")
+  );
+
 export const openOutputDisplayMessage = () =>
   util.format(
     localize("teamstoolkit.localDebug.showDetail"),
@@ -120,7 +130,7 @@ export type DisplayMessages = {
   errorMessageKey: string;
   errorDisplayMessageKey: string;
   errorHelpLink: string;
-  showDetailMessage: string;
+  showDetailMessage: () => string;
   showDetailDisplayMessage: () => string;
   durationMessage: (duration: number) => string;
 };

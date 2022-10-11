@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ProgrammingLanguage } from "../../../../../common/local/constants";
+import { ProgrammingLanguage, TaskOverallLabel } from "../../../../../common/local/constants";
 import { CommentJSONValue, CommentObject, CommentArray } from "comment-json";
 import * as commentJson from "comment-json";
 import {
@@ -252,7 +252,7 @@ function startTeamsAppLocally(
   includeSSO: boolean
 ): Record<string, unknown> {
   const result = {
-    label: TaskLabel.Overall,
+    label: TaskOverallLabel.TransparentDefault,
     dependsOn: [TaskLabel.PrerequisiteCheck, TaskLabel.InstallNpmPackages],
     dependsOrder: "sequence",
   };
@@ -280,7 +280,7 @@ function startTeamsAppLocallyAndInstallApp(
   includeSSO: boolean
 ): Record<string, unknown> {
   const result = startTeamsAppLocally(includeFrontend, includeBackend, includeBot, includeSSO);
-  result.label = TaskLabel.M365Overall;
+  result.label = TaskOverallLabel.TransparentM365;
   (result.dependsOn as string[]).push(TaskLabel.InstallAppInTeams);
 
   return result;
@@ -803,7 +803,7 @@ function generateSpfxTasks(): (Record<string, unknown> | CommentJSONValue)[] {
 
 function startSpfxTeamsAppLocally(): Record<string, unknown> {
   return {
-    label: TaskLabel.Overall,
+    label: TaskOverallLabel.TransparentDefault,
     dependsOn: [TaskLabel.PrerequisiteCheck, TaskLabel.PrepareManifest, TaskLabel.GulpServe],
     dependsOrder: "sequence",
   };

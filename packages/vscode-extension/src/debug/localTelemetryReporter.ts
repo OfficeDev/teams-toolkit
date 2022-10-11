@@ -9,6 +9,7 @@ import {
   LocalTelemetryReporter,
   TaskCommand,
   TaskLabel,
+  TaskOverallLabel,
 } from "@microsoft/teamsfx-core/build/common/local";
 
 import * as globalVariables from "../globalVariables";
@@ -111,7 +112,7 @@ export async function sendDebugAllEvent(
 
   // Transparent task properties
   const preLaunchTaskInfo = await getPreLaunchTaskInfo();
-  if (preLaunchTaskInfo?.m365Overall || preLaunchTaskInfo?.overall) {
+  if (preLaunchTaskInfo && Object.values(preLaunchTaskInfo).length > 0) {
     properties[TelemetryProperty.DebugPrelaunchTaskInfo] = JSON.stringify(preLaunchTaskInfo);
     properties[TelemetryProperty.DebugIsTransparentTask] =
       properties[TelemetryProperty.DebugIsTransparentTask] ?? "true";
@@ -238,10 +239,14 @@ export async function getPreLaunchTaskInfo(): Promise<IPreLaunchTaskInfo | undef
       }
       return dependsOnArr;
     };
-    return {
-      m365Overall: getDependsOn(TaskLabel.M365Overall),
-      overall: getDependsOn(TaskLabel.Overall),
-    };
+    const res: { [key: string]: IDependsOn[] | undefined } = {};
+    Object.values(TaskOverallLabel).forEach((l) => {
+      const dependsOn = getDependsOn(l);
+      if (dependsOn) {
+        res[l] = dependsOn;
+      }
+    });
+    return res;
   } catch {}
 
   // Always return true even if send telemetry failed

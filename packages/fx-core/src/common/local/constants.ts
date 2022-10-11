@@ -104,9 +104,15 @@ export const TaskCommand = Object.freeze({
   prepareManifest: "debug-prepare-manifest",
 });
 
+export const TaskOverallLabel = Object.freeze({
+  NextDefault: "Pre Debug Check & Start All",
+  NextM365: "Pre Debug Check & Start All & Install App",
+  NextSPFx: "prepare dev env",
+  TransparentDefault: "Start Teams App Locally",
+  TransparentM365: "Start Teams App Locally & Install App",
+});
+
 export const TaskLabel = Object.freeze({
-  Overall: "Start Teams App Locally",
-  M365Overall: "Start Teams App Locally & Install App",
   PrerequisiteCheck: "Validate & install prerequisites",
   InstallNpmPackages: "Install npm packages",
   StartLocalTunnel: "Start local tunnel",

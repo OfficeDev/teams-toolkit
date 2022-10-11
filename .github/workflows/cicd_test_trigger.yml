@@ -3,7 +3,7 @@ name: TeamsFx-CICD-Test Triggers
 on:
   workflow_run:
     workflows: ["CD"]
-    branches: ["main", "dev", "ga"]
+    branches: ["main", "dev", "ga", "hotfix/**"]
     types: ["completed"]
 
 jobs:

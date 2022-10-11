@@ -1,15 +1,15 @@
-name: TeamsFx-CICD-Test Triggers
+name: TeamsFx-CD Triggers
 
 on:
   workflow_run:
     workflows: ["CD"]
-    branches: ["main", "dev", "ga"]
+    branches: ["main", "dev", "ga", "hotfix/**"]
     types: ["completed"]
 
 jobs:
   TeamsFxCICDTestTriggers:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && !startsWith(github.event.workflow_run.head_branch, "hotfix") }}
     steps:
       - name: Trigger TeamsFx-CICD-Test
         run: |

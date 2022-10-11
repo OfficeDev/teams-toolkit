@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import * as util from "util";
 
 import { defaultHelpLink } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { ExtensionErrors } from "../error";
+import { localize } from "../utils/localizeUtils";
 
 export const openWenClientCommand = "launch Teams web client";
 export const npmRunDevRegex = /npm[\s]+run[\s]+dev/im;
@@ -93,8 +95,18 @@ export const teamsAppIdPlaceholder = "${teamsAppId}";
 export const teamsAppInternalIdPlaceholder = "${teamsAppInternalId}";
 export const accountHintPlaceholder = "${account-hint}";
 
-export const openOutputPanelCommand = "command:fx-extension.showOutputChannel";
-export const openTerminalCommand = "command:workbench.action.terminal.focus";
+export const openOutputMessage = "Please check the output to see the details.";
+export const openTerminalMessage = "Please check the terminal to see the details.";
+export const openOutputDisplayMessage = () =>
+  util.format(
+    localize("teamstoolkit.localDebug.showDetail"),
+    `[${localize("teamstoolkit.localDebug.outputPanel")}](command:fx-extension.showOutputChannel)`
+  );
+export const openTerminalDisplayMessage = () =>
+  util.format(
+    localize("teamstoolkit.localDebug.showDetail"),
+    `[${localize("teamstoolkit.localDebug.terminal")}](command:workbench.action.terminal.focus)`
+  );
 
 export type DisplayMessages = {
   taskName: string;
@@ -107,9 +119,9 @@ export type DisplayMessages = {
   errorName: string;
   errorMessageKey: string;
   errorDisplayMessageKey: string;
-  errorMessageLink: string;
   errorHelpLink: string;
-  errorMessageCommand: string;
+  showDetailMessage: string;
+  showDetailDisplayMessage: () => string;
   durationMessage: (duration: number) => string;
 };
 
@@ -130,8 +142,8 @@ export const prerequisiteCheckDisplayMessages: DisplayMessages = {
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
-  errorMessageCommand: openOutputPanelCommand,
-  errorMessageLink: "teamstoolkit.localDebug.outputPanel",
+  showDetailMessage: openOutputMessage,
+  showDetailDisplayMessage: openOutputDisplayMessage,
   errorHelpLink: "https://aka.ms/teamsfx-envchecker-help",
   launchServices:
     "Services will be launched locally, please check your terminal window for details.",
@@ -152,8 +164,8 @@ export const prerequisiteCheckForGetStartedDisplayMessages: DisplayMessages = {
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckFailure",
-  errorMessageCommand: openOutputPanelCommand,
-  errorMessageLink: "teamstoolkit.localDebug.outputPanel",
+  showDetailMessage: openOutputMessage,
+  showDetailDisplayMessage: openOutputDisplayMessage,
   errorHelpLink: "https://aka.ms/teamsfx-envchecker-help",
   durationMessage: (duration: number) =>
     `Finished prerequisite check in ${duration.toFixed(2)} seconds.`,
@@ -173,8 +185,8 @@ export const prerequisiteCheckTaskDisplayMessages: DisplayMessages = {
   errorName: ExtensionErrors.PrerequisitesValidationError,
   errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
-  errorMessageCommand: openOutputPanelCommand,
-  errorMessageLink: "teamstoolkit.localDebug.outputPanel",
+  showDetailMessage: openOutputMessage,
+  showDetailDisplayMessage: openOutputDisplayMessage,
   errorHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task",
   durationMessage: (duration: number) =>
     `Finished 'Validate & install prerequisites' Visual Studio Code task in ${duration.toFixed(
@@ -195,8 +207,8 @@ export const npmInstallDisplayMessages: DisplayMessages = {
   errorName: ExtensionErrors.PrerequisitesInstallPackagesError,
   errorMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.npmInstallFailure",
-  errorMessageCommand: openTerminalCommand,
-  errorMessageLink: "teamstoolkit.localDebug.terminal",
+  showDetailMessage: openTerminalMessage,
+  showDetailDisplayMessage: openTerminalDisplayMessage,
   errorHelpLink: "https://aka.ms/teamsfx-npm-package-task",
   durationMessage: (duration: number) =>
     `Finished 'Install npm packages' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
@@ -231,8 +243,8 @@ export const setUpTabDisplayMessages: DisplayMessages = {
   errorName: ExtensionErrors.SetUpTabError,
   errorMessageKey: "teamstoolkit.localDebug.setUpTabFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.setUpTabFailure",
-  errorMessageCommand: "command:fx-extension.showOutputChannel",
-  errorMessageLink: "teamstoolkit.localDebug.outputPanel",
+  showDetailMessage: openOutputMessage,
+  showDetailDisplayMessage: openOutputDisplayMessage,
   errorHelpLink: "https://aka.ms/teamsfx-debug-set-up-tab-task",
   durationMessage: (duration: number) =>
     `Finished 'Set up tab' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
@@ -248,8 +260,8 @@ export const setUpBotDisplayMessages: DisplayMessages = {
   errorName: ExtensionErrors.SetUpBotError,
   errorMessageKey: "teamstoolkit.localDebug.setUpBotFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.setUpBotFailure",
-  errorMessageCommand: "command:fx-extension.showOutputChannel",
-  errorMessageLink: "teamstoolkit.localDebug.outputPanel",
+  showDetailMessage: openOutputMessage,
+  showDetailDisplayMessage: openOutputDisplayMessage,
   errorHelpLink: "https://aka.ms/teamsfx-debug-set-up-bot-task",
   durationMessage: (duration: number) =>
     `Finished 'Set up bot' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
@@ -265,8 +277,8 @@ export const setUpSSODisplayMessages: DisplayMessages = {
   errorName: ExtensionErrors.SetUpSSOError,
   errorMessageKey: "teamstoolkit.localDebug.setUpSSOFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.setUpSSOFailure",
-  errorMessageCommand: "command:fx-extension.showOutputChannel",
-  errorMessageLink: "teamstoolkit.localDebug.outputPanel",
+  showDetailMessage: openOutputMessage,
+  showDetailDisplayMessage: openOutputDisplayMessage,
   errorHelpLink: "https://aka.ms/teamsfx-debug-set-up-sso-task",
   durationMessage: (duration: number) =>
     `Finished 'Set up SSO' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
@@ -284,8 +296,8 @@ export const prepareManifestDisplayMessages: DisplayMessages = {
   errorName: ExtensionErrors.PrepareManifestError,
   errorMessageKey: "teamstoolkit.localDebug.prepareManifestFailure",
   errorDisplayMessageKey: "teamstoolkit.localDebug.prepareManifestFailure",
-  errorMessageCommand: "command:fx-extension.showOutputChannel",
-  errorMessageLink: "teamstoolkit.localDebug.outputPanel",
+  showDetailMessage: openOutputMessage,
+  showDetailDisplayMessage: openOutputDisplayMessage,
   errorHelpLink: "https://aka.ms/teamsfx-debug-prepare-manifest-task",
   durationMessage: (duration: number) =>
     `Finished 'Build and upload Teams manifest' Visual Studio Code task in ${duration.toFixed(

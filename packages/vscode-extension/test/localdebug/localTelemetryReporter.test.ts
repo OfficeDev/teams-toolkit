@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local";
+import { LocalEnvManager, TaskOverallLabel } from "@microsoft/teamsfx-core/build/common/local";
 import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -118,8 +118,8 @@ describe("LocalTelemetryReporter", () => {
         .stub(globalVariables, "workspaceUri")
         .value(vscode.Uri.parse(path.resolve(__dirname, "data", "tabbotfunc")));
       const res = await getPreLaunchTaskInfo();
-      chai.assert.isUndefined(res?.m365Overall);
-      chai.assert.exists(res?.overall);
+      chai.assert.isUndefined(res?.[TaskOverallLabel.TransparentM365]);
+      chai.assert.exists(res?.[TaskOverallLabel.TransparentDefault]);
       chai.assert.sameDeepOrderedMembers(res?.overall ?? [], [
         {
           command: "debug-check-prerequisites",
@@ -170,8 +170,8 @@ describe("LocalTelemetryReporter", () => {
         .stub(globalVariables, "workspaceUri")
         .value(vscode.Uri.parse(path.resolve(__dirname, "data", "m365")));
       const res = await getPreLaunchTaskInfo();
-      chai.assert.exists(res?.m365Overall);
-      chai.assert.sameDeepOrderedMembers(res?.m365Overall ?? [], [
+      chai.assert.exists(res?.[TaskOverallLabel.TransparentM365]);
+      chai.assert.sameDeepOrderedMembers(res?.[TaskOverallLabel.TransparentM365] ?? [], [
         {
           command: "debug-check-prerequisites",
           label: "Validate & install prerequisites",
@@ -208,8 +208,8 @@ describe("LocalTelemetryReporter", () => {
           type: "<unknown>",
         },
       ]);
-      chai.assert.exists(res?.overall);
-      chai.assert.sameDeepOrderedMembers(res?.overall ?? [], [
+      chai.assert.exists(res?.[TaskOverallLabel.TransparentDefault]);
+      chai.assert.sameDeepOrderedMembers(res?.[TaskOverallLabel.TransparentDefault] ?? [], [
         {
           command: "debug-check-prerequisites",
           label: "Validate & install prerequisites",
@@ -248,9 +248,9 @@ describe("LocalTelemetryReporter", () => {
         .stub(globalVariables, "workspaceUri")
         .value(vscode.Uri.parse(path.resolve(__dirname, "data", "customized")));
       const res = await getPreLaunchTaskInfo();
-      chai.assert.isUndefined(res?.m365Overall);
-      chai.assert.exists(res?.overall);
-      chai.assert.sameDeepOrderedMembers(res?.overall ?? [], [
+      chai.assert.isUndefined(res?.[TaskOverallLabel.TransparentM365]);
+      chai.assert.exists(res?.[TaskOverallLabel.TransparentDefault]);
+      chai.assert.sameDeepOrderedMembers(res?.[TaskOverallLabel.TransparentDefault] ?? [], [
         {
           command: "debug-npm-install",
           label: "Install npm packages",

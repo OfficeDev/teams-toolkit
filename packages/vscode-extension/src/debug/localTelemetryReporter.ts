@@ -191,12 +191,9 @@ interface IDependsOn {
   command: string;
 }
 
-interface IPreLaunchTaskInfo {
-  m365Overall?: IDependsOn[];
-  overall?: IDependsOn[];
-}
+type PreLaunchTaskInfo = { [key: string]: IDependsOn[] | undefined };
 
-export async function getPreLaunchTaskInfo(): Promise<IPreLaunchTaskInfo | undefined> {
+export async function getPreLaunchTaskInfo(): Promise<PreLaunchTaskInfo | undefined> {
   try {
     if (!globalVariables.isTeamsFxProject || !globalVariables.workspaceUri?.fsPath) {
       return undefined;

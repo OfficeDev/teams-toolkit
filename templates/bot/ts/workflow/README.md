@@ -70,7 +70,7 @@ The following files are project-related files. You generally will not need to cu
 
 # Customize your application
 
-By default a single command is generated that sends the `helloworldCommandResponse.json` Adaptive Card when a user types `hello` in the private message chat with the bot.
+By default a single command is generated that sends the `helloworldCommandResponse.json` Adaptive Card when a user types `helloWorld` in the private message chat with the bot.
 
 This section outlines some customization you can do to adopt the application for your needs.
 

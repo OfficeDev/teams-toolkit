@@ -47,16 +47,14 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
-    // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
+    await execAsync(`npm install && npm run build`, {
+      cwd: path.resolve(testFolder, 'incoming-webhook'),
+      env: process.env,
+      timeout: 0,
+    });
 
 
-    // deploy
-    await CliHelper.deployAll(projectPath);
-
-    await cleanUp(appName, projectPath, true, false, false);
+    await cleanUp(appName, projectPath, false, false, false);
 
   });
 

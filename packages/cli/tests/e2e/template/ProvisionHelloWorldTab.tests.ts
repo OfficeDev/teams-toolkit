@@ -63,7 +63,7 @@ describe("teamsfx new template", function () {
     // deploy
     await CliHelper.deployAll(projectPath);
 
-    await cleanUp(appName, projectPath, true, false, false);
+    await cleanUp(appName, projectPath, false, false, false);
 
   });
 

@@ -18,7 +18,8 @@ import {
   readContextMultiEnv
 } from "../commonUtils";
 import {
-  FrontendValidator
+  SharepointValidator,
+  AppStudioValidator
 } from "../../commonlib"
 import { TemplateProject } from "../../commonlib/constants"
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -48,23 +49,70 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
+    const config = await fs.readJson(`${projectPath}/SPFx/config/config.json`);
+    expect(config["bundles"]["helloworld-web-part"]).exist;
+    expect(config["bundles"]["secondwebpart-web-part"]).exist;
+
+    {    // validation succeed without provision
+      const command = "teamsfx validate";
+      const result = await execAsync(command, {
+        cwd: path.join(testFolder, appName),
+        env: process.env,
+        timeout: 0,
+      });
+      expect(result.stderr).to.eq("");
+
+    }
+
+    {
+      // validation local env succeed without local debug
+      const command = `teamsfx validate --env ${environmentManager.getLocalEnvName()}`;
+      const result = await execAsync(command, {
+        cwd: path.join(testFolder, appName),
+        env: process.env,
+        timeout: 0,
+      });
+      expect(result.stderr).to.eq("");
+    }
+
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
-    // Validate Provision
-    const context = await readContextMultiEnv(projectPath, env);
+    {
+      // Get context
+      const context = await readContextMultiEnv(
+        projectPath,
+        environmentManager.getDefaultEnvName()
+      );
 
-    // Validate Tab Frontend
-    const frontend = FrontendValidator.init(context);
-    await FrontendValidator.validateProvision(frontend);
+      // Only check Teams App existence
+      const appStudio = AppStudioValidator.init(context);
+      AppStudioValidator.validateTeamsAppExist(appStudio);
+    }
 
     // deploy
     await CliHelper.deployAll(projectPath);
 
+
+    {
+      // Validate sharepoint package
+      const solutionConfig = await fs.readJson(
+        `${projectPath}/SPFx/config/package-solution.json`
+      );
+      const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
+      appId = solutionConfig["solution"]["id"];
+      expect(appId).to.not.be.empty;
+      expect(await fs.pathExists(sharepointPackage)).to.be.true;
+
+      // Check if package exsist in App Catalog
+      SharepointValidator.init();
+      SharepointValidator.validateDeploy(appId);
+    }
+
     await cleanUp(appName, projectPath, true, false, true);
 
   });
-  
+
 });

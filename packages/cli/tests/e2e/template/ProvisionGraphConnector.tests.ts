@@ -63,6 +63,12 @@ describe("teamsfx new template", function () {
     const frontend = FrontendValidator.init(context);
     await FrontendValidator.validateProvision(frontend);
 
+    await execAsync(`npm i @types/node -D`, {
+      cwd: path.resolve(testFolder, 'api'),
+      env: process.env,
+      timeout: 0,
+    });
+
     // deploy
     await CliHelper.deployAll(projectPath);
 

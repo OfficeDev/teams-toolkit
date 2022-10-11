@@ -57,9 +57,6 @@ describe("teamsfx new template", function () {
 
     // Validate Provision
     await validateTabAndBotProjectProvision(projectPath, env);
-
-    // deploy
-    await CliHelper.deployAll(projectPath);
     
     // Assert
     {

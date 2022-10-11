@@ -75,7 +75,7 @@ describe("teamsfx new template", function () {
     await CliHelper.deployAll(projectPath);
 
 
-    await cleanUp(appName, projectPath, true, true, false);
+    await cleanUp(appName, projectPath, true, false, false);
 
   });
 

@@ -332,7 +332,7 @@ function validateAndInstallPrerequisites(
     ports.push(`${TaskDefaultValue.checkPrerequisites.ports.spfxService}, // SPFx service port`);
   }
   prerequisites.push(
-    `"${Prerequisite.portOccupancy}", // Validate available ports to ensure those local debug ones are not occupied.`
+    `"${Prerequisite.portOccupancy}", // Validate available ports to ensure those debug ones are not occupied.`
   );
 
   const prerequisitesComment = `

@@ -123,6 +123,8 @@ export const TaskLabel = Object.freeze({
   StartBot: "Start bot",
   StartAzuriteEmulator: "Start Azurite emulator",
   InstallAppInTeams: "Install app in Teams",
+  GulpTrustDevCert: "gulp trust-dev-cert",
+  GulpServe: "gulp serve",
 });
 
 export const TaskDefaultValue = Object.freeze({
@@ -133,6 +135,7 @@ export const TaskDefaultValue = Object.freeze({
       backendDebug: 9229,
       botService: 3978,
       botDebug: 9239,
+      spfxService: 4321,
     },
   },
   npmInstall: {

@@ -476,14 +476,14 @@ export async function generateLocalDebugSettingsCommon(
     // scaffold for both vscode and cli
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
       if (isSpfx) {
+        const isTransparent = await useTransparentTasks(inputs.projectPath);
         // Only generate launch.json and tasks.json for SPFX
-        const launchConfigurations = Launch.generateSpfxConfigurations();
-        const launchCompounds = Launch.generateSpfxCompounds();
-        const tasks = (await useTransparentTasks(inputs.projectPath))
-          ? TasksTransparency.generateSpfxTasks()
-          : Tasks.generateSpfxTasks();
-        const tasksInputs = Tasks.generateInputs();
-
+        const launchConfigurations = isTransparent
+          ? LaunchTransparency.generateSpfxConfigurations()
+          : Launch.generateSpfxConfigurations();
+        const launchCompounds = isTransparent
+          ? LaunchTransparency.generateSpfxCompounds()
+          : Launch.generateSpfxCompounds();
         await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
         await updateJson(
           `${inputs.projectPath}/.vscode/launch.json`,
@@ -494,16 +494,26 @@ export async function generateLocalDebugSettingsCommon(
           },
           LaunchNext.mergeLaunches
         );
-
-        await updateJson(
-          `${inputs.projectPath}/.vscode/tasks.json`,
-          {
-            version: "2.0.0",
-            tasks: tasks,
-            inputs: tasksInputs,
-          },
-          TasksNext.mergeTasks
-        );
+        if (isTransparent) {
+          const transparentTasksJson = TasksTransparency.generateSpfxTasksJson();
+          await updateCommentJson(
+            `${inputs.projectPath}/.vscode/tasks.json`,
+            transparentTasksJson as CommentObject,
+            TasksTransparency.mergeTasksJson
+          );
+        } else {
+          const tasks = Tasks.generateSpfxTasks();
+          const tasksInputs = Tasks.generateInputs();
+          await updateJson(
+            `${inputs.projectPath}/.vscode/tasks.json`,
+            {
+              version: "2.0.0",
+              tasks: tasks,
+              inputs: tasksInputs,
+            },
+            TasksNext.mergeTasks
+          );
+        }
       } else {
         await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
         if (await useTransparentTasks(inputs.projectPath)) {

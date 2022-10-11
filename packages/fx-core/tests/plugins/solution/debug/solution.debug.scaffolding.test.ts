@@ -879,9 +879,11 @@ describe("solution.debug.scaffolding", () => {
       chai.assert.equal(compounds.length, 2);
 
       //assert output tasks.json
-      const tasksAll = fs.readJSONSync(expectedTasksFile);
-      const tasks: [] = tasksAll["tasks"];
-      const tasksInput: [] = tasksAll["inputs"];
+      const tasksAll = commentJson.parse(
+        fs.readFileSync(expectedTasksFile).toString()
+      ) as CommentObject;
+      const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
+      const tasksInput = tasksAll["inputs"] as CommentArray<CommentObject>;
       chai.assert.equal(tasks.length, 7);
       chai.assert.equal(tasksInput.length, 1);
 

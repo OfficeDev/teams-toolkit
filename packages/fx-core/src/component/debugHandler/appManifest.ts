@@ -153,6 +153,9 @@ export class AppManifestDebugHandler {
       this.envInfoV3.state[ComponentNames.AppManifest] =
         this.envInfoV3.state[ComponentNames.AppManifest] || {};
 
+      // For SPFx manifest
+      this.envInfoV3.config.isLocalDebug = true;
+
       // build
       const packagePathResult = await buildTeamsAppPackage(
         this.projectSettingsV3,

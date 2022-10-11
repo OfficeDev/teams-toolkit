@@ -141,7 +141,11 @@ export async function useTransparentTasks(projectPath?: string): Promise<boolean
   if (await fs.pathExists(tasksJsonPath)) {
     try {
       const tasksContent = await fs.readFile(tasksJsonPath, "utf-8");
-      return tasksContent.includes(TaskCommand.checkPrerequisites); // TODO: update the condition
+      for (const command of Object.values(TaskCommand)) {
+        if (tasksContent.includes(command)) {
+          return true;
+        }
+      }
     } catch (error) {
       return false;
     }

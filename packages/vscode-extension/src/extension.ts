@@ -91,7 +91,9 @@ export async function activate(context: vscode.ExtensionContext) {
       m365TokenProvider: M365TokenInstance,
     });
 
-    registerCodelensAndHoverProviders(context);
+    if (vscode.workspace.isTrusted) {
+      registerCodelensAndHoverProviders(context);
+    }
 
     registerDebugConfigProviders(context);
 

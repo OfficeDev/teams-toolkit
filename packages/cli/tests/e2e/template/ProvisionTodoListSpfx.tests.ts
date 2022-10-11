@@ -52,27 +52,27 @@ describe("teamsfx new template", function () {
     const config = await fs.readJson(`${projectPath}/SPFx/config/config.json`);
     expect(config["bundles"]["todo-list-web-part"]).exist;
 
-    {    // validation succeed without provision
-      const command = "teamsfx validate";
-      const result = await execAsync(command, {
-        cwd: path.join(testFolder, appName),
-        env: process.env,
-        timeout: 0,
-      });
-      expect(result.stderr).to.eq("");
+    // {    // validation succeed without provision
+    //   const command = "teamsfx validate";
+    //   const result = await execAsync(command, {
+    //     cwd: path.join(testFolder, appName),
+    //     env: process.env,
+    //     timeout: 0,
+    //   });
+    //   expect(result.stderr).to.eq("");
 
-    }
+    // }
 
-    {
-      // validation local env succeed without local debug
-      const command = `teamsfx validate --env ${environmentManager.getLocalEnvName()}`;
-      const result = await execAsync(command, {
-        cwd: path.join(testFolder, appName),
-        env: process.env,
-        timeout: 0,
-      });
-      expect(result.stderr).to.eq("");
-    }
+    // {
+    //   // validation local env succeed without local debug
+    //   const command = `teamsfx validate --env ${environmentManager.getLocalEnvName()}`;
+    //   const result = await execAsync(command, {
+    //     cwd: path.join(testFolder, appName),
+    //     env: process.env,
+    //     timeout: 0,
+    //   });
+    //   expect(result.stderr).to.eq("");
+    // }
 
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);

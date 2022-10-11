@@ -69,14 +69,14 @@
 /packages/fx-core/src/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 
-/packages/fx-core/src/plugins/resource/bot @IvanJobs @eriolchan @Yukun-dong @Siglud
-/packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan @Yukun-dong @Siglud
-/packages/fx-core/src/plugins/resource/bot/functionHostedBot @swatDong @XiaofuHuang @a1exwang @kimizhu @IvanJobs @eriolchan @Yukun-dong @Siglud
-/packages/fx-core/tests/plugins/resource/bot/unit/functionsHostedBot @swatDong @XiaofuHuang @a1exwang @kimizhu @IvanJobs @eriolchan @Yukun-dong @Siglud
+/packages/fx-core/src/component/feature/bot @IvanJobs @eriolchan @Yukun-dong @Siglud
+/packages/fx-core/src/component/code/botCode.ts @IvanJobs @eriolchan @Yukun-dong @Siglud
+/packages/fx-core/src/component/resource/botService @IvanJobs @eriolchan @Yukun-dong @Siglud
+/packages/fx-core/src/component/resource/azureAppService @IvanJobs @eriolchan @Yukun-dong @Siglud @hund030
 
-/packages/fx-core/src/plugins/resource/frontend @hund030 @eriolchan @IvanJobs
-/packages/fx-core/tests/plugins/resource/frontend @hund030 @eriolchan @IvanJobs
-/packages/fx-core/tests/plugins/resource/dotnet @hund030 @eriolchan @IvanJobs
+/packages/fx-core/src/component/feature/tab.ts @eriolchan @hund030 @huimiu
+/packages/fx-core/src/component/code/tab @hund030 @eriolchan @huimiu
+/packages/fx-core/src/component/resource/azureStorage @hund030 @eriolchan @huimiu
 
 /packages/fx-core/src/component/feature/api @eriolchan @hund030 @IvanJobs
 /packages/fx-core/src/component/code/api @eriolchan @hund030 @IvanJobs

@@ -4,21 +4,16 @@
 import { IBotRegistration } from "./interfaces/IBotRegistration";
 
 import { AxiosInstance, AxiosResponse, default as axios } from "axios";
-import {
-  BotRegistrationNotFoundError,
-  ConfigUpdatingError,
-  MessageEndpointUpdatingError,
-  ProvisionError,
-} from "../errors";
+import { ConfigUpdatingError, MessageEndpointUpdatingError, ProvisionError } from "../errors";
 import { CommonStrings, ConfigNames } from "../strings";
 import { RetryHandler } from "../retryHandler";
 import { Messages } from "../messages";
-import { getAppStudioEndpoint } from "../../../../component/resource/appManifest/constants";
-import { LogProvider } from "@microsoft/teamsfx-api";
+import { getAppStudioEndpoint } from "../../appManifest/constants";
+import { ResourceContextV3 } from "@microsoft/teamsfx-api";
 import { CheckThrowSomethingMissing } from "../../../error";
 import { FxBotPluginResultFactory } from "../result";
 
-export class AppStudio {
+export class AppStudioClient {
   private static baseUrl = getAppStudioEndpoint();
 
   private static newAxiosInstance(accessToken: string): AxiosInstance {
@@ -47,15 +42,15 @@ export class AppStudio {
   }
 
   public static async getBotRegistration(
-    accessToken: string,
-    botId: string
+    botId: string,
+    token: string
   ): Promise<IBotRegistration | undefined> {
-    const axiosInstance = AppStudio.newAxiosInstance(accessToken);
+    const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     const getBotRegistrationResponse: AxiosResponse<any> | undefined = await RetryHandler.Retry(
       async () => {
         try {
-          return await axiosInstance.get(`${AppStudio.baseUrl}/api/botframework/${botId}`);
+          return await axiosInstance.get(`${AppStudioClient.baseUrl}/api/botframework/${botId}`);
         } catch (e) {
           if (e.response?.status === 404) {
             return e.response;
@@ -75,24 +70,24 @@ export class AppStudio {
   }
 
   public static async createBotRegistration(
-    accessToken: string,
     registration: IBotRegistration,
-    logger?: LogProvider
+    token: string,
+    context: ResourceContextV3
   ): Promise<void> {
-    const axiosInstance = AppStudio.newAxiosInstance(accessToken);
+    const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     let response = undefined;
     try {
       if (registration.botId) {
-        const botReg = await AppStudio.getBotRegistration(accessToken, registration.botId);
+        const botReg = await AppStudioClient.getBotRegistration(token, registration.botId);
         if (botReg) {
-          logger?.info(Messages.BotResourceExist("Appstudio"));
+          context.logProvider?.info(Messages.BotResourceExist("Appstudio"));
           return;
         }
       }
 
       response = await RetryHandler.Retry(() =>
-        axiosInstance.post(`${AppStudio.baseUrl}/api/botframework`, registration)
+        axiosInstance.post(`${AppStudioClient.baseUrl}/api/botframework`, registration)
       );
     } catch (e) {
       e.teamsfxUrlName = "<create-bot-registration>";
@@ -106,23 +101,16 @@ export class AppStudio {
     return;
   }
 
-  public static async updateMessageEndpoint(
-    accessToken: string,
-    botId: string,
-    endpoint: string
+  public static async updateBotRegistration(
+    token: string,
+    botReg: IBotRegistration
   ): Promise<void> {
-    const axiosInstance = AppStudio.newAxiosInstance(accessToken);
-
-    const botReg = await AppStudio.getBotRegistration(accessToken, botId);
-    if (!botReg) {
-      throw new BotRegistrationNotFoundError(botId);
-    }
-    botReg.messagingEndpoint = endpoint;
+    const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     let response = undefined;
     try {
       response = await RetryHandler.Retry(() =>
-        axiosInstance.post(`${AppStudio.baseUrl}/api/botframework/${botId}`, botReg)
+        axiosInstance.post(`${AppStudioClient.baseUrl}/api/botframework/${botReg.botId}`, botReg)
       );
     } catch (e) {
       e.teamsfxUrlName = "<update-message-endpoint>";

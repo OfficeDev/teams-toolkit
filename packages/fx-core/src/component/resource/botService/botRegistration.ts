@@ -4,27 +4,35 @@
 import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
 import { err, FxError, ResourceContextV3, Result, v3, ok } from "@microsoft/teamsfx-api";
 import { ComponentNames } from "../../constants";
-import { GraphScopes } from "../../../common/tools";
+import { GraphScopes, AppStudioScopes } from "../../../common/tools";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "./resourceNameFactory";
 import { MaxLengths } from "./constants";
 import { GraphClient } from "./graphClient";
+import { AppStudioClient } from "./appStudio/appStudioClient";
+import { normalizeName } from "../../utils";
+import { PluginLocalDebug } from "./strings";
 
 export enum BotAuthType {
   AADApp = "AADApp",
   Identity = "User-Assigned Managed Identity", // TODO: Make room for potential changes in the future.
 }
 
+export interface IBotAadCredential {
+  botId: string;
+  botPassword: string;
+}
+
 export class BotRegistration {
   public static async createBotRegistration(
-    context: ResourceContextV3, // Require awareness, for example, local vs remote, by context.
+    context: ResourceContextV3,
     token: string, // Make it general by `token` because the token may comes from M365 or Azure in the future.
     botAuthType: BotAuthType = BotAuthType.AADApp
   ): Promise<Result<undefined, FxError>> {
-    // Init bot state.
+    // 1. Init bot state.
     context.envInfo.state[ComponentNames.TeamsBot] ||= {};
 
-    // Prepare authentication for bot.
+    // 2. Prepare authentication for bot.
     if (botAuthType === BotAuthType.AADApp) {
       // Create bot aad app.
       // Respect existing bot aad from config first.
@@ -76,14 +84,39 @@ export class BotRegistration {
       //TODO: Support identity.
     }
 
-    // Do bot registration.
+    // 3. Do bot registration.
     if (context.envInfo.envName === "local") {
+      // 3.1 Check if bot registration is existing.
+      const botAadCredential = context.envInfo.state[ComponentNames.TeamsBot] as IBotAadCredential;
+      const appStudioTokenRes = await context.tokenProvider.m365TokenProvider.getAccessToken({
+        scopes: AppStudioScopes,
+      });
+      if (appStudioTokenRes.isErr()) {
+        return err(appStudioTokenRes.error);
+      }
+      const appStudioToken = appStudioTokenRes.value;
+      const botReg = await AppStudioClient.getBotRegistration(
+        botAadCredential.botId,
+        appStudioToken
+      );
+      if (botReg) {
+        // A bot registration with the specific botId is existing, so do nothing.
+        return ok(undefined);
+      }
+      // 3.2 Register a new bot registration.
+      const initialBotReg: IBotRegistration = {
+        botId: botAadCredential.botId,
+        name: normalizeName(context.projectSetting.appName) + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
+        description: "",
+        iconUrl: "",
+        messagingEndpoint: "",
+        callingEndpoint: "",
+      };
+      await AppStudioClient.createBotRegistration(initialBotReg, token, context);
     } else {
       // For remote environments.
       // Do nothing since arm/bicep will handle the bot registration.
     }
-
-    // Update states for bot.
 
     return ok(undefined);
   }
@@ -91,11 +124,6 @@ export class BotRegistration {
   public static async updateMessageEndpoint(
     botId: string,
     endpoint: string,
-    token: string
-  ): Promise<void> {}
-
-  public static async updateBotRegistration(
-    botRegistration: IBotRegistration,
     token: string
   ): Promise<void> {}
 }

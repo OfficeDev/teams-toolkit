@@ -146,6 +146,7 @@ export async function useTransparentTasks(projectPath?: string): Promise<boolean
           return true;
         }
       }
+      return false;
     } catch (error) {
       return false;
     }

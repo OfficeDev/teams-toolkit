@@ -1,13 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IAADApplication, IAADPassword } from "./interfaces/IAADApplication";
 import { IBotRegistration } from "./interfaces/IBotRegistration";
-import { IAADDefinition } from "./interfaces/IAADDefinition";
 
 import { AxiosInstance, AxiosResponse, default as axios } from "axios";
 import {
-  AADAppCheckingError,
   BotRegistrationNotFoundError,
   ConfigUpdatingError,
   MessageEndpointUpdatingError,
@@ -47,107 +44,6 @@ export class AppStudio {
       return config;
     });
     return instance;
-  }
-
-  public static async createAADAppV2(
-    accessToken: string,
-    aadApp: IAADDefinition
-  ): Promise<IAADDefinition> {
-    const axiosInstance = AppStudio.newAxiosInstance(accessToken);
-
-    let response = undefined;
-    try {
-      response = await RetryHandler.Retry(() =>
-        axiosInstance.post(`${AppStudio.baseUrl}/api/aadapp/v2`, aadApp)
-      );
-    } catch (e) {
-      throw new ProvisionError(CommonStrings.AAD_APP, e);
-    }
-
-    if (!response || !response.data) {
-      throw new ProvisionError(CommonStrings.AAD_APP);
-    }
-
-    const app = response.data as IAADDefinition;
-    if (!app || !app.id || !app.appId) {
-      throw new ProvisionError(CommonStrings.AAD_APP);
-    }
-
-    return app;
-  }
-
-  public static async createAADApp(
-    accessToken: string,
-    aadApp: IAADApplication
-  ): Promise<IAADApplication> {
-    const axiosInstance = AppStudio.newAxiosInstance(accessToken);
-
-    let response = undefined;
-    try {
-      response = await RetryHandler.Retry(() =>
-        axiosInstance.post(`${AppStudio.baseUrl}/api/aadapp`, aadApp)
-      );
-    } catch (e) {
-      throw new ProvisionError(CommonStrings.AAD_APP, e);
-    }
-
-    if (!response || !response.data) {
-      throw new ProvisionError(CommonStrings.AAD_APP);
-    }
-
-    const app = response.data as IAADApplication;
-    if (!app || !app.id || !app.objectId) {
-      throw new ProvisionError(CommonStrings.AAD_APP);
-    }
-
-    return app;
-  }
-
-  public static async isAADAppExisting(accessToken: string, objectId: string): Promise<boolean> {
-    const axiosInstance = AppStudio.newAxiosInstance(accessToken);
-
-    let response = undefined;
-    try {
-      response = await RetryHandler.Retry(() =>
-        axiosInstance.get(`${AppStudio.baseUrl}/api/aadapp/v2/${objectId}`)
-      );
-    } catch (e) {
-      throw new AADAppCheckingError(e);
-    }
-
-    if (!response || !response.data) {
-      return false;
-    }
-
-    const app = response.data as IAADDefinition;
-    return !(!app || !app.id || !app.appId);
-  }
-
-  public static async createAADAppPassword(
-    accessToken: string,
-    aadAppObjectId?: string
-  ): Promise<IAADPassword> {
-    const axiosInstance = AppStudio.newAxiosInstance(accessToken);
-
-    let response = undefined;
-    try {
-      response = await RetryHandler.Retry(() =>
-        axiosInstance.post(`${AppStudio.baseUrl}/api/aadapp/${aadAppObjectId}/passwords`)
-      );
-    } catch (e) {
-      throw new ProvisionError(CommonStrings.AAD_CLIENT_SECRET, e);
-    }
-
-    if (!response || !response.data) {
-      throw new ProvisionError(CommonStrings.AAD_CLIENT_SECRET);
-    }
-
-    const app = response.data as IAADPassword;
-    if (!app) {
-      throw new ProvisionError(CommonStrings.AAD_CLIENT_SECRET);
-    }
-
-    return app;
   }
 
   public static async getBotRegistration(

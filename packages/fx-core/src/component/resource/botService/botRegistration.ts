@@ -2,20 +2,13 @@
 // Licensed under the MIT license.
 
 import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
-import { err, FxError, ResourceContextV3, Result, v3 } from "@microsoft/teamsfx-api";
+import { err, FxError, ResourceContextV3, Result, v3, ok } from "@microsoft/teamsfx-api";
 import { ComponentNames } from "../../constants";
 import { GraphScopes } from "../../../common/tools";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "./resourceNameFactory";
 import { MaxLengths } from "./constants";
 import { GraphClient } from "./graphClient";
-
-export interface BotRegistrationData {
-  // IBotRegistration is required to do bot registration.
-  botRegistration?: IBotRegistration;
-  // Bot Password is required in runtime of the bot project, so separated it from IBotRegistration.
-  botPassword?: string;
-}
 
 export enum BotAuthType {
   AADApp = "AADApp",
@@ -27,7 +20,7 @@ export class BotRegistration {
     context: ResourceContextV3, // Require awareness, for example, local vs remote, by context.
     token: string, // Make it general by `token` because the token may comes from M365 or Azure in the future.
     botAuthType: BotAuthType = BotAuthType.AADApp
-  ): Promise<Result<BotRegistrationData, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     // Init bot state.
     context.envInfo.state[ComponentNames.TeamsBot] ||= {};
 
@@ -92,7 +85,7 @@ export class BotRegistration {
 
     // Update states for bot.
 
-    return {};
+    return ok(undefined);
   }
 
   public static async updateMessageEndpoint(

@@ -50,6 +50,7 @@ The following files provide the business logic for the workflow bot. These files
 | - | - |
 | `src/index.js` | Application entry point and `restify` handlers for the workflow bot |
 | `src/adaptiveCards/helloworldCommandResponse.json` | A generated Adaptive Card that is sent to Teams |
+| `src/adaptiveCards/doStuffActionResponse.json` | A generated Adaptive Card that is sent to Teams for the response of "doStuff" action |
 | `src/commands/helloworldCommandHandler.js` | Responds to the command message |
 | `src/cardActions/doStuffActionHandler.js` | Responds to the `doStuff` card action |
 

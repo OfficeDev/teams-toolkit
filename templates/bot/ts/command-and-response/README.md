@@ -89,7 +89,8 @@ export class HelloWorldCommandHandler implements TeamsFxBotCommandHandler {
       title: "Your Hello World Bot is Running",
       body: "Congratulations! Your hello world bot is running. Click the button below to trigger an action.",
     };
-    return MessageBuilder.attachAdaptiveCard<CardData>(helloWorldCard, cardData);
+    const cardJson = AdaptiveCards.declare<CardData>(helloWorldCard).render(cardData);
+    return MessageFactory.attachment(CardFactory.adaptiveCard(cardJson));
   }
 }
 ```

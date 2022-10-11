@@ -49,7 +49,8 @@ The following files provide the business logic for the workflow bot. These files
 | File | Contents |
 | - | - |
 | `src/index.js` | Application entry point and `restify` handlers for the workflow bot |
-| `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams |
+| `src/adaptiveCards/helloworldCommandResponse.json` | A generated Adaptive Card that is sent to Teams |
+| `src/adaptiveCards/doStuffActionResponse.json` | A generated Adaptive Card that is sent to Teams for the response of "doStuff" action |
 | `src/commands/helloworldCommandHandler.js` | Responds to the command message |
 | `src/cardActions/doStuffActionHandler.js` | Responds to the `doStuff` card action |
 
@@ -68,7 +69,7 @@ The following files are project-related files. You generally will not need to cu
 
 # Customize your application
 
-By default a single command is generated that sends the `helloworldCommand.json` Adaptive Card when a user types `hello` in the private message chat with the bot.
+By default a single command is generated that sends the `helloworldCommandResponse.json` Adaptive Card when a user types `helloWorld` in the private message chat with the bot.
 
 This section outlines some customization you can do to adopt the application for your needs.
 
@@ -80,7 +81,7 @@ Teams Toolkit enables you to [easily connect to an existing API](#connect-to-exi
 
 ## Customize the Adaptive Card
 
-You can edit the file `src/adaptiveCards/helloworldCommand.json` to customize the Adaptive Card to your liking. 
+You can edit the file `src/adaptiveCards/helloworldCommandResponse.json` to customize the Adaptive Card to your liking. 
 
 The binding between the model and the Adaptive Card is done by name matching (for example, `cardData.title` maps to `${title}` in the Adaptive Card). You can add, edit, or remove properties and their bindings to customize the Adaptive Card to your needs.
 
@@ -112,9 +113,9 @@ Here's a sample action with type `Action.Execute`:
           "verb": "doStuff" 
         }
       ]
-    }
+    },
+    ... 
   ]
-  ... 
 } 
 ```
 
@@ -155,7 +156,7 @@ const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
 const { AdaptiveCardResponse, InvokeResponseFactory } = require("@microsoft/teamsfx");
 const responseCard = require("../adaptiveCards/responseCard.json");
 
-export class Handler1 { 
+class Handler1 { 
     triggerVerb = "doStuff";
 
     async handleActionInvoked(context, message) { 
@@ -163,9 +164,11 @@ export class Handler1 {
         return InvokeResponseFactory.adaptiveCard(responseCardJson);
     } 
 } 
-```
 
-> Note: you can follow [this section](#customize-card-action-handler) to customize the card action handler according to your business need. 
+module.exports = {
+  Handler1,
+}
+```
 
 ### Step 4: register the action handler
 

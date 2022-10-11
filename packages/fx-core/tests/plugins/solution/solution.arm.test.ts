@@ -6,7 +6,6 @@ import {
   FxError,
   ok,
   SolutionContext,
-  AzureSolutionSettings,
   UserError,
   ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
@@ -14,15 +13,12 @@ import * as sinon from "sinon";
 import fs from "fs-extra";
 import {
   HostTypeOptionAzure,
-  HostTypeOptionSPFx,
   TabOptionItem,
-  BotOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   copyParameterJson,
   deployArmTemplates,
   formattedDeploymentError,
-  generateArmTemplate,
   pollDeploymentStatus,
 } from "../../../src/plugins/solution/fx-solution/arm";
 import * as arm from "../../../src/plugins/solution/fx-solution/arm";
@@ -35,14 +31,11 @@ import {
   ResourceManagementClient,
 } from "@azure/arm-resources";
 import * as tools from "../../../src/common/tools";
-import { environmentManager } from "../../../src/core/environment";
 import {
   aadPlugin,
   ErrorName,
-  fehostPlugin,
   fileEncoding,
   SOLUTION_CONFIG_NAME,
-  TestFileContent,
   TestFilePath,
 } from "../../constants";
 import os from "os";
@@ -657,7 +650,7 @@ describe("Deploy ARM Template to Azure", () => {
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
       name: "azure",
-      activeResourcePlugins: [aadPlugin.name, fehostPlugin.name],
+      activeResourcePlugins: [aadPlugin.name, "fx-resource-frontend-hosting"],
       capabilities: [TabOptionItem.id],
     };
     (mockedCtx.projectSettings as ProjectSettingsV3).components = [

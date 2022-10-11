@@ -1,7 +1,5 @@
 import Container from "typedi";
-import { ResourcePlugins } from "../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { Plugin } from "@microsoft/teamsfx-api";
-import "../src/plugins/resource/frontend";
 import "../src/component/resource/aadApp/aadApp";
 import { ComponentNames } from "../src/component/constants";
 import { AadApp } from "../src/component/resource/aadApp/aadApp";
@@ -16,7 +14,6 @@ export class PluginId {
   static readonly Apim = "fx-resource-apim";
 }
 
-export const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin;
 export const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
 export const appStudioPlugin = Container.get<Plugin>(ComponentNames.AppManifest) as Plugin;
 export class TestFilePath {

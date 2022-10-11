@@ -499,16 +499,18 @@ export class ManifestUtils {
         envInfo.state[ComponentNames.TeamsBot]?.validDomain ||
         envInfo.state[ComponentNames.TeamsBot]?.domain;
       if (botId) {
-        if (!botDomain) {
+        if (!botDomain && !ignoreEnvStateValueMissing) {
           return err(
             AppStudioResultFactory.UserError(
-              AppStudioError.IncorrectLocalDebugConfigError.name,
-              AppStudioError.IncorrectLocalDebugConfigError.message(
-                new Error(getLocalizedString("plugins.appstudio.dataRequired", "domain"))
-              )
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(
+                getLocalizedString("plugins.appstudio.dataRequired", "validDomain"),
+                isProvisionSucceeded
+              ),
+              HelpLinks.WhyNeedProvision
             )
           );
-        } else {
+        } else if (botDomain) {
           validDomains.push(botDomain);
         }
       }

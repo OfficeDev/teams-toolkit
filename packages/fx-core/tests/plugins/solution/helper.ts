@@ -17,7 +17,7 @@ import { LocalCrypto } from "../../../src/core/crypto";
 import { v4 as uuid } from "uuid";
 import { ArmTemplateResult } from "../../../src/common/armInterface";
 import sinon from "sinon";
-import { fehostPlugin, SOLUTION_CONFIG_NAME, TestFileContent } from "../../constants";
+import { SOLUTION_CONFIG_NAME, TestFileContent } from "../../constants";
 import {
   MockedAzureAccountProvider,
   MockedLogProvider,
@@ -98,35 +98,6 @@ export class TestHelper {
       ctx: mockedCtx,
       client: undefined,
     };
-  }
-
-  static mockedFehostGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(fehostPlugin, "generateArmTemplates")
-      .callsFake(async (ctx: PluginContext) => {
-        const res: ArmTemplateResult = {
-          Provision: {
-            Orchestration:
-              "Mocked frontend hosting provision orchestration content. Module path: '{{fx-resource-frontend-hosting.Provision.frontendHostingProvision.path}}'.",
-            Modules: {
-              frontendHostingProvision: TestFileContent.feHostProvisionModule,
-            },
-          },
-          Reference: {
-            frontendHostingOutputKey: TestFileContent.feHostReferenceValue,
-          },
-          Parameters: {
-            FrontendParameter: TestFileContent.feHostParameterValue,
-          },
-        };
-        return ok(res);
-      });
-  }
-
-  static mockedFeHostUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker.stub(fehostPlugin, "updateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok({});
-    });
   }
 
   // static mockedSimpleAuthGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {

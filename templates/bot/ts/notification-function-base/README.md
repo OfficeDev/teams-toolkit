@@ -63,7 +63,7 @@ The following files implement the core notification on the Bot Framework. You ge
 | - | - |
 | `src/internal/initialize.ts` | Application initialization |
 | `messageHandler/` | Azure Function bindings to implement Bot protocol |
-| `src/internal/messageHandler.ts` | Bot protocol implementation |
+| `src/internal/messageHandler.ts`<br/>`src/internal/responseWrapper.ts` | Bot protocol implementation |
 
 The following files are project-related files. You generally will not need to customize these files.
 

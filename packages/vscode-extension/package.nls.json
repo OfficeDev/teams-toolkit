@@ -31,6 +31,7 @@
     "teamstoolkit.cacheAccess.saveHomeAccountIdFail": "Cannot save home account id to cache, clean up account cache. ",
     "teamstoolkit.cacheAccess.saveTokenFail": "Cannot save token to cache, clean up account cache. ",
     "teamstoolkit.cacheAccess.writeTokenFail": "Cannot write token to cache, clean up account cache. ",
+    "teamstoolkit.capabilities.untrustedWorkspaces.description": "The Teams Toolkit extension supports limited features in untrusted workspaces.",
     "teamstoolkit.codeFlowLogin.loginCodeFlowFailureDescription": "Cannot get login code for token exchange. Login with another account.",
     "teamstoolkit.codeFlowLogin.loginCodeFlowFailureTitle": "LoginCodeFail",
     "teamstoolkit.codeFlowLogin.loginComponent": "login",

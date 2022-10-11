@@ -13,6 +13,7 @@ import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { sendDebugAllEvent } from "../localTelemetryReporter";
 import * as commonUtils from "../commonUtils";
 import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import { performance } from "perf_hooks";
 
 const ControlCodes = {
   CtrlC: "\u0003",

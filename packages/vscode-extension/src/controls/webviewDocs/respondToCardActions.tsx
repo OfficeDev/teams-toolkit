@@ -3,14 +3,14 @@ import Collapsible from "react-collapsible";
 import { ActionButton, Image } from "@fluentui/react";
 import "./document.scss";
 import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
-import adaptiveCard from "../../img/adaptive-card.gif";
+import adaptiveCard from "../../../img/adaptive-card.gif";
 
 export default function RespondToCardActions() {
   return (
     <div className="doc">
       <h1>Respond to card actions</h1>
       <h2>You can incrementally add card actions from Notification bot and Command bot</h2>
-      <Image src={adaptiveCard} />
+      <Image className="image" src={adaptiveCard} />
       <h1>Handle Card Action</h1>
       <VSCodeButton appearance="secondary">View Tutorial</VSCodeButton>
       <VSCodeButton>Get code snippets</VSCodeButton>

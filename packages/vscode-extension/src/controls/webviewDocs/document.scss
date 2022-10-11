@@ -1,8 +1,25 @@
 .doc{
-  margin: 10vw auto;
+  margin: auto 10vw;
   min-width: 256px;
   max-width: 1166px;
-  color: var(--vscode-editor-foreground);
+  color: var(--vscode-foreground);
+
+  h1 {
+    font-weight: 600;
+    font-size: 26px;
+    margin-bottom: 0;
+    color: var(--vscode-banner-foreground);
+  }
+
+  h2 {
+    font-weight: 500;
+    font-size: 14px;
+    margin-top: 0;
+  }
+
+  .image {
+    margin-top: 20px;
+  }
 
   table {
     font-family: arial, sans-serif;

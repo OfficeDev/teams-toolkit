@@ -5,6 +5,7 @@ import { MemoryRouter, Route } from "react-router-dom";
 import { initializeIcons } from "@fluentui/react/lib/Icons";
 import SampleGallery from "./SampleGallery";
 import Survey from "./Survey";
+import RespondToCardActions from "./webviewDocs/respondToCardActions";
 import { PanelType } from "./PanelType";
 
 const language = "en";
@@ -20,13 +21,20 @@ export default function App(props: any) {
   // Initializing the office-ui-fabric-icons here to avoid multiple initializations in every component.
   initializeIcons();
 
+  let initialIndex = 0;
+  if (panelType === PanelType.Survey) {
+    initialIndex = 1;
+  } else if (panelType === PanelType.RespondToCardActions) {
+    initialIndex = 2;
+  }
   return (
     <MemoryRouter
-      initialEntries={["/sample-gallery", "/survey"]}
-      initialIndex={panelType === PanelType.SampleGallery ? 0 : 1}
+      initialEntries={["/sample-gallery", "/survey", "/respond-to-card-actions"]}
+      initialIndex={initialIndex}
     >
       <Route path="/sample-gallery" component={SampleGallery} />
       <Route path="/survey" component={Survey} />
+      <Route path="/respond-to-card-actions" component={RespondToCardActions} />
     </MemoryRouter>
   );
 }

@@ -208,6 +208,8 @@ export class WebviewPanel {
         return localize("teamstoolkit.webview.samplePageTitle");
       case PanelType.Survey:
         return localize("teamstoolkit.webview.surveyPageTitle");
+      case PanelType.RespondToCardActions:
+        return "Respond to Card Actions";
     }
   }
 

@@ -1,0 +1,54 @@
+.doc{
+  margin: 10vw auto;
+  min-width: 256px;
+  max-width: 1166px;
+  color: var(--vscode-editor-foreground);
+
+  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  td, th {
+    // border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+  
+  // tr:nth-child(even) {
+  //   background-color: #dddddd;
+  // }
+  .Collapsible__trigger {
+    display: block;
+    font-weight: 400;
+    text-decoration: none;
+    position: relative;
+    border: 1px solid white;
+    padding: 10px;
+    // background: $cyan;
+    color: white;
+  
+  
+    &:after {
+      font-family: 'FontAwesome';
+      content: '\f107';
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      display: block;
+      transition: transform 300ms;
+    }
+  
+    &.is-open {
+      &:after {
+        transform: rotateZ(180deg);
+      }
+    }
+  
+    &.is-disabled {
+      opacity: 0.5;
+      background-color: grey;
+    }
+  }
+}

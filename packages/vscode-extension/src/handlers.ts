@@ -3116,6 +3116,10 @@ export function openTutorialHandler(args?: any[]): Promise<Result<unknown, FxErr
     ...getTriggerFromProperty(args),
     [TelemetryProperty.TutorialName]: tutorial.id,
   });
+  if (tutorial.id === "cardActionResponse") {
+    WebviewPanel.createOrShow(PanelType.RespondToCardActions);
+    return Promise.resolve(ok(null));
+  }
   return VS_CODE_UI.openUrl(tutorial.data as string);
 }
 

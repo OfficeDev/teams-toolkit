@@ -30,6 +30,7 @@
     "test:component": "nyc mocha \"tests/component/**/*.test.ts\"",
     "test:hosting": "nyc mocha \"tests/common/hosting/**/*.test.ts\"",
     "test:aadDriver": "nyc mocha \"tests/component/drivers/aad/*.test.ts\"",
+    "test:teamsAppDriver": "nyc mocha \"tests/component/drivers/teamsApp/*.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

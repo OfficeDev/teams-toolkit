@@ -81,26 +81,4 @@ describe("featureFlags", () => {
       mockedEnvRestore();
     });
   });
-
-  describe("isCLIDotNetEnabled()", () => {
-    let mockedEnvRestore: RestoreFn;
-
-    it("return true if env variable is set", async () => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.CLIDotNet]: "true" });
-
-      const result = isCLIDotNetEnabled();
-
-      chai.assert.isTrue(result);
-      mockedEnvRestore();
-    });
-
-    it("return false if env variable is not set", async () => {
-      mockedEnvRestore = mockedEnv({});
-
-      const result = isCLIDotNetEnabled();
-
-      chai.assert.isFalse(result);
-      mockedEnvRestore();
-    });
-  });
 });

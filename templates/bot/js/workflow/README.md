@@ -84,9 +84,9 @@ Here's a sample action with type `Action.Execute`:
           "verb": "DoSomething" 
         }
       ]
-    }
+    },
+    ... 
   ]
-  ... 
 } 
 ```
 

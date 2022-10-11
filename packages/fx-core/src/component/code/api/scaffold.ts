@@ -15,7 +15,7 @@ import { ProgrammingLanguage } from "../../constants";
 import { invalidProjectSettings } from "../../error";
 import { ErrorMessage, LogMessages } from "../../messages";
 import { LogProvider } from "@microsoft/teamsfx-api";
-import { ApiConstants, ReplaceTemplateFileNamePlaceholder, TemplateGroup } from "../constants";
+import { ApiConstants, TemplateGroup, TemplatePlaceHolders } from "../constants";
 import { LanguageStrategyFactory } from "./language-strategy";
 
 export type TemplateVariables = { [key: string]: string };
@@ -101,7 +101,7 @@ export class FunctionScaffold {
       language,
       trigger,
       variables,
-      (name: string) => name.replace(ReplaceTemplateFileNamePlaceholder, entryName)
+      (name: string) => name.replace(TemplatePlaceHolders.functionEntry, entryName)
     );
   }
 

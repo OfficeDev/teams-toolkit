@@ -48,7 +48,7 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
     await execAsync(`npm install && npm run build`, {
-      cwd: path.resolve(testFolder, 'incoming-webhook'),
+      cwd: path.resolve(testFolder),
       env: process.env,
       timeout: 0,
     });

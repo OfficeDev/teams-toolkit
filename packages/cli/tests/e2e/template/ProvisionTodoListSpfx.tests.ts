@@ -50,8 +50,7 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
     const config = await fs.readJson(`${projectPath}/SPFx/config/config.json`);
-    expect(config["bundles"]["helloworld-web-part"]).exist;
-    expect(config["bundles"]["secondwebpart-web-part"]).exist;
+    expect(config["bundles"]["todo-list-web-part"]).exist;
 
     {    // validation succeed without provision
       const command = "teamsfx validate";

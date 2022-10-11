@@ -57,11 +57,14 @@ describe("teamsfx new template", function () {
 
     // Validate Provision
     await validateTabAndBotProjectProvision(projectPath, env);
-    
+
+    // deploy
+    await CliHelper.deployAll(projectPath);
+
     // Assert
     {
       const context = await readContextMultiEnv(projectPath, env);
-      
+
       // Validate Function App
       const functionValidator = new FunctionValidator(context, projectPath, env);
       await functionValidator.validateProvision();

@@ -23,7 +23,6 @@ import {
 } from "../../commonlib"
 import { TemplateProject } from "../../commonlib/constants"
 import { CliHelper } from "../../commonlib/cliHelper";
-import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
@@ -68,10 +67,6 @@ describe("teamsfx new template", function () {
 
       // Get context
       const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
-
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, m365Login);
-      await AadValidator.validate(aad);
 
       // Validate Bot Deploy
       const bot = new BotValidator(context, projectPath, env);

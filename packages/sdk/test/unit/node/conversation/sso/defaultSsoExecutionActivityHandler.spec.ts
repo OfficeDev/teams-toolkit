@@ -20,7 +20,6 @@ describe("DefaultBotSsoExecutionActivityHandler Tests - Node", () => {
   const tenantId = "fake_tenant";
   const authorityHost = "fake_authority_host";
   const initiateLoginEndpoint = "fake_initiate_login_endpoint";
-  const applicationIdUri = "fake_application_id_uri";
   const ssoConfig: BotSsoConfig = {
     aad: {
       scopes: ["User.Read"],
@@ -33,7 +32,6 @@ describe("DefaultBotSsoExecutionActivityHandler Tests - Node", () => {
       M365_CLIENT_SECRET: clientSecret,
       M365_TENANT_ID: tenantId,
       M365_AUTHORITY_HOST: authorityHost,
-      M365_APPLICATION_ID_URI: applicationIdUri,
     });
   });
 

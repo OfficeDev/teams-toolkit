@@ -28,6 +28,7 @@ import {
   unzipAction,
 } from "../../../src/component/generator/generateAction";
 import { unzip } from "../../../src/common/template-utils/templatesUtils";
+import { GenerateContext } from "../../../src/component/generator/generateContext";
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
 
@@ -138,17 +139,35 @@ describe("Generator happy path", async () => {
   const tools = new MockTools();
   setTools(tools);
   const context = createContextV3();
+  const sandbox = sinon.createSandbox();
   const tmpDir = path.join(__dirname, "tmp");
 
   afterEach(async () => {
+    sandbox.restore();
     if (await fs.pathExists(tmpDir)) {
       await fs.rm(tmpDir, { recursive: true });
     }
   });
+
   it("external sample", async () => {
     const sampleName = "bot-proactive-messaging-teamsfx";
     await Generator.generateSample(sampleName, tmpDir, context);
     const files = await fs.readdir(path.join(tmpDir, sampleName));
+    assert.isTrue(files.length > 0);
+    assert.isTrue(files.includes(".fx"));
+  });
+
+  it("template", async () => {
+    const templateName = "bot";
+    const language = "ts";
+    sandbox
+      .stub(fetchTemplateUrlWithTagAction, "run")
+      .callsFake(async (context: GenerateContext) => {
+        context.zipUrl =
+          "https://github.com/hund030/TemplatePackerDemo/releases/download/templates%400.1.0/bot_notification_ts_function_http.zip";
+      });
+    await Generator.generateTemplate(templateName, language, tmpDir, context);
+    const files = await fs.readdir(path.join(tmpDir, context.projectSetting?.appName));
     assert.isTrue(files.length > 0);
     assert.isTrue(files.includes(".fx"));
   });

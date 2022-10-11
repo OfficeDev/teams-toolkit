@@ -79,17 +79,17 @@ describe("teamsfx new template", function () {
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
-    {
-      // Get context
-      const context = await readContextMultiEnv(
-        projectPath,
-        environmentManager.getDefaultEnvName()
-      );
+    // {
+    //   // Get context
+    //   const context = await readContextMultiEnv(
+    //     projectPath,
+    //     environmentManager.getDefaultEnvName()
+    //   );
 
-      // Only check Teams App existence
-      const appStudio = AppStudioValidator.init(context);
-      AppStudioValidator.validateTeamsAppExist(appStudio);
-    }
+    //   // Only check Teams App existence
+    //   const appStudio = AppStudioValidator.init(context);
+    //   AppStudioValidator.validateTeamsAppExist(appStudio);
+    // }
 
     // deploy
     await CliHelper.deployAll(projectPath);

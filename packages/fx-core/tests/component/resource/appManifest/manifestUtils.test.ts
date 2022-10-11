@@ -556,6 +556,6 @@ describe("getManifest V3", () => {
     };
     envInfo.envName = "local";
     const res1 = await manifestUtils.getManifest("", envInfo, true);
-    chai.assert.isTrue(res1.isErr());
+    chai.assert.isTrue(res1.isOk());
   });
 });

@@ -311,7 +311,7 @@ function validateAndInstallPrerequisites(
     );
     ports.push(
       `${TaskDefaultValue.checkPrerequisites.ports.backendService}, // backend service port`,
-      `${TaskDefaultValue.checkPrerequisites.ports.backendDebug}, // backend debug port`
+      `${TaskDefaultValue.checkPrerequisites.ports.backendDebug}, // backend inspector port for Node.js debugger`
     );
   }
   if (includeFuncHostedBot && !includeBackend) {
@@ -325,7 +325,7 @@ function validateAndInstallPrerequisites(
     );
     ports.push(
       `${TaskDefaultValue.checkPrerequisites.ports.botService}, // bot service port`,
-      `${TaskDefaultValue.checkPrerequisites.ports.botDebug}, // bot debug port`
+      `${TaskDefaultValue.checkPrerequisites.ports.botDebug}, // bot inspector port for Node.js debugger`
     );
   }
   if (!includeSpfx) {

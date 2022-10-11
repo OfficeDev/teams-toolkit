@@ -49,7 +49,7 @@ The following files provide the business logic for the workflow bot. These files
 | File | Contents |
 | - | - |
 | `src/index.ts` | Application entry point and `restify` handlers for the workflow bot |
-| `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams |
+| `src/adaptiveCards/helloworldCommandResponse.json` | A generated Adaptive Card that is sent to Teams |
 | `src/commands/helloworldCommandHandler.ts` | Responds to the command message |
 | `src/cardActions/doStuffActionHandler.ts` | Responds to the `doStuff` card action |
 | `src/cardModels.ts` | The default Adaptive Card data model |
@@ -69,7 +69,7 @@ The following files are project-related files. You generally will not need to cu
 
 # Customize your application
 
-By default a single command is generated that sends the `helloworldCommand.json` Adaptive Card when a user types `hello` in the private message chat with the bot.
+By default a single command is generated that sends the `helloworldCommandResponse.json` Adaptive Card when a user types `doStuff` in the private message chat with the bot.
 
 This section outlines some customization you can do to adopt the application for your needs.
 
@@ -81,7 +81,7 @@ Teams Toolkit enables you to [easily connect to an existing API](#connect-to-exi
 
 ## Customize the Adaptive Card
 
-You can edit the file `src/adaptiveCards/helloworldCommand.json` to customize the Adaptive Card to your liking. The file `src/cardModels.ts` defines a data structure that is used to fill data for the Adaptive Card.
+You can edit the file `src/adaptiveCards/helloworldCommandResponse.json` to customize the Adaptive Card to your liking. The file `src/cardModels.ts` defines a data structure that is used to fill data for the Adaptive Card.
 
 The binding between the model and the Adaptive Card is done by name matching (for example,`CardData.title` maps to `${title}` in the Adaptive Card). You can add, edit, or remove properties and their bindings to customize the Adaptive Card to your needs.
 
@@ -113,9 +113,9 @@ Here's a sample `Action.Execute` action:
           "verb": "doStuff" 
         }
       ]
-    }
+    },
+    ... 
   ]
-  ... 
 } 
 ```
 
@@ -166,8 +166,6 @@ export class Handler1 implements TeamsFxAdaptiveCardActionHandler {
     } 
 } 
 ```
-
-> Note: you can follow [this section](#customize-card-action-handler) to customize the card action handler according to your business need. 
 
 ### Step 4: register the action handler
 

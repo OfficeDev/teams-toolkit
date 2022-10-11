@@ -141,7 +141,7 @@ To add the notification feature:
     });
 
 4. Uninstall your previous bot installation from Teams, and press `F5` to start your application.
-5. Send a notification to the bot installation targets (channel/group chat/personal chat) by using a your favorite tool to send a HTTP POST request to `https://localhost:3978/api/notification`.
+5. Send a notification to the bot installation targets (channel/group chat/personal chat) by using a your favorite tool to send a HTTP POST request to `http://localhost:3978/api/notification`.
 
 To learn more, refer to [the notification document](https://aka.ms/teamsfx-notification).
 

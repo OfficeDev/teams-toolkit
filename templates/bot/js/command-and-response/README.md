@@ -74,23 +74,24 @@ The default pattern to trigger a command is through a defined keyword. But often
 
 When using regular expressions, any capture group can be found in `message.matches`. Below is an example that uses regular expression to capture strings after `reboot`, for example if user inputs `reboot myMachine`, `message.matches[1]` will capture `myMachine`:
 
-```typescript
-export class HelloWorldCommandHandler implements TeamsFxBotCommandHandler {
-  triggerPatterns: TriggerPatterns = /^reboot (.*?)$/i; //"helloWorld";
-  async handleCommandReceived(
-    context: TurnContext,
-    message: CommandMessage
-  ): Promise<string | Partial<Activity> | void> {
+```javascript
+class HelloWorldCommandHandler {
+  triggerPatterns = /^reboot (.*?)$/i; //"helloWorld";
+  async handleCommandReceived(context, message) {
     console.log(`Bot received message: ${message.text}`);
     const machineName = message.matches[1];
     console.log(machineName);
     // Render your adaptive card for reply message
-    const cardData: CardData = {
+    const cardData = {
       title: "Your Hello World Bot is Running",
       body: "Congratulations! Your hello world bot is running. Click the button below to trigger an action.",
     };
-    return MessageBuilder.attachAdaptiveCard<CardData>(helloWorldCard, cardData);
+    return MessageBuilder.attachAdaptiveCard(helloWorldCard, cardData);
   }
+}
+
+module.exports = {
+  HelloWorldCommandHandler,
 }
 ```
 
@@ -131,7 +132,7 @@ To add the notification feature:
     ![enable-notification](https://user-images.githubusercontent.com/10163840/165462039-12bd4f61-3fc2-4fc8-8910-6a4b1e138626.png)
 3. To quickly add a sample notification triggered by a HTTP request, you can add the following sample code in `bot\src\index.js`:
 
-    ```typescript
+    ```javascript
     server.post("/api/notification", async (req, res) => {
       for (const target of await commandBot.notification.installations()) {
         await target.sendMessage("This is a sample notification message");
@@ -141,7 +142,7 @@ To add the notification feature:
     });
 
 4. Uninstall your previous bot installation from Teams, and press `F5` to start your application.
-5. Send a notification to the bot installation targets (channel/group chat/personal chat) by using a your favorite tool to send a HTTP POST request to `https://localhost:3978/api/notification`.
+5. Send a notification to the bot installation targets (channel/group chat/personal chat) by using a your favorite tool to send a HTTP POST request to `http://localhost:3978/api/notification`.
 
 To learn more, refer to [the notification document](https://aka.ms/teamsfx-notification).
 

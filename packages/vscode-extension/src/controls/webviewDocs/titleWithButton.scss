@@ -1,0 +1,22 @@
+.titleWithButton {
+  display: flex;
+  margin-top: 25px;
+
+  h2 {
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--vscode-banner-foreground);
+    margin-bottom: 0;
+  }
+
+  .buttons {
+    flex: 1;
+    display: flex;
+    flex-direction: row-reverse;
+  }
+
+  vscode-button {
+    height: 28px;
+    margin-left: 10px;
+  }
+}

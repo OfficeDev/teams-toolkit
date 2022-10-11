@@ -1,4 +1,4 @@
-.doc{
+.doc {
   margin: auto 10vw;
   min-width: 256px;
   max-width: 1166px;
@@ -25,12 +25,18 @@
     font-family: arial, sans-serif;
     border-collapse: collapse;
     width: 100%;
+    margin: 20px auto;
+  }
+
+  th {
+    background-color: var(--vscode-tab-inactiveBackground);
   }
   
   td, th {
     // border: 1px solid #dddddd;
     text-align: left;
     padding: 8px;
+    border-bottom: 1px solid var(--vscode-editor-wordHighlightBackground);
   }
   
   // tr:nth-child(even) {

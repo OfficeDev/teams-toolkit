@@ -4,6 +4,7 @@ import { ActionButton, Image } from "@fluentui/react";
 import "./document.scss";
 import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import adaptiveCard from "../../../img/adaptive-card.gif";
+import TitleWithButton from "./titleWithButton";
 
 export default function RespondToCardActions() {
   return (
@@ -11,9 +12,7 @@ export default function RespondToCardActions() {
       <h1>Respond to card actions</h1>
       <h2>You can incrementally add card actions from Notification bot and Command bot</h2>
       <Image className="image" src={adaptiveCard} />
-      <h1>Handle Card Action</h1>
-      <VSCodeButton appearance="secondary">View Tutorial</VSCodeButton>
-      <VSCodeButton>Get code snippets</VSCodeButton>
+      <TitleWithButton title="Handle Card Action" />
       <p>
         Click “Get code snippets” to get instructions and bootstrap reference code to accelerate
         development. Teams Toolkit will scaffold following files into your project.

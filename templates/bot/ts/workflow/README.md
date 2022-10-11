@@ -24,7 +24,7 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
 4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 5. Type or select `helloWorld` in the chat to send it to your bot - this is the default command provided by the template.
-6. In the response from the bot, select the **Do Stuff** button.
+6. In the response from the bot, select the **DoStuff** button.
 
 The bot will respond by updating the existing Adaptive Card to show the workflow is now complete! Continue reading to learn more about what's included in the template and how to customize it.
 
@@ -52,6 +52,7 @@ The following files can be customized and demonstrate an example implementation 
 | `src/index.ts` | Application entry point and `restify` handlers for the Workflow bot |
 | `src/commands/helloworldCommandHandler.ts` | Implementation that handles responding to a chat command |
 | `src/adaptiveCards/helloworldCommandResponse.json` | Defines the Adaptive Card (UI) that is displayed in response to a chat command |
+| `src/adaptiveCards/doStuffActionResponse.json` | A generated Adaptive Card that is sent to Teams for the response of "doStuff" action |
 | `src/cardActions/doStuffActionHandler.ts` | Implements the handler for the `doStuff` button displayed in the Adaptive Card |
 
 ## Extend the workflow bot template with more actions and responses

@@ -64,7 +64,7 @@ describe("teamsfx new template", function () {
     await FrontendValidator.validateProvision(frontend);
 
     await execAsync(`npm i @types/node -D`, {
-      cwd: path.resolve(testFolder),
+      cwd: path.join(projectPath, "api"),
       env: process.env,
       timeout: 0,
     });

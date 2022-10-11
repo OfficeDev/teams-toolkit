@@ -58,6 +58,12 @@ describe("teamsfx new template", function () {
     // Validate Provision
     await validateTabAndBotProjectProvision(projectPath, env);
 
+    await execAsync(`npm i @types/node -D`, {
+      cwd: path.join(projectPath, "tabs"),
+      env: process.env,
+      timeout: 0,
+    });
+
     // deploy
     await CliHelper.deployAll(projectPath);
 

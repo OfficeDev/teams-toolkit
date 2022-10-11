@@ -7,6 +7,7 @@ import {
   ConversationReference,
   TeamDetails,
   TeamsChannelAccount,
+  TurnContext,
 } from "botbuilder";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { formatString } from "../util/utils";
@@ -21,9 +22,14 @@ import { ConversationReferenceStore } from "./storage";
  *
  * @param target - the notification target.
  * @param text - the plain text message.
+ * @param onError - an optional error handler that can catch exceptions during message sending.
  * @returns A `Promise` representing the asynchronous operation.
  */
-export function sendMessage(target: NotificationTarget, text: string): Promise<void> {
+export function sendMessage(
+  target: NotificationTarget,
+  text: string,
+  onError?: (context: TurnContext, error: Error) => Promise<void>
+): Promise<void> {
   throw new ErrorWithCode(
     formatString(ErrorMessage.BrowserRuntimeNotSupported, "sendMessage"),
     ErrorCode.RuntimeNotSupported
@@ -38,9 +44,14 @@ export function sendMessage(target: NotificationTarget, text: string): Promise<v
  *
  * @param target - the notification target.
  * @param card - the adaptive card raw JSON.
+ * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
  * @returns A `Promise` representing the asynchronous operation.
  */
-export function sendAdaptiveCard(target: NotificationTarget, card: unknown): Promise<void> {
+export function sendAdaptiveCard(
+  target: NotificationTarget,
+  card: unknown,
+  onError?: (context: TurnContext, error: Error) => Promise<void>
+): Promise<void> {
   throw new ErrorWithCode(
     formatString(ErrorMessage.BrowserRuntimeNotSupported, "sendAdaptiveCard"),
     ErrorCode.RuntimeNotSupported
@@ -105,9 +116,13 @@ export class Channel implements NotificationTarget {
    * Only work on server side.
    *
    * @param text - the plain text message.
+   * @param onError - an optional error handler that can catch exceptions during message sending.
    * @returns the response of sending message.
    */
-  public sendMessage(text: string): Promise<MessageResponse> {
+  public sendMessage(
+    text: string,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "Channel"),
       ErrorCode.RuntimeNotSupported
@@ -121,9 +136,13 @@ export class Channel implements NotificationTarget {
    * Only work on server side.
    *
    * @param card - the adaptive card raw JSON.
+   * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
    * @returns the response of sending adaptive card message.
    */
-  public async sendAdaptiveCard(card: unknown): Promise<MessageResponse> {
+  public async sendAdaptiveCard(
+    card: unknown,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "Channel"),
       ErrorCode.RuntimeNotSupported
@@ -189,9 +208,13 @@ export class Member implements NotificationTarget {
    * Only work on server side.
    *
    * @param text - the plain text message.
+   * @param onError - an optional error handler that can catch exceptions during message sending.
    * @returns the response of sending message.
    */
-  public sendMessage(text: string): Promise<MessageResponse> {
+  public sendMessage(
+    text: string,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "Member"),
       ErrorCode.RuntimeNotSupported
@@ -205,9 +228,13 @@ export class Member implements NotificationTarget {
    * Only work on server side.
    *
    * @param card - the adaptive card raw JSON.
+   * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
    * @returns the response of sending adaptive card message.
    */
-  public async sendAdaptiveCard(card: unknown): Promise<MessageResponse> {
+  public async sendAdaptiveCard(
+    card: unknown,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "Member"),
       ErrorCode.RuntimeNotSupported
@@ -279,9 +306,13 @@ export class TeamsBotInstallation implements NotificationTarget {
    * Only work on server side.
    *
    * @param text - the plain text message.
+   * @param onError - an optional error handler that can catch exceptions during message sending.
    * @returns the response of sending message.
    */
-  public sendMessage(text: string): Promise<MessageResponse> {
+  public sendMessage(
+    text: string,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
       ErrorCode.RuntimeNotSupported
@@ -295,9 +326,13 @@ export class TeamsBotInstallation implements NotificationTarget {
    * Only work on server side.
    *
    * @param card - the adaptive card raw JSON.
+   * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
    * @returns the response of sending adaptive card message.
    */
-  public sendAdaptiveCard(card: unknown): Promise<MessageResponse> {
+  public sendAdaptiveCard(
+    card: unknown,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "TeamsBotInstallation"),
       ErrorCode.RuntimeNotSupported

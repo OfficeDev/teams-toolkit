@@ -22,6 +22,6 @@ export interface NotificationTarget
 
 |  Method | Description |
 |  --- | --- |
-|  [sendAdaptiveCard(card)](./teamsfx.notificationtarget.sendadaptivecard.md) | Send an adaptive card message. |
-|  [sendMessage(text)](./teamsfx.notificationtarget.sendmessage.md) | Send a plain text message. |
+|  [sendAdaptiveCard(card, onError)](./teamsfx.notificationtarget.sendadaptivecard.md) | Send an adaptive card message. |
+|  [sendMessage(text, onError)](./teamsfx.notificationtarget.sendmessage.md) | Send a plain text message. |
 

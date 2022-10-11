@@ -306,3 +306,4 @@ export const prepareManifestDisplayMessages: DisplayMessages = {
 };
 
 export const DebugSessionExists = "Debug session exists";
+export const launchUrlMessage = "%s web client will be launched: %s.";

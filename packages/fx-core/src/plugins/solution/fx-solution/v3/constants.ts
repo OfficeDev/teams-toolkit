@@ -1,10 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-export const BuiltInSolutionNames = {
-  azure: "fx-solution-azure",
-  spfx: "fx-solution-spfx",
-};
 export const BuiltInFeaturePluginNames = {
   appStudio: "fx-resource-appstudio",
   aad: "fx-resource-aad-app-for-teams",

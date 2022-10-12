@@ -113,6 +113,7 @@ export enum TelemetryEvent {
   DebugSetUpSSO = "debug-set-up-sso",
   DeploymentInfoNotFound = "deployment-info-not-found",
   InstallScriptNotFound = "install-script-not-found",
+  SkipDeploy = "skip-deploy",
 }
 
 export enum TelemetrySuccess {

@@ -15,8 +15,7 @@ import { Host, Hub } from "./constants";
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import VsCodeLogInstance from "../commonlib/log";
-import * as util from "util";
-import { launchUrlMessage } from "./constants";
+import { sideloadingDisplayMessages } from "./constants";
 
 export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
   teamsfxIsRemote?: boolean;
@@ -149,9 +148,16 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       }
       debugConfiguration.url = result;
 
+      VsCodeLogInstance.info(sideloadingDisplayMessages.title(debugConfiguration.teamsfxHub!));
+      VsCodeLogInstance.outputChannel.appendLine("");
       VsCodeLogInstance.outputChannel.appendLine(
-        util.format(launchUrlMessage, debugConfiguration.teamsfxHub, url)
+        sideloadingDisplayMessages.sideloadingUrlMessage(
+          debugConfiguration.teamsfxHub!,
+          debugConfiguration.url
+        )
       );
+      VsCodeLogInstance.outputChannel.appendLine("");
+      VsCodeLogInstance.outputChannel.appendLine(sideloadingDisplayMessages.hotReloadingMessage);
     } catch (error: any) {
       showError(error);
       terminateAllRunningTeamsfxTasks();

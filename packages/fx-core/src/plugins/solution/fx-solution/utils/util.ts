@@ -29,50 +29,6 @@ import fs from "fs-extra";
 import path from "path";
 import { DeployConfigsConstants } from "../../../../common/azure-hosting/hostingConstant";
 
-/**
- * A helper function to construct a plugin's context.
- * @param solutionCtx solution context
- * @param pluginIdentifier plugin name
- */
-export function getPluginContext(
-  solutionCtx: SolutionContext,
-  pluginIdentifier: string
-): PluginContext {
-  const baseCtx: Context = solutionCtx;
-  if (!solutionCtx.envInfo.state.has(pluginIdentifier)) {
-    solutionCtx.envInfo.state.set(pluginIdentifier, new ConfigMap());
-  }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const pluginConfig: PluginConfig = solutionCtx.envInfo.state.get(pluginIdentifier)!;
-  const pluginCtx: PluginContext = {
-    ...baseCtx,
-    envInfo: solutionCtx.envInfo,
-    config: pluginConfig,
-  };
-  return pluginCtx;
-}
-
-/**
- * A curry-ed version of getPluginContext
- * @param solutionCtx solution context
- */
-export function getPluginContextConstructor(
-  solutionCtx: SolutionContext
-): (pluginIdentifier: string) => PluginContext {
-  return function (pluginIdentifier: string): PluginContext {
-    return getPluginContext(solutionCtx, pluginIdentifier);
-  };
-}
-
-export async function getSubsriptionDisplayName(
-  azureToken: TokenCredential,
-  subscriptionId: string
-): Promise<string | undefined> {
-  const client = new SubscriptionClient(azureToken);
-  const subscription = await client.subscriptions.get(subscriptionId);
-  return subscription.displayName;
-}
-
 export function sendErrorTelemetryThenReturnError(
   eventName: string,
   error: FxError,

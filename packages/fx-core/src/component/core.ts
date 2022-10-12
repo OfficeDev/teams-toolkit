@@ -95,7 +95,6 @@ import {
   TabSPFxItem,
   TabSPFxNewUIItem,
 } from "../plugins/solution/fx-solution/question";
-import { executeConcurrently } from "../plugins/solution/fx-solution/v2/executor";
 import { AzureResources, ComponentNames } from "./constants";
 import { pluginName2ComponentName } from "./migrate";
 import {
@@ -115,6 +114,7 @@ import { ensureBasicFolderStructure } from "../core/FxCore";
 import { SolutionTelemetryProperty } from "../plugins/solution/fx-solution/constants";
 import { getQuestionsForCreateProjectV2 } from "../core/middleware/questionModel";
 import { Constants } from "./resource/aadApp/constants";
+import { executeConcurrently } from "./utils/executor";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";

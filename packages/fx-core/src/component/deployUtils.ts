@@ -26,10 +26,9 @@ import {
   SolutionTelemetryEvent,
   ViewAadAppHelpLink,
 } from "../plugins/solution/fx-solution/constants";
-import { sendErrorTelemetryThenReturnError } from "../plugins/solution/fx-solution/utils/util";
-import { executeConcurrently } from "../plugins/solution/fx-solution/v2/executor";
 import { ComponentNames } from "./constants";
 import { AadApp } from "./resource/aadApp/aadApp";
+import { executeConcurrently } from "./utils/executor";
 
 export class DeployUtils {
   /**

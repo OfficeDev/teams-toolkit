@@ -26,6 +26,7 @@
                 "prerequisites": [
                     "nodejs", // Validate if Node.js is installed.
                     "m365Account", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.
+                    "func", // Install Azure Functions Core Tools. It's used to serve Azure Functions hosted project locally.
                     "ngrok", // Install Ngrok. Bot project requires a public message endpoint, and ngrok can help create public tunnel for your local service.
                     "portOccupancy" // Validate available ports to ensure those debug ones are not occupied.
                 ],
@@ -100,8 +101,34 @@
             "command": "npm run dev:teamsfx",
             "isBackground": true,
             "options": {
-                "cwd": "${workspaceFolder}/bot"
+                "cwd": "${workspaceFolder}/bot",
+                "env": {
+                    "PATH": "${command:fx-extension.get-func-path}${env:PATH}"
+                }
             },
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^.*$",
+                    "file": 0,
+                    "location": 1,
+                    "message": 2
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^.*(Job host stopped|signaling restart).*$",
+                    "endsPattern": "^.*(Worker process started and initialized|Host lock lease acquired by instance ID).*$"
+                }
+            },
+            "dependsOn": [
+                "Start Azurite emulator",
+                "Watch bot"
+            ]
+        },
+        {
+            "label": "Start Azurite emulator",
+            "type": "shell",
+            "command": "npm run prepare-storage:teamsfx",
+            "isBackground": true,
             "problemMatcher": {
                 "pattern": [
                     {
@@ -113,9 +140,28 @@
                 ],
                 "background": {
                     "activeOnStart": true,
-                    "beginsPattern": "[nodemon] starting",
-                    "endsPattern": "restify listening to|Bot/ME service listening at|[nodemon] app crashed"
+                    "beginsPattern": "Azurite",
+                    "endsPattern": "successfully listening"
                 }
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/bot"
+            },
+            "presentation": {
+                "reveal": "silent"
+            }
+        },
+        {
+            "label": "Watch bot",
+            "type": "shell",
+            "command": "npm run watch:teamsfx",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}/bot"
+            },
+            "problemMatcher": "$tsc-watch",
+            "presentation": {
+                "reveal": "silent"
             }
         }
     ]

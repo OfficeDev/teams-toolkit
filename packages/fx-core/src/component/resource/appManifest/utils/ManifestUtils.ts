@@ -557,7 +557,7 @@ export function resolveManifestTemplate(
         if (array.length === 3 && array[0] === "state") {
           const component = array[1];
           const configKey = array[2];
-          if (!view.state[component] || !view.state[component][configKey]) {
+          if (view.state[component]?.[configKey] == undefined) {
             view.state[component] = view.state[component] || {};
             view.state[component][configKey] = `{{${placeholder}}}`;
           }

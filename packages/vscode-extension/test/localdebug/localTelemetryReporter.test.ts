@@ -120,7 +120,7 @@ describe("LocalTelemetryReporter", () => {
       const res = await getPreLaunchTaskInfo();
       chai.assert.isUndefined(res?.[TaskOverallLabel.TransparentM365]);
       chai.assert.exists(res?.[TaskOverallLabel.TransparentDefault]);
-      chai.assert.sameDeepOrderedMembers(res?.overall ?? [], [
+      chai.assert.sameDeepOrderedMembers(res?.[TaskOverallLabel.TransparentDefault] ?? [], [
         {
           command: "debug-check-prerequisites",
           label: "Validate & install prerequisites",

@@ -99,7 +99,7 @@ Congratulations, you've just created your own notification! To learn more about 
 
 Notification bot is compatible with other bot scenarios like command bot and workflow bot.
 
-## Add command to your application
+### Add command to your application
 
 The command and response feature adds the ability for your application to "listen" to commands sent to it via a Teams message and respond to commands with Adaptive Cards. Follow the [steps here](https://aka.ms/teamsfx-command-response#How-to-add-more-command-and-response) to add the command response feature to your workflow bot. Refer [the command bot document](https://aka.ms/teamsfx-command-response) for more information.
 

@@ -14,7 +14,7 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import * as path from "path";
 import { AzureResource } from "../azureResource";
-import { ComponentNames, Scenarios, StorageOutputs } from "../../constants";
+import { ComponentNames, PathConstants, Scenarios, StorageOutputs } from "../../constants";
 import { LogMessages, ProgressMessages, ProgressTitles } from "../../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
@@ -22,7 +22,8 @@ import { errorSource, StorageConstants } from "./constants";
 import { StorageConfig } from "./configs";
 import { AzureStorageClient } from "./clients";
 import { FrontendDeployment } from "../../code/tab/deploy";
-import { Progress } from "./messages";
+import { Messages, Progress } from "./messages";
+import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 
 @Service("azure-storage")
 export class AzureStorageResource extends AzureResource {
@@ -83,17 +84,20 @@ export class AzureStorageResource extends AzureResource {
     );
     const client = new AzureStorageClient(config, context.logProvider);
     const envName = ctx.envInfo.envName;
-    const needDeploy = await FrontendDeployment.needDeploy(inputs.projectPath, envName);
+    const needDeploy = await FrontendDeployment.needDeploy(
+      path.join(inputs.projectPath, PathConstants.tabWorkingDir),
+      envName
+    );
     if (!needDeploy) {
-      await actionContext?.progressBar?.next(ProgressMessages.getDeploymentSrcAndDest);
-      await actionContext?.progressBar?.next(ProgressMessages.clearStorageAccount);
-      await actionContext?.progressBar?.next(ProgressMessages.uploadTabToStorage);
+      await this.skipDeploy(context, actionContext);
       return ok(undefined);
     }
     await this.doDeployment(client, deployDir, actionContext?.progressBar);
-    await FrontendDeployment.saveDeploymentInfo(inputs.projectPath, envName, {
-      lastDeployTime: new Date().toISOString(),
-    });
+    await FrontendDeployment.saveDeploymentInfo(
+      path.join(inputs.projectPath, PathConstants.tabWorkingDir),
+      envName,
+      { lastDeployTime: new Date().toISOString() }
+    );
     return ok(undefined);
   }
 
@@ -110,5 +114,18 @@ export class AzureStorageResource extends AzureResource {
 
     await progress?.next(ProgressMessages.uploadTabToStorage);
     await client.uploadFiles(container, deployDir);
+  }
+
+  private async skipDeploy(
+    context: ResourceContextV3,
+    actionContext?: ActionContext
+  ): Promise<void> {
+    context.logProvider.warning(Messages.SkipDeploy);
+    context.telemetryReporter.sendTelemetryEvent(TelemetryEvent.SkipDeploy, {
+      [TelemetryProperty.Component]: ComponentNames.AzureStorage,
+    });
+    await actionContext?.progressBar?.next(ProgressMessages.getDeploymentSrcAndDest);
+    await actionContext?.progressBar?.next(ProgressMessages.clearStorageAccount);
+    await actionContext?.progressBar?.next(ProgressMessages.uploadTabToStorage);
   }
 }

@@ -113,7 +113,7 @@ describe("handlers", () => {
   it("getAzureProjectConfigV3 return undefined", async () => {
     sinon.stub(handlers, "core").value(new MockCore());
     sinon.stub(handlers, "getSystemInputs").returns({} as Inputs);
-    sinon.stub(MockCore.prototype, "getProjectConfigV3").resolves(ok(undefined));
+    sinon.stub(MockCore.prototype, "getProjectConfigV3").resolves(undefined);
     const res = await handlers.getAzureProjectConfigV3();
     chai.assert.isUndefined(res);
   });

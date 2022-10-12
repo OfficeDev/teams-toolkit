@@ -58,7 +58,6 @@ import { LocalCrypto } from "./crypto";
 import { environmentManager, newEnvInfoV3 } from "./environment";
 import {
   CopyFileError,
-  FunctionRouterError,
   InvalidInputError,
   NonExistEnvNameError,
   NotImplementedError,
@@ -73,12 +72,7 @@ import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
-import {
-  askNewEnvironment,
-  EnvInfoLoaderMW,
-  loadSolutionContext,
-} from "./middleware/envInfoLoader";
-import { EnvInfoLoaderMW_V3, loadEnvInfoV3 } from "./middleware/envInfoLoaderV3";
+import { askNewEnvironment, EnvInfoLoaderMW_V3, loadEnvInfoV3 } from "./middleware/envInfoLoaderV3";
 import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { ProjectMigratorMW } from "./middleware/projectMigrator";
@@ -453,7 +447,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
   ])
   async getProjectConfig(
@@ -463,12 +457,9 @@ export class FxCore implements v3.ICore {
     if (!ctx) return err(new ObjectIsUndefinedError("getProjectConfig input stuff"));
     inputs.stage = Stage.getProjectConfig;
     setCurrentStage(Stage.getProjectConfig);
-    let envState = ctx!.solutionContext?.envInfo.state;
-    if (envState) envState = convertEnvStateMapV3ToV2(envState);
     return ok({
-      settings: ctx!.projectSettings,
-      config: envState,
-      localSettings: ctx!.solutionContext?.localSettings,
+      settings: ctx.projectSettings,
+      config: ctx.envInfoV3?.state,
     });
   }
 
@@ -614,23 +605,17 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
   ])
   async getSelectedEnv(
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<string | undefined, FxError>> {
-    return ok(ctx?.envInfoV2?.envName);
+    return ok(ctx?.envInfoV3?.envName);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(true),
-    ContextInjectorMW,
-  ])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
   async encrypt(
     plaintext: string,
     inputs: Inputs,
@@ -641,13 +626,7 @@ export class FxCore implements v3.ICore {
     return ctx.contextV2.cryptoProvider.encrypt(plaintext);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(true),
-    ContextInjectorMW,
-  ])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
   async decrypt(
     ciphertext: string,
     inputs: Inputs,
@@ -743,45 +722,45 @@ export class FxCore implements v3.ICore {
   }
 
   // deprecated
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMW,
-    ProjectConsolidateMW,
-    AadManifestMigrationMW,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-  ])
+  // @hooks([
+  //   ErrorHandlerMW,
+  //   ConcurrentLockerMW,
+  //   ProjectMigratorMW,
+  //   ProjectConsolidateMW,
+  //   AadManifestMigrationMW,
+  //   ProjectVersionCheckerMW,
+  //   ProjectSettingsLoaderMW,
+  //   ContextInjectorMW,
+  //   ProjectSettingsWriterMW,
+  // ])
   async activateEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    const env = inputs.env;
-    if (!env) {
-      return err(new ObjectIsUndefinedError("env"));
-    }
-    if (!ctx!.projectSettings) {
-      return ok(Void);
-    }
+    // const env = inputs.env;
+    // if (!env) {
+    //   return err(new ObjectIsUndefinedError("env"));
+    // }
+    // if (!ctx!.projectSettings) {
+    //   return ok(Void);
+    // }
 
-    const envConfigs = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
+    // const envConfigs = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
 
-    if (envConfigs.isErr()) {
-      return envConfigs;
-    }
+    // if (envConfigs.isErr()) {
+    //   return envConfigs;
+    // }
 
-    if (envConfigs.isErr() || envConfigs.value.indexOf(env) < 0) {
-      return err(NonExistEnvNameError(env));
-    }
+    // if (envConfigs.isErr() || envConfigs.value.indexOf(env) < 0) {
+    //   return err(NonExistEnvNameError(env));
+    // }
 
-    const solutionContext = await loadSolutionContext(inputs, ctx!.projectSettings, env);
+    // const solutionContext = await loadSolutionContext(inputs, ctx!.projectSettings, env);
 
-    if (!solutionContext.isErr()) {
-      ctx!.provisionInputConfig = solutionContext.value.envInfo.config;
-      ctx!.provisionOutputs = solutionContext.value.envInfo.state;
-      ctx!.envName = solutionContext.value.envInfo.envName;
-    }
+    // if (!solutionContext.isErr()) {
+    //   ctx!.provisionInputConfig = solutionContext.value.envInfo.config;
+    //   ctx!.provisionOutputs = solutionContext.value.envInfo.state;
+    //   ctx!.envName = solutionContext.value.envInfo.envName;
+    // }
 
-    this.tools.ui.showMessage("info", `[${env}] is activated.`, false);
+    // this.tools.ui.showMessage("info", `[${env}] is activated.`, false);
     return ok(Void);
   }
 

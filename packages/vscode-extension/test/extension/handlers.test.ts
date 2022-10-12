@@ -93,6 +93,23 @@ describe("handlers", () => {
     chai.expect(input.platform).equals(Platform.VSCode);
   });
 
+  it("getAzureProjectConfigV3", async () => {
+    sinon.stub(handlers, "core").value(new MockCore());
+    sinon.stub(handlers, "getSystemInputs").returns({} as Inputs);
+    const fake_config_v3 = {
+      projectSettings: {
+        appName: "fake_test",
+        projectId: "fake_projectId",
+      },
+      envInfos: {},
+    };
+    sinon.stub(MockCore.prototype, "getProjectConfigV3").resolves(ok(fake_config_v3));
+    const res = await handlers.getAzureProjectConfigV3();
+    chai.assert.exists(res?.projectSettings);
+    chai.assert.equal(res?.projectSettings.appName, "fake_test");
+    chai.assert.equal(res?.projectSettings.projectId, "fake_projectId");
+  });
+
   it("openBackupConfigMd", async () => {
     const workspacePath = "test";
     const filePath = path.join(workspacePath, ".backup", "backup-config-change-logs.md");

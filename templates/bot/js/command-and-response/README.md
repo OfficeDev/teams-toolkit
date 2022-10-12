@@ -58,7 +58,7 @@ Follow the steps below to add more commands and responses to extend the command 
 
 ### Step 1: Add a command definition in manifest
 
-You can edit the manifest template file `templates\appPackage\manifest.template.json` to include definitions of a command with its title and description in the `commands` array:
+You can edit the manifest template file `templates\appPackage\manifest.template.json` to include definitions of a `doSomething` command with its title and description in the `commands` array:
 
 ```json
 "commandLists": [
@@ -89,7 +89,7 @@ To respond with an Adaptive Card, define your card in its JSON format. Create a 
         "type": "TextBlock",
         "size": "Medium",
         "weight": "Bolder",
-        "text": "Your DoSomething Command is added!"
+        "text": "Your doSomething Command is added!"
     },
     {
         "type": "TextBlock",
@@ -133,12 +133,12 @@ class DoSomethingCommandHandler implements TeamsFxBotCommandHandler {
           body: "Congratulations! You have responded to doSomething command",
         };
 
-        return MessageBuilder.attachAdaptiveCard(helloWorldCard, cardData);
+        const cardJson = AdaptiveCards.declare(doSomethingCard).render(cardData);
+        return MessageFactory.attachment(CardFactory.adaptiveCard(cardJson));
     }    
 }
 
 module.exports = {
-
     DoSomethingCommandHandler,
 }
 ```

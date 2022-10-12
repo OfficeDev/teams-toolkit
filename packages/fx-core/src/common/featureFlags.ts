@@ -40,3 +40,7 @@ export function isCLIDotNetEnabled(): boolean {
 export function isSPFxMultiTabEnabled(): boolean {
   return true;
 }
+
+export function isTDPIntegrationEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.TDPIntegration, false);
+}

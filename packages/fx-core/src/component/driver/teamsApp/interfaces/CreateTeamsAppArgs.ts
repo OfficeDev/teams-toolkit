@@ -3,7 +3,7 @@
 
 export interface CreateTeamsAppArgs {
   /**
-   *
+   * Zipped app package path
    */
   appPackagePath: string;
 }

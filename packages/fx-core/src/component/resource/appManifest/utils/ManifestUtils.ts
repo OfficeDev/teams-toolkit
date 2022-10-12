@@ -53,15 +53,19 @@ import { hasTab } from "../../../../common/projectSettingsHelperV3";
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
     const filePath = await this.getTeamsAppManifestPath(projectPath);
-    if (!(await fs.pathExists(filePath))) {
+    return await this._readAppManifest(filePath);
+  }
+
+  async _readAppManifest(manifestTemplatePath: string): Promise<Result<TeamsAppManifest, FxError>> {
+    if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(filePath)
+          AppStudioError.FileNotFoundError.message(manifestTemplatePath)
         )
       );
     }
-    const content = await fs.readFile(filePath, { encoding: "utf-8" });
+    const content = await fs.readFile(manifestTemplatePath, { encoding: "utf-8" });
     const contentV3 = convertManifestTemplateToV3(content);
     const manifest = JSON.parse(contentV3) as TeamsAppManifest;
     return ok(manifest);

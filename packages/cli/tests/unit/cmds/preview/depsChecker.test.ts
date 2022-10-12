@@ -3,7 +3,11 @@
 
 import * as chai from "chai";
 import * as sinon from "sinon";
-import { DepsLogger, DepsTelemetry, DepsType } from "@microsoft/teamsfx-core";
+import {
+  DepsLogger,
+  DepsTelemetry,
+  DepsType,
+} from "@microsoft/teamsfx-core/build/common/deps-checker";
 
 import * as cliUtils from "../../../../src/cmds/preview/depsChecker/cliUtils";
 import { CliDepsChecker } from "../../../../src/cmds/preview/depsChecker/cliChecker";
@@ -41,14 +45,14 @@ describe("[Checker UT - Cli]", () => {
     it("Node", async () => {
       sandbox.stub(cliUtils, "isNodeCheckerEnabled").resolves(false);
       expect(await CliDepsChecker.isEnabled(DepsType.SpfxNode)).to.be.false;
+      expect(await CliDepsChecker.isEnabled(DepsType.SpfxNodeV1_16)).to.be.false;
       expect(await CliDepsChecker.isEnabled(DepsType.AzureNode)).to.be.false;
-      expect(await CliDepsChecker.isEnabled(DepsType.FunctionNode)).to.be.false;
 
       sandbox.restore();
       sandbox.stub(cliUtils, "isNodeCheckerEnabled").resolves(true);
       expect(await CliDepsChecker.isEnabled(DepsType.AzureNode)).to.be.true;
       expect(await CliDepsChecker.isEnabled(DepsType.SpfxNode)).to.be.true;
-      expect(await CliDepsChecker.isEnabled(DepsType.FunctionNode)).to.be.true;
+      expect(await CliDepsChecker.isEnabled(DepsType.SpfxNodeV1_16)).to.be.true;
     });
 
     it("Dotnet", async () => {

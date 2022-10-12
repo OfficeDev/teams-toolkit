@@ -18,17 +18,22 @@ import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
-import { Constants, FrontendPathInfo } from "../../plugins/resource/frontend/constants";
 import {
   AzureSolutionQuestionNames,
   TabNonSsoItem,
 } from "../../plugins/solution/fx-solution/question";
-import { ComponentNames, Scenarios, StorageOutputs } from "../constants";
+import {
+  ComponentNames,
+  PathConstants,
+  ProgrammingLanguage,
+  Scenarios,
+  StorageOutputs,
+} from "../constants";
 import { Plans } from "../messages";
 import { getComponent, getComponentByScenario } from "../workflow";
 import { assign, cloneDeep, merge } from "lodash";
 import { generateConfigBiceps, bicepUtils, addFeatureNotify, scaffoldRootReadme } from "../utils";
-import { TabCodeProvider } from "../code/tabCode";
+import { TabCodeProvider } from "../code/tab/tabCode";
 import { BicepComponent } from "../bicep";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { IdentityResource } from "../resource/identity";
@@ -37,7 +42,8 @@ import { AppManifest } from "../resource/appManifest/appManifest";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { hooks } from "@feathersjs/hooks/lib";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { isVSProject } from "../../common";
+import { isVSProject } from "../../common/projectSettingsHelper";
+import { errorSource } from "../code/tab/constants";
 
 @Service("teams-tab")
 export class TeamsTab {
@@ -47,7 +53,7 @@ export class TeamsTab {
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.AddFeature,
       telemetryComponentName: ComponentNames.TeamsTab,
-      errorSource: "FE",
+      errorSource: errorSource,
       errorHandler: (error) => {
         if (error && !error?.name) {
           error.name = "addTabError";
@@ -94,9 +100,9 @@ export class TeamsTab {
     // 1. scaffold and config tab
     const clonedInputs = cloneDeep(inputs);
     clonedInputs.folder ||=
-      inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp"
-        ? "."
-        : FrontendPathInfo.WorkingDir;
+      inputs[CoreQuestionNames.ProgrammingLanguage] === ProgrammingLanguage.CSharp
+        ? PathConstants.dotnetWorkingDir
+        : PathConstants.tabWorkingDir;
     clonedInputs.language = inputs[CoreQuestionNames.ProgrammingLanguage];
     const tabCode = Container.get(ComponentNames.TabCode) as TabCodeProvider;
     const res = await tabCode.generate(context, clonedInputs);
@@ -187,7 +193,7 @@ export class TeamsTab {
     {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate local debug configs");
+      effects.push("generate debug configs");
     }
 
     // 5. app-manifest.addCapability
@@ -216,17 +222,18 @@ export class TeamsTab {
 
   @hooks([
     ActionExecutionMW({
-      errorSource: "FE",
+      errorSource: errorSource,
     }),
   ])
   async provision(context: ResourceContextV3): Promise<Result<undefined, FxError>> {
     context.envInfo.state[ComponentNames.TeamsTab] =
       context.envInfo.state[ComponentNames.TeamsTab] || {};
     if (isVSProject(context.projectSetting)) {
-      context.envInfo.state[ComponentNames.TeamsTab][StorageOutputs.indexPath.key] = "/";
+      context.envInfo.state[ComponentNames.TeamsTab][StorageOutputs.indexPath.key] =
+        PathConstants.blazorTabIndexPath;
     } else {
       context.envInfo.state[ComponentNames.TeamsTab][StorageOutputs.indexPath.key] =
-        Constants.FrontendIndexPath;
+        PathConstants.reactTabIndexPath;
     }
     return ok(undefined);
   }

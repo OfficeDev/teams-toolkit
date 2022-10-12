@@ -4,26 +4,35 @@
  *--------------------------------------------------------------------------------------------*/
 import * as util from "util";
 import * as vscode from "vscode";
+import { v4 as uuidv4 } from "uuid";
 import { assembleError, FxError, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import * as globalVariables from "../../globalVariables";
 import { showError } from "../../handlers";
 import { ExtensionErrors, ExtensionSource } from "../../error";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
+import { sendDebugAllEvent } from "../localTelemetryReporter";
+import * as commonUtils from "../commonUtils";
+import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import { performance } from "perf_hooks";
 
 const ControlCodes = {
   CtrlC: "\u0003",
 };
 
-// TODO: ensure local debug session in teamsfx task
 export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   protected writeEmitter = new vscode.EventEmitter<string>();
   onDidWrite: vscode.Event<string> = this.writeEmitter.event;
   protected closeEmitter = new vscode.EventEmitter<number>();
   onDidClose?: vscode.Event<number> = this.closeEmitter.event;
+  protected readonly taskTerminalId: string;
+  protected startTime: number | undefined;
 
-  constructor(private taskDefinition: vscode.TaskDefinition) {}
+  constructor(private taskDefinition: vscode.TaskDefinition) {
+    this.taskTerminalId = uuidv4();
+  }
 
   open(): void {
+    this.startTime = performance.now();
     this.do()
       .then((res) => {
         const error = res.isErr() ? res.error : undefined;
@@ -38,27 +47,45 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
 
   handleInput(data: string): void {
     if (data.includes(ControlCodes.CtrlC)) {
-      this.stop();
+      this.stop(
+        new UserError(
+          ExtensionSource,
+          ExtensionErrors.TaskCancelError,
+          getDefaultString("teamstoolkit.localDebug.taskCancelError"),
+          localize("teamstoolkit.localDebug.taskCancelError")
+        )
+      );
     }
   }
 
-  protected stop(error?: any): void {
+  protected async stop(error?: any): Promise<void> {
     if (error) {
       // TODO: add color
-      this.writeEmitter.fire(`${error?.displayMessage ?? error?.message}\r\n`);
-      showError(assembleError(error));
+      this.writeEmitter.fire(`${error?.message}\r\n`);
+      const fxError = assembleError(error);
+      showError(fxError);
       this.closeEmitter.fire(1);
+
+      await sendDebugAllEvent(fxError, { [TelemetryProperty.DebugIsTransparentTask]: "true" });
+      if (commonUtils.getLocalDebugSession().id !== commonUtils.DebugNoSessionId) {
+        commonUtils.endLocalDebugSession();
+      }
     }
     this.closeEmitter.fire(0);
   }
 
   protected abstract do(): Promise<Result<Void, FxError>>;
 
+  protected getDurationInSeconds(): number | undefined {
+    if (!this.startTime) {
+      return undefined;
+    }
+    return (performance.now() - this.startTime) / 1000;
+  }
+
   public static resolveTeamsFxVariables(str: string): string {
     // Background task cannot resolve variables in VSC.
     // Here Teams Toolkit resolve the workspaceFolder.
-    // TODO: remove one after decide to use which placeholder
-    str = str.replace("${teamsfx:workspaceFolder}", globalVariables.workspaceUri?.fsPath ?? "");
     str = str.replace("${workspaceFolder}", globalVariables.workspaceUri?.fsPath ?? "");
     return str;
   }

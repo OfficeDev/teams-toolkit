@@ -24,7 +24,7 @@ import Container from "typedi";
 import { ComponentNames } from "../../../src/component/constants";
 import * as os from "os";
 import * as telemetry from "../../../src/core/telemetry";
-import { ManifestUtils } from "../../../src/component/resource/appManifest/utils";
+import { ManifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
 import { AppManifest } from "../../../src/component/resource/appManifest/appManifest";
 
 describe("SSO can add in project", () => {
@@ -57,7 +57,6 @@ describe("SSO can add in project", () => {
           provision: true,
           build: true,
           folder: "tabs",
-          sso: true,
         },
       ],
     };
@@ -89,7 +88,7 @@ describe("SSO can add in project", () => {
     assert.isFalse(res);
   });
 
-  it("shouldn't AddSso in me project", async () => {
+  it("should AddSso in me project", async () => {
     const projectSetting: ProjectSettingsV3 = {
       ...basicProjectSetting,
       components: [
@@ -109,7 +108,7 @@ describe("SSO can add in project", () => {
       ],
     };
     const res = await canAddSso(projectSetting);
-    assert.isFalse(res);
+    assert.isTrue(res);
   });
 
   it("shouldn't AddSso in bot project with function", async () => {
@@ -184,6 +183,7 @@ describe("SSO feature", () => {
       language: "typescript",
       "app-name": appName,
       stage: Stage.addFeature,
+      features: "sso",
     };
 
     const component = Container.get(ComponentNames.SSO) as any;
@@ -268,5 +268,22 @@ describe("SSO feature", () => {
     const component = Container.get(ComponentNames.SSO) as any;
     const ssoRes = await component.add(context, inputs);
     assert.isTrue(ssoRes.isErr());
+  });
+
+  it("happy path for function scenario", async () => {
+    sandbox.stub(AppManifest.prototype, "addCapability").resolves(ok(undefined));
+    sandbox.stub(ManifestUtils.prototype, "isExistingTab").resolves(ok(true));
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      language: "typescript",
+      "app-name": appName,
+      stage: Stage.addFeature,
+      features: "function",
+    };
+
+    const component = Container.get(ComponentNames.SSO) as any;
+    const ssoRes = await component.add(context, inputs);
+    assert.isTrue(ssoRes.isOk());
   });
 });

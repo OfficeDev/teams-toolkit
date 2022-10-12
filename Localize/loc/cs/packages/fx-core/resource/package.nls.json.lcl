@@ -1201,6 +1201,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.appSettingsUtil.FailedToResetAppSettingsDevelopment" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to reset values in appsettings.Development.json.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nepovedlo se obnovit hodnoty v appsettings.Development.json.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.backupFiles.FailedToBackupFiles" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to backup %s.]]></Val>
@@ -3022,6 +3031,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.InvalidFeature" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This feature is not applicable for your project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Tato funkce se nedá použít pro váš projekt.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.InvalidInputError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to update context: %s]]></Val>
@@ -3120,10 +3138,13 @@
       </Item>
       <Item ItemId=";error.MissingSubscriptionInConfig" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Please provide the subscrpition id of the resource group (%s) in (%s)]]></Val>
+          <Val><![CDATA[Please provide the subscription id of the resource group (%s) in (%s)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Zadejte prosím ID předplatného skupiny prostředků (%s) v (%s)]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Please provide the subscrpition id of the resource group (%s) in (%s)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3141,6 +3162,15 @@
           <Val><![CDATA[MultipleEnv feature is not enabled]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Funkce MultipleEnv není povolená.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.NgrokConfigError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Load ngrok config %s failed. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nepovedlo se načíst konfiguraci ngrok %s. %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3481,6 +3511,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.aad.CreateAppForbiddenError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to create an app in Azure Active Directory. This problem can be resolved by login using a Microsoft 365 developer account, you can apply for a free account by joining Microsoft 365 Developer Program(https://developer.microsoft.com/en-us/microsoft-365/dev-program).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[V Azure Active Directory se nepovedlo vytvořit aplikaci. Tento problém se dá vyřešit přihlášením pomocí vývojářského účtu Microsoft 365. O bezplatný účet můžete požádat připojením k programu pro vývojáře Microsoft 365 Developer (https://developer.microsoft.com/en-us/microsoft-365/dev-program).]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.aad.CreateSecretError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[`Failed to create an application secret in Azure Active Directory.`]]></Val>
@@ -3648,6 +3687,15 @@
           <Val><![CDATA[Failed to update application in Azure Active Directory: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Nepovedlo se aktualizovat aplikaci v Azure Active Directory: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.UpdateAadAppUsingManifestError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to update application in Azure Active Directory. Please make sure 'templates/appPackage/aad.template.json' is valid: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nepovedlo se aktualizovat aplikaci v Azure Active Directory. Ujistěte se prosím, že cesta templates/appPackage/aad.template.json je platná: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4246,6 +4294,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.appstudio.teamsAppCreateConflict" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to create Teams app with 409 Conflict error. That may come from your app id is conflicting with another app in your tenant. Click Get Help to learn more.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nepovedlo se vytvořit aplikaci Teams s chybou konfliktu 409. To může být způsobeno konfliktem mezi ID vaší aplikace a jinou aplikací ve vašem tenantovi. Kliknutím na Získat pomoc zobrazíte další informace.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.appstudio.teamsAppCreateConflictWithPublishedApp" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A Teams app with that id already exists in your organization's app store. Please manually update the app id and try again.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Aplikace Teams s tímto ID už v obchodě s aplikacemi vaší organizace existuje. Aktualizujte ID aplikace ručně a zkuste to znovu.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.appstudio.teamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to create Teams app in Developer Portal, due to %s]]></Val>
@@ -4351,11 +4417,38 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.debugHandler.BotMessagingEndpointMissingError" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.debugHandler.AppManifestPackageNotExistError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[botMessagingEndpoint is required.]]></Val>
+          <Val><![CDATA[manifestPackagePath %s does not exist.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[botMessagingEndpoint je povinný.]]></Val>
+            <Val><![CDATA[manifestPackagePath %s neexistuje.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.DebugArgumentEmptyError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Debug argument '%s' is empty.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Argument ladění %s je prázdný.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.InvalidAppManifestPackageFileFormatError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[manifestPackagePath must be .zip file path.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[manifestPackagePath musí být cesta k souboru .zip.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.InvalidExistingAADArgsError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Pokud pro jednotné přihlašování používáte existující aplikaci AAD, vyžaduje se objectId, clientId a clientSecret.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4369,20 +4462,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.debugHandler.InvalidSSODebugArgsError" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.debugHandler.InvalidTabBaseUrlError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.]]></Val>
+          <Val><![CDATA[baseUrl must be in the format of 'https://localhost:{port}'.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Pokud pro jednotné přihlašování používáte existující aplikaci AAD, vyžaduje se objectId, clientId a clientSecret.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.debugHandler.InvalidTabDebugArgsError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[baseUrl is required and must be in the format of 'https://localhost:{port}'.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[baseUrl je povinná a musí být ve formátu https://localhost:{port}.]]></Val>
+            <Val><![CDATA[baseUrl musí být ve formátu https://localhost:{port}.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4731,10 +4815,13 @@
       </Item>
       <Item ItemId=";error.function.InstallNpmPackageError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to install NPM packages.]]></Val>
+          <Val><![CDATA[Failed to install npm packages.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Nepovedlo se nainstalovat balíčky NPM.]]></Val>
+            <Val><![CDATA[Nepovedlo se nainstalovat balíčky npm.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to install NPM packages.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -6376,6 +6463,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.bot.BotRegistrationNotFoundWith" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Bot registration was not found with botId %s. Click 'Get Help' button to learn more about how to check bot registrations.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Registrace robota s botId %s se nenašla. Další informace o tom, jak zkontrolovat registrace robota, získáte kliknutím na tlačítko Získat pomoc.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.bot.BotResourceExists" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Bot resource already existed on %s, skip creating Bot resource.]]></Val>
@@ -6606,10 +6702,13 @@
       </Item>
       <Item ItemId=";plugins.bot.FailedUpdateMessageEndpoint" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to update message endpoint with %s]]></Val>
+          <Val><![CDATA[Failed to update message endpoint with %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Nepovedlo se aktualizovat koncový bod zprávy s %s.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to update message endpoint with %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

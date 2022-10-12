@@ -31,7 +31,7 @@ import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { getColorizedString, setSubscriptionId, toLocaleLowerCase, toYargsOptions } from "../utils";
 import { checkIsOnline } from "../commonlib/codeFlowLogin";
-import { AppStudioScopes } from "@microsoft/teamsfx-core";
+import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
 
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   const appStudioTokenJsonRes = await M365TokenProvider.getJsonObject({ scopes: AppStudioScopes });
@@ -80,7 +80,7 @@ async function outputAzureInfo(
     await AzureTokenCIProvider.init(userName, password, tenantId);
     azureProvider = AzureTokenCIProvider;
   }
-  const result = await azureProvider.getAccountCredentialAsync(true, tenantId);
+  const result = await azureProvider.getJsonObject(true);
   if (result) {
     const subscriptions = await azureProvider.listSubscriptions();
     if (commandType === "login") {
@@ -90,7 +90,7 @@ async function outputAzureInfo(
           color: Colors.BRIGHT_GREEN,
         },
         { content: " Your username is ", color: Colors.BRIGHT_WHITE },
-        { content: (result as any).username, color: Colors.BRIGHT_MAGENTA },
+        { content: (result as any).unique_name, color: Colors.BRIGHT_MAGENTA },
       ];
       CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
       CLILogProvider.necessaryLog(

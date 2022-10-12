@@ -26,38 +26,35 @@ import { convertToAlphanumericOnly } from "../../common/utils";
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
-import { AADRegistration } from "../../plugins/resource/bot/aadRegistration";
-import { AppStudio } from "../../plugins/resource/bot/appStudio/appStudio";
-import { IBotRegistration } from "../../plugins/resource/bot/appStudio/interfaces/IBotRegistration";
-import { MaxLengths } from "../../plugins/resource/bot/constants";
-import { PluginLocalDebug } from "../../plugins/resource/bot/resources/strings";
-import { genUUID } from "../../plugins/resource/bot/utils/common";
-import { ResourceNameFactory } from "../../plugins/resource/bot/utils/resourceNameFactory";
+import { AADRegistration } from "../resource/botService/aadRegistration";
+import { AppStudio } from "../resource/botService/appStudio/appStudio";
+import { IBotRegistration } from "../resource/botService/appStudio/interfaces/IBotRegistration";
+import { MaxLengths } from "../resource/botService/constants";
+import { PluginLocalDebug } from "../resource/botService/strings";
+import { genUUID } from "../resource/botService/common";
+import { ResourceNameFactory } from "../resource/botService/resourceNameFactory";
 import { ComponentNames } from "../constants";
 import { DebugAction } from "./common";
-import {
-  BotMessagingEndpointMissingError,
-  errorSource,
-  InvalidExistingBotArgsError,
-} from "./error";
+import { errorSource, DebugArgumentEmptyError, InvalidExistingBotArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 const botDebugMessages = {
-  validatingArgs: "Validating the arguments ...",
-  registeringAAD: "Registering an AAD app for bot ...",
-  registeringBot: "Registering a bot in bot framework developer portal ...",
+  registeringAAD: "Registering the AAD app which is required to create the bot ...",
+  registeringBot: "Registering the bot in Bot Framework Portal ...",
   updatingBotMessagingEndpoint: "Updating the bot messaging endpoint ...",
-  savingStates: "Saving the states for bot ...",
-  settingEnvs: "Setting the environment variables for bot ...",
-  AADRegistered: "AAD app is registered",
-  useExistingAAD: "Skip registering AAD app but use the existing AAD app from args",
-  AADAlreadyRegistered: "Skip registering AAD app as it has already been registered before",
-  botRegistered: "Bot is registered",
-  botAlreadyRegistered: "Skip registering bot as it has already been registered before",
+  savingStates: "Saving the states of bot ...",
+  settingEnvs: "Saving the environment variables of bot ...",
+  AADRegistered: "AAD app is registered (%s)",
+  useExistingAAD: "Skip registering AAD app but use the existing AAD app from args: %s",
+  AADAlreadyRegistered: "Skip registering AAD app (%s) as it has already been registered before",
+  botRegistered: "Bot is registered (%s)",
+  botAlreadyRegistered: "Skip registering bot as it has already been registered before (%s)",
   botMessagingEndpointUpdated: "Bot messaging endpoint is updated to %s",
-  statesSaved: "The states for bot are saved in %s",
-  envsSet: "The environment variables for bot are set in %s",
+  statesSaved: "The states of bot are saved in %s",
+  envsSet: "The environment variables of bot are saved in %s",
 };
+
+const botUrl = "https://dev.botframework.com/bots?id=";
 
 export interface BotDebugArgs {
   botId?: string;
@@ -72,8 +69,6 @@ export class BotDebugHandler {
   private readonly logger?: LogProvider;
   private readonly telemetry?: TelemetryReporter;
   private readonly ui?: UserInteraction;
-
-  private existing = false;
 
   private projectSettingsV3?: ProjectSettingsV3;
   private cryptoProvider?: CryptoProvider;
@@ -98,10 +93,6 @@ export class BotDebugHandler {
   public getActions(): DebugAction[] {
     const actions: DebugAction[] = [];
     actions.push({
-      startMessage: botDebugMessages.validatingArgs,
-      run: this.validateArgs.bind(this),
-    });
-    actions.push({
       startMessage: botDebugMessages.registeringAAD,
       run: this.registerAAD.bind(this),
     });
@@ -125,24 +116,29 @@ export class BotDebugHandler {
   }
 
   private async validateArgs(): Promise<Result<string[], FxError>> {
-    // TODO: allow botPassword to be set in other places (like env) instead of tasks.json
-    if (this.args.botId && this.args.botPassword) {
-      this.existing = true;
-    } else if (this.args.botId || this.args.botPassword) {
+    if (this.args.botId !== undefined && this.args.botId.trim().length === 0) {
+      return err(DebugArgumentEmptyError("botId"));
+    }
+    if (this.args.botPassword !== undefined && this.args.botPassword.trim().length === 0) {
+      return err(DebugArgumentEmptyError("botPassword"));
+    }
+
+    const existing = this.args.botId || this.args.botPassword;
+    const missing = !this.args.botId || !this.args.botPassword;
+    if (existing && missing) {
       return err(InvalidExistingBotArgsError());
     }
-
-    if (!this.args.botMessagingEndpoint || this.args.botMessagingEndpoint.trim().length === 0) {
-      return err(BotMessagingEndpointMissingError());
-    }
-
-    this.args.botMessagingEndpoint = this.args.botMessagingEndpoint.trim();
 
     return ok([]);
   }
 
   private async registerAAD(): Promise<Result<string[], FxError>> {
     try {
+      const result = await this.validateArgs();
+      if (result.isErr()) {
+        return err(result.error);
+      }
+
       const projectSettingsResult = await loadProjectSettingsByProjectPath(this.projectPath, true);
       if (projectSettingsResult.isErr()) {
         return err(projectSettingsResult.error);
@@ -164,19 +160,24 @@ export class BotDebugHandler {
       this.envInfoV3.state[ComponentNames.TeamsBot] =
         this.envInfoV3.state[ComponentNames.TeamsBot] || {};
 
-      if (this.existing) {
+      if (this.args.botId) {
         // use existing bot
         // set botId, botPassword from args to state
         this.envInfoV3.state[ComponentNames.TeamsBot].botId = this.args.botId;
         this.envInfoV3.state[ComponentNames.TeamsBot].botPassword = this.args.botPassword;
 
-        return ok([botDebugMessages.useExistingAAD]);
+        return ok([util.format(botDebugMessages.useExistingAAD, this.args.botId)]);
       } else if (
         this.envInfoV3.state[ComponentNames.TeamsBot].botId &&
         this.envInfoV3.state[ComponentNames.TeamsBot].botPassword
       ) {
         // AAD already registered
-        return ok([botDebugMessages.AADAlreadyRegistered]);
+        return ok([
+          util.format(
+            botDebugMessages.AADAlreadyRegistered,
+            this.envInfoV3.state[ComponentNames.TeamsBot].botId
+          ),
+        ]);
       } else {
         // not using existing bot and AAD not yet registered
         const tokenResult = await this.m365TokenProvider.getAccessToken({
@@ -201,7 +202,7 @@ export class BotDebugHandler {
         this.envInfoV3.state[ComponentNames.TeamsBot].botId = botAuthCredential.clientId;
         this.envInfoV3.state[ComponentNames.TeamsBot].botPassword = botAuthCredential.clientSecret;
 
-        return ok([botDebugMessages.AADRegistered]);
+        return ok([util.format(botDebugMessages.AADRegistered, botAuthCredential.clientId)]);
       }
     } catch (error: unknown) {
       return err(assembleError(error, errorSource));
@@ -222,7 +223,12 @@ export class BotDebugHandler {
         this.envInfoV3!.state[ComponentNames.TeamsBot].botId
       );
       if (result) {
-        return ok([botDebugMessages.botAlreadyRegistered]);
+        return ok([
+          util.format(
+            botDebugMessages.botAlreadyRegistered,
+            `${botUrl}${this.envInfoV3!.state[ComponentNames.TeamsBot].botId}`
+          ),
+        ]);
       }
 
       const botReg: IBotRegistration = {
@@ -238,7 +244,12 @@ export class BotDebugHandler {
 
       await AppStudio.createBotRegistration(tokenResult.value, botReg);
 
-      return ok([botDebugMessages.botRegistered]);
+      return ok([
+        util.format(
+          botDebugMessages.botRegistered,
+          `${botUrl}${this.envInfoV3!.state[ComponentNames.TeamsBot].botId}`
+        ),
+      ]);
     } catch (error: unknown) {
       return err(assembleError(error, errorSource));
     }

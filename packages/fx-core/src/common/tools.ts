@@ -64,7 +64,7 @@ import {
   TabOptionItem,
   MessageExtensionItem,
 } from "../plugins/solution/fx-solution/question";
-import { isV3, TOOLS } from "../core/globalVars";
+import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
 import { isFeatureFlagEnabled } from "./featureFlags";
@@ -568,10 +568,9 @@ export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): b
 // 2. Not minimal app
 export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Promise<boolean> {
   // Not include `Add CICD Workflows` in minimal app case.
-  const isExistingApp = !isV3()
-    ? isExistingTabApp(ctx.projectSetting)
-    : ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id &&
-      isMiniApp(ctx.projectSetting as ProjectSettingsV3);
+  const isExistingApp =
+    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id &&
+    isMiniApp(ctx.projectSetting as ProjectSettingsV3);
   if (isExistingApp) {
     return false;
   }
@@ -612,6 +611,30 @@ export function isYoCheckerEnabled(): boolean {
 
 export function isGeneratorCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
+}
+
+export function getSPFxVersion(): string {
+  const flag = process.env[FeatureFlagName.SPFxVersion];
+
+  return flag ?? "1.15.0";
+}
+
+export async function getAppSPFxVersion(root: string): Promise<string | undefined> {
+  let projectSPFxVersion = undefined;
+  const yoInfoPath = path.join(root, "SPFx", ".yo-rc.json");
+  if (await fs.pathExists(yoInfoPath)) {
+    const yoInfo = await fs.readJson(yoInfoPath);
+    projectSPFxVersion = yoInfo["@microsoft/generator-sharepoint"]?.version;
+  }
+
+  if (!projectSPFxVersion || projectSPFxVersion === "") {
+    const packagePath = path.join(root, "SPFx", "package.json");
+    if (await fs.pathExists(packagePath)) {
+      const packageInfo = await fs.readJson(packagePath);
+      projectSPFxVersion = packageInfo.dependencies["@microsoft/sp-webpart-base"];
+    }
+  }
+  return projectSPFxVersion;
 }
 
 export async function generateBicepFromFile(
@@ -914,6 +937,7 @@ export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWr
 export const GraphScopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
 export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];
 export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`];
+export const AzureScopes = ["https://management.core.windows.net/user_impersonation"];
 
 export async function getSPFxTenant(graphToken: string): Promise<string> {
   const GRAPH_TENANT_ENDPT = "https://graph.microsoft.com/v1.0/sites/root?$select=webUrl";
@@ -941,6 +965,12 @@ export async function getSPFxToken(
     spoToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
   }
   return spoToken;
+}
+
+export function ConvertTokenToJson(token: string): Record<string, unknown> {
+  const array = token.split(".");
+  const buff = Buffer.from(array[1], "base64");
+  return JSON.parse(buff.toString("utf8"));
 }
 
 export function getFixedCommonProjectSettings(rootPath: string | undefined) {

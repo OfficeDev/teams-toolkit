@@ -1201,6 +1201,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.appSettingsUtil.FailedToResetAppSettingsDevelopment" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to reset values in appsettings.Development.json.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[appsettings.Development.json에서 값을 재설정하지 못했습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.backupFiles.FailedToBackupFiles" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to backup %s.]]></Val>
@@ -3022,6 +3031,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.InvalidFeature" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This feature is not applicable for your project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[이 기능은 프로젝트에 적용되지 않습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.InvalidInputError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to update context: %s]]></Val>
@@ -3120,10 +3138,13 @@
       </Item>
       <Item ItemId=";error.MissingSubscriptionInConfig" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Please provide the subscrpition id of the resource group (%s) in (%s)]]></Val>
+          <Val><![CDATA[Please provide the subscription id of the resource group (%s) in (%s)]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[(%s)에 리소스 그룹(%s)의 구독 ID를 제공하세요.]]></Val>
+            <Val><![CDATA[(%s)에서 리소스 그룹(%s)의 구독 ID를 제공하세요.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Please provide the subscrpition id of the resource group (%s) in (%s)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3141,6 +3162,15 @@
           <Val><![CDATA[MultipleEnv feature is not enabled]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[MultipleEnv 기능을 사용할 수 없습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.NgrokConfigError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Load ngrok config %s failed. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ngrok 구성 %s을(를) 로드하지 못했습니다. %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3481,6 +3511,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.aad.CreateAppForbiddenError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to create an app in Azure Active Directory. This problem can be resolved by login using a Microsoft 365 developer account, you can apply for a free account by joining Microsoft 365 Developer Program(https://developer.microsoft.com/en-us/microsoft-365/dev-program).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Active Directory에서 앱을 만들지 못했습니다. 이 문제는 Microsoft 365 개발자 계정을 사용하여 로그인하여 해결할 수 있으며 Microsoft 365 개발자 프로그램(https://developer.microsoft.com/en-us/microsoft-365/dev-program)에 가입하여 무료 계정을 신청할 수 있습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.aad.CreateSecretError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[`Failed to create an application secret in Azure Active Directory.`]]></Val>
@@ -3648,6 +3687,15 @@
           <Val><![CDATA[Failed to update application in Azure Active Directory: %s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Azure Active Directory의 애플리케이션을 업데이트하지 못함: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.aad.UpdateAadAppUsingManifestError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to update application in Azure Active Directory. Please make sure 'templates/appPackage/aad.template.json' is valid: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Active Directory에서 애플리케이션을 업데이트하지 못했습니다. 'templates/appPackage/aad.template.json'이 유효한지 확인하세요: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4246,6 +4294,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.appstudio.teamsAppCreateConflict" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to create Teams app with 409 Conflict error. That may come from your app id is conflicting with another app in your tenant. Click Get Help to learn more.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[409 충돌 오류로 Teams 앱을 생성하지 못했습니다. 앱 ID가 테넌트의 다른 앱과 충돌하기 때문에 발생할 수 있습니다. 자세한 내용은 도움말 보기를 클릭하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.appstudio.teamsAppCreateConflictWithPublishedApp" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[A Teams app with that id already exists in your organization's app store. Please manually update the app id and try again.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[해당 ID의 Teams 앱이 조직의 앱 스토어에 이미 있습니다. 앱 ID를 수동으로 업데이트하고 다시 시도하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.appstudio.teamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to create Teams app in Developer Portal, due to %s]]></Val>
@@ -4351,11 +4417,38 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.debugHandler.BotMessagingEndpointMissingError" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.debugHandler.AppManifestPackageNotExistError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[botMessagingEndpoint is required.]]></Val>
+          <Val><![CDATA[manifestPackagePath %s does not exist.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[botMessagingEndpoint가 필요합니다.]]></Val>
+            <Val><![CDATA[manifestPackagePath %s이(가) 존재하지 않습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.DebugArgumentEmptyError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Debug argument '%s' is empty.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[디버그 인수 '%s'이(가) 비어 있습니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.InvalidAppManifestPackageFileFormatError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[manifestPackagePath must be .zip file path.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[manifestPackagePath는 .zip 파일 경로여야 합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";error.debugHandler.InvalidExistingAADArgsError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SSO용 기존 AAD 앱을 사용하는 경우 objectId, clientId 및 clientSecret이 모두 필요합니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4369,20 +4462,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";error.debugHandler.InvalidSSODebugArgsError" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";error.debugHandler.InvalidTabBaseUrlError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[objectId, clientId and clientSecret are all required if you use existing AAD app for SSO.]]></Val>
+          <Val><![CDATA[baseUrl must be in the format of 'https://localhost:{port}'.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[SSO용 기존 AAD 앱을 사용하는 경우 objectId, clientId 및 clientSecret이 모두 필요합니다.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";error.debugHandler.InvalidTabDebugArgsError" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[baseUrl is required and must be in the format of 'https://localhost:{port}'.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[baseUrl은 필수이며 'https://localhost:{port}' 형식이어야 합니다.]]></Val>
+            <Val><![CDATA[baseUrl은 'https://localhost:{port}' 형식이어야 합니다.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4731,10 +4815,13 @@
       </Item>
       <Item ItemId=";error.function.InstallNpmPackageError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to install NPM packages.]]></Val>
+          <Val><![CDATA[Failed to install npm packages.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[NPM 패키지를 설치하지 못했습니다.]]></Val>
+            <Val><![CDATA[npm 패키지를 설치하지 못했습니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to install NPM packages.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -6376,6 +6463,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.bot.BotRegistrationNotFoundWith" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Bot registration was not found with botId %s. Click 'Get Help' button to learn more about how to check bot registrations.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[botId가 %s인 봇 등록을 찾을 수 없습니다. 봇 등록 확인 방법에 대해 자세히 알아보려면 '도움말 받기' 버튼을 클릭하세요.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.bot.BotResourceExists" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Bot resource already existed on %s, skip creating Bot resource.]]></Val>
@@ -6606,10 +6702,13 @@
       </Item>
       <Item ItemId=";plugins.bot.FailedUpdateMessageEndpoint" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Failed to update message endpoint with %s]]></Val>
+          <Val><![CDATA[Failed to update message endpoint with %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[%s(으)로 메시지 엔드포인트를 업데이트하지 못했습니다.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Failed to update message endpoint with %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

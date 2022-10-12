@@ -182,6 +182,14 @@ describe("CommonUtils", () => {
       chai.expect(result).equals(undefined);
     });
 
+    it("undefined workspace uri", () => {
+      sandbox.restore();
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file(workspacePath));
+
+      const result = commonUtils.getProjectId();
+      chai.expect(result).equals(undefined);
+    });
+
     describe("menus", async () => {
       it("preview", async () => {
         const previewCommand = extensionPackage.contributes.menus["editor/title"].find(
@@ -268,5 +276,38 @@ describe("CommonUtils", () => {
         });
       });
     }
+  });
+
+  it("getAllFeatureFlags", () => {
+    const featureFlags = commonUtils.getAllFeatureFlags();
+
+    const match = featureFlags?.find((featureFlag) => {
+      if (featureFlag.includes(commonUtils.FeatureFlags.SPFxVersion)) {
+        return true;
+      }
+    });
+    chai.expect(match).to.be.exist;
+  });
+
+  describe("get app name", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("get app name successfully", () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(fs, "readFileSync").returns('{ "appName": "name"}');
+
+      const res = commonUtils.getAppName();
+      expect(res).equal("name");
+    });
+
+    it("throw exception", () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(fs, "readFileSync").throws();
+
+      const res = commonUtils.getAppName();
+      expect(res).equal(undefined);
+    });
   });
 });

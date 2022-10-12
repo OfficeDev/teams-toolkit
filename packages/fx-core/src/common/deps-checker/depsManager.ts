@@ -14,8 +14,8 @@ export type DepsOptions = {
 export class DepsManager {
   private static readonly depsOrders = [
     DepsType.AzureNode,
-    DepsType.FunctionNode,
     DepsType.SpfxNode,
+    DepsType.SpfxNodeV1_16,
     DepsType.Dotnet,
     DepsType.FuncCoreTools,
     DepsType.Ngrok,

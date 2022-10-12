@@ -8,50 +8,16 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { Container } from "typedi";
 import { SolutionError, SolutionSource } from "./constants";
+export const ResourcePlugins = {};
 
-export const ResourcePlugins = {
-  SpfxPlugin: "SpfxPlugin",
-  FrontendPlugin: "FrontendPlugin",
-  IdentityPlugin: "IdentityPlugin",
-  SqlPlugin: "SqlPlugin",
-  BotPlugin: "BotPlugin",
-  AadPlugin: "AadPlugin",
-  FunctionPlugin: "FunctionPlugin",
-  LocalDebugPlugin: "LocalDebugPlugin",
-  ApimPlugin: "ApimPlugin",
-  AppStudioPlugin: "AppStudioPlugin",
-  SimpleAuthPlugin: "SimpleAuthPlugin",
-  KeyVaultPlugin: "KeyVaultPlugin",
-};
-
-export const ResourcePluginsV2 = {
-  SpfxPlugin: "SpfxPluginV2",
-  FrontendPlugin: "FrontendPluginV2",
-  IdentityPlugin: "IdentityPluginV2",
-  SqlPlugin: "SqlPluginV2",
-  BotPlugin: "BotPluginV2",
-  AadPlugin: "AadPluginV2",
-  FunctionPlugin: "FunctionPluginV2",
-  LocalDebugPlugin: "LocalDebugPluginV2",
-  ApimPlugin: "ApimPluginV2",
-  AppStudioPlugin: "AppStudioPluginV2",
-  SimpleAuthPlugin: "SimpleAuthPluginV2",
-  KeyVaultPlugin: "KeyVaultPluginV2",
-};
+export const ResourcePluginsV2 = {};
 
 /**
  * @returns all registered resource plugins
  */
 export function getAllResourcePlugins(): Plugin[] {
   const plugins: Plugin[] = [];
-  for (const k in ResourcePlugins) {
-    const plugin = Container.get<Plugin>(k);
-    if (plugin) {
-      plugins.push(plugin);
-    }
-  }
   return plugins;
 }
 
@@ -60,14 +26,6 @@ export function getAllResourcePlugins(): Plugin[] {
  */
 export function getAllV2ResourcePlugins(): v2.ResourcePlugin[] {
   const plugins: v2.ResourcePlugin[] = [];
-  let k: keyof typeof ResourcePluginsV2;
-  for (k in ResourcePluginsV2) {
-    const pluginName = ResourcePluginsV2[k];
-    const plugin = Container.get<v2.ResourcePlugin>(pluginName);
-    if (plugin) {
-      plugins.push(plugin);
-    }
-  }
   return plugins;
 }
 

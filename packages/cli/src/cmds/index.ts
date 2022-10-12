@@ -5,7 +5,7 @@
 
 import { Argv } from "yargs";
 
-import { isDeployManifestEnabled } from "@microsoft/teamsfx-core";
+import { isDeployManifestEnabled } from "@microsoft/teamsfx-core/build/common/tools";
 
 import { YargsCommand } from "../yargsCommand";
 import Account from "./account";

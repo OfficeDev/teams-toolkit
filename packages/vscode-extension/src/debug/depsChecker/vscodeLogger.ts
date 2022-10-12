@@ -5,7 +5,7 @@ import * as os from "os";
 import commonlibLogger, { VsCodeLogProvider } from "../../commonlib/log";
 import { OutputChannel } from "vscode";
 import { LogLevel } from "@microsoft/teamsfx-api";
-import { DepsLogger } from "@microsoft/teamsfx-core";
+import { DepsLogger } from "@microsoft/teamsfx-core/build/common/deps-checker";
 
 export class VSCodeLogger implements DepsLogger {
   public outputChannel: OutputChannel;

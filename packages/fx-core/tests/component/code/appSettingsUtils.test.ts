@@ -28,7 +28,7 @@ describe("appSettingsUtils", () => {
         TeamsFx: {
           Authentication: {
             ClientId: "clientId123",
-            ClientSecret: "clientSecret123",
+            ClientSecret: "mockClientSecret",
             OAuthAuthority: "mockOAuthAuthority",
             ApplicationIdUri: "mockApplicationUrl",
             Bot: {
@@ -87,7 +87,7 @@ describe("appSettingsUtils", () => {
         TeamsFx: {
           Authentication: {
             ClientId: "clientId123",
-            ClientSecret: "clientSecret123",
+            ClientSecret: "mockClientSecret",
             OAuthAuthority: "mockOAuthAuthority",
             ApplicationIdUri: "mockApplicationUrl",
             Bot: {

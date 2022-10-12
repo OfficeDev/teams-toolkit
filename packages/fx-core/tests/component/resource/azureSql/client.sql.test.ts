@@ -14,9 +14,28 @@ import { SqlConfig } from "../../../../src/component/resource/azureSql/types";
 import { getLocalizedString } from "../../../../src/common/localizeUtils";
 import { TokenCredential } from "@azure/core-http";
 import faker from "faker";
-import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
+import { AccessToken, GetTokenOptions } from "@azure/identity";
+import { reject } from "lodash";
 
 chai.use(chaiAsPromised);
+
+export class MyTokenCredential1 implements TokenCredential {
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    return Promise.reject(new Error("mock error"));
+  }
+}
+
+export class MyTokenCredential2 implements TokenCredential {
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    return Promise.reject(new Error("mock error" + ErrorMessage.DomainCode));
+  }
+}
 
 describe("Azure-SQL sql client", () => {
   const tools = new MockTools();
@@ -95,15 +114,8 @@ describe("sqlClient initToken", () => {
     sqlEndpoint: "mock-endpoint",
     databases: ["mock-database"],
   };
-  let credentials: msRestNodeAuth.TokenCredentialsBase;
 
-  before(async () => {
-    credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-      faker.datatype.uuid(),
-      faker.internet.url(),
-      faker.internet.password()
-    );
-  });
+  before(async () => {});
 
   afterEach(() => {
     sandbox.restore();
@@ -129,11 +141,8 @@ describe("sqlClient initToken", () => {
   it("token error", async function () {
     const context = createContextV3();
     context.tokenProvider!.azureAccountProvider.getIdentityCredentialAsync = async () => {
-      return credentials as unknown as TokenCredential;
+      return new MyTokenCredential1();
     };
-    sandbox
-      .stub(msRestNodeAuth.ApplicationTokenCredentials.prototype, "getToken")
-      .rejects(new Error("mock error"));
 
     try {
       await SqlClient.initToken(context.tokenProvider!.azureAccountProvider, sqlConfig);
@@ -146,11 +155,8 @@ describe("sqlClient initToken", () => {
   it("error with domain code", async function () {
     const context = createContextV3();
     context.tokenProvider!.azureAccountProvider.getIdentityCredentialAsync = async () => {
-      return credentials as unknown as TokenCredential;
+      return new MyTokenCredential2();
     };
-    sandbox
-      .stub(msRestNodeAuth.ApplicationTokenCredentials.prototype, "getToken")
-      .rejects(new Error("mock error" + ErrorMessage.DomainCode));
     try {
       await SqlClient.initToken(context.tokenProvider!.azureAccountProvider, sqlConfig);
     } catch (error) {

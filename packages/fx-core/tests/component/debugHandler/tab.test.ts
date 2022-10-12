@@ -17,8 +17,11 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 
-import { ComponentNames } from "../../../src/component/constants";
-import { InvalidTabDebugArgsError } from "../../../src/component/debugHandler/error";
+import { ComponentNames, PathConstants } from "../../../src/component/constants";
+import {
+  DebugArgumentEmptyError,
+  InvalidTabBaseUrlError,
+} from "../../../src/component/debugHandler/error";
 import {
   LocalEnvKeys,
   LocalEnvProvider,
@@ -27,7 +30,6 @@ import {
 import { TabDebugArgs, TabDebugHandler } from "../../../src/component/debugHandler/tab";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
-import { Constants } from "../../../src/plugins/resource/frontend/constants";
 import { runDebugActions } from "./utils";
 
 describe("TabDebugHandler", () => {
@@ -38,14 +40,27 @@ describe("TabDebugHandler", () => {
       sinon.restore();
     });
 
-    it("invalid args", async () => {
+    it("invalid args: undefined baseUrl", async () => {
       const args: TabDebugArgs = {};
       const handler = new TabDebugHandler(projectPath, args);
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
-        chai.assert.equal(result.error.name, InvalidTabDebugArgsError().name);
+        chai.assert.equal(result.error.message, DebugArgumentEmptyError("baseUrl").message);
+      }
+    });
+
+    it("invalid args: invalid url", async () => {
+      const args: TabDebugArgs = {
+        baseUrl: "https://",
+      };
+      const handler = new TabDebugHandler(projectPath, args);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.equal(result.error.message, InvalidTabBaseUrlError().message);
       }
     });
 
@@ -58,7 +73,7 @@ describe("TabDebugHandler", () => {
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
-        chai.assert.equal(result.error.name, InvalidTabDebugArgsError().name);
+        chai.assert.equal(result.error.message, InvalidTabBaseUrlError().message);
       }
     });
 
@@ -158,7 +173,7 @@ describe("TabDebugHandler", () => {
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsTab].domain, "localhost");
       chai.assert.equal(
         envInfoV3.state[ComponentNames.TeamsTab].indexPath,
-        Constants.FrontendIndexPath
+        PathConstants.reactTabIndexPath
       );
       const expectedEnvs: LocalEnvs = {
         template: {

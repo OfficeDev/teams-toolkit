@@ -13,20 +13,21 @@ import {
   Result,
   err,
   ok,
+  ContextV3,
+  ResourceContextV3,
+  InputsWithProjectPath,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { SolutionTelemetryComponentName, SolutionTelemetryProperty } from "../constants";
+import { TokenCredential } from "@azure/core-auth";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { ComponentNames } from "../../../../component/constants";
+import { ComponentNames, PathConstants } from "../../../../component/constants";
 import { updateAzureParameters } from "../arm";
 import { backupFiles } from "./backupFiles";
 import fs from "fs-extra";
 import path from "path";
-import { CommonStrings } from "../../../resource/bot/resources/strings";
-import { DeployConfigs } from "../../../resource/bot/constants";
 import { DeployConfigsConstants } from "../../../../common/azure-hosting/hostingConstant";
-import { FrontendPathInfo } from "../../../resource/frontend/constants";
 
 /**
  * A helper function to construct a plugin's context.
@@ -64,7 +65,7 @@ export function getPluginContextConstructor(
 }
 
 export async function getSubsriptionDisplayName(
-  azureToken: TokenCredentialsBase,
+  azureToken: TokenCredential,
   subscriptionId: string
 ): Promise<string | undefined> {
   const client = new SubscriptionClient(azureToken);
@@ -117,8 +118,8 @@ export function hasBotServiceCreated(envInfo: v3.EnvInfoV3): boolean {
 
 export async function handleConfigFilesWhenSwitchAccount(
   envInfo: v3.EnvInfoV3,
-  appName: string,
-  projectPath: string,
+  context: ResourceContextV3,
+  inputs: InputsWithProjectPath,
   hasSwitchedM365Tenant: boolean,
   hasSwitchedSubscription: boolean,
   hasBotServiceCreatedBefore: boolean,
@@ -128,14 +129,20 @@ export async function handleConfigFilesWhenSwitchAccount(
     return ok(undefined);
   }
 
-  const backupFilesRes = await backupFiles(envInfo.envName, projectPath, isCSharpProject);
+  const backupFilesRes = await backupFiles(
+    envInfo.envName,
+    inputs.projectPath,
+    isCSharpProject,
+    inputs.platform === Platform.VS,
+    context
+  );
   if (backupFilesRes.isErr()) {
     return err(backupFilesRes.error);
   }
 
   const updateAzureParametersRes = await updateAzureParameters(
-    projectPath,
-    appName,
+    inputs.projectPath,
+    context.projectSetting.appName,
     envInfo.envName,
     hasSwitchedM365Tenant,
     hasSwitchedSubscription,
@@ -147,10 +154,13 @@ export async function handleConfigFilesWhenSwitchAccount(
 
   if (hasSwitchedSubscription) {
     const envName = envInfo.envName;
-    const maybeBotFolder = path.join(projectPath, CommonStrings.BOT_WORKING_DIR_NAME);
+    const maybeBotFolder = path.join(inputs.projectPath, PathConstants.botWorkingDir);
     const maybeBotDeploymentFile = path.join(
       maybeBotFolder,
-      path.join(DeployConfigs.DEPLOYMENT_FOLDER, DeployConfigsConstants.DEPLOYMENT_INFO_FILE)
+      path.join(
+        DeployConfigsConstants.DEPLOYMENT_FOLDER,
+        DeployConfigsConstants.DEPLOYMENT_INFO_FILE
+      )
     );
     if (await fs.pathExists(maybeBotDeploymentFile)) {
       try {
@@ -168,10 +178,13 @@ export async function handleConfigFilesWhenSwitchAccount(
       }
     }
 
-    const maybeTabFolder = path.join(projectPath, FrontendPathInfo.WorkingDir);
+    const maybeTabFolder = path.join(inputs.projectPath, PathConstants.tabWorkingDir);
     const maybeTabDeploymentFile = path.join(
       maybeTabFolder,
-      path.join(DeployConfigs.DEPLOYMENT_FOLDER, DeployConfigsConstants.DEPLOYMENT_INFO_FILE)
+      path.join(
+        DeployConfigsConstants.DEPLOYMENT_FOLDER,
+        DeployConfigsConstants.DEPLOYMENT_INFO_FILE
+      )
     );
     if (await fs.pathExists(maybeTabDeploymentFile)) {
       try {

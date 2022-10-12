@@ -163,6 +163,9 @@ export const RequestTypes = {
     getSelectedSubscription: new RequestType0<Result<SubscriptionInfo | undefined, FxError>, Error>(
       `${Namespaces.Azure}/getSelectedSubscriptionRequest`
     ),
+    getAccessToken: new RequestType1<TokenRequest, Result<string, FxError>, Error>(
+      `${Namespaces.Azure}/getAccessTokenRequest`
+    ),
   },
   [Namespaces.M365]: {
     getAccessToken: new RequestType1<TokenRequest, Result<string, FxError>, Error>(
@@ -210,6 +213,9 @@ export const RequestTypes = {
       Result<string | undefined, FxError>,
       Error
     >(`${Namespaces.UserInteraction}/showMessageRequest`),
+    openFile: new RequestType1<string, Result<boolean, FxError>, Error>(
+      `${Namespaces.UserInteraction}/openFileRequest`
+    ),
   },
 };
 

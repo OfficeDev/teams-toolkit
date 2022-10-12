@@ -20,18 +20,17 @@ import {
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
-import { Constants } from "../../plugins/resource/frontend/constants";
-import { ComponentNames } from "../constants";
+import { ComponentNames, PathConstants } from "../constants";
 import { DebugAction } from "./common";
-import { errorSource, InvalidTabDebugArgsError } from "./error";
+import { DebugArgumentEmptyError, errorSource, InvalidTabBaseUrlError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 
 const tabDebugMessages = {
-  validatingArgs: "Validating the arguments ...",
-  savingStates: "Saving the states for Tab ...",
-  settingEnvs: "Setting the environment variables for Tab ...",
-  statesSaved: "The states for Tab are saved in %s",
-  envsSet: "The environment variables for Tab are set in %s",
+  savingStates: "Saving the states of tab to configure manifest and AAD app ...",
+  settingEnvs:
+    "Saving the environment variables of tab to set up the development environment and start the local server ...",
+  statesSaved: "The states of tab are saved in %s",
+  envsSet: "The environment variables of tab are saved in %s",
 };
 
 export interface TabDebugArgs {
@@ -54,10 +53,6 @@ export class TabDebugHandler {
   public getActions(): DebugAction[] {
     const actions: DebugAction[] = [];
     actions.push({
-      startMessage: tabDebugMessages.validatingArgs,
-      run: this.validateArgs.bind(this),
-    });
-    actions.push({
       startMessage: tabDebugMessages.savingStates,
       run: this.saveStates.bind(this),
     });
@@ -69,19 +64,27 @@ export class TabDebugHandler {
   }
 
   private async validateArgs(): Promise<Result<string[], FxError>> {
-    if (!this.args.baseUrl) {
-      return err(InvalidTabDebugArgsError());
+    if (!this.args.baseUrl || this.args.baseUrl.trim().length === 0) {
+      return err(DebugArgumentEmptyError("baseUrl"));
     }
-    const pattern = /https:\/\/localhost:\d+/;
-    const result = this.args.baseUrl.match(pattern);
-    if (!result) {
-      return err(InvalidTabDebugArgsError());
+    try {
+      const url = new URL(this.args.baseUrl);
+      if (url.protocol !== "https:") {
+        return err(InvalidTabBaseUrlError());
+      }
+    } catch {
+      return err(InvalidTabBaseUrlError());
     }
     return ok([]);
   }
 
   private async saveStates(): Promise<Result<string[], FxError>> {
     try {
+      const result = await this.validateArgs();
+      if (result.isErr()) {
+        return err(result.error);
+      }
+
       const projectSettingsResult = await loadProjectSettingsByProjectPath(this.projectPath, true);
       if (projectSettingsResult.isErr()) {
         return err(projectSettingsResult.error);
@@ -106,7 +109,7 @@ export class TabDebugHandler {
       // set endpoint, domain, indexPath to state
       this.envInfoV3.state[ComponentNames.TeamsTab].endpoint = this.args.baseUrl;
       this.envInfoV3.state[ComponentNames.TeamsTab].domain = "localhost";
-      this.envInfoV3.state[ComponentNames.TeamsTab].indexPath = Constants.FrontendIndexPath;
+      this.envInfoV3.state[ComponentNames.TeamsTab].indexPath = PathConstants.reactTabIndexPath;
 
       const statePath = await environmentManager.writeEnvState(
         cloneDeep(this.envInfoV3.state),

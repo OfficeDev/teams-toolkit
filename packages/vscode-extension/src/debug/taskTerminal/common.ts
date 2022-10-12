@@ -14,7 +14,7 @@ import {
   UserErrorOptions,
   Void,
 } from "@microsoft/teamsfx-api";
-import { DebugAction } from "@microsoft/teamsfx-core";
+import { DebugAction } from "@microsoft/teamsfx-core/build/component/debugHandler";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionSource } from "../../error";
@@ -22,7 +22,7 @@ import { ProgressHandler } from "../../progressHandler";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { DisplayMessages } from "../constants";
 import { doctorConstant } from "../depsChecker/doctorConstant";
-import { Step } from "../prerequisitesHandler";
+import { Step } from "../commonUtils";
 
 export async function handleDebugActions(
   actions: DebugAction[],
@@ -30,16 +30,14 @@ export async function handleDebugActions(
 ): Promise<Result<Void, FxError>> {
   const step = new Step(actions.length);
 
-  VsCodeLogInstance.outputChannel.appendLine(
-    displayMessages.checkNumber.split("@number").join(`${step.totalSteps}`)
-  );
+  VsCodeLogInstance.outputChannel.appendLine(displayMessages.checkNumber(step.totalSteps));
   VsCodeLogInstance.outputChannel.appendLine("");
 
   let error: FxError | undefined = undefined;
   const messagesArr: string[][] = [];
 
   const progressHandler = new ProgressHandler(displayMessages.taskName, step.totalSteps);
-  progressHandler.start();
+  await progressHandler.start();
 
   for (const action of actions) {
     await progressHandler.next(action.startMessage);
@@ -72,25 +70,24 @@ export async function handleDebugActions(
   }
 
   if (error) {
-    VsCodeLogInstance.outputChannel.appendLine(`${doctorConstant.Cross} ${error.message}`);
+    VsCodeLogInstance.outputChannel.appendLine(
+      `${doctorConstant.Cross} ${error.name}: ${error.message}`
+    );
     VsCodeLogInstance.outputChannel.appendLine("");
   }
 
   VsCodeLogInstance.outputChannel.appendLine(
-    displayMessages.learnMore.split("@Link").join(displayMessages.learnMoreHelpLink)
+    displayMessages.learnMore(displayMessages.learnMoreHelpLink)
   );
+  VsCodeLogInstance.outputChannel.appendLine("");
 
   if (error) {
-    const message = util.format(
-      getDefaultString(displayMessages.errorMessageKey),
-      `[${getDefaultString(displayMessages.errorMessageLink)}](${
-        displayMessages.errorMessageCommand
-      })`
-    );
-    const displayMessage = util.format(
-      localize(displayMessages.errorDisplayMessageKey),
-      `[${localize(displayMessages.errorMessageLink)}](${displayMessages.errorMessageCommand})`
-    );
+    const message =
+      getDefaultString(displayMessages.errorMessageKey) + " " + displayMessages.showDetailMessage();
+    const displayMessage =
+      localize(displayMessages.errorDisplayMessageKey) +
+      " " +
+      displayMessages.showDetailDisplayMessage();
 
     const errorOptions: UserErrorOptions = {
       source: ExtensionSource,

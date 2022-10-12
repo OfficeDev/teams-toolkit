@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, Stage } from "@microsoft/teamsfx-api";
+import { Inputs } from "@microsoft/teamsfx-api";
+import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import {
-  AppStudioScopes,
-  Correlator,
-  globalStateGet,
   globalStateUpdate,
-  sampleProvider,
-} from "@microsoft/teamsfx-core";
+  globalStateGet,
+} from "@microsoft/teamsfx-core/build/common/globalState";
 import * as AdmZip from "adm-zip";
 import axios from "axios";
 import { execSync } from "child_process";
@@ -19,7 +19,6 @@ import * as uuid from "uuid";
 import * as vscode from "vscode";
 import M365TokenInstance from "../commonlib/m365Login";
 import AzureAccountManager from "../commonlib/azureLogin";
-import { GlobalKey } from "../constants";
 import * as globalVariables from "../globalVariables";
 import { downloadSample, getSystemInputs, openFolder } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
@@ -118,7 +117,7 @@ export class WebviewPanel {
                 [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
                 [TelemetryProperty.AccountType]: AccountType.Azure,
               });
-              await AzureAccountManager.getAccountCredentialAsync(false);
+              await AzureAccountManager.getIdentityCredentialAsync(false);
             });
             break;
           case Commands.CreateNewProject:
@@ -244,7 +243,7 @@ export class WebviewPanel {
       async (status, token, accountInfo) => {
         let email = undefined;
         if (status === "SignedIn") {
-          const token = await AzureAccountManager.getAccountCredentialAsync();
+          const token = await AzureAccountManager.getIdentityCredentialAsync();
           if (token !== undefined) {
             email = (token as any).username ? (token as any).username : undefined;
           }

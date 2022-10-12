@@ -78,6 +78,7 @@ export class AzureOperationCommonConstants {
 }
 
 export class DeployConfigsConstants {
+  public static readonly DEPLOYMENT_FOLDER = ".deployment";
   public static readonly DEPLOYMENT_INFO_FILE = "deployment.json";
   public static readonly DEPLOYMENT_ZIP_CACHE_FILE = "deployment.zip";
   public static readonly FUNC_IGNORE_FILE = ".funcignore";

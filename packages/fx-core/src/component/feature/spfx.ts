@@ -16,48 +16,45 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { isVSProject } from "../../common/projectSettingsHelper";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
-import { TabSPFxNewUIItem } from "../../plugins";
 import {
   frameworkQuestion,
   versionCheckQuestion,
   webpartNameQuestion,
-} from "../../plugins/resource/spfx/utils/questions";
+} from "../../component/resource/spfx/utils/questions";
 import { SPFxTabCodeProvider } from "../code/spfxTabCode";
 import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { addFeatureNotify, scaffoldRootReadme } from "../utils";
-import { isSPFxMultiTabEnabled } from "../../common";
+import { isSPFxMultiTabEnabled } from "../../common/featureFlags";
+import { TabSPFxNewUIItem } from "../../plugins/solution/fx-solution/question";
+import { getComponent } from "../workflow";
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {
   name = ComponentNames.SPFxTab;
-  // @hooks([
-  //   ActionExecutionMW({
-  //     question: (context: ContextV3, inputs: InputsWithProjectPath) => {
-  //       return ok(getSPFxScaffoldQuestion());
-  //     },
-  //   }),
-  // ])
   async add(
     context: ContextV3,
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
-    // add teams-tab
-    projectSettings.components.push({
-      name: "teams-tab",
-      hosting: ComponentNames.SPFx,
-      deploy: true,
-      folder: inputs.folder || "SPFx",
-      build: true,
-    });
-    // add hosting component
-    projectSettings.components.push({
-      name: ComponentNames.SPFx,
-      provision: true,
-    });
+    const spfxTabConfig = getComponent(projectSettings, ComponentNames.SPFx);
+    if (!spfxTabConfig) {
+      // add teams-tab
+      projectSettings.components.push({
+        name: "teams-tab",
+        hosting: ComponentNames.SPFx,
+        deploy: true,
+        folder: inputs.folder || "SPFx",
+        build: true,
+      });
+      // add hosting component
+      projectSettings.components.push({
+        name: ComponentNames.SPFx,
+        provision: true,
+      });
+    }
+
     projectSettings.programmingLanguage =
       projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
     globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
@@ -71,7 +68,7 @@ export class SPFxTab {
     {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate local debug settings");
+      effects.push("generate debug settings");
     }
     if (isSPFxMultiTabEnabled()) {
       await scaffoldRootReadme(context.projectSetting, inputs.projectPath);

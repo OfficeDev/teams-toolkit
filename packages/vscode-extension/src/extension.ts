@@ -12,12 +12,13 @@ import {
   ConfigFolderName,
   FxError,
   InputConfigsFolderName,
+  ProjectSettingsV3,
   ProjectSettingsFileName,
   Result,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
-import { Correlator, isAADEnabled, isValidProject } from "@microsoft/teamsfx-core";
-
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import {
   AadAppTemplateCodeLensProvider,
   AdaptiveCardCodeLensProvider,
@@ -57,7 +58,8 @@ import {
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
-import { LocalTunnelTaskTerminal } from "./debug/taskTerminal/localTunnelTaskTerminal";
+import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
+import { UriHandler } from "./uriHandler";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -70,6 +72,9 @@ export async function activate(context: vscode.ExtensionContext) {
   VS_CODE_UI = new VsCodeUI(context);
   initializeGlobalVariables(context);
   loadLocalizedStrings();
+
+  const uriHandler = new UriHandler();
+  context.subscriptions.push(vscode.window.registerUriHandler(uriHandler));
 
   registerActivateCommands(context);
 
@@ -91,7 +96,9 @@ export async function activate(context: vscode.ExtensionContext) {
       m365TokenProvider: M365TokenInstance,
     });
 
-    registerCodelensAndHoverProviders(context);
+    if (vscode.workspace.isTrusted) {
+      registerCodelensAndHoverProviders(context);
+    }
 
     registerDebugConfigProviders(context);
 
@@ -235,19 +242,6 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
     Correlator.run(handlers.getDotnetPathHandler)
   );
   context.subscriptions.push(getDotnetPathCmd);
-
-  // TODO: remove one after decide to use which placeholder
-  const getNgrokPathCmd = vscode.commands.registerCommand("fx-extension.get-ngrok-path", () =>
-    Correlator.run(() => LocalTunnelTaskTerminal.getNgrokBinFolder())
-  );
-  context.subscriptions.push(getNgrokPathCmd);
-
-  // TODO: remove one after decide to use which placeholder
-  const getTunnelEndpointCmd = vscode.commands.registerCommand(
-    "fx-extension.get-local-tunnel-endpoint",
-    () => Correlator.run(() => LocalTunnelTaskTerminal.getNgrokEndpoint())
-  );
-  context.subscriptions.push(getTunnelEndpointCmd);
 
   const installAppInTeamsCmd = vscode.commands.registerCommand(
     "fx-extension.install-app-in-teams",
@@ -676,10 +670,13 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
 }
 
 async function setAadManifestEnabledContext() {
+  const projectSettingsConfig = await handlers.getAzureProjectConfigV3();
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isAadManifestEnabled",
-    isAADEnabled(await handlers.getAzureSolutionSettings())
+    projectSettingsConfig
+      ? hasAAD(projectSettingsConfig.projectSettings as ProjectSettingsV3)
+      : false
   );
 }
 
@@ -859,13 +856,6 @@ async function runBackgroundAsyncTasks(
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
       TreatmentVariables.EmbeddedSurvey,
-      true
-    )) as boolean | undefined;
-  TreatmentVariableValue.useFolderSelection = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.UseFolderSelection,
       true
     )) as boolean | undefined;
   if (!TreatmentVariableValue.isEmbeddedSurvey) {

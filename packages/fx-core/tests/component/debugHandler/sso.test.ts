@@ -19,7 +19,11 @@ import {
 
 import { getAllowedAppIds } from "../../../src/common/tools";
 import { ComponentNames } from "../../../src/component/constants";
-import { errorSource, InvalidSSODebugArgsError } from "../../../src/component/debugHandler/error";
+import {
+  errorSource,
+  DebugArgumentEmptyError,
+  InvalidExistingAADArgsError,
+} from "../../../src/component/debugHandler/error";
 import {
   LocalEnvKeys,
   LocalEnvProvider,
@@ -28,10 +32,10 @@ import {
 import { SSODebugArgs, SSODebugHandler } from "../../../src/component/debugHandler/sso";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
-import { AadAppClient } from "../../../src/plugins/resource/aad/aadAppClient";
-import { AadAppManifestManager } from "../../../src/plugins/resource/aad/aadAppManifestManager";
-import { TokenProvider } from "../../../src/plugins/resource/aad/utils/tokenProvider";
 import { MockM365TokenProvider, runDebugActions } from "./utils";
+import { AadAppManifestManager } from "../../../src/component/resource/aadApp/aadAppManifestManager";
+import { AadAppClient } from "../../../src/component/resource/aadApp/aadAppClient";
+import { TokenProvider } from "../../../src/component/resource/aadApp/utils/tokenProvider";
 
 describe("SSODebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
@@ -43,7 +47,71 @@ describe("SSODebugHandler", () => {
       sinon.restore();
     });
 
-    it("invalid args", async () => {
+    it("invalid args: empty clientId", async () => {
+      const args: SSODebugArgs = {
+        clientId: "",
+        clientSecret: "xxx",
+        objectId: "11111111-1111-1111-1111-111111111111",
+      };
+      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.deepEqual(result.error.name, DebugArgumentEmptyError("clientId").name);
+      }
+    });
+
+    it("invalid args: empty clientSecret", async () => {
+      const args: SSODebugArgs = {
+        clientId: "11111111-1111-1111-1111-111111111111",
+        clientSecret: "",
+        objectId: "11111111-1111-1111-1111-111111111111",
+      };
+      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.deepEqual(result.error.name, DebugArgumentEmptyError("clientSecret").name);
+      }
+    });
+
+    it("invalid args: empty objectId", async () => {
+      const args: SSODebugArgs = {
+        clientId: "11111111-1111-1111-1111-111111111111",
+        clientSecret: "xxx",
+        objectId: "",
+      };
+      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.deepEqual(result.error.name, DebugArgumentEmptyError("objectId").name);
+      }
+    });
+
+    it("invalid args: empty accessAsUserScopeId", async () => {
+      const args: SSODebugArgs = {
+        clientId: "11111111-1111-1111-1111-111111111111",
+        clientSecret: "xxx",
+        objectId: "11111111-1111-1111-1111-111111111111",
+        accessAsUserScopeId: "",
+      };
+      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof UserError);
+        chai.assert.deepEqual(
+          result.error.name,
+          DebugArgumentEmptyError("accessAsUserScopeId").name
+        );
+      }
+    });
+
+    it("invalid args: missing objectId for existing AAD", async () => {
       const args: SSODebugArgs = {
         clientId: "11111111-1111-1111-1111-111111111111",
         clientSecret: "xxx",
@@ -53,7 +121,7 @@ describe("SSODebugHandler", () => {
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert(result.error instanceof UserError);
-        chai.assert.deepEqual(result.error.name, InvalidSSODebugArgsError().name);
+        chai.assert.deepEqual(result.error.message, InvalidExistingAADArgsError().message);
       }
     });
 

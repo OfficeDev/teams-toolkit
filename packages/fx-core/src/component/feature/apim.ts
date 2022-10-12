@@ -17,12 +17,15 @@ import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { hasApi } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
-import { AzureResourceApim, AzureResourceFunction } from "../../plugins";
+import {
+  AzureResourceApim,
+  AzureResourceFunction,
+} from "../../plugins/solution/fx-solution/question";
 import { BicepComponent } from "../bicep";
 import { ComponentNames } from "../constants";
 import { Plans } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { APIMResource } from "../resource/apim";
+import { APIMResource } from "../resource/apim/apim";
 import { buildAnswer } from "../resource/apim/answer";
 import { ApimPluginConfig } from "../resource/apim/config";
 import { PluginLifeCycle, ProgressMessages, ProgressStep } from "../resource/apim/constants";

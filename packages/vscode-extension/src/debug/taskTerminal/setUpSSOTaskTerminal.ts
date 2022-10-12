@@ -6,12 +6,19 @@
 import * as vscode from "vscode";
 
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
-import { SSODebugArgs, SSODebugHandler } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import {
+  SSODebugArgs,
+  SSODebugHandler,
+} from "@microsoft/teamsfx-core/build/component/debugHandler/sso";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";
 import { tools } from "../../handlers";
+import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import * as commonUtils from "../commonUtils";
 import { setUpSSODisplayMessages } from "../constants";
+import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { handleDebugActions } from "./common";
 
@@ -23,10 +30,28 @@ export class SetUpSSOTaskTerminal extends BaseTaskTerminal {
     this.args = taskDefinition.args as SSODebugArgs;
   }
 
-  async do(): Promise<Result<Void, FxError>> {
+  do(): Promise<Result<Void, FxError>> {
+    return Correlator.runWithId(commonUtils.getLocalDebugSession().id, () =>
+      localTelemetryReporter.runWithTelemetryProperties(
+        TelemetryEvent.DebugSetUpSSOTask,
+        {
+          [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+          [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+            accessAsUserScopeId: maskValue(this.args.accessAsUserScopeId),
+            clientId: maskValue(this.args.clientId),
+            clientSecret: maskValue(this.args.clientSecret),
+            objectId: maskValue(this.args.objectId),
+          }),
+        },
+        () => this._do()
+      )
+    );
+  }
+
+  private async _do(): Promise<Result<Void, FxError>> {
     VsCodeLogInstance.outputChannel.show();
-    VsCodeLogInstance.info(setUpSSODisplayMessages.taskName);
-    VsCodeLogInstance.outputChannel.appendLine(setUpSSODisplayMessages.check);
+    VsCodeLogInstance.info(setUpSSODisplayMessages.title);
+    VsCodeLogInstance.outputChannel.appendLine("");
 
     const workspacePath: string = workspaceUri?.fsPath as string;
     const handler = new SSODebugHandler(
@@ -39,6 +64,11 @@ export class SetUpSSOTaskTerminal extends BaseTaskTerminal {
     );
     const actions = handler.getActions();
 
-    return await handleDebugActions(actions, setUpSSODisplayMessages);
+    const res = await handleDebugActions(actions, setUpSSODisplayMessages);
+    const duration = this.getDurationInSeconds();
+    if (res.isOk() && duration) {
+      VsCodeLogInstance.info(setUpSSODisplayMessages.durationMessage(duration));
+    }
+    return res;
   }
 }

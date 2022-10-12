@@ -52,17 +52,24 @@ import {
 import { ComponentNames } from "./constants";
 import * as Launch from "../plugins/solution/fx-solution/debug/util/launch";
 import * as LaunchNext from "../plugins/solution/fx-solution/debug/util/launchNext";
+import * as LaunchTransparency from "../plugins/solution/fx-solution/debug/util/launchTransparency";
 import * as Tasks from "../plugins/solution/fx-solution/debug/util/tasks";
 import * as TasksNext from "../plugins/solution/fx-solution/debug/util/tasksNext";
+import * as TasksTransparency from "../plugins/solution/fx-solution/debug/util/tasksTransparency";
 import * as Settings from "../plugins/solution/fx-solution/debug/util/settings";
 import fs from "fs-extra";
-import { updateJson, useNewTasks } from "../plugins/solution/fx-solution/debug/scaffolding";
-import { isV3, TOOLS } from "../core";
+import {
+  updateCommentJson,
+  updateJson,
+  useNewTasks,
+  useTransparentTasks,
+} from "../plugins/solution/fx-solution/debug/scaffolding";
+import { TOOLS } from "../core/globalVars";
 import { getComponent } from "./workflow";
-import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
-import { QuestionKey } from "../plugins/resource/function/enums";
-import { DefaultValues } from "../plugins/resource/function/constants";
 import { CoreQuestionNames } from "../core/question";
+import { QuestionKey } from "./code/api/enums";
+import { DefaultValues } from "./feature/api/constants";
+import { CommentObject } from "comment-json";
 
 export interface LocalEnvConfig {
   vscodeEnv?: VsCodeEnv;
@@ -143,12 +150,10 @@ export async function setupLocalEnvironmentCommon(
   config: LocalEnvConfig,
   envInfo: v3.EnvInfoV3
 ): Promise<Result<undefined, FxError>> {
-  const API_STATE_KEY = isV3() ? ComponentNames.TeamsApi : BuiltInFeaturePluginNames.function;
-  const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
-  const BOT_STATE_KEY = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
-  const SIMPLE_AUTH_STATE_KEY = isV3()
-    ? ComponentNames.SimpleAuth
-    : BuiltInFeaturePluginNames.simpleAuth;
+  const API_STATE_KEY = ComponentNames.TeamsApi;
+  const TAB_STATE_KEY = ComponentNames.TeamsTab;
+  const BOT_STATE_KEY = ComponentNames.TeamsBot;
+  const SIMPLE_AUTH_STATE_KEY = ComponentNames.SimpleAuth;
 
   const vscEnv = inputs.vscodeEnv;
   const includeTab = config.hasAzureTab;
@@ -286,16 +291,12 @@ export async function configLocalEnvironmentCommon(
   config: LocalEnvConfig,
   envInfo: v3.EnvInfoV3
 ): Promise<Result<undefined, FxError>> {
-  const API_STATE_KEY = isV3() ? ComponentNames.TeamsApi : BuiltInFeaturePluginNames.function;
-  const AAD_STATE_KEY = isV3() ? ComponentNames.AadApp : BuiltInFeaturePluginNames.aad;
-  const TAB_STATE_KEY = isV3() ? ComponentNames.TeamsTab : BuiltInFeaturePluginNames.frontend;
-  const BOT_STATE_KEY = isV3() ? ComponentNames.TeamsBot : BuiltInFeaturePluginNames.bot;
-  const SIMPLE_AUTH_STATE_KEY = isV3()
-    ? ComponentNames.SimpleAuth
-    : BuiltInFeaturePluginNames.simpleAuth;
-  const APP_MANIFEST_KEY = isV3()
-    ? ComponentNames.AppManifest
-    : BuiltInFeaturePluginNames.appStudio;
+  const API_STATE_KEY = ComponentNames.TeamsApi;
+  const AAD_STATE_KEY = ComponentNames.AadApp;
+  const TAB_STATE_KEY = ComponentNames.TeamsTab;
+  const BOT_STATE_KEY = ComponentNames.TeamsBot;
+  const SIMPLE_AUTH_STATE_KEY = ComponentNames.SimpleAuth;
+  const APP_MANIFEST_KEY = ComponentNames.AppManifest;
 
   const includeTab = config.hasAzureTab;
   const includeBackend = config.hasApi;
@@ -475,13 +476,14 @@ export async function generateLocalDebugSettingsCommon(
     // scaffold for both vscode and cli
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
       if (isSpfx) {
+        const isTransparent = await useTransparentTasks(inputs.projectPath);
         // Only generate launch.json and tasks.json for SPFX
-        const launchConfigurations = Launch.generateSpfxConfigurations();
-        const launchCompounds = Launch.generateSpfxCompounds();
-        const tasks = Tasks.generateSpfxTasks();
-        const tasksInputs = Tasks.generateInputs();
-
-        //TODO: save files via context api
+        const launchConfigurations = isTransparent
+          ? LaunchTransparency.generateSpfxConfigurations()
+          : Launch.generateSpfxConfigurations();
+        const launchCompounds = isTransparent
+          ? LaunchTransparency.generateSpfxCompounds()
+          : Launch.generateSpfxCompounds();
         await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
         await updateJson(
           `${inputs.projectPath}/.vscode/launch.json`,
@@ -492,73 +494,130 @@ export async function generateLocalDebugSettingsCommon(
           },
           LaunchNext.mergeLaunches
         );
-
-        await updateJson(
-          `${inputs.projectPath}/.vscode/tasks.json`,
-          {
-            version: "2.0.0",
-            tasks: tasks,
-            inputs: tasksInputs,
-          },
-          TasksNext.mergeTasks
-        );
+        if (isTransparent) {
+          const transparentTasksJson = TasksTransparency.generateSpfxTasksJson();
+          await updateCommentJson(
+            `${inputs.projectPath}/.vscode/tasks.json`,
+            transparentTasksJson as CommentObject,
+            TasksTransparency.mergeTasksJson
+          );
+        } else {
+          const tasks = Tasks.generateSpfxTasks();
+          const tasksInputs = Tasks.generateInputs();
+          await updateJson(
+            `${inputs.projectPath}/.vscode/tasks.json`,
+            {
+              version: "2.0.0",
+              tasks: tasks,
+              inputs: tasksInputs,
+            },
+            TasksNext.mergeTasks
+          );
+        }
       } else {
-        const launchConfigurations = isM365
-          ? LaunchNext.generateM365Configurations(includeFrontend, includeBackend, includeBot)
-          : (await useNewTasks(inputs.projectPath))
-          ? LaunchNext.generateConfigurations(includeFrontend, includeBackend, includeBot)
-          : Launch.generateConfigurations(includeFrontend, includeBackend, includeBot);
-        const launchCompounds = isM365
-          ? LaunchNext.generateM365Compounds(includeFrontend, includeBackend, includeBot)
-          : (await useNewTasks(inputs.projectPath))
-          ? LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot)
-          : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
-
-        const tasks = isM365
-          ? TasksNext.generateM365Tasks(
-              includeFrontend,
-              includeBackend,
-              includeBot,
-              programmingLanguage
-            )
-          : (await useNewTasks(inputs.projectPath))
-          ? TasksNext.generateTasks(
-              includeFrontend,
-              includeBackend,
-              includeBot,
-              includeFuncHostedBot,
-              programmingLanguage
-            )
-          : Tasks.generateTasks(
-              includeFrontend,
-              includeBackend,
-              includeBot,
-              includeSimpleAuth,
-              programmingLanguage
-            );
-
-        //TODO: save files via context api
         await fs.ensureDir(`${inputs.projectPath}/.vscode/`);
-        await updateJson(
-          `${inputs.projectPath}/.vscode/launch.json`,
-          {
-            version: "0.2.0",
-            configurations: launchConfigurations,
-            compounds: launchCompounds,
-          },
-          LaunchNext.mergeLaunches
-        );
+        if (await useTransparentTasks(inputs.projectPath)) {
+          const launchConfigurations = isM365
+            ? LaunchTransparency.generateM365Configurations(
+                includeFrontend,
+                includeBackend,
+                includeBot
+              )
+            : LaunchTransparency.generateConfigurations(
+                includeFrontend,
+                includeBackend,
+                includeBot
+              );
+          const launchCompounds = isM365
+            ? LaunchTransparency.generateM365Compounds(includeFrontend, includeBackend, includeBot)
+            : LaunchTransparency.generateCompounds(includeFrontend, includeBackend, includeBot);
+          await updateJson(
+            `${inputs.projectPath}/.vscode/launch.json`,
+            {
+              version: "0.2.0",
+              configurations: launchConfigurations,
+              compounds: launchCompounds,
+            },
+            LaunchNext.mergeLaunches
+          );
 
-        await updateJson(
-          `${inputs.projectPath}/.vscode/tasks.json`,
-          {
-            version: "2.0.0",
-            tasks: tasks,
-          },
-          TasksNext.mergeTasks
-        );
+          const tasksJson = isM365
+            ? TasksTransparency.generateM365TasksJson(
+                includeFrontend,
+                includeBackend,
+                includeBot,
+                includeFuncHostedBot,
+                includeAAD,
+                programmingLanguage
+              )
+            : TasksTransparency.generateTasksJson(
+                includeFrontend,
+                includeBackend,
+                includeBot,
+                includeFuncHostedBot,
+                includeAAD,
+                programmingLanguage
+              );
+          await updateCommentJson(
+            `${inputs.projectPath}/.vscode/tasks.json`,
+            tasksJson as CommentObject,
+            TasksTransparency.mergeTasksJson
+          );
+        } else {
+          const launchConfigurations = isM365
+            ? LaunchNext.generateM365Configurations(includeFrontend, includeBackend, includeBot)
+            : (await useNewTasks(inputs.projectPath))
+            ? LaunchNext.generateConfigurations(includeFrontend, includeBackend, includeBot)
+            : Launch.generateConfigurations(includeFrontend, includeBackend, includeBot);
+          const launchCompounds = isM365
+            ? LaunchNext.generateM365Compounds(includeFrontend, includeBackend, includeBot)
+            : (await useNewTasks(inputs.projectPath))
+            ? LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot)
+            : Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
+
+          const tasks = isM365
+            ? TasksNext.generateM365Tasks(
+                includeFrontend,
+                includeBackend,
+                includeBot,
+                programmingLanguage
+              )
+            : (await useNewTasks(inputs.projectPath))
+            ? TasksNext.generateTasks(
+                includeFrontend,
+                includeBackend,
+                includeBot,
+                includeFuncHostedBot,
+                programmingLanguage
+              )
+            : Tasks.generateTasks(
+                includeFrontend,
+                includeBackend,
+                includeBot,
+                includeSimpleAuth,
+                programmingLanguage
+              );
+
+          await updateJson(
+            `${inputs.projectPath}/.vscode/launch.json`,
+            {
+              version: "0.2.0",
+              configurations: launchConfigurations,
+              compounds: launchCompounds,
+            },
+            LaunchNext.mergeLaunches
+          );
+
+          await updateJson(
+            `${inputs.projectPath}/.vscode/tasks.json`,
+            {
+              version: "2.0.0",
+              tasks: tasks,
+            },
+            TasksNext.mergeTasks
+          );
+        }
       }
-
       await updateJson(
         `${inputs.projectPath}/.vscode/settings.json`,
         Settings.generateSettings(includeBackend || includeFuncHostedBot, isSpfx),

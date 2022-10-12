@@ -50,6 +50,9 @@
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms @xzf0587 @hund030
 /packages/fx-core/src/core/middleware/projectMigrator.ts @dooriya @qinezh @a1exwang @blackchoey @wenytang-ms
 
+/packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
+/packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
+
 /packages/fx-core/src/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
 /packages/fx-core/tests/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong
 
@@ -57,30 +60,27 @@
 /packages/fx-core/src/plugins/solution/fx-solution/utils/depsChecker @a1exwang @kimizhu @qinezh
 /packages/fx-core/src/plugins/solution/fx-solution/debug @kimizhu @swatDong @kuojianlu @XiaofuHuang
 
-/packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen @SLdragon
-/packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen @SLdragon
+/packages/fx-core/src/component/resource/aadApp @KennethBWSong @adashen @SLdragon
+/packages/fx-core/tests/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 
-/packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
-/packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
-
-/packages/fx-core/src/plugins/resource/appstudio @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
-/packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
+/packages/fx-core/src/component/resource/appManifest @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
+/packages/fx-core/tests/component/resource/appManifest @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
 
 /packages/fx-core/src/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 
-/packages/fx-core/src/plugins/resource/bot @IvanJobs @eriolchan @Yukun-dong @Siglud
-/packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan @Yukun-dong @Siglud
-/packages/fx-core/src/plugins/resource/bot/functionHostedBot @swatDong @XiaofuHuang @a1exwang @kimizhu @IvanJobs @eriolchan @Yukun-dong @Siglud
-/packages/fx-core/tests/plugins/resource/bot/unit/functionsHostedBot @swatDong @XiaofuHuang @a1exwang @kimizhu @IvanJobs @eriolchan @Yukun-dong @Siglud
+/packages/fx-core/src/component/feature/bot @IvanJobs @eriolchan @Yukun-dong @Siglud
+/packages/fx-core/src/component/code/botCode.ts @IvanJobs @eriolchan @Yukun-dong @Siglud
+/packages/fx-core/src/component/resource/botService @IvanJobs @eriolchan @Yukun-dong @Siglud
+/packages/fx-core/src/component/resource/azureAppService @IvanJobs @eriolchan @Yukun-dong @Siglud @hund030
 
-/packages/fx-core/src/plugins/resource/frontend @hund030 @eriolchan @IvanJobs
-/packages/fx-core/tests/plugins/resource/frontend @hund030 @eriolchan @IvanJobs
-/packages/fx-core/tests/plugins/resource/dotnet @hund030 @eriolchan @IvanJobs
+/packages/fx-core/src/component/feature/tab.ts @eriolchan @hund030 @huimiu
+/packages/fx-core/src/component/code/tab @hund030 @eriolchan @huimiu
+/packages/fx-core/src/component/resource/azureStorage @hund030 @eriolchan @huimiu
 
-/packages/fx-core/src/plugins/resource/function @eriolchan @hund030 @IvanJobs
-/packages/fx-core/tests/plugins/resource/function @eriolchan @hund030 @IvanJobs
-/packages/fx-core/src/plugins/resource/function/utils/depsChecker @a1exwang @kimizhu @qinezh
+/packages/fx-core/src/component/feature/api @eriolchan @hund030 @IvanJobs
+/packages/fx-core/src/component/code/api @eriolchan @hund030 @IvanJobs
+/packages/fx-core/src/component/code/api/depsChecker @a1exwang @kimizhu @qinezh
 
 /templates/tab @hund030 @eriolchan @IvanJobs
 /templates/function-base @hund030 @eriolchan @IvanJobs
@@ -99,8 +99,8 @@
 /packages/fx-core/src/plugins/resource/identity @xzf0587 @adashen @blackchoey
 /packages/fx-core/tests/plugins/resource/identity @xzf0587 @adashen @blackchoey
 
-/packages/fx-core/src/plugins/resource/sql @xzf0587 @adashen @blackchoey
-/packages/fx-core/tests/plugins/resource/sql @xzf0587 @adashen @blackchoey
+/packages/fx-core/src/component/resource/azureSql @xzf0587 @adashen @blackchoey
+/packages/fx-core/tests/component/resource/azureSql @xzf0587 @adashen @blackchoey
 
 /packages/fx-core/src/plugins/resource/localdebug @swatDong @kuojianlu
 /packages/fx-core/tests/plugins/resource/localdebug @swatDong @kuojianlu
@@ -131,8 +131,6 @@
 
 /Localize @HuihuiWu-Microsoft @tecton
 
-/packages/fx-core/src/component @jayzhang @xzf0587 @hund030 @LongOddCode
-/packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/templates/bicep @jayzhang @xzf0587 @hund030 @LongOddCode
 
 /packages/fx-core/src/component/feature/apiconnector @xzf0587 @wenytang-ms @blackchoey
@@ -141,3 +139,6 @@
 /packages/sdk-react @tecton @yiqing-zhao
 
 /packages/fx-core/src/component/debugHandler @swatDong @XiaofuHuang @kuojianlu @kimizhu
+
+/packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
+/packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu

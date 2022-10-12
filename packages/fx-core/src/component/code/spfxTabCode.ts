@@ -11,7 +11,6 @@ import {
   IStaticTab,
   ok,
   Platform,
-  PluginContext,
   ProjectSettingsV3,
   Result,
   Stage,
@@ -23,22 +22,25 @@ import * as path from "path";
 import "reflect-metadata";
 import { Service } from "typedi";
 import * as util from "util";
-import { isSPFxMultiTabEnabled } from "../../common";
+import { isSPFxMultiTabEnabled } from "../../common/featureFlags";
 import { getAppDirectory, isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
 import { getTemplatesFolder } from "../../folder";
-import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../plugins/resource/appstudio/constants";
-import { GeneratorChecker } from "../../plugins/resource/spfx/depsChecker/generatorChecker";
-import { YoChecker } from "../../plugins/resource/spfx/depsChecker/yoChecker";
-import { DependencyInstallError, ScaffoldError } from "../../plugins/resource/spfx/error";
+import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../resource/appManifest/constants";
+import { GeneratorChecker } from "../resource/spfx/depsChecker/generatorChecker";
+import { YoChecker } from "../resource/spfx/depsChecker/yoChecker";
+import {
+  DependencyInstallError,
+  NoConfigurationError,
+  ScaffoldError,
+} from "../resource/spfx/error";
 import {
   ManifestTemplate,
   PlaceHolders,
   ScaffoldProgressMessage,
-} from "../../plugins/resource/spfx/utils/constants";
-import { ProgressHelper } from "../../plugins/resource/spfx/utils/progress-helper";
-import { SPFXQuestionNames } from "../../plugins/resource/spfx/utils/questions";
-import { Utils } from "../../plugins/resource/spfx/utils/utils";
-import { convert2Context } from "../../plugins/resource/utils4v2";
+} from "../resource/spfx/utils/constants";
+import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
+import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
+import { isOfficialSPFx, Utils } from "../resource/spfx/utils/utils";
 import { cpUtils } from "../../plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import { ComponentNames } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -75,35 +77,24 @@ export class SPFxTabCodeProvider {
 }
 
 export async function scaffoldSPFx(
-  context: ContextV3 | PluginContext,
+  context: ContextV3,
   inputs: InputsWithProjectPath,
   outputFolderPath: string
 ): Promise<Result<any, FxError>> {
-  const ui = (context as ContextV3).userInteraction || (context as PluginContext).ui;
+  const ui = context.userInteraction;
   const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
   try {
     const isAddSpfx = inputs.stage === Stage.addFeature && isSPFxMultiTabEnabled();
     const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
     const framework = (inputs[SPFXQuestionNames.framework_type] as string) ?? undefined;
     let solutionName: string | undefined = undefined;
-    let yoPersisted = true;
 
     if (!isAddSpfx) {
-      solutionName =
-        ((context as ContextV3).projectSetting?.appName as string) ||
-        ((context as PluginContext).projectSettings?.appName as string);
+      solutionName = context.projectSetting.appName;
     } else {
       const yorcPath = path.join(inputs.projectPath, "SPFx", ".yo-rc.json");
       if (!(await fs.pathExists(yorcPath))) {
-        yoPersisted = false;
-        await fs.ensureFile(yorcPath);
-        await fs.writeJSON(yorcPath, {
-          "@microsoft/generator-sharepoint": {
-            solutionName:
-              ((context as ContextV3).projectSetting?.appName as string) ||
-              ((context as PluginContext).projectSettings?.appName as string),
-          },
-        });
+        throw NoConfigurationError();
       }
     }
 
@@ -227,9 +218,12 @@ export async function scaffoldSPFx(
     }
 
     // update readme
-    if (!isAddSpfx || !yoPersisted) {
+    if (!isAddSpfx) {
       await fs.copyFile(
-        path.resolve(templateFolder, "./solution/README.md"),
+        path.resolve(
+          templateFolder,
+          isOfficialSPFx() ? "./solution/README.md" : "./solution/prereleaseREADME.md"
+        ),
         `${outputFolderPath}/README.md`
       );
     }
@@ -251,9 +245,7 @@ export async function scaffoldSPFx(
       });
 
       const addCapRes = await manifestProvider.addCapabilities(
-        (context as ContextV3).manifestProvider
-          ? (context as ContextV3)
-          : convert2Context(context as PluginContext, true).context,
+        context,
         inputs,
         capabilitiesToAddManifest
       );
@@ -283,13 +275,7 @@ export async function scaffoldSPFx(
       );
 
       for (const capability of capabilitiesToAddManifest) {
-        const addCapRes = await manifestProvider.updateCapability(
-          (context as ContextV3).manifestProvider
-            ? (context as ContextV3)
-            : convert2Context(context as PluginContext, true).context,
-          inputs,
-          capability
-        );
+        const addCapRes = await manifestProvider.updateCapability(context, inputs, capability);
         if (addCapRes.isErr()) return err(addCapRes.error);
       }
     }

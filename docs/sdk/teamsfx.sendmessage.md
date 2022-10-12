@@ -9,7 +9,7 @@ Send a plain text message to a notification target.
 <b>Signature:</b>
 
 ```typescript
-export declare function sendMessage(target: NotificationTarget, text: string): Promise<MessageResponse>;
+export declare function sendMessage(target: NotificationTarget, text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
 ```
 
 ## Parameters
@@ -18,6 +18,7 @@ export declare function sendMessage(target: NotificationTarget, text: string): P
 |  --- | --- | --- |
 |  target | [NotificationTarget](./teamsfx.notificationtarget.md) | the notification target. |
 |  text | string | the plain text message. |
+|  onError | (context: TurnContext, error: Error) =&gt; Promise&lt;void&gt; | an optional error handler that can catch exceptions during message sending. If not defined, error will be handled by <code>BotAdapter.onTurnError</code>. |
 
 <b>Returns:</b>
 

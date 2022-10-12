@@ -13,12 +13,10 @@ import {
   Stage,
   QTreeNode,
 } from "@microsoft/teamsfx-api";
-import {
-  FxCore,
-  Correlator,
-  getSideloadingStatus,
-  getProjectComponents as coreGetProjectComponents,
-} from "@microsoft/teamsfx-core";
+import { FxCore } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
+import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core/build/common/local";
 import { IServerConnection, Namespaces } from "./apis";
 import LogProvider from "./providers/logger";
 import TokenProvider from "./providers/tokenProvider";
@@ -26,7 +24,7 @@ import TelemetryReporter from "./providers/telemetry";
 import UserInteraction from "./providers/userInteraction";
 import { callFunc } from "./customizedFuncAdapter";
 import { standardizeResult } from "./utils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 export default class ServerConnection implements IServerConnection {
   public static readonly namespace = Namespaces.Server;

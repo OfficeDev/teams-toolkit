@@ -26,31 +26,32 @@ import { AppStudioScopes } from "../../common/tools";
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
-import { AppStudioClient } from "../../plugins/resource/appstudio/appStudio";
+import { AppStudioClient } from "../resource/appManifest/appStudioClient";
 import { ComponentNames } from "../constants";
 import { buildTeamsAppPackage } from "../resource/appManifest/appStudio";
 import { DebugAction } from "./common";
 import {
   AppManifestPackageNotExistError,
+  DebugArgumentEmptyError,
   errorSource,
   InvalidAppManifestPackageFileFormatError,
 } from "./error";
 
 const appManifestDebugMessages = {
-  validatingArgs: "Validating the arguments ...",
-  buildingAndSavingAppManifest: "Building and saving Teams app manifest ...",
-  uploadingAppPackage: "Uploading Teams app manifest package to Teams developer portal ...",
-  savingStates: "Saving the states for Teams app manifest ...",
-  appManifestSaved: "Teams app manifest is saved in %s",
+  buildingAndSavingAppManifest:
+    "Resolving manifest template and generating the Teams app package ...",
+  uploadingAppPackage: "Uploading Teams app package via Teams Developer Portal ...",
+  savingStates: "Saving the states of Teams app ...",
+  appManifestSaved: "Teams app manifest is resolved and app package is saved in %s",
   useExistingAppManifest:
-    "Skip building Teams app manifest but use the existing Teams app manifest package from args",
-  statesSaved: "The states for Teams app manifest are saved in %s",
+    "Skip building Teams app manifest but use the existing Teams app package from args",
+  statesSaved: "The states of Teams app manifest are saved in %s",
   skipSavingStates: "Skip saving the states for Teams app manifest",
-  appPackageUploaded: "Teams app manifest package is uploaded",
+  appPackageUploaded: "Teams app package is uploaded",
 };
 
 export interface AppManifestDebugArgs {
-  manifestPackagePath?: string;
+  appPackagePath?: string;
 }
 
 export class AppManifestDebugHandler {
@@ -86,10 +87,6 @@ export class AppManifestDebugHandler {
   public getActions(): DebugAction[] {
     const actions: DebugAction[] = [];
     actions.push({
-      startMessage: appManifestDebugMessages.validatingArgs,
-      run: this.validateArgs.bind(this),
-    });
-    actions.push({
       startMessage: appManifestDebugMessages.buildingAndSavingAppManifest,
       run: this.buildAndSaveAppManifest.bind(this),
     });
@@ -105,13 +102,17 @@ export class AppManifestDebugHandler {
   }
 
   private async validateArgs(): Promise<Result<string[], FxError>> {
-    if (this.args.manifestPackagePath) {
-      this.args.manifestPackagePath = this.args.manifestPackagePath.trim();
-      if (this.args.manifestPackagePath.length > 0) {
-        if (!(await fs.pathExists(this.args.manifestPackagePath))) {
-          return err(AppManifestPackageNotExistError(this.args.manifestPackagePath));
+    if (this.args.appPackagePath !== undefined && this.args.appPackagePath.trim().length === 0) {
+      return err(DebugArgumentEmptyError("appPackagePath"));
+    }
+
+    if (this.args.appPackagePath) {
+      this.args.appPackagePath = this.args.appPackagePath.trim();
+      if (this.args.appPackagePath.length > 0) {
+        if (!(await fs.pathExists(this.args.appPackagePath))) {
+          return err(AppManifestPackageNotExistError(this.args.appPackagePath));
         }
-        if (path.extname(this.args.manifestPackagePath) != ".zip") {
+        if (path.extname(this.args.appPackagePath) != ".zip") {
           return err(InvalidAppManifestPackageFileFormatError());
         }
         this.existing = true;
@@ -122,7 +123,12 @@ export class AppManifestDebugHandler {
 
   private async buildAndSaveAppManifest(): Promise<Result<string[], FxError>> {
     try {
-      if (this.args.manifestPackagePath) {
+      const result = await this.validateArgs();
+      if (result.isErr()) {
+        return err(result.error);
+      }
+
+      if (this.args.appPackagePath) {
         return ok([appManifestDebugMessages.useExistingAppManifest]);
       }
 
@@ -147,19 +153,25 @@ export class AppManifestDebugHandler {
       this.envInfoV3.state[ComponentNames.AppManifest] =
         this.envInfoV3.state[ComponentNames.AppManifest] || {};
 
+      // For SPFx manifest
+      this.envInfoV3.config.isLocalDebug = true;
+
       // build
-      const result = await buildTeamsAppPackage(
+      const packagePathResult = await buildTeamsAppPackage(
         this.projectSettingsV3,
         this.projectPath,
         this.envInfoV3
       );
-      if (result.isErr()) {
-        return err(result.error);
+      if (packagePathResult.isErr()) {
+        return err(packagePathResult.error);
       }
-      this.args.manifestPackagePath = result.value;
+      this.args.appPackagePath = packagePathResult.value;
 
       return ok([
-        util.format(appManifestDebugMessages.appManifestSaved, path.normalize(result.value)),
+        util.format(
+          appManifestDebugMessages.appManifestSaved,
+          path.normalize(packagePathResult.value)
+        ),
       ]);
     } catch (error: unknown) {
       return err(assembleError(error, errorSource));
@@ -176,7 +188,7 @@ export class AppManifestDebugHandler {
         return err(tokenResult.error);
       }
 
-      const archivedFile = await fs.readFile(this.args.manifestPackagePath!);
+      const archivedFile = await fs.readFile(this.args.appPackagePath!);
       const appdefinition = await AppStudioClient.importApp(
         archivedFile,
         tokenResult.value,

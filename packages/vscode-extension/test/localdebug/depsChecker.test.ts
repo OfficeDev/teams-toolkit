@@ -10,7 +10,7 @@ import {
   DepsType,
   DepsCheckerError,
   defaultHelpLink,
-} from "@microsoft/teamsfx-core";
+} from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as os from "os";
 
 const expect = chai.expect;
@@ -114,7 +114,7 @@ describe("[Checker UT - Extension]", () => {
       const checker = new VSCodeDepsChecker(logger, telemetry);
       const deps = [
         DepsType.SpfxNode,
-        DepsType.FunctionNode,
+        DepsType.SpfxNodeV1_16,
         DepsType.AzureNode,
         DepsType.Dotnet,
         DepsType.FuncCoreTools,
@@ -142,7 +142,7 @@ describe("[Checker UT - Extension]", () => {
       const checker = new VSCodeDepsChecker(logger, telemetry);
       const deps = [
         DepsType.SpfxNode,
-        DepsType.FunctionNode,
+        DepsType.SpfxNodeV1_16,
         DepsType.AzureNode,
         DepsType.Dotnet,
         DepsType.FuncCoreTools,

@@ -9,6 +9,10 @@ import { CardData } from "../cardModels";
  * with an Adaptive Card if the user clicks the Adaptive Card action with `triggerVerb`.
  */
 export class DoStuffCardActionHandler implements TeamsFxAdaptiveCardActionHandler {
+  /**
+   * A global unique string associated with the `Action.Execute` action.
+   * The value should be the same as the `verb` property which you define in your adaptive card JSON.
+   */
   triggerVerb = "doStuff";
 
   async handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse> {
@@ -17,7 +21,7 @@ export class DoStuffCardActionHandler implements TeamsFxAdaptiveCardActionHandle
      */
     const cardData: CardData = {
       title: "Hello World Bot",
-      body: "Congratulations! Your task is processed successfully. Click the button below to learn more about Bots and the Teams Toolkit.",
+      body: "Congratulations! Your task is processed successfully.",
     };
 
     const cardJson = AdaptiveCards.declare(responseCard).render(cardData);

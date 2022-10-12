@@ -16,8 +16,8 @@ import { SPFxTabCodeProvider } from "../../../src/component/code/spfxTabCode";
 import mockedEnv from "mocked-env";
 import { MockTools } from "../../core/utils";
 import { setTools } from "../../../src/core/globalVars";
-import { getTemplatesFolder } from "../../../src";
 import { createContextV3 } from "../../../src/component/utils";
+import { getTemplatesFolder } from "../../../src/folder";
 
 describe("spfx", () => {
   describe("add", () => {

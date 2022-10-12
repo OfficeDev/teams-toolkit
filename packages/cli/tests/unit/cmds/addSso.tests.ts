@@ -4,7 +4,7 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
-import { err, Func, FxError, Inputs, LogLevel, ok } from "@microsoft/teamsfx-api";
+import { Func, FxError, Inputs, LogLevel, ok } from "@microsoft/teamsfx-api";
 
 import LogProvider from "../../../src/commonlib/log";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
@@ -12,7 +12,8 @@ import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import { expect } from "../utils";
 import Add from "../../../src/cmds/add";
 import mockedEnv from "mocked-env";
-import { FxCore, isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
+import { FxCore } from "@microsoft/teamsfx-core";
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 
 describe("Add SSO Command Tests", function () {
@@ -83,8 +84,12 @@ describe("Add SSO Command Tests", function () {
       isPreviewFeaturesEnabled()
         ? [
             "add <feature>",
+            "notification",
+            "command-and-response",
+            "workflow",
             "sso-tab",
             "tab",
+            "spfx-tab",
             "bot",
             "message-extension",
             "azure-function",

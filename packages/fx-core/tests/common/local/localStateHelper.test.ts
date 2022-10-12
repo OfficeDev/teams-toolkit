@@ -9,22 +9,12 @@ import { cloneDeep } from "lodash";
 import * as path from "path";
 
 import { convertToLocalEnvs } from "../../../src/common/local/localStateHelper";
-import { v3 } from "@microsoft/teamsfx-api";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import { ProjectSettingsV3, v3 } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 
 describe("localStateHelper", () => {
-  let mockedEnvRestore: RestoreFn;
-
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
-  });
-
-  afterEach(() => {
-    mockedEnvRestore();
-  });
   describe("convertToLocalEnvs()", () => {
-    const projectSettings0 = {
+    const projectSettings0: ProjectSettingsV3 = {
       appName: "unit-test0",
       projectId: "11111111-1111-1111-1111-111111111111",
       version: "2.0.0",
@@ -37,6 +27,7 @@ describe("localStateHelper", () => {
         capabilities: ["Tab"],
         activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
       },
+      components: [{ name: "aad-app" }, { name: "teams-tab" }],
     };
     const localState0 = {
       solution: {},
@@ -82,14 +73,9 @@ describe("localStateHelper", () => {
       await fs.ensureDir(projectPath);
       await fs.emptyDir(projectPath);
 
-      const projectSettingsAll = cloneDeep(projectSettings0);
-      const aadPluginKey = projectSettingsAll.solutionSettings.activeResourcePlugins.indexOf(
-        "fx-resource-aad-app-for-teams"
-      );
-      if (aadPluginKey > -1) {
-        projectSettingsAll.solutionSettings.activeResourcePlugins.splice(aadPluginKey, 1);
-      }
-      const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, envInfo0);
+      const projectSettings = cloneDeep(projectSettings0) as ProjectSettingsV3;
+      projectSettings.components = [{ name: "teams-tab" }];
+      const localEnvs = await convertToLocalEnvs(projectPath, projectSettings, envInfo0);
 
       chai.assert.isDefined(localEnvs);
       chai.assert.equal(Object.keys(localEnvs).length, 3);
@@ -102,7 +88,8 @@ describe("localStateHelper", () => {
       await fs.emptyDir(projectPath);
 
       const projectSettingsAll = cloneDeep(projectSettings0);
-      projectSettingsAll.solutionSettings.activeResourcePlugins.push("fx-resource-simple-auth");
+      projectSettingsAll.solutionSettings!.activeResourcePlugins.push("fx-resource-simple-auth");
+      projectSettingsAll.components.push({ name: "simple-auth", provision: true });
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, envInfo0);
 
       chai.assert.isDefined(localEnvs);
@@ -138,12 +125,14 @@ describe("localStateHelper", () => {
       const botEnvPath = path.resolve(projectPath, "bot/.env.teamsfx.local");
       fs.ensureFileSync(botEnvPath);
       fs.writeFileSync(botEnvPath, "FOO=BOT");
-      const projectSettingsAll = cloneDeep(projectSettings0);
-      projectSettingsAll.solutionSettings.capabilities.push("Bot");
-      projectSettingsAll.solutionSettings.azureResources.push("function");
-
-      const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, undefined);
-
+      const projectSettings = cloneDeep(projectSettings0) as ProjectSettingsV3;
+      projectSettings.components = [
+        { name: "teams-tab", sso: true },
+        { name: "aad-app", provision: true },
+        { name: "teams-bot" },
+        { name: "teams-api" },
+      ];
+      const localEnvs = await convertToLocalEnvs(projectPath, projectSettings, undefined);
       chai.assert.isDefined(localEnvs);
       chai.assert.equal(localEnvs["FRONTEND_FOO"], "FRONTEND");
       chai.assert.equal(localEnvs["BACKEND_FOO"], "BACKEND");

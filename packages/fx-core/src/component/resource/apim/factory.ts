@@ -1,22 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ApiManagementClient } from "@azure/arm-apimanagement";
-import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
+import { ResourceManagementClient } from "@azure/arm-resources";
 import {
   AzureAccountProvider,
   EnvInfo,
-  Json,
   LogProvider,
   M365TokenProvider,
   Platform,
-  ReadonlyPluginConfig,
   TelemetryReporter,
   v3,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
-import { GraphScopes } from "../../../common";
+import { GraphScopes } from "../../../common/tools";
 import { ISolutionConfig, SolutionConfig } from "./config";
-import { AadDefaultValues, TeamsToolkitComponent } from "./constants";
+import { AadDefaultValues } from "./constants";
 import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
 import { AadManager } from "./managers/aadManager";
 import { ApimManager } from "./managers/apimManager";
@@ -159,7 +157,11 @@ export class Factory {
   ): Promise<ApimService> {
     const credential = AssertNotEmpty(
       "credential",
-      await azureAccountProvider?.getAccountCredentialAsync()
+      await azureAccountProvider?.getIdentityCredentialAsync()
+    );
+    const identityCredential = AssertNotEmpty(
+      "identityCredential",
+      await azureAccountProvider?.getIdentityCredentialAsync()
     );
     let subscriptionId;
     if (solutionConfig.subscriptionId) {
@@ -172,13 +174,11 @@ export class Factory {
     }
 
     const apiManagementClient = new ApiManagementClient(credential, subscriptionId);
-    const resourceProviderClient = new Providers(
-      new ResourceManagementClientContext(credential, subscriptionId)
-    );
+    const resourceProviderClient = new ResourceManagementClient(identityCredential, subscriptionId);
 
     return new ApimService(
       apiManagementClient,
-      resourceProviderClient,
+      resourceProviderClient.providers,
       credential,
       subscriptionId,
       telemetryReporter,

@@ -35,33 +35,32 @@ import { getAllowedAppIds, objectToMap } from "../../common/tools";
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
-import { AadAppClient } from "../../plugins/resource/aad/aadAppClient";
-import { AadAppManifestManager } from "../../plugins/resource/aad/aadAppManifestManager";
-import { Constants } from "../../plugins/resource/aad/constants";
-import { ProvisionConfig } from "../../plugins/resource/aad/utils/configs";
-import { TokenProvider } from "../../plugins/resource/aad/utils/tokenProvider";
 import { ComponentNames } from "../constants";
 import { convertEnvStateV3ToV2 } from "../migrate";
 import { DebugAction } from "./common";
-import { errorSource, InvalidSSODebugArgsError } from "./error";
+import { errorSource, DebugArgumentEmptyError, InvalidExistingAADArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
+import { AadAppClient } from "../resource/aadApp/aadAppClient";
+import { TokenProvider } from "../resource/aadApp/utils/tokenProvider";
+import { ProvisionConfig } from "../resource/aadApp/utils/configs";
+import { AadAppManifestManager } from "../resource/aadApp/aadAppManifestManager";
+import { Constants } from "../resource/aadApp/constants";
 
 const ssoDebugMessages = {
-  validatingArgs: "Validating the arguments ...",
   registeringAAD: "Registering an AAD app for SSO ...",
   configuringAAD: "Configuring AAD app for SSO ...",
   buildingAndSavingAADManifest: "Building and saving AAD manifest ...",
-  savingStates: "Saving the states for SSO ...",
-  settingEnvs: "Setting the environment variables for SSO ...",
-  AADRegistered: "AAD app is registered",
-  useExistingAAD: "Skip registering AAD app but use the existing AAD app from args",
-  AADAlreadyRegistered: "Skip registering AAD app as it has already been registered before",
+  savingStates: "Saving the states of SSO ...",
+  settingEnvs: "Saving the environment variables for SSO ...",
+  AADRegistered: "AAD app is registered (%s)",
+  useExistingAAD: "Skip registering AAD app but use the existing AAD app from args: %s",
+  AADAlreadyRegistered: "Skip registering AAD app as it has already been registered before: %s",
   AADConfigured: "AAD app is configured",
   AADManifestSaved: "AAD app manifest is saved in %s",
   statesSaved: "The states for SSO are saved in %s",
-  tabEnvsSet: "The SSO environment variables for Tab are set in %s",
-  botEnvsSet: "The SSO environment variables for bot are set in %s",
-  backendEnvsSet: "The SSO environment variables for backend are set in %s",
+  tabEnvsSet: "The SSO environment variables of tab are saved in %s",
+  botEnvsSet: "The SSO environment variables of bot are saved in %s",
+  backendEnvsSet: "The SSO environment variables of backend are saved in %s",
 };
 
 export interface SSODebugArgs {
@@ -78,8 +77,6 @@ export class SSODebugHandler {
   private readonly logger?: LogProvider;
   private readonly telemetry?: TelemetryReporter;
   private readonly ui?: UserInteraction;
-
-  private existing = false;
 
   private projectSettingsV3?: ProjectSettingsV3;
   private cryptoProvider?: CryptoProvider;
@@ -104,10 +101,6 @@ export class SSODebugHandler {
   public getActions(): DebugAction[] {
     const actions: DebugAction[] = [];
     actions.push({
-      startMessage: ssoDebugMessages.validatingArgs,
-      run: this.validateArgs.bind(this),
-    });
-    actions.push({
       startMessage: ssoDebugMessages.registeringAAD,
       run: this.registerAAD.bind(this),
     });
@@ -131,17 +124,38 @@ export class SSODebugHandler {
   }
 
   private async validateArgs(): Promise<Result<string[], FxError>> {
-    // TODO: allow clientSecret to be set in other places (like env) instead of tasks.json
-    if (this.args.objectId && this.args.clientId && this.args.clientSecret) {
-      this.existing = true;
-    } else if (this.args.objectId || this.args.clientId || this.args.clientSecret) {
-      return err(InvalidSSODebugArgsError());
+    if (this.args.objectId !== undefined && this.args.objectId.trim().length === 0) {
+      return err(DebugArgumentEmptyError("objectId"));
     }
+    if (this.args.clientId !== undefined && this.args.clientId.trim().length === 0) {
+      return err(DebugArgumentEmptyError("clientId"));
+    }
+    if (this.args.clientSecret !== undefined && this.args.clientSecret.trim().length === 0) {
+      return err(DebugArgumentEmptyError("clientSecret"));
+    }
+    if (
+      this.args.accessAsUserScopeId !== undefined &&
+      this.args.accessAsUserScopeId.trim().length === 0
+    ) {
+      return err(DebugArgumentEmptyError("accessAsUserScopeId"));
+    }
+
+    const existing = this.args.objectId || this.args.clientId || this.args.clientSecret;
+    const missing = !this.args.objectId || !this.args.clientId || !this.args.clientSecret;
+    if (existing && missing) {
+      return err(InvalidExistingAADArgsError());
+    }
+
     return ok([]);
   }
 
   private async registerAAD(): Promise<Result<string[], FxError>> {
     try {
+      const result = await this.validateArgs();
+      if (result.isErr()) {
+        return err(result.error);
+      }
+
       const projectSettingsResult = await loadProjectSettingsByProjectPath(this.projectPath, true);
       if (projectSettingsResult.isErr()) {
         return err(projectSettingsResult.error);
@@ -165,7 +179,7 @@ export class SSODebugHandler {
         this.envInfoV3.state[ComponentNames.AadApp] || {};
 
       // use existing AAD
-      if (this.existing) {
+      if (this.args.clientId) {
         // set objectId, clientId, clientSecret, oauth2PermissionScopeId from args to state
         this.envInfoV3.state[ComponentNames.AadApp].objectId = this.args.objectId;
         this.envInfoV3.state[ComponentNames.AadApp].clientId = this.args.clientId;
@@ -173,7 +187,7 @@ export class SSODebugHandler {
         this.envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId =
           this.args.accessAsUserScopeId || uuidv4();
 
-        return ok([ssoDebugMessages.useExistingAAD]);
+        return ok([util.format(ssoDebugMessages.useExistingAAD, this.args.clientId)]);
       }
 
       // set oauth2PermissionScopeId to state
@@ -199,7 +213,12 @@ export class SSODebugHandler {
           this.envInfoV3.state[ComponentNames.AadApp].clientSecret = config.password;
         }
 
-        return ok([ssoDebugMessages.AADAlreadyRegistered]);
+        return ok([
+          util.format(
+            ssoDebugMessages.AADAlreadyRegistered,
+            this.envInfoV3.state[ComponentNames.AadApp].clientId
+          ),
+        ]);
       }
 
       await TokenProvider.init({
@@ -218,7 +237,7 @@ export class SSODebugHandler {
       this.envInfoV3.state[ComponentNames.AadApp].clientId = config.clientId;
       this.envInfoV3.state[ComponentNames.AadApp].clientSecret = config.password;
 
-      return ok([ssoDebugMessages.AADRegistered]);
+      return ok([util.format(ssoDebugMessages.AADRegistered, config.objectId)]);
     } catch (error: unknown) {
       return err(assembleError(error, errorSource));
     }

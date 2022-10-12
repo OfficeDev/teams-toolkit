@@ -3,37 +3,36 @@ import {
   SolutionContext,
   ok,
   Platform,
-  AzureAccountProvider,
   ConfigMap,
   SubscriptionInfo,
   Plugin,
   Result,
   FxError,
   Void,
-  Inputs,
+  TokenProvider,
 } from "@microsoft/teamsfx-api";
 import path from "path";
-import { environmentManager } from "../../../src";
+import { environmentManager } from "../../../src/core/environment";
 import { LocalCrypto } from "../../../src/core/crypto";
 import { v4 as uuid } from "uuid";
 import { ArmTemplateResult } from "../../../src/common/armInterface";
 import sinon from "sinon";
+import { SOLUTION_CONFIG_NAME, TestFileContent } from "../../constants";
 import {
-  aadPlugin,
-  botPlugin,
-  botPluginV2,
-  fehostPlugin,
-  identityPlugin,
-  simpleAuthPlugin,
-  SOLUTION_CONFIG_NAME,
-  TestFileContent,
-} from "../../constants";
-import { MockedLogProvider, MockedTelemetryReporter, MockedUserInteraction } from "./util";
-import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
+  MockedAzureAccountProvider,
+  MockedLogProvider,
+  MockedM365Provider,
+  MockedTelemetryReporter,
+  MockedUserInteraction,
+  MyTokenCredential,
+} from "./util";
 import os from "os";
 import * as cpUtils from "../../../src/common/cpUtils";
-import { Context } from "@microsoft/teamsfx-api/build/v2";
 
+const mockedTokenProvider: TokenProvider = {
+  azureAccountProvider: new MockedAzureAccountProvider(),
+  m365TokenProvider: new MockedM365Provider(),
+};
 export class TestHelper {
   static appName = "ut_app_name";
   static rootDir = path.join(__dirname, "ut");
@@ -83,7 +82,7 @@ export class TestHelper {
         },
       },
       answers: { platform: Platform.VSCode },
-      azureAccountProvider: Object as any & AzureAccountProvider,
+      azureAccountProvider: mockedTokenProvider.azureAccountProvider,
       ui: new MockedUserInteraction(),
       logProvider: new MockedLogProvider(),
       telemetryReporter: new MockedTelemetryReporter(),
@@ -101,184 +100,90 @@ export class TestHelper {
     };
   }
 
-  static mockedFehostGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(fehostPlugin, "generateArmTemplates")
-      .callsFake(async (ctx: PluginContext) => {
-        const res: ArmTemplateResult = {
-          Provision: {
-            Orchestration:
-              "Mocked frontend hosting provision orchestration content. Module path: '{{fx-resource-frontend-hosting.Provision.frontendHostingProvision.path}}'.",
-            Modules: {
-              frontendHostingProvision: TestFileContent.feHostProvisionModule,
-            },
-          },
-          Reference: {
-            frontendHostingOutputKey: TestFileContent.feHostReferenceValue,
-          },
-          Parameters: {
-            FrontendParameter: TestFileContent.feHostParameterValue,
-          },
-        };
-        return ok(res);
-      });
-  }
+  // static mockedSimpleAuthGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
+  //   return mocker
+  //     .stub(simpleAuthPlugin, "generateArmTemplates")
+  //     .callsFake(async (ctx: PluginContext) => {
+  //       const res: ArmTemplateResult = {
+  //         Provision: {
+  //           Orchestration:
+  //             "Mocked simple auth provision orchestration content. Module path: '{{fx-resource-simple-auth.Provision.simpleAuthProvision.path}}'.",
+  //           Modules: {
+  //             simpleAuthProvision: TestFileContent.simpleAuthProvisionModule,
+  //           },
+  //         },
+  //         Configuration: {
+  //           Orchestration:
+  //             "Mocked simple auth configuration orchestration content. Module path: '{{fx-resource-simple-auth.Configuration.simpleAuthConfig.path}}'.",
+  //           Modules: {
+  //             simpleAuthConfig: TestFileContent.simpleAuthConfigurationModule,
+  //           },
+  //         },
+  //         Reference: {
+  //           simpleAuthOutputKey: TestFileContent.simpleAuthReferenceValue,
+  //         },
+  //         Parameters: {
+  //           SimpleAuthParameter: TestFileContent.simpleAuthParameterValue,
+  //         },
+  //       };
+  //       return ok(res);
+  //     });
+  // }
 
-  static mockedFeHostUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker.stub(fehostPlugin, "updateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok({});
-    });
-  }
+  // static mockedSimpleAuthUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
+  //   return mocker
+  //     .stub(simpleAuthPlugin, "updateArmTemplates")
+  //     .callsFake(async (ctx: PluginContext) => {
+  //       const res: ArmTemplateResult = {
+  //         Reference: {
+  //           simpleAuthOutputKey2: TestFileContent.simpleAuthReferenceValue2,
+  //         },
+  //         Configuration: {
+  //           Modules: {
+  //             simpleAuthConfig: TestFileContent.simpleAuthUpdatedConfigurationModule,
+  //           },
+  //         },
+  //       };
+  //       return ok(res);
+  //     });
+  // }
 
-  static mockedSimpleAuthGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(simpleAuthPlugin, "generateArmTemplates")
-      .callsFake(async (ctx: PluginContext) => {
-        const res: ArmTemplateResult = {
-          Provision: {
-            Orchestration:
-              "Mocked simple auth provision orchestration content. Module path: '{{fx-resource-simple-auth.Provision.simpleAuthProvision.path}}'.",
-            Modules: {
-              simpleAuthProvision: TestFileContent.simpleAuthProvisionModule,
-            },
-          },
-          Configuration: {
-            Orchestration:
-              "Mocked simple auth configuration orchestration content. Module path: '{{fx-resource-simple-auth.Configuration.simpleAuthConfig.path}}'.",
-            Modules: {
-              simpleAuthConfig: TestFileContent.simpleAuthConfigurationModule,
-            },
-          },
-          Reference: {
-            simpleAuthOutputKey: TestFileContent.simpleAuthReferenceValue,
-          },
-          Parameters: {
-            SimpleAuthParameter: TestFileContent.simpleAuthParameterValue,
-          },
-        };
-        return ok(res);
-      });
-  }
+  // static mockedIdentityGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
+  //   return mocker
+  //     .stub(identityPlugin, "generateArmTemplates")
+  //     .callsFake(async (ctx: PluginContext) => {
+  //       console.log(`mocked identity generate arm templates`);
 
-  static mockedSimpleAuthUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(simpleAuthPlugin, "updateArmTemplates")
-      .callsFake(async (ctx: PluginContext) => {
-        const res: ArmTemplateResult = {
-          Reference: {
-            simpleAuthOutputKey2: TestFileContent.simpleAuthReferenceValue2,
-          },
-          Configuration: {
-            Modules: {
-              simpleAuthConfig: TestFileContent.simpleAuthUpdatedConfigurationModule,
-            },
-          },
-        };
-        return ok(res);
-      });
-  }
+  //       const res: ArmTemplateResult = {
+  //         Provision: {
+  //           Orchestration:
+  //             "Mocked identity provision orchestration content. Module path: '{{fx-resource-identity.Provision.identityProvision.path}}'.",
+  //           Modules: {
+  //             identityProvision: TestFileContent.identityProvisionModule,
+  //           },
+  //         },
+  //         Reference: {
+  //           identityOutputKey: TestFileContent.identityReferenceValue,
+  //         },
+  //         Parameters: {
+  //           IdentityParameter: TestFileContent.identityParameterValue,
+  //         },
+  //       };
+  //       return ok(res);
+  //     });
+  // }
 
-  static mockedAadGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker.stub(aadPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      const res: ArmTemplateResult = {
-        Parameters: {
-          AadParameter: TestFileContent.aadParameterValue,
-        },
-      };
-      return ok(res);
-    });
-  }
-
-  static mockedIdentityGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(identityPlugin, "generateArmTemplates")
-      .callsFake(async (ctx: PluginContext) => {
-        console.log(`mocked identity generate arm templates`);
-
-        const res: ArmTemplateResult = {
-          Provision: {
-            Orchestration:
-              "Mocked identity provision orchestration content. Module path: '{{fx-resource-identity.Provision.identityProvision.path}}'.",
-            Modules: {
-              identityProvision: TestFileContent.identityProvisionModule,
-            },
-          },
-          Reference: {
-            identityOutputKey: TestFileContent.identityReferenceValue,
-          },
-          Parameters: {
-            IdentityParameter: TestFileContent.identityParameterValue,
-          },
-        };
-        return ok(res);
-      });
-  }
-
-  static mockedIdentityUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(identityPlugin, "updateArmTemplates")
-      .callsFake(async (ctx: PluginContext) => {
-        return ok({});
-      });
-  }
-
-  static mockedBotGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(botPluginV2, "generateResourceTemplate")
-      .callsFake(async (ctx: Context, inputs: Inputs) => {
-        const res: ArmTemplateResult = {
-          Provision: {
-            Orchestration:
-              "Mocked bot provision orchestration content. Module path: '{{fx-resource-bot.Provision.botProvision.path}}'.",
-            Modules: {
-              botProvision: TestFileContent.botProvisionModule,
-            },
-          },
-          Configuration: {
-            Orchestration:
-              "Mocked bot configuration orchestration content. Module path: '{{fx-resource-bot.Configuration.botConfig.path}}'.",
-            Modules: {
-              botConfig: TestFileContent.botConfigurationModule,
-            },
-          },
-          Reference: {
-            botOutputKey: TestFileContent.botReferenceValue,
-          },
-          Parameters: {
-            BotParameter: TestFileContent.botParameterValue,
-          },
-        };
-        return ok({ kind: "bicep", template: res });
-      });
-  }
-
-  static mockedBotUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker
-      .stub(botPluginV2, "updateResourceTemplate")
-      .callsFake(async (ctx: Context, inputs: Inputs) => {
-        const res: ArmTemplateResult = {
-          Configuration: {
-            Modules: {
-              botConfig: TestFileContent.botConfigUpdateModule,
-            },
-          },
-          Reference: {
-            botOutputKey: TestFileContent.botReferenceValue,
-          },
-        };
-        return ok({ kind: "bicep", template: res });
-      });
-  }
+  // static mockedIdentityUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
+  //   return mocker
+  //     .stub(identityPlugin, "updateArmTemplates")
+  //     .callsFake(async (ctx: PluginContext) => {
+  //       return ok({});
+  //     });
+  // }
 
   static mockArmDeploymentDependencies(mockedCtx: SolutionContext, mocker: sinon.SinonSandbox) {
-    mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
-      const azureToken = new UserTokenCredentials(
-        TestHelper.clientId,
-        TestHelper.domain,
-        TestHelper.username,
-        TestHelper.password
-      );
-      return azureToken;
+    mockedCtx.azureAccountProvider!.getIdentityCredentialAsync = async function () {
+      return new MyTokenCredential();
     };
     mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
       const subscriptionInfo = {

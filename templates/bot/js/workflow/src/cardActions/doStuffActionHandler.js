@@ -1,10 +1,13 @@
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
-const { AdaptiveCardResponse, InvokeResponseFactory } = require("@microsoft/teamsfx");
+const { InvokeResponseFactory } = require("@microsoft/teamsfx");
 const responseCard = require("../adaptiveCards/doStuffActionResponse.json");
 
 class DoStuffActionHandler {
+  /**
+   * A global unique string associated with the `Action.Execute` action.
+   * The value should be the same as the `verb` property which you define in your adaptive card JSON.
+   */
   triggerVerb = "doStuff";
-  adaptiveCardResponse = AdaptiveCardResponse.ReplaceForInteractor;
 
   async handleActionInvoked(context, message) {
     /**
@@ -12,7 +15,7 @@ class DoStuffActionHandler {
      */
     const cardData = {
       title: "Hello World Bot",
-      body: "Congratulations! Your task is processed successfully. Click the button below to learn more about Bots and the Teams Toolkit.",
+      body: "Congratulations! Your task is processed successfully.",
     };
 
     const cardJson = AdaptiveCards.declare(responseCard).render(cardData);
@@ -22,7 +25,7 @@ class DoStuffActionHandler {
      * If you want to send invoke response with text message, you can:
      * 
      return InvokeResponseFactory.textMessage("[ACK] Successfully!");
-    */
+     */
 
     /**
      * If you want to send invoke response with error message, you can:

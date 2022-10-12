@@ -95,7 +95,7 @@ export class ResourceGroupHelper {
     subscriptionId: string,
     location: string
   ): Promise<Result<string, FxError>> {
-    const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+    const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
     if (!azureToken)
       return err(
         new UserError(
@@ -156,7 +156,12 @@ export class ResourceGroupHelper {
   async listResourceGroups(
     rmClient: ResourceManagementClient
   ): Promise<Result<[string, string][], FxError>> {
-    const resourceGroupResults = await rmClient.resourceGroups.list();
+    const resourceGroupResults = [];
+    for await (const page of rmClient.resourceGroups.list().byPage({ maxPageSize: 100 })) {
+      for (const resourceGroup of page) {
+        resourceGroupResults.push(resourceGroup);
+      }
+    }
     const resourceGroupNameLocations = resourceGroupResults
       .filter((item) => item.name)
       .map((item) => [item.name, item.location] as [string, string]);
@@ -167,7 +172,7 @@ export class ResourceGroupHelper {
     azureAccountProvider: AzureAccountProvider,
     rmClient: ResourceManagementClient
   ): Promise<Result<string[], FxError>> {
-    const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+    const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
     if (!azureToken)
       return err(
         new UserError(
@@ -177,10 +182,17 @@ export class ResourceGroupHelper {
         )
       );
     const subscriptionClient = new SubscriptionClient(azureToken);
-    const listLocations = await subscriptionClient.subscriptions.listLocations(
-      rmClient.subscriptionId
-    );
-    const locations = listLocations.map((item) => item.displayName);
+    const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
+    const locations: string[] = [];
+    for await (const page of subscriptionClient.subscriptions
+      .listLocations(askSubRes!.subscriptionId)
+      .byPage({ maxPageSize: 100 })) {
+      for (const location of page) {
+        if (location.displayName) {
+          locations.push(location.displayName);
+        }
+      }
+    }
     const providerData = await rmClient.providers.get(MsResources);
     const resourceTypeData = providerData.resourceTypes?.find(
       (rt) => rt.resourceType?.toLowerCase() === ResourceGroups.toLowerCase()

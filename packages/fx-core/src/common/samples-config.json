@@ -9,7 +9,7 @@
             "fullDescription": "This is a Hello World app of Microsoft Teams Tab app which accomplishes very simple function like single-sign on. You can run this app locally or deploy it to Microsoft Azure. This app only has a Tab frontend.",
             "tags": ["Tab", "TS", "SSO"],
             "time": "5min to run",
-            "configuration": "Ready for local debug",
+            "configuration": "Ready for debug",
             "suggested": true
         },
         {
@@ -19,7 +19,7 @@
             "fullDescription": "This is a Hello World app of Microsoft Teams Tab app which accomplishes very simple function like single-sign on. You can run this app locally or deploy it to Microsoft Azure. This app has a Tab frontend and a backend service using Azure Function.",
             "tags": ["Tab", "TS", "Azure function"],
             "time": "5min to run",
-            "configuration": "Ready for local debug",
+            "configuration": "Ready for debug",
             "suggested": true
         },
         {
@@ -29,7 +29,7 @@
             "fullDescription": "This is a Hello World app of Microsoft Teams Bot app demonstrating how to create commands and build adaptive cards that best for automation.",
             "tags": ["Bot", "TS", "Adaptive Cards"],
             "time": "5min to run",
-            "configuration": "Ready for local debug",
+            "configuration": "Ready for debug",
             "suggested": true
         },
         {
@@ -39,7 +39,7 @@
             "fullDescription": "Contact Exporter app can export your teams contact info to Excel files, and it is using Microsoft Graph Toolkit as UI component. This app only has a Tab frontend.",
             "tags": ["Tab", "JS"],
             "time": "5min to run",
-            "configuration": "Ready for local debug",
+            "configuration": "Ready for debug",
             "suggested": true
         },
         {
@@ -49,7 +49,7 @@
             "fullDescription": "One Productivity Hub sample shows you how to build a tab for viewing your calendar events, to-do tasks and files by using Microsoft Graph Toolkit components and TeamsFx provider. You can run this app locally or deploy it to Microsoft Azure.",
             "tags": ["Tab", "JS", "SSO"],
             "time": "5min to run",
-            "configuration": "Ready for local debug",
+            "configuration": "Ready for debug",
             "suggested": false
         },
         {
@@ -64,7 +64,7 @@
                 "SSO"
             ],
             "time": "5min to run",
-            "configuration": "Ready for local debug",
+            "configuration": "Ready for debug",
             "suggested": false
         },
         {
@@ -94,7 +94,7 @@
             "fullDescription": "Share Now promotes the exchange of information between colleagues by enabling users to share content within the Teams environment. Users engage the app to share items of interest, discover new shared content, set preferences, and bookmark favorites for later reading.",
             "tags": ["Tab", "Message extension", "TS"],
             "time": "30min to run",
-            "configuration": "Ready for local debug",
+            "configuration": "Ready for debug",
             "suggested": false
         },
         {
@@ -104,17 +104,7 @@
             "fullDescription": "My first meeting app is a simple template to show how to build a tab app that can be installed and used in a meeting, in all of meeting lifecycles: pre-meeting chat, in-meeting, post-meeting chat. This sample contains tab as side panel, meeting chat tab, or meeting details tab. The template also includes simple codes to fetch meeting info and user profile.",
             "tags": ["Meeting extension", "JS"],
             "time": "30min to run",
-            "configuration": "Ready for local debug",
-            "suggested": false
-        },
-        {
-            "id": "faq-plus",
-            "title": "FAQ Plus",
-            "shortDescription": "Conversational Bot which answers common questions, looping human when bots unable to help",
-            "fullDescription": "FAQ Plus is a conversational Q&A bot providing an easy way to answer frequently asked questions by users. One can ask a question and the bot responds with information in the knowledge base. If the answer is not in the knowledge base, the bot submits the question to a pre-configured team of experts who help provide support.",
-            "tags": ["Easy QnA", "Bot", "JS"],
-            "time": "1hr to run",
-            "configuration": "Manual configurations required",
+            "configuration": "Ready for debug",
             "suggested": false
         },
         {
@@ -144,7 +134,7 @@
             "fullDescription": "This is a simple static tab application with tutorial to include single sign on features.",
             "tags": ["Tab", "TS"],
             "time": "5min to run",
-            "configuration": "Ready for local debug",
+            "configuration": "Ready for debug",
             "suggested": false
         },
         {
@@ -157,7 +147,7 @@
                 "JS"
             ],
             "time": "5min to run",
-            "configuration": "Ready for local debug",
+            "configuration": "Ready for debug",
             "suggested": false,
             "url": "https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/",
             "packageLink": "https://github.com/OfficeDev/Microsoft-Teams-Samples/archive/refs/heads/main.zip"
@@ -171,7 +161,7 @@
                 "Bot" , "TS"
             ],
             "time": "5min to run",
-            "configuration": "Ready for local debug",
+            "configuration": "Ready for debug",
             "suggested": false
         },
         {
@@ -203,8 +193,20 @@
             "fullDescription": "This sample demonstrates how a Notification Bot can be used to call an external API using API Key authentication, on a pre-defined schedule of every 30 seconds, to obtain the latest stock information and render the results as an Adaptive Card.",
             "tags": ["Bot", "TS", "Azure function", "API Key"],
             "time": "5min to run",
-            "configuration": "Ready for local debug",
+            "configuration": "Ready for debug",
             "suggested": false
+        },
+        {
+            "id": "query-org-user-with-message-extension-sso",
+            "title": "Org User Search Connector",
+            "shortDescription": "Query Org User with Message Extension SSO",
+            "fullDescription": "This is a simple search-based message extension app demonstrating how to integrate with Bot Framework SDK, TeamsFx SDK and Microsoft Graph API to implement a feature that queries organization's user with single sign on (SSO) capability.",
+            "tags": ["Message extension", "SSO"],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "suggested": false,
+            "url": "https://github.com/OfficeDev/TeamsFx-samples/tree/dev/",
+            "packageLink": "https://github.com/OfficeDev/TeamsFx-samples/archive/refs/heads/dev.zip"
         }
     ]
 }

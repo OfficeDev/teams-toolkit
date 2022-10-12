@@ -67,7 +67,6 @@ export class PluginDisplayName {
 
 export class FeatureFlagName {
   static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
-  static readonly APIV3 = "TEAMSFX_APIV3";
   // This will default to true and this environment is only for tests. It does not expose to user.
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly VSCallingCLI = "VS_CALLING_CLI";
@@ -75,15 +74,16 @@ export class FeatureFlagName {
   static readonly AadManifest = "TEAMSFX_AAD_MANIFEST";
   static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";
   static readonly BotNotification = "BOT_NOTIFICATION_ENABLED";
-  static readonly WorkflowBotEnabled = "WORKFLOW_BOT_ENABLED";
   static readonly M365App = "TEAMSFX_M365_APP";
   static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
   static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
+  static readonly SPFxVersion = "TEAMSFX_SPFX_VERSIOIN";
   static readonly SPFxMultiTab = "TEAMSFX_SPFX_MULTI_TAB";
   static readonly ApiConnect = "TEAMSFX_API_CONNECT_ENABLE";
   static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
+  static readonly TDPIntegration = "TDP_INTEGRATION";
 }
 
 export class ManifestVariables {

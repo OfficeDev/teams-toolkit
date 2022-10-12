@@ -14,7 +14,7 @@ import * as fs from "fs-extra";
 import { TeamsAppManifest } from "@microsoft/teamsfx-api";
 import { it } from "../../commonlib/it";
 import * as chai from "chai";
-import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 
 describe("Add capabilities", function () {
   const testFolder = getTestFolder();

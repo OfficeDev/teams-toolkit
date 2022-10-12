@@ -20,41 +20,37 @@ import sinon from "sinon";
 import { setTools } from "../../src/core/globalVars";
 import * as templateAction from "../../src/common/template-utils/templatesActions";
 import "../../src/component/core";
-import "../../src/component/feature/bot";
+import "../../src/component/feature/bot/bot";
 import "../../src/component/feature/sql";
-import "../../src/component/resource/botService";
+import "../../src/component/resource/botService/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { deleteFolder, MockTools, randomAppName } from "../core/utils";
-import { AppStudioClient } from "../../src/plugins/resource/appstudio/appStudio";
-import * as clientFactory from "../../src/plugins/resource/bot/clientFactory";
-import { AADRegistration } from "../../src/plugins/resource/bot/aadRegistration";
-import { TestHelper } from "../plugins/resource/frontend/helper";
+import { AppStudioClient } from "../../src/component/resource/appManifest/appStudioClient";
+import { AADRegistration } from "../../src/component/resource/botService/aadRegistration";
 import arm from "../../src/plugins/solution/fx-solution/arm";
-import { FrontendDeployment } from "../../src/plugins/resource/frontend/ops/deploy";
 import { newEnvInfoV3 } from "../../src/core/environment";
-import { Utils } from "../../src/plugins/resource/spfx/utils/utils";
-import { YoChecker } from "../../src/plugins/resource/spfx/depsChecker/yoChecker";
-import { GeneratorChecker } from "../../src/plugins/resource/spfx/depsChecker/generatorChecker";
+import { Utils } from "../../src/component/resource/spfx/utils/utils";
+import { YoChecker } from "../../src/component/resource/spfx/depsChecker/yoChecker";
+import { GeneratorChecker } from "../../src/component/resource/spfx/depsChecker/generatorChecker";
 import { cpUtils } from "../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import * as uuid from "uuid";
 import * as aadManifest from "../../src/core/generateAadManifestTemplate";
 import {
   SPFXQuestionNames,
   versionCheckQuestion,
-} from "../../src/plugins/resource/spfx/utils/questions";
+} from "../../src/component/resource/spfx/utils/questions";
 import { DefaultManifestProvider } from "../../src/component/resource/appManifest/manifestProvider";
 import { ComponentNames } from "../../src/component/constants";
-import { FunctionScaffold } from "../../src/plugins/resource/function/ops/scaffold";
+import { FunctionScaffold } from "../../src/component/code/api/scaffold";
 import { TeamsfxCore } from "../../src/component/core";
 import { Container } from "typedi";
-import { AzureStorageResource } from "../../src/component/resource/azureStorage";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import mockedEnv from "mocked-env";
 import { ciOption, githubOption, questionNames } from "../../src/component/feature/cicd/questions";
 import * as armFunctions from "../../src/plugins/solution/fx-solution/arm";
 import { apiConnectorImpl } from "../../src/component/feature/apiconnector/apiConnector";
 import * as backup from "../../src/plugins/solution/fx-solution/utils/backupFiles";
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
-import { Constants } from "../../src/plugins/resource/aad/constants";
+import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
 import { CoreQuestionNames } from "../../src/core/question";
 import * as questionV3 from "../../src/component/questionV3";
 import { provisionUtils } from "../../src/component/provisionUtils";
@@ -66,6 +62,22 @@ import {
 } from "../../src/plugins/solution/fx-solution/question";
 import { AddSsoParameters } from "../../src/plugins/solution/fx-solution/constants";
 import { BuiltInFeaturePluginNames } from "../../src/plugins/solution/fx-solution/v3/constants";
+import { Constants } from "../../src/component/resource/aadApp/constants";
+import { AzureStorageResource } from "../../src/component/resource/azureStorage/azureStorage";
+import { FrontendDeployment } from "../../src/component/code/tab/deploy";
+
+class MyTokenCredential implements TokenCredential {
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    return {
+      token: "a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c",
+      expiresOnTimestamp: 12345,
+    };
+  }
+}
+
 describe("Core component test for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -74,16 +86,9 @@ describe("Core component test for v3", () => {
   const projectPath = path.join(os.homedir(), "TeamsApps", appName);
   const context = createContextV3();
   const fx = Container.get<TeamsfxCore>("fx");
-  let mockedEnvRestore: RestoreFn;
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
-  });
-
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
-
   after(async () => {
     deleteFolder(projectPath);
   });
@@ -280,7 +285,7 @@ describe("Core component test for v3", () => {
     if (res.isErr()) {
       console.log(res.error);
     }
-    assert.isTrue(res.isOk());
+    assert.isTrue(res.isErr());
   });
 
   describe("provision", async () => {
@@ -293,16 +298,14 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox
         .stub(provisionUtils, "fillInAzureConfigs")
         .resolves(ok({ hasSwitchedSubscription: false }));
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "00000000-0000-0000-0000-000000000000",
         clientSecret: "mockClientSecret",
@@ -379,16 +382,14 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox
         .stub(provisionUtils, "fillInAzureConfigs")
         .resolves(ok({ hasSwitchedSubscription: true }));
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
@@ -462,13 +463,11 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockSwitchedTid", upn: "mockUpn" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
@@ -540,12 +539,10 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockSwitchedTid", upn: "mockUpn" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
@@ -614,16 +611,14 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockSwitchedTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox
         .stub(provisionUtils, "fillInAzureConfigs")
         .resolves(ok({ hasSwitchedSubscription: true }));
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
@@ -703,8 +698,8 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox
         .stub(provisionUtils, "fillInAzureConfigs")
         .resolves(ok({ hasSwitchedSubscription: false }));
@@ -713,8 +708,6 @@ describe("Core component test for v3", () => {
         .resolves(err(new UserError("Solution", "CancelProvision", "CancelProvision")));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "00000000-0000-0000-0000-000000000000",
         clientSecret: "mockClientSecret",
@@ -773,8 +766,8 @@ describe("Core component test for v3", () => {
         .resolves(ok("fakeToken"));
       sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(undefined);
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       const appName = `unittest${randomAppName()}`;
       const inputs: InputsWithProjectPath = {
         projectPath: projectPath,
@@ -819,8 +812,8 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox
         .stub(provisionUtils, "fillInAzureConfigs")
         .resolves(ok({ hasSwitchedSubscription: true }));
@@ -831,8 +824,6 @@ describe("Core component test for v3", () => {
         .resolves(err(new UserError("Solution", "error1", "error1")));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
         clientId: "00000000-0000-0000-0000-000000000000",
         clientSecret: "mockClientSecret",
@@ -893,13 +884,11 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
       sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
       sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
@@ -956,13 +945,11 @@ describe("Core component test for v3", () => {
         .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ tid: "mockTid" }));
       sandbox
-        .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-        .resolves(TestHelper.fakeCredential);
+        .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-      sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
       sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
       sandbox
         .stub(backup, "backupFiles")
@@ -1018,16 +1005,19 @@ describe("Core component test for v3", () => {
   it("azure-storage.deploy", async () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(FrontendDeployment, "doFrontendDeploymentV3").resolves();
+    sandbox.stub(AzureStorageResource.prototype, <any>"doDeployment").resolves();
     sandbox.stub(aadManifest, "generateAadManifestTemplate").resolves();
+    sandbox.stub(FrontendDeployment, "saveDeploymentInfo").resolves();
+    sandbox.stub(FrontendDeployment, "needDeploy").resolves(true);
     sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      folder: path.join(projectPath, "tabs"),
+      folder: "tabs",
       componentId: "teams-tab",
+      artifactFolder: "tabs/build",
     };
     context.envInfo = newEnvInfoV3();
     context.tokenProvider = tools.tokenProvider;
@@ -1066,9 +1056,8 @@ describe("Core component test for v3", () => {
 
   it("fx.deploy.cli.withAAD", async () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    mockedEnvRestore = mockedEnv({
+    const mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
-      TEAMSFX_APIV3: "true",
       TEAMSFX_AAD_MANIFEST: "true",
     });
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
@@ -1077,16 +1066,14 @@ describe("Core component test for v3", () => {
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockTid" }));
     sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     sandbox
       .stub(provisionUtils, "fillInAzureConfigs")
       .resolves(ok({ hasSwitchedSubscription: false }));
     sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
     sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
       clientId: "00000000-0000-0000-0000-000000000000",
       clientSecret: "mockClientSecret",
@@ -1188,13 +1175,14 @@ describe("Core component test for v3", () => {
       }
       assert.isTrue(deployRes.isErr());
     }
+
+    mockedEnvRestore();
   });
 
   it("fx.deployAadFromVscode", async () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
-    mockedEnvRestore = mockedEnv({
+    const mockedEnvRestore = mockedEnv({
       SWITCH_ACCOUNT: "false",
-      TEAMSFX_APIV3: "true",
       TEAMSFX_AAD_MANIFEST: "true",
     });
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
@@ -1203,16 +1191,14 @@ describe("Core component test for v3", () => {
       .stub(tools.tokenProvider.m365TokenProvider, "getJsonObject")
       .resolves(ok({ tid: "mockTid" }));
     sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getAccountCredentialAsync")
-      .resolves(TestHelper.fakeCredential);
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
     sandbox
       .stub(provisionUtils, "fillInAzureConfigs")
       .resolves(ok({ hasSwitchedSubscription: false }));
     sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(clientFactory, "createResourceProviderClient").resolves({});
-    sandbox.stub(clientFactory, "ensureResourceProvider").resolves();
     sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
       clientId: "00000000-0000-0000-0000-000000000000",
       clientSecret: "mockClientSecret",
@@ -1299,6 +1285,7 @@ describe("Core component test for v3", () => {
       console.log(deployRes.error);
     }
     assert.isTrue(deployRes.isOk());
+    mockedEnvRestore();
   });
   it("getParameterJsonV3", async () => {
     const str = `{

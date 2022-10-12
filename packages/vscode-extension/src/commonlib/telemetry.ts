@@ -7,12 +7,12 @@ import { TelemetryReporter, ConfigFolderName } from "@microsoft/teamsfx-api";
 import {
   getAllFeatureFlags,
   getPackageVersion,
-  getProjectId,
   isFeatureFlagEnabled,
   FeatureFlags,
 } from "../utils/commonUtils";
 import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { Correlator, getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
+import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core/build/common/tools";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { configure, getLogger, Logger } from "log4js";
 import * as os from "os";
 import * as path from "path";

@@ -15,7 +15,7 @@ import {
   getResourceGroupNameFromResourceId,
 } from "./utilities";
 import { PluginId, StateConfigKey } from "./constants";
-import { GraphScopes } from "@microsoft/teamsfx-core";
+import { GraphScopes } from "@microsoft/teamsfx-core/build/common/tools";
 
 export class ApimValidator {
   static apimClient?: ApiManagementClient;
@@ -27,7 +27,7 @@ export class ApimValidator {
     azureAccountProvider: AzureAccountProvider,
     m365TokenProvider: M365TokenProvider
   ): Promise<void> {
-    const tokenCredential = await azureAccountProvider.getAccountCredentialAsync();
+    const tokenCredential = await azureAccountProvider.getIdentityCredentialAsync();
     this.apimClient = new ApiManagementClient(tokenCredential!, subscriptionId);
     this.resourceGroupClient = new ResourceManagementClient(tokenCredential!, subscriptionId);
     const graphTokenRes = await m365TokenProvider.getAccessToken({ scopes: GraphScopes });
@@ -48,15 +48,19 @@ export class ApimValidator {
     await this.resourceGroupClient?.resourceGroups.createOrUpdate(resourceGroupName, {
       location: "eastus",
     });
-    await this.apimClient?.apiManagementService.createOrUpdate(resourceGroupName, serviceName, {
-      publisherName: "teamsfx-test@microsoft.com",
-      publisherEmail: "teamsfx-test@microsoft.com",
-      sku: {
-        name: "Consumption",
-        capacity: 0,
-      },
-      location: "eastus",
-    });
+    await this.apimClient?.apiManagementService.beginCreateOrUpdateAndWait(
+      resourceGroupName,
+      serviceName,
+      {
+        publisherName: "teamsfx-test@microsoft.com",
+        publisherEmail: "teamsfx-test@microsoft.com",
+        sku: {
+          name: "Consumption",
+          capacity: 0,
+        },
+        location: "eastus",
+      }
+    );
   }
 
   public static async validateProvision(ctx: any): Promise<void> {

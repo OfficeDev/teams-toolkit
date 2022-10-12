@@ -2,7 +2,10 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+import {
+  globalStateGet,
+  globalStateUpdate,
+} from "@microsoft/teamsfx-core/build/common/globalState";
 import { TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 
 const welcomePageKey = "ms-teams-vscode-extension.welcomePage.shown";

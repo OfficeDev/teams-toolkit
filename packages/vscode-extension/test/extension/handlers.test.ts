@@ -2,6 +2,7 @@ import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
+import { stubInterface } from "ts-sinon";
 import * as util from "util";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
@@ -11,6 +12,7 @@ import {
   err,
   FxError,
   Inputs,
+  IProgressHandler,
   ok,
   Platform,
   ProjectSettings,
@@ -20,15 +22,13 @@ import {
   UserError,
   Void,
   VsCodeEnv,
+  PathNotExistError,
 } from "@microsoft/teamsfx-api";
-import {
-  CollaborationState,
-  CoreHookContext,
-  DepsManager,
-  DepsType,
-} from "@microsoft/teamsfx-core";
+import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
 
 import * as StringResources from "../../package.nls.json";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
@@ -36,11 +36,14 @@ import M365TokenInstance from "../../src/commonlib/m365Login";
 import { SUPPORTED_SPFX_VERSION } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
+import * as debugCommonUtils from "../../src/debug/commonUtils";
 import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
+import * as debugProvider from "../../src/debug/teamsfxDebugProvider";
 import { ExtensionErrors } from "../../src/error";
 import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
+import { VsCodeUI } from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "../../src/treeview/account/accountTreeViewProvider";
@@ -49,20 +52,21 @@ import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
 import * as commonUtils from "../../src/utils/commonUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import { MockCore } from "../mocks/mockCore";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 
 describe("handlers", () => {
   describe("activate()", function () {
     const sandbox = sinon.createSandbox();
     let setStatusChangeMap: any;
 
-    this.beforeAll(() => {
+    beforeEach(() => {
       sandbox.stub(accountTreeViewProviderInstance, "subscribeToStatusChanges");
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
       sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
       sandbox.stub(ExtTelemetry, "dispose");
     });
 
-    this.afterAll(() => {
+    afterEach(() => {
       sandbox.restore();
     });
 
@@ -88,6 +92,69 @@ describe("handlers", () => {
     const input: Inputs = handlers.getSystemInputs();
 
     chai.expect(input.platform).equals(Platform.VSCode);
+  });
+
+  it("getAzureProjectConfigV3", async () => {
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
+    const fake_config_v3 = {
+      projectSettings: {
+        appName: "fake_test",
+        projectId: "fake_projectId",
+      },
+      envInfos: {},
+    };
+    sandbox.stub(MockCore.prototype, "getProjectConfigV3").resolves(ok(fake_config_v3));
+    const res = await handlers.getAzureProjectConfigV3();
+    chai.assert.exists(res?.projectSettings);
+    chai.assert.equal(res?.projectSettings.appName, "fake_test");
+    chai.assert.equal(res?.projectSettings.projectId, "fake_projectId");
+    sandbox.restore();
+  });
+
+  it("getAzureProjectConfigV3 return undefined", async () => {
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
+    sandbox
+      .stub(MockCore.prototype, "getProjectConfigV3")
+      .resolves(err(new PathNotExistError("path not exist", "fake path")));
+    const res = await handlers.getAzureProjectConfigV3();
+    chai.assert.isUndefined(res);
+    sandbox.restore();
+  });
+
+  it("openBackupConfigMd", async () => {
+    const workspacePath = "test";
+    const filePath = path.join(workspacePath, ".backup", "backup-config-change-logs.md");
+
+    const openTextDocument = sinon.stub(vscode.workspace, "openTextDocument").resolves();
+    const executeCommand = sinon.stub(vscode.commands, "executeCommand").resolves();
+
+    await handlers.openBackupConfigMd(workspacePath, filePath);
+
+    chai.assert.isTrue(openTextDocument.calledOnce);
+    chai.assert.isTrue(
+      executeCommand.calledOnceWithExactly("markdown.showPreview", vscode.Uri.file(filePath))
+    );
+    openTextDocument.restore();
+    executeCommand.restore();
+  });
+
+  it("addFileSystemWatcher", async () => {
+    const workspacePath = "test";
+
+    const watcher = { onDidCreate: () => ({ dispose: () => undefined }) } as any;
+    const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
+    const listener = sinon.stub(watcher, "onDidCreate").resolves();
+
+    handlers.addFileSystemWatcher(workspacePath);
+
+    chai.assert.isTrue(createWatcher.calledTwice);
+    chai.assert.isTrue(listener.calledTwice);
+    createWatcher.restore();
+    listener.restore();
   });
 
   describe("command handlers", function () {
@@ -182,6 +249,39 @@ describe("handlers", () => {
       sinon.assert.calledOnceWithExactly(executeCommandStub, "workbench.action.debug.start");
       sinon.assert.calledOnce(sendTelemetryEventStub);
       sinon.restore();
+    });
+
+    it("treeViewPreviewHandler()", async () => {
+      sinon.stub(localizeUtils, "localize").returns("");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(debugCommonUtils, "getDebugConfig").resolves({ appId: "appId" });
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+
+      let ignoreEnvInfo: boolean | undefined = undefined;
+      let localDebugCalled = 0;
+      sinon
+        .stub(handlers.core, "localDebug")
+        .callsFake(
+          async (
+            inputs: Inputs,
+            ctx?: CoreHookContext | undefined
+          ): Promise<Result<Void, FxError>> => {
+            ignoreEnvInfo = inputs.ignoreEnvInfo;
+            localDebugCalled += 1;
+            return ok({});
+          }
+        );
+      const mockProgressHandler = stubInterface<IProgressHandler>();
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon.stub(VsCodeUI.prototype, "createProgressBar").returns(mockProgressHandler);
+      sinon.stub(VsCodeUI.prototype, "openUrl");
+      sinon.stub(debugProvider, "generateAccountHint");
+
+      const result = await handlers.treeViewPreviewHandler("local");
+
+      chai.assert.isTrue(result.isOk());
     });
   });
 
@@ -716,12 +816,9 @@ describe("handlers", () => {
     it("Prompt user to upgrade toolkit when project SPFx version higher than toolkit", async () => {
       sinon.stub(globalVariables, "isSPFxProject").value(true);
       sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
-      sinon.stub(fs, "pathExists").resolves(true);
-      sinon.stub(fs, "readJson").resolves({
-        "@microsoft/generator-sharepoint": {
-          version: `1.${parseInt(SUPPORTED_SPFX_VERSION.split(".")[1]) + 1}.0`,
-        },
-      });
+      sinon
+        .stub(commonTools, "getAppSPFxVersion")
+        .resolves(`1.${parseInt(SUPPORTED_SPFX_VERSION.split(".")[1]) + 1}.0`);
       const stubShowMessage = sinon.stub().resolves(ok({}));
       sinon.stub(extension, "VS_CODE_UI").value({
         showMessage: stubShowMessage,
@@ -737,12 +834,9 @@ describe("handlers", () => {
     it("Prompt user to upgrade project when project SPFx version lower than toolkit", async () => {
       sinon.stub(globalVariables, "isSPFxProject").value(true);
       sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
-      sinon.stub(fs, "pathExists").resolves(true);
-      sinon.stub(fs, "readJson").resolves({
-        "@microsoft/generator-sharepoint": {
-          version: `1.${parseInt(SUPPORTED_SPFX_VERSION.split(".")[1]) - 1}.0`,
-        },
-      });
+      sinon
+        .stub(commonTools, "getAppSPFxVersion")
+        .resolves(`1.${parseInt(SUPPORTED_SPFX_VERSION.split(".")[1]) - 1}.0`);
 
       const stubShowMessage = sinon.stub().resolves(ok({}));
       sinon.stub(extension, "VS_CODE_UI").value({
@@ -759,10 +853,7 @@ describe("handlers", () => {
     it("Dont show notification when project SPFx version is the same with toolkit", async () => {
       sinon.stub(globalVariables, "isSPFxProject").value(true);
       sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(""));
-      sinon.stub(fs, "pathExists").resolves(true);
-      sinon.stub(fs, "readJson").resolves({
-        "@microsoft/generator-sharepoint": { version: SUPPORTED_SPFX_VERSION },
-      });
+      sinon.stub(commonTools, "getAppSPFxVersion").resolves(SUPPORTED_SPFX_VERSION);
       const stubShowMessage = sinon.stub();
       sinon.stub(extension, "VS_CODE_UI").value({
         showMessage: stubShowMessage,
@@ -790,7 +881,7 @@ describe("handlers", () => {
             isLinuxSupported: false,
             installVersion: "",
             supportedVersions: [],
-            binFolders: ["dotnet-bin-folder"],
+            binFolders: ["dotnet-bin-folder/dotnet"],
           },
         },
       ]);

@@ -29,10 +29,16 @@ import * as utils from "./utils";
  *
  * @param target - the notification target.
  * @param text - the plain text message.
+ * @param onError - an optional error handler that can catch exceptions during message sending.
+ * If not defined, error will be handled by `BotAdapter.onTurnError`.
  * @returns the response of sending message.
  */
-export function sendMessage(target: NotificationTarget, text: string): Promise<MessageResponse> {
-  return target.sendMessage(text);
+export function sendMessage(
+  target: NotificationTarget,
+  text: string,
+  onError?: (context: TurnContext, error: Error) => Promise<void>
+): Promise<MessageResponse> {
+  return target.sendMessage(text, onError);
 }
 
 /**
@@ -40,13 +46,16 @@ export function sendMessage(target: NotificationTarget, text: string): Promise<M
  *
  * @param target - the notification target.
  * @param card - the adaptive card raw JSON.
+ * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
+ * If not defined, error will be handled by `BotAdapter.onTurnError`.
  * @returns the response of sending adaptive card message.
  */
 export function sendAdaptiveCard(
   target: NotificationTarget,
-  card: unknown
+  card: unknown,
+  onError?: (context: TurnContext, error: Error) => Promise<void>
 ): Promise<MessageResponse> {
-  return target.sendAdaptiveCard(card);
+  return target.sendAdaptiveCard(card, onError);
 }
 
 /**
@@ -89,17 +98,30 @@ export class Channel implements NotificationTarget {
    * Send a plain text message.
    *
    * @param text - the plain text message.
+   * @param onError - an optional error handler that can catch exceptions during message sending.
+   * If not defined, error will be handled by `BotAdapter.onTurnError`.
    * @returns the response of sending message.
    */
-  public async sendMessage(text: string): Promise<MessageResponse> {
+  public async sendMessage(
+    text: string,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
     const response: MessageResponse = {};
     await this.parent.adapter.continueConversation(
       this.parent.conversationReference,
       async (context) => {
         const conversation = await this.newConversation(context);
         await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
-          const res = await ctx.sendActivity(text);
-          response.id = res?.id;
+          try {
+            const res = await ctx.sendActivity(text);
+            response.id = res?.id;
+          } catch (error) {
+            if (onError) {
+              await onError(ctx, error as Error);
+            } else {
+              throw error;
+            }
+          }
         });
       }
     );
@@ -110,19 +132,32 @@ export class Channel implements NotificationTarget {
    * Send an adaptive card message.
    *
    * @param card - the adaptive card raw JSON.
+   * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
+   * If not defined, error will be handled by `BotAdapter.onTurnError`.
    * @returns the response of sending adaptive card message.
    */
-  public async sendAdaptiveCard(card: unknown): Promise<MessageResponse> {
+  public async sendAdaptiveCard(
+    card: unknown,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
     const response: MessageResponse = {};
     await this.parent.adapter.continueConversation(
       this.parent.conversationReference,
       async (context) => {
         const conversation = await this.newConversation(context);
         await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
-          const res = await ctx.sendActivity({
-            attachments: [CardFactory.adaptiveCard(card)],
-          });
-          response.id = res?.id;
+          try {
+            const res = await ctx.sendActivity({
+              attachments: [CardFactory.adaptiveCard(card)],
+            });
+            response.id = res?.id;
+          } catch (error) {
+            if (onError) {
+              await onError(ctx, error as Error);
+            } else {
+              throw error;
+            }
+          }
         });
       }
     );
@@ -181,17 +216,30 @@ export class Member implements NotificationTarget {
    * Send a plain text message.
    *
    * @param text - the plain text message.
+   * @param onError - an optional error handler that can catch exceptions during message sending.
+   * If not defined, error will be handled by `BotAdapter.onTurnError`.
    * @returns the response of sending message.
    */
-  public async sendMessage(text: string): Promise<MessageResponse> {
+  public async sendMessage(
+    text: string,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
     const response: MessageResponse = {};
     await this.parent.adapter.continueConversation(
       this.parent.conversationReference,
       async (context) => {
         const conversation = await this.newConversation(context);
         await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
-          const res = await ctx.sendActivity(text);
-          response.id = res?.id;
+          try {
+            const res = await ctx.sendActivity(text);
+            response.id = res?.id;
+          } catch (error) {
+            if (onError) {
+              await onError(ctx, error as Error);
+            } else {
+              throw error;
+            }
+          }
         });
       }
     );
@@ -202,19 +250,32 @@ export class Member implements NotificationTarget {
    * Send an adaptive card message.
    *
    * @param card - the adaptive card raw JSON.
+   * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
+   * If not defined, error will be handled by `BotAdapter.onTurnError`.
    * @returns the response of sending adaptive card message.
    */
-  public async sendAdaptiveCard(card: unknown): Promise<MessageResponse> {
+  public async sendAdaptiveCard(
+    card: unknown,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
     const response: MessageResponse = {};
     await this.parent.adapter.continueConversation(
       this.parent.conversationReference,
       async (context) => {
         const conversation = await this.newConversation(context);
         await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
-          const res = await ctx.sendActivity({
-            attachments: [CardFactory.adaptiveCard(card)],
-          });
-          response.id = res?.id;
+          try {
+            const res = await ctx.sendActivity({
+              attachments: [CardFactory.adaptiveCard(card)],
+            });
+            response.id = res?.id;
+          } catch (error) {
+            if (onError) {
+              await onError(ctx, error as Error);
+            } else {
+              throw error;
+            }
+          }
         });
       }
     );
@@ -293,13 +354,26 @@ export class TeamsBotInstallation implements NotificationTarget {
    * Send a plain text message.
    *
    * @param text - the plain text message.
+   * @param onError - an optional error handler that can catch exceptions during message sending.
+   * If not defined, error will be handled by `BotAdapter.onTurnError`.
    * @returns the response of sending message.
    */
-  public async sendMessage(text: string): Promise<MessageResponse> {
+  public async sendMessage(
+    text: string,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
     const response: MessageResponse = {};
     await this.adapter.continueConversation(this.conversationReference, async (context) => {
-      const res = await context.sendActivity(text);
-      response.id = res?.id;
+      try {
+        const res = await context.sendActivity(text);
+        response.id = res?.id;
+      } catch (error) {
+        if (onError) {
+          await onError(context, error as Error);
+        } else {
+          throw error;
+        }
+      }
     });
     return response;
   }
@@ -308,15 +382,28 @@ export class TeamsBotInstallation implements NotificationTarget {
    * Send an adaptive card message.
    *
    * @param card - the adaptive card raw JSON.
+   * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
+   * If not defined, error will be handled by `BotAdapter.onTurnError`.
    * @returns the response of sending adaptive card message.
    */
-  public async sendAdaptiveCard(card: unknown): Promise<MessageResponse> {
+  public async sendAdaptiveCard(
+    card: unknown,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
     const response: MessageResponse = {};
     await this.adapter.continueConversation(this.conversationReference, async (context) => {
-      const res = await context.sendActivity({
-        attachments: [CardFactory.adaptiveCard(card)],
-      });
-      response.id = res?.id;
+      try {
+        const res = await context.sendActivity({
+          attachments: [CardFactory.adaptiveCard(card)],
+        });
+        response.id = res?.id;
+      } catch (error) {
+        if (onError) {
+          await onError(context, error as Error);
+        } else {
+          throw error;
+        }
+      }
     });
     return response;
   }

@@ -290,3 +290,24 @@ export const FunctionAppSetting = {
   },
   allowedAppIdSep: ";",
 };
+
+export const PathConstants = {
+  botWorkingDir: "bot",
+  apiWorkingDir: "api",
+  tabWorkingDir: "tabs",
+  dotnetWorkingDir: ".",
+  npmPackageFolder: "node_modules",
+  nodePackageFile: "package.json",
+  functionExtensionsFolder: "bin",
+  functionExtensionsFile: "extensions.csproj",
+  deploymentInfoFolder: ".deployment",
+  deploymentInfoFile: "deployment.json",
+  nodeArtifactFolder: "build",
+  dotnetArtifactFolder: "publish",
+  reactTabIndexPath: "/index.html#",
+  blazorTabIndexPath: "/",
+};
+
+export const RegularExpr = {
+  validFunctionNamePattern: /^[a-zA-Z][\w-]{0,126}$/,
+};

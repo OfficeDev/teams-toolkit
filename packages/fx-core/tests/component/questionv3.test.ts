@@ -25,7 +25,7 @@ import {
   TabNonSsoItem,
   WorkflowOptionItem,
 } from "../../src/plugins/solution/fx-solution/question";
-import { manifestUtils } from "../../src/component/resource/appManifest/utils";
+import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
 import {
   Inputs,
   InputsWithProjectPath,
@@ -43,11 +43,7 @@ import { ComponentNames } from "../../src/component/constants";
 
 describe("question for v3", () => {
   const sandbox = sinon.createSandbox();
-  beforeEach(() => {
-    sandbox.stub(process, "env").value({
-      WORKFLOW_BOT_ENABLED: "true",
-    });
-  });
+  beforeEach(() => {});
   afterEach(() => {
     sandbox.restore();
   });

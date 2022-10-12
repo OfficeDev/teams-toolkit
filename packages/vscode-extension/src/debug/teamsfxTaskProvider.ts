@@ -17,19 +17,22 @@ import {
   err,
   assembleError,
 } from "@microsoft/teamsfx-api";
-import { Correlator, FolderName, LocalEnvManager } from "@microsoft/teamsfx-core";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import {
+  FolderName,
+  LocalEnvManager,
+  ITaskDefinition,
+  ProgrammingLanguage,
+  TaskDefinition,
+  TaskCommand,
+} from "@microsoft/teamsfx-core/build/common/local";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import VsCodeLogInstance from "../commonlib/log";
 import { detectVsCodeEnv, showError } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import {
-  DepsType,
-  ITaskDefinition,
-  ProgrammingLanguage,
-  TaskDefinition,
-} from "@microsoft/teamsfx-core";
+import { DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
@@ -42,33 +45,47 @@ import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
 import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
 
 const customTasks = Object.freeze({
-  "debug-check-prerequisites": {
+  [TaskCommand.checkPrerequisites]: {
     createTerminal: (d: vscode.TaskDefinition) => new PrerequisiteTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
   },
-  "debug-npm-install": {
+  [TaskCommand.npmInstall]: {
     createTerminal: (d: vscode.TaskDefinition) => new NpmInstallTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
   },
-  "debug-start-local-tunnel": {
+  [TaskCommand.startLocalTunnel]: {
     createTerminal: (d: vscode.TaskDefinition) => new LocalTunnelTaskTerminal(d),
-    presentationReveal: vscode.TaskRevealKind.Always,
+    presentationReveal: vscode.TaskRevealKind.Silent,
+    presentationEcho: true,
+    presentationshowReuseMessage: true,
   },
-  "debug-set-up-tab": {
+  [TaskCommand.setUpTab]: {
     createTerminal: (d: vscode.TaskDefinition) => new SetUpTabTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
   },
-  "debug-set-up-bot": {
+  [TaskCommand.setUpBot]: {
     createTerminal: (d: vscode.TaskDefinition) => new SetUpBotTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
   },
-  "debug-set-up-sso": {
+  [TaskCommand.setUpSSO]: {
     createTerminal: (d: vscode.TaskDefinition) => new SetUpSSOTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
   },
-  "debug-prepare-manifest": {
+  [TaskCommand.prepareManifest]: {
     createTerminal: (d: vscode.TaskDefinition) => new PrepareManifestTaskTerminal(d),
     presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
   },
 });
 
@@ -199,6 +216,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     if (!customTask) {
       return undefined;
     }
+
     const newTask = new vscode.Task(
       task.definition,
       vscode.TaskScope.Workspace,
@@ -211,6 +229,8 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     );
 
     newTask.presentationOptions.reveal = customTask.presentationReveal;
+    newTask.presentationOptions.echo = customTask.presentationEcho;
+    newTask.presentationOptions.showReuseMessage = customTask.presentationshowReuseMessage;
     return newTask;
   }
 

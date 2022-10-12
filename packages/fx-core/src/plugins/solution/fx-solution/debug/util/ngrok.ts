@@ -35,10 +35,12 @@ export async function getNgrokHttpUrl(addr: string | number): Promise<string | u
           for (const tunnel of tunnels) {
             if (typeof addr === "number" || Number.isInteger(Number.parseInt(addr))) {
               addr = `http://localhost:${addr}`;
-            } else {
-              addr = removeTrailingSlash(addr);
             }
-            if (tunnel.config.addr === addr && tunnel.proto === "https") {
+
+            if (
+              removeTrailingSlash(tunnel.config.addr) === removeTrailingSlash(addr) &&
+              tunnel.proto === "https"
+            ) {
               return tunnel.public_url;
             }
           }
@@ -50,6 +52,28 @@ export async function getNgrokHttpUrl(addr: string | number): Promise<string | u
       --numRetries;
     }
   }
+  return undefined;
+}
+
+// TODO: support http://127.0.0.1:4040/api/tunnels/bot
+export async function getNgrokTunnelFromApi(
+  webServiceUrl: string
+): Promise<{ src: string; dist: string } | undefined> {
+  try {
+    const resp = await axios.get(webServiceUrl);
+    if (resp && resp.data) {
+      const tunnels = (<NgrokApiTunnelsResponse>resp.data).tunnels;
+      // tunnels will be empty if tunnel connection is not completed
+      for (const tunnel of tunnels) {
+        if (tunnel.proto === "https") {
+          return { src: tunnel.config.addr, dist: tunnel.public_url };
+        }
+      }
+    }
+  } catch (err) {
+    // ECONNREFUSED if ngrok is not started
+  }
+
   return undefined;
 }
 

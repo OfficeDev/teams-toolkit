@@ -1,5 +1,9 @@
 import * as vscode from "vscode";
-import { globalStateGet, globalStateUpdate, isValidProject } from "@microsoft/teamsfx-core";
+import {
+  globalStateGet,
+  globalStateUpdate,
+} from "@microsoft/teamsfx-core/build/common/globalState";
+import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";

@@ -2,19 +2,18 @@
 // Licensed under the MIT license.
 
 import { getTemplatesFolder } from "../folder";
-import { Constants } from "../plugins/resource/aad/constants";
 import * as fs from "fs-extra";
 import * as os from "os";
-import {
-  ReplyUrlsWithType,
-  RequiredResourceAccess,
-} from "../plugins/resource/aad/interfaces/AADManifest";
-import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { getAppDirectory } from "../common/tools";
 import { ComponentNames } from "../component/constants";
 import { getComponent } from "../component/workflow";
 import { ProjectSettingsHelper } from "../common/local/projectSettingsHelper";
-import { isVSProject } from "../common";
+import { isVSProject } from "../common/projectSettingsHelper";
+import { Constants } from "../component/resource/aadApp/constants";
+import {
+  ReplyUrlsWithType,
+  RequiredResourceAccess,
+} from "../component/resource/aadApp/interfaces/AADManifest";
 
 interface Permission {
   resource: string;
@@ -53,9 +52,6 @@ export async function generateAadManifestTemplate(
     aadJson.requiredResourceAccess = requiredResourceAccess;
   }
 
-  // if (isV3()) {
-  //   updateRedirectUrlV3(aadJson, projectSettings);
-  // } else {
   const hasTab = ProjectSettingsHelper.includeFrontend(projectSettings);
   if (hasTab) {
     const tabRedirectUrl1 =

@@ -26,13 +26,13 @@ import {
   TEAMS_APP_MANIFEST_TEMPLATE,
 } from "../../../../src/component/resource/appManifest/constants";
 import { DefaultManifestProvider } from "../../../../src/component/resource/appManifest/manifestProvider";
-import { manifestUtils } from "../../../../src/component/resource/appManifest/utils";
+import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
 import { createContextV3 } from "../../../../src/component/utils";
 import { setTools } from "../../../../src/core/globalVars";
-import { CONFIGURABLE_TABS_TPL_EXISTING_APP } from "../../../../src/plugins/resource/appstudio/constants";
-import { AppStudioError } from "../../../../src/plugins/resource/appstudio/errors";
-import { QuestionNames } from "../../../../src/plugins/resource/bot/constants";
-import { AppServiceOptionItem } from "../../../../src/plugins/resource/bot/question";
+import { CONFIGURABLE_TABS_TPL_EXISTING_APP } from "../../../../src/component/resource/appManifest/constants";
+import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
+import { QuestionNames } from "../../../../src/component/feature/bot/constants";
+import { AppServiceOptionItem } from "../../../../src/component/feature/bot/question";
 import {
   AzureSolutionQuestionNames,
   BotScenario,
@@ -40,7 +40,7 @@ import {
 import { MockTools } from "../../../core/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
 import fs from "fs-extra";
-import { newEnvInfoV3 } from "../../../../src";
+import { newEnvInfoV3 } from "../../../../src/core/environment";
 
 describe("Load and Save manifest template V3", () => {
   setTools(new MockTools());
@@ -544,5 +544,18 @@ describe("getManifest V3", () => {
     const res2 = await manifestUtils.getManifest("", envInfo, false);
     chai.assert.isTrue(res1.isErr());
     chai.assert.isTrue(res2.isErr());
+  });
+
+  it("getManifest ignoring missing config", async () => {
+    const envInfo = newEnvInfoV3();
+    envInfo.state = {
+      solution: {},
+      "teams-bot": {
+        botId: uuid.v4(),
+      },
+    };
+    envInfo.envName = "local";
+    const res1 = await manifestUtils.getManifest("", envInfo, true);
+    chai.assert.isTrue(res1.isOk());
   });
 });

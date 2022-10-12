@@ -4,6 +4,7 @@ import {
   err,
   FxError,
   ok,
+  ResourceContextV3,
   Result,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -14,7 +15,7 @@ import { SolutionError, SolutionSource } from "../constants";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 import { getResourceFolder } from "../../../../folder";
 import { addPathToGitignore } from "../../../../core/middleware/projectMigrator";
-import { TOOLS } from "../../../../core";
+import { TOOLS } from "../../../../core/globalVars";
 
 const windowsPathLengthLimit = 260;
 const fileNameLengthLimit = 255;
@@ -54,7 +55,9 @@ async function getBackupFolder(projectPath: string): Promise<string> {
 export async function backupFiles(
   env: string,
   projectPath: string,
-  isCSharpProject: boolean
+  isCSharpProject: boolean,
+  isVSPlatform: boolean,
+  ctx: ResourceContextV3
 ): Promise<Result<undefined, FxError>> {
   const time = formatDate();
   const backupFolder = await getBackupFolder(projectPath);
@@ -120,7 +123,7 @@ export async function backupFiles(
   }
 
   // generate readme.
-  await generateReport(backupFolder);
+  await generateReport(backupFolder, isVSPlatform, ctx);
 
   // update .gitignore
   if (await fs.pathExists(backupFolder)) {
@@ -232,12 +235,15 @@ function convertTo2Digits(num: number) {
   return num.toString().padStart(2, "0");
 }
 
-async function generateReport(backupFolder: string) {
+async function generateReport(backupFolder: string, isVSPlatform: boolean, ctx: ResourceContextV3) {
   try {
     const target = path.join(backupFolder, reportName);
     const source = path.resolve(path.join(getResourceFolder(), reportName));
     if (!(await fs.pathExists(target))) {
       await fs.copyFile(source, target);
+      if ((await fs.pathExists(target)) && !!ctx.userInteraction.openFile && isVSPlatform) {
+        await ctx.userInteraction.openFile(target);
+      }
     }
   } catch (error) {
     // do nothing

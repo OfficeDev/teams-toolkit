@@ -20,12 +20,12 @@ import {
   ProjectSettingsV3,
   ok,
 } from "@microsoft/teamsfx-api";
-import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
-import { Constants } from "../../../../../src/plugins/resource/appstudio/constants";
-import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
-import { AppDefinition } from "./../../../../../src/plugins/resource/appstudio/interfaces/appDefinition";
-import { manifestUtils } from "../../../../../src/component/resource/appManifest/utils";
-import { newEnvInfoV3 } from "../../../../../src";
+import { AppStudioClient } from "./../../../../../src/component/resource/appManifest/appStudioClient";
+import { Constants } from "../../../../../src/component/resource/appManifest/constants";
+import { AppStudioError } from "./../../../../../src/component/resource/appManifest/errors";
+import { AppDefinition } from "./../../../../../src/component/resource/appManifest/interfaces/appDefinition";
+import { manifestUtils } from "../../../../../src/component/resource/appManifest/utils/ManifestUtils";
+import { newEnvInfoV3 } from "../../../../../src/core/environment";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { setTools } from "../../../../../src/core/globalVars";
 import {

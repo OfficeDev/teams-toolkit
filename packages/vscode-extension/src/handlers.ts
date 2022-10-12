@@ -41,6 +41,7 @@ import {
   ok,
   OptionItem,
   Platform,
+  ProjectConfigV3,
   ProjectSettingsFileName,
   Result,
   SelectFileConfig,
@@ -57,30 +58,30 @@ import {
   Void,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
+import { AddSsoParameters } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
 import {
-  AddSsoParameters,
-  AppStudioScopes,
   askSubscription,
-  CollaborationState,
-  Correlator,
-  DepsManager,
-  DepsType,
-  environmentManager,
-  FolderName,
-  FxCore,
+  AppStudioScopes,
   getAppDirectory,
   getFixedCommonProjectSettings,
   getHashedEnv,
-  globalStateGet,
-  globalStateUpdate,
-  InvalidProjectError,
   isExistingTabAppEnabled,
   isUserCancelError,
-  isValidProject,
-  LocalEnvManager,
-  ProjectSettingsHelper,
-  UserTaskFunctionName,
-} from "@microsoft/teamsfx-core";
+} from "@microsoft/teamsfx-core/build/common/tools";
+import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { FolderName } from "@microsoft/teamsfx-core/build/common/local";
+import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { LocalEnvManager, ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local";
+import {
+  globalStateUpdate,
+  globalStateGet,
+} from "@microsoft/teamsfx-core/build/common/globalState";
+import { UserTaskFunctionName } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
+import { FxCore } from "@microsoft/teamsfx-core";
+import { InvalidProjectError } from "@microsoft/teamsfx-core/build/core/error";
 
 import M365TokenInstance from "./commonlib/m365Login";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -93,6 +94,7 @@ import {
   CLI_FOR_M365,
   GlobalKey,
   SpfxManageSiteAdminUrl,
+  SUPPORTED_SPFX_PRERELEASE_VERSION,
   SUPPORTED_SPFX_VERSION,
 } from "./constants";
 import { PanelType } from "./controls/PanelType";
@@ -112,7 +114,6 @@ import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./debug/tea
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
-import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { VS_CODE_UI } from "./extension";
 import * as globalVariables from "./globalVariables";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
@@ -138,7 +139,6 @@ import {
   anonymizeFilePaths,
   getAppName,
   getM365TenantFromEnv,
-  getProjectId,
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
@@ -155,6 +155,9 @@ import {
   sendDebugAllStartEvent,
 } from "./debug/localTelemetryReporter";
 import { compare } from "./utils/versionUtil";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -227,13 +230,7 @@ export function activate(): Result<Void, FxError> {
     core = new FxCore(tools);
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
-      const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
-        "**/unify-config-and-aad-manifest-change-logs.md"
-      );
-
-      unifyConfigWatcher.onDidCreate(async (event) => {
-        await openUnifyConfigMd(workspacePath, event.fsPath);
-      });
+      addFileSystemWatcher(workspacePath);
     }
     automaticNpmInstallHandler(false, false, false);
 
@@ -339,10 +336,39 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   }
 }
 
+export function addFileSystemWatcher(workspacePath: string) {
+  const unifyConfigWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/unify-config-and-aad-manifest-change-logs.md"
+  );
+
+  unifyConfigWatcher.onDidCreate(async (event) => {
+    await openUnifyConfigMd(workspacePath, event.fsPath);
+  });
+
+  const backupConfigWatcher = vscode.workspace.createFileSystemWatcher(
+    "**/backup-config-change-logs.md"
+  );
+
+  backupConfigWatcher.onDidCreate(async (event) => {
+    await openBackupConfigMd(workspacePath, event.fsPath);
+  });
+}
+
+export async function openBackupConfigMd(workspacePath: string, filePath: string) {
+  const backupName = ".backup";
+  const backupConfigMD = "backup-config-change-logs.md";
+  const changeLogsPath: string = path.join(workspacePath, backupName, backupConfigMD);
+  await openPreviewMarkDown(filePath, changeLogsPath);
+}
+
 async function openUnifyConfigMd(workspacePath: string, filePath: string) {
   const backupName = ".backup";
   const unifyConfigMD = "unify-config-and-aad-manifest-change-logs.md";
   const changeLogsPath: string = path.join(workspacePath, backupName, unifyConfigMD);
+  await openPreviewMarkDown(filePath, changeLogsPath);
+}
+
+async function openPreviewMarkDown(filePath: string, changeLogsPath: string) {
   if (changeLogsPath !== filePath) {
     return;
   }
@@ -397,6 +423,16 @@ function registerCoreEvents() {
       ).onLockChanged(false);
     });
   }
+}
+
+export async function getAzureProjectConfigV3(): Promise<ProjectConfigV3 | undefined> {
+  const input = getSystemInputs();
+  input.ignoreEnvInfo = true;
+  const res = await core.getProjectConfigV3(input);
+  if (res.isOk()) {
+    return res.value;
+  }
+  return undefined;
 }
 
 export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings | undefined> {
@@ -567,11 +603,14 @@ async function previewLocal(progressBar: IProgressHandler): Promise<Result<null,
     const error = new UserError(
       ExtensionSource,
       ExtensionErrors.TeamsAppIdNotFoundError,
-      localize("teamstoolkit.handlers.teamsAppIdNotFound")
+      util.format(
+        localize("teamstoolkit.handlers.teamsAppIdNotFound"),
+        environmentManager.getLocalEnvName()
+      )
     );
     return err(error);
   }
-  progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+  await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
   await openHubWebClient(true, debugConfig.appId, constants.Hub.teams);
   return ok(null);
 }
@@ -586,7 +625,7 @@ async function previewRemote(
       const error = new UserError(
         ExtensionSource,
         ExtensionErrors.TeamsAppIdNotFoundError,
-        localize("teamstoolkit.handlers.teamsAppIdNotFound")
+        util.format(localize("teamstoolkit.handlers.teamsAppIdNotFound"), env)
       );
       return err(error);
     }
@@ -621,7 +660,7 @@ async function previewRemote(
     }
 
     if (hub === constants.Hub.teams) {
-      progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+      await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
       await openHubWebClient(includeFrontend, debugConfig.appId, hub);
     } else {
       const shouldContinue = await showInstallAppInTeamsMessage(env, debugConfig.appId);
@@ -631,7 +670,7 @@ async function previewRemote(
 
       const internalId = await getTeamsAppInternalId(debugConfig.appId);
       if (internalId !== undefined) {
-        progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
+        await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
         await openHubWebClient(includeFrontend, internalId, hub);
       }
     }
@@ -1181,7 +1220,7 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
     [TelemetryProperty.DebugProjectComponents]: (await commonUtils.getProjectComponents()) + "",
   });
 
-  const nodeType = (await vscodeHelper.hasFunction()) ? DepsType.FunctionNode : DepsType.AzureNode;
+  const nodeType = DepsType.AzureNode;
   const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
@@ -1259,7 +1298,9 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  * Check & install required local prerequisites before local debug.
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
-  const additionalProperties: { [key: string]: string } = {};
+  const additionalProperties: { [key: string]: string } = {
+    [TelemetryProperty.DebugIsTransparentTask]: "false",
+  };
   {
     // If we know this session is concurrently running with another session, send that correlationId in `debug-all-start` event.
     // Mostly, this happens when user stops debugging while preLaunchTasks are running and immediately hit F5 again.
@@ -1281,7 +1322,9 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
     const result = await localPrerequisites.checkAndInstall();
     if (result.isErr()) {
       // Only local debug use validate-local-prerequisites command
-      await sendDebugAllEvent(result.error);
+      await sendDebugAllEvent(result.error, {
+        [TelemetryProperty.DebugIsTransparentTask]: "false",
+      });
       commonUtils.endLocalDebugSession();
       // return non-zero value to let task "exit ${command:xxx}" to exit
       showError(result.error);
@@ -1397,9 +1440,9 @@ export async function getDotnetPathHandler(): Promise<string> {
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
     const dotnetStatus = (await depsManager.getStatus([DepsType.Dotnet]))?.[0];
     if (dotnetStatus?.isInstalled && dotnetStatus?.details?.binFolders !== undefined) {
-      return `${path.delimiter}${dotnetStatus.details.binFolders.join(path.delimiter)}${
-        path.delimiter
-      }`;
+      return `${path.delimiter}${dotnetStatus.details.binFolders
+        .map((f: string) => path.dirname(f))
+        .join(path.delimiter)}${path.delimiter}`;
     }
   } catch (error: any) {
     showError(assembleError(error));
@@ -1437,7 +1480,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     terminateAllRunningTeamsfxTasks();
     await debug.stopDebugging();
     // only local debug uses pre-debug-check command
-    await sendDebugAllEvent(result.error);
+    await sendDebugAllEvent(result.error, { [TelemetryProperty.DebugIsTransparentTask]: "false" });
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
@@ -1640,28 +1683,23 @@ export async function openReadMeHandler(args: any[]) {
 
 export async function promptSPFxUpgrade() {
   if (globalVariables.isSPFxProject) {
-    let projectSPFxVersion = null;
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-    const yoInfoPath = path.join(globalVariables.workspaceUri?.fsPath!, "SPFx", ".yo-rc.json");
-    if (await fs.pathExists(yoInfoPath)) {
-      const yoInfo = await fs.readJson(yoInfoPath);
-      projectSPFxVersion = yoInfo["@microsoft/generator-sharepoint"]?.version;
-    }
-
-    if (!projectSPFxVersion) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-      const packagePath = path.join(globalVariables.workspaceUri?.fsPath!, "SPFx", "package.json");
-      if (await fs.pathExists(packagePath)) {
-        const packageInfo = await fs.readJSON(packagePath);
-        projectSPFxVersion = packageInfo.dependencies["@microsoft/sp-webpart-base"];
-      }
-    }
+    const projectSPFxVersion = await commonTools.getAppSPFxVersion(
+      globalVariables.workspaceUri!.fsPath!
+    );
 
     if (projectSPFxVersion) {
       const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
-      if (cmp === 1 || cmp === -1) {
-        const args: string[] =
-          cmp === 1 ? [SUPPORTED_SPFX_VERSION] : [SUPPORTED_SPFX_VERSION, SUPPORTED_SPFX_VERSION];
+      const cmpPrerelease = compare(projectSPFxVersion, SUPPORTED_SPFX_PRERELEASE_VERSION);
+
+      if (cmp === 0 || cmpPrerelease === 0) {
+        return;
+      }
+      if (cmp === cmpPrerelease) {
+        const spfxVersion =
+          commonTools.getSPFxVersion() === "1.15.0"
+            ? SUPPORTED_SPFX_VERSION
+            : SUPPORTED_SPFX_PRERELEASE_VERSION;
+        const args: string[] = cmp === 1 ? [spfxVersion] : [spfxVersion, spfxVersion];
         VS_CODE_UI.showMessage(
           "warn",
           util.format(
@@ -2370,7 +2408,7 @@ export async function cmpAccountsHandler(args: any[]) {
     const azureAccount = await AzureAccountManager.getStatus();
     if (azureAccount.status === "SignedIn") {
       const accountInfo = azureAccount.accountInfo;
-      const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+      const email = (accountInfo as any).email || (accountInfo as any).upn;
       if (email !== undefined) {
         signOutAzureOption.label = signOutAzureOption.label.concat(email);
       }
@@ -3044,6 +3082,12 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         data: "https://aka.ms/teamsfx-create-command",
       },
       {
+        id: "cardActionResponse",
+        label: localize("teamstoolkit.tutorials.cardActionResponse.label"),
+        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
+        data: "https://aka.ms/teamsfx-card-action-response",
+      },
+      {
         id: "addSso",
         label: `${localize("teamstoolkit.tutorials.addSso.label")}`,
         detail: localize("teamstoolkit.tutorials.addSso.detail"),
@@ -3211,10 +3255,12 @@ export async function signinAzureCallback(args?: any[]): Promise<Result<null, Fx
       ...triggerFrom,
     });
   }
-  const token = await AzureAccountManager.getAccountCredentialAsync(true);
+  const credential = await AzureAccountManager.getIdentityCredentialAsync(true);
+  const token = await credential?.getToken(AzureScopes);
+  const accountInfo = token?.token ? ConvertTokenToJson(token?.token) : {};
   if (token && node) {
     const needSelectSubscription = await node.setSignedIn(
-      (token as any).username ? (token as any).username : ""
+      (accountInfo as any).email ?? (accountInfo as any).username ?? ""
     );
     if (needSelectSubscription) {
       const solutionSettings = await getAzureSolutionSettings();

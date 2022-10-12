@@ -39,7 +39,7 @@ describe("teamsfx new template", function () {
     testFolder = getTestFolder();
   });
 
-  it(`${TemplateProject.TodoListM365}`, { testPlanCaseId: 15277464 }, async function () {
+  it(`${TemplateProject.TodoListM365}`, { testPlanCaseId: 15277470 }, async function () {
     appName = 'todo-list-with-Azure-backend-M365'
     projectPath = path.resolve(testFolder, appName);
     await execAsync(`teamsfx new template ${TemplateProject.TodoListM365}`, {

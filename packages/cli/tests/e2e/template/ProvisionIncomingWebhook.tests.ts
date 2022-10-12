@@ -36,7 +36,7 @@ describe("teamsfx new template", function () {
     testFolder = getTestFolder();
   });
 
-  it(`${TemplateProject.IncomingWebhook}`, { testPlanCaseId: 15277472 }, async function () {
+  it(`${TemplateProject.IncomingWebhook}`, { testPlanCaseId: 15277475 }, async function () {
     projectPath = path.resolve(testFolder, TemplateProject.IncomingWebhook);
     await execAsync(`teamsfx new template ${TemplateProject.IncomingWebhook}`, {
       cwd: testFolder,

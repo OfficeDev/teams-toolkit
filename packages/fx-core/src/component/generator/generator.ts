@@ -2,18 +2,16 @@
 // Licensed under the MIT license.
 
 import { ContextV3 } from "@microsoft/teamsfx-api";
-import path from "path";
 import {
   Component,
   sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
-import { SampleActionSeq, GenerateAction, TemplateActionSeq } from "./generateAction";
-import { GenerateContext } from "./generateContext";
+import { SampleActionSeq, GeneratorAction, TemplateActionSeq } from "./generatorAction";
+import { GeneratorContext } from "./generatorContext";
 import {
   getSampleInfoFromName,
-  getValidSampleDestination,
   renderTemplateFileData,
   renderTemplateFileName,
   sampleDefaultOnActionError,
@@ -31,11 +29,9 @@ export class Generator {
     const projectId = ctx.projectSetting?.projectId;
     const nameReplaceMap = { ...{ appName: appName }, ...ctx.templateVariables };
     const dataReplaceMap = { ...{ projectId: projectId }, ...nameReplaceMap };
-    const destination = path.join(destinationPath, appName);
-    const generateContext: GenerateContext = {
-      type: "template",
+    const generatorContext: GeneratorContext = {
       name: `${templateName}_${language}`,
-      destination: destination,
+      destination: destinationPath,
       logProvider: ctx.logProvider,
       fileNameReplaceFn: (fileName: string, fileData: Buffer) =>
         renderTemplateFileName(fileName, fileData, nameReplaceMap),
@@ -43,32 +39,7 @@ export class Generator {
         renderTemplateFileData(fileName, fileData, dataReplaceMap),
       onActionError: templateDefaultOnActionError,
     };
-    await this.generate(generateContext, TemplateActionSeq);
-  }
-
-  public static async addBuildingBlock(
-    buildingBlockName: string,
-    language: string,
-    destinationPath: string,
-    ctx: ContextV3
-  ): Promise<void> {
-    const appName = ctx.projectSetting?.appName;
-    const projectId = ctx.projectSetting?.projectId;
-    const nameReplaceMap = { ...{ appName: appName }, ...ctx.templateVariables };
-    const dataReplaceMap = { ...{ projectId: projectId }, ...nameReplaceMap };
-    const destination = destinationPath;
-    const generateContext: GenerateContext = {
-      type: "buildingBlock",
-      name: `${buildingBlockName}_${language}`,
-      destination: destination,
-      logProvider: ctx.logProvider,
-      fileNameReplaceFn: (fileName: string, fileData: Buffer) =>
-        renderTemplateFileName(fileName, fileData, nameReplaceMap),
-      fileDataReplaceFn: (fileName: string, fileData: Buffer) =>
-        renderTemplateFileData(fileName, fileData, dataReplaceMap),
-      onActionError: templateDefaultOnActionError,
-    };
-    await this.generate(generateContext, TemplateActionSeq);
+    await this.generate(generatorContext, TemplateActionSeq);
   }
 
   public static async generateSample(
@@ -76,30 +47,27 @@ export class Generator {
     destinationPath: string,
     ctx: ContextV3
   ): Promise<void> {
-    const destination = await getValidSampleDestination(sampleName, destinationPath);
     const sample = getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
-    const generateContext: GenerateContext = {
-      type: "sample",
+    const generatorContext: GeneratorContext = {
       name: sampleName,
-      destination: destination,
+      destination: destinationPath,
       logProvider: ctx.logProvider,
       zipUrl: sample.link,
       relativePath: sample.relativePath,
       onActionError: sampleDefaultOnActionError,
     };
-    await this.generate(generateContext, SampleActionSeq);
+    await this.generate(generatorContext, SampleActionSeq);
   }
 
   private static async generate(
-    context: GenerateContext,
-    actions: GenerateAction[]
+    context: GeneratorContext,
+    actions: GeneratorAction[]
   ): Promise<void> {
     sendTelemetryEvent(Component.core, TelemetryEvent.GenerateStart, {
-      [TelemetryProperty.GenerateType]: context.type,
       [TelemetryProperty.GenerateName]: context.name,
     });
-    context.logProvider.info(`Start generating ${context.type} ${context.name}`);
+    context.logProvider.info(`Start generating ${context.name}`);
     for (const action of actions) {
       try {
         await context.onActionStart?.(action, context);
@@ -113,10 +81,9 @@ export class Generator {
       }
     }
     sendTelemetryEvent(Component.core, TelemetryEvent.Generate, {
-      [TelemetryProperty.GenerateType]: context.type,
       [TelemetryProperty.GenerateName]: context.name,
       [TelemetryProperty.GenerateFallback]: context.fallbackZipPath ? "true" : "false", // Track fallback cases.
     });
-    context.logProvider.info(`Finish generating ${context.type} ${context.name}`);
+    context.logProvider.info(`Finish generating ${context.name}`);
   }
 }

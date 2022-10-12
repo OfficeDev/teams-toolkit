@@ -3,10 +3,9 @@
 
 import { LogProvider } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
-import { GenerateAction } from "./generateAction";
+import { GeneratorAction } from "./generatorAction";
 
-export interface GenerateContext {
-  type: "template" | "sample" | "buildingBlock";
+export interface GeneratorContext {
   name: string;
   destination: string;
   logProvider: LogProvider;
@@ -18,7 +17,11 @@ export interface GenerateContext {
   fileNameReplaceFn?: (name: string, data: Buffer) => string;
   fileDataReplaceFn?: (name: string, data: Buffer) => Buffer | string;
 
-  onActionStart?: (action: GenerateAction, context: GenerateContext) => Promise<void>;
-  onActionEnd?: (action: GenerateAction, context: GenerateContext) => Promise<void>;
-  onActionError?: (action: GenerateAction, context: GenerateContext, error: Error) => Promise<void>;
+  onActionStart?: (action: GeneratorAction, context: GeneratorContext) => Promise<void>;
+  onActionEnd?: (action: GeneratorAction, context: GeneratorContext) => Promise<void>;
+  onActionError?: (
+    action: GeneratorAction,
+    context: GeneratorContext,
+    error: Error
+  ) => Promise<void>;
 }

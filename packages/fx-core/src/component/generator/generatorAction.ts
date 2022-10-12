@@ -3,10 +3,9 @@
 
 import AdmZip from "adm-zip";
 import path from "path";
-import { GenerateContext } from "./generateContext";
-import { fetchZipUrl } from "./utils";
+import { GeneratorContext } from "./generatorContext";
+import { fetchZipFromUrl, fetchZipUrl, unzip } from "./utils";
 import fs from "fs-extra";
-import { fetchZipFromUrl, unzip } from "../../common/template-utils/templatesUtils";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,
@@ -16,12 +15,12 @@ import {
 import { getTemplatesFolder } from "../../folder";
 import { MissKeyError } from "./error";
 
-export interface GenerateAction {
+export interface GeneratorAction {
   name: string;
-  run: (context: GenerateContext) => Promise<void>;
+  run: (context: GeneratorContext) => Promise<void>;
 }
 
-export enum GenerateActionName {
+export enum GeneratorActionName {
   FetchTemplateUrlWithTag = "FetchTemplatesUrlWithTag",
   FetchSampleUrlWithTag = "FetchSamplesUrlWithTag",
   FetchZipFromUrl = "FetchZipFromUrl",
@@ -29,26 +28,27 @@ export enum GenerateActionName {
   Unzip = "Unzip",
 }
 
-export const fetchTemplateUrlWithTagAction: GenerateAction = {
-  name: GenerateActionName.FetchTemplateUrlWithTag,
-  run: async (context: GenerateContext) => {
+export const fetchTemplateUrlWithTagAction: GeneratorAction = {
+  name: GeneratorActionName.FetchTemplateUrlWithTag,
+  run: async (context: GeneratorContext) => {
     context.zipUrl = await fetchZipUrl(context.name, templateDownloadBaseUrl);
   },
 };
 
-export const fetchSampleUrlWithTagAction: GenerateAction = {
-  name: GenerateActionName.FetchSampleUrlWithTag,
-  run: async (context: GenerateContext) => {
-    //Outside samples don't need fetching zip url with tag
+export const fetchSampleUrlWithTagAction: GeneratorAction = {
+  name: GeneratorActionName.FetchSampleUrlWithTag,
+  run: async (context: GeneratorContext) => {
+    //For 3rd party sample, the zip url is already provided in context, no need to fetch url again;
+    //for 1st party sample, need to call fetchZipUrl function
     if (!context.zipUrl) {
       context.zipUrl = await fetchZipUrl(context.name, sampleDownloadBaseUrl);
     }
   },
 };
 
-export const fetchZipFromUrlAction: GenerateAction = {
-  name: GenerateActionName.FetchZipFromUrl,
-  run: async (context: GenerateContext) => {
+export const fetchZipFromUrlAction: GeneratorAction = {
+  name: GeneratorActionName.FetchZipFromUrl,
+  run: async (context: GeneratorContext) => {
     if (!context.zipUrl) {
       throw new MissKeyError("zipUrl");
     }
@@ -56,9 +56,9 @@ export const fetchZipFromUrlAction: GenerateAction = {
   },
 };
 
-export const fetchTemplateZipFromLocalAction: GenerateAction = {
-  name: GenerateActionName.FetchTemplateZipFromLocal,
-  run: async (context: GenerateContext) => {
+export const fetchTemplateZipFromLocalAction: GeneratorAction = {
+  name: GeneratorActionName.FetchTemplateZipFromLocal,
+  run: async (context: GeneratorContext) => {
     if (context.zip) {
       return;
     }
@@ -75,9 +75,9 @@ export const fetchTemplateZipFromLocalAction: GenerateAction = {
   },
 };
 
-export const unzipAction: GenerateAction = {
-  name: GenerateActionName.Unzip,
-  run: async (context: GenerateContext) => {
+export const unzipAction: GeneratorAction = {
+  name: GeneratorActionName.Unzip,
+  run: async (context: GeneratorContext) => {
     if (!context.zip) {
       throw new MissKeyError("zip");
     }
@@ -91,14 +91,14 @@ export const unzipAction: GenerateAction = {
   },
 };
 
-export const TemplateActionSeq: GenerateAction[] = [
+export const TemplateActionSeq: GeneratorAction[] = [
   fetchTemplateUrlWithTagAction,
   fetchZipFromUrlAction,
   fetchTemplateZipFromLocalAction,
   unzipAction,
 ];
 
-export const SampleActionSeq: GenerateAction[] = [
+export const SampleActionSeq: GeneratorAction[] = [
   fetchSampleUrlWithTagAction,
   fetchZipFromUrlAction,
   unzipAction,

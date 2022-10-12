@@ -8,7 +8,6 @@ import path from "path";
 import {
   fetchZipUrl,
   getSampleInfoFromName,
-  getValidSampleDestination,
   renderTemplateFileData,
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
@@ -26,9 +25,10 @@ import {
   fetchTemplateZipFromLocalAction,
   fetchZipFromUrlAction,
   unzipAction,
-} from "../../../src/component/generator/generateAction";
+} from "../../../src/component/generator/generatorAction";
 import { unzip } from "../../../src/common/template-utils/templatesUtils";
-import { GenerateContext } from "../../../src/component/generator/generateContext";
+import { GeneratorContext } from "../../../src/component/generator/generatorContext";
+import { tmpdir } from "os";
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
 
@@ -61,15 +61,6 @@ describe("Generator utils", () => {
     );
     const content = await fs.readFile(path.join(outputDir, "test.txt"), "utf8");
     assert.equal(content, "test");
-  });
-
-  it("get valid sample destination with existing folder", async () => {
-    const sampleName = "generator";
-    const dstPath = path.resolve(__dirname, "../");
-    assert.equal(
-      await getValidSampleDestination(sampleName, dstPath),
-      path.join(dstPath, "generator_1")
-    );
   });
 
   it("get sample info from name", async () => {
@@ -152,7 +143,7 @@ describe("Generator happy path", async () => {
   it("external sample", async () => {
     const sampleName = "bot-proactive-messaging-teamsfx";
     await Generator.generateSample(sampleName, tmpDir, context);
-    const files = await fs.readdir(path.join(tmpDir, sampleName));
+    const files = await fs.readdir(tmpDir);
     assert.isTrue(files.length > 0);
     assert.isTrue(files.includes(".fx"));
   });
@@ -162,12 +153,12 @@ describe("Generator happy path", async () => {
     const language = "ts";
     sandbox
       .stub(fetchTemplateUrlWithTagAction, "run")
-      .callsFake(async (context: GenerateContext) => {
+      .callsFake(async (context: GeneratorContext) => {
         context.zipUrl =
           "https://github.com/hund030/TemplatePackerDemo/releases/download/templates%400.1.0/bot_notification_ts_function_http.zip";
       });
     await Generator.generateTemplate(templateName, language, tmpDir, context);
-    const files = await fs.readdir(path.join(tmpDir, context.projectSetting?.appName));
+    const files = await fs.readdir(tmpDir);
     assert.isTrue(files.length > 0);
     assert.isTrue(files.includes(".fx"));
   });

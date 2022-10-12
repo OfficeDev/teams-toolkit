@@ -38,7 +38,6 @@ export enum TelemetryProperty {
   TemplateLanguage = "template-language",
   TemplateScenario = "template-scenario",
   TemplateFallback = "template-fallback",
-  GenerateType = "generate-type",
   GenerateName = "generate-name",
   GenerateFallback = "generate-fallback",
   HasSwitchedSubscription = "has-switched-subscription",

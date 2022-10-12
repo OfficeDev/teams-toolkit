@@ -7,12 +7,14 @@ import { StepDriver } from "../interface/stepDriver";
 import { Service } from "typedi";
 import { DriverContext, AzureResourceInfo } from "../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
+import { FxError, Result } from "@microsoft/teamsfx-api";
+import { wrapRun } from "../../utils/common";
 
 @Service("azureAppService/deploy")
 export class AzureAppServiceDeployDriver implements StepDriver {
-  async run(args: unknown, context: DriverContext): Promise<Map<string, string>> {
+  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new AzureAppServiceDeployDriverImpl(args, context);
-    return await impl.run();
+    return wrapRun(() => impl.run());
   }
 }
 

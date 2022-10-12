@@ -1,22 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-
 import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as tools from "../../../src/common/tools";
-import * as utils from "../../../src/component/code/utils";
-import { TestAzureAccountProvider } from "../util/azureAccountMock";
-import { TestLogProvider } from "../util/logProviderMock";
-import { DriverContext } from "../../../src/component/interface/commonArgs";
-import chaiAsPromised = require("chai-as-promised");
-import { NpmBuildDriver } from "../../../src/component/deploy/npmBuildDriver";
-chai.use(chaiAsPromised);
+import * as tools from "../../../../src/common/tools";
+import * as utils from "../../../../src/component/code/utils";
+import { DotnetBuildDriver } from "../../../../src/component/driver/deploy/dotnetBuildDriver";
+import { TestAzureAccountProvider } from "../../util/azureAccountMock";
+import { TestLogProvider } from "../../util/logProviderMock";
+import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
+import { assert } from "chai";
 
-describe("NPM Build Driver test", () => {
+describe("Dotnet Build Driver test", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
@@ -27,8 +23,8 @@ describe("NPM Build Driver test", () => {
     sandbox.restore();
   });
 
-  it("NPM build happy path", async () => {
-    const driver = new NpmBuildDriver();
+  it("Dotnet build happy path", async () => {
+    const driver = new DotnetBuildDriver();
     const args = {
       src: "./",
       buildCommand: "build",
@@ -39,11 +35,11 @@ describe("NPM Build Driver test", () => {
     } as DriverContext;
     sandbox.stub(utils, "execute").resolves();
     const res = await driver.run(args, context);
-    chai.expect(res.size).to.equal(0);
+    chai.expect(res.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
   });
 
   it("Dotnet build error", async () => {
-    const driver = new NpmBuildDriver();
+    const driver = new DotnetBuildDriver();
     const args = {
       src: "./",
       buildCommand: "build",
@@ -53,8 +49,7 @@ describe("NPM Build Driver test", () => {
       logProvider: new TestLogProvider(),
     } as DriverContext;
     sandbox.stub(utils, "execute").throws(new Error("error"));
-    await chai
-      .expect(driver.run(args, context))
-      .to.be.rejectedWith("Please run failed command 'npm build' in the folder: './'.");
+    const res = await driver.run(args, context);
+    assert.equal(res.isErr(), true);
   });
 });

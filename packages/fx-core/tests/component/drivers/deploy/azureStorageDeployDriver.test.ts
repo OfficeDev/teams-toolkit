@@ -3,35 +3,24 @@
 
 import "mocha";
 import * as sinon from "sinon";
-import * as tools from "../../../src/common/tools";
-import { AzureStorageDeployDriver } from "../../../src/component/deploy/azureStorageDeployDriver";
-import { DeployArgs } from "../../../src/component/interface/buildAndDeployArgs";
-import { TestAzureAccountProvider } from "../util/azureAccountMock";
-import { TestLogProvider } from "../util/logProviderMock";
-import { expect, use as chaiUse } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import * as tools from "../../../../src/common/tools";
+import { AzureStorageDeployDriver } from "../../../../src/component/driver/deploy/azureStorageDeployDriver";
+import { DeployArgs } from "../../../../src/component/driver/interface/buildAndDeployArgs";
+import { TestAzureAccountProvider } from "../../util/azureAccountMock";
+import { TestLogProvider } from "../../util/logProviderMock";
+import { assert } from "chai";
 import {
   ListAccountSasResponse,
   StorageAccounts,
   StorageManagementClient,
 } from "@azure/arm-storage";
 import { BlobDeleteResponse, ContainerClient } from "@azure/storage-blob";
-import { MyTokenCredential } from "../../plugins/solution/util";
+import { MyTokenCredential } from "../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
-
-import { DriverContext } from "../../../src/component/interface/commonArgs";
-chaiUse(chaiAsPromised);
+import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 
 function getMockStorageAccount1() {
   return {
-    // beginCreateAndWait: async function (
-    //   resourceGroupName: string,
-    //   accountName: string,
-    //   parameters: StorageAccountCreateParameters,
-    //   options?: StorageAccountsCreateOptionalParams
-    // ): Promise<StorageAccountsCreateResponse> {
-    //   return storageAccount!;
-    // },
     listAccountSAS: async function (): Promise<ListAccountSasResponse> {
       return {
         accountSasToken: "abc",
@@ -86,7 +75,8 @@ describe("Azure Storage Deploy Driver test", () => {
       .resolves({ errorCode: undefined } as BlobDeleteResponse);
     /*const calls = sandbox.stub().callsFake(() => clientStub);
     Object.setPrototypeOf(StorageManagementClient, calls);*/
-    await deploy.run(args, context);
+    const res = await deploy.run(args, context);
+    assert.equal(res.isOk(), true);
   });
 
   it("get azure account credential error", async () => {
@@ -105,9 +95,9 @@ describe("Azure Storage Deploy Driver test", () => {
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .throws(new Error("error"));
-    await expect(deploy.run(args, context)).to.be.rejectedWith(
-      "Failed to retrieve Azure credentials."
-    );
+
+    const res = await deploy.run(args, context);
+    assert.equal(res.isErr(), true);
   });
 
   it("clear storage error", async () => {
@@ -144,8 +134,7 @@ describe("Azure Storage Deploy Driver test", () => {
     sandbox
       .stub(ContainerClient.prototype, "deleteBlob")
       .resolves({ errorCode: "403" } as BlobDeleteResponse);
-    await expect(deploy.run(args, context)).to.be.rejectedWith(
-      "Failed to clear Azure Storage Account. delete blob 403"
-    );
+    const res = await deploy.run(args, context);
+    assert.equal(res.isErr(), true);
   });
 });

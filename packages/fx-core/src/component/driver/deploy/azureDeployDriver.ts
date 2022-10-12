@@ -8,17 +8,20 @@ import {
   AxiosZipDeployResult,
   DeployArgs,
 } from "../interface/buildAndDeployArgs";
-import { checkMissingArgs } from "../utils/common";
-import { DeployExternalApiCallError, DeployTimeoutError } from "../error/deployError";
+import { checkMissingArgs } from "../../utils/common";
+import { DeployExternalApiCallError, DeployTimeoutError } from "../../error/deployError";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import { BaseDeployDriver } from "./baseDeployDriver";
 import { Base64 } from "js-base64";
 import * as appService from "@azure/arm-appservice";
-import { DeployConstant } from "../constant/deployConstant";
+import { DeployConstant } from "../../constant/deployConstant";
 import { default as axios } from "axios";
-import { waitSeconds } from "../../common/tools";
-import { HttpStatusCode } from "../constant/commonConstant";
-import { getAzureAccountCredential, parseAzureResourceId } from "../utils/azureResourceOperation";
+import { waitSeconds } from "../../../common/tools";
+import { HttpStatusCode } from "../../constant/commonConstant";
+import {
+  getAzureAccountCredential,
+  parseAzureResourceId,
+} from "../../utils/azureResourceOperation";
 import { AzureResourceInfo } from "../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
 

@@ -2,15 +2,16 @@
 // Licensed under the MIT license.
 
 import "mocha";
+import * as chai from "chai";
 import * as sinon from "sinon";
-import * as tools from "../../../src/common/tools";
-import { AzureStorageStaticWebsiteConfigDriver } from "../../../src/component/provision/azureStorageStaticWebsiteConfigDriver";
-import { TestAzureAccountProvider } from "../util/azureAccountMock";
-import { TestLogProvider } from "../util/logProviderMock";
-import { DriverContext } from "../../../src/component/interface/commonArgs";
+import * as tools from "../../../../src/common/tools";
+import { AzureStorageStaticWebsiteConfigDriver } from "../../../../src/component/driver/provision/azureStorageStaticWebsiteConfigDriver";
+import { TestAzureAccountProvider } from "../../util/azureAccountMock";
+import { TestLogProvider } from "../../util/logProviderMock";
+import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { ListAccountSasResponse, StorageManagementClient } from "@azure/arm-storage";
 import { BlobServiceClient, ServiceGetPropertiesResponse } from "@azure/storage-blob";
-import { MyTokenCredential } from "../../plugins/solution/util";
+import { MyTokenCredential } from "../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
 
 describe("Azure App Service Deploy Driver test", () => {
@@ -67,7 +68,7 @@ describe("Azure App Service Deploy Driver test", () => {
 
     const caller = sandbox.stub(BlobServiceClient.prototype, "setProperties").resolves();
 
-    await driver.run(
+    const res = await driver.run(
       {
         storageResourceId:
           "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
@@ -78,6 +79,7 @@ describe("Azure App Service Deploy Driver test", () => {
     );
 
     sinon.assert.calledOnce(caller);
+    chai.assert.equal(res.isOk(), true);
   });
 
   it("should skip enable static website", async () => {

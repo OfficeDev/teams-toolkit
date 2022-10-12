@@ -3,17 +3,19 @@
 
 import { DeployStepArgs } from "../interface/buildAndDeployArgs";
 import { AzureDeployDriver } from "./azureDeployDriver";
-import { DeployExternalApiCallError } from "../error/deployError";
+import { DeployExternalApiCallError } from "../../error/deployError";
 import { Service } from "typedi";
 import { StepDriver } from "../interface/stepDriver";
 import { AzureResourceInfo, DriverContext } from "../interface/commonArgs";
 import { TokenCredential } from "@azure/core-http";
+import { FxError, Result } from "@microsoft/teamsfx-api";
+import { wrapRun } from "../../utils/common";
 
 @Service("azureFunctions/deploy")
 export class AzureFunctionDeployDriver implements StepDriver {
-  async run(args: unknown, context: DriverContext): Promise<Map<string, string>> {
+  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new AzureFunctionDeployDriverImpl(args, context);
-    return await impl.run();
+    return wrapRun(() => impl.run());
   }
 }
 

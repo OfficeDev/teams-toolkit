@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 import { BuildArgs } from "../interface/buildAndDeployArgs";
-import { asFactory, asString, checkMissingArgs } from "../utils/common";
+import { asFactory, asString, checkMissingArgs } from "../../utils/common";
 import { BaseStepDriver } from "./baseStepDriver";
-import { execute } from "../code/utils";
-import { ExecuteCommandError } from "../error/componentError";
-import { DeployConstant } from "../constant/deployConstant";
+import { execute } from "../../code/utils";
+import { ExecuteCommandError } from "../../error/componentError";
+import { DeployConstant } from "../../constant/deployConstant";
 
 export abstract class BaseBuildDriver extends BaseStepDriver {
   static readonly emptyMap = new Map<string, string>();

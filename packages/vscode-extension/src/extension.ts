@@ -12,7 +12,7 @@ import {
   ConfigFolderName,
   FxError,
   InputConfigsFolderName,
-  ProjectConfigV3,
+  ProjectSettingsV3,
   ProjectSettingsFileName,
   Result,
   TemplateFolderName,

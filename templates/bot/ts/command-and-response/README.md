@@ -51,10 +51,10 @@ The following files can be customized and demonstrate an example implementation 
 
 Follow the steps below to add more commands and responses to extend the command bot:
 
-1. [Step 1: Add a command definition in manifest](#Step-1-Add-a-command-definition-in-manifest)
-1. [Step 2: Respond with an Adaptive Card](#Step-2-Respond-with-an-Adaptive-Card)
-1. [Step 3: Handle the command](#Step-3-Handle-the-command)
-1. [Step 4: Register the new command](#Step-4-Register-the-new-command)
+1. [Step 1: Add a command definition in manifest](#step-1-add-a-command-definition-in-manifest)
+2. [Step 2: Respond with an Adaptive Card](#step-2-respond-with-an-adaptive-card)
+3. [Step 3: Handle the command](#step-3-handle-the-command)
+4. [Step 4: Register the new command](#step-4-register-the-new-command)
 
 ### Step 1: Add a command definition in manifest
 
@@ -138,6 +138,7 @@ export class DoSomethingCommandHandler implements TeamsFxBotCommandHandler {
 }
 
 ```
+
 You can customize what the command does here, including calling an API, process data, etc.
 
 ### Step 4: Register the new command
@@ -173,6 +174,7 @@ Command bot is compatible with other bot scenarios like notification bot and wor
 The notification feature adds the ability for your application to send Adaptive Cards in response to external events. Follow the [steps here](https://aka.ms/teamsfx-command-response#how-to-extend-my-command-and-response-bot-to-support-notification) to add the notification feature to your command bot. Refer [the notification document](https://aka.ms/teamsfx-notification) for more information.
 
 ### Add workflow to your command bot
+
 Adaptive cards can be updated on user action to allow user progress through a series of cards that require user input. Developers can define actions and use a bot to return an Adaptive Cards in response to user action. This can be chained into sequential workflows. Follow the [steps here](https://aka.ms/teamsfx-card-action-response#add-more-card-actions) to add workflow feature to your command bot. Refer [the workflow document](https://aka.ms/teamsfx-card-action-response) for more information.
 
 ## Additional information and references

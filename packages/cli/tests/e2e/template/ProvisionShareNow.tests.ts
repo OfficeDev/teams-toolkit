@@ -81,9 +81,10 @@ describe("teamsfx new template", function () {
       await SqlValidator.validateSql();
     }
 
-
-    await cleanUp(appName, projectPath, true, true, false);
-
   });
+
+  after(async () => {
+    await cleanUp(appName, projectPath, true, true, false);
+  })
 
 });

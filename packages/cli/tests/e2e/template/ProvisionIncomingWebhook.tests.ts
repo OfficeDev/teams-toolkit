@@ -47,8 +47,10 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
-    await cleanUp(appName, projectPath, false, false, false);
-
   });
+
+  after(async () => {
+    await cleanUp(appName, projectPath, false, false, false);
+  })
 
 });

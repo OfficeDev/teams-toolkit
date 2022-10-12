@@ -6,33 +6,35 @@
  */
 
 import { expect } from "chai";
+import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import {
   execAsync,
   getTestFolder,
-  getSubscriptionId
+  getSubscriptionId,
+  getUniqueAppName
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
-describe("account show", function () {
+describe("account command", function () {
   let testFolder: string;
   let stdlog: {stdout: string, stderr: string};
   const subscription = getSubscriptionId();
-  beforeEach(async () => {
-    testFolder = getTestFolder();
-  });
+  testFolder = getTestFolder();
+  const appName = getUniqueAppName();
+  const projectPath = path.resolve(testFolder, appName);
+
 
   it(`account show `, { testPlanCaseId: 15232246 }, async function () {
 
     stdlog = await execAsync(`teamsfx account show`, {
-      cwd: testFolder,
+      cwd: projectPath,
       env: process.env,
       timeout: 0,
     });
 
     expect(stdlog.stdout).include('log in to Azure or Microsoft 365 account')
-    expect(stdlog.stdout).to.be.undefined
+    expect(stdlog.stderr).to.be.undefined
 
   });
 
@@ -42,13 +44,13 @@ describe("account show", function () {
     await CliHelper.setSubscription(subscription, testFolder);
 
     stdlog = await execAsync(`teamsfx account show`, {
-      cwd: testFolder,
+      cwd: projectPath,
       env: process.env,
       timeout: 0,
     });
 
     expect(stdlog.stdout).include('Account is:')
-    expect(stdlog.stdout).to.be.undefined
+    expect(stdlog.stderr).to.be.undefined
 
   });
 
@@ -58,22 +60,22 @@ describe("account show", function () {
     await CliHelper.setSubscription(subscription, testFolder);
 
     stdlog = await execAsync(`teamsfx account logout azure`, {
-      cwd: testFolder,
+      cwd: projectPath,
       env: process.env,
       timeout: 0,
     });
 
     expect(stdlog.stdout).include('Successfully signed out of Azure.')
-    expect(stdlog.stdout).to.be.undefined
+    expect(stdlog.stderr).to.be.undefined
 
     stdlog = await execAsync(`teamsfx account logout m365`, {
-      cwd: testFolder,
+      cwd: projectPath,
       env: process.env,
       timeout: 0,
     });
 
     expect(stdlog.stdout).include('Successfully signed out of Microsoft 365.')
-    expect(stdlog.stdout).to.be.undefined
+    expect(stdlog.stderr).to.be.undefined
 
   });
 

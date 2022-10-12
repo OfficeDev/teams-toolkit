@@ -92,8 +92,10 @@ describe("teamsfx new template", function () {
       timeout: 0,
     });
 
-    await cleanUp(appName, projectPath, true, true, false);
-
   });
+
+  after(async () => {
+    await cleanUp(appName, projectPath, true, true, false);
+  })
 
 });

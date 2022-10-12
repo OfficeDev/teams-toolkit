@@ -16,7 +16,6 @@ import sinon from "sinon";
 import { getAppStudioToken } from "../tokenProvider";
 import faker from "faker";
 import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
-import { BuiltInSolutionNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
 import { MockedV2Context } from "../../../../plugins/solution/util";
 import * as tool from "../../../../../src/common/tools";
@@ -42,7 +41,7 @@ const projectSettings: ProjectSettings = {
   appName: "my app",
   projectId: uuid.v4(),
   solutionSettings: {
-    name: BuiltInSolutionNames.azure,
+    name: "test",
     version: "3.0.0",
     capabilities: ["Tab"],
     hostType: "Azure",

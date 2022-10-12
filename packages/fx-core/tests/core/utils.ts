@@ -55,7 +55,6 @@ import {
   DEFAULT_PERMISSION_REQUEST,
   PluginNames,
 } from "../../src/plugins/solution/fx-solution/constants";
-import { TeamsAppSolutionNameV2 } from "../../src/plugins/solution/fx-solution/v2/constants";
 import sinon from "sinon";
 import { MyTokenCredential } from "../plugins/solution/util";
 
@@ -133,7 +132,7 @@ export class MockSolution implements Solution {
 }
 
 export class MockSolutionV2 implements v2.SolutionPlugin {
-  name = TeamsAppSolutionNameV2;
+  name = "fx-solution-azure";
   displayName = "Azure Solution V2 Mock";
   async scaffoldSourceCode(ctx: v2.Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     ctx.projectSetting.solutionSettings = solutionSettings();

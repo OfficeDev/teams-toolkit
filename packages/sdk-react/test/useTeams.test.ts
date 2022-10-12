@@ -17,7 +17,7 @@ describe("useTeams() hook tests", () => {
   });
 
   it("Should return not in teams - app.initialize rejects", async () => {
-    const { result } = renderHook(() => useTeams({ initialTheme: "default" }));
+    // const { result } = renderHook(() => useTeams({ initialTheme: "default" }));
     // expect(result.current[0].inTeams).equals(false);
   });
 });

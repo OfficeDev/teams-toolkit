@@ -1,5 +1,7 @@
-import * as React from "react";
 import "./titleWithButton.scss";
+
+import * as React from "react";
+
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 
 export default function TitleWithButton(props: { title: string }) {

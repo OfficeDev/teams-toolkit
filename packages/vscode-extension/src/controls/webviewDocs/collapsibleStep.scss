@@ -1,0 +1,66 @@
+.collapsibleStep {
+  background-color: var(--vscode-tab-inactiveBackground);
+  border-radius: 3px;
+}
+
+.Collapsible__trigger {
+  display: block;
+  text-decoration: none;
+  position: relative;
+  border: 1px solid var(--vscode-tab-inactiveBackground);
+  padding: 13px 23px;
+  background-color: var(--vscode-tab-inactiveBackground);
+  color: var(--vscode-banner-foreground);
+  border-radius: 3px;
+
+  &.is-open {
+    .chevron {
+      transform: rotate(180deg);
+    }
+  }
+
+  &.is-disabled {
+    opacity: 0.5;
+    background-color: grey;
+  }
+}
+
+.Collapsible__contentInner {
+  display: block;
+  text-decoration: none;
+  position: relative;
+  border: 1px solid var(--vscode-tab-inactiveBackground);
+  padding: 0 23px;
+  padding-bottom: 13px;
+  background-color: var(--vscode-tab-inactiveBackground);
+  color: var(--vscode-banner-foreground);
+  border-radius: 3px;
+}
+
+.stepContainer {
+  display: flex;
+  align-items: center;
+
+  .chevron {
+    width: 16px;
+    height: 16px;
+    transition: transform 300ms;
+  }
+}
+
+.stepTitle {
+  flex: 1;
+
+  p {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 13px;
+    margin-top: 0;
+  }
+  
+  h2 {
+    font-weight: 600;
+    font-size: 20px;
+    margin: 0 auto;
+  }
+}

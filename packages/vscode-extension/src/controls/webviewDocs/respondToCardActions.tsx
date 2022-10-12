@@ -1,9 +1,13 @@
-import * as React from "react";
-import Collapsible from "react-collapsible";
-import { ActionButton, Image } from "@fluentui/react";
 import "./document.scss";
-import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
+import "highlight.js/styles/github.css";
+
+import hljs from "highlight.js/lib/core";
+import * as React from "react";
+
+import { Image } from "@fluentui/react";
+
 import adaptiveCard from "../../../img/adaptive-card.gif";
+import CollapsibleStep from "./collapsibleStep";
 import TitleWithButton from "./titleWithButton";
 
 export default function RespondToCardActions() {
@@ -39,30 +43,60 @@ export default function RespondToCardActions() {
           <td>Instruction</td>
         </tr>
       </table>
-      <Collapsible trigger="Add an action to your adaptive card">
-        <p>
-          Here's a sample action with type <code>Action.Execute</code>
-        </p>
-        <code>
-          {`{ 
-  "type": "AdaptiveCard", 
-  "body": [
-    ...
-    {
-      "type": "ActionSet",
-      "actions": [
+      <div className="collapsibleSteps">
+        <CollapsibleStep step={1} title="Add an action to your adaptive card">
+          <p>
+            Here's a sample action with type <code>Action.Execute</code>
+          </p>
+          <div className="code">
+            <pre>
+              <code className="language-json">
+                {`{ 
+      "type": "AdaptiveCard", 
+      "body": [
+        ...
         {
-          "type": "Action.Execute",
-          "title": "DoStuff",
-          "verb": "doStuff" 
+          "type": "ActionSet",
+          "actions": [
+            {
+              "type": "Action.Execute",
+              "title": "DoStuff",
+              "verb": "doStuff" 
+            }
+          ]
         }
       ]
-    }
-  ]
+      ... 
+    }`}
+              </code>
+            </pre>
+          </div>
+        </CollapsibleStep>
+      </div>
+      <CollapsibleStep step={4} title="Register the action handler">
+        <p>
+          1. Go to <code>bot/src/internal/initialize.ts</code>;
+        </p>
+        <p>
+          2. Update your <code>conversationBot</code> initialization to enable cardAction feature
+          and add the handler to <code>action</code> array:
+        </p>
+        <div className="code">
+          <pre>
+            <code className="language-typescript">
+              {`export const commandBot = new ConversationBot({ 
   ... 
-}`}
-        </code>
-      </Collapsible>
+  cardAction: { 
+    enabled: true, 
+    actions: [ 
+      new Handler1() 
+     ], 
+   } 
+});`}
+            </code>
+          </pre>
+        </div>
+      </CollapsibleStep>
     </div>
   );
 }

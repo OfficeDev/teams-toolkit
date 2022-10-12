@@ -37,7 +37,6 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
 } from "./constants";
-import { ArmTemplateResult } from "../../../common/armInterface";
 import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
 import { executeCommand } from "../../../common/cpUtils";
 import {

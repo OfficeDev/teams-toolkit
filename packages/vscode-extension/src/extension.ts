@@ -41,7 +41,12 @@ import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import * as exp from "./exp";
 import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
-import { initializeGlobalVariables, isSPFxProject, workspaceUri } from "./globalVariables";
+import {
+  initializeGlobalVariables,
+  isExistingUser,
+  isSPFxProject,
+  workspaceUri,
+} from "./globalVariables";
 import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
@@ -824,6 +829,23 @@ async function runBackgroundAsyncTasks(
   context: vscode.ExtensionContext,
   isTeamsFxProject: boolean
 ) {
+  await exp.initialize(context);
+  TreatmentVariableValue.welcomeViewStyle = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.WelcomeView,
+      true
+    )) as string | undefined;
+  await vscode.commands.executeCommand("setContext", "fx-extension.isExistingUser", isExistingUser);
+  if (TreatmentVariableValue.welcomeViewStyle === "A") {
+    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
+    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewA", true);
+  } else if (TreatmentVariableValue.welcomeViewStyle === "B") {
+    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
+    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewB", true);
+  }
+
   ExtTelemetry.isFromSample = await handlers.getIsFromSample();
   ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();
   ExtTelemetry.isM365 = await handlers.getIsM365();
@@ -835,7 +857,6 @@ async function runBackgroundAsyncTasks(
 
   await openWelcomePageAfterExtensionInstallation();
 
-  await exp.initialize(context);
   TreatmentVariableValue.previewTreeViewCommand = (await exp
     .getExpService()
     .getTreatmentVariableAsync(

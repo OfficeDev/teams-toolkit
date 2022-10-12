@@ -1,19 +1,26 @@
-// /* eslint-disable dot-notation */
-// // Copyright (c) Wictor Wilén. All rights reserved.
-// // Licensed under the MIT license.
-// // SPDX-License-Identifier: MIT
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 
-// /**
-//  * @jest-environment jsdom
-//  */
+import "mocha";
+import "mocha-jsdom";
+import React from "react";
+import * as sinon from "sinon";
+import { assert, expect } from "chai";
+import { renderHook } from "@testing-library/react-hooks";
+import { useTeams } from "../src/useTeams";
+import { app } from "@microsoft/teams-js";
 
-// // eslint-disable-next-line no-use-before-define
-// import React from "react";
-// import { render, waitFor } from "@testing-library/react";
-// import * as useTeams from "./useTeams";
-// import { app, pages } from "@microsoft/teams-js";
-// import { Flex, Header, Provider } from "@fluentui/react-northstar";
+const sandbox = sinon.createSandbox();
+describe("useTeams() hook tests", () => {
+  afterEach(() => {
+    sandbox.restore();
+  });
 
+  it("Should return not in teams - app.initialize rejects", async () => {
+    const { result } = renderHook(() => useTeams({ initialTheme: "default" }));
+    // expect(result.current[0].inTeams).equals(false);
+  });
+});
 // describe("useTeams", () => {
 //     let spyInitialize: jest.SpyInstance;
 //     let spyRegisterOnThemeChangeHandler: jest.SpyInstance;

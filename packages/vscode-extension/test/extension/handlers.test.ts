@@ -22,6 +22,7 @@ import {
   UserError,
   Void,
   VsCodeEnv,
+  PathNotExistError,
 } from "@microsoft/teamsfx-api";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
@@ -94,8 +95,9 @@ describe("handlers", () => {
   });
 
   it("getAzureProjectConfigV3", async () => {
-    sinon.stub(handlers, "core").value(new MockCore());
-    sinon.stub(handlers, "getSystemInputs").returns({} as Inputs);
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
     const fake_config_v3 = {
       projectSettings: {
         appName: "fake_test",
@@ -103,19 +105,24 @@ describe("handlers", () => {
       },
       envInfos: {},
     };
-    sinon.stub(MockCore.prototype, "getProjectConfigV3").resolves(ok(fake_config_v3));
+    sandbox.stub(MockCore.prototype, "getProjectConfigV3").resolves(ok(fake_config_v3));
     const res = await handlers.getAzureProjectConfigV3();
     chai.assert.exists(res?.projectSettings);
     chai.assert.equal(res?.projectSettings.appName, "fake_test");
     chai.assert.equal(res?.projectSettings.projectId, "fake_projectId");
+    sandbox.restore();
   });
 
   it("getAzureProjectConfigV3 return undefined", async () => {
-    sinon.stub(handlers, "core").value(new MockCore());
-    sinon.stub(handlers, "getSystemInputs").returns({} as Inputs);
-    sinon.stub(MockCore.prototype, "getProjectConfigV3").resolves(undefined);
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
+    sandbox
+      .stub(MockCore.prototype, "getProjectConfigV3")
+      .resolves(err(new PathNotExistError("path not exist", "fake path")));
     const res = await handlers.getAzureProjectConfigV3();
     chai.assert.isUndefined(res);
+    sandbox.restore();
   });
 
   it("openBackupConfigMd", async () => {

@@ -24,10 +24,7 @@ import {
   grantPermission,
   listCollaborator,
 } from "../../src/core/collaborator";
-import {
-  BuiltInFeaturePluginNames,
-  BuiltInSolutionNames,
-} from "../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 import {
   MockedM365Provider,
   MockedAzureAccountProvider,
@@ -47,7 +44,7 @@ describe("Collaborator APIs for V3", () => {
     appName: "my app",
     projectId: uuid.v4(),
     solutionSettings: {
-      name: BuiltInSolutionNames.azure,
+      name: "fx-solution-azure",
       version: "3.0.0",
       capabilities: ["Tab"],
       hostType: "Azure",

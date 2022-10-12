@@ -12,6 +12,7 @@ import {
   ConfigFolderName,
   FxError,
   InputConfigsFolderName,
+  ProjectConfigV3,
   ProjectSettingsFileName,
   Result,
   TemplateFolderName,
@@ -57,7 +58,7 @@ import {
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
-import { isAADEnabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -665,10 +666,13 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
 }
 
 async function setAadManifestEnabledContext() {
+  const projectSettingsConfig = await handlers.getAzureProjectConfigV3();
   vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isAadManifestEnabled",
-    isAADEnabled(await handlers.getAzureSolutionSettings())
+    projectSettingsConfig
+      ? hasAAD(projectSettingsConfig.projectSettings as ProjectSettingsV3)
+      : false
   );
 }
 

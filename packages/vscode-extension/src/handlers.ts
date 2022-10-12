@@ -41,6 +41,7 @@ import {
   ok,
   OptionItem,
   Platform,
+  ProjectConfigV3,
   ProjectSettingsFileName,
   Result,
   SelectFileConfig,
@@ -422,6 +423,16 @@ function registerCoreEvents() {
       ).onLockChanged(false);
     });
   }
+}
+
+export async function getAzureProjectConfigV3(): Promise<ProjectConfigV3 | undefined> {
+  const input = getSystemInputs();
+  input.ignoreEnvInfo = true;
+  const res = await core.getProjectConfigV3(input);
+  if (res.isOk()) {
+    return res.value;
+  }
+  return undefined;
 }
 
 export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings | undefined> {

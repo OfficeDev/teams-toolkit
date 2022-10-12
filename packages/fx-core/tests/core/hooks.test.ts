@@ -30,9 +30,7 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
-import * as commonTools from "../../src/common/tools";
 import { environmentManager } from "../../src/core/environment";
-import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
 import {
   migrateArm,
   ProjectMigratorMW,
@@ -40,10 +38,11 @@ import {
 } from "../../src/core/middleware/projectMigrator";
 import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import { MockSolution, MockTools, MockUserInteraction, randomAppName } from "./utils";
-import { ConstantString } from "../../src/common/constants";
 import { CoreHookContext } from "../../src/core/types";
 import { getProjectTemplatesFolderPath } from "../../src/common/utils";
 import { setTools } from "../../src/core/globalVars";
+import { EnvInfoLoaderMW_V3 } from "../../src/core/middleware/envInfoLoaderV3";
+import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 
 let mockedEnvRestore: () => void;
 describe("Middleware - others", () => {
@@ -338,14 +337,14 @@ describe("Middleware - others", () => {
     }
     async function SolutionContextSpyMW(ctx: CoreHookContext, next: NextFunction) {
       await next();
-      solutionContext = ctx.solutionContext;
+      envInfo = ctx.envInfoV3;
     }
 
     // test variables
-    let solutionContext: SolutionContext | undefined;
+    let envInfo: EnvInfoV3 | undefined;
     let envLoaded: string | undefined = undefined;
     beforeEach(() => {
-      solutionContext = undefined;
+      envInfo = undefined;
       envLoaded = undefined;
 
       // stub environmentManager.loadEnvInfo()
@@ -405,7 +404,7 @@ describe("Middleware - others", () => {
         hooks(MyClass, {
           getQuestions: [
             MockProjectSettingsLoaderMW(),
-            EnvInfoLoaderMW(true),
+            EnvInfoLoaderMW_V3(true),
             SolutionContextSpyMW,
           ],
         });
@@ -415,7 +414,7 @@ describe("Middleware - others", () => {
         // Assert
         assert.isUndefined(envLoaded);
         assert.isTrue(res.isOk());
-        assert.isUndefined(solutionContext);
+        assert.isUndefined(envInfo);
       });
 
       it("skips statically", async () => {
@@ -433,7 +432,7 @@ describe("Middleware - others", () => {
 
         // Act
         hooks(MyClass, {
-          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(true), SolutionContextSpyMW],
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW_V3(true), SolutionContextSpyMW],
         });
         const my = new MyClass();
         const res = await my.myMethod(inputs);
@@ -441,9 +440,9 @@ describe("Middleware - others", () => {
         // Assert
         assert.isUndefined(envLoaded);
         assert.isTrue(res.isOk());
-        assert(solutionContext);
+        assert(envInfo);
         // envInfo should be set to a default value when envInfo loading is skipped.
-        assert.equal(solutionContext?.envInfo.envName, environmentManager.getDefaultEnvName());
+        // assert.equal(envInfo!.envName, environmentManager.getDefaultEnvName());
       });
 
       it("skips dynamically with inputs.ignoreEnvInfo", async () => {
@@ -462,7 +461,11 @@ describe("Middleware - others", () => {
 
         // Act
         hooks(MyClass, {
-          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+          myMethod: [
+            MockProjectSettingsLoaderMW(),
+            EnvInfoLoaderMW_V3(false),
+            SolutionContextSpyMW,
+          ],
         });
         const my = new MyClass();
         const res = await my.myMethod(inputs);
@@ -470,9 +473,9 @@ describe("Middleware - others", () => {
         // Assert
         assert.isUndefined(envLoaded);
         assert.isTrue(res.isOk());
-        assert(solutionContext);
+        assert(envInfo);
         // envInfo should be set to a default value when envInfo loading is skipped.
-        assert.equal(solutionContext?.envInfo.envName, environmentManager.getDefaultEnvName());
+        // assert.equal(envInfo!.envName, environmentManager.getDefaultEnvName());
       });
     });
 
@@ -503,7 +506,11 @@ describe("Middleware - others", () => {
 
         // Act
         hooks(MyClass, {
-          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+          myMethod: [
+            MockProjectSettingsLoaderMW(),
+            EnvInfoLoaderMW_V3(false),
+            SolutionContextSpyMW,
+          ],
         });
         const my = new MyClass();
         const res = await my.myMethod(inputs);
@@ -512,8 +519,8 @@ describe("Middleware - others", () => {
         assert.equal(envLoaded, env);
         assert.isTrue(res.isOk());
         assert.equal((res as Ok<string, FxError>).value, expectedResult);
-        assert(solutionContext);
-        assert.equal(solutionContext?.envInfo.envName, env);
+        assert(envInfo);
+        assert.equal(envInfo!.envName, env);
       });
 
       it("handles error for non-existent inputs.env", async () => {
@@ -542,7 +549,11 @@ describe("Middleware - others", () => {
 
         // Act
         hooks(MyClass, {
-          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+          myMethod: [
+            MockProjectSettingsLoaderMW(),
+            EnvInfoLoaderMW_V3(false),
+            SolutionContextSpyMW,
+          ],
         });
         const my = new MyClass();
         const res = await my.myMethod(inputs);
@@ -550,7 +561,7 @@ describe("Middleware - others", () => {
         // Assert
         assert.isTrue(res.isErr());
         assert.equal((res as Err<string, FxError>).error.name, "ProjectEnvNotExistError");
-        assert(!solutionContext);
+        assert(!envInfo);
       });
     });
 
@@ -593,7 +604,11 @@ describe("Middleware - others", () => {
 
         // Act
         hooks(MyClass, {
-          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+          myMethod: [
+            MockProjectSettingsLoaderMW(),
+            EnvInfoLoaderMW_V3(false),
+            SolutionContextSpyMW,
+          ],
         });
         const my = new MyClass();
         const res = await my.myMethod(inputs);
@@ -603,8 +618,8 @@ describe("Middleware - others", () => {
         assert.equal(envLoaded, envs[0]);
         assert.isTrue(res.isOk());
         assert.equal((res as Ok<string, FxError>).value, expectedResult);
-        assert(solutionContext);
-        assert.equal(solutionContext?.envInfo.envName, envs[0]);
+        assert(envInfo);
+        assert.equal(envInfo?.envName, envs[0]);
 
         // Arrange
         // reorder envs to check whether the lastUsedEnv appears first
@@ -612,7 +627,11 @@ describe("Middleware - others", () => {
 
         // Act
         hooks(MyClass, {
-          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+          myMethod: [
+            MockProjectSettingsLoaderMW(),
+            EnvInfoLoaderMW_V3(false),
+            SolutionContextSpyMW,
+          ],
         });
 
         // Assert
@@ -620,8 +639,8 @@ describe("Middleware - others", () => {
         assert.equal(envLoaded, envs[1]);
         assert.isTrue(res2.isOk());
         assert.equal((res2 as Ok<string, FxError>).value, expectedResult);
-        assert(solutionContext);
-        assert.equal(solutionContext?.envInfo.envName, envs[1]);
+        assert(envInfo);
+        assert.equal(envInfo?.envName, envs[1]);
       });
 
       it("handles user canceling", async () => {
@@ -655,7 +674,7 @@ describe("Middleware - others", () => {
 
         // Act
         hooks(MyClass, {
-          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false)],
+          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW_V3(false)],
         });
         const my = new MyClass();
         const res = await my.myMethod(inputs);
@@ -708,7 +727,11 @@ describe("Middleware - others", () => {
 
         // Act
         hooks(MyClass, {
-          myMethod: [MockProjectSettingsLoaderMW(), EnvInfoLoaderMW(false), SolutionContextSpyMW],
+          myMethod: [
+            MockProjectSettingsLoaderMW(),
+            EnvInfoLoaderMW_V3(false),
+            SolutionContextSpyMW,
+          ],
         });
         const my = new MyClass();
         const res = await my.myMethod(inputs);
@@ -716,9 +739,9 @@ describe("Middleware - others", () => {
         // Assert
         assert.isTrue(res.isOk());
         assert.equal((res as Ok<string, FxError>).value, expectedResult);
-        assert(solutionContext);
+        assert(envInfo);
         assert.equal(envLoaded, inputsEnv);
-        assert.equal(solutionContext?.envInfo.envName, inputsEnv);
+        assert.equal(envInfo?.envName, inputsEnv);
       });
     });
 
@@ -741,7 +764,7 @@ describe("Middleware - others", () => {
 
         // Act
         hooks(MyClass, {
-          myMethod: [EnvInfoLoaderMW(false)],
+          myMethod: [EnvInfoLoaderMW_V3(false)],
         });
         const my = new MyClass();
         const res = await my.myMethod(inputs);

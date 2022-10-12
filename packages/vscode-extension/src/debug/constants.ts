@@ -320,7 +320,7 @@ export const sideloadingDisplayMessages = Object.freeze({
   sideloadingUrlMessage: (hub: Hub, url: string) =>
     `${hub} web client is being launched for you to debug the Teams app: ${url}.`,
   hotReloadingMessage:
-    "The app supports hot reloading. If you change any file within the project, the page will be reloaded.",
+    "The app supports hot reloading. If you have any code changes within the project, the app will be reloaded.",
 });
 
 export const DebugSessionExists = "Debug session exists";

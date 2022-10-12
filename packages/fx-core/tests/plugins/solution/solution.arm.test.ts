@@ -143,6 +143,11 @@ describe("Deploy ARM Template to Azure", () => {
 
     // Assert
     chai.assert.isTrue(result.isErr());
+    const error = (result as Err<void, FxError>).error;
+    chai.expect(error.name).to.equal(ErrorName.FailedToDeployArmTemplatesToAzureError);
+    chai
+      .expect(error.message)
+      .to.have.string("Failed to compile bicep files to Json arm templates file:");
   });
 
   it("should successfully update parameter and deploy arm templates to azure", async () => {
@@ -170,6 +175,7 @@ describe("Deploy ARM Template to Azure", () => {
 
     // Assert
     chai.assert.isTrue(result.isOk());
+    envRestore();
   });
 
   it("should use existing parameter file", async () => {
@@ -243,7 +249,6 @@ describe("Deploy ARM Template to Azure", () => {
     // Assert
     chai.assert.isTrue(result.isErr());
     const error = (result as Err<void, FxError>).error;
-    chai.assert.strictEqual(error.name, "FailedToGetEnvironmentName");
     chai.assert.strictEqual(
       error.message,
       "Failed to get target environment name from solution context."
@@ -271,6 +276,11 @@ describe("Deploy ARM Template to Azure", () => {
 
     // Assert
     chai.assert.isTrue(result.isErr());
+    const error = (result as Err<void, FxError>).error;
+    chai.assert.strictEqual(error.name, "ParameterFileNotExist");
+    expect(error.message)
+      .to.be.a("string")
+      .that.contains("azure.parameters.dev.json does not exist.");
   });
 
   it("should return user error if fail to ensure bicep command", async () => {
@@ -329,6 +339,9 @@ describe("Deploy ARM Template to Azure", () => {
 
     // Assert
     chai.assert.isTrue(result.isErr());
+    const returnedError = result._unsafeUnwrapErr() as UserError;
+    chai.assert.isNotNull(returnedError.displayMessage);
+
     envRestore();
   });
 });
@@ -361,7 +374,6 @@ describe("Poll Deployment Status", () => {
     const status = pollDeploymentStatus(mockedDeployCtx);
     mockedDeployCtx.finished = true;
     await expect(status).to.eventually.be.undefined;
-    assert(logger.called);
   });
 
   it("pollDeploymentStatus OK", async () => {

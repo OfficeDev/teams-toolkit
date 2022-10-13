@@ -48,6 +48,7 @@ import {
   SolutionTelemetryProperty,
   SUBSCRIPTION_ID,
 } from "../plugins/solution/fx-solution/constants";
+import { backupFiles } from "../plugins/solution/fx-solution/utils/backupFiles";
 import {
   resourceGroupHelper,
   ResourceGroupInfo,
@@ -56,11 +57,12 @@ import {
   handleConfigFilesWhenSwitchAccount,
   hasBotServiceCreated,
 } from "../plugins/solution/fx-solution/utils/util";
-import { checkWhetherLocalDebugM365TenantMatches } from "../plugins/solution/fx-solution/v2/utils";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
+import { resetAppSettingsDevelopment } from "./code/appSettingUtils";
 import { ComponentNames } from "./constants";
 import { AppStudioScopes } from "./resource/appManifest/constants";
 import { isCSharpProject, resetEnvInfoWhenSwitchM365 } from "./utils";
+import fs from "fs-extra";
 
 interface M365TenantRes {
   tenantIdInToken: string;
@@ -796,6 +798,140 @@ function addShouldSkipWriteEnvInfo(error: FxError) {
   if (!error.userData) {
     error.userData = { shouldSkipWriteEnvInfo: true };
   }
+}
+
+export async function checkWhetherLocalDebugM365TenantMatches(
+  envInfo: v3.EnvInfoV3 | undefined,
+  ctx: ResourceContextV3,
+  isCSharpProject: boolean,
+  localDebugTenantId: string | undefined,
+  m365TokenProvider: M365TokenProvider,
+  inputs: InputsWithProjectPath
+): Promise<Result<Void, FxError>> {
+  if (localDebugTenantId) {
+    const projectPath = inputs.projectPath;
+    const appStudioTokenJsonRes = await m365TokenProvider.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+      ? appStudioTokenJsonRes.value
+      : undefined;
+    const maybeM365TenantId = parseTeamsAppTenantId(appStudioTokenJson);
+    if (maybeM365TenantId.isErr()) {
+      return maybeM365TenantId;
+    }
+
+    const maybeM365UserAccount = parseUserName(appStudioTokenJson);
+    if (maybeM365UserAccount.isErr()) {
+      return maybeM365UserAccount;
+    }
+
+    if (maybeM365TenantId.value !== localDebugTenantId) {
+      if (
+        projectPath !== undefined &&
+        (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
+      ) {
+        const errorMessage = getLocalizedString(
+          "core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount",
+          localDebugTenantId,
+          maybeM365UserAccount.value,
+          "bot/.notification.localstore.json"
+        );
+        return err(
+          new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
+        );
+      } else if (envInfo) {
+        ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
+          [TelemetryProperty.HasSwitchedM365Tenant]: "true",
+          [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
+          [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,
+        });
+
+        const keys = Object.keys(envInfo.state);
+        for (const key of keys) {
+          if (key !== "solution") {
+            delete (envInfo as v3.EnvInfoV3).state[key];
+          }
+        }
+
+        if (projectPath !== undefined) {
+          const backupFilesRes = await backupFiles(
+            envInfo.envName,
+            projectPath!,
+            isCSharpProject,
+            inputs?.platform === Platform.VS,
+            ctx
+          );
+          if (backupFilesRes.isErr()) {
+            return err(backupFilesRes.error);
+          }
+
+          if (isCSharpProject) {
+            await resetAppSettingsDevelopment(projectPath);
+          }
+        }
+      }
+    } else {
+      ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
+        [TelemetryProperty.HasSwitchedM365Tenant]: "false",
+        [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
+        [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,
+      });
+    }
+  }
+
+  return ok(Void);
+}
+
+export function parseTeamsAppTenantId(
+  appStudioToken?: Record<string, unknown>
+): Result<string, FxError> {
+  if (appStudioToken === undefined) {
+    return err(
+      new SystemError(
+        SolutionSource,
+        SolutionError.NoAppStudioToken,
+        "Graph token json is undefined"
+      )
+    );
+  }
+
+  const teamsAppTenantId = appStudioToken["tid"];
+  if (
+    teamsAppTenantId === undefined ||
+    !(typeof teamsAppTenantId === "string") ||
+    teamsAppTenantId.length === 0
+  ) {
+    return err(
+      new SystemError(
+        SolutionSource,
+        SolutionError.NoTeamsAppTenantId,
+        getDefaultString("error.NoTeamsAppTenantId"),
+        getLocalizedString("error.NoTeamsAppTenantId")
+      )
+    );
+  }
+  return ok(teamsAppTenantId);
+}
+
+export function parseUserName(appStudioToken?: Record<string, unknown>): Result<string, FxError> {
+  if (appStudioToken === undefined) {
+    return err(
+      new SystemError("Solution", SolutionError.NoAppStudioToken, "Graph token json is undefined")
+    );
+  }
+
+  const userName = appStudioToken["upn"];
+  if (userName === undefined || !(typeof userName === "string") || userName.length === 0) {
+    return err(
+      new SystemError(
+        "Solution",
+        SolutionError.NoUserName,
+        "Cannot find user name from App Studio token."
+      )
+    );
+  }
+  return ok(userName);
 }
 
 export const provisionUtils = new ProvisionUtils();

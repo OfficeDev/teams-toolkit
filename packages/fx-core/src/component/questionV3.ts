@@ -8,6 +8,7 @@ import {
   FxError,
   Inputs,
   InputsWithProjectPath,
+  Json,
   ok,
   OptionItem,
   Platform,
@@ -67,7 +68,6 @@ import {
   TabSPFxNewUIItem,
   WorkflowOptionItem,
 } from "../plugins/solution/fx-solution/question";
-import { checkWetherProvisionSucceeded } from "../plugins/solution/fx-solution/v2/utils";
 import { NoCapabilityFoundError } from "../core/error";
 import { ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
@@ -84,6 +84,10 @@ import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
 import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { Constants } from "./resource/aadApp/constants";
 import { functionNameQuestion } from "./feature/api/question";
+import {
+  GLOBAL_CONFIG,
+  SOLUTION_PROVISION_SUCCEEDED,
+} from "../plugins/solution/fx-solution/constants";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -214,7 +218,9 @@ export async function getQuestionsForDeployV3(
   }
   return ok(node);
 }
-
+export function checkWetherProvisionSucceeded(config: Json): boolean {
+  return config[GLOBAL_CONFIG] && config[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
+}
 export async function getQuestionsForAddFeatureV3(
   ctx: v2.Context,
   inputs: Inputs

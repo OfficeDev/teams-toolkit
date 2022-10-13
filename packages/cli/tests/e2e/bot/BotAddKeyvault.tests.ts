@@ -32,7 +32,7 @@ describe("Configuration successfully changed when with different plugins", funct
     await cleanUp(appName, projectPath, false, true, false);
   });
 
-  it(`bot + key vault`,{ testPlanCaseId: 15685600 }, async function () {
+  it(`bot + key vault`, { testPlanCaseId: 15685600 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);
 

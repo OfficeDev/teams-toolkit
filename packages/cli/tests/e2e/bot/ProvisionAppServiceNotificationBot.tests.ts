@@ -10,7 +10,7 @@ import { happyPathTest } from "./NotificationBotHappyPathCommon";
 import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Provision Notification Node", () => {
-    it("Provision Resource: Notification Node", { testPlanCaseId: 15685832 }, async function () {
-        await happyPathTest(Runtime.Node);
-    });
+  it("Provision Resource: Notification Node", { testPlanCaseId: 15685832 }, async function () {
+    await happyPathTest(Runtime.Node);
+  });
 });

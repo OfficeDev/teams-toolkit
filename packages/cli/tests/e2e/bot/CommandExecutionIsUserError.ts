@@ -33,32 +33,36 @@ describe("Error type should be expected", function () {
     await cleanUp(appName, projectPath, true, true, false, env);
   });
 
-  it(`CommandExecutionError should be in UserError`,{ testPlanCaseId: 15685624 }, async function () {
-    // Create new bot project
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
+  it(
+    `CommandExecutionError should be in UserError`,
+    { testPlanCaseId: 15685624 },
+    async function () {
+      // Create new bot project
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 
-    // Provision
-    await setBotSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
+      // Provision
+      await setBotSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+      await CliHelper.provisionProject(projectPath);
 
-    // Make CommandExecutionError
-    // Make `package.json` invalid, so CommandExecutionError would occur when running `npm install`.
-    const packageJsonPath = path.join(projectPath, "bot", "package.json");
-    if (!(await fs.pathExists(packageJsonPath))) {
-      chai.assert.fail(`${packageJsonPath} is not found.`);
+      // Make CommandExecutionError
+      // Make `package.json` invalid, so CommandExecutionError would occur when running `npm install`.
+      const packageJsonPath = path.join(projectPath, "bot", "package.json");
+      if (!(await fs.pathExists(packageJsonPath))) {
+        chai.assert.fail(`${packageJsonPath} is not found.`);
+      }
+      await fs.writeFile(packageJsonPath, "any invalid json");
+      // deploy
+      try {
+        await CliHelper.deployProject(ResourceToDeploy.Bot, projectPath);
+      } catch (e) {
+        chai.assert.isTrue(e instanceof PluginError);
+        chai.assert.isTrue(e.ErrorType === ErrorType.USER);
+        return;
+      }
+
+      // Assert
+      chai.assert.fail("Should not reach here!!!");
     }
-    await fs.writeFile(packageJsonPath, "any invalid json");
-    // deploy
-    try {
-      await CliHelper.deployProject(ResourceToDeploy.Bot, projectPath);
-    } catch (e) {
-      chai.assert.isTrue(e instanceof PluginError);
-      chai.assert.isTrue(e.ErrorType === ErrorType.USER);
-      return;
-    }
-
-    // Assert
-    chai.assert.fail("Should not reach here!!!");
-  });
+  );
 });

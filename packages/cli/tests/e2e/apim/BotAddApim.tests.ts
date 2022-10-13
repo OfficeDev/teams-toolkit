@@ -23,7 +23,7 @@ import { it } from "@microsoft/extra-shot-mocha";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import M365Login from "../../../src/commonlib/m365Login";
 
-describe("Configuration successfully changed when with different plugins",  function () {
+describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
@@ -34,7 +34,7 @@ describe("Configuration successfully changed when with different plugins",  func
     await cleanUp(appName, projectPath, true, true, true);
   });
 
-  it(`bot + apim`,{ testPlanCaseId: 15685003 }, async function () {
+  it(`bot + apim`, { testPlanCaseId: 15685003 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     await ApimValidator.init(subscription, AzureLogin, M365Login);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureApim);

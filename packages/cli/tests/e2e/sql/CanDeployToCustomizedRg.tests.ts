@@ -40,40 +40,44 @@ describe("Deploy to customized resource group", function () {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it(`tab project can deploy sql resource to customized resource group and successfully provision`, { testPlanCaseId: 15687470 }, async function () {
-    // Create new tab project
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
-    await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);
+  it(
+    `tab project can deploy sql resource to customized resource group and successfully provision`,
+    { testPlanCaseId: 15687470 },
+    async function () {
+      // Create new tab project
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+      await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);
 
-    // Create empty resource group
-    const customizedRgName = `${appName}-customized-rg`;
-    await createResourceGroup(customizedRgName, "eastus");
+      // Create empty resource group
+      const customizedRgName = `${appName}-customized-rg`;
+      await createResourceGroup(customizedRgName, "eastus");
 
-    // Customize simple auth bicep files
-    await customizeBicepFilesToCustomizedRg(
-      customizedRgName,
-      projectPath,
-      `name: 'azureSqlProvision'`
-    );
+      // Customize simple auth bicep files
+      await customizeBicepFilesToCustomizedRg(
+        customizedRgName,
+        projectPath,
+        `name: 'azureSqlProvision'`
+      );
 
-    // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(
-      projectPath,
-      `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`
-    );
+      // Provision
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+      await CliHelper.provisionProject(
+        projectPath,
+        `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`
+      );
 
-    // Assert
-    {
-      const context = await readContextMultiEnv(projectPath, env);
+      // Assert
+      {
+        const context = await readContextMultiEnv(projectPath, env);
 
-      // Validate sql
-      await SqlValidator.init(context);
-      await SqlValidator.validateSql();
-      await SqlValidator.validateResourceGroup(customizedRgName);
+        // Validate sql
+        await SqlValidator.init(context);
+        await SqlValidator.validateSql();
+        await SqlValidator.validateResourceGroup(customizedRgName);
+      }
+
+      await deleteResourceGroupByName(customizedRgName);
     }
-
-    await deleteResourceGroupByName(customizedRgName);
-  });
+  );
 });

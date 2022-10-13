@@ -15,16 +15,11 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
-  readContextMultiEnv
+  readContextMultiEnv,
 } from "../commonUtils";
-import {
-  AadValidator,
-  FrontendValidator,
-  FunctionValidator,
-  SqlValidator
-} from "../../commonlib"
+import { AadValidator, FrontendValidator, FunctionValidator, SqlValidator } from "../../commonlib";
 import { getUuid } from "../../commonlib/utilities";
-import { TemplateProject } from "../../commonlib/constants"
+import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
@@ -54,8 +49,10 @@ describe("teamsfx new template", function () {
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath,
-      `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`);
+    await CliHelper.provisionProject(
+      projectPath,
+      `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`
+    );
 
     // Validate Provision
     const context = await readContextMultiEnv(projectPath, env);
@@ -77,11 +74,9 @@ describe("teamsfx new template", function () {
 
     // deploy
     await CliHelper.deployAll(projectPath);
-
   });
 
   after(async () => {
     await cleanUp(appName, projectPath, true, false, false);
-  })
-
+  });
 });

@@ -15,13 +15,10 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
-  readContextMultiEnv
+  readContextMultiEnv,
 } from "../commonUtils";
-import {
-  AadValidator,
-  BotValidator
-} from "../../commonlib"
-import { TemplateProject } from "../../commonlib/constants"
+import { AadValidator, BotValidator } from "../../commonlib";
+import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
@@ -37,7 +34,7 @@ describe("teamsfx new template", function () {
   });
 
   it(`${TemplateProject.NpmSearch}`, { testPlanCaseId: 15277471 }, async function () {
-    projectPath = path.resolve(testFolder, 'NPM-search-connector-M365');
+    projectPath = path.resolve(testFolder, "NPM-search-connector-M365");
     await execAsync(`teamsfx new template ${TemplateProject.NpmSearch}`, {
       cwd: testFolder,
       env: process.env,
@@ -86,11 +83,9 @@ describe("teamsfx new template", function () {
       env: process.env,
       timeout: 0,
     });
-
   });
 
   after(async () => {
     await cleanUp(appName, projectPath, false, true, false);
-  })
-
+  });
 });

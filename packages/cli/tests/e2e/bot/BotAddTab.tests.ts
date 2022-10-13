@@ -34,7 +34,7 @@ describe("Configuration successfully changed when with different plugins", funct
     await cleanUp(appName, projectPath, true, true, false);
   });
 
-  it(`bot + tab`,{ testPlanCaseId: 15685606 }, async function () {
+  it(`bot + tab`, { testPlanCaseId: 15685606 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     if (isPreviewFeaturesEnabled()) {
       await CliHelper.addCapabilityToProject(projectPath, Capability.SSOTab);

@@ -49,20 +49,24 @@ describe("Add capabilities", function () {
     await validateTabAndBotProjectProvision(projectPath, env);
   });
 
-  it(`tab project can add message extension capability and provision`, { testPlanCaseId: 15687149 }, async () => {
-    appName = getUniqueAppName();
-    projectPath = path.resolve(testFolder, appName);
-    // Arrange
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+  it(
+    `tab project can add message extension capability and provision`,
+    { testPlanCaseId: 15687149 },
+    async () => {
+      appName = getUniqueAppName();
+      projectPath = path.resolve(testFolder, appName);
+      // Arrange
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
-    // Act
-    await CliHelper.addCapabilityToProject(projectPath, Capability.MessageExtension);
+      // Act
+      await CliHelper.addCapabilityToProject(projectPath, Capability.MessageExtension);
 
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await setBotSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
-    // Assert
-    await validateTabAndBotProjectProvision(projectPath, env);
-  });
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await setBotSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+      await CliHelper.provisionProject(projectPath);
+      // Assert
+      await validateTabAndBotProjectProvision(projectPath, env);
+    }
+  );
 });

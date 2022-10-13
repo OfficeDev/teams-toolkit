@@ -30,30 +30,38 @@ describe("Add capabilities", function () {
     await cleanUp(appName, projectPath, false, false, false);
   });
 
-  it("tab project can add tab capability with correct manifest template", { testPlanCaseId: 15687024 }, async function () {
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+  it(
+    "tab project can add tab capability with correct manifest template",
+    { testPlanCaseId: 15687024 },
+    async function () {
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
-    if (isPreviewFeaturesEnabled()) {
-      await CliHelper.addCapabilityToProject(projectPath, Capability.SSOTab);
-    } else {
-      await CliHelper.addCapabilityToProject(projectPath, Capability.Tab);
+      if (isPreviewFeaturesEnabled()) {
+        await CliHelper.addCapabilityToProject(projectPath, Capability.SSOTab);
+      } else {
+        await CliHelper.addCapabilityToProject(projectPath, Capability.Tab);
+      }
+
+      const manifest: TeamsAppManifest = await fs.readJSON(
+        `${projectPath}/templates/appPackage/manifest.template.json`
+      );
+      chai.assert.equal(manifest.staticTabs!.length, 2);
     }
+  );
 
-    const manifest: TeamsAppManifest = await fs.readJSON(
-      `${projectPath}/templates/appPackage/manifest.template.json`
-    );
-    chai.assert.equal(manifest.staticTabs!.length, 2);
-  });
+  it(
+    "tab project can add bot capability with correct manifest template",
+    { testPlanCaseId: 15687025 },
+    async function () {
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
-  it("tab project can add bot capability with correct manifest template", { testPlanCaseId: 15687025 }, async function () {
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+      await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
 
-    await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
-
-    const manifest: TeamsAppManifest = await fs.readJSON(
-      `${projectPath}/templates/appPackage/manifest.template.json`
-    );
-    chai.assert.equal(manifest.staticTabs!.length, 1);
-    chai.assert.equal(manifest.bots!.length, 1);
-  });
+      const manifest: TeamsAppManifest = await fs.readJSON(
+        `${projectPath}/templates/appPackage/manifest.template.json`
+      );
+      chai.assert.equal(manifest.staticTabs!.length, 1);
+      chai.assert.equal(manifest.bots!.length, 1);
+    }
+  );
 });

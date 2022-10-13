@@ -55,26 +55,30 @@ describe("Add capabilities", function () {
     await validateTabAndBotProjectProvision(projectPath, env);
   });
 
-  it(`message extension project can add tab capability and provision`, { testPlanCaseId: 15687143 }, async () => {
-    appName = getUniqueAppName();
-    projectPath = path.resolve(testFolder, appName);
+  it(
+    `message extension project can add tab capability and provision`,
+    { testPlanCaseId: 15687143 },
+    async () => {
+      appName = getUniqueAppName();
+      projectPath = path.resolve(testFolder, appName);
 
-    // Arrange
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.MessageExtension);
+      // Arrange
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.MessageExtension);
 
-    // Act
-    if (isPreviewFeaturesEnabled()) {
-      await CliHelper.addCapabilityToProject(projectPath, Capability.SSOTab);
-    } else {
-      await CliHelper.addCapabilityToProject(projectPath, Capability.Tab);
+      // Act
+      if (isPreviewFeaturesEnabled()) {
+        await CliHelper.addCapabilityToProject(projectPath, Capability.SSOTab);
+      } else {
+        await CliHelper.addCapabilityToProject(projectPath, Capability.Tab);
+      }
+
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await setBotSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+      await CliHelper.provisionProject(projectPath);
+
+      // Assert
+      await validateTabAndBotProjectProvision(projectPath, env);
     }
-
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await setBotSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
-
-    // Assert
-    await validateTabAndBotProjectProvision(projectPath, env);
-  });
+  );
 });

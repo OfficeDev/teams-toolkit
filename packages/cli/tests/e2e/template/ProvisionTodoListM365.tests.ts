@@ -16,14 +16,10 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
   readContextMultiEnv,
-  getUniqueAppName
+  getUniqueAppName,
 } from "../commonUtils";
-import {
-  AadValidator,
-  FunctionValidator,
-  FrontendValidator
-} from "../../commonlib"
-import { TemplateProject } from "../../commonlib/constants"
+import { AadValidator, FunctionValidator, FrontendValidator } from "../../commonlib";
+import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
@@ -40,7 +36,7 @@ describe("teamsfx new template", function () {
   });
 
   it(`${TemplateProject.TodoListM365}`, { testPlanCaseId: 15277470 }, async function () {
-    appName = 'todo-list-with-Azure-backend-M365'
+    appName = "todo-list-with-Azure-backend-M365";
     projectPath = path.resolve(testFolder, appName);
     await execAsync(`teamsfx new template ${TemplateProject.TodoListM365}`, {
       cwd: testFolder,
@@ -73,11 +69,9 @@ describe("teamsfx new template", function () {
 
     // deploy
     await CliHelper.deployAll(projectPath);
-
   });
 
   after(async () => {
     await cleanUp(appName, projectPath, true, false, false);
-  })
-
+  });
 });

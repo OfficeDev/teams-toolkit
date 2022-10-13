@@ -16,14 +16,11 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
   readContextMultiEnv,
-  validateTabAndBotProjectProvision
+  validateTabAndBotProjectProvision,
 } from "../commonUtils";
-import {
-  SqlValidator,
-  FunctionValidator
-} from "../../commonlib"
+import { SqlValidator, FunctionValidator } from "../../commonlib";
 import { getUuid } from "../../commonlib/utilities";
-import { TemplateProject } from "../../commonlib/constants"
+import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
@@ -52,8 +49,10 @@ describe("teamsfx new template", function () {
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath,
-      `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`);
+    await CliHelper.provisionProject(
+      projectPath,
+      `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`
+    );
 
     // Validate Provision
     await validateTabAndBotProjectProvision(projectPath, env);
@@ -80,11 +79,9 @@ describe("teamsfx new template", function () {
       await SqlValidator.init(context);
       await SqlValidator.validateSql();
     }
-
   });
 
   after(async () => {
     await cleanUp(appName, projectPath, true, true, false);
-  })
-
+  });
 });

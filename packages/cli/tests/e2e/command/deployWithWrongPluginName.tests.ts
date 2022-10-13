@@ -20,7 +20,7 @@ import {
   cleanUp,
 } from "../commonUtils";
 
-describe("teamsfx deploy frontend-hosting",  function () {
+describe("teamsfx deploy frontend-hosting", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);

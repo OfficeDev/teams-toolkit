@@ -35,7 +35,7 @@ describe("Configuration successfully changed when with different plugins", funct
     await cleanUp(appName, projectPath, true, true, true);
   });
 
-  it(`tab + bot + apim`,{ testPlanCaseId: 15685503 }, async function () {
+  it(`tab + bot + apim`, { testPlanCaseId: 15685503 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
     await ApimValidator.init(subscription, AzureLogin, M365Login);

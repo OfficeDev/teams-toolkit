@@ -15,12 +15,10 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
-  readContextMultiEnv
+  readContextMultiEnv,
 } from "../commonUtils";
-import {
-  FrontendValidator
-} from "../../commonlib"
-import { TemplateProject } from "../../commonlib/constants"
+import { FrontendValidator } from "../../commonlib";
+import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
@@ -55,18 +53,15 @@ describe("teamsfx new template", function () {
     // Validate Provision
     const context = await readContextMultiEnv(projectPath, env);
 
-
     // Validate Tab Frontend
     const frontend = FrontendValidator.init(context);
     await FrontendValidator.validateProvision(frontend);
 
     // deploy
     await CliHelper.deployAll(projectPath);
-
   });
 
   after(async () => {
     await cleanUp(appName, projectPath, false, false, false);
-  })
-
+  });
 });

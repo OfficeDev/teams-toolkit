@@ -67,7 +67,7 @@ export enum TemplateProject {
   AdaptiveCard = "adaptive-card-notification",
   IncomingWebhook = "incoming-webhook-notification",
   GraphConnector = "graph-connector-app",
-  StockUpdate = "stocks-update-notification-bot"
+  StockUpdate = "stocks-update-notification-bot",
 }
 
 export enum Resource {

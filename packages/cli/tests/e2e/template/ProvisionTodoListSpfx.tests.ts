@@ -15,13 +15,10 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
-  readContextMultiEnv
+  readContextMultiEnv,
 } from "../commonUtils";
-import {
-  SharepointValidator,
-  AppStudioValidator
-} from "../../commonlib"
-import { TemplateProject } from "../../commonlib/constants"
+import { SharepointValidator, AppStudioValidator } from "../../commonlib";
+import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
@@ -38,7 +35,7 @@ describe("teamsfx new template", function () {
   });
 
   it(`${TemplateProject.TodoListSpfx}`, { testPlanCaseId: 15277466 }, async function () {
-    appName = 'todo-list-SPFx'
+    appName = "todo-list-SPFx";
     projectPath = path.resolve(testFolder, appName);
     await execAsync(`teamsfx new template ${TemplateProject.TodoListSpfx}`, {
       cwd: testFolder,
@@ -93,11 +90,9 @@ describe("teamsfx new template", function () {
 
     // deploy
     await CliHelper.deployAll(projectPath);
-
   });
 
   after(async () => {
     await cleanUp(appName, projectPath, true, false, true);
-  })
-
+  });
 });

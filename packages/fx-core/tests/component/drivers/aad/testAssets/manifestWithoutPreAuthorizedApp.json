@@ -31,7 +31,7 @@
         {
             "adminConsentDescription": "Allows Teams to call the app's web APIs as the current user.",
             "adminConsentDisplayName": "Teams can access app's web APIs",
-            "id": "${{AAD_APP_OAUTH2_PERMISSION_ID}}",
+            "id": "${{AAD_APP_ACCESS_AS_USER_PERMISSION_ID}}",
             "isEnabled": true,
             "type": "User",
             "userConsentDescription": "Enable Teams to call this app's web APIs with the same rights that you have",

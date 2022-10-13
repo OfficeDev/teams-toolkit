@@ -97,7 +97,7 @@ export class UpdateAadAppDriver implements StepDriver {
 
   private loadCurrentState(): UpdateAadAppOutput {
     return {
-      AAD_APP_OAUTH2_PERMISSION_ID: process.env.AAD_APP_OAUTH2_PERMISSION_ID,
+      AAD_APP_ACCESS_AS_USER_PERMISSION_ID: process.env.AAD_APP_ACCESS_AS_USER_PERMISSION_ID,
     };
   }
 
@@ -108,15 +108,15 @@ export class UpdateAadAppDriver implements StepDriver {
     let generatedNewPermissionId = false;
     try {
       const manifestTemplate = await fs.readFile(manifestPath, "utf8");
-      const permissionIdPlaceholderRegex = /\${{ *AAD_APP_OAUTH2_PERMISSION_ID *}}/;
+      const permissionIdPlaceholderRegex = /\${{ *AAD_APP_ACCESS_AS_USER_PERMISSION_ID *}}/;
 
       // generate a new permission id if there's no one in env and manifest needs it
-      if (!process.env.AAD_APP_OAUTH2_PERMISSION_ID) {
+      if (!process.env.AAD_APP_ACCESS_AS_USER_PERMISSION_ID) {
         const matches = permissionIdPlaceholderRegex.exec(manifestTemplate);
         if (matches) {
           const permissionId = getUuid();
-          process.env.AAD_APP_OAUTH2_PERMISSION_ID = permissionId;
-          state.AAD_APP_OAUTH2_PERMISSION_ID = permissionId;
+          process.env.AAD_APP_ACCESS_AS_USER_PERMISSION_ID = permissionId;
+          state.AAD_APP_ACCESS_AS_USER_PERMISSION_ID = permissionId;
           generatedNewPermissionId = true;
         }
       }
@@ -128,7 +128,7 @@ export class UpdateAadAppDriver implements StepDriver {
     } finally {
       if (generatedNewPermissionId) {
         // restore environment variable to avoid impact to other code
-        delete process.env.AAD_APP_OAUTH2_PERMISSION_ID;
+        delete process.env.AAD_APP_ACCESS_AS_USER_PERMISSION_ID;
       }
     }
   }

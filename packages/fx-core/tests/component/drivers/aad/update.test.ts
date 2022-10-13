@@ -23,7 +23,7 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 const outputKeys = {
-  AAD_APP_OAUTH2_PERMISSION_ID: "AAD_APP_OAUTH2_PERMISSION_ID",
+  AAD_APP_ACCESS_AS_USER_PERMISSION_ID: "AAD_APP_ACCESS_AS_USER_PERMISSION_ID",
 };
 
 const testAssetsRoot = "./tests/component/drivers/aad/testAssets";
@@ -130,7 +130,7 @@ describe("aadAppUpdate", async () => {
 
     const result = await updateAadAppDriver.run(args, mockedDriverContext);
 
-    expect(result.get(outputKeys.AAD_APP_OAUTH2_PERMISSION_ID)).to.be.not.empty;
+    expect(result.get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.be.not.empty;
     expect(result.size).to.equal(1);
     expect(await fs.pathExists(path.join(outputPath))).to.be.true;
     const actualManifest = JSON.parse(await fs.readFile(outputPath, "utf8"));
@@ -143,7 +143,7 @@ describe("aadAppUpdate", async () => {
       "e1fe6dd8-ba31-4d61-89e7-88639da4683d"
     ); // Should convert User.Read to its id
     expect(actualManifest.oauth2Permissions[0].id).to.not.equal(
-      "${{AAD_APP_OAUTH2_PERMISSION_ID}}"
+      "${{AAD_APP_ACCESS_AS_USER_PERMISSION_ID}}"
     ); // Should be replaced with an actual value
   });
 
@@ -229,7 +229,7 @@ describe("aadAppUpdate", async () => {
     envRestore = mockedEnv({
       AAD_APP_OBJECT_ID: expectedObjectId,
       AAD_APP_CLIENT_ID: expectedClientId,
-      AAD_APP_OAUTH2_PERMISSION_ID: expectedPermissionId,
+      AAD_APP_ACCESS_AS_USER_PERMISSION_ID: expectedPermissionId,
     });
 
     const outputPath = path.join(outputRoot, "manifest.output.json");
@@ -242,7 +242,9 @@ describe("aadAppUpdate", async () => {
 
     const actualManifest = JSON.parse(await fs.readFile(outputPath, "utf8"));
 
-    expect(result.get(outputKeys.AAD_APP_OAUTH2_PERMISSION_ID)).to.equal(expectedPermissionId);
+    expect(result.get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.equal(
+      expectedPermissionId
+    );
     expect(result.size).to.equal(1);
     expect(actualManifest.oauth2Permissions[0].id).to.equal(expectedPermissionId);
   });

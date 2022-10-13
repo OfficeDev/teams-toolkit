@@ -96,7 +96,7 @@ export const WorkflowOptionItem: OptionItem = {
   cliName: "workflow-bot",
   detail: getLocalizedString("core.WorkflowOption.detail"),
   groupName: getLocalizedString("core.options.separator.scenario"),
-  data: "https://aka.ms/teamsfx-create-workflow",
+  data: "https://aka.ms/teamsfx-card-action-response",
   buttons: [
     {
       iconPath: "tasklist",

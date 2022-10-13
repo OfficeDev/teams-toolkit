@@ -38,11 +38,11 @@ import {
   SolutionSource,
   SolutionTelemetryProperty,
   SOLUTION_PROVISION_SUCCEEDED,
-} from "../plugins/solution/fx-solution/constants";
+} from "../component/constants";
 import { AppUser } from "../component/resource/appManifest/interfaces/appUser";
 import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
-import { getUserEmailQuestion } from "../plugins/solution/fx-solution/question";
+import { getUserEmailQuestion } from "../component/question";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { ComponentNames } from "../component/constants";

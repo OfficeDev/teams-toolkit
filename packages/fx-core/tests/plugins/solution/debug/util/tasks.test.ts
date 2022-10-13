@@ -3,7 +3,7 @@
 
 import "mocha";
 import * as chai from "chai";
-import { generateSpfxTasks } from "../../../../../src/plugins/solution/fx-solution/debug/util/tasks";
+import { generateSpfxTasks } from "../../../../../src/component/debug/util/tasks";
 
 describe("tasks", () => {
   it("generateSpfxTasks", () => {

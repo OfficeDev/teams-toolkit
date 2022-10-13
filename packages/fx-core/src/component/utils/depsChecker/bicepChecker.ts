@@ -32,8 +32,8 @@ import {
 } from "../../constants";
 
 import { performance } from "perf_hooks";
-import { sendErrorTelemetryThenReturnError } from "../util";
-import { isBicepEnvCheckerEnabled } from "../../../../../common/tools";
+import { sendErrorTelemetryThenReturnError } from "../../utils";
+import { isBicepEnvCheckerEnabled } from "../../../common/tools";
 
 export const BicepName = "Bicep";
 export const installVersion = "v0.4";

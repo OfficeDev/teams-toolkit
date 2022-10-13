@@ -17,15 +17,15 @@ import {
   UserError,
   v2,
 } from "@microsoft/teamsfx-api";
-import { PluginDisplayName } from "../../../../common/constants";
-import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { desensitize } from "../../../../core/middleware/questionModel";
+import { PluginDisplayName } from "../../common/constants";
+import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { desensitize } from "../../core/middleware/questionModel";
 import {
   CoreQuestionNames,
   newResourceGroupNameQuestion,
   QuestionNewResourceGroupLocation,
   QuestionSelectResourceGroup,
-} from "../../../../core/question";
+} from "../../core/question";
 import { SolutionError, SolutionSource } from "../constants";
 
 const MsResources = "Microsoft.Resources";

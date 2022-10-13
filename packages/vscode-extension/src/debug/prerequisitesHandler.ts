@@ -40,7 +40,7 @@ import {
 } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { LocalEnvProvider } from "@microsoft/teamsfx-core/build/component/debugHandler";
 import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
-import { PluginNames } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
+import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 
 import * as fs from "fs-extra";
 import * as os from "os";

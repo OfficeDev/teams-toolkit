@@ -12,10 +12,10 @@ import path from "path";
 import fs from "fs-extra";
 import * as os from "os";
 import { SolutionError, SolutionSource } from "../constants";
-import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { getResourceFolder } from "../../../../folder";
-import { addPathToGitignore } from "../../../../core/middleware/projectMigrator";
-import { TOOLS } from "../../../../core/globalVars";
+import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { getResourceFolder } from "../../folder";
+import { addPathToGitignore } from "../../core/middleware/projectMigrator";
+import { TOOLS } from "../../core/globalVars";
 
 const windowsPathLengthLimit = 260;
 const fileNameLengthLimit = 255;

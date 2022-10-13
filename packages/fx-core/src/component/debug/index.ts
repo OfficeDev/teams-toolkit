@@ -13,14 +13,14 @@ import {
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
-import { BotHostTypes } from "../common/local/constants";
-import { LocalCertificateManager } from "../common/local/localCertificateManager";
+import { BotHostTypes } from "../../common/local/constants";
+import { LocalCertificateManager } from "../../common/local/localCertificateManager";
 import {
   EnvKeysBackend,
   EnvKeysBot,
   EnvKeysFrontend,
   LocalEnvProvider,
-} from "../common/local/localEnvProvider";
+} from "../../common/local/localEnvProvider";
 import {
   hasAAD,
   hasAzureTab,
@@ -29,8 +29,8 @@ import {
   hasFunctionBot,
   hasSimpleAuth,
   hasSPFxTab,
-} from "../common/projectSettingsHelperV3";
-import { getAllowedAppIds } from "../common/tools";
+} from "../../common/projectSettingsHelperV3";
+import { getAllowedAppIds } from "../../common/tools";
 import {
   ConfigLocalDebugSettingsError,
   InvalidLocalBotEndpointFormat,
@@ -38,38 +38,29 @@ import {
   NgrokTunnelNotConnected,
   ScaffoldLocalDebugSettingsError,
   SetupLocalDebugSettingsError,
-} from "../plugins/solution/fx-solution/debug/error";
-import {
-  getCodespaceName,
-  getCodespaceUrl,
-} from "../plugins/solution/fx-solution/debug/util/codespace";
-import { prepareLocalAuthService } from "../plugins/solution/fx-solution/debug/util/localService";
-import { getNgrokHttpUrl } from "../plugins/solution/fx-solution/debug/util/ngrok";
-import {
-  TelemetryEventName,
-  TelemetryUtils,
-} from "../plugins/solution/fx-solution/debug/util/telemetry";
-import { ComponentNames } from "./constants";
-import * as Launch from "../plugins/solution/fx-solution/debug/util/launch";
-import * as LaunchNext from "../plugins/solution/fx-solution/debug/util/launchNext";
-import * as LaunchTransparency from "../plugins/solution/fx-solution/debug/util/launchTransparency";
-import * as Tasks from "../plugins/solution/fx-solution/debug/util/tasks";
-import * as TasksNext from "../plugins/solution/fx-solution/debug/util/tasksNext";
-import * as TasksTransparency from "../plugins/solution/fx-solution/debug/util/tasksTransparency";
-import * as Settings from "../plugins/solution/fx-solution/debug/util/settings";
+} from "./error";
+import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
+import { prepareLocalAuthService } from "./util/localService";
+import { getNgrokHttpUrl } from "./util/ngrok";
+import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
+import { ComponentNames } from "../constants";
+import * as Launch from "./util/launch";
+import * as LaunchNext from "./util/launchNext";
+import * as LaunchTransparency from "./util/launchTransparency";
+import * as Tasks from "./util/tasks";
+import * as TasksNext from "./util/tasksNext";
+import * as TasksTransparency from "./util/tasksTransparency";
+import * as Settings from "./util/settings";
 import fs from "fs-extra";
-import {
-  updateCommentJson,
-  updateJson,
-  useNewTasks,
-  useTransparentTasks,
-} from "../plugins/solution/fx-solution/debug/scaffolding";
-import { TOOLS } from "../core/globalVars";
-import { getComponent } from "./workflow";
-import { CoreQuestionNames } from "../core/question";
-import { QuestionKey } from "./code/api/enums";
-import { DefaultValues } from "./feature/api/constants";
+import { TOOLS } from "../../core/globalVars";
+import { getComponent } from "../workflow";
+import { CoreQuestionNames } from "../../core/question";
+import { QuestionKey } from "../code/api/enums";
+import { DefaultValues } from "../feature/api/constants";
 import { CommentObject } from "comment-json";
+import * as commentJson from "comment-json";
+import * as os from "os";
+import { TaskCommand } from "../../common/local/constants";
 
 export interface LocalEnvConfig {
   vscodeEnv?: VsCodeEnv;
@@ -634,4 +625,88 @@ export async function generateLocalDebugSettingsCommon(
     telemetryProperties
   );
   return ok(undefined);
+}
+
+export async function useNewTasks(projectPath?: string): Promise<boolean> {
+  // for new project or project with "validate-local-prerequisites", use new tasks content
+  const tasksJsonPath = `${projectPath}/.vscode/tasks.json`;
+  if (await fs.pathExists(tasksJsonPath)) {
+    try {
+      const tasksContent = await fs.readFile(tasksJsonPath, "utf-8");
+      return tasksContent.includes("fx-extension.validate-local-prerequisites");
+    } catch (error) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export async function useTransparentTasks(projectPath?: string): Promise<boolean> {
+  // for new project or project with "debug-check-prerequisites", use transparent tasks content
+  const tasksJsonPath = `${projectPath}/.vscode/tasks.json`;
+  if (await fs.pathExists(tasksJsonPath)) {
+    try {
+      const tasksContent = await fs.readFile(tasksJsonPath, "utf-8");
+      for (const command of Object.values(TaskCommand)) {
+        if (tasksContent.includes(command)) {
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export async function updateJson(
+  path: string,
+  newData: Record<string, unknown>,
+  mergeFunc: (
+    existingData: Record<string, unknown>,
+    newData: Record<string, unknown>
+  ) => Record<string, unknown>
+): Promise<void> {
+  let finalData: Record<string, unknown>;
+  if (await fs.pathExists(path)) {
+    try {
+      const existingData = await fs.readJSON(path);
+      finalData = mergeFunc(existingData, newData);
+    } catch (error) {
+      // If failed to parse or edit the existing file, just overwrite completely
+      finalData = newData;
+    }
+  } else {
+    finalData = newData;
+  }
+
+  await fs.writeJSON(path, finalData, {
+    spaces: 4,
+    EOL: os.EOL,
+  });
+}
+
+export async function updateCommentJson(
+  path: string,
+  newData: CommentObject,
+  mergeFunc: (existingData: CommentObject, newData: CommentObject) => CommentObject
+): Promise<void> {
+  let finalData: Record<string, unknown>;
+  if (await fs.pathExists(path)) {
+    try {
+      const content = await fs.readFile(path);
+      const existingData = commentJson.parse(content.toString()) as CommentObject;
+      finalData = mergeFunc(existingData, newData);
+    } catch (error) {
+      // If failed to parse or edit the existing file, just overwrite completely
+      finalData = newData;
+    }
+  } else {
+    finalData = newData;
+  }
+
+  await fs.writeFile(path, commentJson.stringify(finalData, null, 4));
 }

@@ -26,14 +26,14 @@ import {
   SingleSignOnOptionItem,
   TabFeatureIds,
   TabSPFxNewUIItem,
-} from "../../plugins/solution/fx-solution/question";
+} from "../constants";
 import { ComponentNames } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
   getQuestionsForAddFeatureV3,
   getQuestionsForDeployV3,
   getQuestionsForProvisionV3,
-} from "../questionV3";
+} from "../question";
 
 export class Coordinator {
   @hooks([

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { TaskOverallLabel } from "../../../../../common/local/constants";
+import { TaskOverallLabel } from "../../../common/local/constants";
 import * as Launch from "./launch";
 import * as LaunchNext from "./launchNext";
 

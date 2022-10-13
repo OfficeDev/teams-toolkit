@@ -24,7 +24,7 @@ import {
   grantPermission,
   listCollaborator,
 } from "../../src/core/collaborator";
-import { BuiltInFeaturePluginNames } from "../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../src/component/constants";
 import {
   MockedM365Provider,
   MockedAzureAccountProvider,
@@ -36,7 +36,7 @@ import { AppManifest } from "../../src/component/resource/appManifest/appManifes
 import { ComponentNames } from "../../src/component/constants";
 import { hasAAD, hasAzureResource, hasSPFx } from "../../src/common/projectSettingsHelper";
 import { CollaborationState } from "../../src/common/permissionInterface";
-import { SolutionError } from "../../src/plugins/solution/fx-solution/constants";
+import { SolutionError } from "../../src/component/constants";
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();

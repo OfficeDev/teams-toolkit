@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { isAadManifestEnabled } from "../../../../../common/tools";
+import { isAadManifestEnabled } from "../../../common/tools";
 
 export function generateSettings(
   includeFunctions: boolean,

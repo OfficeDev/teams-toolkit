@@ -5,14 +5,14 @@ import chai from "chai";
 import { it } from "mocha";
 import * as sinon from "sinon";
 import { ComponentNames } from "../../../src/component/constants";
-import * as arm from "../../../src/plugins/solution/fx-solution/arm";
-import * as backup from "../../../src/plugins/solution/fx-solution/utils/backupFiles";
+import * as arm from "../../../src/component/arm";
+import * as backup from "../../../src/component/utils/backupFiles";
+import { BuiltInFeaturePluginNames } from "../../../src/component/constants";
+import { MockContext } from "../../component/feature/apiconnector/utils";
 import {
   handleConfigFilesWhenSwitchAccount,
   hasBotServiceCreated,
-} from "../../../src/plugins/solution/fx-solution/utils/util";
-import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
-import { MockContext } from "../../component/feature/apiconnector/utils";
+} from "../../../src/component/provisionUtils";
 const tool = require("../../../src/common/tools");
 const expect = chai.expect;
 

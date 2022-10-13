@@ -37,20 +37,20 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
 } from "./constants";
-import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
-import { executeCommand } from "../../../common/cpUtils";
+import { ConstantString, HelpLinks, PluginDisplayName } from "../common/constants";
+import { executeCommand } from "../common/cpUtils";
 import {
   compileHandlebarsTemplateString,
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
   getUuid,
   waitSeconds,
-} from "../../../common/tools";
+} from "../common/tools";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { ProgressHelper } from "./utils/progressHelper";
-import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { convertManifestTemplateToV3, pluginName2ComponentName } from "../../../component/migrate";
-import { getProjectTemplatesFolderPath } from "../../../common/utils";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { convertManifestTemplateToV3, pluginName2ComponentName } from "../component/migrate";
+import { getProjectTemplatesFolderPath } from "../common/utils";
 
 const bicepOrchestrationFileName = "main.bicep";
 const configsFolder = `.${ConfigFolderName}/configs`;
@@ -637,153 +637,6 @@ async function compileBicepToJson(
     throw new Error(getLocalizedString("core.deployArmTemplates.CompileBicepFailed", err.message));
   }
 }
-
-// Context used by handlebars to render the main.bicep file
-// export class ArmTemplateRenderContext {
-//   public Plugins: Record<string, PluginContext> = {};
-
-//   constructor(pluginNames: string[]) {
-//     for (const plugin of pluginNames) {
-//       this.Plugins[plugin] = {};
-//     }
-//   }
-
-//   public addPluginOutput(pluginName: string, armResult: ArmTemplateResult) {
-//     const PluginContext: PluginContext = {
-//       Provision: {},
-//       Configuration: {},
-//       References: {},
-//     };
-//     const provision = armResult?.Provision?.Modules;
-//     const references = armResult?.Reference;
-//     const configs = armResult?.Configuration?.Modules;
-//     if (provision) {
-//       for (const module of Object.entries(provision)) {
-//         const moduleFileName = module[0];
-//         PluginContext.Provision![moduleFileName] = {
-//           path: generateBicepModuleProvisionFilePath(moduleFileName),
-//         };
-//       }
-//     }
-
-//     if (configs) {
-//       for (const module of Object.entries(configs)) {
-//         const moduleFileName = module[0];
-//         PluginContext.Configuration![moduleFileName] = {
-//           path: generateBicepModuleConfigFilePath(moduleFileName),
-//         };
-//       }
-//     }
-
-//     if (references) {
-//       for (const output of Object.entries(references)) {
-//         const outputKey = output[0];
-//         const outputValue = output[1] as string;
-//         PluginContext.References![outputKey] = outputValue;
-//       }
-//     }
-
-//     this.Plugins[pluginName] = PluginContext;
-//   }
-// }
-
-// // Stores the bicep orchestration information for all resource plugins
-// class BicepOrchestrationContent {
-//   private ParameterJsonTemplate: Record<string, string> = {};
-//   private RenderContext: ArmTemplateRenderContext;
-//   private TemplateAdded = false;
-
-//   private ProvisionTemplate = "";
-//   private ConfigTemplate = "";
-
-//   constructor(pluginNames: string[], baseName: string) {
-//     this.ParameterJsonTemplate[resourceBaseName] = baseName;
-//     this.RenderContext = new ArmTemplateRenderContext(pluginNames);
-//   }
-
-//   public applyTemplate(pluginName: string, armResult: ArmTemplateResult): void {
-//     this.ProvisionTemplate += this.normalizeTemplateSnippet(armResult?.Provision?.Orchestration);
-//     this.ConfigTemplate += this.normalizeTemplateSnippet(armResult?.Configuration?.Orchestration);
-//     this.RenderContext.addPluginOutput(pluginName, armResult);
-//     Object.assign(this.ParameterJsonTemplate, armResult?.Parameters);
-//     if (armResult?.Parameters && Object.keys(armResult?.Parameters).length > 0)
-//       this.TemplateAdded = true;
-//   }
-
-//   public applyReference(configContent: string): string {
-//     return compileHandlebarsTemplateString(configContent, this.RenderContext.Plugins);
-//   }
-
-//   public getOrchestractionProvisionContent(): string {
-//     const orchestrationTemplate =
-//       this.normalizeTemplateSnippet(this.ProvisionTemplate, false) + os.EOL;
-//     return compileHandlebarsTemplateString(
-//       orchestrationTemplate,
-//       this.RenderContext.Plugins
-//     ).trim();
-//   }
-
-//   public getOrchestractionConfigContent(): string {
-//     const orchestrationTemplate =
-//       this.normalizeTemplateSnippet(this.ConfigTemplate, false) + os.EOL;
-//     return compileHandlebarsTemplateString(
-//       orchestrationTemplate,
-//       this.RenderContext.Plugins
-//     ).trim();
-//   }
-
-//   public getParameterFileContent(): string {
-//     const parameterObject = {
-//       $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-//       contentVersion: "1.0.0.0",
-//       parameters: { provisionParameters: { value: this.ParameterJsonTemplate } },
-//     };
-//     return JSON.stringify(parameterObject, undefined, 2);
-//   }
-
-//   public getAppendedParameters(): Record<string, unknown> {
-//     const res = this.ParameterJsonTemplate;
-//     if (res.resourceBaseName) {
-//       delete res.resourceBaseName;
-//     }
-//     return res;
-//   }
-
-//   public needsGenerateTemplate(): boolean {
-//     return this.TemplateAdded;
-//   }
-
-//   private normalizeTemplateSnippet(
-//     snippet: string | undefined,
-//     updateTemplateChangeFlag = true
-//   ): string {
-//     if (snippet) {
-//       if (updateTemplateChangeFlag) {
-//         this.TemplateAdded = true;
-//       }
-//       return snippet.trim() + os.EOL;
-//     }
-//     return "";
-//   }
-// }
-
-// interface PluginContext {
-//   Provision?: { [ModuleName: string]: PluginModuleProperties };
-//   Configuration?: { [ModuleName: string]: PluginModuleProperties };
-//   References?: { [Key: string]: string };
-// }
-
-// interface PluginModuleProperties {
-//   path: string;
-// }
-
-// function generateBicepModuleProvisionFilePath(moduleFileName: string) {
-//   return `./provision/${moduleFileName}.bicep`;
-// }
-
-// function generateBicepModuleConfigFilePath(moduleFileName: string) {
-//   return `./teamsFx/${moduleFileName}.bicep`;
-// }
 
 function expandParameterPlaceholdersV3(
   ctx: v2.Context,

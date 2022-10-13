@@ -41,7 +41,7 @@ import {
   CommandAndResponseOptionItem,
   NotificationOptionItem,
   WorkflowOptionItem,
-} from "../../../../plugins/solution/fx-solution/question";
+} from "../../../constants";
 import { getCustomizedKeys } from "./utils";
 import { TelemetryPropertyKey } from "./telemetry";
 import Mustache from "mustache";

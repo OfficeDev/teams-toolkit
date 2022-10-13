@@ -4,7 +4,7 @@
 import AdmZip from "adm-zip";
 import path from "path";
 import { GeneratorContext } from "./generatorContext";
-import { fetchZipFromUrl, fetchZipUrl, unzip } from "./utils";
+import { fetchZipFromUrl, fetchTemplateZipUrl, unzip, fetchSampleZipUrl } from "./utils";
 import fs from "fs-extra";
 import {
   defaultTimeoutInMs,
@@ -31,7 +31,7 @@ export enum GeneratorActionName {
 export const fetchTemplateUrlWithTagAction: GeneratorAction = {
   name: GeneratorActionName.FetchTemplateUrlWithTag,
   run: async (context: GeneratorContext) => {
-    context.zipUrl = await fetchZipUrl(context.name, templateDownloadBaseUrl);
+    context.zipUrl = await fetchTemplateZipUrl(context.name);
   },
 };
 
@@ -41,7 +41,7 @@ export const fetchSampleUrlWithTagAction: GeneratorAction = {
     //For 3rd party sample, the zip url is already provided in context, no need to fetch url again;
     //for 1st party sample, need to call fetchZipUrl function
     if (!context.zipUrl) {
-      context.zipUrl = await fetchZipUrl(context.name, sampleDownloadBaseUrl);
+      context.zipUrl = await fetchSampleZipUrl(context.name);
     }
   },
 };

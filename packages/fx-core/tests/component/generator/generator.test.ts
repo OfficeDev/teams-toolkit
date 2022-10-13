@@ -6,7 +6,7 @@ import "mocha";
 import fs from "fs-extra";
 import path from "path";
 import {
-  fetchZipUrl,
+  fetchTemplateZipUrl,
   getSampleInfoFromName,
   renderTemplateFileData,
   renderTemplateFileName,
@@ -39,7 +39,7 @@ describe("Generator utils", () => {
   });
 
   it("fetch zip url", async () => {
-    const url = await fetchZipUrl("bot.csharp.default", templateDownloadBaseUrl);
+    const url = await fetchTemplateZipUrl("bot.csharp.default");
     assert.isNotEmpty(url);
   });
 

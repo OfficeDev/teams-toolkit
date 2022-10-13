@@ -1,19 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { StepDriver } from "../../interface/stepDriver";
-import { DriverContext } from "../../interface/commonArgs";
+import { StepDriver } from "../interface/stepDriver";
+import { DriverContext } from "../interface/commonArgs";
 import { Service } from "typedi";
 import { CreateAadAppArgs } from "./interface/createAadAppArgs";
 import { AadAppClient } from "./utility/aadAppClient";
 import { CreateAadAppOutput } from "./interface/createAadAppOutput";
-import { M365TokenProvider, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { FxError, M365TokenProvider, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { GraphScopes } from "../../../common/tools";
 import { Constants } from "../../resource/aadApp/constants";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { MissingEnvUserError } from "./error/missingEnvError";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import axios from "axios";
+import { wrapRun } from "../../utils/common";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
@@ -23,7 +24,17 @@ const driverConstants = {
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateAadAppDriver implements StepDriver {
-  public async run(args: CreateAadAppArgs, context: DriverContext): Promise<Map<string, string>> {
+  public async run(
+    args: CreateAadAppArgs,
+    context: DriverContext
+  ): Promise<Result<Map<string, string>, FxError>> {
+    return wrapRun(() => this.handler(args, context));
+  }
+
+  public async handler(
+    args: CreateAadAppArgs,
+    context: DriverContext
+  ): Promise<Map<string, string>> {
     try {
       this.validateArgs(args);
       const aadAppClient = new AadAppClient(context.m365TokenProvider);
@@ -46,8 +57,9 @@ export class CreateAadAppDriver implements StepDriver {
             driverConstants.generateSecretErrorMessageKey
           );
         }
-        const secret = await aadAppClient.generateClientSecret(aadAppState.AAD_APP_OBJECT_ID);
-        aadAppState.SECRET_AAD_APP_CLIENT_SECRET = secret;
+        aadAppState.SECRET_AAD_APP_CLIENT_SECRET = await aadAppClient.generateClientSecret(
+          aadAppState.AAD_APP_OBJECT_ID
+        );
       }
 
       return new Map(

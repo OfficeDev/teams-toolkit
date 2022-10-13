@@ -5,6 +5,7 @@ import {
   AzureAccountProvider,
   LogProvider,
   M365TokenProvider,
+  Platform,
   TelemetryReporter,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
@@ -15,6 +16,8 @@ export type DriverContext = {
   ui: UserInteraction | undefined;
   logProvider: LogProvider;
   telemetryReporter: TelemetryReporter;
+  projectPath: string;
+  platform: Platform;
 };
 
 export type AzureResourceInfo = {

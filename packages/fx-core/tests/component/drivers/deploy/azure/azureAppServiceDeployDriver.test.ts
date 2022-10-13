@@ -3,24 +3,22 @@
 
 import * as sinon from "sinon";
 import "mocha";
-import { AzureAppServiceDeployDriver } from "../../../src/component/deploy/azureAppServiceDeployDriver";
-import { DeployArgs } from "../../../src/component/interface/buildAndDeployArgs";
+import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
+import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
 import * as appService from "@azure/arm-appservice";
-import * as tools from "../../../src/common/tools";
-import { TestLogProvider } from "../util/logProviderMock";
-import { use as chaiUse, expect } from "chai";
+import * as tools from "../../../../../src/common/tools";
+import { TestLogProvider } from "../../../util/logProviderMock";
+import { use as chaiUse, expect, assert } from "chai";
 import * as fs from "fs-extra";
-import chaiAsPromised from "chai-as-promised";
-import { PrerequisiteError } from "../../../src/component/error/componentError";
-import { TestAzureAccountProvider } from "../util/azureAccountMock";
+import { PrerequisiteError } from "../../../../../src/component/error/componentError";
+import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import * as Models from "@azure/arm-appservice/src/models";
-import { AzureDeployDriver } from "../../../src/component/deploy/azureDeployDriver";
-import { DeployConstant } from "../../../src/component/constant/deployConstant";
-import * as fileOpt from "../../../src/component/utils/fileOperation";
-import { DeployExternalApiCallError } from "../../../src/component/error/deployError";
-import { DriverContext } from "../../../src/component/interface/commonArgs";
-import { MyTokenCredential } from "../../plugins/solution/util";
-chaiUse(chaiAsPromised);
+import { AzureDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureDeployDriver";
+import { DeployConstant } from "../../../../../src/component/constant/deployConstant";
+import * as fileOpt from "../../../../../src/component/utils/fileOperation";
+import { DeployExternalApiCallError } from "../../../../../src/component/error/deployError";
+import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
+import { MyTokenCredential } from "../../../../plugins/solution/util";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -76,10 +74,10 @@ describe("Azure App Service Deploy Driver test", () => {
       status: 200,
     });
     const res = await deploy.run(args, context);
-    expect(res.size).to.equal(0);
+    expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
   });
 
-  it("resource id error", () => {
+  it("resource id error", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
       src: "./",
@@ -92,7 +90,8 @@ describe("Azure App Service Deploy Driver test", () => {
       logProvider: new TestLogProvider(),
     } as DriverContext;
     // await deploy.run(args, context);
-    expect(deploy.run(args, context)).to.be.rejectedWith(PrerequisiteError);
+    const res = await deploy.run(args, context);
+    assert.equal(res.isErr(), true);
   });
 
   it("missing resource id", async () => {
@@ -106,7 +105,8 @@ describe("Azure App Service Deploy Driver test", () => {
       logProvider: new TestLogProvider(),
     } as DriverContext;
     // await deploy.run(args, context);
-    await expect(deploy.run(args, context)).to.be.rejectedWith(PrerequisiteError);
+    const res = await deploy.run(args, context);
+    assert.equal(res.isErr(), true);
   });
 
   it("deploy with ignore file not exists", async () => {
@@ -151,7 +151,7 @@ describe("Azure App Service Deploy Driver test", () => {
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
     const res = await deploy.run(args, context);
-    expect(res.size).to.equal(0);
+    expect(res.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
   });
 
   it("zip deploy to azure error", async () => {
@@ -192,6 +192,7 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    await expect(deploy.run(args, context)).to.be.rejectedWith(DeployExternalApiCallError);
+    const res = await deploy.run(args, context);
+    assert.equal(res.isErr(), true);
   });
 });

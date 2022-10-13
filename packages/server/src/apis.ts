@@ -213,6 +213,9 @@ export const RequestTypes = {
       Result<string | undefined, FxError>,
       Error
     >(`${Namespaces.UserInteraction}/showMessageRequest`),
+    openFile: new RequestType1<string, Result<boolean, FxError>, Error>(
+      `${Namespaces.UserInteraction}/openFileRequest`
+    ),
   },
 };
 

@@ -35,6 +35,6 @@ It's recommended to get channels from .
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [sendAdaptiveCard(card)](./teamsfx.channel.sendadaptivecard.md) |  | Send an adaptive card message. |
-|  [sendMessage(text)](./teamsfx.channel.sendmessage.md) |  | Send a plain text message. |
+|  [sendAdaptiveCard(card, onError)](./teamsfx.channel.sendadaptivecard.md) |  | Send an adaptive card message. |
+|  [sendMessage(text, onError)](./teamsfx.channel.sendmessage.md) |  | Send a plain text message. |
 

@@ -12,7 +12,7 @@ import {
   resetEnvInfoWhenSwitchM365,
   scaffoldRootReadme,
 } from "../../src/component/utils";
-import { BuiltInFeaturePluginNames } from "../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../src/component/constants";
 import { MockTools } from "../core/utils";
 import sinon from "sinon";
 import { deployUtils } from "../../src/component/deployUtils";

@@ -65,6 +65,11 @@ export default class ServerUserInteraction implements UserInteraction {
     return getResponseWithErrorHandling(promise);
   }
 
+  async openFile(filePath: string): Promise<Result<boolean, FxError>> {
+    const promise = this.connection.sendRequest(RequestTypes.ui.openFile, filePath);
+    return getResponseWithErrorHandling(promise);
+  }
+
   async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
     const promise = this.connection.sendRequest(
       RequestTypes.ui.selectFile,

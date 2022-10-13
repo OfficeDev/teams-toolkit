@@ -27,14 +27,12 @@ import { createContextV3 } from "../../src/component/utils";
 import { deleteFolder, MockTools, randomAppName } from "../core/utils";
 import { AppStudioClient } from "../../src/component/resource/appManifest/appStudioClient";
 import { AADRegistration } from "../../src/component/resource/botService/aadRegistration";
-import { TestHelper } from "../plugins/resource/frontend/helper";
-import arm from "../../src/plugins/solution/fx-solution/arm";
-import { FrontendDeployment } from "../../src/plugins/resource/frontend/ops/deploy";
+import arm from "../../src/component/arm";
 import { newEnvInfoV3 } from "../../src/core/environment";
 import { Utils } from "../../src/component/resource/spfx/utils/utils";
 import { YoChecker } from "../../src/component/resource/spfx/depsChecker/yoChecker";
 import { GeneratorChecker } from "../../src/component/resource/spfx/depsChecker/generatorChecker";
-import { cpUtils } from "../../src/plugins/solution/fx-solution/utils/depsChecker/cpUtils";
+import { cpUtils } from "../../src/component/utils/depsChecker/cpUtils";
 import * as uuid from "uuid";
 import * as aadManifest from "../../src/core/generateAadManifestTemplate";
 import {
@@ -46,26 +44,27 @@ import { ComponentNames } from "../../src/component/constants";
 import { FunctionScaffold } from "../../src/component/code/api/scaffold";
 import { TeamsfxCore } from "../../src/component/core";
 import { Container } from "typedi";
-import { AzureStorageResource } from "../../src/component/resource/azureStorage";
 import mockedEnv from "mocked-env";
 import { ciOption, githubOption, questionNames } from "../../src/component/feature/cicd/questions";
-import * as armFunctions from "../../src/plugins/solution/fx-solution/arm";
+import * as armFunctions from "../../src/component/arm";
 import { apiConnectorImpl } from "../../src/component/feature/apiconnector/apiConnector";
-import * as backup from "../../src/plugins/solution/fx-solution/utils/backupFiles";
+import * as backup from "../../src/component/utils/backupFiles";
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
 import { TokenCredential, AccessToken, GetTokenOptions } from "@azure/core-http";
 import { CoreQuestionNames } from "../../src/core/question";
-import * as questionV3 from "../../src/component/questionV3";
+import * as questionV3 from "../../src/component/question";
 import { provisionUtils } from "../../src/component/provisionUtils";
 import { deployUtils } from "../../src/component/deployUtils";
 import {
   AzureResourceApim,
   AzureResourceSQL,
   AzureSolutionQuestionNames,
-} from "../../src/plugins/solution/fx-solution/question";
-import { AddSsoParameters } from "../../src/plugins/solution/fx-solution/constants";
-import { BuiltInFeaturePluginNames } from "../../src/plugins/solution/fx-solution/v3/constants";
+} from "../../src/component/constants";
+import { AddSsoParameters } from "../../src/component/constants";
+import { BuiltInFeaturePluginNames } from "../../src/component/constants";
 import { Constants } from "../../src/component/resource/aadApp/constants";
+import { AzureStorageResource } from "../../src/component/resource/azureStorage/azureStorage";
+import { FrontendDeployment } from "../../src/component/code/tab/deploy";
 
 class MyTokenCredential implements TokenCredential {
   async getToken(
@@ -1006,16 +1005,19 @@ describe("Core component test for v3", () => {
   it("azure-storage.deploy", async () => {
     sandbox.stub(tools.ui, "showMessage").resolves(ok("Confirm"));
     sandbox.stub(templateAction, "scaffoldFromTemplates").resolves();
-    sandbox.stub(FrontendDeployment, "doFrontendDeploymentV3").resolves();
+    sandbox.stub(AzureStorageResource.prototype, <any>"doDeployment").resolves();
     sandbox.stub(aadManifest, "generateAadManifestTemplate").resolves();
+    sandbox.stub(FrontendDeployment, "saveDeploymentInfo").resolves();
+    sandbox.stub(FrontendDeployment, "needDeploy").resolves(true);
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      folder: path.join(projectPath, "tabs"),
+      folder: "tabs",
       componentId: "teams-tab",
+      artifactFolder: "tabs/build",
     };
     context.envInfo = newEnvInfoV3();
     context.tokenProvider = tools.tokenProvider;

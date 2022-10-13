@@ -88,7 +88,7 @@ fakeCert
     })
       .to.throw(
         ErrorWithCode,
-        "clientId, clientSecret or certificateContent, tenantId in configuration is invalid: undefined."
+        "clientId, clientSecret or certificateContent, tenantId, authorityHost in configuration is invalid: undefined."
       )
       .with.property("code", ErrorCode.InvalidConfiguration);
 
@@ -97,7 +97,7 @@ fakeCert
     })
       .to.throw(
         ErrorWithCode,
-        "clientSecret or certificateContent, tenantId in configuration is invalid: undefined."
+        "clientSecret or certificateContent, tenantId, authorityHost in configuration is invalid: undefined."
       )
       .with.property("code", ErrorCode.InvalidConfiguration);
 
@@ -106,7 +106,16 @@ fakeCert
     })
       .to.throw(
         ErrorWithCode,
-        "clientSecret or certificateContent in configuration is invalid: undefined."
+        "clientId, clientSecret or certificateContent, authorityHost in configuration is invalid: undefined."
+      )
+      .with.property("code", ErrorCode.InvalidConfiguration);
+
+    expect(() => {
+      new AppCredential({ authorityHost: authorityHost });
+    })
+      .to.throw(
+        ErrorWithCode,
+        "clientId, clientSecret or certificateContent, tenantId in configuration is invalid: undefined."
       )
       .with.property("code", ErrorCode.InvalidConfiguration);
   });

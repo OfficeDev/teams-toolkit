@@ -278,10 +278,6 @@ export class TeamsBotSsoPrompt extends Dialog {
       missingConfigurations.push("tenantId");
     }
 
-    if (!this.teamsfx.hasConfig("applicationIdUri")) {
-      missingConfigurations.push("applicationIdUri");
-    }
-
     if (missingConfigurations.length != 0) {
       const errorMsg = formatString(
         ErrorMessage.InvalidConfiguration,
@@ -363,10 +359,7 @@ export class TeamsBotSsoPrompt extends Dialog {
 
     const tokenExchangeResource: TokenExchangeResource = {
       id: uuidv4(),
-      uri: this.teamsfx.getConfig("applicationIdUri").replace(/\/$/, "") + "/access_as_user",
     };
-
-    internalLogger.verbose("Token exchange resource uri: " + tokenExchangeResource.uri);
 
     return {
       signInLink: signInLink,

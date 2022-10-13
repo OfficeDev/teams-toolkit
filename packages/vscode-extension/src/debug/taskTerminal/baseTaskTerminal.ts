@@ -13,6 +13,7 @@ import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { sendDebugAllEvent } from "../localTelemetryReporter";
 import * as commonUtils from "../commonUtils";
 import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import { performance } from "perf_hooks";
 
 const ControlCodes = {
   CtrlC: "\u0003",
@@ -60,7 +61,7 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   protected async stop(error?: any): Promise<void> {
     if (error) {
       // TODO: add color
-      this.writeEmitter.fire(`${error?.displayMessage ?? error?.message}\r\n`);
+      this.writeEmitter.fire(`${error?.message}\r\n`);
       const fxError = assembleError(error);
       showError(fxError);
       this.closeEmitter.fire(1);

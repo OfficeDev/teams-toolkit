@@ -12,7 +12,7 @@ import os from "os";
 import * as path from "path";
 
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
-import { prepareLocalAuthService } from "../../../../../src/plugins/solution/fx-solution/debug/util/localService";
+import { prepareLocalAuthService } from "../../../../../src/component/debug/util/localService";
 
 chai.use(chaiAsPromised);
 

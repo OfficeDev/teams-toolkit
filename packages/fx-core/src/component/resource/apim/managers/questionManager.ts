@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { EnvInfo, Func, PluginContext, QTreeNode, v3 } from "@microsoft/teamsfx-api";
 import { APIM_STATE_KEY } from "../../../../component/migrate";
-import { BuiltInFeaturePluginNames } from "../../../../plugins/solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../../constants";
 import { IApimPluginConfig } from "../config";
 import { BuildError, NotImplemented } from "../error";
 import * as CLI from "../questions/cliQuestion";

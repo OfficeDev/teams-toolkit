@@ -28,7 +28,11 @@ import {
 } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { getLocalDebugSession, Step } from "../commonUtils";
-import { localTunnelDisplayMessages, openTerminalCommand } from "../constants";
+import {
+  localTunnelDisplayMessages,
+  openTerminalDisplayMessage,
+  openTerminalMessage,
+} from "../constants";
 import { doctorConstant } from "../depsChecker/doctorConstant";
 import { vscodeLogger } from "../depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "../depsChecker/vscodeTelemetry";
@@ -199,14 +203,16 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
               ExtensionErrors.NgrokProcessError,
               util.format(
                 getDefaultString("teamstoolkit.localDebug.ngrokProcessError"),
-                error?.message ?? "",
-                openTerminalCommand
-              ),
+                error?.message ?? ""
+              ) +
+                " " +
+                openTerminalMessage(),
               util.format(
                 localize("teamstoolkit.localDebug.ngrokProcessError"),
-                error?.message ?? "",
-                openTerminalCommand
-              )
+                error?.message ?? ""
+              ) +
+                " " +
+                openTerminalDisplayMessage()
             )
           )
         );
@@ -221,16 +227,12 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
               new UserError(
                 ExtensionSource,
                 ExtensionErrors.NgrokStoppedError,
-                util.format(
-                  getDefaultString("teamstoolkit.localDebug.ngrokStoppedError"),
-                  code,
-                  openTerminalCommand
-                ),
-                util.format(
-                  localize("teamstoolkit.localDebug.ngrokStoppedError"),
-                  code,
-                  openTerminalCommand
-                )
+                util.format(getDefaultString("teamstoolkit.localDebug.ngrokStoppedError"), code) +
+                  " " +
+                  openTerminalMessage(),
+                util.format(localize("teamstoolkit.localDebug.ngrokStoppedError"), code) +
+                  " " +
+                  openTerminalDisplayMessage()
               )
             )
           );

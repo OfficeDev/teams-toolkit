@@ -45,7 +45,6 @@ The following files can be customized and demonstrate an example implementation 
 | `src/index.js` | Application entry point and `restify` handlers for command and response |
 | `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams |
 | `src/helloworldCommandHandler.js` | The business logic to handle a command |
-| `src/cardModels.js` | The default Adaptive Card data model |
 
 ## Extend the command bot template with more commands and responses
 

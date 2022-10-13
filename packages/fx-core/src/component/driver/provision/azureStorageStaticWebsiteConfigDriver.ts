@@ -4,14 +4,15 @@
 import { StepDriver } from "../interface/stepDriver";
 import { AzureResourceInfo, DriverContext } from "../interface/commonArgs";
 import { Service } from "typedi";
-import { asFactory, asString } from "../utils/common";
+import { asFactory, asString, wrapRun } from "../../utils/common";
 import { AzureStorageStaticWebsiteConfigArgs } from "../interface/provisionArgs";
 import {
   createBlobServiceClient,
   getAzureAccountCredential,
   parseAzureResourceId,
-} from "../utils/azureResourceOperation";
+} from "../../utils/azureResourceOperation";
 import { BlobServiceClient, BlobServiceProperties } from "@azure/storage-blob";
+import { FxError, Result } from "@microsoft/teamsfx-api";
 
 /**
  * enable static website for azure storage account
@@ -27,12 +28,16 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
   protected static readonly RESOURCE_PATTERN =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i;
 
+  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
+    return wrapRun(() => this.config(args, context));
+  }
+
   /**
    * enable static website for azure storage account
    * @param args Azure Storage resourceId, index page and error page
    * @param context log provider, progress handler, telemetry reporter
    */
-  async run(args: unknown, context: DriverContext): Promise<Map<string, string>> {
+  async config(args: unknown, context: DriverContext): Promise<Map<string, string>> {
     const logger = context.logProvider;
     const input = AzureStorageStaticWebsiteConfigDriver.STORAGE_CONFIG_ARGS(args);
     await logger.debug(

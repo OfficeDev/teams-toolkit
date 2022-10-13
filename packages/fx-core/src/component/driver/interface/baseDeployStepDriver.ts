@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DriverContext } from "../interface/commonArgs";
-import { DeployContext } from "../interface/buildAndDeployArgs";
+import { DriverContext } from "./commonArgs";
+import { DeployContext } from "./buildAndDeployArgs";
 
-export abstract class BaseStepDriver {
+export abstract class BaseDeployStepDriver {
   args: unknown;
   context: DeployContext;
   progressBarName = "Deploying";

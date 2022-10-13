@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { DriverContext } from "./commonArgs";
+import { FxError, Result } from "@microsoft/teamsfx-api";
 
 export interface StepDriver {
   /**
@@ -9,5 +10,5 @@ export interface StepDriver {
    * @param args Arguments from the `with` section in the yaml file.
    * @param context logger, telemetry, progress bar, etc.
    */
-  run(args: unknown, context: DriverContext): Promise<Map<string, string>>;
+  run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>>;
 }

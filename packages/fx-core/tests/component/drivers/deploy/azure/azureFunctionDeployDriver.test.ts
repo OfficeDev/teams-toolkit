@@ -3,21 +3,19 @@
 
 import "mocha";
 import * as sinon from "sinon";
-import * as tools from "../../../src/common/tools";
-import { DeployArgs } from "../../../src/component/interface/buildAndDeployArgs";
-import { TestAzureAccountProvider } from "../util/azureAccountMock";
-import { TestLogProvider } from "../util/logProviderMock";
+import * as tools from "../../../../../src/common/tools";
+import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
+import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
+import { TestLogProvider } from "../../../util/logProviderMock";
 import * as appService from "@azure/arm-appservice";
 import * as Models from "@azure/arm-appservice/src/models";
-import * as fileOpt from "../../../src/component/utils/fileOperation";
-import { AzureDeployDriver } from "../../../src/component/deploy/azureDeployDriver";
+import * as fileOpt from "../../../../../src/component/utils/fileOperation";
+import { AzureDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureDeployDriver";
 import { expect, use as chaiUse } from "chai";
 import * as fs from "fs-extra";
-import chaiAsPromised from "chai-as-promised";
-import { AzureFunctionDeployDriver } from "../../../src/component/deploy/azureFunctionDeployDriver";
-import { MyTokenCredential } from "../../plugins/solution/util";
-import { DriverContext } from "../../../src/component/interface/commonArgs";
-chaiUse(chaiAsPromised);
+import { AzureFunctionDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureFunctionDeployDriver";
+import { MyTokenCredential } from "../../../../plugins/solution/util";
+import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 
 describe("Azure Function Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -74,7 +72,7 @@ describe("Azure Function Deploy Driver test", () => {
       status: 200,
     });
     const res = await deploy.run(args, context);
-    expect(res.size).to.equal(0);
+    expect(res.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
   });
 
   it("deploy restart error!", async () => {
@@ -120,7 +118,8 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    await expect(deploy.run(args, context)).to.be.rejectedWith("Failed to restart web app.");
+    const res = await deploy.run(args, context);
+    expect(res.isErr()).to.equal(true);
   });
 
   it("deploy restart throws", async () => {
@@ -166,7 +165,8 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    await expect(deploy.run(args, context)).to.be.rejectedWith("Failed to restart web app.");
+    const res = await deploy.run(args, context);
+    expect(res.isErr()).to.equal(true);
   });
 
   it("Zip deploy throws when upload", async () => {
@@ -212,7 +212,8 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    await expect(deploy.run(args, context)).to.be.rejectedWith("Failed to deploy zip file.");
+    const res = await deploy.run(args, context);
+    expect(res.isErr()).to.equal(true);
   });
 
   it("Check deploy status error", async () => {
@@ -258,9 +259,8 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
       status: 403,
     });
-    await expect(deploy.run(args, context)).to.be.rejectedWith(
-      "Failed to check deployment status."
-    );
+    const res = await deploy.run(args, context);
+    expect(res.isErr()).to.equal(true);
   });
 
   it("Check deploy throws", async () => {
@@ -304,8 +304,8 @@ describe("Azure Function Deploy Driver test", () => {
       },
     });
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").throws(new Error("test"));
-    await expect(deploy.run(args, context)).to.be.rejectedWith(
-      "Failed to check deployment status."
-    );
+
+    const res = await deploy.run(args, context);
+    expect(res.isErr()).to.equal(true);
   });
 });

@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PrerequisiteError } from "../error/componentError";
+import { BaseComponentInnerError, PrerequisiteError } from "../error/componentError";
+import { err, FxError, ok, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 /**
  * check parameter, throw error if value is null or undefined
@@ -54,6 +55,21 @@ export function asFactory<T>(keyValidators: KeyValidators<T>) {
     }
     throw PrerequisiteError.somethingIllegal("Deploy", "data", "plugins.bot.InvalidData");
   };
+}
+
+export async function wrapRun(
+  exec: () => Promise<Map<string, string>>
+): Promise<Result<Map<string, string>, FxError>> {
+  try {
+    return ok(await exec());
+  } catch (error) {
+    if (error instanceof BaseComponentInnerError) {
+      return err(error.toFxError());
+    } else if (error instanceof UserError || error instanceof SystemError) {
+      return err(error);
+    }
+    throw error;
+  }
 }
 
 // Expand environment variables in content. The format of referencing environment variable is: ${{ENV_NAME}}

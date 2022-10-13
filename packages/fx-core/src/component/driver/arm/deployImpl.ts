@@ -75,6 +75,7 @@ export class ArmDeployImpl {
 
   private async deployTemplates(): Promise<Result<deploymentOutput[], FxError>> {
     const outputs: deploymentOutput[] = [];
+    // TODO: add progressBar
     await Promise.all(
       this.args.templates.map(async (template) => {
         const res = await this.deployTemplate(template);

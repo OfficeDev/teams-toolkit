@@ -4,8 +4,8 @@ Quick Start
 -------------------------
 1. Download and install ngrok (https://ngrok.com/)
 2. Open a command prompt and run ngrok http 5130
-3. Right-click your project and select Teams Toolkit > Prepare Teams app dependencies
-4. If prompted, sign in with an M365 account for the Teams organization you want 
+3. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies
+4. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
 to install the app to
 5. Press F5, or select the Debug > Start Debugging menu in Visual Studio
 6. In the launched browser, select the Add button to load the app in Teams

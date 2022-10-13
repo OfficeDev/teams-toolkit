@@ -22,7 +22,6 @@ import {
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import { AppStudioValidator } from "../../commonlib";
 import { it } from "@microsoft/extra-shot-mocha";
-
 describe("Multi Env Happy Path for SPFx", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -163,14 +162,20 @@ describe("Multi Env Happy Path for SPFx", function () {
         expect(await fs.pathExists(file)).to.be.true;
       }
 
+      // Temporarily disable publish
+      // publish
+      /*
     result = await execAsyncWithRetry(`teamsfx publish --env ${env}`, {
       cwd: projectPath,
       env: processEnv,
       timeout: 0,
     });
-
+ 
     {
       expect(result.stderr).to.be.empty;
+    }*/
+    }
+  );
 
   after(async () => {
     // clean up

@@ -84,17 +84,17 @@ To respond with an Adaptive Card, define your card in its JSON format. Create a 
 {
     "type": "AdaptiveCard",
     "body": [
-    {
-        "type": "TextBlock",
-        "size": "Medium",
-        "weight": "Bolder",
-        "text": "Your doSomething Command is added!"
-    },
-    {
-        "type": "TextBlock",
-        "text": "Congratulations! Your hello world bot now includes a new DoSomething Command",
-        "wrap": true
-    }
+        {
+            "type": "TextBlock",
+            "size": "Medium",
+            "weight": "Bolder",
+            "text": "Your doSomething Command is added!"
+        },
+        {
+            "type": "TextBlock",
+            "text": "Congratulations! Your hello world bot now includes a new DoSomething Command",
+            "wrap": true
+        }
     ],
     "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
     "version": "1.4"

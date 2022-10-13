@@ -34,7 +34,7 @@ export class UpdateAadAppDriver implements StepDriver {
       const aadAppClient = new AadAppClient(context.m365TokenProvider);
       const state = this.loadCurrentState();
 
-      const manifest = await this.loadManifest(args.manifestPath, state);
+      const manifest = await this.loadManifest(args.manifestTemplatePath, state);
       const warningMessage = AadManifestHelper.validateManifest(manifest);
       if (warningMessage) {
         warningMessage.split("\n").forEach((warning) => {
@@ -59,8 +59,8 @@ export class UpdateAadAppDriver implements StepDriver {
       await aadAppClient.updateAadApp(manifest);
 
       // Output actual manifest to project folder
-      await fs.ensureDir(path.dirname(args.manifestOutputPath));
-      await fs.writeFile(args.manifestOutputPath, JSON.stringify(manifest, null, 4), "utf8");
+      await fs.ensureDir(path.dirname(args.outputFilePath));
+      await fs.writeFile(args.outputFilePath, JSON.stringify(manifest, null, 4), "utf8");
 
       return ok(
         new Map(
@@ -89,12 +89,12 @@ export class UpdateAadAppDriver implements StepDriver {
 
   private validateArgs(args: UpdateAadAppArgs): void {
     const invalidParameters: string[] = [];
-    if (typeof args.manifestPath !== "string" || !args.manifestPath) {
-      invalidParameters.push("manifestPath");
+    if (typeof args.manifestTemplatePath !== "string" || !args.manifestTemplatePath) {
+      invalidParameters.push("manifestTemplatePath");
     }
 
-    if (typeof args.manifestOutputPath !== "string" || !args.manifestOutputPath) {
-      invalidParameters.push("manifestOutputPath");
+    if (typeof args.outputFilePath !== "string" || !args.outputFilePath) {
+      invalidParameters.push("outputFilePath");
     }
 
     if (invalidParameters.length > 0) {

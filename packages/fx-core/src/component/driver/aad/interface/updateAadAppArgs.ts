@@ -2,6 +2,6 @@
 // Licensed under the MIT license.
 
 export interface UpdateAadAppArgs {
-  manifestPath: string; // Relative path to project root
-  manifestOutputPath: string; // Relative path to project root
+  manifestTemplatePath: string; // Relative path to project root
+  outputFilePath: string; // Relative path to project root
 }

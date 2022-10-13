@@ -58,11 +58,11 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestPath, manifestOutputPath."
+        "Following parameter is missing or invalid for aadApp/update action: manifestTemplatePath, outputFilePath."
       );
 
     args = {
-      manifestPath: "./aad.manifest.json",
+      manifestTemplatePath: "./aad.manifest.json",
     };
 
     result = await updateAadAppDriver.run(args, mockedDriverContext);
@@ -71,11 +71,11 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestOutputPath."
+        "Following parameter is missing or invalid for aadApp/update action: outputFilePath."
       );
 
     args = {
-      manifestOutputPath: "./build/aad.manifest.dev.json",
+      outputFilePath: "./build/aad.manifest.dev.json",
     };
 
     result = await updateAadAppDriver.run(args, mockedDriverContext);
@@ -84,14 +84,14 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestPath."
+        "Following parameter is missing or invalid for aadApp/update action: manifestTemplatePath."
       );
   });
 
   it("should throw error if argument property is invalid", async () => {
     let args: any = {
-      manifestPath: "",
-      manifestOutputPath: "./build/aad.manifest.dev.json",
+      manifestTempaltePath: "",
+      outputFilePath: "./build/aad.manifest.dev.json",
     };
 
     let result = await updateAadAppDriver.run(args, mockedDriverContext);
@@ -100,12 +100,12 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestPath."
+        "Following parameter is missing or invalid for aadApp/update action: manifestTemplatePath."
       );
 
     args = {
-      manifestPath: "./aad.manifest.json",
-      manifestOutputPath: "",
+      manifestTemplatePath: "./aad.manifest.json",
+      outputFilePath: "",
     };
 
     result = await updateAadAppDriver.run(args, mockedDriverContext);
@@ -114,12 +114,12 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestOutputPath."
+        "Following parameter is missing or invalid for aadApp/update action: outputFilePath."
       );
 
     args = {
-      manifestPath: true,
-      manifestOutoutPath: true,
+      manifestTemplatePath: true,
+      outputFilePath: true,
     };
 
     result = await updateAadAppDriver.run(args, mockedDriverContext);
@@ -128,7 +128,7 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestPath, manifestOutputPath."
+        "Following parameter is missing or invalid for aadApp/update action: manifestTemplatePath, outputFilePath."
       );
   });
 
@@ -141,8 +141,8 @@ describe("aadAppUpdate", async () => {
 
     const outputPath = path.join(outputRoot, "manifest.output.json");
     const args = {
-      manifestPath: path.join(testAssetsRoot, "manifest.json"),
-      manifestOutputPath: outputPath,
+      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
     };
 
     const result = await updateAadAppDriver.run(args, mockedDriverContext);
@@ -173,8 +173,8 @@ describe("aadAppUpdate", async () => {
     });
 
     let args = {
-      manifestPath: path.join(testAssetsRoot, "manifest.json"),
-      manifestOutputPath: path.join(outputRoot, "manifest.output.json"),
+      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
     let result = await updateAadAppDriver.run(args, mockedDriverContext);
@@ -186,8 +186,8 @@ describe("aadAppUpdate", async () => {
     });
 
     args = {
-      manifestPath: path.join(testAssetsRoot, "manifestWithoutId.json"),
-      manifestOutputPath: path.join(outputRoot, "manifest.output.json"),
+      manifestTemplatePath: path.join(testAssetsRoot, "manifestWithoutId.json"),
+      outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
     result = await updateAadAppDriver.run(args, mockedDriverContext);
@@ -213,8 +213,8 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestPath: path.join(testAssetsRoot, "manifestWithoutPreAuthorizedApp.json"),
-      manifestOutputPath: path.join(outputRoot, "manifest.output.json"),
+      manifestTemplatePath: path.join(testAssetsRoot, "manifestWithoutPreAuthorizedApp.json"),
+      outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
     const result = await updateAadAppDriver.run(args, mockedDriverContext);
@@ -243,8 +243,8 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestPath: path.join(testAssetsRoot, "manifest.json"),
-      manifestOutputPath: path.join(outputRoot, "manifest.output.json"),
+      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
     const result = await updateAadAppDriver.run(args, mockedDriverContext);
@@ -263,8 +263,8 @@ describe("aadAppUpdate", async () => {
 
     const outputPath = path.join(outputRoot, "manifest.output.json");
     const args = {
-      manifestPath: path.join(testAssetsRoot, "manifest.json"),
-      manifestOutputPath: outputPath,
+      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
     };
 
     const result = await updateAadAppDriver.run(args, mockedDriverContext);
@@ -289,8 +289,8 @@ describe("aadAppUpdate", async () => {
 
     const outputPath = path.join(outputRoot, "manifest.output.json");
     const args = {
-      manifestPath: path.join(testAssetsRoot, "manifestWithNoPermissionId.json"),
-      manifestOutputPath: outputPath,
+      manifestTemplatePath: path.join(testAssetsRoot, "manifestWithNoPermissionId.json"),
+      outputFilePath: outputPath,
     };
 
     const result = await updateAadAppDriver.run(args, mockedDriverContext);
@@ -322,8 +322,8 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestPath: path.join(testAssetsRoot, "manifest.json"),
-      manifestOutputPath: path.join(outputRoot, "manifest.output.json"),
+      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
     const result = await updateAadAppDriver.run(args, mockedDriverContext);
@@ -354,8 +354,8 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestPath: path.join(testAssetsRoot, "manifest.json"),
-      manifestOutputPath: path.join(outputRoot, "manifest.output.json"),
+      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
     const result = await updateAadAppDriver.run(args, mockedDriverContext);

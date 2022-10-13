@@ -2,14 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import {
-  TelemetryReporter,
-  Json,
-  LocalSettings,
-  SystemError,
-  UserError,
-  v2,
-} from "@microsoft/teamsfx-api";
+import { TelemetryReporter, Json, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { SolutionTelemetryComponentName } from "../../constants";
 
 enum TelemetryPropertyKey {

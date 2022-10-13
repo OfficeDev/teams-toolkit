@@ -15,8 +15,8 @@ import {
 import { isCLIDotNetEnabled, isPreviewFeaturesEnabled } from "../../common/featureFlags";
 import { deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
-import { getNotificationTriggerQuestionNode } from "../../component/questionV3";
-import { ExistingTabOptionItem, TabSPFxItem } from "../../plugins/solution/fx-solution/question";
+import { getNotificationTriggerQuestionNode } from "../../component/question";
+import { ExistingTabOptionItem, TabSPFxItem } from "../../component/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
 import { TOOLS } from "../globalVars";
 import {

@@ -3,7 +3,7 @@
 "use strict";
 
 import { ProductName } from "@microsoft/teamsfx-api";
-import { ProgrammingLanguage } from "../../../../../common/local/constants";
+import { ProgrammingLanguage } from "../../../common/local/constants";
 
 // TODO: add spfx tasks with "validate-local-prerequisites"
 export function generateTasks(

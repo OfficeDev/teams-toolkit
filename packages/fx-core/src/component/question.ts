@@ -5,10 +5,12 @@ import {
   ContextV3,
   DynamicPlatforms,
   err,
+  FuncQuestion,
   FxError,
   Inputs,
   InputsWithProjectPath,
   Json,
+  MultiSelectQuestion,
   ok,
   OptionItem,
   Platform,
@@ -18,9 +20,11 @@ import {
   Result,
   SingleSelectQuestion,
   Stage,
+  TextInputQuestion,
   UserError,
   v2,
   v3,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { isVSProject } from "../common/projectSettingsHelper";
 import { HelpLinks, ResourcePlugins } from "../common/constants";
@@ -35,7 +39,39 @@ import {
   hasTab,
 } from "../common/projectSettingsHelperV3";
 import { canAddCICDWorkflows } from "../common/tools";
-import { ComponentNames, Runtime } from "./constants";
+import {
+  ApiConnectionOptionItem,
+  AzureResourceApim,
+  AzureResourceApimNewUI,
+  AzureResourceFunction,
+  AzureResourceFunctionNewUI,
+  AzureResourceKeyVault,
+  AzureResourceKeyVaultNewUI,
+  AzureResourceSQL,
+  AzureResourceSQLNewUI,
+  AzureSolutionQuestionNames,
+  BotFeatureIds,
+  BotNewUIOptionItem,
+  BotOptionItem,
+  CicdOptionItem,
+  CommandAndResponseOptionItem,
+  ComponentNames,
+  HostTypeOptionSPFx,
+  MessageExtensionItem,
+  MessageExtensionNewUIItem,
+  NotificationOptionItem,
+  Runtime,
+  SingleSignOnOptionItem,
+  TabFeatureIds,
+  TabNewUIOptionItem,
+  TabNonSsoItem,
+  TabOptionItem,
+  TabSPFxNewUIItem,
+  WorkflowOptionItem,
+  BuiltInFeaturePluginNames,
+  GLOBAL_CONFIG,
+  SOLUTION_PROVISION_SUCCEEDED,
+} from "./constants";
 import { ComponentName2pluginName } from "./migrate";
 import { getComponent } from "./workflow";
 import { STATIC_TABS_MAX_ITEMS, Constants as Constants1 } from "./resource/appManifest/constants";
@@ -44,38 +80,17 @@ import {
   getConditionOfNotificationTriggerQuestion,
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
-import {
-  ApiConnectionOptionItem,
-  AskSubscriptionQuestion,
-  AzureResourceApimNewUI,
-  AzureResourceFunctionNewUI,
-  AzureResourceKeyVaultNewUI,
-  AzureResourceSQLNewUI,
-  AzureSolutionQuestionNames,
-  BotFeatureIds,
-  BotNewUIOptionItem,
-  CicdOptionItem,
-  CommandAndResponseOptionItem,
-  DeployPluginSelectQuestion,
-  HostTypeOptionSPFx,
-  MessageExtensionItem,
-  MessageExtensionNewUIItem,
-  NotificationOptionItem,
-  SingleSignOnOptionItem,
-  TabFeatureIds,
-  TabNewUIOptionItem,
-  TabNonSsoItem,
-  TabSPFxNewUIItem,
-  WorkflowOptionItem,
-} from "../plugins/solution/fx-solution/question";
 import { NoCapabilityFoundError } from "../core/error";
 import { ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
-import { isCLIDotNetEnabled, isSPFxMultiTabEnabled } from "../common/featureFlags";
+import {
+  isBotNotificationEnabled,
+  isCLIDotNetEnabled,
+  isSPFxMultiTabEnabled,
+} from "../common/featureFlags";
 import { buildQuestionNode } from "./resource/azureSql/questions";
 import { ApiConnectorImpl } from "./feature/apiconnector/ApiConnectorImpl";
-import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
-import { webpartNameQuestion } from "../component/resource/spfx/utils/questions";
+import { webpartNameQuestion } from "./resource/spfx/utils/questions";
 import { getQuestionsForDeployAPIM } from "./resource/apim/apim";
 import { canAddSso } from "./feature/sso";
 import { addCicdQuestion } from "./feature/cicd/cicd";
@@ -84,10 +99,6 @@ import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
 import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { Constants } from "./resource/aadApp/constants";
 import { functionNameQuestion } from "./feature/api/question";
-import {
-  GLOBAL_CONFIG,
-  SOLUTION_PROVISION_SUCCEEDED,
-} from "../plugins/solution/fx-solution/constants";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -535,4 +546,116 @@ export function getPlatformRuntime(platform: Platform): Runtime {
     return runtime;
   }
   throw new Error(getKeyNotFoundInMapErrorMsg(platform));
+}
+
+export function createAddAzureResourceQuestion(
+  alreadyHaveFunction: boolean,
+  alreadyHaveSQL: boolean,
+  alreadyHaveAPIM: boolean,
+  alreadyHaveKeyVault: boolean
+): MultiSelectQuestion {
+  const options: OptionItem[] = [AzureResourceFunction, AzureResourceSQL];
+  if (!alreadyHaveAPIM) options.push(AzureResourceApim);
+  if (!alreadyHaveKeyVault) options.push(AzureResourceKeyVault);
+  return {
+    name: AzureSolutionQuestionNames.AddResources,
+    title: "Cloud resources",
+    type: "multiSelect",
+    staticOptions: options,
+    default: [],
+    onDidChangeSelection: async function (
+      currentSelectedIds: Set<string>,
+      previousSelectedIds: Set<string>
+    ): Promise<Set<string>> {
+      const hasSQL = currentSelectedIds.has(AzureResourceSQL.id);
+      const hasAPIM = currentSelectedIds.has(AzureResourceApim.id);
+      if ((hasSQL || hasAPIM) && !alreadyHaveFunction) {
+        currentSelectedIds.add(AzureResourceFunction.id);
+      }
+      return currentSelectedIds;
+    },
+  };
+}
+
+export function createAddCloudResourceOptions(
+  alreadyHaveAPIM: boolean,
+  alreadyHaveKeyVault: boolean
+): OptionItem[] {
+  const options: OptionItem[] = [AzureResourceFunctionNewUI];
+  if (!alreadyHaveAPIM) options.push(AzureResourceApimNewUI);
+  options.push(AzureResourceSQLNewUI);
+  if (!alreadyHaveKeyVault) options.push(AzureResourceKeyVaultNewUI);
+  return options;
+}
+
+export function addCapabilityQuestion(
+  alreadyHaveTab: boolean,
+  alreadyHaveBot: boolean
+): MultiSelectQuestion {
+  const options: OptionItem[] = [];
+  if (!alreadyHaveTab) options.push(TabOptionItem);
+  if (!alreadyHaveBot) {
+    options.push(BotOptionItem);
+    options.push(MessageExtensionItem);
+    options.push(NotificationOptionItem);
+    options.push(CommandAndResponseOptionItem);
+  }
+  return {
+    name: AzureSolutionQuestionNames.Capabilities,
+    title: isBotNotificationEnabled()
+      ? getLocalizedString("core.addCapabilityQuestion.titleNew")
+      : getLocalizedString("core.addCapabilityQuestion.title"),
+    type: "multiSelect",
+    staticOptions: options,
+    default: [],
+  };
+}
+
+export const DeployPluginSelectQuestion: MultiSelectQuestion = {
+  name: AzureSolutionQuestionNames.PluginSelectionDeploy,
+  title: `Select resources`,
+  type: "multiSelect",
+  skipSingleOption: true,
+  staticOptions: [],
+  default: [],
+};
+
+export const AskSubscriptionQuestion: FuncQuestion = {
+  name: AzureSolutionQuestionNames.AskSub,
+  type: "func",
+  func: async (inputs: Inputs): Promise<Void> => {
+    return ok(Void);
+  },
+};
+
+export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestion {
+  let defaultUserEmail = "";
+  if (currentUserEmail && currentUserEmail.indexOf("@") > 0) {
+    defaultUserEmail = "[UserName]@" + currentUserEmail.split("@")[1];
+  }
+  return {
+    name: "email",
+    type: "text",
+    title: getLocalizedString("core.getUserEmailQuestion.title"),
+    default: defaultUserEmail,
+    validation: {
+      validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
+        if (!input || input.trim() === "") {
+          return getLocalizedString("core.getUserEmailQuestion.validation1");
+        }
+
+        input = input.trim();
+
+        if (input === defaultUserEmail) {
+          return getLocalizedString("core.getUserEmailQuestion.validation2");
+        }
+
+        const re = /\S+@\S+\.\S+/;
+        if (!re.test(input)) {
+          return getLocalizedString("core.getUserEmailQuestion.validation3");
+        }
+        return undefined;
+      },
+    },
+  };
 }

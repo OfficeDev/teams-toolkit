@@ -3,7 +3,7 @@
 "use strict";
 
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
-import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
+import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { SolutionSource } from "../constants";
 
 export function ScaffoldLocalDebugSettingsError(error: any): SystemError {

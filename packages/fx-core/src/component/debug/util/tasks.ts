@@ -3,7 +3,7 @@
 "use strict";
 
 import { ProductName } from "@microsoft/teamsfx-api";
-import { ProgrammingLanguage } from "../../../../../common/local/constants";
+import { ProgrammingLanguage } from "../../../common/local/constants";
 
 //TODO: retire this after fully moved to new tasks with "validate-local-prerequisites" and "npm run dev:teamsfx"
 export function generateTasks(

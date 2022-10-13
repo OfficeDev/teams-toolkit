@@ -64,11 +64,7 @@ import { AADManifest } from "./interfaces/AADManifest";
 import { format, Formats } from "./utils/format";
 import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
 import { isVSProject } from "../../../common/projectSettingsHelper";
-import {
-  PluginNames,
-  REMOTE_AAD_ID,
-  SOLUTION_PROVISION_SUCCEEDED,
-} from "../../../plugins/solution/fx-solution/constants";
+import { PluginNames, REMOTE_AAD_ID, SOLUTION_PROVISION_SUCCEEDED } from "../../constants";
 import { ComponentNames } from "../../constants";
 
 export class AadAppForTeamsImpl {

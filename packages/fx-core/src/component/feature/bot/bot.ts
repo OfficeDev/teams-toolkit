@@ -38,7 +38,7 @@ import {
   MessageExtensionItem,
   NotificationOptionItem,
   WorkflowOptionItem,
-} from "../../../plugins/solution/fx-solution/question";
+} from "../../constants";
 import { BicepComponent } from "../../bicep";
 import { BotCodeProvider } from "../../code/botCode";
 import "../../connection/azureWebAppConfig";

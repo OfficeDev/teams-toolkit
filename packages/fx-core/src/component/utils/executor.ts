@@ -8,7 +8,7 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../common/constants";
-import { SolutionError, SolutionSource } from "../../plugins/solution/fx-solution/constants";
+import { SolutionError, SolutionSource } from "../constants";
 
 export type Thunk<R> = () => Promise<Result<R, FxError>>;
 

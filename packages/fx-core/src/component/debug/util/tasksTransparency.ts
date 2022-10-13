@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ProgrammingLanguage, TaskOverallLabel } from "../../../../../common/local/constants";
+import { ProgrammingLanguage, TaskOverallLabel } from "../../../common/local/constants";
 import { CommentJSONValue, CommentObject, CommentArray } from "comment-json";
 import * as commentJson from "comment-json";
 import {
@@ -10,7 +10,7 @@ import {
   TaskCommand,
   TaskDefaultValue,
   TaskLabel,
-} from "../../../../../common/local/constants";
+} from "../../../common/local/constants";
 
 export function generateTasksJson(
   includeFrontend: boolean,

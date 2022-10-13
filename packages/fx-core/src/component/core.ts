@@ -77,7 +77,7 @@ import {
   ProjectFolderExistError,
 } from "../core/error";
 import { globalVars } from "../core/globalVars";
-import arm from "../plugins/solution/fx-solution/arm";
+import arm from "./arm";
 import {
   ApiConnectionOptionItem,
   AzureResourceApim,
@@ -94,14 +94,14 @@ import {
   TabFeatureIds,
   TabSPFxItem,
   TabSPFxNewUIItem,
-} from "../plugins/solution/fx-solution/question";
+} from "./constants";
 import { AzureResources, ComponentNames } from "./constants";
 import { pluginName2ComponentName } from "./migrate";
 import {
   getQuestionsForAddFeatureV3,
   getQuestionsForDeployV3,
   getQuestionsForProvisionV3,
-} from "./questionV3";
+} from "./question";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "./middleware/actionExecutionMW";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
@@ -111,7 +111,7 @@ import { deployUtils } from "./deployUtils";
 import { provisionUtils } from "./provisionUtils";
 import { getTemplatesFolder } from "../folder";
 import { ensureBasicFolderStructure } from "../core/FxCore";
-import { SolutionTelemetryProperty } from "../plugins/solution/fx-solution/constants";
+import { SolutionTelemetryProperty } from "./constants";
 import { getQuestionsForCreateProjectV2 } from "../core/middleware/questionModel";
 import { Constants } from "./resource/aadApp/constants";
 import { executeConcurrently } from "./utils/executor";

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import "mocha-jsdom";
 import * as sinon from "sinon";
 import { assert, expect } from "chai";
 import { renderHook } from "@testing-library/react-hooks";

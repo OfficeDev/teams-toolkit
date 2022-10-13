@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import "mocha-jsdom";
 import React from "react";
 import * as sinon from "sinon";
 import { assert, expect } from "chai";

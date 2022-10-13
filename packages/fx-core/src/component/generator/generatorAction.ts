@@ -6,12 +6,7 @@ import path from "path";
 import { GeneratorContext } from "./generatorContext";
 import { fetchZipFromUrl, fetchTemplateZipUrl, unzip, fetchSampleZipUrl } from "./utils";
 import fs from "fs-extra";
-import {
-  defaultTimeoutInMs,
-  defaultTryLimits,
-  sampleDownloadBaseUrl,
-  templateDownloadBaseUrl,
-} from "./constant";
+import { defaultTimeoutInMs, defaultTryLimits } from "./constant";
 import { getTemplatesFolder } from "../../folder";
 import { MissKeyError } from "./error";
 

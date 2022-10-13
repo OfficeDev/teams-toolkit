@@ -25,7 +25,7 @@ describe("Scaffold Tab then Add Function and SQL", function () {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("should generate correct local config file", , { testPlanCaseId: 15687252 }, async () => {
+  it("should generate correct local config file", { testPlanCaseId: 15687252 }, async () => {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);

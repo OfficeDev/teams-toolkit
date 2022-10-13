@@ -17,10 +17,9 @@ import {
 import { CliHelper } from "../../commonlib/cliHelper";
 
 describe("account command", function () {
-  let testFolder: string;
   let stdlog: {stdout: string, stderr: string};
   const subscription = getSubscriptionId();
-  testFolder = getTestFolder();
+  const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
 

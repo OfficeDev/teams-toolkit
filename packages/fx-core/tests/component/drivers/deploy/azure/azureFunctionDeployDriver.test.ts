@@ -3,19 +3,19 @@
 
 import "mocha";
 import * as sinon from "sinon";
-import * as tools from "../../../../src/common/tools";
-import { DeployArgs } from "../../../../src/component/driver/interface/buildAndDeployArgs";
-import { TestAzureAccountProvider } from "../../util/azureAccountMock";
-import { TestLogProvider } from "../../util/logProviderMock";
+import * as tools from "../../../../../src/common/tools";
+import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
+import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
+import { TestLogProvider } from "../../../util/logProviderMock";
 import * as appService from "@azure/arm-appservice";
 import * as Models from "@azure/arm-appservice/src/models";
-import * as fileOpt from "../../../../src/component/utils/fileOperation";
-import { AzureDeployDriver } from "../../../../src/component/driver/deploy/azureDeployDriver";
+import * as fileOpt from "../../../../../src/component/utils/fileOperation";
+import { AzureDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureDeployDriver";
 import { expect, use as chaiUse } from "chai";
 import * as fs from "fs-extra";
-import { AzureFunctionDeployDriver } from "../../../../src/component/driver/deploy/azureFunctionDeployDriver";
-import { MyTokenCredential } from "../../../plugins/solution/util";
-import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
+import { AzureFunctionDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureFunctionDeployDriver";
+import { MyTokenCredential } from "../../../../plugins/solution/util";
+import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 
 describe("Azure Function Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();

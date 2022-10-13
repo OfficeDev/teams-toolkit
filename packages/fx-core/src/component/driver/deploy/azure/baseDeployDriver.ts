@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DeployArgs, DeployContext, DeployStepArgs } from "../interface/buildAndDeployArgs";
-import { BaseComponentInnerError } from "../../error/componentError";
+import { DeployArgs, DeployContext, DeployStepArgs } from "../../interface/buildAndDeployArgs";
+import { BaseComponentInnerError } from "../../../error/componentError";
 import ignore, { Ignore } from "ignore";
-import { DeployConstant } from "../../constant/deployConstant";
+import { DeployConstant } from "../../../constant/deployConstant";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { zipFolderAsync } from "../../utils/fileOperation";
-import { asFactory, asOptional, asString } from "../../utils/common";
-import { BaseStepDriver } from "./baseStepDriver";
+import { zipFolderAsync } from "../../../utils/fileOperation";
+import { asFactory, asOptional, asString } from "../../../utils/common";
+import { BaseDeployStepDriver } from "../../interface/baseDeployStepDriver";
 
-export abstract class BaseDeployDriver extends BaseStepDriver {
+export abstract class BaseDeployDriver extends BaseDeployStepDriver {
   protected static readonly emptyMap = new Map<string, string>();
 
   protected static asDeployArgs = asFactory<DeployArgs>({

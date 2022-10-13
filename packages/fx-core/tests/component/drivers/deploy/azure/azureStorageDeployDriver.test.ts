@@ -3,11 +3,11 @@
 
 import "mocha";
 import * as sinon from "sinon";
-import * as tools from "../../../../src/common/tools";
-import { AzureStorageDeployDriver } from "../../../../src/component/driver/deploy/azureStorageDeployDriver";
-import { DeployArgs } from "../../../../src/component/driver/interface/buildAndDeployArgs";
-import { TestAzureAccountProvider } from "../../util/azureAccountMock";
-import { TestLogProvider } from "../../util/logProviderMock";
+import * as tools from "../../../../../src/common/tools";
+import { AzureStorageDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureStorageDeployDriver";
+import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
+import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
+import { TestLogProvider } from "../../../util/logProviderMock";
 import { assert } from "chai";
 import {
   ListAccountSasResponse,
@@ -15,9 +15,9 @@ import {
   StorageManagementClient,
 } from "@azure/arm-storage";
 import { BlobDeleteResponse, ContainerClient } from "@azure/storage-blob";
-import { MyTokenCredential } from "../../../plugins/solution/util";
+import { MyTokenCredential } from "../../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
-import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
+import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 
 function getMockStorageAccount1() {
   return {

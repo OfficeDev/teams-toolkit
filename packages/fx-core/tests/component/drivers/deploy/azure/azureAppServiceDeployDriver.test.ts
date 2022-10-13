@@ -3,22 +3,22 @@
 
 import * as sinon from "sinon";
 import "mocha";
-import { AzureAppServiceDeployDriver } from "../../../../src/component/driver/deploy/azureAppServiceDeployDriver";
-import { DeployArgs } from "../../../../src/component/driver/interface/buildAndDeployArgs";
+import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
+import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
 import * as appService from "@azure/arm-appservice";
-import * as tools from "../../../../src/common/tools";
-import { TestLogProvider } from "../../util/logProviderMock";
+import * as tools from "../../../../../src/common/tools";
+import { TestLogProvider } from "../../../util/logProviderMock";
 import { use as chaiUse, expect, assert } from "chai";
 import * as fs from "fs-extra";
-import { PrerequisiteError } from "../../../../src/component/error/componentError";
-import { TestAzureAccountProvider } from "../../util/azureAccountMock";
+import { PrerequisiteError } from "../../../../../src/component/error/componentError";
+import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import * as Models from "@azure/arm-appservice/src/models";
-import { AzureDeployDriver } from "../../../../src/component/driver/deploy/azureDeployDriver";
-import { DeployConstant } from "../../../../src/component/constant/deployConstant";
-import * as fileOpt from "../../../../src/component/utils/fileOperation";
-import { DeployExternalApiCallError } from "../../../../src/component/error/deployError";
-import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
-import { MyTokenCredential } from "../../../plugins/solution/util";
+import { AzureDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureDeployDriver";
+import { DeployConstant } from "../../../../../src/component/constant/deployConstant";
+import * as fileOpt from "../../../../../src/component/utils/fileOperation";
+import { DeployExternalApiCallError } from "../../../../../src/component/error/deployError";
+import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
+import { MyTokenCredential } from "../../../../plugins/solution/util";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();

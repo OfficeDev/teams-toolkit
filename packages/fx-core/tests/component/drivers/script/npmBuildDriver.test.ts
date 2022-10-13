@@ -12,7 +12,7 @@ import * as utils from "../../../../src/component/code/utils";
 import { TestAzureAccountProvider } from "../../util/azureAccountMock";
 import { TestLogProvider } from "../../util/logProviderMock";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
-import { NpmBuildDriver } from "../../../../src/component/driver/deploy/npmBuildDriver";
+import { NpmBuildDriver } from "../../../../src/component/driver/script/npmBuildDriver";
 import { assert } from "chai";
 
 describe("NPM Build Driver test", () => {

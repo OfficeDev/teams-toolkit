@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { AzureDeployDriver } from "./azureDeployDriver";
-import { DeployStepArgs } from "../interface/buildAndDeployArgs";
+import { DeployStepArgs } from "../../interface/buildAndDeployArgs";
 import {
   BlobDeleteResponse,
   BlobItem,
@@ -10,19 +10,19 @@ import {
   BlockBlobParallelUploadOptions,
   ContainerClient,
 } from "@azure/storage-blob";
-import { DeployConstant } from "../../constant/deployConstant";
-import { DeployExternalApiCallError } from "../../error/deployError";
-import { forEachFileAndDir } from "../../utils/fileOperation";
+import { DeployConstant } from "../../../constant/deployConstant";
+import { DeployExternalApiCallError } from "../../../error/deployError";
+import { forEachFileAndDir } from "../../../utils/fileOperation";
 import * as fs from "fs-extra";
 import path from "path";
 import * as mime from "mime";
 import { FxError, LogProvider, Result } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { StepDriver } from "../interface/stepDriver";
-import { DriverContext, AzureResourceInfo } from "../interface/commonArgs";
-import { createBlobServiceClient } from "../../utils/azureResourceOperation";
+import { StepDriver } from "../../interface/stepDriver";
+import { DriverContext, AzureResourceInfo } from "../../interface/commonArgs";
+import { createBlobServiceClient } from "../../../utils/azureResourceOperation";
 import { TokenCredential } from "@azure/identity";
-import { wrapRun } from "../../utils/common";
+import { wrapRun } from "../../../utils/common";
 
 @Service("azureStorage/deploy")
 export class AzureStorageDeployDriver implements StepDriver {

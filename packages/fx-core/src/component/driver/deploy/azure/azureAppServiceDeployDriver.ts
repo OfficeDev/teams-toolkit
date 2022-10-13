@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DeployStepArgs } from "../interface/buildAndDeployArgs";
+import { DeployStepArgs } from "../../interface/buildAndDeployArgs";
 import { AzureDeployDriver } from "./azureDeployDriver";
-import { StepDriver } from "../interface/stepDriver";
+import { StepDriver } from "../../interface/stepDriver";
 import { Service } from "typedi";
-import { DriverContext, AzureResourceInfo } from "../interface/commonArgs";
+import { DriverContext, AzureResourceInfo } from "../../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
 import { FxError, Result } from "@microsoft/teamsfx-api";
-import { wrapRun } from "../../utils/common";
+import { wrapRun } from "../../../utils/common";
 
 @Service("azureAppService/deploy")
 export class AzureAppServiceDeployDriver implements StepDriver {

@@ -11,7 +11,6 @@ import {
   IStaticTab,
   ok,
   Platform,
-  PluginContext,
   ProjectSettingsV3,
   Result,
   Stage,
@@ -42,7 +41,6 @@ import {
 import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
 import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
 import { isOfficialSPFx, Utils } from "../resource/spfx/utils/utils";
-import { convert2Context } from "../../plugins/resource/utils4v2";
 import { cpUtils } from "../../plugins/solution/fx-solution/utils/depsChecker/cpUtils";
 import { ComponentNames } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -79,11 +77,11 @@ export class SPFxTabCodeProvider {
 }
 
 export async function scaffoldSPFx(
-  context: ContextV3 | PluginContext,
+  context: ContextV3,
   inputs: InputsWithProjectPath,
   outputFolderPath: string
 ): Promise<Result<any, FxError>> {
-  const ui = (context as ContextV3).userInteraction || (context as PluginContext).ui;
+  const ui = context.userInteraction;
   const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
   try {
     const isAddSpfx = inputs.stage === Stage.addFeature && isSPFxMultiTabEnabled();
@@ -92,9 +90,7 @@ export async function scaffoldSPFx(
     let solutionName: string | undefined = undefined;
 
     if (!isAddSpfx) {
-      solutionName =
-        ((context as ContextV3).projectSetting?.appName as string) ||
-        ((context as PluginContext).projectSettings?.appName as string);
+      solutionName = context.projectSetting.appName;
     } else {
       const yorcPath = path.join(inputs.projectPath, "SPFx", ".yo-rc.json");
       if (!(await fs.pathExists(yorcPath))) {
@@ -249,9 +245,7 @@ export async function scaffoldSPFx(
       });
 
       const addCapRes = await manifestProvider.addCapabilities(
-        (context as ContextV3).manifestProvider
-          ? (context as ContextV3)
-          : convert2Context(context as PluginContext, true).context,
+        context,
         inputs,
         capabilitiesToAddManifest
       );
@@ -281,13 +275,7 @@ export async function scaffoldSPFx(
       );
 
       for (const capability of capabilitiesToAddManifest) {
-        const addCapRes = await manifestProvider.updateCapability(
-          (context as ContextV3).manifestProvider
-            ? (context as ContextV3)
-            : convert2Context(context as PluginContext, true).context,
-          inputs,
-          capability
-        );
+        const addCapRes = await manifestProvider.updateCapability(context, inputs, capability);
         if (addCapRes.isErr()) return err(addCapRes.error);
       }
     }

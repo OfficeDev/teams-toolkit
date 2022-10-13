@@ -2,8 +2,9 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { TaskOverallLabel } from "../../../../../common/local/constants";
+import * as Launch from "./launch";
 import * as LaunchNext from "./launchNext";
-import { TaskLabel } from "../../../../../common/local/constants";
 
 export function generateLaunchJson(
   includeFrontend: boolean,
@@ -43,8 +44,8 @@ export function generateCompounds(
   includeBot: boolean
 ): Record<string, unknown>[] {
   const result = LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot);
-  result[0].preLaunchTask = TaskLabel.Overall;
-  result[1].preLaunchTask = TaskLabel.Overall;
+  result[0].preLaunchTask = TaskOverallLabel.TransparentDefault;
+  result[1].preLaunchTask = TaskOverallLabel.TransparentDefault;
   return result;
 }
 
@@ -62,13 +63,24 @@ export function generateM365Compounds(
   includeBot: boolean
 ): Record<string, unknown>[] {
   const result = LaunchNext.generateM365Compounds(includeFrontend, includeBackend, includeBot);
-  result[0].preLaunchTask = TaskLabel.Overall;
-  result[1].preLaunchTask = TaskLabel.Overall;
-  result[2].preLaunchTask = TaskLabel.M365Overall;
-  result[3].preLaunchTask = TaskLabel.M365Overall;
+  result[0].preLaunchTask = TaskOverallLabel.TransparentDefault;
+  result[1].preLaunchTask = TaskOverallLabel.TransparentDefault;
+  result[2].preLaunchTask = TaskOverallLabel.TransparentM365;
+  result[3].preLaunchTask = TaskOverallLabel.TransparentM365;
   if (includeFrontend) {
-    result[4].preLaunchTask = TaskLabel.M365Overall;
-    result[5].preLaunchTask = TaskLabel.M365Overall;
+    result[4].preLaunchTask = TaskOverallLabel.TransparentM365;
+    result[5].preLaunchTask = TaskOverallLabel.TransparentM365;
   }
+  return result;
+}
+
+export function generateSpfxConfigurations(): Record<string, unknown>[] {
+  return Launch.generateSpfxConfigurations();
+}
+
+export function generateSpfxCompounds(): Record<string, unknown>[] {
+  const result = Launch.generateSpfxCompounds();
+  result[0].preLaunchTask = TaskOverallLabel.TransparentDefault;
+  result[1].preLaunchTask = TaskOverallLabel.TransparentDefault;
   return result;
 }

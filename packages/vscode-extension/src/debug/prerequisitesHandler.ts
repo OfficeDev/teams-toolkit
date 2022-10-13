@@ -1149,12 +1149,10 @@ async function handleCheckResults(
 
     if (shouldStop) {
       await progressHelper?.stop(false);
-      const message = util.format(
-        getDefaultString(displayMessages.errorMessageKey),
-        `[${getDefaultString(displayMessages.errorMessageLink)}](${
-          displayMessages.errorMessageCommand
-        })`
-      );
+      const message =
+        getDefaultString(displayMessages.errorMessageKey) +
+        " " +
+        displayMessages.showDetailMessage();
 
       // show failure summary in display message
       const displayMessage =
@@ -1162,10 +1160,10 @@ async function handleCheckResults(
           localize("teamstoolkit.localDebug.failedCheckers"),
           failures.map((f) => f.failureMsg ?? f.checker).join(", ")
         ) +
-        util.format(
-          localize(displayMessages.errorDisplayMessageKey),
-          `[${localize(displayMessages.errorMessageLink)}](${displayMessages.errorMessageCommand})`
-        );
+        localize(displayMessages.errorDisplayMessageKey) +
+        " " +
+        displayMessages.showDetailDisplayMessage();
+
       const errorOptions: UserErrorOptions = {
         source: ExtensionSource,
         name: displayMessages.errorName,

@@ -837,7 +837,11 @@ async function runBackgroundAsyncTasks(
       TreatmentVariables.WelcomeView,
       true
     )) as string | undefined;
-  await vscode.commands.executeCommand("setContext", "fx-extension.isExistingUser", isExistingUser);
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isExistingUser",
+    isExistingUser !== "no"
+  );
   if (TreatmentVariableValue.welcomeViewStyle === "A") {
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewA", true);

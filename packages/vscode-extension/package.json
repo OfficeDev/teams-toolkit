@@ -173,7 +173,7 @@
         {
           "id": "teamsfx-empty-project-and-check-upgrade",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.canUpgradeToArmAndMultiEnv && isWorkspaceTrusted && !fx-extension.welcomeViewTreatment"
+          "when": "!fx-extension.isTeamsFx && fx-extension.canUpgradeToArmAndMultiEnv && isWorkspaceTrusted"
         },
         {
           "id": "teamsfx-empty-project-new-user",

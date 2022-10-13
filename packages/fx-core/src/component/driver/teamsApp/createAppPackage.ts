@@ -18,7 +18,7 @@ import { compileHandlebarsTemplateString } from "../../../common/tools";
 
 const actionName = "teamsApp/createAppPackage";
 
-export class CreateTeamsAppDriver implements StepDriver {
+export class CreateAppPackageDriver implements StepDriver {
   public async run(
     args: CreateAppPackageArgs,
     context: DriverContext

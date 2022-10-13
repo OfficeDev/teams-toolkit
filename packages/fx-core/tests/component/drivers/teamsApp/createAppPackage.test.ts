@@ -4,13 +4,13 @@
 import "mocha";
 import * as sinon from "sinon";
 import chai from "chai";
-import { CreateTeamsAppDriver } from "../../../../src/component/driver/teamsApp/create";
-import { CreateTeamsAppArgs } from "../../../../src/component/driver/teamsApp/interfaces/CreateTeamsAppArgs";
+import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
+import { CreateAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { MockedM365Provider } from "../../../plugins/solution/util";
 
 describe("teamsApp/create", async () => {
-  const teamsAppDriver = new CreateTeamsAppDriver();
+  const teamsAppDriver = new CreateAppPackageDriver();
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),
   };
@@ -20,8 +20,9 @@ describe("teamsApp/create", async () => {
   });
 
   it("should throw error if file not exists", async () => {
-    const args: CreateTeamsAppArgs = {
-      appPackagePath: "fakePath",
+    const args: CreateAppPackageArgs = {
+      manifestTemplatePath: "fakepath",
+      outputPath: "",
     };
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);

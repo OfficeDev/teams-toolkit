@@ -8,11 +8,6 @@ export interface CreateAppPackageArgs {
   manifestTemplatePath: string;
 
   /**
-   * Current workspace, this should be the common args
-   */
-  projectPath: string;
-
-  /**
    * Zipped app package path
    */
   outputPath: string;

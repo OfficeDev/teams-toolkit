@@ -79,13 +79,13 @@ export class CreateTeamsAppDriver implements StepDriver {
         return ok(new Map([["teamsAppId", appDefinition.teamsAppId!]]));
       } catch (e: any) {
         if (e instanceof UserError || e instanceof SystemError) {
-          throw e;
+          return err(e);
         } else {
           const error = AppStudioResultFactory.SystemError(
             AppStudioError.TeamsAppCreateFailedError.name,
             AppStudioError.TeamsAppCreateFailedError.message(e)
           );
-          throw error;
+          return err(error);
         }
       }
     } else {

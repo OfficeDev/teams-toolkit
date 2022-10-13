@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { StepDriver } from "../../interface/stepDriver";
-import { DriverContext } from "../../interface/commonArgs";
+import { StepDriver } from "../interface/stepDriver";
+import { DriverContext } from "../interface/commonArgs";
 import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
 import { Service } from "typedi";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
@@ -10,7 +10,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { AadAppClient } from "./utility/aadAppClient";
 import axios from "axios";
-import { SystemError, UserError } from "@microsoft/teamsfx-api";
+import { SystemError, UserError, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import { getUuid } from "../../../common/tools";
 import { expandEnvironmentVariable } from "../../utils/common";
@@ -25,7 +25,10 @@ const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
 // logic from src\component\resource\aadApp\aadAppManifestManager.ts
 @Service(actionName) // DO NOT MODIFY the service name
 export class UpdateAadAppDriver implements StepDriver {
-  public async run(args: UpdateAadAppArgs, context: DriverContext): Promise<Map<string, string>> {
+  public async run(
+    args: UpdateAadAppArgs,
+    context: DriverContext
+  ): Promise<Result<Map<string, string>, FxError>> {
     try {
       this.validateArgs(args);
       const aadAppClient = new AadAppClient(context.m365TokenProvider);
@@ -59,24 +62,28 @@ export class UpdateAadAppDriver implements StepDriver {
       await fs.ensureDir(path.dirname(args.manifestOutputPath));
       await fs.writeFile(args.manifestOutputPath, JSON.stringify(manifest, null, 4), "utf8");
 
-      return new Map(
-        Object.entries(state) // convert each property to Map item
-          .filter((item) => item[1] && item[1] !== "") // do not return Map item that is empty
+      return ok(
+        new Map(
+          Object.entries(state) // convert each property to Map item
+            .filter((item) => item[1] && item[1] !== "") // do not return Map item that is empty
+        )
       );
     } catch (error) {
       if (error instanceof UserError || error instanceof SystemError) {
-        throw error;
+        return err(error);
       }
 
       if (axios.isAxiosError(error)) {
         if (error.response!.status >= 400 && error.response!.status < 500) {
-          throw new UnhandledUserError(actionName, JSON.stringify(error.response!.data), helpLink);
+          return err(
+            new UnhandledUserError(actionName, JSON.stringify(error.response!.data), helpLink)
+          );
         } else {
-          throw new UnhandledSystemError(actionName, JSON.stringify(error.response!.data));
+          return err(new UnhandledSystemError(actionName, JSON.stringify(error.response!.data)));
         }
       }
 
-      throw new UnhandledSystemError(actionName, JSON.stringify(error));
+      return err(new UnhandledSystemError(actionName, JSON.stringify(error)));
     }
   }
 

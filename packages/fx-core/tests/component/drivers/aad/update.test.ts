@@ -9,7 +9,6 @@ import chaiAsPromised from "chai-as-promised";
 import { UpdateAadAppDriver } from "../../../../src/component/driver/aad/update";
 import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
-import { UserError } from "@microsoft/teamsfx-api";
 import path from "path";
 import * as fs from "fs-extra";
 import { MissingFieldInManifestUserError } from "../../../../src/component/driver/aad/error/invalidFieldInManifestError";
@@ -53,31 +52,40 @@ describe("aadAppUpdate", async () => {
   it("should throw error if argument property is missing", async () => {
     let args: any = {};
 
-    await expect(updateAadAppDriver.run(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
+    let result = await updateAadAppDriver.run(args, mockedDriverContext);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr())
+      .is.instanceOf(InvalidParameterUserError)
+      .and.has.property(
+        "message",
         "Following parameter is missing or invalid for aadApp/update action: manifestPath, manifestOutputPath."
-      )
-      .and.is.instanceOf(InvalidParameterUserError);
+      );
 
     args = {
       manifestPath: "./aad.manifest.json",
     };
 
-    await expect(updateAadAppDriver.run(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
+    result = await updateAadAppDriver.run(args, mockedDriverContext);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr())
+      .is.instanceOf(InvalidParameterUserError)
+      .and.has.property(
+        "message",
         "Following parameter is missing or invalid for aadApp/update action: manifestOutputPath."
-      )
-      .and.is.instanceOf(InvalidParameterUserError);
+      );
 
     args = {
       manifestOutputPath: "./build/aad.manifest.dev.json",
     };
 
-    await expect(updateAadAppDriver.run(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
+    result = await updateAadAppDriver.run(args, mockedDriverContext);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr())
+      .is.instanceOf(InvalidParameterUserError)
+      .and.has.property(
+        "message",
         "Following parameter is missing or invalid for aadApp/update action: manifestPath."
-      )
-      .and.is.instanceOf(InvalidParameterUserError);
+      );
   });
 
   it("should throw error if argument property is invalid", async () => {
@@ -86,33 +94,42 @@ describe("aadAppUpdate", async () => {
       manifestOutputPath: "./build/aad.manifest.dev.json",
     };
 
-    await expect(updateAadAppDriver.run(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
+    let result = await updateAadAppDriver.run(args, mockedDriverContext);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr())
+      .is.instanceOf(InvalidParameterUserError)
+      .and.has.property(
+        "message",
         "Following parameter is missing or invalid for aadApp/update action: manifestPath."
-      )
-      .and.is.instanceOf(InvalidParameterUserError);
+      );
 
     args = {
       manifestPath: "./aad.manifest.json",
       manifestOutputPath: "",
     };
 
-    await expect(updateAadAppDriver.run(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
+    result = await updateAadAppDriver.run(args, mockedDriverContext);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr())
+      .is.instanceOf(InvalidParameterUserError)
+      .and.has.property(
+        "message",
         "Following parameter is missing or invalid for aadApp/update action: manifestOutputPath."
-      )
-      .and.is.instanceOf(InvalidParameterUserError);
+      );
 
     args = {
       manifestPath: true,
       manifestOutoutPath: true,
     };
 
-    await expect(updateAadAppDriver.run(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
+    result = await updateAadAppDriver.run(args, mockedDriverContext);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr())
+      .is.instanceOf(InvalidParameterUserError)
+      .and.has.property(
+        "message",
         "Following parameter is missing or invalid for aadApp/update action: manifestPath, manifestOutputPath."
-      )
-      .and.is.instanceOf(InvalidParameterUserError);
+      );
   });
 
   it("should success with valid manifest", async () => {
@@ -130,8 +147,10 @@ describe("aadAppUpdate", async () => {
 
     const result = await updateAadAppDriver.run(args, mockedDriverContext);
 
-    expect(result.get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.be.not.empty;
-    expect(result.size).to.equal(1);
+    expect(result.isOk()).to.be.true;
+    expect(result._unsafeUnwrap().get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.be.not
+      .empty;
+    expect(result._unsafeUnwrap().size).to.equal(1);
     expect(await fs.pathExists(path.join(outputPath))).to.be.true;
     const actualManifest = JSON.parse(await fs.readFile(outputPath, "utf8"));
     expect(actualManifest.id).to.equal(expectedObjectId);
@@ -158,20 +177,26 @@ describe("aadAppUpdate", async () => {
       manifestOutputPath: path.join(outputRoot, "manifest.output.json"),
     };
 
-    await expect(updateAadAppDriver.run(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith("Field id is missing or invalid in AAD app manifest.") // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
-      .and.is.instanceOf(MissingFieldInManifestUserError)
-      .and.has.property("source", "aadApp/update");
+    let result = await updateAadAppDriver.run(args, mockedDriverContext);
+
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr()).is.instanceOf(MissingFieldInManifestUserError).and.include({
+      message: "Field id is missing or invalid in AAD app manifest.", // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
+      source: "aadApp/update",
+    });
 
     args = {
       manifestPath: path.join(testAssetsRoot, "manifestWithoutId.json"),
       manifestOutputPath: path.join(outputRoot, "manifest.output.json"),
     };
 
-    await expect(updateAadAppDriver.run(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith("Field id is missing or invalid in AAD app manifest.")
-      .and.is.instanceOf(MissingFieldInManifestUserError)
-      .and.has.property("source", "aadApp/update");
+    result = await updateAadAppDriver.run(args, mockedDriverContext);
+
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr()).is.instanceOf(MissingFieldInManifestUserError).and.include({
+      message: "Field id is missing or invalid in AAD app manifest.", // The manifest does not has an id property
+      source: "aadApp/update",
+    });
   });
 
   it("should only call MS Graph API once if manifest does not have preAuthorizedApplications", async () => {
@@ -192,7 +217,9 @@ describe("aadAppUpdate", async () => {
       manifestOutputPath: path.join(outputRoot, "manifest.output.json"),
     };
 
-    await expect(updateAadAppDriver.run(args, mockedDriverContext)).to.not.eventually.be.rejected;
+    const result = await updateAadAppDriver.run(args, mockedDriverContext);
+
+    expect(result.isOk()).to.be.true;
   });
 
   it("should call MS Graph API twice if manifest has preAuthorizedApplications", async () => {
@@ -220,7 +247,9 @@ describe("aadAppUpdate", async () => {
       manifestOutputPath: path.join(outputRoot, "manifest.output.json"),
     };
 
-    await updateAadAppDriver.run(args, mockedDriverContext);
+    const result = await updateAadAppDriver.run(args, mockedDriverContext);
+
+    expect(result.isOk()).to.be.true;
     expect(requestCount).to.equal(2); // should call MS Graph API twice
   });
 
@@ -242,10 +271,11 @@ describe("aadAppUpdate", async () => {
 
     const actualManifest = JSON.parse(await fs.readFile(outputPath, "utf8"));
 
-    expect(result.get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.equal(
+    expect(result.isOk()).to.be.true;
+    expect(result._unsafeUnwrap().get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.equal(
       expectedPermissionId
     );
-    expect(result.size).to.equal(1);
+    expect(result._unsafeUnwrap().size).to.equal(1);
     expect(actualManifest.oauth2Permissions[0].id).to.equal(expectedPermissionId);
   });
 
@@ -266,7 +296,9 @@ describe("aadAppUpdate", async () => {
     const result = await updateAadAppDriver.run(args, mockedDriverContext);
 
     const actualManifest = JSON.parse(await fs.readFile(outputPath, "utf8"));
-    expect(result.size).to.equal(0);
+
+    expect(result.isOk()).to.be.true;
+    expect(result._unsafeUnwrap().size).to.equal(0);
     expect(actualManifest.oauth2Permissions[0].id).to.equal(expectedPermissionId);
   });
 
@@ -294,8 +326,11 @@ describe("aadAppUpdate", async () => {
       manifestOutputPath: path.join(outputRoot, "manifest.output.json"),
     };
 
-    await expect(updateAadAppDriver.run(args, mockedDriverContext))
-      .to.be.eventually.rejected.and.is.instanceOf(UnhandledUserError)
+    const result = await updateAadAppDriver.run(args, mockedDriverContext);
+
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr())
+      .is.instanceOf(UnhandledUserError)
       .and.property("message")
       .contain("Unhandled error happened in aadApp/update action");
   });
@@ -323,8 +358,11 @@ describe("aadAppUpdate", async () => {
       manifestOutputPath: path.join(outputRoot, "manifest.output.json"),
     };
 
-    await expect(updateAadAppDriver.run(args, mockedDriverContext))
-      .to.be.eventually.rejected.and.is.instanceOf(UnhandledSystemError)
+    const result = await updateAadAppDriver.run(args, mockedDriverContext);
+
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr())
+      .is.instanceOf(UnhandledSystemError)
       .and.property("message")
       .contain("Unhandled error happened in aadApp/update action");
   });

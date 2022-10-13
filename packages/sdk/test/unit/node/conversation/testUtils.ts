@@ -52,13 +52,26 @@ export class TestStorage implements NotificationTargetStorage {
 export class TestTarget implements NotificationTarget {
   public content: any;
   public type?: NotificationTargetType | undefined;
-  public sendMessage(text: string): Promise<MessageResponse> {
+  public error?: Error;
+  public async sendMessage(
+    text: string,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
+    if (this.error && onError) {
+      await onError({} as TurnContext, this.error);
+    }
     return new Promise((resolve) => {
       this.content = text;
       resolve({});
     });
   }
-  public sendAdaptiveCard(card: unknown): Promise<MessageResponse> {
+  public async sendAdaptiveCard(
+    card: unknown,
+    onError?: (context: TurnContext, error: Error) => Promise<void>
+  ): Promise<MessageResponse> {
+    if (this.error && onError) {
+      await onError({} as TurnContext, this.error);
+    }
     return new Promise((resolve) => {
       this.content = card;
       resolve({});

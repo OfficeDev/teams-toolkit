@@ -11,6 +11,8 @@ import { FeatureFlagName } from "../../src/common/constants";
 import {
   initializePreviewFeatureFlags,
   isBotNotificationEnabled,
+  isCLIDotNetEnabled,
+  isTDPIntegrationEnabled,
 } from "../../src/common/featureFlags";
 
 chai.use(chaiAsPromised);
@@ -55,6 +57,28 @@ describe("featureFlags", () => {
       initializePreviewFeatureFlags();
 
       chai.assert.isTrue(isBotNotificationEnabled());
+    });
+  });
+
+  describe("isTDPIntegrationEnabled()", () => {
+    let mockedEnvRestore: RestoreFn;
+
+    it("return true if env variable is set", async () => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.TDPIntegration]: "true" });
+
+      const result = isTDPIntegrationEnabled();
+
+      chai.assert.isTrue(result);
+      mockedEnvRestore();
+    });
+
+    it("return false if env variable is not set", async () => {
+      mockedEnvRestore = mockedEnv({});
+
+      const result = isTDPIntegrationEnabled();
+
+      chai.assert.isFalse(result);
+      mockedEnvRestore();
     });
   });
 });

@@ -68,7 +68,7 @@ export class SPFxTab {
     {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate local debug settings");
+      effects.push("generate debug settings");
     }
     if (isSPFxMultiTabEnabled()) {
       await scaffoldRootReadme(context.projectSetting, inputs.projectPath);

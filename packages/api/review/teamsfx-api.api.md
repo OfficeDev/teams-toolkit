@@ -1331,9 +1331,7 @@ export const ProductName = "teamsfx";
 // @public (undocumented)
 export interface ProjectConfig {
     // (undocumented)
-    config?: SolutionConfig | Json;
-    // (undocumented)
-    localSettings?: LocalSettings | Json;
+    config?: Json;
     // (undocumented)
     settings?: ProjectSettings;
 }

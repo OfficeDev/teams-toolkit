@@ -15,7 +15,6 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
-import { BuiltInSolutionNames } from "../../../../src/plugins/solution/fx-solution/v3/constants";
 import { randomAppName } from "../../../core/utils";
 import {
   MockedAzureAccountProvider,
@@ -43,7 +42,7 @@ describe("APIM V3 API", () => {
       appName: "my app",
       projectId: uuid.v4(),
       solutionSettings: {
-        name: BuiltInSolutionNames.azure,
+        name: "fx-solution-azure",
         version: "3.0.0",
         capabilities: ["Tab"],
         hostType: "Azure",

@@ -216,7 +216,7 @@ export class TeamsBot {
     {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate local debug configs");
+      effects.push("generate debug configs");
     }
 
     // 5. app-manifest.addCapability

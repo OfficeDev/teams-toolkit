@@ -42,15 +42,15 @@ export function execute(
     logger?.info(`Start to run command: "${command}" on path: "${workingDir}".`);
 
     exec(command, { cwd: workingDir, env: { ...process.env, ...env } }, (error, stdout, stderr) => {
-      logger?.debug(stdout);
       if (error) {
         logger?.error(`Failed to run command: "${command}" on path: "${workingDir}".`);
+        logger?.error(stdout);
         if (stderr) {
           logger?.error(stderr);
         }
-        logger?.error(error.message);
         reject(error);
       }
+      logger?.debug(stdout);
       resolve(stdout);
     });
   });

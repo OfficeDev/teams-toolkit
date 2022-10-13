@@ -13,7 +13,8 @@ import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
-import { Constants } from "../../resource/appManifest/constants";
+import { Constants, DEFAULT_DEVELOPER } from "../../resource/appManifest/constants";
+import { compileHandlebarsTemplateString } from "../../../common/tools";
 
 const actionName = "teamsApp/createAppPackage";
 
@@ -22,14 +23,39 @@ export class CreateTeamsAppDriver implements StepDriver {
     args: CreateAppPackageArgs,
     context: DriverContext
   ): Promise<Map<string, string>> {
+    const state = this.loadCurrentState();
     const manifestRes = await manifestUtils._readAppManifest(args.manifestTemplatePath);
     if (manifestRes.isErr()) {
       throw manifestRes.error;
     }
-    const manifest: TeamsAppManifest = manifestRes.value;
+    let manifest: TeamsAppManifest = manifestRes.value;
     if (!isUUID(manifest.id)) {
       manifest.id = v4();
     }
+
+    // Adjust template for samples with unnecessary placeholders
+    const capabilities = manifestUtils._getCapabilities(manifest);
+    if (capabilities.isErr()) {
+      throw capabilities.error;
+    }
+    const hasFrontend =
+      capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
+    const tabEndpoint = state.TAB_ENDPOINT;
+    if (!tabEndpoint && !hasFrontend) {
+      manifest.developer = DEFAULT_DEVELOPER;
+    }
+
+    const manifestTemplateString = JSON.stringify(manifest);
+
+    // TODO: Need to add customized keys to telemetry
+    // const customizedKeys = getCustomizedKeys("", JSON.parse(manifestTemplateString));
+    // if (telemetryProps) {
+    //   telemetryProps[TelemetryPropertyKey.customizedKeys] = JSON.stringify(customizedKeys);
+    // }
+    // Render mustache template with state and config
+
+    const resolvedManifestString = compileHandlebarsTemplateString(manifestTemplateString, state);
+    manifest = JSON.parse(resolvedManifestString);
 
     // TODO: deal with relatvie path
     // Environment variable will be replaced with actual value
@@ -75,5 +101,13 @@ export class CreateTeamsAppDriver implements StepDriver {
     // await fs.chmod(manifestFileName, 0o444);
 
     return new Map([["outputPath", zipFileName]]);
+  }
+
+  private loadCurrentState() {
+    // TODO: load all the required env variables, including configs
+    return {
+      TAB_ENDPOINT: process.env.TAB_ENDPOINT,
+      BOT_ID: process.env.BOT_ID,
+    };
   }
 }

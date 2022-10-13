@@ -427,12 +427,11 @@ export class ManifestUtils {
     const templateJson = manifestTemplateRes.value as TeamsAppManifest;
 
     //adjust template for samples with unnecessary placeholders
-    let hasFrontend = false;
     const capabilities = this._getCapabilities(templateJson);
     if (capabilities.isErr()) {
       return err(capabilities.error);
     }
-    hasFrontend =
+    const hasFrontend =
       capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
     const tabEndpoint = envInfo.state[ComponentNames.TeamsTab]?.endpoint;
     if (!tabEndpoint && !hasFrontend) {

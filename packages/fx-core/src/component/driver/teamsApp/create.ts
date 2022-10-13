@@ -1,11 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { TeamsAppManifest, UserError, SystemError } from "@microsoft/teamsfx-api";
+import {
+  TeamsAppManifest,
+  UserError,
+  SystemError,
+  FxError,
+  Result,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
-import { StepDriver } from "../../interface/stepDriver";
-import { DriverContext } from "../../interface/commonArgs";
+import { StepDriver } from "../interface/stepDriver";
+import { DriverContext } from "../interface/commonArgs";
 import { CreateTeamsAppArgs } from "./interfaces/CreateTeamsAppArgs";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
@@ -17,14 +25,17 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 const actionName = "teamsApp/create";
 
 export class CreateTeamsAppDriver implements StepDriver {
-  public async run(args: CreateTeamsAppArgs, context: DriverContext): Promise<Map<string, string>> {
+  public async run(
+    args: CreateTeamsAppArgs,
+    context: DriverContext
+  ): Promise<Result<Map<string, string>, FxError>> {
     let create = true;
 
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
       scopes: AppStudioScopes,
     });
     if (appStudioTokenRes.isErr()) {
-      throw appStudioTokenRes.error;
+      return err(appStudioTokenRes.error);
     }
     const appStudioToken = appStudioTokenRes.value;
 
@@ -33,7 +44,7 @@ export class CreateTeamsAppDriver implements StepDriver {
         AppStudioError.FileNotFoundError.name,
         AppStudioError.FileNotFoundError.message(args.appPackagePath)
       );
-      throw error;
+      return err(error);
     }
     const archivedFile = await fs.readFile(args.appPackagePath);
     const zipEntries = new AdmZip(archivedFile).getEntries();
@@ -43,7 +54,7 @@ export class CreateTeamsAppDriver implements StepDriver {
         AppStudioError.FileNotFoundError.name,
         AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
       );
-      throw error;
+      return err(error);
     }
     const manifestString = manifestFile.getData().toString();
     const manifest = JSON.parse(manifestString) as TeamsAppManifest;
@@ -65,7 +76,7 @@ export class CreateTeamsAppDriver implements StepDriver {
         context.logProvider.info(
           getLocalizedString("plugins.appstudio.teamsAppCreatedNotice", appDefinition.teamsAppId!)
         );
-        return new Map([["teamsAppId", appDefinition.teamsAppId!]]);
+        return ok(new Map([["teamsAppId", appDefinition.teamsAppId!]]));
       } catch (e: any) {
         if (e instanceof UserError || e instanceof SystemError) {
           throw e;
@@ -78,7 +89,7 @@ export class CreateTeamsAppDriver implements StepDriver {
         }
       }
     } else {
-      return new Map([["teamsAppId", teamsAppId]]);
+      return ok(new Map([["teamsAppId", teamsAppId]]));
     }
   }
 }

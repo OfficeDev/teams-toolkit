@@ -11,8 +11,6 @@ import { CreateTeamsAppArgs } from "../../../../src/component/driver/teamsApp/in
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { MockedM365Provider } from "../../../plugins/solution/util";
 
-chai.use(chaiAsPromised);
-
 describe("teamsApp/create", async () => {
   const teamsAppDriver = new CreateTeamsAppDriver();
   const mockedDriverContext: any = {
@@ -27,11 +25,11 @@ describe("teamsApp/create", async () => {
     const args: CreateTeamsAppArgs = {
       appPackagePath: "fakePath",
     };
-    await chai
-      .expect(teamsAppDriver.run(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
-        AppStudioError.FileNotFoundError.message(args.appPackagePath)[0]
-      )
-      .and.is.instanceOf(UserError);
+
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(AppStudioError.FileNotFoundError.name, result.error.name);
+    }
   });
 });

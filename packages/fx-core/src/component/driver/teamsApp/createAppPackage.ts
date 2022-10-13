@@ -6,9 +6,9 @@ import AdmZip from "adm-zip";
 import { v4 } from "uuid";
 import * as path from "path";
 import isUUID from "validator/lib/isUUID";
-import { TeamsAppManifest } from "@microsoft/teamsfx-api";
-import { StepDriver } from "../../interface/stepDriver";
-import { DriverContext } from "../../interface/commonArgs";
+import { TeamsAppManifest, Result, FxError, ok, err } from "@microsoft/teamsfx-api";
+import { StepDriver } from "../interface/stepDriver";
+import { DriverContext } from "../interface/commonArgs";
 import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
@@ -22,11 +22,11 @@ export class CreateTeamsAppDriver implements StepDriver {
   public async run(
     args: CreateAppPackageArgs,
     context: DriverContext
-  ): Promise<Map<string, string>> {
+  ): Promise<Result<Map<string, string>, FxError>> {
     const state = this.loadCurrentState();
     const manifestRes = await manifestUtils._readAppManifest(args.manifestTemplatePath);
     if (manifestRes.isErr()) {
-      throw manifestRes.error;
+      return err(manifestRes.error);
     }
     let manifest: TeamsAppManifest = manifestRes.value;
     if (!isUUID(manifest.id)) {
@@ -36,7 +36,7 @@ export class CreateTeamsAppDriver implements StepDriver {
     // Adjust template for samples with unnecessary placeholders
     const capabilities = manifestUtils._getCapabilities(manifest);
     if (capabilities.isErr()) {
-      throw capabilities.error;
+      return err(capabilities.error);
     }
     const hasFrontend =
       capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
@@ -69,7 +69,7 @@ export class CreateTeamsAppDriver implements StepDriver {
         AppStudioError.FileNotFoundError.name,
         AppStudioError.FileNotFoundError.message(colorFile)
       );
-      throw error;
+      return err(error);
     }
 
     const outlineFile = path.join(appDirectory, manifest.icons.outline);
@@ -78,7 +78,7 @@ export class CreateTeamsAppDriver implements StepDriver {
         AppStudioError.FileNotFoundError.name,
         AppStudioError.FileNotFoundError.message(outlineFile)
       );
-      throw error;
+      return err(error);
     }
 
     const zip = new AdmZip();
@@ -100,7 +100,7 @@ export class CreateTeamsAppDriver implements StepDriver {
     // await fs.writeFile(manifestFileName, JSON.stringify(manifest, null, 4));
     // await fs.chmod(manifestFileName, 0o444);
 
-    return new Map([["outputPath", zipFileName]]);
+    return ok(new Map([["outputPath", zipFileName]]));
   }
 
   private loadCurrentState() {

@@ -934,5 +934,6 @@
   "driver.aadApp.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.aadApp.error.missingEnv": "%s Environment variable %s is not set.",
   "driver.aadApp.error.generateSecretFailed": "Cannot generate client secret.",
-  "driver.aadApp.error.unhandledError": "Unhandled error happened in %s action: %s"
+  "driver.aadApp.error.unhandledError": "Unhandled error happened in %s action: %s",
+  "configManager.error.driverNotFound": "Driver %s not found for step %s"
 }

@@ -10,7 +10,7 @@ import { PrerequisiteError } from "../error/componentError";
  */
 export function checkMissingArgs<T>(name: string, value: T | null | undefined): T {
   if (!value) {
-    throw PrerequisiteError.somethingMissing(name);
+    throw PrerequisiteError.somethingMissing("Deploy", name);
   }
   return value;
 }
@@ -28,14 +28,14 @@ export function asString(s: unknown, key: string): string {
   if (typeof s === "string") {
     return s as string;
   }
-  throw PrerequisiteError.somethingMissing(key);
+  throw PrerequisiteError.somethingMissing("Deploy", key);
 }
 
 export function asNumber(s: unknown, key: string): number {
   if (typeof s === "number") {
     return s as number;
   }
-  throw PrerequisiteError.somethingMissing(key);
+  throw PrerequisiteError.somethingMissing("Deploy", key);
 }
 
 type KeyValidators<T> = {
@@ -52,6 +52,36 @@ export function asFactory<T>(keyValidators: KeyValidators<T>) {
       }
       return maybeT;
     }
-    throw PrerequisiteError.somethingIllegal("data", "plugins.bot.InvalidData");
+    throw PrerequisiteError.somethingIllegal("Deploy", "data", "plugins.bot.InvalidData");
   };
+}
+
+// Expand environment variables in content. The format of referencing environment variable is: ${{ENV_NAME}}
+export function expandEnvironmentVariable(content: string): string {
+  const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
+  const placeholders = content.match(placeholderRegex);
+
+  if (placeholders) {
+    for (const placeholder of placeholders) {
+      const envName = placeholder.slice(3, -2).trim(); // removes `${{` and `}}`
+      const envValue = process.env[envName];
+      if (envValue) {
+        content = content.replace(placeholder, envValue);
+      }
+    }
+  }
+
+  return content;
+}
+
+/**
+ * compare two key-value pairs, return true if they are exactly same
+ * @param kv1 parameter the first key-value pair
+ * @param kv2 parameter the first key-value pair
+ */
+export function isKvPairEqual<T>(kv1: { [key: string]: T }, kv2: { [key: string]: T }): boolean {
+  const _compare = (l: { [key: string]: T }, r: { [key: string]: T }) =>
+    !Object.keys(l).some((key) => r[key] !== l[key]);
+
+  return _compare(kv1, kv2) && _compare(kv2, kv1);
 }

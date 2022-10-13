@@ -39,10 +39,10 @@ import {
 import {
   upgradeDefaultFunctionName,
   upgradeProgrammingLanguage,
-} from "../../src/core/middleware/envInfoLoader";
+} from "../../src/core/middleware/envInfoLoaderV3";
 import { createAppNameQuestion } from "../../src/core/question";
 import { resourceGroupHelper } from "../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
-import { parseTeamsAppTenantId } from "../../src/plugins/solution/fx-solution/v2/utils";
+import { parseTeamsAppTenantId } from "../../src/component/provisionUtils";
 import { MyTokenCredential } from "../plugins/solution/util";
 import { randomAppName } from "./utils";
 

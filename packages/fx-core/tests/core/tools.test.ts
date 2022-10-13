@@ -12,7 +12,6 @@ import {
   replaceTemplateWithUserData,
 } from "../../src/common/tools";
 import { newEnvInfo } from "../../src/core/environment";
-import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 describe("tools", () => {
   it("newEnvInfo should return valid object", () => {
     const result = newEnvInfo();
@@ -31,7 +30,7 @@ describe("tools", () => {
       appName: "my app",
       projectId: "123234",
       solutionSettings: {
-        name: BuiltInSolutionNames.azure,
+        name: "test",
         version: "3.0.0",
         capabilities: ["Tab"],
         hostType: "Azure",

@@ -6,7 +6,15 @@ export class Commands {
   static readonly NpmInstallProd = "npm install --only=prod";
   static readonly NpmBuild = "npm run build";
   static readonly DotNetPublish = "dotnet publish --configuration Release";
+  static readonly BlazorBuild = (output: string, runtime: string): string =>
+    `dotnet publish --output ${output} --configuration Release --runtime ${runtime} --self-contained`;
+  static readonly NpmRunScript = (script: string): string => `npm run ${script}`;
 }
+
+export const NpmScripts = {
+  customizedBuild: "build:teamsfx",
+  customizedInstall: "install:teamsfx",
+};
 
 export const DEFAULT_DOTNET_FRAMEWORK = "net6.0";
 
@@ -22,7 +30,11 @@ export const ApiConstants = {
   baseScenarioName: "default",
 };
 
-export const ReplaceTemplateFileNamePlaceholder = /entryname/g;
+export const TemplatePlaceHolders = {
+  functionEntry: /entryname/g,
+  ProjectFile: /ProjectName/g,
+};
+
 export const RemoteTeamsAppId = "remoteTeamsAppId";
 
 export const TelemetryComponent = {

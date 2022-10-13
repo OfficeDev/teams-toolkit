@@ -29,6 +29,7 @@ import { generateLocalDebugSettings } from "../debug";
 import { addFeatureNotify, scaffoldRootReadme } from "../utils";
 import { isSPFxMultiTabEnabled } from "../../common/featureFlags";
 import { TabSPFxNewUIItem } from "../../plugins/solution/fx-solution/question";
+import { getComponent } from "../workflow";
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {
   name = ComponentNames.SPFxTab;
@@ -37,19 +38,23 @@ export class SPFxTab {
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     const projectSettings = context.projectSetting as ProjectSettingsV3;
-    // add teams-tab
-    projectSettings.components.push({
-      name: "teams-tab",
-      hosting: ComponentNames.SPFx,
-      deploy: true,
-      folder: inputs.folder || "SPFx",
-      build: true,
-    });
-    // add hosting component
-    projectSettings.components.push({
-      name: ComponentNames.SPFx,
-      provision: true,
-    });
+    const spfxTabConfig = getComponent(projectSettings, ComponentNames.SPFx);
+    if (!spfxTabConfig) {
+      // add teams-tab
+      projectSettings.components.push({
+        name: "teams-tab",
+        hosting: ComponentNames.SPFx,
+        deploy: true,
+        folder: inputs.folder || "SPFx",
+        build: true,
+      });
+      // add hosting component
+      projectSettings.components.push({
+        name: ComponentNames.SPFx,
+        provision: true,
+      });
+    }
+
     projectSettings.programmingLanguage =
       projectSettings.programmingLanguage || inputs[CoreQuestionNames.ProgrammingLanguage];
     globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
@@ -63,7 +68,7 @@ export class SPFxTab {
     {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate local debug settings");
+      effects.push("generate debug settings");
     }
     if (isSPFxMultiTabEnabled()) {
       await scaffoldRootReadme(context.projectSetting, inputs.projectPath);

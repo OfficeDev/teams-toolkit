@@ -163,9 +163,6 @@ describe("Multi Env Happy Path for SPFx", function () {
         expect(await fs.pathExists(file)).to.be.true;
       }
 
-      // Temporarily disable publish
-      // publish
-      /*
     result = await execAsyncWithRetry(`teamsfx publish --env ${env}`, {
       cwd: projectPath,
       env: processEnv,
@@ -174,9 +171,6 @@ describe("Multi Env Happy Path for SPFx", function () {
 
     {
       expect(result.stderr).to.be.empty;
-    }*/
-    }
-  );
 
   after(async () => {
     // clean up

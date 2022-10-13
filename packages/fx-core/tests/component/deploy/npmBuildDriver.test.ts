@@ -11,7 +11,7 @@ import * as tools from "../../../src/common/tools";
 import * as utils from "../../../src/component/code/utils";
 import { TestAzureAccountProvider } from "../util/azureAccountMock";
 import { TestLogProvider } from "../util/logProviderMock";
-import { DriverContext } from "../../../src/component/interface/buildAndDeployArgs";
+import { DriverContext } from "../../../src/component/interface/commonArgs";
 import chaiAsPromised = require("chai-as-promised");
 import { NpmBuildDriver } from "../../../src/component/deploy/npmBuildDriver";
 chai.use(chaiAsPromised);

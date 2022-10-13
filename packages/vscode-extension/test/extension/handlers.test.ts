@@ -22,6 +22,7 @@ import {
   UserError,
   Void,
   VsCodeEnv,
+  PathNotExistError,
 } from "@microsoft/teamsfx-api";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
@@ -58,14 +59,14 @@ describe("handlers", () => {
     const sandbox = sinon.createSandbox();
     let setStatusChangeMap: any;
 
-    this.beforeAll(() => {
+    beforeEach(() => {
       sandbox.stub(accountTreeViewProviderInstance, "subscribeToStatusChanges");
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
       sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
       sandbox.stub(ExtTelemetry, "dispose");
     });
 
-    this.afterAll(() => {
+    afterEach(() => {
       sandbox.restore();
     });
 
@@ -91,6 +92,69 @@ describe("handlers", () => {
     const input: Inputs = handlers.getSystemInputs();
 
     chai.expect(input.platform).equals(Platform.VSCode);
+  });
+
+  it("getAzureProjectConfigV3", async () => {
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
+    const fake_config_v3 = {
+      projectSettings: {
+        appName: "fake_test",
+        projectId: "fake_projectId",
+      },
+      envInfos: {},
+    };
+    sandbox.stub(MockCore.prototype, "getProjectConfigV3").resolves(ok(fake_config_v3));
+    const res = await handlers.getAzureProjectConfigV3();
+    chai.assert.exists(res?.projectSettings);
+    chai.assert.equal(res?.projectSettings.appName, "fake_test");
+    chai.assert.equal(res?.projectSettings.projectId, "fake_projectId");
+    sandbox.restore();
+  });
+
+  it("getAzureProjectConfigV3 return undefined", async () => {
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
+    sandbox
+      .stub(MockCore.prototype, "getProjectConfigV3")
+      .resolves(err(new PathNotExistError("path not exist", "fake path")));
+    const res = await handlers.getAzureProjectConfigV3();
+    chai.assert.isUndefined(res);
+    sandbox.restore();
+  });
+
+  it("openBackupConfigMd", async () => {
+    const workspacePath = "test";
+    const filePath = path.join(workspacePath, ".backup", "backup-config-change-logs.md");
+
+    const openTextDocument = sinon.stub(vscode.workspace, "openTextDocument").resolves();
+    const executeCommand = sinon.stub(vscode.commands, "executeCommand").resolves();
+
+    await handlers.openBackupConfigMd(workspacePath, filePath);
+
+    chai.assert.isTrue(openTextDocument.calledOnce);
+    chai.assert.isTrue(
+      executeCommand.calledOnceWithExactly("markdown.showPreview", vscode.Uri.file(filePath))
+    );
+    openTextDocument.restore();
+    executeCommand.restore();
+  });
+
+  it("addFileSystemWatcher", async () => {
+    const workspacePath = "test";
+
+    const watcher = { onDidCreate: () => ({ dispose: () => undefined }) } as any;
+    const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
+    const listener = sinon.stub(watcher, "onDidCreate").resolves();
+
+    handlers.addFileSystemWatcher(workspacePath);
+
+    chai.assert.isTrue(createWatcher.calledTwice);
+    chai.assert.isTrue(listener.calledTwice);
+    createWatcher.restore();
+    listener.restore();
   });
 
   describe("command handlers", function () {

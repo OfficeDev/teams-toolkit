@@ -224,9 +224,7 @@ describe("Multi Env Happy Path for Azure", function () {
           chai.expect(await fs.pathExists(file)).to.be.true;
         }
 
-        // Temporarily disable publish
         // publish
-        /*
         await execAsyncWithRetry(`teamsfx publish --env ${env}`, {
           cwd: projectPath,
           env: processEnv,
@@ -240,12 +238,11 @@ describe("Multi Env Happy Path for Azure", function () {
             throw contextResult.error;
           }
           const context = contextResult.value;
-          const aad = AadValidator.init(context, false, AppStudioLogin);
-          const appId = aad.clientId;
-
-          AppStudioValidator.init(context);
-          await AppStudioValidator.validatePublish(appId);
-        }*/
+          const appStudioObject = AppStudioValidator.init(context);
+          const appId = appStudioObject.teamsAppId;
+          chai.assert.isNotNull(appId);
+          await AppStudioValidator.validatePublish(appId!);
+        }
       } catch (e) {
         console.log("Unexpected exception is thrown when running test: " + e);
         console.log(e.stack);

@@ -54,8 +54,8 @@
 |  [getLogLevel()](./teamsfx.getloglevel.md) | Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | Generate connection configuration consumed by tedious. |
 |  [handleMessageExtensionQueryWithToken(context, config, scopes, logic)](./teamsfx.handlemessageextensionquerywithtoken.md) | Users execute query in message extension with SSO or access token. |
-|  [sendAdaptiveCard(target, card)](./teamsfx.sendadaptivecard.md) | Send an adaptive card message to a notification target. |
-|  [sendMessage(target, text)](./teamsfx.sendmessage.md) | Send a plain text message to a notification target. |
+|  [sendAdaptiveCard(target, card, onError)](./teamsfx.sendadaptivecard.md) | Send an adaptive card message to a notification target. |
+|  [sendMessage(target, text, onError)](./teamsfx.sendmessage.md) | Send a plain text message to a notification target. |
 |  [setLogFunction(logFunction)](./teamsfx.setlogfunction.md) | Set custom log function. Use the function if it's set. Priority is lower than setLogger. |
 |  [setLogger(logger)](./teamsfx.setlogger.md) | Set custom logger. Use the output functions if it's set. Priority is higher than setLogFunction. |
 |  [setLogLevel(level)](./teamsfx.setloglevel.md) | Update log level helper. |

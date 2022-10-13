@@ -14,34 +14,6 @@ export type Thunk<R> = () => Promise<Result<R, FxError>>;
 
 export type NamedThunk<R> = { pluginName: string; taskName: string; thunk: Thunk<R> };
 
-export async function executeThunks<R>(
-  namedThunks: NamedThunk<R>[],
-  logger: LogProvider
-): Promise<Result<R, FxError>[]> {
-  const result = Promise.all(
-    namedThunks.map(async (namedThunk) => {
-      logger.info(`Running ${namedThunk.pluginName} concurrently`);
-      try {
-        return namedThunk.thunk();
-      } catch (e) {
-        if (e instanceof UserError || e instanceof SystemError) {
-          return err<R, FxError>(e);
-        }
-        return err<R, FxError>(
-          new SystemError(
-            SolutionSource,
-            "UnknownError",
-            `[SolutionV2.executeConcurrently] unknown error, plugin: ${
-              namedThunk.pluginName
-            }, taskName: ${namedThunk.taskName}, error: ${JSON.stringify(e)}`
-          )
-        );
-      }
-    })
-  );
-  return result;
-}
-
 export async function executeConcurrently<R>(
   namedThunks: NamedThunk<R>[],
   logger: LogProvider,

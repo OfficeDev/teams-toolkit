@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureResourceInfo, DeployStepArgs, DriverContext } from "../interface/buildAndDeployArgs";
+import { DeployStepArgs } from "../interface/buildAndDeployArgs";
 import { AzureDeployDriver } from "./azureDeployDriver";
 import { DeployExternalApiCallError } from "../error/deployError";
-import { AxiosResponseWithStatusResult } from "../../common/azure-hosting/interfaces";
 import { Service } from "typedi";
 import { StepDriver } from "../interface/stepDriver";
-import { TokenCredential } from "@azure/identity";
+import { AzureResourceInfo, DriverContext } from "../interface/commonArgs";
+import { TokenCredential } from "@azure/core-http";
 
-@Service("deploy/azureFunction")
+@Service("azureFunctions/deploy")
 export class AzureFunctionDeployDriver implements StepDriver {
   async run(args: unknown, context: DriverContext): Promise<Map<string, string>> {
     const impl = new AzureFunctionDeployDriverImpl(args, context);

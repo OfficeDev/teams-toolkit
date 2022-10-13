@@ -38,6 +38,6 @@ It's recommended to get bot installations from .
 |  [channels()](./teamsfx.teamsbotinstallation.channels.md) |  | Get channels from this bot installation. |
 |  [getTeamDetails()](./teamsfx.teamsbotinstallation.getteamdetails.md) |  | Get team details from this bot installation |
 |  [members()](./teamsfx.teamsbotinstallation.members.md) |  | Get members from this bot installation. |
-|  [sendAdaptiveCard(card)](./teamsfx.teamsbotinstallation.sendadaptivecard.md) |  | Send an adaptive card message. |
-|  [sendMessage(text)](./teamsfx.teamsbotinstallation.sendmessage.md) |  | Send a plain text message. |
+|  [sendAdaptiveCard(card, onError)](./teamsfx.teamsbotinstallation.sendadaptivecard.md) |  | Send an adaptive card message. |
+|  [sendMessage(text, onError)](./teamsfx.teamsbotinstallation.sendmessage.md) |  | Send a plain text message. |
 

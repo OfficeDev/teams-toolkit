@@ -20,8 +20,7 @@ import {
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
-import { Constants } from "../../plugins/resource/frontend/constants";
-import { ComponentNames } from "../constants";
+import { ComponentNames, PathConstants } from "../constants";
 import { DebugAction } from "./common";
 import { DebugArgumentEmptyError, errorSource, InvalidTabBaseUrlError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
@@ -110,7 +109,7 @@ export class TabDebugHandler {
       // set endpoint, domain, indexPath to state
       this.envInfoV3.state[ComponentNames.TeamsTab].endpoint = this.args.baseUrl;
       this.envInfoV3.state[ComponentNames.TeamsTab].domain = "localhost";
-      this.envInfoV3.state[ComponentNames.TeamsTab].indexPath = Constants.FrontendIndexPath;
+      this.envInfoV3.state[ComponentNames.TeamsTab].indexPath = PathConstants.reactTabIndexPath;
 
       const statePath = await environmentManager.writeEnvState(
         cloneDeep(this.envInfoV3.state),

@@ -20,6 +20,7 @@ import {
   Result,
   SolutionContext,
   SystemError,
+  TelemetryReporter,
   UserError,
   v2,
   v3,
@@ -27,22 +28,15 @@ import {
 import * as fs from "fs-extra";
 import os from "os";
 import path from "path";
-import { Container } from "typedi";
-import { format } from "util";
 import {
   TEAMS_FX_RESOURCE_ID_KEY,
-  GLOBAL_CONFIG,
-  RESOURCE_GROUP_NAME,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
-  SUBSCRIPTION_ID,
 } from "./constants";
-import { environmentManager } from "../../../core/environment";
-import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../common/armInterface";
 import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
 import { executeCommand } from "../../../common/cpUtils";
 import {
@@ -52,22 +46,13 @@ import {
   getUuid,
   waitSeconds,
 } from "../../../common/tools";
-import { getTemplatesFolder } from "../../../folder";
-import { getActivatedV2ResourcePlugins } from "./ResourcePluginContainer";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { ProgressHelper } from "./utils/progressHelper";
-import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
-import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../../../common/utils";
 import { convertManifestTemplateToV3, pluginName2ComponentName } from "../../../component/migrate";
-import { isVSProject } from "../../../common/projectSettingsHelper";
+import { getProjectTemplatesFolderPath } from "../../../common/utils";
 
 const bicepOrchestrationFileName = "main.bicep";
-const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";
-const bicepOrchestrationConfigMainFileName = "mainConfig.bicep";
-const bicepOrchestrationProvisionFileName = "provision.bicep";
-const bicepOrchestrationConfigFileName = "config.bicep";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const pollWaitSeconds = 10;
@@ -78,83 +63,6 @@ const resourceBaseName = "resourceBaseName";
 const parameterName = "parameters";
 const solutionName = "solution";
 const InvalidTemplateErrorCode = "InvalidTemplate";
-
-// Get ARM template content from each resource plugin and output to project folder
-export async function generateArmTemplate(
-  ctx: SolutionContext,
-  selectedPlugins: NamedArmResourcePlugin[] = []
-): Promise<Result<any, FxError>> {
-  let result: Result<void, FxError>;
-  ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplateStart, {
-    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-  });
-  try {
-    result = await doGenerateArmTemplate(ctx, selectedPlugins);
-    if (result.isOk()) {
-      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplate, {
-        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-      });
-    } else {
-      sendErrorTelemetryThenReturnError(
-        SolutionTelemetryEvent.GenerateArmTemplate,
-        result.error,
-        ctx.telemetryReporter
-      );
-    }
-  } catch (error) {
-    result = err(
-      new SystemError(error, SolutionSource, SolutionError.FailedToGenerateArmTemplates)
-    );
-    sendErrorTelemetryThenReturnError(
-      SolutionTelemetryEvent.GenerateArmTemplate,
-      result.error,
-      ctx.telemetryReporter
-    );
-  }
-  return result;
-}
-
-export async function generateBicep(
-  ctx: v3.ContextWithManifestProvider,
-  inputs: v2.InputsWithProjectPath,
-  addedPlugins: string[],
-  existingPlugins: string[]
-): Promise<Result<any, FxError>> {
-  let result: Result<void, FxError>;
-  ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplateStart, {
-    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-  });
-  try {
-    result = await doGenerateBicep(ctx, inputs, addedPlugins, existingPlugins);
-    if (result.isOk()) {
-      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplate, {
-        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-      });
-    } else {
-      sendErrorTelemetryThenReturnError(
-        SolutionTelemetryEvent.GenerateArmTemplate,
-        result.error,
-        ctx.telemetryReporter
-      );
-    }
-  } catch (error) {
-    result = err(
-      new SystemError({
-        error,
-        source: SolutionSource,
-        name: SolutionError.FailedToGenerateArmTemplates,
-      })
-    );
-    sendErrorTelemetryThenReturnError(
-      SolutionTelemetryEvent.GenerateArmTemplate,
-      result.error,
-      ctx.telemetryReporter
-    );
-  }
-  return result;
-}
 
 type DeployContext = {
   ctx: SolutionContext;
@@ -307,147 +215,6 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
           deployCtx.ctx.telemetryReporter
         );
       }
-    }
-  }
-}
-
-export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
-  const progressHandler = await ProgressHelper.startDeployArmTemplatesProgressHandler(ctx.ui);
-  await progressHandler?.next(
-    getLocalizedString("core.deployArmTemplates.Progress.ExecuteDeployment")
-  );
-
-  // update parameters
-  const parameterJson = await getParameterJson(ctx);
-  const resourceGroupName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
-  if (!resourceGroupName) {
-    return err(
-      new SystemError(
-        SolutionSource,
-        "NoResourceGroupFound",
-        getDefaultString("core.deployArmTemplates.FailedToReadResourceGroup"),
-        getLocalizedString("core.deployArmTemplates.FailedToReadResourceGroup")
-      )
-    );
-  }
-
-  const bicepCommand = await ensureBicep(ctx, ctx.answers);
-
-  // Compile bicep file to json
-  const templateDir = path.join(await getProjectTemplatesFolderPath(ctx.root), "azure");
-  const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
-  const armTemplateJson = await compileBicepToJson(
-    bicepCommand,
-    bicepOrchestrationFilePath,
-    ctx.logProvider
-  );
-  ctx.logProvider?.info(
-    getLocalizedString(
-      "core.deployArmTemplates.CompileBicepSuccessNotice",
-      PluginDisplayName.Solution
-    )
-  );
-
-  // deploy arm templates to azure
-  const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
-  const client = await getResourceManagementClientForArmDeployment(
-    ctx.azureAccountProvider!,
-    subscriptionId
-  );
-  const deploymentName = `${PluginDisplayName.Solution}_deployment`.replace(" ", "_").toLowerCase();
-  const deploymentParameters: Deployment = {
-    properties: {
-      parameters: parameterJson.parameters,
-      template: armTemplateJson as any,
-      mode: "Incremental" as DeploymentMode,
-    },
-  };
-
-  const deployCtx: DeployContext = {
-    ctx: ctx,
-    finished: false,
-    deploymentStartTime: Date.now(),
-    client: client,
-    resourceGroupName: resourceGroupName,
-    deploymentName: deploymentName,
-  };
-
-  try {
-    const result = client.deployments
-      .beginCreateOrUpdateAndWait(resourceGroupName, deploymentName, deploymentParameters)
-      .then((result) => {
-        ctx.logProvider?.info(
-          getLocalizedString(
-            "core.deployArmTemplates.SuccessNotice",
-            PluginDisplayName.Solution,
-            resourceGroupName,
-            deploymentName
-          )
-        );
-        syncArmOutput(ctx.envInfo, result.properties?.outputs);
-        return result;
-      })
-      .finally(() => {
-        deployCtx.finished = true;
-      });
-
-    await pollDeploymentStatus(deployCtx);
-    await result;
-    return ok(undefined);
-  } catch (error) {
-    // return the error if the template is invalid
-    if (error.code === InvalidTemplateErrorCode) {
-      return err(
-        new UserError({
-          error,
-          source: SolutionSource,
-          name: SolutionError.FailedToValidateArmTemplates,
-        })
-      );
-    }
-
-    // try to get deployment error
-    const result = await wrapGetDeploymentError(deployCtx, resourceGroupName, deploymentName);
-    if (result.isOk()) {
-      const deploymentError = result.value;
-
-      // return thrown error if deploymentError is empty
-      if (!deploymentError) {
-        return err(
-          new UserError({
-            error,
-            source: SolutionSource,
-            name: SolutionError.FailedToDeployArmTemplatesToAzure,
-          })
-        );
-      }
-      const deploymentErrorObj = formattedDeploymentError(deploymentError);
-      const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
-      let errorMessage = getLocalizedString(
-        "core.deployArmTemplates.FailNotice",
-        PluginDisplayName.Solution,
-        resourceGroupName,
-        deploymentName
-      );
-      errorMessage += getLocalizedString(
-        "core.deployArmTemplates.DeploymentErrorWithHelplink",
-        error.message,
-        deploymentErrorMessage,
-        HelpLinks.ArmHelpLink
-      );
-      const notificationMessage = getNotificationMessage(deploymentError, deploymentName);
-      const returnError = new UserError({
-        source: SolutionSource,
-        message: errorMessage,
-        displayMessage: notificationMessage,
-        name: SolutionError.FailedToDeployArmTemplatesToAzure,
-        helpLink: HelpLinks.ArmHelpLink,
-      });
-      returnError.innerError = new DeploymentErrorMessage(JSON.stringify(deploymentErrorObj));
-
-      return err(returnError);
-    } else {
-      return result;
     }
   }
 }
@@ -639,65 +406,6 @@ function syncArmOutput(envInfo: EnvInfo | v3.EnvInfoV3, armOutput: any) {
   }
 }
 
-export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
-  ctx.logProvider?.info(
-    getLocalizedString("core.deployArmTemplates.StartNotice", PluginDisplayName.Solution)
-  );
-  let result: Result<void, FxError>;
-  ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ArmDeploymentStart, {
-    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-  });
-  try {
-    result = await doDeployArmTemplates(ctx);
-    if (result.isOk()) {
-      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ArmDeployment, {
-        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-      });
-    } else {
-      const errorProperties: { [key: string]: string } = {};
-      // If the innerError is a DeploymentErrorMessage value, we will set it in telemetry.
-      if (result.error.innerError && result.error.innerError instanceof DeploymentErrorMessage) {
-        errorProperties[SolutionTelemetryProperty.ArmDeploymentError] =
-          result.error.innerError.value;
-      }
-      sendErrorTelemetryThenReturnError(
-        SolutionTelemetryEvent.ArmDeployment,
-        result.error,
-        ctx.telemetryReporter,
-        errorProperties
-      );
-    }
-  } catch (error) {
-    if (error instanceof UserError || error instanceof SystemError) {
-      result = err(error);
-    } else if (error instanceof Error) {
-      result = err(
-        new SystemError({
-          error,
-          source: SolutionSource,
-          name: SolutionError.FailedToDeployArmTemplatesToAzure,
-        })
-      );
-    } else {
-      result = err(
-        new SystemError({
-          error,
-          source: SolutionSource,
-          name: SolutionError.FailedToDeployArmTemplatesToAzure,
-        })
-      );
-    }
-    sendErrorTelemetryThenReturnError(
-      SolutionTelemetryEvent.ArmDeployment,
-      result.error,
-      ctx.telemetryReporter
-    );
-  }
-  await ProgressHelper.endDeployArmTemplatesProgress(result.isOk());
-  return result;
-}
-
 export async function deployArmTemplatesV3(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
@@ -846,40 +554,6 @@ export async function updateAzureParameters(
   }
 }
 
-export async function getParameterJson(ctx: SolutionContext) {
-  if (!ctx.envInfo.envName) {
-    throw new SystemError(
-      "Solution",
-      "FailedToGetEnvironmentName",
-      getDefaultString("core.deployArmTemplates.FailedToGetEnvironmentName"),
-      getLocalizedString("core.deployArmTemplates.FailedToGetEnvironmentName")
-    );
-  }
-
-  const parameterFileName = parameterFileNameTemplate.replace(
-    EnvNamePlaceholder,
-    ctx.envInfo.envName
-  );
-  const parameterFolderPath = path.join(ctx.root, configsFolder);
-  const parameterFilePath = path.join(parameterFolderPath, parameterFileName);
-  try {
-    await fs.stat(parameterFilePath);
-  } catch (err) {
-    const error = new UserError(
-      SolutionSource,
-      "ParameterFileNotExist",
-      getDefaultString("core.deployArmTemplates.ParameterNotExist", parameterFilePath),
-      getLocalizedString("core.deployArmTemplates.ParameterNotExist", parameterFilePath)
-    );
-    ctx.logProvider?.error(error.message);
-    throw error;
-  }
-
-  const parameterJson = await getExpandedParameter(ctx, parameterFilePath); // only expand secrets in memory
-
-  return parameterJson;
-}
-
 export async function getParameterJsonV3(
   ctx: v2.Context,
   projectPath: string,
@@ -910,382 +584,6 @@ export async function getParameterJsonV3(
   return parameterJson;
 }
 
-function generateArmFromResult(
-  result: ArmTemplateResult,
-  bicepOrchestrationTemplate: BicepOrchestrationContent,
-  pluginName: string,
-  moduleProvisionFiles: Map<string, string>,
-  moduleConfigFiles: Map<string, string>
-) {
-  bicepOrchestrationTemplate.applyTemplate(pluginName, result);
-  if (result?.Configuration?.Modules) {
-    for (const module of Object.entries(result.Configuration.Modules)) {
-      const moduleName = module[0];
-      const moduleValue = module[1] as string;
-      moduleConfigFiles.set(generateBicepModuleConfigFilePath(moduleName), moduleValue);
-    }
-  }
-  if (result?.Provision?.Modules) {
-    for (const module of Object.entries(result.Provision.Modules)) {
-      const moduleName = module[0];
-      const moduleValue = module[1] as string;
-      moduleProvisionFiles.set(generateBicepModuleProvisionFilePath(moduleName), moduleValue);
-    }
-  }
-}
-
-async function doGenerateArmTemplate(
-  ctx: SolutionContext,
-  selectedPlugins: NamedArmResourcePlugin[]
-): Promise<Result<any, FxError>> {
-  const baseName = generateResourceBaseName(
-    convertToAlphanumericOnly(ctx.projectSettings!.appName),
-    ctx.envInfo!.envName
-  );
-  const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
-    (p) => new NamedArmResourcePluginAdaptor(p)
-  ); // This function ensures return result won't be empty
-  const bicepOrchestrationTemplate = new BicepOrchestrationContent(
-    plugins.map((p) => p.name),
-    baseName
-  );
-  const moduleProvisionFiles = new Map<string, string>();
-  const moduleConfigFiles = new Map<string, string>();
-
-  // In existing app scenario, arm template will not be added when adding sso
-  // Thus here if main.bicep does not exist, will try to scaffold all
-  const templateFolderPath = path.join(await getProjectTemplatesFolderPath(ctx.root), "azure");
-  if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationFileName)))) {
-    selectedPlugins = plugins;
-  }
-
-  // Get bicep content from each resource plugin
-  for (const plugin of plugins) {
-    const pluginWithArm = plugin as NamedArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
-    const pluginContext = getPluginContext(ctx, pluginWithArm.name);
-    let result: Result<ArmTemplateResult, FxError>;
-    let errMessage = "";
-    let method = "";
-    if (
-      pluginWithArm.updateArmTemplates &&
-      !selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
-    ) {
-      method = "updateArmTemplates";
-      result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<
-        ArmTemplateResult,
-        FxError
-      >;
-      errMessage = getLocalizedString("core.updateArmTemplate.failNotice");
-    } else if (
-      pluginWithArm.generateArmTemplates &&
-      selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
-    ) {
-      method = "generateArmTemplates";
-      result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
-        ArmTemplateResult,
-        FxError
-      >;
-      errMessage = getLocalizedString("core.generateArmTemplate.failNotice");
-    } else {
-      continue;
-    }
-    if (result.isOk()) {
-      ctx.logProvider?.info(
-        getLocalizedString("core.deployArmTemplates.PluginOperationSuccess", plugin.name, method)
-      );
-      generateArmFromResult(
-        result.value,
-        bicepOrchestrationTemplate,
-        pluginWithArm.name,
-        moduleProvisionFiles,
-        moduleConfigFiles
-      );
-    } else {
-      const msg = format(errMessage, ctx.projectSettings?.appName);
-      ctx.logProvider?.error(msg);
-      return result;
-    }
-  }
-
-  await persistBicepTemplates(
-    bicepOrchestrationTemplate,
-    moduleProvisionFiles,
-    moduleConfigFiles,
-    ctx.root,
-    isVSProject(ctx.projectSettings)
-  );
-
-  return ok(undefined); // Nothing to return when success
-}
-
-async function doGenerateBicep(
-  ctx: v3.ContextWithManifestProvider,
-  inputs: v2.InputsWithProjectPath,
-  addedPlugins: string[],
-  existingPlugins: string[]
-): Promise<Result<any, FxError>> {
-  const baseName = generateResourceBaseName(
-    convertToAlphanumericOnly(ctx.projectSetting.appName),
-    ""
-  );
-  const allPlugins = addedPlugins.concat(existingPlugins);
-  const bicepOrchestrationTemplate = new BicepOrchestrationContent(allPlugins, baseName);
-  const moduleProvisionFiles = new Map<string, string>();
-  const moduleConfigFiles = new Map<string, string>();
-
-  // generateBicep
-  const addFeatureInputs: v3.AddFeatureInputs = {
-    ...inputs,
-    allPluginsAfterAdd: allPlugins,
-  };
-  for (const pluginName of addedPlugins) {
-    const selectedPlugin = await Container.get<v3.PluginV3>(pluginName);
-    if (!selectedPlugin.generateBicep) continue;
-    const res = await selectedPlugin.generateBicep(ctx, addFeatureInputs);
-    if (res.isErr()) {
-      ctx.logProvider.error(
-        getLocalizedString(
-          "core.deployArmTemplates.PluginOperationFail",
-          pluginName,
-          "generateBicep()"
-        )
-      );
-      return err(res.error);
-    }
-    if (res.value) {
-      for (const template of res.value) {
-        const armTemplate = template as ArmTemplateResult;
-        generateArmFromResult(
-          armTemplate,
-          bicepOrchestrationTemplate,
-          pluginName,
-          moduleProvisionFiles,
-          moduleConfigFiles
-        );
-      }
-    }
-    ctx.logProvider.info(
-      getLocalizedString(
-        "core.deployArmTemplates.PluginOperationSuccess",
-        pluginName,
-        "generateBicep()"
-      )
-    );
-  }
-  //updateBicep
-  const updateInputs: v3.UpdateInputs = {
-    ...addFeatureInputs,
-    newPlugins: addedPlugins,
-  };
-  for (const pluginName of existingPlugins) {
-    const existingPlugin = await Container.get<v3.PluginV3>(pluginName);
-    if (!existingPlugin.updateBicep) continue;
-    const res = await existingPlugin.updateBicep(ctx, updateInputs);
-    if (res.isErr()) {
-      ctx.logProvider.error(
-        getLocalizedString(
-          "core.deployArmTemplates.PluginOperationFail",
-          pluginName,
-          "updateBicep()"
-        )
-      );
-      return err(res.error);
-    }
-    if (res.value) {
-      for (const template of res.value) {
-        const armTemplate = template as ArmTemplateResult;
-        generateArmFromResult(
-          armTemplate,
-          bicepOrchestrationTemplate,
-          pluginName,
-          moduleProvisionFiles,
-          moduleConfigFiles
-        );
-      }
-    }
-    ctx.logProvider.info(
-      getLocalizedString(
-        "core.deployArmTemplates.PluginOperationSuccess",
-        pluginName,
-        "updateBicep()"
-      )
-    );
-  }
-
-  const persistRes = await persistBicepTemplates(
-    bicepOrchestrationTemplate,
-    moduleProvisionFiles,
-    moduleConfigFiles,
-    inputs.projectPath,
-    isVSProject(ctx.projectSetting)
-  );
-  if (persistRes.isErr()) {
-    return err(persistRes.error);
-  }
-  return ok(undefined); // Nothing to return when success
-}
-
-async function persistBicepTemplates(
-  bicepOrchestrationTemplate: BicepOrchestrationContent,
-  moduleProvisionFiles: Map<string, string>,
-  moduleConfigFiles: Map<string, string>,
-  projectPath: string,
-  isVs: boolean
-): Promise<Result<undefined, FxError>> {
-  // Write bicep content to project folder
-  if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
-    // Output parameter file
-    const envListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
-    if (envListResult.isErr()) {
-      return err(envListResult.error);
-    }
-    const parameterEnvFolderPath = path.join(projectPath, configsFolder);
-    await fs.ensureDir(parameterEnvFolderPath);
-    for (const env of envListResult.value) {
-      const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, env);
-      const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
-      let parameterFileContent = "";
-      if (await fs.pathExists(parameterEnvFilePath)) {
-        try {
-          const parameterFile = await fs.readJson(parameterEnvFilePath);
-          const parameterObj = parameterFile.parameters.provisionParameters.value;
-          const appendParam = bicepOrchestrationTemplate.getAppendedParameters();
-          const duplicateParam = Object.keys(parameterObj).filter((val) =>
-            Object.keys(appendParam).includes(val)
-          );
-          if (duplicateParam && duplicateParam.length != 0) {
-            return err(
-              new UserError({
-                name: SolutionError.FailedToUpdateArmParameters,
-                source: SolutionSource,
-                helpLink: HelpLinks.ArmHelpLink,
-                message: getDefaultString(
-                  "core.generateArmTemplates.DuplicateParameter",
-                  parameterEnvFilePath,
-                  duplicateParam
-                ),
-                displayMessage: getLocalizedString(
-                  "core.generateArmTemplates.DuplicateParameter",
-                  parameterEnvFilePath,
-                  duplicateParam
-                ),
-              })
-            );
-          }
-          parameterFile.parameters.provisionParameters.value = Object.assign(
-            parameterObj,
-            appendParam
-          );
-          parameterFileContent = JSON.stringify(parameterFile, undefined, 2);
-        } catch (error) {
-          return err(
-            new UserError({
-              name: SolutionError.FailedToUpdateArmParameters,
-              source: SolutionSource,
-              helpLink: HelpLinks.ArmHelpLink,
-              message: getDefaultString(
-                "core.generateArmTemplates.InvalidParameterFile",
-                parameterEnvFilePath,
-                (error as Error).message
-              ),
-              displayMessage: getLocalizedString(
-                "core.generateArmTemplates.InvalidParameterFile",
-                parameterEnvFilePath,
-                (error as Error).message
-              ),
-            })
-          );
-        }
-      } else {
-        parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
-      }
-      await fs.writeFile(parameterEnvFilePath, parameterFileContent.replace(/\r?\n/g, os.EOL));
-    }
-
-    const templateFolderPath = path.join(await getProjectTemplatesFolderPath(projectPath), "azure");
-    await fs.ensureDir(templateFolderPath);
-    const templateSolitionPath = path.join(getTemplatesFolder(), "plugins", "solution");
-    // Generate provision.bicep and module provision bicep files
-    let bicepOrchestrationProvisionContent = "";
-    if (
-      !(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationProvisionFileName)))
-    ) {
-      bicepOrchestrationProvisionContent = await fs.readFile(
-        path.join(getTemplatesFolder(), "plugins", "solution", "provision.bicep"),
-        ConstantString.UTF8Encoding
-      );
-    }
-    bicepOrchestrationProvisionContent +=
-      os.EOL + bicepOrchestrationTemplate.getOrchestractionProvisionContent();
-    await fs.appendFile(
-      path.join(templateFolderPath, bicepOrchestrationProvisionFileName),
-      bicepOrchestrationProvisionContent.replace(/\r?\n/g, os.EOL)
-    );
-    // Generate provision part to main.bicep files.
-    if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationFileName)))) {
-      await fs.copyFile(
-        path.join(templateSolitionPath, bicepOrchestrationProvisionMainFileName),
-        path.join(templateFolderPath, bicepOrchestrationFileName)
-      );
-    }
-    // Generate provision.biceps.
-    await fs.ensureDir(path.join(templateFolderPath, "provision"));
-    // Generate module provision bicep files
-    for (const module of moduleProvisionFiles) {
-      const res = bicepOrchestrationTemplate.applyReference(module[1]);
-      await fs.appendFile(path.join(templateFolderPath, module[0]), res.replace(/\r?\n/g, os.EOL));
-    }
-
-    // Skip if no any config part in orchestration.
-    if (bicepOrchestrationTemplate.getOrchestractionConfigContent() !== "") {
-      // Generate config.bicep and module configuration bicep files.
-      let bicepOrchestrationConfigContent = "";
-      // Configuration Biceps.
-      if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationConfigFileName)))) {
-        bicepOrchestrationConfigContent = await fs.readFile(
-          path.join(getTemplatesFolder(), "plugins", "solution", "config.bicep"),
-          ConstantString.UTF8Encoding
-        );
-        const mainConfig = await fs.readFile(
-          path.join(templateSolitionPath, bicepOrchestrationConfigMainFileName),
-          ConstantString.UTF8Encoding
-        );
-        await fs.appendFile(
-          path.join(templateFolderPath, bicepOrchestrationFileName),
-          mainConfig.replace(/\r?\n/g, os.EOL)
-        );
-      }
-      bicepOrchestrationConfigContent +=
-        os.EOL + bicepOrchestrationTemplate.getOrchestractionConfigContent();
-      await fs.appendFile(
-        path.join(templateFolderPath, bicepOrchestrationConfigFileName),
-        bicepOrchestrationConfigContent.replace(/\r?\n/g, os.EOL)
-      );
-    }
-    // Skip if no module configuration bicep update.
-    if (moduleConfigFiles.size != 0) {
-      await fs.ensureDir(path.join(templateFolderPath, "teamsFx"));
-      for (const module of moduleConfigFiles) {
-        const res = bicepOrchestrationTemplate.applyReference(module[1]);
-        await fs.writeFile(path.join(templateFolderPath, module[0]), res.replace(/\r?\n/g, os.EOL));
-      }
-    }
-  }
-  return ok(undefined);
-}
-
-async function getExpandedParameter(ctx: SolutionContext, filePath: string) {
-  try {
-    const parameterTemplate = await fs.readFile(filePath, ConstantString.UTF8Encoding);
-    const parameterJsonString = expandParameterPlaceholders(ctx, parameterTemplate);
-    return JSON.parse(parameterJsonString);
-  } catch (err) {
-    ctx.logProvider?.error(
-      getLocalizedString("core.deployArmTemplates.FailedToExpandParameter", filePath)
-    );
-    throw err;
-  }
-}
 async function getExpandedParameterV3(ctx: v2.Context, envInfo: v3.EnvInfoV3, filePath: string) {
   try {
     const parameterTemplate = await fs.readFile(filePath, ConstantString.UTF8Encoding);
@@ -1341,196 +639,151 @@ async function compileBicepToJson(
 }
 
 // Context used by handlebars to render the main.bicep file
-export class ArmTemplateRenderContext {
-  public Plugins: Record<string, PluginContext> = {};
+// export class ArmTemplateRenderContext {
+//   public Plugins: Record<string, PluginContext> = {};
 
-  constructor(pluginNames: string[]) {
-    for (const plugin of pluginNames) {
-      this.Plugins[plugin] = {};
-    }
-  }
+//   constructor(pluginNames: string[]) {
+//     for (const plugin of pluginNames) {
+//       this.Plugins[plugin] = {};
+//     }
+//   }
 
-  public addPluginOutput(pluginName: string, armResult: ArmTemplateResult) {
-    const PluginContext: PluginContext = {
-      Provision: {},
-      Configuration: {},
-      References: {},
-    };
-    const provision = armResult?.Provision?.Modules;
-    const references = armResult?.Reference;
-    const configs = armResult?.Configuration?.Modules;
-    if (provision) {
-      for (const module of Object.entries(provision)) {
-        const moduleFileName = module[0];
-        PluginContext.Provision![moduleFileName] = {
-          path: generateBicepModuleProvisionFilePath(moduleFileName),
-        };
-      }
-    }
+//   public addPluginOutput(pluginName: string, armResult: ArmTemplateResult) {
+//     const PluginContext: PluginContext = {
+//       Provision: {},
+//       Configuration: {},
+//       References: {},
+//     };
+//     const provision = armResult?.Provision?.Modules;
+//     const references = armResult?.Reference;
+//     const configs = armResult?.Configuration?.Modules;
+//     if (provision) {
+//       for (const module of Object.entries(provision)) {
+//         const moduleFileName = module[0];
+//         PluginContext.Provision![moduleFileName] = {
+//           path: generateBicepModuleProvisionFilePath(moduleFileName),
+//         };
+//       }
+//     }
 
-    if (configs) {
-      for (const module of Object.entries(configs)) {
-        const moduleFileName = module[0];
-        PluginContext.Configuration![moduleFileName] = {
-          path: generateBicepModuleConfigFilePath(moduleFileName),
-        };
-      }
-    }
+//     if (configs) {
+//       for (const module of Object.entries(configs)) {
+//         const moduleFileName = module[0];
+//         PluginContext.Configuration![moduleFileName] = {
+//           path: generateBicepModuleConfigFilePath(moduleFileName),
+//         };
+//       }
+//     }
 
-    if (references) {
-      for (const output of Object.entries(references)) {
-        const outputKey = output[0];
-        const outputValue = output[1] as string;
-        PluginContext.References![outputKey] = outputValue;
-      }
-    }
+//     if (references) {
+//       for (const output of Object.entries(references)) {
+//         const outputKey = output[0];
+//         const outputValue = output[1] as string;
+//         PluginContext.References![outputKey] = outputValue;
+//       }
+//     }
 
-    this.Plugins[pluginName] = PluginContext;
-  }
-}
+//     this.Plugins[pluginName] = PluginContext;
+//   }
+// }
 
-// Stores the bicep orchestration information for all resource plugins
-class BicepOrchestrationContent {
-  private ParameterJsonTemplate: Record<string, string> = {};
-  private RenderContext: ArmTemplateRenderContext;
-  private TemplateAdded = false;
+// // Stores the bicep orchestration information for all resource plugins
+// class BicepOrchestrationContent {
+//   private ParameterJsonTemplate: Record<string, string> = {};
+//   private RenderContext: ArmTemplateRenderContext;
+//   private TemplateAdded = false;
 
-  private ProvisionTemplate = "";
-  private ConfigTemplate = "";
+//   private ProvisionTemplate = "";
+//   private ConfigTemplate = "";
 
-  constructor(pluginNames: string[], baseName: string) {
-    this.ParameterJsonTemplate[resourceBaseName] = baseName;
-    this.RenderContext = new ArmTemplateRenderContext(pluginNames);
-  }
+//   constructor(pluginNames: string[], baseName: string) {
+//     this.ParameterJsonTemplate[resourceBaseName] = baseName;
+//     this.RenderContext = new ArmTemplateRenderContext(pluginNames);
+//   }
 
-  public applyTemplate(pluginName: string, armResult: ArmTemplateResult): void {
-    this.ProvisionTemplate += this.normalizeTemplateSnippet(armResult?.Provision?.Orchestration);
-    this.ConfigTemplate += this.normalizeTemplateSnippet(armResult?.Configuration?.Orchestration);
-    this.RenderContext.addPluginOutput(pluginName, armResult);
-    Object.assign(this.ParameterJsonTemplate, armResult?.Parameters);
-    if (armResult?.Parameters && Object.keys(armResult?.Parameters).length > 0)
-      this.TemplateAdded = true;
-  }
+//   public applyTemplate(pluginName: string, armResult: ArmTemplateResult): void {
+//     this.ProvisionTemplate += this.normalizeTemplateSnippet(armResult?.Provision?.Orchestration);
+//     this.ConfigTemplate += this.normalizeTemplateSnippet(armResult?.Configuration?.Orchestration);
+//     this.RenderContext.addPluginOutput(pluginName, armResult);
+//     Object.assign(this.ParameterJsonTemplate, armResult?.Parameters);
+//     if (armResult?.Parameters && Object.keys(armResult?.Parameters).length > 0)
+//       this.TemplateAdded = true;
+//   }
 
-  public applyReference(configContent: string): string {
-    return compileHandlebarsTemplateString(configContent, this.RenderContext.Plugins);
-  }
+//   public applyReference(configContent: string): string {
+//     return compileHandlebarsTemplateString(configContent, this.RenderContext.Plugins);
+//   }
 
-  public getOrchestractionProvisionContent(): string {
-    const orchestrationTemplate =
-      this.normalizeTemplateSnippet(this.ProvisionTemplate, false) + os.EOL;
-    return compileHandlebarsTemplateString(
-      orchestrationTemplate,
-      this.RenderContext.Plugins
-    ).trim();
-  }
+//   public getOrchestractionProvisionContent(): string {
+//     const orchestrationTemplate =
+//       this.normalizeTemplateSnippet(this.ProvisionTemplate, false) + os.EOL;
+//     return compileHandlebarsTemplateString(
+//       orchestrationTemplate,
+//       this.RenderContext.Plugins
+//     ).trim();
+//   }
 
-  public getOrchestractionConfigContent(): string {
-    const orchestrationTemplate =
-      this.normalizeTemplateSnippet(this.ConfigTemplate, false) + os.EOL;
-    return compileHandlebarsTemplateString(
-      orchestrationTemplate,
-      this.RenderContext.Plugins
-    ).trim();
-  }
+//   public getOrchestractionConfigContent(): string {
+//     const orchestrationTemplate =
+//       this.normalizeTemplateSnippet(this.ConfigTemplate, false) + os.EOL;
+//     return compileHandlebarsTemplateString(
+//       orchestrationTemplate,
+//       this.RenderContext.Plugins
+//     ).trim();
+//   }
 
-  public getParameterFileContent(): string {
-    const parameterObject = {
-      $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-      contentVersion: "1.0.0.0",
-      parameters: { provisionParameters: { value: this.ParameterJsonTemplate } },
-    };
-    return JSON.stringify(parameterObject, undefined, 2);
-  }
+//   public getParameterFileContent(): string {
+//     const parameterObject = {
+//       $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+//       contentVersion: "1.0.0.0",
+//       parameters: { provisionParameters: { value: this.ParameterJsonTemplate } },
+//     };
+//     return JSON.stringify(parameterObject, undefined, 2);
+//   }
 
-  public getAppendedParameters(): Record<string, unknown> {
-    const res = this.ParameterJsonTemplate;
-    if (res.resourceBaseName) {
-      delete res.resourceBaseName;
-    }
-    return res;
-  }
+//   public getAppendedParameters(): Record<string, unknown> {
+//     const res = this.ParameterJsonTemplate;
+//     if (res.resourceBaseName) {
+//       delete res.resourceBaseName;
+//     }
+//     return res;
+//   }
 
-  public needsGenerateTemplate(): boolean {
-    return this.TemplateAdded;
-  }
+//   public needsGenerateTemplate(): boolean {
+//     return this.TemplateAdded;
+//   }
 
-  private normalizeTemplateSnippet(
-    snippet: string | undefined,
-    updateTemplateChangeFlag = true
-  ): string {
-    if (snippet) {
-      if (updateTemplateChangeFlag) {
-        this.TemplateAdded = true;
-      }
-      return snippet.trim() + os.EOL;
-    }
-    return "";
-  }
-}
+//   private normalizeTemplateSnippet(
+//     snippet: string | undefined,
+//     updateTemplateChangeFlag = true
+//   ): string {
+//     if (snippet) {
+//       if (updateTemplateChangeFlag) {
+//         this.TemplateAdded = true;
+//       }
+//       return snippet.trim() + os.EOL;
+//     }
+//     return "";
+//   }
+// }
 
-interface PluginContext {
-  Provision?: { [ModuleName: string]: PluginModuleProperties };
-  Configuration?: { [ModuleName: string]: PluginModuleProperties };
-  References?: { [Key: string]: string };
-}
+// interface PluginContext {
+//   Provision?: { [ModuleName: string]: PluginModuleProperties };
+//   Configuration?: { [ModuleName: string]: PluginModuleProperties };
+//   References?: { [Key: string]: string };
+// }
 
-interface PluginModuleProperties {
-  path: string;
-}
+// interface PluginModuleProperties {
+//   path: string;
+// }
 
-function generateBicepModuleProvisionFilePath(moduleFileName: string) {
-  return `./provision/${moduleFileName}.bicep`;
-}
+// function generateBicepModuleProvisionFilePath(moduleFileName: string) {
+//   return `./provision/${moduleFileName}.bicep`;
+// }
 
-function generateBicepModuleConfigFilePath(moduleFileName: string) {
-  return `./teamsFx/${moduleFileName}.bicep`;
-}
-
-function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: string): string {
-  const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
-    (p) => new NamedArmResourcePluginAdaptor(p)
-  ); // This function ensures return result won't be empty
-  const stateVariables: Record<string, Record<string, any>> = {};
-  const availableVariables: Record<string, Record<string, any>> = { state: stateVariables };
-  // Add plugin contexts to available variables
-  for (const plugin of plugins) {
-    const pluginContext = getPluginContext(ctx, plugin.name);
-    const pluginVariables: Record<string, string> = {};
-    for (const configItem of pluginContext.config) {
-      if (typeof configItem[1] === "string") {
-        // Currently we only config with string type
-        pluginVariables[configItem[0]] = configItem[1];
-      }
-    }
-    stateVariables[plugin.name] = pluginVariables;
-  }
-  // Add solution config to available variables
-  const solutionConfig = ctx.envInfo.state.get(GLOBAL_CONFIG);
-  if (solutionConfig) {
-    const solutionVariables: Record<string, string> = {};
-    for (const configItem of solutionConfig) {
-      if (typeof configItem[1] === "string") {
-        // Currently we only config with string type
-        solutionVariables[configItem[0]] = configItem[1];
-      }
-    }
-    stateVariables[solutionName] = solutionVariables;
-  }
-
-  // Add environment variable to available variables
-  const processVariables: Record<string, string> = Object.keys(process.env).reduce(
-    (obj: Record<string, string>, key: string) => {
-      obj[key] = process.env[key] as string;
-      return obj;
-    },
-    {}
-  );
-
-  availableVariables["$env"] = processVariables;
-
-  return compileHandlebarsTemplateString(parameterContent, availableVariables);
-}
+// function generateBicepModuleConfigFilePath(moduleFileName: string) {
+//   return `./teamsFx/${moduleFileName}.bicep`;
+// }
 
 function expandParameterPlaceholdersV3(
   ctx: v2.Context,
@@ -1737,27 +990,7 @@ export function formattedDeploymentError(deploymentError: any): any {
   }
 }
 
-class ArmV2 {
-  async generateArmTemplate(
-    ctx: SolutionContext,
-    selectedPlugins: NamedArmResourcePlugin[] = []
-  ): Promise<Result<any, FxError>> {
-    return generateArmTemplate(ctx, selectedPlugins);
-  }
-  async deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
-    return deployArmTemplates(ctx);
-  }
-}
-
 class Arm {
-  async generateBicep(
-    ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath,
-    addedPlugins: string[],
-    existingPlugins: string[]
-  ): Promise<Result<any, FxError>> {
-    return generateBicep(ctx, inputs, addedPlugins, existingPlugins);
-  }
   async deployArmTemplates(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
@@ -1769,6 +1002,34 @@ class Arm {
 }
 
 const arm = new Arm();
-export const armV2 = new ArmV2();
-
 export default arm;
+
+export function sendErrorTelemetryThenReturnError(
+  eventName: string,
+  error: FxError,
+  reporter?: TelemetryReporter,
+  properties?: { [p: string]: string },
+  measurements?: { [p: string]: number },
+  errorProps?: string[]
+): FxError {
+  if (!properties) {
+    properties = {};
+  }
+
+  if (SolutionTelemetryProperty.Component in properties === false) {
+    properties[SolutionTelemetryProperty.Component] = SolutionTelemetryComponentName;
+  }
+
+  properties[SolutionTelemetryProperty.Success] = "no";
+  if (error instanceof UserError) {
+    properties["error-type"] = "user";
+  } else {
+    properties["error-type"] = "system";
+  }
+
+  properties["error-code"] = `${error.source}.${error.name}`;
+  properties["error-message"] = error.message;
+
+  reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+  return error;
+}

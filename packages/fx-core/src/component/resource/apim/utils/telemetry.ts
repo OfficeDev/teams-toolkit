@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { EnvInfo, UserError, SystemError, TelemetryReporter } from "@microsoft/teamsfx-api";
-import { solutionGlobalVars } from "../../../../plugins/solution/fx-solution/v3/solutionGlobalVars";
+import { UserError, SystemError, TelemetryReporter } from "@microsoft/teamsfx-api";
+import { globalVars } from "../../../../core/globalVars";
 import { PluginLifeCycle, ProjectConstants, OperationStatus } from "../constants";
 import { IName } from "../interfaces/IName";
 
@@ -26,9 +26,7 @@ export class Telemetry {
     status: OperationStatus,
     error?: UserError | SystemError
   ): void {
-    const properties = solutionGlobalVars.TeamsAppId
-      ? { appid: solutionGlobalVars.TeamsAppId }
-      : undefined;
+    const properties = globalVars.teamsAppId ? { appid: globalVars.teamsAppId } : undefined;
     this.sendOperationEvent(telemetryReporter, lifeCycle, status, properties, undefined, error);
   }
 

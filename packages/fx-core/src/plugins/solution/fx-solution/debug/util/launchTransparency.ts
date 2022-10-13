@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { TaskOverallLabel } from "../../../../../common/local/constants";
+import * as Launch from "./launch";
 import * as LaunchNext from "./launchNext";
 
 export function generateLaunchJson(
@@ -42,8 +44,8 @@ export function generateCompounds(
   includeBot: boolean
 ): Record<string, unknown>[] {
   const result = LaunchNext.generateCompounds(includeFrontend, includeBackend, includeBot);
-  result[0].preLaunchTask = "Start Teams App Locally";
-  result[1].preLaunchTask = "Start Teams App Locally";
+  result[0].preLaunchTask = TaskOverallLabel.TransparentDefault;
+  result[1].preLaunchTask = TaskOverallLabel.TransparentDefault;
   return result;
 }
 
@@ -61,13 +63,24 @@ export function generateM365Compounds(
   includeBot: boolean
 ): Record<string, unknown>[] {
   const result = LaunchNext.generateM365Compounds(includeFrontend, includeBackend, includeBot);
-  result[0].preLaunchTask = "Start Teams App Locally";
-  result[1].preLaunchTask = "Start Teams App Locally";
-  result[2].preLaunchTask = "Start Teams App Locally & Install App";
-  result[3].preLaunchTask = "Start Teams App Locally & Install App";
+  result[0].preLaunchTask = TaskOverallLabel.TransparentDefault;
+  result[1].preLaunchTask = TaskOverallLabel.TransparentDefault;
+  result[2].preLaunchTask = TaskOverallLabel.TransparentM365;
+  result[3].preLaunchTask = TaskOverallLabel.TransparentM365;
   if (includeFrontend) {
-    result[4].preLaunchTask = "Start Teams App Locally & Install App";
-    result[5].preLaunchTask = "Start Teams App Locally & Install App";
+    result[4].preLaunchTask = TaskOverallLabel.TransparentM365;
+    result[5].preLaunchTask = TaskOverallLabel.TransparentM365;
   }
+  return result;
+}
+
+export function generateSpfxConfigurations(): Record<string, unknown>[] {
+  return Launch.generateSpfxConfigurations();
+}
+
+export function generateSpfxCompounds(): Record<string, unknown>[] {
+  const result = Launch.generateSpfxCompounds();
+  result[0].preLaunchTask = TaskOverallLabel.TransparentDefault;
+  result[1].preLaunchTask = TaskOverallLabel.TransparentDefault;
   return result;
 }

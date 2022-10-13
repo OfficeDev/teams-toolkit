@@ -16,7 +16,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccountExtensionApi as AzureAccount } from "./azure-account.api";
-import { LoginFailureError } from "./codeFlowLogin";
+import { ConvertTokenToJson, LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
 import {
@@ -50,6 +50,41 @@ import { getSubscriptionInfoFromEnv } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as globalVariables from "../globalVariables";
 import accountTreeViewProviderInstance from "../treeview/account/accountTreeViewProvider";
+import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { AccessToken, GetTokenOptions } from "@azure/identity";
+import { Constants } from "@microsoft/teamsfx-core/build/component/resource/azureSql/constants";
+
+class TeamsFxTokenCredential implements TokenCredential {
+  private tokenCredentialBase: TokenCredentialsBase;
+
+  constructor(tokenCredentialBase: TokenCredentialsBase) {
+    this.tokenCredentialBase = tokenCredentialBase;
+  }
+
+  async getToken(
+    scopes: string | string[],
+    options?: GetTokenOptions | undefined
+  ): Promise<AccessToken | null> {
+    if (this.tokenCredentialBase) {
+      const token = await this.tokenCredentialBase.getToken();
+      const tokenJson = ConvertTokenToJson(token.accessToken);
+      if (scopes === Constants.azureSqlScope) {
+        // fix SQL.DatabaseUserCreateError
+        const tenantId = (tokenJson as any).tid;
+        const vsCredential = new identity.VisualStudioCodeCredential({ tenantId: tenantId });
+        const sqlToken = await vsCredential.getToken(scopes);
+        return sqlToken;
+      } else {
+        return {
+          token: token.accessToken,
+          expiresOnTimestamp: (tokenJson as any).exp * 1000,
+        };
+      }
+    } else {
+      return null;
+    }
+  }
+}
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -148,40 +183,42 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  private doGetIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
+  private async doGetIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
+    const tokenCredentialBase = await this.doGetAccountCredentialAsync();
+    if (tokenCredentialBase) {
+      return new TeamsFxTokenCredential(tokenCredentialBase);
+    } else {
+      return Promise.reject(LoginFailureError());
+    }
+  }
+
+  private doGetAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
     if (this.isUserLogin()) {
       const azureAccount: AzureAccount =
         vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
-      // Choose one tenant credential when users have multi tenants.)
+      // Choose one tenant credential when users have multi tenants. (TODO, need to optize after UX design)
       // 1. When azure-account-extension has at least one subscription, return the first one credential.
       // 2. When azure-account-extension has no subscription and has at at least one session, return the first session credential.
       // 3. When azure-account-extension has no subscription and no session, return undefined.
-      return new Promise(async (resolve) => {
+      return new Promise(async (resolve, reject) => {
+        await azureAccount.waitForSubscriptions();
         if (azureAccount.subscriptions.length > 0) {
+          let credential2 = azureAccount.subscriptions[0].session.credentials2;
           if (AzureAccountManager.tenantId) {
             for (let i = 0; i < azureAccount.sessions.length; ++i) {
               const item = azureAccount.sessions[i];
               if (item.tenantId == AzureAccountManager.tenantId) {
-                const vsCredential = new identity.VisualStudioCodeCredential({
-                  tenantId: AzureAccountManager.tenantId,
-                });
-                resolve(vsCredential);
+                credential2 = item.credentials2;
+                break;
               }
             }
           }
-          const session = azureAccount.subscriptions[0].session;
-          const vsCredential = new identity.VisualStudioCodeCredential({
-            tenantId: session.tenantId,
-          });
-          resolve(vsCredential);
+          // TODO - If the correct process is always selecting subs before other calls, throw error if selected subs not exist.
+          resolve(credential2);
         } else if (azureAccount.sessions.length > 0) {
-          const session = azureAccount.subscriptions[0].session;
-          const vsCredential = new identity.VisualStudioCodeCredential({
-            tenantId: session.tenantId,
-          });
-          resolve(vsCredential);
+          resolve(azureAccount.sessions[0].credentials2);
         } else {
-          Promise.reject(LoginFailureError());
+          reject(LoginFailureError());
         }
       });
     }

@@ -615,6 +615,7 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
     default: ScratchOptionYes.id,
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     skipSingleOption: true,
+    forgetLastValue: true,
   };
 }
 

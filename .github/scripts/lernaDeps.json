@@ -22,7 +22,7 @@
     "packages/server",
     "templates"
   ],
-  "sdk": ["packages/sdk", "packages/sdk-react"],
+  "sdk": ["packages/adaptivecards-tools-sdk", "packages/sdk", "packages/sdk-react"],
   "template": ["templates"],
   "extra-shot-mocha": ["packages/extra-shot-mocha"]
 }

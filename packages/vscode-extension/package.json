@@ -60,7 +60,9 @@
     "untrustedWorkspaces": {
       "supported": "limited",
       "description": "%teamstoolkit.capabilities.untrustedWorkspaces.description%",
-      "restrictedConfigurations": ["fx-extension.SPFxVersion"]
+      "restrictedConfigurations": [
+        "fx-extension.SPFxVersion"
+      ]
     }
   },
   "contributes": {

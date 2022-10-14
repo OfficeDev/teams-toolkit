@@ -28,7 +28,7 @@ import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { addFeatureNotify, scaffoldRootReadme } from "../utils";
 import { isSPFxMultiTabEnabled } from "../../common/featureFlags";
-import { TabSPFxNewUIItem } from "../../plugins/solution/fx-solution/question";
+import { TabSPFxNewUIItem } from "../constants";
 import { getComponent } from "../workflow";
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {
@@ -68,7 +68,7 @@ export class SPFxTab {
     {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate local debug settings");
+      effects.push("generate debug settings");
     }
     if (isSPFxMultiTabEnabled()) {
       await scaffoldRootReadme(context.projectSetting, inputs.projectPath);

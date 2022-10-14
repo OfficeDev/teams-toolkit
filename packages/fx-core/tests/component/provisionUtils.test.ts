@@ -4,8 +4,8 @@ import * as sinon from "sinon";
 import { ComponentNames } from "../../src/component/constants";
 import { provisionUtils } from "../../src/component/provisionUtils";
 import { createContextV3 } from "../../src/component/utils";
-import { SolutionError } from "../../src/plugins/solution/fx-solution/constants";
-import { resourceGroupHelper } from "../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
+import { SolutionError } from "../../src/component/constants";
+import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import {
   MockAzureAccountProvider,
   MockM365TokenProvider,
@@ -15,7 +15,7 @@ import { MyTokenCredential } from "../plugins/solution/util";
 
 const expect = chai.expect;
 
-describe("preProvision", () => {
+describe("provisionUtils", () => {
   describe("checkProvisionSubscription", () => {
     const mocker = sinon.createSandbox();
 

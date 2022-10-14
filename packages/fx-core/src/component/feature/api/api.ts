@@ -26,7 +26,7 @@ import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../../common/utils";
 import { globalVars } from "../../../core/globalVars";
 import { CoreQuestionNames } from "../../../core/question";
-import { AzureResourceFunction } from "../../../plugins/solution/fx-solution/question";
+import { AzureResourceFunction } from "../../constants";
 import { BicepComponent } from "../../bicep";
 import { ApiCodeProvider } from "../../code/api/apiCode";
 import { QuestionKey } from "../../code/api/enums";
@@ -170,7 +170,7 @@ export class TeamsApi {
     {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate local debug configs");
+      effects.push("generate debug configs");
     }
 
     globalVars.isVS = isVSProject(projectSettings);

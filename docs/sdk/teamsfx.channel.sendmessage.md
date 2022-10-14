@@ -9,7 +9,7 @@ Send a plain text message.
 <b>Signature:</b>
 
 ```typescript
-sendMessage(text: string): Promise<MessageResponse>;
+sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
 ```
 
 ## Parameters
@@ -17,6 +17,7 @@ sendMessage(text: string): Promise<MessageResponse>;
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  text | string | the plain text message. |
+|  onError | (context: TurnContext, error: Error) =&gt; Promise&lt;void&gt; | an optional error handler that can catch exceptions during message sending. If not defined, error will be handled by <code>BotAdapter.onTurnError</code>. |
 
 <b>Returns:</b>
 

@@ -115,6 +115,9 @@ export enum TelemetryEvent {
   ConfirmProvision = "confirm-provision",
   CheckLocalDebugTenant = "check-local-debug-tenant",
   DebugSetUpSSO = "debug-set-up-sso",
+  DeploymentInfoNotFound = "deployment-info-not-found",
+  InstallScriptNotFound = "install-script-not-found",
+  SkipDeploy = "skip-deploy",
 }
 
 export enum TelemetrySuccess {

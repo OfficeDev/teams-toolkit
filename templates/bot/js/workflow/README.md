@@ -1,95 +1,75 @@
-# Responding to card actions
+# Overview of the Workflow bot template
 
-The Adaptive Card action handler feature enables the app to respond to adaptive card actions that triggered by end users to complete a sequential workflow. When user gets an Adaptive Card, it can provide one or more buttons in the card to ask for user's input, do something like calling some APIs, and then send another adaptive card in conversation to response to the card action.
+This template showcases an app that responds to chat commands by displaying UI using an Adaptive Card. The card has a button that demonstrates how to receive user input on the card, do something like call an API, and update the UI of that card. This can be further customized to create richer, more complex sequence of steps which forms a complete workflow.
 
-This application is built with the [Microsoft Bot Framework](https://dev.botframework.com/) running on a restify server running on App Service along with the [Azure Bot Service](https://azure.microsoft.com/services/bot-services/).
+The app template is built using the TeamsFx SDK, which provides a simple set of functions over the Microsoft Bot Framework to implement this scenario.
 
-
-# Getting Started
-
-Run your app with local debugging by pressing `F5` in VSCode. Select `Debug (Edge)` or `Debug (Chrome)`.
-
-**Congratulations**! You are running an application that can now send respond to a chat command in Teams.
+## Get Started with the Workflow bot
 
 >
 > **Prerequisites**
 >
-> To run locally, you will need:
+> To run the workflow bot template in your local dev machine, you will need:
 >
 > - `Node.js` installed locally (recommended version: 14)
-> - An [M365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+> - An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 >
 > **Note**
 >
 > Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-command-response#customize-installation).
 >
 
-# Understanding the code
+1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
+3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
+4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
+5. Type or select `helloWorld` in the chat to send it to your bot - this is the default command provided by the template.
+6. In the response from the bot, select the **DoStuff** button.
 
-This section walks through the generated code. The project folder contains the following:
+The bot will respond by updating the existing Adaptive Card to show the workflow is now complete! Continue reading to learn more about what's included in the template and how to customize it.
+
+Here is a screen shot of the application running:
+
+![Responds to command](https://user-images.githubusercontent.com/10163840/192477792-dc447b3a-e304-4cd8-b4df-b1eb9d226292.png)
+
+When you click the `DoStuff` button, the above adaptive card will be updated to a new card as shown below:
+
+![Responds to card action](https://user-images.githubusercontent.com/10163840/192477148-29d9edfc-085b-4d02-b3de-b47b9a456108.png)
+
+## What's included in the template
 
 | Folder | Contents |
 | - | - |
 | `.fx` | Project level settings, configurations, and environment information |
 | `.vscode` | VSCode files for local debug |
 | `bot` | The source code for the workflow bot Teams application |
-| `templates` | Templates for the Teams application manifest and for provisioning Azure resources |
+| `templates` | Templates for the Teams application manifest and for provisioning Azure resources (optional) used by Teams Toolkit |
 
-The core command-response implementation is in `bot` folder.
-
-The following files provide the business logic for the workflow bot. These files can be updated to fit your business logic requirements. The default implementation provides a starting point to help you get started.
+The following files can be customized and demonstrate an example implementation to get you started.
 
 | File | Contents |
 | - | - |
-| `src/index.js` | Application entry point and `restify` handlers for the workflow bot |
-| `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams |
-| `src/commands/helloworldCommandHandler.js` | Responds to the command message |
-| `src/cardActions/doStuffActionHandler.js` | Responds to the `doStuff` card action |
+| `src/index.js` | Application entry point and `restify` handlers for the Workflow bot |
+| `src/commands/helloworldCommandHandler.js` | Implementation that handles responding to a chat command |
+| `src/adaptiveCards/helloworldCommandResponse.json` | Defines the Adaptive Card (UI) that is displayed in response to a chat command |
+| `src/adaptiveCards/doStuffActionResponse.json` | A generated Adaptive Card that is sent to Teams for the response of "doStuff" action |
+| `src/cardActions/doStuffActionHandler.js` | Implements the handler for the `doStuff` button displayed in the Adaptive Card |
 
-The following files implement the core workflow bot on the Bot Framework. You generally will not need to customize these files.
+## Extend the workflow bot template with more actions and responses
 
-| File / Folder | Contents |
-| - | - |
-| `src/internal/initialize.js` | Application initialization and bot message handling |
+Follow steps below to add more actions and responses to extend the workflow bot:
 
-The following files are project-related files. You generally will not need to customize these files.
+1. [Step 1: Add an action to your Adaptive Card](#step-1-add-an-action-to-your-adaptive-card)
+2. [Step 2: Respond with a new Adaptive Card](#step-2-respond-with-a-new-adaptive-card)
+3. [Step 3: Handle the new action](#step-3-handle-the-new-action)
+4. [Step 4: Register the new handler](#step-4-register-the-new-handler)
 
-| File / Folder | Contents |
-| - | - |
-| `.gitignore` | Git ignore file |
-| `package.json` | NPM package file |
+### Step 1: Add an action to your Adaptive Card
 
-# Customize your application
-
-By default a single command is generated that sends the `helloworldCommand.json` Adaptive Card when a user types `hello` in the private message chat with the bot.
-
-This section outlines some customization you can do to adopt the application for your needs.
-
-## Customize the command logic
-
-The default command logic simply returns a hard-coded Adaptive Card. You can customize this logic with your customize business logic. Often your business logic might require you to call your existing APIs.
-
-Teams Toolkit enables you to [easily connect to an existing API](#connect-to-existing-apis).
-
-## Customize the Adaptive Card
-
-You can edit the file `src/adaptiveCards/helloworldCommand.json` to customize the Adaptive Card to your liking. 
-
-The binding between the model and the Adaptive Card is done by name matching (for example, `cardData.title` maps to `${title}` in the Adaptive Card). You can add, edit, or remove properties and their bindings to customize the Adaptive Card to your needs.
-
-You can also add new cards if appropriate for your application. Please follow this [sample](https://aka.ms/teamsfx-adaptive-card-sample) to see how to build different types of adaptive cards with a list or a table of dynamic contents using `ColumnSet` and `FactSet`.
-
-## Add more card actions
-
-You can use the following 4 steps to add more card action:
-1. [Step 1: add an action to your Adaptive Card](#step-1-add-an-action-to-your-adaptive-card)
-2. [Step 2: add adaptive card for action response](#step-2-add-adaptive-card-for-action-response)
-3. [Step 3: add action handler](#step-3-add-action-handler)
-4. [Step 4: register the action handler](#step-4-register-the-action-handler)
-
-### Step 1: add an action to your Adaptive Card
+Adding new actions (buttons) to an Adaptive Card is as simple as defining them in the JSON file. Add a new `DoSomething` action to the `src/adaptiveCards/helloworldCommandResponse.json` file:
 
 Here's a sample action with type `Action.Execute`:
+
 ```json
 { 
   "type": "AdaptiveCard", 
@@ -100,22 +80,23 @@ Here's a sample action with type `Action.Execute`:
       "actions": [
         {
           "type": "Action.Execute",
-          "title": "DoStuff",
-          "verb": "doStuff" 
+          "title": "DoSomething",
+          "verb": "DoSomething" 
         }
       ]
-    }
+    },
+    ... 
   ]
-  ... 
 } 
 ```
 
-`Action.Execute` invoking the bot can return Adaptive Cards as a response, which will replace the existing card in conversation by default.  
+Specifying the `type` as `Action.Execute` allows this Adaptive Card to respond with another card, which will update the UI by replacing the existing card. Learn more about [Adaptive Card Universal Actions in the documentation](https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/overview?tabs=mobile#universal-actions).
 
-### Step 2: add adaptive card for action response
-For each action invoke, you can return a new adaptive card to display the response to end user. You can use [adaptive card designer](https://adaptivecards.io/designer/) to design your card layout according to your business needs.
+> **_NOTE:_**  the `verb` property is required here so that the TeamsFx conversation SDK can invoke the corresponding action handler when the action is invoked in Teams. You should provide a global unique string for the `verb` property, otherwise you may experience unexpected behavior if you're using a general string that might cause a collision with other bot actions.  
 
-To get-started, you can just create a sample card (`responseCard.json`) with the following content, and put it in `bot/src/adaptiveCards` folder:
+### Step 2: Respond with a new Adaptive Card
+
+For each action, you can display a new Adaptive Card as a response to the user. Create a new file, `bot/src/adaptiveCards/doSomethingResponse.json` to use as a response for the `DoSomething` action created in the previous step:
 
 ```json
 {
@@ -125,7 +106,7 @@ To get-started, you can just create a sample card (`responseCard.json`) with the
       "type": "TextBlock",
       "size": "Medium",
       "weight": "Bolder",
-      "text": "This is a sample action response."
+      "text": "A sample response to DoSomething."
     }
   ],
   "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
@@ -133,33 +114,45 @@ To get-started, you can just create a sample card (`responseCard.json`) with the
 }
 ```
 
-### Step 3: add action handler 
+You can use the [Adaptive Card Designer](https://adaptivecards.io/designer/) to help visually design your Adaptive Card UI.
 
-Add handler to implements `TeamsFxAdaptiveCardActionHandler` to process the logic when corresponding action is executed.
+### Step 3: Handle the new action
 
-Please note:
-* The `triggerVerb` is the `verb` property of your action. 
-* The `actionData` is the data associated with the action, which may include dynamic user input or some contextual data provided in the `data` property of your action.
-* If an Adaptive Card is returned, then the existing card will be replaced with it by default.
+The TeamsFx SDK provides a convenient class, `TeamsFxAdaptiveCardActionHandler`, to handle when an action from an Adaptive Card is invoked. Create a new file, `bot/src/cardActions/doSomethingActionHandler.js`:
 
 ```javascript
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
 const { AdaptiveCardResponse, InvokeResponseFactory } = require("@microsoft/teamsfx");
-const responseCard = require("../adaptiveCards/responseCard.json");
+const responseCard = require("../adaptiveCards/doSomethingResponse.json");
 
-export class Handler1 { 
-    triggerVerb = "doStuff";
+class DoSomethingActionHandler { 
+    triggerVerb = "doSomething";
 
     async handleActionInvoked(context, message) { 
         const responseCardJson = AdaptiveCards.declare(responseCard).render(actionData);
         return InvokeResponseFactory.adaptiveCard(responseCardJson);
     } 
 } 
+
+module.exports = {
+
+  DoSomethingActionHandler,
+}
 ```
 
-> Note: you can follow [this section](#customize-card-action-handler) to customize the card action handler according to your business need. 
+> Please note:
+>
+> - The `triggerVerb` is the `verb` property of your action.
+>
+> - The `actionData` is the data associated with the action, which may include dynamic user input or some contextual data provided in the `data` property of your action.
+>
+> - If an Adaptive Card is returned, then the existing card will be replaced with it by default.
 
-### Step 4: register the action handler
+You can customize what the action does here, including calling an API, processing data, etc.
+
+### Step 4: Register the new handler
+
+Each new card action needs to be configured in the `ConversationBot`, which powers the conversational flow of the workflow bot template. Navigate to the `bot/src/internal/initialize.js` file and update the `actions` array of the `cardAction` property.
 
 1. Go to `bot/src/internal/initialize.js`;
 2. Update your `conversationBot` initialization to enable cardAction feature and add the handler to `actions` array:
@@ -170,93 +163,39 @@ const conversationBot = new ConversationBot({
   cardAction: { 
     enabled: true, 
     actions: [ 
-      new Handler1() 
+      new doStuffActionHandler(),
+      new doSomethingActionHandler() 
     ], 
   } 
 }); 
 ```
 
-For more code snippets and details, refer to [this document](https://aka.ms/teamsfx-card-action-response#).
+Congratulations, you've just created your own workflow! To learn more about extending the Workflow bot template, [visit the documentation on GitHub](https://aka.ms/teamsfx-card-action-response). You can find more scenarios like:
 
-## Add notifications to your application
+- [Customize the way to respond to an action](https://aka.ms/teamsfx-card-action-response#customize-the-action-response)
+- [Customize the Adaptive Card content](https://aka.ms/teamsfx-card-action-response#customize-the-adaptive-card-content)
+- [Create a user specific view](https://aka.ms/teamsfx-card-action-response#auto-refresh-to-user-specific-view)
+- [Access Microsoft Graph](https://aka.ms/teamsfx-card-action-response#access-microsoft-graph)
+- [Connect to existing APIs](https://aka.ms/teamsfx-card-action-response#connect-to-existing-apis)
+- [Change the way to initialize the bot](https://aka.ms/teamsfx-card-action-response#customize-the-initialization)
 
-The notification feature adds the ability for your application to send Adaptive Cards in response to external events. For example, when a message is posted to `Event Hub` your application can respond and send an appropriate Adaptive Card to Teams.
+## Extend workflow bot with other bot scenarios
 
-To add the notification feature:
+Workflow bot is compatible with other bot scenarios like notification bot and command bot.
 
-1. Go to `bot\src\internal\initialize.js`
-2. Update your `conversationBot` initialization to enable notification feature:
+### Add notifications to your workflow bot
 
-```javascript
-const conversationBot = new ConversationBot({ 
-  ... 
-  cardAction: { 
-    enabled: true, 
-    actions: [ 
-      new Handler1() 
-    ], 
-  },
-  notification: {
-    enabled: true
-  } 
-}); 
-```
+The notification feature adds the ability for your application to send Adaptive Cards in response to external events. Follow the [steps here](https://aka.ms/teamsfx-card-action-response#how-to-extend-workflow-bot-with-notification-feature) to add the notification feature to your workflow bot. Refer [the notification document](https://aka.ms/teamsfx-notification) for more information.
 
-3. To quickly add a sample notification triggered by a HTTP request, you can add the following sample code in `bot\src\index.js`:
+### Add command and responses to your workflow bot
 
-    ```javascript
-    server.post("/api/notification", async (req, res) => {
-      for (const target of await conversationBot.notification.installations()) {
-        await target.sendMessage("This is a sample notification message");
-      }
-    
-      res.json({});
-    });
+The command and response feature adds the ability for your application to "listen" to commands sent to it via a Teams message and respond to commands with Adaptive Cards. Follow the [steps here](https://aka.ms/teamsfx-command-response#How-to-add-more-command-and-response) to add the command response feature to your workflow bot. Refer [the command bot document](https://aka.ms/teamsfx-command-response) for more information.
 
-4. Uninstall your previous bot installation from Teams, and press `F5` to start your application.
-5. Send a notification to the bot installation targets (channel/group chat/personal chat) by using a your favorite tool to send a HTTP POST request to `https://localhost:3978/api/notification`.
+## Additional information and references
 
-To learn more, refer to [the notification document](https://aka.ms/teamsfx-notification).
-
-## Access Microsoft Graph
-
-If you are responding to a command that needs access to Microsoft Graph, you can leverage single sign on to leverage the logged-in Teams user token to access their Microsoft Graph data. Read more about how Teams Toolkit can help you [add SSO](https://aka.ms/teamsfx-add-sso) to your application.
-
-## Connect to existing APIs
-
-Often you need to connect to existing APIs in order to retrieve data to send to Teams. Teams Toolkit makes it easy for you to configure and manage authentication for existing APIs. 
-
-For more information, [click here](https://aka.ms/teamsfx-connect-api).
-
-## Customize the initialization
-
-The default initialization is located in `bot/src/internal/initialize.js`.
-
-You can update the initialization logic to:
-
-- Set `options.adapter` to use your own `BotFrameworkAdapter`
-- Set `options.command.commands` to include more command handlers
-- Set `options.cardAction.actions` to include more action handlers
-- Set `options.{feature}.enabled` to enable more `ConversationBot` functionality
-
-To learn more, visit [additional initialization customizations](https://aka.ms/teamsfx-command-response#customize-initialization).
-
-## Update the Teams application manifest
-
-You can find the Teams application manifest in `templates/appPackage/manifest.template.json`.
-
-The file contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file.
-
-See the [schema reference](https://docs.microsoft.com/microsoftteams/platform/resources/schema/manifest-schema) for more information.
-
-## Additional information
-
-* Manage [multiple environments](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env)
-* [Collaborate](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration) with others
-
-# References
-
-* [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
-* [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli)
-* [TeamsFx SDK](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-sdk)
-* [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)
+- [Manage multiple environments](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env)
+- [Collaborate with others](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration)
+- [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
+- [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli)
+- [TeamsFx SDK](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-sdk)
+- [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)

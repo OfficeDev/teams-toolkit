@@ -22,6 +22,7 @@ import "mocha";
 import * as chai from "chai";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("User can customize Bicep files", function () {
   const testFolder = getTestFolder();
@@ -34,28 +35,32 @@ describe("User can customize Bicep files", function () {
     await cleanUp(appName, projectPath, true, true, false);
   });
 
-  it("Regenerate Bicep will not affect user's customized Bicep code", async () => {
-    // Arrange
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+  it(
+    "Regenerate Bicep will not affect user's customized Bicep code",
+    { testPlanCaseId: 15687243 },
+    async () => {
+      // Arrange
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
-    // Act
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    const customizedServicePlans: string[] = await customizeBicepFile(projectPath);
+      // Act
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      const customizedServicePlans: string[] = await customizeBicepFile(projectPath);
 
-    // Add capability and cloud resource
-    await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
-    await setBotSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
+      // Add capability and cloud resource
+      await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
+      await setBotSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
+      await CliHelper.setSubscription(subscription, projectPath);
+      await CliHelper.provisionProject(projectPath);
 
-    const resourceGroup = await getRGAfterProvision(projectPath, env);
-    chai.assert.exists(resourceGroup);
-    chai.expect(resourceGroup).to.be.a("string");
+      const resourceGroup = await getRGAfterProvision(projectPath, env);
+      chai.assert.exists(resourceGroup);
+      chai.expect(resourceGroup).to.be.a("string");
 
-    // Assert
-    customizedServicePlans.forEach(async (servicePlanName) => {
-      await validateServicePlan(servicePlanName, resourceGroup!, subscription);
-    });
-  });
+      // Assert
+      customizedServicePlans.forEach(async (servicePlanName) => {
+        await validateServicePlan(servicePlanName, resourceGroup!, subscription);
+      });
+    }
+  );
 });

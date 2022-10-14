@@ -1335,9 +1335,7 @@ export const ProductName = "teamsfx";
 // @public (undocumented)
 export interface ProjectConfig {
     // (undocumented)
-    config?: SolutionConfig | Json;
-    // (undocumented)
-    localSettings?: LocalSettings | Json;
+    config?: Json;
     // (undocumented)
     settings?: ProjectSettings;
 }
@@ -2067,6 +2065,7 @@ export interface UserInteraction {
     createProgressBar: (title: string, totalSteps: number) => IProgressHandler;
     executeFunction?(config: ExecuteFuncConfig): any | Promise<any>;
     inputText: (config: InputTextConfig) => Promise<Result<InputTextResult, FxError>>;
+    openFile?(filePath: string): Promise<Result<boolean, FxError>>;
     openUrl(link: string): Promise<Result<boolean, FxError>>;
     reload?(): Promise<Result<boolean, FxError>>;
     runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args: any): Promise<Result<T, FxError>>;

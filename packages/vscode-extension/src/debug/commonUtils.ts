@@ -17,10 +17,7 @@ import {
 } from "@microsoft/teamsfx-core/build/common/local";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { getResourceGroupInPortal } from "@microsoft/teamsfx-core/build/common/tools";
-import {
-  PluginNames,
-  GLOBAL_CONFIG,
-} from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
+import { PluginNames, GLOBAL_CONFIG } from "@microsoft/teamsfx-core/build/component/constants";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { localize } from "../utils/localizeUtils";
@@ -121,6 +118,8 @@ export async function getDebugConfig(
 ): Promise<{ appId: string; env?: string } | undefined> {
   try {
     const inputs = getSystemInputs();
+    // hide core log by default
+    inputs.loglevel = "Debug";
     const getConfigRes = await core.getProjectConfigV3(inputs);
     if (getConfigRes.isErr()) throw getConfigRes.error;
     const config = getConfigRes.value;

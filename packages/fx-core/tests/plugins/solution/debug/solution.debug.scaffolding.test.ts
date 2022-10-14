@@ -2,15 +2,10 @@ import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as fs from "fs-extra";
-import { ConfigFolderName, Inputs, Platform } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, InputsWithProjectPath, Platform } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as uuid from "uuid";
-import { MockedV2Context } from "../util";
-import { scaffoldLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
-import {
-  AzureSolutionQuestionNames,
-  BotScenario,
-} from "../../../../src/plugins/solution/fx-solution/question";
+import { AzureSolutionQuestionNames, BotScenario } from "../../../../src/component/constants";
 import { PluginBot } from "../../../../src/component/resource/botService/strings";
 import { isAadManifestEnabled } from "../../../../src/common/tools";
 import { BotHostTypes } from "../../../../src/common/local/constants";
@@ -19,6 +14,8 @@ import { MockTools } from "../../../core/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import * as commentJson from "comment-json";
 import { CommentObject, CommentArray } from "comment-json";
+import { generateLocalDebugSettings } from "../../../../src/component/debug";
+import { createContextV3 } from "../../../../src/component/utils";
 
 chai.use(chaiAsPromised);
 
@@ -39,7 +36,7 @@ describe("solution.debug.scaffolding", () => {
   setTools(tools);
 
   describe("scaffoldLocalDebugSettings", () => {
-    let inputs: Inputs;
+    let inputs: InputsWithProjectPath;
 
     beforeEach(() => {
       inputs = {
@@ -79,8 +76,8 @@ describe("solution.debug.scaffolding", () => {
           components: [{ name: "teams-tab" }, { name: "teams-api" }, { name: "aad-app" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        const v2Context = createContextV3(projectSetting);
+        const result = await generateLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
         //assert output launch.json
@@ -146,8 +143,8 @@ describe("solution.debug.scaffolding", () => {
           components: [{ name: "teams-tab" }, { name: "aad-app" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        const v2Context = createContextV3(projectSetting);
+        const result = await generateLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
         //assert output launch.json
@@ -193,8 +190,8 @@ describe("solution.debug.scaffolding", () => {
           components: [{ name: "teams-tab" }, { name: "aad-app" }, { name: "simple-auth" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        const v2Context = createContextV3(projectSetting);
+        const result = await generateLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
         //assert output launch.json
@@ -256,8 +253,8 @@ describe("solution.debug.scaffolding", () => {
           components: [{ name: "teams-tab" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        const v2Context = createContextV3(projectSetting);
+        const result = await generateLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
         //assert output launch.json
@@ -318,8 +315,8 @@ describe("solution.debug.scaffolding", () => {
           components: [{ name: "teams-bot" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        const v2Context = createContextV3(projectSetting);
+        const result = await generateLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
         //assert output launch.json
@@ -370,9 +367,10 @@ describe("solution.debug.scaffolding", () => {
             },
           },
         };
-        const v2Context = new MockedV2Context(projectSetting);
+
         inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        const v2Context = createContextV3(projectSetting);
+        const result = await generateLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
         //assert output launch.json
@@ -438,9 +436,9 @@ describe("solution.debug.scaffolding", () => {
             },
           },
         };
-        const v2Context = new MockedV2Context(projectSetting);
         inputs[AzureSolutionQuestionNames.Scenarios] = [BotScenario.NotificationBot];
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        const v2Context = createContextV3(projectSetting);
+        const result = await generateLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
         //assert output launch.json
@@ -513,8 +511,8 @@ describe("solution.debug.scaffolding", () => {
           ],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        const v2Context = createContextV3(projectSetting);
+        const result = await generateLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
         //assert output launch.json
@@ -580,8 +578,8 @@ describe("solution.debug.scaffolding", () => {
           components: [{ name: "teams-bot" }, { name: "teams-tab" }, { name: "aad-app" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        const v2Context = createContextV3(projectSetting);
+        const result = await generateLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
         //assert output launch.json
@@ -632,8 +630,8 @@ describe("solution.debug.scaffolding", () => {
           ],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        const v2Context = createContextV3(projectSetting);
+        const result = await generateLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
         //assert output launch.json
@@ -695,8 +693,8 @@ describe("solution.debug.scaffolding", () => {
           components: [{ name: "teams-bot" }, { name: "teams-tab" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        const v2Context = createContextV3(projectSetting);
+        const result = await generateLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
         //assert output launch.json
@@ -759,8 +757,8 @@ describe("solution.debug.scaffolding", () => {
           components: [{ name: "teams-tab" }, { name: "aad-app" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        const v2Context = createContextV3(projectSetting);
+        const result = await generateLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
         //assert output launch.json
@@ -822,8 +820,8 @@ describe("solution.debug.scaffolding", () => {
           components: [{ name: "teams-bot" }],
           programmingLanguage: parameter.programmingLanguage,
         };
-        const v2Context = new MockedV2Context(projectSetting);
-        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        const v2Context = createContextV3(projectSetting);
+        const result = await generateLocalDebugSettings(v2Context, inputs);
         chai.assert.isTrue(result.isOk());
 
         //assert output launch.json
@@ -867,8 +865,8 @@ describe("solution.debug.scaffolding", () => {
         },
         components: [{ name: "teams-tab", hosting: "spfx" }],
       };
-      const v2Context = new MockedV2Context(projectSetting);
-      const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+      const v2Context = createContextV3(projectSetting);
+      const result = await generateLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
       //assert output launch.json
@@ -879,9 +877,11 @@ describe("solution.debug.scaffolding", () => {
       chai.assert.equal(compounds.length, 2);
 
       //assert output tasks.json
-      const tasksAll = fs.readJSONSync(expectedTasksFile);
-      const tasks: [] = tasksAll["tasks"];
-      const tasksInput: [] = tasksAll["inputs"];
+      const tasksAll = commentJson.parse(
+        fs.readFileSync(expectedTasksFile).toString()
+      ) as CommentObject;
+      const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
+      const tasksInput = tasksAll["inputs"] as CommentArray<CommentObject>;
       chai.assert.equal(tasks.length, 7);
       chai.assert.equal(tasksInput.length, 1);
 
@@ -908,8 +908,8 @@ describe("solution.debug.scaffolding", () => {
         },
         components: [{ name: "teams-tab" }, { name: "teams-api" }],
       };
-      const v2Context = new MockedV2Context(projectSetting);
-      const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+      const v2Context = createContextV3(projectSetting);
+      const result = await generateLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
       //assert output
@@ -930,8 +930,8 @@ describe("solution.debug.scaffolding", () => {
         components: [],
       };
 
-      const v2Context = new MockedV2Context(projectSetting);
-      const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+      const v2Context = createContextV3(projectSetting);
+      const result = await generateLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
       //assert output
@@ -961,9 +961,56 @@ describe("solution.debug.scaffolding", () => {
         ],
         programmingLanguage: "javascript",
       };
-      const v2Context = new MockedV2Context(projectSetting);
-      const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+      const v2Context = createContextV3(projectSetting);
+      const result = await generateLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
+    });
+
+    it("happy path: add capability to transparent task", async () => {
+      fs.ensureDirSync(`${inputs.projectPath}/.vscode`);
+      fs.writeJSONSync(expectedTasksFile, {
+        version: "2.0.0",
+        tasks: [
+          {
+            label: "Validate & install prerequisites",
+            type: "teamsfx",
+            command: "debug-check-prerequisites",
+            args: {
+              prerequisites: ["nodejs"],
+            },
+          },
+        ],
+      });
+      const projectSetting = {
+        appName: "",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          name: "",
+          version: "",
+          hostType: "Azure",
+          capabilities: ["Tab", "Bot"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
+        },
+        components: [{ name: "teams-tab" }, { name: "teams-bot" }, { name: "aad-app" }],
+        programmingLanguage: "javascript",
+      };
+      const v2Context = createContextV3(projectSetting);
+      const result = await generateLocalDebugSettings(v2Context, inputs);
+      chai.assert.isTrue(result.isOk());
+
+      //assert output launch.json
+      const launch = fs.readJSONSync(expectedLaunchFile);
+      const configurations: [] = launch["configurations"];
+      const compounds: [] = launch["compounds"];
+      chai.assert.equal(configurations.length, 5);
+      chai.assert.equal(compounds.length, 2);
+
+      //assert output tasks.json
+      const tasksAll = commentJson.parse(
+        fs.readFileSync(expectedTasksFile).toString()
+      ) as CommentObject;
+      const tasks = tasksAll["tasks"] as CommentArray<CommentObject>;
+      chai.assert.equal(tasks.length, 11);
     });
 
     it("happy path: add capability", async () => {
@@ -995,8 +1042,8 @@ describe("solution.debug.scaffolding", () => {
         components: [{ name: "teams-tab" }, { name: "teams-bot" }, { name: "aad-app" }],
         programmingLanguage: "javascript",
       };
-      const v2Context = new MockedV2Context(projectSetting);
-      const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+      const v2Context = createContextV3(projectSetting);
+      const result = await generateLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
       //assert output launch.json
@@ -1043,8 +1090,8 @@ describe("solution.debug.scaffolding", () => {
         components: [{ name: "teams-tab" }, { name: "teams-bot" }, { name: "aad-app" }],
         programmingLanguage: "javascript",
       };
-      const v2Context = new MockedV2Context(projectSetting);
-      const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+      const v2Context = createContextV3(projectSetting);
+      const result = await generateLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
       //assert output launch.json
@@ -1110,8 +1157,8 @@ describe("solution.debug.scaffolding", () => {
         components: [{ name: "teams-tab" }, { name: "teams-bot" }, { name: "aad-app" }],
         programmingLanguage: "javascript",
       };
-      const v2Context = new MockedV2Context(projectSetting);
-      const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+      const v2Context = createContextV3(projectSetting);
+      const result = await generateLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
 
       //assert output launch.json

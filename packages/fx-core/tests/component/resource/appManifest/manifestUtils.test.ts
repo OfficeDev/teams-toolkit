@@ -33,10 +33,7 @@ import { CONFIGURABLE_TABS_TPL_EXISTING_APP } from "../../../../src/component/re
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { QuestionNames } from "../../../../src/component/feature/bot/constants";
 import { AppServiceOptionItem } from "../../../../src/component/feature/bot/question";
-import {
-  AzureSolutionQuestionNames,
-  BotScenario,
-} from "../../../../src/plugins/solution/fx-solution/question";
+import { AzureSolutionQuestionNames, BotScenario } from "../../../../src/component/constants";
 import { MockTools } from "../../../core/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
 import fs from "fs-extra";
@@ -544,5 +541,18 @@ describe("getManifest V3", () => {
     const res2 = await manifestUtils.getManifest("", envInfo, false);
     chai.assert.isTrue(res1.isErr());
     chai.assert.isTrue(res2.isErr());
+  });
+
+  it("getManifest ignoring missing config", async () => {
+    const envInfo = newEnvInfoV3();
+    envInfo.state = {
+      solution: {},
+      "teams-bot": {
+        botId: uuid.v4(),
+      },
+    };
+    envInfo.envName = "local";
+    const res1 = await manifestUtils.getManifest("", envInfo, true);
+    chai.assert.isTrue(res1.isOk());
   });
 });

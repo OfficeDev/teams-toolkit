@@ -93,3 +93,77 @@ export const BotHostTypes = Object.freeze({
 });
 
 export const BotCapabilities = "capabilities";
+
+export const TaskCommand = Object.freeze({
+  checkPrerequisites: "debug-check-prerequisites",
+  npmInstall: "debug-npm-install",
+  startLocalTunnel: "debug-start-local-tunnel",
+  setUpTab: "debug-set-up-tab",
+  setUpBot: "debug-set-up-bot",
+  setUpSSO: "debug-set-up-sso",
+  prepareManifest: "debug-prepare-manifest",
+});
+
+export const TaskOverallLabel = Object.freeze({
+  NextDefault: "Pre Debug Check & Start All",
+  NextM365: "Pre Debug Check & Start All & Install App",
+  NextSPFx: "prepare dev env",
+  TransparentDefault: "Start Teams App Locally",
+  TransparentM365: "Start Teams App Locally & Install App",
+});
+
+export const TaskLabel = Object.freeze({
+  PrerequisiteCheck: "Validate & install prerequisites",
+  InstallNpmPackages: "Install npm packages",
+  StartLocalTunnel: "Start local tunnel",
+  SetUpTab: "Set up tab",
+  SetUpBot: "Set up bot",
+  SetUpSSO: "Set up SSO",
+  PrepareManifest: "Build & upload Teams manifest",
+  InstallAzureFuncBindingExt: "Install Azure Functions binding extensions",
+  StartServices: "Start services",
+  StartFrontend: "Start frontend",
+  StartBackend: "Start backend",
+  WatchBackend: "Watch backend",
+  WatchBot: "Watch bot",
+  StartBot: "Start bot",
+  StartAzuriteEmulator: "Start Azurite emulator",
+  InstallAppInTeams: "Install app in Teams",
+  GulpTrustDevCert: "gulp trust-dev-cert",
+  GulpServe: "gulp serve",
+});
+
+export const TaskDefaultValue = Object.freeze({
+  checkPrerequisites: {
+    ports: {
+      tabService: 53000,
+      backendService: 7071,
+      backendDebug: 9229,
+      botService: 3978,
+      botDebug: 9239,
+      spfxService: 4321,
+    },
+  },
+  npmInstall: {
+    npmInstallArgs: ["--no-audit"],
+  },
+  startLocalTunnel: {
+    ngrokArgs: "http 3978 --log=stdout --log-format=logfmt",
+  },
+  setUpTab: {
+    baseUrl: "https://localhost:53000",
+  },
+  setUpBot: {
+    botMessagingEndpoint: "/api/messages",
+  },
+});
+
+export const Prerequisite = Object.freeze({
+  nodejs: "nodejs",
+  m365Account: "m365Account",
+  devCert: "devCert",
+  func: "func",
+  ngrok: "ngrok",
+  dotnet: "dotnet",
+  portOccupancy: "portOccupancy",
+});

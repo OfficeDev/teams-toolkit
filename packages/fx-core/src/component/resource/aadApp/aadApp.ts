@@ -33,10 +33,10 @@ import { DialogUtils } from "./utils/dialog";
 import { UnhandledError } from "./errors";
 import { hooks } from "@feathersjs/hooks/lib";
 import { CommonErrorHandlerMW } from "../../../core/middleware/CommonErrorHandlerMW";
-import { BuiltInFeaturePluginNames } from "../../../plugins/solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { AppUser } from "../appManifest/interfaces/appUser";
-import { Language } from "../../../plugins/solution/fx-solution/constants";
+import { Language } from "../../constants";
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";

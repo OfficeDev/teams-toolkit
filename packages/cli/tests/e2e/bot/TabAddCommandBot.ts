@@ -16,7 +16,7 @@ import {
   getUniqueAppName,
   cleanUp,
 } from "../commonUtils";
-import { it } from "../../commonlib/it";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Regression test for bug 14739454", function () {
   const testFolder = getTestFolder();
@@ -25,7 +25,7 @@ describe("Regression test for bug 14739454", function () {
 
   const env = Object.assign({}, process.env);
 
-  it("Add capability: command and response", async function () {
+  it("Add capability: command and response", { testPlanCaseId: 15685897 }, async function () {
     const cmd = `teamsfx new --interactive false --app-name ${appName} --capabilities tab --programming-language typescript`;
     await execAsync(cmd, {
       cwd: testFolder,

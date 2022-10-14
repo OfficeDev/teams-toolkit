@@ -9,7 +9,7 @@ import { CreateAppPackageArgs } from "../../../../src/component/driver/teamsApp/
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { MockedM365Provider } from "../../../plugins/solution/util";
 
-describe("teamsApp/create", async () => {
+describe("teamsApp/createAppPackage", async () => {
   const teamsAppDriver = new CreateAppPackageDriver();
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),

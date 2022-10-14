@@ -27,15 +27,15 @@
 
 New features:
 
-- New scenario-based Teams app template `Workflow bot` that enables you to create workflow style Teams application to facilitate users progress through multiple Adaptive Cards via buttons and inputs. Checkout our [documentation](https://aka.ms/teamsfx-card-action-response) for more details.
-- Debugging process is now transparently defined in `.vscode/tasks.json` and accepts parameters and arguments to enable customization and provide more granular control over debugging processes. Checkout our [documentation](https://aka.ms/teamsfx-debug-tasks) for more details. If you are running an existing project created by older Teams Toolkit versions, checkout this guide for [how to upgrade](https://aka.ms/teamsfx-debug-upgrade-new-tasks).
-- Simplified single sign-on for Message Extension and Command bot via `Add sso` command and TeamsFx SDK that helps you leverage logged-in Teams user token when accessing Microsoft Graph from your Teams application. Checkout our [documentation](https://aka.ms/teamsfx-add-sso) for more details.
-- SharePoint developers can now easily combine relevant web parts in a single personal Teams app as a [multi-tab Teams app](https://learn.microsoft.com/sharepoint/dev/spfx/build-for-teams-me-experience#build-a-multi-tab-personal-teams-app) via `Add feature`.
+- Use the new Workflow bot template to create sequential workflows where Adaptive Cards can be returned in response to user input. Learn more about this new template in the [documentation](https://aka.ms/teamsfx-card-action-response).
+- Configure each step of the debugging experience in Teams Toolkit by customizing the `.vscode/tasks.json` file, which now [surfaces parameters for finer-tuned control](https://aka.ms/teamsfx-debug-tasks).
+- Use the new Add SSO command for a simple way to [configure single sign-on for Message extension and Command bot projects](https://aka.ms/teamsfx-add-sso).
+- SPFx developers can now combine web parts as a [multi-Tab Teams app](https://learn.microsoft.com/sharepoint/dev/spfx/build-for-teams-me-experience#build-a-multi-tab-personal-teams-app) using the Add Feature menu.
 
 Enhancements:
 
 - You can now send notifications to a specific channel or person with TeamsFx SDK. Checkout [code snippets](https://aka.ms/teamsfx-send-notification#send-notifications-to-a-specific-channel) here.
-- Stop prompting debug console when browser launches to avoid distractions.
+- We've changed which windows are shown by default when an app starts debugging so you'll no longer see red error messages coming from the browser that are mistaken as errors for your app.
 
 ## 4.0.6 - Sep 23, 2022
 

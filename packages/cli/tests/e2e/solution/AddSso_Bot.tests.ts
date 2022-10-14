@@ -21,6 +21,7 @@ import { expect } from "chai";
 import { AadValidator, BotValidator } from "../../commonlib";
 import M365Login from "../../../src/commonlib/m365Login";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Add SSO", () => {
   const testFolder = getTestFolder();
@@ -37,7 +38,7 @@ describe("Add SSO", () => {
     }
   });
 
-  it(`Add SSO to non SSO Bot project`, async () => {
+  it(`Add SSO to non SSO Bot project`, { testPlanCaseId: 15687161 }, async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_AAD_MANIFEST: "true",
       TEAMSFX_CONFIG_UNIFY: "true",

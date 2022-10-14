@@ -19,6 +19,7 @@ import { environmentManager } from "@microsoft/teamsfx-core/build/core/environme
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { ApimValidator } from "../../commonlib";
+import { it } from "@microsoft/extra-shot-mocha";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import M365Login from "../../../src/commonlib/m365Login";
 
@@ -33,7 +34,7 @@ describe("Configuration successfully changed when with different plugins", funct
     await cleanUp(appName, projectPath, true, false, true);
   });
 
-  it(`tab + apim`, async function () {
+  it(`tab + apim`, { testPlanCaseId: 15685496 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await ApimValidator.init(subscription, AzureLogin, M365Login);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureApim);

@@ -112,7 +112,12 @@ export class AppCredential implements TokenCredential {
   private loadAndValidateConfig(config: AuthenticationConfiguration): AuthenticationConfiguration {
     internalLogger.verbose("Validate authentication configuration");
 
-    if (config.clientId && (config.clientSecret || config.certificateContent) && config.tenantId) {
+    if (
+      config.clientId &&
+      (config.clientSecret || config.certificateContent) &&
+      config.tenantId &&
+      config.authorityHost
+    ) {
       return config;
     }
 
@@ -128,6 +133,10 @@ export class AppCredential implements TokenCredential {
 
     if (!config.tenantId) {
       missingValues.push("tenantId");
+    }
+
+    if (!config.authorityHost) {
+      missingValues.push("authorityHost");
     }
 
     const errorMsg = formatString(

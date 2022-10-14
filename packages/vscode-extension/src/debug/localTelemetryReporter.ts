@@ -1,9 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError } from "@microsoft/teamsfx-api";
-import { LocalTelemetryReporter } from "@microsoft/teamsfx-core/build/common/local";
 import { performance } from "perf_hooks";
+
+import { FxError } from "@microsoft/teamsfx-api";
+import {
+  LocalEnvManager,
+  LocalTelemetryReporter,
+  TaskCommand,
+  TaskLabel,
+  TaskOverallLabel,
+} from "@microsoft/teamsfx-core/build/common/local";
+
+import * as globalVariables from "../globalVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -12,6 +21,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
 import { getLocalDebugSession, getProjectComponents } from "./commonUtils";
+import { TeamsfxTaskProvider } from "./teamsfxTaskProvider";
 
 function saveEventTime(eventName: string, time: number) {
   const session = getLocalDebugSession();
@@ -93,12 +103,23 @@ export async function sendDebugAllEvent(
   const precheckTime = session.eventTimes[TelemetryEvent.DebugPreCheck];
   const servicesGap = precheckTime === undefined ? -1 : (performance.now() - precheckTime) / 1000;
 
-  const properties = {
+  const properties: { [key: string]: string } = {
     [TelemetryProperty.CorrelationId]: session.id,
     [TelemetryProperty.Success]: error === undefined ? TelemetrySuccess.Yes : TelemetrySuccess.No,
     ...session.properties,
     ...additionalProperties,
   };
+
+  // Transparent task properties
+  const preLaunchTaskInfo = await getPreLaunchTaskInfo();
+  if (preLaunchTaskInfo && Object.values(preLaunchTaskInfo).length > 0) {
+    properties[TelemetryProperty.DebugPrelaunchTaskInfo] = JSON.stringify(preLaunchTaskInfo);
+    properties[TelemetryProperty.DebugIsTransparentTask] =
+      properties[TelemetryProperty.DebugIsTransparentTask] ?? "true";
+  } else {
+    properties[TelemetryProperty.DebugIsTransparentTask] =
+      properties[TelemetryProperty.DebugIsTransparentTask] ?? "false";
+  }
 
   const measurements = {
     [LocalTelemetryReporter.PropertyDuration]: duration,
@@ -116,4 +137,119 @@ export async function sendDebugAllEvent(
       measurements
     );
   }
+}
+
+export const UnknownPlaceholder = "<unknown>";
+export const UndefinedPlaceholder = "<undefined>";
+export const DefaultPlaceholder = "<default>";
+
+export function maskValue(
+  value: string | undefined,
+  knownValues: (string | { value: string; mask: string })[] = []
+): string {
+  if (typeof value === "undefined") {
+    return UndefinedPlaceholder;
+  }
+  const findValue = knownValues.find((v) =>
+    typeof v === "string" ? v === value : v.value === value
+  );
+
+  if (typeof findValue === "undefined") {
+    return UnknownPlaceholder;
+  } else if (typeof findValue === "string") {
+    return findValue;
+  } else {
+    return findValue.mask;
+  }
+}
+
+export function maskArrayValue(
+  valueArr: string[] | undefined,
+  knownValues: (string | { value: string; mask: string })[] = []
+): string[] | string {
+  if (typeof valueArr === "undefined") {
+    return UndefinedPlaceholder;
+  }
+
+  return valueArr.map((v) => maskValue(`${v}`, knownValues));
+}
+
+interface ITaskJson {
+  tasks?: ITask[];
+}
+
+interface ITask {
+  label?: string;
+  type?: string;
+  command?: string;
+  dependsOn?: string | string[];
+}
+
+interface IDependsOn {
+  label: string;
+  type: string;
+  command: string;
+}
+
+type PreLaunchTaskInfo = { [key: string]: IDependsOn[] | undefined };
+
+export async function getPreLaunchTaskInfo(): Promise<PreLaunchTaskInfo | undefined> {
+  try {
+    if (!globalVariables.isTeamsFxProject || !globalVariables.workspaceUri?.fsPath) {
+      return undefined;
+    }
+
+    const localEnvManager = new LocalEnvManager();
+    const taskJson = (await localEnvManager.getTaskJson(
+      globalVariables.workspaceUri.fsPath
+    )) as ITaskJson;
+    if (!taskJson) {
+      return undefined;
+    }
+
+    const getDependsOn = (overallTaskLabel: string) => {
+      const dependsOnArr: IDependsOn[] = [];
+      const overallTask = findTask(taskJson, overallTaskLabel);
+      if (!overallTask || !overallTask.dependsOn) {
+        return undefined;
+      }
+      const labelList: string[] = Array.isArray(overallTask.dependsOn)
+        ? overallTask.dependsOn
+        : typeof overallTask.dependsOn === "string"
+        ? [overallTask.dependsOn]
+        : [];
+
+      for (const label of labelList) {
+        const task = findTask(taskJson, label);
+        const isTeamsFxTask = task?.type === TeamsfxTaskProvider.type;
+
+        // Only send the info scaffold by Teams Toolkit. If user changed some property, the value will be "unknown".
+        dependsOnArr.push({
+          label: maskValue(label, Object.values(TaskLabel)),
+          type: maskValue(task?.type, [TeamsfxTaskProvider.type]),
+          command: !isTeamsFxTask
+            ? task?.command
+              ? UnknownPlaceholder
+              : UndefinedPlaceholder
+            : maskValue(task?.command, Object.values(TaskCommand)),
+        });
+      }
+      return dependsOnArr;
+    };
+    const res: { [key: string]: IDependsOn[] | undefined } = {};
+    Object.values(TaskOverallLabel).forEach((l) => {
+      const dependsOn = getDependsOn(l);
+      if (dependsOn) {
+        res[l] = dependsOn;
+      }
+    });
+    return res;
+  } catch {}
+
+  // Always return true even if send telemetry failed
+  return undefined;
+}
+
+function findTask(taskJson: ITaskJson, label: string): ITask | undefined {
+  return taskJson?.tasks?.find((task) => task?.label === label);
 }

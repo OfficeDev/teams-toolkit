@@ -35,6 +35,6 @@ It's recommended to get members from .
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [sendAdaptiveCard(card)](./teamsfx.member.sendadaptivecard.md) |  | Send an adaptive card message. |
-|  [sendMessage(text)](./teamsfx.member.sendmessage.md) |  | Send a plain text message. |
+|  [sendAdaptiveCard(card, onError)](./teamsfx.member.sendadaptivecard.md) |  | Send an adaptive card message. |
+|  [sendMessage(text, onError)](./teamsfx.member.sendmessage.md) |  | Send a plain text message. |
 

@@ -24,6 +24,8 @@ import {
   ProjectSettingsHelper,
   TelemetryContext,
 } from "@microsoft/teamsfx-core/build/common/local";
+import { Prerequisite } from "@microsoft/teamsfx-core/build/common/local/constants";
+
 import {
   DependencyStatus,
   DepsCheckerError,
@@ -38,7 +40,7 @@ import {
 } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { LocalEnvProvider } from "@microsoft/teamsfx-core/build/component/debugHandler";
 import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
-import { PluginNames } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
+import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 
 import * as fs from "fs-extra";
 import * as os from "os";
@@ -84,7 +86,6 @@ import { ProgressHelper } from "./progressHelper";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
-import { Prerequisite } from "./taskTerminal/prerequisiteTaskTerminal";
 import { Step } from "./commonUtils";
 
 enum Checker {
@@ -328,7 +329,10 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
   return await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPrerequisites,
     // projectComponents is already serialized JSON string
-    { [TelemetryProperty.DebugProjectComponents]: `${projectComponents}` },
+    {
+      [TelemetryProperty.DebugProjectComponents]: `${projectComponents}`,
+      [TelemetryProperty.DebugIsTransparentTask]: "false",
+    },
     async (ctx: TelemetryContext) => {
       // terminate all running teamsfx tasks
       if (allRunningTeamsfxTasks.size > 0) {
@@ -360,7 +364,9 @@ export async function checkAndInstallForTask(
 
   return await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPrerequisites,
-    {},
+    {
+      [TelemetryProperty.DebugIsTransparentTask]: "true",
+    },
     async (ctx: TelemetryContext) => {
       // terminate all running teamsfx tasks
       if (allRunningTeamsfxTasks.size > 0) {
@@ -1143,12 +1149,10 @@ async function handleCheckResults(
 
     if (shouldStop) {
       await progressHelper?.stop(false);
-      const message = util.format(
-        getDefaultString(displayMessages.errorMessageKey),
-        `[${getDefaultString(displayMessages.errorMessageLink)}](${
-          displayMessages.errorMessageCommand
-        })`
-      );
+      const message =
+        getDefaultString(displayMessages.errorMessageKey) +
+        " " +
+        displayMessages.showDetailMessage();
 
       // show failure summary in display message
       const displayMessage =
@@ -1156,10 +1160,10 @@ async function handleCheckResults(
           localize("teamstoolkit.localDebug.failedCheckers"),
           failures.map((f) => f.failureMsg ?? f.checker).join(", ")
         ) +
-        util.format(
-          localize(displayMessages.errorDisplayMessageKey),
-          `[${localize(displayMessages.errorMessageLink)}](${displayMessages.errorMessageCommand})`
-        );
+        localize(displayMessages.errorDisplayMessageKey) +
+        " " +
+        displayMessages.showDetailDisplayMessage();
+
       const errorOptions: UserErrorOptions = {
         source: ExtensionSource,
         name: displayMessages.errorName,

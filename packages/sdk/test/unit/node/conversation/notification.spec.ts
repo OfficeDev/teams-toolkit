@@ -39,10 +39,32 @@ describe("Notification Tests - Node", () => {
     assert.strictEqual(target.content, "test");
   });
 
+  it("sendMessage should catch and handle error", async () => {
+    const target = new TestTarget();
+    target.error = new Error("test");
+    let errorMessage = "";
+    await sendMessage(target, "test", (ctx, err) => {
+      errorMessage = err.message;
+      return Promise.resolve();
+    });
+    assert.strictEqual(errorMessage, "test");
+  });
+
   it("sendAdaptiveCard should send correct card", async () => {
     const target = new TestTarget();
     await sendAdaptiveCard(target, { foo: "bar" });
     assert.deepStrictEqual(target.content, { foo: "bar" });
+  });
+
+  it("sendAdaptiveCard should catch and handle error", async () => {
+    const target = new TestTarget();
+    target.error = new Error("test");
+    let errorMessage = "";
+    await sendAdaptiveCard(target, { foo: "bar" }, (ctx, err) => {
+      errorMessage = err.message;
+      return Promise.resolve();
+    });
+    assert.strictEqual(errorMessage, "test");
   });
 
   describe("Channel Tests - Node", () => {
@@ -50,12 +72,17 @@ describe("Notification Tests - Node", () => {
     let botInstallation: TeamsBotInstallation;
     let content: any;
     let activityResponse: any;
+    let turnError: Error | undefined;
 
     beforeEach(() => {
       content = "";
       activityResponse = {};
+      turnError = undefined;
       const stubContext = sandbox.createStubInstance(TurnContext);
       stubContext.sendActivity.callsFake((activityOrText, speak, inputHint) => {
+        if (turnError) {
+          throw turnError;
+        }
         return new Promise((resolve) => {
           content = activityOrText;
           resolve(activityResponse);
@@ -97,6 +124,35 @@ describe("Notification Tests - Node", () => {
       assert.deepStrictEqual(res, { id: undefined });
     });
 
+    it("sendMessage should handle error", async () => {
+      const channel = new Channel(botInstallation, { id: "1" } as ChannelInfo);
+      activityResponse = {
+        id: "message-x",
+      };
+      turnError = new Error("error-message-x");
+      let errorMessage = "";
+      await channel.sendMessage("text", (ctx, err) => {
+        errorMessage = err.message;
+        return Promise.resolve();
+      });
+      assert.strictEqual(errorMessage, "error-message-x");
+    });
+
+    it("sendMessage should throw error if onError is undefined", async () => {
+      const channel = new Channel(botInstallation, { id: "1" } as ChannelInfo);
+      activityResponse = {
+        id: "message-x",
+      };
+      turnError = new Error("error-message-x");
+      let actualError: Error | undefined;
+      try {
+        await channel.sendMessage("text");
+      } catch (error) {
+        actualError = error as Error;
+      }
+      assert.isDefined(actualError);
+    });
+
     it("sendAdaptiveCard should send correct card", async () => {
       sandbox.stub(CardFactory, "adaptiveCard").callsFake((card) => {
         return { content: card } as any;
@@ -121,6 +177,41 @@ describe("Notification Tests - Node", () => {
       res = await channel.sendAdaptiveCard({ foo: "bar" });
       assert.deepStrictEqual(res, { id: undefined });
     });
+
+    it("sendAdaptiveCard should handle error", async () => {
+      sandbox.stub(CardFactory, "adaptiveCard").callsFake((card) => {
+        return { content: card } as any;
+      });
+      const channel = new Channel(botInstallation, { id: "1" } as ChannelInfo);
+      activityResponse = {
+        id: "message-x",
+      };
+      turnError = new Error("error-card-x");
+      let errorMessage = "";
+      await channel.sendAdaptiveCard({ foo: "bar" }, (ctx, err) => {
+        errorMessage = err.message;
+        return Promise.resolve();
+      });
+      assert.strictEqual(errorMessage, "error-card-x");
+    });
+
+    it("sendAdaptiveCard should throw error if onError is undefined", async () => {
+      sandbox.stub(CardFactory, "adaptiveCard").callsFake((card) => {
+        return { content: card } as any;
+      });
+      const channel = new Channel(botInstallation, { id: "1" } as ChannelInfo);
+      activityResponse = {
+        id: "message-x",
+      };
+      turnError = new Error("error-card-x");
+      let actualError: Error | undefined;
+      try {
+        await channel.sendAdaptiveCard({ foo: "bar" });
+      } catch (error) {
+        actualError = error as Error;
+      }
+      assert.isDefined(actualError);
+    });
   });
 
   describe("Member Tests - Node", () => {
@@ -128,10 +219,12 @@ describe("Notification Tests - Node", () => {
     let botInstallation: TeamsBotInstallation;
     let content: any;
     let activityResponse: any;
+    let turnError: Error | undefined;
 
     beforeEach(() => {
       content = "";
       activityResponse = {};
+      turnError = undefined;
       const stubConversations = sandbox.createStubInstance(Conversations);
       stubConversations.createConversation.resolves({
         id: "1",
@@ -142,6 +235,9 @@ describe("Notification Tests - Node", () => {
       stubTurnState.get.returns(stubConnectorClient);
       const stubContext = sandbox.createStubInstance(TurnContext);
       stubContext.sendActivity.callsFake((activityOrText, speak, inputHint) => {
+        if (turnError) {
+          throw turnError;
+        }
         return new Promise((resolve) => {
           content = activityOrText;
           resolve(activityResponse);
@@ -192,6 +288,37 @@ describe("Notification Tests - Node", () => {
       assert.deepStrictEqual(res, { id: undefined });
     });
 
+    it("sendMessage should handle error", async () => {
+      const member = new Member(botInstallation, { id: "1" } as TeamsChannelAccount);
+      assert.strictEqual(member.type, "Person");
+      activityResponse = {
+        id: "message-y",
+      };
+      turnError = new Error("error-message-y");
+      let errorMessage = "";
+      await member.sendMessage("text", (ctx, err) => {
+        errorMessage = err.message;
+        return Promise.resolve();
+      });
+      assert.strictEqual(errorMessage, "error-message-y");
+    });
+
+    it("sendMessage should throw error if onError is undefined", async () => {
+      const member = new Member(botInstallation, { id: "1" } as TeamsChannelAccount);
+      assert.strictEqual(member.type, "Person");
+      activityResponse = {
+        id: "message-y",
+      };
+      turnError = new Error("error-message-y");
+      let actualError: Error | undefined;
+      try {
+        await member.sendMessage("text");
+      } catch (error) {
+        actualError = error as Error;
+      }
+      assert.isDefined(actualError);
+    });
+
     it("sendAdaptiveCard should send correct card", async () => {
       sandbox.stub(CardFactory, "adaptiveCard").callsFake((card) => {
         return { content: card } as any;
@@ -216,6 +343,41 @@ describe("Notification Tests - Node", () => {
       res = await member.sendAdaptiveCard({ foo: "bar" });
       assert.deepStrictEqual(res, { id: undefined });
     });
+
+    it("sendAdaptiveCard should handle error", async () => {
+      sandbox.stub(CardFactory, "adaptiveCard").callsFake((card) => {
+        return { content: card } as any;
+      });
+      const member = new Member(botInstallation, { id: "1" } as TeamsChannelAccount);
+      activityResponse = {
+        id: "message-y",
+      };
+      turnError = new Error("error-card-y");
+      let errorMessage = "";
+      await member.sendAdaptiveCard({ foo: "bar" }, (ctx, err) => {
+        errorMessage = err.message;
+        return Promise.resolve();
+      });
+      assert.strictEqual(errorMessage, "error-card-y");
+    });
+
+    it("sendAdaptiveCard should throw error if onError is undefined", async () => {
+      sandbox.stub(CardFactory, "adaptiveCard").callsFake((card) => {
+        return { content: card } as any;
+      });
+      const member = new Member(botInstallation, { id: "1" } as TeamsChannelAccount);
+      activityResponse = {
+        id: "message-y",
+      };
+      turnError = new Error("error-card-x");
+      let actualError: Error | undefined;
+      try {
+        await member.sendAdaptiveCard({ foo: "bar" });
+      } catch (error) {
+        actualError = error as Error;
+      }
+      assert.isDefined(actualError);
+    });
   });
 
   describe("TeamsBotInstallation Tests - Node", () => {
@@ -224,10 +386,12 @@ describe("Notification Tests - Node", () => {
     let context: TurnContext;
     let content: any;
     let activityResponse: any;
+    let turnError: Error | undefined;
 
     beforeEach(() => {
       content = "";
       activityResponse = {};
+      turnError = undefined;
       const stubAdapter = sandbox.createStubInstance(BotFrameworkAdapter);
       (
         stubAdapter.continueConversation as unknown as sinon.SinonStub<
@@ -240,6 +404,9 @@ describe("Notification Tests - Node", () => {
       adapter = stubAdapter;
       const stubContext = sandbox.createStubInstance(TurnContext);
       stubContext.sendActivity.callsFake((activityOrText, speak, inputHint) => {
+        if (turnError) {
+          throw turnError;
+        }
         return new Promise((resolve) => {
           content = activityOrText;
           resolve(activityResponse);
@@ -272,6 +439,45 @@ describe("Notification Tests - Node", () => {
       assert.deepStrictEqual(res, { id: undefined });
     });
 
+    it("sendMessage should handle error", async () => {
+      const conversationRef = {
+        conversation: {
+          conversationType: "channel",
+        },
+      };
+      const installation = new TeamsBotInstallation(adapter, conversationRef as any);
+      activityResponse = {
+        id: "message-a",
+      };
+      turnError = new Error("error-message-a");
+      let errorMessage = "";
+      await installation.sendMessage("text", (ctx, err) => {
+        errorMessage = err.message;
+        return Promise.resolve();
+      });
+      assert.strictEqual(errorMessage, "error-message-a");
+    });
+
+    it("sendMessage should throw error if onError is undefined", async () => {
+      const conversationRef = {
+        conversation: {
+          conversationType: "channel",
+        },
+      };
+      const installation = new TeamsBotInstallation(adapter, conversationRef as any);
+      activityResponse = {
+        id: "message-a",
+      };
+      turnError = new Error("error-message-a");
+      let actualError: Error | undefined;
+      try {
+        await installation.sendMessage("text");
+      } catch (error) {
+        actualError = error as Error;
+      }
+      assert.isDefined(actualError);
+    });
+
     it("sendAdaptiveCard should send correct card", async () => {
       sandbox.stub(CardFactory, "adaptiveCard").callsFake((card) => {
         return { content: card } as any;
@@ -301,6 +507,51 @@ describe("Notification Tests - Node", () => {
       activityResponse = undefined;
       res = await installation.sendAdaptiveCard({ foo: "bar" });
       assert.deepStrictEqual(res, { id: undefined });
+    });
+
+    it("sendAdaptiveCard should handle error", async () => {
+      sandbox.stub(CardFactory, "adaptiveCard").callsFake((card) => {
+        return { content: card } as any;
+      });
+      const conversationRef = {
+        conversation: {
+          conversationType: "channel",
+        },
+      };
+      const installation = new TeamsBotInstallation(adapter, conversationRef as any);
+      activityResponse = {
+        id: "message-a",
+      };
+      turnError = new Error("error-card-a");
+      let errorMessage = "";
+      await installation.sendAdaptiveCard({ foo: "bar" }, (ctx, err) => {
+        errorMessage = err.message;
+        return Promise.resolve();
+      });
+      assert.strictEqual(errorMessage, "error-card-a");
+    });
+
+    it("sendAdaptiveCard should throw error if onError is undefined", async () => {
+      sandbox.stub(CardFactory, "adaptiveCard").callsFake((card) => {
+        return { content: card } as any;
+      });
+      const conversationRef = {
+        conversation: {
+          conversationType: "channel",
+        },
+      };
+      const installation = new TeamsBotInstallation(adapter, conversationRef as any);
+      activityResponse = {
+        id: "message-a",
+      };
+      turnError = new Error("error-card-a");
+      let actualError: Error | undefined;
+      try {
+        await installation.sendAdaptiveCard({ foo: "bar" });
+      } catch (error) {
+        actualError = error as Error;
+      }
+      assert.isDefined(actualError);
     });
 
     it("channels should return correct channels", async () => {

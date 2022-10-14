@@ -15,7 +15,7 @@ import { MockTools, randomAppName } from "../core/utils";
 import { assert } from "chai";
 import { TeamsfxCore } from "../../src/component/core";
 import * as sinon from "sinon";
-import * as question from "../../src/component/questionV3";
+import * as question from "../../src/component/question";
 import { TeamsBot } from "../../src/component/feature/bot/bot";
 import { AzureWebAppResource } from "../../src/component/resource/azureAppService/azureWebApp";
 import { deployUtils } from "../../src/component/deployUtils";

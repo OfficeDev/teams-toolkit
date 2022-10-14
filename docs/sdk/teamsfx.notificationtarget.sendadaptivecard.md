@@ -9,7 +9,7 @@ Send an adaptive card message.
 <b>Signature:</b>
 
 ```typescript
-sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
+sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
 ```
 
 ## Parameters
@@ -17,6 +17,7 @@ sendAdaptiveCard(card: unknown): Promise<MessageResponse>;
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  card | unknown | the adaptive card raw JSON. |
+|  onError | (context: TurnContext, error: Error) =&gt; Promise&lt;void&gt; | an optional error handler that can catch exceptions during adaptive card sending. If not defined, error will be handled by <code>BotAdapter.onTurnError</code>. |
 
 <b>Returns:</b>
 

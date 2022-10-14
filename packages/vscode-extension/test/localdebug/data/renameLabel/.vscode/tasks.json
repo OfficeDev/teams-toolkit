@@ -1,0 +1,19 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "renamed",
+            "dependsOn": [
+                "Validate & install prerequisites",
+                "Install npm packages",
+                "Start local tunnel",
+                "Set up tab",
+                "Set up bot",
+                "Set up SSO",
+                "Build & upload Teams manifest",
+                "Start services"
+            ],
+            "dependsOrder": "sequence"
+        }
+    ]
+}

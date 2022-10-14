@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+import "mocha";
 import { InputsWithProjectPath, Platform, v3, ok } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
 import { convertContext } from "../../src/component/resource/aadApp/utils";
@@ -8,7 +12,7 @@ import {
   resetEnvInfoWhenSwitchM365,
   scaffoldRootReadme,
 } from "../../src/component/utils";
-import { BuiltInFeaturePluginNames } from "../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../src/component/constants";
 import { MockTools } from "../core/utils";
 import sinon from "sinon";
 import { deployUtils } from "../../src/component/deployUtils";
@@ -22,6 +26,9 @@ import { setTools } from "../../src/core/globalVars";
 import { newEnvInfoV3 } from "../../src/core/environment";
 import fs from "fs-extra";
 import { MyTokenCredential } from "../plugins/solution/util";
+import { expandEnvironmentVariable } from "../../src/component/utils/common";
+import mockedEnv, { RestoreFn } from "mocked-env";
+
 describe("resetEnvInfoWhenSwitchM365", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -251,5 +258,70 @@ describe("resetEnvInfoWhenSwitchM365", () => {
       },
     ];
     await scaffoldRootReadme(projectSettings, ".");
+  });
+});
+
+describe("expandEnvironmentVariable", () => {
+  const template = "ENV_A value:${{ENV_A}}" + "ENV_B value:${{ENV_B}}";
+
+  let envRestore: RestoreFn | undefined;
+
+  afterEach(() => {
+    if (envRestore) {
+      envRestore();
+      envRestore = undefined;
+    }
+  });
+
+  it("should expand all environment variables", () => {
+    envRestore = mockedEnv({
+      ENV_A: "A",
+      ENV_B: "B",
+    });
+
+    const result = expandEnvironmentVariable(template);
+
+    expect(result).to.equal("ENV_A value:A" + "ENV_B value:B");
+  });
+
+  it("should not expand placeholder when specified environment variable not exist", () => {
+    envRestore = mockedEnv({
+      ENV_A: "A",
+    });
+
+    const result = expandEnvironmentVariable(template);
+
+    expect(result).to.equal("ENV_A value:A" + "ENV_B value:${{ENV_B}}");
+  });
+
+  it("should not modify original string", () => {
+    envRestore = mockedEnv({
+      ENV_A: "A",
+      ENV_B: "B",
+    });
+
+    expandEnvironmentVariable(template);
+
+    expect(template).to.equal("ENV_A value:${{ENV_A}}" + "ENV_B value:${{ENV_B}}");
+  });
+
+  it("should do nothing with non valid placeholder", () => {
+    const template = "placeholder:${{}}";
+
+    const result = expandEnvironmentVariable(template);
+
+    expect(result).to.equal("placeholder:${{}}");
+  });
+
+  it("should allow leading and trailing whitespaces in environment variable name", () => {
+    const template = "placeholder: ${{ ENV_A }}";
+
+    envRestore = mockedEnv({
+      ENV_A: "A",
+    });
+
+    const result = expandEnvironmentVariable(template);
+
+    expect(result).to.equal("placeholder: A");
   });
 });

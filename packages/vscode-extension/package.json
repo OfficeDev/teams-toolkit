@@ -56,6 +56,15 @@
     "workspaceContains:**/.fx/*",
     "onView:teamsfx-empty-project"
   ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "%teamstoolkit.capabilities.untrustedWorkspaces.description%",
+      "restrictedConfigurations": [
+        "fx-extension.SPFxVersion"
+      ]
+    }
+  },
   "contributes": {
     "icons": {
       "teamsfx-add-feature": {
@@ -111,7 +120,7 @@
         {
           "id": "teamsfx-environment",
           "name": "Environment",
-          "when": "fx-extension.isTeamsFx"
+          "when": "fx-extension.isTeamsFx && isWorkspaceTrusted"
         },
         {
           "id": "teamsfx-development",
@@ -149,7 +158,7 @@
         {
           "id": "teamsfx-empty-project-and-check-upgrade",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.canUpgradeToArmAndMultiEnv"
+          "when": "!fx-extension.isTeamsFx && fx-extension.canUpgradeToArmAndMultiEnv && isWorkspaceTrusted"
         }
       ]
     },
@@ -495,7 +504,7 @@
       {
         "command": "fx-extension.addEnvironment",
         "title": "%teamstoolkit.commands.createEnvironment.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
         "category": "Teams"
       },
       {
@@ -507,19 +516,19 @@
       {
         "command": "fx-extension.addFeature",
         "title": "%teamstoolkit.commands.addFeature.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
         "category": "Teams"
       },
       {
         "command": "fx-extension.build",
         "title": "%teamstoolkit.commands.zipPackage.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
         "category": "Teams"
       },
       {
         "command": "fx-extension.checkProjectUpgrade",
         "title": "%teamstoolkit.commands.upgradeProject.title%",
-        "enablement": "fx-extension.initialized",
+        "enablement": "fx-extension.initialized && isWorkspaceTrusted",
         "category": "Teams"
       },
       {
@@ -531,25 +540,25 @@
       {
         "command": "fx-extension.deploy",
         "title": "%teamstoolkit.commands.deploy.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
         "category": "Teams"
       },
       {
         "command": "fx-extension.deployAadAppManifest",
         "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
-        "enablement": "fx-extension.isTeamsFx && fx-extension.isAadManifestEnabled",
+        "enablement": "fx-extension.isTeamsFx && fx-extension.isAadManifestEnabled && isWorkspaceTrusted",
         "category": "Teams"
       },
       {
         "command": "fx-extension.migrateTeamsManifest",
         "title": "%teamstoolkit.commands.migrateManifest.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
         "category": "Teams"
       },
       {
         "command": "fx-extension.migrateTeamsTabApp",
         "title": "%teamstoolkit.commands.migrateApp.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
         "category": "Teams"
       },
       {
@@ -561,7 +570,7 @@
       {
         "command": "fx-extension.openManifest",
         "title": "%teamstoolkit.commands.editManifest.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
         "category": "Teams"
       },
       {
@@ -573,26 +582,26 @@
       {
         "command": "fx-extension.provision",
         "title": "%teamstoolkit.commands.provision.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
         "category": "Teams"
       },
       {
         "command": "fx-extension.publish",
         "title": "%teamstoolkit.commands.publish.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
         "category": "Teams"
       },
       {
         "command": "fx-extension.updatePreviewFile",
         "title": "%teamstoolkit.commands.updateManifest.title%",
         "icon": "$(sync)",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
         "category": "Teams"
       },
       {
         "command": "fx-extension.validateManifest",
         "title": "%teamstoolkit.commands.validateManifest.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
         "category": "Teams"
       },
       {

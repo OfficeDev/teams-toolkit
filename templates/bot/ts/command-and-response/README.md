@@ -89,7 +89,8 @@ export class HelloWorldCommandHandler implements TeamsFxBotCommandHandler {
       title: "Your Hello World Bot is Running",
       body: "Congratulations! Your hello world bot is running. Click the button below to trigger an action.",
     };
-    return MessageBuilder.attachAdaptiveCard<CardData>(helloWorldCard, cardData);
+    const cardJson = AdaptiveCards.declare<CardData>(helloWorldCard).render(cardData);
+    return MessageFactory.attachment(CardFactory.adaptiveCard(cardJson));
   }
 }
 ```
@@ -141,9 +142,14 @@ To add the notification feature:
     });
 
 4. Uninstall your previous bot installation from Teams, and press `F5` to start your application.
-5. Send a notification to the bot installation targets (channel/group chat/personal chat) by using a your favorite tool to send a HTTP POST request to `https://localhost:3978/api/notification`.
+5. Send a notification to the bot installation targets (channel/group chat/personal chat) by using a your favorite tool to send a HTTP POST request to `http://localhost:3978/api/notification`.
 
 To learn more, refer to [the notification document](https://aka.ms/teamsfx-notification).
+
+## Add adaptive card actions
+The Adaptive Card action handler feature enables the app to respond to adaptive card actions that triggered by end users to complete a sequential workflow. When user gets an Adaptive Card, it can provide one or more buttons in the card to ask for user's input, do something like calling some APIs, and then send another adaptive card in conversation to response to the card action.
+
+To add adaptive card actions to command bot, you can follow the steps [here](https://aka.ms/teamsfx-card-action-response#add-more-card-actions).
 
 ## Access Microsoft Graph
 

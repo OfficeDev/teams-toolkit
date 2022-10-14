@@ -41,6 +41,7 @@ import {
   ok,
   OptionItem,
   Platform,
+  ProjectConfigV3,
   ProjectSettingsFileName,
   Result,
   SelectFileConfig,
@@ -57,7 +58,7 @@ import {
   Void,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
-import { AddSsoParameters } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
+import { AddSsoParameters } from "@microsoft/teamsfx-core/build/component/constants";
 import {
   askSubscription,
   AppStudioScopes,
@@ -78,7 +79,7 @@ import {
   globalStateUpdate,
   globalStateGet,
 } from "@microsoft/teamsfx-core/build/common/globalState";
-import { UserTaskFunctionName } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
+import { UserTaskFunctionName } from "@microsoft/teamsfx-core/build/component/constants";
 import { FxCore } from "@microsoft/teamsfx-core";
 import { InvalidProjectError } from "@microsoft/teamsfx-core/build/core/error";
 
@@ -422,6 +423,16 @@ function registerCoreEvents() {
       ).onLockChanged(false);
     });
   }
+}
+
+export async function getAzureProjectConfigV3(): Promise<ProjectConfigV3 | undefined> {
+  const input = getSystemInputs();
+  input.ignoreEnvInfo = true;
+  const res = await core.getProjectConfigV3(input);
+  if (res.isOk()) {
+    return res.value;
+  }
+  return undefined;
 }
 
 export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings | undefined> {
@@ -1287,7 +1298,9 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  * Check & install required local prerequisites before local debug.
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
-  const additionalProperties: { [key: string]: string } = {};
+  const additionalProperties: { [key: string]: string } = {
+    [TelemetryProperty.DebugIsTransparentTask]: "false",
+  };
   {
     // If we know this session is concurrently running with another session, send that correlationId in `debug-all-start` event.
     // Mostly, this happens when user stops debugging while preLaunchTasks are running and immediately hit F5 again.
@@ -1309,7 +1322,9 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
     const result = await localPrerequisites.checkAndInstall();
     if (result.isErr()) {
       // Only local debug use validate-local-prerequisites command
-      await sendDebugAllEvent(result.error);
+      await sendDebugAllEvent(result.error, {
+        [TelemetryProperty.DebugIsTransparentTask]: "false",
+      });
       commonUtils.endLocalDebugSession();
       // return non-zero value to let task "exit ${command:xxx}" to exit
       showError(result.error);
@@ -1465,7 +1480,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     terminateAllRunningTeamsfxTasks();
     await debug.stopDebugging();
     // only local debug uses pre-debug-check command
-    await sendDebugAllEvent(result.error);
+    await sendDebugAllEvent(result.error, { [TelemetryProperty.DebugIsTransparentTask]: "false" });
     commonUtils.endLocalDebugSession();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";

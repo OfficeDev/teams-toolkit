@@ -14,6 +14,7 @@ import {
   UserInteraction,
   v2,
 } from "@microsoft/teamsfx-api";
+import * as commentJson from "comment-json";
 import * as fs from "fs-extra";
 import * as path from "path";
 
@@ -32,7 +33,7 @@ import { LocalStateProvider } from "../localStateProvider";
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import { convertEnvStateV3ToV2 } from "../../component/migrate";
-import { getNgrokTunnelFromApi } from "../../plugins/solution/fx-solution/debug/util/ngrok";
+import { getNgrokTunnelFromApi } from "../../component/debug/util/ngrok";
 import { LocalEnvKeys, LocalEnvProvider } from "../../component/debugHandler/localEnvProvider";
 
 export class LocalEnvManager {
@@ -192,6 +193,16 @@ export class LocalEnvManager {
       await localEnvProvider.saveFrontendLocalEnvs(frontendEnvs);
     }
     return res;
+  }
+
+  public async getTaskJson(projectPath: string): Promise<any> {
+    try {
+      const taskFilePath = path.resolve(projectPath, ".vscode", "tasks.json");
+      const content = await fs.readFile(taskFilePath, "utf-8");
+      return commentJson.parse(content);
+    } catch {
+      return undefined;
+    }
   }
 
   // Retry logic when reading project config files in case of read-write conflict

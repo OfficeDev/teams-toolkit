@@ -19,7 +19,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 
-import { it } from "../../commonlib/it";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Collaboration", function () {
   const testFolder = getTestFolder();

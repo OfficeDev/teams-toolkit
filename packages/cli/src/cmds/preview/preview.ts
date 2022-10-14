@@ -21,6 +21,7 @@ import {
   Platform,
   ProjectSettings,
   ProjectSettingsFileName,
+  ProjectSettingsV3,
   Result,
   SystemError,
   UnknownError,
@@ -85,6 +86,11 @@ import { openHubWebClient } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { FolderName } from "@microsoft/teamsfx-core/build/common/local/constants";
 import { FxCore } from "@microsoft/teamsfx-core";
+import {
+  hasAzureTab,
+  hasBot,
+  hasSPFxTab,
+} from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
 
 enum Checker {
   M365Account = "Microsoft 365 Account",
@@ -452,15 +458,10 @@ export default class Preview extends YargsCommand {
       return err(configResult.error);
     }
     const config = configResult.value;
-    tenantId = config?.config
-      ?.get(constants.solutionPluginName)
-      ?.get(constants.teamsAppTenantIdConfigKey) as string;
-    localTeamsAppId = config?.config
-      ?.get(constants.appstudioPluginName)
-      ?.get(constants.remoteTeamsAppIdConfigKey);
-    localBotId = config?.config
-      ?.get(constants.botPluginName)
-      ?.get(constants.botIdConfigKey) as string;
+    tenantId = config?.config?.[constants.appstudioPluginName]?.["tenantId"] as string;
+    localTeamsAppId =
+      config?.config?.[constants.appstudioPluginName]?.[constants.remoteTeamsAppIdConfigKey];
+    localBotId = config?.config?.[constants.botPluginName]?.[constants.botIdConfigKey] as string;
 
     if (localTeamsAppId === undefined || localTeamsAppId.length === 0) {
       return err(errors.TeamsAppIdNotExists());
@@ -761,20 +762,13 @@ export default class Preview extends YargsCommand {
       throw NotM365Project();
     }
 
-    const activeResourcePlugins =
-      (config?.settings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins ?? [];
-    const includeFrontend = activeResourcePlugins.some(
-      (pluginName) => pluginName === constants.frontendHostingPluginName
-    );
-    const includeBot = activeResourcePlugins.some(
-      (pluginName) => pluginName === constants.botPluginName
-    );
+    const includeFrontend =
+      (config?.settings && hasAzureTab(config.settings as ProjectSettingsV3)) || false;
+    const includeBot = (config?.settings && hasBot(config.settings as ProjectSettingsV3)) || false;
     if (hub === constants.Hub.office && !includeFrontend) {
       throw errors.OnlyLaunchPageSupportedInOffice();
     }
-    const includeSpfx = activeResourcePlugins.some(
-      (pluginName) => pluginName === constants.spfxPluginName
-    );
+    const includeSpfx = config?.settings && hasSPFxTab(config.settings as ProjectSettingsV3);
     if (includeSpfx) {
       if (!this.sharepointSiteUrl) {
         return err(errors.NoUrlForSPFxRemotePreview());
@@ -782,13 +776,10 @@ export default class Preview extends YargsCommand {
       return this.spfxPreview(workspaceFolder, browser, this.sharepointSiteUrl, browserArguments);
     }
 
-    const tenantId = config?.config
-      ?.get(constants.solutionPluginName)
-      ?.get(constants.teamsAppTenantIdConfigKey) as string;
+    const tenantId = config?.config?.[constants.appstudioPluginName]?.tenantId as string;
 
-    const remoteTeamsAppId: string = config?.config
-      ?.get(constants.appstudioPluginName)
-      ?.get(constants.remoteTeamsAppIdConfigKey);
+    const remoteTeamsAppId: string =
+      config?.config?.[constants.appstudioPluginName]?.[constants.remoteTeamsAppIdConfigKey];
     if (remoteTeamsAppId === undefined || remoteTeamsAppId.length === 0) {
       return err(errors.PreviewWithoutProvision());
     }
@@ -796,7 +787,7 @@ export default class Preview extends YargsCommand {
     // launch Teams
     if (hub === constants.Hub.teams) {
       await openHubWebClient(
-        includeFrontend,
+        includeFrontend || false,
         tenantId,
         remoteTeamsAppId,
         hub,

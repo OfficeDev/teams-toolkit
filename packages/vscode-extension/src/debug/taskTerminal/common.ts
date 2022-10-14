@@ -82,16 +82,12 @@ export async function handleDebugActions(
   VsCodeLogInstance.outputChannel.appendLine("");
 
   if (error) {
-    const message = util.format(
-      getDefaultString(displayMessages.errorMessageKey),
-      `[${getDefaultString(displayMessages.errorMessageLink)}](${
-        displayMessages.errorMessageCommand
-      })`
-    );
-    const displayMessage = util.format(
-      localize(displayMessages.errorDisplayMessageKey),
-      `[${localize(displayMessages.errorMessageLink)}](${displayMessages.errorMessageCommand})`
-    );
+    const message =
+      getDefaultString(displayMessages.errorMessageKey) + " " + displayMessages.showDetailMessage();
+    const displayMessage =
+      localize(displayMessages.errorDisplayMessageKey) +
+      " " +
+      displayMessages.showDetailDisplayMessage();
 
     const errorOptions: UserErrorOptions = {
       source: ExtensionSource,

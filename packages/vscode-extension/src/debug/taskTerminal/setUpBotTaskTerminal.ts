@@ -6,6 +6,7 @@
 import * as vscode from "vscode";
 
 import { assembleError, err, FxError, Result, Void } from "@microsoft/teamsfx-api";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import {
   BotDebugArgs,
   BotDebugHandler,
@@ -15,10 +16,14 @@ import {
 import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";
 import { tools } from "../../handlers";
+import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import * as commonUtils from "../commonUtils";
 import { setUpBotDisplayMessages } from "../constants";
+import { DefaultPlaceholder, localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { handleDebugActions } from "./common";
 import { LocalTunnelTaskTerminal } from "./localTunnelTaskTerminal";
+import { TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
 
 export class SetUpBotTaskTerminal extends BaseTaskTerminal {
   private readonly args: BotDebugArgs;
@@ -28,7 +33,26 @@ export class SetUpBotTaskTerminal extends BaseTaskTerminal {
     this.args = taskDefinition.args as BotDebugArgs;
   }
 
-  async do(): Promise<Result<Void, FxError>> {
+  do(): Promise<Result<Void, FxError>> {
+    return Correlator.runWithId(commonUtils.getLocalDebugSession().id, () =>
+      localTelemetryReporter.runWithTelemetryProperties(
+        TelemetryEvent.DebugSetUpBotTask,
+        {
+          [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+          [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+            botId: maskValue(this.args.botId),
+            botMessagingEndpoint: maskValue(this.args.botMessagingEndpoint, [
+              { value: TaskDefaultValue.setUpBot.botMessagingEndpoint, mask: DefaultPlaceholder },
+            ]),
+            botPassword: maskValue(this.args.botPassword),
+          }),
+        },
+        () => this._do()
+      )
+    );
+  }
+
+  private async _do(): Promise<Result<Void, FxError>> {
     try {
       if (!this.args.botMessagingEndpoint || this.args.botMessagingEndpoint.trim().length === 0) {
         return err(DebugArgumentEmptyError("botMessagingEndpoint"));
@@ -60,6 +84,11 @@ export class SetUpBotTaskTerminal extends BaseTaskTerminal {
     );
     const actions = handler.getActions();
 
-    return await handleDebugActions(actions, setUpBotDisplayMessages);
+    const res = await handleDebugActions(actions, setUpBotDisplayMessages);
+    const duration = this.getDurationInSeconds();
+    if (res.isOk() && duration) {
+      VsCodeLogInstance.info(setUpBotDisplayMessages.durationMessage(duration));
+    }
+    return res;
   }
 }

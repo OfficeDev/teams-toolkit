@@ -1,99 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  AzureSolutionSettings,
-  err,
-  ok,
-  Platform,
-  ProjectSettings,
-  UserError,
-  v2,
-  v3,
-} from "@microsoft/teamsfx-api";
+import { err, ok, Platform, UserError, v2, v3 } from "@microsoft/teamsfx-api";
 import chai from "chai";
 import { it } from "mocha";
 import * as sinon from "sinon";
-import * as uuid from "uuid";
-import { TabSsoItem } from "../../../src/plugins/solution/fx-solution/question";
-import { fillInSolutionSettings } from "../../../src/plugins/solution/fx-solution/v2/utils";
-import mockedEnv from "mocked-env";
-import * as arm from "../../../src/plugins/solution/fx-solution/arm";
-import * as backup from "../../../src/plugins/solution/fx-solution/utils/backupFiles";
-import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import { ComponentNames } from "../../../src/component/constants";
+import * as arm from "../../../src/component/arm";
+import * as backup from "../../../src/component/utils/backupFiles";
+import { BuiltInFeaturePluginNames } from "../../../src/component/constants";
+import { MockContext } from "../../component/feature/apiconnector/utils";
 import {
   handleConfigFilesWhenSwitchAccount,
   hasBotServiceCreated,
-} from "../../../src/plugins/solution/fx-solution/utils/util";
-import { ComponentNames } from "../../../src/component/constants";
-import { PluginNames } from "../../../src/plugins/solution/fx-solution/constants";
+} from "../../../src/component/provisionUtils";
 const tool = require("../../../src/common/tools");
 const expect = chai.expect;
 
-describe("util: fillInSolutionSettings() with AAD manifest enabled", async () => {
-  const mocker = sinon.createSandbox();
-  let projectSettings: ProjectSettings;
-  let mockedEnvRestore: () => void;
-
-  beforeEach(async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_AAD_MANIFEST: "true",
-    });
-
-    projectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        name: "test",
-        version: "1.0",
-      },
-    };
-
-    // mocker.stub(tool, "isAadManifestEnabled").returns(true);
-  });
-
-  afterEach(async () => {
-    mockedEnvRestore();
-    mocker.restore();
-  });
-
-  it("Tab with SSO", async () => {
-    const mockInput = {
-      capabilities: ["Tab"],
-      platform: Platform.VSCode,
-    };
-
-    const res = fillInSolutionSettings(projectSettings, mockInput);
-
-    const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
-    expect(solutionSettings?.capabilities?.includes(TabSsoItem.id)).to.be.true;
-  });
-
-  it("Tab without SSO", async () => {
-    const mockInput = {
-      capabilities: ["TabNonSso"],
-      platform: Platform.VSCode,
-    };
-
-    const res = fillInSolutionSettings(projectSettings, mockInput);
-
-    const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
-    expect(solutionSettings?.capabilities?.includes(TabSsoItem.id)).to.be.false;
-  });
-
-  it("M365 SSO Tab", async () => {
-    const mockInput = {
-      capabilities: ["M365SsoLaunchPage"],
-      platform: Platform.VSCode,
-    };
-
-    const res = fillInSolutionSettings(projectSettings, mockInput);
-    const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
-    expect(solutionSettings?.capabilities?.includes(TabSsoItem.id)).to.be.true;
-  });
-});
-
 describe("util: handleConfigFilesWhenSwitchAccount", async () => {
   const mocker = sinon.createSandbox();
+  const context = MockContext();
+  const mockInput = {
+    capabilities: ["Tab"],
+    platform: Platform.VSCode,
+    projectPath: "project-path",
+  };
   afterEach(async () => {
     mocker.restore();
   });
@@ -105,14 +35,12 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       state: { solution: {}, [BuiltInFeaturePluginNames.bot]: { resourceId: "mockResourceId" } },
       config: {},
     };
-    const appName = "app-name";
-    const projectPath = "project-path";
 
     // Act
     const res = await handleConfigFilesWhenSwitchAccount(
       envInfo,
-      appName,
-      projectPath,
+      context,
+      mockInput,
       false,
       false,
       true,
@@ -132,14 +60,14 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       state: { solution: {}, [BuiltInFeaturePluginNames.bot]: { resourceId: "mockResourceId" } },
       config: {},
     };
-    const appName = "app-name";
+    const appName = "ut";
     const projectPath = "project-path";
 
     // Act
     const res = await handleConfigFilesWhenSwitchAccount(
       envInfo,
-      appName,
-      projectPath,
+      context,
+      mockInput,
       true,
       true,
       true,
@@ -162,14 +90,14 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       state: { solution: {} },
       config: {},
     };
-    const appName = "app-name";
+    const appName = "ut";
     const projectPath = "project-path";
 
     // Act
     const res = await handleConfigFilesWhenSwitchAccount(
       envInfo,
-      appName,
-      projectPath,
+      context,
+      mockInput,
       true,
       true,
       false,
@@ -189,14 +117,12 @@ describe("util: handleConfigFilesWhenSwitchAccount", async () => {
       state: { solution: {} },
       config: {},
     };
-    const appName = "app-name";
-    const projectPath = "project-path";
 
     // Act
     const res = await handleConfigFilesWhenSwitchAccount(
       envInfo,
-      appName,
-      projectPath,
+      context,
+      mockInput,
       true,
       true,
       false,

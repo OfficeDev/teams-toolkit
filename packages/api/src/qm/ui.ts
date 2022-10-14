@@ -338,6 +338,13 @@ export interface UserInteraction {
    * @param config execute function configurations
    */
   executeFunction?(config: ExecuteFuncConfig): any | Promise<any>;
+
+  /**
+   * Opens a file.
+   * @param filePath The path of the file that should be opened.
+   * @returns A promise indicating if open was successful.
+   */
+  openFile?(filePath: string): Promise<Result<boolean, FxError>>;
 }
 
 export interface IProgressHandler {

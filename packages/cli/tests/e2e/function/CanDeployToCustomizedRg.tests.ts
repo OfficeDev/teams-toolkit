@@ -16,12 +16,13 @@ import {
   readContextMultiEnv,
   createResourceGroup,
   deleteResourceGroupByName,
+  customizeBicepFilesToCustomizedRg,
 } from "../commonUtils";
 import M365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
-import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Deploy to customized resource group", function () {
   const testFolder = getTestFolder();
@@ -34,45 +35,49 @@ describe("Deploy to customized resource group", function () {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it(`tab project can deploy function resource to customized resource group and successfully provision / deploy`, async function () {
-    // Create new tab + func project
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
-    await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
+  it(
+    `tab project can deploy function resource to customized resource group and successfully provision / deploy`,
+    { testPlanCaseId: 15686840 },
+    async function () {
+      // Create new tab + func project
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+      await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
 
-    // Create empty resource group
-    const customizedRgName = `${appName}-customized-rg`;
-    await createResourceGroup(customizedRgName, "eastus");
+      // Create empty resource group
+      const customizedRgName = `${appName}-customized-rg`;
+      await createResourceGroup(customizedRgName, "eastus");
 
-    // Customize simple auth bicep files
-    await customizeBicepFilesToCustomizedRg(
-      customizedRgName,
-      projectPath,
-      `name: 'azureFunctionApiProvision'`,
-      `name: 'teamsFxAzureFunctionApiConfig'`
-    );
+      // Customize simple auth bicep files
+      await customizeBicepFilesToCustomizedRg(
+        customizedRgName,
+        projectPath,
+        `name: 'azureFunctionApiProvision'`,
+        `name: 'teamsFxAzureFunctionApiConfig'`
+      );
 
-    // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
+      // Provision
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+      await CliHelper.provisionProject(projectPath);
 
-    // deploy
-    await CliHelper.deployProject(ResourceToDeploy.Function, projectPath);
+      // deploy
+      await CliHelper.deployProject(ResourceToDeploy.Function, projectPath);
 
-    // Assert
-    {
-      const context = await readContextMultiEnv(projectPath, env);
+      // Assert
+      {
+        const context = await readContextMultiEnv(projectPath, env);
 
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, M365Login);
-      await AadValidator.validate(aad);
+        // Validate Aad App
+        const aad = AadValidator.init(context, false, M365Login);
+        await AadValidator.validate(aad);
 
-      // Validate Function App
-      const functionValidator = new FunctionValidator(context, projectPath, env);
-      await functionValidator.validateProvision();
-      await functionValidator.validateDeploy();
+        // Validate Function App
+        const functionValidator = new FunctionValidator(context, projectPath, env);
+        await functionValidator.validateProvision();
+        await functionValidator.validateDeploy();
+      }
+
+      await deleteResourceGroupByName(customizedRgName);
     }
-
-    await deleteResourceGroupByName(customizedRgName);
-  });
+  );
 });

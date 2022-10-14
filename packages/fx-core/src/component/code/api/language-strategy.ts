@@ -27,7 +27,7 @@ const NodeJSCommonStrategy: FunctionLanguageStrategy = {
    * Its consistency can be guaranteed by `npm install`.
    */
   hasUpdatedContentFilter: (itemPath: string) =>
-    path.basename(itemPath) !== PathConstants.npmPackageFolderName,
+    path.basename(itemPath) !== PathConstants.npmPackageFolder,
   buildCommands: [],
   deployFolderRelativePath: "",
 };

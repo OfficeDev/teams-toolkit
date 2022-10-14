@@ -2,12 +2,10 @@
 
 ## 4.1.0 - Oct 17, 2022
 
-Incremental version for Teams Toolkit with new features and several enhancements.
-
 New features:
 
-- New scenario-based Teams app template `Workflow bot` that enables you to create workflow style Teams application to facilicate users progress through multiple Adaptive Cards via buttons and inputs. Checkout our [documentation](https://aka.ms/teamsfx-card-action-response) for more details.
-- Debugging process are now transparently defined in `.vscode/tasks.json` and accepts parameters and arguments to enable customization and provide more granular control over debugging processes. Checkout our [documentation](https://aka.ms/teamsfx-debug-tasks) for more details. If you are running an existing project created by older Teams Toolkit versions, checkout this guide for [how to upgrade](https://aka.ms/teamsfx-debug-upgrade-new-tasks).
+- New scenario-based Teams app template `Workflow bot` that enables you to create workflow style Teams application to facilitate users progress through multiple Adaptive Cards via buttons and inputs. Checkout our [documentation](https://aka.ms/teamsfx-card-action-response) for more details.
+- Debugging process is now transparently defined in `.vscode/tasks.json` and accepts parameters and arguments to enable customization and provide more granular control over debugging processes. Checkout our [documentation](https://aka.ms/teamsfx-debug-tasks) for more details. If you are running an existing project created by older Teams Toolkit versions, checkout this guide for [how to upgrade](https://aka.ms/teamsfx-debug-upgrade-new-tasks).
 - Simplified single sign-on for Message Extension and Command bot via `Add sso` command and TeamsFx SDK that helps you leverage logged-in Teams user token when accessing Microsoft Graph from your Teams application. Checkout our [documentation](https://aka.ms/teamsfx-add-sso) for more details.
 - SharePoint developers can now easily combine relevant web parts in a single personal Teams app as a [multi-tab Teams app](https://learn.microsoft.com/sharepoint/dev/spfx/build-for-teams-me-experience#build-a-multi-tab-personal-teams-app) via `Add feature`.
 

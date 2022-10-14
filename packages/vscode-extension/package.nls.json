@@ -242,6 +242,7 @@
     "teamstoolkit.handlers.loginFailed": "Login failed, the operation is terminated.",
     "teamstoolkit.handlers.m365SignIn": "Successfully signed in to Microsoft 365 account.",
     "teamstoolkit.handlers.m365SignOut": "Successfully signed out of Microsoft 365 account.",
+    "teamstoolkit.handlers.loginCacheFailed": "Failed to get login account token from cache. You could try signing out and signing back in to your Azure Account using Teams Toolkit tree view or command palette",
     "teamstoolkit.handlers.noOpenWorkspace": "No open workspace",
     "teamstoolkit.handlers.openFolderTitle": "Open folder",
     "teamstoolkit.handlers.operationNotSupport": "Operation not support: %s",

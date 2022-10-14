@@ -41,7 +41,6 @@ describe("Blazor App", function () {
   const envName = environmentManager.getDefaultEnvName();
   const env = Object.assign({}, process.env);
   env["TEAMSFX_CLI_DOTNET"] = "true";
-  env["TEAMSFX_APIV3"] = "false";
 
   after(async () => {
     // clean up
@@ -57,7 +56,7 @@ describe("Blazor App", function () {
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath, "", env);
     await setProvisionParameterValue(projectPath, "dev", {
-      key: "webappServerfarmsSku",
+      key: "webAppSKU",
       value: "B1",
     });
 

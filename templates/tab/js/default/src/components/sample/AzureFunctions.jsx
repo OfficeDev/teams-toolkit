@@ -3,8 +3,9 @@ import { Button, Loader } from "@fluentui/react-northstar";
 import { useData } from "@microsoft/teamsfx-react";
 import { BearerTokenAuthProvider, createApiClient } from "@microsoft/teamsfx"
 import { TeamsFxContext } from "../Context";
+import config from "./lib/config";
 
-const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
+const functionName = config.apiName || "myFunc";
 
 async function callFunction(teamsfx) {
   if (!teamsfx) {
@@ -12,7 +13,7 @@ async function callFunction(teamsfx) {
   }
   try {
     const credential = teamsfx.getCredential();
-    const apiBaseUrl = teamsfx.getConfig("apiEndpoint") + "/api/";
+    const apiBaseUrl = config.apiEndpoint + "/api/";
     // createApiClient(...) creates an Axios instance which uses BearerTokenAuthProvider to inject token to request header
     const apiClient = createApiClient(
       apiBaseUrl,

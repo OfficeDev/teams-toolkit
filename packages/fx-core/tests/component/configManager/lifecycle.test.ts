@@ -14,8 +14,9 @@ import {
   MockedUserInteraction,
 } from "../../plugins/solution/util";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
-import { Platform, Result, FxError, ok } from "@microsoft/teamsfx-api";
+import { Platform, Result, FxError, ok, err } from "@microsoft/teamsfx-api";
 import { StepDriver } from "../../../src/component/driver/interface/stepDriver";
+import { timeStamp } from "console";
 
 const mockedDriverContext: DriverContext = {
   m365TokenProvider: new MockedM365Provider(),
@@ -69,6 +70,21 @@ describe("v3 lifecyle", () => {
       }
     }
 
+    class DriverThatReturnsError implements StepDriver {
+      async run(
+        args: unknown,
+        context: DriverContext
+      ): Promise<Result<Map<string, string>, FxError>> {
+        const fxError: FxError = {
+          name: "fakeError",
+          message: "fake message",
+          source: "xxx",
+          timestamp: new Date(),
+        };
+        return err(fxError);
+      }
+    }
+
     const sandbox = sinon.createSandbox();
     before(() => {
       sandbox
@@ -76,13 +92,17 @@ describe("v3 lifecyle", () => {
         .withArgs(sandbox.match("DriverA"))
         .returns(true)
         .withArgs(sandbox.match("DriverB"))
+        .returns(true)
+        .withArgs(sandbox.match("DriverThatReturnsError"))
         .returns(true);
       sandbox
         .stub(Container, "get")
         .withArgs(sandbox.match("DriverA"))
         .returns(new DriverA())
         .withArgs(sandbox.match("DriverB"))
-        .returns(new DriverB());
+        .returns(new DriverB())
+        .withArgs(sandbox.match("DriverThatReturnsError"))
+        .returns(new DriverThatReturnsError());
     });
 
     after(() => {
@@ -110,6 +130,30 @@ describe("v3 lifecyle", () => {
           result.value.get("OUTPUT_A") === "VALUE_A" &&
           result.value.get("OUTPUT_B") === "VALUE_B"
       );
+    });
+
+    it("should return error if one of the driver returns error", async () => {
+      const driverDefs: DriverDefinition[] = [];
+      driverDefs.push({
+        name: "xxx",
+        uses: "DriverA",
+        with: {},
+      });
+      driverDefs.push({
+        name: "xxx",
+        uses: "DriverB",
+        with: {},
+      });
+
+      driverDefs.push({
+        name: "xxx",
+        uses: "DriverThatReturnsError",
+        with: {},
+      });
+
+      const lifecycle = new Lifecycle("configureApp", driverDefs);
+      const result = await lifecycle.run(mockedDriverContext);
+      assert(result.isErr() && result.error.name === "fakeError");
     });
   });
 });

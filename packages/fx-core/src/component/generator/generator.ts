@@ -1,13 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ContextV3 } from "@microsoft/teamsfx-api";
+import { hooks } from "@feathersjs/hooks/lib";
+import { ActionContext, ContextV3 } from "@microsoft/teamsfx-api";
 import {
   Component,
   sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
+import { ProgressMessages, ProgressTitles } from "../messages";
+import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { SampleActionSeq, GeneratorAction, TemplateActionSeq } from "./generatorAction";
 import { GeneratorContext } from "./generatorContext";
 import {
@@ -19,11 +22,19 @@ import {
 } from "./utils";
 
 export class Generator {
+  @hooks([
+    ActionExecutionMW({
+      enableProgressBar: true,
+      progressTitle: ProgressTitles.generateTemplate,
+      progressSteps: 1,
+    }),
+  ])
   public static async generateTemplate(
     templateName: string,
     language: string,
     destinationPath: string,
-    ctx: ContextV3
+    ctx: ContextV3,
+    actionContext?: ActionContext
   ): Promise<void> {
     const appName = ctx.projectSetting?.appName;
     const projectId = ctx.projectSetting?.projectId;
@@ -39,13 +50,22 @@ export class Generator {
         renderTemplateFileData(fileName, fileData, dataReplaceMap),
       onActionError: templateDefaultOnActionError,
     };
+    await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
     await this.generate(generatorContext, TemplateActionSeq);
   }
 
+  @hooks([
+    ActionExecutionMW({
+      enableProgressBar: true,
+      progressTitle: ProgressTitles.generateSample,
+      progressSteps: 1,
+    }),
+  ])
   public static async generateSample(
     sampleName: string,
     destinationPath: string,
-    ctx: ContextV3
+    ctx: ContextV3,
+    actionContext?: ActionContext
   ): Promise<void> {
     const sample = getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
@@ -57,6 +77,7 @@ export class Generator {
       relativePath: sample.relativePath,
       onActionError: sampleDefaultOnActionError,
     };
+    await actionContext?.progressBar?.next(ProgressMessages.generateSample);
     await this.generate(generatorContext, SampleActionSeq);
   }
 

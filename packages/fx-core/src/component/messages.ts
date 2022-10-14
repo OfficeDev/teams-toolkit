@@ -17,6 +17,8 @@ export class ProgressTitles {
   static readonly buildingBot = "Building Bot";
   static readonly buildingApi = "Building Api";
   static readonly provisionBot = "Registering Bot";
+  static readonly generateTemplate = "Generating Template";
+  static readonly generateSample = "Generating Sample";
   static readonly configureStorage = PostProvisionProgress.title;
   // Deploying Azure Functions [Bot]
   static readonly deploying = (component: string, scenario?: string): string =>
@@ -34,6 +36,8 @@ export class ProgressMessages {
   static readonly packingCode = "Creating application package.";
   static readonly enableStaticWebsite = PostProvisionProgress.steps.EnableStaticWebsite;
   static readonly provisionBot = "Registering bot.";
+  static readonly generateTemplate = "Downloading and unzipping Template";
+  static readonly generateSample = "Downloading and unzipping Sample";
 }
 
 export class LogMessages {

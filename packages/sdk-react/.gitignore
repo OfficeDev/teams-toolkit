@@ -1,4 +1,4 @@
 build
 coverage/
 node_modules/
-junit.xml
+*.xml

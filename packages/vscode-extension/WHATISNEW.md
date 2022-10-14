@@ -1,3 +1,4 @@
+- [4.1.0 - Oct 17 2022](#410---oct-17-2022)
 - [4.0.6 - Sep 23 2022](#406---sep-23-2022)
 - [4.0.5 - Aug 22 2022](#405---aug-22-2022)
 - [4.0.4 - Aug 09 2022](#404---aug-09-2022)
@@ -21,6 +22,20 @@
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
 
 # Changelog
+
+## 4.1.0 - Oct 17, 2022
+
+New features:
+
+- Use the new Workflow bot template to create sequential workflows where Adaptive Cards can be returned in response to user input. Learn more about this new template in the [documentation](https://aka.ms/teamsfx-card-action-response).
+- Configure each step of the debugging experience in Teams Toolkit by customizing the `.vscode/tasks.json` file, which now [surfaces parameters for finer-tuned control](https://aka.ms/teamsfx-debug-tasks).
+- Use the new Add SSO command for a simple way to [configure single sign-on for Message extension and Command bot projects](https://aka.ms/teamsfx-add-sso).
+- SPFx developers can now combine web parts as a [multi-Tab Teams app](https://learn.microsoft.com/sharepoint/dev/spfx/build-for-teams-me-experience#build-a-multi-tab-personal-teams-app) using the Add Feature menu.
+
+Enhancements:
+
+- You can now send notifications to a specific channel or person with TeamsFx SDK. Checkout [code snippets](https://aka.ms/teamsfx-send-notification#send-notifications-to-a-specific-channel) here.
+- We've changed which windows are shown by default when an app starts debugging so you'll no longer see red error messages coming from the browser that are mistaken as errors for your app.
 
 ## 4.0.6 - Sep 23, 2022
 

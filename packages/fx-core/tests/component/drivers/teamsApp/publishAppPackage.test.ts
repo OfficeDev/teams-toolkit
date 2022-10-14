@@ -4,13 +4,13 @@
 import "mocha";
 import * as sinon from "sinon";
 import chai from "chai";
-import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
-import { CreateAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/CreateAppPackageArgs";
+import { PublishAppPackageDriver } from "../../../../src/component/driver/teamsApp/publishAppPackage";
+import { PublishAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/PublishAppPackageArgs";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { MockedM365Provider } from "../../../plugins/solution/util";
 
-describe("teamsApp/createAppPackage", async () => {
-  const teamsAppDriver = new CreateAppPackageDriver();
+describe("teamsApp/publishAppPackage", async () => {
+  const teamsAppDriver = new PublishAppPackageDriver();
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),
   };
@@ -20,9 +20,8 @@ describe("teamsApp/createAppPackage", async () => {
   });
 
   it("should throw error if file not exists", async () => {
-    const args: CreateAppPackageArgs = {
-      manifestTemplatePath: "fakepath",
-      outputPath: "",
+    const args: PublishAppPackageArgs = {
+      appPackagePath: "fakepath",
     };
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);

@@ -17,10 +17,6 @@ describe("useTeamsFx() hook tests", () => {
   let spyUseData: jest.SpyInstance;
 
   beforeEach(() => {
-    jest.resetAllMocks();
-    jest.clearAllMocks();
-
-    window.history.pushState({}, "", "/");
     spyUseTeams = jest.spyOn(useTeams, "useTeams");
     spyUseTeams.mockImplementation(() => {
       return [
@@ -29,6 +25,11 @@ describe("useTeamsFx() hook tests", () => {
       ];
     });
     spyUseData = jest.spyOn(useData, "useData");
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.clearAllMocks();
   });
 
   it("returns default teamsfx instance", async () => {

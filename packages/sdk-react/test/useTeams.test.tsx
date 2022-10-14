@@ -18,11 +18,7 @@ describe("useTeams", () => {
   let spyGetContext: jest.SpyInstance;
 
   beforeEach(() => {
-    jest.resetAllMocks();
-    jest.clearAllMocks();
-
     window.history.pushState({}, "", "/");
-
     spyInitialize = jest.spyOn(app, "initialize");
     spyInitialize.mockImplementation(() => {
       return Promise.resolve();
@@ -40,6 +36,11 @@ describe("useTeams", () => {
         },
       } as Partial<app.Context>);
     });
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.clearAllMocks();
   });
 
   it("Should return not in teams - app.initialize rejects", async () => {

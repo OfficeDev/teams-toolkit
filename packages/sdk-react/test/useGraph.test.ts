@@ -17,9 +17,12 @@ describe("useGraph() hook tests", () => {
   let spyTeamsFxLogin: jest.SpyInstance;
 
   beforeEach(() => {
+    spyTeamsFxLogin = jest.spyOn(TeamsFx.prototype, "login");
+  });
+
+  afterEach(() => {
     jest.resetAllMocks();
     jest.clearAllMocks();
-    spyTeamsFxLogin = jest.spyOn(TeamsFx.prototype, "login");
   });
 
   it("call function after initialized", async () => {

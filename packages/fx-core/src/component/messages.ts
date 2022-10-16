@@ -12,6 +12,8 @@ export class ProgressTitles {
   static readonly buildingBot = "Building Bot";
   static readonly buildingApi = "Building Api";
   static readonly provisionBot = "Registering Bot";
+  static readonly generateTemplate = "Generating Template";
+  static readonly generateSample = "Generating Sample";
   static readonly configureStorage = "Configuring Tab";
   // Deploying Azure Functions [Bot]
   static readonly deploying = (component: string, scenario?: string): string =>
@@ -28,6 +30,8 @@ export class ProgressMessages {
   static readonly packingCode = "Creating application package.";
   static readonly enableStaticWebsite = "Enabling Azure Storage account static website.";
   static readonly provisionBot = "Registering bot.";
+  static readonly generateTemplate = "Downloading and unzipping Template";
+  static readonly generateSample = "Downloading and unzipping Sample";
   static readonly getDeploymentSrcAndDest = "Retrieving deployment source and destination.";
   static readonly clearStorageAccount = "Cleaning up Azure Storage account.";
   static readonly uploadTabToStorage = "Uploading Tab frontend to Azure Storage account.";

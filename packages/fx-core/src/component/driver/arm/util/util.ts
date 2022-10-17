@@ -4,7 +4,7 @@
 import path from "path";
 import { TemplateType } from "../constant";
 import { deploymentOutput, templateArgs } from "../interface";
-import { DriverContext } from "../../../interface/commonArgs";
+import { DriverContext } from "../../interface/commonArgs";
 
 export function hasBicepTemplate(args: templateArgs[]): boolean {
   for (const arg of args) {

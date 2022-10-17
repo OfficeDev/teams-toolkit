@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DriverContext } from "../../interface/commonArgs";
+import { DriverContext } from "../interface/commonArgs";
 import { Constants, TemplateType } from "./constant";
 import { deployArgs, deploymentOutput, templateArgs } from "./interface";
 import { validateArgs } from "./validator";
@@ -15,7 +15,7 @@ import { expandEnvironmentVariable } from "../../utils/common";
 import { executeCommand } from "../../../common/cpUtils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm-resources";
-import { SolutionError } from "../../../plugins/solution/fx-solution/constants";
+import { SolutionError } from "../../constants";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -138,7 +138,7 @@ export class ArmDeployImpl {
       return JSON.parse(result);
     } catch (err) {
       throw new Error(
-        getLocalizedString("core.deployArmTemplates.CompileBicepFailed", err.message)
+        getLocalizedString("driver.arm.deploy.error.CompileBicepFailed", err.message)
       );
     }
   }

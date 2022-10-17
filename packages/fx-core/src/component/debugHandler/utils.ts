@@ -2,12 +2,10 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { TokenCredential } from "@azure/core-http";
 import {
   CryptoProvider,
   LogProvider,
   M365TokenProvider,
-  AzureAccountProvider,
   ProjectSettingsV3,
   ResourceContextV3,
   TelemetryReporter,
@@ -15,7 +13,6 @@ import {
   v3,
   err,
   ok,
-  SubscriptionInfo,
   InputsWithProjectPath,
   Platform,
   Result,
@@ -81,8 +78,7 @@ function constructResourceContextV3(
     envInfo: envInfoV3,
     tokenProvider: {
       m365TokenProvider,
-      azureAccountProvider: new MockAzureAccountProvider(),
-    },
+    } as any,
     projectPath,
     manifestProvider: new DefaultManifestProvider(),
     projectSetting: projectSettingsV3,
@@ -98,53 +94,7 @@ function constructResourceContextV3(
 function constructInputsWithProjectPath(projectPath: string): InputsWithProjectPath {
   const inputs: InputsWithProjectPath = {
     projectPath,
-    platform: Platform.VSCode, // NOTE: may need to be updated afterwards
+    platform: Platform.VSCode,
   };
   return inputs;
-}
-
-class MockAzureAccountProvider implements AzureAccountProvider {
-  getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined> {
-    throw new Error("Method not implemented.");
-  }
-
-  signout(): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-
-  setStatusChangeMap(
-    name: string,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>,
-    immediateCall?: boolean
-  ): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-
-  removeStatusChangeMap(name: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
-  }
-
-  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    throw new Error("Method not implemented.");
-  }
-
-  listSubscriptions(): Promise<SubscriptionInfo[]> {
-    throw new Error("Method not implemented.");
-  }
-
-  setSubscription(subscriptionId: string): Promise<void> {
-    throw new Error("Method not implemented.");
-  }
-
-  getAccountInfo(): Record<string, string> | undefined {
-    throw new Error("Method not implemented.");
-  }
-
-  getSelectedSubscription(triggerUI?: boolean): Promise<SubscriptionInfo | undefined> {
-    throw new Error("Method not implemented.");
-  }
 }

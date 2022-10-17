@@ -13,6 +13,7 @@ import {
   OptionItem,
   ok,
   ConfigFolderName,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccountExtensionApi as AzureAccount } from "./azure-account.api";
@@ -52,6 +53,7 @@ import * as globalVariables from "../globalVariables";
 import accountTreeViewProviderInstance from "../treeview/account/accountTreeViewProvider";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { AccessToken, GetTokenOptions } from "@azure/identity";
+import { Constants } from "@microsoft/teamsfx-core/build/component/resource/azureSql/constants";
 
 class TeamsFxTokenCredential implements TokenCredential {
   private tokenCredentialBase: TokenCredentialsBase;
@@ -64,15 +66,34 @@ class TeamsFxTokenCredential implements TokenCredential {
     scopes: string | string[],
     options?: GetTokenOptions | undefined
   ): Promise<AccessToken | null> {
-    if (this.tokenCredentialBase) {
-      const token = await this.tokenCredentialBase.getToken();
-      const tokenJson = ConvertTokenToJson(token.accessToken);
-      return {
-        token: token.accessToken,
-        expiresOnTimestamp: (tokenJson as any).exp * 1000,
-      };
-    } else {
-      return null;
+    try {
+      if (this.tokenCredentialBase) {
+        const token = await this.tokenCredentialBase.getToken();
+        const tokenJson = ConvertTokenToJson(token.accessToken);
+        if (scopes === Constants.azureSqlScope) {
+          // fix SQL.DatabaseUserCreateError
+          const tenantId = (tokenJson as any).tid;
+          const vsCredential = new identity.VisualStudioCodeCredential({ tenantId: tenantId });
+          const sqlToken = await vsCredential.getToken(scopes);
+          return sqlToken;
+        } else {
+          return {
+            token: token.accessToken,
+            expiresOnTimestamp: (tokenJson as any).exp * 1000,
+          };
+        }
+      } else {
+        return null;
+      }
+    } catch (error) {
+      if ((error as any).message === "Entry not found in cache.") {
+        throw new SystemError(
+          "Login",
+          ExtensionErrors.LoginCacheError,
+          localize("teamstoolkit.handlers.loginCacheFailed")
+        );
+      }
+      throw error;
     }
   }
 }

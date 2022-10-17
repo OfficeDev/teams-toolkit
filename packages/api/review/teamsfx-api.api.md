@@ -507,6 +507,10 @@ export interface ContextV3 extends Context_2 {
     // (undocumented)
     projectSetting: ProjectSettingsV3;
     // (undocumented)
+    templateVariables?: {
+        [key: string]: string;
+    };
+    // (undocumented)
     tokenProvider?: TokenProvider;
 }
 
@@ -1331,9 +1335,7 @@ export const ProductName = "teamsfx";
 // @public (undocumented)
 export interface ProjectConfig {
     // (undocumented)
-    config?: SolutionConfig | Json;
-    // (undocumented)
-    localSettings?: LocalSettings | Json;
+    config?: Json;
     // (undocumented)
     settings?: ProjectSettings;
 }

@@ -38,8 +38,8 @@ import {
   MessageExtensionNewUIItem,
   BotNewUIOptionItem,
   WorkflowOptionItem,
-} from "../plugins/solution/fx-solution/question";
-import { resourceGroupHelper } from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
+} from "../component/constants";
+import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { ResourceManagementClient } from "@azure/arm-resources";
 
 export enum CoreQuestionNames {
@@ -615,6 +615,7 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
     default: ScratchOptionYes.id,
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     skipSingleOption: true,
+    forgetLastValue: true,
   };
 }
 

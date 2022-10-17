@@ -150,12 +150,12 @@ export class Messages {
   };
 
   static readonly StartLocalDebug: Messages = {
-    log: Messages.getLog("Start to local debug"),
+    log: Messages.getLog("Start to debug"),
     telemetry: Messages.getEventName("local-debug-start"),
   };
 
   static readonly EndLocalDebug: Messages = {
-    log: Messages.getLog("Successfully local debug"),
+    log: Messages.getLog("Successfully debug"),
     telemetry: Messages.getEventName("local-debug"),
   };
 
@@ -200,12 +200,12 @@ export class Messages {
   };
 
   static readonly StartPostLocalDebug: Messages = {
-    log: Messages.getLog("Start to post local debug"),
+    log: Messages.getLog("Start to post debug"),
     telemetry: Messages.getEventName("post-local-debug-start"),
   };
 
   static readonly EndPostLocalDebug: Messages = {
-    log: Messages.getLog("Successfully post local debug"),
+    log: Messages.getLog("Successfully post debug"),
     telemetry: Messages.getEventName("post-local-debug"),
   };
 

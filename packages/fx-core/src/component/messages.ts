@@ -2,38 +2,39 @@
 // Licensed under the MIT license.
 
 import { Effect } from "@microsoft/teamsfx-api";
-import {
-  DeployProgress,
-  PostProvisionProgress,
-  ScaffoldProgress,
-} from "../plugins/resource/frontend/resources/steps";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export class ProgressTitles {
-  static readonly scaffoldTab = ScaffoldProgress.title;
+  static readonly scaffoldTab = "Scaffolding Tab";
   static readonly scaffoldBot = "Scaffolding Bot";
   static readonly scaffoldApi = "Scaffolding Api";
   static readonly buildingTab = "Building Tab";
   static readonly buildingBot = "Building Bot";
   static readonly buildingApi = "Building Api";
   static readonly provisionBot = "Registering Bot";
-  static readonly configureStorage = PostProvisionProgress.title;
+  static readonly generateTemplate = "Generating Template";
+  static readonly generateSample = "Generating Sample";
+  static readonly configureStorage = "Configuring Tab";
   // Deploying Azure Functions [Bot]
   static readonly deploying = (component: string, scenario?: string): string =>
     `Deploying ${component}` + (scenario ? `[${scenario}]` : "");
-  static readonly deployingStorage = DeployProgress.title;
 }
 
 export class ProgressMessages {
-  static readonly scaffoldTab = ScaffoldProgress.steps.Scaffold;
+  static readonly scaffoldTab = "Scaffolding Tab frontend project.";
   static readonly scaffoldBot = "Retrieving templates.";
   static readonly scaffoldApi = "Scaffolding Function Api project.";
-  static readonly buildingTab = DeployProgress.steps.Build;
+  static readonly buildingTab = "Building Tab frontend project";
   static readonly buildingBot = "Installing dependencies.";
   static readonly buildingApi = "Building Function Api.";
   static readonly packingCode = "Creating application package.";
-  static readonly enableStaticWebsite = PostProvisionProgress.steps.EnableStaticWebsite;
+  static readonly enableStaticWebsite = "Enabling Azure Storage account static website.";
   static readonly provisionBot = "Registering bot.";
+  static readonly generateTemplate = "Downloading and unzipping Template";
+  static readonly generateSample = "Downloading and unzipping Sample";
+  static readonly getDeploymentSrcAndDest = "Retrieving deployment source and destination.";
+  static readonly clearStorageAccount = "Cleaning up Azure Storage account.";
+  static readonly uploadTabToStorage = "Uploading Tab frontend to Azure Storage account.";
 }
 
 export class LogMessages {
@@ -51,6 +52,10 @@ export class LogMessages {
   public static readonly askFunctionName: string = getLocalizedString(
     "plugins.function.askFunctionName"
   );
+  static readonly FailedSaveEnv = (envPath: string): string =>
+    getLocalizedString("error.frontend.FailedSaveEnv", envPath);
+  static readonly FailedLoadEnv = (envPath: string): string =>
+    getLocalizedString("error.frontend.FailedLoadEnv", envPath);
 }
 
 export interface LocalizedMessage {

@@ -30,6 +30,7 @@ import {
   EnvStateFileNameTemplate,
   InputConfigsFolderName,
   SingleSelectConfig,
+  ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 
 import { ConfigNotFoundError, UserdataNotFound, EnvUndefined, ReadFileError } from "./error";
@@ -43,8 +44,7 @@ import cliLogger from "./commonlib/log";
 import { WriteFileError } from "@microsoft/teamsfx-core/build/core/error";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
-import { isSPFxProject } from "@microsoft/teamsfx-core/build/common/tools";
-import { ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local/projectSettingsHelper";
+import { hasSPFxTab } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
 
 export type Json = { [_: string]: any };
 
@@ -550,13 +550,13 @@ export async function isSpfxProject(
   }
   const config = configResult.value;
   const projectSettings = config?.settings;
-  return ok(isSPFxProject(projectSettings));
+  return ok(hasSPFxTab(projectSettings as ProjectSettingsV3));
 }
 
 export async function promptSPFxUpgrade(rootFolder: string) {
   const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
   const projectSettings = await localEnvManager.getProjectSettings(rootFolder);
-  const isSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
+  const isSpfx = hasSPFxTab(projectSettings as ProjectSettingsV3);
   if (isSpfx) {
     let projectSPFxVersion = null;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain

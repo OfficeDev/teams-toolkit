@@ -6,6 +6,7 @@ import klaw from "klaw";
 import AdmZip from "adm-zip";
 import ignore, { Ignore } from "ignore";
 import path from "path";
+import glob from "glob";
 import { DeployConstant } from "../constant/deployConstant";
 
 /**
@@ -118,4 +119,35 @@ async function readZip(cache: string): Promise<AdmZip | undefined> {
     // Failed to load cache, it doesn't block deployment.
   }
   return undefined;
+}
+
+/**
+ * Recursively list all files that match a naming pattern in a specified directory
+ * @param directoryPath base dir
+ * @param matchPattern filename pattern
+ * @param ignorePattern filename ignore pattern
+ */
+export async function listFilePaths(
+  directoryPath: string,
+  matchPattern = "**",
+  ignorePattern?: string
+): Promise<string[]> {
+  return new Promise<string[]>((resolve, reject) => {
+    const ignore: string = ignorePattern ? path.join(directoryPath, ignorePattern) : "";
+    glob(
+      path.join(directoryPath, matchPattern),
+      {
+        dot: true, // Include .dot files
+        nodir: true, // Only match files
+        ignore,
+      },
+      (error, filePaths) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(filePaths);
+        }
+      }
+    );
+  });
 }

@@ -11,6 +11,7 @@ import {
   ok,
   ResourceContextV3,
   Result,
+  TelemetryReporter,
   UserError,
   v2,
   v3,
@@ -25,11 +26,11 @@ import {
   SolutionSource,
   SolutionTelemetryEvent,
   ViewAadAppHelpLink,
-} from "../plugins/solution/fx-solution/constants";
-import { sendErrorTelemetryThenReturnError } from "../plugins/solution/fx-solution/utils/util";
-import { executeConcurrently } from "../plugins/solution/fx-solution/v2/executor";
+} from "./constants";
 import { ComponentNames } from "./constants";
 import { AadApp } from "./resource/aadApp/aadApp";
+import { sendErrorTelemetryThenReturnError } from "./utils";
+import { executeConcurrently } from "./utils/executor";
 
 export class DeployUtils {
   /**
@@ -194,5 +195,4 @@ export class DeployUtils {
     return err(new UserError(SolutionSource, "UserCancel", "UserCancel"));
   }
 }
-
 export const deployUtils = new DeployUtils();

@@ -17,10 +17,7 @@ import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { hasApi } from "../../common/projectSettingsHelperV3";
 import { convertToAlphanumericOnly } from "../../common/utils";
-import {
-  AzureResourceApim,
-  AzureResourceFunction,
-} from "../../plugins/solution/fx-solution/question";
+import { AzureResourceApim, AzureResourceFunction } from "../constants";
 import { BicepComponent } from "../bicep";
 import { ComponentNames } from "../constants";
 import { Plans } from "../messages";

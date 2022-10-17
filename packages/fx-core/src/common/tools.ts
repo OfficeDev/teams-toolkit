@@ -43,11 +43,7 @@ import {
 } from "./constants";
 import * as crypto from "crypto";
 import { FailedToParseResourceIdError } from "../core/error";
-import {
-  PluginNames,
-  SolutionError,
-  SolutionSource,
-} from "../plugins/solution/fx-solution/constants";
+import { PluginNames, SolutionError, SolutionSource } from "../component/constants";
 import Mustache from "mustache";
 import {
   Component,
@@ -63,7 +59,7 @@ import {
   BotOptionItem,
   TabOptionItem,
   MessageExtensionItem,
-} from "../plugins/solution/fx-solution/question";
+} from "../component/constants";
 import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";

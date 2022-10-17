@@ -255,8 +255,7 @@ export interface Inputs extends Json {
 
 export interface ProjectConfig {
   settings?: ProjectSettings;
-  config?: SolutionConfig | Json;
-  localSettings?: LocalSettings | Json;
+  config?: Json;
 }
 
 export interface ProjectConfigV3 {
@@ -289,6 +288,7 @@ export interface ContextV3 extends Context {
   envInfo?: EnvInfoV3;
   tokenProvider?: TokenProvider;
   projectPath?: string;
+  templateVariables?: { [key: string]: string };
 }
 export interface ResourceContextV3 extends ContextV3 {
   envInfo: EnvInfoV3;

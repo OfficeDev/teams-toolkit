@@ -26,7 +26,7 @@ import { LocalCrypto } from "../../../src/core/crypto";
 import { EnvInfoLoaderMW_V3 } from "../../../src/core/middleware/envInfoLoaderV3";
 import { CoreHookContext } from "../../../src/core/types";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
-import * as envInfoLoader from "../../../src/core/middleware/envInfoLoader";
+import * as envInfoLoader from "../../../src/core/middleware/envInfoLoaderV3";
 import { newProjectSettingsV3 } from "../../../src/component/utils";
 import {
   newSolutionContext,
@@ -119,7 +119,7 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
       getContext: [
         ErrorHandlerMW,
         ProjectSettingsLoaderMW,
-        envInfoLoader.EnvInfoLoaderMW(false),
+        envInfoLoader.EnvInfoLoaderMW_V3(false),
         ContextInjectorMW,
       ],
     });
@@ -173,9 +173,9 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
       assert.isTrue(ctx !== undefined);
       if (ctx) {
         assert.isTrue(
-          ctx.envInfoV2 &&
-            ctx.envInfoV2.state &&
-            ctx.envInfoV2.state[pluginName][secretName] === secretText
+          ctx.envInfoV3 &&
+            ctx.envInfoV3.state &&
+            ctx.envInfoV3.state[pluginName][secretName] === secretText
         );
       }
     }
@@ -195,6 +195,7 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
     const envInfo = newEnvInfoV3();
     envInfo.state.solution = { programmingLanguage: "javascript", defaultFunctionName: "myFunc" };
     sandbox.stub(environmentManager, "loadEnvInfo").resolves(ok(envInfo));
+    sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
     class MyClass {
       tools = tools;
       async getProjectSettings(

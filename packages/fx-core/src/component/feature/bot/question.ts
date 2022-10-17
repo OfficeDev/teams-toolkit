@@ -3,10 +3,7 @@
 import { Inputs, SingleSelectQuestion, OptionItem, Platform } from "@microsoft/teamsfx-api";
 import { isPreviewFeaturesEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import {
-  AzureSolutionQuestionNames,
-  NotificationOptionItem,
-} from "../../../plugins/solution/fx-solution/question";
+import { AzureSolutionQuestionNames, NotificationOptionItem } from "../../constants";
 import { Runtime } from "../../constants";
 import { NotificationTrigger, NotificationTriggers, QuestionNames } from "./constants";
 

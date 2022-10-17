@@ -38,7 +38,7 @@ import {
   MessageExtensionItem,
   NotificationOptionItem,
   WorkflowOptionItem,
-} from "../../../plugins/solution/fx-solution/question";
+} from "../../constants";
 import { BicepComponent } from "../../bicep";
 import { BotCodeProvider } from "../../code/botCode";
 import "../../connection/azureWebAppConfig";
@@ -216,7 +216,7 @@ export class TeamsBot {
     {
       const res = await generateLocalDebugSettings(context, inputs);
       if (res.isErr()) return err(res.error);
-      effects.push("generate local debug configs");
+      effects.push("generate debug configs");
     }
 
     // 5. app-manifest.addCapability

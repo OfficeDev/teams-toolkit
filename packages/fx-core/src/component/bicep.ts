@@ -14,7 +14,7 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { getProjectTemplatesFolderPath } from "../common/utils";
 import { getTemplatesFolder } from "../folder";
-import arm from "../plugins/solution/fx-solution/arm";
+import arm from "./arm";
 @Service("bicep")
 export class BicepComponent {
   readonly name = "bicep";

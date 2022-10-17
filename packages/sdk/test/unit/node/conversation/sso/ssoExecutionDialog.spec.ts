@@ -51,7 +51,6 @@ describe("BotSsoExecutionDialog Tests - Node", () => {
   const userPrincipalName = "fake_userPrincipalName";
   const authorityHost = "fake_authority_host";
   const initiateLoginEndpoint = "fake_initiate_login_endpoint";
-  const applicationIdUri = "fake_application_id_uri";
 
   const requiredScopes: string[] = ["User.Read"];
   const expiresOnTimestamp = 12345678;
@@ -92,7 +91,6 @@ describe("BotSsoExecutionDialog Tests - Node", () => {
       M365_CLIENT_SECRET: clientSecret,
       M365_TENANT_ID: tenantId,
       M365_AUTHORITY_HOST: authorityHost,
-      M365_APPLICATION_ID_URI: applicationIdUri,
     });
 
     // Mock onBehalfOfUserCredential implementation
@@ -284,10 +282,6 @@ describe("BotSsoExecutionDialog Tests - Node", () => {
 
     assert.strictEqual(activity.attachments![0].content.buttons[0].type, ActionTypes.Signin);
     assert.strictEqual(activity.attachments![0].content.buttons[0].title, "Teams SSO Sign In");
-    assert.strictEqual(
-      activity.attachments![0].content.tokenExchangeResource.uri,
-      applicationIdUri + "/access_as_user"
-    );
 
     assert.strictEqual(
       activity.attachments![0].content.buttons[0].value,

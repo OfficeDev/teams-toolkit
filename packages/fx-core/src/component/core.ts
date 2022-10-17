@@ -34,7 +34,7 @@ import "./bicep";
 import "./code/api/apiCode";
 import "./code/botCode";
 import "./code/spfxTabCode";
-import "./code/tabCode";
+import "./code/tab/tabCode";
 import "./connection/apimConfig";
 import "./connection/azureFunctionConfig";
 import "./connection/azureWebAppConfig";
@@ -55,7 +55,7 @@ import { AppManifest } from "./resource/appManifest/appManifest";
 import "./resource/azureAppService/azureFunction";
 import "./resource/azureAppService/azureWebApp";
 import "./resource/azureSql";
-import "./resource/azureStorage";
+import "./resource/azureStorage/azureStorage";
 import "./resource/botService/botService";
 import "./resource/keyVault";
 import "./resource/spfx";
@@ -77,7 +77,7 @@ import {
   ProjectFolderExistError,
 } from "../core/error";
 import { globalVars } from "../core/globalVars";
-import arm from "../plugins/solution/fx-solution/arm";
+import arm from "./arm";
 import {
   ApiConnectionOptionItem,
   AzureResourceApim,
@@ -94,16 +94,14 @@ import {
   TabFeatureIds,
   TabSPFxItem,
   TabSPFxNewUIItem,
-} from "../plugins/solution/fx-solution/question";
-import { executeConcurrently } from "../plugins/solution/fx-solution/v2/executor";
-import { getBotTroubleShootMessage } from "../plugins/solution/fx-solution/v2/utils";
+} from "./constants";
 import { AzureResources, ComponentNames } from "./constants";
 import { pluginName2ComponentName } from "./migrate";
 import {
   getQuestionsForAddFeatureV3,
   getQuestionsForDeployV3,
   getQuestionsForProvisionV3,
-} from "./questionV3";
+} from "./question";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "./middleware/actionExecutionMW";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
@@ -113,9 +111,10 @@ import { deployUtils } from "./deployUtils";
 import { provisionUtils } from "./provisionUtils";
 import { getTemplatesFolder } from "../folder";
 import { ensureBasicFolderStructure } from "../core/FxCore";
-import { SolutionTelemetryProperty } from "../plugins/solution/fx-solution/constants";
+import { SolutionTelemetryProperty } from "./constants";
 import { getQuestionsForCreateProjectV2 } from "../core/middleware/questionModel";
 import { Constants } from "./resource/aadApp/constants";
+import { executeConcurrently } from "./utils/executor";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -756,4 +755,26 @@ export async function preCheck(projectPath: string): Promise<Result<undefined, F
   }
 
   return ok(undefined);
+}
+
+export interface BotTroubleShootMessage {
+  troubleShootLink: string;
+  textForLogging: string;
+  textForMsgBox: string;
+  textForActionButton: string;
+}
+
+export function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessage {
+  const botTroubleShootLink =
+    "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
+  const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
+  const botTroubleShootLearnMore = getLocalizedString("core.deploy.botTroubleShoot.learnMore");
+  const botTroubleShootMsg = `${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
+
+  return {
+    troubleShootLink: botTroubleShootLink,
+    textForLogging: isBot ? botTroubleShootMsg : "",
+    textForMsgBox: botTroubleShootDesc,
+    textForActionButton: botTroubleShootLearnMore,
+  } as BotTroubleShootMessage;
 }

@@ -15,8 +15,8 @@ import {
   BotSsoItem,
   TabOptionItem,
   TabSPFxItem,
-} from "../plugins/solution/fx-solution/question";
-import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
+  BuiltInFeaturePluginNames,
+} from "../component/constants";
 import * as uuid from "uuid";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {

@@ -7,7 +7,7 @@ import "reflect-metadata";
 import { Service } from "typedi";
 import { ApiConnectorImpl } from "./ApiConnectorImpl";
 import { ResultFactory } from "./result";
-import { UserTaskFunctionName } from "../../../plugins/solution/fx-solution/constants";
+import { UserTaskFunctionName } from "../../constants";
 import "../../connection/azureWebAppConfig";
 import { ComponentNames } from "../../constants";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";

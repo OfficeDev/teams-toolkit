@@ -25,10 +25,8 @@ import { CommonStrings, ConfigNames, PluginLocalDebug } from "./strings";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "./resourceNameFactory";
 import { MaxLengths } from "./constants";
-import { AADRegistration } from "./aadRegistration";
 import { Messages } from "./messages";
 import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
-import { AppStudio } from "./appStudio/appStudio";
 import { BotServiceOutputs, ComponentNames } from "../../constants";
 import { normalizeName } from "../../utils";
 import { getComponent } from "../../workflow";
@@ -38,6 +36,10 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { wrapError } from "./errors";
 import { CheckThrowSomethingMissing } from "../../error";
+import { LocalBotEndpointNotConfigured } from "../../../plugins/solution/fx-solution/debug/error";
+import { LocalBotRegistration } from "./botRegistration/localBotRegistration";
+import { RemoteBotRegistration } from "./botRegistration/remoteBotRegistration";
+import { BotRegistration } from "./botRegistration/botRegistration";
 
 const errorSource = "BotService";
 function _checkThrowSomethingMissing<T>(key: string, value: T | undefined): T {
@@ -86,15 +88,17 @@ export class BotService extends AzureResource {
     await actionContext?.progressBar?.next(ProgressMessages.provisionBot);
     // init bot state
     context.envInfo.state[ComponentNames.TeamsBot] ||= {};
-    const aadRes = await createBotAAD(context);
-    if (aadRes.isErr()) return err(aadRes.error);
+
+    let botRegistration: BotRegistration | undefined = undefined;
     if (context.envInfo.envName === "local") {
-      const botConfig = aadRes.value;
-      const regRes = await createBotRegInAppStudio(botConfig, context);
-      if (regRes.isErr()) return err(regRes.error);
+      botRegistration = new LocalBotRegistration();
+    } else {
+      botRegistration = new RemoteBotRegistration();
     }
-    // Update states for bot aad configs.
-    context.envInfo.state[ComponentNames.TeamsBot] = aadRes.value;
+
+    const regRes = await botRegistration.createBotRegistration(context);
+    if (regRes.isErr()) return err(regRes.error);
+
     return ok(undefined);
   }
   @hooks([
@@ -110,23 +114,16 @@ export class BotService extends AzureResource {
     // create bot aad app by API call
     const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     if (!teamsBot) return ok(undefined);
-    const plans: Effect[] = [];
+
+    let botRegistration: BotRegistration | undefined = undefined;
+    // const plans: Effect[] = [Plans.updateBotEndpoint()];
     if (context.envInfo.envName === "local") {
-      plans.push(Plans.updateBotEndpoint());
-      const teamsBotState = context.envInfo.state[ComponentNames.TeamsBot];
-      const appStudioTokenRes = await context.tokenProvider.m365TokenProvider.getAccessToken({
-        scopes: AppStudioScopes,
-      });
-      const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
-      _checkThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, teamsBotState.siteEndpoint);
-      _checkThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-      _checkThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, teamsBotState.botId);
-      await AppStudio.updateMessageEndpoint(
-        appStudioToken!,
-        teamsBotState.botId,
-        `${teamsBotState.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
-      );
+      botRegistration = new LocalBotRegistration();
+    } else {
+      botRegistration = new RemoteBotRegistration();
     }
+    const updateRes = await botRegistration.updateMessageEndpoint(context);
+    if (updateRes.isErr()) return err(updateRes.error);
     return ok(undefined);
   }
 }

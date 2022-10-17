@@ -16,6 +16,8 @@ const defaultSQLScope = "https://database.windows.net/";
 /**
  * Generate connection configuration consumed by tedious.
  *
+ * @deprecated we recommend you compose your own Tedious configuration for better flexibility.
+ *
  * @param {TeamsFx} teamsfx - Used to provide configuration and auth
  * @param { string? } databaseName - specify database name to override default one if there are multiple databases.
  *

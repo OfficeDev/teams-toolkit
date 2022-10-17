@@ -273,7 +273,7 @@ export interface GetTeamsUserTokenOptions extends GetTokenOptions {
     resources?: string[];
 }
 
-// @public
+// @public @deprecated
 export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: string): Promise<ConnectionConfig>;
 
 // @public

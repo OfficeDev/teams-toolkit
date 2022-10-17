@@ -101,8 +101,8 @@ import { APIMResource } from "../../component/resource/apim/apim";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
-const learnMoreText = "Learn More";
-const upgradeButton = "Upgrade";
+const learnMoreText = getLocalizedString("core.option.learnMore");
+const upgradeButton = getLocalizedString("core.option.upgrade");
 const solutionName = "solution";
 const subscriptionId = "subscriptionId";
 const resourceGroupName = "resourceGroupName";

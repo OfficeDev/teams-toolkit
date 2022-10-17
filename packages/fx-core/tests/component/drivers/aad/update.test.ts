@@ -7,7 +7,11 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { UpdateAadAppDriver } from "../../../../src/component/driver/aad/update";
-import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
+import {
+  MockedLogProvider,
+  MockedM365Provider,
+  MockedTelemetryReporter,
+} from "../../../plugins/solution/util";
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
 import path from "path";
 import * as fs from "fs-extra";
@@ -365,5 +369,123 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(UnhandledSystemError)
       .and.property("message")
       .contain("Unhandled error happened in aadApp/update action");
+  });
+
+  it("should send telemetries when success", async () => {
+    const mockedTelemetryReporter = new MockedTelemetryReporter();
+    let startTelemetry: any, endTelemetry: any;
+
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    sinon
+      .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+      .onFirstCall()
+      .callsFake((eventName, properties, measurements) => {
+        startTelemetry = {
+          eventName,
+          properties,
+          measurements,
+        };
+      })
+      .onSecondCall()
+      .callsFake((eventName, properties, measurements) => {
+        endTelemetry = {
+          eventName,
+          properties,
+          measurements,
+        };
+      });
+
+    const outputPath = path.join(outputRoot, "manifest.output.json");
+    const args = {
+      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: outputPath,
+    };
+    const dirverContext: any = {
+      m365TokenProvider: new MockedM365Provider(),
+      logProvider: new MockedLogProvider(),
+      telemetryReporter: mockedTelemetryReporter,
+    };
+
+    const result = await updateAadAppDriver.run(args, dirverContext);
+
+    expect(result.isOk()).to.be.true;
+    expect(startTelemetry.eventName).to.equal("aadApp/update-start");
+    expect(startTelemetry.properties.component).to.equal("aadApp/update");
+    expect(endTelemetry.eventName).to.equal("aadApp/update");
+    expect(endTelemetry.properties.component).to.equal("aadApp/update");
+    expect(endTelemetry.properties.success).to.equal("yes");
+  });
+
+  it("should send error telemetries when fail", async () => {
+    const mockedTelemetryReporter = new MockedTelemetryReporter();
+    let startTelemetry: any, endTelemetry: any;
+
+    sinon
+      .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+      .onFirstCall()
+      .callsFake((eventName, properties, measurements) => {
+        startTelemetry = {
+          eventName,
+          properties,
+          measurements,
+        };
+      });
+
+    sinon
+      .stub(mockedTelemetryReporter, "sendTelemetryErrorEvent")
+      .onFirstCall()
+      .callsFake((eventName, properties, measurements) => {
+        endTelemetry = {
+          eventName,
+          properties,
+          measurements,
+        };
+      });
+
+    sinon.stub(AadAppClient.prototype, "updateAadApp").rejects({
+      isAxiosError: true,
+      response: {
+        status: 500,
+        data: {
+          error: {
+            code: "InternalServerError",
+            message: "Internal server error",
+          },
+        },
+      },
+    });
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const args = {
+      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: path.join(outputRoot, "manifest.output.json"),
+    };
+    const dirverContext: any = {
+      m365TokenProvider: new MockedM365Provider(),
+      logProvider: new MockedLogProvider(),
+      telemetryReporter: mockedTelemetryReporter,
+    };
+
+    const result = await updateAadAppDriver.run(args, dirverContext);
+
+    expect(result.isOk()).to.be.false;
+    expect(startTelemetry.eventName).to.equal("aadApp/update-start");
+    expect(startTelemetry.properties.component).to.equal("aadApp/update");
+    expect(endTelemetry.eventName).to.equal("aadApp/update");
+    expect(endTelemetry.properties.component).to.equal("aadApp/update");
+    expect(endTelemetry.properties.success).to.equal("no");
+    expect(endTelemetry.properties["error-code"]).to.equal("aadApp/update.UnhandledError");
+    expect(endTelemetry.properties["error-type"]).to.equal("system");
+    expect(endTelemetry.properties["error-message"])
+      .contain("Unhandled error happened in aadApp/update action")
+      .and.contain("Internal server error");
   });
 });

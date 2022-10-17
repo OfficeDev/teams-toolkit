@@ -5,7 +5,6 @@ import { DriverContext } from "../interface/commonArgs";
 import { Constants, TemplateType } from "./constant";
 import { deployArgs, deploymentOutput, templateArgs } from "./interface";
 import { validateArgs } from "./validator";
-import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { hasBicepTemplate, getPath, convertOutputs, getFileExtension } from "./util/util";
 import { err, FxError, ok, Result, SystemError } from "@microsoft/teamsfx-api";
 import { ConstantString, PluginDisplayName } from "../../../common/constants";
@@ -15,6 +14,7 @@ import { executeCommand } from "../../../common/cpUtils";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm-resources";
 import { SolutionError } from "../../constants";
+import { InvalidParameterUserError } from "../aad/error/invalidParameterUserError";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 

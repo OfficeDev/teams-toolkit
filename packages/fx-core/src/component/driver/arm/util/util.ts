@@ -34,6 +34,21 @@ export function convertOutputs(outputs: deploymentOutput[]): Map<string, string>
   return res;
 }
 
+/**
+ * convert arm deployment output to string-string map which will be set in env.
+ * The key will be converted to upperCase
+ * The nested key will use "__" to join the key name
+ * { tabOutput:
+ *    {
+ *      type: "Object",
+ *      value: {
+ *        keyA: "valueA",
+ *        KeyB: 1
+ *      }
+ *    }
+ * }
+ * Convert the above output, there will be 2 keys TABOUTPUT__KEYA, TABOUTPUT__KEYB
+ */
 function convertOutput(output: deploymentOutput, map: Map<string, string>, prefix?: string) {
   const keys = Object.keys(output);
   for (const key of keys) {
@@ -43,6 +58,9 @@ function convertOutput(output: deploymentOutput, map: Map<string, string>, prefi
       convertOutput(value, map, newPrefix);
     } else {
       const mapKey = buildKey(key, prefix);
+      if (map.get(mapKey)) {
+        throw new Error(`There is duplicated key ${mapKey} in arm deployment output`);
+      }
       map.set(mapKey.toUpperCase(), value.toString());
     }
   }

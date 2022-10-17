@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 export const Constants = {
-  actionName: "arm/deploy",
+  actionName: "arm/deploy", // DO NOT MODIFY the name
 };
 
 export enum TemplateType {

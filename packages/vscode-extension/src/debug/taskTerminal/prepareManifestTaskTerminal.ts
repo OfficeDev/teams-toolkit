@@ -60,7 +60,7 @@ export class PrepareManifestTaskTerminal extends BaseTaskTerminal {
       this.args,
       tools.tokenProvider.m365TokenProvider,
       tools.logProvider,
-      tools.telemetryReporter,
+      tools.telemetryReporter!,
       tools.ui
     );
     const actions = handler.getActions();

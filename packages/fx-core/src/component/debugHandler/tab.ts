@@ -11,9 +11,13 @@ import {
   CryptoProvider,
   err,
   FxError,
+  LogProvider,
+  M365TokenProvider,
   ok,
   ProjectSettingsV3,
   Result,
+  TelemetryReporter,
+  UserInteraction,
   v3,
 } from "@microsoft/teamsfx-api";
 
@@ -24,6 +28,7 @@ import { ComponentNames, PathConstants } from "../constants";
 import { DebugAction } from "./common";
 import { DebugArgumentEmptyError, errorSource, InvalidTabBaseUrlError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
+import { checkM365Tenant } from "./utils";
 
 const tabDebugMessages = {
   savingStates: "Saving the states of tab to configure manifest and AAD app ...",
@@ -40,14 +45,29 @@ export interface TabDebugArgs {
 export class TabDebugHandler {
   private readonly projectPath: string;
   private args: TabDebugArgs;
+  private readonly m365TokenProvider: M365TokenProvider;
+  private readonly logger: LogProvider;
+  private readonly telemetry: TelemetryReporter;
+  private readonly ui: UserInteraction;
 
   private projectSettingsV3?: ProjectSettingsV3;
   private cryptoProvider?: CryptoProvider;
   private envInfoV3?: v3.EnvInfoV3;
 
-  constructor(projectPath: string, args: TabDebugArgs) {
+  constructor(
+    projectPath: string,
+    args: TabDebugArgs,
+    m365TokenProvider: M365TokenProvider,
+    logger: LogProvider,
+    telemetry: TelemetryReporter,
+    ui: UserInteraction
+  ) {
     this.projectPath = projectPath;
     this.args = args;
+    this.m365TokenProvider = m365TokenProvider;
+    this.logger = logger;
+    this.telemetry = telemetry;
+    this.ui = ui;
   }
 
   public getActions(): DebugAction[] {
@@ -103,6 +123,23 @@ export class TabDebugHandler {
         return err(envInfoResult.error);
       }
       this.envInfoV3 = envInfoResult.value;
+
+      if (this.envInfoV3.state[ComponentNames.TeamsTab]) {
+        const checkResult = await checkM365Tenant(
+          this.projectPath,
+          this.projectSettingsV3,
+          this.envInfoV3,
+          this.m365TokenProvider,
+          this.logger,
+          this.telemetry,
+          this.ui,
+          this.cryptoProvider
+        );
+        if (checkResult.isErr()) {
+          return err(checkResult.error);
+        }
+      }
+
       this.envInfoV3.state[ComponentNames.TeamsTab] =
         this.envInfoV3.state[ComponentNames.TeamsTab] || {};
 

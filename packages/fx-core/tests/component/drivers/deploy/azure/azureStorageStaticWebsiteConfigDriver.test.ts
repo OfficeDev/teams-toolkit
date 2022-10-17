@@ -4,14 +4,14 @@
 import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as tools from "../../../../src/common/tools";
-import { AzureStorageStaticWebsiteConfigDriver } from "../../../../src/component/driver/provision/azureStorageStaticWebsiteConfigDriver";
-import { TestAzureAccountProvider } from "../../util/azureAccountMock";
-import { TestLogProvider } from "../../util/logProviderMock";
-import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
+import * as tools from "../../../../../src/common/tools";
+import { AzureStorageStaticWebsiteConfigDriver } from "../../../../../src/component/driver/deploy/azure/azureStorageStaticWebsiteConfigDriver";
+import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
+import { TestLogProvider } from "../../../util/logProviderMock";
+import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { ListAccountSasResponse, StorageManagementClient } from "@azure/arm-storage";
 import { BlobServiceClient, ServiceGetPropertiesResponse } from "@azure/storage-blob";
-import { MyTokenCredential } from "../../../plugins/solution/util";
+import { MyTokenCredential } from "../../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
 
 describe("Azure App Service Deploy Driver test", () => {

@@ -37,6 +37,11 @@ export class ProgressMessages {
   );
   static readonly clearStorageAccount = getLocalizedString("core.progress.clearStorageAccount");
   static readonly uploadTabToStorage = getLocalizedString("core.progress.uploadTabToStorage");
+  static readonly getAzureAccountInfoForDeploy = "Retrieving Azure account information.";
+  static readonly getAzureUploadEndpoint = "Retrieving Azure upload endpoint.";
+  static readonly uploadZipFileToAzure = "Uploading application package to Azure.";
+  static readonly checkAzureDeployStatus = "Waiting for Azure deployment to complete.";
+  static readonly restartAzureFunctionApp = "Restarting Azure Function App.";
 }
 
 export class LogMessages {

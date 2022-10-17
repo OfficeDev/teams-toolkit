@@ -29,8 +29,8 @@ describe("NPM Build Driver test", () => {
   it("NPM build happy path", async () => {
     const driver = new NpmBuildDriver();
     const args = {
-      src: "./",
-      buildCommand: "build",
+      workingDirectory: "./",
+      args: "build",
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
@@ -44,8 +44,9 @@ describe("NPM Build Driver test", () => {
   it("Dotnet build error", async () => {
     const driver = new NpmBuildDriver();
     const args = {
-      src: "./",
-      buildCommand: "build",
+      workingDirectory: "./",
+      args: "build",
+      env: { a: "HELLO" },
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),

@@ -26,8 +26,9 @@ describe("Dotnet Build Driver test", () => {
   it("Dotnet build happy path", async () => {
     const driver = new DotnetBuildDriver();
     const args = {
-      src: "./",
-      buildCommand: "build",
+      workingDirectory: "./",
+      args: "build",
+      env: { a: "b" },
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
@@ -41,8 +42,8 @@ describe("Dotnet Build Driver test", () => {
   it("Dotnet build error", async () => {
     const driver = new DotnetBuildDriver();
     const args = {
-      src: "./",
-      buildCommand: "build",
+      workingDirectory: "./",
+      args: "build",
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),

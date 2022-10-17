@@ -15,6 +15,7 @@ import {
   SystemError,
   UserError,
   v3,
+  Void,
 } from "@microsoft/teamsfx-api";
 
 import { ComponentNames } from "../../../src/component/constants";
@@ -35,6 +36,7 @@ import { BotAuthCredential } from "../../../src/component/resource/botService/bo
 import { MockM365TokenProvider, runDebugActions } from "./utils";
 import { BotDebugArgs, BotDebugHandler } from "../../../src/component/debugHandler";
 import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
+import * as utils from "../../../src/component/debugHandler/utils";
 
 describe("TabDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
@@ -435,6 +437,155 @@ describe("TabDebugHandler", () => {
         customized: {},
       };
       chai.assert.deepEqual(botEnvs, expected);
+      sinon.restore();
+    });
+
+    it("check m365 tenant happy path", async () => {
+      const projectSettingV3: ProjectSettingsV3 = {
+        appName: "unit-test",
+        projectId: "11111111-1111-1111-1111-111111111111",
+        solutionSettings: {
+          name: "fx-solution-azure",
+          version: "1.0.0",
+          hostType: "Azure",
+          azureResources: [] as string[],
+          capabilities: ["Bot"],
+          activeResourcePlugins: ["fx-resource-bot", "fx-resource-appstudio"],
+        },
+        components: [{ name: "teams-bot", sso: false }],
+      };
+      sinon
+        .stub(projectSettingsLoader, "loadProjectSettingsByProjectPath")
+        .returns(Promise.resolve(ok(projectSettingV3)));
+      const envInfoV3: v3.EnvInfoV3 = {
+        envName: environmentManager.getLocalEnvName(),
+        config: {},
+        state: {
+          solution: {},
+          [ComponentNames.TeamsBot]: {},
+          [ComponentNames.AppManifest]: {
+            tenantId: "22222222-2222-2222-2222-222222222222",
+          },
+        },
+      };
+      sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
+      let checkM365TenantCalled = false;
+      sinon.stub(utils, "checkM365Tenant").callsFake(async () => {
+        checkM365TenantCalled = true;
+        return ok(Void);
+      });
+      const botAuthCredential: BotAuthCredential = {
+        objectId: "11111111-1111-1111-1111-111111111111",
+        clientId: "22222222-2222-2222-2222-222222222222",
+        clientSecret: "xxx",
+      };
+      let called = false;
+      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").callsFake(async () => {
+        called = true;
+        return botAuthCredential;
+      });
+      sinon.stub(AppStudio, "getBotRegistration").callsFake(async () => {
+        return undefined;
+      });
+      sinon.stub(AppStudio, "createBotRegistration").callsFake(async () => {});
+      sinon.stub(AppStudio, "updateMessageEndpoint").callsFake(async () => {});
+      sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
+        return ok("");
+      });
+      let botEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon.stub(LocalEnvProvider.prototype, "loadBotLocalEnvs").returns(Promise.resolve(botEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveBotLocalEnvs").callsFake(async (envs) => {
+        botEnvs = envs;
+        return "";
+      });
+      const domain = "af0e-180-158-57-208.ngrok.io";
+      const botEndpoint = `https://${domain}`;
+      const args: BotDebugArgs = {
+        botMessagingEndpoint: `${botEndpoint}/api/messages`,
+      };
+      const handler = new BotDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isOk());
+      chai.assert(checkM365TenantCalled);
+      chai.assert(called);
+      chai.assert.equal(
+        envInfoV3.state[ComponentNames.TeamsBot].objectId,
+        botAuthCredential.objectId
+      );
+      chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].botId, botAuthCredential.clientId);
+      chai.assert.equal(
+        envInfoV3.state[ComponentNames.TeamsBot].botPassword,
+        botAuthCredential.clientSecret
+      );
+      chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].siteEndpoint, botEndpoint);
+      chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].validDomain, domain);
+      const expected: LocalEnvs = {
+        template: {
+          [LocalEnvKeys.bot.template.BotId]: botAuthCredential.clientId as string,
+          [LocalEnvKeys.bot.template.BotPassword]: botAuthCredential.clientSecret as string,
+        },
+        teamsfx: {},
+        customized: {},
+      };
+      chai.assert.deepEqual(botEnvs, expected);
+      sinon.restore();
+    });
+
+    it("check m365 tenant failed", async () => {
+      const projectSetting: ProjectSettings = {
+        appName: "unit-test",
+        projectId: "11111111-1111-1111-1111-111111111111",
+      };
+      sinon
+        .stub(projectSettingsLoader, "loadProjectSettingsByProjectPath")
+        .returns(Promise.resolve(ok(projectSetting)));
+      const envInfoV3: v3.EnvInfoV3 = {
+        envName: environmentManager.getLocalEnvName(),
+        config: {},
+        state: {
+          solution: {},
+          [ComponentNames.TeamsBot]: {},
+          [ComponentNames.AppManifest]: {
+            tenantId: "22222222-2222-2222-2222-222222222222",
+          },
+        },
+      };
+      sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
+      let called = false;
+      const error = new SystemError("solution", "checkM365TenantFailed", "checkM365Tenant failed");
+      sinon.stub(utils, "checkM365Tenant").callsFake(async () => {
+        called = true;
+        return err(error);
+      });
+      const args: BotDebugArgs = {
+        botMessagingEndpoint: "https://af0e-180-158-57-208.ngrok.io/api/messages",
+      };
+      const handler = new BotDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(called);
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof SystemError);
+        chai.assert.deepEqual(result.error.name, error.name);
+      }
       sinon.restore();
     });
   });

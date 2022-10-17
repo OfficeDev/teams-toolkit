@@ -1,3 +1,7 @@
+# 2.0.1
+- Support Teams JS SDK 2.0.
+- Add error details when projects not running inside Teams.
+
 # 0.6.0
 - Breaking: Remove loadConfiguration() function and add TeamsFx class
 - Support automatic choosing of credential class based on IdentityType

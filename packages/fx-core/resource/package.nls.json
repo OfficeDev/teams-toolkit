@@ -22,7 +22,7 @@
   "core.provision.StartNotice": "[%s] Start provisioning. It could take several minutes.",
   "core.provision.configurationFinishNotice": "[%s] Configuration finished.",
   "core.provision.ProvisionFinishNotice": "[%s] Provision finished!",
-  "core.provision.viewResources": "View Provisioned Resources",
+  "core.provision.viewResources": "View provisioned resources",
   "core.deploy.FailedToDeployBeforeProvision": "Failed to deploy because the resources have not been provisioned yet. Make sure you do the provision first. Click Get Help to learn more about why you need to provision.",
   "core.deploy.noCapabilityFound": "No capability found to %s. Click Get Help to learn more about how to add capabilities.",
   "core.deploy.successNotice": "'%s' successfully deployed to the cloud.",

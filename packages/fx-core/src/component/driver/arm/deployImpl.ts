@@ -29,7 +29,7 @@ export class ArmDeployImpl {
     this.context = context;
   }
 
-  public async run(): Promise<Result<Map<string, string>, FxError>> {
+  public async run(): Promise<Map<string, string>> {
     await this.validateArgs();
     await this.createClient();
 
@@ -40,9 +40,9 @@ export class ArmDeployImpl {
     const deployRes = await this.deployTemplates();
     if (deployRes.isOk()) {
       const outputs = deployRes.value;
-      return ok(convertOutputs(outputs));
+      return convertOutputs(outputs);
     } else {
-      return err(deployRes.error);
+      throw deployRes.error;
     }
   }
 

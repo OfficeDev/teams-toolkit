@@ -53,4 +53,23 @@ describe("Arm driver deploy", () => {
     const res = await driver.run(deployArgs, mockedDriverContext);
     assert.isTrue(res.isOk());
   });
+
+  it("invalid parameters", async () => {
+    sandbox.stub(fs, "readFile").resolves("{}" as any);
+    sandbox.stub(cpUtils, "executeCommand").resolves("{}" as any);
+    const deployArgs = {
+      subscriptionId: "",
+      resourceGroupName: "",
+      bicepCliVersion: "",
+      templates: [
+        {
+          path: "mock-template",
+          parameters: "mock-parameters",
+          deploymentName: "",
+        },
+      ],
+    } as any;
+    const res = await driver.run(deployArgs, mockedDriverContext);
+    assert.isTrue(res.isErr());
+  });
 });

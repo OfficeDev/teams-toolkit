@@ -8,6 +8,9 @@ import { formatString } from "../util/utils";
 
 /**
  * Generate connection configuration consumed by tedious.
+ *
+ * @deprecated we recommend you compose your own Tedious configuration for better flexibility.
+ *
  * @remarks
  * Only works in in server side.
  */

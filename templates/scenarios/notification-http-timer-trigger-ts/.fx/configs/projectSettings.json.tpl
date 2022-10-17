@@ -1,5 +1,5 @@
 {
-  "appName": "zhijieapp1013nbf",
+  "appName": "{{appName}}",
   "version": "2.1.0",
   "components": [
     {

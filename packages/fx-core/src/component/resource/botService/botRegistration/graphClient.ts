@@ -7,19 +7,22 @@ import { AADRegistrationConstants } from "../constants";
 import { CreateAADAppError, CreateAADSecretError, ProvisionError } from "../errors";
 import { CommonStrings } from "../strings";
 import { RetryHandler } from "../retryHandler";
-import { AadAppCredential } from "../aadAppCredential";
+import { IAadAppCredentials } from "../IAadAppCredentials";
 
 export class GraphClient {
   public static async registerAadApp(
     displayName: string,
     token: string
-  ): Promise<AadAppCredential> {
+  ): Promise<IAadAppCredentials> {
     const axiosInstance: AxiosInstance = axios.create({
       baseURL: AADRegistrationConstants.GRAPH_REST_BASE_URL,
     });
     axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-    const result = new AadAppCredential();
+    const result: IAadAppCredentials = {
+      clientId: "",
+      clientSecret: "",
+    };
 
     // 1. Register a new AAD App.
     let regResponse: AxiosResponse<any> | undefined;

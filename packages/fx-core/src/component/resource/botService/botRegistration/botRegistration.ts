@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, FxError, ResourceContextV3, Result, v3, ok } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  ResourceContextV3,
+  Result,
+  v3,
+  ok,
+  M365TokenProvider,
+} from "@microsoft/teamsfx-api";
 import { ComponentNames } from "../../../constants";
 import { GraphScopes } from "../../../../common/tools";
 import * as uuid from "uuid";
@@ -21,31 +29,36 @@ export interface IBotAadCredentials {
 
 export abstract class BotRegistration {
   public async createBotRegistration(
-    context: ResourceContextV3,
+    m365TokenProvider: M365TokenProvider,
+    aadDisplayName: string,
+    botConfig?: IBotAadCredentials,
     botAuthType: BotAuthType = BotAuthType.AADApp
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<IBotAadCredentials | undefined, FxError>> {
     // 1. Init bot state.
-    context.envInfo.state[ComponentNames.TeamsBot] ||= {};
+    // context.envInfo.state[ComponentNames.TeamsBot] ||= {};
 
     // 2. Prepare authentication for bot.
     if (botAuthType === BotAuthType.AADApp) {
       // Create bot aad app.
       // Respect existing bot aad from config first.
-      const botConfig =
-        context.envInfo.config.bot?.appId && context.envInfo.config.bot?.appPassword
-          ? {
-              botId: context.envInfo.config.bot?.appId,
-              botPassword: context.envInfo.config.bot?.appPassword,
-            }
-          : context.envInfo.state[ComponentNames.TeamsBot];
+      // const botConfig =
+      //   context.envInfo.config.bot?.appId && context.envInfo.config.bot?.appPassword
+      //     ? {
+      //         botId: context.envInfo.config.bot?.appId,
+      //         botPassword: context.envInfo.config.bot?.appPassword,
+      //       }
+      //     : context.envInfo.state[ComponentNames.TeamsBot];
 
       if (botConfig?.botId && botConfig?.botPassword) {
         // Existing bot aad scenario.
-        context.envInfo.state[ComponentNames.TeamsBot] = botConfig;
+        return ok({
+          botId: botConfig.botId,
+          botPassword: botConfig.botPassword,
+        });
       } else {
         // Create a new bot aad app.
         // Prepare graph token.
-        const graphTokenRes = await context.tokenProvider.m365TokenProvider.getAccessToken({
+        const graphTokenRes = await m365TokenProvider.getAccessToken({
           scopes: GraphScopes,
         });
 
@@ -55,30 +68,34 @@ export abstract class BotRegistration {
         const graphToken = graphTokenRes.value;
 
         // Prepare aad app name.
-        const solutionConfig = context.envInfo.state.solution as v3.AzureSolutionConfig;
-        const resourceNameSuffix = solutionConfig.resourceNameSuffix
-          ? solutionConfig.resourceNameSuffix
-          : uuid.v4();
-        const aadDisplayName = ResourceNameFactory.createCommonName(
-          resourceNameSuffix,
-          context.projectSetting.appName,
-          MaxLengths.AAD_DISPLAY_NAME
-        );
+        // const solutionConfig = context.envInfo.state.solution as v3.AzureSolutionConfig;
+        // const resourceNameSuffix = solutionConfig.resourceNameSuffix
+        //   ? solutionConfig.resourceNameSuffix
+        //   : uuid.v4();
+        // const aadDisplayName = ResourceNameFactory.createCommonName(
+        //   resourceNameSuffix,
+        //   context.projectSetting.appName,
+        //   MaxLengths.AAD_DISPLAY_NAME
+        // );
 
         // Call GraphClient.
         const aadAppCredential = await GraphClient.registerAadApp(aadDisplayName, graphToken);
 
-        // Save states.
-        context.envInfo.state[ComponentNames.TeamsBot] = {
+        return ok({
           botId: aadAppCredential.clientId,
           botPassword: aadAppCredential.clientSecret,
-        };
+        });
+        // Save states.
+        // context.envInfo.state[ComponentNames.TeamsBot] = {
+        //   botId: aadAppCredential.clientId,
+        //   botPassword: aadAppCredential.clientSecret,
+        // };
       }
     } else {
       // Suppose === BotAuthType.Identity
       //TODO: Support identity.
+      return ok(undefined);
     }
-    return ok(undefined);
   }
 
   public abstract updateMessageEndpoint(

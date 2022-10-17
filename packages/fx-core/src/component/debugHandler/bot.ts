@@ -26,8 +26,6 @@ import { convertToAlphanumericOnly } from "../../common/utils";
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
-import { AADRegistration } from "../resource/botService/aadRegistration";
-import { AppStudio } from "../resource/botService/appStudio/appStudio";
 import { IBotRegistration } from "../resource/botService/appStudio/interfaces/IBotRegistration";
 import { MaxLengths } from "../resource/botService/constants";
 import { PluginLocalDebug } from "../resource/botService/strings";
@@ -37,6 +35,8 @@ import { ComponentNames } from "../constants";
 import { DebugAction } from "./common";
 import { errorSource, DebugArgumentEmptyError, InvalidExistingBotArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
+import { AppStudioClient } from "../resource/botService/appStudio/appStudioClient";
+import { GraphClient } from "../resource/botService/botRegistration/graphClient";
 
 const botDebugMessages = {
   registeringAAD: "Registering the AAD app which is required to create the bot ...",
@@ -192,13 +192,8 @@ export class BotDebugHandler {
           this.projectSettingsV3.appName,
           MaxLengths.AAD_DISPLAY_NAME
         );
-        const botAuthCredential = await AADRegistration.registerAADAppAndGetSecretByGraph(
-          tokenResult.value,
-          displayName
-        );
-
+        const botAuthCredential = await GraphClient.registerAadApp(displayName, tokenResult.value);
         // set objectId, botId, botPassword to state
-        this.envInfoV3.state[ComponentNames.TeamsBot].objectId = botAuthCredential.objectId;
         this.envInfoV3.state[ComponentNames.TeamsBot].botId = botAuthCredential.clientId;
         this.envInfoV3.state[ComponentNames.TeamsBot].botPassword = botAuthCredential.clientSecret;
 
@@ -218,9 +213,9 @@ export class BotDebugHandler {
         return err(tokenResult.error);
       }
 
-      const result = await AppStudio.getBotRegistration(
-        tokenResult.value,
-        this.envInfoV3!.state[ComponentNames.TeamsBot].botId
+      const result = await AppStudioClient.getBotRegistration(
+        this.envInfoV3!.state[ComponentNames.TeamsBot].botId,
+        tokenResult.value
       );
       if (result) {
         return ok([
@@ -242,7 +237,7 @@ export class BotDebugHandler {
         callingEndpoint: "",
       };
 
-      await AppStudio.createBotRegistration(tokenResult.value, botReg);
+      await AppStudioClient.createBotRegistration(botReg, tokenResult.value);
 
       return ok([
         util.format(
@@ -270,7 +265,7 @@ export class BotDebugHandler {
         return err(tokenResult.error);
       }
 
-      await AppStudio.updateMessageEndpoint(
+      await AppStudioClient.updateMessageEndpoint(
         tokenResult.value,
         this.envInfoV3!.state[ComponentNames.TeamsBot].botId,
         this.args.botMessagingEndpoint!

@@ -62,14 +62,11 @@ export class LocalBotRegistration extends BotRegistration {
       return err(appStudioTokenRes.error);
     }
     const appStudioToken = appStudioTokenRes.value;
-
-    const botReg = await AppStudioClient.getBotRegistration(teamsBotState.botId, appStudioToken);
-    if (!botReg) {
-      throw new BotRegistrationNotFoundError(teamsBotState.botId);
-    }
-
-    botReg.messagingEndpoint = `${teamsBotState.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`;
-    await AppStudioClient.updateBotRegistration(appStudioToken, botReg);
+    await AppStudioClient.updateMessageEndpoint(
+      appStudioToken,
+      teamsBotState.botId,
+      `${teamsBotState.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
+    );
     return ok(undefined);
   }
 }

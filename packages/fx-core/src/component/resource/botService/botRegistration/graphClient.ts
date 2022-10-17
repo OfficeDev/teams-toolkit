@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as utils from "./common";
+import * as utils from "../common";
 import { AxiosInstance, AxiosResponse, default as axios } from "axios";
 
-import { AADRegistrationConstants } from "./constants";
-import { CreateAADAppError, CreateAADSecretError, ProvisionError } from "./errors";
-import { CommonStrings } from "./strings";
-import { RetryHandler } from "./retryHandler";
-import { AadAppCredential } from "./aadAppCredential";
+import { AADRegistrationConstants } from "../constants";
+import { CreateAADAppError, CreateAADSecretError, ProvisionError } from "../errors";
+import { CommonStrings } from "../strings";
+import { RetryHandler } from "../retryHandler";
+import { AadAppCredential } from "../aadAppCredential";
 
 export class GraphClient {
   public static async registerAadApp(

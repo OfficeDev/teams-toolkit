@@ -4,7 +4,12 @@
 import { IBotRegistration } from "./interfaces/IBotRegistration";
 
 import { AxiosInstance, AxiosResponse, default as axios } from "axios";
-import { ConfigUpdatingError, MessageEndpointUpdatingError, ProvisionError } from "../errors";
+import {
+  BotRegistrationNotFoundError,
+  ConfigUpdatingError,
+  MessageEndpointUpdatingError,
+  ProvisionError,
+} from "../errors";
 import { CommonStrings, ConfigNames } from "../strings";
 import { RetryHandler } from "../retryHandler";
 import { Messages } from "../messages";
@@ -72,7 +77,7 @@ export class AppStudioClient {
   public static async createBotRegistration(
     registration: IBotRegistration,
     token: string,
-    context: ResourceContextV3
+    context?: ResourceContextV3
   ): Promise<void> {
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
@@ -81,7 +86,7 @@ export class AppStudioClient {
       if (registration.botId) {
         const botReg = await AppStudioClient.getBotRegistration(token, registration.botId);
         if (botReg) {
-          context.logProvider?.info(Messages.BotResourceExist("Appstudio"));
+          context?.logProvider?.info(Messages.BotResourceExist("Appstudio"));
           return;
         }
       }
@@ -97,6 +102,23 @@ export class AppStudioClient {
     if (!response || !response.data) {
       throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION);
     }
+
+    return;
+  }
+
+  public static async updateMessageEndpoint(
+    token: string,
+    botId: string,
+    endpoint: string
+  ): Promise<void> {
+    const botReg = await AppStudioClient.getBotRegistration(botId, token);
+    if (!botReg) {
+      throw new BotRegistrationNotFoundError(botId);
+    }
+
+    botReg.messagingEndpoint = endpoint;
+
+    await AppStudioClient.updateBotRegistration(token, botReg);
 
     return;
   }

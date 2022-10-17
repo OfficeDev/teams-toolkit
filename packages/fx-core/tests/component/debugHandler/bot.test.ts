@@ -34,11 +34,15 @@ import { AppStudio } from "../../../src/component/resource/botService/appStudio/
 import { BotAuthCredential } from "../../../src/component/resource/botService/botAuthCredential";
 import { MockM365TokenProvider, runDebugActions } from "./utils";
 import { BotDebugArgs, BotDebugHandler } from "../../../src/component/debugHandler";
+import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
 
 describe("TabDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
   const tenantId = "11111111-1111-1111-1111-111111111111";
   const m365TokenProvider = new MockM365TokenProvider(tenantId);
+  const logger = new MockLogProvider();
+  const telemetry = new MockTelemetryReporter();
+  const ui = new MockUserInteraction();
 
   describe("setUp", () => {
     afterEach(() => {
@@ -50,7 +54,14 @@ describe("TabDebugHandler", () => {
         botId: "",
         botPassword: "xxx",
       };
-      const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new BotDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -64,7 +75,14 @@ describe("TabDebugHandler", () => {
         botId: "xxx",
         botPassword: "",
       };
-      const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new BotDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -77,7 +95,14 @@ describe("TabDebugHandler", () => {
       const args: BotDebugArgs = {
         botId: "xxx",
       };
-      const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new BotDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -98,7 +123,14 @@ describe("TabDebugHandler", () => {
       const args: BotDebugArgs = {
         botMessagingEndpoint: "https://af0e-180-158-57-208.ngrok.io/api/messages",
       };
-      const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new BotDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -121,7 +153,14 @@ describe("TabDebugHandler", () => {
       const args: BotDebugArgs = {
         botMessagingEndpoint: "https://af0e-180-158-57-208.ngrok.io/api/messages",
       };
-      const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new BotDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -189,7 +228,14 @@ describe("TabDebugHandler", () => {
       const args: BotDebugArgs = {
         botMessagingEndpoint: `${botEndpoint}/api/messages`,
       };
-      const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new BotDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert(called);
@@ -280,7 +326,14 @@ describe("TabDebugHandler", () => {
       const args: BotDebugArgs = {
         botMessagingEndpoint: `${botEndpoint}/api/messages`,
       };
-      const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new BotDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert(!registerAADCalled);
@@ -357,7 +410,14 @@ describe("TabDebugHandler", () => {
         botPassword: "xxx",
         botMessagingEndpoint: `${botEndpoint}/api/messages`,
       };
-      const handler = new BotDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new BotDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert(!called);

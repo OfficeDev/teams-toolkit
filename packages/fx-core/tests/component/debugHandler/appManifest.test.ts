@@ -26,11 +26,15 @@ import * as projectSettingsLoader from "../../../src/core/middleware/projectSett
 import { AppStudioClient } from "../../../src/component/resource/appManifest/appStudioClient";
 import { AppDefinition } from "../../../src/component/resource/appManifest/interfaces/appDefinition";
 import { MockM365TokenProvider, runDebugActions } from "./utils";
+import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
 
 describe("AppManifestDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
   const tenantId = "11111111-1111-1111-1111-111111111111";
   const m365TokenProvider = new MockM365TokenProvider(tenantId);
+  const logger = new MockLogProvider();
+  const telemetry = new MockTelemetryReporter();
+  const ui = new MockUserInteraction();
 
   describe("prepare", () => {
     afterEach(() => {
@@ -44,7 +48,14 @@ describe("AppManifestDebugHandler", () => {
       const args: AppManifestDebugArgs = {
         appPackagePath: "",
       };
-      const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new AppManifestDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -62,7 +73,14 @@ describe("AppManifestDebugHandler", () => {
       const args: AppManifestDebugArgs = {
         appPackagePath,
       };
-      const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new AppManifestDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -82,7 +100,14 @@ describe("AppManifestDebugHandler", () => {
       const args: AppManifestDebugArgs = {
         appPackagePath,
       };
-      const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new AppManifestDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -102,7 +127,14 @@ describe("AppManifestDebugHandler", () => {
         .stub(projectSettingsLoader, "loadProjectSettingsByProjectPath")
         .returns(Promise.resolve(err(error)));
       const args: AppManifestDebugArgs = {};
-      const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new AppManifestDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -123,7 +155,14 @@ describe("AppManifestDebugHandler", () => {
       const error = new SystemError("core", "LoadEnvInfoFailed", "loadEnvInfo failed.");
       sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(err(error)));
       const args: AppManifestDebugArgs = {};
-      const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new AppManifestDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -165,7 +204,14 @@ describe("AppManifestDebugHandler", () => {
         return ok("");
       });
       const args: AppManifestDebugArgs = {};
-      const handler = new AppManifestDebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new AppManifestDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert(called);

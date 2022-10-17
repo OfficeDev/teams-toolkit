@@ -36,11 +36,15 @@ import { MockM365TokenProvider, runDebugActions } from "./utils";
 import { AadAppManifestManager } from "../../../src/component/resource/aadApp/aadAppManifestManager";
 import { AadAppClient } from "../../../src/component/resource/aadApp/aadAppClient";
 import { TokenProvider } from "../../../src/component/resource/aadApp/utils/tokenProvider";
+import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
 
 describe("SSODebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
   const tenantId = "11111111-1111-1111-1111-111111111111";
   const m365TokenProvider = new MockM365TokenProvider(tenantId);
+  const logger = new MockLogProvider();
+  const telemetry = new MockTelemetryReporter();
+  const ui = new MockUserInteraction();
 
   describe("setUp", () => {
     afterEach(() => {
@@ -53,7 +57,14 @@ describe("SSODebugHandler", () => {
         clientSecret: "xxx",
         objectId: "11111111-1111-1111-1111-111111111111",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -68,7 +79,14 @@ describe("SSODebugHandler", () => {
         clientSecret: "",
         objectId: "11111111-1111-1111-1111-111111111111",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -83,7 +101,14 @@ describe("SSODebugHandler", () => {
         clientSecret: "xxx",
         objectId: "",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -99,7 +124,14 @@ describe("SSODebugHandler", () => {
         objectId: "11111111-1111-1111-1111-111111111111",
         accessAsUserScopeId: "",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -116,7 +148,14 @@ describe("SSODebugHandler", () => {
         clientId: "11111111-1111-1111-1111-111111111111",
         clientSecret: "xxx",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -139,7 +178,14 @@ describe("SSODebugHandler", () => {
         clientId: "22222222-2222-2222-2222-222222222222",
         clientSecret: "xxx",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -164,7 +210,14 @@ describe("SSODebugHandler", () => {
         clientId: "22222222-2222-2222-2222-222222222222",
         clientSecret: "xxx",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -193,7 +246,14 @@ describe("SSODebugHandler", () => {
       const errorMessage = "exception";
       sinon.stub(TokenProvider, "init").throws(new Error(errorMessage));
       const args: SSODebugArgs = {};
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -273,7 +333,14 @@ describe("SSODebugHandler", () => {
         return "";
       });
       const args: SSODebugArgs = {};
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);
@@ -381,7 +448,14 @@ describe("SSODebugHandler", () => {
         return "";
       });
       const args: SSODebugArgs = {};
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);
@@ -508,7 +582,14 @@ describe("SSODebugHandler", () => {
         return "";
       });
       const args: SSODebugArgs = {};
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);
@@ -662,7 +743,14 @@ describe("SSODebugHandler", () => {
         return "";
       });
       const args: SSODebugArgs = {};
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);

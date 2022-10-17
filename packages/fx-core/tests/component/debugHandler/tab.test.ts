@@ -30,10 +30,16 @@ import {
 import { TabDebugArgs, TabDebugHandler } from "../../../src/component/debugHandler/tab";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
-import { runDebugActions } from "./utils";
+import { MockM365TokenProvider, runDebugActions } from "./utils";
+import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
 
 describe("TabDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
+  const tenantId = "11111111-1111-1111-1111-111111111111";
+  const m365TokenProvider = new MockM365TokenProvider(tenantId);
+  const logger = new MockLogProvider();
+  const telemetry = new MockTelemetryReporter();
+  const ui = new MockUserInteraction();
 
   describe("setUp", () => {
     afterEach(() => {
@@ -42,7 +48,14 @@ describe("TabDebugHandler", () => {
 
     it("invalid args: undefined baseUrl", async () => {
       const args: TabDebugArgs = {};
-      const handler = new TabDebugHandler(projectPath, args);
+      const handler = new TabDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -55,7 +68,14 @@ describe("TabDebugHandler", () => {
       const args: TabDebugArgs = {
         baseUrl: "https://",
       };
-      const handler = new TabDebugHandler(projectPath, args);
+      const handler = new TabDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -68,7 +88,14 @@ describe("TabDebugHandler", () => {
       const args: TabDebugArgs = {
         baseUrl: "http://localhost:53000",
       };
-      const handler = new TabDebugHandler(projectPath, args);
+      const handler = new TabDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -89,7 +116,14 @@ describe("TabDebugHandler", () => {
       const args: TabDebugArgs = {
         baseUrl: "https://localhost:53000",
       };
-      const handler = new TabDebugHandler(projectPath, args);
+      const handler = new TabDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -112,7 +146,14 @@ describe("TabDebugHandler", () => {
       const args: TabDebugArgs = {
         baseUrl: "https://localhost:53000",
       };
-      const handler = new TabDebugHandler(projectPath, args);
+      const handler = new TabDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -166,7 +207,14 @@ describe("TabDebugHandler", () => {
       const args: TabDebugArgs = {
         baseUrl,
       };
-      const handler = new TabDebugHandler(projectPath, args);
+      const handler = new TabDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsTab].endpoint, baseUrl);

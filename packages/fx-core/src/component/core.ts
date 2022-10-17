@@ -500,7 +500,7 @@ export class TeamsfxCore {
       );
       const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
       if (url) {
-        const title = "View Provisioned Resources";
+        const title = getLocalizedString("core.provision.viewResources");
         ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
           const userSelected = result.isOk() ? result.value : undefined;
           if (userSelected === title) {

@@ -653,7 +653,7 @@ export class AddSsoParameters {
   static readonly Tab = "tab";
   static readonly Readme = "README.md";
   static readonly ReadmeCSharp = "README.txt";
-  static readonly LearnMore = "Learn More";
+  static readonly LearnMore = getLocalizedString("core.provision.learnMore");
   static readonly LearnMoreUrl = "https://aka.ms/teamsfx-add-sso-readme";
   static readonly AddSso = "addSso";
   static readonly AppSettings = "appsettings.json";

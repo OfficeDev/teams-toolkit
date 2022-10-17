@@ -126,7 +126,11 @@ export class CreateAppPackageDriver implements StepDriver {
       zipFileName = path.join(context.projectPath, zipFileName);
     }
 
-    const appDirectory = path.dirname(args.manifestTemplatePath);
+    let appDirectory = path.dirname(args.manifestTemplatePath);
+    if (!path.isAbsolute(appDirectory)) {
+      appDirectory = path.join(context.projectPath, appDirectory);
+    }
+
     const colorFile = path.join(appDirectory, manifest.icons.color);
     if (!(await fs.pathExists(colorFile))) {
       const error = AppStudioResultFactory.UserError(

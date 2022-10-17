@@ -98,7 +98,9 @@ export function getEnvironmentVariables(content: string): string[] {
   const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
   const placeholders = content.match(placeholderRegex);
   if (placeholders) {
-    return placeholders.map((placeholder) => placeholder.slice(3, -2).trim()); // removes `${{` and `}}`)
+    const variables = placeholders.map((placeholder) => placeholder.slice(3, -2).trim()); // removes `${{` and `}}`)
+    // remove duplicates
+    return [...new Set(variables)];
   }
   return [];
 }

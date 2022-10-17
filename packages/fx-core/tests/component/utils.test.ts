@@ -345,6 +345,7 @@ describe("TeamsFxTelemetryReporter", () => {
 
   afterEach(() => {
     sinon.restore();
+    expect(reporterCalled).to.be.true; // Because TeamsFxTelemetryReport ignores all exceptions which include test failures, please check your test case to find actual errors.
   });
 
   describe("sendStartEvent", () => {
@@ -481,7 +482,8 @@ describe("TeamsFxTelemetryReporter", () => {
       sinon
         .stub(mockedTelemetryReporter, "sendTelemetryErrorEvent")
         .callsFake((eventName, properties, measurements, errorProps) => {
-          expect(errorProps).include("test").and.include("test");
+          expect(errorProps).include("test");
+          expect(errorProps).include("error-message");
           reporterCalled = true;
         });
 

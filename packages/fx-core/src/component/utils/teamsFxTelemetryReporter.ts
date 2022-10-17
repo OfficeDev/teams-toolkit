@@ -60,7 +60,9 @@ export class TeamsFxTelemetryReporter {
         if (!actualConfig.errorProps) {
           actualConfig.errorProps = [];
         }
-        actualConfig.errorProps.concat([TelemetryConstants.properties.errorMessage]);
+        actualConfig.errorProps = actualConfig.errorProps.concat([
+          TelemetryConstants.properties.errorMessage,
+        ]);
 
         this.telemetryReporter.sendTelemetryErrorEvent(
           actualConfig.eventName,

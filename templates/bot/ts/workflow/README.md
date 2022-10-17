@@ -81,7 +81,7 @@ Here's a sample action with type `Action.Execute`:
         {
           "type": "Action.Execute",
           "title": "DoSomething",
-          "verb": "DoSomething" 
+          "verb": "doSomething" 
         }
       ]
     },

@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import path from "path";
 import { validate as uuidValidate } from "uuid";
 import { TemplateType } from "./constant";
 import { deployArgs, templateArgs } from "./interface";
-import { hasBicepTemplate } from "./util/util";
+import { getFileExtension, hasBicepTemplate } from "./util/util";
 
 export async function validateArgs(args: deployArgs): Promise<string[]> {
   const invalidParameters: string[] = [];
@@ -21,8 +20,8 @@ export async function validateArgs(args: deployArgs): Promise<string[]> {
   invalidParameters.push(...res);
 
   const needBicepCli = hasBicepTemplate(args.templates);
-  if (await validateBicep(args.bicepCliVersion, needBicepCli)) {
-    invalidParameters.push("bicepCliVersion  is invalid");
+  if (!(await validateBicep(args.bicepCliVersion, needBicepCli))) {
+    invalidParameters.push("bicepCliVersion is invalid");
   }
 
   return invalidParameters;
@@ -66,11 +65,10 @@ function validateTemplate(template: templateArgs): string[] {
     res.push("deploymentName is invalid");
   }
 
-  if (path.extname(template.parameters).toLowerCase() !== "json") {
+  if (getFileExtension(template.parameters) !== "json") {
     res.push("parameters is invalid");
   }
-
-  const templateType = path.extname(template.path).toLowerCase();
+  const templateType = getFileExtension(template.path);
   if (templateType !== TemplateType.Json && templateType !== TemplateType.Bicep) {
     res.push("path is invalid");
   }

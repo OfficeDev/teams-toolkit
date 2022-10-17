@@ -8,12 +8,17 @@ import { DriverContext } from "../../interface/commonArgs";
 
 export function hasBicepTemplate(args: templateArgs[]): boolean {
   for (const arg of args) {
-    const templateType = path.extname(arg.path).toLowerCase();
+    const templateType = getFileExtension(arg.path);
     if (templateType === TemplateType.Bicep) {
       return true;
     }
   }
   return false;
+}
+
+export function getFileExtension(filename: string): string {
+  const ext = path.extname(filename).toLowerCase();
+  return ext ? ext.substring(1) : ext;
 }
 
 // TODO: should update when context get path property

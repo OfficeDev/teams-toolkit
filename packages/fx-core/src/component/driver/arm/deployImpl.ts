@@ -6,9 +6,8 @@ import { Constants, TemplateType } from "./constant";
 import { deployArgs, deploymentOutput, templateArgs } from "./interface";
 import { validateArgs } from "./validator";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
-import { hasBicepTemplate, getPath, convertOutputs } from "./util/util";
+import { hasBicepTemplate, getPath, convertOutputs, getFileExtension } from "./util/util";
 import { err, FxError, ok, Result, SystemError } from "@microsoft/teamsfx-api";
-import path from "path";
 import { ConstantString, PluginDisplayName } from "../../../common/constants";
 import * as fs from "fs-extra";
 import { expandEnvironmentVariable } from "../../utils/common";
@@ -73,7 +72,7 @@ export class ArmDeployImpl {
     this.client = new ResourceManagementClient(azureToken, this.args.subscriptionId);
   }
 
-  private async deployTemplates(): Promise<Result<deploymentOutput[], FxError>> {
+  async deployTemplates(): Promise<Result<deploymentOutput[], FxError>> {
     const outputs: deploymentOutput[] = [];
     // TODO: add progressBar
     await Promise.all(
@@ -87,7 +86,7 @@ export class ArmDeployImpl {
     return ok(outputs);
   }
 
-  private async deployTemplate(
+  async deployTemplate(
     templateArg: templateArgs
   ): Promise<Result<deploymentOutput | undefined, FxError>> {
     const parameters = await this.getDeployParameters(templateArg.parameters);
@@ -99,6 +98,13 @@ export class ArmDeployImpl {
         mode: "Incremental" as DeploymentMode,
       },
     };
+    return this.executeDeployment(templateArg, deploymentParameters);
+  }
+
+  async executeDeployment(
+    templateArg: templateArgs,
+    deploymentParameters: Deployment
+  ): Promise<Result<deploymentOutput | undefined, FxError>> {
     const result = await this.client?.deployments.beginCreateOrUpdateAndWait(
       this.args.resourceGroupName,
       templateArg.deploymentName,
@@ -115,7 +121,7 @@ export class ArmDeployImpl {
   }
 
   private async getDeployTemplate(templatePath: string): Promise<string> {
-    const templateType = path.extname(templatePath).toLowerCase();
+    const templateType = getFileExtension(templatePath);
     const filePath = getPath(templatePath, this.context);
     let templateJsonString;
     if (templateType === TemplateType.Bicep) {

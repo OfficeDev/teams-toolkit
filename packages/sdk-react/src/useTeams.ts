@@ -1,6 +1,5 @@
-// Copyright (c) Wictor Wilén. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-// SPDX-License-Identifier: MIT
 
 import { useEffect, useState } from "react";
 import { unstable_batchedUpdates as batchedUpdates } from "react-dom";

@@ -1,3 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+/**
+ * @jest-environment jsdom
+ */
+
 import * as sdkReact from "../src/index";
 
 describe("index", () => {

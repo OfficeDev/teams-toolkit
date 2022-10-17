@@ -16,27 +16,15 @@ import {
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import {
-  AppStudioScopes,
-  compileHandlebarsTemplateString,
-  GraphScopes,
-} from "../../../common/tools";
-import { CommonStrings, ConfigNames, PluginLocalDebug } from "./strings";
-import * as uuid from "uuid";
-import { ResourceNameFactory } from "./resourceNameFactory";
-import { MaxLengths } from "./constants";
-import { Messages } from "./messages";
-import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
+import { compileHandlebarsTemplateString } from "../../../common/tools";
 import { BotServiceOutputs, ComponentNames } from "../../constants";
-import { normalizeName } from "../../utils";
 import { getComponent } from "../../workflow";
 import { AzureResource } from "../azureResource";
-import { Plans, ProgressMessages, ProgressTitles } from "../../messages";
+import { ProgressMessages, ProgressTitles } from "../../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { wrapError } from "./errors";
 import { CheckThrowSomethingMissing } from "../../error";
-import { LocalBotEndpointNotConfigured } from "../../../plugins/solution/fx-solution/debug/error";
 import { LocalBotRegistration } from "./botRegistration/localBotRegistration";
 import { RemoteBotRegistration } from "./botRegistration/remoteBotRegistration";
 import { BotRegistration } from "./botRegistration/botRegistration";

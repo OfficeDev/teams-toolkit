@@ -163,8 +163,8 @@ const conversationBot = new ConversationBot({
   cardAction: { 
     enabled: true, 
     actions: [ 
-      new doStuffActionHandler(),
-      new doSomethingActionHandler() 
+      new DoStuffActionHandler(),
+      new DoSomethingActionHandler() 
     ], 
   } 
 }); 

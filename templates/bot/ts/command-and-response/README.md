@@ -114,8 +114,11 @@ You can use the [Adaptive Card Designer](https://adaptivecards.io/designer/) to 
 The TeamsFx SDK provides a convenient class, `TeamsFxBotCommandHandler`, to handle when an command is triggered from Teams conversation message. Create a new file, `bot/src/doSomethingCommandHandler.ts`:
 
 ```typescript
-import { doSomethingCard } from "./adaptiveCards/doSomethingCommandResponse.json";
+import { Activity, CardFactory, MessageFactory, TurnContext } from "botbuilder";
 import { CommandMessage, TeamsFxBotCommandHandler, TriggerPatterns, MessageBuilder, } from "@microsoft/teamsfx";
+import doSomethingCard  from "./adaptiveCards/doSomethingCommandResponse.json";
+import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
+import { CardData } from "./cardModels";
 
 export class DoSomethingCommandHandler implements TeamsFxBotCommandHandler {
     triggerPatterns: TriggerPatterns = "doSomething";
@@ -127,7 +130,7 @@ export class DoSomethingCommandHandler implements TeamsFxBotCommandHandler {
         // verify the command arguments which are received from the client if needed.
         console.log(`Bot received message: ${message.text}`);
 
-        const cardData = {
+        const cardData: CardData = {
           title: "doSomething command is added",
           body: "Congratulations! You have responded to doSomething command",
         };
@@ -146,6 +149,10 @@ You can customize what the command does here, including calling an API, process 
 Each new command needs to be configured in the `ConversationBot`, which powers the conversational flow of the command bot template. Navigate to the `bot/src/internal/initialize.ts` file and update the `commands` array of the `command` property:
 
 ```typescript
+import { HelloWorldCommandHandler } from "../helloworldCommandHandler";
+import { DoSomethingCommandHandler } from "../doSomethingCommandHandler";
+import { ConversationBot } from "@microsoft/teamsfx";
+
 const commandBot = new ConversationBot({
     //...
     command: {
@@ -157,7 +164,7 @@ const commandBot = new ConversationBot({
 });
 ```
 
-Congratulations, you've just created your won command! To learn more about the command bot template, [visit the documentation on GitHub](https://aka.ms/teamsfx-command-response). You can find more scenarios like:
+Congratulations, you've just created your own command! To learn more about the command bot template, [visit the documentation on GitHub](https://aka.ms/teamsfx-command-response). You can find more scenarios like:
 
 - [Customize the trigger pattern](https://aka.ms/teamsfx-command-response#customize-the-trigger-pattern)
 - [Customize the Adaptive Card with dynamic content](https://aka.ms/teamsfx-command-response#how-to-build-command-response-using-adaptive-card-with-dynamic-content)

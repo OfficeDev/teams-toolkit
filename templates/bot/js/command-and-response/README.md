@@ -114,15 +114,13 @@ The TeamsFx SDK provides a convenient class, `TeamsFxBotCommandHandler`, to hand
 
 ```javascript
 const doSomethingCard = require("./adaptiveCards/doSomethingCommandResponse.json");
-const { MessageBuilder } = require("@microsoft/teamsfx");
+const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const { CardFactory, MessageFactory } = require("botbuilder");
 
-class DoSomethingCommandHandler implements TeamsFxBotCommandHandler {
-    triggerPatterns: TriggerPatterns = "doSomething";
+class DoSomethingCommandHandler {
+    triggerPatterns = "doSomething";
 
-    async handleCommandReceived(
-        context: TurnContext,
-        message: CommandMessage
-    ): Promise<string | Partial<Activity>> {
+    async handleCommandReceived(context, message) {
         // verify the command arguments which are received from the client if needed.
         console.log(`Bot received message: ${message.text}`);
 
@@ -148,6 +146,10 @@ You can customize what the command does here, including calling an API, process 
 Each new command needs to be configured in the `ConversationBot`, which powers the conversational flow of the command bot template. Navigate to the `bot/src/internal/initialize.js` file and update the `commands` array of the `command` property:
 
 ```javascript
+const { ConversationBot } = require("@microsoft/teamsfx");
+const { HelloWorldCommandHandler } = require("../helloworldCommandHandler");
+const { DoSomethingCommandHandler} = require("../doSomethingCommandHandler")
+
 const commandBot = new ConversationBot({
     //...
     command: {
@@ -157,9 +159,13 @@ const commandBot = new ConversationBot({
             new DoSomethingCommandHandler() ],
     },
 });
+
+module.exports = {
+  commandBot,
+};
 ```
 
-Congratulations, you've just created your won command! To learn more about the command bot template, [visit the documentation on GitHub](https://aka.ms/teamsfx-command-response). You can find more scenarios like:
+Congratulations, you've just created your own command! To learn more about the command bot template, [visit the documentation on GitHub](https://aka.ms/teamsfx-command-response). You can find more scenarios like:
 
 - [Customize the trigger pattern](https://aka.ms/teamsfx-command-response#customize-the-trigger-pattern)
 - [Customize the Adaptive Card with dynamic content](https://aka.ms/teamsfx-command-response#how-to-build-command-response-using-adaptive-card-with-dynamic-content)

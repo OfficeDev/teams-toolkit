@@ -14,14 +14,18 @@ import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { Constants, DEFAULT_DEVELOPER } from "../../resource/appManifest/constants";
-import { compileHandlebarsTemplateString } from "../../../common/tools";
+import { TelemetryPropertyKey } from "../../resource/appManifest/utils/telemetry";
+import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { HelpLinks } from "../../../common/constants";
 
 const actionName = "teamsApp/createAppPackage";
 
 export class CreateAppPackageDriver implements StepDriver {
   public async run(
     args: CreateAppPackageArgs,
-    context: DriverContext
+    context: DriverContext,
+    withEmptyCapabilities?: boolean
   ): Promise<Result<Map<string, string>, FxError>> {
     const state = this.loadCurrentState();
     const manifestRes = await manifestUtils._readAppManifest(args.manifestTemplatePath);
@@ -31,6 +35,14 @@ export class CreateAppPackageDriver implements StepDriver {
     let manifest: TeamsAppManifest = manifestRes.value;
     if (!isUUID(manifest.id)) {
       manifest.id = v4();
+    }
+
+    if (withEmptyCapabilities) {
+      manifest.bots = [];
+      manifest.composeExtensions = [];
+      manifest.configurableTabs = [];
+      manifest.staticTabs = [];
+      manifest.webApplicationInfo = undefined;
     }
 
     // Adjust template for samples with unnecessary placeholders
@@ -47,20 +59,72 @@ export class CreateAppPackageDriver implements StepDriver {
 
     const manifestTemplateString = JSON.stringify(manifest);
 
-    // TODO: Need to add customized keys to telemetry
-    // const customizedKeys = getCustomizedKeys("", JSON.parse(manifestTemplateString));
-    // if (telemetryProps) {
-    //   telemetryProps[TelemetryPropertyKey.customizedKeys] = JSON.stringify(customizedKeys);
-    // }
-    // Render mustache template with state and config
+    // Add environment variable keys to telemetry
+    const customizedKeys = getEnvironmentVariables(manifestTemplateString);
+    const telemetryProps: { [key: string]: string } = {};
+    telemetryProps[TelemetryPropertyKey.customizedKeys] = JSON.stringify(customizedKeys);
 
-    const resolvedManifestString = compileHandlebarsTemplateString(manifestTemplateString, state);
+    const resolvedManifestString = expandEnvironmentVariable(manifestTemplateString);
+
+    const isLocalDebug = state.ENV_NAME === "local";
+    const tokens = getEnvironmentVariables(resolvedManifestString).filter(
+      (x) => x != "TEAMS_APP_ID"
+    );
+    if (tokens.length > 0) {
+      if (isLocalDebug) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.GetLocalDebugConfigFailedError.name,
+            AppStudioError.GetLocalDebugConfigFailedError.message(
+              new Error(getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")))
+            )
+          )
+        );
+      } else {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.GetRemoteConfigFailedError.name,
+            AppStudioError.GetRemoteConfigFailedError.message(
+              getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")),
+              false
+            ),
+            HelpLinks.WhyNeedProvision
+          )
+        );
+      }
+    }
+
     manifest = JSON.parse(resolvedManifestString);
 
-    // TODO: deal with relatvie path
-    // Environment variable will be replaced with actual value
+    // dynamically set validDomains for manifest, which can be refactored by static manifest templates
+    if (isLocalDebug || manifest.validDomains?.length === 0) {
+      const validDomains: string[] = [];
+      const tabEndpoint = state.TAB_ENDPOINT;
+      const tabDomain = state.TAB_DOMAIN;
+      const botDomain = state.BOT_DOMAIN;
+      if (tabDomain) {
+        validDomains.push(tabDomain);
+      }
+      if (tabEndpoint && isLocalDebug) {
+        validDomains.push(tabEndpoint.slice(8));
+      }
+      if (botDomain) {
+        validDomains.push(botDomain);
+      }
+      for (const domain of validDomains) {
+        if (manifest.validDomains?.indexOf(domain) == -1) {
+          manifest.validDomains.push(domain);
+        }
+      }
+    }
+
+    // Deal with relative path
+    // Environment variables should have been replaced by value
     // ./build/appPackage/appPackage.dev.zip instead of ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-    const zipFileName = args.outputPath;
+    let zipFileName = args.outputPath;
+    if (!path.isAbsolute(zipFileName)) {
+      zipFileName = path.join(context.projectPath, zipFileName);
+    }
 
     const appDirectory = path.dirname(args.manifestTemplatePath);
     const colorFile = path.join(appDirectory, manifest.icons.color);
@@ -100,14 +164,16 @@ export class CreateAppPackageDriver implements StepDriver {
     // await fs.writeFile(manifestFileName, JSON.stringify(manifest, null, 4));
     // await fs.chmod(manifestFileName, 0o444);
 
-    return ok(new Map([["outputPath", zipFileName]]));
+    return ok(new Map([["TEAMS_APP_PACKAGE_PATH", zipFileName]]));
   }
 
   private loadCurrentState() {
-    // TODO: load all the required env variables, including configs
     return {
       TAB_ENDPOINT: process.env.TAB_ENDPOINT,
+      TAB_DOMAIN: process.env.TAB_DOMAIN,
       BOT_ID: process.env.BOT_ID,
+      BOT_DOMAIN: process.env.BOT_DOMAIN,
+      ENV_NAME: process.env.TEAMSFX_ENV,
     };
   }
 }

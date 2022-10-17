@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
-import { assert, expect } from "chai";
+/**
+ * @jest-environment jsdom
+ */
+
 import { renderHook } from "@testing-library/react-hooks";
 import { useData } from "../src/useData";
 
@@ -13,15 +15,15 @@ describe("useData() hook tests", () => {
         return Promise.resolve("data");
       })
     );
-    assert.isDefined(result.current.reload);
-    expect(result.current.data).equals(undefined);
-    expect(result.current.error).equals(undefined);
-    expect(result.current.loading).equals(true);
+    expect(result.current.reload).toBeDefined();
+    expect(result.current.data).toBe(undefined);
+    expect(result.current.error).toBe(undefined);
+    expect(result.current.loading).toBe(true);
 
     await waitForNextUpdate();
-    expect(result.current.data).equals("data");
-    expect(result.current.error).equals(undefined);
-    expect(result.current.loading).equals(false);
+    expect(result.current.data).toBe("data");
+    expect(result.current.error).toBe(undefined);
+    expect(result.current.loading).toBe(false);
   });
 
   it("returns error when call function has error", async () => {
@@ -30,14 +32,14 @@ describe("useData() hook tests", () => {
         return Promise.reject("test error");
       })
     );
-    assert.isDefined(result.current.reload);
-    expect(result.current.data).equals(undefined);
-    expect(result.current.error).equals(undefined);
-    expect(result.current.loading).equals(true);
+    expect(result.current.reload).toBeDefined();
+    expect(result.current.data).toBe(undefined);
+    expect(result.current.error).toBe(undefined);
+    expect(result.current.loading).toBe(true);
 
     await waitForNextUpdate();
-    expect(result.current.data).equals(undefined);
-    expect(result.current.error).equals("test error");
-    expect(result.current.loading).equals(false);
+    expect(result.current.data).toBe(undefined);
+    expect(result.current.error).toBe("test error");
+    expect(result.current.loading).toBe(false);
   });
 });

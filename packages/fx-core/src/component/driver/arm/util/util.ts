@@ -5,6 +5,7 @@ import path from "path";
 import { TemplateType } from "../constant";
 import { deploymentOutput, templateArgs } from "../interface";
 import { DriverContext } from "../../interface/commonArgs";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export function hasBicepTemplate(args: templateArgs[]): boolean {
   for (const arg of args) {
@@ -59,7 +60,7 @@ function convertOutput(output: deploymentOutput, map: Map<string, string>, prefi
     } else {
       const mapKey = buildKey(key, prefix);
       if (map.get(mapKey)) {
-        throw new Error(`There is duplicated key ${mapKey} in arm deployment output`);
+        throw new Error(getLocalizedString("driver.arm.error.outputConversionFailed", mapKey));
       }
       map.set(mapKey.toUpperCase(), value.toString());
     }

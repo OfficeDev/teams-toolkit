@@ -48,11 +48,12 @@ import {
   SolutionTelemetryProperty,
   SUBSCRIPTION_ID,
   BuiltInFeaturePluginNames,
+  ComponentNames,
+  PathConstants,
 } from "./constants";
 import { backupFiles } from "./utils/backupFiles";
 import { resourceGroupHelper, ResourceGroupInfo } from "./utils/ResourceGroupHelper";
 import { resetAppSettingsDevelopment } from "./code/appSettingUtils";
-import { ComponentNames, PathConstants } from "./constants";
 import { AppStudioScopes } from "./resource/appManifest/constants";
 import { isCSharpProject, resetEnvInfoWhenSwitchM365 } from "./utils";
 import fs from "fs-extra";
@@ -208,6 +209,49 @@ export class ProvisionUtils {
     return ok(undefined);
   }
 
+  async ensureSubscription(azureAccountProvider: AzureAccountProvider, subscriptionId?: string) {
+    // make sure the user is logged in
+    await azureAccountProvider.getIdentityCredentialAsync(true);
+    if (!subscriptionId) {
+      const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
+      if (!subscriptionInAccount) {
+        return err(
+          new UserError(
+            SolutionSource,
+            SolutionError.SubscriptionNotFound,
+            "Failed to select subscription"
+          )
+        );
+      } else {
+        return subscriptionInAccount;
+      }
+    }
+
+    // verify valid subscription (permission)
+    const subscriptions = await azureAccountProvider.listSubscriptions();
+
+    const foundSubscriptionInfo = findSubscriptionFromList(subscriptionId, subscriptions);
+    // if (!foundSubscriptionInfo) {
+    //   return err(
+    //     new UserError(
+    //       SolutionSource,
+    //       SolutionError.SubscriptionNotFound,
+    //       `The subscription '${targetSubscriptionIdFromCLI}' for '${envInfo.envName}' environment is not found in the current account, please use the right Azure account or check the subscription parameter.`
+    //     )
+    //   );
+    // } else {
+    //   this.updateEnvInfoSubscription(envInfo, foundSubscriptionInfo);
+    //   ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+    //   return this.compareWithStateSubscription(
+    //     ctx,
+    //     envInfo,
+    //     foundSubscriptionInfo,
+    //     subscriptionIdInState,
+    //     envName,
+    //     CustomizeSubscriptionType.CommandLine
+    //   );
+    // }
+  }
   /**
    * make sure subscription is correct before provision
    *

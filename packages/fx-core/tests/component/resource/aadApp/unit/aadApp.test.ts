@@ -13,6 +13,9 @@ import { setTools } from "../../../../../src/core/globalVars";
 import { MockTools } from "../../../../core/utils";
 import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
 import { AadAppClient } from "../../../../../src/component/resource/aadApp/aadAppClient";
+import { Inputs, Platform, ResourceContextV3 } from "@microsoft/teamsfx-api";
+import { InputsWithProjectPath } from "@microsoft/teamsfx-api";
+import { AadAppManifestManager } from "../../../../../src/component/resource/aadApp/aadAppManifestManager";
 
 describe("aadApp", () => {
   const sandbox = sinon.createSandbox();
@@ -258,5 +261,51 @@ describe("aadApp", () => {
     const aadApp = new AadApp();
     const res = await aadApp.grantPermission(ctx, userList);
     chai.assert.isTrue(res.isErr());
+  });
+
+  it("build aad manifest", async function () {
+    ctx.projectSetting.components = [
+      {
+        name: "teams-app",
+        hosting: "azure-storage",
+        sso: true,
+      },
+      {
+        name: "aad-app",
+        provision: true,
+      },
+      {
+        name: "identity",
+        provision: true,
+      },
+    ];
+    ctx.envInfo = {
+      envName: "dev",
+      state: {
+        solution: { provisionSucceeded: true },
+        [ComponentNames.AppManifest]: { tenantId: "mock_project_tenant_id" },
+        [ComponentNames.AadApp]: {},
+      },
+      config: {},
+    };
+    ctx.tokenProvider = {
+      m365TokenProvider: new MockedM365Provider(),
+      azureAccountProvider: new MockedAzureAccountProvider(),
+    };
+
+    const inputs: Inputs = {
+      projectPath: "mock-path",
+      platform: Platform.VSCode,
+    };
+    inputs.env = "dev";
+
+    sandbox.stub(AadAppManifestManager, "loadAadManifest").resolves({ id: "fake-aad-id" } as any);
+    sandbox.stub(AadAppManifestManager, "writeManifestFileToBuildFolder").resolves();
+    const aadApp = new AadApp();
+    const res = await aadApp.buildAadManifest(
+      ctx as ResourceContextV3,
+      inputs as InputsWithProjectPath
+    );
+    chai.assert.isFalse(res.isErr());
   });
 });

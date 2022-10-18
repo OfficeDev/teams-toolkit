@@ -941,5 +941,7 @@
   "driver.aadApp.error.generateSecretFailed": "Cannot generate client secret.",
   "driver.aadApp.error.unhandledError": "Unhandled error happened in %s action: %s",
   "driver.aadApp.error.invalidFieldInManifest": "Field %s is missing or invalid in AAD app manifest.",
-  "configManager.error.driverNotFound": "Driver %s not found for step %s"
+  "configManager.error.driverNotFound": "Driver %s not found for step %s",
+  "configManager.error.yamlParsing": "Error parsing yaml file at path %s. Reason: %s",
+  "configManager.error.invalidLifecycle": "The schema of lifecycle %s is invalid"
 }

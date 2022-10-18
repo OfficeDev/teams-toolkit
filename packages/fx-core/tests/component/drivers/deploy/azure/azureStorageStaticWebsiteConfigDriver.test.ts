@@ -13,6 +13,7 @@ import { ListAccountSasResponse, StorageManagementClient } from "@azure/arm-stor
 import { BlobServiceClient, ServiceGetPropertiesResponse } from "@azure/storage-blob";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
+import { MockUserInteraction } from "../../../../core/utils";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -47,6 +48,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const driver = new AzureStorageStaticWebsiteConfigDriver();
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
+      ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as DriverContext;
     // fake azure credentials

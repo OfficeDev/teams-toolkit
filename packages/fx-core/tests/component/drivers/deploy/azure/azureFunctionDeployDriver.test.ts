@@ -16,6 +16,7 @@ import * as fs from "fs-extra";
 import { AzureFunctionDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureFunctionDeployDriver";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
+import { MockUserInteraction } from "../../../../core/utils";
 
 describe("Azure Function Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -39,6 +40,7 @@ describe("Azure Function Deploy Driver test", () => {
     } as DeployArgs;
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
+      ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as DriverContext;
     sandbox

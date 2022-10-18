@@ -18,6 +18,7 @@ import { BlobDeleteResponse, ContainerClient } from "@azure/storage-blob";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
+import { MockUserInteraction } from "../../../../core/utils";
 
 function getMockStorageAccount1() {
   return {
@@ -50,6 +51,7 @@ describe("Azure Storage Deploy Driver test", () => {
     } as DeployArgs;
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
+      ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as DriverContext;
     sandbox

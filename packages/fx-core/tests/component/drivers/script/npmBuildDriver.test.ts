@@ -14,6 +14,7 @@ import { TestLogProvider } from "../../util/logProviderMock";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { NpmBuildDriver } from "../../../../src/component/driver/script/npmBuildDriver";
 import { assert } from "chai";
+import { MockUserInteraction } from "../../../core/utils";
 
 describe("NPM Build Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -35,6 +36,7 @@ describe("NPM Build Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
     } as DriverContext;
     sandbox.stub(utils, "execute").resolves();
     const res = await driver.run(args, context);

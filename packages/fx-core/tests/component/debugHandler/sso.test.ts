@@ -282,7 +282,7 @@ describe("SSODebugHandler", () => {
       chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost/${clientId}`
+        `api://localhost:53000/${clientId}`
       );
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,
@@ -517,7 +517,7 @@ describe("SSODebugHandler", () => {
       chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost/botid-${botId}`
+        `api://localhost:53000/botid-${botId}`
       );
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,
@@ -671,7 +671,7 @@ describe("SSODebugHandler", () => {
       chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost/botid-${botId}`
+        `api://localhost:53000/botid-${botId}`
       );
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,

@@ -39,7 +39,7 @@ export abstract class BotRegistration {
         const graphToken = graphTokenRes.value;
 
         // Call GraphClient.
-        const aadAppCredential = await GraphClient.registerAadApp(aadDisplayName, graphToken);
+        const aadAppCredential = await GraphClient.registerAadApp(graphToken, aadDisplayName);
 
         return ok({
           botId: aadAppCredential.clientId,

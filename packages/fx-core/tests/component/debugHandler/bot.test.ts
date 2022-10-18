@@ -29,11 +29,13 @@ import {
 } from "../../../src/component/debugHandler/localEnvProvider";
 import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
-import { AADRegistration } from "../../../src/component/resource/botService/aadRegistration";
-import { AppStudio } from "../../../src/component/resource/botService/appStudio/appStudio";
+import { GraphClient } from "../../../src/component/resource/botService/botRegistration/graphClient";
+import { AppStudioClient } from "../../../src/component/resource/botService/appStudio/appStudioClient";
 import { BotAuthCredential } from "../../../src/component/resource/botService/botAuthCredential";
 import { MockM365TokenProvider, runDebugActions } from "./utils";
 import { BotDebugArgs, BotDebugHandler } from "../../../src/component/debugHandler";
+import { IBotAadCredentials } from "../../../src/component/resource/botService/botRegistration/botRegistration";
+import { IAadAppCredentials } from "../../../src/component/resource/botService/IAadAppCredentials";
 
 describe("TabDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
@@ -156,21 +158,20 @@ describe("TabDebugHandler", () => {
         },
       };
       sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
-      const botAuthCredential: BotAuthCredential = {
-        objectId: "11111111-1111-1111-1111-111111111111",
+      const aadAppCredentials: IAadAppCredentials = {
         clientId: "22222222-2222-2222-2222-222222222222",
         clientSecret: "xxx",
       };
       let called = false;
-      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").callsFake(async () => {
+      sinon.stub(GraphClient, "registerAadApp").callsFake(async () => {
         called = true;
-        return botAuthCredential;
+        return aadAppCredentials;
       });
-      sinon.stub(AppStudio, "getBotRegistration").callsFake(async () => {
+      sinon.stub(AppStudioClient, "getBotRegistration").callsFake(async () => {
         return undefined;
       });
-      sinon.stub(AppStudio, "createBotRegistration").callsFake(async () => {});
-      sinon.stub(AppStudio, "updateMessageEndpoint").callsFake(async () => {});
+      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {});
+      sinon.stub(AppStudioClient, "updateMessageEndpoint").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
       });
@@ -250,18 +251,21 @@ describe("TabDebugHandler", () => {
       };
       sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
       let registerAADCalled = false;
-      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").callsFake(async () => {
+      sinon.stub(GraphClient, "registerAadApp").callsFake(async () => {
         registerAADCalled = true;
-        return {};
+        return {
+          clientId: "",
+          clientSecret: "",
+        };
       });
-      sinon.stub(AppStudio, "getBotRegistration").callsFake(async (_token, id) => {
+      sinon.stub(AppStudioClient, "getBotRegistration").callsFake(async (_token, id) => {
         return id === botId ? ({} as any) : undefined;
       });
       let registerBotCalled = false;
-      sinon.stub(AppStudio, "createBotRegistration").callsFake(async () => {
+      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {
         registerBotCalled = true;
       });
-      sinon.stub(AppStudio, "updateMessageEndpoint").callsFake(async () => {});
+      sinon.stub(AppStudioClient, "updateMessageEndpoint").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
       });
@@ -328,15 +332,18 @@ describe("TabDebugHandler", () => {
       };
       sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
       let called = false;
-      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").callsFake(async () => {
+      sinon.stub(GraphClient, "registerAadApp").callsFake(async () => {
         called = true;
-        return {};
+        return {
+          clientId: "",
+          clientSecret: "",
+        };
       });
-      sinon.stub(AppStudio, "getBotRegistration").callsFake(async () => {
+      sinon.stub(AppStudioClient, "getBotRegistration").callsFake(async () => {
         return undefined;
       });
-      sinon.stub(AppStudio, "createBotRegistration").callsFake(async () => {});
-      sinon.stub(AppStudio, "updateMessageEndpoint").callsFake(async () => {});
+      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {});
+      sinon.stub(AppStudioClient, "updateMessageEndpoint").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
       });

@@ -11,8 +11,8 @@ import { IAadAppCredentials } from "../IAadAppCredentials";
 
 export class GraphClient {
   public static async registerAadApp(
-    displayName: string,
-    token: string
+    token: string,
+    displayName: string
   ): Promise<IAadAppCredentials> {
     const axiosInstance: AxiosInstance = axios.create({
       baseURL: AADRegistrationConstants.GRAPH_REST_BASE_URL,

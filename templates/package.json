@@ -51,7 +51,7 @@
         "notification-http-ts",
         "notification-http-js",
         "notification-timer-ts",
-        "notificationtimer-js"  
+        "notification-timer-js"  
     ],
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^4.19.0",

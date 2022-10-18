@@ -21,10 +21,7 @@ export class RemoteBotRegistration extends BotRegistration {
       return err(superRes.error);
     }
 
-    return ok({
-      botId: "",
-      botPassword: "",
-    });
+    return ok(superRes.value);
   }
 
   public async updateMessageEndpoint(

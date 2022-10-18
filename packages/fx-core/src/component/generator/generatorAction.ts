@@ -4,7 +4,7 @@
 import AdmZip from "adm-zip";
 import path from "path";
 import { GeneratorContext } from "./generatorContext";
-import { fetchZipFromUrl, fetchTemplateZipUrl, unzip, fetchSampleZipUrl } from "./utils";
+import { fetchZipFromUrl, fetchTemplateZipUrl, unzip, fetchSampleZipUrl, zipFolder } from "./utils";
 import fs from "fs-extra";
 import { defaultTimeoutInMs, defaultTryLimits } from "./constant";
 import { getTemplatesFolder } from "../../folder";
@@ -51,10 +51,7 @@ export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
       context.name
     );
 
-    const zip = new AdmZip();
-    zip.addLocalFolder(templateSourceCodePath);
-
-    context.zip = zip;
+    context.zip = zipFolder(templateSourceCodePath);
   },
 };
 

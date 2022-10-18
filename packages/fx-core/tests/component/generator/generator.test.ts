@@ -25,7 +25,6 @@ import {
   fetchZipFromUrlAction,
   unzipAction,
 } from "../../../src/component/generator/generatorAction";
-import { unzip } from "../../../src/common/template-utils/templatesUtils";
 import * as generatorUtils from "../../../src/component/generator/utils";
 import { GeneratorContext } from "../../../src/component/generator/generatorContext";
 import mockedEnv from "mocked-env";
@@ -54,7 +53,7 @@ describe("Generator utils", () => {
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
     zip.writeZip(path.join(tmpDir, "test.zip"));
-    await unzip(
+    await generatorUtils.unzip(
       new AdmZip(path.join(tmpDir, "test.zip")),
       outputDir,
       (fileName: string, fileData: Buffer) => renderTemplateFileName(fileName, fileData, {}),

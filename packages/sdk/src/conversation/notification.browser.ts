@@ -471,6 +471,7 @@ export class NotificationBot {
 
   /**
    * Returns the first {@link Channel} where predicate is true, and undefined otherwise.
+   * (Ensure the bot app is installed into the `General` channel, otherwise undefined will be returned.)
    *
    * @remarks
    * Only work on server side.
@@ -512,6 +513,7 @@ export class NotificationBot {
 
   /**
    * Returns all {@link Channel} where predicate is true, and empty array otherwise.
+   * (Ensure the bot app is installed into the `General` channel, otherwise empty array will be returned.)
    *
    * @remarks
    * Only work on server side.

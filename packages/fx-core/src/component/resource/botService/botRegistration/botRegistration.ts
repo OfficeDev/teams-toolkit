@@ -1,20 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  err,
-  FxError,
-  ResourceContextV3,
-  Result,
-  v3,
-  ok,
-  M365TokenProvider,
-} from "@microsoft/teamsfx-api";
-import { ComponentNames } from "../../../constants";
+import { err, FxError, Result, ok, M365TokenProvider } from "@microsoft/teamsfx-api";
 import { GraphScopes } from "../../../../common/tools";
-import * as uuid from "uuid";
-import { ResourceNameFactory } from "../resourceNameFactory";
-import { MaxLengths } from "../constants";
 import { GraphClient } from "./graphClient";
 
 export enum BotAuthType {
@@ -33,28 +21,11 @@ export abstract class BotRegistration {
     aadDisplayName: string,
     botConfig?: IBotAadCredentials,
     botAuthType: BotAuthType = BotAuthType.AADApp
-  ): Promise<Result<IBotAadCredentials | undefined, FxError>> {
-    // 1. Init bot state.
-    // context.envInfo.state[ComponentNames.TeamsBot] ||= {};
-
-    // 2. Prepare authentication for bot.
+  ): Promise<Result<IBotAadCredentials, FxError>> {
     if (botAuthType === BotAuthType.AADApp) {
-      // Create bot aad app.
-      // Respect existing bot aad from config first.
-      // const botConfig =
-      //   context.envInfo.config.bot?.appId && context.envInfo.config.bot?.appPassword
-      //     ? {
-      //         botId: context.envInfo.config.bot?.appId,
-      //         botPassword: context.envInfo.config.bot?.appPassword,
-      //       }
-      //     : context.envInfo.state[ComponentNames.TeamsBot];
-
       if (botConfig?.botId && botConfig?.botPassword) {
         // Existing bot aad scenario.
-        return ok({
-          botId: botConfig.botId,
-          botPassword: botConfig.botPassword,
-        });
+        return ok(botConfig);
       } else {
         // Create a new bot aad app.
         // Prepare graph token.
@@ -67,17 +38,6 @@ export abstract class BotRegistration {
         }
         const graphToken = graphTokenRes.value;
 
-        // Prepare aad app name.
-        // const solutionConfig = context.envInfo.state.solution as v3.AzureSolutionConfig;
-        // const resourceNameSuffix = solutionConfig.resourceNameSuffix
-        //   ? solutionConfig.resourceNameSuffix
-        //   : uuid.v4();
-        // const aadDisplayName = ResourceNameFactory.createCommonName(
-        //   resourceNameSuffix,
-        //   context.projectSetting.appName,
-        //   MaxLengths.AAD_DISPLAY_NAME
-        // );
-
         // Call GraphClient.
         const aadAppCredential = await GraphClient.registerAadApp(aadDisplayName, graphToken);
 
@@ -85,20 +45,20 @@ export abstract class BotRegistration {
           botId: aadAppCredential.clientId,
           botPassword: aadAppCredential.clientSecret,
         });
-        // Save states.
-        // context.envInfo.state[ComponentNames.TeamsBot] = {
-        //   botId: aadAppCredential.clientId,
-        //   botPassword: aadAppCredential.clientSecret,
-        // };
       }
     } else {
       // Suppose === BotAuthType.Identity
       //TODO: Support identity.
-      return ok(undefined);
+      return ok({
+        botId: "",
+        botPassword: "",
+      });
     }
   }
 
   public abstract updateMessageEndpoint(
-    context: ResourceContextV3
+    m365TokenProvider: M365TokenProvider,
+    botId: string,
+    endpoint: string
   ): Promise<Result<undefined, FxError>>;
 }

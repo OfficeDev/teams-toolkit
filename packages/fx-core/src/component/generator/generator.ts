@@ -41,7 +41,7 @@ export class Generator {
     const nameReplaceMap = { ...{ appName: appName }, ...ctx.templateVariables };
     const dataReplaceMap = { ...{ projectId: projectId }, ...nameReplaceMap };
     const generatorContext: GeneratorContext = {
-      name: `${templateName}_${language}`,
+      name: `${templateName}-${language}`,
       destination: destinationPath,
       logProvider: ctx.logProvider,
       fileNameReplaceFn: (fileName: string, fileData: Buffer) =>

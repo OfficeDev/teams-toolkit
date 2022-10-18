@@ -6,11 +6,16 @@ import { DriverContext } from "../interface/commonArgs";
 import { Service } from "typedi";
 import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
 import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
-import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { err, FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import axios from "axios";
 import { wrapRun } from "../../utils/common";
+import {
+  BotRegistration,
+  IBotAadCredentials,
+} from "../../resource/botService/botRegistration/botRegistration";
+import { RemoteBotRegistration } from "../../resource/botService/botRegistration/remoteBotRegistration";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -31,11 +36,24 @@ export class CreateBotAadAppDriver implements StepDriver {
     try {
       this.validateArgs(args);
       const botAadAppState = this.loadCurrentState();
-
-      return new Map(
-        Object.entries(botAadAppState) // convert each property to Map item
-          .filter((item) => item[1] && item[1] !== "") // do not return Map item that is empty
+      const botConfig: IBotAadCredentials = {
+        botId: botAadAppState.BOT_ID ?? "",
+        botPassword: botAadAppState.BOT_PASSWORD ?? "",
+      };
+      const botRegistration: BotRegistration = new RemoteBotRegistration();
+      const createRes = await botRegistration.createBotRegistration(
+        context.m365TokenProvider,
+        args.name,
+        botConfig
       );
+      if (createRes.isErr()) {
+        throw err(createRes.error);
+      }
+
+      return new Map([
+        ["BOT_ID", createRes.value.botId],
+        ["BOT_PASSWORD", createRes.value.botPassword],
+      ]);
     } catch (error) {
       if (error instanceof UserError || error instanceof SystemError) {
         throw error;

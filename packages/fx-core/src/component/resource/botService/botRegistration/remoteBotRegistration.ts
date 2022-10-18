@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, M365TokenProvider, Result, ok } from "@microsoft/teamsfx-api";
+import { FxError, M365TokenProvider, Result, ok, err } from "@microsoft/teamsfx-api";
 import { BotRegistration, BotAuthType, IBotAadCredentials } from "./botRegistration";
 
 export class RemoteBotRegistration extends BotRegistration {
@@ -12,6 +12,15 @@ export class RemoteBotRegistration extends BotRegistration {
     botAuthType: BotAuthType = BotAuthType.AADApp
   ): Promise<Result<IBotAadCredentials, FxError>> {
     // Do nothing because it's handled by arm/bicep snippets.
+    const superRes = await super.createBotRegistration(
+      m365TokenProvider,
+      aadDisplayName,
+      botConfig
+    );
+    if (superRes.isErr()) {
+      return err(superRes.error);
+    }
+
     return ok({
       botId: "",
       botPassword: "",

@@ -14,6 +14,7 @@ import fs from "fs-extra";
 import AdmZip from "adm-zip";
 import { StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
+import { CreateAppPackageDriver } from "./createAppPackage";
 import { CreateTeamsAppArgs } from "./interfaces/CreateTeamsAppArgs";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
@@ -24,11 +25,16 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 
 const actionName = "teamsApp/create";
 
+const outputNames = {
+  TEAMS_APP_ID: "TEAMS_APP_ID",
+};
+
 export class CreateTeamsAppDriver implements StepDriver {
   public async run(
     args: CreateTeamsAppArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
+    const state = this.loadCurrentState();
     let create = true;
 
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
@@ -39,14 +45,35 @@ export class CreateTeamsAppDriver implements StepDriver {
     }
     const appStudioToken = appStudioTokenRes.value;
 
-    if (!(await fs.pathExists(args.appPackagePath))) {
+    const createAppPackageDriver = new CreateAppPackageDriver();
+    const result = await createAppPackageDriver.run(
+      {
+        manifestTemplatePath: args.manifestTemplatePath,
+        outputPath: `${context.projectPath}/build/appPackage/appPackage.${state.ENV_NAME}.zip`,
+      },
+      context
+    );
+    if (result.isErr()) {
+      return result;
+    }
+
+    const appPackagePath = result.value.get("TEAMS_APP_PACKAGE_PATH");
+    if (!appPackagePath) {
+      return err(
+        AppStudioResultFactory.SystemError(
+          AppStudioError.InvalidInputError.name,
+          AppStudioError.InvalidInputError.message("TEAMS_APP_PACKAGE_PATH", "undefined")
+        )
+      );
+    }
+    if (!(await fs.pathExists(appPackagePath))) {
       const error = AppStudioResultFactory.UserError(
         AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(args.appPackagePath)
+        AppStudioError.FileNotFoundError.message(appPackagePath)
       );
       return err(error);
     }
-    const archivedFile = await fs.readFile(args.appPackagePath);
+    const archivedFile = await fs.readFile(appPackagePath);
     const zipEntries = new AdmZip(archivedFile).getEntries();
     const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
     if (!manifestFile) {
@@ -76,7 +103,7 @@ export class CreateTeamsAppDriver implements StepDriver {
         context.logProvider.info(
           getLocalizedString("plugins.appstudio.teamsAppCreatedNotice", appDefinition.teamsAppId!)
         );
-        return ok(new Map([["teamsAppId", appDefinition.teamsAppId!]]));
+        return ok(new Map([[outputNames.TEAMS_APP_ID, appDefinition.teamsAppId!]]));
       } catch (e: any) {
         if (e instanceof UserError || e instanceof SystemError) {
           return err(e);
@@ -89,7 +116,13 @@ export class CreateTeamsAppDriver implements StepDriver {
         }
       }
     } else {
-      return ok(new Map([["teamsAppId", teamsAppId]]));
+      return ok(new Map([[outputNames.TEAMS_APP_ID, teamsAppId]]));
     }
+  }
+
+  private loadCurrentState() {
+    return {
+      ENV_NAME: process.env.TEAMSFX_ENV,
+    };
   }
 }

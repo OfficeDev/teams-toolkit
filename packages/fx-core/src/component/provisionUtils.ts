@@ -283,7 +283,7 @@ export class ProvisionUtils {
           new UserError(
             SolutionSource,
             SolutionError.SubscriptionNotFound,
-            "Failed to select subscription"
+            getLocalizedString("core.provision.subscription.failToSelect")
           )
         );
       } else {
@@ -313,7 +313,11 @@ export class ProvisionUtils {
           new UserError(
             SolutionSource,
             SolutionError.SubscriptionNotFound,
-            `The subscription '${targetSubscriptionIdFromCLI}' for '${envInfo.envName}' environment is not found in the current account, please use the right Azure account or check the subscription parameter.`
+            getLocalizedString(
+              "core.provision.subscription.NotFoundParam",
+              targetSubscriptionIdFromCLI,
+              envInfo.envName
+            )
           )
         );
       } else {
@@ -338,12 +342,12 @@ export class ProvisionUtils {
           new UserError(
             SolutionSource,
             SolutionError.SubscriptionNotFound,
-            `The subscription '${subscriptionIdInConfig}'(${subscriptionNameInConfig}) for '${
-              envInfo.envName
-            }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
-              EnvNamePlaceholder,
-              envInfo.envName
-            )}' file.`
+            getLocalizedString(
+              "core.provision.subscription.NotFoundConfig",
+              subscriptionIdInConfig,
+              envInfo.envName,
+              EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envInfo.envName)
+            )
           )
         );
       } else {
@@ -372,7 +376,11 @@ export class ProvisionUtils {
             new UserError(
               SolutionSource,
               SolutionError.SubscriptionNotFound,
-              `The subscription '${subscriptionIdInState}'(${subscriptionNameInState}) for '${envInfo.envName}' environment is not found in the current account, please use the right Azure account.`
+              getLocalizedString(
+                "core.provision.subscription.NotFoundState",
+                subscriptionIdInState,
+                envInfo.envName
+              )
             )
           );
         }
@@ -496,7 +504,7 @@ export class ProvisionUtils {
         new UserError(
           SolutionSource,
           SolutionError.NotLoginToAzure,
-          "Login to Azure using the Azure Account extension"
+          getLocalizedString("core.error.notLoginToAzure")
         )
       );
     }
@@ -550,7 +558,7 @@ export class ProvisionUtils {
             new UserError(
               SolutionSource,
               SolutionError.ResourceGroupNotFound,
-              `Resource group '${inputs.targetResourceGroupName}' does not exist, please specify an existing resource group.`
+              getLocalizedString("core.error.resourceGroupNotFound", inputs.targetResourceGroupName)
             )
           );
         }
@@ -580,7 +588,7 @@ export class ProvisionUtils {
           new UserError(
             SolutionSource,
             SolutionError.ResourceGroupNotFound,
-            `Resource group '${resourceGroupName}' does not exist, please check your '${envFile}' file.`
+            getLocalizedString("core.error.resourceGroupNotFound2", resourceGroupName, envFile)
           )
         );
       }

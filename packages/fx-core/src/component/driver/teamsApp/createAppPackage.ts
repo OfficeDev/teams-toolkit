@@ -124,6 +124,8 @@ export class CreateAppPackageDriver implements StepDriver {
     let zipFileName = args.outputPath;
     if (!path.isAbsolute(zipFileName)) {
       zipFileName = path.join(context.projectPath, zipFileName);
+      const dir = path.dirname(zipFileName);
+      await fs.mkdir(dir, { recursive: true });
     }
 
     let appDirectory = path.dirname(args.manifestTemplatePath);

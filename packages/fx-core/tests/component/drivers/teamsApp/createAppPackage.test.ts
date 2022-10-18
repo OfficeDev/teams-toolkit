@@ -51,5 +51,8 @@ describe("teamsApp/createAppPackage", async () => {
     if (result.isOk()) {
       chai.assert(result.value.has("TEAMS_APP_PACKAGE_PATH"));
     }
+    if (await fs.pathExists(args.outputPath)) {
+      await fs.remove(args.outputPath);
+    }
   });
 });

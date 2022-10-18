@@ -7,6 +7,7 @@ import * as sinon from "sinon";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
 import {
   CreateAADAppError,
+  CreateAADSecretError,
   PluginError,
 } from "../../../../src/component/resource/botService/errors";
 import { default as axios } from "axios";
@@ -116,64 +117,6 @@ describe("Test GraphClient", () => {
       } catch (e) {
         chai.assert.equal(e.name, "ProvisionError");
         chai.assert.include(e.message, CommonStrings.AAD_APP);
-        return;
-      }
-      chai.assert.fail(Messages.ShouldNotReachHere);
-    });
-
-    it("Create secret error", async () => {
-      // Arrange
-      const graphToken = "anything";
-      const displayName = "any name";
-
-      sinon.stub(RetryHandler, "Retry").throws(new CreateAADAppError());
-      // Act
-      try {
-        await GraphClient.registerAadApp(graphToken, displayName);
-      } catch (e) {
-        chai.assert.equal(e.name, CreateSecretError.name);
-        return;
-      }
-      chai.assert.fail(Messages.ShouldNotReachHere);
-    });
-
-    it("Create secret undefined", async () => {
-      // Arrange
-      const graphToken = "anything";
-      const displayName = "any name";
-
-      const fakeAxiosInstance = axios.create();
-      sinon.stub(fakeAxiosInstance, "post").resolves(undefined);
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
-
-      // Act
-      try {
-        await GraphClient.registerAadApp(graphToken, displayName);
-      } catch (e) {
-        chai.assert.equal(e.name, "ProvisionError");
-        chai.assert.include(e.message, CommonStrings.AAD_CLIENT_SECRET);
-        return;
-      }
-      chai.assert.fail(Messages.ShouldNotReachHere);
-    });
-
-    it("Create secret invalid", async () => {
-      // Arrange
-      const graphToken = "anything";
-      const displayName = "any name";
-
-      const fakeAxiosInstance = axios.create();
-      sinon.stub(fakeAxiosInstance, "post").resolves({
-        status: 200,
-      });
-      sinon.stub(axios, "create").returns(fakeAxiosInstance);
-
-      // Act
-      try {
-        await GraphClient.registerAadApp(graphToken, displayName);
-      } catch (e) {
-        chai.assert.equal(e.name, "ProvisionError");
-        chai.assert.include(e.message, CommonStrings.AAD_CLIENT_SECRET);
         return;
       }
       chai.assert.fail(Messages.ShouldNotReachHere);

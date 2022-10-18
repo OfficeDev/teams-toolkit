@@ -32,15 +32,6 @@ export class LocalBotRegistration extends BotRegistration {
     }
 
     const appStudioToken = appStudioTokenRes.value;
-    // Check if bot registration exists?
-    const botReg = await AppStudioClient.getBotRegistration(
-      appStudioToken,
-      botAadCredentials.botId
-    );
-    if (botReg) {
-      // A bot registration with the specific botId exists, so do nothing.
-      return ok(botAadCredentials);
-    }
     // Register a new bot registration.
     const initialBotReg: IBotRegistration = {
       botId: botAadCredentials.botId,

@@ -20,15 +20,9 @@ import { loadProjectSettings } from "./projectSettingsLoader";
 import { needMigrateToArmAndMultiEnv } from "./projectMigrator";
 import { needConsolidateLocalRemote } from "./consolidateLocalRemote";
 import * as os from "os";
-import {
-  generateAadManifest,
-  needMigrateToAadManifest,
-  Permission,
-  permissionsToRequiredResourceAccess,
-} from "./MigrationUtils";
-import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
+import { generateAadManifest, needMigrateToAadManifest } from "./MigrationUtils";
 
-const LearnMore = "Learn More";
+const LearnMore = getLocalizedString("core.option.learnMore");
 const LearnMoreLink = "https://aka.ms/teamsfx-aad-manifest";
 let userCancelFlag = false;
 const backupFolder = ".backup";

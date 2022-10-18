@@ -10,6 +10,7 @@
 // to copy you changes to function plugin.
 
 import * as os from "os";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 export function isWindows(): boolean {
   return os.type() === "Windows_NT";
@@ -28,14 +29,14 @@ export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
 export const bicepHelpLink = `${defaultHelpLink}#how-to-install-bicep-cli`;
 
 export const Messages = {
-  learnMoreButtonText: "Learn more",
+  learnMoreButtonText: getLocalizedString("core.option.learnMore"),
 
-  downloadBicep: `Downloading and installing the portable version of @NameVersion, which will be installed to @InstallDir and will not affect your environment.`,
-  finishInstallBicep: `Successfully installed @NameVersion.`,
-  failToInstallBicep: `Failed to install @NameVersion`,
-  failToInstallBicepOutputVSC: `Failed to install @NameVersion. please read this wiki(@HelpLink) to install @NameVersion manually and restart Visual Studio Code.`,
-  failToInstallBicepOutputCLI: `Failed to install @NameVersion. please read this wiki(@HelpLink) to install @NameVersion manually.`,
-  failToInstallBicepDialog: `Failed to install @NameVersion. please click Learn More to install @NameVersion manually and restart Visual Studio Code.`,
+  downloadBicep: getLocalizedString("depChecker.downloadBicep"),
+  finishInstallBicep: getLocalizedString("depChecker.finishInstallBicep"),
+  failToInstallBicep: getLocalizedString("depChecker.failToInstallBicep"),
+  failToInstallBicepOutputVSC: getLocalizedString("depChecker.failToInstallBicepOutputVSC"),
+  failToInstallBicepOutputCLI: getLocalizedString("depChecker.failToInstallBicepOutputCLI"),
+  failToInstallBicepDialog: getLocalizedString("depChecker.failToInstallBicepDialog"),
 };
 
 export enum DepsCheckerEvent {

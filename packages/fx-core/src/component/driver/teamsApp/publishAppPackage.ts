@@ -8,22 +8,31 @@ import {
   ok,
   TeamsAppManifest,
   UserCancelError,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
+import { hooks } from "@feathersjs/hooks/lib";
 import { StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { Constants } from "../../resource/appManifest/constants";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
+import { TelemetryPropertyKey } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
 const actionName = "teamsApp/configure";
 
+const outputKeys = {
+  publishedAppId: "TEAMS_APP_PUBLISHED_APP_ID",
+};
+
 export class PublishAppPackageDriver implements StepDriver {
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: PublishAppPackageArgs,
     context: DriverContext
@@ -59,6 +68,10 @@ export class PublishAppPackageDriver implements StepDriver {
     if (appStudioTokenRes.isErr()) {
       return err(appStudioTokenRes.error);
     }
+
+    let result;
+    const telemetryProps: { [key: string]: string } = {};
+
     const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioTokenRes.value);
     if (existApp) {
       let executePublishUpdate = false;
@@ -86,12 +99,9 @@ export class PublishAppPackageDriver implements StepDriver {
           archivedFile,
           appStudioTokenRes.value
         );
-        const result = new Map([
-          ["publishedAppId", appId],
-          ["appName", manifest.name.short],
-          ["update", "true"],
-        ]);
-        return ok(result);
+        result = new Map([[outputKeys.publishedAppId, appId]]);
+        // TODO: how to send telemetry with own properties
+        telemetryProps[TelemetryPropertyKey.updateExistingApp] = "true";
       } else {
         return err(UserCancelError);
       }
@@ -101,12 +111,32 @@ export class PublishAppPackageDriver implements StepDriver {
         archivedFile,
         appStudioTokenRes.value
       );
-      const result = new Map([
-        ["publishedAppId", appId],
-        ["appName", manifest.name.short],
-        ["update", "false"],
-      ]);
-      return ok(result);
+      result = new Map([["publishedAppId", appId]]);
+      telemetryProps[TelemetryPropertyKey.updateExistingApp] = "false";
     }
+
+    context.logProvider.info(`Publish success!`);
+    if (context.platform === Platform.CLI) {
+      const msg = getLocalizedString(
+        "plugins.appstudio.publishSucceedNotice.cli",
+        manifest.name.short,
+        Constants.TEAMS_ADMIN_PORTAL,
+        Constants.TEAMS_MANAGE_APP_DOC
+      );
+      context.ui?.showMessage("info", msg, false);
+    } else {
+      const msg = getLocalizedString(
+        "plugins.appstudio.publishSucceedNotice",
+        manifest.name.short,
+        Constants.TEAMS_MANAGE_APP_DOC
+      );
+      const adminPortal = getLocalizedString("plugins.appstudio.adminPortal");
+      context.ui?.showMessage("info", msg, false, adminPortal).then((value) => {
+        if (value.isOk() && value.value === adminPortal) {
+          context.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
+        }
+      });
+    }
+    return ok(result);
   }
 }

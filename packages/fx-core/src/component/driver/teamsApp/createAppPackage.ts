@@ -6,10 +6,14 @@ import AdmZip from "adm-zip";
 import { v4 } from "uuid";
 import * as path from "path";
 import isUUID from "validator/lib/isUUID";
+import { hooks } from "@feathersjs/hooks/lib";
+import { pathToFileURL } from "url";
+import { Platform, Colors } from "@microsoft/teamsfx-api";
 import { TeamsAppManifest, Result, FxError, ok, err } from "@microsoft/teamsfx-api";
 import { StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
@@ -17,11 +21,12 @@ import { Constants, DEFAULT_DEVELOPER } from "../../resource/appManifest/constan
 import { TelemetryPropertyKey } from "../../resource/appManifest/utils/telemetry";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { HelpLinks } from "../../../common/constants";
+import { HelpLinks, VSCodeExtensionCommand } from "../../../common/constants";
 
 const actionName = "teamsApp/createAppPackage";
 
 export class CreateAppPackageDriver implements StepDriver {
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: CreateAppPackageArgs,
     context: DriverContext,
@@ -33,9 +38,6 @@ export class CreateAppPackageDriver implements StepDriver {
       return err(manifestRes.error);
     }
     let manifest: TeamsAppManifest = manifestRes.value;
-    if (!isUUID(manifest.id)) {
-      manifest.id = v4();
-    }
 
     if (withEmptyCapabilities) {
       manifest.bots = [];
@@ -94,6 +96,10 @@ export class CreateAppPackageDriver implements StepDriver {
       }
     }
 
+    if (!isUUID(manifest.id)) {
+      manifest.id = v4();
+    }
+
     manifest = JSON.parse(resolvedManifestString);
 
     // dynamically set validDomains for manifest, which can be refactored by static manifest templates
@@ -121,12 +127,19 @@ export class CreateAppPackageDriver implements StepDriver {
     // Deal with relative path
     // Environment variables should have been replaced by value
     // ./build/appPackage/appPackage.dev.zip instead of ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-    let zipFileName = args.outputPath;
+    let zipFileName = args.outputZipPath;
     if (!path.isAbsolute(zipFileName)) {
       zipFileName = path.join(context.projectPath, zipFileName);
-      const dir = path.dirname(zipFileName);
-      await fs.mkdir(dir, { recursive: true });
     }
+    const zipFileDir = path.dirname(zipFileName);
+    await fs.mkdir(zipFileDir, { recursive: true });
+
+    const jsonFileName = args.outputJsonPath;
+    if (!path.isAbsolute(jsonFileName)) {
+      zipFileName = path.join(context.projectPath, jsonFileName);
+    }
+    const jsonFileDir = path.dirname(jsonFileName);
+    await fs.mkdir(jsonFileDir, { recursive: true });
 
     let appDirectory = path.dirname(args.manifestTemplatePath);
     if (!path.isAbsolute(appDirectory)) {
@@ -162,13 +175,37 @@ export class CreateAppPackageDriver implements StepDriver {
 
     zip.writeZip(zipFileName);
 
-    // TODO: should we keep manifest json as well?
-    // const manifestFileName = path.join(buildFolderPath, `manifest.${envInfo.envName}.json`);
-    // if (await fs.pathExists(manifestFileName)) {
-    //     await fs.chmod(manifestFileName, 0o777);
-    // }
-    // await fs.writeFile(manifestFileName, JSON.stringify(manifest, null, 4));
-    // await fs.chmod(manifestFileName, 0o444);
+    if (await fs.pathExists(jsonFileName)) {
+      await fs.chmod(jsonFileName, 0o777);
+    }
+    await fs.writeFile(jsonFileName, JSON.stringify(manifest, null, 4));
+    await fs.chmod(jsonFileName, 0o444);
+
+    if (context.platform === Platform.CLI || context.platform === Platform.VS) {
+      const builtSuccess = [
+        { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
+        { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
+        { content: zipFileName, color: Colors.BRIGHT_MAGENTA },
+        { content: " built successfully!", color: Colors.BRIGHT_WHITE },
+      ];
+      if (context.platform === Platform.VS) {
+        context.logProvider?.info(builtSuccess);
+      } else {
+        context.ui?.showMessage("info", builtSuccess, false);
+      }
+    } else if (context.platform === Platform.VSCode) {
+      const isWindows = process.platform === "win32";
+      let builtSuccess = getLocalizedString(
+        "plugins.appstudio.buildSucceedNotice.fallback",
+        zipFileName
+      );
+      if (isWindows) {
+        const folderLink = pathToFileURL(path.dirname(zipFileName));
+        const appPackageLink = `${VSCodeExtensionCommand.openFolder}?%5B%22${folderLink}%22%5D`;
+        builtSuccess = getLocalizedString("plugins.appstudio.buildSucceedNotice", appPackageLink);
+      }
+      context.ui?.showMessage("info", builtSuccess, false);
+    }
 
     return ok(new Map([["TEAMS_APP_PACKAGE_PATH", zipFileName]]));
   }

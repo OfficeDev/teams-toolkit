@@ -27,7 +27,7 @@ To test your notification deployed on `restify`:
 >
 > To run locally, you will need:
 >
-> - `Node.js` installed locally (recommended version: 14)
+> - `Node.js` installed locally (recommended version: 16)
 > - An [M365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 >
 > **Note**

@@ -2,7 +2,14 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import { InputsWithProjectPath, Platform, v3, ok } from "@microsoft/teamsfx-api";
+import {
+  InputsWithProjectPath,
+  Platform,
+  v3,
+  ok,
+  UserError,
+  SystemError,
+} from "@microsoft/teamsfx-api";
 import { expect } from "chai";
 import { convertContext } from "../../src/component/resource/aadApp/utils";
 import {
@@ -25,9 +32,10 @@ import {
 import { setTools } from "../../src/core/globalVars";
 import { newEnvInfoV3 } from "../../src/core/environment";
 import fs from "fs-extra";
-import { MyTokenCredential } from "../plugins/solution/util";
+import { MockedTelemetryReporter, MyTokenCredential } from "../plugins/solution/util";
 import { expandEnvironmentVariable } from "../../src/component/utils/common";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { TeamsFxTelemetryReporter } from "../../src/component/utils/teamsFxTelemetryReporter";
 
 describe("resetEnvInfoWhenSwitchM365", () => {
   const sandbox = sinon.createSandbox();
@@ -323,5 +331,300 @@ describe("expandEnvironmentVariable", () => {
     const result = expandEnvironmentVariable(template);
 
     expect(result).to.equal("placeholder: A");
+  });
+});
+
+describe("TeamsFxTelemetryReporter", () => {
+  const mockedTelemetryReporter = new MockedTelemetryReporter();
+  const teamsFxTelemetryReporter = new TeamsFxTelemetryReporter(mockedTelemetryReporter);
+  let reporterCalled: boolean;
+
+  beforeEach(() => {
+    reporterCalled = false;
+  });
+
+  afterEach(() => {
+    sinon.restore();
+    expect(reporterCalled).to.be.true; // Because TeamsFxTelemetryReport ignores all exceptions which include test failures, please check your test case to find actual errors.
+  });
+
+  describe("sendStartEvent", () => {
+    it("should append -start to event name", () => {
+      sinon.stub(mockedTelemetryReporter, "sendTelemetryEvent").callsFake((eventName) => {
+        expect(eventName).to.equal("test-start");
+        reporterCalled = true;
+      });
+
+      teamsFxTelemetryReporter.sendStartEvent({ eventName: "test" });
+    });
+
+    it("should set component property if component name exists", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+        .callsFake((eventName, properties) => {
+          expect(properties).has.property("component", "test");
+          reporterCalled = true;
+        });
+
+      teamsFxTelemetryReporter.sendStartEvent({ eventName: "test", componentName: "test" });
+    });
+
+    it("should not set component property if component name does not exist", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+        .callsFake((eventName, properties) => {
+          expect(properties).to.be.undefined;
+          reporterCalled = true;
+        });
+
+      teamsFxTelemetryReporter.sendStartEvent({ eventName: "test" });
+    });
+
+    it("should not overwrite user provided component property", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+        .callsFake((eventName, properties) => {
+          expect(properties).has.property("component", "mycomponent");
+          reporterCalled = true;
+        });
+
+      teamsFxTelemetryReporter.sendStartEvent({
+        eventName: "test",
+        componentName: "test",
+        properties: {
+          component: "mycomponent",
+        },
+      });
+    });
+
+    it("should pass measurements to telemetry reporter", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+        .callsFake((eventName, properties, measurements) => {
+          expect(measurements).has.property("duration", 100);
+          reporterCalled = true;
+        });
+
+      teamsFxTelemetryReporter.sendEndEvent({
+        eventName: "test",
+        measurements: {
+          duration: 100,
+        },
+      });
+    });
+  });
+
+  describe("sendEndEvent", () => {
+    it("should call sentTelemetryEvent when not provide FxError", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+        .callsFake((eventName, properties, measurements) => {
+          expect(eventName).to.equal("test");
+          expect(properties).has.property("success", "yes");
+          reporterCalled = true;
+        });
+
+      teamsFxTelemetryReporter.sendEndEvent({
+        eventName: "test",
+      });
+    });
+
+    it("should call sendTelemetryErrorEvent when provide FxError ", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryErrorEvent")
+        .callsFake((eventName, properties, measurements) => {
+          expect(eventName).to.equal("test");
+          expect(properties).include({
+            success: "no",
+            "error-code": "source.name",
+            "error-type": "user",
+            "error-message": "message",
+          });
+          reporterCalled = true;
+        });
+
+      teamsFxTelemetryReporter.sendEndEvent(
+        {
+          eventName: "test",
+        },
+        new UserError("source", "name", "message")
+      );
+    });
+
+    it("should not overwrite provided properties", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryErrorEvent")
+        .callsFake((eventName, properties, measurements) => {
+          expect(eventName).to.equal("test");
+          expect(properties).include({
+            success: "no",
+            "error-code": "my error code",
+            "error-type": "user",
+            "error-message": "message",
+            "my-property": "value",
+          });
+          reporterCalled = true;
+        });
+
+      teamsFxTelemetryReporter.sendEndEvent(
+        {
+          eventName: "test",
+          properties: {
+            "error-code": "my error code",
+            "my-property": "value",
+          },
+        },
+        new UserError("source", "name", "message")
+      );
+    });
+
+    it("should merge provided errorProps", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryErrorEvent")
+        .callsFake((eventName, properties, measurements, errorProps) => {
+          expect(errorProps).include("test");
+          expect(errorProps).include("error-message");
+          reporterCalled = true;
+        });
+
+      teamsFxTelemetryReporter.sendEndEvent(
+        {
+          eventName: "test",
+          errorProps: ["test"],
+        },
+        new UserError("source", "name", "message")
+      );
+    });
+
+    it("should set error type to system error when FxError is SystemError", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryErrorEvent")
+        .callsFake((eventName, properties, measurements, errorProps) => {
+          expect(properties).has.property("error-type", "system");
+          reporterCalled = true;
+        });
+
+      teamsFxTelemetryReporter.sendEndEvent(
+        {
+          eventName: "test",
+        },
+        new SystemError("source", "name", "message")
+      );
+    });
+
+    it("should set error type to user error when FxError is UserError", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryErrorEvent")
+        .callsFake((eventName, properties, measurements, errorProps) => {
+          expect(properties).has.property("error-type", "user");
+          reporterCalled = true;
+        });
+
+      teamsFxTelemetryReporter.sendEndEvent(
+        {
+          eventName: "test",
+        },
+        new UserError("source", "name", "message")
+      );
+    });
+
+    it("should set component property if component name exists", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+        .callsFake((eventName, properties) => {
+          expect(properties).has.property("component", "test");
+          reporterCalled = true;
+        });
+
+      teamsFxTelemetryReporter.sendEndEvent({ eventName: "test", componentName: "test" });
+    });
+
+    it("should not set component property if component name does not exist", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+        .callsFake((eventName, properties) => {
+          expect(properties).not.has.property("component");
+          reporterCalled = true;
+        });
+
+      teamsFxTelemetryReporter.sendEndEvent({ eventName: "test" });
+    });
+  });
+
+  describe("defulatConfig", () => {
+    it("should merge default event name if exist", () => {
+      sinon.stub(mockedTelemetryReporter, "sendTelemetryEvent").callsFake((eventName) => {
+        expect(eventName).to.equal("base-event-name-test");
+        reporterCalled = true;
+      });
+
+      const defaultConfig = {
+        baseEventName: "base-event-name-",
+      };
+      const teamsFxTelemetryReporter = new TeamsFxTelemetryReporter(
+        mockedTelemetryReporter,
+        defaultConfig
+      );
+      teamsFxTelemetryReporter.sendEndEvent({ eventName: "test" });
+    });
+
+    it("should merge default component name if config does not have one", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+        .callsFake((eventName, properties) => {
+          expect(properties).has.property("component", "testcomponent");
+          reporterCalled = true;
+        });
+
+      const defaultConfig = {
+        componentName: "testcomponent",
+      };
+      const teamsFxTelemetryReporter = new TeamsFxTelemetryReporter(
+        mockedTelemetryReporter,
+        defaultConfig
+      );
+      teamsFxTelemetryReporter.sendEndEvent({ eventName: "test" });
+    });
+
+    it("should not merge default component name if config already have component name", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+        .callsFake((eventName, properties) => {
+          expect(properties).has.property("component", "mycomponent");
+          reporterCalled = true;
+        });
+
+      const defaultConfig = {
+        componentName: "testcomponent",
+      };
+      const teamsFxTelemetryReporter = new TeamsFxTelemetryReporter(
+        mockedTelemetryReporter,
+        defaultConfig
+      );
+      teamsFxTelemetryReporter.sendEndEvent({ eventName: "test", componentName: "mycomponent" });
+    });
+
+    it("should not modify original config object when merge", () => {
+      sinon
+        .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+        .callsFake((eventName, properties) => {
+          expect(properties).has.property("component", "testcomponent");
+          reporterCalled = true;
+        });
+
+      const defaultConfig = {
+        componentName: "testcomponent",
+      };
+      const config = {
+        eventName: "test",
+      };
+      const teamsFxTelemetryReporter = new TeamsFxTelemetryReporter(
+        mockedTelemetryReporter,
+        defaultConfig
+      );
+      teamsFxTelemetryReporter.sendEndEvent(config);
+
+      expect(config).not.has.property("component");
+    });
   });
 });

@@ -280,14 +280,23 @@ export async function publishTeamsApp(
   const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioTokenRes.value);
   if (existApp) {
     let executePublishUpdate = false;
-    let description = `The app ${existApp.displayName} has already been submitted to tenant App Catalog.\nStatus: ${existApp.publishingState}\n`;
+    let description = getLocalizedString(
+      "plugins.appstudio.pubWarn",
+      existApp.displayName,
+      existApp.publishingState
+    );
     if (existApp.lastModifiedDateTime) {
       description =
-        description + `Last Modified: ${existApp.lastModifiedDateTime?.toLocaleString()}\n`;
+        description +
+        getLocalizedString(
+          "plugins.appstudio.lastModified",
+          existApp.lastModifiedDateTime?.toLocaleString()
+        );
     }
-    description = description + "Do you want to submit a new update?";
-    const res = await ctx.userInteraction.showMessage("warn", description, true, "Confirm");
-    if (res?.isOk() && res.value === "Confirm") executePublishUpdate = true;
+    description = description + getLocalizedString("plugins.appstudio.updatePublihsedAppConfirm");
+    const confirm = getLocalizedString("core.option.confirm");
+    const res = await ctx.userInteraction.showMessage("warn", description, true, confirm);
+    if (res?.isOk() && res.value === confirm) executePublishUpdate = true;
 
     if (executePublishUpdate) {
       const appId = await AppStudioClient.publishTeamsAppUpdate(
@@ -507,17 +516,19 @@ export async function updateManifest(
   delete manifest.id;
   delete existingManifest.id;
   if (!_.isEqual(manifest, existingManifest)) {
+    const previewOnly = getLocalizedString("plugins.appstudio.previewOnly");
+    const previewUpdate = getLocalizedString("plugins.appstudio.previewAndUpdate");
     const res = await ctx.userInteraction.showMessage(
       "warn",
       getLocalizedString("plugins.appstudio.updateManifestTip"),
       true,
-      "Preview only",
-      "Preview and update"
+      previewOnly,
+      previewUpdate
     );
 
-    if (res?.isOk() && res.value === "Preview only") {
+    if (res?.isOk() && res.value === previewOnly) {
       return await buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
-    } else if (res?.isOk() && res.value === "Preview and update") {
+    } else if (res?.isOk() && res.value === previewUpdate) {
       buildTeamsAppPackage(ctx.projectSetting, inputs.projectPath, ctx.envInfo);
     } else {
       return err(UserCancelError);
@@ -539,14 +550,14 @@ export async function updateManifest(
       const app = await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
       const devPortalUpdateTime = new Date(app.updatedAt!)?.getTime() ?? -1;
       if (localUpdateTime < devPortalUpdateTime) {
+        const option = getLocalizedString("plugins.appstudio.overwriteAndUpdate");
         const res = await ctx.userInteraction.showMessage(
           "warn",
           getLocalizedString("plugins.appstudio.updateOverwriteTip"),
           true,
-          "Overwrite and update"
+          option
         );
-
-        if (!(res?.isOk() && res.value === "Overwrite and update")) {
+        if (!(res?.isOk() && res.value === option)) {
           return err(UserCancelError);
         }
       }

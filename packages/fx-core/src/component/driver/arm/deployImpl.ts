@@ -6,7 +6,7 @@ import { Constants, TemplateType } from "./constant";
 import { deployArgs, deploymentOutput, templateArgs } from "./interface";
 import { validateArgs } from "./validator";
 import { hasBicepTemplate, getPath, convertOutputs, getFileExtension } from "./util/util";
-import { err, FxError, ok, Result, SystemError } from "@microsoft/teamsfx-api";
+import { FxError, ok, Result, SystemError } from "@microsoft/teamsfx-api";
 import { ConstantString, PluginDisplayName } from "../../../common/constants";
 import * as fs from "fs-extra";
 import { expandEnvironmentVariable } from "../../utils/common";

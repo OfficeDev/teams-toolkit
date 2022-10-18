@@ -245,6 +245,10 @@ export class AadAppForTeamsImpl {
     const config: SetApplicationInContextConfig = new SetApplicationInContextConfig(isLocalDebug);
     config.restoreConfigFromContext(ctx);
 
+    const userSetFrontendEndpoint = format(
+      ctx.envInfo.config.auth?.frontendEndpoint as string,
+      Formats.Endpoint
+    );
     const userSetFrontendDomain = format(
       ctx.envInfo.config.auth?.frontendDomain as string,
       Formats.Domain
@@ -255,7 +259,7 @@ export class AadAppForTeamsImpl {
       Formats.Endpoint
     );
 
-    if (!config.frontendDomain && !config.botId) {
+    if (!config.frontendEndpoint && !config.frontendDomain && !config.botId) {
       const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
       if (
         azureSolutionSettings?.capabilities.includes("Tab") ||
@@ -265,13 +269,25 @@ export class AadAppForTeamsImpl {
       }
     }
 
+    if (userSetFrontendEndpoint) {
+      config.frontendEndpoint = userSetFrontendEndpoint;
+    } else if (userSetFrontendDomain) {
+      config.frontendEndpoint = undefined;
+    }
     config.frontendDomain = userSetFrontendDomain ?? config.frontendDomain;
     config.botId = userSetBotId ?? config.botId;
     config.botEndpoint = userSetBotEndpoint ?? config.botEndpoint;
 
-    if (config.frontendDomain || config.botId) {
-      let applicationIdUri = "api://";
-      applicationIdUri += config.frontendDomain ? `${config.frontendDomain}/` : "";
+    if (config.frontendEndpoint || config.frontendDomain || config.botId) {
+      let applicationIdUri = `api://`;
+      let host = "";
+      if (config.frontendEndpoint) {
+        const url = new URL(config.frontendEndpoint);
+        host = url.host;
+      } else if (config.frontendDomain) {
+        host = config.frontendDomain;
+      }
+      applicationIdUri += host ? `${host}/` : "";
       applicationIdUri += config.botId ? "botid-" + config.botId : config.clientId;
       config.applicationIdUri = applicationIdUri;
       ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));

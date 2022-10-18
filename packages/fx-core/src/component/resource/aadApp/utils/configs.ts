@@ -413,6 +413,7 @@ export class ProvisionConfig {
 }
 
 export class SetApplicationInContextConfig {
+  public frontendEndpoint?: string;
   public frontendDomain?: string;
   public botId?: string;
   public botEndpoint?: string;
@@ -425,13 +426,24 @@ export class SetApplicationInContextConfig {
   }
 
   public restoreConfigFromContext(ctx: PluginContext): void {
+    let frontendEndpoint: ConfigValue;
     let frontendDomain: ConfigValue;
     if (this.isLocalDebug) {
+      frontendEndpoint = ConfigUtils.getLocalDebugConfigOfOtherPlugins(
+        ctx,
+        ConfigKeysOfOtherPlugin.localDebugTabEndpoint
+      );
       frontendDomain = ConfigUtils.getLocalDebugConfigOfOtherPlugins(
         ctx,
         ConfigKeysOfOtherPlugin.localDebugTabDomain
       );
     } else {
+      frontendEndpoint = ctx.config.get(ConfigKeys.frontendEndpoint);
+      if (!frontendEndpoint) {
+        frontendEndpoint = ctx.envInfo.state
+          .get(Plugins.frontendHosting)
+          ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
+      }
       frontendDomain = ctx.config.get(ConfigKeys.domain);
       if (!frontendDomain) {
         frontendDomain = ctx.envInfo.state
@@ -440,6 +452,9 @@ export class SetApplicationInContextConfig {
       }
     }
 
+    if (frontendEndpoint) {
+      this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
+    }
     if (frontendDomain) {
       this.frontendDomain = format(frontendDomain as string, Formats.Domain);
     }

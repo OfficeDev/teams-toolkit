@@ -1,4 +1,11 @@
 import "mocha";
+
+import { assert } from "chai";
+import * as fs from "fs-extra";
+import * as os from "os";
+import * as path from "path";
+import * as sinon from "sinon";
+
 import {
   InputsWithProjectPath,
   ok,
@@ -6,19 +13,19 @@ import {
   ResourceContextV3,
   Void,
 } from "@microsoft/teamsfx-api";
-import * as path from "path";
+
+import { TeamsfxCore } from "../../src/component/core";
+import { deployUtils } from "../../src/component/deployUtils";
+import * as EnvManager from "../../src/component/envManager";
+import { TeamsBot } from "../../src/component/feature/bot/bot";
+import * as question from "../../src/component/questionV3";
+import { AppManifest } from "../../src/component/resource/appManifest/appManifest";
+import { AzureWebAppResource } from "../../src/component/resource/azureAppService/azureWebApp";
 import { createContextV3 } from "../../src/component/utils";
 import { newEnvInfoV3 } from "../../src/core/environment";
+import * as FxCore from "../../src/core/FxCore";
 import { setTools } from "../../src/core/globalVars";
-import * as os from "os";
 import { MockTools, randomAppName } from "../core/utils";
-import { assert } from "chai";
-import { TeamsfxCore } from "../../src/component/core";
-import * as sinon from "sinon";
-import * as question from "../../src/component/questionV3";
-import { TeamsBot } from "../../src/component/feature/bot/bot";
-import { AzureWebAppResource } from "../../src/component/resource/azureAppService/azureWebApp";
-import { deployUtils } from "../../src/component/deployUtils";
 
 describe("component core test", () => {
   const sandbox = sinon.createSandbox();
@@ -113,5 +120,35 @@ describe("component core test", () => {
       console.log(res.error);
     }
     assert.isTrue(res.isOk());
+  });
+
+  it("init() should use projectId in inputs", async () => {
+    const tools = new MockTools();
+    setTools(tools);
+    const appName = `unittest${randomAppName()}`;
+    const projectPath = path.join(os.homedir(), "TeamsApps", appName);
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      folder: path.join(projectPath, "tabs"),
+      "app-name": appName,
+      projectId: "37495c20-9c8b-4db0-b43e-000000000000",
+    };
+    const context = createContextV3();
+    context.tokenProvider = tools.tokenProvider;
+
+    // mock requisite
+    sandbox.stub(fs, "ensureDir");
+    sandbox.stub(FxCore, "ensureBasicFolderStructure").resolves(ok(null));
+    sandbox.stub(EnvManager, "createEnvWithName").resolves(ok(undefined));
+    sandbox.stub(AppManifest.prototype, "init").resolves(ok(undefined));
+
+    const fxCore = new TeamsfxCore();
+    const res = await fxCore.init(context as ResourceContextV3, inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+    assert.strictEqual(context.projectSetting.projectId, "37495c20-9c8b-4db0-b43e-000000000000");
   });
 });

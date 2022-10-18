@@ -4,7 +4,7 @@
 
 ## NotificationBot.findChannel() method
 
-Returns the first [Channel](./teamsfx.channel.md) where predicate is true, and undefined otherwise.
+Returns the first [Channel](./teamsfx.channel.md) where predicate is true, and undefined otherwise. (Ensure the bot app is installed into the `General` channel, otherwise undefined will be returned.)
 
 <b>Signature:</b>
 

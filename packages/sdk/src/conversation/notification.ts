@@ -576,6 +576,7 @@ export class NotificationBot {
 
   /**
    * Returns the first {@link Channel} where predicate is true, and undefined otherwise.
+   * (Ensure the bot app is installed into the `General` channel, otherwise undefined will be returned.)
    *
    * @param predicate find calls predicate once for each channel of the installation,
    * until it finds one where predicate returns true. If such a channel is found, find
@@ -627,6 +628,7 @@ export class NotificationBot {
 
   /**
    * Returns all {@link Channel} where predicate is true, and empty array otherwise.
+   * (Ensure the bot app is installed into the `General` channel, otherwise empty array will be returned.)
    *
    * @param predicate find calls predicate for each channel of the installation.
    * @returns an array of {@link Channel} where predicate is true, and empty array otherwise.

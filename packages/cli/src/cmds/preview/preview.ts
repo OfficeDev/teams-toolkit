@@ -458,10 +458,9 @@ export default class Preview extends YargsCommand {
       return err(configResult.error);
     }
     const config = configResult.value;
-    tenantId = config?.config?.[constants.appstudioPluginName]?.["tenantId"] as string;
-    localTeamsAppId =
-      config?.config?.[constants.appstudioPluginName]?.[constants.remoteTeamsAppIdConfigKey];
-    localBotId = config?.config?.[constants.botPluginName]?.[constants.botIdConfigKey] as string;
+    tenantId = config?.config?.["app-manifest"]?.["tenantId"] as string;
+    localTeamsAppId = config?.config?.["app-manifest"]?.[constants.remoteTeamsAppIdConfigKey];
+    localBotId = config?.config?.["teams-bot"]?.[constants.botIdConfigKey] as string;
 
     if (localTeamsAppId === undefined || localTeamsAppId.length === 0) {
       return err(errors.TeamsAppIdNotExists());
@@ -776,10 +775,10 @@ export default class Preview extends YargsCommand {
       return this.spfxPreview(workspaceFolder, browser, this.sharepointSiteUrl, browserArguments);
     }
 
-    const tenantId = config?.config?.[constants.appstudioPluginName]?.tenantId as string;
+    const tenantId = config?.config?.["app-manifest"]?.tenantId as string;
 
     const remoteTeamsAppId: string =
-      config?.config?.[constants.appstudioPluginName]?.[constants.remoteTeamsAppIdConfigKey];
+      config?.config?.["app-manifest"]?.[constants.remoteTeamsAppIdConfigKey];
     if (remoteTeamsAppId === undefined || remoteTeamsAppId.length === 0) {
       return err(errors.PreviewWithoutProvision());
     }

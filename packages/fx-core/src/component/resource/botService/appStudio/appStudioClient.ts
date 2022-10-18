@@ -47,8 +47,8 @@ export class AppStudioClient {
   }
 
   public static async getBotRegistration(
-    botId: string,
-    token: string
+    token: string,
+    botId: string
   ): Promise<IBotRegistration | undefined> {
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
@@ -75,8 +75,8 @@ export class AppStudioClient {
   }
 
   public static async createBotRegistration(
-    registration: IBotRegistration,
     token: string,
+    registration: IBotRegistration,
     context?: ResourceContextV3
   ): Promise<void> {
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
@@ -111,7 +111,7 @@ export class AppStudioClient {
     botId: string,
     endpoint: string
   ): Promise<void> {
-    const botReg = await AppStudioClient.getBotRegistration(botId, token);
+    const botReg = await AppStudioClient.getBotRegistration(token, botId);
     if (!botReg) {
       throw new BotRegistrationNotFoundError(botId);
     }

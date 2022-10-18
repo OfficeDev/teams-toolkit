@@ -214,8 +214,8 @@ export class BotDebugHandler {
       }
 
       const result = await AppStudioClient.getBotRegistration(
-        this.envInfoV3!.state[ComponentNames.TeamsBot].botId,
-        tokenResult.value
+        tokenResult.value,
+        this.envInfoV3!.state[ComponentNames.TeamsBot].botId
       );
       if (result) {
         return ok([
@@ -237,7 +237,7 @@ export class BotDebugHandler {
         callingEndpoint: "",
       };
 
-      await AppStudioClient.createBotRegistration(botReg, tokenResult.value);
+      await AppStudioClient.createBotRegistration(tokenResult.value, botReg);
 
       return ok([
         util.format(

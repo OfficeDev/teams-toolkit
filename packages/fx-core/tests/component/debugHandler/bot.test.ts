@@ -31,10 +31,8 @@ import { environmentManager } from "../../../src/core/environment";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import { GraphClient } from "../../../src/component/resource/botService/botRegistration/graphClient";
 import { AppStudioClient } from "../../../src/component/resource/botService/appStudio/appStudioClient";
-import { BotAuthCredential } from "../../../src/component/resource/botService/botAuthCredential";
 import { MockM365TokenProvider, runDebugActions } from "./utils";
 import { BotDebugArgs, BotDebugHandler } from "../../../src/component/debugHandler";
-import { IBotAadCredentials } from "../../../src/component/resource/botService/botRegistration/botRegistration";
 import { IAadAppCredentials } from "../../../src/component/resource/botService/IAadAppCredentials";
 
 describe("TabDebugHandler", () => {
@@ -194,21 +192,17 @@ describe("TabDebugHandler", () => {
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert(called);
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.TeamsBot].objectId,
-        botAuthCredential.objectId
-      );
-      chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].botId, botAuthCredential.clientId);
+      chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].botId, aadAppCredentials.clientId);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.TeamsBot].botPassword,
-        botAuthCredential.clientSecret
+        aadAppCredentials.clientSecret
       );
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].siteEndpoint, botEndpoint);
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].validDomain, domain);
       const expected: LocalEnvs = {
         template: {
-          [LocalEnvKeys.bot.template.BotId]: botAuthCredential.clientId as string,
-          [LocalEnvKeys.bot.template.BotPassword]: botAuthCredential.clientSecret as string,
+          [LocalEnvKeys.bot.template.BotId]: aadAppCredentials.clientId as string,
+          [LocalEnvKeys.bot.template.BotPassword]: aadAppCredentials.clientSecret as string,
         },
         teamsfx: {},
         customized: {},

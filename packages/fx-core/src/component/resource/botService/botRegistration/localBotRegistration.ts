@@ -2,18 +2,9 @@
 // Licensed under the MIT license.
 
 import { IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
-import {
-  err,
-  FxError,
-  ResourceContextV3,
-  Result,
-  ok,
-  M365TokenProvider,
-} from "@microsoft/teamsfx-api";
-import { ComponentNames } from "../../../constants";
+import { err, FxError, Result, ok, M365TokenProvider } from "@microsoft/teamsfx-api";
 import { AppStudioScopes } from "../../../../common/tools";
 import { AppStudioClient } from "../appStudio/appStudioClient";
-import { CommonStrings } from "../strings";
 import { BotRegistration, BotAuthType, IBotAadCredentials } from "./botRegistration";
 
 export class LocalBotRegistration extends BotRegistration {
@@ -43,8 +34,8 @@ export class LocalBotRegistration extends BotRegistration {
     const appStudioToken = appStudioTokenRes.value;
     // Check if bot registration exists?
     const botReg = await AppStudioClient.getBotRegistration(
-      botAadCredentials.botId,
-      appStudioToken
+      appStudioToken,
+      botAadCredentials.botId
     );
     if (botReg) {
       // A bot registration with the specific botId exists, so do nothing.
@@ -59,7 +50,7 @@ export class LocalBotRegistration extends BotRegistration {
       messagingEndpoint: "",
       callingEndpoint: "",
     };
-    await AppStudioClient.createBotRegistration(initialBotReg, appStudioToken);
+    await AppStudioClient.createBotRegistration(appStudioToken, initialBotReg);
     return ok(botAadCredentials);
   }
 

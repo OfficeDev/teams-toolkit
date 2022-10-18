@@ -414,7 +414,6 @@ export class ProvisionConfig {
 
 export class SetApplicationInContextConfig {
   public frontendEndpoint?: string;
-  public frontendDomain?: string;
   public botId?: string;
   public botEndpoint?: string;
   public clientId?: string;
@@ -427,15 +426,10 @@ export class SetApplicationInContextConfig {
 
   public restoreConfigFromContext(ctx: PluginContext): void {
     let frontendEndpoint: ConfigValue;
-    let frontendDomain: ConfigValue;
     if (this.isLocalDebug) {
       frontendEndpoint = ConfigUtils.getLocalDebugConfigOfOtherPlugins(
         ctx,
         ConfigKeysOfOtherPlugin.localDebugTabEndpoint
-      );
-      frontendDomain = ConfigUtils.getLocalDebugConfigOfOtherPlugins(
-        ctx,
-        ConfigKeysOfOtherPlugin.localDebugTabDomain
       );
     } else {
       frontendEndpoint = ctx.config.get(ConfigKeys.frontendEndpoint);
@@ -444,19 +438,10 @@ export class SetApplicationInContextConfig {
           .get(Plugins.frontendHosting)
           ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
       }
-      frontendDomain = ctx.config.get(ConfigKeys.domain);
-      if (!frontendDomain) {
-        frontendDomain = ctx.envInfo.state
-          .get(Plugins.frontendHosting)
-          ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
-      }
     }
 
     if (frontendEndpoint) {
       this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
-    }
-    if (frontendDomain) {
-      this.frontendDomain = format(frontendDomain as string, Formats.Domain);
     }
 
     const botId: ConfigValue = this.isLocalDebug
@@ -490,9 +475,9 @@ export class SetApplicationInContextConfig {
     }
   }
   public restoreConfigFromLocalSettings(localSettings: v2.LocalSettings): void {
-    const frontendDomain = localSettings.frontend?.tabDomain;
-    if (frontendDomain) {
-      this.frontendDomain = format(frontendDomain as string, Formats.Domain);
+    const frontendEndpoint = localSettings.frontend?.tabEndpoint;
+    if (frontendEndpoint) {
+      this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
     }
     const botId = localSettings.bot?.botId;
     if (botId) {
@@ -511,12 +496,10 @@ export class SetApplicationInContextConfig {
   }
   public restoreConfigFromEnvInfo(ctx: v2.Context, envInfo: v3.EnvInfoV3): void {
     const aadResource = envInfo.state[aadComponentKey] as v3.AADApp;
-    let frontendDomain = aadResource?.domain;
-    if (!frontendDomain) {
-      frontendDomain = (envInfo.state[tabComponentKey] as v3.FrontendHostingResource)?.domain;
-    }
-    if (frontendDomain) {
-      this.frontendDomain = format(frontendDomain as string, Formats.Domain);
+    const frontendEndpoint = (envInfo.state[tabComponentKey] as v3.FrontendHostingResource)
+      ?.endpoint;
+    if (frontendEndpoint) {
+      this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
     }
     const botId = (envInfo.state[botComponentKey] as v3.AzureBot)?.botId;
     if (botId) {

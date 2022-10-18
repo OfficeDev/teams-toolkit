@@ -259,7 +259,7 @@ export class AadAppForTeamsImpl {
       Formats.Endpoint
     );
 
-    if (!config.frontendEndpoint && !config.frontendDomain && !config.botId) {
+    if (!config.frontendEndpoint && !config.botId) {
       const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
       if (
         azureSolutionSettings?.capabilities.includes("Tab") ||
@@ -272,21 +272,15 @@ export class AadAppForTeamsImpl {
     if (userSetFrontendEndpoint) {
       config.frontendEndpoint = userSetFrontendEndpoint;
     } else if (userSetFrontendDomain) {
-      config.frontendEndpoint = undefined;
+      config.frontendEndpoint = userSetFrontendDomain;
     }
-    config.frontendDomain = userSetFrontendDomain ?? config.frontendDomain;
     config.botId = userSetBotId ?? config.botId;
     config.botEndpoint = userSetBotEndpoint ?? config.botEndpoint;
 
-    if (config.frontendEndpoint || config.frontendDomain || config.botId) {
+    if (config.frontendEndpoint || config.botId) {
       let applicationIdUri = `api://`;
-      let host = "";
-      if (config.frontendEndpoint) {
-        const url = new URL(config.frontendEndpoint);
-        host = url.host;
-      } else if (config.frontendDomain) {
-        host = config.frontendDomain;
-      }
+      const url = new URL(config.frontendEndpoint as string);
+      const host = url.host;
       applicationIdUri += host ? `${host}/` : "";
       applicationIdUri += config.botId ? "botid-" + config.botId : config.clientId;
       config.applicationIdUri = applicationIdUri;
@@ -297,7 +291,12 @@ export class AadAppForTeamsImpl {
         CannotGenerateIdentifierUrisError.message()
       );
     }
-    config.saveConfigIntoContext(ctx, config.frontendDomain, config.botId, config.botEndpoint);
+    let frontendDomain = undefined;
+    if (config.frontendEndpoint) {
+      const url = new URL(config.frontendEndpoint as string);
+      frontendDomain = url.hostname;
+    }
+    config.saveConfigIntoContext(ctx, frontendDomain, config.botId, config.botEndpoint);
     return ResultFactory.Success();
   }
 

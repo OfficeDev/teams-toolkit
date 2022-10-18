@@ -249,12 +249,8 @@ export class SSODebugHandler {
       let applicationIdUri = "api://";
       if (ProjectSettingsHelper.includeFrontend(this.projectSettingsV3)) {
         const endpoint = this.envInfoV3!.state[ComponentNames.TeamsTab].endpoint;
-        if (!endpoint) {
-          applicationIdUri += `localhost/`;
-        } else {
-          const url = new URL(endpoint as string);
-          applicationIdUri += `${url.host}/`;
-        }
+        const url = new URL(endpoint as string);
+        applicationIdUri += `${url.host}/`;
         if (!ProjectSettingsHelper.includeBot(this.projectSettingsV3)) {
           applicationIdUri += this.envInfoV3!.state[ComponentNames.AadApp].clientId;
         }

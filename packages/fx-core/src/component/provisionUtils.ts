@@ -208,49 +208,46 @@ export class ProvisionUtils {
     }
     return ok(undefined);
   }
-
-  async ensureSubscription(azureAccountProvider: AzureAccountProvider, subscriptionId?: string) {
+  /**
+   * make sure subscription is correct before provision for V3
+   * subscriptionId is provided from .env.xxx file
+   */
+  async ensureSubscription(
+    azureAccountProvider: AzureAccountProvider,
+    givenSubscriptionId?: string
+  ): Promise<Result<SubscriptionInfo, FxError>> {
     // make sure the user is logged in
     await azureAccountProvider.getIdentityCredentialAsync(true);
-    if (!subscriptionId) {
+    if (!givenSubscriptionId) {
       const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
       if (!subscriptionInAccount) {
         return err(
           new UserError(
-            SolutionSource,
+            "coordinator",
             SolutionError.SubscriptionNotFound,
-            "Failed to select subscription"
+            getLocalizedString("core.provision.subscription.failToSelect")
           )
         );
       } else {
-        return subscriptionInAccount;
+        return ok(subscriptionInAccount);
       }
     }
 
     // verify valid subscription (permission)
     const subscriptions = await azureAccountProvider.listSubscriptions();
 
-    const foundSubscriptionInfo = findSubscriptionFromList(subscriptionId, subscriptions);
-    // if (!foundSubscriptionInfo) {
-    //   return err(
-    //     new UserError(
-    //       SolutionSource,
-    //       SolutionError.SubscriptionNotFound,
-    //       `The subscription '${targetSubscriptionIdFromCLI}' for '${envInfo.envName}' environment is not found in the current account, please use the right Azure account or check the subscription parameter.`
-    //     )
-    //   );
-    // } else {
-    //   this.updateEnvInfoSubscription(envInfo, foundSubscriptionInfo);
-    //   ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
-    //   return this.compareWithStateSubscription(
-    //     ctx,
-    //     envInfo,
-    //     foundSubscriptionInfo,
-    //     subscriptionIdInState,
-    //     envName,
-    //     CustomizeSubscriptionType.CommandLine
-    //   );
-    // }
+    const foundSubscriptionInfo = findSubscriptionFromList(givenSubscriptionId, subscriptions);
+    if (!foundSubscriptionInfo) {
+      return err(
+        new UserError(
+          "coordinator",
+          SolutionError.SubscriptionNotFound,
+          getLocalizedString("core.provision.subscription.NotFound", givenSubscriptionId)
+        )
+      );
+    }
+
+    return ok(foundSubscriptionInfo);
   }
   /**
    * make sure subscription is correct before provision

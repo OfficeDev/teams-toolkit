@@ -45,6 +45,14 @@
         "tab/js/m365",
         "tab/ts/m365"
     ],
+    "templates-v3": [
+        "notification-http-timer-js",
+        "notification-http-timer-ts",
+        "notification-http-ts",
+        "notification-http-js",
+        "notification-timer-ts",
+        "notificationtimer-js"  
+    ],
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^4.19.0",
         "@typescript-eslint/parser": "^4.19.0",

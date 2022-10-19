@@ -8,9 +8,9 @@ import {
   ok,
   M365TokenProvider,
   NotImplementedError,
+  LogProvider,
 } from "@microsoft/teamsfx-api";
 import { GraphScopes } from "../../../../common/tools";
-import { CONFIGURABLE_TABS_TPL_EXISTING_APP } from "../../appManifest/constants";
 import { GraphClient } from "./graphClient";
 
 export enum BotAuthType {
@@ -73,7 +73,8 @@ export class BotRegistration {
     m365TokenProvider: M365TokenProvider,
     aadDisplayName: string,
     botConfig?: IBotAadCredentials,
-    botAuthType: BotAuthType = BotAuthType.AADApp
+    botAuthType: BotAuthType = BotAuthType.AADApp,
+    logProvider?: LogProvider
   ): Promise<Result<IBotAadCredentials, FxError>> {
     return err(
       new NotImplementedError(Constants.BOT_REGISTRATION, Constants.CREATE_BOT_REGISTRATION)

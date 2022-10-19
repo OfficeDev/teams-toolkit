@@ -271,7 +271,12 @@ export class AadAppForTeamsImpl {
 
     if (config.frontendDomain || config.botId) {
       let applicationIdUri = "api://";
-      applicationIdUri += config.frontendDomain ? `${config.frontendDomain}/` : "";
+      let frontendHost = config.frontendDomain;
+      if (config.frontendEndpoint) {
+        const url = new URL(config.frontendEndpoint as string);
+        frontendHost = url.host;
+      }
+      applicationIdUri += frontendHost ? `${frontendHost}/` : "";
       applicationIdUri += config.botId ? "botid-" + config.botId : config.clientId;
       config.applicationIdUri = applicationIdUri;
       ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));

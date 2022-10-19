@@ -14,15 +14,11 @@ export class LocalBotRegistration extends BotRegistration {
     botConfig?: IBotAadCredentials,
     botAuthType: BotAuthType = BotAuthType.AADApp
   ): Promise<Result<IBotAadCredentials, FxError>> {
-    const superRes = await super.createBotRegistration(
-      m365TokenProvider,
-      aadDisplayName,
-      botConfig
-    );
-    if (superRes.isErr()) {
-      return err(superRes.error);
+    const botAadRes = await super.createBotAadApp(m365TokenProvider, aadDisplayName, botConfig);
+    if (botAadRes.isErr()) {
+      return err(botAadRes.error);
     }
-    const botAadCredentials: IBotAadCredentials = superRes.value;
+    const botAadCredentials: IBotAadCredentials = botAadRes.value;
 
     const appStudioTokenRes = await m365TokenProvider.getAccessToken({
       scopes: AppStudioScopes,

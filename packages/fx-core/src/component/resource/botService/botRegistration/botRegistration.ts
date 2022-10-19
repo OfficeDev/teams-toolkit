@@ -1,8 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, FxError, Result, ok, M365TokenProvider } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  Result,
+  ok,
+  M365TokenProvider,
+  NotImplementedError,
+} from "@microsoft/teamsfx-api";
 import { GraphScopes } from "../../../../common/tools";
+import { CONFIGURABLE_TABS_TPL_EXISTING_APP } from "../../appManifest/constants";
 import { GraphClient } from "./graphClient";
 
 export enum BotAuthType {
@@ -15,8 +23,14 @@ export interface IBotAadCredentials {
   botPassword: string;
 }
 
-export abstract class BotRegistration {
-  public async createBotRegistration(
+export class Constants {
+  public static readonly BOT_REGISTRATION: string = "BotRegistration";
+  public static readonly CREATE_BOT_REGISTRATION: string = "createBotRegistration";
+  public static readonly UPDATE_MESSAGE_ENDPOINT: string = "updateMessageEndpoint";
+}
+
+export class BotRegistration {
+  public async createBotAadApp(
     m365TokenProvider: M365TokenProvider,
     aadDisplayName: string,
     botConfig?: IBotAadCredentials,
@@ -55,10 +69,24 @@ export abstract class BotRegistration {
       });
     }
   }
+  public async createBotRegistration(
+    m365TokenProvider: M365TokenProvider,
+    aadDisplayName: string,
+    botConfig?: IBotAadCredentials,
+    botAuthType: BotAuthType = BotAuthType.AADApp
+  ): Promise<Result<IBotAadCredentials, FxError>> {
+    return err(
+      new NotImplementedError(Constants.BOT_REGISTRATION, Constants.CREATE_BOT_REGISTRATION)
+    );
+  }
 
-  public abstract updateMessageEndpoint(
+  public async updateMessageEndpoint(
     m365TokenProvider: M365TokenProvider,
     botId: string,
     endpoint: string
-  ): Promise<Result<undefined, FxError>>;
+  ): Promise<Result<undefined, FxError>> {
+    return err(
+      new NotImplementedError(Constants.BOT_REGISTRATION, Constants.UPDATE_MESSAGE_ENDPOINT)
+    );
+  }
 }

@@ -9,6 +9,7 @@ import { MockedM365Provider } from "../../../plugins/solution/util";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { UserError } from "@microsoft/teamsfx-api";
+import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -55,5 +56,21 @@ describe("aadAppCreate", async () => {
         "Following parameter is missing or invalid for botAadApp/create action: name."
       )
       .and.is.instanceOf(UserError);
+  });
+
+  it("happy path", async () => {
+    const args: any = {
+      name: expectedDisplayName,
+    };
+
+    sinon.stub(GraphClient, "registerAadApp").resolves({
+      clientId: expectedClientId,
+      clientSecret: expectedSecretText,
+    });
+
+    const result = await createBotAadAppDriver.handler(args, mockedDriverContext);
+
+    expect(result.get(outputKeys.BOT_ID)).to.be.equal(expectedClientId);
+    expect(result.get(outputKeys.BOT_PASSWORD)).to.be.equal(expectedSecretText);
   });
 });

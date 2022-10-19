@@ -11,17 +11,13 @@ export class RemoteBotRegistration extends BotRegistration {
     botConfig?: IBotAadCredentials,
     botAuthType: BotAuthType = BotAuthType.AADApp
   ): Promise<Result<IBotAadCredentials, FxError>> {
-    // Do nothing because it's handled by arm/bicep snippets.
-    const superRes = await super.createBotRegistration(
-      m365TokenProvider,
-      aadDisplayName,
-      botConfig
-    );
-    if (superRes.isErr()) {
-      return err(superRes.error);
+    const botAadRes = await super.createBotAadApp(m365TokenProvider, aadDisplayName, botConfig);
+    if (botAadRes.isErr()) {
+      return err(botAadRes.error);
     }
 
-    return ok(superRes.value);
+    // Didn't provision Azure bot service because it's handled by arm/bicep snippets.
+    return ok(botAadRes.value);
   }
 
   public async updateMessageEndpoint(

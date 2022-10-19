@@ -8,21 +8,19 @@ namespace {{SafeProjectName}}.CardActions
 {
     public class DoStuffActionHandler : IAdaptiveCardActionHandler
     {
-        private string _triggerVerb = "doStuff";
-        private AdaptiveCardResponse _adaptiveCardResponse = AdaptiveCardResponse.ReplaceForInteractor;
         private readonly string _responseCardFilePath = Path.Combine(".", "Resources", "DoStuffActionResponse.json");
 
-        public string TriggerVerb
-        {
-            get => _triggerVerb;
-            set => _triggerVerb = value;
-        }
+        /// <summary>
+        /// A global unique string associated with the `Action.Execute` action.
+        /// The value should be the same as the `verb` property which you define in your adaptive card JSON.
+        /// </summary>
+        public string TriggerVerb => "doStuff";
 
-        public AdaptiveCardResponse AdaptiveCardResponse
-        {
-            get => _adaptiveCardResponse;
-            set => _adaptiveCardResponse = value;
-        }
+        /// <summary>
+        /// Indicate how your action response card is sent in the conversation.
+        /// By default, the response card can only be updated for the interactor who trigger the action.
+        /// </summary>
+        public AdaptiveCardResponse AdaptiveCardResponse => AdaptiveCardResponse.ReplaceForInteractor;
 
         public async Task<InvokeResponse> HandleActionInvokedAsync(ITurnContext turnContext, object cardData, CancellationToken cancellationToken = default)
         {
@@ -35,12 +33,24 @@ namespace {{SafeProjectName}}.CardActions
                 new HelloWorldModel
                 {
                     Title = "Hello World Bot",
-                    Body = "Congratulations! Your task is processed successfully.",
+                    Body = $"Congratulations! Your {TriggerVerb} action is processed successfully!",
                 }
             );
 
-            // Adaptive card
+            // Send invoke response with adaptive card
             return InvokeResponseFactory.AdaptiveCard(JsonConvert.DeserializeObject(cardContent));
+
+            /**
+             * If you want to send invoke response with text message, you can:
+             *
+             * return InvokeResponseFactory.TextMessage("[ACK] Successfully!");
+            */
+
+            /**
+             * If you want to send invoke response with error message, you can:
+             *
+             * return InvokeResponseFactory.ErrorResponse(InvokeResponseErrorCode.BadRequest, "The incoming request is invalid.");
+             */
         }
     }
 }

@@ -24,6 +24,7 @@ import {
 } from "../../../utils/azureResourceOperation";
 import { AzureResourceInfo } from "../../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
+import { ProgressMessages } from "../../../messages";
 
 export abstract class AzureDeployDriver extends BaseDeployDriver {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -36,15 +37,15 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
   abstract pattern: RegExp;
 
   async deploy(args: DeployArgs): Promise<void> {
-    const dist = checkMissingArgs("deployDist", args.dist);
-    const src = checkMissingArgs("deploySrc", args.src);
+    const dist = checkMissingArgs("deployDist", args.distributionPath);
+    const src = checkMissingArgs("deploySrc", args.workingDirectory);
 
     const resourceId = checkMissingArgs("resourceId", args.resourceId);
     const azureResource = this.parseResourceId(resourceId);
     const azureCredential = await getAzureAccountCredential(this.context.azureAccountProvider);
 
     return await this.azureDeploy(
-      { src: src, dist: dist, ignoreFile: args.ignoreFile },
+      { workingDirectory: src, distributionPath: dist, ignoreFile: args.ignoreFile },
       azureResource,
       azureCredential
     );
@@ -83,15 +84,20 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<void> {
+    await this.progressBar?.next(ProgressMessages.packingCode);
     const zipBuffer = await this.packageToZip(args, this.context);
+    await this.progressBar?.next(ProgressMessages.getAzureAccountInfoForDeploy);
     const config = await this.createAzureDeployConfig(azureResource, azureCredential);
+    await this.progressBar?.next(ProgressMessages.getAzureUploadEndpoint);
     const endpoint = this.getZipDeployEndpoint(azureResource.resourceGroupName);
+    await this.progressBar?.next(ProgressMessages.uploadZipFileToAzure);
     const location = await AzureDeployDriver.zipDeployPackage(
       endpoint,
       zipBuffer,
       config,
       this.context.logProvider
     );
+    await this.progressBar?.next(ProgressMessages.checkAzureDeployStatus);
     await AzureDeployDriver.checkDeployStatus(location, config, this.context.logProvider);
   }
 

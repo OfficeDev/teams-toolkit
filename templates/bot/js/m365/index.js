@@ -7,12 +7,13 @@ const restify = require("restify");
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 const { BotFrameworkAdapter } = require("botbuilder");
 const { TeamsBot } = require("./teamsBot");
+const { default: config } = require("./config");
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about adapters.
 const adapter = new BotFrameworkAdapter({
-  appId: process.env.BOT_ID,
-  appPassword: process.env.BOT_PASSWORD,
+  appId: config.botId,
+  appPassword: config.botPassword,
 });
 
 adapter.onTurnError = async (context, error) => {

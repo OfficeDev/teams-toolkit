@@ -717,6 +717,8 @@ export class AadAppForTeamsImpl {
 
   public async loadAndBuildManifest(ctx: PluginContext): Promise<AADManifest> {
     let isProvisionSucceeded;
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartBuildAadManifest);
     if (ctx.envInfo.envName === "local") {
       isProvisionSucceeded = !!ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID);
     } else {
@@ -744,6 +746,7 @@ export class AadAppForTeamsImpl {
       );
     }
     await AadAppManifestManager.writeManifestFileToBuildFolder(manifest, ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndBuildAadManifest);
     return manifest;
   }
 

@@ -8,17 +8,16 @@ import { DeployArgs } from "../../../../../src/component/driver/interface/buildA
 import * as appService from "@azure/arm-appservice";
 import * as tools from "../../../../../src/common/tools";
 import { TestLogProvider } from "../../../util/logProviderMock";
-import { use as chaiUse, expect, assert } from "chai";
+import { expect, assert } from "chai";
 import * as fs from "fs-extra";
-import { PrerequisiteError } from "../../../../../src/component/error/componentError";
 import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import * as Models from "@azure/arm-appservice/src/models";
 import { AzureDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureDeployDriver";
 import { DeployConstant } from "../../../../../src/component/constant/deployConstant";
 import * as fileOpt from "../../../../../src/component/utils/fileOperation";
-import { DeployExternalApiCallError } from "../../../../../src/component/error/deployError";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
+import { MockUserInteraction } from "../../../../core/utils";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -34,8 +33,8 @@ describe("Azure App Service Deploy Driver test", () => {
   it("deploy happy path", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/serverFarms/some-server-farm",
@@ -43,6 +42,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
     } as DriverContext;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -80,14 +80,15 @@ describe("Azure App Service Deploy Driver test", () => {
   it("resource id error", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/serverFarms",
     } as DeployArgs;
     const context = {
       logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
     } as DriverContext;
     // await deploy.run(args, context);
     const res = await deploy.run(args, context);
@@ -97,8 +98,8 @@ describe("Azure App Service Deploy Driver test", () => {
   it("missing resource id", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       ignoreFile: "./ignore",
     } as DeployArgs;
     const context = {
@@ -112,8 +113,8 @@ describe("Azure App Service Deploy Driver test", () => {
   it("deploy with ignore file not exists", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/serverFarms/some-server-farm",
@@ -157,8 +158,8 @@ describe("Azure App Service Deploy Driver test", () => {
   it("zip deploy to azure error", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/serverFarms/some-server-farm",

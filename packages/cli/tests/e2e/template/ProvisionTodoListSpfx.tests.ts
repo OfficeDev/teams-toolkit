@@ -15,6 +15,7 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
+  execAsyncWithRetry,
 } from "../commonUtils";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -47,10 +48,19 @@ describe("teamsfx new template", function () {
     const config = await fs.readJson(`${projectPath}/SPFx/config/config.json`);
     expect(config["bundles"]["todo-list-web-part"]).exist;
 
-    // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
+    // validation succeed without provision
+    await execAsync("teamsfx validate", {
+      cwd: path.join(testFolder, appName),
+      env: process.env,
+      timeout: 0,
+    });
+
+    // provision
+    await execAsyncWithRetry(`teamsfx provision`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     // deploy
     await CliHelper.deployAll(projectPath);

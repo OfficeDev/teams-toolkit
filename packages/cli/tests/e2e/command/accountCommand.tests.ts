@@ -21,7 +21,7 @@ describe("account command", function () {
       timeout: 0,
     });
 
-    expect(stdlog.stdout).include("log in to Azure or Microsoft 365 account");
+    expect(stdlog.stdout).include("Account is: undefined");
     expect(stdlog.stderr).to.be.undefined;
   });
 
@@ -34,7 +34,7 @@ describe("account command", function () {
     });
 
     expect(stdlog.stdout).include("Account is:");
-    expect(stdlog.stderr).to.be.undefined;
+    expect(stdlog.stderr).to.be.empty;
   });
 
   it(`account logout`, { testPlanCaseId: 15232255 }, async function () {
@@ -46,7 +46,7 @@ describe("account command", function () {
     });
 
     expect(stdlog.stdout).include("Successfully signed out of Azure.");
-    expect(stdlog.stderr).to.be.undefined;
+    expect(stdlog.stderr).to.be.empty;
 
     stdlog = await execAsync(`teamsfx account logout m365`, {
       env: process.env,

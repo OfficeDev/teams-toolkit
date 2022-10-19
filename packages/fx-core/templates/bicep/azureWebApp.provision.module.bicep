@@ -50,10 +50,21 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           value: '1'
         }
         {{else}}
+          {{#if (equals "Tab" scenario)}}
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: '1'
         }
+          {{else}}
+        {
+          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
+          value: 'true' // Execute build steps on your site during deployment
+        }
+        {
+          name: 'RUNNING_ON_AZURE'
+          value: '1'
+        }
+          {{/if}}
         {{/if}}
       ]
     }

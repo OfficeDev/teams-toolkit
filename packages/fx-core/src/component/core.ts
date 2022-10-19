@@ -309,6 +309,9 @@ export class TeamsfxCore {
     const projectSettings = newProjectSettings() as ProjectSettingsV3;
     projectSettings.appName = inputs["app-name"];
     projectSettings.components = [];
+    if (inputs.projectId) {
+      projectSettings.projectId = inputs.projectId;
+    }
     context.projectSetting = projectSettings;
     await fs.ensureDir(inputs.projectPath);
     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));

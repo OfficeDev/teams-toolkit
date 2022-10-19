@@ -18,7 +18,7 @@ import { TeamsfxCore } from "../../src/component/core";
 import { deployUtils } from "../../src/component/deployUtils";
 import * as EnvManager from "../../src/component/envManager";
 import { TeamsBot } from "../../src/component/feature/bot/bot";
-import * as question from "../../src/component/questionV3";
+import * as question from "../../src/component/question";
 import { AppManifest } from "../../src/component/resource/appManifest/appManifest";
 import { AzureWebAppResource } from "../../src/component/resource/azureAppService/azureWebApp";
 import { createContextV3 } from "../../src/component/utils";
@@ -26,13 +26,6 @@ import { newEnvInfoV3 } from "../../src/core/environment";
 import * as FxCore from "../../src/core/FxCore";
 import { setTools } from "../../src/core/globalVars";
 import { MockTools, randomAppName } from "../core/utils";
-import { assert } from "chai";
-import { TeamsfxCore } from "../../src/component/core";
-import * as sinon from "sinon";
-import * as question from "../../src/component/question";
-import { TeamsBot } from "../../src/component/feature/bot/bot";
-import { AzureWebAppResource } from "../../src/component/resource/azureAppService/azureWebApp";
-import { deployUtils } from "../../src/component/deployUtils";
 
 describe("component core test", () => {
   const sandbox = sinon.createSandbox();

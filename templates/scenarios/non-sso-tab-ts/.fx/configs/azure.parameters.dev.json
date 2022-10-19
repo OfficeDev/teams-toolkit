@@ -4,7 +4,7 @@
   "parameters": {
     "provisionParameters": {
       "value": {
-        "resourceBaseName": "zhijieapp13de2bb"
+        "resourceBaseName": "{{resourceBaseName}}"
       }
     }
   }

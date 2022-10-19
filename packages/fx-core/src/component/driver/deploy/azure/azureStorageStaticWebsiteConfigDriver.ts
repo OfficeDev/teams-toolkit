@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { StepDriver } from "../interface/stepDriver";
-import { AzureResourceInfo, DriverContext } from "../interface/commonArgs";
+import { StepDriver } from "../../interface/stepDriver";
+import { AzureResourceInfo, DriverContext } from "../../interface/commonArgs";
 import { Service } from "typedi";
-import { asFactory, asString, wrapRun } from "../../utils/common";
-import { AzureStorageStaticWebsiteConfigArgs } from "../interface/provisionArgs";
+import { asFactory, asString, wrapRun } from "../../../utils/common";
+import { AzureStorageStaticWebsiteConfigArgs } from "../../interface/provisionArgs";
 import {
   createBlobServiceClient,
   getAzureAccountCredential,
   parseAzureResourceId,
-} from "../../utils/azureResourceOperation";
+} from "../../../utils/azureResourceOperation";
 import { BlobServiceClient, BlobServiceProperties } from "@azure/storage-blob";
 import { FxError, Result } from "@microsoft/teamsfx-api";
 

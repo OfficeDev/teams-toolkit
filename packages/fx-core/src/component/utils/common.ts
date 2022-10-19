@@ -32,9 +32,9 @@ export function asString(s: unknown, key: string): string {
   throw PrerequisiteError.somethingMissing("Deploy", key);
 }
 
-export function asNumber(s: unknown, key: string): number {
-  if (typeof s === "number") {
-    return s as number;
+export function asRecord(s: unknown, key: string): Record<string, string> {
+  if (s instanceof Object) {
+    return s as Record<string, string>;
   }
   throw PrerequisiteError.somethingMissing("Deploy", key);
 }
@@ -58,11 +58,16 @@ export function asFactory<T>(keyValidators: KeyValidators<T>) {
 }
 
 export async function wrapRun(
-  exec: () => Promise<Map<string, string>>
+  exec: () => Promise<Map<string, string>>,
+  errorHandler?: () => Promise<void>
 ): Promise<Result<Map<string, string>, FxError>> {
   try {
     return ok(await exec());
   } catch (error) {
+    if (errorHandler) {
+      console.debug("Error handler is called.");
+      await errorHandler();
+    }
     if (error instanceof BaseComponentInnerError) {
       return err(error.toFxError());
     } else if (error instanceof UserError || error instanceof SystemError) {

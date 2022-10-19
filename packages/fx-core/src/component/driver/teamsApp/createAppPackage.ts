@@ -3,13 +3,11 @@
 
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
-import { v4 } from "uuid";
 import * as path from "path";
-import isUUID from "validator/lib/isUUID";
 import { hooks } from "@feathersjs/hooks/lib";
 import { pathToFileURL } from "url";
 import { Platform, Colors } from "@microsoft/teamsfx-api";
-import { TeamsAppManifest, Result, FxError, ok, err } from "@microsoft/teamsfx-api";
+import { Result, FxError, ok, err } from "@microsoft/teamsfx-api";
 import { StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
@@ -17,11 +15,9 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
-import { Constants, DEFAULT_DEVELOPER } from "../../resource/appManifest/constants";
-import { TelemetryPropertyKey } from "../../resource/appManifest/utils/telemetry";
-import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
+import { Constants } from "../../resource/appManifest/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { HelpLinks, VSCodeExtensionCommand } from "../../../common/constants";
+import { VSCodeExtensionCommand } from "../../../common/constants";
 
 const actionName = "teamsApp/createAppPackage";
 
@@ -33,97 +29,15 @@ export class CreateAppPackageDriver implements StepDriver {
     withEmptyCapabilities?: boolean
   ): Promise<Result<Map<string, string>, FxError>> {
     const state = this.loadCurrentState();
-    const manifestRes = await manifestUtils._readAppManifest(args.manifestTemplatePath);
+    const manifestRes = await manifestUtils.getManifestV3(
+      args.manifestTemplatePath,
+      state,
+      withEmptyCapabilities
+    );
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
-    let manifest: TeamsAppManifest = manifestRes.value;
-
-    if (withEmptyCapabilities) {
-      manifest.bots = [];
-      manifest.composeExtensions = [];
-      manifest.configurableTabs = [];
-      manifest.staticTabs = [];
-      manifest.webApplicationInfo = undefined;
-    }
-
-    // Adjust template for samples with unnecessary placeholders
-    const capabilities = manifestUtils._getCapabilities(manifest);
-    if (capabilities.isErr()) {
-      return err(capabilities.error);
-    }
-    const hasFrontend =
-      capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
-    const tabEndpoint = state.TAB_ENDPOINT;
-    if (!tabEndpoint && !hasFrontend) {
-      manifest.developer = DEFAULT_DEVELOPER;
-    }
-
-    const manifestTemplateString = JSON.stringify(manifest);
-
-    // Add environment variable keys to telemetry
-    const customizedKeys = getEnvironmentVariables(manifestTemplateString);
-    const telemetryProps: { [key: string]: string } = {};
-    telemetryProps[TelemetryPropertyKey.customizedKeys] = JSON.stringify(customizedKeys);
-
-    const resolvedManifestString = expandEnvironmentVariable(manifestTemplateString);
-
-    const isLocalDebug = state.ENV_NAME === "local";
-    const tokens = getEnvironmentVariables(resolvedManifestString).filter(
-      (x) => x != "TEAMS_APP_ID"
-    );
-    if (tokens.length > 0) {
-      if (isLocalDebug) {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetLocalDebugConfigFailedError.name,
-            AppStudioError.GetLocalDebugConfigFailedError.message(
-              new Error(getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")))
-            )
-          )
-        );
-      } else {
-        return err(
-          AppStudioResultFactory.UserError(
-            AppStudioError.GetRemoteConfigFailedError.name,
-            AppStudioError.GetRemoteConfigFailedError.message(
-              getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")),
-              false
-            ),
-            HelpLinks.WhyNeedProvision
-          )
-        );
-      }
-    }
-
-    if (!isUUID(manifest.id)) {
-      manifest.id = v4();
-    }
-
-    manifest = JSON.parse(resolvedManifestString);
-
-    // dynamically set validDomains for manifest, which can be refactored by static manifest templates
-    if (isLocalDebug || manifest.validDomains?.length === 0) {
-      const validDomains: string[] = [];
-      const tabEndpoint = state.TAB_ENDPOINT;
-      const tabDomain = state.TAB_DOMAIN;
-      const botDomain = state.BOT_DOMAIN;
-      if (tabDomain) {
-        validDomains.push(tabDomain);
-      }
-      if (tabEndpoint && isLocalDebug) {
-        validDomains.push(tabEndpoint.slice(8));
-      }
-      if (botDomain) {
-        validDomains.push(botDomain);
-      }
-      for (const domain of validDomains) {
-        if (manifest.validDomains?.indexOf(domain) == -1) {
-          manifest.validDomains.push(domain);
-        }
-      }
-    }
-
+    const manifest = manifestRes.value;
     // Deal with relative path
     // Environment variables should have been replaced by value
     // ./build/appPackage/appPackage.dev.zip instead of ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip

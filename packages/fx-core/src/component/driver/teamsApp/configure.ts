@@ -3,9 +3,11 @@
 
 import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
+import { hooks } from "@feathersjs/hooks/lib";
 import { StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
@@ -15,6 +17,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 const actionName = "teamsApp/configure";
 
 export class ConfigureTeamsAppDriver implements StepDriver {
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: ConfigureTeamsAppArgs,
     context: DriverContext
@@ -44,9 +47,12 @@ export class ConfigureTeamsAppDriver implements StepDriver {
         context.logProvider,
         true
       );
-      context.logProvider.info(
-        getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", appDefinition.teamsAppId!)
+      const message = getLocalizedString(
+        "plugins.appstudio.teamsAppUpdatedLog",
+        appDefinition.teamsAppId!
       );
+      context.logProvider.info(message);
+      context.ui?.showMessage("info", message, false);
       return ok(new Map([["teamsAppId", appDefinition.teamsAppId!]]));
     } catch (e: any) {
       return err(

@@ -26,7 +26,8 @@ describe("teamsApp/createAppPackage", async () => {
   it("should throw error if file not exists", async () => {
     const args: CreateAppPackageArgs = {
       manifestTemplatePath: "fakepath",
-      outputPath: "",
+      outputZipPath: "",
+      outputJsonPath: "",
     };
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);
@@ -40,19 +41,23 @@ describe("teamsApp/createAppPackage", async () => {
     const args: CreateAppPackageArgs = {
       manifestTemplatePath:
         "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
-      outputPath:
+      outputZipPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+      outputJsonPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
     };
 
     process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
+    sinon.stub(fs, "chmod").callsFake(async () => {});
+    sinon.stub(fs, "writeFile").callsFake(async () => {});
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isOk());
     if (result.isOk()) {
       chai.assert(result.value.has("TEAMS_APP_PACKAGE_PATH"));
     }
-    if (await fs.pathExists(args.outputPath)) {
-      await fs.remove(args.outputPath);
+    if (await fs.pathExists(args.outputZipPath)) {
+      await fs.remove(args.outputZipPath);
     }
   });
 });

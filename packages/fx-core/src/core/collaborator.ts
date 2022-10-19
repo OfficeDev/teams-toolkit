@@ -38,11 +38,11 @@ import {
   SolutionSource,
   SolutionTelemetryProperty,
   SOLUTION_PROVISION_SUCCEEDED,
-} from "../plugins/solution/fx-solution/constants";
+} from "../component/constants";
 import { AppUser } from "../component/resource/appManifest/interfaces/appUser";
 import { CoreSource } from "./error";
 import { TOOLS } from "./globalVars";
-import { getUserEmailQuestion } from "../plugins/solution/fx-solution/question";
+import { getUserEmailQuestion } from "../component/question";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { ComponentNames } from "../component/constants";
@@ -280,8 +280,7 @@ function getCurrentCollaborationState(
     envInfo.state.solution[SOLUTION_PROVISION_SUCCEEDED] === "true" ||
     envInfo.state.solution[SOLUTION_PROVISION_SUCCEEDED] === true;
   if (!provisioned) {
-    const warningMsg =
-      "The resources have not been provisioned yet. Please provision the resources first.";
+    const warningMsg = getLocalizedString("core.collaboration.notProvisioned");
     return {
       state: CollaborationState.NotProvisioned,
       message: warningMsg,
@@ -290,8 +289,7 @@ function getCurrentCollaborationState(
 
   const aadAppTenantId = envInfo.state[ComponentNames.AppManifest]?.tenantId;
   if (!aadAppTenantId || user.tenantId != (aadAppTenantId as string)) {
-    const warningMsg =
-      "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account.";
+    const warningMsg = getLocalizedString("core.collaboration.tenantNotMatch");
     return {
       state: CollaborationState.M365TenantNotMatch,
       message: warningMsg,

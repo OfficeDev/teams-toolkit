@@ -51,7 +51,7 @@ import {
   CicdOptionItem,
   ExistingTabOptionItem,
   SingleSignOnOptionItem,
-} from "../plugins/solution/fx-solution/question";
+} from "../component/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
@@ -97,7 +97,7 @@ import {
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
   getQuestionsForProvisionV3,
-} from "../component/questionV3";
+} from "../component/question";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd/cicd";
 import { ComponentNames } from "../component/constants";
@@ -106,8 +106,7 @@ import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnector
 import { createEnvWithName } from "../component/envManager";
 import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
-import { copyParameterJson } from "../plugins/solution/fx-solution/arm";
-import { convertEnvStateMapV3ToV2 } from "../component/migrate";
+import { copyParameterJson } from "../component/arm";
 import { ProjectSettingsHelper } from "../common/local";
 
 export class FxCore implements v3.ICore {
@@ -721,46 +720,7 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
-  // deprecated
-  // @hooks([
-  //   ErrorHandlerMW,
-  //   ConcurrentLockerMW,
-  //   ProjectMigratorMW,
-  //   ProjectConsolidateMW,
-  //   AadManifestMigrationMW,
-  //   ProjectVersionCheckerMW,
-  //   ProjectSettingsLoaderMW,
-  //   ContextInjectorMW,
-  //   ProjectSettingsWriterMW,
-  // ])
   async activateEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    // const env = inputs.env;
-    // if (!env) {
-    //   return err(new ObjectIsUndefinedError("env"));
-    // }
-    // if (!ctx!.projectSettings) {
-    //   return ok(Void);
-    // }
-
-    // const envConfigs = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
-
-    // if (envConfigs.isErr()) {
-    //   return envConfigs;
-    // }
-
-    // if (envConfigs.isErr() || envConfigs.value.indexOf(env) < 0) {
-    //   return err(NonExistEnvNameError(env));
-    // }
-
-    // const solutionContext = await loadSolutionContext(inputs, ctx!.projectSettings, env);
-
-    // if (!solutionContext.isErr()) {
-    //   ctx!.provisionInputConfig = solutionContext.value.envInfo.config;
-    //   ctx!.provisionOutputs = solutionContext.value.envInfo.state;
-    //   ctx!.envName = solutionContext.value.envInfo.envName;
-    // }
-
-    // this.tools.ui.showMessage("info", `[${env}] is activated.`, false);
     return ok(Void);
   }
 

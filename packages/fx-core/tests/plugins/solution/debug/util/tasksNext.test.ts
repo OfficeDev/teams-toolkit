@@ -6,7 +6,7 @@ import * as chai from "chai";
 import {
   generateM365Tasks,
   generateTasks,
-} from "../../../../../src/plugins/solution/fx-solution/debug/util/tasksNext";
+} from "../../../../../src/component/debug/util/tasksNext";
 
 describe("tasksNext", () => {
   describe("generateTasks", () => {

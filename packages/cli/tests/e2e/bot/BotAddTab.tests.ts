@@ -21,6 +21,7 @@ import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/f
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import { BotValidator } from "../../commonlib";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();
@@ -33,7 +34,7 @@ describe("Configuration successfully changed when with different plugins", funct
     await cleanUp(appName, projectPath, true, true, false);
   });
 
-  it(`bot + tab`, async function () {
+  it(`bot + tab`, { testPlanCaseId: 15685606 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     if (isPreviewFeaturesEnabled()) {
       await CliHelper.addCapabilityToProject(projectPath, Capability.SSOTab);

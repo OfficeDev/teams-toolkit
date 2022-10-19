@@ -4,6 +4,11 @@
 
 ## getTediousConnectionConfig() function
 
+> Warning: This API is now obsolete.
+> 
+> we recommend you compose your own Tedious configuration for better flexibility.
+> 
+
 Generate connection configuration consumed by tedious.
 
 <b>Signature:</b>

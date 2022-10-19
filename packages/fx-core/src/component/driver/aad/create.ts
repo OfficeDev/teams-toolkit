@@ -1,54 +1,100 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { StepDriver } from "../../interface/stepDriver";
-import { DriverContext } from "../../interface/commonArgs";
+import { StepDriver } from "../interface/stepDriver";
+import { DriverContext } from "../interface/commonArgs";
 import { Service } from "typedi";
 import { CreateAadAppArgs } from "./interface/createAadAppArgs";
 import { AadAppClient } from "./utility/aadAppClient";
 import { CreateAadAppOutput } from "./interface/createAadAppOutput";
-import { M365TokenProvider, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { FxError, M365TokenProvider, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { GraphScopes } from "../../../common/tools";
 import { Constants } from "../../resource/aadApp/constants";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { MissingEnvUserError } from "./error/missingEnvError";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import axios from "axios";
+import { wrapRun } from "../../utils/common";
+import { hooks } from "@feathersjs/hooks/lib";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { logMessageKeys } from "./utility/constants";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
 const driverConstants = {
   generateSecretErrorMessageKey: "driver.aadApp.error.generateSecretFailed",
 };
+const SECRET_AAD_APP_CLIENT_SECRET = "SECRET_AAD_APP_CLIENT_SECRET";
+const AAD_APP_CLIENT_ID = "AAD_APP_CLIENT_ID";
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateAadAppDriver implements StepDriver {
-  public async run(args: CreateAadAppArgs, context: DriverContext): Promise<Map<string, string>> {
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  public async run(
+    args: CreateAadAppArgs,
+    context: DriverContext
+  ): Promise<Result<Map<string, string>, FxError>> {
+    return wrapRun(() => this.handler(args, context));
+  }
+
+  public async handler(
+    args: CreateAadAppArgs,
+    context: DriverContext
+  ): Promise<Map<string, string>> {
     try {
+      context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
+
       this.validateArgs(args);
       const aadAppClient = new AadAppClient(context.m365TokenProvider);
       const aadAppState = this.loadCurrentState();
       if (!aadAppState.AAD_APP_CLIENT_ID) {
+        context.logProvider?.info(
+          getLocalizedString(logMessageKeys.startCreateAadApp, AAD_APP_CLIENT_ID)
+        );
         // Create new AAD app if no client id exists
         const aadApp = await aadAppClient.createAadApp(args.name);
         aadAppState.AAD_APP_CLIENT_ID = aadApp.appId!;
         aadAppState.AAD_APP_OBJECT_ID = aadApp.id!;
         await this.setAadEndpointInfo(context.m365TokenProvider, aadAppState);
+        context.logProvider?.info(getLocalizedString(logMessageKeys.successCreateAadApp));
+      } else {
+        context.logProvider?.info(
+          getLocalizedString(logMessageKeys.skipCreateAadApp, AAD_APP_CLIENT_ID)
+        );
       }
 
-      if (args.generateClientSecret && !aadAppState.SECRET_AAD_APP_CLIENT_SECRET) {
-        // Create new client secret if no client secret exists
-        if (!aadAppState.AAD_APP_OBJECT_ID) {
-          throw new MissingEnvUserError(
-            actionName,
-            "AAD_APP_OBJECT_ID",
-            helpLink,
-            driverConstants.generateSecretErrorMessageKey
+      if (args.generateClientSecret) {
+        if (!aadAppState.SECRET_AAD_APP_CLIENT_SECRET) {
+          context.logProvider?.info(
+            getLocalizedString(
+              logMessageKeys.startGenerateClientSecret,
+              SECRET_AAD_APP_CLIENT_SECRET
+            )
+          );
+          // Create new client secret if no client secret exists
+          if (!aadAppState.AAD_APP_OBJECT_ID) {
+            throw new MissingEnvUserError(
+              actionName,
+              "AAD_APP_OBJECT_ID",
+              helpLink,
+              driverConstants.generateSecretErrorMessageKey
+            );
+          }
+          aadAppState.SECRET_AAD_APP_CLIENT_SECRET = await aadAppClient.generateClientSecret(
+            aadAppState.AAD_APP_OBJECT_ID
+          );
+          context.logProvider?.info(getLocalizedString(logMessageKeys.successGenerateClientSecret));
+        } else {
+          context.logProvider?.info(
+            getLocalizedString(logMessageKeys.skipCreateAadApp, SECRET_AAD_APP_CLIENT_SECRET)
           );
         }
-        const secret = await aadAppClient.generateClientSecret(aadAppState.AAD_APP_OBJECT_ID);
-        aadAppState.SECRET_AAD_APP_CLIENT_SECRET = secret;
       }
+
+      context.logProvider?.info(
+        getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
+      );
 
       return new Map(
         Object.entries(aadAppState) // convert each property to Map item
@@ -56,17 +102,28 @@ export class CreateAadAppDriver implements StepDriver {
       );
     } catch (error) {
       if (error instanceof UserError || error instanceof SystemError) {
+        context.logProvider?.error(
+          getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
+        );
         throw error;
       }
 
       if (axios.isAxiosError(error)) {
+        const message = JSON.stringify(error.response!.data);
+        context.logProvider?.error(
+          getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
+        );
         if (error.response!.status >= 400 && error.response!.status < 500) {
-          throw new UnhandledUserError(actionName, JSON.stringify(error.response!.data), helpLink);
+          throw new UnhandledUserError(actionName, message, helpLink);
         } else {
-          throw new UnhandledSystemError(actionName, JSON.stringify(error.response!.data));
+          throw new UnhandledSystemError(actionName, message);
         }
       }
 
+      const message = JSON.stringify(error);
+      context.logProvider?.error(
+        getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
+      );
       throw new UnhandledSystemError(actionName, JSON.stringify(error));
     }
   }

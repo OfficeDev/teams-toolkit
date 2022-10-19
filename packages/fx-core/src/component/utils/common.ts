@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PrerequisiteError } from "../error/componentError";
+import { BaseComponentInnerError, PrerequisiteError } from "../error/componentError";
+import { err, FxError, ok, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 /**
  * check parameter, throw error if value is null or undefined
@@ -31,9 +32,9 @@ export function asString(s: unknown, key: string): string {
   throw PrerequisiteError.somethingMissing("Deploy", key);
 }
 
-export function asNumber(s: unknown, key: string): number {
-  if (typeof s === "number") {
-    return s as number;
+export function asRecord(s: unknown, key: string): Record<string, string> {
+  if (s instanceof Object) {
+    return s as Record<string, string>;
   }
   throw PrerequisiteError.somethingMissing("Deploy", key);
 }
@@ -56,6 +57,26 @@ export function asFactory<T>(keyValidators: KeyValidators<T>) {
   };
 }
 
+export async function wrapRun(
+  exec: () => Promise<Map<string, string>>,
+  errorHandler?: () => Promise<void>
+): Promise<Result<Map<string, string>, FxError>> {
+  try {
+    return ok(await exec());
+  } catch (error) {
+    if (errorHandler) {
+      console.debug("Error handler is called.");
+      await errorHandler();
+    }
+    if (error instanceof BaseComponentInnerError) {
+      return err(error.toFxError());
+    } else if (error instanceof UserError || error instanceof SystemError) {
+      return err(error);
+    }
+    throw error;
+  }
+}
+
 // Expand environment variables in content. The format of referencing environment variable is: ${{ENV_NAME}}
 export function expandEnvironmentVariable(content: string): string {
   const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
@@ -72,6 +93,21 @@ export function expandEnvironmentVariable(content: string): string {
   }
 
   return content;
+}
+
+/**
+ * Expand environment variables in content. The format of referencing environment variable is: ${{ENV_NAME}}
+ * @return An array of environment variables
+ */
+export function getEnvironmentVariables(content: string): string[] {
+  const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
+  const placeholders = content.match(placeholderRegex);
+  if (placeholders) {
+    const variables = placeholders.map((placeholder) => placeholder.slice(3, -2).trim()); // removes `${{` and `}}`)
+    // remove duplicates
+    return [...new Set(variables)];
+  }
+  return [];
 }
 
 /**

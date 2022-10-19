@@ -38,7 +38,7 @@ import {
   MessageExtensionItem,
   NotificationOptionItem,
   WorkflowOptionItem,
-} from "../../../plugins/solution/fx-solution/question";
+} from "../../constants";
 import { BicepComponent } from "../../bicep";
 import { BotCodeProvider } from "../../code/botCode";
 import "../../connection/azureWebAppConfig";
@@ -98,6 +98,7 @@ export class TeamsBot {
         if (res.isErr()) return err(res.error);
         effects.push("add bot capability in app manifest");
       }
+      addFeatureNotify(inputs, context.userInteraction, "Capability", [inputs.features]);
       return ok(undefined);
     }
     const addedComponents: string[] = [];

@@ -47,21 +47,19 @@ import {
   SolutionSource,
   SolutionTelemetryProperty,
   SUBSCRIPTION_ID,
-} from "../plugins/solution/fx-solution/constants";
-import {
-  resourceGroupHelper,
-  ResourceGroupInfo,
-} from "../plugins/solution/fx-solution/utils/ResourceGroupHelper";
-import {
-  handleConfigFilesWhenSwitchAccount,
-  hasBotServiceCreated,
-} from "../plugins/solution/fx-solution/utils/util";
-import { checkWhetherLocalDebugM365TenantMatches } from "../plugins/solution/fx-solution/v2/utils";
-import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
-import { ComponentNames } from "./constants";
+  BuiltInFeaturePluginNames,
+  ComponentNames,
+  PathConstants,
+} from "./constants";
+import { backupFiles } from "./utils/backupFiles";
+import { resourceGroupHelper, ResourceGroupInfo } from "./utils/ResourceGroupHelper";
+import { resetAppSettingsDevelopment } from "./code/appSettingUtils";
 import { AppStudioScopes } from "./resource/appManifest/constants";
 import { isCSharpProject, resetEnvInfoWhenSwitchM365 } from "./utils";
-
+import fs from "fs-extra";
+import { updateAzureParameters } from "./arm";
+import path from "path";
+import { DeployConfigsConstants } from "../common/azure-hosting/hostingConstant";
 interface M365TenantRes {
   tenantIdInToken: string;
   tenantUserName: string;
@@ -242,7 +240,7 @@ export class ProvisionUtils {
           new UserError(
             SolutionSource,
             SolutionError.SubscriptionNotFound,
-            "Failed to select subscription"
+            getLocalizedString("core.provision.subscription.failToSelect")
           )
         );
       } else {
@@ -272,7 +270,11 @@ export class ProvisionUtils {
           new UserError(
             SolutionSource,
             SolutionError.SubscriptionNotFound,
-            `The subscription '${targetSubscriptionIdFromCLI}' for '${envInfo.envName}' environment is not found in the current account, please use the right Azure account or check the subscription parameter.`
+            getLocalizedString(
+              "core.provision.subscription.NotFoundParam",
+              targetSubscriptionIdFromCLI,
+              envInfo.envName
+            )
           )
         );
       } else {
@@ -297,12 +299,12 @@ export class ProvisionUtils {
           new UserError(
             SolutionSource,
             SolutionError.SubscriptionNotFound,
-            `The subscription '${subscriptionIdInConfig}'(${subscriptionNameInConfig}) for '${
-              envInfo.envName
-            }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
-              EnvNamePlaceholder,
-              envInfo.envName
-            )}' file.`
+            getLocalizedString(
+              "core.provision.subscription.NotFoundConfig",
+              subscriptionIdInConfig,
+              envInfo.envName,
+              EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envInfo.envName)
+            )
           )
         );
       } else {
@@ -331,7 +333,11 @@ export class ProvisionUtils {
             new UserError(
               SolutionSource,
               SolutionError.SubscriptionNotFound,
-              `The subscription '${subscriptionIdInState}'(${subscriptionNameInState}) for '${envInfo.envName}' environment is not found in the current account, please use the right Azure account.`
+              getLocalizedString(
+                "core.provision.subscription.NotFoundState",
+                subscriptionIdInState,
+                envInfo.envName
+              )
             )
           );
         }
@@ -455,7 +461,7 @@ export class ProvisionUtils {
         new UserError(
           SolutionSource,
           SolutionError.NotLoginToAzure,
-          "Login to Azure using the Azure Account extension"
+          getLocalizedString("core.error.notLoginToAzure")
         )
       );
     }
@@ -509,7 +515,7 @@ export class ProvisionUtils {
             new UserError(
               SolutionSource,
               SolutionError.ResourceGroupNotFound,
-              `Resource group '${inputs.targetResourceGroupName}' does not exist, please specify an existing resource group.`
+              getLocalizedString("core.error.resourceGroupNotFound", inputs.targetResourceGroupName)
             )
           );
         }
@@ -539,7 +545,7 @@ export class ProvisionUtils {
           new UserError(
             SolutionSource,
             SolutionError.ResourceGroupNotFound,
-            `Resource group '${resourceGroupName}' does not exist, please check your '${envFile}' file.`
+            getLocalizedString("core.error.resourceGroupNotFound2", resourceGroupName, envFile)
           )
         );
       }
@@ -796,6 +802,238 @@ function addShouldSkipWriteEnvInfo(error: FxError) {
   if (!error.userData) {
     error.userData = { shouldSkipWriteEnvInfo: true };
   }
+}
+
+export async function checkWhetherLocalDebugM365TenantMatches(
+  envInfo: v3.EnvInfoV3 | undefined,
+  ctx: ResourceContextV3,
+  isCSharpProject: boolean,
+  localDebugTenantId: string | undefined,
+  m365TokenProvider: M365TokenProvider,
+  inputs: InputsWithProjectPath
+): Promise<Result<Void, FxError>> {
+  if (localDebugTenantId) {
+    const projectPath = inputs.projectPath;
+    const appStudioTokenJsonRes = await m365TokenProvider.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    const appStudioTokenJson = appStudioTokenJsonRes?.isOk()
+      ? appStudioTokenJsonRes.value
+      : undefined;
+    const maybeM365TenantId = parseTeamsAppTenantId(appStudioTokenJson);
+    if (maybeM365TenantId.isErr()) {
+      return maybeM365TenantId;
+    }
+
+    const maybeM365UserAccount = parseUserName(appStudioTokenJson);
+    if (maybeM365UserAccount.isErr()) {
+      return maybeM365UserAccount;
+    }
+
+    if (maybeM365TenantId.value !== localDebugTenantId) {
+      if (
+        projectPath !== undefined &&
+        (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
+      ) {
+        const errorMessage = getLocalizedString(
+          "core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount",
+          localDebugTenantId,
+          maybeM365UserAccount.value,
+          "bot/.notification.localstore.json"
+        );
+        return err(
+          new UserError("Solution", SolutionError.CannotLocalDebugInDifferentTenant, errorMessage)
+        );
+      } else if (envInfo) {
+        ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
+          [TelemetryProperty.HasSwitchedM365Tenant]: "true",
+          [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
+          [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,
+        });
+
+        const keys = Object.keys(envInfo.state);
+        for (const key of keys) {
+          if (key !== "solution") {
+            delete (envInfo as v3.EnvInfoV3).state[key];
+          }
+        }
+
+        if (projectPath !== undefined) {
+          const backupFilesRes = await backupFiles(
+            envInfo.envName,
+            projectPath!,
+            isCSharpProject,
+            inputs?.platform === Platform.VS,
+            ctx
+          );
+          if (backupFilesRes.isErr()) {
+            return err(backupFilesRes.error);
+          }
+
+          if (isCSharpProject) {
+            await resetAppSettingsDevelopment(projectPath);
+          }
+        }
+      }
+    } else {
+      ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckLocalDebugTenant, {
+        [TelemetryProperty.HasSwitchedM365Tenant]: "false",
+        [SolutionTelemetryProperty.M365TenantId]: maybeM365TenantId.value,
+        [SolutionTelemetryProperty.PreviousM365TenantId]: localDebugTenantId,
+      });
+    }
+  }
+
+  return ok(Void);
+}
+
+export function parseTeamsAppTenantId(
+  appStudioToken?: Record<string, unknown>
+): Result<string, FxError> {
+  if (appStudioToken === undefined) {
+    return err(
+      new SystemError(
+        SolutionSource,
+        SolutionError.NoAppStudioToken,
+        "Graph token json is undefined"
+      )
+    );
+  }
+
+  const teamsAppTenantId = appStudioToken["tid"];
+  if (
+    teamsAppTenantId === undefined ||
+    !(typeof teamsAppTenantId === "string") ||
+    teamsAppTenantId.length === 0
+  ) {
+    return err(
+      new SystemError(
+        SolutionSource,
+        SolutionError.NoTeamsAppTenantId,
+        getDefaultString("error.NoTeamsAppTenantId"),
+        getLocalizedString("error.NoTeamsAppTenantId")
+      )
+    );
+  }
+  return ok(teamsAppTenantId);
+}
+
+export function parseUserName(appStudioToken?: Record<string, unknown>): Result<string, FxError> {
+  if (appStudioToken === undefined) {
+    return err(
+      new SystemError("Solution", SolutionError.NoAppStudioToken, "Graph token json is undefined")
+    );
+  }
+
+  const userName = appStudioToken["upn"];
+  if (userName === undefined || !(typeof userName === "string") || userName.length === 0) {
+    return err(
+      new SystemError(
+        "Solution",
+        SolutionError.NoUserName,
+        "Cannot find user name from App Studio token."
+      )
+    );
+  }
+  return ok(userName);
+}
+export function hasBotServiceCreated(envInfo: v3.EnvInfoV3): boolean {
+  if (!envInfo || !envInfo.state) {
+    return false;
+  }
+
+  return (
+    (!!envInfo.state[BuiltInFeaturePluginNames.bot] &&
+      !!envInfo.state[BuiltInFeaturePluginNames.bot]["resourceId"]) ||
+    (!!envInfo.state[ComponentNames.TeamsBot] &&
+      !!envInfo.state[ComponentNames.TeamsBot]["resourceId"])
+  );
+}
+
+export async function handleConfigFilesWhenSwitchAccount(
+  envInfo: v3.EnvInfoV3,
+  context: ResourceContextV3,
+  inputs: InputsWithProjectPath,
+  hasSwitchedM365Tenant: boolean,
+  hasSwitchedSubscription: boolean,
+  hasBotServiceCreatedBefore: boolean,
+  isCSharpProject: boolean
+): Promise<Result<undefined, FxError>> {
+  if (!hasSwitchedM365Tenant && !hasSwitchedSubscription) {
+    return ok(undefined);
+  }
+
+  const backupFilesRes = await backupFiles(
+    envInfo.envName,
+    inputs.projectPath,
+    isCSharpProject,
+    inputs.platform === Platform.VS,
+    context
+  );
+  if (backupFilesRes.isErr()) {
+    return err(backupFilesRes.error);
+  }
+
+  const updateAzureParametersRes = await updateAzureParameters(
+    inputs.projectPath,
+    context.projectSetting.appName,
+    envInfo.envName,
+    hasSwitchedM365Tenant,
+    hasSwitchedSubscription,
+    hasBotServiceCreatedBefore
+  );
+  if (updateAzureParametersRes.isErr()) {
+    return err(updateAzureParametersRes.error);
+  }
+
+  if (hasSwitchedSubscription) {
+    const envName = envInfo.envName;
+    const maybeBotFolder = path.join(inputs.projectPath, PathConstants.botWorkingDir);
+    const maybeBotDeploymentFile = path.join(
+      maybeBotFolder,
+      path.join(
+        DeployConfigsConstants.DEPLOYMENT_FOLDER,
+        DeployConfigsConstants.DEPLOYMENT_INFO_FILE
+      )
+    );
+    if (await fs.pathExists(maybeBotDeploymentFile)) {
+      try {
+        const botDeployJson = await fs.readJSON(maybeBotDeploymentFile);
+        const lastTime = Math.max(botDeployJson[envInfo.envName]?.time ?? 0, 0);
+        if (lastTime !== 0) {
+          botDeployJson[envName] = {
+            time: 0,
+          };
+
+          await fs.writeJSON(maybeBotDeploymentFile, botDeployJson);
+        }
+      } catch (exception) {
+        // do nothing
+      }
+    }
+
+    const maybeTabFolder = path.join(inputs.projectPath, PathConstants.tabWorkingDir);
+    const maybeTabDeploymentFile = path.join(
+      maybeTabFolder,
+      path.join(
+        DeployConfigsConstants.DEPLOYMENT_FOLDER,
+        DeployConfigsConstants.DEPLOYMENT_INFO_FILE
+      )
+    );
+    if (await fs.pathExists(maybeTabDeploymentFile)) {
+      try {
+        const deploymentInfoJson = await fs.readJSON(maybeTabDeploymentFile);
+        if (!!deploymentInfoJson[envName] && !!deploymentInfoJson[envName].lastDeployTime) {
+          delete deploymentInfoJson[envName].lastDeployTime;
+          await fs.writeJSON(maybeTabDeploymentFile, deploymentInfoJson);
+        }
+      } catch (exception) {
+        // do nothing
+      }
+    }
+  }
+
+  return ok(undefined);
 }
 
 export const provisionUtils = new ProvisionUtils();

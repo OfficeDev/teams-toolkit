@@ -28,7 +28,14 @@ import {
 import { convertToAlphanumericOnly } from "../../../common/utils";
 import { CoreQuestionNames } from "../../../core/question";
 import { FrontendDeployment } from "./deploy";
-import { ComponentNames, PathConstants, ProgrammingLanguage } from "../../constants";
+import {
+  ComponentNames,
+  PathConstants,
+  ProgrammingLanguage,
+  M365SsoLaunchPageOptionItem,
+  TabNonSsoItem,
+  TabOptionItem,
+} from "../../constants";
 import { getComponent } from "../../workflow";
 import { convertToLangKey, execute } from "../utils";
 import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
@@ -36,11 +43,6 @@ import { isVSProject } from "../../../common/projectSettingsHelper";
 import { LogMessages, ProgressMessages, ProgressTitles } from "../../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import {
-  M365SsoLaunchPageOptionItem,
-  TabNonSsoItem,
-  TabOptionItem,
-} from "../../../plugins/solution/fx-solution/question";
 import { BadComponent } from "../../error";
 import { CommandExecutionError, TemplateZipFallbackError, UnzipError } from "../error";
 import { AppSettingConstants, replaceBlazorAppSettings } from "../appSettingUtils";

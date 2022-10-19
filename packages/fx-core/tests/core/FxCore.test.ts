@@ -25,7 +25,7 @@ import {
   MessageExtensionItem,
   TabOptionItem,
   TabSPFxItem,
-} from "../../src/plugins/solution/fx-solution/question";
+} from "../../src/component/constants";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 import * as templateActions from "../../src/common/template-utils/templatesActions";
 describe("Core basic APIs", () => {

@@ -41,7 +41,7 @@ import * as utils from "../../src/utils";
 import { expect } from "./utils";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import { PluginNames } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
+import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
 const staticOptions2: apis.StaticOptions = [
   { id: "a", cliName: "aa", label: "aaa" },

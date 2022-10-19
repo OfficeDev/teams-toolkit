@@ -58,7 +58,7 @@ import {
   Void,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
-import { AddSsoParameters } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
+import { AddSsoParameters } from "@microsoft/teamsfx-core/build/component/constants";
 import {
   askSubscription,
   AppStudioScopes,
@@ -79,7 +79,7 @@ import {
   globalStateUpdate,
   globalStateGet,
 } from "@microsoft/teamsfx-core/build/common/globalState";
-import { UserTaskFunctionName } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
+import { UserTaskFunctionName } from "@microsoft/teamsfx-core/build/component/constants";
 import { FxCore } from "@microsoft/teamsfx-core";
 import { InvalidProjectError } from "@microsoft/teamsfx-core/build/core/error";
 

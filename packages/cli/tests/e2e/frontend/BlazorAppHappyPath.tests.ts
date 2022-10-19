@@ -22,6 +22,7 @@ import {
   setProvisionParameterValue,
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
+import { it } from "@microsoft/extra-shot-mocha";
 import { Capability, PluginId, StateConfigKey } from "../../commonlib/constants";
 import {
   getExpectedM365ClientSecret,
@@ -46,13 +47,13 @@ describe("Blazor App", function () {
     // clean up
     await cleanUp(appName, projectPath, false, false, false);
   });
-  it(`Create Blazor app`, async () => {
+  it(`Create Blazor app`, { testPlanCaseId: 15686028 }, async () => {
     await CliHelper.createDotNetProject(appName, testFolder, Capability.Tab, env);
     const programCsPath = path.join(testFolder, appName, "App.razor");
     chai.assert.isTrue(await fs.pathExists(programCsPath));
   });
 
-  it(`Provision Resource`, async () => {
+  it(`Provision Resource`, { testPlanCaseId: 15686030 }, async () => {
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath, "", env);
     await setProvisionParameterValue(projectPath, "dev", {
@@ -91,7 +92,7 @@ describe("Blazor App", function () {
     );
   });
 
-  it("Deploy Blazor app to Azure Web APP", async () => {
+  it("Deploy Blazor app to Azure Web APP", { testPlanCaseId: 15686031 }, async () => {
     await CliHelper.deployAll(projectPath, "", env);
 
     const context = await readContextMultiEnv(projectPath, envName);

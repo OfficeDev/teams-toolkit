@@ -507,6 +507,10 @@ export interface ContextV3 extends Context_2 {
     // (undocumented)
     projectSetting: ProjectSettingsV3;
     // (undocumented)
+    templateVariables?: {
+        [key: string]: string;
+    };
+    // (undocumented)
     tokenProvider?: TokenProvider;
 }
 

@@ -266,6 +266,9 @@ export class AadAppForTeamsImpl {
     }
 
     config.frontendDomain = userSetFrontendDomain ?? config.frontendDomain;
+    config.frontendEndpoint = userSetFrontendDomain
+      ? `https://${userSetFrontendDomain}`
+      : config.frontendEndpoint;
     config.botId = userSetBotId ?? config.botId;
     config.botEndpoint = userSetBotEndpoint ?? config.botEndpoint;
 

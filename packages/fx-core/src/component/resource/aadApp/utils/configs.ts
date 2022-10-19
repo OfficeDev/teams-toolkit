@@ -435,9 +435,7 @@ export class SetApplicationInContextConfig {
       );
     } else {
       frontendDomain = ctx.config.get(ConfigKeys.domain);
-      if (frontendDomain) {
-        frontendEndpoint = `https://${frontendDomain}`;
-      } else {
+      if (!frontendDomain) {
         frontendDomain = ctx.envInfo.state
           .get(Plugins.frontendHosting)
           ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);

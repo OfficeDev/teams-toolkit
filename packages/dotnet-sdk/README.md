@@ -262,15 +262,16 @@ catch (ExceptionWithCode e)
             return InvokeResponseFactory.TextMessage("[ACK] Successfully!");
 
             /**
-             * If you want to send invoke response with text message, you can:
+             * If you want to send invoke response with adaptive card, you can:
              *
              * return InvokeResponseFactory.AdaptiveCard(JsonConvert.DeserializeObject(<your-card-json>));
-            */
+             */
 
             /**
              * If you want to send invoke response with error message, you can:
              *
              * return InvokeResponseFactory.ErrorResponse(InvokeResponseErrorCode.BadRequest, "The incoming request is invalid.");
+             */
         }
     }
     ```

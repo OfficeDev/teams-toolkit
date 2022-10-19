@@ -36,6 +36,7 @@ import {
   errorSource,
   InvalidAppManifestPackageFileFormatError,
 } from "./error";
+import { checkM365Tenant } from "./utils";
 
 const appManifestDebugMessages = {
   buildingAndSavingAppManifest:
@@ -58,9 +59,9 @@ export class AppManifestDebugHandler {
   private readonly projectPath: string;
   private args: AppManifestDebugArgs;
   private readonly m365TokenProvider: M365TokenProvider;
-  private readonly logger?: LogProvider;
-  private readonly telemetry?: TelemetryReporter;
-  private readonly ui?: UserInteraction;
+  private readonly logger: LogProvider;
+  private readonly telemetry: TelemetryReporter;
+  private readonly ui: UserInteraction;
 
   private existing = false;
 
@@ -72,9 +73,9 @@ export class AppManifestDebugHandler {
     projectPath: string,
     args: AppManifestDebugArgs,
     m365TokenProvider: M365TokenProvider,
-    logger?: LogProvider,
-    telemetry?: TelemetryReporter,
-    ui?: UserInteraction
+    logger: LogProvider,
+    telemetry: TelemetryReporter,
+    ui: UserInteraction
   ) {
     this.projectPath = projectPath;
     this.args = args;
@@ -150,6 +151,23 @@ export class AppManifestDebugHandler {
         return err(envInfoResult.error);
       }
       this.envInfoV3 = envInfoResult.value;
+
+      if (this.envInfoV3.state[ComponentNames.AppManifest]) {
+        const checkResult = await checkM365Tenant(
+          this.projectPath,
+          this.projectSettingsV3,
+          this.envInfoV3,
+          this.m365TokenProvider,
+          this.logger,
+          this.telemetry,
+          this.ui,
+          this.cryptoProvider
+        );
+        if (checkResult.isErr()) {
+          return err(checkResult.error);
+        }
+      }
+
       this.envInfoV3.state[ComponentNames.AppManifest] =
         this.envInfoV3.state[ComponentNames.AppManifest] || {};
 

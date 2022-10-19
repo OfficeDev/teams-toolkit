@@ -37,6 +37,7 @@ import { ComponentNames } from "../constants";
 import { DebugAction } from "./common";
 import { errorSource, DebugArgumentEmptyError, InvalidExistingBotArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
+import { checkM365Tenant } from "./utils";
 
 const botDebugMessages = {
   registeringAAD: "Registering the AAD app which is required to create the bot ...",
@@ -66,9 +67,9 @@ export class BotDebugHandler {
   private readonly projectPath: string;
   private args: BotDebugArgs;
   private readonly m365TokenProvider: M365TokenProvider;
-  private readonly logger?: LogProvider;
-  private readonly telemetry?: TelemetryReporter;
-  private readonly ui?: UserInteraction;
+  private readonly logger: LogProvider;
+  private readonly telemetry: TelemetryReporter;
+  private readonly ui: UserInteraction;
 
   private projectSettingsV3?: ProjectSettingsV3;
   private cryptoProvider?: CryptoProvider;
@@ -78,9 +79,9 @@ export class BotDebugHandler {
     projectPath: string,
     args: BotDebugArgs,
     m365TokenProvider: M365TokenProvider,
-    logger?: LogProvider,
-    telemetry?: TelemetryReporter,
-    ui?: UserInteraction
+    logger: LogProvider,
+    telemetry: TelemetryReporter,
+    ui: UserInteraction
   ) {
     this.projectPath = projectPath;
     this.args = args;
@@ -157,6 +158,23 @@ export class BotDebugHandler {
         return err(envInfoResult.error);
       }
       this.envInfoV3 = envInfoResult.value;
+
+      if (this.envInfoV3.state[ComponentNames.TeamsBot]) {
+        const checkResult = await checkM365Tenant(
+          this.projectPath,
+          this.projectSettingsV3,
+          this.envInfoV3,
+          this.m365TokenProvider,
+          this.logger,
+          this.telemetry,
+          this.ui,
+          this.cryptoProvider
+        );
+        if (checkResult.isErr()) {
+          return err(checkResult.error);
+        }
+      }
+
       this.envInfoV3.state[ComponentNames.TeamsBot] =
         this.envInfoV3.state[ComponentNames.TeamsBot] || {};
 

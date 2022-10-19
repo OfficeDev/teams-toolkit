@@ -41,7 +41,7 @@ export class InvalidLifecycleError extends UserError {
     const key = "configManager.error.invalidLifecycle";
     const errorOptions: UserErrorOptions = {
       source: component,
-      name: "YamlParsingError",
+      name: "InvalidLifecycleError",
       message: getDefaultString(key, lifecycle),
       displayMessage: getLocalizedString(key, lifecycle),
     };

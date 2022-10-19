@@ -16,7 +16,6 @@ import {
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
 import { Platform, Result, FxError, ok, err } from "@microsoft/teamsfx-api";
 import { StepDriver } from "../../../src/component/driver/interface/stepDriver";
-import { timeStamp } from "console";
 
 const mockedDriverContext: DriverContext = {
   m365TokenProvider: new MockedM365Provider(),

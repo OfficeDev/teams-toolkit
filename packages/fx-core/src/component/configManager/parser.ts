@@ -1,5 +1,5 @@
 import { FxError, Result, ok, err } from "@microsoft/teamsfx-api";
-import { readFile } from "fs-extra";
+import fs from "fs-extra";
 import { load } from "js-yaml";
 import { InvalidLifecycleError, YamlParsingError } from "./error";
 import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./interface";
@@ -13,8 +13,10 @@ function parseLifecycles(obj: Record<string, unknown>): Result<RawProjectModel, 
       if (!Array.isArray(value)) {
         return err(new InvalidLifecycleError(name));
       }
-      if (!("uses" in value && "with" in value)) {
-        return err(new InvalidLifecycleError(name));
+      for (const elem of value) {
+        if (!("uses" in elem && "with" in elem)) {
+          return err(new InvalidLifecycleError(name));
+        }
       }
       result[name] = value;
     }
@@ -43,10 +45,11 @@ export class YamlParser implements IYamlParser {
 
   private async parseRaw(path: string): Promise<Result<RawProjectModel, FxError>> {
     try {
-      const str = await readFile(path, "utf8");
+      const str = await fs.readFile(path, "utf8");
       const content = load(str);
-      if (content == null || content == undefined || typeof content !== "object") {
-        return err(new YamlParsingError(path, new Error("Invalid yaml format")));
+      // note: typeof null === "object" typeof undefined === "undefined" in js
+      if (typeof content !== "object" || Array.isArray(content) || content === null) {
+        return err(new YamlParsingError(path, new Error(`Invalid yaml format: ${str}`)));
       }
       const value = content as unknown as Record<string, unknown>;
       return parseLifecycles(value);

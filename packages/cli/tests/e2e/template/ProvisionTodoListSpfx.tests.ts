@@ -15,9 +15,7 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
-  readContextMultiEnv,
 } from "../commonUtils";
-import { SharepointValidator, AppStudioValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
@@ -49,44 +47,10 @@ describe("teamsfx new template", function () {
     const config = await fs.readJson(`${projectPath}/SPFx/config/config.json`);
     expect(config["bundles"]["todo-list-web-part"]).exist;
 
-    // {    // validation succeed without provision
-    //   const command = "teamsfx validate";
-    //   const result = await execAsync(command, {
-    //     cwd: path.join(testFolder, appName),
-    //     env: process.env,
-    //     timeout: 0,
-    //   });
-    //   expect(result.stderr).to.eq("");
-
-    // }
-
-    // {
-    //   // validation local env succeed without local debug
-    //   const command = `teamsfx validate --env ${environmentManager.getLocalEnvName()}`;
-    //   const result = await execAsync(command, {
-    //     cwd: path.join(testFolder, appName),
-    //     env: process.env,
-    //     timeout: 0,
-    //   });
-    //   expect(result.stderr).to.eq("");
-    // }
-
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
-
-    // {
-    //   // Get context
-    //   const context = await readContextMultiEnv(
-    //     projectPath,
-    //     environmentManager.getDefaultEnvName()
-    //   );
-
-    //   // Only check Teams App existence
-    //   const appStudio = AppStudioValidator.init(context);
-    //   AppStudioValidator.validateTeamsAppExist(appStudio);
-    // }
 
     // deploy
     await CliHelper.deployAll(projectPath);

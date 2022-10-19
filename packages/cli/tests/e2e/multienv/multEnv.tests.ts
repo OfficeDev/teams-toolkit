@@ -64,6 +64,19 @@ describe("Multi Env Happy Path for Azure", function () {
         `[Successfully] env list, stdout: '${result.stdout}', stderr: '${result.stderr}'`
       );
 
+      // provision
+      result = await execAsyncWithRetry(
+        `teamsfx provision --sql-admin-name e2e --sql-password 'Abc123456%' --env ${env}`,
+        {
+          cwd: projectPath,
+          env: processEnv,
+          timeout: 0,
+        }
+      );
+      console.log(
+        `[Successfully] provision, stdout: '${result.stdout}', stderr: '${result.stderr}'`
+      );
+
       // validate manifest
       result = await execAsyncWithRetry(`teamsfx validate --env ${env}`, {
         cwd: projectPath,

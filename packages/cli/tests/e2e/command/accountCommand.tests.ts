@@ -6,21 +6,17 @@
  */
 
 import { expect } from "chai";
-import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
-import { execAsync, getTestFolder, getSubscriptionId, getUniqueAppName } from "../commonUtils";
+import { execAsync, getTestFolder, getSubscriptionId } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 
 describe("account command", function () {
   let stdlog: { stdout: string; stderr: string };
   const subscription = getSubscriptionId();
   const testFolder = getTestFolder();
-  const appName = getUniqueAppName();
-  const projectPath = path.resolve(testFolder, appName);
 
   it(`account show `, { testPlanCaseId: 15232246 }, async function () {
     stdlog = await execAsync(`teamsfx account show`, {
-      cwd: projectPath,
       env: process.env,
       timeout: 0,
     });
@@ -33,7 +29,6 @@ describe("account command", function () {
     await CliHelper.setSubscription(subscription, testFolder);
 
     stdlog = await execAsync(`teamsfx account show`, {
-      cwd: projectPath,
       env: process.env,
       timeout: 0,
     });
@@ -46,7 +41,6 @@ describe("account command", function () {
     await CliHelper.setSubscription(subscription, testFolder);
 
     stdlog = await execAsync(`teamsfx account logout azure`, {
-      cwd: projectPath,
       env: process.env,
       timeout: 0,
     });
@@ -55,7 +49,6 @@ describe("account command", function () {
     expect(stdlog.stderr).to.be.undefined;
 
     stdlog = await execAsync(`teamsfx account logout m365`, {
-      cwd: projectPath,
       env: process.env,
       timeout: 0,
     });

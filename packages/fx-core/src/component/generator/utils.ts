@@ -237,6 +237,12 @@ export function getSampleInfoFromName(sampleName: string): SampleInfo {
   return samples[0];
 }
 
+export function zipFolder(folderPath: string): AdmZip {
+  const zip = new AdmZip();
+  zip.addLocalFolder(folderPath);
+  return zip;
+}
+
 export async function templateDefaultOnActionError(
   action: GeneratorAction,
   context: GeneratorContext,

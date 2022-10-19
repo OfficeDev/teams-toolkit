@@ -91,6 +91,21 @@ export function expandEnvironmentVariable(content: string): string {
 }
 
 /**
+ * Expand environment variables in content. The format of referencing environment variable is: ${{ENV_NAME}}
+ * @return An array of environment variables
+ */
+export function getEnvironmentVariables(content: string): string[] {
+  const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
+  const placeholders = content.match(placeholderRegex);
+  if (placeholders) {
+    const variables = placeholders.map((placeholder) => placeholder.slice(3, -2).trim()); // removes `${{` and `}}`)
+    // remove duplicates
+    return [...new Set(variables)];
+  }
+  return [];
+}
+
+/**
  * compare two key-value pairs, return true if they are exactly same
  * @param kv1 parameter the first key-value pair
  * @param kv2 parameter the first key-value pair

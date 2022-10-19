@@ -24,8 +24,16 @@ import { AadAppForTeamsImpl } from "../../../../../src/component/resource/aadApp
 import { AadAppClient } from "../../../../../src/component/resource/aadApp/aadAppClient";
 import { ProvisionConfig } from "../../../../../src/component/resource/aadApp/utils/configs";
 import { AadAppManifestManager } from "../../../../../src/component/resource/aadApp/aadAppManifestManager";
-import { ConfigKeys } from "../../../../../src/component/resource/aadApp/constants";
+import {
+  ConfigKeys,
+  ConfigKeysOfOtherPlugin,
+  Plugins,
+} from "../../../../../src/component/resource/aadApp/constants";
 import { SOLUTION_PROVISION_SUCCEEDED } from "../../../../../src/component/constants";
+import {
+  LocalSettingsBotKeys,
+  LocalSettingsFrontendKeys,
+} from "../../../../../src/common/localSettingsConstants";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
@@ -180,18 +188,100 @@ describe("AadAppForTeamsPlugin: CI", () => {
     mockProvisionResult(context);
     const setAppId = plugin.setApplicationInContext(context);
     chai.assert.isTrue(setAppId.isOk());
+    const frontendEndpoint = context.envInfo.state
+      .get(Plugins.frontendHosting)
+      .get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
+    const url = new URL(frontendEndpoint);
+    const expectedFrontendEndpoint = `${url.protocol}//${url.hostname}`;
     chai.assert.equal(
-      context.envInfo.state.get("fx-resource-aad-app-for-teams").frontendEndpoint,
-      context.envInfo.state.get("fx-resource-frontend-hosting").endpoint
+      context.envInfo.state.get(Plugins.pluginNameComplex).get(ConfigKeys.frontendEndpoint),
+      expectedFrontendEndpoint
     );
+    const botId = context.envInfo.state
+      .get(Plugins.teamsBot)
+      .get(ConfigKeysOfOtherPlugin.teamsBotId);
     chai.assert.equal(
-      context.envInfo.state.get("fx-resource-aad-app-for-teams").botId,
-      context.envInfo.state.get("fx-resource-bot").botId
+      context.envInfo.state.get(Plugins.pluginNameComplex).get(ConfigKeys.botId),
+      botId
     );
 
     chai.assert.equal(
-      context.envInfo.state.get("fx-resource-aad-app-for-teams").botEndpoint,
-      context.envInfo.state.get("fx-resource-bot").siteEndpoint
+      context.envInfo.state.get(Plugins.pluginNameComplex).get(ConfigKeys.botEndpoint),
+      context.envInfo.state.get(Plugins.teamsBot).get(ConfigKeysOfOtherPlugin.teamsBotEndpoint)
+    );
+
+    const expectedApplicationIdUris = `api://${url.host}/botid-${botId}`;
+    chai.assert.equal(
+      context.envInfo.state.get(Plugins.pluginNameComplex).get(ConfigKeys.applicationIdUri),
+      expectedApplicationIdUris
+    );
+  });
+
+  it("setApplicationInContext: using manifest, local", async function () {
+    sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    context = await TestHelper.pluginContext(new Map(), true, true, true);
+    context.m365TokenProvider = mockTokenProviderM365();
+    mockProvisionResult(context, true);
+    const setAppId = plugin.setApplicationInContext(context, true);
+    chai.assert.isTrue(setAppId.isOk());
+    const frontendEndpoint = context.localSettings?.frontend?.get(
+      LocalSettingsFrontendKeys.TabEndpoint
+    );
+    const url = new URL(frontendEndpoint);
+    const expectedFrontendEndpoint = `${url.protocol}//${url.hostname}`;
+    chai.assert.equal(
+      context.localSettings?.auth?.get(ConfigKeys.frontendEndpoint),
+      expectedFrontendEndpoint
+    );
+    const botId = context.localSettings?.bot?.get(LocalSettingsBotKeys.BotId);
+    chai.assert.equal(context.localSettings?.auth?.get(ConfigKeys.botId), botId);
+
+    chai.assert.equal(
+      context.localSettings?.auth?.get(ConfigKeys.botEndpoint),
+      context.localSettings?.bot?.get(LocalSettingsBotKeys.BotEndpoint)
+    );
+
+    const expectedApplicationIdUris = `api://${url.host}/botid-${botId}`;
+    chai.assert.equal(
+      context.localSettings?.auth?.get(ConfigKeys.applicationIdUri),
+      expectedApplicationIdUris
+    );
+  });
+
+  it("setApplicationInContext: using manifest, existing frontend endpoint", async function () {
+    sinon.stub<any, any>(tool, "isAadManifestEnabled").returns(true);
+    context = await TestHelper.pluginContext(new Map(), true, true, false);
+    const frontendEndpoint = "https://test-domain:12345";
+    context.envInfo.config.auth = {
+      frontendEndpoint,
+    };
+    context.m365TokenProvider = mockTokenProviderM365();
+    mockProvisionResult(context);
+    const setAppId = plugin.setApplicationInContext(context);
+    chai.assert.isTrue(setAppId.isOk());
+    const url = new URL(frontendEndpoint);
+    const expectedFrontendEndpoint = `${url.protocol}//${url.hostname}`;
+    chai.assert.equal(
+      context.envInfo.state.get(Plugins.pluginNameComplex).get(ConfigKeys.frontendEndpoint),
+      expectedFrontendEndpoint
+    );
+    const botId = context.envInfo.state
+      .get(Plugins.teamsBot)
+      .get(ConfigKeysOfOtherPlugin.teamsBotId);
+    chai.assert.equal(
+      context.envInfo.state.get(Plugins.pluginNameComplex).get(ConfigKeys.botId),
+      botId
+    );
+
+    chai.assert.equal(
+      context.envInfo.state.get(Plugins.pluginNameComplex).get(ConfigKeys.botEndpoint),
+      context.envInfo.state.get(Plugins.teamsBot).get(ConfigKeysOfOtherPlugin.teamsBotEndpoint)
+    );
+
+    const expectedApplicationIdUris = `api://${url.host}/botid-${botId}`;
+    chai.assert.equal(
+      context.envInfo.state.get(Plugins.pluginNameComplex).get(ConfigKeys.applicationIdUri),
+      expectedApplicationIdUris
     );
   });
 

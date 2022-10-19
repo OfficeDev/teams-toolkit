@@ -141,9 +141,10 @@ export class TestHelper {
   ) {
     let domain: string | undefined = undefined;
     let endpoint: string | undefined = undefined;
+    const port = 12345;
     if (frontend) {
       domain = faker.internet.domainName();
-      endpoint = "https://" + domain;
+      endpoint = `https://${domain}:${port}`;
     }
 
     let botId: string | undefined = undefined;
@@ -300,15 +301,7 @@ export function mockProvisionResult(
     aadInfo.set(ConfigKeys.clientSecret, faker.datatype.uuid());
     aadInfo.set(ConfigKeys.oauth2PermissionScopeId, faker.datatype.uuid());
 
-    const frontendInfo = new ConfigMap();
-    frontendInfo.set("tabDomain", "fake.storage.domain.test");
-    frontendInfo.set("tabEndpoint", "https://fake.storage.domain.test");
-    const localSettings: LocalSettings = {
-      teamsApp: new ConfigMap(),
-      auth: aadInfo,
-      frontend: frontendInfo,
-    };
-    context.localSettings = localSettings;
+    context.localSettings!.auth = aadInfo;
   }
 }
 

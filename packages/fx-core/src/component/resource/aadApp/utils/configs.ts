@@ -452,9 +452,12 @@ export class SetApplicationInContextConfig {
     }
 
     if (isAadManifestEnabled()) {
-      const botEndpoint: ConfigValue = ctx.envInfo.state
-        .get(Plugins.teamsBot)
-        ?.get(ConfigKeysOfOtherPlugin.teamsBotEndpoint);
+      const botEndpoint: ConfigValue = this.isLocalDebug
+        ? ConfigUtils.getLocalDebugConfigOfOtherPlugins(
+            ctx,
+            ConfigKeysOfOtherPlugin.localDebugBotEndpoint
+          )
+        : ctx.envInfo.state.get(Plugins.teamsBot)?.get(ConfigKeysOfOtherPlugin.teamsBotEndpoint);
       if (botEndpoint) {
         this.botEndpoint = format(botEndpoint as string, Formats.Endpoint);
       }
@@ -529,13 +532,14 @@ export class SetApplicationInContextConfig {
     );
 
     if (isAadManifestEnabled()) {
-      ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.botId, botId);
-      ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.botEndpoint, botEndpoint);
+      ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.botId, botId, this.isLocalDebug);
+      ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.botEndpoint, botEndpoint, this.isLocalDebug);
       if (frontendDomain) {
         ConfigUtils.checkAndSaveConfig(
           ctx,
           ConfigKeys.frontendEndpoint,
-          `https://${frontendDomain}`
+          `https://${frontendDomain}`,
+          this.isLocalDebug
         );
       }
     }

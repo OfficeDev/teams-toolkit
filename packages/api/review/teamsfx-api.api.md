@@ -609,6 +609,7 @@ export interface EnvConfig {
         clientSecret?: string;
         objectId?: string;
         accessAsUserScopeId?: string;
+        frontendEndpoint?: string;
         frontendDomain?: string;
         botId?: string;
         botEndpoint?: string;

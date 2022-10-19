@@ -33,6 +33,11 @@
           "description": "The access_as_user scope id of existing AAD app for Teams app.",
           "minLength": 1
         },
+        "frontendEndpoint": {
+          "type": "string",
+          "description": "The frontend endpoint for redirect URLs of existing AAD app for Teams app.",
+          "minLength": 1
+        },
         "frontendDomain": {
           "type": "string",
           "description": "The frontend domain for redirect URLs of existing AAD app for Teams app.",

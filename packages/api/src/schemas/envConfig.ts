@@ -32,6 +32,10 @@ export interface EnvConfig {
      */
     accessAsUserScopeId?: string;
     /**
+     * The frontend endpoint for redirect URLs of existing AAD app for Teams app.
+     */
+    frontendEndpoint?: string;
+    /**
      * The frontend domain for redirect URLs of existing AAD app for Teams app.
      */
     frontendDomain?: string;

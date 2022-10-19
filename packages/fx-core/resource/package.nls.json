@@ -1017,5 +1017,6 @@
   "driver.arm.error.outputConversionFailed": "There is a duplicated key %s in arm deployment output",
   "debug.warningMessage": "To debug applications in Teams, your localhost server must be on HTTPS.\nFor Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store.\n You may skip this step, but you'll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.\nFor more information \"https://aka.ms/teamsfx-ca-certificate\".",
   "debug.warningMessage2": " You may be asked for your account credentials when installing the certificate.",
-  "debug.install": "Install"
+  "debug.install": "Install",
+  "driver.spfx.error.noValidAppCatelog": "There is no valid app catelog in your tenant. Please set the property 'createAppCatalogIfNotExist' as 'true' or create it by yourself."
 }

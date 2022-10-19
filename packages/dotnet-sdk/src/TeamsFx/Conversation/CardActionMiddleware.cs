@@ -66,10 +66,14 @@ namespace Microsoft.TeamsFx.Conversation
                                     throw new ExceptionWithCode(errorMessage, ExceptionCode.InvalidParameter);
                                 }
 
-                                var isRefresh = card.GetType().GetProperty("refresh") != null;
-                                if (isRefresh && handler.AdaptiveCardResponse != AdaptiveCardResponse.NewForAll)
+                                var isRefresh = ((JObject)card).ContainsKey("refresh");
+                                var adaptiveCardResponse = handler.AdaptiveCardResponse;
+
+                                if (isRefresh && handler.AdaptiveCardResponse == AdaptiveCardResponse.ReplaceForInteractor)
                                 {
-                                    handler.AdaptiveCardResponse = AdaptiveCardResponse.NewForAll;
+                                    // Ensure the base card for refresh action is able be viewed for all members
+                                    // Otherwise, the refresh won't be triggered when user see the base card in Teams.
+                                    adaptiveCardResponse = AdaptiveCardResponse.ReplaceForAll;
                                 }
 
                                 var messageActivity = MessageFactory.Attachment
@@ -81,7 +85,7 @@ namespace Microsoft.TeamsFx.Conversation
                                     }
                                 );
 
-                                switch (handler.AdaptiveCardResponse)
+                                switch (adaptiveCardResponse)
                                 {
                                     case AdaptiveCardResponse.NewForAll:
                                         await SendInvokeResponseAsync(turnContext, InvokeResponseFactory.TextMessage(defaultMessage), cancellationToken).ConfigureAwait(false);

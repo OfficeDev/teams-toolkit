@@ -38,8 +38,6 @@ describe("account command", function () {
   });
 
   it(`account logout`, { testPlanCaseId: 15232255 }, async function () {
-    await CliHelper.setSubscription(subscription, testFolder);
-
     stdlog = await execAsync(`teamsfx account logout azure`, {
       env: process.env,
       timeout: 0,

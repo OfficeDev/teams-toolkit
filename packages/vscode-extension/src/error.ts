@@ -48,4 +48,5 @@ export enum ExtensionErrors {
   SetUpBotError = "SetUpBotError",
   SetUpSSOError = "SetUpSSOError",
   PrepareManifestError = "PrepareManifestError",
+  LoginCacheError = "LoginCacheError",
 }

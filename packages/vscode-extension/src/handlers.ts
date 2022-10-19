@@ -3264,7 +3264,7 @@ export async function signinAzureCallback(args?: any[]): Promise<Result<null, Fx
   const accountInfo = token?.token ? ConvertTokenToJson(token?.token) : {};
   if (token && node) {
     const needSelectSubscription = await node.setSignedIn(
-      (accountInfo as any).email ?? (accountInfo as any).username ?? ""
+      (accountInfo as any).email ?? (accountInfo as any).upn ?? ""
     );
     if (needSelectSubscription) {
       const solutionSettings = await getAzureSolutionSettings();

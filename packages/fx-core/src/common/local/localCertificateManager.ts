@@ -20,17 +20,11 @@ import * as ps from "./process";
 import { CoreSource } from "../../core/error";
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
 
-const installText = "Install";
-const learnMoreText = "Learn More";
+const installText = getLocalizedString("debug.install");
+const learnMoreText = getLocalizedString("core.provision.learnMore");
 const learnMoreUrl = "https://aka.ms/teamsfx-ca-certificate";
-const warningMessage =
-  'To debug applications in Teams, your localhost server must be on HTTPS.\
- For Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store.\
- You may skip this step, but you\'ll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.\
- For more information "https://aka.ms/teamsfx-ca-certificate".';
-const confirmMessage =
-  warningMessage +
-  " You may be asked for your account credentials when installing the certificate.";
+const warningMessage = getLocalizedString("debug.warningMessage");
+const confirmMessage = warningMessage + getLocalizedString("debug.warningMessage2");
 
 const trustCertificateCancelError = new UserError({
   source: CoreSource,

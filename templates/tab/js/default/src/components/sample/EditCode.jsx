@@ -1,6 +1,7 @@
 import React from "react";
+import config from "./lib/config";
 
-var functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
+var functionName = config.apiName || "myFunc";
 
 export function EditCode(props) {
   const { showFunction, tabCodeEntry, functionCodePath } = {

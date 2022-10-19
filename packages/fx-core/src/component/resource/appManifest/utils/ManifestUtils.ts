@@ -13,6 +13,8 @@ import {
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
+import isUUID from "validator/lib/isUUID";
+import { v4 } from "uuid";
 import "reflect-metadata";
 import { getProjectTemplatesFolderPath } from "../../../../common/utils";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
@@ -50,6 +52,8 @@ import { HelpLinks } from "../../../../common/constants";
 import { ComponentNames } from "../../../constants";
 import { compileHandlebarsTemplateString, getAppDirectory } from "../../../../common/tools";
 import { hasTab } from "../../../../common/projectSettingsHelperV3";
+import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
+
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
     const filePath = await this.getTeamsAppManifestPath(projectPath);
@@ -526,6 +530,104 @@ export class ManifestUtils {
     return ok(manifest);
   }
 
+  async getManifestV3(
+    manifestTemplatePath: string,
+    state: any,
+    withEmptyCapabilities?: boolean
+  ): Promise<Result<TeamsAppManifest, FxError>> {
+    const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
+    if (manifestRes.isErr()) {
+      return err(manifestRes.error);
+    }
+    let manifest: TeamsAppManifest = manifestRes.value;
+
+    if (withEmptyCapabilities) {
+      manifest.bots = [];
+      manifest.composeExtensions = [];
+      manifest.configurableTabs = [];
+      manifest.staticTabs = [];
+      manifest.webApplicationInfo = undefined;
+    }
+
+    // Adjust template for samples with unnecessary placeholders
+    const capabilities = manifestUtils._getCapabilities(manifest);
+    if (capabilities.isErr()) {
+      return err(capabilities.error);
+    }
+    const hasFrontend =
+      capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
+    const tabEndpoint = state.TAB_ENDPOINT;
+    if (!tabEndpoint && !hasFrontend) {
+      manifest.developer = DEFAULT_DEVELOPER;
+    }
+
+    const manifestTemplateString = JSON.stringify(manifest);
+
+    // Add environment variable keys to telemetry
+    const customizedKeys = getEnvironmentVariables(manifestTemplateString);
+    const telemetryProps: { [key: string]: string } = {};
+    telemetryProps[TelemetryPropertyKey.customizedKeys] = JSON.stringify(customizedKeys);
+
+    const resolvedManifestString = expandEnvironmentVariable(manifestTemplateString);
+
+    const isLocalDebug = state.ENV_NAME === "local";
+    const tokens = getEnvironmentVariables(resolvedManifestString).filter(
+      (x) => x != "TEAMS_APP_ID"
+    );
+    if (tokens.length > 0) {
+      if (isLocalDebug) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.GetLocalDebugConfigFailedError.name,
+            AppStudioError.GetLocalDebugConfigFailedError.message(
+              new Error(getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")))
+            )
+          )
+        );
+      } else {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.GetRemoteConfigFailedError.name,
+            AppStudioError.GetRemoteConfigFailedError.message(
+              getLocalizedString("plugins.appstudio.dataRequired", tokens.join(",")),
+              false
+            ),
+            HelpLinks.WhyNeedProvision
+          )
+        );
+      }
+    }
+
+    if (!isUUID(manifest.id)) {
+      manifest.id = v4();
+    }
+
+    manifest = JSON.parse(resolvedManifestString);
+
+    // dynamically set validDomains for manifest, which can be refactored by static manifest templates
+    if (isLocalDebug || manifest.validDomains?.length === 0) {
+      const validDomains: string[] = [];
+      const tabEndpoint = state.TAB_ENDPOINT;
+      const tabDomain = state.TAB_DOMAIN;
+      const botDomain = state.BOT_DOMAIN;
+      if (tabDomain) {
+        validDomains.push(tabDomain);
+      }
+      if (tabEndpoint && isLocalDebug) {
+        validDomains.push(tabEndpoint.slice(8));
+      }
+      if (botDomain) {
+        validDomains.push(botDomain);
+      }
+      for (const domain of validDomains) {
+        if (manifest.validDomains?.indexOf(domain) == -1) {
+          manifest.validDomains.push(domain);
+        }
+      }
+    }
+    return ok(manifest);
+  }
+
   async isExistingTab(
     inputs: InputsWithProjectPath,
     context: ContextV3
@@ -560,7 +662,7 @@ export function resolveManifestTemplate(
         if (array.length === 3 && array[0] === "state") {
           const component = array[1];
           const configKey = array[2];
-          if (!view.state[component] || !view.state[component][configKey]) {
+          if (view.state[component]?.[configKey] == undefined) {
             view.state[component] = view.state[component] || {};
             view.state[component][configKey] = `{{${placeholder}}}`;
           }

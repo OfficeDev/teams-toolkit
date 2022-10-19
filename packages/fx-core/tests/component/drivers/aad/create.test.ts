@@ -5,7 +5,7 @@ import "mocha";
 import * as sinon from "sinon";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { CreateAadAppDriver } from "../../../../src/component/driver/aad/create";
-import { MockedM365Provider } from "../../../plugins/solution/util";
+import { MockedM365Provider, MockedTelemetryReporter } from "../../../plugins/solution/util";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { UserError } from "@microsoft/teamsfx-api";
@@ -290,5 +290,119 @@ describe("aadAppCreate", async () => {
         expect(error.message).contains("Unhandled error happened in aadApp/create action");
       }
     );
+  });
+
+  it("should send telemetries when success", async () => {
+    const mockedTelemetryReporter = new MockedTelemetryReporter();
+    let startTelemetry: any, endTelemetry: any;
+
+    sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
+      id: expectedObjectId,
+      displayName: expectedDisplayName,
+      appId: expectedClientId,
+    } as AADApplication);
+
+    sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
+
+    sinon
+      .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+      .onFirstCall()
+      .callsFake((eventName, properties, measurements) => {
+        startTelemetry = {
+          eventName,
+          properties,
+          measurements,
+        };
+      })
+      .onSecondCall()
+      .callsFake((eventName, properties, measurements) => {
+        endTelemetry = {
+          eventName,
+          properties,
+          measurements,
+        };
+      });
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+    };
+    const driverContext: any = {
+      m365TokenProvider: new MockedM365Provider(),
+      telemetryReporter: mockedTelemetryReporter,
+    };
+
+    const result = await createAadAppDriver.run(args, driverContext);
+
+    expect(result.isOk()).to.be.true;
+    expect(startTelemetry.eventName).to.equal("aadApp/create-start");
+    expect(startTelemetry.properties.component).to.equal("aadApp/create");
+    expect(endTelemetry.eventName).to.equal("aadApp/create");
+    expect(endTelemetry.properties.component).to.equal("aadApp/create");
+    expect(endTelemetry.properties.success).to.equal("yes");
+  });
+
+  it("should send telemetries when fail", async () => {
+    const mockedTelemetryReporter = new MockedTelemetryReporter();
+    let startTelemetry: any, endTelemetry: any;
+
+    sinon.stub(AadAppClient.prototype, "createAadApp").rejects({
+      isAxiosError: true,
+      response: {
+        status: 400,
+        data: {
+          error: {
+            code: "Request_BadRequest",
+            message:
+              "Invalid value specified for property 'displayName' of resource 'Application'.",
+          },
+        },
+      },
+    });
+
+    sinon
+      .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+      .onFirstCall()
+      .callsFake((eventName, properties, measurements) => {
+        startTelemetry = {
+          eventName,
+          properties,
+          measurements,
+        };
+      });
+
+    sinon
+      .stub(mockedTelemetryReporter, "sendTelemetryErrorEvent")
+      .onFirstCall()
+      .callsFake((eventName, properties, measurements) => {
+        endTelemetry = {
+          eventName,
+          properties,
+          measurements,
+        };
+      });
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+    };
+    const driverContext: any = {
+      m365TokenProvider: new MockedM365Provider(),
+      telemetryReporter: mockedTelemetryReporter,
+    };
+
+    const result = await createAadAppDriver.run(args, driverContext);
+
+    expect(result.isOk()).to.be.false;
+    expect(startTelemetry.eventName).to.equal("aadApp/create-start");
+    expect(startTelemetry.properties.component).to.equal("aadApp/create");
+    expect(endTelemetry.eventName).to.equal("aadApp/create");
+    expect(endTelemetry.properties.component).to.equal("aadApp/create");
+    expect(endTelemetry.properties.success).to.equal("no");
+    expect(endTelemetry.properties["error-code"]).to.equal("aadApp/create.UnhandledError");
+    expect(endTelemetry.properties["error-type"]).to.equal("user");
+    expect(endTelemetry.properties["error-message"])
+      .contain("Unhandled error happened in aadApp/create action")
+      .and.contain("Invalid value specified for property");
   });
 });

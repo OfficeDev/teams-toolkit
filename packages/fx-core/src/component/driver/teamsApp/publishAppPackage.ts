@@ -19,6 +19,7 @@ import { Constants } from "../../resource/appManifest/constants";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { AppStudioScopes } from "../../../common/tools";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 const actionName = "teamsApp/configure";
 
@@ -61,14 +62,23 @@ export class PublishAppPackageDriver implements StepDriver {
     const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioTokenRes.value);
     if (existApp) {
       let executePublishUpdate = false;
-      let description = `The app ${existApp.displayName} has already been submitted to tenant App Catalog.\nStatus: ${existApp.publishingState}\n`;
+      let description = getLocalizedString(
+        "plugins.appstudio.pubWarn",
+        existApp.displayName,
+        existApp.publishingState
+      );
       if (existApp.lastModifiedDateTime) {
         description =
-          description + `Last Modified: ${existApp.lastModifiedDateTime?.toLocaleString()}\n`;
+          description +
+          getLocalizedString(
+            "plugins.appstudio.lastModified",
+            existApp.lastModifiedDateTime?.toLocaleString()
+          );
       }
-      description = description + "Do you want to submit a new update?";
-      const res = await context.ui?.showMessage("warn", description, true, "Confirm");
-      if (res?.isOk() && res.value === "Confirm") executePublishUpdate = true;
+      description = description + getLocalizedString("plugins.appstudio.updatePublihsedAppConfirm");
+      const confirm = getLocalizedString("core.option.confirm");
+      const res = await context.ui?.showMessage("warn", description, true, confirm);
+      if (res?.isOk() && res.value === confirm) executePublishUpdate = true;
 
       if (executePublishUpdate) {
         const appId = await AppStudioClient.publishTeamsAppUpdate(

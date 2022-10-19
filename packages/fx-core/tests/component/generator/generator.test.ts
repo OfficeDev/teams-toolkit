@@ -12,7 +12,6 @@ import {
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
-import { templateDownloadBaseUrl } from "../../../src/component/generator/constant";
 import { Generator } from "../../../src/component/generator/generator";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
@@ -26,9 +25,11 @@ import {
   fetchZipFromUrlAction,
   unzipAction,
 } from "../../../src/component/generator/generatorAction";
-import { unzip } from "../../../src/common/template-utils/templatesUtils";
+import * as generatorUtils from "../../../src/component/generator/utils";
 import { GeneratorContext } from "../../../src/component/generator/generatorContext";
-import { tmpdir } from "os";
+import mockedEnv from "mocked-env";
+import { FeatureFlagName } from "../../../src/common/constants";
+
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
 
@@ -52,7 +53,7 @@ describe("Generator utils", () => {
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
     zip.writeZip(path.join(tmpDir, "test.zip"));
-    await unzip(
+    await generatorUtils.unzip(
       new AdmZip(path.join(tmpDir, "test.zip")),
       outputDir,
       (fileName: string, fileData: Buffer) => renderTemplateFileName(fileName, fileData, {}),
@@ -161,5 +162,26 @@ describe("Generator happy path", async () => {
     const files = await fs.readdir(tmpDir);
     assert.isTrue(files.length > 0);
     assert.isTrue(files.includes(".fx"));
+  });
+
+  it("template from source code", async () => {
+    const templateName = "test";
+    const language = "ts";
+    const mockedEnvRestore = mockedEnv({
+      [FeatureFlagName.DebugTemplate]: "true",
+      NODE_ENV: "development",
+    });
+    sandbox.stub(generatorUtils, "unzip").resolves();
+    sandbox.stub(generatorUtils, "zipFolder").returns(new AdmZip());
+
+    let success = false;
+    try {
+      await Generator.generateTemplate(templateName, language, tmpDir, context);
+      success = true;
+    } catch (e) {
+      assert.fail(e.toString());
+    }
+    assert.isTrue(success);
+    mockedEnvRestore();
   });
 });

@@ -18,6 +18,7 @@ import { BlobDeleteResponse, ContainerClient } from "@azure/storage-blob";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
+import { MockUserInteraction } from "../../../../core/utils";
 
 function getMockStorageAccount1() {
   return {
@@ -43,13 +44,14 @@ describe("Azure Storage Deploy Driver test", () => {
   it("deploy to storage happy path", async () => {
     const deploy = new AzureStorageDeployDriver();
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
+      ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as DriverContext;
     sandbox
@@ -82,8 +84,8 @@ describe("Azure Storage Deploy Driver test", () => {
   it("get azure account credential error", async () => {
     const deploy = new AzureStorageDeployDriver();
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
@@ -115,8 +117,8 @@ describe("Azure Storage Deploy Driver test", () => {
     const mockStorageManagementClient = new StorageManagementClient(new MyTokenCredential(), "id");
     mockStorageManagementClient.storageAccounts = getMockStorageAccount1() as any;
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;

@@ -185,7 +185,7 @@ export class DeployUtils {
       username,
       subscriptionName ? subscriptionName : subscriptionId
     );
-    const deployOption = "Deploy";
+    const deployOption = getLocalizedString("core.option.deploy");
     const result = await ctx.userInteraction.showMessage("warn", msg, true, deployOption);
     const choice = result?.isOk() ? result.value : undefined;
 

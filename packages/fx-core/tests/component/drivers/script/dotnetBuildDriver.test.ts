@@ -11,6 +11,7 @@ import { TestAzureAccountProvider } from "../../util/azureAccountMock";
 import { TestLogProvider } from "../../util/logProviderMock";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { assert } from "chai";
+import { MockUserInteraction } from "../../../core/utils";
 
 describe("Dotnet Build Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -26,11 +27,13 @@ describe("Dotnet Build Driver test", () => {
   it("Dotnet build happy path", async () => {
     const driver = new DotnetBuildDriver();
     const args = {
-      src: "./",
-      buildCommand: "build",
+      workingDirectory: "./",
+      args: "build",
+      env: { a: "b" },
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
+      ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as DriverContext;
     sandbox.stub(utils, "execute").resolves();
@@ -41,8 +44,8 @@ describe("Dotnet Build Driver test", () => {
   it("Dotnet build error", async () => {
     const driver = new DotnetBuildDriver();
     const args = {
-      src: "./",
-      buildCommand: "build",
+      workingDirectory: "./",
+      args: "build",
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),

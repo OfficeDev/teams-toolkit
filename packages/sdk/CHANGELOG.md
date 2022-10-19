@@ -1,6 +1,7 @@
 # 2.0.1
 - Support Teams JS SDK 2.0.
 - Add error details when projects not running inside Teams.
+- `getTediousConnectionConfig` is now deprecated. We recommend you compose your own Tedious configuration for better flexibility.
 
 # 0.6.0
 - Breaking: Remove loadConfiguration() function and add TeamsFx class

@@ -22,7 +22,7 @@ describe("account command", function () {
     });
 
     expect(stdlog.stdout).include("Account is: undefined");
-    expect(stdlog.stderr).to.be.undefined;
+    expect(stdlog.stderr).to.be.empty;
   });
 
   it(`account set`, { testPlanCaseId: 15232256 }, async function () {
@@ -54,6 +54,6 @@ describe("account command", function () {
     });
 
     expect(stdlog.stdout).include("Successfully signed out of Microsoft 365.");
-    expect(stdlog.stderr).to.be.undefined;
+    expect(stdlog.stderr).to.be.empty;
   });
 });

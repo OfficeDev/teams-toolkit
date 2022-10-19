@@ -12,8 +12,8 @@ import { it } from "@microsoft/extra-shot-mocha";
 import {
   execAsync,
   getTestFolder,
-  cleanUp,
-  setSimpleAuthSkuNameToB1Bicep,
+  cleanUpLocalProject,
+  cleanupSharePointPackage,
   getSubscriptionId,
   execAsyncWithRetry,
 } from "../commonUtils";
@@ -27,8 +27,6 @@ describe("teamsfx new template", function () {
   let testFolder: string;
   let projectPath: string;
 
-  const env = environmentManager.getDefaultEnvName();
-  const subscription = getSubscriptionId();
   beforeEach(async () => {
     testFolder = getTestFolder();
   });
@@ -45,9 +43,6 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
-    const config = await fs.readJson(`${projectPath}/SPFx/config/config.json`);
-    expect(config["bundles"]["todo-list-web-part"]).exist;
-
     // validation succeed without provision
     await execAsync("teamsfx validate", {
       cwd: path.join(testFolder, appName),
@@ -63,10 +58,16 @@ describe("teamsfx new template", function () {
     });
 
     // deploy
-    await CliHelper.deployAll(projectPath);
+    await execAsyncWithRetry(`teamsfx deploy`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
   });
 
-  after(async () => {
-    await cleanUp(appName, projectPath, true, false, true);
+  afterEach(async () => {
+    // clean up
+    await cleanUpLocalProject(projectPath);
+    await cleanupSharePointPackage(appId);
   });
 });

@@ -63,22 +63,22 @@ describe("teamsfx new template", function () {
       timeout: 0,
     });
 
-    // deploy
-    await CliHelper.deployAll(projectPath);
+    // // deploy
+    // await CliHelper.deployAll(projectPath);
 
-    // Assert
-    {
-      const context = await readContextMultiEnv(projectPath, env);
+    // // Assert
+    // {
+    //   const context = await readContextMultiEnv(projectPath, env);
 
-      // Validate Function App
-      const functionValidator = new FunctionValidator(context, projectPath, env);
-      await functionValidator.validateProvision();
-      await functionValidator.validateDeploy();
+    //   // Validate Function App
+    //   const functionValidator = new FunctionValidator(context, projectPath, env);
+    //   await functionValidator.validateProvision();
+    //   await functionValidator.validateDeploy();
 
-      // Validate sql
-      await SqlValidator.init(context);
-      await SqlValidator.validateSql();
-    }
+    //   // Validate sql
+    //   await SqlValidator.init(context);
+    //   await SqlValidator.validateSql();
+    // }
   });
 
   after(async () => {

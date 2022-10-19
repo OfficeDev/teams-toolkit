@@ -17,7 +17,7 @@ export class GetTenantFailedError extends SystemError {
     // TODO: move strings to the localization file
     const param1 = username ? `for user ${username} ` : "";
     const param2 = error ? `due to error ${error.message}` : "";
-    this.message = getDefaultString("plugins.spfx.GetTenantFailedError", param1, param2);
-    this.displayMessage = getLocalizedString("plugins.spfx.GetTenantFailedError", param1, param2);
+    this.message = getDefaultString(messageKey, param1, param2);
+    this.displayMessage = getLocalizedString(messageKey, param1, param2);
   }
 }

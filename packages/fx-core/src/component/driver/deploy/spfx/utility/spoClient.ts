@@ -56,10 +56,7 @@ export namespace SPOClient {
     file: Buffer
   ): Promise<any> {
     const requester = createRequesterWithToken(spoToken);
-    const res = await requester.post(
-      `/_api/web/tenantappcatalog/Add(overwrite=true, url='${fileName}')`,
-      file
-    );
+    await requester.post(`/_api/web/tenantappcatalog/Add(overwrite=true, url='${fileName}')`, file);
   }
 
   /**
@@ -72,7 +69,7 @@ export namespace SPOClient {
       skipFeatureDeployment: true,
     };
     const requester = createRequesterWithToken(spoToken);
-    const res = await requester.post(
+    await requester.post(
       `/_api/web/tenantappcatalog/AvailableApps/GetById('${appId}')/Deploy`,
       deploySetting
     );

@@ -914,7 +914,7 @@ describe("SSODebugHandler", () => {
       chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost/${clientId}`
+        `api://localhost:53000/${clientId}`
       );
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,

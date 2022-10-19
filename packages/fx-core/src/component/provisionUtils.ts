@@ -466,6 +466,53 @@ export class ProvisionUtils {
     }
   }
 
+  async ensureResourceGroup(
+    platform: Platform,
+    azureAccountProvider: AzureAccountProvider,
+    subscriptionId: string,
+    givenResourceGroupName?: string,
+    givenResourceGroupLocation?: string
+  ): Promise<Result<ResourceGroupInfo, FxError>> {
+    const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
+    if (azureToken === undefined) {
+      return err(
+        new UserError(
+          "coordinator",
+          SolutionError.NotLoginToAzure,
+          getLocalizedString("core.error.notLoginToAzure")
+        )
+      );
+    }
+    const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
+    let resourceGroupInfo: ResourceGroupInfo;
+    if (givenResourceGroupName) {
+      const getResourceGroupRes = await resourceGroupHelper.getResourceGroupInfo(
+        givenResourceGroupName,
+        rmClient
+      );
+      if (getResourceGroupRes.isErr()) {
+        // resource group not exist
+        if (platform === Platform.VS && givenResourceGroupLocation) {
+          resourceGroupInfo = {
+            createNewResourceGroup: true,
+            name: givenResourceGroupName,
+            location: givenResourceGroupLocation,
+          };
+        } else return err(getResourceGroupRes.error);
+      } else {
+        if (!getResourceGroupRes.value) {
+          return err(
+            new UserError(
+              SolutionSource,
+              SolutionError.ResourceGroupNotFound,
+              getLocalizedString("core.error.resourceGroupNotFound", givenResourceGroupName)
+            )
+          );
+        }
+      }
+    }
+  }
+
   /**
    * Asks common questions and puts the answers in the global namespace of SolutionConfig
    *

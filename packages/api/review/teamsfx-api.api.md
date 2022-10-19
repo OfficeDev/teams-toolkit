@@ -1736,6 +1736,8 @@ export enum Stage {
     // (undocumented)
     deploy = "deploy",
     // (undocumented)
+    deployAad = "deployAad",
+    // (undocumented)
     getProjectConfig = "getProjectConfig",
     // (undocumented)
     getQuestions = "getQuestions",

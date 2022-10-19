@@ -158,6 +158,7 @@ import { compare } from "./utils/versionUtil";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
+import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -927,6 +928,10 @@ export async function runCommand(
       }
       case Stage.deploy: {
         result = await core.deployArtifacts(inputs);
+        break;
+      }
+      case Stage.deployAad: {
+        result = await core.deployAadManifest(inputs);
         break;
       }
       case Stage.publish: {
@@ -3060,7 +3065,11 @@ export async function deployAadAppManifest(args: any[]): Promise<Result<null, Fx
     const envName = selectedEnv.value;
     inputs.env = envName;
   }
-  return await runCommand(Stage.deploy, inputs);
+  if (isV3Enabled()) {
+    return await runCommand(Stage.deployAad, inputs);
+  } else {
+    return await runCommand(Stage.deploy, inputs);
+  }
 }
 
 export async function selectTutorialsHandler(args?: any[]): Promise<Result<unknown, FxError>> {

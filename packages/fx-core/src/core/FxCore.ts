@@ -66,6 +66,7 @@ import {
   ProjectFolderExistError,
   TaskNotSupportError,
   WriteFileError,
+  NoAadManifestExistError,
 } from "./error";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
 import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
@@ -108,6 +109,9 @@ import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { copyParameterJson } from "../component/arm";
 import { ProjectSettingsHelper } from "../common/local";
+import { UpdateAadAppDriver } from "../component/driver/aad/update";
+import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
+import { DriverContext } from "../component/driver/interface/commonArgs";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -266,6 +270,55 @@ export class FxCore implements v3.ICore {
   async localDebug(inputs: Inputs): Promise<Result<Void, FxError>> {
     inputs.env = environmentManager.getLocalEnvName();
     return this.provisionResources(inputs);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW_V3(),
+  ])
+  async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.deployAad);
+    inputs.stage = Stage.deployAad;
+    const updateAadClient: UpdateAadAppDriver = Container.get("UpdateAadAppDriver") as any;
+    // current manifest path is fixed path at
+    const manifestTemplatePath: string = path.join(
+      inputs.projectPath!,
+      ".fx",
+      "aad.template.manifest.json"
+    );
+    if (!(await fs.pathExists(manifestTemplatePath))) {
+      return err(new NoAadManifestExistError(manifestTemplatePath));
+    }
+    const manifestOutputPath: string = path.join(
+      inputs.projectPath!,
+      "build",
+      `aad.${inputs.env}.manifest.json`
+    );
+    const inputArgs: UpdateAadAppArgs = {
+      manifestTemplatePath: manifestTemplatePath,
+      outputFilePath: manifestOutputPath,
+    };
+    const contextV3: DriverContext = {
+      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider,
+      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider,
+      ui: TOOLS.ui,
+      logProvider: TOOLS.logProvider,
+      telemetryReporter: TOOLS.telemetryReporter!,
+      projectPath: inputs.projectPath as string,
+      platform: Platform.VSCode,
+    };
+    const res = await updateAadClient.run(inputArgs, contextV3);
+    if (res.isErr()) return err(res.error);
+    return ok(Void);
   }
 
   @hooks([

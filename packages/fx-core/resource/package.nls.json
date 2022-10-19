@@ -748,6 +748,7 @@
   "error.aad.UpdateAadAppError": "Failed to update application in Azure Active Directory: %s",
   "error.aad.UpdateAadAppUsingManifestError": "Failed to update application in Azure Active Directory. Please make sure 'templates/appPackage/aad.template.json' is valid: %s",
   "error.aad.AadManifestNotFoundError": "Aad manifest file not found",
+  "error.aad.AadManifestNotExistError": "AAD manifest doesn't exist in %s, please use the CLI to specify an AAD manifest to deploy.",
   "error.aad.GetDisplayNameError": "Failed to get display name.",
   "error.aad.GetConfigError": "Failed to get configuration value \"%s\" for %s.",
   "error.aad.FormatError": "Invalid format for %s. Value: %s.",

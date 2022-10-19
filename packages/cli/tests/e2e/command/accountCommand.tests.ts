@@ -45,13 +45,5 @@ describe("account command", function () {
 
     expect(stdlog.stdout).include("Successfully signed out of Azure.");
     expect(stdlog.stderr).to.be.empty;
-
-    stdlog = await execAsync(`teamsfx account logout m365`, {
-      env: process.env,
-      timeout: 0,
-    });
-
-    expect(stdlog.stdout).include("Successfully signed out of Microsoft 365.");
-    expect(stdlog.stderr).to.be.empty;
   });
 });

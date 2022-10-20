@@ -9,6 +9,7 @@ import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
+import { cleanUpResourceGroup } from "../clean";
 import {
   getTestFolder,
   cleanUp,
@@ -20,7 +21,6 @@ import {
   execAsyncWithRetry,
 } from "../commonUtils";
 import { SqlValidator, FunctionValidator } from "../../commonlib";
-import { getUuid } from "../../commonlib/utilities";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
@@ -32,6 +32,9 @@ describe("teamsfx new template", function () {
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
 
+  before(async () => {
+    await cleanUpResourceGroup("dev-rg");
+  });
   it(`${TemplateProject.ShareNow}`, { testPlanCaseId: 15277467 }, async function () {
     await CliHelper.createTemplateProject(
       appName,

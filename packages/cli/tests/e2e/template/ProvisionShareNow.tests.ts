@@ -54,6 +54,12 @@ describe("teamsfx new template", function () {
     // Validate Provision
     await validateTabAndBotProjectProvision(projectPath, env);
 
+    await execAsync(`Set EXPO_DEBUG=true && npm config set package-lock false`, {
+      cwd: path.join(projectPath, "tabs"),
+      env: process.env,
+      timeout: 0,
+    });
+
     const result = await execAsync(`npm i @types/node -D`, {
       cwd: path.join(projectPath, "tabs"),
       env: process.env,

@@ -1,0 +1,53 @@
+{
+    "name": "teamsfx-template-tab",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "@fluentui/react-northstar": "^0.62.0",
+        "@microsoft/mgt-element": "2.4.1-next.teamsfx.8d56785",
+        "@microsoft/mgt-react": "2.4.1-next.teamsfx.8d56785",
+        "@microsoft/mgt-teamsfx-provider": "2.4.1-next.teamsfx.8d56785",
+        "@microsoft/microsoft-graph-client": "^3.0.1",
+        "@microsoft/teams-js": "^2.2.0",
+        "@microsoft/teamsfx": "2.0.0-beta.0",
+        "@microsoft/teamsfx-react": "2.0.0-beta.1",
+        "axios": "^0.21.1",
+        "msteams-react-base-component": "^4.0.1",
+        "react": "^16.14.0",
+        "react-dom": "^16.14.0",
+        "react-router-dom": "^5.1.2",
+        "react-scripts": "^5.0.1"
+    },
+    "devDependencies": {
+        "cross-env": "^7.0.3",
+        "env-cmd": "^10.1.0"
+    },
+    "scripts": {
+        "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run start",
+        "start": "cross-env GENERATE_SOURCEMAP=false react-scripts start",
+        "install:teamsfx": "npm install",
+        "build": "cross-env GENERATE_SOURCEMAP=false react-scripts build",
+        "build:teamsfx": "cross-env-shell \"env-cmd -f .env.teamsfx.${TEAMS_FX_ENV} npm run build\"",
+        "build:teamsfx:dev": "cross-env TEAMS_FX_ENV=dev npm run build:teamsfx",
+        "eject": "react-scripts eject"
+    },
+    "eslintConfig": {
+        "extends": [
+            "react-app",
+            "react-app/jest"
+        ]
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "homepage": "."
+}

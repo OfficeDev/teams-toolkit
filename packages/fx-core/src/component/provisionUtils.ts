@@ -511,6 +511,7 @@ export class ProvisionUtils {
         }
       }
     }
+    return ok(resourceGroupInfo!);
   }
 
   /**

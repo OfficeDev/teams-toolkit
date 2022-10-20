@@ -108,6 +108,7 @@ import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { copyParameterJson } from "../component/arm";
 import { ProjectSettingsHelper } from "../common/local";
+import { coordinator } from "../component/coordinator";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -168,8 +169,9 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    const fx = Container.get("fx") as any;
-    const res = await fx.create(context, inputs as InputsWithProjectPath);
+    const res = await coordinator.create(context, inputs as InputsWithProjectPath);
+    // const fx = Container.get("fx") as any;
+    // const res = await fx.create(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;

@@ -76,6 +76,7 @@ export class Coordinator {
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.CreateProject,
       telemetryComponentName: "coordinator",
+      errorSource: "coordinator",
     }),
   ])
   async create(
@@ -302,3 +303,5 @@ export class Coordinator {
     return ok(undefined);
   }
 }
+
+export const coordinator = new Coordinator();

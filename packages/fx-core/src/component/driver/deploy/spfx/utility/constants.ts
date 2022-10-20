@@ -13,13 +13,6 @@ export class Constants {
   public static readonly DeployProgressTitle = getLocalizedString("plugins.spfx.deploy.title");
 }
 
-export class ProgressTitleMessage {
-  static readonly PreDeployProgressTitle = getLocalizedString(
-    "plugins.spfx.buildSharepointPackage"
-  );
-  static readonly ScaffoldProgressTitle = getLocalizedString("plugins.spfx.scaffold.title");
-}
-
 export class DeployProgressMessage {
   static readonly CreateSPAppCatalog = getLocalizedString("plugins.spfx.deploy.createAppcatalog");
   static readonly UploadAndDeploy = getLocalizedString("plugins.spfx.deploy.uploadAddDeploy");

@@ -12,7 +12,11 @@ import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 
 import { Constants } from "../../../../../src/component/driver/deploy/spfx/utility/constants";
-import { MockedLogProvider, MockedM365Provider } from "../../../../plugins/solution/util";
+import {
+  MockedLogProvider,
+  MockedM365Provider,
+  MockedUserInteraction,
+} from "../../../../plugins/solution/util";
 import { SPFxDeployDriver } from "../../../../../src/component/driver/deploy/spfx/deployDriver";
 import { SPOClient } from "../../../../../src/component/driver/deploy/spfx/utility/spoClient";
 import * as Tools from "../../../../../src/common/tools";
@@ -38,6 +42,7 @@ describe("SPFx Deploy Driver", async () => {
   const deployDriver = new SPFxDeployDriver();
   const mockedDriverContext: any = {
     logProvider: new MockedLogProvider(),
+    ui: new MockedUserInteraction(),
     m365TokenProvider: new MockedM365Provider(),
     platform: Platform.VSCode,
   };

@@ -33,8 +33,9 @@ describe("teamsfx new template", function () {
   const env = environmentManager.getDefaultEnvName();
 
   before(async () => {
-    await cleanUpResourceGroup("dev-rg");
+    await cleanUpResourceGroup("share_now");
   });
+
   it(`${TemplateProject.ShareNow}`, { testPlanCaseId: 15277467 }, async function () {
     await CliHelper.createTemplateProject(
       appName,
@@ -46,12 +47,12 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
-    const config = fs.readJSONSync(path.join(projectPath, ".fx", "configs", `config.${env}.json`));
-    config["skipAddingSqlUser"] = true;
-    fs.writeFileSync(
-      path.join(projectPath, ".fx", "configs", `config.${env}.json`),
-      JSON.stringify(config)
-    );
+    // const config = fs.readJSONSync(path.join(projectPath, ".fx", "configs", `config.${env}.json`));
+    // config["skipAddingSqlUser"] = true;
+    // fs.writeFileSync(
+    //   path.join(projectPath, ".fx", "configs", `config.${env}.json`),
+    //   JSON.stringify(config)
+    // );
 
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
@@ -81,8 +82,6 @@ describe("teamsfx new template", function () {
     // deploy
     await execAsyncWithRetry(`teamsfx deploy`, {
       cwd: projectPath,
-      env: Object.assign({}, process.env),
-      timeout: 0,
     });
     console.log(`[Successfully] deploy for ${projectPath}`);
 
@@ -95,9 +94,9 @@ describe("teamsfx new template", function () {
       await functionValidator.validateProvision();
       await functionValidator.validateDeploy();
 
-      // // Validate sql
-      // await SqlValidator.init(context);
-      // await SqlValidator.validateSql();
+      // Validate sql
+      await SqlValidator.init(context);
+      await SqlValidator.validateSql();
     }
   });
 

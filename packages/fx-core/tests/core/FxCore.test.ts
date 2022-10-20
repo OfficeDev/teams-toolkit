@@ -178,6 +178,7 @@ describe("Core basic APIs", () => {
       projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
     };
     const res = await core.deployAadManifest(inputs);
+    assert.isTrue(await fs.pathExists(path.join(os.tmpdir(), appName, "samples-v3", "build")));
     await deleteTestProject(appName);
     assert.isTrue(res.isOk());
     mockedEnvRestore();

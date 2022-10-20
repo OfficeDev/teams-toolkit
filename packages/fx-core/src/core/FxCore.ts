@@ -293,6 +293,7 @@ export class FxCore implements v3.ICore {
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new NoAadManifestExistError(manifestTemplatePath));
     }
+    await fs.ensureDir(path.join(inputs.projectPath!, "build"));
     const manifestOutputPath: string = path.join(
       inputs.projectPath!,
       "build",

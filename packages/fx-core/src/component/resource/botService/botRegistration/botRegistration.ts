@@ -27,6 +27,7 @@ export class Constants {
   public static readonly BOT_REGISTRATION: string = "BotRegistration";
   public static readonly CREATE_BOT_REGISTRATION: string = "createBotRegistration";
   public static readonly UPDATE_MESSAGE_ENDPOINT: string = "updateMessageEndpoint";
+  public static readonly MSI_FOR_BOT: string = "MSI Support for Bot";
 }
 
 export class BotRegistration {
@@ -63,10 +64,7 @@ export class BotRegistration {
     } else {
       // Suppose === BotAuthType.Identity
       //TODO: Support identity.
-      return ok({
-        botId: "",
-        botPassword: "",
-      });
+      return err(new NotImplementedError(Constants.BOT_REGISTRATION, Constants.MSI_FOR_BOT));
     }
   }
   public async createBotRegistration(

@@ -164,7 +164,11 @@ export class Coordinator {
       }
       if (templateName) {
         const langKey = convertToLangKey(language);
-        await Generator.generateTemplate(templateName, langKey, projectPath, context);
+        try {
+          await Generator.generateTemplate(templateName, langKey, projectPath, context);
+        } catch (e) {
+          throw e;
+        }
       }
 
       merge(actionContext?.telemetryProps, {

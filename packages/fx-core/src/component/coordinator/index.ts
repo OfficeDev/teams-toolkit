@@ -7,6 +7,7 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
+  ProjectSettingsV3,
   ResourceContextV3,
   Result,
 } from "@microsoft/teamsfx-api";
@@ -37,7 +38,10 @@ import {
   TabFeatureIds,
   TabSPFxNewUIItem,
   ComponentNames,
-  TabSPFxItem,
+  WorkflowOptionItem,
+  NotificationOptionItem,
+  CommandAndResponseOptionItem,
+  TabOptionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
@@ -50,7 +54,19 @@ import * as path from "path";
 import { globalVars } from "../../core/globalVars";
 import fs from "fs-extra";
 import { globalStateUpdate } from "../../common/globalState";
-
+import { QuestionNames } from "../feature/bot/constants";
+import {
+  AppServiceOptionItem,
+  AppServiceOptionItemForVS,
+  FunctionsHttpAndTimerTriggerOptionItem,
+  FunctionsHttpTriggerOptionItem,
+  FunctionsTimerTriggerOptionItem,
+} from "../feature/bot/question";
+import { Generator } from "../generator/generator";
+import { convertToLangKey } from "../code/utils";
+import { downloadSampleHook } from "../../core/downloadSample";
+import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
+import * as uuid from "uuid";
 export class Coordinator {
   @hooks([
     ActionExecutionMW({
@@ -71,12 +87,22 @@ export class Coordinator {
     if (!folder) {
       return err(InvalidInputError("folder is undefined"));
     }
-    inputs.folder = folder;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath = "";
     const automaticNpmInstall = "automaticNpmInstall";
     if (scratch === ScratchOptionNo.id) {
       // create from sample
+      const sampleId = inputs[CoreQuestionNames.Samples] as string;
+      if (!sampleId) {
+        throw InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs);
+      }
+      projectPath = path.join(folder, sampleId);
+      inputs.projectPath = projectPath;
+      await fs.ensureDir(projectPath);
+
+      await Generator.generateSample(sampleId, projectPath, context);
+
+      await downloadSampleHook(sampleId, projectPath);
     } else {
       // create from new
       const appName = inputs[CoreQuestionNames.AppName] as string;
@@ -93,40 +119,71 @@ export class Coordinator {
       await fs.ensureDir(projectPath);
 
       // set isVS global var when creating project
-      globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
-      const features = inputs.capabilities as string;
-
+      const language = inputs[CoreQuestionNames.ProgrammingLanguage];
+      globalVars.isVS = language === "csharp";
+      const feature = inputs.capabilities as string;
       delete inputs.folder;
 
-      if (features === M365SsoLaunchPageOptionItem.id || features === M365SearchAppOptionItem.id) {
+      if (feature === M365SsoLaunchPageOptionItem.id || feature === M365SearchAppOptionItem.id) {
         context.projectSetting.isM365 = true;
         inputs.isM365 = true;
       }
 
-      let group = "";
+      let templateName = "";
 
-      if (BotFeatureIds.includes(features)) {
+      if (BotFeatureIds.includes(feature)) {
         // bot
-        group = "bot";
-      } else if (TabFeatureIds.includes(features)) {
+        if (feature === NotificationOptionItem.id) {
+          const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
+          if (trigger === AppServiceOptionItem.id) {
+            templateName = "notification-restify";
+          } else if (trigger === AppServiceOptionItemForVS.id) {
+            templateName = "notification-webapi";
+          } else if (trigger === AppServiceOptionItemForVS.id) {
+            templateName = "notification-restify";
+          } else if (trigger === FunctionsHttpTriggerOptionItem.id) {
+            templateName = "notification-http-trigger";
+          } else if (trigger === FunctionsTimerTriggerOptionItem.id) {
+            templateName = "notification-timer-trigger";
+          } else if (trigger === FunctionsHttpAndTimerTriggerOptionItem.id) {
+            templateName = "notification-http-timer-trigger";
+          }
+        } else if (feature === CommandAndResponseOptionItem.id) {
+          templateName = "command-and-response";
+        } else if (feature === WorkflowOptionItem.id) {
+          templateName = "workflow";
+        }
+      } else if (TabFeatureIds.includes(feature)) {
         // tab
-        group = "tab";
-      } else if (features === TabSPFxItem.id) {
-        // spfx tab
-        group = "tab";
+        if (feature === TabOptionItem.id) {
+          templateName = "sso-tab";
+        } else {
+          templateName = "tab";
+        }
+      }
+      if (templateName) {
+        const langKey = convertToLangKey(language);
+        await Generator.generateTemplate(templateName, langKey, projectPath, context);
       }
 
-      //TODO
-
       merge(actionContext?.telemetryProps, {
-        [TelemetryProperty.Feature]: features,
+        [TelemetryProperty.Feature]: feature,
       });
+    }
+
+    // generate unique projectId in projectSettings.json
+    const projectSettingsRes = await loadProjectSettingsByProjectPath(projectPath, true);
+    if (projectSettingsRes.isOk()) {
+      const projectSettings = projectSettingsRes.value;
+      projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
+      projectSettings.isFromSample = true;
+      inputs.projectId = projectSettings.projectId;
+      context.projectSetting = projectSettings as ProjectSettingsV3;
     }
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
     }
     context.projectPath = projectPath;
-
     return ok(projectPath);
   }
 

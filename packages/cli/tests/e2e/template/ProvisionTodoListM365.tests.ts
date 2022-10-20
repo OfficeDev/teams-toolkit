@@ -10,7 +10,6 @@ import fs from "fs-extra";
 import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import {
-  execAsync,
   getTestFolder,
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
@@ -25,24 +24,19 @@ import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
-  let appName: string;
-  let testFolder: string;
-  let projectPath: string;
-
-  const env = environmentManager.getDefaultEnvName();
+  const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
-  beforeEach(async () => {
-    testFolder = getTestFolder();
-  });
+  const appName = getUniqueAppName();
+  const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   it(`${TemplateProject.TodoListM365}`, { testPlanCaseId: 15277470 }, async function () {
-    appName = "todo-list-with-Azure-backend-M365";
-    projectPath = path.resolve(testFolder, appName);
-    await execAsync(`teamsfx new template ${TemplateProject.TodoListM365}`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
+    await CliHelper.createTemplateProject(
+      appName,
+      testFolder,
+      TemplateProject.ShareNow,
+      "todo-list-with-Azure-backend-M365"
+    );
 
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;

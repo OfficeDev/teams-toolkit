@@ -13,32 +13,28 @@ import {
   execAsync,
   getTestFolder,
   cleanUpLocalProject,
-  cleanupSharePointPackage,
   getSubscriptionId,
   execAsyncWithRetry,
+  getUniqueAppName,
 } from "../commonUtils";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
-  let appId: string;
-  let appName: string;
-  let testFolder: string;
-  let projectPath: string;
-
-  beforeEach(async () => {
-    testFolder = getTestFolder();
-  });
+  const testFolder = getTestFolder();
+  const subscription = getSubscriptionId();
+  const appName = getUniqueAppName();
+  const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   it(`${TemplateProject.TodoListSpfx}`, { testPlanCaseId: 15277466 }, async function () {
-    appName = "todo-list-SPFx";
-    projectPath = path.resolve(testFolder, appName);
-    await execAsync(`teamsfx new template ${TemplateProject.TodoListSpfx}`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
+    await CliHelper.createTemplateProject(
+      appName,
+      testFolder,
+      TemplateProject.ShareNow,
+      "todo-list-SPFx"
+    );
 
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
@@ -68,6 +64,5 @@ describe("teamsfx new template", function () {
   afterEach(async () => {
     // clean up
     await cleanUpLocalProject(projectPath);
-    await cleanupSharePointPackage(appId);
   });
 });

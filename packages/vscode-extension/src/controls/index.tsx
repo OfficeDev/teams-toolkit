@@ -6,6 +6,7 @@ import { initializeIcons } from "@fluentui/react/lib/Icons";
 import SampleGallery from "./SampleGallery";
 import Survey from "./Survey";
 import RespondToCardActions from "./webviewDocs/respondToCardActions";
+import WorkflowBot from "./webviewDocs/workflowBot";
 import { PanelType } from "./PanelType";
 
 const language = "en";
@@ -34,7 +35,7 @@ export default function App(props: any) {
     >
       <Route path="/sample-gallery" component={SampleGallery} />
       <Route path="/survey" component={Survey} />
-      <Route path="/respond-to-card-actions" component={RespondToCardActions} />
+      <Route path="/respond-to-card-actions" component={WorkflowBot} />
     </MemoryRouter>
   );
 }

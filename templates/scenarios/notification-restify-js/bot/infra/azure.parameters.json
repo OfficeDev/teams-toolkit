@@ -3,13 +3,16 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "resourceBaseName": {
-        "value": "v3sample${{RESOURCE_SUFFIX}}"
+        "value": "notification${{RESOURCE_SUFFIX}}"
       },
       "botAadAppClientId": {
         "value": "${{BOT_ID}}"
       },
       "botAadAppClientSecret": {
         "value": "${{SECRET_BOT_PASSWORD}}"
+      },
+      "webAppSKU": {
+        "value": "F1"
       }
     }
   }

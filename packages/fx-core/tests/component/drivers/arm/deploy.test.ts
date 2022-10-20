@@ -13,6 +13,7 @@ import * as cpUtils from "../../../../src/common/cpUtils";
 import { ArmDeployImpl } from "../../../../src/component/driver/arm/deployImpl";
 import { ok } from "@microsoft/teamsfx-api";
 import * as bicepChecker from "../../../../src/component/utils/depsChecker/bicepChecker";
+import axios from "axios";
 
 describe("Arm driver deploy", () => {
   const sandbox = createSandbox();
@@ -42,7 +43,12 @@ describe("Arm driver deploy", () => {
     });
     sandbox.stub(ArmDeployImpl.prototype, "executeDeployment").resolves(deployRes as any);
     sandbox.stub(bicepChecker, "getAvailableBicepVersions").resolves([bicepCliVersion]);
-    sandbox.stub(bicepChecker, "ensureBicepForDriver").resolves("bicep");
+    const fakeAxiosInstance = axios.create();
+    sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+    sandbox.stub(fakeAxiosInstance, "get").resolves({
+      status: 200,
+      data: "",
+    });
     let deployArgs = {
       subscriptionId: "00000000-0000-0000-0000-000000000000",
       resourceGroupName: "mock-group",

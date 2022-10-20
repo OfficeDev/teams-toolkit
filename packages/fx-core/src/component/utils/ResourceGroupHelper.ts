@@ -101,7 +101,7 @@ export class ResourceGroupHelper {
         new UserError(
           SolutionSource,
           SolutionError.FailedToGetAzureCredential,
-          "Failed to get azure credential"
+          getLocalizedString("error.FailedToGetAzureCredential")
         )
       );
     const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
@@ -114,7 +114,7 @@ export class ResourceGroupHelper {
         new UserError(
           SolutionSource,
           SolutionError.FailedToCreateResourceGroup,
-          `Failed to create resource group "${resourceGroupName}": the resource group exists`
+          getLocalizedString("core.error.FailedToCreateResourceGroup.exist", resourceGroupName)
         )
       );
     }
@@ -178,7 +178,8 @@ export class ResourceGroupHelper {
         new UserError(
           SolutionSource,
           SolutionError.FailedToGetAzureCredential,
-          "Failed to get azure credential"
+          getDefaultString("error.FailedToGetAzureCredential"),
+          getLocalizedString("error.FailedToGetAzureCredential")
         )
       );
     const subscriptionClient = new SubscriptionClient(azureToken);

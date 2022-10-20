@@ -379,6 +379,9 @@ export class FxCore implements v3.ICore {
     } else if (func.method === "updateManifest") {
       const component = Container.get("app-manifest") as any;
       res = await component.deploy(context, inputs as InputsWithProjectPath);
+    } else if (func.method === "buildAadManifest") {
+      const component = Container.get("aad-app") as any;
+      res = await component.buildAadManifest(context, inputs as InputsWithProjectPath);
     } else {
       return err(new NotImplementedError(func.method));
     }
@@ -720,46 +723,7 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
-  // deprecated
-  // @hooks([
-  //   ErrorHandlerMW,
-  //   ConcurrentLockerMW,
-  //   ProjectMigratorMW,
-  //   ProjectConsolidateMW,
-  //   AadManifestMigrationMW,
-  //   ProjectVersionCheckerMW,
-  //   ProjectSettingsLoaderMW,
-  //   ContextInjectorMW,
-  //   ProjectSettingsWriterMW,
-  // ])
   async activateEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    // const env = inputs.env;
-    // if (!env) {
-    //   return err(new ObjectIsUndefinedError("env"));
-    // }
-    // if (!ctx!.projectSettings) {
-    //   return ok(Void);
-    // }
-
-    // const envConfigs = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
-
-    // if (envConfigs.isErr()) {
-    //   return envConfigs;
-    // }
-
-    // if (envConfigs.isErr() || envConfigs.value.indexOf(env) < 0) {
-    //   return err(NonExistEnvNameError(env));
-    // }
-
-    // const solutionContext = await loadSolutionContext(inputs, ctx!.projectSettings, env);
-
-    // if (!solutionContext.isErr()) {
-    //   ctx!.provisionInputConfig = solutionContext.value.envInfo.config;
-    //   ctx!.provisionOutputs = solutionContext.value.envInfo.state;
-    //   ctx!.envName = solutionContext.value.envInfo.envName;
-    // }
-
-    // this.tools.ui.showMessage("info", `[${env}] is activated.`, false);
     return ok(Void);
   }
 

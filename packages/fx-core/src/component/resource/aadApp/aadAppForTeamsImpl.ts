@@ -266,12 +266,20 @@ export class AadAppForTeamsImpl {
     }
 
     config.frontendDomain = userSetFrontendDomain ?? config.frontendDomain;
+    config.frontendEndpoint = userSetFrontendDomain
+      ? `https://${userSetFrontendDomain}`
+      : config.frontendEndpoint;
     config.botId = userSetBotId ?? config.botId;
     config.botEndpoint = userSetBotEndpoint ?? config.botEndpoint;
 
     if (config.frontendDomain || config.botId) {
       let applicationIdUri = "api://";
-      applicationIdUri += config.frontendDomain ? `${config.frontendDomain}/` : "";
+      let frontendHost = config.frontendDomain;
+      if (config.frontendEndpoint) {
+        const url = new URL(config.frontendEndpoint as string);
+        frontendHost = url.host;
+      }
+      applicationIdUri += frontendHost ? `${frontendHost}/` : "";
       applicationIdUri += config.botId ? "botid-" + config.botId : config.clientId;
       config.applicationIdUri = applicationIdUri;
       ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));
@@ -702,6 +710,8 @@ export class AadAppForTeamsImpl {
 
   public async loadAndBuildManifest(ctx: PluginContext): Promise<AADManifest> {
     let isProvisionSucceeded;
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartBuildAadManifest);
     if (ctx.envInfo.envName === "local") {
       isProvisionSucceeded = !!ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID);
     } else {
@@ -729,6 +739,7 @@ export class AadAppForTeamsImpl {
       );
     }
     await AadAppManifestManager.writeManifestFileToBuildFolder(manifest, ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndBuildAadManifest);
     return manifest;
   }
 

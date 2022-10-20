@@ -81,7 +81,7 @@ Here's a sample action with type `Action.Execute`:
         {
           "type": "Action.Execute",
           "title": "DoSomething",
-          "verb": "DoSomething" 
+          "verb": "doSomething" 
         }
       ]
     },
@@ -118,7 +118,7 @@ You can use the [Adaptive Card Designer](https://adaptivecards.io/designer/) to 
 
 ### Step 3: Handle the new action
 
-The TeamsFx SDK provides a convenient class, `TeamsFxAdaptiveCardActionHandler`, to handle when an action from an Adaptive Card is invoked. Create a new file, `bot/src/cardActions/doSomethingActionHandler.js`:
+The TeamsFx SDK provides a convenient class, `TeamsFxAdaptiveCardActionHandler`, to handle when an action from an Adaptive Card is invoked. Create a new file, `bot/src/cardActions/doSomethingActionHandler.ts`:
 
 ```typescript
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
@@ -158,8 +158,8 @@ const conversationBot = new ConversationBot({
   cardAction: { 
     enabled: true, 
     actions: [ 
-      new doStuffActionHandler(),
-      new doSomethingActionHandler() 
+      new DoStuffActionHandler(),
+      new DoSomethingActionHandler() 
     ], 
   } 
 }); 

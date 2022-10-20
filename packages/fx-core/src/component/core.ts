@@ -309,6 +309,9 @@ export class TeamsfxCore {
     const projectSettings = newProjectSettings() as ProjectSettingsV3;
     projectSettings.appName = inputs["app-name"];
     projectSettings.components = [];
+    if (inputs.projectId) {
+      projectSettings.projectId = inputs.projectId;
+    }
     context.projectSetting = projectSettings;
     await fs.ensureDir(inputs.projectPath);
     await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
@@ -500,7 +503,7 @@ export class TeamsfxCore {
       );
       const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
       if (url) {
-        const title = "View Provisioned Resources";
+        const title = getLocalizedString("core.provision.viewResources");
         ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
           const userSelected = result.isOk() ? result.value : undefined;
           if (userSelected === title) {

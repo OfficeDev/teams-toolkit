@@ -14,6 +14,7 @@ import { TestLogProvider } from "../../util/logProviderMock";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { NpmBuildDriver } from "../../../../src/component/driver/script/npmBuildDriver";
 import { assert } from "chai";
+import { MockUserInteraction } from "../../../core/utils";
 
 describe("NPM Build Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -29,12 +30,13 @@ describe("NPM Build Driver test", () => {
   it("NPM build happy path", async () => {
     const driver = new NpmBuildDriver();
     const args = {
-      src: "./",
-      buildCommand: "build",
+      workingDirectory: "./",
+      args: "build",
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
     } as DriverContext;
     sandbox.stub(utils, "execute").resolves();
     const res = await driver.run(args, context);
@@ -44,8 +46,9 @@ describe("NPM Build Driver test", () => {
   it("Dotnet build error", async () => {
     const driver = new NpmBuildDriver();
     const args = {
-      src: "./",
-      buildCommand: "build",
+      workingDirectory: "./",
+      args: "build",
+      env: { a: "HELLO" },
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),

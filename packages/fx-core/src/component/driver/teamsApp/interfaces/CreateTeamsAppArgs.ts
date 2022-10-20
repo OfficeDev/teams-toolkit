@@ -3,7 +3,7 @@
 
 export interface CreateTeamsAppArgs {
   /**
-   * Zipped app package path
+   * Teams app manifest template path
    */
-  appPackagePath: string;
+  manifestTemplatePath: string;
 }

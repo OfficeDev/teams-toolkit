@@ -32,8 +32,6 @@ describe("teamsfx new template", function () {
   const projectPath = path.resolve(testFolder, appName);
   const env = environmentManager.getDefaultEnvName();
 
-  beforeEach(async () => {});
-
   it(`${TemplateProject.ShareNow}`, { testPlanCaseId: 15277467 }, async function () {
     await CliHelper.createTemplateProject(
       appName,
@@ -56,11 +54,16 @@ describe("teamsfx new template", function () {
     // Validate Provision
     await validateTabAndBotProjectProvision(projectPath, env);
 
-    await execAsync(`npm i @types/node -D`, {
+    const result = await execAsync(`npm i @types/node -D`, {
       cwd: path.join(projectPath, "tabs"),
       env: process.env,
       timeout: 0,
     });
+    if (!result.stderr) {
+      console.log("success to run cmd: npm i @types/node -D");
+    } else {
+      console.log("[failed] ", result.stderr);
+    }
 
     // deploy
     await CliHelper.deployAll(projectPath);

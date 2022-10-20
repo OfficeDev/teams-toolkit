@@ -18,7 +18,7 @@ import {
   UnzipError,
 } from "./error";
 import { GeneratorAction, GeneratorActionName } from "./generatorAction";
-import { GeneratorContext } from "./generatorContext";
+import { GeneratorContext } from "./generatorAction";
 import { SampleInfo, sampleProvider } from "../../common/samples";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
@@ -26,6 +26,7 @@ import { EOL } from "os";
 import templateConfig from "../../common/templates-config.json";
 import sampleConfig from "../../common/samples-config.json";
 import semver from "semver";
+import { Generator } from "./generator";
 
 const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
 const templateVersion = templateConfig.version;
@@ -228,13 +229,13 @@ export function renderTemplateFileName(
 }
 
 export function getSampleInfoFromName(sampleName: string): SampleInfo {
-  const samples = sampleProvider.SampleCollection.samples.filter(
+  const sample = sampleProvider.SampleCollection.samples.find(
     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
   );
-  if (!samples.length) {
+  if (!sample) {
     throw Error(`invalid sample name: '${sampleName}'`);
   }
-  return samples[0];
+  return sample;
 }
 
 export function zipFolder(folderPath: string): AdmZip {
@@ -268,9 +269,9 @@ export async function sampleDefaultOnActionError(
 ) {
   switch (action.name) {
     case GeneratorActionName.FetchSampleUrlWithTag:
-      throw new FetchSampleUrlWithTagError();
+      throw new FetchSampleUrlWithTagError(error);
     case GeneratorActionName.FetchZipFromUrl:
-      throw new FetchZipFromUrlError(context.zipUrl!);
+      throw new FetchZipFromUrlError(context.zipUrl!, error);
     case GeneratorActionName.Unzip:
       throw new UnzipError();
     default:

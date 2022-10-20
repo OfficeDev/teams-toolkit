@@ -3,13 +3,34 @@
 
 import AdmZip from "adm-zip";
 import path from "path";
-import { GeneratorContext } from "./generatorContext";
 import { fetchZipFromUrl, fetchTemplateZipUrl, unzip, fetchSampleZipUrl, zipFolder } from "./utils";
 import fs from "fs-extra";
 import { defaultTimeoutInMs, defaultTryLimits } from "./constant";
 import { getTemplatesFolder } from "../../folder";
 import { MissKeyError } from "./error";
 import { FeatureFlagName } from "../../common/constants";
+import { LogProvider } from "@microsoft/teamsfx-api";
+
+export interface GeneratorContext {
+  name: string;
+  destination: string;
+  logProvider: LogProvider;
+  relativePath?: string;
+  zipUrl?: string;
+  zip?: AdmZip;
+  fallbackZipPath?: string;
+
+  fileNameReplaceFn?: (name: string, data: Buffer) => string;
+  fileDataReplaceFn?: (name: string, data: Buffer) => Buffer | string;
+
+  onActionStart?: (action: GeneratorAction, context: GeneratorContext) => Promise<void>;
+  onActionEnd?: (action: GeneratorAction, context: GeneratorContext) => Promise<void>;
+  onActionError?: (
+    action: GeneratorAction,
+    context: GeneratorContext,
+    error: Error
+  ) => Promise<void>;
+}
 
 export interface GeneratorAction {
   name: string;

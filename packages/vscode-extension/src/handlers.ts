@@ -775,6 +775,46 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   }
 }
 
+export async function validateManifestHandlerV3(args?: any[]): Promise<Result<null, FxError>> {
+  // Use default manifest template
+  // Throw error if not exists and remind user to use CLI
+  const workspacePath = globalVariables.workspaceUri?.fsPath;
+  const manifestTemplatePath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
+
+  if (!(await fs.pathExists(manifestTemplatePath))) {
+    const error = new UserError(
+      ExtensionSource,
+      ExtensionErrors.DefaultManifestTemplateNotExistsError,
+      util.format(
+        localize("teamstoolkit.handlers.defaultManifestTemplateNotExists"),
+        manifestTemplatePath
+      )
+    );
+
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
+    showError(error);
+    return err(error);
+  }
+
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "validateManifestV3",
+    params: {
+      manifestTemplatePath: manifestTemplatePath,
+    },
+  };
+
+  // TODO: how to load selected env variables?
+  const selectedEnv = await askTargetEnvironment();
+  if (selectedEnv.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+    showError(selectedEnv.error);
+    return err(selectedEnv.error);
+  }
+  const env = selectedEnv.value;
+  return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
+}
+
 /**
  * Ask user to select environment, local is included
  */

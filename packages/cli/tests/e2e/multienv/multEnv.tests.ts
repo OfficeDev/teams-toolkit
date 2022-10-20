@@ -23,6 +23,7 @@ import {
   setBotSkuNameToB1Bicep,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
+import { getUuid } from "../../commonlib/utilities";
 
 import { Capability } from "../../commonlib/constants";
 
@@ -66,7 +67,10 @@ describe("Multi Env Happy Path for Azure", function () {
 
       // provision
       result = await execAsyncWithRetry(
-        `teamsfx provision --sql-admin-name e2e --sql-password 'Abc123456%' --env ${env}`,
+        `teamsfx provision --sql-admin-name e2e --sql-password Cab232332${getUuid().substring(
+          0,
+          6
+        )} --env ${env}`,
         {
           cwd: projectPath,
           env: processEnv,

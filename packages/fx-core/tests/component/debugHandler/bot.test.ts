@@ -475,21 +475,20 @@ describe("TabDebugHandler", () => {
         checkM365TenantCalled = true;
         return ok(Void);
       });
-      const botAuthCredential: BotAuthCredential = {
-        objectId: "11111111-1111-1111-1111-111111111111",
+      const aadAppCredentials: AadAppCredentials = {
         clientId: "22222222-2222-2222-2222-222222222222",
         clientSecret: "xxx",
       };
       let called = false;
-      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").callsFake(async () => {
+      sinon.stub(GraphClient, "registerAadApp").callsFake(async () => {
         called = true;
-        return botAuthCredential;
+        return aadAppCredentials;
       });
-      sinon.stub(AppStudio, "getBotRegistration").callsFake(async () => {
+      sinon.stub(AppStudioClient, "getBotRegistration").callsFake(async () => {
         return undefined;
       });
-      sinon.stub(AppStudio, "createBotRegistration").callsFake(async () => {});
-      sinon.stub(AppStudio, "updateMessageEndpoint").callsFake(async () => {});
+      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {});
+      sinon.stub(AppStudioClient, "updateMessageEndpoint").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
       });
@@ -520,21 +519,17 @@ describe("TabDebugHandler", () => {
       chai.assert(result.isOk());
       chai.assert(checkM365TenantCalled);
       chai.assert(called);
-      chai.assert.equal(
-        envInfoV3.state[ComponentNames.TeamsBot].objectId,
-        botAuthCredential.objectId
-      );
-      chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].botId, botAuthCredential.clientId);
+      chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].botId, aadAppCredentials.clientId);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.TeamsBot].botPassword,
-        botAuthCredential.clientSecret
+        aadAppCredentials.clientSecret
       );
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].siteEndpoint, botEndpoint);
       chai.assert.equal(envInfoV3.state[ComponentNames.TeamsBot].validDomain, domain);
       const expected: LocalEnvs = {
         template: {
-          [LocalEnvKeys.bot.template.BotId]: botAuthCredential.clientId as string,
-          [LocalEnvKeys.bot.template.BotPassword]: botAuthCredential.clientSecret as string,
+          [LocalEnvKeys.bot.template.BotId]: aadAppCredentials.clientId as string,
+          [LocalEnvKeys.bot.template.BotPassword]: aadAppCredentials.clientSecret as string,
         },
         teamsfx: {},
         customized: {},

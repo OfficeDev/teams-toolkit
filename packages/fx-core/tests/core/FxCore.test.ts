@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, Platform, Stage, Ok } from "@microsoft/teamsfx-api";
+import { Inputs, Platform, Stage, Ok, Err, UserError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -31,6 +31,7 @@ import * as templateActions from "../../src/common/template-utils/templatesActio
 import mockedEnv from "mocked-env";
 import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
 import AdmZip from "adm-zip";
+import { NoAadManifestExistError } from "../../src/core/error";
 import "../../src/component/driver/aad/update";
 
 let mockedEnvRestore: () => void;
@@ -160,7 +161,7 @@ describe("Core basic APIs", () => {
     assert.isTrue(activateEnvRes.isOk());
   });
 
-  it("deploy aad manifest", async () => {
+  it("deploy aad manifest happy path", async () => {
     const core = new FxCore(tools);
     mockedEnvRestore = mockedEnv({
       V3_INTEGRATION: "true",
@@ -181,6 +182,44 @@ describe("Core basic APIs", () => {
     assert.isTrue(await fs.pathExists(path.join(os.tmpdir(), appName, "samples-v3", "build")));
     await deleteTestProject(appName);
     assert.isTrue(res.isOk());
+    mockedEnvRestore();
+  });
+
+  it("deploy aad manifest not exist", async () => {
+    const core = new FxCore(tools);
+    mockedEnvRestore = mockedEnv({
+      V3_INTEGRATION: "true",
+    });
+    const appName = mockV3Project();
+    const appManifestPath = path.join(
+      os.tmpdir(),
+      appName,
+      "samples-v3",
+      ".fx",
+      "aad.manifest.json"
+    );
+    await fs.remove(appManifestPath);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+    };
+    try {
+      const res = await core.deployAadManifest(inputs);
+    } catch (err) {
+      assert.isNotNull(err);
+      assert.isTrue(err instanceof NoAadManifestExistError);
+      assert.equal(
+        err.message,
+        `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`
+      );
+    }
+    await deleteTestProject(appName);
     mockedEnvRestore();
   });
 

@@ -20,6 +20,7 @@ import sinon from "sinon";
 import * as uuid from "uuid";
 import {
   checkPermission,
+  CollaborationConstants,
   CollaborationUtil,
   grantPermission,
   listCollaborator,
@@ -38,6 +39,10 @@ import { hasAAD, hasAzureResource, hasSPFx } from "../../src/common/projectSetti
 import { CollaborationState } from "../../src/common/permissionInterface";
 import { SolutionError } from "../../src/component/constants";
 import { AadApp } from "../../src/component/resource/aadApp/aadApp";
+import fs from "fs-extra";
+import { FeatureFlagName } from "../../src/common/constants";
+import mockedEnv, { RestoreFn } from "mocked-env";
+
 describe("Collaborator APIs for V3", () => {
   const sandbox = sinon.createSandbox();
   const projectSettings: ProjectSettingsV3 = {
@@ -747,6 +752,166 @@ describe("Collaborator APIs for V3", () => {
       inputs.email = "your_collaborator@yourcompany.com";
       const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 1);
+    });
+  });
+
+  describe("loadDotEnvFile v3", () => {
+    let mockedEnvRestore: RestoreFn;
+
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.ApiV3]: "true" });
+    });
+    afterEach(() => {
+      mockedEnvRestore();
+      sandbox.restore();
+    });
+    it("happy path", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox
+        .stub(fs, "readFile")
+        .resolves(
+          Buffer.from(
+            "AAD_APP_OBJECT_ID=aadObjectId\n TEAMS_APP_ID=teamsAppId\n TEAMS_APP_TENANT_ID=tenantId"
+          )
+        );
+
+      const result = await CollaborationUtil.loadDotEnvFile("filePath");
+      assert.isTrue(result.isOk());
+      if (result.isOk()) {
+        assert.equal(result.value[CollaborationConstants.TeamsAppIdEnv], "teamsAppId");
+        assert.equal(result.value[CollaborationConstants.AadObjectIdEnv], "aadObjectId");
+        assert.equal(result.value[CollaborationConstants.TeamsAppTenantIdEnv], "tenantId");
+      }
+    });
+
+    it("file path error", async () => {
+      sandbox.stub(fs, "pathExists").resolves(false);
+      const result = await CollaborationUtil.loadDotEnvFile("filepath");
+      assert.isTrue(result.isErr());
+      if (result.isErr()) {
+        assert.equal(result.error.name, SolutionError.FailedToLoadDotEnvFile);
+      }
+    });
+
+    it("load env failed", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFile").throws(new Error("failed to load env"));
+      const result = await CollaborationUtil.loadDotEnvFile("filepath");
+      if (result.isErr()) {
+        assert.equal(result.error.name, SolutionError.FailedToLoadDotEnvFile);
+      }
+    });
+  });
+
+  describe("getTeamsAppIdAndAadObjectId v3", () => {
+    let mockedEnvRestore: RestoreFn;
+
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.ApiV3]: "true" });
+    });
+    afterEach(() => {
+      mockedEnvRestore();
+      sandbox.restore();
+    });
+
+    it("happy path vsc", async () => {
+      const mockedEnvTmp: RestoreFn = mockedEnv({
+        [CollaborationConstants.TeamsAppIdEnv]: "teamsAppId",
+        [CollaborationConstants.AadObjectIdEnv]: "aadObjectId",
+      });
+      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
+      assert.isTrue(result.isOk());
+      if (result.isOk()) {
+        const appId = result.value;
+        assert.equal(appId.teamsAppId, "teamsAppId");
+        assert.equal(appId.aadObjectId, "aadObjectId");
+      }
+      mockedEnvTmp();
+    });
+
+    it("happy path cli: get from parameter", async () => {
+      const inputsCli: v2.InputsWithProjectPath = {
+        platform: Platform.CLI,
+        projectPath: path.join(os.tmpdir(), randomAppName()),
+        teamsAppId: "teamsAppId",
+        aadObjectId: "aadObjectId",
+      };
+      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputsCli);
+      assert.isTrue(result.isOk());
+      if (result.isOk()) {
+        const appId = result.value;
+        assert.equal(appId.teamsAppId, "teamsAppId");
+        assert.equal(appId.aadObjectId, "aadObjectId");
+      }
+    });
+
+    it("happy path cli: get from dotenv", async () => {
+      const inputsCli: v2.InputsWithProjectPath = {
+        platform: Platform.CLI,
+        projectPath: path.join(os.tmpdir(), randomAppName()),
+        dotEnvFilePath: "filePath",
+      };
+      sandbox.stub(CollaborationUtil, "loadDotEnvFile").resolves(
+        ok({
+          [CollaborationConstants.TeamsAppIdEnv]: "teamsAppId",
+          [CollaborationConstants.AadObjectIdEnv]: "aadObjectId",
+        })
+      );
+      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputsCli);
+      assert.isTrue(result.isOk());
+      console.log(result);
+      if (result.isOk()) {
+        const appId = result.value;
+        assert.equal(appId.teamsAppId, "teamsAppId");
+        assert.equal(appId.aadObjectId, "aadObjectId");
+      }
+    });
+
+    it("happy path cli: get from env", async () => {
+      const inputsCli: v2.InputsWithProjectPath = {
+        platform: Platform.CLI,
+        projectPath: path.join(os.tmpdir(), randomAppName()),
+      };
+      const mockedEnvTmp: RestoreFn = mockedEnv({
+        [CollaborationConstants.TeamsAppIdEnv]: "teamsAppId",
+        [CollaborationConstants.AadObjectIdEnv]: "aadObjectId",
+      });
+      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputsCli);
+      assert.isTrue(result.isOk());
+      if (result.isOk()) {
+        const appId = result.value;
+        assert.equal(appId.teamsAppId, "teamsAppId");
+        assert.equal(appId.aadObjectId, "aadObjectId");
+      }
+      mockedEnvTmp();
+    });
+
+    it("load DotEnv failed", async () => {
+      const inputsCli: v2.InputsWithProjectPath = {
+        platform: Platform.CLI,
+        projectPath: path.join(os.tmpdir(), randomAppName()),
+        dotEnvFilePath: "filePath",
+      };
+      sandbox
+        .stub(CollaborationUtil, "loadDotEnvFile")
+        .resolves(err(new UserError("source", "errorName", "errorMessage")));
+      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputsCli);
+      assert.isTrue(result.isErr());
+      if (result.isErr()) {
+        assert.equal(result.error.name, "errorName");
+      }
+    });
+
+    it("failed to get teamsAppId", async () => {
+      const inputsCli: v2.InputsWithProjectPath = {
+        platform: Platform.VSCode,
+        projectPath: path.join(os.tmpdir(), randomAppName()),
+      };
+      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputsCli);
+      assert.isTrue(result.isErr());
+      if (result.isErr()) {
+        assert.equal(result.error.name, SolutionError.FailedToGetTeamsAppId);
+      }
     });
   });
 });

@@ -57,7 +57,7 @@ import { validate as uuidValidate } from "uuid";
 import { HelpLinks } from "../../../common/constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { AppUser } from "../appManifest/interfaces/appUser";
-import { isAadManifestEnabled } from "../../../common/tools";
+import { isAadManifestEnabled, isApiV3Enabled } from "../../../common/tools";
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";
 import { AADManifest } from "./interfaces/AADManifest";
@@ -393,12 +393,14 @@ export class AadAppForTeamsImpl {
 
   public async checkPermission(
     ctx: ContextV3,
-    userInfo: AppUser
+    userInfo: AppUser,
+    aadObjectIdV3?: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     ctx.logProvider.info(Messages.StartCheckPermission.log);
     await TokenProvider.init({ m365: ctx.tokenProvider?.m365TokenProvider }, TokenAudience.Graph);
-    const aadState = ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp;
-    const objectId = aadState.objectId;
+    const objectId = isApiV3Enabled()
+      ? aadObjectIdV3
+      : (ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp).objectId;
     if (!objectId) {
       const params = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
       const msgs0 = getPermissionErrorMessage(params[0], false);
@@ -425,11 +427,15 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success(result);
   }
 
-  public async listCollaborator(ctx: ContextV3): Promise<Result<AadOwner[], FxError>> {
+  public async listCollaborator(
+    ctx: ContextV3,
+    aadObjectIdV3?: string
+  ): Promise<Result<AadOwner[], FxError>> {
     ctx.logProvider.info(Messages.StartListCollaborator.log);
     await TokenProvider.init({ m365: ctx.tokenProvider?.m365TokenProvider }, TokenAudience.Graph);
-    const aadState = ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp;
-    const objectId = aadState.objectId;
+    const objectId = isApiV3Enabled()
+      ? aadObjectIdV3
+      : (ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp).objectId;
     if (!objectId) {
       const msgs = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
       throw ResultFactory.SystemError(GetConfigError.name, msgs);
@@ -445,12 +451,14 @@ export class AadAppForTeamsImpl {
 
   public async grantPermission(
     ctx: ContextV3,
-    userInfo: AppUser
+    userInfo: AppUser,
+    aadObjectIdV3?: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     ctx.logProvider.info(Messages.StartGrantPermission.log);
     await TokenProvider.init({ m365: ctx.tokenProvider?.m365TokenProvider }, TokenAudience.Graph);
-    const aadState = ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp;
-    const objectId = aadState.objectId;
+    const objectId = isApiV3Enabled()
+      ? aadObjectIdV3
+      : (ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp).objectId;
     if (!objectId) {
       const params = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
       const msg0 = getPermissionErrorMessage(params[0], true);

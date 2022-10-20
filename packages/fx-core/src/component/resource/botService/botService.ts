@@ -25,8 +25,6 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { wrapError } from "./errors";
 import { CheckThrowSomethingMissing } from "../../error";
 import { BotRegistration, BotAadCredentials } from "./botRegistration/botRegistration";
-import { LocalBotRegistration } from "./botRegistration/localBotRegistration";
-import { RemoteBotRegistration } from "./botRegistration/remoteBotRegistration";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "./resourceNameFactory";
 import { MaxLengths } from "./constants";

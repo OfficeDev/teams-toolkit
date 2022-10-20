@@ -10,6 +10,10 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { UserError } from "@microsoft/teamsfx-api";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
+import {
+  UnhandledSystemError,
+  UnhandledUserError,
+} from "../../../../src/component/driver/botAadApp/error/unhandledError";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -72,5 +76,58 @@ describe("aadAppCreate", async () => {
 
     expect(result.get(outputKeys.BOT_ID)).to.be.equal(expectedClientId);
     expect(result.get(outputKeys.BOT_PASSWORD)).to.be.equal(expectedSecretText);
+  });
+
+  it("should throw user error when GraphClient failed with 4xx error", async () => {
+    sinon.stub(GraphClient, "registerAadApp").rejects({
+      isAxiosError: true,
+      response: {
+        status: 400,
+        data: {
+          error: {
+            code: "Request_BadRequest",
+            message:
+              "Invalid value specified for property 'displayName' of resource 'Application'.",
+          },
+        },
+      },
+    });
+
+    const args: any = {
+      name: expectedDisplayName,
+    };
+
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
+      (error) => {
+        expect(error instanceof UnhandledUserError).to.be.true;
+        expect(error.message).contains("Unhandled error happened in botAadApp/create action");
+      }
+    );
+  });
+
+  it("should throw system error when GraphClient failed with non 4xx error", async () => {
+    sinon.stub(GraphClient, "registerAadApp").rejects({
+      isAxiosError: true,
+      response: {
+        status: 500,
+        data: {
+          error: {
+            code: "InternalServerError",
+            message: "Internal server error",
+          },
+        },
+      },
+    });
+
+    const args: any = {
+      name: expectedDisplayName,
+    };
+
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
+      (error) => {
+        expect(error instanceof UnhandledSystemError).to.be.true;
+        expect(error.message).contains("Unhandled error happened in botAadApp/create action");
+      }
+    );
   });
 });

@@ -18,7 +18,7 @@ export enum BotAuthType {
   Identity = "User-Assigned Managed Identity", // TODO: Make room for potential changes in the future.
 }
 
-export interface IBotAadCredentials {
+export interface BotAadCredentials {
   botId: string;
   botPassword: string;
 }
@@ -34,9 +34,9 @@ export class BotRegistration {
   public async createBotAadApp(
     m365TokenProvider: M365TokenProvider,
     aadDisplayName: string,
-    botConfig?: IBotAadCredentials,
+    botConfig?: BotAadCredentials,
     botAuthType: BotAuthType = BotAuthType.AADApp
-  ): Promise<Result<IBotAadCredentials, FxError>> {
+  ): Promise<Result<BotAadCredentials, FxError>> {
     if (botAuthType === BotAuthType.AADApp) {
       if (botConfig?.botId && botConfig?.botPassword) {
         // Existing bot aad scenario.
@@ -70,10 +70,10 @@ export class BotRegistration {
   public async createBotRegistration(
     m365TokenProvider: M365TokenProvider,
     aadDisplayName: string,
-    botConfig?: IBotAadCredentials,
+    botConfig?: BotAadCredentials,
     botAuthType: BotAuthType = BotAuthType.AADApp,
     logProvider?: LogProvider
-  ): Promise<Result<IBotAadCredentials, FxError>> {
+  ): Promise<Result<BotAadCredentials, FxError>> {
     return err(
       new NotImplementedError(Constants.BOT_REGISTRATION, Constants.CREATE_BOT_REGISTRATION)
     );

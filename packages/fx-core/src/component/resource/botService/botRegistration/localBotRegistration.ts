@@ -5,24 +5,24 @@ import { IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
 import { err, FxError, Result, ok, M365TokenProvider, LogProvider } from "@microsoft/teamsfx-api";
 import { AppStudioScopes } from "../../../../common/tools";
 import { AppStudioClient } from "../appStudio/appStudioClient";
-import { BotRegistration, BotAuthType, IBotAadCredentials } from "./botRegistration";
+import { BotRegistration, BotAuthType, BotAadCredentials } from "./botRegistration";
 import { Messages } from "../messages";
 
 export class LocalBotRegistration extends BotRegistration {
   public async createBotRegistration(
     m365TokenProvider: M365TokenProvider,
     aadDisplayName: string,
-    botConfig?: IBotAadCredentials,
+    botConfig?: BotAadCredentials,
     botAuthType: BotAuthType = BotAuthType.AADApp,
     logProvider?: LogProvider
-  ): Promise<Result<IBotAadCredentials, FxError>> {
+  ): Promise<Result<BotAadCredentials, FxError>> {
     const botAadRes = await super.createBotAadApp(m365TokenProvider, aadDisplayName, botConfig);
     if (botAadRes.isErr()) {
       return err(botAadRes.error);
     }
     logProvider?.info(Messages.SuccessfullyCreatedBotAadApp);
 
-    const botAadCredentials: IBotAadCredentials = botAadRes.value;
+    const botAadCredentials: BotAadCredentials = botAadRes.value;
 
     logProvider?.info(Messages.ProvisioningBotRegistration);
     const appStudioTokenRes = await m365TokenProvider.getAccessToken({

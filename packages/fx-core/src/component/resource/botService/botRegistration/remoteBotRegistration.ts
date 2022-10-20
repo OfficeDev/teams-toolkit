@@ -3,16 +3,16 @@
 
 import { FxError, M365TokenProvider, Result, ok, err, LogProvider } from "@microsoft/teamsfx-api";
 import { Messages } from "../messages";
-import { BotRegistration, BotAuthType, IBotAadCredentials } from "./botRegistration";
+import { BotRegistration, BotAuthType, BotAadCredentials } from "./botRegistration";
 
 export class RemoteBotRegistration extends BotRegistration {
   public async createBotRegistration(
     m365TokenProvider: M365TokenProvider,
     aadDisplayName: string,
-    botConfig?: IBotAadCredentials,
+    botConfig?: BotAadCredentials,
     botAuthType: BotAuthType = BotAuthType.AADApp,
     logProvider?: LogProvider
-  ): Promise<Result<IBotAadCredentials, FxError>> {
+  ): Promise<Result<BotAadCredentials, FxError>> {
     const botAadRes = await super.createBotAadApp(m365TokenProvider, aadDisplayName, botConfig);
     if (botAadRes.isErr()) {
       return err(botAadRes.error);

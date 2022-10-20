@@ -13,7 +13,7 @@ import axios from "axios";
 import { wrapRun } from "../../utils/common";
 import {
   BotRegistration,
-  IBotAadCredentials,
+  BotAadCredentials,
 } from "../../resource/botService/botRegistration/botRegistration";
 import { RemoteBotRegistration } from "../../resource/botService/botRegistration/remoteBotRegistration";
 
@@ -36,7 +36,7 @@ export class CreateBotAadAppDriver implements StepDriver {
     try {
       this.validateArgs(args);
       const botAadAppState = this.loadCurrentState();
-      const botConfig: IBotAadCredentials = {
+      const botConfig: BotAadCredentials = {
         botId: botAadAppState.BOT_ID ?? "",
         botPassword: botAadAppState.BOT_PASSWORD ?? "",
       };

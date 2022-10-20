@@ -24,13 +24,14 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { wrapError } from "./errors";
 import { CheckThrowSomethingMissing } from "../../error";
-import { BotRegistration, IBotAadCredentials } from "./botRegistration/botRegistration";
+import { BotRegistration, BotAadCredentials } from "./botRegistration/botRegistration";
 import { LocalBotRegistration } from "./botRegistration/localBotRegistration";
 import { RemoteBotRegistration } from "./botRegistration/remoteBotRegistration";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "./resourceNameFactory";
 import { MaxLengths } from "./constants";
 import { CommonStrings } from "./strings";
+import { BotRegistrationFactory, BotRegistrationKind } from "./botRegistration/factory";
 
 const errorSource = "BotService";
 function _checkThrowSomethingMissing<T>(key: string, value: T | undefined): T {
@@ -81,12 +82,9 @@ export class BotService extends AzureResource {
     context.envInfo.state[ComponentNames.TeamsBot] ||= {};
     const teamsBotState = context.envInfo.state[ComponentNames.TeamsBot];
 
-    let botRegistration: BotRegistration | undefined = undefined;
-    if (context.envInfo.envName === "local") {
-      botRegistration = new LocalBotRegistration();
-    } else {
-      botRegistration = new RemoteBotRegistration();
-    }
+    const botRegistration: BotRegistration = BotRegistrationFactory.create(
+      context.envInfo.envName === "local" ? BotRegistrationKind.Local : BotRegistrationKind.Remote
+    );
 
     const solutionConfig = context.envInfo.state.solution as v3.AzureSolutionConfig;
     const resourceNameSuffix = solutionConfig.resourceNameSuffix
@@ -98,7 +96,7 @@ export class BotService extends AzureResource {
       MaxLengths.AAD_DISPLAY_NAME
     );
 
-    const botConfig: IBotAadCredentials =
+    const botConfig: BotAadCredentials =
       context.envInfo.config.bot?.appId && context.envInfo.config.bot?.appPassword
         ? {
             botId: context.envInfo.config.bot?.appId,
@@ -136,13 +134,9 @@ export class BotService extends AzureResource {
     const teamsBot = getComponent(context.projectSetting, ComponentNames.TeamsBot);
     if (!teamsBot) return ok(undefined);
 
-    let botRegistration: BotRegistration | undefined = undefined;
-    // const plans: Effect[] = [Plans.updateBotEndpoint()];
-    if (context.envInfo.envName === "local") {
-      botRegistration = new LocalBotRegistration();
-    } else {
-      botRegistration = new RemoteBotRegistration();
-    }
+    const botRegistration: BotRegistration = BotRegistrationFactory.create(
+      context.envInfo.envName === "local" ? BotRegistrationKind.Local : BotRegistrationKind.Remote
+    );
 
     const teamsBotState = context.envInfo.state[ComponentNames.TeamsBot];
 

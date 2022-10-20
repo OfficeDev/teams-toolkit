@@ -18,6 +18,7 @@ import {
   readContextMultiEnv,
   validateTabAndBotProjectProvision,
   getUniqueAppName,
+  execAsyncWithRetry,
 } from "../commonUtils";
 import { SqlValidator, FunctionValidator } from "../../commonlib";
 import { getUuid } from "../../commonlib/utilities";
@@ -72,7 +73,12 @@ describe("teamsfx new template", function () {
     }
 
     // deploy
-    await CliHelper.deployAll(projectPath);
+    await execAsyncWithRetry(`teamsfx deploy`, {
+      cwd: projectPath,
+      env: Object.assign({}, process.env),
+      timeout: 0,
+    });
+    console.log(`[Successfully] deploy for ${projectPath}`);
 
     // Assert
     {

@@ -112,21 +112,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
         TelemetryEvent.DebugStartLocalTunnelTask,
         {
           [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-          [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
-            ngrokArgs: maskValue(
-              Array.isArray(this.args.ngrokArgs)
-                ? this.args.ngrokArgs.join(" ")
-                : this.args.ngrokArgs,
-              [
-                {
-                  value: TaskDefaultValue.startLocalTunnel.ngrokArgs,
-                  mask: DefaultPlaceholder,
-                },
-              ]
-            ),
-            ngrokPath: maskValue(this.args.ngrokPath, ["ngrok"]),
-            tunnelInspection: maskValue(this.args.tunnelInspection),
-          }),
+          [TelemetryProperty.DebugTaskArgs]: this.generateTaskArgsTelemetry(),
         },
         () => this._do()
       )
@@ -385,6 +371,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       {
         [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        [TelemetryProperty.DebugTaskArgs]: this.generateTaskArgsTelemetry(),
       },
       {
         [LocalTelemetryReporter.PropertyDuration]: duration ?? -1,
@@ -415,11 +402,28 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       {
         [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.DebugTaskArgs]: this.generateTaskArgsTelemetry(),
       },
       {
         [LocalTelemetryReporter.PropertyDuration]: this.getDurationInSeconds() ?? -1,
       }
     );
+  }
+
+  private generateTaskArgsTelemetry(): string {
+    return JSON.stringify({
+      ngrokArgs: maskValue(
+        Array.isArray(this.args.ngrokArgs) ? this.args.ngrokArgs.join(" ") : this.args.ngrokArgs,
+        [
+          {
+            value: TaskDefaultValue.startLocalTunnel.ngrokArgs,
+            mask: DefaultPlaceholder,
+          },
+        ]
+      ),
+      ngrokPath: maskValue(this.args.ngrokPath, ["ngrok"]),
+      tunnelInspection: maskValue(this.args.tunnelInspection),
+    });
   }
 
   public static async getNgrokEndpoint(): Promise<string> {

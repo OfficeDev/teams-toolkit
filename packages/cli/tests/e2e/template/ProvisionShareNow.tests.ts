@@ -10,7 +10,6 @@ import fs from "fs-extra";
 import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import {
-  execAsync,
   getTestFolder,
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
@@ -55,22 +54,22 @@ describe("teamsfx new template", function () {
     // Validate Provision
     await validateTabAndBotProjectProvision(projectPath, env);
 
-    await execAsync(`set EXPO_DEBUG=true && npm config set package-lock false`, {
-      cwd: path.join(projectPath, "tabs"),
-      env: process.env,
-      timeout: 0,
-    });
+    // await execAsync(`set EXPO_DEBUG=true && npm config set package-lock false`, {
+    //   cwd: path.join(projectPath, "tabs"),
+    //   env: process.env,
+    //   timeout: 0,
+    // });
 
-    const result = await execAsync(`npm i @types/node -D`, {
-      cwd: path.join(projectPath, "tabs"),
-      env: process.env,
-      timeout: 0,
-    });
-    if (!result.stderr) {
-      console.log("success to run cmd: npm i @types/node -D");
-    } else {
-      console.log("[failed] ", result.stderr);
-    }
+    // const result = await execAsync(`npm i @types/node -D`, {
+    //   cwd: path.join(projectPath, "tabs"),
+    //   env: process.env,
+    //   timeout: 0,
+    // });
+    // if (!result.stderr) {
+    //   console.log("success to run cmd: npm i @types/node -D");
+    // } else {
+    //   console.log("[failed] ", result.stderr);
+    // }
 
     // deploy
     await execAsyncWithRetry(`teamsfx deploy`, {

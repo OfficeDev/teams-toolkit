@@ -60,7 +60,7 @@ export namespace AppStudioClient {
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {
       method: e.request?.method,
-      "status-code": e?.response?.status,
+      "status-code": `${e?.response?.status}`,
       url: `<${apiName}-url>`,
     });
     return error;
@@ -216,6 +216,7 @@ export namespace AppStudioClient {
           const error = new Error(response?.data.error.message);
           error.name = response?.data.error.code;
           (error as any).response = response;
+          (error as any).request = response.request;
           const exception = wrapException(error, APP_STUDIO_API_NAMES.PUBLISH_APP);
           throw exception;
         } else {
@@ -278,6 +279,7 @@ export namespace AppStudioClient {
           const error = new Error(response.data.error?.message || response.data.errorMessage);
           error.name = response?.data.error.code;
           (error as any).response = response;
+          (error as any).request = response.request;
           const exception = wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
           throw exception;
         } else {

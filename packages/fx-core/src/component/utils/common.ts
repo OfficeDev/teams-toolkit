@@ -25,6 +25,15 @@ export function asOptional<T>(as: (s: unknown, key: string) => T) {
   };
 }
 
+export function asBoolean(s: unknown, key: string): boolean {
+  if (typeof s === "boolean") {
+    return s;
+  } else if (typeof s === "string") {
+    return s === "true";
+  }
+  throw PrerequisiteError.somethingMissing("Deploy", key);
+}
+
 export function asString(s: unknown, key: string): string {
   if (typeof s === "string") {
     return s as string;

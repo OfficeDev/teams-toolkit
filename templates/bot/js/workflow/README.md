@@ -81,7 +81,7 @@ Here's a sample action with type `Action.Execute`:
         {
           "type": "Action.Execute",
           "title": "DoSomething",
-          "verb": "DoSomething" 
+          "verb": "doSomething" 
         }
       ]
     },
@@ -163,8 +163,8 @@ const conversationBot = new ConversationBot({
   cardAction: { 
     enabled: true, 
     actions: [ 
-      new doStuffActionHandler(),
-      new doSomethingActionHandler() 
+      new DoStuffActionHandler(),
+      new DoSomethingActionHandler() 
     ], 
   } 
 }); 

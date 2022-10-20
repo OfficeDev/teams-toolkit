@@ -12,8 +12,10 @@ import {
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
+import { hooks } from "@feathersjs/hooks/lib";
 import { StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { CreateAppPackageDriver } from "./createAppPackage";
 import { CreateTeamsAppArgs } from "./interfaces/CreateTeamsAppArgs";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
@@ -30,6 +32,7 @@ const outputNames = {
 };
 
 export class CreateTeamsAppDriver implements StepDriver {
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: CreateTeamsAppArgs,
     context: DriverContext
@@ -49,7 +52,8 @@ export class CreateTeamsAppDriver implements StepDriver {
     const result = await createAppPackageDriver.run(
       {
         manifestTemplatePath: args.manifestTemplatePath,
-        outputPath: `${context.projectPath}/build/appPackage/appPackage.${state.ENV_NAME}.zip`,
+        outputZipPath: `${context.projectPath}/build/appPackage/appPackage.${state.ENV_NAME}.zip`,
+        outputJsonPath: `${context.projectPath}/build/appPackage/manifest.${state.ENV_NAME}.json`,
       },
       context
     );
@@ -100,9 +104,12 @@ export class CreateTeamsAppDriver implements StepDriver {
           appStudioTokenRes.value,
           context.logProvider
         );
-        context.logProvider.info(
-          getLocalizedString("plugins.appstudio.teamsAppCreatedNotice", appDefinition.teamsAppId!)
+        const message = getLocalizedString(
+          "plugins.appstudio.teamsAppCreatedNotice",
+          appDefinition.teamsAppId!
         );
+        context.logProvider.info(message);
+        context.ui?.showMessage("info", message, false);
         return ok(new Map([[outputNames.TEAMS_APP_ID, appDefinition.teamsAppId!]]));
       } catch (e: any) {
         if (e instanceof UserError || e instanceof SystemError) {

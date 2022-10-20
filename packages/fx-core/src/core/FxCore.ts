@@ -379,6 +379,9 @@ export class FxCore implements v3.ICore {
     } else if (func.method === "updateManifest") {
       const component = Container.get("app-manifest") as any;
       res = await component.deploy(context, inputs as InputsWithProjectPath);
+    } else if (func.method === "buildAadManifest") {
+      const component = Container.get("aad-app") as any;
+      res = await component.buildAadManifest(context, inputs as InputsWithProjectPath);
     } else {
       return err(new NotImplementedError(func.method));
     }

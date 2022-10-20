@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, Platform, Stage } from "@microsoft/teamsfx-api";
+import { Inputs, Platform, Stage, Ok } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -28,6 +28,12 @@ import {
 } from "../../src/component/constants";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 import * as templateActions from "../../src/common/template-utils/templatesActions";
+import mockedEnv from "mocked-env";
+import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
+import AdmZip from "adm-zip";
+import "../../src/component/driver/aad/update";
+
+let mockedEnvRestore: () => void;
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -154,6 +160,29 @@ describe("Core basic APIs", () => {
     assert.isTrue(activateEnvRes.isOk());
   });
 
+  it("deploy aad manifest", async () => {
+    const core = new FxCore(tools);
+    mockedEnvRestore = mockedEnv({
+      V3_INTEGRATION: "true",
+    });
+    const appName = mockV3Project();
+    sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+    };
+    const res = await core.deployAadManifest(inputs);
+    await deleteTestProject(appName);
+    assert.isTrue(res.isOk());
+    mockedEnvRestore();
+  });
+
   it("ProgrammingLanguageQuestion", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -203,3 +232,14 @@ describe("Core basic APIs", () => {
     }
   });
 });
+
+function mockV3Project(): string {
+  const zip = new AdmZip(path.join(__dirname, "./samples_v3.zip"));
+  const appName = randomAppName();
+  zip.extractAllTo(path.join(os.tmpdir(), appName));
+  return appName;
+}
+
+async function deleteTestProject(appName: string) {
+  await fs.remove(path.join(os.tmpdir(), appName));
+}

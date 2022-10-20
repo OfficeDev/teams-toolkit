@@ -109,7 +109,7 @@ import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { copyParameterJson } from "../component/arm";
 import { ProjectSettingsHelper } from "../common/local";
-import { UpdateAadAppDriver } from "../component/driver/aad/update";
+import "../component/driver/aad/update";
 import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
 import { DriverContext } from "../component/driver/interface/commonArgs";
 
@@ -282,26 +282,21 @@ export class FxCore implements v3.ICore {
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
-    ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
   async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deployAad);
     inputs.stage = Stage.deployAad;
-    const updateAadClient: UpdateAadAppDriver = Container.get("UpdateAadAppDriver") as any;
+    const updateAadClient = Container.get("aadApp/update") as any;
     // current manifest path is fixed path at
-    const manifestTemplatePath: string = path.join(
-      inputs.projectPath!,
-      ".fx",
-      "aad.template.manifest.json"
-    );
+    const manifestTemplatePath: string = path.join(inputs.projectPath!, ".fx", "aad.template.json");
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new NoAadManifestExistError(manifestTemplatePath));
     }
     const manifestOutputPath: string = path.join(
       inputs.projectPath!,
       "build",
-      `aad.${inputs.env}.manifest.json`
+      `aad.${inputs.env}.json`
     );
     const inputArgs: UpdateAadAppArgs = {
       manifestTemplatePath: manifestTemplatePath,

@@ -41,13 +41,6 @@ export function asString(s: unknown, key: string): string {
   throw PrerequisiteError.somethingMissing("Deploy", key);
 }
 
-export function asRecord(s: unknown, key: string): Record<string, string> {
-  if (s instanceof Object) {
-    return s as Record<string, string>;
-  }
-  throw PrerequisiteError.somethingMissing("Deploy", key);
-}
-
 type KeyValidators<T> = {
   [P in keyof T]-?: (s: unknown, key: string) => T[P];
 };

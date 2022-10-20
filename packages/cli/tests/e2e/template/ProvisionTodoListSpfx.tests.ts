@@ -32,7 +32,7 @@ describe("teamsfx new template", function () {
     await CliHelper.createTemplateProject(
       appName,
       testFolder,
-      TemplateProject.ShareNow,
+      TemplateProject.TodoListSpfx,
       "todo-list-SPFx"
     );
 

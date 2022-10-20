@@ -34,7 +34,7 @@ describe("teamsfx new template", function () {
     await CliHelper.createTemplateProject(
       appName,
       testFolder,
-      TemplateProject.ShareNow,
+      TemplateProject.NpmSearch,
       "NPM-search-connector-M365"
     );
 

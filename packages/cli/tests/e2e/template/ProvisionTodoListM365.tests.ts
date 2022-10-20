@@ -34,7 +34,7 @@ describe("teamsfx new template", function () {
     await CliHelper.createTemplateProject(
       appName,
       testFolder,
-      TemplateProject.ShareNow,
+      TemplateProject.TodoListM365,
       "todo-list-with-Azure-backend-M365"
     );
 

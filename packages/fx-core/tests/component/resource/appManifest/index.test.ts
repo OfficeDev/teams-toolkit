@@ -509,7 +509,7 @@ describe("App-manifest Component", () => {
               aadId: teamsAppId,
               displayName: "displayName",
               userPrincipalName: "userPrincipalName",
-              isAdministrator: false,
+              isAdministrator: true,
             },
           ];
         });
@@ -529,7 +529,7 @@ describe("App-manifest Component", () => {
       );
       chai.assert.isTrue(result.isOk());
       if (result.isOk()) {
-        chai.assert.equal(result.value[0].userObjectId, "teansAppId");
+        chai.assert.equal(result.value[0].userObjectId, "teamsAppId");
       }
     });
 

@@ -914,4 +914,347 @@ describe("Collaborator APIs for V3", () => {
       }
     });
   });
+
+  describe("collaboration v3", () => {
+    let mockedEnvRestore: RestoreFn;
+
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.ApiV3]: "true" });
+      sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+        ok({
+          tid: "mock_project_tenant_id",
+          oid: "fake_oid",
+          unique_name: "fake_unique_name",
+          name: "fake_name",
+        })
+      );
+    });
+    afterEach(() => {
+      mockedEnvRestore();
+      sandbox.restore();
+    });
+
+    it("listCollaborator: happy path", async () => {
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
+      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+      sandbox.stub(appStudio, "listCollaborator").resolves(
+        ok([
+          {
+            userObjectId: "fake-aad-user-object-id",
+            resourceId: "fake-resource-id",
+            displayName: "fake-display-name",
+            userPrincipalName: "fake-user-principal-name",
+          },
+        ])
+      );
+      sandbox.stub(aadPlugin, "listCollaborator").resolves(
+        ok([
+          {
+            userObjectId: "fake-aad-user-object-id",
+            resourceId: "fake-resource-id",
+            displayName: "fake-display-name",
+            userPrincipalName: "fake-user-principal-name",
+          },
+        ])
+      );
+      sandbox.stub(CollaborationUtil, "getTeamsAppIdAndAadObjectId").resolves(
+        ok({
+          teamsAppId: "teamsAppId",
+          aadObjectId: "aadObjectId",
+        })
+      );
+
+      inputs.platform == Platform.CLI;
+      const envInfo: v3.EnvInfoV3 = {
+        envName: "dev",
+        state: {
+          solution: {},
+        },
+        config: {},
+      };
+
+      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      assert.isTrue(result.isOk() && result.value.collaborators!.length === 1);
+    });
+
+    it("list collaborator: failed to read teams app id", async () => {
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
+      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+      sandbox.stub(appStudio, "listCollaborator").resolves(
+        ok([
+          {
+            userObjectId: "fake-aad-user-object-id",
+            resourceId: "fake-resource-id",
+            displayName: "fake-display-name",
+            userPrincipalName: "fake-user-principal-name",
+          },
+        ])
+      );
+      sandbox.stub(aadPlugin, "listCollaborator").resolves(
+        ok([
+          {
+            userObjectId: "fake-aad-user-object-id",
+            resourceId: "fake-resource-id",
+            displayName: "fake-display-name",
+            userPrincipalName: "fake-user-principal-name",
+          },
+        ])
+      );
+      sandbox
+        .stub(CollaborationUtil, "getTeamsAppIdAndAadObjectId")
+        .resolves(err(new UserError("source", "errorName", "errorMessage")));
+
+      inputs.platform == Platform.CLI;
+      const envInfo: v3.EnvInfoV3 = {
+        envName: "dev",
+        state: {
+          solution: {},
+        },
+        config: {},
+      };
+
+      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      assert.isTrue(result.isErr() && result.error.name === "errorName");
+    });
+
+    it("grantPermission: happy path", async () => {
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
+      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+      sandbox.stub(appStudio, "grantPermission").resolves(
+        ok([
+          {
+            name: "aad_app",
+            resourceId: "fake_aad_app_resource_id",
+            roles: ["Owner"],
+            type: "M365",
+          },
+        ])
+      );
+      sandbox.stub(aadPlugin, "grantPermission").resolves(
+        ok([
+          {
+            name: "teams_app",
+            resourceId: "fake_teams_app_resource_id",
+            roles: ["Administrator"],
+            type: "M365",
+          },
+        ])
+      );
+      sandbox.stub(CollaborationUtil, "getTeamsAppIdAndAadObjectId").resolves(
+        ok({
+          teamsAppId: "teamsAppId",
+          aadObjectId: "aadObjectId",
+        })
+      );
+      sandbox
+        .stub(CollaborationUtil, "getUserInfo")
+        .onCall(0)
+        .resolves({
+          tenantId: "mock_project_tenant_id",
+          aadId: "aadId",
+          userPrincipalName: "userPrincipalName",
+          displayName: "displayName",
+          isAdministrator: true,
+        })
+        .onCall(1)
+        .resolves({
+          tenantId: "mock_project_tenant_id",
+          aadId: "aadId",
+          userPrincipalName: "userPrincipalName2",
+          displayName: "displayName2",
+          isAdministrator: true,
+        });
+
+      inputs.platform == Platform.CLI;
+      inputs.email = "your_collaborator@yourcompany.com";
+      const envInfo: v3.EnvInfoV3 = {
+        envName: "dev",
+        state: {
+          solution: {},
+        },
+        config: {},
+      };
+
+      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
+    });
+
+    it("grantPermission: failed to read teams app id", async () => {
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
+      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+      sandbox.stub(appStudio, "grantPermission").resolves(
+        ok([
+          {
+            name: "aad_app",
+            resourceId: "fake_aad_app_resource_id",
+            roles: ["Owner"],
+            type: "M365",
+          },
+        ])
+      );
+      sandbox.stub(aadPlugin, "grantPermission").resolves(
+        ok([
+          {
+            name: "teams_app",
+            resourceId: "fake_teams_app_resource_id",
+            roles: ["Administrator"],
+            type: "M365",
+          },
+        ])
+      );
+      sandbox
+        .stub(CollaborationUtil, "getTeamsAppIdAndAadObjectId")
+        .resolves(err(new UserError("source", "errorName", "errorMessage")));
+      sandbox
+        .stub(CollaborationUtil, "getUserInfo")
+        .onCall(0)
+        .resolves({
+          tenantId: "mock_project_tenant_id",
+          aadId: "aadId",
+          userPrincipalName: "userPrincipalName",
+          displayName: "displayName",
+          isAdministrator: true,
+        })
+        .onCall(1)
+        .resolves({
+          tenantId: "mock_project_tenant_id",
+          aadId: "aadId",
+          userPrincipalName: "userPrincipalName2",
+          displayName: "displayName2",
+          isAdministrator: true,
+        });
+
+      inputs.platform == Platform.CLI;
+      inputs.email = "your_collaborator@yourcompany.com";
+      const envInfo: v3.EnvInfoV3 = {
+        envName: "dev",
+        state: {
+          solution: {},
+        },
+        config: {},
+      };
+
+      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      assert.isTrue(result.isErr() && result.error.name === "errorName");
+    });
+
+    it("checkPermission: happy path", async () => {
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
+      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+      sandbox.stub(appStudio, "checkPermission").resolves(
+        ok([
+          {
+            name: "teams_app",
+            resourceId: "fake_teams_app_resource_id",
+            roles: ["Administrator"],
+            type: "M365",
+          },
+        ])
+      );
+      sandbox.stub(aadPlugin, "checkPermission").resolves(
+        ok([
+          {
+            name: "aad_app",
+            resourceId: "fake_aad_app_resource_id",
+            roles: ["Owner"],
+            type: "M365",
+          },
+        ])
+      );
+      sandbox.stub(CollaborationUtil, "getTeamsAppIdAndAadObjectId").resolves(
+        ok({
+          teamsAppId: "teamsAppId",
+          aadObjectId: "aadObjectId",
+        })
+      );
+      sandbox
+        .stub(CollaborationUtil, "getUserInfo")
+        .onCall(0)
+        .resolves({
+          tenantId: "mock_project_tenant_id",
+          aadId: "aadId",
+          userPrincipalName: "userPrincipalName",
+          displayName: "displayName",
+          isAdministrator: true,
+        })
+        .onCall(1)
+        .resolves({
+          tenantId: "mock_project_tenant_id",
+          aadId: "aadId",
+          userPrincipalName: "userPrincipalName2",
+          displayName: "displayName2",
+          isAdministrator: true,
+        });
+
+      inputs.platform == Platform.CLI;
+      const envInfo: v3.EnvInfoV3 = {
+        envName: "dev",
+        state: {
+          solution: {},
+        },
+        config: {},
+      };
+
+      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
+    });
+
+    it("checkPermission: failed to read teams app id", async () => {
+      const appStudio = Container.get<AppManifest>(ComponentNames.AppManifest);
+      const aadPlugin = Container.get<AadApp>(ComponentNames.AadApp);
+      sandbox.stub(appStudio, "checkPermission").resolves(
+        ok([
+          {
+            name: "teams_app",
+            resourceId: "fake_teams_app_resource_id",
+            roles: ["Administrator"],
+            type: "M365",
+          },
+        ])
+      );
+      sandbox.stub(aadPlugin, "checkPermission").resolves(
+        ok([
+          {
+            name: "aad_app",
+            resourceId: "fake_aad_app_resource_id",
+            roles: ["Owner"],
+            type: "M365",
+          },
+        ])
+      );
+      sandbox
+        .stub(CollaborationUtil, "getTeamsAppIdAndAadObjectId")
+        .resolves(err(new UserError("source", "errorName", "errorMessage")));
+      sandbox
+        .stub(CollaborationUtil, "getUserInfo")
+        .onCall(0)
+        .resolves({
+          tenantId: "mock_project_tenant_id",
+          aadId: "aadId",
+          userPrincipalName: "userPrincipalName",
+          displayName: "displayName",
+          isAdministrator: true,
+        })
+        .onCall(1)
+        .resolves({
+          tenantId: "mock_project_tenant_id",
+          aadId: "aadId",
+          userPrincipalName: "userPrincipalName2",
+          displayName: "displayName2",
+          isAdministrator: true,
+        });
+
+      inputs.platform == Platform.CLI;
+      const envInfo: v3.EnvInfoV3 = {
+        envName: "dev",
+        state: {
+          solution: {},
+        },
+        config: {},
+      };
+
+      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      assert.isTrue(result.isErr() && result.error.name === "errorName");
+    });
+  });
 });

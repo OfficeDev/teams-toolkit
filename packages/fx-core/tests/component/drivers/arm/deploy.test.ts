@@ -23,6 +23,8 @@ describe("Arm driver deploy", () => {
     azureAccountProvider: new MockAzureAccountProvider(),
   };
   const driver = new ArmDeployDriver();
+
+  const bicepCliVersion = "v0.9.1";
   beforeEach(() => {});
 
   afterEach(() => {
@@ -38,11 +40,10 @@ describe("Arm driver deploy", () => {
         value: "mockValue",
       },
     });
-    const bicepCliVersion = "v0.9.1";
     sandbox.stub(ArmDeployImpl.prototype, "executeDeployment").resolves(deployRes as any);
     sandbox.stub(bicepChecker, "getAvailableBicepVersions").resolves([bicepCliVersion]);
     sandbox.stub(bicepChecker, "ensureBicepForDriver").resolves("bicep");
-    const deployArgs = {
+    let deployArgs = {
       subscriptionId: "00000000-0000-0000-0000-000000000000",
       resourceGroupName: "mock-group",
       bicepCliVersion: bicepCliVersion,
@@ -52,17 +53,37 @@ describe("Arm driver deploy", () => {
           parameters: "mock-parameters.json",
           deploymentName: "mock-deployment",
         },
+        {
+          path: "mock-template2.json",
+          parameters: "mock-parameters2.json",
+          deploymentName: "mock-deployment2",
+        },
       ],
     };
-    const res = await driver.run(deployArgs, mockedDriverContext);
-    console.log(res._unsafeUnwrapErr);
+
+    let res = await driver.run(deployArgs, mockedDriverContext);
+    assert.isTrue(res.isOk());
+
+    deployArgs = {
+      subscriptionId: "00000000-0000-0000-0000-000000000000",
+      resourceGroupName: "mock-group",
+      bicepCliVersion: "",
+      templates: [
+        {
+          path: "mock-template.json",
+          parameters: "mock-parameters.json",
+          deploymentName: "mock-deployment",
+        },
+      ],
+    };
+    res = await driver.run(deployArgs, mockedDriverContext);
     assert.isTrue(res.isOk());
   });
 
   it("invalid parameters", async () => {
     sandbox.stub(fs, "readFile").resolves("{}" as any);
     sandbox.stub(cpUtils, "executeCommand").resolves("{}" as any);
-    const deployArgs = {
+    let deployArgs = {
       subscriptionId: "",
       resourceGroupName: "",
       bicepCliVersion: "",
@@ -74,7 +95,16 @@ describe("Arm driver deploy", () => {
         },
       ],
     } as any;
-    const res = await driver.run(deployArgs, mockedDriverContext);
+    let res = await driver.run(deployArgs, mockedDriverContext);
+    assert.isTrue(res.isErr());
+
+    deployArgs = {
+      subscriptionId: "00000000-0000-0000-0000-000000000000",
+      resourceGroupName: "mock-group",
+      bicepCliVersion: "",
+      templates: [],
+    } as any;
+    res = await driver.run(deployArgs, mockedDriverContext);
     assert.isTrue(res.isErr());
   });
 });

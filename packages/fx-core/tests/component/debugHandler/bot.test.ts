@@ -33,7 +33,7 @@ import { GraphClient } from "../../../src/component/resource/botService/botRegis
 import { AppStudioClient } from "../../../src/component/resource/botService/appStudio/appStudioClient";
 import { MockM365TokenProvider, runDebugActions } from "./utils";
 import { BotDebugArgs, BotDebugHandler } from "../../../src/component/debugHandler";
-import { IAadAppCredentials } from "../../../src/component/resource/botService/IAadAppCredentials";
+import { AadAppCredentials } from "../../../src/component/resource/botService/AadAppCredentials";
 
 describe("TabDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
@@ -156,7 +156,7 @@ describe("TabDebugHandler", () => {
         },
       };
       sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
-      const aadAppCredentials: IAadAppCredentials = {
+      const aadAppCredentials: AadAppCredentials = {
         clientId: "22222222-2222-2222-2222-222222222222",
         clientSecret: "xxx",
       };

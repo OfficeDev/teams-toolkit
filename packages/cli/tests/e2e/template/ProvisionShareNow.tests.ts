@@ -43,13 +43,17 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
+    const config = fs.readJSONSync(path.join(projectPath, ".fx", "configs", `config.${env}.json`));
+    config["skipAddingSqlUser"] = true;
+    fs.writeFileSync(
+      path.join(projectPath, ".fx", "configs", `config.${env}.json`),
+      JSON.stringify(config)
+    );
+
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(
-      projectPath,
-      `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`
-    );
+    await CliHelper.provisionProject(projectPath);
 
     // Validate Provision
     await validateTabAndBotProjectProvision(projectPath, env);
@@ -88,9 +92,9 @@ describe("teamsfx new template", function () {
       await functionValidator.validateProvision();
       await functionValidator.validateDeploy();
 
-      // Validate sql
-      await SqlValidator.init(context);
-      await SqlValidator.validateSql();
+      // // Validate sql
+      // await SqlValidator.init(context);
+      // await SqlValidator.validateSql();
     }
   });
 

@@ -12,6 +12,7 @@ import fs from "fs-extra";
 import * as cpUtils from "../../../../src/common/cpUtils";
 import { ArmDeployImpl } from "../../../../src/component/driver/arm/deployImpl";
 import { ok } from "@microsoft/teamsfx-api";
+import * as bicepChecker from "../../../../src/component/utils/depsChecker/bicepChecker";
 
 describe("Arm driver deploy", () => {
   const sandbox = createSandbox();
@@ -37,11 +38,14 @@ describe("Arm driver deploy", () => {
         value: "mockValue",
       },
     });
+    const bicepCliVersion = "v0.9.1";
     sandbox.stub(ArmDeployImpl.prototype, "executeDeployment").resolves(deployRes as any);
+    sandbox.stub(bicepChecker, "getAvailableBicepVersions").resolves([bicepCliVersion]);
+    sandbox.stub(bicepChecker, "ensureBicepForDriver").resolves("bicep");
     const deployArgs = {
       subscriptionId: "00000000-0000-0000-0000-000000000000",
       resourceGroupName: "mock-group",
-      bicepCliVersion: "0.4.8",
+      bicepCliVersion: bicepCliVersion,
       templates: [
         {
           path: "mock-template.bicep",
@@ -51,6 +55,7 @@ describe("Arm driver deploy", () => {
       ],
     };
     const res = await driver.run(deployArgs, mockedDriverContext);
+    console.log(res._unsafeUnwrapErr);
     assert.isTrue(res.isOk());
   });
 

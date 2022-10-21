@@ -1,3 +1,6 @@
+# 1.2.0-rc
+- Support adaptive card universal action handler in conversation bot.
+
 # 1.1.0
 - Support Bot SSO
 

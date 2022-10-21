@@ -11,11 +11,12 @@ import * as appService from "@azure/arm-appservice";
 import * as Models from "@azure/arm-appservice/src/models";
 import * as fileOpt from "../../../../../src/component/utils/fileOperation";
 import { AzureDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureDeployDriver";
-import { expect, use as chaiUse } from "chai";
+import { expect } from "chai";
 import * as fs from "fs-extra";
 import { AzureFunctionDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureFunctionDeployDriver";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
+import { MockUserInteraction } from "../../../../core/utils";
 
 describe("Azure Function Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -31,14 +32,15 @@ describe("Azure Function Deploy Driver test", () => {
   it("deploy happy path", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
+      ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
     } as DriverContext;
     sandbox
@@ -78,8 +80,8 @@ describe("Azure Function Deploy Driver test", () => {
   it("deploy restart error!", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -125,8 +127,8 @@ describe("Azure Function Deploy Driver test", () => {
   it("deploy restart throws", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -172,8 +174,8 @@ describe("Azure Function Deploy Driver test", () => {
   it("Zip deploy throws when upload", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -219,8 +221,8 @@ describe("Azure Function Deploy Driver test", () => {
   it("Check deploy status error", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -266,8 +268,8 @@ describe("Azure Function Deploy Driver test", () => {
   it("Check deploy throws", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
-      src: "./",
-      dist: "./",
+      workingDirectory: "./",
+      distributionPath: "./",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",

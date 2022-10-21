@@ -22,9 +22,9 @@ export declare class NotificationBot
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [findAllChannels(predicate)](./teamsfx.notificationbot.findallchannels.md) |  | Returns all [Channel](./teamsfx.channel.md) where predicate is true, and empty array otherwise. |
+|  [findAllChannels(predicate)](./teamsfx.notificationbot.findallchannels.md) |  | Returns all [Channel](./teamsfx.channel.md) where predicate is true, and empty array otherwise. (Ensure the bot app is installed into the <code>General</code> channel, otherwise empty array will be returned.) |
 |  [findAllMembers(predicate, scope)](./teamsfx.notificationbot.findallmembers.md) |  | Returns all [Member](./teamsfx.member.md) where predicate is true, and empty array otherwise. |
-|  [findChannel(predicate)](./teamsfx.notificationbot.findchannel.md) |  | Returns the first [Channel](./teamsfx.channel.md) where predicate is true, and undefined otherwise. |
+|  [findChannel(predicate)](./teamsfx.notificationbot.findchannel.md) |  | Returns the first [Channel](./teamsfx.channel.md) where predicate is true, and undefined otherwise. (Ensure the bot app is installed into the <code>General</code> channel, otherwise undefined will be returned.) |
 |  [findMember(predicate, scope)](./teamsfx.notificationbot.findmember.md) |  | Returns the first [Member](./teamsfx.member.md) where predicate is true, and undefined otherwise. |
 |  [installations()](./teamsfx.notificationbot.installations.md) |  | Get all targets where the bot is installed. |
 

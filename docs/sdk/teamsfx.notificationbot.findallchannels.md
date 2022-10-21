@@ -4,7 +4,7 @@
 
 ## NotificationBot.findAllChannels() method
 
-Returns all [Channel](./teamsfx.channel.md) where predicate is true, and empty array otherwise.
+Returns all [Channel](./teamsfx.channel.md) where predicate is true, and empty array otherwise. (Ensure the bot app is installed into the `General` channel, otherwise empty array will be returned.)
 
 <b>Signature:</b>
 

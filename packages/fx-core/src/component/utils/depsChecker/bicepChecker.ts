@@ -34,6 +34,7 @@ import {
 import { performance } from "perf_hooks";
 import { sendErrorTelemetryThenReturnError } from "../../utils";
 import { isBicepEnvCheckerEnabled } from "../../../common/tools";
+import { DriverContext } from "../../driver/interface/commonArgs";
 
 export const BicepName = "Bicep";
 export const installVersion = "v0.4";
@@ -71,6 +72,33 @@ export async function ensureBicep(
   return bicepChecker.getBicepCommand();
 }
 
+export async function getAvailableBicepVersions(): Promise<string[]> {
+  const bicepChecker = new BicepChecker();
+  return await bicepChecker.getVersions();
+}
+
+export async function ensureBicepForDriver(
+  ctx: DriverContext,
+  version: string,
+  platform?: Platform
+): Promise<string> {
+  const bicepChecker = new BicepChecker(ctx.logProvider, ctx.telemetryReporter, version);
+  try {
+    await bicepChecker.install();
+  } catch (err) {
+    ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
+    await displayLearnMore(
+      Messages.failToInstallBicepDialog.split("@NameVersion").join(displayBicepName),
+      bicepHelpLink,
+      ctx.ui,
+      ctx.telemetryReporter
+    );
+    outputErrorMessage(ctx as any, platform ? { platform: platform } : undefined);
+    throw err;
+  }
+  return bicepChecker.getBicepCommand();
+}
+
 function outputErrorMessage(ctx: SolutionContext | v2.Context, inputs?: Inputs) {
   const message =
     inputs?.platform === Platform.VSCode
@@ -84,11 +112,13 @@ function outputErrorMessage(ctx: SolutionContext | v2.Context, inputs?: Inputs) 
 class BicepChecker {
   private readonly _logger: LogProvider | undefined;
   private readonly _telemetry: TelemetryReporter | undefined;
+  private readonly _version: string | undefined;
   private readonly _axios: AxiosInstance;
 
-  constructor(logger?: LogProvider, telemetry?: TelemetryReporter) {
+  constructor(logger?: LogProvider, telemetry?: TelemetryReporter, version?: string) {
     this._logger = logger;
     this._telemetry = telemetry;
+    this._version = version;
     this._axios = axios.create({
       headers: { "content-type": "application/json" },
     });
@@ -122,10 +152,21 @@ class BicepChecker {
 
     await this.installBicep();
 
-    if (!(await this.validate())) {
+    if (!this._version && !(await this.validate())) {
       await this.handleInstallFailed();
     }
     await this.handleInstallCompleted();
+  }
+
+  async getVersions(): Promise<string[]> {
+    const response: AxiosResponse<Array<{ tag_name: string }>> = await this._axios.get(
+      bicepReleaseApiUrl,
+      {
+        headers: { Accept: "application/vnd.github.v3+json" },
+      }
+    );
+    const versions = response.data.map((item) => item.tag_name);
+    return versions;
   }
 
   private async cleanup() {
@@ -168,25 +209,30 @@ class BicepChecker {
 
   private async doInstallBicep(): Promise<void> {
     let selectedVersion: string;
-    try {
-      const response: AxiosResponse<Array<{ tag_name: string }>> = await this._axios.get(
-        bicepReleaseApiUrl,
-        {
-          headers: { Accept: "application/vnd.github.v3+json" },
-        }
-      );
-      const versions = response.data.map((item) => item.tag_name);
-      const maxSatisfying = semver.maxSatisfying(versions, installVersionPattern);
-      selectedVersion = maxSatisfying || fallbackInstallVersion;
-    } catch (e) {
-      // GitHub public API has a limit of 60 requests per hour per IP
-      // If it fails to retrieve the latest version, just use a known version.
-      selectedVersion = fallbackInstallVersion;
-      this._telemetry?.sendTelemetryEvent(
-        DepsCheckerEvent.bicepFailedToRetrieveGithubReleaseVersions,
-        { [TelemetryMeasurement.ErrorMessage]: `${e}` }
-      );
+    if (this._version) {
+      selectedVersion = this._version;
+    } else {
+      try {
+        const response: AxiosResponse<Array<{ tag_name: string }>> = await this._axios.get(
+          bicepReleaseApiUrl,
+          {
+            headers: { Accept: "application/vnd.github.v3+json" },
+          }
+        );
+        const versions = response.data.map((item) => item.tag_name);
+        const maxSatisfying = semver.maxSatisfying(versions, installVersionPattern);
+        selectedVersion = maxSatisfying || fallbackInstallVersion;
+      } catch (e) {
+        // GitHub public API has a limit of 60 requests per hour per IP
+        // If it fails to retrieve the latest version, just use a known version.
+        selectedVersion = fallbackInstallVersion;
+        this._telemetry?.sendTelemetryEvent(
+          DepsCheckerEvent.bicepFailedToRetrieveGithubReleaseVersions,
+          { [TelemetryMeasurement.ErrorMessage]: `${e}` }
+        );
+      }
     }
+
     const installDir = this.getBicepExecPath();
 
     await this._logger?.info(

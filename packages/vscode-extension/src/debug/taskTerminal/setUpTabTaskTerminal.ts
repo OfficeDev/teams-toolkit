@@ -16,6 +16,7 @@ import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import * as commonUtils from "../commonUtils";
+import { tools } from "../../handlers";
 import { setUpTabDisplayMessages } from "../constants";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
@@ -51,7 +52,14 @@ export class SetUpTabTaskTerminal extends BaseTaskTerminal {
     VsCodeLogInstance.outputChannel.appendLine("");
 
     const workspacePath: string = workspaceUri?.fsPath as string;
-    const handler = new TabDebugHandler(workspacePath, this.args);
+    const handler = new TabDebugHandler(
+      workspacePath,
+      this.args,
+      tools.tokenProvider.m365TokenProvider,
+      tools.logProvider,
+      tools.telemetryReporter!,
+      tools.ui
+    );
     const actions = handler.getActions();
 
     const res = await handleDebugActions(actions, setUpTabDisplayMessages);

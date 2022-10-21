@@ -127,17 +127,7 @@ export class DeployUtils {
       )
     );
 
-    // 2. check azure account
-    const subscriptionResult = await this.checkDeployAzureSubscription(
-      context,
-      context.envInfo,
-      context.tokenProvider.azureAccountProvider
-    );
-    if (subscriptionResult.isErr()) {
-      return err(subscriptionResult.error);
-    }
-
-    // 3. start deploy
+    // 2. start deploy
     context.logProvider.info(
       getLocalizedString("core.deploy.startNotice", PluginDisplayName.Solution)
     );
@@ -185,7 +175,7 @@ export class DeployUtils {
       username,
       subscriptionName ? subscriptionName : subscriptionId
     );
-    const deployOption = "Deploy";
+    const deployOption = getLocalizedString("core.option.deploy");
     const result = await ctx.userInteraction.showMessage("warn", msg, true, deployOption);
     const choice = result?.isOk() ? result.value : undefined;
 

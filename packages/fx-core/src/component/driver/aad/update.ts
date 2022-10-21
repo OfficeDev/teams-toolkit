@@ -18,6 +18,10 @@ import { AadManifestHelper } from "../../resource/aadApp/utils/aadManifestHelper
 import { AADManifest } from "../../resource/aadApp/interfaces/AADManifest";
 import { MissingFieldInManifestUserError } from "./error/invalidFieldInManifestError";
 import isUUID from "validator/lib/isUUID";
+import { hooks } from "@feathersjs/hooks/lib";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { logMessageKeys } from "./utility/constants";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -25,11 +29,14 @@ const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
 // logic from src\component\resource\aadApp\aadAppManifestManager.ts
 @Service(actionName) // DO NOT MODIFY the service name
 export class UpdateAadAppDriver implements StepDriver {
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: UpdateAadAppArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     try {
+      context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
+
       this.validateArgs(args);
       const aadAppClient = new AadAppClient(context.m365TokenProvider);
       const state = this.loadCurrentState();
@@ -61,6 +68,13 @@ export class UpdateAadAppDriver implements StepDriver {
       // Output actual manifest to project folder
       await fs.ensureDir(path.dirname(args.outputFilePath));
       await fs.writeFile(args.outputFilePath, JSON.stringify(manifest, null, 4), "utf8");
+      context.logProvider?.info(
+        getLocalizedString(logMessageKeys.outputAadAppManifest, args.outputFilePath)
+      );
+
+      context.logProvider?.info(
+        getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
+      );
 
       return ok(
         new Map(
@@ -70,19 +84,28 @@ export class UpdateAadAppDriver implements StepDriver {
       );
     } catch (error) {
       if (error instanceof UserError || error instanceof SystemError) {
+        context.logProvider?.error(
+          getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
+        );
         return err(error);
       }
 
       if (axios.isAxiosError(error)) {
+        const message = JSON.stringify(error.response!.data);
+        context.logProvider?.error(
+          getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
+        );
         if (error.response!.status >= 400 && error.response!.status < 500) {
-          return err(
-            new UnhandledUserError(actionName, JSON.stringify(error.response!.data), helpLink)
-          );
+          return err(new UnhandledUserError(actionName, message, helpLink));
         } else {
-          return err(new UnhandledSystemError(actionName, JSON.stringify(error.response!.data)));
+          return err(new UnhandledSystemError(actionName, message));
         }
       }
 
+      const message = JSON.stringify(error);
+      context.logProvider?.error(
+        getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
+      );
       return err(new UnhandledSystemError(actionName, JSON.stringify(error)));
     }
   }

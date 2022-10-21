@@ -71,6 +71,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
 
   private childProc: cp.ChildProcess | undefined;
   private isOutputSummary: boolean;
+  private log: string;
 
   private readonly args: LocalTunnelArgs;
   private readonly status: LocalTunnelTaskStatus;
@@ -83,6 +84,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     this.isOutputSummary = false;
     this.progressHandler = new ProgressHandler(localTunnelDisplayMessages.taskName, 1, "terminal");
     this.step = new Step(1);
+    this.log = "";
 
     for (const task of LocalTunnelTaskTerminal.ngrokTaskTerminals.values()) {
       task.terminal.close();
@@ -166,6 +168,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
 
       this.childProc.stdout?.setEncoding("utf-8");
       this.childProc.stdout?.on("data", (data: string | Buffer) => {
+        this.log += data.toString();
         const line = data.toString().replace(/\n/g, "\r\n");
         this.writeEmitter.fire(line);
         const res = this.saveNgrokEndpointFromLog(line);
@@ -403,6 +406,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
         [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
         [TelemetryProperty.Success]: TelemetrySuccess.No,
         [TelemetryProperty.DebugTaskArgs]: this.generateTaskArgsTelemetry(),
+        [TelemetryProperty.DebugNgrokLog]: this.log,
       },
       {
         [LocalTelemetryReporter.PropertyDuration]: this.getDurationInSeconds() ?? -1,

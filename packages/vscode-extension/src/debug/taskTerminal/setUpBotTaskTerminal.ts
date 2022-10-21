@@ -44,7 +44,6 @@ export class SetUpBotTaskTerminal extends BaseTaskTerminal {
             botMessagingEndpoint: maskValue(this.args.botMessagingEndpoint, [
               { value: TaskDefaultValue.setUpBot.botMessagingEndpoint, mask: DefaultPlaceholder },
             ]),
-            botPwd: maskValue(this.args.botPassword),
           }),
         },
         () => this._do()

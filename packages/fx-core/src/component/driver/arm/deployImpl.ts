@@ -15,6 +15,7 @@ import { getDefaultString, getLocalizedString } from "../../../common/localizeUt
 import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm-resources";
 import { SolutionError } from "../../constants";
 import { InvalidParameterUserError } from "../aad/error/invalidParameterUserError";
+import { ensureBicepForDriver } from "../../utils/depsChecker/bicepChecker";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -54,9 +55,8 @@ export class ArmDeployImpl {
     }
   }
 
-  // TODO: download bicep cli
   private async ensureBicepCli(): Promise<string> {
-    return "";
+    return await ensureBicepForDriver(this.context, this.args.bicepCliVersion!);
   }
 
   private async createClient(): Promise<void> {

@@ -33,7 +33,7 @@ import { VSCodeExtensionCommand } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import { hasTab } from "../../../common/projectSettingsHelperV3";
-import { AppStudioScopes } from "../../../common/tools";
+import { AppStudioScopes, isApiV3Enabled } from "../../../common/tools";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
 import { globalVars } from "../../../core/globalVars";
 import { getTemplatesFolder } from "../../../folder";
@@ -497,11 +497,14 @@ export class AppManifest implements CloudResource {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
-    m365TokenProvider: M365TokenProvider
+    m365TokenProvider: M365TokenProvider,
+    teamsAppIdV3?: string
   ): Promise<Result<TeamsAppAdmin[], FxError>> {
     TelemetryUtils.init(ctx);
     try {
-      const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
+      const teamsAppId = isApiV3Enabled()
+        ? teamsAppIdV3
+        : await this.getTeamsAppId(ctx, inputs, envInfo);
       if (!teamsAppId) {
         return err(
           new UserError(
@@ -569,14 +572,17 @@ export class AppManifest implements CloudResource {
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
     m365TokenProvider: M365TokenProvider,
-    userInfo: AppUser
+    userInfo: AppUser,
+    teamsAppIdV3?: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     try {
       const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
-      const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
+      const teamsAppId = isApiV3Enabled()
+        ? teamsAppIdV3
+        : await this.getTeamsAppId(ctx, inputs, envInfo);
       if (!teamsAppId) {
         const msgs = ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name);
         return err(
@@ -639,13 +645,16 @@ export class AppManifest implements CloudResource {
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
     m365TokenProvider: M365TokenProvider,
-    userInfo: AppUser
+    userInfo: AppUser,
+    teamsAppIdV3?: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     TelemetryUtils.init(ctx);
     try {
       const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
-      const teamsAppId = await this.getTeamsAppId(ctx, inputs, envInfo);
+      const teamsAppId = isApiV3Enabled()
+        ? teamsAppIdV3
+        : await this.getTeamsAppId(ctx, inputs, envInfo);
       if (!teamsAppId) {
         return err(
           new UserError(

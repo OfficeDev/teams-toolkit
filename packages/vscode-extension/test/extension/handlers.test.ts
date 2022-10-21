@@ -387,15 +387,16 @@ describe("handlers", () => {
     });
 
     it("deployAadManifest", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const deployAadManifest = sinon.spy(handlers.core, "deployAadManifest");
-      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const sandbox = sinon.createSandbox();
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const deployAadManifest = sandbox.spy(handlers.core, "deployAadManifest");
+      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
       await handlers.runCommand(Stage.deployAad);
 
-      sinon.restore();
-      sinon.assert.calledOnce(deployAadManifest);
+      sandbox.assert.calledOnce(deployAadManifest);
+      sandbox.restore();
     });
 
     it("localDebug", async () => {
@@ -803,19 +804,20 @@ describe("handlers", () => {
   });
 
   it("deployAadAppManifest v3", async () => {
-    sinon.stub(handlers, "core").value(new MockCore());
-    sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-    sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    const sanbox = sinon.createSandbox();
+    sanbox.stub(handlers, "core").value(new MockCore());
+    sanbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sanbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     mockedEnvRestore = mockedEnv({
       TEAMSFX_API_V3: "true",
     });
 
-    const deployAadManifest = sinon.spy(handlers.core, "deployAadManifest");
+    const deployAadManifest = sanbox.spy(handlers.core, "deployAadManifest");
     await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
-    sinon.assert.calledOnce(deployAadManifest);
-    chai.assert.equal(deployAadManifest.getCall(0).args[0]["include-aad-manifest"], "yes");
+    sanbox.assert.calledOnce(deployAadManifest);
 
     mockedEnvRestore();
+    sanbox.restore();
   });
 
   it("showError", async () => {

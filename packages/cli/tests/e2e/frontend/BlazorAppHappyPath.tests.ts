@@ -41,7 +41,7 @@ describe("Blazor App", function () {
   const envName = environmentManager.getDefaultEnvName();
   const env = Object.assign({}, process.env);
   env["TEAMSFX_CLI_DOTNET"] = "true";
-  env["TEAMSFX_V3"] = "false";
+  env["TEAMSFX_APIV3"] = "false";
 
   after(async () => {
     // clean up

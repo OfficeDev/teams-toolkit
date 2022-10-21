@@ -110,7 +110,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         ctx.arguments.push(actionContext);
       }
       await next();
-      if (ctx.result?.isErr()) throw ctx.result.error;
+      if (ctx.result?.isErr && ctx.result.isErr()) throw ctx.result.error;
       // send end telemetry
       if (action.enableTelemetry) {
         sendSuccessEvent(eventName, telemetryProps);
@@ -152,9 +152,8 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         );
       }
       TOOLS.logProvider.info(`execute [${actionName}] failed!`);
-      // ctx.result = err(fxError);
-      // return;
-      throw fxError;
+      ctx.result = err(fxError);
+      return;
     }
   };
 }

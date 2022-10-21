@@ -53,6 +53,6 @@ export class FetchSampleUrlWithTagError extends BaseComponentInnerError {
 
 export class MissKeyError extends BaseComponentInnerError {
   constructor(keyName: string) {
-    super("generate", "SystemError", "MissKeyError", "error.generator.MissKeyError", [keyName]);
+    super(errorSource, "SystemError", "MissKeyError", "error.generator.MissKeyError", [keyName]);
   }
 }

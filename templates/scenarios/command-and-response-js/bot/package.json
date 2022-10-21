@@ -17,7 +17,7 @@
         "url": "https://github.com"
     },
     "dependencies": {
-        "@microsoft/teamsfx": "^1.0.0",
+        "@microsoft/teamsfx": "^2.0.1-alpha",
         "restify": "^8.5.1"
     },
     "devDependencies": {

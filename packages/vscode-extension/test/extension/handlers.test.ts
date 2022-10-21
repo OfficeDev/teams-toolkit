@@ -53,7 +53,9 @@ import * as commonUtils from "../../src/utils/commonUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import { MockCore } from "../mocks/mockCore";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import mockedEnv from "mocked-env";
 
+let mockedEnvRestore: () => void;
 describe("handlers", () => {
   describe("activate()", function () {
     const sandbox = sinon.createSandbox();
@@ -786,6 +788,22 @@ describe("handlers", () => {
     sinon.assert.calledOnce(deployArtifacts);
     chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
     sinon.restore();
+  });
+
+  it("deployAadAppManifest v3", async () => {
+    sinon.stub(handlers, "core").value(new MockCore());
+    sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_API_V3: "true",
+    });
+
+    const deployAadManifest = sinon.spy(handlers.core, "deployAadManifest");
+    await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
+    sinon.assert.calledOnce(deployAadManifest);
+    chai.assert.equal(deployAadManifest.getCall(0).args[0]["include-aad-manifest"], "yes");
+
+    mockedEnvRestore();
   });
 
   it("showError", async () => {

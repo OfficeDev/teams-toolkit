@@ -32,6 +32,10 @@ export class MockCore implements Core {
     return ok("");
   }
 
+  async deployAadManifest(inputs: Inputs): Promise<Result<string, FxError>> {
+    return ok("");
+  }
+
   async deployArtifacts(inputs: Inputs): Promise<Result<string, FxError>> {
     return ok("");
   }

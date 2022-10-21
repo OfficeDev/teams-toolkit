@@ -56,7 +56,7 @@ export class M365AccountNode extends DynamicNode {
       return;
     }
     this.status = AccountItemStatus.Switching;
-    this.contextValue = "switchingM365";
+    this.contextValue = "";
     // refresh
     this.eventEmitter.fire(this);
   }

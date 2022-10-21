@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsoft/teamsfx-api";
+import {
+  IBot,
+  IComposeExtension,
+  IConfigurableTab,
+  IStaticTab,
+  devPreview,
+} from "@microsoft/teamsfx-api";
 export class Constants {
   public static readonly MANIFEST_FILE = "manifest.json";
   public static readonly PLUGIN_NAME = "AppStudioPlugin";
@@ -440,6 +446,127 @@ export const STATIC_TABS_TPL_LOCAL_DEBUG: IStaticTab[] = [
     websiteUrl:
       "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/tab",
     scopes: ["personal"],
+  },
+];
+
+export const OFFICE_ADDIN_EXTENSIONS_LOCAL_DEBUG: devPreview.ElementExtensions = [
+  {
+    requirements: {
+      scopes: [],
+    },
+    runtimes: [
+      {
+        requirements: {},
+        id: "TaskPaneRuntime",
+        type: "general",
+        code: {
+          page: "https://localhost:3000/taskpane.html",
+        },
+        lifetime: "short",
+        actions: [
+          {
+            id: "TaskPaneRuntimeShow",
+            type: "openPage",
+            pinnable: false,
+          },
+        ],
+      },
+      {
+        id: "CommandsRuntime",
+        type: "general",
+        code: {
+          page: "https://localhost:3000/commands.html",
+          script: "https://localhost:3000/commands.js",
+        },
+        lifetime: "short",
+        actions: [
+          {
+            id: "action",
+            type: "executeFunction",
+          },
+        ],
+      },
+    ],
+    ribbons: [
+      {
+        contexts: [],
+        tabs: [
+          {
+            builtInTabId: "TabDefault",
+            groups: [
+              {
+                id: "msgReadGroup",
+                label: "Contoso Add-in",
+                icons: [
+                  {
+                    size: 16,
+                    file: "https://localhost:3000/assets/icon-16.png",
+                  },
+                  {
+                    size: 32,
+                    file: "https://localhost:3000/assets/icon-32.png",
+                  },
+                  {
+                    size: 80,
+                    file: "https://localhost:3000/assets/icon-80.png",
+                  },
+                ],
+                controls: [
+                  {
+                    id: "msgReadOpenPaneButton",
+                    type: "button",
+                    label: "Show Taskpane",
+                    icons: [
+                      {
+                        size: 16,
+                        file: "https://localhost:3000/assets/icon-16.png",
+                      },
+                      {
+                        size: 32,
+                        file: "https://localhost:3000/assets/icon-32.png",
+                      },
+                      {
+                        size: 80,
+                        file: "https://localhost:3000/assets/icon-80.png",
+                      },
+                    ],
+                    supertip: {
+                      title: "Show Taskpane",
+                      description: "Opens a pane displaying all available properties.",
+                    },
+                    actionId: "TaskPaneRuntimeShow",
+                  },
+                  {
+                    id: "ActionButton",
+                    type: "button",
+                    label: "Perform an action",
+                    icons: [
+                      {
+                        size: 16,
+                        file: "https://localhost:3000/assets/icon-16.png",
+                      },
+                      {
+                        size: 32,
+                        file: "https://localhost:3000/assets/icon-32.png",
+                      },
+                      {
+                        size: 80,
+                        file: "https://localhost:3000/assets/icon-80.png",
+                      },
+                    ],
+                    supertip: {
+                      title: "Perform an action",
+                      description: "Perform an action when clicked.",
+                    },
+                    actionId: "action",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
   },
 ];
 

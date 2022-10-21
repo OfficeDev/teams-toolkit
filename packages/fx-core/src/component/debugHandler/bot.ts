@@ -211,7 +211,7 @@ export class BotDebugHandler {
           MaxLengths.AAD_DISPLAY_NAME
         );
         const botAuthCredential = await GraphClient.registerAadApp(tokenResult.value, displayName);
-        // set objectId, botId, botPassword to state
+        // set botId, botPassword to state
         this.envInfoV3.state[ComponentNames.TeamsBot].botId = botAuthCredential.clientId;
         this.envInfoV3.state[ComponentNames.TeamsBot].botPassword = botAuthCredential.clientSecret;
 

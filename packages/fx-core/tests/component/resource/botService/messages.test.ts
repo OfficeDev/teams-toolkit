@@ -26,18 +26,4 @@ describe("Test Messages", () => {
     expect(messages[0]).to.be.equals(getDefaultString("plugins.bot.FailedToUpdateConfigs", sth));
     expect(messages[1]).to.be.equals(getLocalizedString("plugins.bot.FailedToUpdateConfigs", sth));
   });
-
-  it("SomethingIsMissing", () => {
-    const sth = "sth";
-    const messages = Messages.SomethingIsMissing(sth);
-    expect(messages[0]).to.be.equals(getDefaultString("plugins.bot.SomethingIsMissing", sth));
-    expect(messages[1]).to.be.equals(getLocalizedString("plugins.bot.SomethingIsMissing", sth));
-  });
-
-  it("SomethingIsMissing", () => {
-    const sth = "sth";
-    const messages = Messages.SomethingIsMissing(sth);
-    expect(messages[0]).to.be.equals(getDefaultString("plugins.bot.SomethingIsMissing", sth));
-    expect(messages[1]).to.be.equals(getLocalizedString("plugins.bot.SomethingIsMissing", sth));
-  });
 });

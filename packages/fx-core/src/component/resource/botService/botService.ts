@@ -88,6 +88,7 @@ export class BotService extends AzureResource {
     const resourceNameSuffix = solutionConfig.resourceNameSuffix
       ? solutionConfig.resourceNameSuffix
       : uuid.v4();
+    _checkThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, context.projectSetting.appName);
     const aadDisplayName = ResourceNameFactory.createCommonName(
       resourceNameSuffix,
       context.projectSetting.appName,

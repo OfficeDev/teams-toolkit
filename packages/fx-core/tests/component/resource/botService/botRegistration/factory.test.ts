@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import "mocha";
-import * as chai from "chai";
-import * as sinon from "sinon";
 import { RemoteBotRegistration } from "../../../../../src/component/resource/botService/botRegistration/remoteBotRegistration";
 import {
   BotRegistrationFactory,

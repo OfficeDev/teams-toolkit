@@ -7,19 +7,13 @@ import * as sinon from "sinon";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
 import {
   CreateAADAppError,
-  CreateAADSecretError,
   PluginError,
 } from "../../../../src/component/resource/botService/errors";
 import { default as axios } from "axios";
 import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
 import { Messages } from "./messages";
-import { AppStudioClient } from "../../../../src/component/resource/botService/appStudio/appStudioClient";
-import { BotAuthCredential } from "../../../../src/component/resource/botService/botAuthCredential";
 import { CommonStrings } from "../../../../src/component/resource/botService/strings";
-import {
-  CreateAppError,
-  CreateSecretError,
-} from "../../../../src/component/resource/aadApp/errors";
+import { CreateAppError } from "../../../../src/component/resource/aadApp/errors";
 
 describe("Test GraphClient", () => {
   describe("Test registerAadApp", () => {

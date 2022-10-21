@@ -194,7 +194,7 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
           tag: "templates@0.0.0-rc"
-          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
+          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip, ${{ runner.temp }}/teamsfx_templates_v3/*.zip
           allowUpdates: true
           removeArtifacts: true
 

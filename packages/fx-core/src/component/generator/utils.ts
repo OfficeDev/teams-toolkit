@@ -26,7 +26,6 @@ import { EOL } from "os";
 import templateConfig from "../../common/templates-config.json";
 import sampleConfig from "../../common/samples-config.json";
 import semver from "semver";
-import { Generator } from "./generator";
 
 const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
 const templateVersion = templateConfig.version;

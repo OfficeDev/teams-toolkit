@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AccessToken, OnBehalfOfCredential } from "@azure/identity";
+import { AccessToken } from "@azure/identity";
 import {
   Activity,
   ActivityTypes,

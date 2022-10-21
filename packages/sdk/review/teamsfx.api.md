@@ -66,11 +66,13 @@ export class ApiKeyProvider implements AuthProvider {
 
 // @public
 export class AppCredential implements TokenCredential {
-    // Warning: (ae-forgotten-export) The symbol "AppCredentialAuthConfig" needs to be exported by the entry point index.d.ts
     constructor(authConfig: AppCredentialAuthConfig);
     constructor(authConfig: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
 }
+
+// @public
+export type AppCredentialAuthConfig = OnBehalfOfCredentialAuthConfig;
 
 // @public
 export interface AuthenticationConfiguration {
@@ -104,7 +106,6 @@ export class BearerTokenAuthProvider implements AuthProvider {
 
 // @public
 export interface BotSsoConfig {
-    // Warning: (ae-forgotten-export) The symbol "OnBehalfOfCredentialAuthConfig" needs to be exported by the entry point index.d.ts
     aad: {
         scopes: string[];
     } & ((OnBehalfOfCredentialAuthConfig & {
@@ -409,6 +410,19 @@ export enum NotificationTargetType {
     Group = "Group",
     Person = "Person"
 }
+
+// @public
+export type OnBehalfOfCredentialAuthConfig = {
+    authorityHost: string;
+    clientId: string;
+    tenantId: string;
+} & ({
+    clientSecret: string;
+    certificateContent?: never;
+} | {
+    clientSecret?: never;
+    certificateContent: string;
+});
 
 // @public
 export class OnBehalfOfUserCredential implements TokenCredential {

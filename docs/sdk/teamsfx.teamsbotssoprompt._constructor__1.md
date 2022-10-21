@@ -16,7 +16,7 @@ constructor(authConfig: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: s
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  authConfig | OnBehalfOfCredentialAuthConfig |  |
+|  authConfig | [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) |  |
 |  initiateLoginEndpoint | string |  |
 |  dialogId | string |  |
 |  settings | [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) |  |

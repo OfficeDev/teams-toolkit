@@ -18,7 +18,7 @@ constructor(dedupStorage: Storage, ssoPromptSettings: TeamsBotSsoPromptSettings,
 |  --- | --- | --- |
 |  dedupStorage | Storage |  |
 |  ssoPromptSettings | [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) |  |
-|  authConfig | OnBehalfOfCredentialAuthConfig |  |
+|  authConfig | [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) |  |
 |  initiateLoginEndpoint | string |  |
 |  dialogName | string |  |
 

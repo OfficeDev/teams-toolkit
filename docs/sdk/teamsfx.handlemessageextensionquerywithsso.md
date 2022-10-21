@@ -17,7 +17,7 @@ export declare function handleMessageExtensionQueryWithSSO(context: TurnContext,
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  context | TurnContext | The context object for the current turn. |
-|  config | OnBehalfOfCredentialAuthConfig | User custom the message extension authentication configuration. |
+|  config | [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) | User custom the message extension authentication configuration. |
 |  initiateLoginEndpoint | string | Login page for Teams to redirect to. |
 |  scopes | string \| string\[\] | The list of scopes for which the token will have access. |
 |  logic | (token: [MessageExtensionTokenResponse](./teamsfx.messageextensiontokenresponse.md)<!-- -->) =&gt; Promise&lt;any&gt; | Business logic when executing the query in message extension with SSO or access token. |

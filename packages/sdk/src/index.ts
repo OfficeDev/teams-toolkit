@@ -18,7 +18,11 @@ export { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "./bot/teamsBotSsoP
 export { TeamsBotSsoPromptTokenResponse } from "./bot/teamsBotSsoPromptTokenResponse";
 
 export { UserInfo } from "./models/userinfo";
-export { AuthenticationConfiguration } from "./models/configuration";
+export {
+  AuthenticationConfiguration,
+  AppCredentialAuthConfig,
+  OnBehalfOfCredentialAuthConfig,
+} from "./models/configuration";
 export { GetTeamsUserTokenOptions } from "./models/teamsUserTokenOptions";
 
 export {

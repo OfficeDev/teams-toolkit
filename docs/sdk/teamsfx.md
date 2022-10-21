@@ -91,7 +91,9 @@
 
 |  Type Alias | Description |
 |  --- | --- |
+|  [AppCredentialAuthConfig](./teamsfx.appcredentialauthconfig.md) | Authentication configuration for AppCredential used in node environment |
 |  [BotSsoExecutionDialogHandler](./teamsfx.botssoexecutiondialoghandler.md) |  |
 |  [LogFunction](./teamsfx.logfunction.md) | Log function for customized logging. |
+|  [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) | Authentication configuration for OnBehalfOfCredential used in node environment |
 |  [TriggerPatterns](./teamsfx.triggerpatterns.md) | The trigger pattern used to trigger a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance. |
 

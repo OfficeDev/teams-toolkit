@@ -198,7 +198,7 @@ export class AadApp implements CloudResource {
   ])
   async listCollaborator(
     ctx: ContextV3,
-    aadObjectIdV3?: string,
+    aadObjectIdV3?: string
   ): Promise<Result<AadOwner[], FxError>> {
     const aadAppImplement = new AadAppForTeamsImpl();
     const res = await this.runWithExceptionCatchingAsync(

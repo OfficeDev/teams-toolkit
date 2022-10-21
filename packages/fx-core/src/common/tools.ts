@@ -410,8 +410,8 @@ export function isApiConnectEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ApiConnect, false);
 }
 
-export function isApiV3Enabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ApiV3, false);
+export function isV3Enabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.V3, false);
 }
 
 // This method is for deciding whether AAD should be activated.

@@ -488,7 +488,7 @@ describe("App-manifest Component", () => {
     let mockedEnvRestore: RestoreFn;
     before(() => {
       mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.ApiV3]: "true",
+        [FeatureFlagName.V3]: "true",
       });
     });
     afterEach(() => {

@@ -386,6 +386,18 @@ describe("handlers", () => {
       sinon.assert.calledOnce(deployArtifacts);
     });
 
+    it("deployAadManifest", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const deployAadManifest = sinon.spy(handlers.core, "deployAadManifest");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      await handlers.runCommand(Stage.deployAad);
+
+      sinon.restore();
+      sinon.assert.calledOnce(deployAadManifest);
+    });
+
     it("localDebug", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");

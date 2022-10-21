@@ -164,7 +164,7 @@ describe("Core basic APIs", () => {
   it("deploy aad manifest happy path", async () => {
     const core = new FxCore(tools);
     mockedEnvRestore = mockedEnv({
-      V3_INTEGRATION: "true",
+      TEAMSFX_API_V3: "true",
     });
     const appName = mockV3Project();
     sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
@@ -188,7 +188,7 @@ describe("Core basic APIs", () => {
   it("deploy aad manifest not exist", async () => {
     const core = new FxCore(tools);
     mockedEnvRestore = mockedEnv({
-      V3_INTEGRATION: "true",
+      TEAMSFX_API_V3: "true",
     });
     const appName = mockV3Project();
     const appManifestPath = path.join(

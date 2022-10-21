@@ -158,7 +158,7 @@ import { compare } from "./utils/versionUtil";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { isApiV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -3065,7 +3065,7 @@ export async function deployAadAppManifest(args: any[]): Promise<Result<null, Fx
     const envName = selectedEnv.value;
     inputs.env = envName;
   }
-  if (isV3Enabled()) {
+  if (isApiV3Enabled()) {
     return await runCommand(Stage.deployAad, inputs);
   } else {
     return await runCommand(Stage.deploy, inputs);

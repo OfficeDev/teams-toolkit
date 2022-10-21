@@ -44,7 +44,3 @@ export function isSPFxMultiTabEnabled(): boolean {
 export function isTDPIntegrationEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.TDPIntegration, false);
 }
-
-export function isV3Enabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.V3Integration, false);
-}

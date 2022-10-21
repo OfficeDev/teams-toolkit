@@ -84,7 +84,6 @@ export class FeatureFlagName {
   static readonly Preview = "TEAMSFX_PREVIEW";
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
   static readonly TDPIntegration = "TDP_INTEGRATION";
-  static readonly V3Integration = "V3_INTEGRATION";
   static readonly ApiV3 = "TEAMSFX_API_V3";
 }
 

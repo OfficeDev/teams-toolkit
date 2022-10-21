@@ -15,12 +15,9 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
-  readContextMultiEnv,
   validateTabAndBotProjectProvision,
   getUniqueAppName,
-  execAsyncWithRetry,
 } from "../commonUtils";
-import { SqlValidator, FunctionValidator } from "../../commonlib";
 import { getUuid } from "../../commonlib/utilities";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -48,13 +45,6 @@ describe("teamsfx new template", function () {
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
-    // const config = fs.readJSONSync(path.join(projectPath, ".fx", "configs", `config.${env}.json`));
-    // config["skipAddingSqlUser"] = true;
-    // fs.writeFileSync(
-    //   path.join(projectPath, ".fx", "configs", `config.${env}.json`),
-    //   JSON.stringify(config)
-    // );
-
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
@@ -65,43 +55,6 @@ describe("teamsfx new template", function () {
 
     // Validate Provision
     await validateTabAndBotProjectProvision(projectPath, env);
-
-    // await execAsync(`set EXPO_DEBUG=true && npm config set package-lock false`, {
-    //   cwd: path.join(projectPath, "tabs"),
-    //   env: process.env,
-    //   timeout: 0,
-    // });
-
-    // const result = await execAsync(`npm i @types/node -D`, {
-    //   cwd: path.join(projectPath, "tabs"),
-    //   env: process.env,
-    //   timeout: 0,
-    // });
-    // if (!result.stderr) {
-    //   console.log("success to run cmd: npm i @types/node -D");
-    // } else {
-    //   console.log("[failed] ", result.stderr);
-    // }
-
-    // deploy
-    await execAsyncWithRetry(`teamsfx deploy`, {
-      cwd: projectPath,
-    });
-    console.log(`[Successfully] deploy for ${projectPath}`);
-
-    // Assert
-    {
-      const context = await readContextMultiEnv(projectPath, env);
-
-      // Validate Function App
-      const functionValidator = new FunctionValidator(context, projectPath, env);
-      await functionValidator.validateProvision();
-      await functionValidator.validateDeploy();
-
-      // Validate sql
-      await SqlValidator.init(context);
-      await SqlValidator.validateSql();
-    }
   });
 
   after(async () => {

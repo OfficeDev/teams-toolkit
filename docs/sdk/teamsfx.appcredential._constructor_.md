@@ -9,14 +9,14 @@ Constructor of AppCredential.
 <b>Signature:</b>
 
 ```typescript
-constructor(authConfig: AuthenticationConfiguration);
+constructor(authConfig: AppCredentialAuthConfig);
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  authConfig | [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | The authentication configuration. Use environment variables if not provided. |
+|  authConfig | AppCredentialAuthConfig | The authentication configuration. Use environment variables if not provided. |
 
 ## Exceptions
 

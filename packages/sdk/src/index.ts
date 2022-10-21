@@ -8,7 +8,10 @@ export { OnBehalfOfUserCredential } from "./credential/onBehalfOfUserCredential"
 export { TeamsUserCredential } from "./credential/teamsUserCredential";
 
 export { MsGraphAuthProvider } from "./core/msGraphAuthProvider";
-export { createMicrosoftGraphClient } from "./core/msGraphClientProvider";
+export {
+  createMicrosoftGraphClient,
+  createMicrosoftGraphClientWithCredential,
+} from "./core/msGraphClientProvider";
 export { getTediousConnectionConfig } from "./core/defaultTediousConnectionConfiguration";
 
 export { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "./bot/teamsBotSsoPrompt";
@@ -77,5 +80,8 @@ export { CommandBot } from "./conversation/command";
 export { CardActionBot } from "./conversation/cardAction";
 export { MessageBuilder } from "./conversation/messageBuilder";
 export { InvokeResponseFactory } from "./conversation/invokeResponseFactory";
-export { handleMessageExtensionQueryWithToken } from "./messageExtension/executeWithSSO";
+export {
+  handleMessageExtensionQueryWithToken,
+  handleMessageExtensionQueryWithSSO,
+} from "./messageExtension/executeWithSSO";
 export { MessageExtensionTokenResponse } from "./messageExtension/teamsMsgExtTokenResponse";

@@ -66,6 +66,6 @@ describe("createMicrosoftGraphClient Tests - node", () => {
       new TeamsFx().setSsoToken(ssoToken),
       scopes
     );
-    expect(graphClient.config.authProvider.teamsfx).to.be.instanceOf(TeamsFx);
+    expect(graphClient.config.authProvider.credentialOrTeamsFx).to.be.instanceOf(TeamsFx);
   });
 });

@@ -5,10 +5,10 @@ import { Client } from "@microsoft/microsoft-graph-client";
 import { MsGraphAuthProvider } from "./msGraphAuthProvider";
 import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
 import { internalLogger } from "../util/logger";
+import { TokenCredential } from "@azure/identity";
 
 /**
  * Get Microsoft graph client.
- *
  * @example
  * Get Microsoft graph client by TokenCredential
  * ```typescript
@@ -65,5 +65,17 @@ export function createMicrosoftGraphClient(
     authProvider,
   });
 
+  return graphClient;
+}
+
+export function createMicrosoftGraphClientWithCredential(
+  credential: TokenCredential,
+  scopes?: string | string[]
+): Client {
+  internalLogger.info("Create Microsoft Graph Client");
+  const authProvider = new MsGraphAuthProvider(credential, scopes);
+  const graphClient = Client.initWithMiddleware({
+    authProvider,
+  });
   return graphClient;
 }

@@ -3,7 +3,7 @@
 import "mocha";
 import * as chai from "chai";
 
-import { AppStudio } from "../../../../src/component/resource/botService/appStudio/appStudio";
+import { AppStudioClient } from "../../../../src/component/resource/botService/appStudio/appStudioClient";
 import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
 import * as sinon from "sinon";
 import { IBotRegistration } from "../../../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";
@@ -14,118 +14,6 @@ import { UserError } from "@microsoft/teamsfx-api";
 describe("Test AppStudio APIs", () => {
   afterEach(() => {
     sinon.restore();
-  });
-
-  describe("createAADAppV2", () => {
-    it("Happy Path", async () => {
-      // Arrange
-      const accessToken = "anything";
-      sinon.stub(RetryHandler, "Retry").resolves({
-        data: {
-          id: "anything",
-          appId: "anything",
-        },
-      });
-
-      // Act
-
-      const result = await AppStudio.createAADAppV2(accessToken, {
-        displayName: "anything",
-      });
-
-      chai.assert.isTrue(result.appId === "anything");
-      chai.assert.isTrue(result.id === "anything");
-    });
-
-    it("Empty Data", async () => {
-      // Arrange
-      const accessToken = "anything";
-      sinon.stub(RetryHandler, "Retry").resolves({});
-
-      // Act
-      try {
-        await AppStudio.createAADAppV2(accessToken, {
-          displayName: "anything",
-        });
-      } catch (e) {
-        chai.assert.isTrue(e instanceof PluginError);
-        return;
-      }
-
-      // Assert
-      chai.assert.fail(Messages.ShouldNotReachHere);
-    });
-  });
-
-  describe("createAADApp", () => {
-    it("Happy Path", async () => {
-      // Arrange
-      const accessToken = "anything";
-      sinon.stub(RetryHandler, "Retry").resolves({
-        data: {
-          id: "anything",
-          objectId: "anything",
-        },
-      });
-
-      // Act
-      const result = await AppStudio.createAADApp(accessToken, {
-        displayName: "anything",
-      });
-
-      chai.assert.isTrue(result.id === "anything");
-      chai.assert.isTrue(result.objectId === "anything");
-    });
-
-    it("Empty Data", async () => {
-      // Arrange
-      const accessToken = "anything";
-      sinon.stub(RetryHandler, "Retry").resolves({});
-
-      // Act
-      try {
-        await AppStudio.createAADApp(accessToken, {
-          displayName: "anything",
-        });
-      } catch (e) {
-        chai.assert.isTrue(e instanceof PluginError);
-        return;
-      }
-
-      // Assert
-      chai.assert.fail(Messages.ShouldNotReachHere);
-    });
-  });
-
-  describe("isAADAppExisting", () => {
-    it("Happy Path", async () => {
-      // Arrange
-      const accessToken = "anything";
-      sinon.stub(RetryHandler, "Retry").resolves({
-        data: {
-          id: "anything",
-          appId: "anything",
-        },
-      });
-
-      // Act
-      const result = await AppStudio.isAADAppExisting(accessToken, "anything");
-
-      // Assert
-      chai.assert.isTrue(result);
-    });
-
-    it("Empty Data", async () => {
-      // Arrange
-      const accessToken = "anything";
-      sinon.stub(RetryHandler, "Retry").resolves({});
-
-      // Act
-      const result = await AppStudio.isAADAppExisting(accessToken, "anything");
-
-      // Assert
-      chai.assert.isFalse(result);
-    });
   });
 
   describe("createBotRegistration", () => {
@@ -147,7 +35,7 @@ describe("Test AppStudio APIs", () => {
 
       // Act
       try {
-        await AppStudio.createBotRegistration(accessToken, botReg);
+        await AppStudioClient.createBotRegistration(accessToken, botReg);
       } catch {
         chai.assert.fail(Messages.ShouldNotReachHere);
       }
@@ -169,7 +57,7 @@ describe("Test AppStudio APIs", () => {
 
       // Act
       try {
-        await AppStudio.createBotRegistration(accessToken, botReg);
+        await AppStudioClient.createBotRegistration(accessToken, botReg);
       } catch (e) {
         chai.assert.isTrue(e instanceof PluginError);
         return;
@@ -188,7 +76,7 @@ describe("Test AppStudio APIs", () => {
       sinon.stub(RetryHandler, "Retry").resolves({
         data: {},
       });
-      sinon.stub(AppStudio, "getBotRegistration").resolves({
+      sinon.stub(AppStudioClient, "getBotRegistration").resolves({
         name: "",
         description: "",
         iconUrl: "",
@@ -198,7 +86,7 @@ describe("Test AppStudio APIs", () => {
 
       // Act
       try {
-        await AppStudio.updateMessageEndpoint(accessToken, "anything", "anything");
+        await AppStudioClient.updateMessageEndpoint(accessToken, "anything", "anything");
       } catch {
         chai.assert.fail(Messages.ShouldNotReachHere);
       }
@@ -212,7 +100,7 @@ describe("Test AppStudio APIs", () => {
 
       // Act
       try {
-        await AppStudio.updateMessageEndpoint(accessToken, "anything", "");
+        await AppStudioClient.updateMessageEndpoint(accessToken, "anything", "");
       } catch (e) {
         chai.assert.isTrue(e instanceof PluginError);
         return;
@@ -225,7 +113,7 @@ describe("Test AppStudio APIs", () => {
     it("Retry Exception", async () => {
       // Arrange
       const accessToken = "anything";
-      sinon.stub(AppStudio, "getBotRegistration").resolves({
+      sinon.stub(AppStudioClient, "getBotRegistration").resolves({
         name: "",
         description: "",
         iconUrl: "",
@@ -237,7 +125,7 @@ describe("Test AppStudio APIs", () => {
 
       // Act
       try {
-        await AppStudio.updateMessageEndpoint(accessToken, "anything", "anything");
+        await AppStudioClient.updateMessageEndpoint(accessToken, "anything", "anything");
       } catch (e) {
         chai.assert.isTrue(e instanceof PluginError);
         return;
@@ -252,7 +140,7 @@ describe("Test AppStudio APIs", () => {
     it("Empty Access Token", async () => {
       // Act
       try {
-        await AppStudio.getBotRegistration("", "anything");
+        await AppStudioClient.getBotRegistration("", "anything");
       } catch (e) {
         chai.assert.isTrue(e instanceof UserError);
         return;
@@ -262,7 +150,7 @@ describe("Test AppStudio APIs", () => {
     it("Get Bot Exception", async () => {
       // Arrange
       const accessToken = "anything";
-      sinon.stub(AppStudio, "getBotRegistration").resolves({
+      sinon.stub(AppStudioClient, "getBotRegistration").resolves({
         name: "",
         description: "",
         iconUrl: "",
@@ -284,7 +172,7 @@ describe("Test AppStudio APIs", () => {
 
       // Act
       try {
-        await AppStudio.getBotRegistration(accessToken, "anything");
+        await AppStudioClient.getBotRegistration(accessToken, "anything");
       } catch (e) {
         chai.assert.isTrue(e instanceof PluginError);
         return;

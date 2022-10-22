@@ -67,6 +67,19 @@ import { convertToLangKey } from "../code/utils";
 import { downloadSampleHook } from "../../core/downloadSample";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import * as uuid from "uuid";
+
+export enum TemplateNames {
+  Tab = "tab",
+  SsoTab = "sso-tab",
+  NotificationRestify = "notification-restify",
+  NotificationWebApi = "notification-webapi",
+  NotificationHttpTrigger = "notification-http-trigger",
+  NotificationTimerTrigger = "notification-timer-trigger",
+  NotificationHttpTimerTrigger = "notification-http-timer-trigger",
+  CommandAndResponse = "command-and-response",
+  Workflow = "workflow",
+}
+
 export class Coordinator {
   @hooks([
     ActionExecutionMW({
@@ -130,36 +143,33 @@ export class Coordinator {
         inputs.isM365 = true;
       }
 
-      let templateName = "";
-
+      let templateName;
       if (BotFeatureIds.includes(feature)) {
         // bot
         if (feature === NotificationOptionItem.id) {
           const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
           if (trigger === AppServiceOptionItem.id) {
-            templateName = "notification-restify";
+            templateName = TemplateNames.NotificationRestify;
           } else if (trigger === AppServiceOptionItemForVS.id) {
-            templateName = "notification-webapi";
-          } else if (trigger === AppServiceOptionItemForVS.id) {
-            templateName = "notification-restify";
+            templateName = TemplateNames.NotificationWebApi;
           } else if (trigger === FunctionsHttpTriggerOptionItem.id) {
-            templateName = "notification-http-trigger";
+            templateName = TemplateNames.NotificationHttpTrigger;
           } else if (trigger === FunctionsTimerTriggerOptionItem.id) {
-            templateName = "notification-timer-trigger";
+            templateName = TemplateNames.NotificationTimerTrigger;
           } else if (trigger === FunctionsHttpAndTimerTriggerOptionItem.id) {
-            templateName = "notification-http-timer-trigger";
+            templateName = TemplateNames.NotificationHttpTimerTrigger;
           }
         } else if (feature === CommandAndResponseOptionItem.id) {
-          templateName = "command-and-response";
+          templateName = TemplateNames.CommandAndResponse;
         } else if (feature === WorkflowOptionItem.id) {
-          templateName = "workflow";
+          templateName = TemplateNames.Workflow;
         }
       } else if (TabFeatureIds.includes(feature)) {
         // tab
         if (feature === TabOptionItem.id) {
-          templateName = "sso-tab";
+          templateName = TemplateNames.SsoTab;
         } else {
-          templateName = "tab";
+          templateName = TemplateNames.Tab;
         }
       }
       if (templateName) {

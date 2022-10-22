@@ -2162,7 +2162,7 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
   return result;
 }
 
-export async function listCollaborator(env?: string): Promise<void> {
+export async function listCollaborator(env?: string): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
 
@@ -2188,7 +2188,7 @@ export async function listCollaborator(env?: string): Promise<void> {
         }
 
         await processResult(TelemetryEvent.ListCollaborator, result, inputs);
-        return;
+        return result;
       }
     }
 
@@ -2207,6 +2207,7 @@ export async function listCollaborator(env?: string): Promise<void> {
   }
 
   await processResult(TelemetryEvent.ListCollaborator, result, inputs);
+  return result;
 }
 
 export async function manageCollaboratorHandler(): Promise<Result<any, FxError>> {

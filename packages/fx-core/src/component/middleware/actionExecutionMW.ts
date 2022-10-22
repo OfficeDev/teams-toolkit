@@ -153,7 +153,6 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       }
       TOOLS.logProvider.info(`execute [${actionName}] failed!`);
       ctx.result = err(fxError);
-      return;
     }
   };
 }

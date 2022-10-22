@@ -43,7 +43,7 @@ import { getLocalizedString } from "../common/localizeUtils";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import { isValidProject, newProjectSettings } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import { createV2Context, isApiV3Enabled } from "../common/tools";
+import { createV2Context, isV3Enabled } from "../common/tools";
 import { getTemplatesFolder } from "../folder";
 import {
   ApiConnectionOptionItem,
@@ -170,7 +170,7 @@ export class FxCore implements v3.ICore {
     inputs.stage = Stage.create;
     const context = createContextV3();
     let res;
-    if (isApiV3Enabled()) {
+    if (isV3Enabled()) {
       res = await coordinator.create(context, inputs as InputsWithProjectPath);
     } else {
       const fx = Container.get("fx") as any;

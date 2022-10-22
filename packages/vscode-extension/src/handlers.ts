@@ -158,7 +158,7 @@ import { compare } from "./utils/versionUtil";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
-import { isApiV3Enabled } from "@microsoft/teamsfx-core";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -2108,7 +2108,7 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
       throw checkCoreRes.error;
     }
 
-    if (!isApiV3Enabled()) {
+    if (!isV3Enabled()) {
       const collaborationStateResult = await checkCollaborationState(env!);
       if (collaborationStateResult.isErr()) {
         throw collaborationStateResult.error;
@@ -2125,7 +2125,7 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
     }
 
     inputs = getSystemInputs();
-    if (!isApiV3Enabled()) {
+    if (!isV3Enabled()) {
       inputs.env = env;
     }
     result = await core.grantPermission(inputs);
@@ -2170,7 +2170,7 @@ export async function listCollaborator(env?: string): Promise<void> {
       throw checkCoreRes.error;
     }
 
-    if (!isApiV3Enabled()) {
+    if (!isV3Enabled()) {
       const collaborationStateResult = await checkCollaborationState(env!);
       if (collaborationStateResult.isErr()) {
         throw collaborationStateResult.error;

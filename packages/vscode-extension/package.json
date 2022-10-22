@@ -278,7 +278,7 @@
         },
         {
           "command": "fx-extension.listCollaborator",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/ && !fx-extension.isApiV3Enabled",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/ && !fx-extension.isV3Enabled",
           "group": "inline@3"
         },
         {
@@ -293,7 +293,7 @@
         },
         {
           "command": "fx-extension.grantPermission",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/ && !fx-extension.isApiV3Enabled",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/ && !fx-extension.isV3Enabled",
           "group": "inline@3"
         },
         {
@@ -636,7 +636,7 @@
       {
         "command": "fx-extension.manageCollaborator",
         "title": "%teamstoolkit.commands.manageCollaborator.title%",
-        "enablement": "fx-extension.isApiV3Enabled",
+        "enablement": "fx-extension.isV3Enabled",
         "category": "Teams"
       },
       {

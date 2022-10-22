@@ -60,7 +60,7 @@ import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
 import { UriHandler } from "./uriHandler";
-import { isApiV3Enabled } from "@microsoft/teamsfx-core";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -492,7 +492,7 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(deployManifestFromCtxMenuCmd);
 
-  if (isApiV3Enabled()) {
+  if (isV3Enabled()) {
     registerInCommandController(
       context,
       "fx-extension.manageCollaborator",
@@ -692,7 +692,7 @@ async function setAadManifestEnabledContext() {
 }
 
 async function setApiV3EnabledContext() {
-  vscode.commands.executeCommand("setContext", "fx-extension.isApiV3Enabled", isApiV3Enabled());
+  vscode.commands.executeCommand("setContext", "fx-extension.isV3Enabled", isV3Enabled());
 }
 
 function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {

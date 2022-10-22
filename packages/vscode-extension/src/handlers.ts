@@ -2121,6 +2121,9 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
         } else {
           window.showWarningMessage(result.value.message);
         }
+
+        await processResult(TelemetryEvent.GrantPermission, result, inputs);
+        return result;
       }
     }
 
@@ -2183,6 +2186,9 @@ export async function listCollaborator(env?: string): Promise<void> {
         } else {
           window.showWarningMessage(result.value.message);
         }
+
+        await processResult(TelemetryEvent.ListCollaborator, result, inputs);
+        return;
       }
     }
 
@@ -2204,7 +2210,7 @@ export async function listCollaborator(env?: string): Promise<void> {
 }
 
 export async function manageCollaboratorHandler(): Promise<Result<any, FxError>> {
-  let result: Result<any, FxError> = ok(Void);
+  let result: any = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageCollaboratorStart);
 
   try {
@@ -2231,7 +2237,6 @@ export async function manageCollaboratorHandler(): Promise<Result<any, FxError>>
     }
 
     const command = collaboratorCommand.value.result;
-    let result;
     switch (command) {
       case "grantPermission":
         result = await grantPermission();

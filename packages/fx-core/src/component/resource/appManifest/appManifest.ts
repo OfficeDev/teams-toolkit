@@ -33,7 +33,7 @@ import { VSCodeExtensionCommand } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import { hasTab } from "../../../common/projectSettingsHelperV3";
-import { AppStudioScopes, isApiV3Enabled } from "../../../common/tools";
+import { AppStudioScopes, isV3Enabled } from "../../../common/tools";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
 import { globalVars } from "../../../core/globalVars";
 import { getTemplatesFolder } from "../../../folder";
@@ -502,7 +502,7 @@ export class AppManifest implements CloudResource {
   ): Promise<Result<TeamsAppAdmin[], FxError>> {
     TelemetryUtils.init(ctx);
     try {
-      const teamsAppId = isApiV3Enabled()
+      const teamsAppId = isV3Enabled()
         ? teamsAppIdV3
         : await this.getTeamsAppId(ctx, inputs, envInfo);
       if (!teamsAppId) {
@@ -580,7 +580,7 @@ export class AppManifest implements CloudResource {
       const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
-      const teamsAppId = isApiV3Enabled()
+      const teamsAppId = isV3Enabled()
         ? teamsAppIdV3
         : await this.getTeamsAppId(ctx, inputs, envInfo);
       if (!teamsAppId) {
@@ -652,7 +652,7 @@ export class AppManifest implements CloudResource {
     try {
       const appStudioTokenRes = await m365TokenProvider.getAccessToken({ scopes: AppStudioScopes });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
-      const teamsAppId = isApiV3Enabled()
+      const teamsAppId = isV3Enabled()
         ? teamsAppIdV3
         : await this.getTeamsAppId(ctx, inputs, envInfo);
       if (!teamsAppId) {

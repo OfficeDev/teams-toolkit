@@ -29,7 +29,7 @@ const outputKeys = {
   AAD_APP_ACCESS_AS_USER_PERMISSION_ID: "AAD_APP_ACCESS_AS_USER_PERMISSION_ID",
 };
 
-const testAssetsRoot = "./tests/component/drivers/aad/testAssets";
+const testAssetsRoot = "./tests/component/driver/aad/testAssets";
 const outputRoot = path.join(testAssetsRoot, "output");
 
 describe("aadAppUpdate", async () => {

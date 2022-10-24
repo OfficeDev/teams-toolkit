@@ -16,4 +16,6 @@ export interface CoreHookContext extends HookContext {
   //
   envInfoV3?: v3.EnvInfoV3;
   solutionV3?: v3.ISolution;
+
+  envOutput?: Map<string, string>;
 }

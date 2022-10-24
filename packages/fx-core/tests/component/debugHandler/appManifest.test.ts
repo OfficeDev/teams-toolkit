@@ -29,7 +29,7 @@ import { MockM365TokenProvider, runDebugActions } from "./utils";
 import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
 import * as utils from "../../../src/component/debugHandler/utils";
 
-describe("AppManifestDebugHandler", () => {
+describe.only("AppManifestDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
   const tenantId = "11111111-1111-1111-1111-111111111111";
   const m365TokenProvider = new MockM365TokenProvider(tenantId);
@@ -190,6 +190,9 @@ describe("AppManifestDebugHandler", () => {
       };
       sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
       sinon.stub(fs, "readFile").returns(Promise.resolve(Buffer.from("")));
+      sinon
+        .stub(appstudio, "checkIfAppInDifferentAcountSameTenant")
+        .returns(Promise.resolve(ok(false)));
       let called = false;
       sinon.stub(appstudio, "buildTeamsAppPackage").callsFake(async () => {
         called = true;
@@ -246,6 +249,9 @@ describe("AppManifestDebugHandler", () => {
         return ok(Void);
       });
       sinon.stub(fs, "readFile").returns(Promise.resolve(Buffer.from("")));
+      sinon
+        .stub(appstudio, "checkIfAppInDifferentAcountSameTenant")
+        .returns(Promise.resolve(ok(false)));
       let called = false;
       sinon.stub(appstudio, "buildTeamsAppPackage").callsFake(async () => {
         called = true;
@@ -319,6 +325,121 @@ describe("AppManifestDebugHandler", () => {
         chai.assert(result.error instanceof SystemError);
         chai.assert.deepEqual(result.error.name, error.name);
       }
+      sinon.restore();
+    });
+
+    it("different m365 account but same tenant happy path", async () => {
+      const projectSetting: ProjectSettings = {
+        appName: "unit-test",
+        projectId: "11111111-1111-1111-1111-111111111111",
+      };
+      const oldAppId = "oldAppId";
+      sinon
+        .stub(projectSettingsLoader, "loadProjectSettingsByProjectPath")
+        .returns(Promise.resolve(ok(projectSetting)));
+      const envInfoV3: v3.EnvInfoV3 = {
+        envName: environmentManager.getLocalEnvName(),
+        config: {},
+        state: {
+          solution: {},
+          [ComponentNames.AppManifest]: {
+            teamsAppId: oldAppId,
+            tenantId: "22222222-2222-2222-2222-222222222222",
+          },
+        },
+      };
+      sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
+      let checkM365TenantCalled = false;
+      sinon.stub(utils, "checkM365Tenant").callsFake(async () => {
+        checkM365TenantCalled = true;
+        return ok(Void);
+      });
+      sinon.stub(fs, "readFile").returns(Promise.resolve(Buffer.from("")));
+      sinon
+        .stub(appstudio, "checkIfAppInDifferentAcountSameTenant")
+        .returns(Promise.resolve(ok(true)));
+      sinon
+        .stub(appstudio, "buildTeamsAppPackage")
+        .callsFake(async (projectSetings, path, envInfo) => {
+          if (envInfo.state[ComponentNames.AppManifest].teamsAppId !== oldAppId) {
+            return ok("");
+          } else {
+            return err(new UserError("error", "error", "", ""));
+          }
+        });
+      const teamsAppId = "11111111-1111-1111-1111-111111111111";
+      const appDefinition: AppDefinition = {
+        teamsAppId,
+        tenantId,
+      };
+      sinon.stub(AppStudioClient, "importApp").returns(Promise.resolve(appDefinition));
+      sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
+        return ok("");
+      });
+      const args: AppManifestDebugArgs = {};
+      const handler = new AppManifestDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isOk());
+      chai.assert.equal(envInfoV3.state[ComponentNames.AppManifest].teamsAppId, teamsAppId);
+      chai.assert.equal(envInfoV3.state[ComponentNames.AppManifest].tenantId, tenantId);
+      sinon.restore();
+    });
+
+    it("check different account but same tenant error", async () => {
+      const projectSetting: ProjectSettings = {
+        appName: "unit-test",
+        projectId: "11111111-1111-1111-1111-111111111111",
+      };
+      sinon
+        .stub(projectSettingsLoader, "loadProjectSettingsByProjectPath")
+        .returns(Promise.resolve(ok(projectSetting)));
+      const envInfoV3: v3.EnvInfoV3 = {
+        envName: environmentManager.getLocalEnvName(),
+        config: {},
+        state: {
+          solution: {},
+        },
+      };
+      sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
+      sinon.stub(fs, "readFile").returns(Promise.resolve(Buffer.from("")));
+      sinon
+        .stub(appstudio, "checkIfAppInDifferentAcountSameTenant")
+        .returns(Promise.resolve(err(new UserError("error", "error", "", ""))));
+      let called = false;
+      sinon.stub(appstudio, "buildTeamsAppPackage").callsFake(async () => {
+        called = true;
+        return ok("");
+      });
+      const teamsAppId = "11111111-1111-1111-1111-111111111111";
+      const appDefinition: AppDefinition = {
+        teamsAppId,
+        tenantId,
+      };
+      sinon.stub(AppStudioClient, "importApp").returns(Promise.resolve(appDefinition));
+      sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
+        return ok("");
+      });
+      const args: AppManifestDebugArgs = {};
+      const handler = new AppManifestDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isOk());
+      chai.assert(called);
+      chai.assert.equal(envInfoV3.state[ComponentNames.AppManifest].teamsAppId, teamsAppId);
+      chai.assert.equal(envInfoV3.state[ComponentNames.AppManifest].tenantId, tenantId);
       sinon.restore();
     });
   });

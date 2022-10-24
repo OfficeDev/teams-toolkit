@@ -28,7 +28,10 @@ import { environmentManager } from "../../core/environment";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import { AppStudioClient } from "../resource/appManifest/appStudioClient";
 import { ComponentNames } from "../constants";
-import { buildTeamsAppPackage } from "../resource/appManifest/appStudio";
+import {
+  buildTeamsAppPackage,
+  checkIfAppInDifferentAcountSameTenant,
+} from "../resource/appManifest/appStudio";
 import { DebugAction } from "./common";
 import {
   AppManifestPackageNotExistError,
@@ -37,6 +40,7 @@ import {
   InvalidAppManifestPackageFileFormatError,
 } from "./error";
 import { checkM365Tenant } from "./utils";
+import { v4 } from "uuid";
 
 const appManifestDebugMessages = {
   buildingAndSavingAppManifest:
@@ -173,6 +177,21 @@ export class AppManifestDebugHandler {
 
       // For SPFx manifest
       this.envInfoV3.config.isLocalDebug = true;
+
+      // Local debug if switching to a different account in same tenant
+      if (
+        this.envInfoV3.envName === environmentManager.getLocalEnvName() &&
+        !!this.envInfoV3.state[ComponentNames.AppManifest].teamsAppId
+      ) {
+        const checkAppInDifferentAccount = await checkIfAppInDifferentAcountSameTenant(
+          this.envInfoV3.state[ComponentNames.AppManifest].teamsAppId,
+          this.m365TokenProvider,
+          this.logger
+        );
+        if (checkAppInDifferentAccount.isOk() && checkAppInDifferentAccount.value) {
+          this.envInfoV3.state[ComponentNames.AppManifest].teamsAppId = v4();
+        }
+      }
 
       // build
       const packagePathResult = await buildTeamsAppPackage(

@@ -278,7 +278,7 @@
         },
         {
           "command": "fx-extension.listCollaborator",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/ && !fx-extension.isV3Enabled",
           "group": "inline@3"
         },
         {
@@ -293,7 +293,7 @@
         },
         {
           "command": "fx-extension.grantPermission",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/ && !fx-extension.isV3Enabled",
           "group": "inline@3"
         },
         {
@@ -632,6 +632,12 @@
         "command": "fx-extension.listCollaborator",
         "title": "%teamstoolkit.commands.listAppOwner.title%",
         "icon": "$(organization)"
+      },
+      {
+        "command": "fx-extension.manageCollaborator",
+        "title": "%teamstoolkit.commands.manageCollaborator.title%",
+        "enablement": "fx-extension.isV3Enabled",
+        "category": "Teams"
       },
       {
         "command": "fx-extension.localdebug",

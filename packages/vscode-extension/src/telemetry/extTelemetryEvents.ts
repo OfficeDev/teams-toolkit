@@ -170,6 +170,9 @@ export enum TelemetryEvent {
   GrantPermissionStart = "grant-permission-start",
   GrantPermission = "grant-permission",
 
+  ManageCollaboratorStart = "manage-collaborator-start",
+  ManageCollaborator = "manage-collaborator",
+
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
   OpenSideloadingJoinM365 = "open-sideloading-joinm365",

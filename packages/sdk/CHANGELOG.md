@@ -1,4 +1,5 @@
-# 2.0.1
+# 2.0.0
+- Refactor SDK and make it easy to use (Docs will be ready in next release).
 - Support Teams JS SDK 2.0.
 - Add error details when projects not running inside Teams.
 - `getTediousConnectionConfig` is now deprecated. We recommend you compose your own Tedious configuration for better flexibility.

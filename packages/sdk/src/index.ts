@@ -22,6 +22,7 @@ export {
   AuthenticationConfiguration,
   AppCredentialAuthConfig,
   OnBehalfOfCredentialAuthConfig,
+  TeamsUserCredentialAuthConfig,
 } from "./models/configuration";
 export { GetTeamsUserTokenOptions } from "./models/teamsUserTokenOptions";
 

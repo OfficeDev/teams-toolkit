@@ -36,6 +36,7 @@ import {
 } from "./constants";
 import { NoInitializedHelpGenerator } from "./error";
 import { FxCore } from "@microsoft/teamsfx-core";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 export class HelpParamGenerator {
   private core: FxCore;
@@ -47,8 +48,7 @@ export class HelpParamGenerator {
     Stage.publish,
     Stage.provision,
     Stage.deploy,
-    Stage.grantPermission,
-    Stage.checkPermission,
+    ...(isV3Enabled() ? [Stage.grantPermission, Stage.checkPermission] : []),
     "validate",
     "update",
     "addCICDWorkflows",

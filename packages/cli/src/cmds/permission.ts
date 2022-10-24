@@ -18,6 +18,7 @@ import activate from "../activate";
 import { argsToInputs, getSystemInputs, isSpfxProject } from "../utils";
 import HelpParamGenerator from "../helpParamGenerator";
 import CLILogProvider from "../commonlib/log";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 const azureMessage =
   "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
@@ -30,6 +31,11 @@ const spfxMessage =
   "Manage site admins using SharePoint admin center: " +
   "https://docs.microsoft.com/en-us/sharepoint/manage-site-collection-administrators";
 
+const teamsAppId = "teams-app-id";
+const aadObjectId = "aad-app-id";
+const dotenvFilePath = "dotenv-file-path";
+const env = "env";
+
 export class PermissionStatus extends YargsCommand {
   public readonly commandHead = `status`;
   public readonly command = `${this.commandHead}`;
@@ -38,11 +44,36 @@ export class PermissionStatus extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.checkPermission);
-    return yargs.option(this.params).option(this.listAllCollaborators, {
+    const result = yargs.option(this.params).option(this.listAllCollaborators, {
       description: `To list all collaborators`,
       name: this.listAllCollaborators,
       type: "boolean",
     });
+    if (isV3Enabled()) {
+      result
+        .option(env, {
+          description: "Select an existing environment for the project",
+          type: "string",
+          name: env,
+        })
+        .option(dotenvFilePath, {
+          description: "dot env file path",
+          name: dotenvFilePath,
+          type: "string",
+        })
+        .option(teamsAppId, {
+          description: "teams app id",
+          name: teamsAppId,
+          type: "string",
+        })
+        .option(aadObjectId, {
+          description: "aad app id",
+          name: aadObjectId,
+          type: "string",
+        });
+    }
+
+    return result;
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -57,23 +88,36 @@ export class PermissionStatus extends YargsCommand {
 
     const core = result.value;
     const listAll = args[this.listAllCollaborators];
+    const inputs = getSystemInputs(rootFolder, args.env);
 
-    const isSpfx = await isSpfxProject(rootFolder, core);
-    if (isSpfx.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, isSpfx.error);
-      return err(isSpfx.error);
-    }
+    if (!isV3Enabled()) {
+      const isSpfx = await isSpfxProject(rootFolder, core);
+      if (isSpfx.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, isSpfx.error);
+        return err(isSpfx.error);
+      }
 
-    if (!isSpfx.value) {
-      CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
+      if (!isSpfx.value) {
+        CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
+      } else {
+        CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
+      }
     } else {
+      // print necessary messages
+      CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
       CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
+
+      // add user input to Inputs
+      inputs["dotEnvFilePath"] = args[dotenvFilePath];
+      inputs["aadObjectId"] = args[aadObjectId];
+      inputs["teamsAppId"] = args[teamsAppId];
+      inputs[env] = args[env];
     }
 
     {
       const result = listAll
-        ? await core.listCollaborator(getSystemInputs(rootFolder, args.env))
-        : await core.checkPermission(getSystemInputs(rootFolder, args.env));
+        ? await core.listCollaborator(inputs)
+        : await core.checkPermission(inputs);
 
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, result.error, {

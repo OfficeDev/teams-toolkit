@@ -43,6 +43,7 @@ import {
   NotificationOptionItem,
   CommandAndResponseOptionItem,
   TabOptionItem,
+  TabNonSsoItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
@@ -81,6 +82,23 @@ export enum TemplateNames {
   CommandAndResponse = "command-and-response",
   Workflow = "workflow",
 }
+
+export const Feature2TemplateName: any = {
+  [`${NotificationOptionItem.id}:${AppServiceOptionItem.id}`]: TemplateNames.NotificationRestify,
+  [`${NotificationOptionItem.id}:${AppServiceOptionItemForVS.id}`]:
+    TemplateNames.NotificationWebApi,
+  [`${NotificationOptionItem.id}:${FunctionsHttpTriggerOptionItem.id}`]:
+    TemplateNames.NotificationHttpTrigger,
+  [`${NotificationOptionItem.id}:${FunctionsTimerTriggerOptionItem.id}`]:
+    TemplateNames.NotificationTimerTrigger,
+  [`${NotificationOptionItem.id}:${FunctionsHttpAndTimerTriggerOptionItem.id}`]:
+    TemplateNames.NotificationHttpTimerTrigger,
+  [`${CommandAndResponseOptionItem.id}:undefined`]: TemplateNames.CommandAndResponse,
+  [`${WorkflowOptionItem.id}:undefined`]: TemplateNames.Workflow,
+  [`${TabOptionItem.id}:undefined`]: TemplateNames.SsoTab,
+  [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
+  [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
+};
 
 export class Coordinator {
   @hooks([
@@ -144,42 +162,13 @@ export class Coordinator {
         context.projectSetting.isM365 = true;
         inputs.isM365 = true;
       }
-
-      let templateName;
-      if (BotFeatureIds.includes(feature)) {
-        // bot
-        if (feature === NotificationOptionItem.id) {
-          const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
-          if (trigger === AppServiceOptionItem.id) {
-            templateName = TemplateNames.NotificationRestify;
-          } else if (trigger === AppServiceOptionItemForVS.id) {
-            templateName = TemplateNames.NotificationWebApi;
-          } else if (trigger === FunctionsHttpTriggerOptionItem.id) {
-            templateName = TemplateNames.NotificationHttpTrigger;
-          } else if (trigger === FunctionsTimerTriggerOptionItem.id) {
-            templateName = TemplateNames.NotificationTimerTrigger;
-          } else if (trigger === FunctionsHttpAndTimerTriggerOptionItem.id) {
-            templateName = TemplateNames.NotificationHttpTimerTrigger;
-          }
-        } else if (feature === CommandAndResponseOptionItem.id) {
-          templateName = TemplateNames.CommandAndResponse;
-        } else if (feature === WorkflowOptionItem.id) {
-          templateName = TemplateNames.Workflow;
-        }
-      } else if (TabFeatureIds.includes(feature)) {
-        // tab
-        if (feature === TabOptionItem.id) {
-          templateName = TemplateNames.SsoTab;
-        } else {
-          templateName = TemplateNames.Tab;
-        }
-      }
+      const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
+      const templateName = Feature2TemplateName[`${feature}:${trigger}`];
       if (templateName) {
         const langKey = convertToLangKey(language);
         const res = await Generator.generateTemplate(templateName, langKey, projectPath, context);
         if (res.isErr()) return err(res.error);
       }
-
       merge(actionContext?.telemetryProps, {
         [TelemetryProperty.Feature]: feature,
       });

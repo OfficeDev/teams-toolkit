@@ -12,43 +12,47 @@
 </head>
 
 <body>
-    <script src="https://statics.teams.cdn.office.net/sdk/v1.6.0/js/MicrosoftTeams.min.js"
-        integrity="sha384-mhp2E+BLMiZLe7rDIzj19WjgXJeI32NkPvrvvZBrMi5IvWup/1NUfS5xuYN5S3VT"
-        crossorigin="anonymous"></script>
+    <script
+        src="https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min.js"
+        integrity="sha384-QtTBFeFlfRDZBfwHJHYQp7MdLJ2C3sfAEB1Qpy+YblvjavBye+q87TELpTnvlXw4"
+        crossorigin="anonymous"
+    ></script>
     <script type="text/javascript">
-        microsoftTeams.initialize();
+        microsoftTeams.app.initialize().then(()=>{
+            // Get the tab context, and use the information to navigate to Azure AD login page
+            microsoftTeams.getContext().then(async function (context) {
+                // Generate random state string and store it, so we can verify it in the callback
+                let state = _guid();
+                localStorage.setItem("state", state);
+                localStorage.removeItem("codeVerifier");
+                var currentURL = new URL(window.location);
+                var clientId = currentURL.searchParams.get("clientId");
 
-        // Get the tab context, and use the information to navigate to Azure AD login page
-        microsoftTeams.getContext(async function (context) {
-            // Generate random state string and store it, so we can verify it in the callback
-            let state = _guid();
-            localStorage.setItem("state", state);
-            localStorage.removeItem("codeVerifier");
-            var currentURL = new URL(window.location);
-            var clientId = currentURL.searchParams.get("clientId");
+                var scope = currentURL.searchParams.get("scope");
 
-            var scope = currentURL.searchParams.get("scope");
+                var originalCode = _guid();
+                var codeChallenge = await pkceChallengeFromVerifier(originalCode);
 
-            var originalCode = _guid();
-            var codeChallenge = await pkceChallengeFromVerifier(originalCode);
+                localStorage.setItem("codeVerifier", originalCode);
+                let queryParams = {
+                    client_id: clientId,
+                    response_type: "code",
+                    response_mode: "fragment",
+                    scope: scope,
+                    redirect_uri: window.location.origin + "/auth-end.html",
+                    nonce: _guid(),
+                    state: state,
+                    login_hint: context.loginHint,
+                    code_challenge: codeChallenge,
+                    code_challenge_method: "S256"
+                };
 
-            localStorage.setItem("codeVerifier", originalCode);
-            let queryParams = {
-                client_id: clientId,
-                response_type: "code",
-                response_mode: "fragment",
-                scope: scope,
-                redirect_uri: window.location.origin + "/auth-end.html",
-                nonce: _guid(),
-                state: state,
-                login_hint: context.loginHint,
-                code_challenge: codeChallenge,
-                code_challenge_method: "S256"
-            };
-
-            let authorizeEndpoint = `https://login.microsoftonline.com/${context.tid}/oauth2/v2.0/authorize?${toQueryString(queryParams)}`;
-            window.location.assign(authorizeEndpoint);
+                let authorizeEndpoint = `https://login.microsoftonline.com/${context.tid}/oauth2/v2.0/authorize?${toQueryString(queryParams)}`;
+                window.location.assign(authorizeEndpoint);
+            });
         });
+
+        
 
         // Build query string from map of query parameter
         function toQueryString(queryParams) {

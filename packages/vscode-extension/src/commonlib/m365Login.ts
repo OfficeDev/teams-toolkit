@@ -340,7 +340,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     while (switchTimes < maxSwitchTimes) {
       try {
         await AppStudioClient.getApp(teamsAppId, currentToken, VsCodeLogInstance);
-        VsCodeLogInstance.info(`Switched to correct Microsoft 365 account.`);
+        VsCodeLogInstance.info(`Signed in with correct Microsoft 365 account.`);
         return ok(token as any);
       } catch (error: any) {
         VsCodeLogInstance.error(

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, Platform, Stage, Ok, Err, UserError } from "@microsoft/teamsfx-api";
-import { assert } from "chai";
+import { Inputs, Platform, Stage, Ok, Err, FxError } from "@microsoft/teamsfx-api";
+import { assert, expect } from "chai";
 import fs from "fs-extra";
 import "mocha";
 import { RestoreFn } from "mocked-env";
@@ -33,6 +33,7 @@ import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
 import AdmZip from "adm-zip";
 import { NoAadManifestExistError } from "../../src/core/error";
 import "../../src/component/driver/aad/update";
+import { isError } from "lodash";
 
 let mockedEnvRestore: () => void;
 describe("Core basic APIs", () => {
@@ -196,7 +197,7 @@ describe("Core basic APIs", () => {
       appName,
       "samples-v3",
       ".fx",
-      "aad.manifest.json"
+      "aad.template.json"
     );
     await fs.remove(appManifestPath);
     const inputs: Inputs = {
@@ -209,15 +210,12 @@ describe("Core basic APIs", () => {
       stage: Stage.deployAad,
       projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
     };
-    try {
-      const res = await core.deployAadManifest(inputs);
-    } catch (err) {
-      assert.isNotNull(err);
-      assert.isTrue(err instanceof NoAadManifestExistError);
-      assert.equal(
-        err.message,
-        `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`
-      );
+    const errMsg = `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`;
+    const res = await core.deployAadManifest(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof NoAadManifestExistError);
+      assert.equal(res.error.message, errMsg);
     }
     await deleteTestProject(appName);
     mockedEnvRestore();

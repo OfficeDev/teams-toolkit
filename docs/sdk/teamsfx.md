@@ -95,5 +95,6 @@
 |  [BotSsoExecutionDialogHandler](./teamsfx.botssoexecutiondialoghandler.md) |  |
 |  [LogFunction](./teamsfx.logfunction.md) | Log function for customized logging. |
 |  [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) | Authentication configuration for OnBehalfOfCredential used in node environment |
+|  [TeamsUserCredentialAuthConfig](./teamsfx.teamsusercredentialauthconfig.md) | Authentication configuration for TeamsUserCredential used in browser environment |
 |  [TriggerPatterns](./teamsfx.triggerpatterns.md) | The trigger pattern used to trigger a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance. |
 

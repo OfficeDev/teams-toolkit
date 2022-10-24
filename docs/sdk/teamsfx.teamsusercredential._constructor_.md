@@ -16,7 +16,7 @@ constructor(authConfig: TeamsUserCredentialAuthConfig);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  authConfig | TeamsUserCredentialAuthConfig |  |
+|  authConfig | [TeamsUserCredentialAuthConfig](./teamsfx.teamsusercredentialauthconfig.md) |  |
 
 ## Remarks
 

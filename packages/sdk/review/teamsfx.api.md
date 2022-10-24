@@ -523,13 +523,18 @@ export interface TeamsFxBotSsoCommandHandler {
 
 // @public
 export class TeamsUserCredential implements TokenCredential {
-    // Warning: (ae-forgotten-export) The symbol "TeamsUserCredentialAuthConfig" needs to be exported by the entry point index.d.ts
     constructor(authConfig: TeamsUserCredentialAuthConfig);
     constructor(authConfig: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(resources?: string[]): Promise<UserInfo>;
     login(scopes: string | string[], resources?: string[]): Promise<void>;
 }
+
+// @public
+export type TeamsUserCredentialAuthConfig = {
+    initiateLoginEndpoint: string;
+    clientId: string;
+};
 
 // @public
 export type TriggerPatterns = string | RegExp | (string | RegExp)[];

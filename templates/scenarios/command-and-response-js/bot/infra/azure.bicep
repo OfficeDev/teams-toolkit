@@ -13,6 +13,7 @@ param botAadAppClientSecret string
 param serverfarmsName string = resourceBaseName
 param webAppName string = resourceBaseName
 param location string = resourceGroup().location
+param webAppSKU string
 
 // Compute resources for your Web App
 resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {

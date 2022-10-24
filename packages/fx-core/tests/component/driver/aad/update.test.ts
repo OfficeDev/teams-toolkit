@@ -21,6 +21,7 @@ import {
   UnhandledUserError,
 } from "../../../../src/component/driver/aad/error/unhandledError";
 import { InvalidParameterUserError } from "../../../../src/component/driver/aad/error/invalidParameterUserError";
+import { cwd } from "process";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -40,6 +41,7 @@ describe("aadAppUpdate", async () => {
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),
     logProvider: new MockedLogProvider(),
+    projectPath: cwd(),
   };
 
   let envRestore: RestoreFn | undefined;
@@ -168,6 +170,52 @@ describe("aadAppUpdate", async () => {
     expect(actualManifest.oauth2Permissions[0].id).to.not.equal(
       "${{AAD_APP_ACCESS_AS_USER_PERMISSION_ID}}"
     ); // Should be replaced with an actual value
+  });
+
+  it("should use absolute path in args directly", async () => {
+    const outputPath = path.join(cwd(), outputRoot, "manifest.output.json");
+    const manifestPath = path.join(cwd(), testAssetsRoot, "manifest.json");
+    process.chdir("tests"); // change cwd for test
+    try {
+      sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+      envRestore = mockedEnv({
+        AAD_APP_OBJECT_ID: expectedObjectId,
+        AAD_APP_CLIENT_ID: expectedClientId,
+      });
+
+      const args = {
+        manifestTemplatePath: manifestPath,
+        outputFilePath: outputPath,
+      };
+
+      const result = await updateAadAppDriver.run(args, mockedDriverContext);
+
+      expect(result.isOk()).to.be.true;
+    } finally {
+      process.chdir(".."); // restore cwd
+    }
+  });
+
+  it("should add project path to relative path in args", async () => {
+    process.chdir("tests"); // change cwd for test
+    try {
+      sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+      envRestore = mockedEnv({
+        AAD_APP_OBJECT_ID: expectedObjectId,
+        AAD_APP_CLIENT_ID: expectedClientId,
+      });
+
+      const args = {
+        manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+        outputFilePath: path.join(outputRoot, "manifest.output.json"),
+      };
+
+      const result = await updateAadAppDriver.run(args, mockedDriverContext);
+
+      expect(result.isOk()).to.be.true;
+    } finally {
+      process.chdir(".."); // restore cwd
+    }
   });
 
   it("should throw error if manifest does not contain id", async () => {
@@ -409,6 +457,7 @@ describe("aadAppUpdate", async () => {
       m365TokenProvider: new MockedM365Provider(),
       logProvider: new MockedLogProvider(),
       telemetryReporter: mockedTelemetryReporter,
+      projectPath: cwd(),
     };
 
     const result = await updateAadAppDriver.run(args, dirverContext);
@@ -472,6 +521,7 @@ describe("aadAppUpdate", async () => {
       m365TokenProvider: new MockedM365Provider(),
       logProvider: new MockedLogProvider(),
       telemetryReporter: mockedTelemetryReporter,
+      projectPath: cwd(),
     };
 
     const result = await updateAadAppDriver.run(args, dirverContext);

@@ -34,6 +34,7 @@
     "test:botAadAppDriver": "nyc mocha \"tests/component/driver/botAadApp/*.test.ts\"",
     "test:armDriver": "nyc mocha \"tests/component/driver/arm/*.test.ts\"",
     "test:teamsAppDriver": "nyc mocha \"tests/component/driver/teamsApp/*.test.ts\"",
+    "test:coordinator": "nyc mocha \"tests/component/coordinator.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

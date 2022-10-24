@@ -41,7 +41,11 @@ export class UpdateAadAppDriver implements StepDriver {
       const aadAppClient = new AadAppClient(context.m365TokenProvider);
       const state = this.loadCurrentState();
 
-      const manifest = await this.loadManifest(args.manifestTemplatePath, state);
+      const manifestAbsolutePath = this.getAbsolutePath(
+        args.manifestTemplatePath,
+        context.projectPath
+      );
+      const manifest = await this.loadManifest(manifestAbsolutePath, state);
       const warningMessage = AadManifestHelper.validateManifest(manifest);
       if (warningMessage) {
         warningMessage.split("\n").forEach((warning) => {
@@ -66,10 +70,11 @@ export class UpdateAadAppDriver implements StepDriver {
       await aadAppClient.updateAadApp(manifest);
 
       // Output actual manifest to project folder
-      await fs.ensureDir(path.dirname(args.outputFilePath));
-      await fs.writeFile(args.outputFilePath, JSON.stringify(manifest, null, 4), "utf8");
+      const outputFileAbsolutePath = this.getAbsolutePath(args.outputFilePath, context.projectPath);
+      await fs.ensureDir(path.dirname(outputFileAbsolutePath));
+      await fs.writeFile(outputFileAbsolutePath, JSON.stringify(manifest, null, 4), "utf8");
       context.logProvider?.info(
-        getLocalizedString(logMessageKeys.outputAadAppManifest, args.outputFilePath)
+        getLocalizedString(logMessageKeys.outputAadAppManifest, outputFileAbsolutePath)
       );
 
       context.logProvider?.info(
@@ -161,5 +166,11 @@ export class UpdateAadAppDriver implements StepDriver {
         delete process.env.AAD_APP_ACCESS_AS_USER_PERMISSION_ID;
       }
     }
+  }
+
+  private getAbsolutePath(relativeOrAbsolutePath: string, projectPath: string) {
+    return path.isAbsolute(relativeOrAbsolutePath)
+      ? relativeOrAbsolutePath
+      : path.join(projectPath, relativeOrAbsolutePath);
   }
 }

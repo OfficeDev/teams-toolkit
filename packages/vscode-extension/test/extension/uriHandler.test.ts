@@ -11,11 +11,21 @@ describe("uri handler", () => {
     sandbox.restore();
   });
 
-  it("handle uri", async () => {
+  it("invalid uri missing query", async () => {
     const handler = new UriHandler();
-    const uri = vscode.Uri.parse("vscode://test.test?id=1");
+    const uri = vscode.Uri.parse("vscode://test.test");
     sandbox.stub(featureFlags, "isTDPIntegrationEnabled").returns(true);
-    const showMessage = sandbox.stub(vscode.window, "showInformationMessage");
+    const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
+    await handler.handleUri(uri);
+
+    sandbox.assert.calledOnce(showMessage);
+  });
+
+  it("invalid uri missing app id", async () => {
+    const handler = new UriHandler();
+    const uri = vscode.Uri.parse("vscode://test.test?test=1");
+    sandbox.stub(featureFlags, "isTDPIntegrationEnabled").returns(true);
+    const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
     await handler.handleUri(uri);
 
     sandbox.assert.calledOnce(showMessage);
@@ -29,5 +39,18 @@ describe("uri handler", () => {
     await handler.handleUri(uri);
 
     chai.assert.isTrue(showMessage.notCalled);
+  });
+
+  it("valid uri", async () => {
+    const handler = new UriHandler();
+    const uri = vscode.Uri.parse("vscode://test.test?appId=1");
+    sandbox.stub(featureFlags, "isTDPIntegrationEnabled").returns(true);
+
+    const executeCommand = sandbox
+      .stub(vscode.commands, "executeCommand")
+      .returns(Promise.resolve(""));
+    await handler.handleUri(uri);
+
+    sandbox.assert.calledOnceWithExactly(executeCommand, "fx-extension.openFromTdp", "1");
   });
 });

@@ -14,7 +14,7 @@ provision:
 
   - uses: storage/enableStaticWebsite
     with:
-      storageResourceId: ${{TAB_RESOURCE_ID}}
+      storageResourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}}
       indexPage: index.html
       errorPage: error.html
     # Output: N/A
@@ -32,7 +32,7 @@ deploy:
   with:
     workingDirectory: ./tab
     distributionPath: ./ # Deploy base folder
-    resourceId: ${{ TAB_AZURE_STORAGE_RESOURCE_ID }} # The resource id of the cloud resource to be deployed to
+    resourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to
 
 registerApp:
   - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty

@@ -295,3 +295,12 @@ export interface ResourceContextV3 extends ContextV3 {
   tokenProvider: TokenProvider;
 }
 export type MaybePromise<T> = T | Promise<T>;
+
+/**
+ * simplified project settings for v3
+ */
+export interface Settings {
+  version: string;
+  projectId: string;
+  isFromSample: boolean;
+}

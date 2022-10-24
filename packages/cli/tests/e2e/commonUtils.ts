@@ -291,11 +291,10 @@ export async function cleanUpAadApp(
   return Promise.all(promises);
 }
 
-export async function cleanUpResourceGroup(appName: string, envName?: string): Promise<boolean> {
-  if (!appName) {
+export async function cleanUpResourceGroup(name: string): Promise<boolean> {
+  if (!name) {
     return false;
   }
-  const name = `${appName}-${envName}-rg`;
   return await deleteResourceGroupByName(name);
 }
 
@@ -326,6 +325,13 @@ export async function cleanUpLocalProject(projectPath: string, necessary?: Promi
   });
 }
 
+export async function readResourceGroupName(appName: string, envName: string): Promise<string> {
+  const states = await fs.readJSON(getConfigFileName(appName, envName));
+  return (
+    states?.[PluginId.Solution]?.[StateConfigKey.resourceGroupName] ?? `${appName}-${envName}-rg`
+  );
+}
+
 export async function cleanUp(
   appName: string,
   projectPath: string,
@@ -341,11 +347,12 @@ export async function cleanUp(
     hasApimPlugin,
     envName
   );
+  const rgName = await readResourceGroupName(appName, envName);
   return Promise.all([
     // delete aad app
     cleanUpAadAppPromise,
     // remove resouce group
-    cleanUpResourceGroup(appName, envName),
+    cleanUpResourceGroup(rgName),
     // remove project
     cleanUpLocalProject(projectPath, cleanUpAadAppPromise),
   ]);

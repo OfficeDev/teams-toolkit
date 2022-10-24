@@ -10,6 +10,7 @@ export const nodeNotFoundHelpLink = `${defaultHelpLink}#nodenotfound`;
 export const nodeNotSupportedForAzureHelpLink = `${defaultHelpLink}#nodenotsupported-azure-hosting`;
 export const nodeNotSupportedForFunctionsHelpLink = `${defaultHelpLink}#nodenotsupported-azure-functions`;
 export const nodeNotSupportedForSPFxHelpLink = `${defaultHelpLink}#nodenotsupported-spfx-hosting`;
+export const nodeInstallationLink = "https://nodejs.org/about/releases/";
 
 export const dotnetExplanationHelpLink = `${defaultHelpLink}#how-to-install-net-sdk`;
 export const dotnetFailToInstallHelpLink = `${defaultHelpLink}#failtoinstalldotnet`;

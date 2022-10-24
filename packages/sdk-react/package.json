@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-react",
-  "version": "2.0.0",
+  "version": "2.0.0-rc",
   "description": "React helper functions for Microsoft TeamsFx",
   "main": "build/cjs/index.js",
   "module": "build/esm/index.js",
@@ -32,7 +32,7 @@
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@microsoft/microsoft-graph-client": "^3.0.1",
     "@microsoft/teams-js": "^2.0.0",
-    "@microsoft/teamsfx": "^2.0.0",
+    "@microsoft/teamsfx": "^2.0.0-rc",
     "@testing-library/react": "^12.1.1",
     "@testing-library/react-hooks": "^7.0.2",
     "@types/react": "^16.8.0",
@@ -71,7 +71,7 @@
   "peerDependencies": {
     "@fluentui/react-northstar": "^0.62.0",
     "@microsoft/microsoft-graph-client": "^3.0.1",
-    "@microsoft/teamsfx": "^2.0.0",
+    "@microsoft/teamsfx": ">2.0.0-alpha",
     "@microsoft/teams-js": "^2.0.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6"

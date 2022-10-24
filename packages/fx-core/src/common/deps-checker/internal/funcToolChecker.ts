@@ -9,6 +9,7 @@ import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import {
   defaultHelpLink,
   functionDepsVersionsLink,
+  nodeInstallationLink,
   nodeNotFoundHelpLink,
 } from "../constant/helpLink";
 import { runWithProgressIndicator } from "../util/progressIndicator";
@@ -47,6 +48,8 @@ const FuncNodeVersionWhiteList: { [key: string]: { [key: string]: boolean } } = 
     "16": true,
   },
 };
+
+const RecommendedNodeVersion = "16";
 
 type FuncInstallationStatus = {
   isInstalled: boolean;
@@ -198,12 +201,10 @@ export class FuncToolChecker implements DepsChecker {
             .join(`v${portableFunc.funcVersion}`)
             .split("@NodeVersion")
             .join(`v${nodeVersion}`)
-            .split("@SupportedVersions")
-            .join(
-              Object.keys(FuncNodeVersionWhiteList[portableFunc.funcVersion.toString()])
-                .map((v) => "v" + v)
-                .join(", ")
-            ),
+            .split("@Link")
+            .join(nodeInstallationLink)
+            .split("@RecommendedVersion")
+            .join(`v${RecommendedNodeVersion}`),
           functionDepsVersionsLink
         );
       }

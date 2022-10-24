@@ -20,6 +20,8 @@ jobs:
 <%/hosting_type_contains_spfx%>
       # To specify the env name for multi-env feature.
       TEAMSFX_ENV_NAME: <%env_name%>
+      # To specify the version of TTK CLI for use.
+      TEAMSFX_CLI_VERSION: 1.*
 
     steps:
       # Setup environment.
@@ -50,6 +52,7 @@ jobs:
       - name: Login Azure by service principal 
         uses: OfficeDev/teamsfx-cli-action@v1
         with:
+          cli-version: ${{env.TEAMSFX_CLI_VERSION}}
           commands: account login azure 
           service-principal: true
           username: ${{secrets.AZURE_SERVICE_PRINCIPAL_NAME}}
@@ -60,6 +63,7 @@ jobs:
       - name: Deploy to hosting environment
         uses: OfficeDev/teamsfx-cli-action@v1
         with:
+          cli-version: ${{env.TEAMSFX_CLI_VERSION}}
           commands: deploy
           env: ${{env.TEAMSFX_ENV_NAME}}
 <%#cloud_resources_contains_apim%>

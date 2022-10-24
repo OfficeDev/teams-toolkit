@@ -26,7 +26,7 @@ import "../../src/component/resource/botService/botService";
 import { createContextV3 } from "../../src/component/utils";
 import { deleteFolder, MockTools, randomAppName } from "../core/utils";
 import { AppStudioClient } from "../../src/component/resource/appManifest/appStudioClient";
-import { AADRegistration } from "../../src/component/resource/botService/aadRegistration";
+import { GraphClient } from "../../src/component/resource/botService/botRegistration/graphClient";
 import arm from "../../src/component/arm";
 import { newEnvInfoV3 } from "../../src/core/environment";
 import { Utils } from "../../src/component/resource/spfx/utils/utils";
@@ -306,10 +306,9 @@ describe("Core component test for v3", () => {
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+      sandbox.stub(GraphClient, "registerAadApp").resolves({
         clientId: "00000000-0000-0000-0000-000000000000",
         clientSecret: "mockClientSecret",
-        objectId: "00000000-0000-0000-0000-000000000000",
       });
       sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
       const appName = `unittest${randomAppName()}`;
@@ -390,10 +389,9 @@ describe("Core component test for v3", () => {
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+      sandbox.stub(GraphClient, "registerAadApp").resolves({
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
-        objectId: "mockObjectId",
       });
       sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
       sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
@@ -468,10 +466,9 @@ describe("Core component test for v3", () => {
       sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+      sandbox.stub(GraphClient, "registerAadApp").resolves({
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
-        objectId: "mockObjectId",
       });
       const appName = `unittest${randomAppName()}`;
       const inputs: InputsWithProjectPath = {
@@ -543,10 +540,9 @@ describe("Core component test for v3", () => {
         .resolves(new MyTokenCredential());
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+      sandbox.stub(GraphClient, "registerAadApp").resolves({
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
-        objectId: "mockObjectId",
       });
       const appName = `unittest${randomAppName()}`;
       const inputs: InputsWithProjectPath = {
@@ -619,10 +615,9 @@ describe("Core component test for v3", () => {
       sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+      sandbox.stub(GraphClient, "registerAadApp").resolves({
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
-        objectId: "mockObjectId",
       });
       sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
       sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
@@ -708,10 +703,9 @@ describe("Core component test for v3", () => {
         .resolves(err(new UserError("Solution", "CancelProvision", "CancelProvision")));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+      sandbox.stub(GraphClient, "registerAadApp").resolves({
         clientId: "00000000-0000-0000-0000-000000000000",
         clientSecret: "mockClientSecret",
-        objectId: "00000000-0000-0000-0000-000000000000",
       });
       sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
       const appName = `unittest${randomAppName()}`;
@@ -824,10 +818,9 @@ describe("Core component test for v3", () => {
         .resolves(err(new UserError("Solution", "error1", "error1")));
       sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+      sandbox.stub(GraphClient, "registerAadApp").resolves({
         clientId: "00000000-0000-0000-0000-000000000000",
         clientSecret: "mockClientSecret",
-        objectId: "00000000-0000-0000-0000-000000000000",
       });
 
       const appName = `unittest${randomAppName()}`;
@@ -891,10 +884,9 @@ describe("Core component test for v3", () => {
       sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
       sandbox.stub(armFunctions, "updateAzureParameters").resolves(ok(undefined));
       sandbox.stub(backup, "backupFiles").resolves(ok(undefined));
-      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+      sandbox.stub(GraphClient, "registerAadApp").resolves({
         clientId: "00000000-0000-0000-0000-000000000000",
         clientSecret: "mockClientSecret",
-        objectId: "00000000-0000-0000-0000-000000000000",
       });
 
       const appName = `unittest${randomAppName()}`;
@@ -954,10 +946,9 @@ describe("Core component test for v3", () => {
       sandbox
         .stub(backup, "backupFiles")
         .resolves(err(new UserError("solution", "backupError", "backupError")));
-      sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+      sandbox.stub(GraphClient, "registerAadApp").resolves({
         clientId: "00000000-0000-0000-0000-000000000000",
         clientSecret: "mockClientSecret",
-        objectId: "00000000-0000-0000-0000-000000000000",
       });
 
       const appName = `unittest${randomAppName()}`;
@@ -1074,10 +1065,9 @@ describe("Core component test for v3", () => {
     sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+    sandbox.stub(GraphClient, "registerAadApp").resolves({
       clientId: "00000000-0000-0000-0000-000000000000",
       clientSecret: "mockClientSecret",
-      objectId: "00000000-0000-0000-0000-000000000000",
     });
     sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
     sandbox.stub(deployUtils, "checkDeployAzureSubscription").resolves(ok({}));
@@ -1199,10 +1189,9 @@ describe("Core component test for v3", () => {
     sandbox.stub(provisionUtils, "askForProvisionConsent").resolves(ok(Void));
     sandbox.stub(AppStudioClient, "getApp").onFirstCall().throws({}).onSecondCall().resolves({});
     sandbox.stub(AppStudioClient, "importApp").resolves({ teamsAppId: "mockTeamsAppId" });
-    sandbox.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves({
+    sandbox.stub(GraphClient, "registerAadApp").resolves({
       clientId: "00000000-0000-0000-0000-000000000000",
       clientSecret: "mockClientSecret",
-      objectId: "00000000-0000-0000-0000-000000000000",
     });
     sandbox.stub(arm, "deployArmTemplates").resolves(ok(undefined));
     sandbox.stub(deployUtils, "checkDeployAzureSubscription").resolves(ok({}));

@@ -9,7 +9,7 @@ Quick Start
 to install the app to
 5. Press F5, or select the Debug > Start Debugging menu in Visual Studio
 6. In the launched browser, select the Add button to load the app in Teams
-7. You can play with this app to create an adaptive card, share a message, search for an nuget package or unfurl links from ".botframwork.com" domain.
+7. You can play with this app to create an adaptive card, share a message, search for an NuGet package or unfurl links from ".botframework.com" domain.
 
 Learn more
 -------------------------

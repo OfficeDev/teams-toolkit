@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>Microsoft.TeamsFx</AssemblyName>
     <RootNamespace>Microsoft.TeamsFx</RootNamespace>
-    <Version>1.1.0</Version>
+    <Version>1.2.0-rc</Version>
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <RepositoryUrl>https://github.com/OfficeDev/TeamsFx</RepositoryUrl>
@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <SupportedPlatform Include="browser" />
-    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>

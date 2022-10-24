@@ -43,7 +43,7 @@ import { getLocalizedString } from "../common/localizeUtils";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import { isValidProject, newProjectSettings } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import { createV2Context } from "../common/tools";
+import { createV2Context, isV3Enabled } from "../common/tools";
 import { getTemplatesFolder } from "../folder";
 import {
   ApiConnectionOptionItem,
@@ -108,6 +108,7 @@ import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { copyParameterJson } from "../component/arm";
 import { ProjectSettingsHelper } from "../common/local";
+import { coordinator } from "../component/coordinator";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -168,8 +169,13 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    const fx = Container.get("fx") as any;
-    const res = await fx.create(context, inputs as InputsWithProjectPath);
+    let res;
+    if (isV3Enabled()) {
+      res = await coordinator.create(context, inputs as InputsWithProjectPath);
+    } else {
+      const fx = Container.get("fx") as any;
+      res = await fx.create(context, inputs as InputsWithProjectPath);
+    }
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;
@@ -379,6 +385,9 @@ export class FxCore implements v3.ICore {
     } else if (func.method === "updateManifest") {
       const component = Container.get("app-manifest") as any;
       res = await component.deploy(context, inputs as InputsWithProjectPath);
+    } else if (func.method === "buildAadManifest") {
+      const component = Container.get("aad-app") as any;
+      res = await component.buildAadManifest(context, inputs as InputsWithProjectPath);
     } else {
       return err(new NotImplementedError(func.method));
     }

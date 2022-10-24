@@ -1559,6 +1559,16 @@ export type SelectFolderConfig = UIConfig<string>;
 export type SelectFolderResult = InputResult<string>;
 
 // @public
+export interface Settings {
+    // (undocumented)
+    isFromSample: boolean;
+    // (undocumented)
+    projectId: string;
+    // (undocumented)
+    version: string;
+}
+
+// @public
 export interface ShellAction extends ActionBase {
     // (undocumented)
     async?: boolean;

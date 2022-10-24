@@ -10,5 +10,10 @@ export interface CreateAppPackageArgs {
   /**
    * Zipped app package path
    */
-  outputPath: string;
+  outputZipPath: string;
+
+  /**
+   * Manifest file path
+   */
+  outputJsonPath: string;
 }

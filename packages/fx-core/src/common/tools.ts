@@ -410,6 +410,10 @@ export function isApiConnectEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ApiConnect, false);
 }
 
+export function isV3Enabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.V3, false);
+}
+
 // This method is for deciding whether AAD should be activated.
 // Currently AAD plugin will always be activated when scaffold.
 // This part will be updated when we support adding aad separately.
@@ -860,8 +864,9 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
   let retry = 0;
   const retryIntervalSeconds = 2;
   do {
+    let response = undefined;
     try {
-      const response = await instance.get("/api/usersettings/mtUserAppPolicy");
+      response = await instance.get("/api/usersettings/mtUserAppPolicy");
       let result: boolean | undefined;
       if (response.status >= 400) {
         result = undefined;
@@ -895,7 +900,12 @@ export async function getSideloadingStatus(token: string): Promise<boolean | und
       sendTelemetryErrorEvent(
         Component.core,
         TelemetryEvent.CheckSideloading,
-        new SystemError({ error, source: "M365Account" })
+        new SystemError({ error, source: "M365Account" }),
+        {
+          [TelemetryProperty.CheckSideloadingStatusCode]: `${response?.status}`,
+          [TelemetryProperty.CheckSideloadingMethod]: "get",
+          [TelemetryProperty.CheckSideloadingUrl]: "<check-sideloading-status>",
+        }
       );
       await waitSeconds((retry + 1) * retryIntervalSeconds);
     }

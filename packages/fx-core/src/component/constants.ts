@@ -484,6 +484,8 @@ export enum SolutionError {
   FailedToBackupFiles = "FailedToBackupFiles",
   MissingSubscriptionIdInConfig = "MissingSubscriptionIdInConfig",
   FailedToResetAppSettingsDevelopment = "FailedToResetAppSettingsDevelopment",
+  FailedToLoadDotEnvFile = "FailedToLoadDotEnvFile",
+  FailedToGetTeamsAppId = "FailedToGetTeamsAppId",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -600,7 +602,7 @@ export class UnauthorizedToCheckResourceGroupError extends UserError {
     super(
       SolutionSource,
       new.target.name,
-      `Unauthorized to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'. Please check your Azure subscription.`
+      getLocalizedString("error.rgUnauthorizedError", resourceGroupName, subscriptionInfoString)
     );
   }
 }
@@ -614,7 +616,11 @@ export class FailedToCheckResourceGroupExistenceError extends UserError {
   ) {
     const subscriptionInfoString =
       subscriptionId + (subscriptionName.length > 0 ? `(${subscriptionName})` : "");
-    const baseErrorMessage = `Failed to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'`;
+    const baseErrorMessage = getLocalizedString(
+      "error.rgCheckBaseError",
+      resourceGroupName,
+      subscriptionInfoString
+    );
 
     if (error instanceof RestError) {
       // Avoid sensitive information like request headers in the error message.
@@ -1010,7 +1016,7 @@ export type BotNotificationTrigger =
 
 export const AzureResourcesQuestion: MultiSelectQuestion = {
   name: AzureSolutionQuestionNames.AzureResources,
-  title: "Cloud resources",
+  title: getLocalizedString("core.question.AzureResourcesQuestion.title"),
   type: "multiSelect",
   staticOptions: [AzureResourceSQL, AzureResourceFunction],
   default: [],
@@ -1023,7 +1029,7 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
     }
     return currentSelectedIds;
   },
-  placeholder: "Select a resource (optional)",
+  placeholder: getLocalizedString("core.question.AzureResourcesQuestion.placeholder"),
 };
 
 export const BotFeatureIds = [

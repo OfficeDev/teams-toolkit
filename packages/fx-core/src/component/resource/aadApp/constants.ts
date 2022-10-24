@@ -179,6 +179,16 @@ export class Messages {
     telemetry: Messages.getEventName("deploy"),
   };
 
+  static readonly StartBuildAadManifest: Messages = {
+    log: Messages.getLog("Start to build aad manifest"),
+    telemetry: Messages.getEventName("build-aad-manifest-start"),
+  };
+
+  static readonly EndBuildAadManifest: Messages = {
+    log: Messages.getLog("Successfully build aad manifest"),
+    telemetry: Messages.getEventName("build-aad-manifest"),
+  };
+
   static readonly StartScaffold: Messages = {
     log: Messages.getLog("Start to scaffold resources"),
     telemetry: Messages.getEventName("scaffold-start"),

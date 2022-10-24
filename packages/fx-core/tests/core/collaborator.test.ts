@@ -759,7 +759,7 @@ describe("Collaborator APIs for V3", () => {
     let mockedEnvRestore: RestoreFn;
 
     beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.ApiV3]: "true" });
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
     });
     afterEach(() => {
       mockedEnvRestore();
@@ -807,7 +807,7 @@ describe("Collaborator APIs for V3", () => {
     let mockedEnvRestore: RestoreFn;
 
     beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.ApiV3]: "true" });
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
     });
     afterEach(() => {
       mockedEnvRestore();
@@ -919,7 +919,7 @@ describe("Collaborator APIs for V3", () => {
     let mockedEnvRestore: RestoreFn;
 
     beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.ApiV3]: "true" });
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
       sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
         ok({
           tid: "mock_project_tenant_id",

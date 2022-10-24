@@ -57,7 +57,7 @@ import { validate as uuidValidate } from "uuid";
 import { HelpLinks } from "../../../common/constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { AppUser } from "../appManifest/interfaces/appUser";
-import { isAadManifestEnabled, isApiV3Enabled } from "../../../common/tools";
+import { isAadManifestEnabled, isV3Enabled } from "../../../common/tools";
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";
 import { AADManifest } from "./interfaces/AADManifest";
@@ -406,7 +406,7 @@ export class AadAppForTeamsImpl {
   ): Promise<Result<ResourcePermission[], FxError>> {
     ctx.logProvider.info(Messages.StartCheckPermission.log);
     await TokenProvider.init({ m365: ctx.tokenProvider?.m365TokenProvider }, TokenAudience.Graph);
-    const objectId = isApiV3Enabled()
+    const objectId = isV3Enabled()
       ? aadObjectIdV3
       : (ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp).objectId;
     if (!objectId) {
@@ -441,7 +441,7 @@ export class AadAppForTeamsImpl {
   ): Promise<Result<AadOwner[], FxError>> {
     ctx.logProvider.info(Messages.StartListCollaborator.log);
     await TokenProvider.init({ m365: ctx.tokenProvider?.m365TokenProvider }, TokenAudience.Graph);
-    const objectId = isApiV3Enabled()
+    const objectId = isV3Enabled()
       ? aadObjectIdV3
       : (ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp).objectId;
     if (!objectId) {
@@ -464,7 +464,7 @@ export class AadAppForTeamsImpl {
   ): Promise<Result<ResourcePermission[], FxError>> {
     ctx.logProvider.info(Messages.StartGrantPermission.log);
     await TokenProvider.init({ m365: ctx.tokenProvider?.m365TokenProvider }, TokenAudience.Graph);
-    const objectId = isApiV3Enabled()
+    const objectId = isV3Enabled()
       ? aadObjectIdV3
       : (ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp).objectId;
     if (!objectId) {

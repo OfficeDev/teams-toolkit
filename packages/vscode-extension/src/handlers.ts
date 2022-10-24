@@ -752,68 +752,68 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     getTriggerFromProperty(args)
   );
 
-  const func: Func = {
-    namespace: "fx-solution-azure",
-    method: "validateManifest",
-    params: {},
-  };
+  if (isV3Enabled()) {
+    // Use default manifest template
+    // Throw error if not exists and remind user to use CLI
+    const workspacePath = globalVariables.workspaceUri?.fsPath;
+    const manifestTemplatePath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
 
-  const selectedEnv = await askTargetEnvironment();
-  if (selectedEnv.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
-    showError(selectedEnv.error);
-    return err(selectedEnv.error);
-  }
-  const env = selectedEnv.value;
+    if (!(await fs.pathExists(manifestTemplatePath))) {
+      const error = new UserError(
+        ExtensionSource,
+        ExtensionErrors.DefaultManifestTemplateNotExistsError,
+        util.format(
+          localize("teamstoolkit.handlers.defaultManifestTemplateNotExists"),
+          manifestTemplatePath
+        )
+      );
 
-  const isLocalDebug = env === environmentManager.getLocalEnvName();
-  if (isLocalDebug) {
-    func.params.type = "localDebug";
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
+      showError(error);
+      return err(error);
+    }
+
+    const func: Func = {
+      namespace: "fx-solution-azure",
+      method: "validateManifest",
+      params: {
+        manifestTemplatePath: manifestTemplatePath,
+      },
+    };
+
+    const selectedEnv = await askTargetEnvironment();
+    if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+      showError(selectedEnv.error);
+      return err(selectedEnv.error);
+    }
+    const env = selectedEnv.value;
+    func.params.env = env;
     return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
   } else {
-    func.params.type = "remote";
-    return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
+    const func: Func = {
+      namespace: "fx-solution-azure",
+      method: "validateManifest",
+      params: {},
+    };
+
+    const selectedEnv = await askTargetEnvironment();
+    if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+      showError(selectedEnv.error);
+      return err(selectedEnv.error);
+    }
+    const env = selectedEnv.value;
+
+    const isLocalDebug = env === environmentManager.getLocalEnvName();
+    if (isLocalDebug) {
+      func.params.type = "localDebug";
+      return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
+    } else {
+      func.params.type = "remote";
+      return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
+    }
   }
-}
-
-export async function validateManifestHandlerV3(args?: any[]): Promise<Result<null, FxError>> {
-  // Use default manifest template
-  // Throw error if not exists and remind user to use CLI
-  const workspacePath = globalVariables.workspaceUri?.fsPath;
-  const manifestTemplatePath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
-
-  if (!(await fs.pathExists(manifestTemplatePath))) {
-    const error = new UserError(
-      ExtensionSource,
-      ExtensionErrors.DefaultManifestTemplateNotExistsError,
-      util.format(
-        localize("teamstoolkit.handlers.defaultManifestTemplateNotExists"),
-        manifestTemplatePath
-      )
-    );
-
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
-    showError(error);
-    return err(error);
-  }
-
-  const func: Func = {
-    namespace: "fx-solution-azure",
-    method: "validateManifestV3",
-    params: {
-      manifestTemplatePath: manifestTemplatePath,
-    },
-  };
-
-  // TODO: how to load selected env variables?
-  const selectedEnv = await askTargetEnvironment();
-  if (selectedEnv.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
-    showError(selectedEnv.error);
-    return err(selectedEnv.error);
-  }
-  const env = selectedEnv.value;
-  return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
 }
 
 /**

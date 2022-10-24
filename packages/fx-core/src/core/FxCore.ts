@@ -43,7 +43,7 @@ import { getLocalizedString } from "../common/localizeUtils";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import { isValidProject, newProjectSettings } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import { createV2Context } from "../common/tools";
+import { createV2Context, isV3Enabled } from "../common/tools";
 import { getTemplatesFolder } from "../folder";
 import {
   ApiConnectionOptionItem,
@@ -374,8 +374,26 @@ export class FxCore implements v3.ICore {
       );
       res = ok(path);
     } else if (func.method === "validateManifest") {
-      const component = Container.get("app-manifest") as any;
-      res = await component.validate(context, inputs as InputsWithProjectPath);
+      // TODO: load environment variables into process.env
+      if (isV3Enabled()) {
+        const driver: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
+        const args: ValidateTeamsAppArgs = {
+          manifestTemplatePath: func.params.manifestTemplatePath,
+        };
+        const driverContext: DriverContext = {
+          azureAccountProvider: context.tokenProvider!.azureAccountProvider,
+          m365TokenProvider: context.tokenProvider!.m365TokenProvider,
+          ui: context.userInteraction,
+          logProvider: context.logProvider,
+          telemetryReporter: context.telemetryReporter,
+          projectPath: context.projectPath!,
+          platform: inputs.platform,
+        };
+        res = await driver.run(args, driverContext);
+      } else {
+        const component = Container.get("app-manifest") as any;
+        res = await component.validate(context, inputs as InputsWithProjectPath);
+      }
     } else if (func.method === "buildPackage") {
       const component = Container.get("app-manifest") as any;
       res = await component.build(context, inputs as InputsWithProjectPath);
@@ -385,21 +403,6 @@ export class FxCore implements v3.ICore {
     } else if (func.method === "buildAadManifest") {
       const component = Container.get("aad-app") as any;
       res = await component.buildAadManifest(context, inputs as InputsWithProjectPath);
-    } else if (func.method === "validateManifestV3") {
-      const driver = new ValidateTeamsAppDriver();
-      const args: ValidateTeamsAppArgs = {
-        manifestTemplatePath: func.params.manifestTemplatePath,
-      };
-      const driverContext: DriverContext = {
-        azureAccountProvider: context.tokenProvider!.azureAccountProvider,
-        m365TokenProvider: context.tokenProvider!.m365TokenProvider,
-        ui: context.userInteraction,
-        logProvider: context.logProvider,
-        telemetryReporter: context.telemetryReporter,
-        projectPath: context.projectPath!,
-        platform: inputs.platform,
-      };
-      res = await driver.run(args, driverContext);
     } else {
       return err(new NotImplementedError(func.method));
     }

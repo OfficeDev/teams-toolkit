@@ -28,14 +28,11 @@ import {
 } from "../../src/component/constants";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 import * as templateActions from "../../src/common/template-utils/templatesActions";
-import mockedEnv from "mocked-env";
 import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
 import AdmZip from "adm-zip";
 import { NoAadManifestExistError } from "../../src/core/error";
 import "../../src/component/driver/aad/update";
-import { isError } from "lodash";
 
-let mockedEnvRestore: () => void;
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -164,9 +161,6 @@ describe("Core basic APIs", () => {
 
   it("deploy aad manifest happy path", async () => {
     const core = new FxCore(tools);
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     const appName = mockV3Project();
     sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
     const inputs: Inputs = {
@@ -183,14 +177,10 @@ describe("Core basic APIs", () => {
     assert.isTrue(await fs.pathExists(path.join(os.tmpdir(), appName, "samples-v3", "build")));
     await deleteTestProject(appName);
     assert.isTrue(res.isOk());
-    mockedEnvRestore();
   });
 
   it("deploy aad manifest return err", async () => {
     const core = new FxCore(tools);
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     const appName = mockV3Project();
     const appManifestPath = path.join(
       os.tmpdir(),
@@ -222,9 +212,6 @@ describe("Core basic APIs", () => {
 
   it("deploy aad manifest not exist", async () => {
     const core = new FxCore(tools);
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
     const appName = mockV3Project();
     const appManifestPath = path.join(
       os.tmpdir(),
@@ -252,7 +239,6 @@ describe("Core basic APIs", () => {
       assert.equal(res.error.message, errMsg);
     }
     await deleteTestProject(appName);
-    mockedEnvRestore();
   });
 
   it("ProgrammingLanguageQuestion", async () => {

@@ -58,13 +58,11 @@ export namespace AppStudioClient {
       )
     );
 
-    try {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {
-        method: e.request?.method,
-        "status-code": `${e?.response?.status}`,
-        url: `<${apiName}-url>`,
-      });
-    } catch {}
+    TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {
+      method: e.request?.method,
+      "status-code": `${e?.response?.status}`,
+      url: `<${apiName}-url>`,
+    });
     return error;
   }
 

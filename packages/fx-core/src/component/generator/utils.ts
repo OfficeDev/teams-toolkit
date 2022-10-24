@@ -26,6 +26,7 @@ import { EOL } from "os";
 import templateConfig from "../../common/templates-config.json";
 import sampleConfig from "../../common/samples-config.json";
 import semver from "semver";
+import { isV3Enabled } from "../../common/tools";
 
 const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
 const templateVersion = templateConfig.version;
@@ -36,6 +37,7 @@ const sampleTagPrefix = sampleConfig.tagPrefix;
 const sampleTagListURL = sampleConfig.tagListURL;
 
 function selectTemplateTag(tags: string[]): string | undefined {
+  if (isV3Enabled()) return templateAlphaVersion;
   if (preRelease === "alpha") {
     return templateAlphaVersion;
   }

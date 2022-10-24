@@ -54,6 +54,7 @@ import * as localizeUtils from "../../src/utils/localizeUtils";
 import { MockCore } from "../mocks/mockCore";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import mockedEnv from "mocked-env";
+import { VsCodeLogProvider } from "../../src/commonlib/log";
 
 let mockedEnvRestore: () => void;
 describe("handlers", () => {
@@ -735,6 +736,96 @@ describe("handlers", () => {
       await handlers.listCollaborator("env");
 
       chai.expect(showWarningMessage.callCount).to.be.equal(1);
+    });
+  });
+
+  describe("permission v3", function () {
+    const sandbox = sinon.createSandbox();
+
+    this.beforeEach(() => {
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    });
+
+    this.afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("happy path: grant permission", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: "grantPermission" })),
+      });
+      sandbox.stub(MockCore.prototype, "grantPermission").returns(
+        Promise.resolve(
+          ok({
+            state: CollaborationState.OK,
+            userInfo: {
+              userObjectId: "fake-user-object-id",
+              userPrincipalName: "fake-user-principle-name",
+            },
+            permissions: [
+              {
+                name: "name",
+                type: "type",
+                resourceId: "id",
+                roles: ["Owner"],
+              },
+            ],
+          })
+        )
+      );
+      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
+
+      const result = await handlers.manageCollaboratorHandler();
+      chai.expect(result.isOk()).equals(true);
+    });
+
+    it("happy path: list collaborator", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: "listCollaborator" })),
+      });
+      sandbox.stub(MockCore.prototype, "listCollaborator").returns(
+        Promise.resolve(
+          ok({
+            state: CollaborationState.OK,
+            collaborators: [
+              {
+                userPrincipalName: "userPrincipalName",
+                userObjectId: "userObjectId",
+                isAadOwner: true,
+                teamsAppResourceId: "teamsAppResourceId",
+              },
+            ],
+          })
+        )
+      );
+      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
+      sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
+        name: "name",
+        append: (value: string) => {},
+        appendLine: (value: string) => {},
+        replace: (value: string) => {},
+        clear: () => {},
+        show: (...params: any[]) => {},
+        hide: () => {},
+        dispose: () => {},
+      });
+
+      const result = await handlers.manageCollaboratorHandler();
+      chai.expect(result.isOk()).equals(true);
+    });
+
+    it("User Cancel", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(extension, "VS_CODE_UI").value({
+        selectOption: () =>
+          Promise.resolve(err(new UserError("source", "errorName", "errorMessage"))),
+      });
+
+      const result = await handlers.manageCollaboratorHandler();
+      chai.expect(result.isErr()).equals(true);
     });
   });
 

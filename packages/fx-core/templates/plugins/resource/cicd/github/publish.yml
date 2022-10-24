@@ -16,6 +16,8 @@ jobs:
       M365_TENANT_ID: ${{secrets.M365_TENANT_ID}}
       # To specify the env name for multi-env feature.
       TEAMSFX_ENV_NAME: <%env_name%>
+      # To specify the version of TTK CLI for use.
+      TEAMSFX_CLI_VERSION: 1.*
 
     steps:
       # Setup environment.
@@ -31,6 +33,7 @@ jobs:
       - name: Package Teams App for publishing
         uses: OfficeDev/teamsfx-cli-action@v1
         with:
+          cli-version: ${{env.TEAMSFX_CLI_VERSION}}
           commands: package
           env: ${{env.TEAMSFX_ENV_NAME}}
 
@@ -43,5 +46,6 @@ jobs:
       - name: Publish Teams App
         uses: OfficeDev/teamsfx-cli-action@v1
         with:
+          cli-version: ${{env.TEAMSFX_CLI_VERSION}}
           commands: publish
           env: ${{env.TEAMSFX_ENV_NAME}}

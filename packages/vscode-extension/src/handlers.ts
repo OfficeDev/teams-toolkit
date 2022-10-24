@@ -158,7 +158,7 @@ import { compare } from "./utils/versionUtil";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
-import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -2101,7 +2101,7 @@ export async function openResourceGroupInPortal(env: string): Promise<Result<Voi
   }
 }
 
-export async function grantPermission(env: string): Promise<Result<any, FxError>> {
+export async function grantPermission(env?: string): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermissionStart);
 
@@ -2112,45 +2112,52 @@ export async function grantPermission(env: string): Promise<Result<any, FxError>
       throw checkCoreRes.error;
     }
 
-    const collaborationStateResult = await checkCollaborationState(env);
-    if (collaborationStateResult.isErr()) {
-      throw collaborationStateResult.error;
+    if (!isV3Enabled()) {
+      const collaborationStateResult = await checkCollaborationState(env!);
+      if (collaborationStateResult.isErr()) {
+        throw collaborationStateResult.error;
+      }
+
+      if (collaborationStateResult.value.state !== CollaborationState.OK) {
+        result = collaborationStateResult;
+        if (result.value.state === CollaborationState.NotProvisioned) {
+          showWarningMessageWithProvisionButton(result.value.message);
+        } else {
+          window.showWarningMessage(result.value.message);
+        }
+
+        await processResult(TelemetryEvent.GrantPermission, result, inputs);
+        return result;
+      }
     }
 
-    if (collaborationStateResult.value.state === CollaborationState.OK) {
-      inputs = getSystemInputs();
+    inputs = getSystemInputs();
+    if (!isV3Enabled()) {
       inputs.env = env;
-      result = await core.grantPermission(inputs);
-      if (result.isErr()) {
-        throw result.error;
-      }
-      const grantSucceededMsg = util.format(
-        localize("teamstoolkit.handlers.grantPermissionSucceeded"),
-        inputs.email,
-        env
-      );
-
-      let warningMsg = localize("teamstoolkit.handlers.grantPermissionWarning");
-      let helpUrl = AzureAssignRoleHelpUrl;
-      if (globalVariables.isSPFxProject) {
-        warningMsg = localize("teamstoolkit.handlers.grantPermissionWarningSpfx");
-        helpUrl = SpfxManageSiteAdminUrl;
-      }
-
-      showGrantSuccessMessageWithGetHelpButton(grantSucceededMsg + " " + warningMsg, helpUrl);
-
-      VsCodeLogInstance.info(grantSucceededMsg);
-      VsCodeLogInstance.warning(
-        warningMsg + localize("teamstoolkit.handlers.referLinkForMoreDetails") + helpUrl
-      );
-    } else {
-      result = collaborationStateResult;
-      if (result.value.state === CollaborationState.NotProvisioned) {
-        showWarningMessageWithProvisionButton(result.value.message);
-      } else {
-        window.showWarningMessage(result.value.message);
-      }
     }
+    result = await core.grantPermission(inputs);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    const grantSucceededMsg = util.format(
+      localize("teamstoolkit.handlers.grantPermissionSucceeded"),
+      inputs.email,
+      env
+    );
+
+    let warningMsg = localize("teamstoolkit.handlers.grantPermissionWarning");
+    let helpUrl = AzureAssignRoleHelpUrl;
+    if (globalVariables.isSPFxProject) {
+      warningMsg = localize("teamstoolkit.handlers.grantPermissionWarningSpfx");
+      helpUrl = SpfxManageSiteAdminUrl;
+    }
+
+    showGrantSuccessMessageWithGetHelpButton(grantSucceededMsg + " " + warningMsg, helpUrl);
+
+    VsCodeLogInstance.info(grantSucceededMsg);
+    VsCodeLogInstance.warning(
+      warningMsg + localize("teamstoolkit.handlers.referLinkForMoreDetails") + helpUrl
+    );
   } catch (e) {
     result = wrapError(e);
   }
@@ -2159,7 +2166,7 @@ export async function grantPermission(env: string): Promise<Result<any, FxError>
   return result;
 }
 
-export async function listCollaborator(env: string): Promise<void> {
+export async function listCollaborator(env?: string): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
 
@@ -2170,35 +2177,87 @@ export async function listCollaborator(env: string): Promise<void> {
       throw checkCoreRes.error;
     }
 
-    const collaborationStateResult = await checkCollaborationState(env);
-    if (collaborationStateResult.isErr()) {
-      throw collaborationStateResult.error;
-    }
-
-    if (collaborationStateResult.value.state === CollaborationState.OK) {
-      inputs = getSystemInputs();
-      inputs.env = env;
-
-      result = await core.listCollaborator(inputs);
-      if (result.isErr()) {
-        throw result.error;
+    if (!isV3Enabled()) {
+      const collaborationStateResult = await checkCollaborationState(env!);
+      if (collaborationStateResult.isErr()) {
+        throw collaborationStateResult.error;
       }
 
-      // TODO: For short-term workaround. Remove after webview is ready.
-      VsCodeLogInstance.outputChannel.show();
-    } else {
-      result = collaborationStateResult;
-      if (result.value.state === CollaborationState.NotProvisioned) {
-        showWarningMessageWithProvisionButton(result.value.message);
-      } else {
-        window.showWarningMessage(result.value.message);
+      if (collaborationStateResult.value.state !== CollaborationState.OK) {
+        result = collaborationStateResult;
+        if (result.value.state === CollaborationState.NotProvisioned) {
+          showWarningMessageWithProvisionButton(result.value.message);
+        } else {
+          window.showWarningMessage(result.value.message);
+        }
+
+        await processResult(TelemetryEvent.ListCollaborator, result, inputs);
+        return result;
       }
     }
+
+    inputs = getSystemInputs();
+    inputs.env = env;
+
+    result = await core.listCollaborator(inputs);
+    if (result.isErr()) {
+      throw result.error;
+    }
+
+    // TODO: For short-term workaround. Remove after webview is ready.
+    VsCodeLogInstance.outputChannel.show();
   } catch (e) {
     result = wrapError(e);
   }
 
   await processResult(TelemetryEvent.ListCollaborator, result, inputs);
+  return result;
+}
+
+export async function manageCollaboratorHandler(): Promise<Result<any, FxError>> {
+  let result: any = ok(Void);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageCollaboratorStart);
+
+  try {
+    const collaboratorCommandSelection: SingleSelectConfig = {
+      name: "collaborationCommand",
+      title: "command",
+      options: [
+        {
+          id: "grantPermission",
+          label: localize("teamstoolkit.manageCollaborator.grantPermission.label"),
+          detail: localize("teamstoolkit.manageCollaborator.grantPermission.detail"),
+        },
+        {
+          id: "listCollaborator",
+          label: localize("teamstoolkit.manageCollaborator.listCollaborator.label"),
+          detail: localize("teamstoolkit.manageCollaborator.listCollaborator.detail"),
+        },
+      ],
+      returnObject: false,
+    };
+    const collaboratorCommand = await VS_CODE_UI.selectOption(collaboratorCommandSelection);
+    if (collaboratorCommand.isErr()) {
+      throw collaboratorCommand.error;
+    }
+
+    const command = collaboratorCommand.value.result;
+    switch (command) {
+      case "grantPermission":
+        result = await grantPermission();
+        break;
+
+      case "listCollaborator":
+      default:
+        result = await listCollaborator();
+        break;
+    }
+  } catch (e) {
+    result = wrapError(e);
+  }
+
+  await processResult(TelemetryEvent.ManageCollaborator, result);
+  return result;
 }
 
 export async function openM365AccountHandler() {

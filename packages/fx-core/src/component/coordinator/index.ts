@@ -134,7 +134,8 @@ export class Coordinator {
       inputs.projectPath = projectPath;
       await fs.ensureDir(projectPath);
 
-      await Generator.generateSample(sampleId, projectPath, context);
+      const res = await Generator.generateSample(sampleId, projectPath, context);
+      if (res.isErr()) return err(res.error);
 
       await downloadSampleHook(sampleId, projectPath);
     } else {

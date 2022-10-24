@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, Platform, Stage, Ok, Err, FxError } from "@microsoft/teamsfx-api";
+import { Inputs, Platform, Stage, Ok, Err, FxError, UserError } from "@microsoft/teamsfx-api";
 import { assert, expect } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -184,6 +184,40 @@ describe("Core basic APIs", () => {
     await deleteTestProject(appName);
     assert.isTrue(res.isOk());
     mockedEnvRestore();
+  });
+
+  it("deploy aad manifest return err", async () => {
+    const core = new FxCore(tools);
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    const appName = mockV3Project();
+    const appManifestPath = path.join(
+      os.tmpdir(),
+      appName,
+      "samples-v3",
+      ".fx",
+      "aad.template.json"
+    );
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+    };
+    sandbox
+      .stub(UpdateAadAppDriver.prototype, "run")
+      .throws(new UserError("error name", "fake_error", "fake_err_msg"));
+    const errMsg = `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`;
+    const res = await core.deployAadManifest(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.strictEqual(res.error.message, "fake_err_msg");
+    }
   });
 
   it("deploy aad manifest not exist", async () => {

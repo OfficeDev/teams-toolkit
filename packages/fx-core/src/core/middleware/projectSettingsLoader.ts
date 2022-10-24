@@ -29,7 +29,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
-import { createV2Context } from "../../common/tools";
+import { createV2Context, isV3Enabled } from "../../common/tools";
 import { LocalCrypto } from "../crypto";
 import { newEnvInfo } from "../environment";
 import {
@@ -97,16 +97,16 @@ export async function loadProjectSettingsByProjectPath(
   isMultiEnvEnabled = false
 ): Promise<Result<ProjectSettings, FxError>> {
   try {
-    const confFolderPath = path.resolve(projectPath, `.${ConfigFolderName}`);
-    const settingsFile = isMultiEnvEnabled
-      ? path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName)
-      : path.resolve(confFolderPath, "settings.json");
+    const settingsFile = getProjectSettingsPath(projectPath);
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     if (!projectSettings.projectId) {
       projectSettings.projectId = uuid.v4();
       sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
         [TelemetryProperty.ProjectId]: projectSettings.projectId,
       });
+    }
+    if (isV3Enabled()) {
+      return ok(projectSettings);
     }
     globalVars.isVS = isVSProject(projectSettings);
     return ok(convertProjectSettingsV2ToV3(projectSettings, projectPath));
@@ -154,6 +154,9 @@ export function shouldIgnored(ctx: CoreHookContext): boolean {
 }
 
 export function getProjectSettingsPath(projectPath: string) {
+  if (isV3Enabled()) {
+    return path.resolve(projectPath, `.${ConfigFolderName}`, ProjectSettingsFileName);
+  }
   return path.resolve(
     projectPath,
     `.${ConfigFolderName}`,

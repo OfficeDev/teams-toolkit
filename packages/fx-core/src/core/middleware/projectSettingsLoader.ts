@@ -143,6 +143,7 @@ export async function newSolutionContext(tools: Tools, inputs: Inputs): Promise<
 }
 
 export function shouldIgnored(ctx: CoreHookContext): boolean {
+  if (isV3Enabled()) return true;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const method = ctx.method;
 

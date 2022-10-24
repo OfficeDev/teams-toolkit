@@ -4,6 +4,7 @@ import {
   ContextV3,
   err,
   FxError,
+  Inputs,
   InputsWithProjectPath,
   ok,
   Platform,
@@ -67,6 +68,7 @@ import { convertToLangKey } from "../code/utils";
 import { downloadSampleHook } from "../../core/downloadSample";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import * as uuid from "uuid";
+import { settingsUtil } from "../utils/settingsUtil";
 
 export enum TemplateNames {
   Tab = "tab",
@@ -94,7 +96,7 @@ export class Coordinator {
   ])
   async create(
     context: ContextV3,
-    inputs: InputsWithProjectPath,
+    inputs: Inputs,
     actionContext?: ActionContext
   ): Promise<Result<string, FxError>> {
     const folder = inputs[QuestionRootFolder.name] as string;
@@ -174,11 +176,8 @@ export class Coordinator {
       }
       if (templateName) {
         const langKey = convertToLangKey(language);
-        try {
-          await Generator.generateTemplate(templateName, langKey, projectPath, context);
-        } catch (e) {
-          throw e;
-        }
+        const res = await Generator.generateTemplate(templateName, langKey, projectPath, context);
+        if (res.isErr()) return err(res.error);
       }
 
       merge(actionContext?.telemetryProps, {
@@ -187,13 +186,13 @@ export class Coordinator {
     }
 
     // generate unique projectId in projectSettings.json
-    const projectSettingsRes = await loadProjectSettingsByProjectPath(projectPath, true);
+    const projectSettingsRes = await settingsUtil.readSettings(projectPath);
     if (projectSettingsRes.isOk()) {
-      const projectSettings = projectSettingsRes.value;
-      projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
-      projectSettings.isFromSample = true;
-      inputs.projectId = projectSettings.projectId;
-      context.projectSetting = projectSettings as ProjectSettingsV3;
+      const settings = projectSettingsRes.value;
+      settings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
+      settings.isFromSample = scratch === ScratchOptionNo.id;
+      inputs.projectId = settings.projectId;
+      await settingsUtil.writeSettings(projectPath, settings);
     }
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
@@ -249,15 +248,6 @@ export class Coordinator {
         [TelemetryProperty.Feature]: features,
       });
       if (res.isErr()) return err(res.error);
-      if (features !== ApiConnectionOptionItem.id && features !== CicdOptionItem.id) {
-        if (
-          context.envInfo?.state?.solution?.provisionSucceeded === true ||
-          context.envInfo?.state?.solution?.provisionSucceeded === "true"
-        ) {
-          context.envInfo.state.solution.provisionSucceeded = false;
-        }
-        await environmentManager.resetProvisionState(inputs, context);
-      }
       return ok(res.value);
     }
     return ok(undefined);

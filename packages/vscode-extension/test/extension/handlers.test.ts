@@ -836,6 +836,7 @@ describe("handlers", () => {
       await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
       sandbox.assert.calledOnce(runCommandSpy);
       chai.assert.equal(runCommandSpy.getCall(0).args[0], Stage.deployAad);
+      sandbox.restore();
     });
   });
 

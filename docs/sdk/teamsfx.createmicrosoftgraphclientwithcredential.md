@@ -4,6 +4,8 @@
 
 ## createMicrosoftGraphClientWithCredential() function
 
+Get Microsoft graph client.
+
 <b>Signature:</b>
 
 ```typescript
@@ -14,10 +16,60 @@ export declare function createMicrosoftGraphClientWithCredential(credential: Tok
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  credential | TokenCredential |  |
-|  scopes | string \| string\[\] |  |
+|  credential | TokenCredential | Used to provide configuration and auth. |
+|  scopes | string \| string\[\] | The array of Microsoft Token scope of access. Default value is <code>[.default]</code>. |
 
 <b>Returns:</b>
 
 Client
+
+Graph client with specified scopes.
+
+## Exceptions
+
+[InvalidParameter](./teamsfx.errorcode.md) when scopes is not a valid string or string array.
+
+## Example
+
+Get Microsoft graph client by TokenCredential
+
+```typescript
+// In browser: TeamsUserCredential
+const authConfig: TeamsUserCredentialAuthConfig = {
+  clientId: "xxx",
+    initiateLoginEndpoint: "https://xxx/auth-start.html",
+};
+
+const credential = new TeamsUserCredential(authConfig);
+
+const scope = "User.Read";
+await credential.login(scope);
+
+const client = createMicrosoftGraphClientWithCredential(credential, scope);
+
+// In node: OnBehalfOfUserCredential
+const oboAuthConfig: OnBehalfOfCredentialAuthConfig = {
+  authorityHost: "xxx",
+  clientId: "xxx",
+  tenantId: "xxx",
+  clientSecret: "xxx",
+};
+
+const oboCredential = new OnBehalfOfUserCredential(ssoToken, oboAuthConfig);
+const scope = "User.Read";
+const client = createMicrosoftGraphClientWithCredential(oboCredential, scope);
+
+// In node: AppCredential
+const appAuthConfig: AppCredentialAuthConfig = {
+  authorityHost: "xxx",
+  clientId: "xxx",
+  tenantId: "xxx",
+  clientSecret: "xxx",
+};
+const appCredential = new AppCredential(appAuthConfig);
+const scope = "User.Read";
+const client = createMicrosoftGraphClientWithCredential(appCredential, scope);
+
+const profile = await client.api("/me").get();
+```
 

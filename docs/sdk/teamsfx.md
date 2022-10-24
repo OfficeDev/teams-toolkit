@@ -49,7 +49,7 @@
 |  --- | --- |
 |  [createApiClient(apiEndpoint, authProvider)](./teamsfx.createapiclient.md) | Initializes new Axios instance with specific auth provider |
 |  [createMicrosoftGraphClient(teamsfx, scopes)](./teamsfx.createmicrosoftgraphclient.md) | Get Microsoft graph client. |
-|  [createMicrosoftGraphClientWithCredential(credential, scopes)](./teamsfx.createmicrosoftgraphclientwithcredential.md) |  |
+|  [createMicrosoftGraphClientWithCredential(credential, scopes)](./teamsfx.createmicrosoftgraphclientwithcredential.md) | Get Microsoft graph client. |
 |  [createPemCertOption(cert, key, options)](./teamsfx.createpemcertoption.md) | Helper to create SecureContextOptions from PEM format cert |
 |  [createPfxCertOption(pfx, options)](./teamsfx.createpfxcertoption.md) | Helper to create SecureContextOptions from PFX format cert |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | Get log level. |

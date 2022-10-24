@@ -230,7 +230,7 @@ export function createApiClient(apiEndpoint: string, authProvider: AuthProvider)
 // @public
 export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
 
-// @public (undocumented)
+// @public
 export function createMicrosoftGraphClientWithCredential(credential: TokenCredential, scopes?: string | string[]): Client;
 
 // @public

@@ -692,7 +692,7 @@ async function setAadManifestEnabledContext() {
 }
 
 async function setApiV3EnabledContext() {
-  vscode.commands.executeCommand("setContext", "fx-extension.isV3Enabled", isV3Enabled());
+  await vscode.commands.executeCommand("setContext", "fx-extension.isV3Enabled", isV3Enabled());
 }
 
 function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {

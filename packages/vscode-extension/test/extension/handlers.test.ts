@@ -826,17 +826,6 @@ describe("handlers", () => {
       const result = await handlers.manageCollaboratorHandler();
       chai.expect(result.isErr()).equals(true);
     });
-
-    it("deployAadAppManifest v3", async () => {
-      sandbox.stub(handlers, "core").value(new MockCore());
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const runCommandSpy = sandbox.spy(handlers, "runCommand");
-      await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
-      sandbox.assert.calledOnce(runCommandSpy);
-      chai.assert.equal(runCommandSpy.getCall(0).args[0], Stage.deployAad);
-      runCommandSpy.restore();
-    });
   });
 
   describe("manifest", () => {
@@ -902,6 +891,20 @@ describe("handlers", () => {
     sinon.assert.calledOnce(deployArtifacts);
     chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
     sinon.restore();
+  });
+
+  it("deployAadAppManifest v3", async () => {
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    const runCommandSpy = sandbox.spy(handlers, "runCommand");
+    await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
+    sandbox.assert.calledOnce(runCommandSpy);
+    chai.assert.equal(runCommandSpy.getCall(0).args[0], Stage.deployAad);
+    runCommandSpy.restore();
+    sandbox.restore();
   });
 
   it("showError", async () => {

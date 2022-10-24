@@ -3355,3 +3355,51 @@ export async function selectSubscriptionCallback(args?: any[]): Promise<Result<n
   await AzureAccountManager.setSubscription(askSubRes.value.subscriptionId);
   return ok(null);
 }
+
+/**
+ * scaffold based on app id from Developer Portal
+ */
+export async function scaffoldFromDeveloperPortalHandler(
+  args?: any[]
+): Promise<Result<null, FxError>> {
+  if (!args || args.length !== 1) {
+    // should never happen
+    return ok(null);
+  }
+
+  const progressBar = VS_CODE_UI.createProgressBar(
+    localize("teamstoolkit.devPortalIntegration.checkM365Account.progressTitle"),
+    1
+  );
+  await progressBar.start();
+  let token = "";
+  try {
+    const tokenRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
+      { scopes: AppStudioScopes },
+      args[0]
+    );
+    if (tokenRes.isErr()) {
+      if ((tokenRes.error as any).displayMessage) {
+        window.showErrorMessage((tokenRes.error as any).displayMessage);
+      } else {
+        vscode.window.showErrorMessage(
+          localize("teamstoolkit.devPortalIntegration.generalError.message")
+        );
+      }
+      await progressBar.end(false);
+      return err(tokenRes.error);
+    }
+    token = tokenRes.value;
+    await progressBar.end(true);
+  } catch (e) {
+    vscode.window.showErrorMessage(
+      localize("teamstoolkit.devPortalIntegration.generalError.message")
+    );
+    await progressBar.end(false);
+    throw e;
+  }
+
+  // TODO: get manifest and scaffold
+
+  return ok(null);
+}

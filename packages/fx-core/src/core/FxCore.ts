@@ -43,7 +43,7 @@ import { getLocalizedString } from "../common/localizeUtils";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import { isValidProject, newProjectSettings } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import { createV2Context } from "../common/tools";
+import { createV2Context, isV3Enabled } from "../common/tools";
 import { getTemplatesFolder } from "../folder";
 import {
   ApiConnectionOptionItem,
@@ -112,6 +112,7 @@ import { ProjectSettingsHelper } from "../common/local";
 import "../component/driver/aad/update";
 import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
 import { DriverContext } from "../component/driver/interface/commonArgs";
+import { coordinator } from "../component/coordinator";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -172,8 +173,13 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    const fx = Container.get("fx") as any;
-    const res = await fx.create(context, inputs as InputsWithProjectPath);
+    let res;
+    if (isV3Enabled()) {
+      res = await coordinator.create(context, inputs as InputsWithProjectPath);
+    } else {
+      const fx = Container.get("fx") as any;
+      res = await fx.create(context, inputs as InputsWithProjectPath);
+    }
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;

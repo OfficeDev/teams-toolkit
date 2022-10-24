@@ -334,6 +334,17 @@ export class CodeFlowLogin {
     }
   }
 
+  async switchAccount(scopes: Array<string>): Promise<Result<string, FxError>> {
+    await this.logout();
+    (this.msalTokenCache as any).storage.setCache({});
+    try {
+      const accessToken = await this.login(scopes);
+      return ok(accessToken);
+    } catch (e) {
+      return err(LoginCodeFlowError(e));
+    }
+  }
+
   async startServer(server: http.Server, port: number): Promise<string> {
     // handle port timeout
     let defferedPort: Deferred<string>;

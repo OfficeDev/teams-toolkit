@@ -226,6 +226,13 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
  * Internal commands that will not show in command palette and only be called via executeCommand()
  */
 function registerInternalCommands(context: vscode.ExtensionContext) {
+  registerInCommandController(
+    context,
+    "fx-extension.openFromTdp",
+    handlers.scaffoldFromDeveloperPortalHandler,
+    "openFromTdp"
+  );
+
   // Register backend extensions install command
   const backendExtensionsInstallCmd = vscode.commands.registerCommand(
     "fx-extension.backend-extensions-install",

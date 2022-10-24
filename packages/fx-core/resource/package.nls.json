@@ -26,6 +26,7 @@
   "core.provision.subscription.NotFoundParam": "The subscription '%s' for '%s' environment is not found in the current account, please use the right Azure account or check the subscription parameter.",
   "core.provision.subscription.NotFoundConfig": "The subscription '%s' for '%s' environment is not found in the current account, please use the right Azure account or check the '%s' file.",
   "core.provision.subscription.NotFoundState": "The subscription '%s' for '%s' environment is not found in the current account, please use the right Azure account.",
+  "core.provision.subscription.NotFound": "The subscription '%s' is not found in the current account, please use the right Azure account.",
   "core.provision.subscription.failToSelect": "Failed to select subscription",
   "core.error.notLoginToAzure": "Login to Azure using the Azure Account extension",
   "core.error.FailedToCreateResourceGroup.exist": "Failed to create resource group '%s': the resource group exists",

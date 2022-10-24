@@ -10,12 +10,12 @@ import fs from "fs-extra";
 import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import {
-  execAsync,
   getTestFolder,
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
   readContextMultiEnv,
+  getUniqueAppName,
 } from "../commonUtils";
 import { AadValidator, FrontendValidator, FunctionValidator, SqlValidator } from "../../commonlib";
 import { getUuid } from "../../commonlib/utilities";
@@ -25,23 +25,19 @@ import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
-  let appName: string;
-  let testFolder: string;
-  let projectPath: string;
-
-  const env = environmentManager.getDefaultEnvName();
+  const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
-  beforeEach(async () => {
-    testFolder = getTestFolder();
-  });
+  const appName = getUniqueAppName();
+  const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   it(`${TemplateProject.TodoListBackend}`, { testPlanCaseId: 15277465 }, async function () {
-    projectPath = path.resolve(testFolder, TemplateProject.TodoListBackend);
-    await execAsync(`teamsfx new template ${TemplateProject.TodoListBackend}`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
+    await CliHelper.createTemplateProject(
+      appName,
+      testFolder,
+      TemplateProject.TodoListBackend,
+      TemplateProject.TodoListBackend
+    );
 
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;

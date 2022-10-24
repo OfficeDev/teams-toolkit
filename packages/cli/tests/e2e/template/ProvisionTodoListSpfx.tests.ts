@@ -12,87 +12,57 @@ import { it } from "@microsoft/extra-shot-mocha";
 import {
   execAsync,
   getTestFolder,
-  cleanUp,
-  setSimpleAuthSkuNameToB1Bicep,
+  cleanUpLocalProject,
   getSubscriptionId,
-  readContextMultiEnv,
+  execAsyncWithRetry,
+  getUniqueAppName,
 } from "../commonUtils";
-import { SharepointValidator, AppStudioValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
-  let appId: string;
-  let appName: string;
-  let testFolder: string;
-  let projectPath: string;
-
-  const env = environmentManager.getDefaultEnvName();
+  const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
-  beforeEach(async () => {
-    testFolder = getTestFolder();
-  });
+  const appName = getUniqueAppName();
+  const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   it(`${TemplateProject.TodoListSpfx}`, { testPlanCaseId: 15277466 }, async function () {
-    appName = "todo-list-SPFx";
-    projectPath = path.resolve(testFolder, appName);
-    await execAsync(`teamsfx new template ${TemplateProject.TodoListSpfx}`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
+    await CliHelper.createTemplateProject(
+      appName,
+      testFolder,
+      TemplateProject.TodoListSpfx,
+      "todo-list-SPFx"
+    );
 
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
 
-    const config = await fs.readJson(`${projectPath}/SPFx/config/config.json`);
-    expect(config["bundles"]["todo-list-web-part"]).exist;
+    // validation succeed without provision
+    await execAsync("teamsfx validate", {
+      cwd: path.join(testFolder, appName),
+      env: process.env,
+      timeout: 0,
+    });
 
-    // {    // validation succeed without provision
-    //   const command = "teamsfx validate";
-    //   const result = await execAsync(command, {
-    //     cwd: path.join(testFolder, appName),
-    //     env: process.env,
-    //     timeout: 0,
-    //   });
-    //   expect(result.stderr).to.eq("");
-
-    // }
-
-    // {
-    //   // validation local env succeed without local debug
-    //   const command = `teamsfx validate --env ${environmentManager.getLocalEnvName()}`;
-    //   const result = await execAsync(command, {
-    //     cwd: path.join(testFolder, appName),
-    //     env: process.env,
-    //     timeout: 0,
-    //   });
-    //   expect(result.stderr).to.eq("");
-    // }
-
-    // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
-
-    // {
-    //   // Get context
-    //   const context = await readContextMultiEnv(
-    //     projectPath,
-    //     environmentManager.getDefaultEnvName()
-    //   );
-
-    //   // Only check Teams App existence
-    //   const appStudio = AppStudioValidator.init(context);
-    //   AppStudioValidator.validateTeamsAppExist(appStudio);
-    // }
+    // provision
+    await execAsyncWithRetry(`teamsfx provision`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     // deploy
-    await CliHelper.deployAll(projectPath);
+    await execAsyncWithRetry(`teamsfx deploy`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
   });
 
-  after(async () => {
-    await cleanUp(appName, projectPath, true, false, true);
+  afterEach(async () => {
+    // clean up
+    await cleanUpLocalProject(projectPath);
   });
 });

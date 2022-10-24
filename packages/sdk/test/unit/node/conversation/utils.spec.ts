@@ -78,9 +78,19 @@ describe("Notification.Utils Tests - Node", () => {
         },
       },
     };
+    const context3 = {
+      activity: {
+        conversation: {
+          id: "3",
+          name: "channel-name",
+        },
+      },
+    };
     const id1 = getTeamsBotInstallationId(context1 as any);
     const id2 = getTeamsBotInstallationId(context2 as any);
+    const id3 = getTeamsBotInstallationId(context3 as any);
     assert.strictEqual(id1, "1");
     assert.strictEqual(id2, "2");
+    assert.isUndefined(id3);
   });
 });

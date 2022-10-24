@@ -170,10 +170,39 @@ export class AadApp implements CloudResource {
       telemetry: { component: BuiltInFeaturePluginNames.aad },
     }),
   ])
-  async listCollaborator(ctx: ContextV3): Promise<Result<AadOwner[], FxError>> {
+  async buildAadManifest(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    const aadAppImplement = new AadAppForTeamsImpl();
+    const convertCtx = convertContext(context, inputs);
+    const res = await this.runWithExceptionCatchingAsync(
+      async () => {
+        await aadAppImplement.loadAndBuildManifest(convertCtx);
+        return ResultFactory.Success();
+      },
+      convertCtx,
+      Messages.EndBuildAadManifest.telemetry
+    );
+    if (res.isErr()) {
+      return res;
+    }
+    this.setState(convertCtx, context);
+    return res;
+  }
+
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: { component: BuiltInFeaturePluginNames.aad },
+    }),
+  ])
+  async listCollaborator(
+    ctx: ContextV3,
+    aadObjectIdV3?: string
+  ): Promise<Result<AadOwner[], FxError>> {
     const aadAppImplement = new AadAppForTeamsImpl();
     const res = await this.runWithExceptionCatchingAsync(
-      async () => aadAppImplement.listCollaborator(ctx),
+      async () => aadAppImplement.listCollaborator(ctx, aadObjectIdV3),
       ctx,
       Messages.EndListCollaborator.telemetry
     );
@@ -187,11 +216,12 @@ export class AadApp implements CloudResource {
   ])
   async grantPermission(
     ctx: ContextV3,
-    userInfo: AppUser
+    userInfo: AppUser,
+    aadObjectIdV3?: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     const aadAppImplement = new AadAppForTeamsImpl();
     const res = await this.runWithExceptionCatchingAsync(
-      async () => aadAppImplement.grantPermission(ctx, userInfo),
+      async () => aadAppImplement.grantPermission(ctx, userInfo, aadObjectIdV3),
       ctx,
       Messages.EndGrantPermission.telemetry
     );
@@ -205,11 +235,12 @@ export class AadApp implements CloudResource {
   ])
   async checkPermission(
     ctx: ContextV3,
-    userInfo: AppUser
+    userInfo: AppUser,
+    aadObjectIdV3?: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     const aadAppImplement = new AadAppForTeamsImpl();
     const res = await this.runWithExceptionCatchingAsync(
-      async () => aadAppImplement.checkPermission(ctx, userInfo),
+      async () => aadAppImplement.checkPermission(ctx, userInfo, aadObjectIdV3),
       ctx,
       Messages.EndCheckPermission.telemetry
     );

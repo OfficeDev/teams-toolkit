@@ -12,7 +12,10 @@ import { wrapRun } from "../../utils/common";
 export class NpmBuildDriver implements StepDriver {
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new NpmBuildDriverImpl(args, context);
-    return wrapRun(() => impl.run());
+    return wrapRun(
+      () => impl.run(),
+      () => impl.cleanup()
+    );
   }
 }
 

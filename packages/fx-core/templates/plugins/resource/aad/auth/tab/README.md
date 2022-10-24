@@ -27,12 +27,11 @@ These two HTML files are used for auth redirects.
 
     `GetUserProfile`: This file implements a function that calls Microsoft Graph API to get user info.
 
-1. Execute the following commands under `tabs/`: `npm install @microsoft/teamsfx-react`. If the version of `@microsoft/teamsfx` in `tabs/package.json` is `2.0.0-beta.0`, please use the following commands under `tabs/` instead: `npm install @microsoft/teamsfx-react@2.0.0-beta.1`.
-1. Add the following lines to `tabs/src/components/sample/Welcome.*` to import `InitTeamsFx`:
+2. Add the following lines to `tabs/src/components/sample/Welcome.*` to import `InitTeamsFx`:
     ```
     import { InitTeamsFx } from "../../sso/InitTeamsFx";
     ```
-1. Replace the following line: `<AddSSO />` with `<InitTeamsFx />` to replace the `AddSSO` component with `InitTeamsFx` component.
+3. Replace the following line: `<AddSSO />` with `<InitTeamsFx />` to replace the `AddSSO` component with `InitTeamsFx` component.
 
 # Debug your application
 

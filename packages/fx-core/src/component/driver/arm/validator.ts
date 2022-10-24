@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { validate as uuidValidate } from "uuid";
+import { getAvailableBicepVersions } from "../../utils/depsChecker/bicepChecker";
 import { TemplateType } from "./constant";
 import { deployArgs, templateArgs } from "./interface";
 import { getFileExtension, hasBicepTemplate } from "./util/util";
@@ -27,7 +28,6 @@ export async function validateArgs(args: deployArgs): Promise<string[]> {
   return invalidParameters;
 }
 
-// TODO
 async function validateBicep(
   bicepCliVersion: string | undefined,
   needBicepCli: boolean
@@ -36,10 +36,9 @@ async function validateBicep(
     return true;
   }
 
-  // if there is no bicep cli version, we will check bicep in PATH
-  if (!bicepCliVersion) {
-  } else {
-    // check the bicep cli version
+  if (bicepCliVersion) {
+    const versions = await getAvailableBicepVersions();
+    return versions.includes(bicepCliVersion);
   }
   return true;
 }

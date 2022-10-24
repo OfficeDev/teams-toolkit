@@ -11,7 +11,7 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 >
 > To run the workflow bot template in your local dev machine, you will need:
 >
-> - `Node.js` installed locally (recommended version: 14)
+> - `Node.js` installed locally (recommended version: 16)
 > - An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 >
 > **Note**
@@ -81,7 +81,7 @@ Here's a sample action with type `Action.Execute`:
         {
           "type": "Action.Execute",
           "title": "DoSomething",
-          "verb": "DoSomething" 
+          "verb": "doSomething" 
         }
       ]
     },
@@ -163,8 +163,8 @@ const conversationBot = new ConversationBot({
   cardAction: { 
     enabled: true, 
     actions: [ 
-      new doStuffActionHandler(),
-      new doSomethingActionHandler() 
+      new DoStuffActionHandler(),
+      new DoSomethingActionHandler() 
     ], 
   } 
 }); 

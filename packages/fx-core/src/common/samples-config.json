@@ -209,9 +209,7 @@
             "tags": ["Message extension", "SSO"],
             "time": "5min to run",
             "configuration": "Ready for debug",
-            "suggested": false,
-            "url": "https://github.com/OfficeDev/TeamsFx-samples/tree/dev/",
-            "packageLink": "https://github.com/OfficeDev/TeamsFx-samples/archive/refs/heads/dev.zip"
+            "suggested": false
         }
     ]
 }

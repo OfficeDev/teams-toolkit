@@ -2,17 +2,22 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { ActionContext, ContextV3 } from "@microsoft/teamsfx-api";
+import { ActionContext, ContextV3, FxError, Result, ok } from "@microsoft/teamsfx-api";
 import {
   Component,
   sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
+import { errorSource } from "../code/tab/constants";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { SampleActionSeq, GeneratorAction, TemplateActionSeq } from "./generatorAction";
-import { GeneratorContext } from "./generatorContext";
+import {
+  SampleActionSeq,
+  GeneratorAction,
+  TemplateActionSeq,
+  GeneratorContext,
+} from "./generatorAction";
 import {
   getSampleInfoFromName,
   renderTemplateFileData,
@@ -27,6 +32,7 @@ export class Generator {
       enableProgressBar: true,
       progressTitle: ProgressTitles.generateTemplate,
       progressSteps: 1,
+      errorSource: errorSource,
     }),
   ])
   public static async generateTemplate(
@@ -35,7 +41,7 @@ export class Generator {
     destinationPath: string,
     ctx: ContextV3,
     actionContext?: ActionContext
-  ): Promise<void> {
+  ): Promise<Result<undefined, FxError>> {
     const appName = ctx.projectSetting?.appName;
     const projectId = ctx.projectSetting?.projectId;
     const nameReplaceMap = { ...{ appName: appName }, ...ctx.templateVariables };
@@ -52,6 +58,7 @@ export class Generator {
     };
     await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
     await this.generate(generatorContext, TemplateActionSeq);
+    return ok(undefined);
   }
 
   @hooks([
@@ -59,6 +66,7 @@ export class Generator {
       enableProgressBar: true,
       progressTitle: ProgressTitles.generateSample,
       progressSteps: 1,
+      errorSource: errorSource,
     }),
   ])
   public static async generateSample(
@@ -66,7 +74,7 @@ export class Generator {
     destinationPath: string,
     ctx: ContextV3,
     actionContext?: ActionContext
-  ): Promise<void> {
+  ): Promise<Result<undefined, FxError>> {
     const sample = getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
     const generatorContext: GeneratorContext = {
@@ -79,6 +87,7 @@ export class Generator {
     };
     await actionContext?.progressBar?.next(ProgressMessages.generateSample);
     await this.generate(generatorContext, SampleActionSeq);
+    return ok(undefined);
   }
 
   private static async generate(

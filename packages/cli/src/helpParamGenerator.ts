@@ -48,7 +48,7 @@ export class HelpParamGenerator {
     Stage.publish,
     Stage.provision,
     Stage.deploy,
-    ...(isV3Enabled() ? [Stage.grantPermission, Stage.checkPermission] : []),
+    ...(isV3Enabled() ? [] : [Stage.grantPermission, Stage.checkPermission]),
     "validate",
     "update",
     "addCICDWorkflows",

@@ -19,6 +19,7 @@ import { argsToInputs, getSystemInputs, isSpfxProject } from "../utils";
 import HelpParamGenerator from "../helpParamGenerator";
 import CLILogProvider from "../commonlib/log";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { CollaborationConstants } from "@microsoft/teamsfx-core/build/core/collaborator";
 
 const azureMessage =
   "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
@@ -56,12 +57,12 @@ export class PermissionStatus extends YargsCommand {
           name: env,
         })
         .option(teamsAppId, {
-          description: "teams app id",
+          description: "Id of Your Teams app",
           name: teamsAppId,
           type: "string",
         })
         .option(aadObjectId, {
-          description: "aad app id",
+          description: "Object Id of your Azure AD app",
           name: aadObjectId,
           type: "string",
         });
@@ -102,8 +103,8 @@ export class PermissionStatus extends YargsCommand {
       CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
 
       // add user input to Inputs
-      inputs["aadObjectId"] = args[aadObjectId];
-      inputs["teamsAppId"] = args[teamsAppId];
+      inputs[CollaborationConstants.AadObjectId] = args[aadObjectId];
+      inputs[CollaborationConstants.TeamsAppId] = args[teamsAppId];
       inputs[env] = args[env];
     }
 
@@ -145,12 +146,12 @@ export class PermissionGrant extends YargsCommand {
           name: env,
         })
         .option(teamsAppId, {
-          description: "teams app id",
+          description: "Id of Your Teams app",
           name: teamsAppId,
           type: "string",
         })
         .option(aadObjectId, {
-          description: "aad app id",
+          description: "Object Id of your Azure AD app",
           name: aadObjectId,
           type: "string",
         });
@@ -190,8 +191,8 @@ export class PermissionGrant extends YargsCommand {
       CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
 
       // add user input to Inputs
-      answers["aadObjectId"] = args[aadObjectId];
-      answers["teamsAppId"] = args[teamsAppId];
+      answers[CollaborationConstants.AadObjectId] = args[aadObjectId];
+      answers[CollaborationConstants.TeamsAppId] = args[teamsAppId];
       answers[env] = args[env];
     }
 

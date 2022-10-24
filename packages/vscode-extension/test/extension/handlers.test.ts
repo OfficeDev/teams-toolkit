@@ -809,7 +809,7 @@ describe("handlers", () => {
     sanbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sanbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_API_V3: "true",
+      TEAMSFX_V3: "true",
     });
 
     const deployAadManifest = sanbox.spy(handlers.core, "deployAadManifest");

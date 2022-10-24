@@ -12,10 +12,15 @@ import { wrapRun } from "../../utils/common";
 export class DotnetBuildDriver implements StepDriver {
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new DotnetBuildDriverImpl(args, context);
-    return wrapRun(() => impl.run());
+    return wrapRun(
+      () => impl.run(),
+      () => impl.cleanup()
+    );
   }
 }
 
 export class DotnetBuildDriverImpl extends BaseBuildDriver {
+  progressBarName = `Building Dotnet project at ${this.workingDirectory}`;
+  progressBarSteps = 1;
   buildPrefix = "dotnet";
 }

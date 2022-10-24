@@ -69,6 +69,7 @@
     "teamstoolkit.commands.environmentsLink.title": "Learn more about environments",
     "teamstoolkit.commands.feedbackLink.title": "Learn more about help and feedback",
     "teamstoolkit.commands.listAppOwner.title": "List Microsoft 365 Teams App (with AAD App) Owners",
+    "teamstoolkit.commands.manageCollaborator.title": "Manage M365 Teams App (with AAD app) Collaborators",
     "teamstoolkit.commands.localDebug.title": "Debug",
     "teamstoolkit.commands.m365AccountSettings.title": "Microsoft 365 portal",
     "teamstoolkit.commands.migrateApp.title": "Upgrade Teams JS SDK and code references",
@@ -188,6 +189,8 @@
     "teamstoolkit.commandsTreeViewProvider.validateManifestDescription": "Validate the Teams app manifest file",
     "teamstoolkit.commandsTreeViewProvider.validateManifestTitle": "Validate App Manifest File",
     "teamstoolkit.commandsTreeViewProvider.validateManifestTitleNew": "Validate manifest file",
+    "teamstoolkit.commandsTreeViewProvider.manageCollaboratorTitle": "Manage Collaborator",
+    "teamstoolkit.commandsTreeViewProvider.manageCollaboratorDescription": "Manage M365 Teams App (with AAD app) Collaborators",
     "teamstoolkit.common.cancel": "Cancel",
     "teamstoolkit.common.commingSoon": "Tutorials are in active development and will come soon in future release, please stay tuned.",
     "teamstoolkit.common.confirm": "Confirm",
@@ -421,5 +424,9 @@
     "teamstoolkit.taskDefinitions.args.sso.clientIdTitle": "The AAD app client id for SSO",
     "teamstoolkit.taskDefinitions.args.sso.clientSecretTitle": "The AAD app client secret for SSO",
     "teamstoolkit.taskDefinitions.args.sso.accessAsUserScopeIdTitle": "The AAD app access_as_user scope id for SSO",
-    "teamstoolkit.taskDefinitions.args.manifest.appPackagePathTitle": "Teams app package path"
+    "teamstoolkit.taskDefinitions.args.manifest.appPackagePathTitle": "Teams app package path",
+    "teamstoolkit.manageCollaborator.grantPermission.label": "Grant Permission",
+    "teamstoolkit.manageCollaborator.grantPermission.description": "Add Microsoft 365 Teams App (with AAD App) Owners",
+    "teamstoolkit.manageCollaborator.listCollaborator.label": "List Collaborator",
+    "teamstoolkit.manageCollaborator.listCollaborator.description": "List Microsoft 365 Teams App (with AAD App) Owners"
 }

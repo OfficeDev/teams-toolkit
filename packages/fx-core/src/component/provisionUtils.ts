@@ -48,11 +48,12 @@ import {
   SolutionTelemetryProperty,
   SUBSCRIPTION_ID,
   BuiltInFeaturePluginNames,
+  ComponentNames,
+  PathConstants,
 } from "./constants";
 import { backupFiles } from "./utils/backupFiles";
 import { resourceGroupHelper, ResourceGroupInfo } from "./utils/ResourceGroupHelper";
 import { resetAppSettingsDevelopment } from "./code/appSettingUtils";
-import { ComponentNames, PathConstants } from "./constants";
 import { AppStudioScopes } from "./resource/appManifest/constants";
 import { isCSharpProject, resetEnvInfoWhenSwitchM365 } from "./utils";
 import fs from "fs-extra";
@@ -207,7 +208,47 @@ export class ProvisionUtils {
     }
     return ok(undefined);
   }
+  // /**
+  //  * make sure subscription is correct before provision for V3
+  //  * subscriptionId is provided from .env.xxx file
+  //  */
+  // async ensureSubscription(
+  //   azureAccountProvider: AzureAccountProvider,
+  //   givenSubscriptionId?: string
+  // ): Promise<Result<SubscriptionInfo, FxError>> {
+  //   // make sure the user is logged in
+  //   await azureAccountProvider.getIdentityCredentialAsync(true);
+  //   if (!givenSubscriptionId) {
+  //     const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
+  //     if (!subscriptionInAccount) {
+  //       return err(
+  //         new UserError(
+  //           "coordinator",
+  //           SolutionError.SubscriptionNotFound,
+  //           getLocalizedString("core.provision.subscription.failToSelect")
+  //         )
+  //       );
+  //     } else {
+  //       return ok(subscriptionInAccount);
+  //     }
+  //   }
 
+  //   // verify valid subscription (permission)
+  //   const subscriptions = await azureAccountProvider.listSubscriptions();
+
+  //   const foundSubscriptionInfo = findSubscriptionFromList(givenSubscriptionId, subscriptions);
+  //   if (!foundSubscriptionInfo) {
+  //     return err(
+  //       new UserError(
+  //         "coordinator",
+  //         SolutionError.SubscriptionNotFound,
+  //         getLocalizedString("core.provision.subscription.NotFound", givenSubscriptionId)
+  //       )
+  //     );
+  //   }
+
+  //   return ok(foundSubscriptionInfo);
+  // }
   /**
    * make sure subscription is correct before provision
    *
@@ -239,7 +280,7 @@ export class ProvisionUtils {
           new UserError(
             SolutionSource,
             SolutionError.SubscriptionNotFound,
-            "Failed to select subscription"
+            getLocalizedString("core.provision.subscription.failToSelect")
           )
         );
       } else {
@@ -269,7 +310,11 @@ export class ProvisionUtils {
           new UserError(
             SolutionSource,
             SolutionError.SubscriptionNotFound,
-            `The subscription '${targetSubscriptionIdFromCLI}' for '${envInfo.envName}' environment is not found in the current account, please use the right Azure account or check the subscription parameter.`
+            getLocalizedString(
+              "core.provision.subscription.NotFoundParam",
+              targetSubscriptionIdFromCLI,
+              envInfo.envName
+            )
           )
         );
       } else {
@@ -294,12 +339,12 @@ export class ProvisionUtils {
           new UserError(
             SolutionSource,
             SolutionError.SubscriptionNotFound,
-            `The subscription '${subscriptionIdInConfig}'(${subscriptionNameInConfig}) for '${
-              envInfo.envName
-            }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
-              EnvNamePlaceholder,
-              envInfo.envName
-            )}' file.`
+            getLocalizedString(
+              "core.provision.subscription.NotFoundConfig",
+              subscriptionIdInConfig,
+              envInfo.envName,
+              EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envInfo.envName)
+            )
           )
         );
       } else {
@@ -328,7 +373,11 @@ export class ProvisionUtils {
             new UserError(
               SolutionSource,
               SolutionError.SubscriptionNotFound,
-              `The subscription '${subscriptionIdInState}'(${subscriptionNameInState}) for '${envInfo.envName}' environment is not found in the current account, please use the right Azure account.`
+              getLocalizedString(
+                "core.provision.subscription.NotFoundState",
+                subscriptionIdInState,
+                envInfo.envName
+              )
             )
           );
         }
@@ -417,6 +466,54 @@ export class ProvisionUtils {
     }
   }
 
+  // async ensureResourceGroup(
+  //   platform: Platform,
+  //   azureAccountProvider: AzureAccountProvider,
+  //   subscriptionId: string,
+  //   givenResourceGroupName?: string,
+  //   givenResourceGroupLocation?: string
+  // ): Promise<Result<ResourceGroupInfo, FxError>> {
+  //   const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
+  //   if (azureToken === undefined) {
+  //     return err(
+  //       new UserError(
+  //         "coordinator",
+  //         SolutionError.NotLoginToAzure,
+  //         getLocalizedString("core.error.notLoginToAzure")
+  //       )
+  //     );
+  //   }
+  //   const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
+  //   let resourceGroupInfo: ResourceGroupInfo;
+  //   if (givenResourceGroupName) {
+  //     const getResourceGroupRes = await resourceGroupHelper.getResourceGroupInfo(
+  //       givenResourceGroupName,
+  //       rmClient
+  //     );
+  //     if (getResourceGroupRes.isErr()) {
+  //       // resource group not exist
+  //       if (platform === Platform.VS && givenResourceGroupLocation) {
+  //         resourceGroupInfo = {
+  //           createNewResourceGroup: true,
+  //           name: givenResourceGroupName,
+  //           location: givenResourceGroupLocation,
+  //         };
+  //       } else return err(getResourceGroupRes.error);
+  //     } else {
+  //       if (!getResourceGroupRes.value) {
+  //         return err(
+  //           new UserError(
+  //             SolutionSource,
+  //             SolutionError.ResourceGroupNotFound,
+  //             getLocalizedString("core.error.resourceGroupNotFound", givenResourceGroupName)
+  //           )
+  //         );
+  //       }
+  //     }
+  //   }
+  //   return ok(resourceGroupInfo!);
+  // }
+
   /**
    * Asks common questions and puts the answers in the global namespace of SolutionConfig
    *
@@ -452,7 +549,7 @@ export class ProvisionUtils {
         new UserError(
           SolutionSource,
           SolutionError.NotLoginToAzure,
-          "Login to Azure using the Azure Account extension"
+          getLocalizedString("core.error.notLoginToAzure")
         )
       );
     }
@@ -506,7 +603,7 @@ export class ProvisionUtils {
             new UserError(
               SolutionSource,
               SolutionError.ResourceGroupNotFound,
-              `Resource group '${inputs.targetResourceGroupName}' does not exist, please specify an existing resource group.`
+              getLocalizedString("core.error.resourceGroupNotFound", inputs.targetResourceGroupName)
             )
           );
         }
@@ -536,7 +633,7 @@ export class ProvisionUtils {
           new UserError(
             SolutionSource,
             SolutionError.ResourceGroupNotFound,
-            `Resource group '${resourceGroupName}' does not exist, please check your '${envFile}' file.`
+            getLocalizedString("core.error.resourceGroupNotFound2", resourceGroupName, envFile)
           )
         );
       }

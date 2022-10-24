@@ -14,11 +14,16 @@ import { wrapRun } from "../../../utils/common";
 export class AzureAppServiceDeployDriver implements StepDriver {
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new AzureAppServiceDeployDriverImpl(args, context);
-    return wrapRun(() => impl.run());
+    return wrapRun(
+      () => impl.run(),
+      () => impl.cleanup()
+    );
   }
 }
 
 export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
+  progressBarName = `Deploying ${this.workingDirectory ?? ""} to Azure App Service`;
+  progressBarSteps = 5;
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/serverFarms\/([^\/]*)/i;
 
@@ -27,6 +32,8 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<void> {
+    await this.progressBar?.start();
     await this.zipDeploy(args, azureResource, azureCredential);
+    await this.progressBar?.end(true);
   }
 }

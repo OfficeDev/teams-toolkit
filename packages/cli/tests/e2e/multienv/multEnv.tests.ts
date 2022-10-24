@@ -23,6 +23,7 @@ import {
   setBotSkuNameToB1Bicep,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
+import { getUuid } from "../../commonlib/utilities";
 
 import { Capability } from "../../commonlib/constants";
 
@@ -62,6 +63,22 @@ describe("Multi Env Happy Path for Azure", function () {
       chai.expect(result.stderr).to.be.empty;
       console.log(
         `[Successfully] env list, stdout: '${result.stdout}', stderr: '${result.stderr}'`
+      );
+
+      // provision
+      result = await execAsyncWithRetry(
+        `teamsfx provision --sql-admin-name e2e --sql-password Cab232332${getUuid().substring(
+          0,
+          6
+        )} --env ${env}`,
+        {
+          cwd: projectPath,
+          env: processEnv,
+          timeout: 0,
+        }
+      );
+      console.log(
+        `[Successfully] provision, stdout: '${result.stdout}', stderr: '${result.stderr}'`
       );
 
       // validate manifest

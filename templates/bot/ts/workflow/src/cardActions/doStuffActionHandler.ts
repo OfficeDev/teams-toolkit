@@ -5,10 +5,10 @@ import responseCard from "../adaptiveCards/doStuffActionResponse.json";
 import { CardData } from "../cardModels";
 
 /**
- * The `DoStuffCardActionHandler` registers an action with the `TeamsFxBotActionHandler` and responds
+ * The `DoStuffActionHandler` registers an action with the `TeamsFxBotActionHandler` and responds
  * with an Adaptive Card if the user clicks the Adaptive Card action with `triggerVerb`.
  */
-export class DoStuffCardActionHandler implements TeamsFxAdaptiveCardActionHandler {
+export class DoStuffActionHandler implements TeamsFxAdaptiveCardActionHandler {
   /**
    * A global unique string associated with the `Action.Execute` action.
    * The value should be the same as the `verb` property which you define in your adaptive card JSON.

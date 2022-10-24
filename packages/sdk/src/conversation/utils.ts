@@ -35,5 +35,16 @@ export function getTargetType(
  * @internal
  */
 export function getTeamsBotInstallationId(context: TurnContext): string | undefined {
-  return context.activity?.channelData?.team?.id ?? context.activity.conversation.id;
+  const teamId = context.activity?.channelData?.team?.id;
+  if (teamId) {
+    return teamId;
+  }
+
+  // Fallback to use conversation id.
+  // the conversation id is equal to team id only when the bot app is installed into the General channel.
+  if (context.activity.conversation.name === undefined) {
+    return context.activity.conversation.id;
+  }
+
+  return undefined;
 }

@@ -14,21 +14,22 @@ export type Step = {
 };
 
 export type DeployArgs = {
-  src: string;
-  dist: string;
+  workingDirectory: string;
+  distributionPath: string;
   ignoreFile?: string;
   resourceId: string;
 };
 
 export type DeployStepArgs = {
-  src: string;
-  dist: string;
+  workingDirectory: string;
+  distributionPath: string;
   ignoreFile?: string;
 };
 
 export type BuildArgs = {
-  src: string;
-  buildCommand: string;
+  workingDirectory: string;
+  env?: Record<string, string>;
+  args: string;
 };
 
 export type DeployContext = {

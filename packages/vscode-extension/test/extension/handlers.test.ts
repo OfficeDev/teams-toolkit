@@ -53,11 +53,9 @@ import * as commonUtils from "../../src/utils/commonUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import { MockCore } from "../mocks/mockCore";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-import mockedEnv from "mocked-env";
 import { VsCodeLogProvider } from "../../src/commonlib/log";
 import { ProgressHandler } from "../../src/progressHandler";
 
-let mockedEnvRestore: () => void;
 describe("handlers", () => {
   describe("activate()", function () {
     const sandbox = sinon.createSandbox();
@@ -828,6 +826,17 @@ describe("handlers", () => {
       const result = await handlers.manageCollaboratorHandler();
       chai.expect(result.isErr()).equals(true);
     });
+
+    it("deployAadAppManifest v3", async () => {
+      const sandbox = sinon.createSandbox();
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const runCommandSpy = sandbox.spy(handlers, "runCommand");
+      await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
+      sandbox.assert.calledOnce(runCommandSpy);
+      chai.assert.equal(runCommandSpy.getCall(0).args[0], Stage.deployAad);
+    });
   });
 
   describe("manifest", () => {
@@ -893,23 +902,6 @@ describe("handlers", () => {
     sinon.assert.calledOnce(deployArtifacts);
     chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
     sinon.restore();
-  });
-
-  it("deployAadAppManifest v3", async () => {
-    const sanbox = sinon.createSandbox();
-    sanbox.stub(handlers, "core").value(new MockCore());
-    sanbox.stub(ExtTelemetry, "sendTelemetryEvent");
-    sanbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-
-    const deployAadManifest = sanbox.spy(handlers.core, "deployAadManifest");
-    await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
-    sanbox.assert.calledOnce(deployAadManifest);
-
-    mockedEnvRestore();
-    sanbox.restore();
   });
 
   it("showError", async () => {

@@ -16,6 +16,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
   readContextMultiEnv,
+  getUniqueAppName,
 } from "../commonUtils";
 import { AadValidator, FrontendValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
@@ -24,23 +25,19 @@ import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
-  let appName: string;
-  let testFolder: string;
-  let projectPath: string;
-
-  const env = environmentManager.getDefaultEnvName();
+  const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
-  beforeEach(async () => {
-    testFolder = getTestFolder();
-  });
+  const appName = getUniqueAppName();
+  const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   it(`${TemplateProject.GraphConnector}`, { testPlanCaseId: 15277460 }, async function () {
-    projectPath = path.resolve(testFolder, TemplateProject.GraphConnector);
-    await execAsync(`teamsfx new template ${TemplateProject.GraphConnector}`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
+    await CliHelper.createTemplateProject(
+      appName,
+      testFolder,
+      TemplateProject.GraphConnector,
+      TemplateProject.GraphConnector
+    );
 
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;
@@ -60,11 +57,16 @@ describe("teamsfx new template", function () {
     const frontend = FrontendValidator.init(context);
     await FrontendValidator.validateProvision(frontend);
 
-    await execAsync(`npm i @types/node -D`, {
+    const result = await execAsync(`npm i @types/node -D`, {
       cwd: path.join(projectPath, "api"),
       env: process.env,
       timeout: 0,
     });
+    if (!result.stderr) {
+      console.log("success to run cmd: npm i @types/node -D");
+    } else {
+      console.log("[failed] ", result.stderr);
+    }
 
     // deploy
     await CliHelper.deployAll(projectPath);

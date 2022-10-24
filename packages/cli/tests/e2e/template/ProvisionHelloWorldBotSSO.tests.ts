@@ -16,6 +16,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   getSubscriptionId,
   readContextMultiEnv,
+  getUniqueAppName,
 } from "../commonUtils";
 import { AadValidator, BotValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
@@ -24,23 +25,19 @@ import m365Login from "../../../src/commonlib/m365Login";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
-  let appName: string;
-  let testFolder: string;
-  let projectPath: string;
-
-  const env = environmentManager.getDefaultEnvName();
+  const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
-  beforeEach(async () => {
-    testFolder = getTestFolder();
-  });
+  const appName = getUniqueAppName();
+  const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   it(`${TemplateProject.HelloWorldBotSSO}`, { testPlanCaseId: 15277464 }, async function () {
-    projectPath = path.resolve(testFolder, TemplateProject.HelloWorldBotSSO);
-    await execAsync(`teamsfx new template ${TemplateProject.HelloWorldBotSSO}`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
+    await CliHelper.createTemplateProject(
+      appName,
+      testFolder,
+      TemplateProject.HelloWorldBotSSO,
+      TemplateProject.HelloWorldBotSSO
+    );
 
     expect(fs.pathExistsSync(projectPath)).to.be.true;
     expect(fs.pathExistsSync(path.resolve(projectPath, ".fx"))).to.be.true;

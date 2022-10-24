@@ -8,14 +8,9 @@ export class Constants {
   public static readonly APP_CATALOG_MAX_TIMES = 6;
   public static readonly APP_CATALOG_ACTIVE_TIME = 180000;
   public static readonly DeployDriverName = "spfx/deploy";
-}
-
-export class ProgressTitleMessage {
-  static readonly PreDeployProgressTitle = getLocalizedString(
-    "plugins.spfx.buildSharepointPackage"
-  );
-  static readonly DeployProgressTitle = getLocalizedString("plugins.spfx.deploy.title");
-  static readonly ScaffoldProgressTitle = getLocalizedString("plugins.spfx.scaffold.title");
+  public static readonly TelemetryComponentName = "fx-resource-spfx";
+  public static readonly TelemetryDeployEventName = "deploy";
+  public static readonly DeployProgressTitle = getLocalizedString("plugins.spfx.deploy.title");
 }
 
 export class DeployProgressMessage {

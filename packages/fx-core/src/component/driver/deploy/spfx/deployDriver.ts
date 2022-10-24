@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
 import {
   Result,
   FxError,
@@ -18,18 +19,19 @@ import { getSPFxToken, GraphScopes } from "../../../../common/tools";
 import { asBoolean, asFactory, asString, wrapRun } from "../../../utils/common";
 import { DriverContext } from "../../interface/commonArgs";
 import { StepDriver } from "../../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { CreateAppCatalogFailedError } from "./error/createAppCatalogFailedError";
 import { GetGraphTokenFailedError } from "./error/getGraphTokenFailedError";
 import { GetSPOTokenFailedError } from "./error/getSPOTokenFailedError";
 import { GetTenantFailedError } from "./error/getTenantFailedError";
 import { InsufficientPermissionError } from "./error/insufficientPermissionError";
 import { NoSPPackageError } from "./error/noSPPackageError";
+import { NoValidAppCatelog } from "./error/noValidAppCatelogError";
 import { UploadAppPackageFailedError } from "./error/uploadAppPackageFailedError";
 import { DeploySPFxArgs } from "./interface/deployArgs";
-import { Constants } from "./utility/constants";
+import { Constants, DeployProgressMessage } from "./utility/constants";
 import { sleep } from "./utility/sleep";
 import { SPOClient } from "./utility/spoClient";
-import { NoValidAppCatelog } from "./error/noValidAppCatelogError";
 
 @Service(Constants.DeployDriverName)
 export class SPFxDeployDriver implements StepDriver {
@@ -40,6 +42,9 @@ export class SPFxDeployDriver implements StepDriver {
     packageSolutionPath: asString,
   });
 
+  @hooks([
+    addStartAndEndTelemetry(Constants.TelemetryDeployEventName, Constants.TelemetryComponentName),
+  ])
   public async run(
     args: DeploySPFxArgs,
     context: DriverContext
@@ -49,7 +54,10 @@ export class SPFxDeployDriver implements StepDriver {
 
   public async deploy(args: DeploySPFxArgs, context: DriverContext): Promise<Map<string, string>> {
     const deployArgs = this.asDeployArgs(args);
-    // const progressHandler = await ProgressHelper.startDeployProgressHandler(context.ui);
+    const progressHandler = context.ui?.createProgressBar(
+      Constants.DeployProgressTitle,
+      Object.entries(DeployProgressMessage).length
+    );
     let success = false;
     try {
       const tenant = await this.getTenant(context.m365TokenProvider);
@@ -64,7 +72,7 @@ export class SPFxDeployDriver implements StepDriver {
       if (appCatalogSite) {
         SPOClient.setBaseUrl(appCatalogSite);
       } else {
-        // await progressHandler?.next(DeployProgressMessage.CreateSPAppCatalog);
+        await progressHandler?.next(DeployProgressMessage.CreateSPAppCatalog);
         if (deployArgs.createAppCatalogIfNotExist) {
           try {
             await SPOClient.createAppCatalog(spoToken);
@@ -106,7 +114,7 @@ export class SPFxDeployDriver implements StepDriver {
       const fileName = path.parse(appPackage).base;
       const bytes = await fs.readFile(appPackage);
       try {
-        // await progressHandler?.next(DeployProgressMessage.UploadAndDeploy);
+        await progressHandler?.next(DeployProgressMessage.UploadAndDeploy);
         await SPOClient.uploadAppPackage(spoToken, fileName, bytes);
       } catch (e: any) {
         if (e.response?.status === 403) {
@@ -137,7 +145,7 @@ export class SPFxDeployDriver implements StepDriver {
       }
       success = true;
     } finally {
-      // await progressHandler?.end(success);
+      await progressHandler?.end(success);
     }
     return this.EmptyMap;
   }

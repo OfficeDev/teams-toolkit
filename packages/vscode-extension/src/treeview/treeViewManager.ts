@@ -13,6 +13,7 @@ import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -176,6 +177,17 @@ class TreeViewManager {
         "manifestEditor",
         { name: "edit", custom: false }
       ),
+      ...(isV3Enabled()
+        ? [
+            new TreeViewCommand(
+              localize("teamstoolkit.commandsTreeViewProvider.manageCollaboratorTitle"),
+              localize("teamstoolkit.commandsTreeViewProvider.manageCollaboratorDescription"),
+              "fx-extension.manageCollaborator",
+              "manageCollaborator",
+              { name: "organization", custom: false }
+            ),
+          ]
+        : []),
     ];
 
     const developmentProvider = new CommandsTreeViewProvider(developmentCommands);

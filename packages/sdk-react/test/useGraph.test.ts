@@ -45,7 +45,9 @@ describe("useGraph() hook tests", () => {
     expect(result.current.error).toBe(undefined);
     expect(result.current.loading).toBe(false);
 
-    expect((authenticatedGraph as any).config.authProvider.credentialOrTeamsFx).toBeInstanceOf(TeamsFx);
+    expect((authenticatedGraph as any).config.authProvider.credentialOrTeamsFx).toBeInstanceOf(
+      TeamsFx
+    );
     expect(graphScope && graphScope[0]).toBe("User.Read");
   });
 
@@ -80,7 +82,9 @@ describe("useGraph() hook tests", () => {
     expect(result.current.error).toBe(undefined);
     expect(result.current.loading).toBe(false);
 
-    expect((authenticatedGraph as any).config.authProvider.credentialOrTeamsFx).toBeInstanceOf(TeamsFx);
+    expect((authenticatedGraph as any).config.authProvider.credentialOrTeamsFx).toBeInstanceOf(
+      TeamsFx
+    );
     expect(graphScope && graphScope[0]).toBe("User.Read");
 
     act(() => result.current.reload());
@@ -113,7 +117,9 @@ describe("useGraph() hook tests", () => {
     expect(result.current.error).toBe(undefined);
     expect(result.current.loading).toBe(false);
 
-    expect((authenticatedGraph as any).config.authProvider.credentialOrTeamsFx).toBeInstanceOf(TeamsFx);
+    expect((authenticatedGraph as any).config.authProvider.credentialOrTeamsFx).toBeInstanceOf(
+      TeamsFx
+    );
     expect(graphScope && graphScope[0]).toBe("User.Read");
 
     act(() => result.current.reload());

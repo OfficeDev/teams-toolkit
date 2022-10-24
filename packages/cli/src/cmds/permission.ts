@@ -33,7 +33,6 @@ const spfxMessage =
 
 const teamsAppId = "teams-app-id";
 const aadObjectId = "aad-app-id";
-const dotenvFilePath = "dotenv-file-path";
 const env = "env";
 
 export class PermissionStatus extends YargsCommand {
@@ -55,11 +54,6 @@ export class PermissionStatus extends YargsCommand {
           description: "Select an existing environment for the project",
           type: "string",
           name: env,
-        })
-        .option(dotenvFilePath, {
-          description: "dot env file path",
-          name: dotenvFilePath,
-          type: "string",
         })
         .option(teamsAppId, {
           description: "teams app id",
@@ -108,7 +102,6 @@ export class PermissionStatus extends YargsCommand {
       CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
 
       // add user input to Inputs
-      inputs["dotEnvFilePath"] = args[dotenvFilePath];
       inputs["aadObjectId"] = args[aadObjectId];
       inputs["teamsAppId"] = args[teamsAppId];
       inputs[env] = args[env];
@@ -142,7 +135,28 @@ export class PermissionGrant extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.grantPermission);
-    return yargs.option(this.params);
+    const result = yargs.option(this.params);
+
+    if (isV3Enabled()) {
+      result
+        .option(env, {
+          description: "Select an existing environment for the project",
+          type: "string",
+          name: env,
+        })
+        .option(teamsAppId, {
+          description: "teams app id",
+          name: teamsAppId,
+          type: "string",
+        })
+        .option(aadObjectId, {
+          description: "aad app id",
+          name: aadObjectId,
+          type: "string",
+        });
+    }
+
+    return result;
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -158,16 +172,27 @@ export class PermissionGrant extends YargsCommand {
     const answers = argsToInputs(this.params, args);
     const core = result.value;
 
-    const isSpfx = await isSpfxProject(rootFolder, core);
-    if (isSpfx.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, isSpfx.error);
-      return err(isSpfx.error);
-    }
+    if (!isV3Enabled()) {
+      const isSpfx = await isSpfxProject(rootFolder, core);
+      if (isSpfx.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, isSpfx.error);
+        return err(isSpfx.error);
+      }
 
-    if (!isSpfx.value) {
-      CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
+      if (!isSpfx.value) {
+        CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
+      } else {
+        CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
+      }
     } else {
+      // print necessary messages
+      CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
       CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
+
+      // add user input to Inputs
+      answers["aadObjectId"] = args[aadObjectId];
+      answers["teamsAppId"] = args[teamsAppId];
+      answers[env] = args[env];
     }
 
     {

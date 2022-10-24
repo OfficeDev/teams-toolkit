@@ -97,7 +97,9 @@ export async function loadProjectSettingsByProjectPath(
   isMultiEnvEnabled = false
 ): Promise<Result<ProjectSettings, FxError>> {
   try {
-    const settingsFile = getProjectSettingsPath(projectPath);
+    const settingsFile = isMultiEnvEnabled
+      ? getProjectSettingsPath(projectPath)
+      : path.resolve(projectPath, `.${ConfigFolderName}`, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     if (!projectSettings.projectId) {
       projectSettings.projectId = uuid.v4();

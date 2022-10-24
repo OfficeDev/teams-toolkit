@@ -241,6 +241,33 @@ describe("handlers", () => {
       sinon.restore();
     });
 
+    it("validateManifestHandler()", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      await handlers.validateManifestHandler();
+
+      sinon.assert.calledOnce(sendTelemetryErrorEvent);
+      sinon.restore();
+    });
+
+    it("validateManifestHandler() - V3", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(localizeUtils, "localize").returns("");
+
+      const res = await handlers.validateManifestHandler();
+
+      chai.assert(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, ExtensionErrors.DefaultManifestTemplateNotExistsError);
+      }
+      sinon.restore();
+    });
+
     it("debugHandler()", async () => {
       const sendTelemetryEventStub = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");

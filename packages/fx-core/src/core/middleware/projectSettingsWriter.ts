@@ -12,8 +12,6 @@ import {
   StaticPlatforms,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import { pick } from "lodash";
-import { isV3Enabled } from "../../common/tools";
 import { convertProjectSettingsV3ToV2 } from "../../component/migrate";
 import { WriteFileError } from "../error";
 import { TOOLS } from "../globalVars";
@@ -47,9 +45,6 @@ export const ProjectSettingsWriterMW: Middleware = async (
         if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
       }
       const settingFile = getProjectSettingsPath(inputs.projectPath);
-      if (isV3Enabled()) {
-        projectSettings = pick(projectSettings, ["version", "projectId", "isFromSample"]) as any;
-      }
       await fs.writeFile(settingFile, JSON.stringify(projectSettings, null, 4));
       TOOLS?.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
     } catch (e) {

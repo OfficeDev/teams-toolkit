@@ -107,9 +107,6 @@ export async function loadProjectSettingsByProjectPath(
         [TelemetryProperty.ProjectId]: projectSettings.projectId,
       });
     }
-    if (isV3Enabled()) {
-      return ok(projectSettings);
-    }
     globalVars.isVS = isVSProject(projectSettings);
     return ok(convertProjectSettingsV2ToV3(projectSettings, projectPath));
   } catch (e) {

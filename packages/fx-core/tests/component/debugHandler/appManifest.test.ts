@@ -29,7 +29,7 @@ import { MockM365TokenProvider, runDebugActions } from "./utils";
 import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
 import * as utils from "../../../src/component/debugHandler/utils";
 
-describe.only("AppManifestDebugHandler", () => {
+describe("AppManifestDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
   const tenantId = "11111111-1111-1111-1111-111111111111";
   const m365TokenProvider = new MockM365TokenProvider(tenantId);

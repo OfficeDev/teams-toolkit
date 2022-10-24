@@ -153,7 +153,7 @@ describe("localSettingsHelper", () => {
     let projectSettings: ProjectSettingsV3;
 
     beforeEach(() => {
-      sinon.stub(process, "env").value({ TEAMSFX_V3: "true" });
+      sinon.stub(process, "env").value({ TEAMSFX_API_V3: "true" });
       sinon
         .stub(LocalEnvManager.prototype, "getProjectSettings")
         .callsFake(async (): Promise<ProjectSettings> => {
@@ -377,7 +377,7 @@ describe("localSettingsHelper", () => {
     const projectPath = "fake path";
 
     beforeEach(() => {
-      sinon.stub(process, "env").value({ TEAMSFX_V3: "true" });
+      sinon.stub(process, "env").value({ TEAMSFX_API_V3: "true" });
       sinon
         .stub(LocalEnvManager.prototype, "getProjectSettings")
         .callsFake(async (): Promise<ProjectSettings> => {

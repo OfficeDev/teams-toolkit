@@ -141,7 +141,7 @@ describe("Generator happy path", async () => {
     const sampleName = "bot-proactive-messaging-teamsfx";
     await fs.mkdir(tmpDir);
     const result = await Generator.generateSample(sampleName, tmpDir, context);
-    assert(result.isOk());
+    assert.isTrue(result.isOk());
     const files = await fs.readdir(tmpDir);
     assert.isTrue(files.length > 0);
     assert.isTrue(files.includes(".fx"));
@@ -158,7 +158,7 @@ describe("Generator happy path", async () => {
           "https://github.com/hund030/TemplatePackerDemo/releases/download/templates%400.1.0/bot_notification_ts_function_http.zip";
       });
     const result = await Generator.generateTemplate(templateName, language, tmpDir, context);
-    assert(result.isOk());
+    assert.isTrue(result.isOk());
     const files = await fs.readdir(tmpDir);
     assert.isTrue(files.length > 0);
     assert.isTrue(files.includes(".fx"));

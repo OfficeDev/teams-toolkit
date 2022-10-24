@@ -10,6 +10,9 @@
       },
       "botAadAppClientSecret": {
         "value": "${{SECRET_BOT_PASSWORD}}"
+      },
+      "webAppSKU": {
+        "value": "F1"
       }
     }
   }

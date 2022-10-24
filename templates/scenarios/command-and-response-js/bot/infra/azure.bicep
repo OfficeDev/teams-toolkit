@@ -10,9 +10,8 @@ param botAadAppClientId string
 @description('Required by Bot Framework package in your bot project')
 param botAadAppClientSecret string
 
-param serverfarmsName string = '${resourceBaseName}bot'
-param webAppSKU string = 'F1'
-param webAppName string = '${resourceBaseName}bot'
+param serverfarmsName string = resourceBaseName
+param webAppName string = resourceBaseName
 param location string = resourceGroup().location
 
 // Compute resources for your Web App

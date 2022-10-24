@@ -33,7 +33,7 @@ deploy:
     workingDirectory: ./bot
     distributionPath: ./ # Deploy base folder
     ignoreFile: ./.appserviceIgnore # Can be changed to any ignore file location, leave blank will ignore nothing
-    resourceId: ${{ BOT_AZURE_APP_SERVICE_RESOURCE_ID }} # The resource id of the cloud resource to be deployed to
+    resourceId: ${{BOT_AZURE_APP_SERVICE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to
 
 registerApp:
   - uses: teamsApp/create # Creates a Teams app

@@ -111,6 +111,7 @@ import { ProjectSettingsHelper } from "../common/local";
 import { ValidateTeamsAppDriver } from "../component/driver/teamsApp/validate";
 import { ValidateTeamsAppArgs } from "../component/driver/teamsApp/interfaces/ValidateTeamsAppArgs";
 import { DriverContext } from "../component/driver/interface/commonArgs";
+import { coordinator } from "../component/coordinator";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -171,8 +172,13 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    const fx = Container.get("fx") as any;
-    const res = await fx.create(context, inputs as InputsWithProjectPath);
+    let res;
+    if (isV3Enabled()) {
+      res = await coordinator.create(context, inputs as InputsWithProjectPath);
+    } else {
+      const fx = Container.get("fx") as any;
+      res = await fx.create(context, inputs as InputsWithProjectPath);
+    }
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;

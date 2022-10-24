@@ -86,6 +86,10 @@ describe("AccountTreeViewProvider", () => {
     chai.assert.isTrue(m365SignedInStub.calledOnce);
     chai.assert.isTrue(updateSideloadingStub.calledOnce);
 
+    const m365SwitchingStub = sandbox.stub(AccountTreeViewProvider.m365AccountNode, "setSwitching");
+    await m365StatusChange("Switching");
+    chai.assert.isTrue(m365SwitchingStub.calledOnce);
+
     const azureSignedOutStub = sandbox.stub(
       AccountTreeViewProvider.azureAccountNode,
       "setSignedOut"

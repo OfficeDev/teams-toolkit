@@ -68,11 +68,9 @@ import {
 import { Generator } from "../generator/generator";
 import { convertToLangKey } from "../code/utils";
 import { downloadSampleHook } from "../../core/downloadSample";
-import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import * as uuid from "uuid";
 import { settingsUtil } from "../utils/settingsUtil";
 import { DriverContext } from "../driver/interface/commonArgs";
-import { CICD } from "../feature/cicd/cicd";
 
 export enum TemplateNames {
   Tab = "tab",

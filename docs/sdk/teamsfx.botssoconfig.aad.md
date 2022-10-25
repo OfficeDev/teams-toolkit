@@ -11,5 +11,7 @@ aad related configurations
 ```typescript
 aad: {
         scopes: string[];
-    } & AuthenticationConfiguration;
+    } & ((OnBehalfOfCredentialAuthConfig & {
+        initiateLoginEndpoint: string;
+    }) | AuthenticationConfiguration);
 ```

@@ -66,9 +66,13 @@ export class ApiKeyProvider implements AuthProvider {
 
 // @public
 export class AppCredential implements TokenCredential {
+    constructor(authConfig: AppCredentialAuthConfig);
     constructor(authConfig: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
 }
+
+// @public
+export type AppCredentialAuthConfig = OnBehalfOfCredentialAuthConfig;
 
 // @public
 export interface AuthenticationConfiguration {
@@ -104,7 +108,9 @@ export class BearerTokenAuthProvider implements AuthProvider {
 export interface BotSsoConfig {
     aad: {
         scopes: string[];
-    } & AuthenticationConfiguration;
+    } & ((OnBehalfOfCredentialAuthConfig & {
+        initiateLoginEndpoint: string;
+    }) | AuthenticationConfiguration);
     // (undocumented)
     dialog?: {
         CustomBotSsoExecutionActivityHandler?: new (ssoConfig: BotSsoConfig) => BotSsoExecutionActivityHandler;
@@ -129,6 +135,7 @@ export interface BotSsoExecutionActivityHandler {
 // @public
 export class BotSsoExecutionDialog extends ComponentDialog {
     constructor(dedupStorage: Storage_2, ssoPromptSettings: TeamsBotSsoPromptSettings, teamsfx: TeamsFx, dialogName?: string);
+    constructor(dedupStorage: Storage_2, ssoPromptSettings: TeamsBotSsoPromptSettings, authConfig: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, dialogName?: string);
     addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
     protected onEndDialog(context: TurnContext): Promise<void>;
     run(context: TurnContext, accessor: StatePropertyAccessor): Promise<void>;
@@ -224,6 +231,9 @@ export function createApiClient(apiEndpoint: string, authProvider: AuthProvider)
 export function createMicrosoftGraphClient(teamsfx: TeamsFxConfiguration, scopes?: string | string[]): Client;
 
 // @public
+export function createMicrosoftGraphClientWithCredential(credential: TokenCredential, scopes?: string | string[]): Client;
+
+// @public
 export function createPemCertOption(cert: string | Buffer, key: string | Buffer, options?: {
     passphrase?: string;
     ca?: string | Buffer;
@@ -273,8 +283,11 @@ export interface GetTeamsUserTokenOptions extends GetTokenOptions {
     resources?: string[];
 }
 
-// @public
+// @public @deprecated
 export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: string): Promise<ConnectionConfig>;
+
+// @public
+export function handleMessageExtensionQueryWithSSO(context: TurnContext, config: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<void | MessagingExtensionResponse>;
 
 // @public
 export function handleMessageExtensionQueryWithToken(context: TurnContext, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
@@ -350,6 +363,7 @@ export interface MessageExtensionTokenResponse extends TokenResponse {
 // @public
 export class MsGraphAuthProvider implements AuthenticationProvider {
     constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
+    constructor(credential: TokenCredential, scopes?: string | string[]);
     getAccessToken(): Promise<string>;
 }
 
@@ -398,7 +412,21 @@ export enum NotificationTargetType {
 }
 
 // @public
+export type OnBehalfOfCredentialAuthConfig = {
+    authorityHost: string;
+    clientId: string;
+    tenantId: string;
+} & ({
+    clientSecret: string;
+    certificateContent?: never;
+} | {
+    clientSecret?: never;
+    certificateContent: string;
+});
+
+// @public
 export class OnBehalfOfUserCredential implements TokenCredential {
+    constructor(ssoToken: string, config: OnBehalfOfCredentialAuthConfig);
     constructor(ssoToken: string, config: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(): UserInfo;
@@ -443,6 +471,7 @@ export class TeamsBotInstallation implements NotificationTarget {
 // @public
 export class TeamsBotSsoPrompt extends Dialog {
     constructor(teamsfx: TeamsFx, dialogId: string, settings: TeamsBotSsoPromptSettings);
+    constructor(authConfig: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, dialogId: string, settings: TeamsBotSsoPromptSettings);
     beginDialog(dc: DialogContext): Promise<DialogTurnResult>;
     continueDialog(dc: DialogContext): Promise<DialogTurnResult>;
 }
@@ -494,11 +523,18 @@ export interface TeamsFxBotSsoCommandHandler {
 
 // @public
 export class TeamsUserCredential implements TokenCredential {
+    constructor(authConfig: TeamsUserCredentialAuthConfig);
     constructor(authConfig: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(resources?: string[]): Promise<UserInfo>;
     login(scopes: string | string[], resources?: string[]): Promise<void>;
 }
+
+// @public
+export type TeamsUserCredentialAuthConfig = {
+    initiateLoginEndpoint: string;
+    clientId: string;
+};
 
 // @public
 export type TriggerPatterns = string | RegExp | (string | RegExp)[];

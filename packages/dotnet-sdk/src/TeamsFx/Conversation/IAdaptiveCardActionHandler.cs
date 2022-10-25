@@ -14,14 +14,14 @@ namespace Microsoft.TeamsFx.Conversation
         /// The verb defined in adaptive card action that can trigger this handler.
         /// The verb string here is case-insensitive.
         /// </summary>
-        string TriggerVerb { get; set; }
+        string TriggerVerb { get; }
 
         /// <summary>
         /// Indicates the behavior for how the card response will be sent in Teams conversation.
         /// The default value is `AdaptiveCardResponse.ReplaceForInteractor`, which means the card
         /// response will replace the current one only for the interactor.
         /// </summary>
-        AdaptiveCardResponse AdaptiveCardResponse { get; set; }
+        AdaptiveCardResponse AdaptiveCardResponse { get; }
 
         /// <summary>
         /// The handler function that will be invoked when the card action is executed.

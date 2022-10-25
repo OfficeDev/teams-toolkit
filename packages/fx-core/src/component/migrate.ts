@@ -9,7 +9,7 @@ import { cloneDeep } from "lodash";
 import { join } from "path";
 import { isVSProject } from "../common/projectSettingsHelper";
 import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
-import { MessageExtensionNewUIItem } from "../plugins/solution/fx-solution/question";
+import { MessageExtensionNewUIItem } from "./constants";
 import { ComponentNames } from "./constants";
 import { ensureComponentConnections } from "./utils";
 import { getComponent } from "./workflow";
@@ -215,7 +215,7 @@ export function convertProjectSettingsV2ToV3(
           hosting: hostingComponent,
           name: "teams-tab",
           build: true,
-          provision: false,
+          provision: true,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
           sso: tabSSO,
@@ -280,6 +280,7 @@ export function convertProjectSettingsV2ToV3(
           name: "teams-bot",
           hosting: hostingComponent,
           build: true,
+          provision: true,
           folder: "",
           artifactFolder: "bin\\Release\\net6.0\\win-x86\\publish",
           capabilities: botCapabilities,

@@ -19,7 +19,7 @@
     <PackageReference Include="AdaptiveCards.Templating" Version="1.3.1" />
     <PackageReference Include="Microsoft.Bot.Builder" Version="4.17.2" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.17.2 />
-    <PackageReference Include="Microsoft.TeamsFx" Version="1.1.0">
+    <PackageReference Include="Microsoft.TeamsFx" Version="1.2.0-rc">
       <!-- Exclude TeamsFx wwwroot static files which are for frontend only. -->
       <ExcludeAssets>contentFiles</ExcludeAssets>
     </PackageReference>

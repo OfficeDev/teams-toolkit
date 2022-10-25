@@ -7,8 +7,8 @@ import {
   copyParameterJson,
   formattedDeploymentError,
   pollDeploymentStatus,
-} from "../../../src/plugins/solution/fx-solution/arm";
-import * as arm from "../../../src/plugins/solution/fx-solution/arm";
+} from "../../../src/component/arm";
+import * as arm from "../../../src/component/arm";
 import path from "path";
 import mockedEnv from "mocked-env";
 import {
@@ -24,10 +24,10 @@ import "mocha";
 import chai, { assert, expect } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { TestHelper } from "./helper";
-import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
+import * as bicepChecker from "../../../src/component/utils/depsChecker/bicepChecker";
 chai.use(chaiAsPromised);
 import { MockedLogProvider } from "./util";
-import { SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
+import { SolutionError } from "../../../src/component/constants";
 import * as armResources from "@azure/arm-resources";
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
 import { ComponentNames } from "../../../src/component/constants";

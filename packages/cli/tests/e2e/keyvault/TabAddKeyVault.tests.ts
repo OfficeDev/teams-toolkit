@@ -21,6 +21,7 @@ import { environmentManager } from "@microsoft/teamsfx-core";
 import { KeyVaultValidator } from "../../commonlib/keyVaultValidator";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Test Azure Key Vault", function () {
   const testFolder = getTestFolder();
@@ -33,7 +34,7 @@ describe("Test Azure Key Vault", function () {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it(`tab + key vault project happy path`, async function () {
+  it(`tab + key vault project happy path`, { testPlanCaseId: 15686997 }, async function () {
     // Create tab + key vault project
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);

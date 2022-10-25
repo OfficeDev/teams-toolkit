@@ -44,7 +44,6 @@ export class SetUpBotTaskTerminal extends BaseTaskTerminal {
             botMessagingEndpoint: maskValue(this.args.botMessagingEndpoint, [
               { value: TaskDefaultValue.setUpBot.botMessagingEndpoint, mask: DefaultPlaceholder },
             ]),
-            botPassword: maskValue(this.args.botPassword),
           }),
         },
         () => this._do()
@@ -79,7 +78,7 @@ export class SetUpBotTaskTerminal extends BaseTaskTerminal {
       this.args,
       tools.tokenProvider.m365TokenProvider,
       tools.logProvider,
-      tools.telemetryReporter,
+      tools.telemetryReporter!,
       tools.ui
     );
     const actions = handler.getActions();

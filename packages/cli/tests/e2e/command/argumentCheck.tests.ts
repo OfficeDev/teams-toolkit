@@ -7,11 +7,12 @@
 
 import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 import { expect } from "chai";
+import { it } from "@microsoft/extra-shot-mocha";
 
 import { execAsync } from "../commonUtils";
 
 describe("teamsfx command argument check", function () {
-  it(`teamsfx add me`, async function () {
+  it(`teamsfx add me`, { testPlanCaseId: 15685949 }, async function () {
     try {
       const command = isPreviewFeaturesEnabled() ? `teamsfx add me` : `teamsfx capability add me`;
       await execAsync(command, {

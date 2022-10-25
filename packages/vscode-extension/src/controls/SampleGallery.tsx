@@ -180,18 +180,11 @@ class SampleCard extends React.Component<SampleCardProps, any> {
       <div
         className={`sample-card box${this.props.order}`}
         tabIndex={0}
-        onClick={() => {
-          vscode.postMessage({
-            command: Commands.SendTelemetryEvent,
-            data: {
-              eventName: TelemetryEvent.ClickSampleCard,
-              properties: {
-                [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-                [TelemetryProperty.SampleAppName]: this.props.sampleAppFolder,
-              },
-            },
-          });
-          this.props.highlightSample(this.props.sampleAppFolder);
+        onClick={this.onSampleCard}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            this.onSampleCard();
+          }
         }}
       >
         {this.props.suggested && (
@@ -260,4 +253,18 @@ class SampleCard extends React.Component<SampleCardProps, any> {
       </div>
     );
   }
+
+  onSampleCard = () => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.ClickSampleCard,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
+          [TelemetryProperty.SampleAppName]: this.props.sampleAppFolder,
+        },
+      },
+    });
+    this.props.highlightSample(this.props.sampleAppFolder);
+  };
 }

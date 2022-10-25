@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureResourceInfo } from "../interface/commonArgs";
+import { AzureResourceInfo } from "../driver/interface/commonArgs";
 import { ExternalApiCallError, PrerequisiteError } from "../error/componentError";
 import { AzureAccountProvider } from "@microsoft/teamsfx-api";
 import { BlobServiceClient } from "@azure/storage-blob";

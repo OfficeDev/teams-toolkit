@@ -7,6 +7,7 @@ export enum AccountItemStatus {
   SignedOut,
   SigningIn,
   SignedIn,
+  Switching,
 }
 
 export const loadingIcon = new vscode.ThemeIcon("loading~spin");

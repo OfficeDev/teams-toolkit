@@ -507,6 +507,10 @@ export interface ContextV3 extends Context_2 {
     // (undocumented)
     projectSetting: ProjectSettingsV3;
     // (undocumented)
+    templateVariables?: {
+        [key: string]: string;
+    };
+    // (undocumented)
     tokenProvider?: TokenProvider;
 }
 
@@ -1553,6 +1557,16 @@ export type SelectFolderConfig = UIConfig<string>;
 
 // @public (undocumented)
 export type SelectFolderResult = InputResult<string>;
+
+// @public
+export interface Settings {
+    // (undocumented)
+    isFromSample: boolean;
+    // (undocumented)
+    projectId: string;
+    // (undocumented)
+    version: string;
+}
 
 // @public
 export interface ShellAction extends ActionBase {

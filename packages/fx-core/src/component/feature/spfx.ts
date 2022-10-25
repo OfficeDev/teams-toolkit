@@ -28,7 +28,7 @@ import { ComponentNames } from "../constants";
 import { generateLocalDebugSettings } from "../debug";
 import { addFeatureNotify, scaffoldRootReadme } from "../utils";
 import { isSPFxMultiTabEnabled } from "../../common/featureFlags";
-import { TabSPFxNewUIItem } from "../../plugins/solution/fx-solution/question";
+import { TabSPFxNewUIItem } from "../constants";
 import { getComponent } from "../workflow";
 @Service(ComponentNames.SPFxTab)
 export class SPFxTab {

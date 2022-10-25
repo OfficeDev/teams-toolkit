@@ -85,7 +85,7 @@ describe("MsGraphAuthProvider Tests with Credential - Node", () => {
 
     const decodedToken = jwtDecode<AADJwtPayLoad>(accessToken);
     assert.strictEqual(decodedToken.aud, "00000003-0000-0000-c000-000000000000");
-    assert.strictEqual(decodedToken.appid, process.env.M365_CLIENT_ID);
+    assert.strictEqual(decodedToken.appid, process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID);
     assert.strictEqual(decodedToken.idtyp, "user");
     assert.strictEqual(decodedToken.upn, process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME);
     assert.isTrue(decodedToken.scp!.indexOf(scopes) >= 0);
@@ -105,7 +105,7 @@ describe("MsGraphAuthProvider Tests with Credential - Node", () => {
 
     const decodedToken = jwtDecode<AADJwtPayLoad>(accessToken);
     assert.strictEqual(decodedToken.aud, "https://graph.microsoft.com");
-    assert.strictEqual(decodedToken.appid, process.env.M365_CLIENT_ID);
+    assert.strictEqual(decodedToken.appid, process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID);
     assert.strictEqual(decodedToken.idtyp, "app");
   });
 });

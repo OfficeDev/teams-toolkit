@@ -5,7 +5,6 @@ import {
   ContextV3,
   DynamicPlatforms,
   err,
-  FolderQuestion,
   FuncQuestion,
   FxError,
   Inputs,
@@ -104,7 +103,6 @@ import * as path from "path";
 import { snakeCase } from "lodash";
 import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
-import { QueryCollectionFormat } from "@azure/core-http";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,

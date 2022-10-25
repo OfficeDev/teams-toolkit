@@ -296,6 +296,22 @@ class TreeViewManager {
   private registerHelper(disposables: vscode.Disposable[]) {
     const helpCommand = [
       new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.tutorialDescription"),
+        "fx-extension.selectTutorials",
+        undefined,
+        { name: "tasklist", custom: false },
+        TreeCategory.GettingStarted
+      ),
+      new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.documentationTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.documentationDescription"),
+        "fx-extension.openDocument",
+        undefined,
+        { name: "book", custom: false },
+        TreeCategory.GettingStarted
+      ),
+      new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.getStartedTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.getStarted"),
         "fx-extension.openWelcome",
@@ -303,37 +319,15 @@ class TreeViewManager {
         { name: "symbol-event", custom: false },
         TreeCategory.GettingStarted
       ),
-    ];
-    helpCommand.push(
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.tutorialDescription"),
-        "fx-extension.selectTutorials",
+        localize("teamstoolkit.commandsTreeViewProvider.reportIssuesTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.reportIssuesDescription"),
+        "fx-extension.openReportIssues",
         undefined,
-        { name: "tasklist", custom: false },
-        TreeCategory.GettingStarted
-      )
-    );
-    helpCommand.push(
-      ...[
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.documentationTitle"),
-          localize("teamstoolkit.commandsTreeViewProvider.documentationDescription"),
-          "fx-extension.openDocument",
-          undefined,
-          { name: "book", custom: false },
-          TreeCategory.GettingStarted
-        ),
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.reportIssuesTitleNew"),
-          localize("teamstoolkit.commandsTreeViewProvider.reportIssuesDescription"),
-          "fx-extension.openReportIssues",
-          undefined,
-          { name: "github", custom: false },
-          TreeCategory.Feedback
-        ),
-      ]
-    );
+        { name: "github", custom: false },
+        TreeCategory.Feedback
+      ),
+    ];
     const helpProvider = new CommandsTreeViewProvider(helpCommand);
     disposables.push(
       vscode.window.registerTreeDataProvider("teamsfx-help-and-feedback", helpProvider)

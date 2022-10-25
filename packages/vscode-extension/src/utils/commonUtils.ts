@@ -454,7 +454,7 @@ export function getTriggerFromProperty(args?: any[]) {
   // if not args are not supplied, by default, it is trigger from "CommandPalette"
   // e.g. vscode.commands.executeCommand("fx-extension.openWelcome");
   // in this case, "fx-exentiosn.openWelcome" is trigged from "CommandPalette".
-  if (!args || (args && args.length === 0)) {
+  if (!args || (args && args.length === 0) || !args[0]) {
     return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette };
   }
 

@@ -3210,36 +3210,57 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
   const config: SingleSelectConfig = {
     name: "tutorialName",
-    title: "Tutorials",
+    title: localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),
     options: [
+      {
+        id: "cardActionResponse",
+        label: `$(file-code)${localize("teamstoolkit.tutorials.cardActionResponse.label")}`,
+        description: "recommended",
+        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
+        groupName: "Teams app scenario guides",
+        data: "https://aka.ms/teamsfx-card-action-response",
+      },
+      {
+        id: "cardActionResponse2",
+        label: `${localize("teamstoolkit.tutorials.cardActionResponse.label")}`,
+        description: "recommended",
+        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
+        groupName: "Teams app scenario guides",
+        data: "https://aka.ms/teamsfx-card-action-response",
+        buttons: [
+          {
+            iconPath: "file-code",
+            tooltip: "Open a in product tutorial",
+            command: "fx-extension.noop",
+          },
+        ],
+      },
       {
         id: "sendNotification",
         label: `${localize("teamstoolkit.tutorials.sendNotification.label")}`,
         detail: localize("teamstoolkit.tutorials.sendNotification.detail"),
+        groupName: "Teams app scenario guides",
         data: "https://aka.ms/teamsfx-send-notification",
       },
       {
         id: "commandAndResponse",
         label: `${localize("teamstoolkit.tutorials.commandAndResponse.label")}`,
         detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
+        groupName: "Other",
         data: "https://aka.ms/teamsfx-create-command",
-      },
-      {
-        id: "cardActionResponse",
-        label: localize("teamstoolkit.tutorials.cardActionResponse.label"),
-        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
-        data: "https://aka.ms/teamsfx-card-action-response",
       },
       {
         id: "addSso",
         label: `${localize("teamstoolkit.tutorials.addSso.label")}`,
         detail: localize("teamstoolkit.tutorials.addSso.detail"),
+        groupName: "Other",
         data: "https://aka.ms/teamsfx-add-sso",
       },
       {
         id: "connectApi",
         label: `${localize("teamstoolkit.tutorials.connectApi.label")}`,
         detail: localize("teamstoolkit.tutorials.connectApi.detail"),
+        groupName: "Other",
         data: "https://aka.ms/teamsfx-connect-api",
       },
     ],

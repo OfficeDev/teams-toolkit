@@ -1,8 +1,7 @@
-import "./github.scss";
 import "highlight.js/styles/github.css";
-
 import "github-markdown-css/github-markdown-dark.css";
 // import hljs from "highlight.js/lib/core";
+import "./github.scss";
 import * as React from "react";
 
 import CollapsibleStep from "./collapsibleStep";

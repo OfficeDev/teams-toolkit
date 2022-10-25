@@ -3,6 +3,7 @@
 
 import { Result, FxError, ok, err, ManifestUtil } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
+import { Service } from "typedi";
 import { StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { ValidateTeamsAppArgs } from "./interfaces/ValidateTeamsAppArgs";
@@ -15,6 +16,7 @@ import { HelpLinks } from "../../../common/constants";
 
 const actionName = "teamsApp/validate";
 
+@Service(actionName)
 export class ValidateTeamsAppDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(

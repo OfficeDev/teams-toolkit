@@ -38,6 +38,7 @@
     "test:coordinator": "nyc mocha \"tests/component/coordinator.test.ts\"",
     "test:env": "nyc mocha \"tests/component/envUtil.test.ts\"",
     "test:generator": "nyc mocha \"tests/component/generator/*.test.ts\"",
+    "test:validate": "nyc mocha \"tests/component/envUtil.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

@@ -336,7 +336,7 @@ describe("Other test case", () => {
       version: "1.0.0",
       projectId: "123",
     };
-    sandbox.stub(fs, "readJsonSync").resolves(projectSettings);
+    sandbox.stub(fs, "readJsonSync").returns(projectSettings);
     const isValid = isValidProject("aaa");
     assert.isTrue(isValid);
   });
@@ -350,7 +350,7 @@ describe("Other test case", () => {
         projectId: "123",
         isFromSample: false,
       };
-      sandbox.stub(fs, "readJsonSync").resolves(settings);
+      sandbox.stub(fs, "readJsonSync").returns(settings);
       const isValid = isValidProject("aaa");
       assert.isTrue(isValid);
     } finally {

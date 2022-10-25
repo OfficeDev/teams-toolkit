@@ -292,7 +292,9 @@ export async function listCollaborator(
   const collaborators: Collaborator[] = [];
   const teamsAppId: string = teamsAppOwners[0]?.resourceId ?? "";
   const aadAppId: string = aadOwners[0]?.resourceId ?? "";
-  const aadAppTenantId = envInfo.state[ComponentNames.AppManifest]?.tenantId;
+  const aadAppTenantId = isV3Enabled()
+    ? user.tenantId
+    : envInfo.state[ComponentNames.AppManifest]?.tenantId;
 
   for (const teamsAppOwner of teamsAppOwners) {
     const aadOwner = aadOwners.find((owner) => owner.userObjectId === teamsAppOwner.userObjectId);
@@ -321,11 +323,10 @@ export async function listCollaborator(
         color: Colors.BRIGHT_WHITE,
       },
       { content: user.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
-      {
-        content: getLocalizedString("core.collaboration.StartingListAllTeamsAppOwners"),
-        color: Colors.BRIGHT_WHITE,
-      },
-      { content: `${envInfo.envName}\n`, color: Colors.BRIGHT_MAGENTA },
+      ...getPrintEnvMessage(
+        isV3Enabled() ? inputs.env : envInfo.envName,
+        getLocalizedString("core.collaboration.StartingListAllTeamsAppOwners")
+      ),
       { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },
       { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
       {
@@ -387,7 +388,11 @@ export async function listCollaborator(
     (collaborator) => collaborator.aadResourceId && collaborator.isAadOwner
   ).length;
   if (telemetryProps) {
-    telemetryProps[SolutionTelemetryProperty.Env] = getHashedEnv(envInfo.envName);
+    telemetryProps[SolutionTelemetryProperty.Env] = isV3Enabled()
+      ? inputs.env
+        ? getHashedEnv(inputs.env)
+        : undefined
+      : getHashedEnv(envInfo.envName);
     telemetryProps[SolutionTelemetryProperty.CollaboratorCount] = collaborators.length.toString();
     telemetryProps[SolutionTelemetryProperty.AadOwnerCount] = aadOwnerCount.toString();
   }
@@ -456,7 +461,7 @@ export async function checkPermission(
   if (inputs.platform === Platform.CLI) {
     // TODO: get tenant id from .env
     const aadAppTenantId = isV3Enabled()
-      ? process.env[CollaborationConstants.TeamsAppTenantIdEnv]
+      ? userInfo.tenantId
       : envInfo.state[ComponentNames.AppManifest]?.tenantId;
     const message = [
       {
@@ -628,7 +633,7 @@ export async function grantPermission(
     if (inputs.platform === Platform.CLI) {
       // TODO: get tenant id from .env
       const aadAppTenantId = isV3Enabled()
-        ? process.env[CollaborationConstants.TeamsAppTenantIdEnv]
+        ? result.value.tenantId
         : envInfo.state[ComponentNames.AppManifest]?.tenantId;
       const message = [
         {
@@ -636,11 +641,10 @@ export async function grantPermission(
           color: Colors.BRIGHT_WHITE,
         },
         { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
-        {
-          content: getLocalizedString("core.collaboration.StartingGrantPermission"),
-          color: Colors.BRIGHT_WHITE,
-        },
-        { content: `${envInfo.envName}\n`, color: Colors.BRIGHT_MAGENTA },
+        ...getPrintEnvMessage(
+          isV3Enabled() ? inputs.env : envInfo.envName,
+          getLocalizedString("core.collaboration.StartingGrantPermission")
+        ),
         { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },
         { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
       ];
@@ -735,4 +739,16 @@ export async function getQuestionsForGrantPermission(
     return ok(new QTreeNode(getUserEmailQuestion((jsonObject as any).upn)));
   }
   return ok(undefined);
+}
+
+function getPrintEnvMessage(env: string | undefined, message: string) {
+  return env
+    ? [
+        {
+          content: message,
+          color: Colors.BRIGHT_WHITE,
+        },
+        { content: `${env}\n`, color: Colors.BRIGHT_MAGENTA },
+      ]
+    : [];
 }

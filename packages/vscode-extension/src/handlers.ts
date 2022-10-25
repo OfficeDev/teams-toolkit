@@ -2224,19 +2224,22 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
       env
     );
 
-    let warningMsg = localize("teamstoolkit.handlers.grantPermissionWarning");
-    let helpUrl = AzureAssignRoleHelpUrl;
-    if (globalVariables.isSPFxProject) {
-      warningMsg = localize("teamstoolkit.handlers.grantPermissionWarningSpfx");
-      helpUrl = SpfxManageSiteAdminUrl;
+    // Will not show help messages in V3
+    if (!isV3Enabled()) {
+      let warningMsg = localize("teamstoolkit.handlers.grantPermissionWarning");
+      let helpUrl = AzureAssignRoleHelpUrl;
+      if (globalVariables.isSPFxProject) {
+        warningMsg = localize("teamstoolkit.handlers.grantPermissionWarningSpfx");
+        helpUrl = SpfxManageSiteAdminUrl;
+      }
+
+      showGrantSuccessMessageWithGetHelpButton(grantSucceededMsg + " " + warningMsg, helpUrl);
+
+      VsCodeLogInstance.info(grantSucceededMsg);
+      VsCodeLogInstance.warning(
+        warningMsg + localize("teamstoolkit.handlers.referLinkForMoreDetails") + helpUrl
+      );
     }
-
-    showGrantSuccessMessageWithGetHelpButton(grantSucceededMsg + " " + warningMsg, helpUrl);
-
-    VsCodeLogInstance.info(grantSucceededMsg);
-    VsCodeLogInstance.warning(
-      warningMsg + localize("teamstoolkit.handlers.referLinkForMoreDetails") + helpUrl
-    );
   } catch (e) {
     result = wrapError(e);
   }

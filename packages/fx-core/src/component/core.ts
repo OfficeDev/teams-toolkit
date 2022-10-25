@@ -98,7 +98,7 @@ import {
 import { AzureResources, ComponentNames } from "./constants";
 import { pluginName2ComponentName } from "./migrate";
 import {
-  getQuestionsForAddFeatureV3,
+  getQuestionsForAddFeature,
   getQuestionsForDeployV3,
   getQuestionsForProvisionV3,
 } from "./question";
@@ -247,7 +247,7 @@ export class TeamsfxCore {
   @hooks([
     ActionExecutionMW({
       question: (context, inputs) => {
-        return getQuestionsForAddFeatureV3(context, inputs);
+        return getQuestionsForAddFeature(context, inputs);
       },
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.AddFeature,

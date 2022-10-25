@@ -91,7 +91,7 @@ import { preCheck } from "../component/core";
 import {
   FeatureId,
   getQuestionsForAddFeatureSubCommand,
-  getQuestionsForAddFeatureV3,
+  getQuestionsForAddFeature,
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
   getQuestionsForProvisionV3,
@@ -495,7 +495,7 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.getQuestions);
     const context = createContextV3();
     if (func.method === "addFeature") {
-      return await getQuestionsForAddFeatureV3(context, inputs);
+      return await getQuestionsForAddFeature(context, inputs);
     } else if (func.method === "addResource") {
       return await getQuestionsForAddResourceV3(context, inputs);
     } else if (func.method === "addCICDWorkflows") {

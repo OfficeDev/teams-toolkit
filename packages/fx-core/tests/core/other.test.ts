@@ -340,7 +340,7 @@ describe("Other test case", () => {
     const isValid = isValidProject("aaa");
     assert.isTrue(isValid);
   });
-  it("isValidProject: true v3", async () => {
+  it("isValidProject v3: true", async () => {
     const mockedEnvRestore = mockedEnv({
       TEAMSFX_V3: "true",
     });
@@ -353,6 +353,38 @@ describe("Other test case", () => {
       sandbox.stub(fs, "readJsonSync").returns(settings);
       const isValid = isValidProject("aaa");
       assert.isTrue(isValid);
+    } finally {
+      mockedEnvRestore();
+    }
+  });
+  it("isValidProject v3: false case 1", async () => {
+    const mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const settings: any = {
+        version: "1.0.0",
+        isFromSample: false,
+      };
+      sandbox.stub(fs, "readJsonSync").returns(settings);
+      const isValid = isValidProject("aaa");
+      assert.isFalse(isValid);
+    } finally {
+      mockedEnvRestore();
+    }
+  });
+  it("isValidProject v3: false case 2", async () => {
+    const mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const settings: any = {
+        projectId: "123",
+        isFromSample: false,
+      };
+      sandbox.stub(fs, "readJsonSync").returns(settings);
+      const isValid = isValidProject("aaa");
+      assert.isFalse(isValid);
     } finally {
       mockedEnvRestore();
     }

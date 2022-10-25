@@ -464,11 +464,15 @@ export class VsCodeUI implements UserInteraction {
         async (resolve): Promise<void> => {
           // set options
           quickPick.items = [
-            {
-              id: "default",
-              label: localize("teamstoolkit.qm.defaultFolder"),
-              description: config.default,
-            },
+            ...(config.default
+              ? [
+                  {
+                    id: "default",
+                    label: localize("teamstoolkit.qm.defaultFolder"),
+                    description: config.default,
+                  },
+                ]
+              : []),
             {
               id: "browse",
               label: `$(folder) ${localize("teamstoolkit.qm.browse")}`,
@@ -550,7 +554,7 @@ export class VsCodeUI implements UserInteraction {
     defaultValue?: string
   ): Promise<Result<SelectFilesResult, FxError>>;
   async selectFileInQuickPick(
-    config: UIConfig<any>,
+    config: UIConfig<any> & { filters?: { [name: string]: string[] } },
     type: "file" | "files",
     defaultValue?: string
   ): Promise<Result<InputResult<string[] | string>, FxError>> {
@@ -571,11 +575,15 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise(async (resolve) => {
         // set options
         quickPick.items = [
-          {
-            id: "default",
-            label: localize("teamstoolkit.qm.defaultFile"),
-            description: defaultValue,
-          },
+          ...(defaultValue
+            ? [
+                {
+                  id: "default",
+                  label: localize("teamstoolkit.qm.defaultFile"),
+                  description: defaultValue,
+                },
+              ]
+            : []),
           {
             id: "browse",
             label: `$(file) ${localize("teamstoolkit.qm.browse")}`,
@@ -595,6 +603,7 @@ export class VsCodeUI implements UserInteraction {
                 canSelectFiles: true,
                 canSelectFolders: false,
                 canSelectMany: type === "files",
+                filters: config.filters,
                 title: config.title,
               });
               if (uriList && uriList.length > 0) {

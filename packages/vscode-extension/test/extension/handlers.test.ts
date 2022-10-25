@@ -399,6 +399,20 @@ describe("handlers", () => {
       sandbox.restore();
     });
 
+    it("deployAadManifest happy path", async () => {
+      const sandbox = sinon.createSandbox();
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sandbox.stub(handlers.core, "deployAadManifest").resolves(ok("test_success"));
+      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const res = await handlers.runCommand(Stage.deployAad);
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.strictEqual(res.value, "test_success");
+      }
+      sandbox.restore();
+    });
+
     it("localDebug", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");

@@ -66,10 +66,6 @@ describe("createMicrosoftGraphClientWithCredential Tests - Node", () => {
     ssoToken = await getSsoTokenFromTeams();
   });
 
-  afterEach(() => {
-    RestoreEnvironmentVariable(restore);
-  });
-
   it("call graph API should success with OnBehalfOfUserCredential", async function () {
     const scopes = ["User.Read"];
     const authConfig: OnBehalfOfCredentialAuthConfig = {

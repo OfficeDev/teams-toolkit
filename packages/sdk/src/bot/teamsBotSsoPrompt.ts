@@ -137,13 +137,24 @@ export class TeamsBotSsoPrompt extends Dialog {
    * Constructor of TeamsBotSsoPrompt.
    *
    * @param {TeamsFx} teamsfx - Used to provide configuration and auth
-   * @param dialogId Unique ID of the dialog within its parent `DialogSet` or `ComponentDialog`.
-   * @param settings Settings used to configure the prompt.
+   * @param {string} dialogId Unique ID of the dialog within its parent `DialogSet` or `ComponentDialog`.
+   * @param {TeamsBotSsoPromptSettings} settings Settings used to configure the prompt.
    *
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    */
   constructor(teamsfx: TeamsFx, dialogId: string, settings: TeamsBotSsoPromptSettings);
+  /**
+   * Constructor of TeamsBotSsoPrompt.
+   *
+   * @param {OnBehalfOfCredentialAuthConfig} authConfig - Used to provide configuration and auth
+   * @param {string} initiateLoginEndpoint - Login URL for Teams to redirect to
+   * @param {string} dialogId Unique ID of the dialog within its parent `DialogSet` or `ComponentDialog`.
+   * @param {TeamsBotSsoPromptSettings} settings Settings used to configure the prompt.
+   *
+   * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
+   */
   constructor(
     authConfig: OnBehalfOfCredentialAuthConfig,
     initiateLoginEndpoint: string,

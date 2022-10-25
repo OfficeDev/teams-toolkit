@@ -1,10 +1,10 @@
 {
-    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v1.0.0/",
-    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/tags/v1.0.0.zip",
+    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v1.1.0/",
+    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/tags/v1.1.0.zip",
     "tagListURL": "https://github.com/OfficeDev/TeamsFx-Samples/releases/download/sample-tag-list/sample-tags.txt",
     "sampleDownloadBaseUrl": "https://github.com/OfficeDev/TeamsFx-sample/releases/download",
     "tagPrefix": "v",
-    "version": "^1.0.0",
+    "version": "^1.1.0",
     "samples": [
         {
             "id": "hello-world-tab",

@@ -6,8 +6,8 @@ import AdmZip from "adm-zip";
 import * as path from "path";
 import { hooks } from "@feathersjs/hooks/lib";
 import { pathToFileURL } from "url";
-import { Platform, Colors } from "@microsoft/teamsfx-api";
-import { Result, FxError, ok, err } from "@microsoft/teamsfx-api";
+import { Result, FxError, ok, err, Platform, Colors } from "@microsoft/teamsfx-api";
+import { Service } from "typedi";
 import { StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
@@ -21,6 +21,7 @@ import { VSCodeExtensionCommand } from "../../../common/constants";
 
 const actionName = "teamsApp/createAppPackage";
 
+@Service(actionName)
 export class CreateAppPackageDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(

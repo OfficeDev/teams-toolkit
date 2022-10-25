@@ -752,27 +752,67 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     getTriggerFromProperty(args)
   );
 
-  const func: Func = {
-    namespace: "fx-solution-azure",
-    method: "validateManifest",
-    params: {},
-  };
+  if (isV3Enabled()) {
+    // Use default manifest template
+    // Throw error if not exists and remind user to use CLI
+    const workspacePath = globalVariables.workspaceUri?.fsPath;
+    const manifestTemplatePath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
 
-  const selectedEnv = await askTargetEnvironment();
-  if (selectedEnv.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
-    showError(selectedEnv.error);
-    return err(selectedEnv.error);
-  }
-  const env = selectedEnv.value;
+    if (!(await fs.pathExists(manifestTemplatePath))) {
+      const error = new UserError(
+        ExtensionSource,
+        ExtensionErrors.DefaultManifestTemplateNotExistsError,
+        util.format(
+          localize("teamstoolkit.handlers.defaultManifestTemplateNotExists"),
+          manifestTemplatePath
+        )
+      );
 
-  const isLocalDebug = env === environmentManager.getLocalEnvName();
-  if (isLocalDebug) {
-    func.params.type = "localDebug";
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
+      showError(error);
+      return err(error);
+    }
+
+    const selectedEnv = await askTargetEnvironment();
+    if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+      showError(selectedEnv.error);
+      return err(selectedEnv.error);
+    }
+    const env = selectedEnv.value;
+
+    const func: Func = {
+      namespace: "fx-solution-azure",
+      method: "validateManifest",
+      params: {
+        manifestTemplatePath: manifestTemplatePath,
+        env: env,
+      },
+    };
     return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
   } else {
-    func.params.type = "remote";
-    return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
+    const func: Func = {
+      namespace: "fx-solution-azure",
+      method: "validateManifest",
+      params: {},
+    };
+
+    const selectedEnv = await askTargetEnvironment();
+    if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+      showError(selectedEnv.error);
+      return err(selectedEnv.error);
+    }
+    const env = selectedEnv.value;
+
+    const isLocalDebug = env === environmentManager.getLocalEnvName();
+    if (isLocalDebug) {
+      func.params.type = "localDebug";
+      return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
+    } else {
+      func.params.type = "remote";
+      return await runUserTask(func, TelemetryEvent.ValidateManifest, false, env);
+    }
   }
 }
 
@@ -804,23 +844,27 @@ async function askTargetEnvironment(): Promise<Result<string, FxError>> {
 export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
 
-  const func: Func = {
-    namespace: "fx-solution-azure",
-    method: "buildPackage",
-    params: {
-      type: "",
-    },
-  };
+  if (isV3Enabled()) {
+    // Use default manifest template
+    // Throw error if not exists and remind user to use CLI
+    const workspacePath = globalVariables.workspaceUri?.fsPath;
+    const manifestTemplatePath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
 
-  if (args && args.length > 0 && args[0] != TelemetryTriggerFrom.TreeView) {
-    func.params.type = args[0];
-    const isLocalDebug = args[0] === "localDebug";
-    if (isLocalDebug) {
-      return await runUserTask(func, TelemetryEvent.Build, false, "local");
-    } else {
-      return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
+    if (!(await fs.pathExists(manifestTemplatePath))) {
+      const error = new UserError(
+        ExtensionSource,
+        ExtensionErrors.DefaultManifestTemplateNotExistsError,
+        util.format(
+          localize("teamstoolkit.handlers.defaultManifestTemplateNotExists"),
+          manifestTemplatePath
+        )
+      );
+
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, error);
+      showError(error);
+      return err(error);
     }
-  } else {
+
     const selectedEnv = await askTargetEnvironment();
     if (selectedEnv.isErr()) {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
@@ -828,13 +872,52 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
       return err(selectedEnv.error);
     }
     const env = selectedEnv.value;
-    const isLocalDebug = env === "local";
-    if (isLocalDebug) {
-      func.params.type = "localDebug";
-      return await runUserTask(func, TelemetryEvent.Build, false, env);
+
+    const func: Func = {
+      namespace: "fx-solution-azure",
+      method: "buildPackage",
+      params: {
+        manifestTemplatePath: manifestTemplatePath,
+        ouptutZipPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`,
+        outputJsonPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env}.json`,
+        env: env,
+      },
+    };
+
+    return await runUserTask(func, TelemetryEvent.Build, false, env);
+  } else {
+    const func: Func = {
+      namespace: "fx-solution-azure",
+      method: "buildPackage",
+      params: {
+        type: "",
+      },
+    };
+
+    if (args && args.length > 0 && args[0] != TelemetryTriggerFrom.TreeView) {
+      func.params.type = args[0];
+      const isLocalDebug = args[0] === "localDebug";
+      if (isLocalDebug) {
+        return await runUserTask(func, TelemetryEvent.Build, false, "local");
+      } else {
+        return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
+      }
     } else {
-      func.params.type = "remote";
-      return await runUserTask(func, TelemetryEvent.Build, false, env);
+      const selectedEnv = await askTargetEnvironment();
+      if (selectedEnv.isErr()) {
+        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
+        showError(selectedEnv.error);
+        return err(selectedEnv.error);
+      }
+      const env = selectedEnv.value;
+      const isLocalDebug = env === "local";
+      if (isLocalDebug) {
+        func.params.type = "localDebug";
+        return await runUserTask(func, TelemetryEvent.Build, false, env);
+      } else {
+        func.params.type = "remote";
+        return await runUserTask(func, TelemetryEvent.Build, false, env);
+      }
     }
   }
 }

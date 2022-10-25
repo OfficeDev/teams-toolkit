@@ -12,6 +12,13 @@ provision:
       bicepCliVersion: 0.9.1 # Teams Toolkit will download this bicep CLI version from github for you, will use bicep CLI in PATH if you remove this config.
     # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-provision-arm#output for more details on the naming conversion rule.
 
+  - uses: storage/enableStaticWebsite
+    with:
+      storageResourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}}
+      indexPage: index.html
+      errorPage: error.html
+    # Output: N/A
+
 deploy:
 - uses: build/npm # Run npm command
   with:
@@ -21,6 +28,11 @@ deploy:
   with:
     workingDirectory: ./tab
     args: run build:teamsfx
+- uses: deploy/azureStorage # Deploy bits to Azure Storage Static Website
+  with:
+    workingDirectory: ./tab
+    distributionPath: ./ # Deploy base folder
+    resourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to
 
 registerApp:
   - uses: teamsApp/create # Creates a Teams app

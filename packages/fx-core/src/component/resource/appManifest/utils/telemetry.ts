@@ -97,6 +97,9 @@ export class TelemetryUtils {
     _properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ) {
+    if (!this.ctx) {
+      return;
+    }
     const properties = Object.assign({}, _properties);
     this.addCommonProperty(properties);
 

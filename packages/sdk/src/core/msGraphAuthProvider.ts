@@ -6,6 +6,7 @@ import { ErrorWithCode, ErrorCode } from "./errors";
 import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
 import { internalLogger } from "../util/logger";
 import { validateScopesType } from "../util/utils";
+import { AccessToken, TokenCredential } from "@azure/identity";
 
 const defaultScope = "https://graph.microsoft.com/.default";
 
@@ -13,7 +14,7 @@ const defaultScope = "https://graph.microsoft.com/.default";
  * Microsoft Graph auth provider for Teams Framework
  */
 export class MsGraphAuthProvider implements AuthenticationProvider {
-  private teamsfx: TeamsFxConfiguration;
+  private credentialOrTeamsFx: TokenCredential | TeamsFxConfiguration;
   private scopes: string | string[];
 
   /**
@@ -26,8 +27,13 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
    *
    * @returns An instance of MsGraphAuthProvider.
    */
-  constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]) {
-    this.teamsfx = teamsfx;
+  constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
+  constructor(credential: TokenCredential, scopes?: string | string[]);
+  constructor(
+    credentialOrTeamsFx: TeamsFxConfiguration | TokenCredential,
+    scopes?: string | string[]
+  ) {
+    this.credentialOrTeamsFx = credentialOrTeamsFx;
 
     let scopesStr = defaultScope;
     if (scopes) {
@@ -59,7 +65,15 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
    */
   public async getAccessToken(): Promise<string> {
     internalLogger.info(`Get Graph Access token with scopes: '${this.scopes}'`);
-    const accessToken = await this.teamsfx.getCredential().getToken(this.scopes);
+
+    let accessToken: AccessToken | null;
+    if ((this.credentialOrTeamsFx as TeamsFxConfiguration).getCredential) {
+      accessToken = await (this.credentialOrTeamsFx as TeamsFxConfiguration)
+        .getCredential()
+        .getToken(this.scopes);
+    } else {
+      accessToken = await (this.credentialOrTeamsFx as TokenCredential).getToken(this.scopes);
+    }
 
     return new Promise<string>((resolve, reject) => {
       if (accessToken) {

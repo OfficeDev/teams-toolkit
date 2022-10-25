@@ -26,6 +26,7 @@ import { formatString } from "../../util/utils";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../core/errors";
 import { internalLogger } from "../../util/logger";
 import { createHash } from "crypto";
+import { OnBehalfOfCredentialAuthConfig } from "../../models/configuration";
 
 let DIALOG_NAME = "BotSsoExecutionDialog";
 let TEAMS_SSO_PROMPT_ID = "TeamsFxSsoPrompt";
@@ -55,21 +56,51 @@ export class BotSsoExecutionDialog extends ComponentDialog {
     ssoPromptSettings: TeamsBotSsoPromptSettings,
     teamsfx: TeamsFx,
     dialogName?: string
+  );
+  constructor(
+    dedupStorage: Storage,
+    ssoPromptSettings: TeamsBotSsoPromptSettings,
+    authConfig: OnBehalfOfCredentialAuthConfig,
+    initiateLoginEndpoint: string,
+    dialogName?: string
+  );
+  constructor(
+    dedupStorage: Storage,
+    ssoPromptSettings: TeamsBotSsoPromptSettings,
+    authConfig: TeamsFx | OnBehalfOfCredentialAuthConfig,
+    ...args: any
   ) {
-    super(dialogName ?? DIALOG_NAME);
+    super(((authConfig as TeamsFx).getCredential ? args[0] : args[1]) ?? DIALOG_NAME);
+    const dialogName: string = (authConfig as TeamsFx).getCredential ? args[0] : args[1];
+
     if (dialogName) {
       DIALOG_NAME = dialogName;
       TEAMS_SSO_PROMPT_ID = dialogName + TEAMS_SSO_PROMPT_ID;
       COMMAND_ROUTE_DIALOG = dialogName + COMMAND_ROUTE_DIALOG;
     }
 
+    let ssoDialog: TeamsBotSsoPrompt;
+    if ((authConfig as TeamsFx).getCredential) {
+      ssoDialog = new TeamsBotSsoPrompt(
+        authConfig as TeamsFx,
+        TEAMS_SSO_PROMPT_ID,
+        ssoPromptSettings
+      );
+    } else {
+      ssoDialog = new TeamsBotSsoPrompt(
+        authConfig as OnBehalfOfCredentialAuthConfig,
+        args[0],
+        TEAMS_SSO_PROMPT_ID,
+        ssoPromptSettings
+      );
+    }
+
+    this.addDialog(ssoDialog);
+
     this.initialDialogId = COMMAND_ROUTE_DIALOG;
 
     this.dedupStorage = dedupStorage;
     this.dedupStorageKeys = [];
-
-    const ssoDialog = new TeamsBotSsoPrompt(teamsfx, TEAMS_SSO_PROMPT_ID, ssoPromptSettings);
-    this.addDialog(ssoDialog);
 
     const commandRouteDialog = new WaterfallDialog(COMMAND_ROUTE_DIALOG, [
       this.commandRouteStep.bind(this),

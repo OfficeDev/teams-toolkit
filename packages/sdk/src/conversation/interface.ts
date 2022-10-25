@@ -12,7 +12,10 @@ import {
   SigninStateVerificationQuery,
 } from "botbuilder";
 import { TeamsBotSsoPromptTokenResponse } from "../bot/teamsBotSsoPromptTokenResponse";
-import { AuthenticationConfiguration } from "../models/configuration";
+import {
+  AuthenticationConfiguration,
+  OnBehalfOfCredentialAuthConfig,
+} from "../models/configuration";
 
 /**
  * The response of a message action, e.g., `sendMessage`, `sendAdaptiveCard`.
@@ -323,7 +326,10 @@ export interface BotSsoConfig {
      * The list of scopes for which the token will have access
      */
     scopes: string[];
-  } & AuthenticationConfiguration;
+  } & (
+    | (OnBehalfOfCredentialAuthConfig & { initiateLoginEndpoint: string })
+    | AuthenticationConfiguration
+  );
 
   dialog?: {
     /**

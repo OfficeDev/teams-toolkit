@@ -18,6 +18,7 @@ export declare class BotSsoExecutionDialog extends ComponentDialog
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
 |  [(constructor)(dedupStorage, ssoPromptSettings, teamsfx, dialogName)](./teamsfx.botssoexecutiondialog._constructor_.md) |  | Creates a new instance of the BotSsoExecutionDialog. |
+|  [(constructor)(dedupStorage, ssoPromptSettings, authConfig, initiateLoginEndpoint, dialogName)](./teamsfx.botssoexecutiondialog._constructor__1.md) |  | Constructs a new instance of the <code>BotSsoExecutionDialog</code> class |
 
 ## Methods
 

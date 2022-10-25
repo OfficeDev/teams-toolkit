@@ -30,6 +30,7 @@ const credential = new AppCredential();
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
 |  [(constructor)(authConfig)](./teamsfx.appcredential._constructor_.md) |  | Constructor of AppCredential. |
+|  [(constructor)(authConfig)](./teamsfx.appcredential._constructor__1.md) |  | Constructs a new instance of the <code>AppCredential</code> class |
 
 ## Methods
 

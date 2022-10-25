@@ -2,7 +2,7 @@
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
     "manifestVersion": "1.14",
     "version": "1.0.0",
-    "id": "{{state.fx-resource-appstudio.teamsAppId}}",
+    "id": "${{TEAMS_APP_ID}}",
     "packageName": "com.microsoft.teams.extension",
     "developer": {
         "name": "Teams App, Inc.",
@@ -11,21 +11,21 @@
         "termsOfUseUrl": "https://www.example.com/privacy"
     },
     "icons": {
-        "color": "{{config.manifest.icons.color}}",
-        "outline": "{{config.manifest.icons.outline}}"
+        "color": "./resources/color.png",
+        "outline": "./resources/outline.png"
     },
     "name": {
-        "short": "{{config.manifest.appName.short}}",
-        "full": "{{config.manifest.appName.full}}"
+        "short": "command-bot",
+        "full": "Full name for command-bot"
     },
     "description": {
-        "short": "{{config.manifest.description.short}}",
-        "full": "{{config.manifest.description.full}}"
+        "short": "Short description of command-bot",
+        "full": "Full description of command-bot"
     },
     "accentColor": "#FFFFFF",
     "bots": [
         {
-            "botId": "{{state.fx-resource-bot.botId}}",
+            "botId": "${{BOT_ID}}",
             "scopes": [
                 "personal",
                 "team",
@@ -142,7 +142,6 @@
         "messageTeamMembers"
     ],
     "validDomains": [
-        "{{state.fx-resource-bot.domain}}",
-        "{{state.fx-resource-bot.domain}}"
+        "${{BOT_DOMAIN}}"
     ]
 }

@@ -233,6 +233,12 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
     "openFromTdp"
   );
 
+  const showOutputChannel = vscode.commands.registerCommand(
+    "fx-extension.showOutputChannel",
+    (...args) => Correlator.run(handlers.showOutputChannel, args)
+  );
+  context.subscriptions.push(showOutputChannel);
+
   // Register backend extensions install command
   const backendExtensionsInstallCmd = vscode.commands.registerCommand(
     "fx-extension.backend-extensions-install",
@@ -447,12 +453,6 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
   });
   context.subscriptions.push(preview);
-
-  const showOutputChannel = vscode.commands.registerCommand(
-    "fx-extension.showOutputChannel",
-    (...args) => Correlator.run(handlers.showOutputChannel, args)
-  );
-  context.subscriptions.push(showOutputChannel);
 
   registerInCommandController(context, "fx-extension.openFolder", handlers.openFolderHandler);
 

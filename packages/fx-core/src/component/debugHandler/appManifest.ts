@@ -179,10 +179,7 @@ export class AppManifestDebugHandler {
       this.envInfoV3.config.isLocalDebug = true;
 
       // Local debug if switching to a different account in same tenant
-      if (
-        this.envInfoV3.envName === environmentManager.getLocalEnvName() &&
-        !!this.envInfoV3.state[ComponentNames.AppManifest].teamsAppId
-      ) {
+      if (!!this.envInfoV3.state[ComponentNames.AppManifest].teamsAppId) {
         const checkAppInDifferentAccount = await checkIfAppInDifferentAcountSameTenant(
           this.envInfoV3.state[ComponentNames.AppManifest].teamsAppId,
           this.m365TokenProvider,

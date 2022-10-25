@@ -393,7 +393,8 @@ describe("handlers", () => {
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const deployAadManifest = sandbox.spy(handlers.core, "deployAadManifest");
       sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
-      await handlers.runCommand(Stage.deployAad);
+      const input: Inputs = handlers.getSystemInputs();
+      await handlers.runCommand(Stage.deployAad, input);
 
       sandbox.assert.calledOnce(deployAadManifest);
       sandbox.restore();
@@ -405,7 +406,8 @@ describe("handlers", () => {
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(handlers.core, "deployAadManifest").resolves(ok("test_success"));
       sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
-      const res = await handlers.runCommand(Stage.deployAad);
+      const input: Inputs = handlers.getSystemInputs();
+      const res = await handlers.runCommand(Stage.deployAad, input);
       chai.assert.isTrue(res.isOk());
       if (res.isOk()) {
         chai.assert.strictEqual(res.value, "test_success");

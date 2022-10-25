@@ -6,7 +6,6 @@ import * as jsonschema from "jsonschema";
 import * as path from "path";
 import { Container } from "typedi";
 import * as uuid from "uuid";
-
 import { hooks } from "@feathersjs/hooks";
 import {
   AppPackageFolderName,
@@ -59,7 +58,6 @@ import { environmentManager, newEnvInfoV3 } from "./environment";
 import {
   CopyFileError,
   InvalidInputError,
-  NonExistEnvNameError,
   NotImplementedError,
   ObjectIsUndefinedError,
   OperationNotPermittedError,
@@ -166,8 +164,28 @@ export class FxCore implements v3.ICore {
     return result;
   }
 
+  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
+    if (isV3Enabled()) return this.createProjectNew(inputs);
+    else return this.createProjectOld(inputs);
+  }
+
+  @hooks([ErrorHandlerMW, ContextInjectorMW])
+  async createProjectNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+    if (!ctx) {
+      return err(new ObjectIsUndefinedError("ctx for createProject"));
+    }
+    setCurrentStage(Stage.create);
+    inputs.stage = Stage.create;
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    ctx.projectSettings = context.projectSetting;
+    inputs.projectPath = context.projectPath;
+    return ok(inputs.projectPath!);
+  }
+
   @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
-  async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+  async createProjectOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }

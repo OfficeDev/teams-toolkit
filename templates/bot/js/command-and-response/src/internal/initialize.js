@@ -1,6 +1,6 @@
 const { ConversationBot } = require("@microsoft/teamsfx");
 const { HelloWorldCommandHandler } = require("../helloworldCommandHandler");
-const { default: config } = require("./config");
+const config = require("./config");
 
 // Create the command bot and register the command handlers for your app.
 // You can also use the commandBot.command.registerCommands to register other commands

@@ -1,7 +1,7 @@
 const { ConversationBot } = require("@microsoft/teamsfx");
 const { DoStuffActionHandler } = require("../cardActions/doStuffActionHandler");
 const { HelloWorldCommandHandler } = require("../commands/helloworldCommandHandler");
-const { default: config } = require("./config");
+const config = require("./config");
 
 // Create the conversation bot and register the command and card action handlers for your app.
 const conversationBot = new ConversationBot({

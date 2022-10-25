@@ -1,5 +1,5 @@
 const { ConversationBot } = require("@microsoft/teamsfx");
-const { default: config } = require("./config");
+const config = require("./config");
 
 // Create bot.
 const bot = new ConversationBot({

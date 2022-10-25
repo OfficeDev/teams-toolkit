@@ -5,6 +5,7 @@ import {
   ContextV3,
   DynamicPlatforms,
   err,
+  FolderQuestion,
   FuncQuestion,
   FxError,
   Inputs,
@@ -81,7 +82,7 @@ import {
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
 import { NoCapabilityFoundError } from "../core/error";
-import { ProgrammingLanguageQuestion } from "../core/question";
+import { ProgrammingLanguageQuestion, ProjectNamePattern } from "../core/question";
 import { createContextV3 } from "./utils";
 import {
   isBotNotificationEnabled,
@@ -99,6 +100,11 @@ import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
 import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { Constants } from "./resource/aadApp/constants";
 import { functionNameQuestion } from "./feature/api/question";
+import * as path from "path";
+import { snakeCase } from "lodash";
+import fs from "fs-extra";
+import * as jsonschema from "jsonschema";
+import { QueryCollectionFormat } from "@azure/core-http";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -422,6 +428,8 @@ export async function getQuestionsForAddFeatureV3(
   if (SelectedFeature && !options.map((op) => op.id).includes(SelectedFeature)) {
     return err(new InvalidFeature());
   }
+  const subFolderQuestion = featureSubFolderQuestion(inputs.projectPath!);
+  addFeatureNode.addChild(new QTreeNode(subFolderQuestion));
   return ok(addFeatureNode);
 }
 export async function getQuestionsForAddResourceV3(
@@ -716,4 +724,41 @@ export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestio
       },
     },
   };
+}
+
+export function featureSubFolderQuestion(projectPath: string): TextInputQuestion {
+  const question: TextInputQuestion = {
+    type: "text",
+    name: "sub-folder",
+    title: getLocalizedString("core.question.featureFolder.title"),
+    placeholder: getLocalizedString("core.question.featureFolder.placeholder"),
+    default: (inputs: Inputs) => {
+      const featureName = inputs[AzureSolutionQuestionNames.Features];
+      return snakeCase(featureName);
+    },
+    validation: {
+      validFunc: async (input: string, inputs?: Inputs) => {
+        const schema = {
+          pattern: ProjectNamePattern,
+          maxLength: 30,
+        };
+        const folderName = input as string;
+        const validateResult = jsonschema.validate(folderName, schema);
+        if (validateResult.errors && validateResult.errors.length > 0) {
+          if (validateResult.errors[0].name === "pattern") {
+            return getLocalizedString("core.question.featureFolder.validation.pattern");
+          }
+          if (validateResult.errors[0].name === "maxLength") {
+            return getLocalizedString("core.question.featureFolder.validation.maxlength");
+          }
+        }
+        const folderPath = path.join(projectPath, input);
+        if (fs.pathExistsSync(folderPath)) {
+          return getLocalizedString("core.question.featureFolder.validation.pathExist", folderPath);
+        }
+        return undefined;
+      },
+    },
+  };
+  return question;
 }

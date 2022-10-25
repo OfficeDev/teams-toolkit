@@ -36,6 +36,7 @@ import {
   FxError,
   InputConfigsFolderName,
   Inputs,
+  InputsWithProjectPath,
   IProgressHandler,
   M365TokenProvider,
   ok,
@@ -708,7 +709,7 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
   } catch (error) {
     VsCodeLogInstance.warning(`${error}`);
   }
-  const result = await runUserTask(func, TelemetryEvent.AddFeature, true);
+  const result = await runCommand(Stage.addFeature);
   if (result.isOk()) {
     await globalStateUpdate("automaticNpmInstall", true);
     await automaticNpmInstallHandler(excludeFrontend, excludeBackend, excludeBot);
@@ -1032,6 +1033,10 @@ export async function runCommand(
       }
       case Stage.listCollaborator: {
         result = await core.listCollaborator(inputs);
+        break;
+      }
+      case Stage.addFeature: {
+        result = await core.addFeature(inputs as InputsWithProjectPath);
         break;
       }
       default:

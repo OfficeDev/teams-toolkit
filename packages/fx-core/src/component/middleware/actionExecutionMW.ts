@@ -21,6 +21,7 @@ import {
 import { assign } from "lodash";
 import { TOOLS } from "../../core/globalVars";
 import { TelemetryConstants } from "../constants";
+import { DriverContext } from "../driver/interface/commonArgs";
 import {
   sendErrorEvent,
   sendMigratedErrorEvent,
@@ -88,7 +89,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
           const askQuestionRes = await traverse(
             node,
             inputs,
-            context.userInteraction,
+            context.userInteraction || (context as any).ui,
             context.telemetryReporter
           );
           if (askQuestionRes.isErr()) throw askQuestionRes.error;

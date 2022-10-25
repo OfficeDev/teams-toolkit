@@ -7,16 +7,12 @@ import * as fs from "fs-extra";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,
+  sampleRepoName,
   templateAlphaVersion,
   templateBetaVersion,
   templateFileExt,
 } from "./constant";
-import {
-  FetchSampleUrlWithTagError,
-  FetchZipFromUrlError,
-  TemplateZipFallbackError,
-  UnzipError,
-} from "./error";
+import { FetchZipFromUrlError, TemplateZipFallbackError, UnzipError } from "./error";
 import { GeneratorAction, GeneratorActionName } from "./generatorAction";
 import { GeneratorContext } from "./generatorAction";
 import { SampleInfo, sampleProvider } from "../../common/samples";
@@ -31,9 +27,6 @@ const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
 const templateVersion = templateConfig.version;
 const templateTagPrefix = templateConfig.tagPrefix;
 const templateTagListURL = templateConfig.tagListURL;
-const sampleVersion = sampleConfig.version;
-const sampleTagPrefix = sampleConfig.tagPrefix;
-const sampleTagListURL = sampleConfig.tagListURL;
 
 function selectTemplateTag(tags: string[]): string | undefined {
   if (preRelease === "alpha") {
@@ -46,13 +39,6 @@ function selectTemplateTag(tags: string[]): string | undefined {
   const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));
   const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
   return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
-}
-
-function selectSampleTag(tags: string[]): string | undefined {
-  const versionPattern = preRelease ? `0.0.0-${preRelease}` : sampleVersion;
-  const versionList = tags.map((tag: string) => tag.replace(sampleTagPrefix, ""));
-  const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
-  return selectedVersion ? sampleTagPrefix + selectedVersion : undefined;
 }
 
 async function sendRequestWithRetry<T>(
@@ -132,20 +118,7 @@ export async function fetchTemplateZipUrl(
   if (!selectedTag) {
     throw new Error(`Failed to find valid template for ${name}`);
   }
-  return `${templateConfig.templateDownloadBaseURL}/${selectTemplateTag}/${name}.zip`;
-}
-
-export async function fetchSampleZipUrl(
-  name: string,
-  tryLimits = defaultTryLimits,
-  timeoutInMs = defaultTimeoutInMs
-): Promise<string> {
-  const tags = await fetchTagList(sampleTagListURL, tryLimits, timeoutInMs);
-  const selectedTag = selectSampleTag(tags.replace(/\r/g, "").split("\n"));
-  if (!selectedTag) {
-    throw new Error(`Failed to find valid sample for ${name}`);
-  }
-  return `${sampleConfig.sampleDownloadBaseUrl}/${selectTemplateTag}/${name}.zip`;
+  return `${templateConfig.templateDownloadBaseURL}/${selectedTag}/${name}.zip`;
 }
 
 export async function fetchZipFromUrl(
@@ -237,6 +210,11 @@ export function getSampleInfoFromName(sampleName: string): SampleInfo {
   return sample;
 }
 
+export function getSampleRelativePath(sampleName: string): string {
+  const sampleTag = sampleConfig.version.replace(/[^\d.]/g, "");
+  return `${sampleRepoName}-${sampleTag}/${sampleName}/`;
+}
+
 export function zipFolder(folderPath: string): AdmZip {
   const zip = new AdmZip();
   zip.addLocalFolder(folderPath);
@@ -267,8 +245,6 @@ export async function sampleDefaultOnActionError(
   error: Error
 ) {
   switch (action.name) {
-    case GeneratorActionName.FetchSampleUrlWithTag:
-      throw new FetchSampleUrlWithTagError(error);
     case GeneratorActionName.FetchZipFromUrl:
       throw new FetchZipFromUrlError(context.zipUrl!, error);
     case GeneratorActionName.Unzip:

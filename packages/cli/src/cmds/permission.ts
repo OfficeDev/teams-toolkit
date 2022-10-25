@@ -4,7 +4,7 @@
 "use strict";
 
 import path from "path";
-import { FxError, err, ok, Result, Stage, LogLevel } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Stage, LogLevel, UserError } from "@microsoft/teamsfx-api";
 
 import { Argv, Options } from "yargs";
 import { YargsCommand } from "../yargsCommand";
@@ -20,6 +20,7 @@ import HelpParamGenerator from "../helpParamGenerator";
 import CLILogProvider from "../commonlib/log";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { CollaborationConstants } from "@microsoft/teamsfx-core/build/core/collaborator";
+import { EnvNotSpecified } from "../error";
 
 const azureMessage =
   "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
@@ -79,6 +80,13 @@ export class PermissionStatus extends YargsCommand {
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, result.error);
       return err(result.error);
+    }
+
+    // Throw error if --env not specified
+    if (!args[env]) {
+      const error = new EnvNotSpecified();
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
+      return err(error);
     }
 
     const core = result.value;
@@ -168,6 +176,13 @@ export class PermissionGrant extends YargsCommand {
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GrantPermission, result.error);
       return err(result.error);
+    }
+
+    // Throw error if --env not specified
+    if (!args[env]) {
+      const error = new EnvNotSpecified();
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
+      return err(error);
     }
 
     const answers = argsToInputs(this.params, args);

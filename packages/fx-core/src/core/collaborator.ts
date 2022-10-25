@@ -469,11 +469,10 @@ export async function checkPermission(
         color: Colors.BRIGHT_WHITE,
       },
       { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
-      {
-        content: getLocalizedString("core.collaboration.StaringCheckPermission"),
-        color: Colors.BRIGHT_WHITE,
-      },
-      { content: `${inputs.envName}\n`, color: Colors.BRIGHT_MAGENTA },
+      ...getPrintEnvMessage(
+        isV3Enabled() ? inputs.env : envInfo.envName,
+        getLocalizedString("core.collaboration.StaringCheckPermission")
+      ),
       { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },
       { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
     ];

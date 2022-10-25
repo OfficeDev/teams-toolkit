@@ -1,0 +1,4 @@
+provision:
+  - name: test
+    with:
+      name: mybot

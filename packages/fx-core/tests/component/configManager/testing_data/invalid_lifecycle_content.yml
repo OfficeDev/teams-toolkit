@@ -1,0 +1,5 @@
+provision:
+  drivers: 
+    - uses: bot/registerApp
+      with:
+        name: mybot

@@ -344,15 +344,18 @@ describe("Other test case", () => {
     const mockedEnvRestore = mockedEnv({
       TEAMSFX_V3: "true",
     });
-    const settings: Settings = {
-      version: "1.0.0",
-      projectId: "123",
-      isFromSample: false,
-    };
-    sandbox.stub(fs, "readJsonSync").resolves(settings);
-    const isValid = isValidProject("aaa");
-    assert.isTrue(isValid);
-    mockedEnvRestore();
+    try {
+      const settings: Settings = {
+        version: "1.0.0",
+        projectId: "123",
+        isFromSample: false,
+      };
+      sandbox.stub(fs, "readJsonSync").resolves(settings);
+      const isValid = isValidProject("aaa");
+      assert.isTrue(isValid);
+    } finally {
+      mockedEnvRestore();
+    }
   });
   it("getQuestionsForResourceGroup", async () => {
     const mockSubscriptionId = "mockSub";

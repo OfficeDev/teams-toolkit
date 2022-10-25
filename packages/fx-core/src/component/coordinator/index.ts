@@ -48,6 +48,7 @@ import {
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
   getQuestionsForAddFeature,
+  getQuestionsForAddFeatureV3,
   getQuestionsForDeployV3,
   getQuestionsForProvisionV3,
 } from "../question";
@@ -70,6 +71,8 @@ import { downloadSampleHook } from "../../core/downloadSample";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import * as uuid from "uuid";
 import { settingsUtil } from "../utils/settingsUtil";
+import { DriverContext } from "../driver/interface/commonArgs";
+import { CICD } from "../feature/cicd/cicd";
 
 export enum TemplateNames {
   Tab = "tab",
@@ -242,7 +245,38 @@ export class Coordinator {
     }
     return ok(undefined);
   }
-
+  /**
+   * add feature v3
+   */
+  @hooks([
+    ActionExecutionMW({
+      question: (context, inputs) => {
+        return getQuestionsForAddFeatureV3(context, inputs);
+      },
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.AddFeature,
+      telemetryComponentName: "coordinator",
+    }),
+  ])
+  async addFeatureV3(
+    context: DriverContext,
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
+  ): Promise<Result<any, FxError>> {
+    //TODO call generator
+    const features = inputs[AzureSolutionQuestionNames.Features];
+    if (features === CicdOptionItem.id) {
+      // const component = Container.get("cicd") as CICD;
+      // change CICD interface
+      // const res = await component.add(context, inputs);
+      // merge(actionContext?.telemetryProps, {
+      //   [TelemetryProperty.Feature]: features,
+      // });
+      // if (res.isErr()) return err(res.error);
+      // return ok(res.value);
+    }
+    return ok(undefined);
+  }
   @hooks([
     ActionExecutionMW({
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {

@@ -50,6 +50,7 @@ import {
   CicdOptionItem,
   ExistingTabOptionItem,
   SingleSignOnOptionItem,
+  ComponentNames,
 } from "../component/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
@@ -86,7 +87,7 @@ import {
   sendErrorTelemetryThenReturnError,
 } from "./telemetry";
 import { CoreHookContext } from "./types";
-import { createContextV3 } from "../component/utils";
+import { createContextV3, createDriverContext } from "../component/utils";
 import { preCheck } from "../component/core";
 import {
   FeatureId,
@@ -98,7 +99,6 @@ import {
 } from "../component/question";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd/cicd";
-import { ComponentNames } from "../component/constants";
 import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
 import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
 import { createEnvWithName } from "../component/envManager";
@@ -324,6 +324,10 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
+  async addFeature(inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
+    return isV3Enabled() ? this.addFeatureV3(inputs) : this.addFeatureOld(inputs);
+  }
+
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -337,7 +341,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
-  async addFeature(
+  async addFeatureOld(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
   ): Promise<Result<any, FxError>> {
@@ -349,7 +353,14 @@ export class FxCore implements v3.ICore {
     ctx!.projectSettings = context.projectSetting;
     return ok(res.value);
   }
-
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW])
+  async addFeatureV3(inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
+    inputs.stage = Stage.addFeature;
+    const context = createDriverContext(inputs);
+    const res = await coordinator.addFeatureV3(context, inputs);
+    if (res.isErr()) return err(res.error);
+    return ok(res.value);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,

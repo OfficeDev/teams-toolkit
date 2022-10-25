@@ -159,6 +159,32 @@ describe("Core basic APIs", () => {
     assert.isTrue(activateEnvRes.isOk());
   });
 
+  it("deploy aad manifest happy path with param", async () => {
+    const core = new FxCore(tools);
+    const appName = mockV3Project();
+    // sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+    };
+
+    const runSpy = sandbox.spy(UpdateAadAppDriver.prototype, "run");
+    await core.deployAadManifest(inputs);
+    sandbox.assert.calledOnce(runSpy);
+    assert.isNotNull(runSpy.getCall(0).args[0]);
+    assert.strictEqual(
+      runSpy.getCall(0).args[0].manifestTemplatePath,
+      path.join(os.tmpdir(), appName, "samples-v3", ".fx", "aad.template.json")
+    );
+    runSpy.restore();
+  });
+
   it("deploy aad manifest happy path", async () => {
     const core = new FxCore(tools);
     const appName = mockV3Project();

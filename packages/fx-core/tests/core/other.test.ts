@@ -10,6 +10,7 @@ import {
   Json,
   Platform,
   ProjectSettings,
+  Settings,
   Stage,
   SubscriptionInfo,
   SystemError,
@@ -338,6 +339,20 @@ describe("Other test case", () => {
     sandbox.stub(fs, "readJsonSync").resolves(projectSettings);
     const isValid = isValidProject("aaa");
     assert.isTrue(isValid);
+  });
+  it("isValidProject: true v3", async () => {
+    const mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    const settings: Settings = {
+      version: "1.0.0",
+      projectId: "123",
+      isFromSample: false,
+    };
+    sandbox.stub(fs, "readJsonSync").resolves(settings);
+    const isValid = isValidProject("aaa");
+    assert.isTrue(isValid);
+    mockedEnvRestore();
   });
   it("getQuestionsForResourceGroup", async () => {
     const mockSubscriptionId = "mockSub";

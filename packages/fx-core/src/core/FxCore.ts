@@ -50,6 +50,7 @@ import {
   CicdOptionItem,
   ExistingTabOptionItem,
   SingleSignOnOptionItem,
+  ComponentNames,
 } from "../component/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
@@ -87,7 +88,7 @@ import {
   sendErrorTelemetryThenReturnError,
 } from "./telemetry";
 import { CoreHookContext } from "./types";
-import { createContextV3 } from "../component/utils";
+import { createContextV3, createDriverContext } from "../component/utils";
 import { preCheck } from "../component/core";
 import {
   FeatureId,
@@ -99,7 +100,6 @@ import {
 } from "../component/question";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd/cicd";
-import { ComponentNames } from "../component/constants";
 import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
 import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
 import { createEnvWithName } from "../component/envManager";
@@ -115,6 +115,8 @@ import { DriverContext } from "../component/driver/interface/commonArgs";
 import { coordinator } from "../component/coordinator";
 import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPackage";
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
+import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
+import { createContext } from "vm";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -208,6 +210,23 @@ export class FxCore implements v3.ICore {
     return ok(context.projectPath!);
   }
 
+  async provisionResources(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return isV3Enabled() ? this.provisionResourcesNew(inputs) : this.provisionResourcesOld(inputs);
+  }
+
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
+  async provisionResourcesNew(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.provision);
+    inputs.stage = Stage.provision;
+    const context = createDriverContext(inputs);
+    const envMap = ctx?.envOutput;
+    const res = await coordinator.provision(context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    return ok(Void);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -221,7 +240,10 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
-  async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async provisionResourcesOld(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createContextV3();

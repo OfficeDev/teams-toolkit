@@ -70,6 +70,7 @@ import { downloadSampleHook } from "../../core/downloadSample";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import * as uuid from "uuid";
 import { settingsUtil } from "../utils/settingsUtil";
+import { DriverContext } from "../driver/interface/commonArgs";
 
 export enum TemplateNames {
   Tab = "tab",
@@ -254,7 +255,7 @@ export class Coordinator {
     }),
   ])
   async provision(
-    ctx: ResourceContextV3,
+    ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {

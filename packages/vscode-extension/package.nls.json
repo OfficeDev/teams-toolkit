@@ -281,6 +281,7 @@
     "teamstoolkit.handlers.teamsAppIdNotFound": "Failed to find 'fx-resource-appstudio.teamsAppId' in 'state.%s.json'.",
     "teamstoolkit.handlers.teamsToolkit": "Teams Toolkit",
     "teamstoolkit.handlers.vsCodeEnvironment": "VS Code Environment: %s",
+    "teamstoolkit.handlers.defaultManifestTemplateNotExists": "Manifest template file not found in %s. You can use CLI with your own template file.",
     "teamstoolkit.localDebug.failedCheckers": "Failed to check: [%s]. ",
     "teamstoolkit.localDebug.howToFixIssues": "How to fix the issues",
     "teamstoolkit.localDebug.installApp.bot.configureOutlook": "Configure Outlook",

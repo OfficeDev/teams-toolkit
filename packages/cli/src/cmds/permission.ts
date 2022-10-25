@@ -4,7 +4,7 @@
 "use strict";
 
 import path from "path";
-import { FxError, err, ok, Result, Stage, LogLevel, UserError } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Stage, LogLevel } from "@microsoft/teamsfx-api";
 
 import { Argv, Options } from "yargs";
 import { YargsCommand } from "../yargsCommand";

@@ -108,7 +108,12 @@ import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { copyParameterJson } from "../component/arm";
 import { ProjectSettingsHelper } from "../common/local";
+import { ValidateTeamsAppDriver } from "../component/driver/teamsApp/validate";
+import { ValidateTeamsAppArgs } from "../component/driver/teamsApp/interfaces/ValidateTeamsAppArgs";
+import { DriverContext } from "../component/driver/interface/commonArgs";
 import { coordinator } from "../component/coordinator";
+import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPackage";
+import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -377,11 +382,48 @@ export class FxCore implements v3.ICore {
       );
       res = ok(path);
     } else if (func.method === "validateManifest") {
-      const component = Container.get("app-manifest") as any;
-      res = await component.validate(context, inputs as InputsWithProjectPath);
+      // TODO: load environment variables into process.env
+      if (isV3Enabled()) {
+        const driver: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
+        const args: ValidateTeamsAppArgs = {
+          manifestTemplatePath: func.params.manifestTemplatePath,
+        };
+        const driverContext: DriverContext = {
+          azureAccountProvider: context.tokenProvider!.azureAccountProvider,
+          m365TokenProvider: context.tokenProvider!.m365TokenProvider,
+          ui: context.userInteraction,
+          logProvider: context.logProvider,
+          telemetryReporter: context.telemetryReporter,
+          projectPath: context.projectPath!,
+          platform: inputs.platform,
+        };
+        res = await driver.run(args, driverContext);
+      } else {
+        const component = Container.get("app-manifest") as any;
+        res = await component.validate(context, inputs as InputsWithProjectPath);
+      }
     } else if (func.method === "buildPackage") {
-      const component = Container.get("app-manifest") as any;
-      res = await component.build(context, inputs as InputsWithProjectPath);
+      if (isV3Enabled()) {
+        const driver: CreateAppPackageDriver = Container.get("teamsApp/createAppPackage");
+        const args: CreateAppPackageArgs = {
+          manifestTemplatePath: func.params.manifestTemplatePath,
+          outputZipPath: func.params.outputZipPath,
+          outputJsonPath: func.params.outputJsonPath,
+        };
+        const driverContext: DriverContext = {
+          azureAccountProvider: context.tokenProvider!.azureAccountProvider,
+          m365TokenProvider: context.tokenProvider!.m365TokenProvider,
+          ui: context.userInteraction,
+          logProvider: context.logProvider,
+          telemetryReporter: context.telemetryReporter,
+          projectPath: context.projectPath!,
+          platform: inputs.platform,
+        };
+        res = await driver.run(args, driverContext);
+      } else {
+        const component = Container.get("app-manifest") as any;
+        res = await component.build(context, inputs as InputsWithProjectPath);
+      }
     } else if (func.method === "updateManifest") {
       const component = Container.get("app-manifest") as any;
       res = await component.deploy(context, inputs as InputsWithProjectPath);

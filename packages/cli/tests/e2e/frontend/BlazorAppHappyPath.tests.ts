@@ -41,7 +41,6 @@ describe("Blazor App", function () {
   const envName = environmentManager.getDefaultEnvName();
   const env = Object.assign({}, process.env);
   env["TEAMSFX_CLI_DOTNET"] = "true";
-  env["TEAMSFX_APIV3"] = "false";
 
   after(async () => {
     // clean up
@@ -55,11 +54,11 @@ describe("Blazor App", function () {
 
   it(`Provision Resource`, { testPlanCaseId: 15686030 }, async () => {
     await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath, "", env);
     await setProvisionParameterValue(projectPath, "dev", {
-      key: "webappServerfarmsSku",
+      key: "webAppSKU",
       value: "B1",
     });
+    await CliHelper.provisionProject(projectPath, "", env);
 
     const tokenProvider = MockAzureAccountProvider;
     const tokenCredential = await tokenProvider.getIdentityCredentialAsync();

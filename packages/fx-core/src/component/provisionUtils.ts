@@ -208,7 +208,47 @@ export class ProvisionUtils {
     }
     return ok(undefined);
   }
+  // /**
+  //  * make sure subscription is correct before provision for V3
+  //  * subscriptionId is provided from .env.xxx file
+  //  */
+  // async ensureSubscription(
+  //   azureAccountProvider: AzureAccountProvider,
+  //   givenSubscriptionId?: string
+  // ): Promise<Result<SubscriptionInfo, FxError>> {
+  //   // make sure the user is logged in
+  //   await azureAccountProvider.getIdentityCredentialAsync(true);
+  //   if (!givenSubscriptionId) {
+  //     const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
+  //     if (!subscriptionInAccount) {
+  //       return err(
+  //         new UserError(
+  //           "coordinator",
+  //           SolutionError.SubscriptionNotFound,
+  //           getLocalizedString("core.provision.subscription.failToSelect")
+  //         )
+  //       );
+  //     } else {
+  //       return ok(subscriptionInAccount);
+  //     }
+  //   }
 
+  //   // verify valid subscription (permission)
+  //   const subscriptions = await azureAccountProvider.listSubscriptions();
+
+  //   const foundSubscriptionInfo = findSubscriptionFromList(givenSubscriptionId, subscriptions);
+  //   if (!foundSubscriptionInfo) {
+  //     return err(
+  //       new UserError(
+  //         "coordinator",
+  //         SolutionError.SubscriptionNotFound,
+  //         getLocalizedString("core.provision.subscription.NotFound", givenSubscriptionId)
+  //       )
+  //     );
+  //   }
+
+  //   return ok(foundSubscriptionInfo);
+  // }
   /**
    * make sure subscription is correct before provision
    *
@@ -425,6 +465,54 @@ export class ProvisionUtils {
       }
     }
   }
+
+  // async ensureResourceGroup(
+  //   platform: Platform,
+  //   azureAccountProvider: AzureAccountProvider,
+  //   subscriptionId: string,
+  //   givenResourceGroupName?: string,
+  //   givenResourceGroupLocation?: string
+  // ): Promise<Result<ResourceGroupInfo, FxError>> {
+  //   const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
+  //   if (azureToken === undefined) {
+  //     return err(
+  //       new UserError(
+  //         "coordinator",
+  //         SolutionError.NotLoginToAzure,
+  //         getLocalizedString("core.error.notLoginToAzure")
+  //       )
+  //     );
+  //   }
+  //   const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
+  //   let resourceGroupInfo: ResourceGroupInfo;
+  //   if (givenResourceGroupName) {
+  //     const getResourceGroupRes = await resourceGroupHelper.getResourceGroupInfo(
+  //       givenResourceGroupName,
+  //       rmClient
+  //     );
+  //     if (getResourceGroupRes.isErr()) {
+  //       // resource group not exist
+  //       if (platform === Platform.VS && givenResourceGroupLocation) {
+  //         resourceGroupInfo = {
+  //           createNewResourceGroup: true,
+  //           name: givenResourceGroupName,
+  //           location: givenResourceGroupLocation,
+  //         };
+  //       } else return err(getResourceGroupRes.error);
+  //     } else {
+  //       if (!getResourceGroupRes.value) {
+  //         return err(
+  //           new UserError(
+  //             SolutionSource,
+  //             SolutionError.ResourceGroupNotFound,
+  //             getLocalizedString("core.error.resourceGroupNotFound", givenResourceGroupName)
+  //           )
+  //         );
+  //       }
+  //     }
+  //   }
+  //   return ok(resourceGroupInfo!);
+  // }
 
   /**
    * Asks common questions and puts the answers in the global namespace of SolutionConfig

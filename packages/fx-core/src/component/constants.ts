@@ -484,6 +484,8 @@ export enum SolutionError {
   FailedToBackupFiles = "FailedToBackupFiles",
   MissingSubscriptionIdInConfig = "MissingSubscriptionIdInConfig",
   FailedToResetAppSettingsDevelopment = "FailedToResetAppSettingsDevelopment",
+  FailedToLoadDotEnvFile = "FailedToLoadDotEnvFile",
+  FailedToGetTeamsAppId = "FailedToGetTeamsAppId",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

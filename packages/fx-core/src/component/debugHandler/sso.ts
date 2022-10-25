@@ -266,7 +266,9 @@ export class SSODebugHandler {
       // set applicationIdUris to state
       let applicationIdUri = "api://";
       if (ProjectSettingsHelper.includeFrontend(this.projectSettingsV3)) {
-        applicationIdUri += "localhost/";
+        const endpoint = this.envInfoV3!.state[ComponentNames.TeamsTab].endpoint;
+        const url = new URL(endpoint as string);
+        applicationIdUri += `${url.host}/`;
         if (!ProjectSettingsHelper.includeBot(this.projectSettingsV3)) {
           applicationIdUri += this.envInfoV3!.state[ComponentNames.AadApp].clientId;
         }

@@ -49,10 +49,12 @@
 |  --- | --- |
 |  [createApiClient(apiEndpoint, authProvider)](./teamsfx.createapiclient.md) | Initializes new Axios instance with specific auth provider |
 |  [createMicrosoftGraphClient(teamsfx, scopes)](./teamsfx.createmicrosoftgraphclient.md) | Get Microsoft graph client. |
+|  [createMicrosoftGraphClientWithCredential(credential, scopes)](./teamsfx.createmicrosoftgraphclientwithcredential.md) | Get Microsoft graph client. |
 |  [createPemCertOption(cert, key, options)](./teamsfx.createpemcertoption.md) | Helper to create SecureContextOptions from PEM format cert |
 |  [createPfxCertOption(pfx, options)](./teamsfx.createpfxcertoption.md) | Helper to create SecureContextOptions from PFX format cert |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | Generate connection configuration consumed by tedious. |
+|  [handleMessageExtensionQueryWithSSO(context, config, initiateLoginEndpoint, scopes, logic)](./teamsfx.handlemessageextensionquerywithsso.md) | Users execute query in message extension with SSO or access token. |
 |  [handleMessageExtensionQueryWithToken(context, config, scopes, logic)](./teamsfx.handlemessageextensionquerywithtoken.md) | Users execute query in message extension with SSO or access token. |
 |  [sendAdaptiveCard(target, card, onError)](./teamsfx.sendadaptivecard.md) | Send an adaptive card message to a notification target. |
 |  [sendMessage(target, text, onError)](./teamsfx.sendmessage.md) | Send a plain text message to a notification target. |
@@ -89,7 +91,10 @@
 
 |  Type Alias | Description |
 |  --- | --- |
+|  [AppCredentialAuthConfig](./teamsfx.appcredentialauthconfig.md) | Authentication configuration for AppCredential used in node environment |
 |  [BotSsoExecutionDialogHandler](./teamsfx.botssoexecutiondialoghandler.md) |  |
 |  [LogFunction](./teamsfx.logfunction.md) | Log function for customized logging. |
+|  [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) | Authentication configuration for OnBehalfOfCredential used in node environment |
+|  [TeamsUserCredentialAuthConfig](./teamsfx.teamsusercredentialauthconfig.md) | Authentication configuration for TeamsUserCredential used in browser environment |
 |  [TriggerPatterns](./teamsfx.triggerpatterns.md) | The trigger pattern used to trigger a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance. |
 

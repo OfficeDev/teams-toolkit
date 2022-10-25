@@ -4,7 +4,10 @@
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
 import { UserInfo } from "../models/userinfo";
-import { AuthenticationConfiguration } from "../models/configuration";
+import {
+  AuthenticationConfiguration,
+  OnBehalfOfCredentialAuthConfig,
+} from "../models/configuration";
 import { internalLogger } from "../util/logger";
 import {
   formatString,
@@ -44,7 +47,12 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * @throws {@link ErrorCode|InternalError} when SSO token is not valid.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    */
-  constructor(ssoToken: string, config: AuthenticationConfiguration) {
+  constructor(ssoToken: string, config: OnBehalfOfCredentialAuthConfig);
+  constructor(ssoToken: string, config: AuthenticationConfiguration);
+  constructor(
+    ssoToken: string,
+    config: OnBehalfOfCredentialAuthConfig | AuthenticationConfiguration
+  ) {
     internalLogger.info("Get on behalf of user credential");
 
     const missingConfigurations: string[] = [];

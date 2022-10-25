@@ -21,7 +21,6 @@ import {
 import { assign } from "lodash";
 import { TOOLS } from "../../core/globalVars";
 import { TelemetryConstants } from "../constants";
-import { DriverContext } from "../driver/interface/commonArgs";
 import {
   sendErrorEvent,
   sendMigratedErrorEvent,

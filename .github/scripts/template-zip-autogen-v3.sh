@@ -23,6 +23,6 @@ for TEMPLATE in ${TEMPLATE_LIST[@]}; do
     fi
 
     cd ./templates/scenarios/${TEMPLATE} 
-    zip -rq ${TEMPLATE}.zip .
+    zip -rq ${TEMPLATE_OUTPUT_DIR}/${TEMPLATE}.zip .
     cd -
 done

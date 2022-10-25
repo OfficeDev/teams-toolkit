@@ -629,7 +629,7 @@
   "core.addFeatureQuestion.title": "Add features",
   "core.createCapabilityQuestion.title": "Select capabilities",
   "core.createCapabilityQuestion.titleNew": "Capabilities",
-  "core.createCapabilityQuestion.placeholder": "Select at least 1 capability",
+  "core.createCapabilityQuestion.placeholder": "Select 1 capability",
   "core.createCapabilityQuestion.single.title": "Capability",
   "core.createCapabilityQuestion.single.placeholder": "Select an option",
   "core.capability.validation": "Invalid capability combinations: %s, option sets: %s are mutually exclusive",

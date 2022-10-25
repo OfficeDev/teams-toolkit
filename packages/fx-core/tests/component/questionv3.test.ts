@@ -9,6 +9,7 @@ import {
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
   FeatureId,
+  getQuestionsForAddFeature,
 } from "../../src/component/question";
 import {
   ApiConnectionOptionItem,
@@ -105,17 +106,17 @@ describe("question for v3", () => {
     assert.isTrue(res.isOk());
   });
 
-  it("getQuestionsForAddFeatureV3 - CLI_HELP", async () => {
+  it("getQuestionsForAddFeature - CLI_HELP", async () => {
     const context = createContextV3();
     const inputs: InputsWithProjectPath = {
       platform: Platform.CLI_HELP,
       projectPath: ".",
     };
-    const res = await getQuestionsForAddFeatureV3(context, inputs);
+    const res = await getQuestionsForAddFeature(context, inputs);
     assert.isTrue(res.isOk());
   });
 
-  it("getQuestionsForAddFeatureV3 - VS Code", async () => {
+  it("getQuestionsForAddFeature - VS Code", async () => {
     const manifest = new TeamsAppManifest();
     manifest.staticTabs = [];
     manifest.bots = [];
@@ -150,11 +151,11 @@ describe("question for v3", () => {
       projectPath: ".",
     };
     const context = createContextV3(projectSettings);
-    const res = await getQuestionsForAddFeatureV3(context, inputs);
+    const res = await getQuestionsForAddFeature(context, inputs);
     assert.isTrue(res.isOk());
   });
 
-  it("getQuestionsForAddFeatureV3 for tab - VS Code", async () => {
+  it("getQuestionsForAddFeature for tab - VS Code", async () => {
     const manifest = new TeamsAppManifest();
     manifest.staticTabs = [];
     manifest.bots = [];
@@ -189,7 +190,7 @@ describe("question for v3", () => {
       projectPath: ".",
     };
     const context = createContextV3(projectSettings);
-    const res = await getQuestionsForAddFeatureV3(context, inputs);
+    const res = await getQuestionsForAddFeature(context, inputs);
     assert.isTrue(res.isOk());
     if (res.isOk()) {
       const node = res.value;
@@ -223,7 +224,7 @@ describe("question for v3", () => {
     }
   });
 
-  it("getQuestionsForAddFeatureV3 for SPFx - VS Code", async () => {
+  it("getQuestionsForAddFeature for SPFx - VS Code", async () => {
     const manifest = new TeamsAppManifest();
     manifest.staticTabs = [];
     manifest.bots = [];
@@ -255,7 +256,7 @@ describe("question for v3", () => {
       projectPath: ".",
     };
     const context = createContextV3(projectSettings);
-    const res = await getQuestionsForAddFeatureV3(context, inputs);
+    const res = await getQuestionsForAddFeature(context, inputs);
     assert.isTrue(res.isOk());
   });
 
@@ -310,7 +311,7 @@ describe("question for v3", () => {
       assert.isTrue(res.isOk());
     }
   });
-  it("getQuestionsForAddFeatureV3 for Message Extension - VS Code", async () => {
+  it("getQuestionsForAddFeature for Message Extension - VS Code", async () => {
     const manifest = new TeamsAppManifest();
     manifest.staticTabs = [];
     manifest.bots = [];
@@ -344,7 +345,7 @@ describe("question for v3", () => {
       projectPath: ".",
     };
     const context = createContextV3(projectSettings);
-    const res = await getQuestionsForAddFeatureV3(context, inputs);
+    const res = await getQuestionsForAddFeature(context, inputs);
     assert.isTrue(res.isOk());
     const expectedOptions = [
       TabNewUIOptionItem,

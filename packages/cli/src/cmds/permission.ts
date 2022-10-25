@@ -82,13 +82,6 @@ export class PermissionStatus extends YargsCommand {
       return err(result.error);
     }
 
-    // Throw error if --env not specified
-    if (!args[env]) {
-      const error = new EnvNotSpecified();
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
-      return err(error);
-    }
-
     const core = result.value;
     const listAll = args[this.listAllCollaborators];
     const inputs = getSystemInputs(rootFolder, args.env);
@@ -106,6 +99,13 @@ export class PermissionStatus extends YargsCommand {
         CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
       }
     } else {
+      // Throw error if --env not specified
+      if (!args[env]) {
+        const error = new EnvNotSpecified();
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
+        return err(error);
+      }
+
       // print necessary messages
       CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
       CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
@@ -178,13 +178,6 @@ export class PermissionGrant extends YargsCommand {
       return err(result.error);
     }
 
-    // Throw error if --env not specified
-    if (!args[env]) {
-      const error = new EnvNotSpecified();
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
-      return err(error);
-    }
-
     const answers = argsToInputs(this.params, args);
     const core = result.value;
 
@@ -201,6 +194,13 @@ export class PermissionGrant extends YargsCommand {
         CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
       }
     } else {
+      // Throw error if --env not specified
+      if (!args[env]) {
+        const error = new EnvNotSpecified();
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
+        return err(error);
+      }
+
       // print necessary messages
       CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
       CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);

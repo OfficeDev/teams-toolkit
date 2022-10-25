@@ -695,8 +695,8 @@ export async function grantPermission(
         ];
         ctx.userInteraction.showMessage("info", message, false);
       }
-      // Always show helplink for spfx
-      if (isV3Enabled() || hasSPFxTab(ctx.projectSetting)) {
+      // Will not show helplink for v3
+      if (!isV3Enabled() && hasSPFxTab(ctx.projectSetting)) {
         ctx.userInteraction.showMessage(
           "info",
           getLocalizedString("core.collaboration.SharePointTip") +
@@ -704,8 +704,8 @@ export async function grantPermission(
           false
         );
       }
-      // Always show helplink for azure
-      if (isV3Enabled() || hasAzureResourceV3(ctx.projectSetting)) {
+      // Will not show helplink for v3
+      if (!isV3Enabled() && hasAzureResourceV3(ctx.projectSetting)) {
         ctx.userInteraction.showMessage(
           "info",
           getLocalizedString("core.collaboration.AzureTip") + AzureRoleAssignmentsHelpLink,

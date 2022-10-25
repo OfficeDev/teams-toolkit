@@ -43,7 +43,17 @@ import {
 } from "./constants";
 import * as crypto from "crypto";
 import { FailedToParseResourceIdError } from "../core/error";
-import { PluginNames, SolutionError, SolutionSource } from "../component/constants";
+import {
+  PluginNames,
+  SolutionError,
+  SolutionSource,
+  HostTypeOptionAzure,
+  TabSsoItem,
+  BotSsoItem,
+  BotOptionItem,
+  TabOptionItem,
+  MessageExtensionItem,
+} from "../component/constants";
 import Mustache from "mustache";
 import {
   Component,
@@ -52,14 +62,6 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "./telemetry";
-import {
-  HostTypeOptionAzure,
-  TabSsoItem,
-  BotSsoItem,
-  BotOptionItem,
-  TabOptionItem,
-  MessageExtensionItem,
-} from "../component/constants";
 import { TOOLS } from "../core/globalVars";
 import { LocalCrypto } from "../core/crypto";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
@@ -568,11 +570,13 @@ export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): b
 // 2. Not minimal app
 export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Promise<boolean> {
   // Not include `Add CICD Workflows` in minimal app case.
-  const isExistingApp =
-    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id &&
-    isMiniApp(ctx.projectSetting as ProjectSettingsV3);
-  if (isExistingApp) {
-    return false;
+  if (!isV3Enabled()) {
+    const isExistingApp =
+      ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id &&
+      isMiniApp(ctx.projectSetting as ProjectSettingsV3);
+    if (isExistingApp) {
+      return false;
+    }
   }
 
   if (!inputs.projectPath) {

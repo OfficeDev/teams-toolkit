@@ -169,13 +169,8 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    let res;
-    if (isV3Enabled()) {
-      res = await coordinator.create(context, inputs as InputsWithProjectPath);
-    } else {
-      const fx = Container.get("fx") as any;
-      res = await fx.create(context, inputs as InputsWithProjectPath);
-    }
+    const fx = Container.get("fx") as any;
+    const res = await fx.create(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;

@@ -115,7 +115,24 @@ describe("question for v3", () => {
     const res = await getQuestionsForAddFeature(context, inputs);
     assert.isTrue(res.isOk());
   });
-
+  it("getQuestionsForAddFeatureV3 - CLI_HELP", async () => {
+    const context = createContextV3();
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.CLI_HELP,
+      projectPath: ".",
+    };
+    const res = await getQuestionsForAddFeatureV3(context, inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("getQuestionsForAddFeatureV3 - VS Code", async () => {
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const context = createContextV3();
+    const res = await getQuestionsForAddFeatureV3(context, inputs);
+    assert.isTrue(res.isOk());
+  });
   it("getQuestionsForAddFeature - VS Code", async () => {
     const manifest = new TeamsAppManifest();
     manifest.staticTabs = [];
@@ -154,7 +171,6 @@ describe("question for v3", () => {
     const res = await getQuestionsForAddFeature(context, inputs);
     assert.isTrue(res.isOk());
   });
-
   it("getQuestionsForAddFeature for tab - VS Code", async () => {
     const manifest = new TeamsAppManifest();
     manifest.staticTabs = [];

@@ -38,7 +38,6 @@ export const commands: YargsCommand[] = [
   new Config(),
   new Preview(),
   new Env(),
-  ...(isV3Enabled() ? [new ApplyCommand()] : []),
 ];
 
 /**
@@ -48,6 +47,9 @@ export const commands: YargsCommand[] = [
 export function registerCommands(yargs: Argv): void {
   if (isRemoteCollaborationEnabled()) {
     commands.push(new Permission());
+  }
+  if (isV3Enabled()) {
+    commands.push(new ApplyCommand());
   }
 
   commands.forEach((command) => {

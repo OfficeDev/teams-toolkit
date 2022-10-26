@@ -9,3 +9,8 @@ export enum TemplateType {
   Json = "json",
   Bicep = "bicep",
 }
+
+export const TelemetryProperties = {
+  jsonTemplateCount: "json-template-count",
+  bicepTemplateCount: "bicep-template-count",
+};

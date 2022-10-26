@@ -3,19 +3,19 @@
 
 "use strict";
 
-import { Argv, Options } from "yargs";
-import { FxError, err, ok, Result, Platform, Func, Stage, Inputs } from "@microsoft/teamsfx-api";
+import { Argv } from "yargs";
+import { FxError, err, ok, Result } from "@microsoft/teamsfx-api";
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
-import { argsToInputs, getTeamsAppTelemetryInfoByEnv } from "../utils";
-import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
+import { getSystemInputs, getTeamsAppTelemetryInfoByEnv } from "../utils";
+import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import HelpParamGenerator from "../helpParamGenerator";
 import { getHashedEnv } from "@microsoft/teamsfx-core/build/common/tools";
+import { EnvOptions, RootFolderOptions } from "../constants";
 
 export default class Publish extends YargsCommand {
   public readonly commandHead = `publish`;
@@ -23,63 +23,42 @@ export default class Publish extends YargsCommand {
   public readonly description = "Publish the app to Teams.";
 
   public builder(yargs: Argv): Argv<any> {
-    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.publish);
-    return yargs.version(false).options(this.params);
+    return yargs.version(false).options(RootFolderOptions).options(EnvOptions);
   }
 
-  public async runCommand(args: {
-    [argName: string]: string | string[];
-  }): Promise<Result<null, FxError>> {
-    const answers = argsToInputs(this.params, args);
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    const inputs = getSystemInputs(args.folder, args.env);
 
-    const manifestFolderParamName = "manifest-folder";
-    let result;
-    // if input manifestFolderParam(actually also teams-app-id param),
-    // this call is from VS platform, since CLI hide these two param from users.
-    if (answers[manifestFolderParamName] && answers["teams-app-id"]) {
-      CliTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart);
-      result = await activate();
-    } else {
-      const rootFolder = answers.projectPath!;
-      CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.PublishStart);
-      result = await activate(rootFolder);
-    }
-
-    if (result.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Publish, result.error);
-      return err(result.error);
-    }
-
-    const core = result.value;
-    if (answers[manifestFolderParamName] && answers["teams-app-id"]) {
-      answers.platform = Platform.VS;
-      const func: Func = {
-        namespace: "fx-solution-azure",
-        method: "VSpublish",
-      };
-      result = await core.executeUserTask!(func, answers);
-    } else {
-      result = await core.publishApplication(answers);
-    }
-
-    // For VS, use appid from `answers['teams-app-id']`, for other cases, use appid from config files in projectPath
     const properties: { [key: string]: string } = {};
-    if (answers.env) {
-      properties[TelemetryProperty.Env] = getHashedEnv(answers.env);
+    if (inputs.env) {
+      properties[TelemetryProperty.Env] = getHashedEnv(inputs.env);
     }
-    if (answers[manifestFolderParamName] && answers["teams-app-id"]) {
-      properties[TelemetryProperty.AppId] = answers["teams-app-id"];
-    } else if (answers.projectPath && answers.env) {
-      const appInfo = getTeamsAppTelemetryInfoByEnv(answers.projectPath, answers.env);
+    if (inputs.projectPath && inputs.env) {
+      const appInfo = getTeamsAppTelemetryInfoByEnv(inputs.projectPath, inputs.env);
       if (appInfo) {
         properties[TelemetryProperty.AppId] = appInfo.appId;
         properties[TelemetryProperty.TenantId] = appInfo.tenantId;
       }
     }
 
+    const rootFolder = inputs.projectPath!;
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(
+      TelemetryEvent.PublishStart,
+      properties
+    );
+    const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Publish, result.error, properties);
       return err(result.error);
+    }
+    const core = result.value;
+    {
+      const result = await core.publishApplication(inputs);
+
+      if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Publish, result.error, properties);
+        return err(result.error);
+      }
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Publish, {

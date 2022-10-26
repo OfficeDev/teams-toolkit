@@ -65,6 +65,7 @@ export enum Stage {
   addResource = "addResource",
   addCapability = "addCapability",
   addCiCdFlow = "addCiCdFlow",
+  deployAad = "deployAad",
 }
 
 export enum TelemetryEvent {

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, Platform, Stage } from "@microsoft/teamsfx-api";
-import { assert } from "chai";
+import { Inputs, Platform, Stage, Ok, Err, FxError, UserError } from "@microsoft/teamsfx-api";
+import { assert, expect } from "chai";
 import fs from "fs-extra";
 import "mocha";
 import { RestoreFn } from "mocked-env";
@@ -28,6 +28,11 @@ import {
 } from "../../src/component/constants";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 import * as templateActions from "../../src/common/template-utils/templatesActions";
+import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
+import AdmZip from "adm-zip";
+import { NoAadManifestExistError } from "../../src/core/error";
+import "../../src/component/driver/aad/update";
+
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -154,6 +159,114 @@ describe("Core basic APIs", () => {
     assert.isTrue(activateEnvRes.isOk());
   });
 
+  it("deploy aad manifest happy path with param", async () => {
+    const core = new FxCore(tools);
+    const appName = mockV3Project();
+    // sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+    };
+
+    const runSpy = sandbox.spy(UpdateAadAppDriver.prototype, "run");
+    await core.deployAadManifest(inputs);
+    sandbox.assert.calledOnce(runSpy);
+    assert.isNotNull(runSpy.getCall(0).args[0]);
+    assert.strictEqual(
+      runSpy.getCall(0).args[0].manifestTemplatePath,
+      path.join(os.tmpdir(), appName, "samples-v3", ".fx", "aad.template.json")
+    );
+    runSpy.restore();
+  });
+
+  it("deploy aad manifest happy path", async () => {
+    const core = new FxCore(tools);
+    const appName = mockV3Project();
+    sandbox.stub(UpdateAadAppDriver.prototype, "run").resolves(new Ok(new Map()));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+    };
+    const res = await core.deployAadManifest(inputs);
+    assert.isTrue(await fs.pathExists(path.join(os.tmpdir(), appName, "samples-v3", "build")));
+    await deleteTestProject(appName);
+    assert.isTrue(res.isOk());
+  });
+
+  it("deploy aad manifest return err", async () => {
+    const core = new FxCore(tools);
+    const appName = mockV3Project();
+    const appManifestPath = path.join(
+      os.tmpdir(),
+      appName,
+      "samples-v3",
+      ".fx",
+      "aad.template.json"
+    );
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+    };
+    sandbox
+      .stub(UpdateAadAppDriver.prototype, "run")
+      .throws(new UserError("error name", "fake_error", "fake_err_msg"));
+    const errMsg = `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`;
+    const res = await core.deployAadManifest(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.strictEqual(res.error.message, "fake_err_msg");
+    }
+  });
+
+  it("deploy aad manifest not exist", async () => {
+    const core = new FxCore(tools);
+    const appName = mockV3Project();
+    const appManifestPath = path.join(
+      os.tmpdir(),
+      appName,
+      "samples-v3",
+      ".fx",
+      "aad.template.json"
+    );
+    await fs.remove(appManifestPath);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [CoreQuestionNames.Folder]: os.tmpdir(),
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+    };
+    const errMsg = `AAD manifest doesn't exist in ${appManifestPath}, please use the CLI to specify an AAD manifest to deploy.`;
+    const res = await core.deployAadManifest(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof NoAadManifestExistError);
+      assert.equal(res.error.message, errMsg);
+    }
+    await deleteTestProject(appName);
+  });
+
   it("ProgrammingLanguageQuestion", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -203,3 +316,14 @@ describe("Core basic APIs", () => {
     }
   });
 });
+
+function mockV3Project(): string {
+  const zip = new AdmZip(path.join(__dirname, "./samples_v3.zip"));
+  const appName = randomAppName();
+  zip.extractAllTo(path.join(os.tmpdir(), appName));
+  return appName;
+}
+
+async function deleteTestProject(appName: string) {
+  await fs.remove(path.join(os.tmpdir(), appName));
+}

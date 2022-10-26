@@ -1,0 +1,5 @@
+provision:
+  - name: test
+    uses: some_unknown_driver
+    with:
+      name: mybot

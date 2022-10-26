@@ -20,6 +20,7 @@ import {
   UserError,
   UserCancelError,
   SystemError,
+  LogProvider,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
@@ -156,6 +157,33 @@ export async function createTeamsApp(
   } else {
     return ok(teamsAppId);
   }
+}
+
+export async function checkIfAppInDifferentAcountSameTenant(
+  teamsAppId: string,
+  tokenProvider: M365TokenProvider,
+  logger: LogProvider
+): Promise<Result<boolean, FxError>> {
+  const appStudioTokenRes = await tokenProvider.getAccessToken({
+    scopes: AppStudioScopes,
+  });
+  if (appStudioTokenRes.isErr()) {
+    return err(appStudioTokenRes.error);
+  }
+
+  const appStudioToken = appStudioTokenRes.value;
+
+  try {
+    await AppStudioClient.getApp(teamsAppId, appStudioToken, logger);
+  } catch (error: any) {
+    if (error.message && error.message.includes("404")) {
+      const exists = await AppStudioClient.checkExistsInTenant(teamsAppId, appStudioToken, logger);
+
+      return ok(exists);
+    }
+  }
+
+  return ok(false);
 }
 
 /**

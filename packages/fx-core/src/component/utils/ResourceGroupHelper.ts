@@ -20,6 +20,7 @@ import {
   UserInteraction,
   v2,
 } from "@microsoft/teamsfx-api";
+import { rm } from "fs";
 import { PluginDisplayName } from "../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { TOOLS } from "../../core/globalVars";
@@ -265,60 +266,7 @@ export class ResourceGroupHelper {
     rmClient: ResourceManagementClient,
     defaultResourceGroupName: string
   ): Promise<Result<ResourceGroupInfo, FxError>> {
-    const listRgRes = await this.listResourceGroups(rmClient);
-    if (listRgRes.isErr()) return err(listRgRes.error);
-
-    const getLocationsRes = await this.getLocations(azureAccountProvider, rmClient);
-    if (getLocationsRes.isErr()) {
-      return err(getLocationsRes.error);
-    }
-
-    const node = await this.getQuestionsForResourceGroup(
-      defaultResourceGroupName,
-      listRgRes.value,
-      getLocationsRes.value,
-      rmClient
-    );
-    if (node) {
-      const res = await traverse(node, inputs, ctx.userInteraction);
-      if (res.isErr()) {
-        ctx.logProvider?.debug(
-          `[${PluginDisplayName.Solution}] failed to run question model for target resource group.`
-        );
-        return err(res.error);
-      }
-
-      const desensitized = desensitize(node, inputs);
-      ctx.logProvider?.info(
-        `[${
-          PluginDisplayName.Solution
-        }] success to run question model for resource group, answers:${JSON.stringify(
-          desensitized
-        )}`
-      );
-    }
-    const targetResourceGroupName = inputs.targetResourceGroupName;
-    if (!targetResourceGroupName || typeof targetResourceGroupName !== "string") {
-      return err(
-        new UserError(SolutionSource, "InvalidInputError", "Invalid targetResourceGroupName")
-      );
-    }
-    const resourceGroupName = inputs.targetResourceGroupName;
-    if (resourceGroupName === newResourceGroupOption) {
-      return ok({
-        name: inputs[CoreQuestionNames.NewResourceGroupName],
-        location: inputs[CoreQuestionNames.NewResourceGroupLocation],
-        createNewResourceGroup: true,
-      });
-    } else {
-      const target = listRgRes.value.find((item) => item[0] == targetResourceGroupName);
-      const location = target![1]; // location must exist because the user can only select from this list.
-      return ok({
-        createNewResourceGroup: false,
-        name: targetResourceGroupName,
-        location: location,
-      });
-    }
+    return this.askResourceGroupInfoV3(azureAccountProvider, rmClient, defaultResourceGroupName);
   }
 
   /**

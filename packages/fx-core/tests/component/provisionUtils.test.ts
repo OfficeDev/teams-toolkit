@@ -9,14 +9,19 @@ import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelp
 import {
   MockAzureAccountProvider,
   MockM365TokenProvider,
+  MockTools,
   MockUserInteraction,
 } from "../core/utils";
 import { MyTokenCredential } from "../plugins/solution/util";
 import { assert } from "console";
+import { setTools } from "../../src/core/globalVars";
 
 const expect = chai.expect;
 
 describe("provisionUtils", () => {
+  const tools = new MockTools();
+  setTools(tools);
+
   describe("checkProvisionSubscription", () => {
     const mocker = sinon.createSandbox();
 
@@ -946,62 +951,92 @@ describe("provisionUtils", () => {
     });
   });
 
-  describe("ensureSubscription", () => {
+  describe("ensureResourceGroup", () => {
     const mocker = sinon.createSandbox();
-
     afterEach(() => {
       mocker.restore();
     });
-    it("no givenSubscriptionId - fail to select", async () => {
+    it("fail: azure token undefined", async () => {
       const azureAccountProvider = new MockAzureAccountProvider();
-      mocker
-        .stub(azureAccountProvider, "getIdentityCredentialAsync")
-        .resolves(new MyTokenCredential());
-      mocker.stub(azureAccountProvider, "getSelectedSubscription").resolves(undefined);
-      const res = await provisionUtils.ensureSubscription(azureAccountProvider);
+      mocker.stub(azureAccountProvider, "getIdentityCredentialAsync").resolves(undefined);
+      const res = await provisionUtils.ensureResourceGroup(azureAccountProvider, "mockSubId");
       assert(res.isErr());
     });
-    it("no givenSubscriptionId - success to select", async () => {
+    it("fail: given invalid resource group 1", async () => {
       const azureAccountProvider = new MockAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
-      mocker.stub(azureAccountProvider, "getSelectedSubscription").resolves({
-        subscriptionId: "mockSubId",
-        tenantId: "mockTenantId",
-        subscriptionName: "mockSubName",
-      });
-      const res = await provisionUtils.ensureSubscription(azureAccountProvider);
+      mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(undefined);
+      const res = await provisionUtils.ensureResourceGroup(azureAccountProvider, "mockSubId");
+      assert(res.isErr());
+    });
+    it("fail: given invalid resource group 2", async () => {
+      const azureAccountProvider = new MockAzureAccountProvider();
+      mocker
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      mocker
+        .stub(resourceGroupHelper, "getResourceGroupInfo")
+        .resolves(err(new UserError({ source: "src", name: "TestError", message: "test" })));
+      const res = await provisionUtils.ensureResourceGroup(
+        azureAccountProvider,
+        "mockSubId",
+        "mockRG"
+      );
+      assert(res.isErr());
+    });
+    it("success: given valid resource group", async () => {
+      const azureAccountProvider = new MockAzureAccountProvider();
+      mocker
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(
+        ok({
+          createNewResourceGroup: true,
+          name: "test-rg",
+          location: "East US",
+        })
+      );
+      const res = await provisionUtils.ensureResourceGroup(
+        azureAccountProvider,
+        "mockSubId",
+        "mockRG"
+      );
       assert(res.isOk());
     });
-    it("givenSubscriptionId - permission pass", async () => {
+
+    it("success: ask resource group", async () => {
       const azureAccountProvider = new MockAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
-      mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
-        {
-          subscriptionId: "mockSubId",
-          tenantId: "mockTenantId",
-          subscriptionName: "mockSubName",
-        },
-      ]);
-      const res = await provisionUtils.ensureSubscription(azureAccountProvider, "mockSubId");
+      mocker.stub(resourceGroupHelper, "askResourceGroupInfoV3").resolves(
+        ok({
+          createNewResourceGroup: true,
+          name: "test-rg",
+          location: "East US",
+        })
+      );
+      mocker.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("mockRG"));
+      const res = await provisionUtils.ensureResourceGroup(azureAccountProvider, "mockSubId");
       assert(res.isOk());
     });
-    it("givenSubscriptionId - permission fail", async () => {
+
+    it("success: ask resource group", async () => {
       const azureAccountProvider = new MockAzureAccountProvider();
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
-      mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
-        {
-          subscriptionId: "mockSubId2",
-          tenantId: "mockTenantId",
-          subscriptionName: "mockSubName",
-        },
-      ]);
-      const res = await provisionUtils.ensureSubscription(azureAccountProvider, "mockSubId");
+      mocker.stub(resourceGroupHelper, "askResourceGroupInfoV3").resolves(
+        ok({
+          createNewResourceGroup: true,
+          name: "test-rg",
+          location: "East US",
+        })
+      );
+      mocker.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("mockRG"));
+      const res = await provisionUtils.ensureResourceGroup(azureAccountProvider, "mockSubId");
       assert(res.isOk());
     });
   });

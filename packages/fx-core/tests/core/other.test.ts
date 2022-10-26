@@ -10,6 +10,7 @@ import {
   Json,
   Platform,
   ProjectSettings,
+  Settings,
   Stage,
   SubscriptionInfo,
   SystemError,
@@ -335,9 +336,58 @@ describe("Other test case", () => {
       version: "1.0.0",
       projectId: "123",
     };
-    sandbox.stub(fs, "readJsonSync").resolves(projectSettings);
+    sandbox.stub(fs, "readJsonSync").returns(projectSettings);
     const isValid = isValidProject("aaa");
     assert.isTrue(isValid);
+  });
+  it("isValidProject v3: true", async () => {
+    const mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const settings: Settings = {
+        version: "1.0.0",
+        projectId: "123",
+        isFromSample: false,
+      };
+      sandbox.stub(fs, "readJsonSync").returns(settings);
+      const isValid = isValidProject("aaa");
+      assert.isTrue(isValid);
+    } finally {
+      mockedEnvRestore();
+    }
+  });
+  it("isValidProject v3: false case 1", async () => {
+    const mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const settings: any = {
+        version: "1.0.0",
+        isFromSample: false,
+      };
+      sandbox.stub(fs, "readJsonSync").returns(settings);
+      const isValid = isValidProject("aaa");
+      assert.isFalse(isValid);
+    } finally {
+      mockedEnvRestore();
+    }
+  });
+  it("isValidProject v3: false case 2", async () => {
+    const mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const settings: any = {
+        projectId: "123",
+        isFromSample: false,
+      };
+      sandbox.stub(fs, "readJsonSync").returns(settings);
+      const isValid = isValidProject("aaa");
+      assert.isFalse(isValid);
+    } finally {
+      mockedEnvRestore();
+    }
   });
   it("getQuestionsForResourceGroup", async () => {
     const mockSubscriptionId = "mockSub";

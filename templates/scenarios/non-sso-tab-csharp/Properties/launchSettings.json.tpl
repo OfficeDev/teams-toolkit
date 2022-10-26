@@ -11,7 +11,7 @@
       },
       "hotReloadProfile": "aspnetcore"
     },
-    "MyTeamsApp1": {
+    "{{ProjectName}}": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,

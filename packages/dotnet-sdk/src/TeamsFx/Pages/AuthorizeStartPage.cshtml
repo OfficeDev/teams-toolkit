@@ -42,12 +42,12 @@
                     redirect_uri: window.location.origin + "/auth-end.html",
                     nonce: _guid(),
                     state: state,
-                    login_hint: context.loginHint,
+                    login_hint: context.user.loginHint,
                     code_challenge: codeChallenge,
                     code_challenge_method: "S256"
                 };
 
-                let authorizeEndpoint = `https://login.microsoftonline.com/${context.tid}/oauth2/v2.0/authorize?${toQueryString(queryParams)}`;
+                let authorizeEndpoint = `https://login.microsoftonline.com/${context.user.tenant.id}/oauth2/v2.0/authorize?${toQueryString(queryParams)}`;
                 window.location.assign(authorizeEndpoint);
             });
         });

@@ -6,7 +6,6 @@ import * as jsonschema from "jsonschema";
 import * as path from "path";
 import { Container } from "typedi";
 import * as uuid from "uuid";
-
 import { hooks } from "@feathersjs/hooks";
 import {
   AppPackageFolderName,
@@ -59,13 +58,13 @@ import { environmentManager, newEnvInfoV3 } from "./environment";
 import {
   CopyFileError,
   InvalidInputError,
-  NonExistEnvNameError,
   NotImplementedError,
   ObjectIsUndefinedError,
   OperationNotPermittedError,
   ProjectFolderExistError,
   TaskNotSupportError,
   WriteFileError,
+  NoAadManifestExistError,
 } from "./error";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
 import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
@@ -108,6 +107,8 @@ import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { copyParameterJson } from "../component/arm";
 import { ProjectSettingsHelper } from "../common/local";
+import "../component/driver/aad/update";
+import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
 import { ValidateTeamsAppDriver } from "../component/driver/teamsApp/validate";
 import { ValidateTeamsAppArgs } from "../component/driver/teamsApp/interfaces/ValidateTeamsAppArgs";
 import { DriverContext } from "../component/driver/interface/commonArgs";
@@ -167,8 +168,28 @@ export class FxCore implements v3.ICore {
     return result;
   }
 
+  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
+    if (isV3Enabled()) return this.createProjectNew(inputs);
+    else return this.createProjectOld(inputs);
+  }
+
+  @hooks([ErrorHandlerMW, ContextInjectorMW])
+  async createProjectNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+    if (!ctx) {
+      return err(new ObjectIsUndefinedError("ctx for createProject"));
+    }
+    setCurrentStage(Stage.create);
+    inputs.stage = Stage.create;
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    ctx.projectSettings = context.projectSetting;
+    inputs.projectPath = context.projectPath;
+    return ok(inputs.projectPath!);
+  }
+
   @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
-  async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+  async createProjectOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
@@ -278,6 +299,51 @@ export class FxCore implements v3.ICore {
   async localDebug(inputs: Inputs): Promise<Result<Void, FxError>> {
     inputs.env = environmentManager.getLocalEnvName();
     return this.provisionResources(inputs);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    ContextInjectorMW,
+    EnvInfoWriterMW_V3(),
+  ])
+  async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.deployAad);
+    inputs.stage = Stage.deployAad;
+    const updateAadClient = Container.get("aadApp/update") as any;
+    // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
+    const manifestTemplatePath: string = path.join(inputs.projectPath!, ".fx", "aad.template.json");
+    if (!(await fs.pathExists(manifestTemplatePath))) {
+      return err(new NoAadManifestExistError(manifestTemplatePath));
+    }
+    await fs.ensureDir(path.join(inputs.projectPath!, "build"));
+    const manifestOutputPath: string = path.join(
+      inputs.projectPath!,
+      "build",
+      `aad.${inputs.env}.json`
+    );
+    const inputArgs: UpdateAadAppArgs = {
+      manifestTemplatePath: manifestTemplatePath,
+      outputFilePath: manifestOutputPath,
+    };
+    const contextV3: DriverContext = {
+      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider,
+      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider,
+      ui: TOOLS.ui,
+      logProvider: TOOLS.logProvider,
+      telemetryReporter: TOOLS.telemetryReporter!,
+      projectPath: inputs.projectPath as string,
+      platform: Platform.VSCode,
+    };
+    const res = await updateAadClient.run(inputArgs, contextV3);
+    if (res.isErr()) return err(res.error);
+    return ok(Void);
   }
 
   @hooks([

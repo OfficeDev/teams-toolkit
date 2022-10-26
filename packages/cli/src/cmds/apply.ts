@@ -40,10 +40,7 @@ export class ApplyCommand extends YargsCommand {
         choices: ["registerApp", "configureApp", "provision", "deploy", "publish"],
       },
     };
-    if (this.params) {
-      yargs.options(this.params);
-    }
-    return yargs.version(false);
+    return yargs.options(this.params).version(false);
   }
 
   public async runCommand(args: {

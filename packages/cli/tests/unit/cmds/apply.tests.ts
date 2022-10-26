@@ -3,19 +3,14 @@
 
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
-import { err, Func, FxError, Inputs, ok, UserError, Void } from "@microsoft/teamsfx-api";
+import { FxError, ok, Void } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "../../../src/telemetry/cliTelemetryEvents";
+import { TelemetryProperty, TelemetrySuccess } from "../../../src/telemetry/cliTelemetryEvents";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import { ApplyCommand } from "../../../src/cmds/apply";
 import { expect } from "../utils";
 import * as constants from "../../../src/constants";
-import { NotSupportedProjectType } from "../../../src/error";
 
 describe("teamsfx apply", function () {
   const sandbox = sinon.createSandbox();
@@ -71,6 +66,11 @@ describe("teamsfx apply", function () {
     const cmd = new ApplyCommand();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     expect(registeredCommands).deep.equals(["apply"]);
+    expect(options)
+      .contains("template")
+      .and.contains("folder")
+      .and.contains("env")
+      .and.contains("lifecycle");
   });
 
   it("apply command should return normally if apply returns ok", async () => {

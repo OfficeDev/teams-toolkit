@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 export function initialize() {
-    microsoftTeams.app.initialize();
+    return microsoftTeams.app.initialize();
 }
 
 export function authenticate(url) {
-    microsoftTeams.authentication.authenticate({
+    return microsoftTeams.authentication.authenticate({
         url: url,
         width: 600,
         height: 535,
@@ -14,5 +14,5 @@ export function authenticate(url) {
 }
 
 export function getAuthToken(...resources) {
-    microsoftTeams.authentication.getAuthToken(...resources);
+    return microsoftTeams.authentication.getAuthToken(...resources);
 }

@@ -1,0 +1,39 @@
+﻿@using Microsoft.Extensions.Configuration
+@using System.IO
+@inject NavigationManager MyNavigationManager
+@inject IConfiguration Configuration
+@inject IJSRuntime jsRuntime
+@inject MicrosoftTeams MicrosoftTeams
+
+@if (isLoaded)
+{
+    @ChildContent
+}
+else
+{
+	<div style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+		<FluentProgressRing/>
+	</div>
+}
+
+@code {
+	bool isLoaded;
+
+	[Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		await base.OnAfterRenderAsync(firstRender);
+
+		try
+		{
+			if (firstRender)
+			{
+				isLoaded = true;
+				StateHasChanged();
+			}
+		}
+		catch (Exception) { }	
+	}
+}

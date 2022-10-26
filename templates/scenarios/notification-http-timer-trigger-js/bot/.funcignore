@@ -1,0 +1,14 @@
+.development
+.DS_Store
+.git*
+.notification.localstore.json
+.vscode
+*.js.map
+*.ts
+_storage_emulator
+local.settings.json
+node_modules/.bin
+node_modules/azure-functions-core-tools
+node_modules/azurite
+README.md
+tsconfig.json

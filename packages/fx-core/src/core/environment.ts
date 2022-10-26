@@ -37,7 +37,7 @@ import {
   mapToJson,
   compileHandlebarsTemplateString,
 } from "../common/tools";
-import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
+import { GLOBAL_CONFIG } from "../component/constants";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";

@@ -5,37 +5,58 @@ import { Effect } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export class ProgressTitles {
-  static readonly scaffoldTab = "Scaffolding Tab";
-  static readonly scaffoldBot = "Scaffolding Bot";
-  static readonly scaffoldApi = "Scaffolding Api";
-  static readonly buildingTab = "Building Tab";
-  static readonly buildingBot = "Building Bot";
-  static readonly buildingApi = "Building Api";
-  static readonly provisionBot = "Registering Bot";
-  static readonly configureStorage = "Configuring Tab";
+  static readonly scaffoldTab = getLocalizedString("core.progress.scaffoldTab");
+  static readonly scaffoldBot = getLocalizedString("core.progress.scaffoldBot");
+  static readonly scaffoldApi = getLocalizedString("core.progress.scaffoldApi");
+  static readonly buildingTab = getLocalizedString("core.progress.buildingTab");
+  static readonly buildingBot = getLocalizedString("core.progress.buildingBot");
+  static readonly buildingApi = getLocalizedString("core.progress.buildingApi");
+  static readonly provisionBot = getLocalizedString("core.progress.provisionBot");
+  static readonly generateTemplate = getLocalizedString("core.progress.generateTemplate");
+  static readonly generateSample = getLocalizedString("core.progress.generateSample");
+  static readonly configureStorage = getLocalizedString("core.progress.configureStorage");
   // Deploying Azure Functions [Bot]
   static readonly deploying = (component: string, scenario?: string): string =>
     `Deploying ${component}` + (scenario ? `[${scenario}]` : "");
 }
 
 export class ProgressMessages {
-  static readonly scaffoldTab = "Scaffolding Tab frontend project.";
-  static readonly scaffoldBot = "Retrieving templates.";
-  static readonly scaffoldApi = "Scaffolding Function Api project.";
-  static readonly buildingTab = "Building Tab frontend project";
-  static readonly buildingBot = "Installing dependencies.";
-  static readonly buildingApi = "Building Function Api.";
-  static readonly packingCode = "Creating application package.";
-  static readonly enableStaticWebsite = "Enabling Azure Storage account static website.";
-  static readonly provisionBot = "Registering bot.";
-  static readonly getDeploymentSrcAndDest = "Retrieving deployment source and destination.";
-  static readonly clearStorageAccount = "Cleaning up Azure Storage account.";
-  static readonly uploadTabToStorage = "Uploading Tab frontend to Azure Storage account.";
+  static readonly scaffoldTab = getLocalizedString("core.progress.scaffoldTab.detail");
+  static readonly scaffoldBot = getLocalizedString("core.progress.scaffoldBot.detail");
+  static readonly scaffoldApi = getLocalizedString("core.progress.scaffoldApi.detail");
+  static readonly buildingTab = getLocalizedString("core.progress.buildingTab.detail");
+  static readonly buildingBot = getLocalizedString("core.progress.buildingBot.detail");
+  static readonly buildingApi = getLocalizedString("core.progress.buildingApi.detail");
+  static readonly packingCode = getLocalizedString("core.progress.packingCode");
+  static readonly enableStaticWebsite = getLocalizedString("core.progress.enableStaticWebsite");
+  static readonly provisionBot = getLocalizedString("core.progress.provisionBot");
+  static readonly generateTemplate = getLocalizedString("core.progress.generateTemplate.detail");
+  static readonly generateSample = getLocalizedString("core.progress.generateSample.detail");
+  static readonly getDeploymentSrcAndDest = getLocalizedString(
+    "core.progress.getDeploymentSrcAndDest"
+  );
+  static readonly clearStorageAccount = getLocalizedString("core.progress.clearStorageAccount");
+  static readonly uploadTabToStorage = getLocalizedString("core.progress.uploadTabToStorage");
+  static readonly getAzureAccountInfoForDeploy = getLocalizedString(
+    "core.progress.getAzureAccountInfoForDeploy"
+  );
+  static readonly getAzureUploadEndpoint = getLocalizedString(
+    "core.progress.getAzureUploadEndpoint"
+  );
+  static readonly uploadZipFileToAzure = getLocalizedString("core.progress.uploadZipFileToAzure");
+  static readonly checkAzureDeployStatus = getLocalizedString(
+    "core.progress.checkAzureDeployStatus"
+  );
+  static readonly restartAzureFunctionApp = getLocalizedString(
+    "core.progress.restartAzureFunctionApp"
+  );
 }
 
 export class LogMessages {
-  static readonly updateFunctionAppSettings = "Updating Azure Function app settings.";
-  static readonly enableStaticWebsite = "Enabling static website feature for Azure Storage.";
+  static readonly updateFunctionAppSettings = getLocalizedString(
+    "core.log.updateFunctionAppSettings"
+  );
+  static readonly enableStaticWebsite = getLocalizedString("core.progress.enableStaticWebsite");
   public static readonly getTemplateFrom = (url: string): string =>
     getLocalizedString("plugins.function.getTemplateFrom", url);
   public static readonly getTemplateFromLocal = getLocalizedString(
@@ -83,8 +104,9 @@ export function concatErrorMessageWithSuggestions(
 }
 
 export class ErrorMessage {
-  static readonly programmingLanguageInvalid =
-    "Invalid programming language found in project settings.";
+  static readonly programmingLanguageInvalid = getLocalizedString(
+    "core.error.programmingLanguageInvalid"
+  );
   public static readonly SomethingIsMissing = (something: string): LocalizedMessage =>
     getLocalizedMessage("plugins.bot.SomethingIsMissing", something);
   public static readonly SomethingIsNotExisting = (something: string): LocalizedMessage =>

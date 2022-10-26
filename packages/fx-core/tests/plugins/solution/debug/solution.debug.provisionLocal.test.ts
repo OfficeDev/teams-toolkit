@@ -3,16 +3,15 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { Platform } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
-import { MockedV2Context } from "../util";
-import {
-  setupLocalDebugSettings,
-  configLocalDebugSettings,
-  setupLocalEnvironment,
-  configLocalEnvironment,
-} from "../../../../src/plugins/solution/fx-solution/debug/provisionLocal";
 import * as path from "path";
 import { MockTools } from "../../../core/utils";
 import { setTools } from "../../../../src/core/globalVars";
+import {
+  configLocalEnvironment,
+  generateLocalDebugSettings,
+  setupLocalEnvironment,
+} from "../../../../src/component/debug";
+import { createContextV3 } from "../../../../src/component/utils";
 chai.use(chaiAsPromised);
 
 describe("solution.debug.provisionLocal", () => {
@@ -37,75 +36,8 @@ describe("solution.debug.provisionLocal", () => {
         platform: Platform.VSCode,
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
       };
-      const v2Context = new MockedV2Context(projectSetting);
-      const result = await setupLocalDebugSettings(v2Context, inputs, {
-        auth: {},
-        frontend: {},
-        backend: {},
-      });
-      chai.assert.isTrue(result.isOk());
-    });
-
-    it("partial local settings", async () => {
-      const projectSetting = {
-        appName: "",
-        projectId: uuid.v4(),
-        solutionSettings: {
-          name: "fx-solution-azure",
-          hostType: "Azure",
-          capabilities: ["Tab"],
-          azureResources: ["function"],
-          activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
-        },
-        components: [
-          { name: "teams-tab" },
-          { name: "teams-api" },
-          { name: "simple-auth" },
-          { name: "aad-app" },
-        ],
-        programmingLanguage: "typescript",
-      };
-      const inputs = {
-        platform: Platform.VSCode,
-        projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
-      };
-      const v2Context = new MockedV2Context(projectSetting);
-      const localSettings = {
-        foo: {},
-        bar: {},
-      } as any;
-      const result = await setupLocalDebugSettings(v2Context, inputs, localSettings);
-      chai.assert.isTrue(result.isOk());
-      chai.assert.isDefined(localSettings.auth);
-      chai.assert.isDefined(localSettings.frontend);
-      chai.assert.isDefined(localSettings.backend);
-    });
-  });
-
-  describe("configLocalDebugSettings", () => {
-    it("happy path", async () => {
-      const projectSetting = {
-        appName: "",
-        projectId: uuid.v4(),
-        solutionSettings: {
-          name: "",
-          version: "",
-          activeResourcePlugins: [],
-        },
-        programmingLanguage: "typescript",
-        components: [],
-      };
-      const inputs = {
-        platform: Platform.VSCode,
-        projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
-      };
-      const v2Context = new MockedV2Context(projectSetting);
-      const result = await configLocalDebugSettings(v2Context, inputs, {
-        teamsApp: {},
-        auth: {},
-        frontend: {},
-        backend: {},
-      });
+      const v2Context = createContextV3(projectSetting);
+      const result = await generateLocalDebugSettings(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
     });
   });
@@ -131,7 +63,7 @@ describe("solution.debug.provisionLocal", () => {
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
         checkerInfo: { skipNgrok: true },
       };
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = createContextV3(projectSetting);
       const envInfo = {
         envName: "default",
         config: {
@@ -146,7 +78,8 @@ describe("solution.debug.provisionLocal", () => {
           },
         },
       };
-      const result = await setupLocalEnvironment(v2Context, inputs, envInfo);
+      v2Context.envInfo = envInfo;
+      const result = await setupLocalEnvironment(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
     });
   });
@@ -172,7 +105,7 @@ describe("solution.debug.provisionLocal", () => {
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
         checkerInfo: { skipNgrok: true },
       };
-      const v2Context = new MockedV2Context(projectSetting);
+      const v2Context = createContextV3(projectSetting);
       const envInfo = {
         envName: "default",
         config: {},
@@ -183,7 +116,8 @@ describe("solution.debug.provisionLocal", () => {
           },
         },
       };
-      const result = await configLocalEnvironment(v2Context, inputs, envInfo);
+      v2Context.envInfo = envInfo;
+      const result = await configLocalEnvironment(v2Context, inputs);
       chai.assert.isTrue(result.isOk());
     });
   });

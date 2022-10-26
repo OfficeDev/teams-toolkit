@@ -507,6 +507,10 @@ export interface ContextV3 extends Context_2 {
     // (undocumented)
     projectSetting: ProjectSettingsV3;
     // (undocumented)
+    templateVariables?: {
+        [key: string]: string;
+    };
+    // (undocumented)
     tokenProvider?: TokenProvider;
 }
 
@@ -1537,13 +1541,21 @@ export interface RunnableTask<T> {
 }
 
 // @public
-export type SelectFileConfig = UIConfig<string>;
+export type SelectFileConfig = UIConfig<string> & {
+    filters?: {
+        [name: string]: string[];
+    };
+};
 
 // @public (undocumented)
 export type SelectFileResult = InputResult<string>;
 
 // @public
-export type SelectFilesConfig = UIConfig<string[]>;
+export type SelectFilesConfig = UIConfig<string[]> & {
+    filters?: {
+        [name: string]: string[];
+    };
+};
 
 // @public (undocumented)
 export type SelectFilesResult = InputResult<string[]>;
@@ -1553,6 +1565,16 @@ export type SelectFolderConfig = UIConfig<string>;
 
 // @public (undocumented)
 export type SelectFolderResult = InputResult<string>;
+
+// @public
+export interface Settings {
+    // (undocumented)
+    isFromSample: boolean;
+    // (undocumented)
+    projectId: string;
+    // (undocumented)
+    version: string;
+}
 
 // @public
 export interface ShellAction extends ActionBase {
@@ -1731,6 +1753,8 @@ export enum Stage {
     debug = "debug",
     // (undocumented)
     deploy = "deploy",
+    // (undocumented)
+    deployAad = "deployAad",
     // (undocumented)
     getProjectConfig = "getProjectConfig",
     // (undocumented)

@@ -9,13 +9,14 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
 import { cleanUpLocalProject, execAsync, getTestFolder, getUniqueAppName } from "../commonUtils";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Start a new project", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
 
-  it("Create SPFx project with minimal framework", async function () {
+  it("Create SPFx project with minimal framework", { testPlanCaseId: 15687313 }, async function () {
     const command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type minimal --spfx-webpart-name helloworld --programming-language typescript`;
     const result = await execAsync(command, {
       cwd: testFolder,

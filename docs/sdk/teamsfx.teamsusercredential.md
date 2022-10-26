@@ -22,6 +22,7 @@ Can only be used within Teams.
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
 |  [(constructor)(authConfig)](./teamsfx.teamsusercredential._constructor_.md) |  | Constructor of TeamsUserCredential. |
+|  [(constructor)(authConfig)](./teamsfx.teamsusercredential._constructor__1.md) |  | Constructs a new instance of the <code>TeamsUserCredential</code> class |
 
 ## Methods
 

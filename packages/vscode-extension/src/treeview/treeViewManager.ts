@@ -13,6 +13,7 @@ import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -65,22 +66,20 @@ class TreeViewManager {
       );
       developmentTreeviewProvider.refresh();
     }
-    if (TreatmentVariableValue.previewTreeViewCommand) {
-      const developmentTreeviewProvider = this.getTreeView(
-        "teamsfx-development"
-      ) as CommandsTreeViewProvider;
-      const developmentCommands = developmentTreeviewProvider.getCommands();
-      developmentCommands.push(
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.previewTitle"),
-          localize("teamstoolkit.commandsTreeViewProvider.previewDescription"),
-          "fx-extension.debug",
-          undefined,
-          { name: "debug-alt", custom: false }
-        )
-      );
-      developmentTreeviewProvider.refresh();
-    }
+    const developmentTreeviewProvider = this.getTreeView(
+      "teamsfx-development"
+    ) as CommandsTreeViewProvider;
+    const developmentCommands = developmentTreeviewProvider.getCommands();
+    developmentCommands.push(
+      new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.previewTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.previewDescription"),
+        "fx-extension.debug",
+        undefined,
+        { name: "debug-alt", custom: false }
+      )
+    );
+    developmentTreeviewProvider.refresh();
   }
 
   public getTreeView(viewName: string) {
@@ -176,6 +175,17 @@ class TreeViewManager {
         "manifestEditor",
         { name: "edit", custom: false }
       ),
+      ...(isV3Enabled()
+        ? [
+            new TreeViewCommand(
+              localize("teamstoolkit.commandsTreeViewProvider.manageCollaboratorTitle"),
+              localize("teamstoolkit.commandsTreeViewProvider.manageCollaboratorDescription"),
+              "fx-extension.manageCollaborator",
+              "manageCollaborator",
+              { name: "organization", custom: false }
+            ),
+          ]
+        : []),
     ];
 
     const developmentProvider = new CommandsTreeViewProvider(developmentCommands);

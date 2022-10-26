@@ -18,10 +18,7 @@ import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
-import {
-  AzureSolutionQuestionNames,
-  TabNonSsoItem,
-} from "../../plugins/solution/fx-solution/question";
+import { AzureSolutionQuestionNames, TabNonSsoItem } from "../constants";
 import {
   ComponentNames,
   PathConstants,

@@ -1,5 +1,9 @@
 import { ConfidentialClientApplication, NodeAuthOptions } from "@azure/msal-node";
-import { AuthenticationConfiguration } from "../models/configuration";
+import {
+  AppCredentialAuthConfig,
+  AuthenticationConfiguration,
+  OnBehalfOfCredentialAuthConfig,
+} from "../models/configuration";
 import { ClientCertificate, getAuthority } from "./utils";
 import { internalLogger } from "./logger";
 import { ErrorWithCode, ErrorCode } from "../core/errors";
@@ -9,7 +13,10 @@ import { createHash } from "crypto";
  * @internal
  */
 export function createConfidentialClientApplication(
-  authentication: AuthenticationConfiguration
+  authentication:
+    | AuthenticationConfiguration
+    | AppCredentialAuthConfig
+    | OnBehalfOfCredentialAuthConfig
 ): ConfidentialClientApplication {
   const authority = getAuthority(authentication.authorityHost!, authentication.tenantId!);
   const clientCertificate: ClientCertificate | undefined = parseCertificate(

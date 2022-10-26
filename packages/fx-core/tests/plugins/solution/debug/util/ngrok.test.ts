@@ -7,7 +7,7 @@ import axios from "axios";
 import { stub, restore } from "sinon";
 import rewire from "rewire";
 
-const ngrok = rewire("../../../../../src/plugins/solution/fx-solution/debug/util/ngrok");
+const ngrok = rewire("../../../../../src/component/debug/util/ngrok");
 describe("ngrok", () => {
   describe("getNgrokHttpUrl", () => {
     before(() => {

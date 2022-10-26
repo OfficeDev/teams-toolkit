@@ -351,7 +351,7 @@ describe("SSODebugHandler", () => {
       chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost/${clientId}`
+        `api://localhost:53000/${clientId}`
       );
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,
@@ -600,7 +600,7 @@ describe("SSODebugHandler", () => {
       chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost/botid-${botId}`
+        `api://localhost:53000/botid-${botId}`
       );
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,
@@ -632,7 +632,7 @@ describe("SSODebugHandler", () => {
           [LocalEnvKeys.bot.teamsfx.ClientSecret]: clientSecret,
           [LocalEnvKeys.bot.teamsfx.AuthorityHost]: "https://login.microsoftonline.com",
           [LocalEnvKeys.bot.teamsfx.TenantId]: tenantId,
-          [LocalEnvKeys.bot.teamsfx.ApplicationIdUri]: `api://localhost/botid-${botId}`,
+          [LocalEnvKeys.bot.teamsfx.ApplicationIdUri]: `api://localhost:53000/botid-${botId}`,
           [LocalEnvKeys.bot.teamsfx.LoginEndpoint]: `${botEndpoint}/auth-start.html`,
         },
         customized: {},
@@ -761,7 +761,7 @@ describe("SSODebugHandler", () => {
       chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost/botid-${botId}`
+        `api://localhost:53000/botid-${botId}`
       );
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,
@@ -806,7 +806,7 @@ describe("SSODebugHandler", () => {
           [LocalEnvKeys.bot.teamsfx.ClientSecret]: clientSecret,
           [LocalEnvKeys.bot.teamsfx.AuthorityHost]: "https://login.microsoftonline.com",
           [LocalEnvKeys.bot.teamsfx.TenantId]: tenantId,
-          [LocalEnvKeys.bot.teamsfx.ApplicationIdUri]: `api://localhost/botid-${botId}`,
+          [LocalEnvKeys.bot.teamsfx.ApplicationIdUri]: `api://localhost:53000/botid-${botId}`,
           [LocalEnvKeys.bot.teamsfx.LoginEndpoint]: `${botEndpoint}/auth-start.html`,
           [LocalEnvKeys.bot.teamsfx.ApiEndpoint]: "http://localhost:7071",
         },
@@ -914,7 +914,7 @@ describe("SSODebugHandler", () => {
       chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost/${clientId}`
+        `api://localhost:53000/${clientId}`
       );
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,

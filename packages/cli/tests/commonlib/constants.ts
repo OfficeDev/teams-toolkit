@@ -48,6 +48,28 @@ export enum Capability {
   Notification = "notification",
 }
 
+export enum TemplateProject {
+  HelloWorldTabSSO = "hello-world-tab",
+  HelloWorldTabBackEnd = "hello-world-tab-with-backend",
+  HelloWorldBot = "hello-world-bot",
+  ContactExporter = "graph-toolkit-contact-exporter",
+  OneProductivityHub = "graph-toolkit-one-productivity-hub",
+  HelloWorldBotSSO = "bot-sso",
+  TodoListBackend = "todo-list-with-Azure-backend",
+  TodoListSpfx = "todo-list-spfx",
+  ShareNow = "share-now",
+  MyFirstMetting = "hello-world-in-meeting",
+  FAQPlus = "faq-plus",
+  TodoListM365 = "todo-list-with-azure-backend-m365",
+  NpmSearch = "npm-search-connector-m365",
+  HelloWorldTab = "hello-world-tab-without-sso",
+  ProactiveMessaging = "bot-proactive-messaging-teamsfx",
+  AdaptiveCard = "adaptive-card-notification",
+  IncomingWebhook = "incoming-webhook-notification",
+  GraphConnector = "graph-connector-app",
+  StockUpdate = "stocks-update-notification-bot",
+}
+
 export enum Resource {
   AzureKeyVault = "azure-keyvault",
   AzureFunction = "azure-function",

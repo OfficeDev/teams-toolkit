@@ -39,7 +39,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         {{#if (contains "node" configs)}}
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~14' // Set NodeJS version to 14.x for your site
+          value: '~16' // Set NodeJS version to 16.x for your site
         }
         {
           name: 'SCM_SCRIPT_GENERATOR_ARGS'

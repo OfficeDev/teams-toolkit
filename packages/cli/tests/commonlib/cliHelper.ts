@@ -4,7 +4,7 @@
 import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 
 import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
-import { Capability, Resource, ResourceToDeploy } from "./constants";
+import { TemplateProject, Resource, ResourceToDeploy, Capability } from "./constants";
 import path from "path";
 
 export class CliHelper {
@@ -228,6 +228,46 @@ export class CliHelper {
         testFolder,
         appName
       )} with capability ${capability}`;
+      if (result.stderr) {
+        console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+      } else {
+        console.log(`[Successfully] ${message}`);
+      }
+    } catch (e) {
+      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
+    }
+  }
+
+  static async createTemplateProject(
+    appName: string,
+    testFolder: string,
+    template: TemplateProject,
+    templateFolderName: string,
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    const command = `teamsfx new template ${template} --interactive false `;
+    const timeout = 100000;
+    try {
+      const result = await execAsync(command, {
+        cwd: testFolder,
+        env: processEnv ? processEnv : process.env,
+        timeout: timeout,
+      });
+
+      //  change original template name to appName
+      await execAsync(`mv ./${templateFolderName} ./${appName}`, {
+        cwd: testFolder,
+        env: processEnv ? processEnv : process.env,
+        timeout: timeout,
+      });
+
+      const message = `scaffold project to ${path.resolve(
+        testFolder,
+        appName
+      )} with template ${template}`;
       if (result.stderr) {
         console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
       } else {

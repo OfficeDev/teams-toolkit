@@ -25,7 +25,7 @@ import {
   ProjectSettings,
   v2,
 } from "@microsoft/teamsfx-api";
-import { TabSsoItem } from "../../src/plugins/solution/fx-solution/question";
+import { TabSsoItem } from "../../src/component/constants";
 import * as featureFlags from "../../src/common/featureFlags";
 import fs from "fs-extra";
 import { environmentManager } from "../../src/core/environment";

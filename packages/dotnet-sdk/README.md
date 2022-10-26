@@ -234,6 +234,107 @@ catch (ExceptionWithCode e)
     }
     ```
 
+### Using Conversation Bot for Adaptive Card Actions
+
+1. Add your adaptive card action handler class which implements the `IAdaptiveCardActionHandler` interface.
+    - Set the `TriggerVerb` property, the value should be the same as the `verb` property of the `Action.Execute` action.
+    - Handle your action in `HandleActionInvokedAsync` function, and return an `InvokeResponse` as the action response.
+
+    ```csharp
+    public class DoStuffActionHandler : IAdaptiveCardActionHandler
+    {
+        /// <summary>
+        /// A global unique string associated with the `Action.Execute` action.
+        /// The value should be the same as the `verb` property which you define in your adaptive card JSON.
+        /// </summary>
+        public string TriggerVerb => "doStuff";
+
+        /// <summary>
+        /// Indicate how your acrion response card is sent in the conversation.
+        /// By default, the response card can only be updated for the interactor who trigger the action.
+        /// </summary>
+        public AdaptiveCardResponse AdaptiveCardResponse => AdaptiveCardResponse.ReplaceForInteractor;
+
+
+        public async Task<InvokeResponse> HandleActionInvokedAsync(ITurnContext turnContext, object cardData, CancellationToken cancellationToken = default)
+        {
+            // Send invoke response with text message
+            return InvokeResponseFactory.TextMessage("[ACK] Successfully!");
+
+            /**
+             * If you want to send invoke response with adaptive card, you can:
+             *
+             * return InvokeResponseFactory.AdaptiveCard(JsonConvert.DeserializeObject(<your-card-json>));
+             */
+
+            /**
+             * If you want to send invoke response with error message, you can:
+             *
+             * return InvokeResponseFactory.ErrorResponse(InvokeResponseErrorCode.BadRequest, "The incoming request is invalid.");
+             */
+        }
+    }
+    ```
+
+2. Initialize your own bot adapter and the `ConversationBot` in your app's startup (usually it's in `Program.cs` or `Startup.cs`)
+    ```csharp
+    // create action handler instance
+    builder.Services.AddSingleton<DoStuffActionHandler>();
+
+    // create conversation bot with adaptive card action feature enabled.
+    builder.Services.AddSingleton(sp =>
+    {
+        var options = new ConversationOptions()
+        {
+            // NOTE: you need to register your CloudAdapter into your service before conversation bot initialization.
+            Adapter = sp.GetService<CloudAdapter>(),
+            CardAction = new CardActionOptions()
+            {
+                Actions = new List<IAdaptiveCardActionHandler> { sp.GetService<DoStuffActionHandler>() }
+            }
+        };
+
+        return new ConversationBot(options);
+    });
+    ```
+
+3. Reference the conversation bot in your bot message controller/handler to ensure it's initialized before handling any bot message
+    ```csharp
+    namespace SampleTeamsApp.Controllers
+    {
+        using Microsoft.AspNetCore.Mvc;
+        using Microsoft.Bot.Builder;
+        using Microsoft.Bot.Builder.Integration.AspNet.Core;
+        using Microsoft.TeamsFx.Conversation;
+
+        [Route("api/messages")]
+        [ApiController]
+        public class BotController : ControllerBase
+        {
+            private readonly ConversationBot _conversation;
+            private readonly IBot _bot;
+
+            public BotController(ConversationBot conversation, IBot bot)
+            {
+                _conversation = conversation;
+                _bot = bot;
+            }
+
+            [HttpPost]
+            public async Task PostAsync(CancellationToken cancellationToken = default)
+            {
+                await (_conversation.Adapter as CloudAdapter).ProcessAsync
+                (
+                    Request,
+                    Response,
+                    _bot,
+                    cancellationToken
+                );
+            }
+        }
+    }
+    ```
+
 ## SDK Upgrade Steps
 ### Upgrade from 0.1.0-rc to 0.3.0 (For projects created by Visual Studio 2019 toolkit)
 If there is an existing project created in VS2019, you can use the following steps to upgrade:

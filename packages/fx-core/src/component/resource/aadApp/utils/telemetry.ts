@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { TOOLS } from "../../../../core/globalVars";
-import { solutionGlobalVars } from "../../../../plugins/solution/fx-solution/v3/solutionGlobalVars";
+import { globalVars, TOOLS } from "../../../../core/globalVars";
 import { Plugins, Telemetry } from "../constants";
 
 export class TelemetryUtils {
@@ -63,7 +62,7 @@ export class TelemetryUtils {
   };
 
   private static addAppIdInProperty(properties: { [key: string]: string }): void {
-    const appId = solutionGlobalVars.TeamsAppId || "";
+    const appId = globalVars.teamsAppId || "";
     properties[Telemetry.appId] = appId as string;
   }
 }

@@ -6,11 +6,9 @@ namespace {{SafeProjectName}};
 
 public class AdapterWithErrorHandler : CloudAdapter
 {
-    public AdapterWithErrorHandler(IConfiguration configuration, IHttpClientFactory httpClientFactory, ILogger<IBotFrameworkHttpAdapter> logger)
-        : base(BotFrameworkAuthenticationFactory.Create(null, validateAuthority: false, null, null, null, null, null, null, null,
-            new PasswordServiceClientCredentialFactory(configuration["BOT_ID"], configuration["BOT_PASSWORD"], httpClientFactory.CreateClient(), logger),
-                new AuthenticationConfiguration(), httpClientFactory, logger), logger)
-    {
+	public AdapterWithErrorHandler(BotFrameworkAuthentication auth, ILogger<IBotFrameworkHttpAdapter> logger)
+		: base(auth, logger)
+	{
         OnTurnError = async (turnContext, exception) =>
         {
             // Log any leaked exception from the application.

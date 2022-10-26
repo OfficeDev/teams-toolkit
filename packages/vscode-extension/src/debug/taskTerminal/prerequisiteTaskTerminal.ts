@@ -33,47 +33,51 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
   }
 
   do(): Promise<Result<Void, FxError>> {
-    return Correlator.runWithId(commonUtils.startLocalDebugSession(), async () => {
-      const additionalProperties: { [key: string]: string } = {
-        [TelemetryProperty.DebugIsTransparentTask]: "true",
-      };
-      {
-        // If we know this session is concurrently running with another session, send that correlationId in `debug-all-start` event.
-        // Mostly, this happens when user stops debugging while preLaunchTasks are running and immediately hit F5 again.
-        const session = commonUtils.getLocalDebugSession();
-        if (session.id !== commonUtils.DebugNoSessionId) {
-          additionalProperties[TelemetryProperty.DebugConcurrentCorrelationId] = session.id;
-          // Indicates in which stage (of the first F5) the user hits F5 again.
-          additionalProperties[TelemetryProperty.DebugConcurrentLastEventName] =
-            localTelemetryReporter.getLastEventName();
-        }
+    const telemetryProperties = {
+      [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+      [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+        portOccupancy: maskArrayValue(
+          this.args.portOccupancy?.map((p) => `${p}`),
+          Object.values(TaskDefaultValue.checkPrerequisites.ports).map((p) => `${p}`)
+        ),
+        prerequisites: maskArrayValue(this.args.prerequisites, Object.values(Prerequisite)),
+      }),
+    };
+    const additionalProperties: { [key: string]: string } = {
+      [TelemetryProperty.DebugIsTransparentTask]: "true",
+    };
+    {
+      // If we know this session is concurrently running with another session, send that correlationId in `debug-all-start` event.
+      // Mostly, this happens when user stops debugging while preLaunchTasks are running and immediately hit F5 again.
+      const session = commonUtils.getLocalDebugSession();
+      if (session.id !== commonUtils.DebugNoSessionId) {
+        additionalProperties[TelemetryProperty.DebugConcurrentCorrelationId] = session.id;
+        // Indicates in which stage (of the first F5) the user hits F5 again.
+        additionalProperties[TelemetryProperty.DebugConcurrentLastEventName] =
+          localTelemetryReporter.getLastEventName();
       }
+    }
 
+    return Correlator.runWithId(commonUtils.startLocalDebugSession(), async () => {
       if (commonUtils.checkAndSkipDebugging()) {
         throw new Error(DebugSessionExists);
       }
       await sendDebugAllStartEvent(additionalProperties);
       return await localTelemetryReporter.runWithTelemetryProperties(
         TelemetryEvent.DebugCheckPrerequisitesTask,
-        {
-          [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-          [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
-            portOccupancy: maskArrayValue(
-              this.args.portOccupancy?.map((p) => `${p}`),
-              Object.values(TaskDefaultValue.checkPrerequisites.ports).map((p) => `${p}`)
-            ),
-            prerequisites: maskArrayValue(this.args.prerequisites, Object.values(Prerequisite)),
-          }),
-        },
-        () => this._do()
+        telemetryProperties,
+        () => this._do(telemetryProperties)
       );
     });
   }
 
-  private async _do(): Promise<Result<Void, FxError>> {
+  private async _do(telemetryProperties: {
+    [key: string]: string;
+  }): Promise<Result<Void, FxError>> {
     const res = await checkAndInstallForTask(
       this.args.prerequisites ?? [],
-      this.args.portOccupancy
+      this.args.portOccupancy,
+      telemetryProperties
     );
     const duration = this.getDurationInSeconds();
     if (res.isOk() && duration) {

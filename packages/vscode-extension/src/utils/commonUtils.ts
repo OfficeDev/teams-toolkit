@@ -24,7 +24,7 @@ import {
   isExistingTabApp as isExistingTabAppCore,
   isValidProject,
 } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { PluginNames } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
+import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 import * as extensionPackage from "../../package.json";
 import { CONFIGURATION_PREFIX, ConfigurationKey, UserState } from "../constants";
 import * as commonUtils from "../debug/commonUtils";

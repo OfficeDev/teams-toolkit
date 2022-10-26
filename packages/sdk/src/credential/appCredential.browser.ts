@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
-import { AuthenticationConfiguration } from "../models/configuration";
+import { AppCredentialAuthConfig, AuthenticationConfiguration } from "../models/configuration";
 import { formatString } from "../util/utils";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 
@@ -19,7 +19,9 @@ export class AppCredential implements TokenCredential {
    * @remarks
    * Only works in in server side.
    */
-  constructor(authConfig: AuthenticationConfiguration) {
+  constructor(authConfig: AppCredentialAuthConfig);
+  constructor(authConfig: AuthenticationConfiguration);
+  constructor(authConfig: AppCredentialAuthConfig | AuthenticationConfiguration) {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "AppCredential"),
       ErrorCode.RuntimeNotSupported

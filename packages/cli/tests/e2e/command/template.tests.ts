@@ -8,7 +8,7 @@
 import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
-
+import { it } from "@microsoft/extra-shot-mocha";
 import { execAsync, getTestFolder, cleanUpLocalProject } from "../commonUtils";
 
 describe("teamsfx new template", function () {
@@ -16,7 +16,7 @@ describe("teamsfx new template", function () {
   const sampleName = "todo-list-with-Azure-backend";
   const projectPath = path.resolve(testFolder, sampleName);
 
-  it(`${sampleName}`, async function () {
+  it(`${sampleName}`, { testPlanCaseId: 15685967 }, async function () {
     await execAsync(`teamsfx new template ${sampleName}`, {
       cwd: testFolder,
       env: process.env,

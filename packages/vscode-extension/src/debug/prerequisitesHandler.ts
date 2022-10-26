@@ -40,7 +40,7 @@ import {
 } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { LocalEnvProvider } from "@microsoft/teamsfx-core/build/component/debugHandler";
 import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
-import { PluginNames } from "@microsoft/teamsfx-core/build/plugins/solution/fx-solution/constants";
+import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 
 import * as fs from "fs-extra";
 import * as os from "os";
@@ -174,13 +174,6 @@ type PrerequisiteOrderedChecker = {
   fastFail: boolean;
 };
 
-async function runWithCheckResultTelemetry(
-  eventName: string,
-  action: (ctx: TelemetryContext) => Promise<CheckResult>
-): Promise<CheckResult> {
-  return runWithCheckResultTelemetryProperties(eventName, {}, action);
-}
-
 async function runWithCheckResultTelemetryProperties(
   eventName: string,
   initialProperties: { [key: string]: string },
@@ -199,6 +192,7 @@ async function runWithCheckResultTelemetryProperties(
 async function runWithCheckResultsTelemetry(
   eventName: string,
   errorName: string, // unified error name of multiple errors in CheckResult[]
+  initialProperties: { [key: string]: string },
   action: (ctx: TelemetryContext) => Promise<CheckResult[]>
 ): Promise<CheckResult[]> {
   return await localTelemetryReporter.runWithTelemetryGeneric(
@@ -222,7 +216,8 @@ async function runWithCheckResultsTelemetry(
           name: errorName,
         });
       }
-    }
+    },
+    initialProperties
   );
 }
 
@@ -270,10 +265,12 @@ function addCheckResultsForTelemetry(
 async function checkPort(
   localEnvManager: LocalEnvManager,
   ports: number[],
-  displayMessage: string
+  displayMessage: string,
+  additionalTelemetryProperties: { [key: string]: string }
 ): Promise<CheckResult> {
-  return await runWithCheckResultTelemetry(
+  return await runWithCheckResultTelemetryProperties(
     TelemetryEvent.DebugPrereqsCheckPorts,
+    additionalTelemetryProperties,
     async (ctx: TelemetryContext) => {
       VsCodeLogInstance.outputChannel.appendLine(displayMessage);
       const portsInUse = await localEnvManager.getPortsInUse(ports);
@@ -314,7 +311,9 @@ async function checkPort(
 export async function checkPrerequisitesForGetStarted(): Promise<Result<void, FxError>> {
   const nodeChecker = await getOrderedCheckersForGetStarted();
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStartedPrerequisitesStart);
-  const res = await _checkAndInstall(prerequisiteCheckForGetStartedDisplayMessages, nodeChecker);
+  const res = await _checkAndInstall(prerequisiteCheckForGetStartedDisplayMessages, nodeChecker, {
+    [TelemetryProperty.DebugIsTransparentTask]: "false",
+  });
   if (res.error) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.GetStartedPrerequisites, res.error);
     return err(res.error);
@@ -326,13 +325,15 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
   const projectComponents = await commonUtils.getProjectComponents();
   const orderedCheckers = await getOrderedCheckers();
 
+  // projectComponents is already serialized JSON string
+  const additionalTelemetryProperties = {
+    [TelemetryProperty.DebugProjectComponents]: `${projectComponents}`,
+    [TelemetryProperty.DebugIsTransparentTask]: "false",
+  };
+
   return await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPrerequisites,
-    // projectComponents is already serialized JSON string
-    {
-      [TelemetryProperty.DebugProjectComponents]: `${projectComponents}`,
-      [TelemetryProperty.DebugIsTransparentTask]: "false",
-    },
+    additionalTelemetryProperties,
     async (ctx: TelemetryContext) => {
       // terminate all running teamsfx tasks
       if (allRunningTeamsfxTasks.size > 0) {
@@ -340,7 +341,11 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
         terminateAllRunningTeamsfxTasks();
       }
 
-      const res = await _checkAndInstall(prerequisiteCheckDisplayMessages, orderedCheckers);
+      const res = await _checkAndInstall(
+        prerequisiteCheckDisplayMessages,
+        orderedCheckers,
+        additionalTelemetryProperties
+      );
       if (res.error) {
         const debugSession = commonUtils.getLocalDebugSession();
         addCheckResultsForTelemetry(
@@ -358,15 +363,22 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
 
 export async function checkAndInstallForTask(
   prerequisites: string[],
-  ports?: number[]
+  ports: number[] | undefined,
+  telemetryProperties: { [key: string]: string }
 ): Promise<Result<Void, FxError>> {
   const orderedCheckers = await getOrderedCheckersForTask(prerequisites, ports);
+  const projectComponents = await commonUtils.getProjectComponents();
 
-  return await localTelemetryReporter.runWithTelemetryProperties(
-    TelemetryEvent.DebugPrerequisites,
+  const additionalTelemetryProperties = Object.assign(
     {
+      [TelemetryProperty.DebugProjectComponents]: `${projectComponents}`,
       [TelemetryProperty.DebugIsTransparentTask]: "true",
     },
+    telemetryProperties
+  );
+  return await localTelemetryReporter.runWithTelemetryProperties(
+    TelemetryEvent.DebugPrerequisites,
+    additionalTelemetryProperties,
     async (ctx: TelemetryContext) => {
       // terminate all running teamsfx tasks
       if (allRunningTeamsfxTasks.size > 0) {
@@ -374,7 +386,11 @@ export async function checkAndInstallForTask(
         terminateAllRunningTeamsfxTasks();
       }
 
-      const res = await _checkAndInstall(prerequisiteCheckTaskDisplayMessages, orderedCheckers);
+      const res = await _checkAndInstall(
+        prerequisiteCheckTaskDisplayMessages,
+        orderedCheckers,
+        additionalTelemetryProperties
+      );
       if (res.error) {
         const debugSession = commonUtils.getLocalDebugSession();
         addCheckResultsForTelemetry(
@@ -395,8 +411,18 @@ export async function checkAndInstallNpmPackagesForTask(
     cwd: string;
     args?: string[];
     forceUpdate?: boolean;
-  }[]
+  }[],
+  telemetryProperties: { [key: string]: string }
 ): Promise<Result<Void, FxError>> {
+  const projectComponents = await commonUtils.getProjectComponents();
+
+  const additionalTelemetryProperties = Object.assign(
+    {
+      [TelemetryProperty.DebugProjectComponents]: `${projectComponents}`,
+      [TelemetryProperty.DebugIsTransparentTask]: "true",
+    },
+    telemetryProperties
+  );
   const checkers = projectOptions.map<NpmInstallCheckerInfo>((p) => {
     const cwdBaseName = path.basename(p.cwd);
     return {
@@ -408,13 +434,16 @@ export async function checkAndInstallNpmPackagesForTask(
     };
   });
 
-  // TODO: Add telemetry
-  const res = await _checkAndInstall(npmInstallDisplayMessages, [
-    {
-      info: checkers,
-      fastFail: false,
-    },
-  ]);
+  const res = await _checkAndInstall(
+    npmInstallDisplayMessages,
+    [
+      {
+        info: checkers,
+        fastFail: false,
+      },
+    ],
+    additionalTelemetryProperties
+  );
   if (res.error) {
     return err(res.error);
   }
@@ -424,7 +453,8 @@ export async function checkAndInstallNpmPackagesForTask(
 
 async function _checkAndInstall(
   displayMessages: DisplayMessages,
-  orderedCheckers: PrerequisiteOrderedChecker[]
+  orderedCheckers: PrerequisiteOrderedChecker[],
+  additionalTelemetryProperties: { [key: string]: string }
 ): Promise<{ checkResults: CheckResult[]; error?: FxError }> {
   let progressHelper: ProgressHelper | undefined;
   const checkResults: CheckResult[] = [];
@@ -471,11 +501,18 @@ async function _checkAndInstall(
         await runWithCheckResultsTelemetry(
           TelemetryEvent.DebugPrereqsInstallPackages,
           ExtensionErrors.PrerequisitesInstallPackagesError,
+          additionalTelemetryProperties,
           async () => {
             const checkPromises = [];
             for (const orderedCheckerInfo of orderedCheckerInfoArr) {
               checkPromises.push(
-                getCheckPromise(orderedCheckerInfo, depsManager, localEnvManager, step).finally(
+                getCheckPromise(
+                  orderedCheckerInfo,
+                  depsManager,
+                  localEnvManager,
+                  step,
+                  additionalTelemetryProperties
+                ).finally(
                   async () =>
                     await progressHelper?.end(
                       orderedCheckerInfo.checker === Checker.NpmInstall
@@ -504,7 +541,8 @@ async function _checkAndInstall(
           orderedCheckerInfo,
           depsManager,
           localEnvManager,
-          step
+          step,
+          additionalTelemetryProperties
         ).finally(
           async () =>
             await progressHelper?.end(
@@ -532,21 +570,36 @@ function getCheckPromise(
   checkerInfo: PrerequisiteCheckerInfo,
   depsManager: DepsManager,
   localEnvManager: LocalEnvManager,
-  step: Step
+  step: Step,
+  additionalTelemetryProperties: { [key: string]: string }
 ): Promise<CheckResult> {
   switch (checkerInfo.checker) {
     case DepsType.AzureNode:
     case DepsType.SpfxNode:
     case DepsType.SpfxNodeV1_16:
-      return checkNode(checkerInfo.checker, depsManager, step.getPrefix());
+      return checkNode(
+        checkerInfo.checker,
+        depsManager,
+        step.getPrefix(),
+        additionalTelemetryProperties
+      );
     case Checker.M365Account:
-      return checkM365Account(step.getPrefix(), true);
+      return checkM365Account(step.getPrefix(), true, additionalTelemetryProperties);
     case Checker.LocalCertificate:
-      return resolveLocalCertificate(localEnvManager, step.getPrefix());
+      return resolveLocalCertificate(
+        localEnvManager,
+        step.getPrefix(),
+        additionalTelemetryProperties
+      );
     case DepsType.Dotnet:
     case DepsType.FuncCoreTools:
     case DepsType.Ngrok:
-      return checkDependency(checkerInfo.checker, depsManager, step.getPrefix());
+      return checkDependency(
+        checkerInfo.checker,
+        depsManager,
+        step.getPrefix(),
+        additionalTelemetryProperties
+      );
     case Checker.AzureFunctionsExtension:
       return resolveBackendExtension(depsManager, step.getPrefix());
     case Checker.NpmInstall:
@@ -557,13 +610,15 @@ function getCheckPromise(
         step.getPrefix(),
         npmInstalChecherInfo.cwd,
         npmInstalChecherInfo.args,
+        additionalTelemetryProperties,
         npmInstalChecherInfo.forceUpdate
       );
     case Checker.Ports:
       return checkPort(
         localEnvManager,
         (checkerInfo as PortCheckerInfo)?.ports ?? [],
-        `${step.getPrefix()} ${ProgressMessage[Checker.Ports]} ...`
+        `${step.getPrefix()} ${ProgressMessage[Checker.Ports]} ...`,
+        additionalTelemetryProperties
       );
   }
 }
@@ -665,9 +720,14 @@ async function ensureM365Account(
   return m365Result;
 }
 
-function checkM365Account(prefix: string, showLoginPage: boolean): Promise<CheckResult> {
-  return runWithCheckResultTelemetry(
+function checkM365Account(
+  prefix: string,
+  showLoginPage: boolean,
+  additionalTelemetryProperties: { [key: string]: string }
+): Promise<CheckResult> {
+  return runWithCheckResultTelemetryProperties(
     TelemetryEvent.DebugPrereqsCheckM365Account,
+    additionalTelemetryProperties,
     async (): Promise<CheckResult> => {
       let result = ResultStatus.success;
       let error = undefined;
@@ -754,46 +814,52 @@ function showNotification(message: string, url: string): void {
 async function checkNode(
   nodeDep: DepsType,
   depsManager: DepsManager,
-  prefix: string
+  prefix: string,
+  additionalTelemetryProperties: { [key: string]: string }
 ): Promise<CheckResult> {
-  return await runWithCheckResultTelemetry(TelemetryEvent.DebugPrereqsCheckNode, async () => {
-    try {
-      VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
-      const nodeStatus = (
-        await depsManager.ensureDependencies([nodeDep], {
-          fastFail: false,
-          doctor: true,
-        })
-      )[0];
-      return {
-        checker: nodeStatus.name,
-        result: nodeStatus.isInstalled
-          ? nodeStatus.error
-            ? ResultStatus.warn
-            : ResultStatus.success
-          : ResultStatus.failed,
-        successMsg: nodeStatus.isInstalled
-          ? doctorConstant.NodeSuccess.split("@Version").join(nodeStatus.details.installVersion)
-          : nodeStatus.name,
-        failureMsg: nodeStatus.name,
-        error: handleDepsCheckerError(nodeStatus.error, nodeStatus),
-      };
-    } catch (error: unknown) {
-      return {
-        checker: DepsDisplayName[nodeDep],
-        result: ResultStatus.failed,
-        successMsg: DepsDisplayName[nodeDep],
-        failureMsg: DepsDisplayName[nodeDep],
-        error: handleDepsCheckerError(error),
-      };
+  return await runWithCheckResultTelemetryProperties(
+    TelemetryEvent.DebugPrereqsCheckNode,
+    additionalTelemetryProperties,
+    async () => {
+      try {
+        VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
+        const nodeStatus = (
+          await depsManager.ensureDependencies([nodeDep], {
+            fastFail: false,
+            doctor: true,
+          })
+        )[0];
+        return {
+          checker: nodeStatus.name,
+          result: nodeStatus.isInstalled
+            ? nodeStatus.error
+              ? ResultStatus.warn
+              : ResultStatus.success
+            : ResultStatus.failed,
+          successMsg: nodeStatus.isInstalled
+            ? doctorConstant.NodeSuccess.split("@Version").join(nodeStatus.details.installVersion)
+            : nodeStatus.name,
+          failureMsg: nodeStatus.name,
+          error: handleDepsCheckerError(nodeStatus.error, nodeStatus),
+        };
+      } catch (error: unknown) {
+        return {
+          checker: DepsDisplayName[nodeDep],
+          result: ResultStatus.failed,
+          successMsg: DepsDisplayName[nodeDep],
+          failureMsg: DepsDisplayName[nodeDep],
+          error: handleDepsCheckerError(error),
+        };
+      }
     }
-  });
+  );
 }
 
 async function checkDependency(
   nonNodeDep: DepsType,
   depsManager: DepsManager,
-  prefix: string
+  prefix: string,
+  additionalTelemetryProperties: { [key: string]: string }
 ): Promise<CheckResult> {
   try {
     VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nonNodeDep]} ...`);
@@ -823,7 +889,8 @@ async function checkDependency(
           });
         }
         return error !== undefined ? assembleError(error) : undefined;
-      }
+      },
+      additionalTelemetryProperties
     );
 
     if (depsStatus.length == 0) {
@@ -880,10 +947,12 @@ async function resolveBackendExtension(
 
 async function resolveLocalCertificate(
   localEnvManager: LocalEnvManager,
-  prefix: string
+  prefix: string,
+  additionalTelemetryProperties: { [key: string]: string }
 ): Promise<CheckResult> {
-  return await runWithCheckResultTelemetry(
+  return await runWithCheckResultTelemetryProperties(
     TelemetryEvent.DebugPrereqsCheckCert,
+    additionalTelemetryProperties,
     async (ctx: TelemetryContext) => {
       let result = ResultStatus.success;
       let error = undefined;
@@ -991,12 +1060,16 @@ function checkNpmInstall(
   prefix: string,
   folder: string,
   args: string[],
+  additionalTelemetryProperties: { [key: string]: string },
   forceUpdate?: boolean
 ): Promise<CheckResult> {
   const taskName = `${component} npm install`;
   return runWithCheckResultTelemetryProperties(
     TelemetryEvent.DebugPrereqsCheckNpmInstall,
-    { [TelemetryProperty.DebugNpmInstallName]: taskName },
+    Object.assign(
+      { [TelemetryProperty.DebugNpmInstallName]: taskName },
+      additionalTelemetryProperties
+    ),
     async (ctx: TelemetryContext) => {
       VsCodeLogInstance.outputChannel.appendLine(
         `${prefix} ${ProgressMessage[Checker.NpmInstall](displayName, folder)} ...`

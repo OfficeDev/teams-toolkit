@@ -25,15 +25,15 @@ steps:
     # To enable M365 account login by environment variables and non-interactive mode.
     CI_ENABLED: 'true'
     TEAMSFX_ENV_NAME: <%env_name%>
+    # To specify the version of TTK CLI for use.
+    TEAMSFX_CLI_VERSION: 1.*
   inputs:
     targetType: 'inline'
     script: |
       set -evuxo pipefail
       
-      # Install the local dev dependency of @microsoft/teamsfx-cli. 
-      # 'npm ci' is used here to install dependencies and it depends on package-lock.json.
-      # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
-      npm ci
+      # Install the TTK CLI for later use.
+      npm install @microsoft/teamsfx-cli@${TEAMSFX_CLI_VERSION}
 
       # Build the project.
       # The way to build the current project depends on how you scaffold it.

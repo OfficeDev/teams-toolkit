@@ -28,12 +28,12 @@ import {
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
-} from "../../plugins/solution/fx-solution/constants";
+} from "../constants";
 import {
   AzureResourceFunctionNewUI,
   AzureSolutionQuestionNames,
   SingleSignOnOptionItem,
-} from "../../plugins/solution/fx-solution/question";
+} from "../constants";
 import "../connection/azureWebAppConfig";
 import { ComponentNames, TelemetryConstants } from "../constants";
 import { generateLocalDebugSettings } from "../debug";

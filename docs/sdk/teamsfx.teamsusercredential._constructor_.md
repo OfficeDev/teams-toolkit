@@ -9,14 +9,14 @@ Constructor of TeamsUserCredential.
 <b>Signature:</b>
 
 ```typescript
-constructor(authConfig: AuthenticationConfiguration);
+constructor(authConfig: TeamsUserCredentialAuthConfig);
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  authConfig | [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) |  |
+|  authConfig | [TeamsUserCredentialAuthConfig](./teamsfx.teamsusercredentialauthconfig.md) |  |
 
 ## Remarks
 

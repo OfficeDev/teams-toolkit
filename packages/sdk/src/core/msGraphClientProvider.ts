@@ -5,10 +5,10 @@ import { Client } from "@microsoft/microsoft-graph-client";
 import { MsGraphAuthProvider } from "./msGraphAuthProvider";
 import { TeamsFxConfiguration } from "../models/teamsfxConfiguration";
 import { internalLogger } from "../util/logger";
+import { TokenCredential } from "@azure/identity";
 
 /**
  * Get Microsoft graph client.
- *
  * @example
  * Get Microsoft graph client by TokenCredential
  * ```typescript
@@ -65,5 +65,69 @@ export function createMicrosoftGraphClient(
     authProvider,
   });
 
+  return graphClient;
+}
+
+// eslint-disable-next-line no-secrets/no-secrets
+/**
+ * Get Microsoft graph client.
+ * @example
+ * Get Microsoft graph client by TokenCredential
+ * ```typescript
+ * // In browser: TeamsUserCredential
+ * const authConfig: TeamsUserCredentialAuthConfig = {
+ *   clientId: "xxx",
+    initiateLoginEndpoint: "https://xxx/auth-start.html",
+ * };
+
+ * const credential = new TeamsUserCredential(authConfig);
+
+ * const scope = "User.Read";
+ * await credential.login(scope);
+
+ * const client = createMicrosoftGraphClientWithCredential(credential, scope);
+
+ * // In node: OnBehalfOfUserCredential
+ * const oboAuthConfig: OnBehalfOfCredentialAuthConfig = {
+ *   authorityHost: "xxx",
+ *   clientId: "xxx",
+ *   tenantId: "xxx",
+ *   clientSecret: "xxx",
+ * };
+
+ * const oboCredential = new OnBehalfOfUserCredential(ssoToken, oboAuthConfig);
+ * const scope = "User.Read";
+ * const client = createMicrosoftGraphClientWithCredential(oboCredential, scope);
+
+ * // In node: AppCredential
+ * const appAuthConfig: AppCredentialAuthConfig = {
+ *   authorityHost: "xxx",
+ *   clientId: "xxx",
+ *   tenantId: "xxx",
+ *   clientSecret: "xxx",
+ * };
+ * const appCredential = new AppCredential(appAuthConfig);
+ * const scope = "User.Read";
+ * const client = createMicrosoftGraphClientWithCredential(appCredential, scope);
+ * 
+ * const profile = await client.api("/me").get();
+ * ```
+ *
+ * @param {TokenCredential} credential - Used to provide configuration and auth.
+ * @param scopes - The array of Microsoft Token scope of access. Default value is `[.default]`.
+ *
+ * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+ *
+ * @returns Graph client with specified scopes.
+ */
+export function createMicrosoftGraphClientWithCredential(
+  credential: TokenCredential,
+  scopes?: string | string[]
+): Client {
+  internalLogger.info("Create Microsoft Graph Client");
+  const authProvider = new MsGraphAuthProvider(credential, scopes);
+  const graphClient = Client.initWithMiddleware({
+    authProvider,
+  });
   return graphClient;
 }

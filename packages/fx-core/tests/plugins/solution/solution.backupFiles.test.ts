@@ -3,7 +3,7 @@ import { fileEncoding, TestFilePath } from "../../constants";
 import os from "os";
 import path from "path";
 import fs from "fs-extra";
-import { backupFiles } from "../../../src/plugins/solution/fx-solution/utils/backupFiles";
+import { backupFiles } from "../../../src/component/utils/backupFiles";
 import { expect } from "chai";
 import { MockTools } from "../../core/utils";
 import { setTools } from "../../../src/core/globalVars";

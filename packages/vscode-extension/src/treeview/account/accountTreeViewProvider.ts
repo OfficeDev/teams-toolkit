@@ -83,6 +83,8 @@ async function m365AccountStatusChangeHandler(
     instance.m365AccountNode.setSigningIn();
   } else if (status === "SignedOut") {
     instance.m365AccountNode.setSignedOut();
+  } else if (status == "Switching") {
+    instance.m365AccountNode.setSwitching();
   }
   await envTreeProviderInstance.refreshRemoteEnvWarning();
   return Promise.resolve();

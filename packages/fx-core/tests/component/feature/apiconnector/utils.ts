@@ -1,15 +1,15 @@
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
-import { ComponentNames } from "../../../../src/component/constants";
+import {
+  ComponentNames,
+  RESOURCE_GROUP_NAME,
+  SUBSCRIPTION_ID,
+} from "../../../../src/component/constants";
 import {
   BasicAuthConfig,
   AADAuthConfig,
   APIKeyAuthConfig,
 } from "../../../../src/component/feature/apiconnector/config";
 import { AuthType, KeyLocation } from "../../../../src/component/feature/apiconnector/constants";
-import {
-  RESOURCE_GROUP_NAME,
-  SUBSCRIPTION_ID,
-} from "../../../../src/plugins/solution/fx-solution/constants";
 import { MockUserInteraction } from "../../../core/utils";
 
 export function MockContext(): any {

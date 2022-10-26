@@ -21,7 +21,7 @@ Please check the [README](https://github.com/OfficeDev/TeamsFx/blob/main/package
 ### Prerequisites
 
 - Node.js version 10.x.x or higher
-- TeamsFx SDK version 0.6.0 or higher
+- TeamsFx SDK version 0.6.0 or higher 
 - A project created by the Teams Toolkit VS Code extension or `teamsfx` CLI tool.
 
 ### Install the `@microsoft/teamsfx-react` package
@@ -32,7 +32,12 @@ Install the TeamsFx SDK for TypeScript/JavaScript with `npm`:
 npm install @microsoft/teamsfx-react
 ```
 
-Please also install the peer dependencies if you are using npm 6.
+Please also install the peer dependencies if you are using npm 6. 
+```bash
+npm install @microsoft/teamsfx@^2.0.0 @microsoft/teams-js@^2.0.0 react@^16.8.6 react-dom@^16.8.6 @fluentui/react-northstar@^0.62.0 msteams-react-base-component@^3.1.1
+```
+
+Note that for `@microsoft/teamsfx-react@^2.0.0`, it depends on `@microsoft/teamsfx@^2.0.0` and `@microsoft/teams-js@^2.0.0`. If you wish to use lower versions, please install the peer dependencies as follows:
 ```bash
 npm install @microsoft/teamsfx@^0.6.0 react@^16.8.6 @fluentui/react-northstar@^0.60.1 msteams-react-base-component@^3.1.1
 ```
@@ -91,6 +96,11 @@ return (
 Fundamental helper hook function to do asynchronized operation like fetch data from a remote database / backend API.
 It returns custom data, loading status, error object and reload function.
 By default, it will fetch the data once the component has been initialized.
+
+### useTeams
+The hook is based on the Microsoft Teams JavaScript SDK, the Fluent UI components and Microsoft Graph Toolkit, merged from [msteams-react-base-component](https://github.com/wictorwilen/msteams-react-base-component).
+It returns a tuple of where an object of properties are in the first field and an object of methods in the second.
+If you want to manually set the initial theme, please pass the config object to `useTeams()`.
 
 ### useTeamsFx
 Initialize TeamsFx and Teams JS SDK, in a development environment, verbose logging message will be printed to console.

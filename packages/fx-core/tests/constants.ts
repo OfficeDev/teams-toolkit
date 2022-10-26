@@ -24,7 +24,7 @@ export class TestFilePath {
   static readonly mainFileName = "main.bicep";
   static readonly provisionFileName = "provision.bicep";
   static readonly configFileName = "config.bicep";
-  static readonly defaultParameterFileName = `azure.parameters.default.json`;
+  static readonly defaultParameterFileName = `azure.parameters.dev.json`;
 
   static readonly provisionFolder = "provision";
   static readonly fehostProvisionFileName = "frontendHostingProvision.bicep";

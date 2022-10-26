@@ -12,7 +12,7 @@ import { ok, err, ProjectSettingsV3, SystemError, Void, v3 } from "@microsoft/te
 import { MockM365TokenProvider } from "./utils";
 import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
 import { LocalCrypto } from "../../../src/core/crypto";
-import * as utils from "../../../src/plugins/solution/fx-solution/v2/utils";
+import * as utils from "../../../src/component/provisionUtils";
 import { checkM365Tenant } from "../../../src/component/debugHandler/utils";
 import { environmentManager } from "../../../src/core/environment";
 import { ComponentNames } from "../../../src/component/constants";

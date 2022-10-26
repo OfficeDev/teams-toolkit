@@ -42,7 +42,7 @@ import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
 import path from "path";
 import os from "os";
-import { PluginNames } from "../../plugins/solution/fx-solution/constants";
+import { PluginNames } from "../../component/constants";
 import {
   getProjectSettingsPath,
   loadProjectSettings,
@@ -53,7 +53,7 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
-} from "../../plugins/solution/fx-solution/question";
+} from "../../component/constants";
 import { ResourcePlugins } from "../../common/constants";
 import {
   MANIFEST_LOCAL,
@@ -101,8 +101,8 @@ import { APIMResource } from "../../component/resource/apim/apim";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
-const learnMoreText = "Learn More";
-const upgradeButton = "Upgrade";
+const learnMoreText = getLocalizedString("core.option.learnMore");
+const upgradeButton = getLocalizedString("core.option.upgrade");
 const solutionName = "solution";
 const subscriptionId = "subscriptionId";
 const resourceGroupName = "resourceGroupName";

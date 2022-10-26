@@ -14,7 +14,7 @@ import {
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
-import { it } from "../../commonlib/it";
+import { it } from "@microsoft/extra-shot-mocha";
 import { Runtime } from "../../commonlib/constants";
 
 export function happyPathTest(runtime: Runtime): void {

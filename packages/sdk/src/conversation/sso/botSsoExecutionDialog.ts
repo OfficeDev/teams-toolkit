@@ -26,6 +26,7 @@ import { formatString } from "../../util/utils";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../core/errors";
 import { internalLogger } from "../../util/logger";
 import { createHash } from "crypto";
+import { OnBehalfOfCredentialAuthConfig } from "../../models/configuration";
 
 let DIALOG_NAME = "BotSsoExecutionDialog";
 let TEAMS_SSO_PROMPT_ID = "TeamsFxSsoPrompt";
@@ -46,30 +47,69 @@ export class BotSsoExecutionDialog extends ComponentDialog {
 
   /**
    * Creates a new instance of the BotSsoExecutionDialog.
-   * @param dedupStorage Helper storage to remove duplicated messages
-   * @param settings The list of scopes for which the token will have access
-   * @param teamsfx {@link TeamsFx} instance for authentication
+   * @param {@link Storage} dedupStorage Helper storage to remove duplicated messages
+   * @param {@link TeamsBotSsoPromptSettings} settings The list of scopes for which the token will have access
+   * @param {@link TeamsFx} teamsfx instance for authentication
+   * @param {string} dialogName custom dialog name
    */
   constructor(
     dedupStorage: Storage,
     ssoPromptSettings: TeamsBotSsoPromptSettings,
     teamsfx: TeamsFx,
     dialogName?: string
+  );
+  /**
+   * Creates a new instance of the BotSsoExecutionDialog.
+   * @param {@link Storage} dedupStorage Helper storage to remove duplicated messages
+   * @param {@link TeamsBotSsoPromptSettings} settings The list of scopes for which the token will have access
+   * @param {@link OnBehalfOfCredentialAuthConfig} authConfig The authentication configuration.
+   * @param {string} initiateLoginEndpoint Login URL for Teams to redirect to.
+   * @param {string} dialogName custom dialog name
+   */
+  constructor(
+    dedupStorage: Storage,
+    ssoPromptSettings: TeamsBotSsoPromptSettings,
+    authConfig: OnBehalfOfCredentialAuthConfig,
+    initiateLoginEndpoint: string,
+    dialogName?: string
+  );
+  constructor(
+    dedupStorage: Storage,
+    ssoPromptSettings: TeamsBotSsoPromptSettings,
+    authConfig: TeamsFx | OnBehalfOfCredentialAuthConfig,
+    ...args: any
   ) {
-    super(dialogName ?? DIALOG_NAME);
+    super(((authConfig as TeamsFx).getCredential ? args[0] : args[1]) ?? DIALOG_NAME);
+    const dialogName: string = (authConfig as TeamsFx).getCredential ? args[0] : args[1];
+
     if (dialogName) {
       DIALOG_NAME = dialogName;
       TEAMS_SSO_PROMPT_ID = dialogName + TEAMS_SSO_PROMPT_ID;
       COMMAND_ROUTE_DIALOG = dialogName + COMMAND_ROUTE_DIALOG;
     }
 
+    let ssoDialog: TeamsBotSsoPrompt;
+    if ((authConfig as TeamsFx).getCredential) {
+      ssoDialog = new TeamsBotSsoPrompt(
+        authConfig as TeamsFx,
+        TEAMS_SSO_PROMPT_ID,
+        ssoPromptSettings
+      );
+    } else {
+      ssoDialog = new TeamsBotSsoPrompt(
+        authConfig as OnBehalfOfCredentialAuthConfig,
+        args[0],
+        TEAMS_SSO_PROMPT_ID,
+        ssoPromptSettings
+      );
+    }
+
+    this.addDialog(ssoDialog);
+
     this.initialDialogId = COMMAND_ROUTE_DIALOG;
 
     this.dedupStorage = dedupStorage;
     this.dedupStorageKeys = [];
-
-    const ssoDialog = new TeamsBotSsoPrompt(teamsfx, TEAMS_SSO_PROMPT_ID, ssoPromptSettings);
-    this.addDialog(ssoDialog);
 
     const commandRouteDialog = new WaterfallDialog(COMMAND_ROUTE_DIALOG, [
       this.commandRouteStep.bind(this),

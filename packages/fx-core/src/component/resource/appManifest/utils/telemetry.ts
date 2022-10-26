@@ -9,11 +9,7 @@ import {
   ResourceContextV3,
 } from "@microsoft/teamsfx-api";
 import { Constants } from "../constants";
-import {
-  PluginNames,
-  REMOTE_TEAMS_APP_TENANT_ID,
-} from "../../../../plugins/solution/fx-solution/constants";
-import { ComponentNames } from "../../../constants";
+import { PluginNames, REMOTE_TEAMS_APP_TENANT_ID, ComponentNames } from "../../../constants";
 
 export enum TelemetryPropertyKey {
   component = "component",
@@ -101,6 +97,9 @@ export class TelemetryUtils {
     _properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ) {
+    if (!this.ctx) {
+      return;
+    }
     const properties = Object.assign({}, _properties);
     this.addCommonProperty(properties);
 

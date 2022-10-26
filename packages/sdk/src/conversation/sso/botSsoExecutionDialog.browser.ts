@@ -6,17 +6,37 @@ import { ErrorWithCode, ErrorCode, ErrorMessage } from "../../core/errors";
 import { TeamsFx } from "../../core/teamsfx.browser";
 import { BotSsoExecutionDialogHandler, TriggerPatterns } from "../interface";
 import { StatePropertyAccessor, TurnContext, Storage } from "botbuilder";
+import { OnBehalfOfCredentialAuthConfig } from "../../models/configuration";
+import { TeamsBotSsoPromptSettings } from "../../index.browser";
 /*
  * Sso execution dialog, use to handle sso command
  */
 export class BotSsoExecutionDialog {
   /**
-   * Creates a new instance of the BotSsoExecutionDialog.
-   * @param dedupStorage Helper storage to remove duplicated messages
-   * @param requiredScopes The list of scopes for which the token will have access
-   * @param teamsfx {@link TeamsFx} instance for authentication
+   * Constructor of BotSsoExecutionDialog
+   *
+   * @remarks
+   * Can Only works in in server side.
    */
-  constructor(dedupStorage: Storage, requiredScopes: string[], teamsfx: TeamsFx) {
+  constructor(
+    dedupStorage: Storage,
+    ssoPromptSettings: TeamsBotSsoPromptSettings,
+    teamsfx: TeamsFx,
+    dialogName?: string
+  );
+  constructor(
+    dedupStorage: Storage,
+    ssoPromptSettings: TeamsBotSsoPromptSettings,
+    authConfig: OnBehalfOfCredentialAuthConfig,
+    initiateLoginEndpoint: string,
+    dialogName?: string
+  );
+  constructor(
+    dedupStorage: Storage,
+    ssoPromptSettings: TeamsBotSsoPromptSettings,
+    authConfig: TeamsFx | OnBehalfOfCredentialAuthConfig,
+    ...args: any
+  ) {
     throw new ErrorWithCode(
       formatString(ErrorMessage.BrowserRuntimeNotSupported, "BotSsoExecutionDialog"),
       ErrorCode.RuntimeNotSupported

@@ -15,8 +15,8 @@ export class Constants {
   public static readonly PLUGIN_NAME = "SPFx";
   public static readonly PLUGIN_DEV_NAME = "fx-resource-spfx";
   public static readonly BUILD_SHAREPOINT_PACKAGE = "Build SharePoint Package";
-  public static readonly READ_MORE = "Read more";
-  public static readonly CANCEL = "Cancel";
+  public static readonly READ_MORE = getLocalizedString("core.Notification.ReadMore");
+  public static readonly CANCEL = getLocalizedString("core.option.cancel");
   public static readonly DEPLOY_GUIDE =
     "https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-spfx?tabs=vscode#deploy-your-app-to-sharepoint";
   public static readonly CREATE_APP_CATALOG_GUIDE =

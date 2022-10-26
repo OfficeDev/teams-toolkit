@@ -19,12 +19,7 @@ import {
 import { convertEnvStateV3ToV2, convertProjectSettingsV3ToV2 } from "../../migrate";
 import fs from "fs-extra";
 import path from "path";
-import {
-  AddSsoParameters,
-  Language,
-  SolutionError,
-  SolutionSource,
-} from "../../../plugins/solution/fx-solution/constants";
+import { AddSsoParameters, Language, SolutionError, SolutionSource } from "../../constants";
 import AdmZip from "adm-zip";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { unzip } from "../../../common/template-utils/templatesUtils";

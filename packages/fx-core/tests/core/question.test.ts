@@ -25,7 +25,7 @@ import {
   TabSPFxItem,
   TabSPFxNewUIItem,
   WorkflowOptionItem,
-} from "../../src/plugins/solution/fx-solution/question";
+} from "../../src/component/constants";
 import { getLocalizedString } from "../../src/common/localizeUtils";
 
 describe("Programming Language Questions", async () => {

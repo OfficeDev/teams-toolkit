@@ -6,6 +6,7 @@
 // Import polyfills for fetch required by msgraph-sdk-javascript.
 require("isomorphic-fetch");
 const teamsfxSdk = require("@microsoft/teamsfx");
+const config = require("../config");
 
 /**
  * This function handles requests from teamsfx client.
@@ -52,7 +53,12 @@ module.exports = async function (context, req, teamsfxContext) {
   // Construct TeamsFx using user identity.
   let teamsfx;
   try {
-    teamsfx = new teamsfxSdk.TeamsFx().setSsoToken(accessToken);
+    teamsfx = new teamsfxSdk.TeamsFx(teamsfxSdk.IdentityType.User, {
+      authorityHost: config.authorityHost,
+      tenantId: config.tenantId,
+      clientId: config.clientId,
+      clientSecret: config.clientSecret,
+    }).setSsoToken(accessToken);
   } catch (e) {
     context.log.error(e);
     return {

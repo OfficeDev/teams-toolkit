@@ -18,7 +18,7 @@ import { TeamsfxCore } from "../../src/component/core";
 import { deployUtils } from "../../src/component/deployUtils";
 import * as EnvManager from "../../src/component/envManager";
 import { TeamsBot } from "../../src/component/feature/bot/bot";
-import * as question from "../../src/component/questionV3";
+import * as question from "../../src/component/question";
 import { AppManifest } from "../../src/component/resource/appManifest/appManifest";
 import { AzureWebAppResource } from "../../src/component/resource/azureAppService/azureWebApp";
 import { createContextV3 } from "../../src/component/utils";

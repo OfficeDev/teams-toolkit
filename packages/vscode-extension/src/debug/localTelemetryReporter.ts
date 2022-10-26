@@ -111,9 +111,11 @@ export async function sendDebugAllEvent(
   };
 
   // Transparent task properties
-  const preLaunchTaskInfo = await getPreLaunchTaskInfo();
-  if (preLaunchTaskInfo && Object.values(preLaunchTaskInfo).length > 0) {
-    properties[TelemetryProperty.DebugPrelaunchTaskInfo] = JSON.stringify(preLaunchTaskInfo);
+  const taskInfo = await getTaskInfo();
+  if (taskInfo && taskInfo.IsTransparentTask) {
+    properties[TelemetryProperty.DebugPrelaunchTaskInfo] = JSON.stringify(
+      taskInfo.PreLaunchTaskInfo
+    );
     properties[TelemetryProperty.DebugIsTransparentTask] =
       properties[TelemetryProperty.DebugIsTransparentTask] ?? "true";
   } else {
@@ -192,8 +194,12 @@ interface IDependsOn {
 }
 
 type PreLaunchTaskInfo = { [key: string]: IDependsOn[] | undefined };
+type TaskInfo = {
+  PreLaunchTaskInfo: PreLaunchTaskInfo;
+  IsTransparentTask: boolean;
+};
 
-export async function getPreLaunchTaskInfo(): Promise<PreLaunchTaskInfo | undefined> {
+export async function getTaskInfo(): Promise<TaskInfo | undefined> {
   try {
     if (!globalVariables.isTeamsFxProject || !globalVariables.workspaceUri?.fsPath) {
       return undefined;
@@ -236,17 +242,27 @@ export async function getPreLaunchTaskInfo(): Promise<PreLaunchTaskInfo | undefi
       }
       return dependsOnArr;
     };
-    const res: { [key: string]: IDependsOn[] | undefined } = {};
+    const prelaunchTaskInfo: { [key: string]: IDependsOn[] | undefined } = {};
     Object.values(TaskOverallLabel).forEach((l) => {
       const dependsOn = getDependsOn(l);
       if (dependsOn) {
-        res[l] = dependsOn;
+        prelaunchTaskInfo[l] = dependsOn;
       }
     });
-    return res;
+
+    const teamsfxTasks = taskJson?.tasks?.filter(
+      (t) =>
+        t?.type === TeamsfxTaskProvider.type &&
+        t?.command &&
+        Object.values(TaskCommand).includes(t?.command)
+    );
+
+    return {
+      PreLaunchTaskInfo: prelaunchTaskInfo,
+      IsTransparentTask: !!teamsfxTasks?.length,
+    };
   } catch {}
 
-  // Always return true even if send telemetry failed
   return undefined;
 }
 

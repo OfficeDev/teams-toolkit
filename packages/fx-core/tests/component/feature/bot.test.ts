@@ -36,7 +36,7 @@ import {
   MessageExtensionItem,
   NotificationOptionItem,
   WorkflowOptionItem,
-} from "../../../src/plugins/solution/fx-solution/question";
+} from "../../../src/component/constants";
 import Container from "typedi";
 import child_process from "child_process";
 import { AppSettingConstants } from "../../../src/component/code/appSettingUtils";

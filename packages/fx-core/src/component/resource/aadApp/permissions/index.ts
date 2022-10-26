@@ -4,10 +4,7 @@
 import { err, FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
-import {
-  DEFAULT_PERMISSION_REQUEST,
-  SolutionError,
-} from "../../../../plugins/solution/fx-solution/constants";
+import { DEFAULT_PERMISSION_REQUEST, SolutionError } from "../../../constants";
 import { Plugins } from "../constants";
 import { IPermissionList } from "../interfaces/IPermissionList";
 import * as jsonPermissionList from "./permissions.json";

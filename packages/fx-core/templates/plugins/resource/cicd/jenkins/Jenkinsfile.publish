@@ -19,16 +19,16 @@ pipeline {
         CI_ENABLED = 'true'
         // To specify the env name for multi-env feature.
         TEAMSFX_ENV_NAME = '<%env_name%>'
+        // To specify the version of TTK CLI for use.
+        TEAMSFX_CLI_VERSION = '1.*'
     }
 
     stages {
         // Setup environment.
         stage('Setup environment') {
             steps {
-                // Install the local dev dependency of @microsoft/teamsfx-cli. 
-                // 'npm ci' is used here to install dependencies and it depends on package-lock.json.
-                // If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.          
-                sh 'npm ci'
+                // Install the TTK CLI for later use.
+                sh 'npm install @microsoft/teamsfx-cli@${TEAMSFX_CLI_VERSION}'
                 // Check the version of teamsfx.
                 sh 'npx teamsfx -v'
             }

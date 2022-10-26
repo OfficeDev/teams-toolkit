@@ -41,7 +41,12 @@ import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import * as exp from "./exp";
 import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
-import { initializeGlobalVariables, isSPFxProject, workspaceUri } from "./globalVariables";
+import {
+  initializeGlobalVariables,
+  isExistingUser,
+  isSPFxProject,
+  workspaceUri,
+} from "./globalVariables";
 import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
@@ -60,6 +65,7 @@ import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
 import { UriHandler } from "./uriHandler";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -225,6 +231,19 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
  * Internal commands that will not show in command palette and only be called via executeCommand()
  */
 function registerInternalCommands(context: vscode.ExtensionContext) {
+  registerInCommandController(
+    context,
+    "fx-extension.openFromTdp",
+    handlers.scaffoldFromDeveloperPortalHandler,
+    "openFromTdp"
+  );
+
+  const showOutputChannel = vscode.commands.registerCommand(
+    "fx-extension.showOutputChannel",
+    (...args) => Correlator.run(handlers.showOutputChannel, args)
+  );
+  context.subscriptions.push(showOutputChannel);
+
   // Register backend extensions install command
   const backendExtensionsInstallCmd = vscode.commands.registerCommand(
     "fx-extension.backend-extensions-install",
@@ -440,12 +459,6 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   });
   context.subscriptions.push(preview);
 
-  const showOutputChannel = vscode.commands.registerCommand(
-    "fx-extension.showOutputChannel",
-    (...args) => Correlator.run(handlers.showOutputChannel, args)
-  );
-  context.subscriptions.push(showOutputChannel);
-
   registerInCommandController(context, "fx-extension.openFolder", handlers.openFolderHandler);
 
   const checkSideloading = vscode.commands.registerCommand(
@@ -491,23 +504,32 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(deployManifestFromCtxMenuCmd);
 
-  const grantPermission = vscode.commands.registerCommand(
-    "fx-extension.grantPermission",
-    (node) => {
-      const envName = node.identifier;
-      Correlator.run(handlers.grantPermission, envName);
-    }
-  );
-  context.subscriptions.push(grantPermission);
+  if (isV3Enabled()) {
+    registerInCommandController(
+      context,
+      "fx-extension.manageCollaborator",
+      handlers.manageCollaboratorHandler,
+      "manageCollaborator"
+    );
+  } else {
+    const grantPermission = vscode.commands.registerCommand(
+      "fx-extension.grantPermission",
+      (node) => {
+        const envName = node.identifier;
+        Correlator.run(handlers.grantPermission, envName);
+      }
+    );
+    context.subscriptions.push(grantPermission);
 
-  const listCollaborator = vscode.commands.registerCommand(
-    "fx-extension.listCollaborator",
-    (node) => {
-      const envName = node.identifier;
-      Correlator.run(handlers.listCollaborator, envName);
-    }
-  );
-  context.subscriptions.push(listCollaborator);
+    const listCollaborator = vscode.commands.registerCommand(
+      "fx-extension.listCollaborator",
+      (node) => {
+        const envName = node.identifier;
+        Correlator.run(handlers.listCollaborator, envName);
+      }
+    );
+    context.subscriptions.push(listCollaborator);
+  }
 
   const localDebug = vscode.commands.registerCommand("fx-extension.localdebug", (node) => {
     Correlator.run(handlers.treeViewLocalDebugHandler);
@@ -661,6 +683,7 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
   }
 
   await setAadManifestEnabledContext();
+  await setApiV3EnabledContext();
 
   await vscode.commands.executeCommand(
     "setContext",
@@ -678,6 +701,10 @@ async function setAadManifestEnabledContext() {
       ? hasAAD(projectSettingsConfig.projectSettings as ProjectSettingsV3)
       : false
   );
+}
+
+async function setApiV3EnabledContext() {
+  await vscode.commands.executeCommand("setContext", "fx-extension.isV3Enabled", isV3Enabled());
 }
 
 function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
@@ -824,6 +851,27 @@ async function runBackgroundAsyncTasks(
   context: vscode.ExtensionContext,
   isTeamsFxProject: boolean
 ) {
+  await exp.initialize(context);
+  TreatmentVariableValue.welcomeViewStyle = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.WelcomeView,
+      true
+    )) as string | undefined;
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isExistingUser",
+    isExistingUser !== "no"
+  );
+  if (TreatmentVariableValue.welcomeViewStyle === "A") {
+    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
+    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewA", true);
+  } else if (TreatmentVariableValue.welcomeViewStyle === "B") {
+    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
+    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewB", true);
+  }
+
   ExtTelemetry.isFromSample = await handlers.getIsFromSample();
   ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();
   ExtTelemetry.isM365 = await handlers.getIsM365();
@@ -834,15 +882,6 @@ async function runBackgroundAsyncTasks(
   upgrade.showChangeLog();
 
   await openWelcomePageAfterExtensionInstallation();
-
-  await exp.initialize(context);
-  TreatmentVariableValue.previewTreeViewCommand = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.PreviewTreeViewCommand,
-      true
-    )) as boolean | undefined;
 
   if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();

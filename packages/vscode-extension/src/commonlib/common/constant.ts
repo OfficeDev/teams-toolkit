@@ -9,6 +9,7 @@ export const signingIn = "SigningIn";
 export const loggedOut = "LoggedOut";
 export const loggedIn = "LoggedIn";
 export const loggingIn = "LoggingIn";
+export const switching = "Switching";
 export const initializing = "Initializing";
 
 export const subscriptionInfoFile = "subscriptionInfo.json";

@@ -25,6 +25,7 @@ import fs from "fs-extra";
 import { expect } from "chai";
 import { AadValidator, BotValidator, FrontendValidator } from "../../commonlib";
 import M365Login from "../../../src/commonlib/m365Login";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("SSO Tab with aad manifest enabled", () => {
   const testFolder = getTestFolder();
@@ -39,7 +40,7 @@ describe("SSO Tab with aad manifest enabled", () => {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it("SSO Tab E2E test with aad manifest enabled", async () => {
+  it("SSO Tab E2E test with aad manifest enabled", { testPlanCaseId: 15687261 }, async () => {
     // Arrange
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
 

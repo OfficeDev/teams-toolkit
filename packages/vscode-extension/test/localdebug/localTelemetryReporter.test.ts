@@ -2,15 +2,10 @@
 // Licensed under the MIT license.
 import { LocalEnvManager, TaskOverallLabel } from "@microsoft/teamsfx-core/build/common/local";
 import * as chai from "chai";
-import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
-import {
-  getPreLaunchTaskInfo,
-  maskArrayValue,
-  maskValue,
-} from "../../src/debug/localTelemetryReporter";
+import { getTaskInfo, maskArrayValue, maskValue } from "../../src/debug/localTelemetryReporter";
 import * as globalVariables from "../../src/globalVariables";
 
 describe("LocalTelemetryReporter", () => {
@@ -88,7 +83,7 @@ describe("LocalTelemetryReporter", () => {
     });
   });
 
-  describe("getPreLaunchTaskInfo()", () => {
+  describe("getTaskInfo()", () => {
     afterEach(async () => {
       sinon.restore();
     });
@@ -99,7 +94,7 @@ describe("LocalTelemetryReporter", () => {
         .stub(globalVariables, "workspaceUri")
         .value(vscode.Uri.parse(path.resolve(__dirname, "unknown")));
       sinon.stub(LocalEnvManager.prototype, "getTaskJson").returns(Promise.resolve(undefined));
-      const res = await getPreLaunchTaskInfo();
+      const res = await getTaskInfo();
       chai.assert.isUndefined(res);
     });
 
@@ -107,61 +102,96 @@ describe("LocalTelemetryReporter", () => {
       sinon.stub(globalVariables, "isTeamsFxProject").value(true);
       sinon
         .stub(globalVariables, "workspaceUri")
-        .value(vscode.Uri.parse(path.resolve(__dirname, "renameLabel")));
-      sinon.stub(LocalEnvManager.prototype, "getTaskJson").returns(Promise.resolve(undefined));
-      const res = await getPreLaunchTaskInfo();
-      chai.assert.isUndefined(res);
+        .value(vscode.Uri.parse(path.resolve(__dirname, "data", "renameLabel")));
+      const res = await getTaskInfo();
+      chai.assert.isEmpty(res?.PreLaunchTaskInfo);
+      chai.assert.isFalse(res?.IsTransparentTask);
     });
+
+    it("task.json of old tab project", async () => {
+      sinon.stub(globalVariables, "isTeamsFxProject").value(true);
+      sinon
+        .stub(globalVariables, "workspaceUri")
+        .value(vscode.Uri.parse(path.resolve(__dirname, "data", "oldTab")));
+      const res = await getTaskInfo();
+      chai.assert.exists(res?.PreLaunchTaskInfo);
+      chai.assert.sameDeepOrderedMembers(
+        res?.PreLaunchTaskInfo?.[TaskOverallLabel.NextDefault] ?? [],
+        [
+          {
+            command: "<unknown>",
+            label: "<unknown>",
+            type: "<unknown>",
+          },
+          {
+            command: "<unknown>",
+            label: "<unknown>",
+            type: "<unknown>",
+          },
+          {
+            command: "<undefined>",
+            label: "<unknown>",
+            type: "<undefined>",
+          },
+        ]
+      );
+      chai.assert.isFalse(res?.IsTransparentTask);
+    });
+
     it("task.json of a tab + bot + func project", async () => {
       sinon.stub(globalVariables, "isTeamsFxProject").value(true);
       sinon
         .stub(globalVariables, "workspaceUri")
         .value(vscode.Uri.parse(path.resolve(__dirname, "data", "tabbotfunc")));
-      const res = await getPreLaunchTaskInfo();
-      chai.assert.isUndefined(res?.[TaskOverallLabel.TransparentM365]);
-      chai.assert.exists(res?.[TaskOverallLabel.TransparentDefault]);
-      chai.assert.sameDeepOrderedMembers(res?.[TaskOverallLabel.TransparentDefault] ?? [], [
-        {
-          command: "debug-check-prerequisites",
-          label: "Validate & install prerequisites",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-npm-install",
-          label: "Install npm packages",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-start-local-tunnel",
-          label: "Start local tunnel",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-set-up-tab",
-          label: "Set up tab",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-set-up-bot",
-          label: "Set up bot",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-set-up-sso",
-          label: "Set up SSO",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-prepare-manifest",
-          label: "Build & upload Teams manifest",
-          type: "teamsfx",
-        },
-        {
-          command: "<undefined>",
-          label: "Start services",
-          type: "<undefined>",
-        },
-      ]);
+      const res = await getTaskInfo();
+      chai.assert.isTrue(res?.IsTransparentTask);
+      chai.assert.isUndefined(res?.PreLaunchTaskInfo?.[TaskOverallLabel.TransparentM365]);
+      chai.assert.exists(res?.PreLaunchTaskInfo?.[TaskOverallLabel.TransparentDefault]);
+      chai.assert.sameDeepOrderedMembers(
+        res?.PreLaunchTaskInfo?.[TaskOverallLabel.TransparentDefault] ?? [],
+        [
+          {
+            command: "debug-check-prerequisites",
+            label: "Validate & install prerequisites",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-npm-install",
+            label: "Install npm packages",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-start-local-tunnel",
+            label: "Start local tunnel",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-set-up-tab",
+            label: "Set up tab",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-set-up-bot",
+            label: "Set up bot",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-set-up-sso",
+            label: "Set up SSO",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-prepare-manifest",
+            label: "Build & upload Teams manifest",
+            type: "teamsfx",
+          },
+          {
+            command: "<undefined>",
+            label: "Start services",
+            type: "<undefined>",
+          },
+        ]
+      );
     });
 
     it("task.json of a m365 project", async () => {
@@ -169,124 +199,135 @@ describe("LocalTelemetryReporter", () => {
       sinon
         .stub(globalVariables, "workspaceUri")
         .value(vscode.Uri.parse(path.resolve(__dirname, "data", "m365")));
-      const res = await getPreLaunchTaskInfo();
-      chai.assert.exists(res?.[TaskOverallLabel.TransparentM365]);
-      chai.assert.sameDeepOrderedMembers(res?.[TaskOverallLabel.TransparentM365] ?? [], [
-        {
-          command: "debug-check-prerequisites",
-          label: "Validate & install prerequisites",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-npm-install",
-          label: "Install npm packages",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-set-up-tab",
-          label: "Set up tab",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-set-up-sso",
-          label: "Set up SSO",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-prepare-manifest",
-          label: "Build & upload Teams manifest",
-          type: "teamsfx",
-        },
-        {
-          command: "<undefined>",
-          label: "Start services",
-          type: "<undefined>",
-        },
-        {
-          command: "<unknown>",
-          label: "Install app in Teams",
-          type: "<unknown>",
-        },
-      ]);
-      chai.assert.exists(res?.[TaskOverallLabel.TransparentDefault]);
-      chai.assert.sameDeepOrderedMembers(res?.[TaskOverallLabel.TransparentDefault] ?? [], [
-        {
-          command: "debug-check-prerequisites",
-          label: "Validate & install prerequisites",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-npm-install",
-          label: "Install npm packages",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-set-up-tab",
-          label: "Set up tab",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-set-up-sso",
-          label: "Set up SSO",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-prepare-manifest",
-          label: "Build & upload Teams manifest",
-          type: "teamsfx",
-        },
-        {
-          command: "<undefined>",
-          label: "Start services",
-          type: "<undefined>",
-        },
-      ]);
+      const res = await getTaskInfo();
+      chai.assert.isTrue(res?.IsTransparentTask);
+      chai.assert.exists(res?.PreLaunchTaskInfo?.[TaskOverallLabel.TransparentM365]);
+      chai.assert.sameDeepOrderedMembers(
+        res?.PreLaunchTaskInfo?.[TaskOverallLabel.TransparentM365] ?? [],
+        [
+          {
+            command: "debug-check-prerequisites",
+            label: "Validate & install prerequisites",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-npm-install",
+            label: "Install npm packages",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-set-up-tab",
+            label: "Set up tab",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-set-up-sso",
+            label: "Set up SSO",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-prepare-manifest",
+            label: "Build & upload Teams manifest",
+            type: "teamsfx",
+          },
+          {
+            command: "<undefined>",
+            label: "Start services",
+            type: "<undefined>",
+          },
+          {
+            command: "<unknown>",
+            label: "Install app in Teams",
+            type: "<unknown>",
+          },
+        ]
+      );
+      chai.assert.exists(res?.PreLaunchTaskInfo?.[TaskOverallLabel.TransparentDefault]);
+      chai.assert.sameDeepOrderedMembers(
+        res?.PreLaunchTaskInfo?.[TaskOverallLabel.TransparentDefault] ?? [],
+        [
+          {
+            command: "debug-check-prerequisites",
+            label: "Validate & install prerequisites",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-npm-install",
+            label: "Install npm packages",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-set-up-tab",
+            label: "Set up tab",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-set-up-sso",
+            label: "Set up SSO",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-prepare-manifest",
+            label: "Build & upload Teams manifest",
+            type: "teamsfx",
+          },
+          {
+            command: "<undefined>",
+            label: "Start services",
+            type: "<undefined>",
+          },
+        ]
+      );
     });
     it("task.json of user customized project", async () => {
       sinon.stub(globalVariables, "isTeamsFxProject").value(true);
       sinon
         .stub(globalVariables, "workspaceUri")
         .value(vscode.Uri.parse(path.resolve(__dirname, "data", "customized")));
-      const res = await getPreLaunchTaskInfo();
-      chai.assert.isUndefined(res?.[TaskOverallLabel.TransparentM365]);
-      chai.assert.exists(res?.[TaskOverallLabel.TransparentDefault]);
-      chai.assert.sameDeepOrderedMembers(res?.[TaskOverallLabel.TransparentDefault] ?? [], [
-        {
-          command: "debug-npm-install",
-          label: "Install npm packages",
-          type: "teamsfx",
-        },
-        {
-          command: "<unknown>",
-          label: "<unknown>",
-          type: "<unknown>",
-        },
-        {
-          command: "debug-set-up-tab",
-          label: "<unknown>",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-set-up-bot",
-          label: "<unknown>",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-set-up-sso",
-          label: "Set up SSO",
-          type: "teamsfx",
-        },
-        {
-          command: "debug-prepare-manifest",
-          label: "Build & upload Teams manifest",
-          type: "teamsfx",
-        },
-        {
-          command: "<undefined>",
-          label: "Start services",
-          type: "<undefined>",
-        },
-      ]);
+      const res = await getTaskInfo();
+      chai.assert.isTrue(res?.IsTransparentTask);
+      chai.assert.isUndefined(res?.PreLaunchTaskInfo?.[TaskOverallLabel.TransparentM365]);
+      chai.assert.exists(res?.PreLaunchTaskInfo?.[TaskOverallLabel.TransparentDefault]);
+      chai.assert.sameDeepOrderedMembers(
+        res?.PreLaunchTaskInfo?.[TaskOverallLabel.TransparentDefault] ?? [],
+        [
+          {
+            command: "debug-npm-install",
+            label: "Install npm packages",
+            type: "teamsfx",
+          },
+          {
+            command: "<unknown>",
+            label: "<unknown>",
+            type: "<unknown>",
+          },
+          {
+            command: "debug-set-up-tab",
+            label: "<unknown>",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-set-up-bot",
+            label: "<unknown>",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-set-up-sso",
+            label: "Set up SSO",
+            type: "teamsfx",
+          },
+          {
+            command: "debug-prepare-manifest",
+            label: "Build & upload Teams manifest",
+            type: "teamsfx",
+          },
+          {
+            command: "<undefined>",
+            label: "Start services",
+            type: "<undefined>",
+          },
+        ]
+      );
     });
   });
 });

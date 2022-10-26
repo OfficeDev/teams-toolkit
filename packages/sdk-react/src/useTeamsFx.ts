@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { LogLevel, setLogLevel, setLogFunction, TeamsFx, IdentityType } from "@microsoft/teamsfx";
-import { useTeams } from "msteams-react-base-component";
+import { useTeams } from "./useTeams";
 import { ThemePrepared } from "@fluentui/react-northstar";
 import { useData } from "./useData";
 

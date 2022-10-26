@@ -33,6 +33,8 @@ import { manifestUtils } from "../../../../src/component/resource/appManifest/ut
 import * as uuid from "uuid";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
 import { AppDefinition } from "../../../../src/component/resource/appManifest/interfaces/appDefinition";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import { FeatureFlagName } from "../../../../src/common/constants";
 
 describe("App-manifest Component", () => {
   const sandbox = sinon.createSandbox();
@@ -480,5 +482,109 @@ describe("App-manifest Component", () => {
       const finalManifest = getManifestRes.value;
       chai.assert(finalManifest.validDomains?.includes("abc.com"));
     }
+  });
+
+  describe("collaboration v3", () => {
+    let mockedEnvRestore: RestoreFn;
+    before(() => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.V3]: "true",
+      });
+    });
+    afterEach(() => {
+      sandbox.restore();
+    });
+    after(() => {
+      sandbox.restore();
+      mockedEnvRestore();
+    });
+
+    it("listCollaborator v3 - succeed", async function () {
+      sandbox
+        .stub(AppStudioClient, "getUserList")
+        .callsFake(async (teamsAppId: string, appStudioToken: string) => {
+          return [
+            {
+              tenantId: "tenantId",
+              aadId: teamsAppId,
+              displayName: "displayName",
+              userPrincipalName: "userPrincipalName",
+              isAdministrator: true,
+            },
+          ];
+        });
+
+      const envInfo = newEnvInfoV3();
+      envInfo.envName = "local";
+      envInfo.state = {
+        solution: {},
+      };
+
+      const result = await component.listCollaborator(
+        context,
+        inputs,
+        envInfo,
+        tools.tokenProvider.m365TokenProvider,
+        "teamsAppId"
+      );
+      chai.assert.isTrue(result.isOk());
+      if (result.isOk()) {
+        chai.assert.equal(result.value[0].userObjectId, "teamsAppId");
+      }
+    });
+
+    it("grantPermission v3 - succeed", async function () {
+      sandbox.stub(AppStudioClient, "grantPermission").resolves();
+      const envInfo = newEnvInfoV3();
+      envInfo.envName = "local";
+      envInfo.state = {
+        solution: {},
+      };
+
+      const userList = {
+        tenantId: "tenantId",
+        aadId: "aadId",
+        displayName: "displayName",
+        userPrincipalName: "userPrincipalName",
+        isAdministrator: true,
+      };
+
+      const result = await component.grantPermission(
+        context,
+        inputs,
+        envInfo,
+        tools.tokenProvider.m365TokenProvider,
+        userList,
+        "teamsAppId"
+      );
+      chai.assert.isTrue(result.isOk());
+    });
+
+    it("checkPermission v3 - succeed", async function () {
+      sandbox.stub(AppStudioClient, "checkPermission").resolves(Constants.PERMISSIONS.admin);
+      const envInfo = newEnvInfoV3();
+      envInfo.envName = "local";
+      envInfo.state = {
+        solution: {},
+      };
+
+      const userList = {
+        tenantId: "tenantId",
+        aadId: "aadId",
+        displayName: "displayName",
+        userPrincipalName: "userPrincipalName",
+        isAdministrator: true,
+      };
+
+      const result = await component.checkPermission(
+        context,
+        inputs,
+        envInfo,
+        tools.tokenProvider.m365TokenProvider,
+        userList,
+        "teamsAppId"
+      );
+      chai.assert.isTrue(result.isOk());
+    });
   });
 });

@@ -22,7 +22,7 @@ import {
 
 import { ComponentNames } from "../constants";
 import { DefaultManifestProvider } from "../resource/appManifest/manifestProvider";
-import { checkWhetherLocalDebugM365TenantMatches } from "../../plugins/solution/fx-solution/v2/utils";
+import { checkWhetherLocalDebugM365TenantMatches } from "../provisionUtils";
 import { isCSharpProject } from "../utils";
 
 export async function checkM365Tenant(

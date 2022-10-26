@@ -33,10 +33,7 @@ import { CONFIGURABLE_TABS_TPL_EXISTING_APP } from "../../../../src/component/re
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import { QuestionNames } from "../../../../src/component/feature/bot/constants";
 import { AppServiceOptionItem } from "../../../../src/component/feature/bot/question";
-import {
-  AzureSolutionQuestionNames,
-  BotScenario,
-} from "../../../../src/plugins/solution/fx-solution/question";
+import { AzureSolutionQuestionNames, BotScenario } from "../../../../src/component/constants";
 import { MockTools } from "../../../core/utils";
 import { getAzureProjectRoot } from "../../../plugins/resource/appstudio/helper";
 import fs from "fs-extra";

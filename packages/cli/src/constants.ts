@@ -5,6 +5,7 @@
 
 import { Inputs, Platform, QTreeNode, Stage } from "@microsoft/teamsfx-api";
 import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
+import { Options } from "yargs";
 
 export const cliSource = "TeamsfxCLI";
 export const cliName = "teamsfx";
@@ -17,11 +18,28 @@ export const RootFolderNode = new QTreeNode({
   default: "./",
 });
 
+export const RootFolderOptions: { [_: string]: Options } = {
+  folder: {
+    type: "string",
+    global: false,
+    description: "Select root folder of the project",
+    default: "./",
+  },
+};
+
 export const EnvNodeNoCreate = new QTreeNode({
   type: "text",
   name: "env",
   title: "Select an existing environment for the project",
 });
+
+export const EnvOptions: { [_: string]: Options } = {
+  env: {
+    type: "string",
+    global: false,
+    description: "Select an existing environment for the project",
+  },
+};
 
 export const SubscriptionNode = new QTreeNode({
   type: "text",
@@ -34,6 +52,30 @@ export const CollaboratorEmailNode = new QTreeNode({
   name: "email",
   title: "Input email address of collaborator",
 });
+
+export const ManifestFilePathParamName = "manifest-file-path";
+export const OutputZipPathParamName = "output-zip-path";
+export const OutputManifestParamName = "output-manifest-path";
+export const BuildPackageOptions: { [_: string]: Options } = {
+  [ManifestFilePathParamName]: {
+    type: "string",
+    global: false,
+    description:
+      "Select the Teams app manifest template path, default to '${root}/templates/appPackage/manifest.template.json'",
+  },
+  [OutputZipPathParamName]: {
+    type: "string",
+    global: false,
+    description:
+      "Select the output path of the zipped app package, default to '${root}/build/appPackage/appPackage.${env}.json'",
+  },
+  [OutputManifestParamName]: {
+    type: "string",
+    global: false,
+    description:
+      "Select the output path of the generated manifest path, default to '${root}/build/appPackage/manifest.${env}.json'",
+  },
+};
 
 export const templates = sampleProvider.SampleCollection.samples.map((sample) => {
   return {

@@ -6,7 +6,7 @@ import path from "path";
 import { AadAppOutputs, BotServiceOutputs, ComponentNames } from "../constants";
 import fs from "fs-extra";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
-import { SolutionError, SolutionSource } from "../../plugins/solution/fx-solution/constants";
+import { SolutionError, SolutionSource } from "../constants";
 
 export class AppSettingConstants {
   static DevelopmentFileName = "appsettings.Development.json";

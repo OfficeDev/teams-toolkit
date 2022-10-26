@@ -105,7 +105,7 @@ export const automaticNpmInstallHintMessage =
 export const doctorResult = {
   NodeNotFound: `Cannot find Node.js.`,
   NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).`,
-  NodeNotRecommended: `Node.js (@CurrentVersion) is not in the recommended version list (@SupportedVersions).`,
+  NodeNotRecommended: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions). It may cause problems if you continue to debug.`,
   NodeSuccess: `Supported Node.js version (@Version) is installed`,
   InstallNode: "Go to https://nodejs.org/about/releases/ to install Node.js (v16 is recommended).",
   SideLoadingDisabled:

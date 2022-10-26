@@ -20,11 +20,12 @@ import { MockTools, randomAppName } from "../../../core/utils";
 import { newEnvInfoV3 } from "../../../../src/core/environment";
 import { BotService } from "../../../../src/component/resource/botService/botService";
 import { ComponentNames } from "../../../../src/component/constants";
-import { AppStudio } from "../../../../src/component/resource/botService/appStudio/appStudio";
+import { AppStudioClient } from "../../../../src/component/resource/botService/appStudio/appStudioClient";
 import { TeamsfxCore } from "../../../../src/component/core";
 import { AppManifest } from "../../../../src/component/resource/appManifest/appManifest";
 import { provisionUtils } from "../../../../src/component/provisionUtils";
 import { TelemetryKeys } from "../../../../src/component/resource/botService/constants";
+import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
 
 describe("Bot service", () => {
   const tools = new MockTools();
@@ -56,7 +57,7 @@ describe("Bot service", () => {
       botId: "botID",
       botPassword: "botPassword",
     };
-    sandbox.stub(AppStudio, "getBotRegistration").resolves({} as any);
+    sandbox.stub(AppStudioClient, "getBotRegistration").resolves({} as any);
     const res = await component.provision(context as ResourceContextV3, inputs);
     assert.isTrue(res.isOk());
   });
@@ -65,8 +66,12 @@ describe("Bot service", () => {
       botId: "botID",
       botPassword: "botPassword",
     };
-    sandbox.stub(AppStudio, "getBotRegistration").rejects({
+    sandbox.stub(AppStudioClient, "getBotRegistration").rejects({
       response: { status: 500 },
+    });
+    sandbox.stub(GraphClient, "registerAadApp").resolves({
+      clientId: "clientId",
+      clientSecret: "clientSecret",
     });
     const res = await component.provision(context as ResourceContextV3, inputs);
     assert.isTrue(res.isErr());
@@ -92,7 +97,7 @@ describe("Bot service", () => {
       botId: "botID",
       botPassword: "botPassword",
     };
-    sandbox.stub(AppStudio, "getBotRegistration").rejects({
+    sandbox.stub(AppStudioClient, "getBotRegistration").rejects({
       response: { status: 500 },
       toJSON: () => ({
         config: {

@@ -6,7 +6,6 @@ import * as jsonschema from "jsonschema";
 import * as path from "path";
 import { Container } from "typedi";
 import * as uuid from "uuid";
-
 import { hooks } from "@feathersjs/hooks";
 import {
   AppPackageFolderName,
@@ -43,7 +42,7 @@ import { getLocalizedString } from "../common/localizeUtils";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import { isValidProject, newProjectSettings } from "../common/projectSettingsHelper";
 import { TelemetryReporterInstance } from "../common/telemetry";
-import { createV2Context } from "../common/tools";
+import { createV2Context, isV3Enabled } from "../common/tools";
 import { getTemplatesFolder } from "../folder";
 import {
   ApiConnectionOptionItem,
@@ -51,7 +50,7 @@ import {
   CicdOptionItem,
   ExistingTabOptionItem,
   SingleSignOnOptionItem,
-} from "../plugins/solution/fx-solution/question";
+} from "../component/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
@@ -59,13 +58,13 @@ import { environmentManager, newEnvInfoV3 } from "./environment";
 import {
   CopyFileError,
   InvalidInputError,
-  NonExistEnvNameError,
   NotImplementedError,
   ObjectIsUndefinedError,
   OperationNotPermittedError,
   ProjectFolderExistError,
   TaskNotSupportError,
   WriteFileError,
+  NoAadManifestExistError,
 } from "./error";
 import { setCurrentStage, setTools, TOOLS } from "./globalVars";
 import { AadManifestMigrationMW } from "./middleware/aadManifestMigration";
@@ -97,7 +96,7 @@ import {
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
   getQuestionsForProvisionV3,
-} from "../component/questionV3";
+} from "../component/question";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd/cicd";
 import { ComponentNames } from "../component/constants";
@@ -106,9 +105,16 @@ import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnector
 import { createEnvWithName } from "../component/envManager";
 import { getProjectTemplatesFolderPath } from "../common/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
-import { copyParameterJson } from "../plugins/solution/fx-solution/arm";
-import { convertEnvStateMapV3ToV2 } from "../component/migrate";
+import { copyParameterJson } from "../component/arm";
 import { ProjectSettingsHelper } from "../common/local";
+import "../component/driver/aad/update";
+import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
+import { ValidateTeamsAppDriver } from "../component/driver/teamsApp/validate";
+import { ValidateTeamsAppArgs } from "../component/driver/teamsApp/interfaces/ValidateTeamsAppArgs";
+import { DriverContext } from "../component/driver/interface/commonArgs";
+import { coordinator } from "../component/coordinator";
+import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPackage";
+import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -161,16 +167,41 @@ export class FxCore implements v3.ICore {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
-  async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
+    if (isV3Enabled()) return this.createProjectNew(inputs);
+    else return this.createProjectOld(inputs);
+  }
+
+  @hooks([ErrorHandlerMW, ContextInjectorMW])
+  async createProjectNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    const fx = Container.get("fx") as any;
-    const res = await fx.create(context, inputs as InputsWithProjectPath);
+    const res = await coordinator.create(context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    ctx.projectSettings = context.projectSetting;
+    inputs.projectPath = context.projectPath;
+    return ok(inputs.projectPath!);
+  }
+
+  @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
+  async createProjectOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+    if (!ctx) {
+      return err(new ObjectIsUndefinedError("ctx for createProject"));
+    }
+    setCurrentStage(Stage.create);
+    inputs.stage = Stage.create;
+    const context = createContextV3();
+    let res;
+    if (isV3Enabled()) {
+      res = await coordinator.create(context, inputs as InputsWithProjectPath);
+    } else {
+      const fx = Container.get("fx") as any;
+      res = await fx.create(context, inputs as InputsWithProjectPath);
+    }
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;
@@ -279,6 +310,51 @@ export class FxCore implements v3.ICore {
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
+    EnvInfoWriterMW_V3(),
+  ])
+  async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.deployAad);
+    inputs.stage = Stage.deployAad;
+    const updateAadClient = Container.get("aadApp/update") as any;
+    // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
+    const manifestTemplatePath: string = path.join(inputs.projectPath!, ".fx", "aad.template.json");
+    if (!(await fs.pathExists(manifestTemplatePath))) {
+      return err(new NoAadManifestExistError(manifestTemplatePath));
+    }
+    await fs.ensureDir(path.join(inputs.projectPath!, "build"));
+    const manifestOutputPath: string = path.join(
+      inputs.projectPath!,
+      "build",
+      `aad.${inputs.env}.json`
+    );
+    const inputArgs: UpdateAadAppArgs = {
+      manifestTemplatePath: manifestTemplatePath,
+      outputFilePath: manifestOutputPath,
+    };
+    const contextV3: DriverContext = {
+      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider,
+      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider,
+      ui: TOOLS.ui,
+      logProvider: TOOLS.logProvider,
+      telemetryReporter: TOOLS.telemetryReporter!,
+      projectPath: inputs.projectPath as string,
+      platform: Platform.VSCode,
+    };
+    const res = await updateAadClient.run(inputArgs, contextV3);
+    if (res.isErr()) return err(res.error);
+    return ok(Void);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
+    ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
@@ -372,14 +448,54 @@ export class FxCore implements v3.ICore {
       );
       res = ok(path);
     } else if (func.method === "validateManifest") {
-      const component = Container.get("app-manifest") as any;
-      res = await component.validate(context, inputs as InputsWithProjectPath);
+      // TODO: load environment variables into process.env
+      if (isV3Enabled()) {
+        const driver: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
+        const args: ValidateTeamsAppArgs = {
+          manifestTemplatePath: func.params.manifestTemplatePath,
+        };
+        const driverContext: DriverContext = {
+          azureAccountProvider: context.tokenProvider!.azureAccountProvider,
+          m365TokenProvider: context.tokenProvider!.m365TokenProvider,
+          ui: context.userInteraction,
+          logProvider: context.logProvider,
+          telemetryReporter: context.telemetryReporter,
+          projectPath: context.projectPath!,
+          platform: inputs.platform,
+        };
+        res = await driver.run(args, driverContext);
+      } else {
+        const component = Container.get("app-manifest") as any;
+        res = await component.validate(context, inputs as InputsWithProjectPath);
+      }
     } else if (func.method === "buildPackage") {
-      const component = Container.get("app-manifest") as any;
-      res = await component.build(context, inputs as InputsWithProjectPath);
+      if (isV3Enabled()) {
+        const driver: CreateAppPackageDriver = Container.get("teamsApp/createAppPackage");
+        const args: CreateAppPackageArgs = {
+          manifestTemplatePath: func.params.manifestTemplatePath,
+          outputZipPath: func.params.outputZipPath,
+          outputJsonPath: func.params.outputJsonPath,
+        };
+        const driverContext: DriverContext = {
+          azureAccountProvider: context.tokenProvider!.azureAccountProvider,
+          m365TokenProvider: context.tokenProvider!.m365TokenProvider,
+          ui: context.userInteraction,
+          logProvider: context.logProvider,
+          telemetryReporter: context.telemetryReporter,
+          projectPath: context.projectPath!,
+          platform: inputs.platform,
+        };
+        res = await driver.run(args, driverContext);
+      } else {
+        const component = Container.get("app-manifest") as any;
+        res = await component.build(context, inputs as InputsWithProjectPath);
+      }
     } else if (func.method === "updateManifest") {
       const component = Container.get("app-manifest") as any;
       res = await component.deploy(context, inputs as InputsWithProjectPath);
+    } else if (func.method === "buildAadManifest") {
+      const component = Container.get("aad-app") as any;
+      res = await component.buildAadManifest(context, inputs as InputsWithProjectPath);
     } else {
       return err(new NotImplementedError(func.method));
     }
@@ -721,46 +837,7 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
-  // deprecated
-  // @hooks([
-  //   ErrorHandlerMW,
-  //   ConcurrentLockerMW,
-  //   ProjectMigratorMW,
-  //   ProjectConsolidateMW,
-  //   AadManifestMigrationMW,
-  //   ProjectVersionCheckerMW,
-  //   ProjectSettingsLoaderMW,
-  //   ContextInjectorMW,
-  //   ProjectSettingsWriterMW,
-  // ])
   async activateEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    // const env = inputs.env;
-    // if (!env) {
-    //   return err(new ObjectIsUndefinedError("env"));
-    // }
-    // if (!ctx!.projectSettings) {
-    //   return ok(Void);
-    // }
-
-    // const envConfigs = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
-
-    // if (envConfigs.isErr()) {
-    //   return envConfigs;
-    // }
-
-    // if (envConfigs.isErr() || envConfigs.value.indexOf(env) < 0) {
-    //   return err(NonExistEnvNameError(env));
-    // }
-
-    // const solutionContext = await loadSolutionContext(inputs, ctx!.projectSettings, env);
-
-    // if (!solutionContext.isErr()) {
-    //   ctx!.provisionInputConfig = solutionContext.value.envInfo.config;
-    //   ctx!.provisionOutputs = solutionContext.value.envInfo.state;
-    //   ctx!.envName = solutionContext.value.envInfo.envName;
-    // }
-
-    // this.tools.ui.showMessage("info", `[${env}] is activated.`, false);
     return ok(Void);
   }
 

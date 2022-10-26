@@ -7,7 +7,8 @@
 import "isomorphic-fetch";
 import { Context, HttpRequest } from "@azure/functions";
 import { Client } from "@microsoft/microsoft-graph-client";
-import { createMicrosoftGraphClient, TeamsFx, UserInfo } from "@microsoft/teamsfx";
+import { createMicrosoftGraphClient, IdentityType, TeamsFx, UserInfo } from "@microsoft/teamsfx";
+import config from "../config";
 
 interface Response {
   status: number;
@@ -65,7 +66,12 @@ export default async function run(
   // Construct teamsfx.
   let teamsfx: TeamsFx;
   try {
-    teamsfx = new TeamsFx().setSsoToken(accessToken);
+    teamsfx = new TeamsFx(IdentityType.User, {
+      authorityHost: config.authorityHost,
+      tenantId: config.tenantId,
+      clientId: config.clientId,
+      clientSecret: config.clientSecret,
+    }).setSsoToken(accessToken);
   } catch (e) {
     context.log.error(e);
     return {

@@ -51,6 +51,16 @@ export class M365AccountNode extends DynamicNode {
     this.eventEmitter.fire(this);
   }
 
+  public setSwitching() {
+    if (this.status === AccountItemStatus.Switching) {
+      return;
+    }
+    this.status = AccountItemStatus.Switching;
+    this.contextValue = "";
+    // refresh
+    this.eventEmitter.fire(this);
+  }
+
   public updateSideloading(token: string) {
     this.sideloadingNode.token = token;
     this.eventEmitter.fire(this);
@@ -75,9 +85,15 @@ export class M365AccountNode extends DynamicNode {
     this.tooltip = new vscode.MarkdownString(
       localize("teamstoolkit.accountTree.m365AccountTooltip")
     );
-    if (this.status === AccountItemStatus.SigningIn) {
+    if (
+      this.status === AccountItemStatus.SigningIn ||
+      this.status === AccountItemStatus.Switching
+    ) {
       this.iconPath = loadingIcon;
-      this.label = localize("teamstoolkit.accountTree.signingInM365");
+      this.label =
+        this.status === AccountItemStatus.Switching
+          ? localize("teamstoolkit.accountTree.switchingM365")
+          : localize("teamstoolkit.accountTree.signingInM365");
     } else {
       this.iconPath = m365Icon;
     }

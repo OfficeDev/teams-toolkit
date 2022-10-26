@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { includes } from "lodash";
 import Mustache from "mustache";
 import { TEAMS_APP_SHORT_NAME_MAX_LENGTH } from "../constants";
+import { AppDefinition } from "../interfaces/appDefinition";
+import { ConfigurableTab } from "../interfaces/configurableTab";
 
 export function getCustomizedKeys(prefix: string, manifest: any): string[] {
   let keys: string[] = [];
@@ -37,6 +40,66 @@ export function renderTemplate(manifestString: string, view: any): string {
   Mustache.escape = (value) => value;
   manifestString = Mustache.render(manifestString, view);
   return manifestString;
+}
+
+export function needTabCode(appDefinition: AppDefinition): boolean {
+  const isPersonalApp = !!appDefinition.staticTabs && appDefinition.staticTabs.length > 0;
+  const isGroupApp =
+    !!appDefinition.configurableTabs &&
+    appDefinition.configurableTabs.length > 0 &&
+    groupAppConfigured(appDefinition.configurableTabs[0]);
+
+  return isPersonalApp || isGroupApp;
+}
+
+export function needBotCode(appDefinition: AppDefinition): boolean {
+  const isBot = !!appDefinition.bots && appDefinition.bots.length > 0;
+  const isMessageExtension =
+    !!appDefinition.messagingExtensions && appDefinition.messagingExtensions.length > 0;
+  return isBot || isMessageExtension;
+}
+
+export function hasMeetingExtension(appDefinition: AppDefinition): boolean {
+  return (
+    !!appDefinition.configurableTabs &&
+    appDefinition.configurableTabs.length > 0 &&
+    meetingExtensionConfigured(appDefinition.configurableTabs[0])
+  );
+}
+
+const groupAppConfigured = (tab?: ConfigurableTab) => {
+  const validGroupAppContext =
+    includes(tab?.context, MeetingsContext.ChannelTab) ||
+    includes(tab?.context, MeetingsContext.PrivateChatTab);
+  const validGroupAppScope =
+    includes(tab?.scopes, CommandScope.GroupChat) || includes(tab?.scopes, CommandScope.Team);
+
+  return validGroupAppScope && validGroupAppContext;
+};
+
+const meetingExtensionConfigured = (tab?: ConfigurableTab) => {
+  const validMeetingContext =
+    includes(tab?.context, MeetingsContext.SidePanel) ||
+    includes(tab?.context, MeetingsContext.DetailsTab) ||
+    includes(tab?.context, MeetingsContext.ChatTab);
+  const validMeetingScope = includes(tab?.scopes, CommandScope.GroupChat);
+
+  return validMeetingScope && validMeetingContext;
+};
+
+export enum CommandScope {
+  Team = "team",
+  Personal = "personal",
+  GroupChat = "groupchat",
+}
+
+export enum MeetingsContext {
+  ChannelTab = "channelTab",
+  PrivateChatTab = "privateChatTab",
+  SidePanel = "meetingSidePanel",
+  ShareToStage = "meetingStage",
+  DetailsTab = "meetingDetailsTab",
+  ChatTab = "meetingChatTab",
 }
 
 export class RetryHandler {

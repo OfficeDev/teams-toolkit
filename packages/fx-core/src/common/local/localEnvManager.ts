@@ -33,7 +33,7 @@ import { LocalStateProvider } from "../localStateProvider";
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
 import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import { convertEnvStateV3ToV2 } from "../../component/migrate";
-import { getNgrokTunnelFromApi } from "../../plugins/solution/fx-solution/debug/util/ngrok";
+import { getNgrokTunnelFromApi } from "../../component/debug/util/ngrok";
 import { LocalEnvKeys, LocalEnvProvider } from "../../component/debugHandler/localEnvProvider";
 
 export class LocalEnvManager {

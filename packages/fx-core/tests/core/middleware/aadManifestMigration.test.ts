@@ -13,7 +13,7 @@ import { AadManifestMigrationMW } from "../../../src/core/middleware/aadManifest
 import { MockProjectSettings, MockTools, MockUserInteraction, randomAppName } from "../utils";
 import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 import * as tool from "../../../src/common/tools";
-import { PluginNames } from "../../../src/plugins/solution/fx-solution/constants";
+import { PluginNames } from "../../../src/component/constants";
 
 describe("Middleware - aadManifestMigration.test", () => {
   const sandbox = sinon.createSandbox();

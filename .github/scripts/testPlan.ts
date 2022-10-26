@@ -119,7 +119,7 @@ interface Pagenation<T> {
 }
 
 const CLITestPlanTemplate: TestPlan = {
-  id: 10445798,
+  id: 15232204,
   name: "CLI Test Plan Template",
 };
 

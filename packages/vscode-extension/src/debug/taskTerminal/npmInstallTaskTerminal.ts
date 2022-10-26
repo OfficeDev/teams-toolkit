@@ -41,37 +41,40 @@ export class NpmInstallTaskTerminal extends BaseTaskTerminal {
   }
 
   do(): Promise<Result<Void, FxError>> {
+    const telemetryProperties = {
+      [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
+      [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
+        forceUpdate: maskValue(this.args.forceUpdate ? "true" : "false", ["false", "true"]),
+        projects: !this.args.projects
+          ? UndefinedPlaceholder
+          : this.args.projects.map((p) => {
+              return {
+                cwd: maskValue(p.cwd ? path.basename(p.cwd) : p.cwd, [
+                  { value: "tabs", mask: "<tab>" },
+                  { value: "api", mask: "<api>" },
+                  { value: "bot", mask: "<bot>" },
+                  { value: "SPFx", mask: "<spfx>" },
+                ]),
+                npmInstallArgs: maskArrayValue(
+                  p.npmInstallArgs,
+                  TaskDefaultValue.npmInstall.npmInstallArgs
+                ),
+              };
+            }),
+      }),
+    };
     return Correlator.runWithId(commonUtils.getLocalDebugSession().id, () =>
       localTelemetryReporter.runWithTelemetryProperties(
         TelemetryEvent.DebugNpmInstallTask,
-        {
-          [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
-          [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
-            forceUpdate: maskValue(this.args.forceUpdate ? "true" : "false", ["false", "true"]),
-            projects: !this.args.projects
-              ? UndefinedPlaceholder
-              : this.args.projects.map((p) => {
-                  return {
-                    cwd: maskValue(p.cwd ? path.basename(p.cwd) : p.cwd, [
-                      { value: "tabs", mask: "<tab>" },
-                      { value: "api", mask: "<api>" },
-                      { value: "bot", mask: "<bot>" },
-                      { value: "SPFx", mask: "<spfx>" },
-                    ]),
-                    npmInstallArgs: maskArrayValue(
-                      p.npmInstallArgs,
-                      TaskDefaultValue.npmInstall.npmInstallArgs
-                    ),
-                  };
-                }),
-          }),
-        },
-        () => this._do()
+        telemetryProperties,
+        () => this._do(telemetryProperties)
       )
     );
   }
 
-  private async _do(): Promise<Result<Void, FxError>> {
+  private async _do(telemetryProperties: {
+    [key: string]: string;
+  }): Promise<Result<Void, FxError>> {
     if (!this.args?.projects || this.args.projects.length === 0) {
       return ok(Void);
     }
@@ -91,7 +94,10 @@ export class NpmInstallTaskTerminal extends BaseTaskTerminal {
       };
     });
 
-    const res = await checkAndInstallNpmPackagesForTask(npmInstallProjectOptions);
+    const res = await checkAndInstallNpmPackagesForTask(
+      npmInstallProjectOptions,
+      telemetryProperties
+    );
     const duration = this.getDurationInSeconds();
     if (res.isOk() && duration) {
       VsCodeLogInstance.info(npmInstallDisplayMessages.durationMessage(duration));

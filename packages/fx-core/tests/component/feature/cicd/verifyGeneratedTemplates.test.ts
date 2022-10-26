@@ -30,6 +30,7 @@ import { convertToAlphanumericOnly } from "../../../../src/common/utils";
 import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 import sinon from "sinon";
 import { getTemplatesFolder } from "../../../../src/folder";
+import * as tools from "../../../../src/common/tools";
 
 describe("Add ci cd workflow", () => {
   const cicdPlugin: CICDImpl = new CICDImpl();
@@ -79,7 +80,7 @@ describe("Add ci cd workflow", () => {
           getTemplatesFolder(),
           "plugins",
           "resource",
-          "cicd",
+          tools.isV3Enabled() ? "cicd" : "cicd_v2",
           providerKind
         );
 
@@ -142,6 +143,7 @@ describe("Add ci cd workflow", () => {
 
   describe("Verify Incremental Cases", () => {
     it("Add GitHub then Jenkins, Content of Templates should be expected", async () => {
+      sandbox.stub(tools, "isV3Enabled").returns(true);
       const projectSetting: ProjectSettingsV3 = {
         appName: "my app",
         projectId: "1232343534",
@@ -186,7 +188,7 @@ describe("Add ci cd workflow", () => {
             getTemplatesFolder(),
             "plugins",
             "resource",
-            "cicd",
+            tools.isV3Enabled() ? "cicd" : "cicd_v2",
             providerKind
           );
 

@@ -73,7 +73,7 @@ describe("MsGraphAuthProvider Tests - Node", () => {
   it("create msGraphAuthProvider instance should success with TeamsFx", function () {
     const teamsfx = new TeamsFx().setSsoToken(ssoToken);
     const authProvider: any = new MsGraphAuthProvider(teamsfx, scopes);
-    expect(authProvider.teamsfx).to.be.instanceOf(TeamsFx);
+    expect(authProvider.credentialOrTeamsFx).to.be.instanceOf(TeamsFx);
   });
 
   it("create msGraphAuthProvider instance should throw UiRequiredError with unconsent scope with OnBehalfOfUserCredential", async function () {

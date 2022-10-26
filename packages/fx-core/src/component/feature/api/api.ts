@@ -26,7 +26,7 @@ import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../../common/utils";
 import { globalVars } from "../../../core/globalVars";
 import { CoreQuestionNames } from "../../../core/question";
-import { AzureResourceFunction } from "../../../plugins/solution/fx-solution/question";
+import { AzureResourceFunction } from "../../constants";
 import { BicepComponent } from "../../bicep";
 import { ApiCodeProvider } from "../../code/api/apiCode";
 import { QuestionKey } from "../../code/api/enums";

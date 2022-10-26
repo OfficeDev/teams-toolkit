@@ -5,6 +5,8 @@ import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance, AxiosError } from "axios";
 import { IAADDefinition } from "../../../resource/aadApp/interfaces/IAADDefinition";
 import { AADApplication } from "../../../resource/aadApp/interfaces/AADApplication";
+import { AADManifest } from "../../../resource/aadApp/interfaces/AADManifest";
+import { AadManifestHelper } from "../../../resource/aadApp/utils/aadManifestHelper";
 import { GraphScopes } from "../../../../common/tools";
 import { Constants } from "../../../resource/aadApp/constants";
 import axiosRetry from "axios-retry";
@@ -74,6 +76,12 @@ export class AadAppClient {
     });
 
     return response.data.secretText;
+  }
+
+  public async updateAadApp(manifest: AADManifest): Promise<void> {
+    const objectId = manifest.id!; // You need to ensure the object id exists in manifest
+    const requestBody = AadManifestHelper.manifestToApplication(manifest);
+    await this.axios.patch(`applications/${objectId}`, requestBody);
   }
 
   // only use it to retry 4xx errors for create client secret requests right after AAD app creation (usually 404)

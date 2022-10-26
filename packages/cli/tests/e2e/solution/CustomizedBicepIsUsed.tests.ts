@@ -21,6 +21,7 @@ import "mocha";
 import * as chai from "chai";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("User can customize Bicep files", function () {
   const testFolder = getTestFolder();
@@ -33,23 +34,27 @@ describe("User can customize Bicep files", function () {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it("user customized Bicep file is used when provision", async () => {
-    // Arrange
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+  it(
+    "user customized Bicep file is used when provision",
+    { testPlanCaseId: 15687187 },
+    async () => {
+      // Arrange
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
-    // Act
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    const customizedServicePlans: string[] = await customizeBicepFile(projectPath);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
+      // Act
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      const customizedServicePlans: string[] = await customizeBicepFile(projectPath);
+      await CliHelper.setSubscription(subscription, projectPath);
+      await CliHelper.provisionProject(projectPath);
 
-    const resourceGroup = await getRGAfterProvision(projectPath, env);
-    chai.assert.exists(resourceGroup);
-    chai.expect(resourceGroup).to.be.a("string");
+      const resourceGroup = await getRGAfterProvision(projectPath, env);
+      chai.assert.exists(resourceGroup);
+      chai.expect(resourceGroup).to.be.a("string");
 
-    // Assert
-    customizedServicePlans.forEach(async (servicePlanName) => {
-      await validateServicePlan(servicePlanName, resourceGroup!, subscription);
-    });
-  });
+      // Assert
+      customizedServicePlans.forEach(async (servicePlanName) => {
+        await validateServicePlan(servicePlanName, resourceGroup!, subscription);
+      });
+    }
+  );
 });

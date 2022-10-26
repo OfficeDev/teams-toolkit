@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { BotNotificationTriggers } from "../../../plugins/solution/fx-solution/question";
+import { BotNotificationTriggers } from "../../constants";
 
 export const BotCapabilities = {
   NOTIFICATION: "notification",

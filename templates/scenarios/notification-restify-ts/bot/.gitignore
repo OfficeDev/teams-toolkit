@@ -1,0 +1,13 @@
+# dependencies
+node_modules/
+
+# misc
+.env
+.deployment
+.DS_Store
+
+# build
+lib/
+
+# Local data
+.notification.localstore.json

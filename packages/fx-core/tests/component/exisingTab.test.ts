@@ -9,7 +9,7 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
-import { ExistingTabOptionItem } from "../../src/plugins/solution/fx-solution/question";
+import { ExistingTabOptionItem } from "../../src/component/constants";
 import "../../src/component/core";
 import { TeamsfxCore } from "../../src/component/core";
 import "../../src/component/feature/bot/bot";

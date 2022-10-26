@@ -57,18 +57,14 @@ import { validate as uuidValidate } from "uuid";
 import { HelpLinks } from "../../../common/constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { AppUser } from "../appManifest/interfaces/appUser";
-import { isAadManifestEnabled } from "../../../common/tools";
+import { isAadManifestEnabled, isV3Enabled } from "../../../common/tools";
 import { getPermissionMap } from "./permissions";
 import { AadAppManifestManager } from "./aadAppManifestManager";
 import { AADManifest } from "./interfaces/AADManifest";
 import { format, Formats } from "./utils/format";
 import { generateAadManifestTemplate } from "../../../core/generateAadManifestTemplate";
 import { isVSProject } from "../../../common/projectSettingsHelper";
-import {
-  PluginNames,
-  REMOTE_AAD_ID,
-  SOLUTION_PROVISION_SUCCEEDED,
-} from "../../../plugins/solution/fx-solution/constants";
+import { PluginNames, REMOTE_AAD_ID, SOLUTION_PROVISION_SUCCEEDED } from "../../constants";
 import { ComponentNames } from "../../constants";
 
 export class AadAppForTeamsImpl {
@@ -270,12 +266,20 @@ export class AadAppForTeamsImpl {
     }
 
     config.frontendDomain = userSetFrontendDomain ?? config.frontendDomain;
+    config.frontendEndpoint = userSetFrontendDomain
+      ? `https://${userSetFrontendDomain}`
+      : config.frontendEndpoint;
     config.botId = userSetBotId ?? config.botId;
     config.botEndpoint = userSetBotEndpoint ?? config.botEndpoint;
 
     if (config.frontendDomain || config.botId) {
       let applicationIdUri = "api://";
-      applicationIdUri += config.frontendDomain ? `${config.frontendDomain}/` : "";
+      let frontendHost = config.frontendDomain;
+      if (config.frontendEndpoint) {
+        const url = new URL(config.frontendEndpoint as string);
+        frontendHost = url.host;
+      }
+      applicationIdUri += frontendHost ? `${frontendHost}/` : "";
       applicationIdUri += config.botId ? "botid-" + config.botId : config.clientId;
       config.applicationIdUri = applicationIdUri;
       ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));
@@ -397,12 +401,14 @@ export class AadAppForTeamsImpl {
 
   public async checkPermission(
     ctx: ContextV3,
-    userInfo: AppUser
+    userInfo: AppUser,
+    aadObjectIdV3?: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     ctx.logProvider.info(Messages.StartCheckPermission.log);
     await TokenProvider.init({ m365: ctx.tokenProvider?.m365TokenProvider }, TokenAudience.Graph);
-    const aadState = ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp;
-    const objectId = aadState.objectId;
+    const objectId = isV3Enabled()
+      ? aadObjectIdV3
+      : (ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp).objectId;
     if (!objectId) {
       const params = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
       const msgs0 = getPermissionErrorMessage(params[0], false);
@@ -429,11 +435,15 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success(result);
   }
 
-  public async listCollaborator(ctx: ContextV3): Promise<Result<AadOwner[], FxError>> {
+  public async listCollaborator(
+    ctx: ContextV3,
+    aadObjectIdV3?: string
+  ): Promise<Result<AadOwner[], FxError>> {
     ctx.logProvider.info(Messages.StartListCollaborator.log);
     await TokenProvider.init({ m365: ctx.tokenProvider?.m365TokenProvider }, TokenAudience.Graph);
-    const aadState = ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp;
-    const objectId = aadState.objectId;
+    const objectId = isV3Enabled()
+      ? aadObjectIdV3
+      : (ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp).objectId;
     if (!objectId) {
       const msgs = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
       throw ResultFactory.SystemError(GetConfigError.name, msgs);
@@ -449,12 +459,14 @@ export class AadAppForTeamsImpl {
 
   public async grantPermission(
     ctx: ContextV3,
-    userInfo: AppUser
+    userInfo: AppUser,
+    aadObjectIdV3?: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     ctx.logProvider.info(Messages.StartGrantPermission.log);
     await TokenProvider.init({ m365: ctx.tokenProvider?.m365TokenProvider }, TokenAudience.Graph);
-    const aadState = ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp;
-    const objectId = aadState.objectId;
+    const objectId = isV3Enabled()
+      ? aadObjectIdV3
+      : (ctx.envInfo?.state[ComponentNames.AadApp] as v3.AADApp).objectId;
     if (!objectId) {
       const params = ConfigErrorMessages.GetConfigError(ConfigKeys.objectId, Plugins.pluginName);
       const msg0 = getPermissionErrorMessage(params[0], true);
@@ -706,6 +718,8 @@ export class AadAppForTeamsImpl {
 
   public async loadAndBuildManifest(ctx: PluginContext): Promise<AADManifest> {
     let isProvisionSucceeded;
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartBuildAadManifest);
     if (ctx.envInfo.envName === "local") {
       isProvisionSucceeded = !!ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID);
     } else {
@@ -733,6 +747,7 @@ export class AadAppForTeamsImpl {
       );
     }
     await AadAppManifestManager.writeManifestFileToBuildFolder(manifest, ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndBuildAadManifest);
     return manifest;
   }
 

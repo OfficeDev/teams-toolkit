@@ -9,7 +9,7 @@ import {
   generateTasks,
   generateTasksJson,
   mergeTasksJson,
-} from "../../../../../src/plugins/solution/fx-solution/debug/util/tasksTransparency";
+} from "../../../../../src/component/debug/util/tasksTransparency";
 import * as commentJson from "comment-json";
 import { CommentObject } from "comment-json";
 

@@ -276,4 +276,12 @@ export class AppStudioError {
       getLocalizedString("error.appstudio.teamsAppCreateConflictWithPublishedApp"),
     ],
   };
+
+  public static readonly InvalidInputError = {
+    name: "InvalidInput",
+    message: (key: string, value: string): [string, string] => [
+      getDefaultString("error.appstudio.invalidInput", key, value),
+      getLocalizedString("error.appstudio.invalidInput", key, value),
+    ],
+  };
 }

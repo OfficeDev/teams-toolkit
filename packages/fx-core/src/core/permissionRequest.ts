@@ -10,7 +10,7 @@ import {
   err,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { SolutionError } from "../plugins/solution/fx-solution/constants";
+import { SolutionError } from "../component/constants";
 import { CoreSource } from "./error";
 
 export class PermissionRequestFileProvider implements PermissionRequestProvider {

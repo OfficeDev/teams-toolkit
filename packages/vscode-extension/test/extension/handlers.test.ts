@@ -53,6 +53,8 @@ import * as commonUtils from "../../src/utils/commonUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import { MockCore } from "../mocks/mockCore";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import { VsCodeLogProvider } from "../../src/commonlib/log";
+import { ProgressHandler } from "../../src/progressHandler";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -240,6 +242,33 @@ describe("handlers", () => {
       sinon.restore();
     });
 
+    it("validateManifestHandler()", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      await handlers.validateManifestHandler();
+
+      sinon.assert.calledOnce(sendTelemetryErrorEvent);
+      sinon.restore();
+    });
+
+    it("validateManifestHandler() - V3", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(localizeUtils, "localize").returns("");
+
+      const res = await handlers.validateManifestHandler();
+
+      chai.assert(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, ExtensionErrors.DefaultManifestTemplateNotExistsError);
+      }
+      sinon.restore();
+    });
+
     it("debugHandler()", async () => {
       const sendTelemetryEventStub = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
@@ -382,6 +411,35 @@ describe("handlers", () => {
 
       sinon.restore();
       sinon.assert.calledOnce(deployArtifacts);
+    });
+
+    it("deployAadManifest", async () => {
+      const sandbox = sinon.createSandbox();
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const deployAadManifest = sandbox.spy(handlers.core, "deployAadManifest");
+      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const input: Inputs = handlers.getSystemInputs();
+      await handlers.runCommand(Stage.deployAad, input);
+
+      sandbox.assert.calledOnce(deployAadManifest);
+      sandbox.restore();
+    });
+
+    it("deployAadManifest happy path", async () => {
+      const sandbox = sinon.createSandbox();
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sandbox.stub(handlers.core, "deployAadManifest").resolves(ok("test_success"));
+      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const input: Inputs = handlers.getSystemInputs();
+      const res = await handlers.runCommand(Stage.deployAad, input);
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.strictEqual(res.value, "test_success");
+      }
+      sandbox.restore();
     });
 
     it("localDebug", async () => {
@@ -723,6 +781,96 @@ describe("handlers", () => {
     });
   });
 
+  describe("permission v3", function () {
+    const sandbox = sinon.createSandbox();
+
+    this.beforeEach(() => {
+      sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    });
+
+    this.afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("happy path: grant permission", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: "grantPermission" })),
+      });
+      sandbox.stub(MockCore.prototype, "grantPermission").returns(
+        Promise.resolve(
+          ok({
+            state: CollaborationState.OK,
+            userInfo: {
+              userObjectId: "fake-user-object-id",
+              userPrincipalName: "fake-user-principle-name",
+            },
+            permissions: [
+              {
+                name: "name",
+                type: "type",
+                resourceId: "id",
+                roles: ["Owner"],
+              },
+            ],
+          })
+        )
+      );
+      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
+
+      const result = await handlers.manageCollaboratorHandler();
+      chai.expect(result.isOk()).equals(true);
+    });
+
+    it("happy path: list collaborator", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: "listCollaborator" })),
+      });
+      sandbox.stub(MockCore.prototype, "listCollaborator").returns(
+        Promise.resolve(
+          ok({
+            state: CollaborationState.OK,
+            collaborators: [
+              {
+                userPrincipalName: "userPrincipalName",
+                userObjectId: "userObjectId",
+                isAadOwner: true,
+                teamsAppResourceId: "teamsAppResourceId",
+              },
+            ],
+          })
+        )
+      );
+      sandbox.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const vscodeLogProviderInstance = VsCodeLogProvider.getInstance();
+      sandbox.stub(vscodeLogProviderInstance, "outputChannel").value({
+        name: "name",
+        append: (value: string) => {},
+        appendLine: (value: string) => {},
+        replace: (value: string) => {},
+        clear: () => {},
+        show: (...params: any[]) => {},
+        hide: () => {},
+        dispose: () => {},
+      });
+
+      const result = await handlers.manageCollaboratorHandler();
+      chai.expect(result.isOk()).equals(true);
+    });
+
+    it("User Cancel", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(extension, "VS_CODE_UI").value({
+        selectOption: () =>
+          Promise.resolve(err(new UserError("source", "errorName", "errorMessage"))),
+      });
+
+      const result = await handlers.manageCollaboratorHandler();
+      chai.expect(result.isErr()).equals(true);
+    });
+  });
+
   describe("manifest", () => {
     it("edit manifest template: local", async () => {
       sinon.restore();
@@ -785,6 +933,20 @@ describe("handlers", () => {
     await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
     sinon.assert.calledOnce(deployArtifacts);
     chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
+    sinon.restore();
+  });
+
+  it("deployAadAppManifest v3", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(true);
+    sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+    sinon.stub(handlers, "core").value(new MockCore());
+    sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    const deployAadManifest = sinon.spy(handlers.core, "deployAadManifest");
+    await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
+    sinon.assert.calledOnce(deployAadManifest);
+    chai.assert.equal(deployAadManifest.getCall(0).args[0]["include-aad-manifest"], "yes");
+    deployAadManifest.restore();
     sinon.restore();
   });
 
@@ -914,6 +1076,124 @@ describe("handlers", () => {
       sinon.stub(DepsManager.prototype, "getStatus").rejects(new Error("failed to get status"));
       const dotnetPath = await handlers.getDotnetPathHandler();
       chai.assert.equal(dotnetPath, `${path.delimiter}`);
+    });
+  });
+
+  describe("scaffoldFromDeveloperPortalHandler", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+    it("missing args", async () => {
+      const progressHandler = new ProgressHandler("title", 1);
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
+
+      const res = await handlers.scaffoldFromDeveloperPortalHandler();
+
+      chai.assert.equal(res.isOk(), true);
+      chai.assert.equal(createProgressBar.notCalled, true);
+    });
+
+    it("incorrect number of args", async () => {
+      const progressHandler = new ProgressHandler("title", 1);
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
+
+      const res = await handlers.scaffoldFromDeveloperPortalHandler(["1", "2"]);
+
+      chai.assert.equal(res.isOk(), true);
+      chai.assert.equal(createProgressBar.notCalled, true);
+    });
+
+    it("general error when signing in M365", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const progressHandler = new ProgressHandler("title", 1);
+      const startProgress = sinon.stub(progressHandler, "start").resolves();
+      const endProgress = sinon.stub(progressHandler, "end").resolves();
+      sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").throws("error");
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
+      const showErrorMessage = sinon.stub(vscode.window, "showErrorMessage");
+      let hasError = false;
+
+      await handlers.scaffoldFromDeveloperPortalHandler(["appId"]).catch((err) => {
+        hasError = true;
+        chai.assert.equal(err, "error");
+        chai.assert.equal(createProgressBar.calledOnce, true);
+        chai.assert.equal(startProgress.calledOnce, true);
+        chai.assert.equal(endProgress.calledOnceWithExactly(false), true);
+        chai.assert.equal(showErrorMessage.calledOnce, true);
+      });
+
+      chai.assert.equal(hasError, true);
+    });
+
+    it("error when signing M365", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const progressHandler = new ProgressHandler("title", 1);
+      const startProgress = sinon.stub(progressHandler, "start").resolves();
+      const endProgress = sinon.stub(progressHandler, "end").resolves();
+      sinon
+        .stub(M365TokenInstance, "signInWhenInitiatedFromTdp")
+        .resolves(err(new UserError("source", "name", "message", "displayMessage")));
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
+      const showErrorMessage = sinon.stub(vscode.window, "showErrorMessage");
+
+      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
+
+      chai.assert.equal(res.isErr(), true);
+      chai.assert.equal(createProgressBar.calledOnce, true);
+      chai.assert.equal(startProgress.calledOnce, true);
+      chai.assert.equal(endProgress.calledOnceWithExactly(false), true);
+      chai.assert.equal(showErrorMessage.calledOnce, true);
+    });
+
+    it("error when signing in M365 but missing display message", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const progressHandler = new ProgressHandler("title", 1);
+      const startProgress = sinon.stub(progressHandler, "start").resolves();
+      const endProgress = sinon.stub(progressHandler, "end").resolves();
+      sinon
+        .stub(M365TokenInstance, "signInWhenInitiatedFromTdp")
+        .resolves(err(new UserError("source", "name", "", "")));
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
+      const showErrorMessage = sinon.stub(vscode.window, "showErrorMessage");
+
+      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
+
+      chai.assert.equal(res.isErr(), true);
+      chai.assert.equal(createProgressBar.calledOnce, true);
+      chai.assert.equal(startProgress.calledOnce, true);
+      chai.assert.equal(endProgress.calledOnceWithExactly(false), true);
+      chai.assert.equal(showErrorMessage.calledOnce, true);
+    });
+
+    it("sign in M365 successfully", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const progressHandler = new ProgressHandler("title", 1);
+      const startProgress = sinon.stub(progressHandler, "start").resolves();
+      const endProgress = sinon.stub(progressHandler, "end").resolves();
+      sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
+      const showErrorMessage = sinon.stub(vscode.window, "showErrorMessage");
+
+      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
+
+      chai.assert.equal(res.isOk(), true);
+      chai.assert.equal(createProgressBar.calledOnce, true);
+      chai.assert.equal(startProgress.calledOnce, true);
+      chai.assert.equal(endProgress.calledOnceWithExactly(true), true);
     });
   });
 });

@@ -5,7 +5,6 @@ import { hooks, NextFunction } from "@feathersjs/hooks/lib";
 import {
   CryptoProvider,
   EnvConfig,
-  EnvInfo,
   Err,
   err,
   FxError,
@@ -16,7 +15,6 @@ import {
   Result,
   SingleSelectConfig,
   SingleSelectResult,
-  SolutionContext,
   Stage,
   Tools,
   UserCancelError,
@@ -29,15 +27,13 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { Container } from "typedi";
 import { environmentManager } from "../../src/core/environment";
 import {
   migrateArm,
   ProjectMigratorMW,
   ArmParameters,
 } from "../../src/core/middleware/projectMigrator";
-import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
-import { MockSolution, MockTools, MockUserInteraction, randomAppName } from "./utils";
+import { MockTools, MockUserInteraction, randomAppName } from "./utils";
 import { CoreHookContext } from "../../src/core/types";
 import { getProjectTemplatesFolderPath } from "../../src/common/utils";
 import { setTools } from "../../src/core/globalVars";
@@ -47,11 +43,7 @@ import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 let mockedEnvRestore: () => void;
 describe("Middleware - others", () => {
   const sandbox = sinon.createSandbox();
-  const mockSolution = new MockSolution();
-
-  beforeEach(() => {
-    Container.set(SolutionPlugins.AzureTeamsSolution, mockSolution);
-  });
+  beforeEach(() => {});
   afterEach(() => {
     sandbox.restore();
   });

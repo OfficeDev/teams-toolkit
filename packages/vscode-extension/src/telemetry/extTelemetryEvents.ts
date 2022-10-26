@@ -170,6 +170,9 @@ export enum TelemetryEvent {
   GrantPermissionStart = "grant-permission-start",
   GrantPermission = "grant-permission",
 
+  ManageCollaboratorStart = "manage-collaborator-start",
+  ManageCollaborator = "manage-collaborator",
+
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
   OpenSideloadingJoinM365 = "open-sideloading-joinm365",
@@ -261,6 +264,7 @@ export enum TelemetryProperty {
   DebugTaskId = "debug-task-id",
   DebugTaskArgs = "debug-task-args",
   DebugPrelaunchTaskInfo = "debug-prelaunch-task-info",
+  DebugNgrokLog = "debug-ngrok-log",
   DebugConfigName = "debug-config-name",
   Internal = "internal",
   InternalAlias = "internal-alias",

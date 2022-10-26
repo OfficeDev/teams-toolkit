@@ -110,7 +110,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         ctx.arguments.push(actionContext);
       }
       await next();
-      if (ctx.result.isErr()) throw ctx.result.error;
+      if (ctx.result?.isErr && ctx.result.isErr()) throw ctx.result.error;
       // send end telemetry
       if (action.enableTelemetry) {
         sendSuccessEvent(eventName, telemetryProps);

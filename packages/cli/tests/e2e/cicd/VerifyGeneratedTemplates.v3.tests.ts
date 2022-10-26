@@ -12,6 +12,7 @@ import { getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import { getTemplatesFolder } from "@microsoft/teamsfx-core/build/folder";
+import { it } from "@microsoft/extra-shot-mocha";
 import Mustache from "mustache";
 import * as fs from "fs-extra";
 import { CICDProviderFactory } from "../../../../fx-core/src/component/feature/cicd/provider/factory";
@@ -23,7 +24,7 @@ describe("Verify generated templates & readme V3", function () {
     await cleanUp(appName, projectPath, false, false, false);
   });
 
-  it(`Verify generated templates & readme`, async function () {
+  it(`Verify generated templates & readme`, { testPlanCaseId: 15685915 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 
     // Add CICD Workflows.

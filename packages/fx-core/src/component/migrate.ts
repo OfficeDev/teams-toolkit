@@ -9,7 +9,7 @@ import { cloneDeep } from "lodash";
 import { join } from "path";
 import { isVSProject } from "../common/projectSettingsHelper";
 import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
-import { MessageExtensionNewUIItem } from "../plugins/solution/fx-solution/question";
+import { MessageExtensionNewUIItem } from "./constants";
 import { ComponentNames } from "./constants";
 import { ensureComponentConnections } from "./utils";
 import { getComponent } from "./workflow";

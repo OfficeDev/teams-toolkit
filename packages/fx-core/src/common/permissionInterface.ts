@@ -56,3 +56,8 @@ export interface TeamsAppAdmin {
   displayName: string;
   userPrincipalName: string;
 }
+
+export interface AppIds {
+  teamsAppId: string;
+  aadObjectId?: string;
+}

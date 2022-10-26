@@ -102,7 +102,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
   });
 
   it("getToken should failed when not running inside Teams", async function () {
-    sinon.stub(TeamsUserCredential.prototype, <any>"checkInTeams").returns(false);
     const credential = new TeamsUserCredential(authConfig);
     const errorResult = await expect(credential.getToken([])).to.eventually.be.rejectedWith(
       ErrorWithCode
@@ -110,7 +109,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
     assert.strictEqual(errorResult.code, ErrorCode.InternalError);
     assert.include(
       errorResult.message,
-      "Initialize teams sdk failed due to not running inside Teams"
+      "Initialize teams sdk failed due to not running inside Teams environment"
     );
   });
 

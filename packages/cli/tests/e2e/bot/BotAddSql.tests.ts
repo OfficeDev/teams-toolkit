@@ -20,6 +20,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { BotValidator } from "../../commonlib";
 import { getUuid } from "../../commonlib/utilities";
+import { it } from "@microsoft/extra-shot-mocha";
 
 describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();
@@ -32,7 +33,7 @@ describe("Configuration successfully changed when with different plugins", funct
     await cleanUp(appName, projectPath, false, true, false);
   });
 
-  it(`bot + sql`, async function () {
+  it(`bot + sql`, { testPlanCaseId: 15685605 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);
 

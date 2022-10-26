@@ -9,7 +9,7 @@ import {
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
   FeatureId,
-} from "../../src/component/questionV3";
+} from "../../src/component/question";
 import {
   ApiConnectionOptionItem,
   AzureResourceApimNewUI,
@@ -24,7 +24,7 @@ import {
   TabNewUIOptionItem,
   TabNonSsoItem,
   WorkflowOptionItem,
-} from "../../src/plugins/solution/fx-solution/question";
+} from "../../src/component/constants";
 import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
 import {
   Inputs,

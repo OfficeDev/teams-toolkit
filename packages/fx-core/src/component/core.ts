@@ -77,7 +77,7 @@ import {
   ProjectFolderExistError,
 } from "../core/error";
 import { globalVars } from "../core/globalVars";
-import arm from "../plugins/solution/fx-solution/arm";
+import arm from "./arm";
 import {
   ApiConnectionOptionItem,
   AzureResourceApim,
@@ -94,16 +94,14 @@ import {
   TabFeatureIds,
   TabSPFxItem,
   TabSPFxNewUIItem,
-} from "../plugins/solution/fx-solution/question";
-import { executeConcurrently } from "../plugins/solution/fx-solution/v2/executor";
-import { getBotTroubleShootMessage } from "../plugins/solution/fx-solution/v2/utils";
+} from "./constants";
 import { AzureResources, ComponentNames } from "./constants";
 import { pluginName2ComponentName } from "./migrate";
 import {
   getQuestionsForAddFeatureV3,
   getQuestionsForDeployV3,
   getQuestionsForProvisionV3,
-} from "./questionV3";
+} from "./question";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "./middleware/actionExecutionMW";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
@@ -113,9 +111,10 @@ import { deployUtils } from "./deployUtils";
 import { provisionUtils } from "./provisionUtils";
 import { getTemplatesFolder } from "../folder";
 import { ensureBasicFolderStructure } from "../core/FxCore";
-import { SolutionTelemetryProperty } from "../plugins/solution/fx-solution/constants";
+import { SolutionTelemetryProperty } from "./constants";
 import { getQuestionsForCreateProjectV2 } from "../core/middleware/questionModel";
 import { Constants } from "./resource/aadApp/constants";
+import { executeConcurrently } from "./utils/executor";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -504,7 +503,7 @@ export class TeamsfxCore {
       );
       const msg = getLocalizedString("core.provision.successNotice", ctx.projectSetting.appName);
       if (url) {
-        const title = "View Provisioned Resources";
+        const title = getLocalizedString("core.provision.viewResources");
         ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
           const userSelected = result.isOk() ? result.value : undefined;
           if (userSelected === title) {
@@ -759,4 +758,26 @@ export async function preCheck(projectPath: string): Promise<Result<undefined, F
   }
 
   return ok(undefined);
+}
+
+export interface BotTroubleShootMessage {
+  troubleShootLink: string;
+  textForLogging: string;
+  textForMsgBox: string;
+  textForActionButton: string;
+}
+
+export function getBotTroubleShootMessage(isBot: boolean): BotTroubleShootMessage {
+  const botTroubleShootLink =
+    "https://aka.ms/teamsfx-bot-help#how-can-i-troubleshoot-issues-when-teams-bot-isnt-responding-on-azure";
+  const botTroubleShootDesc = getLocalizedString("core.deploy.botTroubleShoot");
+  const botTroubleShootLearnMore = getLocalizedString("core.deploy.botTroubleShoot.learnMore");
+  const botTroubleShootMsg = `${botTroubleShootDesc} ${botTroubleShootLearnMore}: ${botTroubleShootLink}.`;
+
+  return {
+    troubleShootLink: botTroubleShootLink,
+    textForLogging: isBot ? botTroubleShootMsg : "",
+    textForMsgBox: botTroubleShootDesc,
+    textForActionButton: botTroubleShootLearnMore,
+  } as BotTroubleShootMessage;
 }

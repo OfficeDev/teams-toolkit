@@ -46,4 +46,14 @@ describe("m365Node", () => {
     chai.assert.equal(treeItem.collapsibleState, vscode.TreeItemCollapsibleState.None);
     chai.assert.equal(treeItem.contextValue, "signinM365");
   });
+
+  it("setSwitching", async () => {
+    const m365Node = new M365AccountNode(eventEmitter);
+    m365Node.setSwitching();
+    const treeItem = await m365Node.getTreeItem();
+
+    chai.assert.equal(treeItem.iconPath, loadingIcon);
+    chai.assert.equal(treeItem.collapsibleState, vscode.TreeItemCollapsibleState.None);
+    chai.assert.equal(treeItem.contextValue, "");
+  });
 });

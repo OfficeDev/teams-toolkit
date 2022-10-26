@@ -5,7 +5,7 @@
  * @author Kuojian Lu <kuojianlu@microsoft.com>
  */
 
-import { it } from "../../commonlib/it";
+import { it } from "@microsoft/extra-shot-mocha";
 import { describe } from "mocha";
 import path from "path";
 import { getTestFolder, getUniqueAppName, cleanUpLocalProject } from "../commonUtils";
@@ -32,7 +32,7 @@ describe("Create M365 Message Extension", function () {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("happy path", async () => {
+  it("happy path", { testPlanCaseId: 15687010 }, async () => {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.M365SearchApp);
     await M365Validator.validateProjectSettings(projectPath);
     await M365Validator.validateManifest(projectPath);

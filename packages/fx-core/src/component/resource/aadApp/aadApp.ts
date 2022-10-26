@@ -33,10 +33,10 @@ import { DialogUtils } from "./utils/dialog";
 import { UnhandledError } from "./errors";
 import { hooks } from "@feathersjs/hooks/lib";
 import { CommonErrorHandlerMW } from "../../../core/middleware/CommonErrorHandlerMW";
-import { BuiltInFeaturePluginNames } from "../../../plugins/solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { AppUser } from "../appManifest/interfaces/appUser";
-import { Language } from "../../../plugins/solution/fx-solution/constants";
+import { Language } from "../../constants";
 @Service(ComponentNames.AadApp)
 export class AadApp implements CloudResource {
   readonly type = "cloud";
@@ -170,10 +170,39 @@ export class AadApp implements CloudResource {
       telemetry: { component: BuiltInFeaturePluginNames.aad },
     }),
   ])
-  async listCollaborator(ctx: ContextV3): Promise<Result<AadOwner[], FxError>> {
+  async buildAadManifest(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<undefined, FxError>> {
+    const aadAppImplement = new AadAppForTeamsImpl();
+    const convertCtx = convertContext(context, inputs);
+    const res = await this.runWithExceptionCatchingAsync(
+      async () => {
+        await aadAppImplement.loadAndBuildManifest(convertCtx);
+        return ResultFactory.Success();
+      },
+      convertCtx,
+      Messages.EndBuildAadManifest.telemetry
+    );
+    if (res.isErr()) {
+      return res;
+    }
+    this.setState(convertCtx, context);
+    return res;
+  }
+
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: { component: BuiltInFeaturePluginNames.aad },
+    }),
+  ])
+  async listCollaborator(
+    ctx: ContextV3,
+    aadObjectIdV3?: string
+  ): Promise<Result<AadOwner[], FxError>> {
     const aadAppImplement = new AadAppForTeamsImpl();
     const res = await this.runWithExceptionCatchingAsync(
-      async () => aadAppImplement.listCollaborator(ctx),
+      async () => aadAppImplement.listCollaborator(ctx, aadObjectIdV3),
       ctx,
       Messages.EndListCollaborator.telemetry
     );
@@ -187,11 +216,12 @@ export class AadApp implements CloudResource {
   ])
   async grantPermission(
     ctx: ContextV3,
-    userInfo: AppUser
+    userInfo: AppUser,
+    aadObjectIdV3?: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     const aadAppImplement = new AadAppForTeamsImpl();
     const res = await this.runWithExceptionCatchingAsync(
-      async () => aadAppImplement.grantPermission(ctx, userInfo),
+      async () => aadAppImplement.grantPermission(ctx, userInfo, aadObjectIdV3),
       ctx,
       Messages.EndGrantPermission.telemetry
     );
@@ -205,11 +235,12 @@ export class AadApp implements CloudResource {
   ])
   async checkPermission(
     ctx: ContextV3,
-    userInfo: AppUser
+    userInfo: AppUser,
+    aadObjectIdV3?: string
   ): Promise<Result<ResourcePermission[], FxError>> {
     const aadAppImplement = new AadAppForTeamsImpl();
     const res = await this.runWithExceptionCatchingAsync(
-      async () => aadAppImplement.checkPermission(ctx, userInfo),
+      async () => aadAppImplement.checkPermission(ctx, userInfo, aadObjectIdV3),
       ctx,
       Messages.EndCheckPermission.telemetry
     );

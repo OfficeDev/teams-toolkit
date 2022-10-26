@@ -9,7 +9,7 @@ import fs from "fs-extra";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TOOLS } from "../globalVars";
 import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
-import { PluginNames } from "../../plugins/solution/fx-solution/constants";
+import { PluginNames } from "../../component/constants";
 import { RequiredResourceAccess } from "../../component/resource/aadApp/interfaces/AADManifest";
 
 export interface Permission {

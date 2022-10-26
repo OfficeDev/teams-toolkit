@@ -39,8 +39,8 @@ import { ManifestTemplate } from "../../component/resource/spfx/utils/constants"
 import { generateAadManifest, needMigrateToAadManifest } from "./MigrationUtils";
 import { getManifestTemplatePath } from "../../component/resource/appManifest/utils/ManifestUtils";
 
-const upgradeButton = "Upgrade";
-const LearnMore = "Learn More";
+const upgradeButton = getLocalizedString("core.option.upgrade");
+const LearnMore = getLocalizedString("core.option.learnMore");
 const LearnMoreLinkWithAADManifest = "https://aka.ms/teamsfx-unify-config-and-aad-manifest-guide";
 const UnifyManifestLearMoreLink = "https://aka.ms/teamsfx-unify-local-remote-manifest-guide";
 let userCancelFlag = false;

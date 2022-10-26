@@ -40,6 +40,7 @@ class CommandController {
       "fx-extension.build",
       "fx-extension.deploy",
       "fx-extension.publish",
+      "fx-extension.openFromTdp",
     ]);
   }
 

@@ -116,18 +116,6 @@ export class PluginError extends Error {
   }
 }
 
-export class AADAppCheckingError extends PluginError {
-  constructor(innerError?: InnerError) {
-    super(
-      ErrorType.USER,
-      ErrorNames.CALL_APPSTUDIO_API_ERROR,
-      Messages.FailToCallAppStudioForCheckingAADApp as [string, string],
-      [Messages.RetryTheCurrentStep],
-      innerError
-    );
-  }
-}
-
 export class CreateAADAppError extends PluginError {
   constructor(innerError?: InnerError) {
     super(ErrorType.USER, CreateAppError.name, CreateAppError.message(), [], innerError);

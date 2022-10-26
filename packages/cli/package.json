@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-cli",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "author": "Microsoft Corporation",
   "description": "",
   "license": "MIT",
@@ -43,6 +43,7 @@
   "aiKey": "1c56be97-bb74-42cf-b04b-8f1aabf04592",
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@microsoft/extra-shot-mocha": "^0.0.2-alpha.efe3d972e.0",
     "@mochajs/json-file-reporter": "^1.3.0",
     "@types/adm-zip": "^0.4.34",
     "@types/chai": "^4.2.14",
@@ -112,8 +113,8 @@
     "@azure/arm-subscriptions": "^5.0.0",
     "@azure/core-http": "^1.2.0",
     "@azure/identity": "^1.3.0",
-    "@microsoft/teamsfx-api": "^0.20.6",
-    "@microsoft/teamsfx-core": "^1.16.2",
+    "@microsoft/teamsfx-api": "^0.20.7",
+    "@microsoft/teamsfx-core": "^1.17.0",
     "adm-zip": "^0.5.5",
     "applicationinsights": "^1.8.10",
     "async": "^2.6.4",

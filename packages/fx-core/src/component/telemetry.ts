@@ -10,9 +10,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import { TelemetryEvent, TelemetryProperty } from "../common/telemetry";
 import { globalVars, TOOLS } from "../core/globalVars";
-import { AzureSolutionQuestionNames } from "../plugins/solution/fx-solution/question";
+import { AzureSolutionQuestionNames } from "./constants";
 import { TelemetryKeys } from "./resource/botService/constants";
-import { PluginNames } from "../plugins/solution/fx-solution/constants";
+import { PluginNames } from "./constants";
 import { ComponentNames, Scenarios, TelemetryConstants } from "./constants";
 import { TelemetryHelper } from "./resource/botService/telemetryHelper";
 

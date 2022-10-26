@@ -21,6 +21,8 @@ import {
   ProjectSettingsV3,
   ProvisionBicep,
   Result,
+  TelemetryReporter,
+  UserError,
   UserInteraction,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -39,7 +41,11 @@ import { LocalCrypto } from "../core/crypto";
 import { environmentManager } from "../core/environment";
 import { TOOLS } from "../core/globalVars";
 import { getTemplatesFolder } from "../folder";
-import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
+import {
+  SolutionTelemetryComponentName,
+  SolutionTelemetryProperty,
+  BuiltInFeaturePluginNames,
+} from "./constants";
 import { ComponentNames, ProgrammingLanguage, Scenarios, scenarioToComponent } from "./constants";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
 import { getComponent, getComponentByScenario } from "./workflow";
@@ -659,4 +665,34 @@ export async function scaffoldRootReadme(
       await fs.copy(sourcePath, targetPath);
     }
   }
+}
+
+export function sendErrorTelemetryThenReturnError(
+  eventName: string,
+  error: FxError,
+  reporter?: TelemetryReporter,
+  properties?: { [p: string]: string },
+  measurements?: { [p: string]: number },
+  errorProps?: string[]
+): FxError {
+  if (!properties) {
+    properties = {};
+  }
+
+  if (SolutionTelemetryProperty.Component in properties === false) {
+    properties[SolutionTelemetryProperty.Component] = SolutionTelemetryComponentName;
+  }
+
+  properties[SolutionTelemetryProperty.Success] = "no";
+  if (error instanceof UserError) {
+    properties["error-type"] = "user";
+  } else {
+    properties["error-type"] = "system";
+  }
+
+  properties["error-code"] = `${error.source}.${error.name}`;
+  properties["error-message"] = error.message;
+
+  reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+  return error;
 }

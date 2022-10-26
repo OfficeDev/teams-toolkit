@@ -45,6 +45,7 @@ import { TokenProvider } from "../resource/aadApp/utils/tokenProvider";
 import { ProvisionConfig } from "../resource/aadApp/utils/configs";
 import { AadAppManifestManager } from "../resource/aadApp/aadAppManifestManager";
 import { Constants } from "../resource/aadApp/constants";
+import { checkM365Tenant } from "./utils";
 
 const ssoDebugMessages = {
   registeringAAD: "Registering an AAD app for SSO ...",
@@ -74,9 +75,9 @@ export class SSODebugHandler {
   private readonly projectPath: string;
   private args: SSODebugArgs;
   private readonly m365TokenProvider: M365TokenProvider;
-  private readonly logger?: LogProvider;
-  private readonly telemetry?: TelemetryReporter;
-  private readonly ui?: UserInteraction;
+  private readonly logger: LogProvider;
+  private readonly telemetry: TelemetryReporter;
+  private readonly ui: UserInteraction;
 
   private projectSettingsV3?: ProjectSettingsV3;
   private cryptoProvider?: CryptoProvider;
@@ -86,9 +87,9 @@ export class SSODebugHandler {
     projectPath: string,
     args: SSODebugArgs,
     m365TokenProvider: M365TokenProvider,
-    logger?: LogProvider,
-    telemetry?: TelemetryReporter,
-    ui?: UserInteraction
+    logger: LogProvider,
+    telemetry: TelemetryReporter,
+    ui: UserInteraction
   ) {
     this.projectPath = projectPath;
     this.args = args;
@@ -175,6 +176,23 @@ export class SSODebugHandler {
       }
 
       this.envInfoV3 = envInfoResult.value;
+
+      if (this.envInfoV3.state[ComponentNames.AadApp]) {
+        const checkResult = await checkM365Tenant(
+          this.projectPath,
+          this.projectSettingsV3,
+          this.envInfoV3,
+          this.m365TokenProvider,
+          this.logger,
+          this.telemetry,
+          this.ui,
+          this.cryptoProvider
+        );
+        if (checkResult.isErr()) {
+          return err(checkResult.error);
+        }
+      }
+
       this.envInfoV3.state[ComponentNames.AadApp] =
         this.envInfoV3.state[ComponentNames.AadApp] || {};
 
@@ -248,7 +266,9 @@ export class SSODebugHandler {
       // set applicationIdUris to state
       let applicationIdUri = "api://";
       if (ProjectSettingsHelper.includeFrontend(this.projectSettingsV3)) {
-        applicationIdUri += "localhost/";
+        const endpoint = this.envInfoV3!.state[ComponentNames.TeamsTab].endpoint;
+        const url = new URL(endpoint as string);
+        applicationIdUri += `${url.host}/`;
         if (!ProjectSettingsHelper.includeBot(this.projectSettingsV3)) {
           applicationIdUri += this.envInfoV3!.state[ComponentNames.AadApp].clientId;
         }

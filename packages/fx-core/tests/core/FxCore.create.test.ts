@@ -13,11 +13,7 @@ import {
   ScratchOptionNoVSC,
   ScratchOptionYesVSC,
 } from "../../src/core/question";
-import {
-  BotOptionItem,
-  TabOptionItem,
-  TabSPFxItem,
-} from "../../src/plugins/solution/fx-solution/question";
+import { BotOptionItem, TabOptionItem, TabSPFxItem } from "../../src/component/constants";
 import { deleteFolder, MockTools, randomAppName } from "./utils";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";

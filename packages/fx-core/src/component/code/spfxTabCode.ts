@@ -41,7 +41,7 @@ import {
 import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
 import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
 import { isOfficialSPFx, Utils } from "../resource/spfx/utils/utils";
-import { cpUtils } from "../../plugins/solution/fx-solution/utils/depsChecker/cpUtils";
+import { cpUtils } from "../utils/depsChecker/cpUtils";
 import { ComponentNames } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { DefaultManifestProvider } from "../resource/appManifest/manifestProvider";

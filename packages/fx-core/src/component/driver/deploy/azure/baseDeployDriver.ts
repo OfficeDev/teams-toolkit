@@ -15,8 +15,8 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
   protected static readonly emptyMap = new Map<string, string>();
 
   protected static asDeployArgs = asFactory<DeployArgs>({
-    src: asString,
-    dist: asString,
+    workingDirectory: asString,
+    distributionPath: asString,
     ignoreFile: asOptional(asString),
     resourceId: asString,
   });
@@ -25,6 +25,7 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
     await this.context.logProvider.debug("start deploy process");
 
     const deployArgs = BaseDeployDriver.asDeployArgs(this.args);
+    this.workingDirectory = deployArgs.workingDirectory;
     // call real deploy
     await this.wrapErrorHandler(async () => {
       await this.deploy(deployArgs);
@@ -41,18 +42,18 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
   protected async packageToZip(args: DeployStepArgs, context: DeployContext): Promise<Buffer> {
     const ig = await this.handleIgnore(args, context);
     const zipFilePath = path.join(
-      args.dist,
+      args.distributionPath,
       DeployConstant.DEPLOYMENT_TMP_FOLDER,
       DeployConstant.DEPLOYMENT_ZIP_CACHE_FILE
     );
-    return await zipFolderAsync(args.dist, zipFilePath, ig);
+    return await zipFolderAsync(args.distributionPath, zipFilePath, ig);
   }
 
   protected async handleIgnore(args: DeployStepArgs, context: DeployContext): Promise<Ignore> {
     // always add deploy temp folder into ignore list
     const ig = ignore().add(DeployConstant.DEPLOYMENT_TMP_FOLDER);
     if (args.ignoreFile) {
-      const ignoreFilePath = path.join(args.src, args.ignoreFile);
+      const ignoreFilePath = path.join(args.workingDirectory, args.ignoreFile);
       if (await fs.pathExists(ignoreFilePath)) {
         const ignoreFileContent = await fs.readFile(ignoreFilePath);
         ignoreFileContent
@@ -64,7 +65,7 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
           });
       } else {
         await context.logProvider.warning(
-          `already set deploy ignore file ${args.ignoreFile} but file not exists in ${args.src}, skip ignore!`
+          `already set deploy ignore file ${args.ignoreFile} but file not exists in ${args.workingDirectory}, skip ignore!`
         );
       }
     }

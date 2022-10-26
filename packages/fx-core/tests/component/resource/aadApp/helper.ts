@@ -18,12 +18,11 @@ import {
   M365TokenProvider,
 } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
-import jwt_decode from "jwt-decode";
 import { MockUserInteraction } from "../../../core/utils";
 import {
   DEFAULT_PERMISSION_REQUEST,
   ARM_TEMPLATE_OUTPUT,
-} from "../../../../src/plugins/solution/fx-solution/constants";
+} from "../../../../src/component/constants";
 import { AppUser } from "../../../../src/component/resource/appManifest/interfaces/appUser";
 import { SOLUTION } from "../../../../src/component/resource/appManifest/constants";
 import {

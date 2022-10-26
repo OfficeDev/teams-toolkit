@@ -20,6 +20,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, PluginId } from "../../commonlib/constants";
 import fs from "fs-extra";
 import { expect } from "chai";
+import { it } from "@microsoft/extra-shot-mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Add SSO", () => {
@@ -37,7 +38,7 @@ describe("Add SSO", () => {
     }
   });
 
-  it(`Add SSO to non SSO Tab project`, async () => {
+  it(`Add SSO to non SSO Tab project`, { testPlanCaseId: 15687171 }, async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_AAD_MANIFEST: "true",
       TEAMSFX_CONFIG_UNIFY: "true",

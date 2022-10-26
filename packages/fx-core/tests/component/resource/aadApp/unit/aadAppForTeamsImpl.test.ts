@@ -25,7 +25,7 @@ import { AadAppClient } from "../../../../../src/component/resource/aadApp/aadAp
 import { ProvisionConfig } from "../../../../../src/component/resource/aadApp/utils/configs";
 import { AadAppManifestManager } from "../../../../../src/component/resource/aadApp/aadAppManifestManager";
 import { ConfigKeys } from "../../../../../src/component/resource/aadApp/constants";
-import { SOLUTION_PROVISION_SUCCEEDED } from "../../../../../src/plugins/solution/fx-solution/constants";
+import { SOLUTION_PROVISION_SUCCEEDED } from "../../../../../src/component/constants";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;

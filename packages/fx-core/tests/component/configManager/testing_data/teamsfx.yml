@@ -1,0 +1,101 @@
+version: 1.0.0
+
+provision:
+  - uses: bot/registerAadApp
+    with:
+      name: myTeamsApp-bot
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # BOT_ID: the AAD app client id created for Azure Bot
+    # BOT_PASSWORD: the AAD app client secret created for Azure Bot
+
+  - uses: arm/deploy
+    with:
+      subscriptionId: ${{AZURE_SUBSCRIPTION_ID}} # If the environment variable is not defined, TeamsFx will ask you select one subscription
+      resourceGroupName: ${{AZURE_RESOURCE_GROUP_NAME}} # If the environment variable is not defined, TeamsFx will ask you to select or create one resource group
+      templates:
+      - path: ./tab/deployment/azure.bicep # Relative path to this file
+        parameter: ./tab/deployment/azure.parameters.json # Relative path to this file. Placeholders will be replaced with corresponding environment variable before ARM deployment.
+        deploymentName: Create resources for Tab
+      - path: ./bot/deployment/azure.json # Besides bicep, the action can also support JSON format
+        parameter: ./bot/deployment/azure.parameters.json
+        deploymentName: Create resources for Bot
+      bicepCliVersion: 0.9.1 # Teams Toolkit will download this bicep CLI version from github for you, will use bicep CLI in PATH if you remove this config.
+    # Output: every bicep output will be persisted in current environment's .env file.
+
+  - uses: azureStorage/enableStaticWebsite
+    with:
+      storageResourceId: ${{TAB_RESOURCE_ID}}
+      indexPage: index.html
+      errorPage: error.html
+    # Output: N/A
+
+deploy:
+  - uses: npm/command
+    with:
+      srcFolder: ./bot
+      args: install
+  - uses: npm/command
+    with:
+      srcFolder: ./bot
+      args: run build
+  - uses: azureAppService/deploy
+    with:
+      srcFolder: ./bot
+      # deploy base folder
+      distributionPath: ./
+      # can be changed to any ignore file location, leave blank will ignore nothing
+      ignoreFile: ./.appserviceIgnore
+      # the resource id of the cloud resource to be deployed to
+      resourceId: ${{ BOT_AZURE_APP_SERVICE_RESOURCE_ID }}
+    
+  - uses: npm/command
+    with:
+      srcFolder: ./tab
+      args: install:teamsfx
+  - uses: npm/command
+    with:
+      srcFolder: ./tab
+      args: run build:teamsfx
+  - uses: azureStorage/deploy
+    with:
+      srcFolder: ./tab
+      # deploy base folder
+      distributionPath: ./
+      # the resource id of the cloud resource to be deployed to
+      resourceId: ${{ TAB_AZURE_STORAGE_RESOURCE_ID }}
+
+registerApp:
+  - uses: aadApp/create
+    with:
+      name: myTeamsApp-aad # note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
+      generateClientSecret: true # if the value is false or the property is not defined, the driver will not generate client secret for you
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # AAD_APP_CLIENT_ID: the client id of AAD app
+    # AAD_APP_CLIENT_SECRET: the client secret of AAD app
+    # AAD_APP_OBJECT_ID: the object id of AAD app
+
+  - uses: teamsApp/create
+    with:
+      manifestTemplate: ./templates/appPackage/manifest.template.json # Path to manifest 
+
+configureApp:
+  - uses: aadApp/update
+    with:
+      manifestPath: ./templates/appPackage/aad.template.json # Environment variables in manifest will be replaced before apply to AAD app
+  # Output: following environment variable will be persisted in current environment's .env file.
+  # AAD_APP_OAUTH2_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
+
+  - uses: teamsApp/update
+    with:
+      manifestTemplate: ./templates/appPackage/manifest.template.json
+
+publish:
+  - uses: teamsApp/createAppPackage
+    with:
+    manifestTemplate: ./templates/appPackage/manifest.template.json # Path to manifest 
+    outputZipPath: ./build/appPackage/appPackage.${{ TEAMSFX_ENV }}.zip 
+    outputJsonPath: ./build/appPackage/manifest.${{ TEAMSFX_ENV }}.json
+
+  - uses: teamsApp/publishAppPackage
+    with:
+      zipPath: ./build/appPackage/appPackage.${{ TEAMSFX_ENV }}.zip

@@ -51,10 +51,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as uuid from "uuid";
-import {
-  DEFAULT_PERMISSION_REQUEST,
-  PluginNames,
-} from "../../src/plugins/solution/fx-solution/constants";
+import { DEFAULT_PERMISSION_REQUEST, PluginNames } from "../../src/component/constants";
 import sinon from "sinon";
 import { MyTokenCredential } from "../plugins/solution/util";
 

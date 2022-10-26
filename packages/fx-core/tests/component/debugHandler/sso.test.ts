@@ -15,6 +15,7 @@ import {
   SystemError,
   UserError,
   v3,
+  Void,
 } from "@microsoft/teamsfx-api";
 
 import { getAllowedAppIds } from "../../../src/common/tools";
@@ -36,11 +37,16 @@ import { MockM365TokenProvider, runDebugActions } from "./utils";
 import { AadAppManifestManager } from "../../../src/component/resource/aadApp/aadAppManifestManager";
 import { AadAppClient } from "../../../src/component/resource/aadApp/aadAppClient";
 import { TokenProvider } from "../../../src/component/resource/aadApp/utils/tokenProvider";
+import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
+import * as utils from "../../../src/component/debugHandler/utils";
 
 describe("SSODebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
   const tenantId = "11111111-1111-1111-1111-111111111111";
   const m365TokenProvider = new MockM365TokenProvider(tenantId);
+  const logger = new MockLogProvider();
+  const telemetry = new MockTelemetryReporter();
+  const ui = new MockUserInteraction();
 
   describe("setUp", () => {
     afterEach(() => {
@@ -53,7 +59,14 @@ describe("SSODebugHandler", () => {
         clientSecret: "xxx",
         objectId: "11111111-1111-1111-1111-111111111111",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -68,7 +81,14 @@ describe("SSODebugHandler", () => {
         clientSecret: "",
         objectId: "11111111-1111-1111-1111-111111111111",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -83,7 +103,14 @@ describe("SSODebugHandler", () => {
         clientSecret: "xxx",
         objectId: "",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -99,7 +126,14 @@ describe("SSODebugHandler", () => {
         objectId: "11111111-1111-1111-1111-111111111111",
         accessAsUserScopeId: "",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -116,7 +150,14 @@ describe("SSODebugHandler", () => {
         clientId: "11111111-1111-1111-1111-111111111111",
         clientSecret: "xxx",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -139,7 +180,14 @@ describe("SSODebugHandler", () => {
         clientId: "22222222-2222-2222-2222-222222222222",
         clientSecret: "xxx",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -164,7 +212,14 @@ describe("SSODebugHandler", () => {
         clientId: "22222222-2222-2222-2222-222222222222",
         clientSecret: "xxx",
       };
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -193,7 +248,14 @@ describe("SSODebugHandler", () => {
       const errorMessage = "exception";
       sinon.stub(TokenProvider, "init").throws(new Error(errorMessage));
       const args: SSODebugArgs = {};
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       if (result.isErr()) {
@@ -273,7 +335,14 @@ describe("SSODebugHandler", () => {
         return "";
       });
       const args: SSODebugArgs = {};
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);
@@ -282,7 +351,7 @@ describe("SSODebugHandler", () => {
       chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost/${clientId}`
+        `api://localhost:53000/${clientId}`
       );
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,
@@ -381,7 +450,14 @@ describe("SSODebugHandler", () => {
         return "";
       });
       const args: SSODebugArgs = {};
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);
@@ -508,7 +584,14 @@ describe("SSODebugHandler", () => {
         return "";
       });
       const args: SSODebugArgs = {};
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);
@@ -517,7 +600,7 @@ describe("SSODebugHandler", () => {
       chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost/botid-${botId}`
+        `api://localhost:53000/botid-${botId}`
       );
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,
@@ -549,7 +632,7 @@ describe("SSODebugHandler", () => {
           [LocalEnvKeys.bot.teamsfx.ClientSecret]: clientSecret,
           [LocalEnvKeys.bot.teamsfx.AuthorityHost]: "https://login.microsoftonline.com",
           [LocalEnvKeys.bot.teamsfx.TenantId]: tenantId,
-          [LocalEnvKeys.bot.teamsfx.ApplicationIdUri]: `api://localhost/botid-${botId}`,
+          [LocalEnvKeys.bot.teamsfx.ApplicationIdUri]: `api://localhost:53000/botid-${botId}`,
           [LocalEnvKeys.bot.teamsfx.LoginEndpoint]: `${botEndpoint}/auth-start.html`,
         },
         customized: {},
@@ -662,7 +745,14 @@ describe("SSODebugHandler", () => {
         return "";
       });
       const args: SSODebugArgs = {};
-      const handler = new SSODebugHandler(projectPath, args, m365TokenProvider);
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isOk());
       chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);
@@ -671,7 +761,7 @@ describe("SSODebugHandler", () => {
       chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
-        `api://localhost/botid-${botId}`
+        `api://localhost:53000/botid-${botId}`
       );
       chai.assert.equal(
         envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,
@@ -716,7 +806,7 @@ describe("SSODebugHandler", () => {
           [LocalEnvKeys.bot.teamsfx.ClientSecret]: clientSecret,
           [LocalEnvKeys.bot.teamsfx.AuthorityHost]: "https://login.microsoftonline.com",
           [LocalEnvKeys.bot.teamsfx.TenantId]: tenantId,
-          [LocalEnvKeys.bot.teamsfx.ApplicationIdUri]: `api://localhost/botid-${botId}`,
+          [LocalEnvKeys.bot.teamsfx.ApplicationIdUri]: `api://localhost:53000/botid-${botId}`,
           [LocalEnvKeys.bot.teamsfx.LoginEndpoint]: `${botEndpoint}/auth-start.html`,
           [LocalEnvKeys.bot.teamsfx.ApiEndpoint]: "http://localhost:7071",
         },
@@ -725,6 +815,180 @@ describe("SSODebugHandler", () => {
       chai.assert.deepEqual(frontendEnvs, expectedFrontendEnvs);
       chai.assert.deepEqual(backendEnvs, expectedBackendEnvs);
       chai.assert.deepEqual(botEnvs, expectedBotEnvs);
+      sinon.restore();
+    });
+
+    it("frontend check m365 tenant happy path", async () => {
+      const projectSettingV3: ProjectSettingsV3 = {
+        appName: "unit-test",
+        projectId: "11111111-1111-1111-1111-111111111111",
+        solutionSettings: {
+          name: "fx-solution-azure",
+          version: "1.0.0",
+          hostType: "Azure",
+          azureResources: [] as string[],
+          capabilities: ["Tab", "TabSSO"],
+          activeResourcePlugins: [
+            "fx-resource-frontend-hosting",
+            "fx-resource-appstudio",
+            "fx-resource-aad-app-for-teams",
+          ],
+        },
+        components: [
+          { name: "teams-tab", sso: true },
+          { name: "aad-app", provision: true },
+        ],
+      };
+      sinon
+        .stub(projectSettingsLoader, "loadProjectSettingsByProjectPath")
+        .returns(Promise.resolve(ok(projectSettingV3)));
+      const endpoint = "https://localhost:53000";
+      const envInfoV3: v3.EnvInfoV3 = {
+        envName: environmentManager.getLocalEnvName(),
+        config: {},
+        state: {
+          solution: {},
+          [ComponentNames.TeamsTab]: {
+            endpoint,
+          },
+          [ComponentNames.AadApp]: {},
+          [ComponentNames.AppManifest]: {
+            tenantId: "22222222-2222-2222-2222-222222222222",
+          },
+        },
+      };
+      sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
+      let checkM365TenantCalled = false;
+      sinon.stub(utils, "checkM365Tenant").callsFake(async () => {
+        checkM365TenantCalled = true;
+        return ok(Void);
+      });
+      const manifest = {};
+      sinon
+        .stub(AadAppManifestManager, "loadAadManifest")
+        .returns(Promise.resolve(manifest as any));
+      const objectId = "11111111-1111-1111-1111-111111111111";
+      const clientId = "22222222-2222-2222-2222-222222222222";
+      sinon
+        .stub(AadAppClient, "createAadAppUsingManifest")
+        .callsFake(async (stage, manifest, config) => {
+          config.objectId = objectId;
+          config.clientId = clientId;
+        });
+      const clientSecret = "xxx";
+      sinon.stub(AadAppClient, "createAadAppSecret").callsFake(async (stage, config) => {
+        config.password = clientSecret;
+      });
+      sinon.stub(AadAppClient, "updateAadAppUsingManifest").callsFake(async () => {});
+      sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
+        return ok("");
+      });
+      sinon.stub(AadAppManifestManager, "writeManifestFileToBuildFolder").callsFake(async () => {});
+      let frontendEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon
+        .stub(LocalEnvProvider.prototype, "loadFrontendLocalEnvs")
+        .returns(Promise.resolve(frontendEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveFrontendLocalEnvs").callsFake(async (envs) => {
+        frontendEnvs = envs;
+        return "";
+      });
+      const args: SSODebugArgs = {};
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isOk());
+      chai.assert(checkM365TenantCalled);
+      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].objectId, objectId);
+      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].clientId, clientId);
+      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].clientSecret, clientSecret);
+      chai.assert(envInfoV3.state[ComponentNames.AadApp].oauth2PermissionScopeId !== undefined);
+      chai.assert.equal(
+        envInfoV3.state[ComponentNames.AadApp].applicationIdUris,
+        `api://localhost:53000/${clientId}`
+      );
+      chai.assert.equal(
+        envInfoV3.state[ComponentNames.AadApp].frontendEndpoint,
+        "https://localhost"
+      );
+      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].tenantId, tenantId);
+      chai.assert.equal(
+        envInfoV3.state[ComponentNames.AadApp].oauthHost,
+        "https://login.microsoftonline.com"
+      );
+      chai.assert.equal(
+        envInfoV3.state[ComponentNames.AadApp].oauthAuthority,
+        `https://login.microsoftonline.com/${tenantId}`
+      );
+      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botId, undefined);
+      chai.assert.equal(envInfoV3.state[ComponentNames.AadApp].botEndpoint, undefined);
+      const expectedEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {
+          [LocalEnvKeys.frontend.teamsfx.ClientId]: clientId,
+          [LocalEnvKeys.frontend.teamsfx.LoginUrl]: `${endpoint}/auth-start.html`,
+        },
+        customized: {},
+      };
+      chai.assert.deepEqual(frontendEnvs, expectedEnvs);
+      sinon.restore();
+    });
+
+    it("check m365 tenant failed", async () => {
+      const projectSetting: ProjectSettings = {
+        appName: "unit-test",
+        projectId: "11111111-1111-1111-1111-111111111111",
+      };
+      sinon
+        .stub(projectSettingsLoader, "loadProjectSettingsByProjectPath")
+        .returns(Promise.resolve(ok(projectSetting)));
+      const envInfoV3: v3.EnvInfoV3 = {
+        envName: environmentManager.getLocalEnvName(),
+        config: {},
+        state: {
+          solution: {},
+          [ComponentNames.AadApp]: {},
+          [ComponentNames.AppManifest]: {
+            tenantId: "22222222-2222-2222-2222-222222222222",
+          },
+        },
+      };
+      sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
+      let called = false;
+      const error = new SystemError("solution", "checkM365TenantFailed", "checkM365Tenant failed");
+      sinon.stub(utils, "checkM365Tenant").callsFake(async () => {
+        called = true;
+        return err(error);
+      });
+      const args: SSODebugArgs = {
+        objectId: "11111111-1111-1111-1111-111111111111",
+        clientId: "22222222-2222-2222-2222-222222222222",
+        clientSecret: "xxx",
+      };
+      const handler = new SSODebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(called);
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof SystemError);
+        chai.assert.deepEqual(result.error.name, error.name);
+      }
       sinon.restore();
     });
   });

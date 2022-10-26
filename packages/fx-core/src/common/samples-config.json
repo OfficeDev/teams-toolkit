@@ -1,6 +1,10 @@
 {
     "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v1.0.0/",
     "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/tags/v1.0.0.zip",
+    "tagListURL": "https://github.com/OfficeDev/TeamsFx-Samples/releases/download/sample-tag-list/sample-tags.txt",
+    "sampleDownloadBaseUrl": "https://github.com/OfficeDev/TeamsFx-sample/releases/download",
+    "tagPrefix": "v",
+    "version": "^1.0.0",
     "samples": [
         {
             "id": "hello-world-tab",
@@ -150,7 +154,8 @@
             "configuration": "Ready for debug",
             "suggested": false,
             "url": "https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/",
-            "packageLink": "https://github.com/OfficeDev/Microsoft-Teams-Samples/archive/refs/heads/main.zip"
+            "packageLink": "https://github.com/OfficeDev/Microsoft-Teams-Samples/archive/refs/heads/main.zip",
+            "relativePath": "Microsoft-Teams-Samples-main/samples/bot-proactive-messaging-teamsfx/"
         },
         {
             "id": "adaptive-card-notification",
@@ -204,9 +209,7 @@
             "tags": ["Message extension", "SSO"],
             "time": "5min to run",
             "configuration": "Ready for debug",
-            "suggested": false,
-            "url": "https://github.com/OfficeDev/TeamsFx-samples/tree/dev/",
-            "packageLink": "https://github.com/OfficeDev/TeamsFx-samples/archive/refs/heads/dev.zip"
+            "suggested": false
         }
     ]
 }

@@ -10,6 +10,7 @@ import { expect } from "chai";
 import path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, ResourceToDeploy } from "../../commonlib/constants";
+import { it } from "@microsoft/extra-shot-mocha";
 
 import {
   getTestFolder,
@@ -25,7 +26,7 @@ describe("teamsfx deploy frontend-hosting", function () {
   const projectPath = path.resolve(testFolder, appName);
   const subscription = getSubscriptionId();
 
-  it(`in bot project`, async function () {
+  it(`in bot project`, { testPlanCaseId: 15685958 }, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 
     // Provision

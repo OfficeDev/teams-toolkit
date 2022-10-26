@@ -115,7 +115,7 @@ import { DriverContext } from "../component/driver/interface/commonArgs";
 import { coordinator } from "../component/coordinator";
 import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPackage";
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
-import { readEnv, writeEnv } from "../component/utils/envUtil";
+import * as envUtil from "../component/utils/envUtil";
 import { YamlParser } from "../component/configManager/parser";
 import { LifecycleName } from "../component/configManager/interface";
 import "../component/driver/teamsApp/createAppPackage";
@@ -876,7 +876,7 @@ export class FxCore implements v3.ICore {
     }
     const env = inputs.env;
     const lifecycle = lifecycleName as LifecycleName;
-    const result = await readEnv(projectPath, env);
+    const result = await envUtil.readEnv(projectPath, env);
     if (result.isErr()) {
       return err(result.error);
     }
@@ -911,7 +911,7 @@ export class FxCore implements v3.ICore {
         return ok(Void);
       } else {
         await TOOLS.logProvider?.info(`Lifecycle ${lifecycle} succeeded`);
-        const writeResult = await writeEnv(projectPath, env, runResult.value.env);
+        const writeResult = await envUtil.writeEnv(projectPath, env, runResult.value.env);
         return writeResult.map(() => Void);
       }
     } else {

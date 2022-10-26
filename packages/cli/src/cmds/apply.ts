@@ -4,7 +4,7 @@
 "use strict";
 
 import { Argv } from "yargs";
-import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result } from "@microsoft/teamsfx-api";
 import {} from "@microsoft/teamsfx-core";
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
@@ -64,7 +64,7 @@ export class ApplyCommand extends YargsCommand {
     }
 
     const core = result.value;
-    const inputs = getSystemInputs(rootFolder);
+    const inputs = getSystemInputs(rootFolder, args["env"] as string);
     inputs.projectId = inputs.projectId ?? uuid.v4();
     inputs.folder = inputs.folder ?? rootFolder;
 

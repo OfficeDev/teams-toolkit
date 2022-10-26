@@ -39,7 +39,6 @@ describe("TreeViewManager", () => {
     sandbox
       .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
       .returns(Promise.resolve(true));
-    sandbox.stub(TreatmentVariableValue, "previewTreeViewCommand").value(true);
 
     treeViewManager.registerTreeViews({
       subscriptions: [],

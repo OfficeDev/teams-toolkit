@@ -4,7 +4,7 @@
 
 ## BotSsoExecutionDialog.(constructor)
 
-Constructs a new instance of the `BotSsoExecutionDialog` class
+Creates a new instance of the BotSsoExecutionDialog.
 
 <b>Signature:</b>
 
@@ -19,6 +19,6 @@ constructor(dedupStorage: Storage, ssoPromptSettings: TeamsBotSsoPromptSettings,
 |  dedupStorage | Storage |  |
 |  ssoPromptSettings | [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) |  |
 |  authConfig | [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) |  |
-|  initiateLoginEndpoint | string |  |
-|  dialogName | string |  |
+|  initiateLoginEndpoint | string | Login URL for Teams to redirect to. |
+|  dialogName | string | custom dialog name |
 

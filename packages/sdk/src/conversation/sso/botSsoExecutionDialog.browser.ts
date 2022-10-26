@@ -13,10 +13,10 @@ import { TeamsBotSsoPromptSettings } from "../../index.browser";
  */
 export class BotSsoExecutionDialog {
   /**
-   * Creates a new instance of the BotSsoExecutionDialog.
-   * @param dedupStorage Helper storage to remove duplicated messages
-   * @param requiredScopes The list of scopes for which the token will have access
-   * @param teamsfx {@link TeamsFx} instance for authentication
+   * Constructor of BotSsoExecutionDialog
+   *
+   * @remarks
+   * Can Only works in in server side.
    */
   constructor(
     dedupStorage: Storage,

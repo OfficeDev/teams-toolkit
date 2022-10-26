@@ -4,7 +4,7 @@
 
 ## OnBehalfOfUserCredential.(constructor)
 
-Constructs a new instance of the `OnBehalfOfUserCredential` class
+Constructor of OnBehalfOfUserCredential
 
 <b>Signature:</b>
 
@@ -16,6 +16,18 @@ constructor(ssoToken: string, config: AuthenticationConfiguration);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  ssoToken | string |  |
-|  config | [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) |  |
+|  ssoToken | string | User token provided by Teams SSO feature. |
+|  config | [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | The authentication configuration. Use environment variables if not provided. |
+
+## Exceptions
+
+[InvalidConfiguration](./teamsfx.errorcode.md) when client id, client secret, certificate content, authority host or tenant id is not found in config.
+
+[InternalError](./teamsfx.errorcode.md) when SSO token is not valid.
+
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
+
+## Remarks
+
+Only works in in server side.
 

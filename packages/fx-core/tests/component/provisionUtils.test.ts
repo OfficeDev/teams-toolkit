@@ -1,10 +1,10 @@
 import { err, ok, Platform, UserError, v2 } from "@microsoft/teamsfx-api";
+import "mocha";
 import chai from "chai";
 import * as sinon from "sinon";
-import { ComponentNames } from "../../src/component/constants";
+import { ComponentNames, SolutionError } from "../../src/component/constants";
 import { provisionUtils } from "../../src/component/provisionUtils";
 import { createContextV3 } from "../../src/component/utils";
-import { SolutionError } from "../../src/component/constants";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import {
   MockAzureAccountProvider,
@@ -12,6 +12,7 @@ import {
   MockUserInteraction,
 } from "../core/utils";
 import { MyTokenCredential } from "../plugins/solution/util";
+import { assert } from "console";
 
 const expect = chai.expect;
 
@@ -882,6 +883,126 @@ describe("provisionUtils", () => {
       if (res.isErr()) {
         expect(res.error.userData.shouldSkipWriteEnvInfo).equal(true);
       }
+    });
+  });
+
+  describe("ensureSubscription", () => {
+    const mocker = sinon.createSandbox();
+
+    afterEach(() => {
+      mocker.restore();
+    });
+    it("no givenSubscriptionId - fail to select", async () => {
+      const azureAccountProvider = new MockAzureAccountProvider();
+      mocker
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "getSelectedSubscription").resolves(undefined);
+      const res = await provisionUtils.ensureSubscription(azureAccountProvider);
+      assert(res.isErr());
+    });
+    it("no givenSubscriptionId - success to select", async () => {
+      const azureAccountProvider = new MockAzureAccountProvider();
+      mocker
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "getSelectedSubscription").resolves({
+        subscriptionId: "mockSubId",
+        tenantId: "mockTenantId",
+        subscriptionName: "mockSubName",
+      });
+      const res = await provisionUtils.ensureSubscription(azureAccountProvider);
+      assert(res.isOk());
+    });
+    it("givenSubscriptionId - permission pass", async () => {
+      const azureAccountProvider = new MockAzureAccountProvider();
+      mocker
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
+        {
+          subscriptionId: "mockSubId",
+          tenantId: "mockTenantId",
+          subscriptionName: "mockSubName",
+        },
+      ]);
+      const res = await provisionUtils.ensureSubscription(azureAccountProvider, "mockSubId");
+      assert(res.isOk());
+    });
+    it("givenSubscriptionId - permission fail", async () => {
+      const azureAccountProvider = new MockAzureAccountProvider();
+      mocker
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
+        {
+          subscriptionId: "mockSubId2",
+          tenantId: "mockTenantId",
+          subscriptionName: "mockSubName",
+        },
+      ]);
+      const res = await provisionUtils.ensureSubscription(azureAccountProvider, "mockSubId");
+      assert(res.isOk());
+    });
+  });
+
+  describe("ensureSubscription", () => {
+    const mocker = sinon.createSandbox();
+
+    afterEach(() => {
+      mocker.restore();
+    });
+    it("no givenSubscriptionId - fail to select", async () => {
+      const azureAccountProvider = new MockAzureAccountProvider();
+      mocker
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "getSelectedSubscription").resolves(undefined);
+      const res = await provisionUtils.ensureSubscription(azureAccountProvider);
+      assert(res.isErr());
+    });
+    it("no givenSubscriptionId - success to select", async () => {
+      const azureAccountProvider = new MockAzureAccountProvider();
+      mocker
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "getSelectedSubscription").resolves({
+        subscriptionId: "mockSubId",
+        tenantId: "mockTenantId",
+        subscriptionName: "mockSubName",
+      });
+      const res = await provisionUtils.ensureSubscription(azureAccountProvider);
+      assert(res.isOk());
+    });
+    it("givenSubscriptionId - permission pass", async () => {
+      const azureAccountProvider = new MockAzureAccountProvider();
+      mocker
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
+        {
+          subscriptionId: "mockSubId",
+          tenantId: "mockTenantId",
+          subscriptionName: "mockSubName",
+        },
+      ]);
+      const res = await provisionUtils.ensureSubscription(azureAccountProvider, "mockSubId");
+      assert(res.isOk());
+    });
+    it("givenSubscriptionId - permission fail", async () => {
+      const azureAccountProvider = new MockAzureAccountProvider();
+      mocker
+        .stub(azureAccountProvider, "getIdentityCredentialAsync")
+        .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "listSubscriptions").resolves([
+        {
+          subscriptionId: "mockSubId2",
+          tenantId: "mockTenantId",
+          subscriptionName: "mockSubName",
+        },
+      ]);
+      const res = await provisionUtils.ensureSubscription(azureAccountProvider, "mockSubId");
+      assert(res.isOk());
     });
   });
 });

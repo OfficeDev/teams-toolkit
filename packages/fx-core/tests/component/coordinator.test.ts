@@ -1,7 +1,6 @@
 import { Inputs, ok, Platform } from "@microsoft/teamsfx-api";
 import "mocha";
 import * as sinon from "sinon";
-import fs from "fs-extra";
 import { Generator } from "../../src/component/generator/generator";
 import { createContextV3 } from "../../src/component/utils";
 import { settingsUtil } from "../../src/component/utils/settingsUtil";
@@ -16,8 +15,6 @@ import { YamlParser } from "../../src/component/configManager/parser";
 import { ProjectModel } from "../../src/component/configManager/interface";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { envUtil } from "../../src/component/utils/envUtil";
-import { MyTokenCredential } from "../plugins/solution/util";
-import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import { provisionUtils } from "../../src/component/provisionUtils";
 
 describe("component coordinator test", () => {

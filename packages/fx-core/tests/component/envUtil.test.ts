@@ -39,9 +39,7 @@ describe("env utils", () => {
       return Promise.resolve();
     });
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
-    const map = new Map<string, string>();
-    map.set("SECRET_ABC", decrypted);
-    const res = await envUtil.writeEnv(".", "dev", map);
+    const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
     assert.isTrue(res.isOk());
     value = value!.substr("SECRET_ABC=".length);
     const decRes = await cryptoProvider.decrypt(value);
@@ -101,7 +99,8 @@ describe("env utils", () => {
     };
     const res = await my.myMethod(inputs);
     assert.isTrue(res.isOk());
-    value = value!.substr("SECRET_ABC=".length);
+    assert.isDefined(value);
+    value = value!.substring("SECRET_ABC=".length);
     const decRes = await cryptoProvider.decrypt(value);
     if (decRes.isErr()) throw decRes.error;
     assert.isTrue(decRes.isOk());

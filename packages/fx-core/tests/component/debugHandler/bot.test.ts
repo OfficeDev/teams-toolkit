@@ -355,7 +355,7 @@ describe("BotDebugHandler", () => {
       sinon.restore();
     });
 
-    it("get bot id from env failed", async () => {
+    it("get bot failed with id from envInfo", async () => {
       const projectSettingV3: ProjectSettingsV3 = {
         appName: "unit-test",
         projectId: "11111111-1111-1111-1111-111111111111",
@@ -666,6 +666,80 @@ describe("BotDebugHandler", () => {
       if (result.isErr()) {
         chai.assert(result.error instanceof SystemError);
         chai.assert.deepEqual(result.error.name, error.name);
+      }
+      sinon.restore();
+    });
+
+    it("save state failed", async () => {
+      const projectSettingV3: ProjectSettingsV3 = {
+        appName: "unit-test",
+        projectId: "11111111-1111-1111-1111-111111111111",
+        solutionSettings: {
+          name: "fx-solution-azure",
+          version: "1.0.0",
+          hostType: "Azure",
+          azureResources: [] as string[],
+          capabilities: ["Bot"],
+          activeResourcePlugins: ["fx-resource-bot", "fx-resource-appstudio"],
+        },
+        components: [{ name: "teams-bot", sso: false }],
+      };
+      sinon
+        .stub(projectSettingsLoader, "loadProjectSettingsByProjectPath")
+        .returns(Promise.resolve(ok(projectSettingV3)));
+      const envInfoV3: v3.EnvInfoV3 = {
+        envName: environmentManager.getLocalEnvName(),
+        config: {},
+        state: {
+          solution: {},
+        },
+      };
+      sinon.stub(environmentManager, "loadEnvInfo").returns(Promise.resolve(ok(envInfoV3)));
+      const aadAppCredentials: AadAppCredentials = {
+        clientId: "22222222-2222-2222-2222-222222222222",
+        clientSecret: "xxx",
+      };
+      let called = false;
+      sinon.stub(GraphClient, "registerAadApp").callsFake(async () => {
+        called = true;
+        return aadAppCredentials;
+      });
+      sinon.stub(AppStudioClient, "getBotRegistration").callsFake(async () => {
+        return undefined;
+      });
+      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {});
+      sinon.stub(AppStudioClient, "updateMessageEndpoint").callsFake(async () => {});
+      sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
+        return err(new SystemError("writeEnvState", "writeEnvStateError", "", ""));
+      });
+      let botEnvs: LocalEnvs = {
+        template: {},
+        teamsfx: {},
+        customized: {},
+      };
+      sinon.stub(LocalEnvProvider.prototype, "loadBotLocalEnvs").returns(Promise.resolve(botEnvs));
+      sinon.stub(LocalEnvProvider.prototype, "saveBotLocalEnvs").callsFake(async (envs) => {
+        botEnvs = envs;
+        return "";
+      });
+      const domain = "af0e-180-158-57-208.ngrok.io";
+      const botEndpoint = `https://${domain}`;
+      const args: BotDebugArgs = {
+        botMessagingEndpoint: `${botEndpoint}/api/messages`,
+      };
+      const handler = new BotDebugHandler(
+        projectPath,
+        args,
+        m365TokenProvider,
+        logger,
+        telemetry,
+        ui
+      );
+      const result = await runDebugActions(handler.getActions());
+      chai.assert(result.isErr());
+      chai.assert(called);
+      if (result.isErr()) {
+        chai.assert.equal(result.error.name, "writeEnvStateError");
       }
       sinon.restore();
     });

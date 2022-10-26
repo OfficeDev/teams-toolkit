@@ -159,6 +159,7 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { TreatmentVariableValue } from "./exp/treatmentVariables";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -982,6 +983,7 @@ export async function runCommand(
 
     inputs = defaultInputs ? defaultInputs : getSystemInputs();
     inputs.stage = stage;
+    inputs.taskOrientedTemplateNaming = TreatmentVariableValue.taskOrientedTemplateNaming;
 
     switch (stage) {
       case Stage.create: {

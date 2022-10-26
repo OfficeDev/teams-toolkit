@@ -117,7 +117,7 @@ import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPa
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import * as envUtil from "../component/utils/envUtil";
 import { YamlParser } from "../component/configManager/parser";
-import { ILifecycle, LifecycleName, ProjectModel } from "../component/configManager/interface";
+import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import "../component/driver/teamsApp/createAppPackage";
 import "../component/driver/teamsApp/create";
 import "../component/driver/teamsApp/configure";
@@ -902,7 +902,7 @@ export class FxCore implements v3.ICore {
     if (lifecycle) {
       return this.runLifecycle(lifecycle, driverContext, env);
     } else {
-      await driverContext.logProvider.warning(`No definition found for ${lifecycle}`);
+      await driverContext.logProvider.warning(`No definition found for ${lifecycleName}`);
       return ok(Void);
     }
   }

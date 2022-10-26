@@ -26,7 +26,6 @@ export class ApplyCommand extends YargsCommand {
       folder: {
         alias: "f",
         describe: "path to project folder",
-        requiresArg: true,
       },
       env: {
         alias: "e",

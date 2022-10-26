@@ -45,7 +45,7 @@
         "tab/js/m365",
         "tab/ts/m365"
     ],
-    "templates-v3": [
+    "templatesV3": [
         "notification-http-timer-trigger-js",
         "notification-http-timer-trigger-ts",
         "notification-http-trigger-js",

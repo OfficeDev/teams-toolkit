@@ -13,7 +13,7 @@ fi
 TEMPLATE_OUTPUT_DIR=$1
 mkdir -p ${TEMPLATE_OUTPUT_DIR}
 
-TEMPLATE_LIST=$(jq -r '.templates-v3[]' ./templates/package.json)
+TEMPLATE_LIST=$(jq -r '.templatesV3[]' ./templates/package.json)
 
 for TEMPLATE in ${TEMPLATE_LIST[@]}; do
 

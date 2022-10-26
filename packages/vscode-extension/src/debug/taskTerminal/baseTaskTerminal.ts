@@ -14,6 +14,7 @@ import { sendDebugAllEvent } from "../localTelemetryReporter";
 import * as commonUtils from "../commonUtils";
 import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { performance } from "perf_hooks";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 
 const ControlCodes = {
   CtrlC: "\u0003",
@@ -66,7 +67,9 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
       showError(fxError);
       this.closeEmitter.fire(1);
 
-      await sendDebugAllEvent(fxError, { [TelemetryProperty.DebugIsTransparentTask]: "true" });
+      await Correlator.runWithId(commonUtils.getLocalDebugSession().id, () =>
+        sendDebugAllEvent(fxError, { [TelemetryProperty.DebugIsTransparentTask]: "true" })
+      );
       if (commonUtils.getLocalDebugSession().id !== commonUtils.DebugNoSessionId) {
         commonUtils.endLocalDebugSession();
       }

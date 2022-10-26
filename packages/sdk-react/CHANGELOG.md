@@ -4,9 +4,9 @@ Initial release of the SDK for React Hook.
 
 - Add 3 React Hook functions: useTeamsFx, useGraph and useData
 
-# 2.0.1
+# 2.0.0
 
-2.0.1 is a major version upgrade for TeamsFx SDK for React hooks with many improvements and supports.
+2.0.0 is a major version upgrade for TeamsFx SDK for React hooks with many improvements and supports.
 
 ## Added
 - Add `useTeams` hook, referenced [msteams-react-base-component](https://github.com/wictorwilen/msteams-react-base-component).

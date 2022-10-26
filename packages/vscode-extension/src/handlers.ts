@@ -1014,6 +1014,10 @@ export async function runCommand(
         result = await core.deployArtifacts(inputs);
         break;
       }
+      case Stage.deployAad: {
+        result = await core.deployAadManifest(inputs);
+        break;
+      }
       case Stage.publish: {
         result = await core.publishApplication(inputs);
         break;
@@ -3208,7 +3212,11 @@ export async function deployAadAppManifest(args: any[]): Promise<Result<null, Fx
     const envName = selectedEnv.value;
     inputs.env = envName;
   }
-  return await runCommand(Stage.deploy, inputs);
+  if (isV3Enabled()) {
+    return await runCommand(Stage.deployAad, inputs);
+  } else {
+    return await runCommand(Stage.deploy, inputs);
+  }
 }
 
 export async function selectTutorialsHandler(args?: any[]): Promise<Result<unknown, FxError>> {

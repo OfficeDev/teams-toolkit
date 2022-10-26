@@ -616,8 +616,7 @@
       },
       {
         "command": "fx-extension.deployAadAppManifestFromCtxMenu",
-        "title": "%teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title%",
-        "enablement": "fx-extension.isAadManifestEnabled"
+        "title": "%teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title%"
       },
       {
         "command": "fx-extension.deployManifestFromCtxMenu",

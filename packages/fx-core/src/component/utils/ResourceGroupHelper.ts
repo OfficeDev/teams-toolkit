@@ -9,16 +9,20 @@ import {
   err,
   FxError,
   Inputs,
+  LogProvider,
   ok,
   OptionItem,
+  Platform,
   QTreeNode,
   Result,
   traverse,
   UserError,
+  UserInteraction,
   v2,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { TOOLS } from "../../core/globalVars";
 import { desensitize } from "../../core/middleware/questionModel";
 import {
   CoreQuestionNames,
@@ -292,6 +296,64 @@ export class ResourceGroupHelper {
           desensitized
         )}`
       );
+    }
+    const targetResourceGroupName = inputs.targetResourceGroupName;
+    if (!targetResourceGroupName || typeof targetResourceGroupName !== "string") {
+      return err(
+        new UserError(SolutionSource, "InvalidInputError", "Invalid targetResourceGroupName")
+      );
+    }
+    const resourceGroupName = inputs.targetResourceGroupName;
+    if (resourceGroupName === newResourceGroupOption) {
+      return ok({
+        name: inputs[CoreQuestionNames.NewResourceGroupName],
+        location: inputs[CoreQuestionNames.NewResourceGroupLocation],
+        createNewResourceGroup: true,
+      });
+    } else {
+      const target = listRgRes.value.find((item) => item[0] == targetResourceGroupName);
+      const location = target![1]; // location must exist because the user can only select from this list.
+      return ok({
+        createNewResourceGroup: false,
+        name: targetResourceGroupName,
+        location: location,
+      });
+    }
+  }
+
+  /**
+   * Ask user to create a new resource group or use an existing resource group  V3
+   */
+  async askResourceGroupInfoV3(
+    azureAccountProvider: AzureAccountProvider,
+    rmClient: ResourceManagementClient,
+    defaultResourceGroupName: string
+  ): Promise<Result<ResourceGroupInfo, FxError>> {
+    const listRgRes = await this.listResourceGroups(rmClient);
+    if (listRgRes.isErr()) return err(listRgRes.error);
+
+    const getLocationsRes = await this.getLocations(azureAccountProvider, rmClient);
+    if (getLocationsRes.isErr()) {
+      return err(getLocationsRes.error);
+    }
+
+    const node = await this.getQuestionsForResourceGroup(
+      defaultResourceGroupName,
+      listRgRes.value,
+      getLocationsRes.value,
+      rmClient
+    );
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    if (node) {
+      const res = await traverse(node, inputs, TOOLS.ui);
+      if (res.isErr()) {
+        TOOLS.logProvider?.debug(
+          `[${PluginDisplayName.Solution}] failed to run question model for target resource group.`
+        );
+        return err(res.error);
+      }
     }
     const targetResourceGroupName = inputs.targetResourceGroupName;
     if (!targetResourceGroupName || typeof targetResourceGroupName !== "string") {

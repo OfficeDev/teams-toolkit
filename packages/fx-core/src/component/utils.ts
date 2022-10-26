@@ -47,6 +47,7 @@ import {
   BuiltInFeaturePluginNames,
 } from "./constants";
 import { ComponentNames, ProgrammingLanguage, Scenarios, scenarioToComponent } from "./constants";
+import { DriverContext } from "./driver/interface/commonArgs";
 import { DefaultManifestProvider } from "./resource/appManifest/manifestProvider";
 import { getComponent, getComponentByScenario } from "./workflow";
 
@@ -459,7 +460,18 @@ export function createContextV3(projectSettings?: ProjectSettingsV3): ContextV3 
   };
   return context;
 }
-
+export function createDriverContext(inputs: Inputs): DriverContext {
+  const driverContext: DriverContext = {
+    azureAccountProvider: TOOLS.tokenProvider!.azureAccountProvider,
+    m365TokenProvider: TOOLS.tokenProvider!.m365TokenProvider,
+    ui: TOOLS.ui,
+    logProvider: TOOLS.logProvider,
+    telemetryReporter: TOOLS.telemetryReporter!,
+    projectPath: inputs.projectPath!,
+    platform: inputs.platform,
+  };
+  return driverContext;
+}
 export function normalizeName(appName: string): string {
   const normalizedAppName = appName.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
   return normalizedAppName;

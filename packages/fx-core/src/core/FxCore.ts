@@ -116,7 +116,6 @@ import { coordinator } from "../component/coordinator";
 import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPackage";
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
-import { createContext } from "vm";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -222,9 +221,9 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createDriverContext(inputs);
-    const envMap = ctx?.envOutput;
     const res = await coordinator.provision(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
+    ctx!.envVars = res.value;
     return ok(Void);
   }
   @hooks([

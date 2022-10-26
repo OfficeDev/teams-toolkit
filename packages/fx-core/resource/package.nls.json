@@ -409,6 +409,7 @@
   "error.InvalidProjectSettingsFileError": "The projectSettings.json file is invalid: %s.",
   "error.FetchSampleError": "Failed to get data from remote repository for %s.",
   "error.ProjectEnvNotExistError": "Environment %s not found. Make sure the config.%s.json file exist.",
+  "error.DotEnvFileNotExistError": "Environment %s not found. Make sure the .env.%s file exist.",
   "error.InvalidEnvNameError": "Environment name can only contain letters, digits, _ and -.",
   "error.UpgradeCanceledError": "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 2.10.0).",
   "error.ConsolidateCanceledError": "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 3.7.0).",

@@ -8,14 +8,12 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProjectSettingsV3,
   ResourceContextV3,
   Result,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
 import { Container } from "typedi";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { environmentManager } from "../../core/environment";
 import { InvalidInputError } from "../../core/error";
 import { getQuestionsForCreateProjectV2 } from "../../core/middleware/questionModel";
 import {
@@ -67,10 +65,13 @@ import {
 import { Generator } from "../generator/generator";
 import { convertToLangKey } from "../code/utils";
 import { downloadSampleHook } from "../../core/downloadSample";
-import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import * as uuid from "uuid";
 import { settingsUtil } from "../utils/settingsUtil";
 import { DriverContext } from "../driver/interface/commonArgs";
+import { DotenvParseOutput } from "dotenv";
+import { YamlParser } from "../configManager/parser";
+import { provisionUtils } from "../provisionUtils";
+import { envUtil } from "../utils/envUtil";
 
 export enum TemplateNames {
   Tab = "tab",
@@ -258,9 +259,71 @@ export class Coordinator {
     ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    //TODO call provision actions
-    return ok(undefined);
+  ): Promise<Result<DotenvParseOutput, FxError>> {
+    if (inputs["subscription-id"]) {
+      process.env.AZURE_SUBSCRIPTION_ID = inputs["subscription-id"];
+    }
+    if (inputs["resource-group"]) {
+      process.env.AZURE_RESOURCE_GROUP_NAME = inputs["resource-group"];
+    }
+    const output: DotenvParseOutput = {};
+    const parser = new YamlParser();
+    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const maybeProjectModel = await parser.parse(templatePath);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    const cycles = [projectModel.registerApp, projectModel.provision, projectModel.configureApp];
+    for (const cycle of cycles) {
+      if (!cycle) continue;
+      const res = await cycle.run(ctx);
+      if (res.isErr()) return err(res.error);
+      let unresolvedPlaceHolders = res.value.unresolvedPlaceHolders;
+      if (unresolvedPlaceHolders.length > 0) {
+        if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) {
+          const ensureRes = await provisionUtils.ensureSubscription(
+            ctx.azureAccountProvider,
+            process.env.AZURE_SUBSCRIPTION_ID
+          );
+          if (ensureRes.isErr()) return err(ensureRes.error);
+          const subInfo = ensureRes.value;
+          if (subInfo && subInfo.subscriptionId) {
+            process.env.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
+            output.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
+            unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
+              (ph) => ph !== "AZURE_SUBSCRIPTION_ID"
+            );
+          }
+        }
+        if (
+          process.env.AZURE_SUBSCRIPTION_ID &&
+          unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")
+        ) {
+          const ensureRes = await provisionUtils.ensureResourceGroup(
+            ctx.azureAccountProvider,
+            process.env.AZURE_SUBSCRIPTION_ID,
+            process.env.AZURE_RESOURCE_GROUP_NAME
+          );
+          if (ensureRes.isErr()) return err(ensureRes.error);
+          const rgInfo = ensureRes.value;
+          if (rgInfo) {
+            process.env.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
+            output.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
+            unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
+              (ph) => ph !== "AZURE_RESOURCE_GROUP_NAME"
+            );
+          }
+        }
+      }
+      if (unresolvedPlaceHolders.length === 0) {
+        const res = await cycle.run(ctx);
+        if (res.isErr()) return err(res.error);
+        const newOutput = envUtil.map2object(res.value.env);
+        merge(output, newOutput);
+      }
+    }
+    return ok(output);
   }
 
   @hooks([

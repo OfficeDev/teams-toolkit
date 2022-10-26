@@ -1,0 +1,34 @@
+{{=<% %>=}}
+// This is just an example workflow for continuous integration.
+// The example workflow is expected to run on Ubuntu stable versions, for example, 20.04lts and later.
+// You should customize it to meet your own requirements.
+// The file may be renamed to Jenkinsfile, and put into dev branch.
+pipeline {
+    // To customize the agent field, please refer to https://www.jenkins.io/doc/book/pipeline/syntax/#agent.
+    agent any
+
+    // To customize triggers, please refer to https://www.jenkins.io/doc/book/pipeline/syntax/#triggers.
+    triggers { pollSCM('H */4 * * 1-5') }
+
+    stages {
+        // Build the project.
+        // The way to build the current project depends on how you scaffold it.
+        // Different folder structures require different commands set.
+        // 'npm ci' may be used here to install dependencies and it depends on package-lock.json.
+        // If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
+        stage('Build the project') {
+            steps {
+                sh '<%build_script%>'
+            }
+        }
+
+        // Run unit test.
+        // Currently, no opinionated solution for unit test provided during scaffolding, so,
+        // set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
+        // stage('Run Unit Test') {
+        //    steps {
+        //        sh 'npm run test'
+        //    }
+        // }
+    }
+}

@@ -1,0 +1,77 @@
+{{=<% %>=}}
+// This is just an example workflow for continuous deployment.
+// The example workflow is expected to run on Ubuntu stable versions, for example, 20.04lts and later.
+// You should customize it to meet your own requirements.
+pipeline {
+    // To customize the agent field, please refer to https://www.jenkins.io/doc/book/pipeline/syntax/#agent.
+    agent any
+
+    // To customize triggers, please refer to https://www.jenkins.io/doc/book/pipeline/syntax/#triggers.
+    triggers { pollSCM('H */4 * * 1-5') }
+
+    // To learn more about environment, please refer to https://www.jenkins.io/doc/book/pipeline/syntax/#environment.
+    environment {
+<%#hosting_type_contains_spfx%>
+        M365_ACCOUNT_NAME = credentials('M365_ACCOUNT_NAME')
+        M365_ACCOUNT_PASSWORD = credentials('M365_ACCOUNT_PASSWORD')
+        M365_TENANT_ID = credentials('M365_TENANT_ID')
+<%/hosting_type_contains_spfx%>
+        // To enable M365 account login by environment variables and non-interactive mode. 
+        CI_ENABLED = 'true'
+        // To specify the env name for multi-env feature.
+        TEAMSFX_ENV_NAME = '<%env_name%>'
+    }
+
+    stages {
+        // Setup environment.
+        stage('Setup environment') {
+            steps {
+                // Install the local dev dependency of @microsoft/teamsfx-cli. 
+                // 'npm ci' is used here to install dependencies and it depends on package-lock.json.
+                // If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
+                sh 'npm ci'
+                // Check the version of teamsfx.
+                sh 'npx teamsfx -v'
+            }
+        }
+
+        // Build the project.
+        // The way to build the current project depends on how you scaffold it.
+        // Different folder structures require different commands set.
+        // 'npm ci' may be used here to install dependencies and it depends on package-lock.json.
+        // If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
+        stage('Build the project') {
+            steps {
+                sh '<%build_script%>'
+            }
+        }
+
+        // Run unit test.
+        // Currently, no opinionated solution for unit test provided during scaffolding, so,
+        // set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
+        // stage('Run unit test') {
+        //     steps {
+        //         sh 'npm run test'
+        //     }
+        // }
+<%#hosting_type_contains_azure%>
+
+        stage('Login Azure by service principal') {
+            environment {
+              SP_NAME = credentials('AZURE_SERVICE_PRINCIPAL_NAME') 
+              SP_PASSWORD = credentials('AZURE_SERVICE_PRINCIPAL_PASSWORD') 
+              TENANT_ID = credentials('AZURE_TENANT_ID') 
+            }
+            steps {
+                sh 'npx teamsfx account login azure --service-principal --username ${SP_NAME} --password ${SP_PASSWORD} --tenant ${TENANT_ID}'
+            } 
+        }
+<%/hosting_type_contains_azure%>
+
+        stage('Deploy to hosting environment') {
+            steps {
+                sh 'npx teamsfx deploy --env ${TEAMSFX_ENV_NAME}<%#cloud_resources_contains_apim%> --api-version v1 --open-api-document openapi/openapi.json --api-prefix <%api_prefix%><%/cloud_resources_contains_apim%>'
+            }
+        }
+    }
+}

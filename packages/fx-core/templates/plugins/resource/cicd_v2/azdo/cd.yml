@@ -1,0 +1,56 @@
+{{=<% %>=}}
+# This is just an example workflow for continuous deployment.
+# You should customize it to meet your own requirements.
+trigger:
+# When new commits are pushed onto the main branch.
+- main 
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+# Setup environment.
+- task: NodeTool@0
+  inputs:
+    versionSpec: '14.17.0'
+    checkLatest: true
+
+- task: Bash@3
+  env:
+<%#hosting_type_contains_spfx%>
+    M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
+    M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
+    M365_TENANT_ID: $(M365_TENANT_ID)
+<%/hosting_type_contains_spfx%>
+    # To enable M365 account login by environment variables and non-interactive mode.
+    CI_ENABLED: 'true'
+    TEAMSFX_ENV_NAME: <%env_name%>
+  inputs:
+    targetType: 'inline'
+    script: |
+      set -evuxo pipefail
+      
+      # Install the local dev dependency of @microsoft/teamsfx-cli. 
+      # 'npm ci' is used here to install dependencies and it depends on package-lock.json.
+      # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
+      npm ci
+
+      # Build the project.
+      # The way to build the current project depends on how you scaffold it.
+      # Different folder structures require different commands set.
+      # 'npm ci' may be used here to install dependencies and it depends on package-lock.json.
+      # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.  
+      <%build_script%>
+
+      # Run unit test.
+      # Currently, no opinioned solution for unit test provided during scaffolding, so,
+      # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
+      # npm run test
+
+  <%#hosting_type_contains_azure%>
+      # Login Azure by service principal
+      npx teamsfx account login azure --service-principal --username $(AZURE_SERVICE_PRINCIPAL_NAME) --password $(AZURE_SERVICE_PRINCIPAL_PASSWORD) --tenant $(AZURE_TENANT_ID)
+  <%/hosting_type_contains_azure%>
+
+      # Deploy to hosting environment.
+      npx teamsfx deploy --env ${TEAMSFX_ENV_NAME}<%#cloud_resources_contains_apim%> --api-version v1 --open-api-document openapi/openapi.json --api-prefix <%api_prefix%><%/cloud_resources_contains_apim%>

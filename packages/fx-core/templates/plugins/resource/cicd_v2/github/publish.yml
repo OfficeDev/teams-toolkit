@@ -1,0 +1,47 @@
+{{=<% %>=}}
+# This is just an example workflow for publishing Teams app.
+# You should customize it to meet your own requirements.
+name: 'Publish Teams App'
+on:
+  # Manually trigger this workflow, and you should pick the right branch.
+  workflow_dispatch:
+jobs:
+  publishTeamsApp:
+    runs-on: ubuntu-latest
+    # You can uncomment the line below to use environments (refer to https://docs.github.com/en/actions/reference/environments). 
+    #environment: test_environment
+    env:
+      M365_ACCOUNT_NAME: ${{secrets.M365_ACCOUNT_NAME}}
+      M365_ACCOUNT_PASSWORD: ${{secrets.M365_ACCOUNT_PASSWORD}}
+      M365_TENANT_ID: ${{secrets.M365_TENANT_ID}}
+      # To specify the env name for multi-env feature.
+      TEAMSFX_ENV_NAME: <%env_name%>
+
+    steps:
+      # Setup environment.
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      # This step is to pack the Teams App as zip file,
+      # which can be used to be uploaded onto Teams Client for installation.
+      - name: Package Teams App for publishing
+        uses: OfficeDev/teamsfx-cli-action@v1
+        with:
+          commands: package
+          env: ${{env.TEAMSFX_ENV_NAME}}
+
+      - name: Upload Teams App's package as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: appPackage
+          path: build/appPackage/appPackage.${{env.TEAMSFX_ENV_NAME}}.zip
+
+      - name: Publish Teams App
+        uses: OfficeDev/teamsfx-cli-action@v1
+        with:
+          commands: publish
+          env: ${{env.TEAMSFX_ENV_NAME}}

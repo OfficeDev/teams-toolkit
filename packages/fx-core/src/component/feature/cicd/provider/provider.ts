@@ -17,6 +17,8 @@ import {
   hasSPFxTab,
   hasSQL,
 } from "../../../../common/projectSettingsHelperV3";
+import { isV3Enabled } from "../../../../common/tools";
+
 export class CICDProvider {
   public scaffoldTo = "";
   public providerName = "";
@@ -63,7 +65,7 @@ export class CICDProvider {
         getTemplatesFolder(),
         "plugins",
         "resource",
-        "cicd",
+        isV3Enabled() ? "cicd" : "cicd_v2",
         this.providerName,
         "README.md"
       );
@@ -100,7 +102,7 @@ export class CICDProvider {
         getTemplatesFolder(),
         "plugins",
         "resource",
-        "cicd",
+        isV3Enabled() ? "cicd" : "cicd_v2",
         this.providerName,
         this.sourceTemplateName(templateName)
       );

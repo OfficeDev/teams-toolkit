@@ -20,6 +20,7 @@ import HelpParamGenerator from "../helpParamGenerator";
 import CLILogProvider from "../commonlib/log";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { CollaborationConstants } from "@microsoft/teamsfx-core/build/core/collaborator";
+import { EnvNotSpecified } from "../error";
 
 const azureMessage =
   "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
@@ -98,6 +99,13 @@ export class PermissionStatus extends YargsCommand {
         CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
       }
     } else {
+      // Throw error if --env not specified
+      if (!args[env]) {
+        const error = new EnvNotSpecified();
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
+        return err(error);
+      }
+
       // print necessary messages
       CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
       CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
@@ -186,6 +194,13 @@ export class PermissionGrant extends YargsCommand {
         CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
       }
     } else {
+      // Throw error if --env not specified
+      if (!args[env]) {
+        const error = new EnvNotSpecified();
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
+        return err(error);
+      }
+
       // print necessary messages
       CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
       CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);

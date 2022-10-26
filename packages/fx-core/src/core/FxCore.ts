@@ -117,7 +117,7 @@ import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPa
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import * as envUtil from "../component/utils/envUtil";
 import { YamlParser } from "../component/configManager/parser";
-import { LifecycleName, ProjectModel } from "../component/configManager/interface";
+import { ILifecycle, LifecycleName, ProjectModel } from "../component/configManager/interface";
 import "../component/driver/teamsApp/createAppPackage";
 import "../component/driver/teamsApp/create";
 import "../component/driver/teamsApp/configure";
@@ -876,7 +876,7 @@ export class FxCore implements v3.ICore {
       return err(InvalidInputError("invalid env", inputs));
     }
     const env = inputs.env;
-    const lifecycle = lifecycleName as LifecycleName;
+    const lifecycleName_: LifecycleName = lifecycleName as LifecycleName;
     const result = await envUtil.readEnv(projectPath, env);
     if (result.isErr()) {
       return err(result.error);
@@ -898,20 +898,21 @@ export class FxCore implements v3.ICore {
       projectPath: projectPath,
       platform: inputs.platform,
     };
-    return this.applyProjectModel(projectModel, lifecycle, driverContext, env);
-  }
-
-  async applyProjectModel(
-    projectModel: ProjectModel,
-    lifecycle: LifecycleName,
-    driverContext: DriverContext,
-    env: string
-  ): Promise<Result<Void, FxError>> {
-    const runResult = await projectModel[lifecycle]?.run(driverContext);
-    if (runResult === undefined) {
+    const lifecycle = projectModel[lifecycleName_];
+    if (lifecycle) {
+      return this.runLifecycle(lifecycle, driverContext, env);
+    } else {
       await driverContext.logProvider.warning(`No definition found for ${lifecycle}`);
       return ok(Void);
     }
+  }
+
+  async runLifecycle(
+    lifecycle: ILifecycle,
+    driverContext: DriverContext,
+    env: string
+  ): Promise<Result<Void, FxError>> {
+    const runResult = await lifecycle.run(driverContext);
     if (runResult.isOk()) {
       const result = runResult.value;
       if (result.unresolvedPlaceHolders.length != 0) {
@@ -920,7 +921,7 @@ export class FxCore implements v3.ICore {
         );
         return ok(Void);
       } else {
-        await driverContext.logProvider.info(`Lifecycle ${lifecycle} succeeded`);
+        await driverContext.logProvider.info(`Lifecycle ${lifecycle.name} succeeded`);
         const writeResult = await envUtil.writeEnv(
           driverContext.projectPath,
           env,
@@ -930,7 +931,7 @@ export class FxCore implements v3.ICore {
       }
     } else {
       await driverContext.logProvider.error(
-        `Failed to run ${lifecycle} due to ${runResult.error.name}: ${runResult.error.message}`
+        `Failed to run ${lifecycle.name} due to ${runResult.error.name}: ${runResult.error.message}`
       );
       return err(runResult.error);
     }

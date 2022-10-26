@@ -54,7 +54,7 @@ export class ArmDeployImpl {
     }
   }
 
-  private async ensureBicepCli(): Promise<string> {
+  public async ensureBicepCli(): Promise<string> {
     return await ensureBicepForDriver(this.context, this.args.bicepCliVersion!);
   }
 

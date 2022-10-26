@@ -1,7 +1,7 @@
 import { Inputs, ok, Platform } from "@microsoft/teamsfx-api";
 import "mocha";
 import * as sinon from "sinon";
-import { coordinator } from "../../src/component/coordinator";
+import fs from "fs-extra";
 import { Generator } from "../../src/component/generator/generator";
 import { createContextV3 } from "../../src/component/utils";
 import { settingsUtil } from "../../src/component/utils/settingsUtil";
@@ -12,6 +12,12 @@ import { assert } from "chai";
 import { TabOptionItem } from "../../src/component/constants";
 import { FxCore } from "../../src/core/FxCore";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { YamlParser } from "../../src/component/configManager/parser";
+import { ProjectModel } from "../../src/component/configManager/interface";
+import { DriverContext } from "../../src/component/driver/interface/commonArgs";
+import { envUtil } from "../../src/component/utils/envUtil";
+import { MyTokenCredential } from "../plugins/solution/util";
+import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 
 describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
@@ -89,5 +95,73 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs2);
     assert.isTrue(res2.isOk());
+  });
+
+  it("provision happy path (create rg)", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
+          });
+        },
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox
+      .stub(mockProjectModel.registerApp!, "run")
+      .onFirstCall()
+      .resolves(
+        ok({
+          env: new Map(),
+          unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
+        })
+      )
+      .onSecondCall()
+      .resolves(
+        ok({
+          env: new Map(),
+          unresolvedPlaceHolders: [],
+        })
+      );
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "mockSubId",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
+    sandbox.stub(resourceGroupHelper, "askResourceGroupInfoV3").resolves(
+      ok({
+        createNewResourceGroup: true,
+        name: "test-rg",
+        location: "East US",
+      })
+    );
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ version: "1", projectId: "mockPID", isFromSample: false }));
+    sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isOk());
   });
 });

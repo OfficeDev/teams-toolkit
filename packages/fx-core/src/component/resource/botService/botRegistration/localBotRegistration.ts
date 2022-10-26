@@ -7,6 +7,7 @@ import { AppStudioScopes } from "../../../../common/tools";
 import { AppStudioClient } from "../appStudio/appStudioClient";
 import { BotRegistration, BotAuthType, BotAadCredentials } from "./botRegistration";
 import { Messages } from "../messages";
+import { MaxLengths } from "../constants";
 
 export class LocalBotRegistration extends BotRegistration {
   public async createBotRegistration(
@@ -34,9 +35,10 @@ export class LocalBotRegistration extends BotRegistration {
 
     const appStudioToken = appStudioTokenRes.value;
     // Register a new bot registration.
+    const botName = aadDisplayName.length > MaxLengths.BOT_NAME ? aadDisplayName.substr(aadDisplayName.length - MaxLengths.BOT_NAME): aadDisplayName; 
     const initialBotReg: IBotRegistration = {
       botId: botAadCredentials.botId,
-      name: aadDisplayName,
+      name: botName,
       description: "",
       iconUrl: "",
       messagingEndpoint: "",

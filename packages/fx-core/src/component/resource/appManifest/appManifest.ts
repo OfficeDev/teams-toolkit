@@ -60,6 +60,7 @@ import {
   createTeamsApp,
   publishTeamsApp,
   updateManifest,
+  updateManifestV3,
   updateTeamsApp,
   validateManifest,
 } from "./appStudio";
@@ -441,7 +442,11 @@ export class AppManifest implements CloudResource {
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     TelemetryUtils.init(context);
-    return await updateManifest(context, inputs);
+    if (isV3Enabled()) {
+      return await updateManifestV3(context, inputs);
+    } else {
+      return await updateManifest(context, inputs);
+    }
   }
 
   /**

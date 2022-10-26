@@ -5,6 +5,7 @@ import {
   ConfigFolderName,
   ProjectSettings,
   ProjectSettingsFileName,
+  Settings,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -18,6 +19,7 @@ import {
   BuiltInFeaturePluginNames,
 } from "../component/constants";
 import * as uuid from "uuid";
+import { isV3Enabled } from "./tools";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -71,11 +73,23 @@ function validateStringArray(arr?: any, enums?: string[]) {
 export function isValidProject(workspacePath?: string): boolean {
   if (!workspacePath) return false;
   try {
-    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`, "configs");
-    const settingsFile = path.resolve(confFolderPath, ProjectSettingsFileName);
-    const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
-    if (validateProjectSettings(projectSettings)) return false;
-    return true;
+    if (isV3Enabled()) {
+      const filePath = path.resolve(workspacePath, ".fx", ProjectSettingsFileName);
+      const projectSettings: Settings = fs.readJsonSync(filePath) as Settings;
+      if (!projectSettings.projectId) {
+        return false;
+      }
+      if (!projectSettings.version) {
+        return false;
+      }
+      return true;
+    } else {
+      const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`, "configs");
+      const settingsFile = path.resolve(confFolderPath, ProjectSettingsFileName);
+      const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
+      if (validateProjectSettings(projectSettings)) return false;
+      return true;
+    }
   } catch (e) {
     return false;
   }

@@ -31,7 +31,9 @@ export class WrapDriverContext {
     Object.assign(this, driverContext, {});
     this.progressBars = [];
     this.eventName = eventName;
-    this.telemetryProperties["component"] = componentName;
+    this.telemetryProperties = {
+      component: eventName,
+    };
     if (driverContext.telemetryReporter) {
       this.wrapTelemetryReporter = new TeamsFxTelemetryReporter(driverContext.telemetryReporter, {
         componentName,

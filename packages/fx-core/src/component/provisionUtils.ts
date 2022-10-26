@@ -60,8 +60,6 @@ import fs from "fs-extra";
 import { updateAzureParameters } from "./arm";
 import path from "path";
 import { DeployConfigsConstants } from "../common/azure-hosting/hostingConstant";
-import { ThrottlingUtils } from "@azure/msal-common";
-import { randomFill } from "crypto";
 interface M365TenantRes {
   tenantIdInToken: string;
   tenantUserName: string;

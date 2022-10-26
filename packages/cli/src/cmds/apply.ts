@@ -5,16 +5,9 @@
 
 import { Argv } from "yargs";
 import { FxError, err, ok, Result } from "@microsoft/teamsfx-api";
-import {} from "@microsoft/teamsfx-core";
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
 import { getSystemInputs } from "../utils";
-import CliTelemetry from "../telemetry/cliTelemetry";
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "../telemetry/cliTelemetryEvents";
 import * as uuid from "uuid";
 import * as path from "path";
 
@@ -74,14 +67,9 @@ export class ApplyCommand extends YargsCommand {
       args["lifecycle"] as string
     );
     if (initResult.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.InitProject, initResult.error);
       return err(initResult.error);
     }
 
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.InitProject, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.NewProjectId]: inputs.projectId,
-    });
     return ok(null);
   }
 }

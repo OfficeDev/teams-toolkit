@@ -28,7 +28,6 @@ export type DeployStepArgs = {
 
 export type BuildArgs = {
   workingDirectory: string;
-  env?: Record<string, string>;
   args: string;
 };
 

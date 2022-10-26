@@ -117,7 +117,7 @@ import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPa
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import * as envUtil from "../component/utils/envUtil";
 import { YamlParser } from "../component/configManager/parser";
-import { LifecycleName } from "../component/configManager/interface";
+import { LifecycleName, ProjectModel } from "../component/configManager/interface";
 import "../component/driver/teamsApp/createAppPackage";
 import "../component/driver/teamsApp/create";
 import "../component/driver/teamsApp/configure";
@@ -862,17 +862,18 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
+  // apply the given yaml template to current project.
   async apply(
     inputs: Inputs,
     templatePath: string,
     lifecycleName: string
   ): Promise<Result<Void, FxError>> {
     if (!inputs.projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
+      return err(InvalidInputError("invalid projectPath", inputs));
     }
     const projectPath = inputs.projectPath;
     if (!inputs.env) {
-      return err(new ObjectIsUndefinedError("env"));
+      return err(InvalidInputError("invalid env", inputs));
     }
     const env = inputs.env;
     const lifecycle = lifecycleName as LifecycleName;
@@ -897,25 +898,38 @@ export class FxCore implements v3.ICore {
       projectPath: projectPath,
       platform: inputs.platform,
     };
+    return this.applyProjectModel(projectModel, lifecycle, driverContext, env);
+  }
+
+  async applyProjectModel(
+    projectModel: ProjectModel,
+    lifecycle: LifecycleName,
+    driverContext: DriverContext,
+    env: string
+  ): Promise<Result<Void, FxError>> {
     const runResult = await projectModel[lifecycle]?.run(driverContext);
     if (runResult === undefined) {
-      await TOOLS.logProvider?.warning(`No definition found for ${lifecycle}`);
+      await driverContext.logProvider.warning(`No definition found for ${lifecycle}`);
       return ok(Void);
     }
     if (runResult.isOk()) {
       const result = runResult.value;
       if (result.unresolvedPlaceHolders.length != 0) {
-        await TOOLS.logProvider?.warning(
+        await driverContext.logProvider.warning(
           `Unresolved placeholders: ${result.unresolvedPlaceHolders.join(", ")}`
         );
         return ok(Void);
       } else {
-        await TOOLS.logProvider?.info(`Lifecycle ${lifecycle} succeeded`);
-        const writeResult = await envUtil.writeEnv(projectPath, env, runResult.value.env);
+        await driverContext.logProvider.info(`Lifecycle ${lifecycle} succeeded`);
+        const writeResult = await envUtil.writeEnv(
+          driverContext.projectPath,
+          env,
+          runResult.value.env
+        );
         return writeResult.map(() => Void);
       }
     } else {
-      await TOOLS.logProvider?.error(
+      await driverContext.logProvider.error(
         `Failed to run ${lifecycle} due to ${runResult.error.name}: ${runResult.error.message}`
       );
       return err(runResult.error);

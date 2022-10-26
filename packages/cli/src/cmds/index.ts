@@ -5,7 +5,7 @@
 
 import { Argv } from "yargs";
 
-import { isDeployManifestEnabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { isDeployManifestEnabled, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 
 import { YargsCommand } from "../yargsCommand";
 import Account from "./account";
@@ -23,6 +23,7 @@ import Permission from "./permission";
 import Env from "./env";
 import M365 from "./m365/m365";
 import { ManifestValidate } from "./validate";
+import { ApplyCommand } from "./apply";
 
 export const commands: YargsCommand[] = [
   new Account(),
@@ -37,6 +38,7 @@ export const commands: YargsCommand[] = [
   new Config(),
   new Preview(),
   new Env(),
+  ...(isV3Enabled() ? [new ApplyCommand()] : []),
 ];
 
 /**

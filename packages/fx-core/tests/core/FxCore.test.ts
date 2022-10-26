@@ -203,3 +203,44 @@ describe("Core basic APIs", () => {
     }
   });
 });
+
+describe("apply yaml template", async () => {
+  const sandbox = sinon.createSandbox();
+  const tools = new MockTools();
+  beforeEach(() => {
+    setTools(tools);
+  });
+  afterEach(async () => {
+    sandbox.restore();
+  });
+  describe("when run with missing input", async () => {
+    it("should return error when projectPath is undefined", async () => {
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: undefined,
+      };
+      const res = await core.apply(inputs, "", "provision");
+      assert.isTrue(
+        res.isErr() &&
+          res.error.name === "ObjectIsUndefinedError" &&
+          res.error.message.includes("projectPath")
+      );
+    });
+
+    it("should return error when env is undefined", async () => {
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        env: undefined,
+      };
+      const res = await core.apply(inputs, "", "provision");
+      assert.isTrue(
+        res.isErr() &&
+          res.error.name === "ObjectIsUndefinedError" &&
+          res.error.message.includes("env")
+      );
+    });
+  });
+});

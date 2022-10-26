@@ -112,6 +112,27 @@ import { DriverContext } from "../component/driver/interface/commonArgs";
 import { coordinator } from "../component/coordinator";
 import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPackage";
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
+import { readEnv, writeEnv } from "../component/utils/envUtil";
+import { YamlParser } from "../component/configManager/parser";
+import { LifecycleName } from "../component/configManager/interface";
+import "../component/driver/teamsApp/createAppPackage";
+import "../component/driver/teamsApp/create";
+import "../component/driver/teamsApp/configure";
+import "../component/driver/teamsApp/copyAppPackageForSPFx";
+import "../component/driver/teamsApp/publishAppPackage";
+import "../component/driver/teamsApp/validate";
+import "../component/driver/aad/create";
+import "../component/driver/aad/update";
+import "../component/driver/arm/deploy";
+import "../component/driver/botAadApp/create";
+import "../component/driver/deploy/azure/azureAppServiceDeployDriver";
+import "../component/driver/deploy/azure/azureFunctionDeployDriver";
+import "../component/driver/deploy/azure/azureStorageDeployDriver";
+import "../component/driver/deploy/azure/azureStorageStaticWebsiteConfigDriver";
+import "../component/driver/deploy/spfx/deployDriver";
+import "../component/driver/script/dotnetBuildDriver";
+import "../component/driver/script/npmBuildDriver";
+import "../component/driver/script/npxBuildDriver";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -791,6 +812,66 @@ export class FxCore implements v3.ICore {
 
   async activateEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     return ok(Void);
+  }
+
+  async apply(
+    inputs: Inputs,
+    templatePath: string,
+    lifecycleName: string
+  ): Promise<Result<Void, FxError>> {
+    if (!inputs.projectPath) {
+      return err(new ObjectIsUndefinedError("projectPath"));
+    }
+    const projectPath = inputs.projectPath;
+    if (!inputs.env) {
+      return err(new ObjectIsUndefinedError("env"));
+    }
+    const env = inputs.env;
+    const lifecycle = lifecycleName as LifecycleName;
+    const result = await readEnv(projectPath, env);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    const parser = new YamlParser();
+    const maybeProjectModel = await parser.parse(templatePath);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+
+    const projectModel = maybeProjectModel.value;
+    const driverContext: DriverContext = {
+      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider!,
+      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider!,
+      ui: TOOLS.ui,
+      logProvider: TOOLS.logProvider,
+      telemetryReporter: TOOLS.telemetryReporter!,
+      projectPath: projectPath,
+      platform: inputs.platform,
+    };
+    const runResult = await projectModel[lifecycle]?.run(driverContext);
+    if (runResult === undefined) {
+      await TOOLS.logProvider?.warning(`No definition found for ${lifecycle}`);
+      return ok(Void);
+    }
+    if (runResult.isOk()) {
+      const result = runResult.value;
+      if (result.unresolvedPlaceHolders.length != 0) {
+        await TOOLS.logProvider?.warning(
+          `Unresolved placeholders: ${result.unresolvedPlaceHolders.join(", ")}`
+        );
+        return ok(Void);
+      } else {
+        await TOOLS.logProvider?.info(`Lifecycle ${lifecycle} succeeded`);
+        const writeResult = await writeEnv(projectPath, env, runResult.value.env);
+        return writeResult.map(() => Void);
+      }
+    } else {
+      await TOOLS.logProvider?.error(
+        `Failed to run ${lifecycle} due to ${runResult.error.name}: ${runResult.error.message}`
+      );
+      return err(runResult.error);
+    }
   }
 
   async _init(

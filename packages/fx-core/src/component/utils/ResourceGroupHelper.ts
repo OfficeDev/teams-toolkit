@@ -9,7 +9,6 @@ import {
   err,
   FxError,
   Inputs,
-  LogProvider,
   ok,
   OptionItem,
   Platform,
@@ -17,14 +16,11 @@ import {
   Result,
   traverse,
   UserError,
-  UserInteraction,
   v2,
 } from "@microsoft/teamsfx-api";
-import { rm } from "fs";
 import { PluginDisplayName } from "../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { TOOLS } from "../../core/globalVars";
-import { desensitize } from "../../core/middleware/questionModel";
 import {
   CoreQuestionNames,
   newResourceGroupNameQuestion,

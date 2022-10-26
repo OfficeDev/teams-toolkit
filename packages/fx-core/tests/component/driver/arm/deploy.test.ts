@@ -124,12 +124,6 @@ describe("Arm driver deploy", () => {
   it("deploy error", async () => {
     sandbox.stub(fs, "readFile").resolves("{}" as any);
     sandbox.stub(cpUtils, "executeCommand").resolves("{}" as any);
-    const deployRes = ok({
-      mockKey: {
-        type: "string",
-        value: "mockValue",
-      },
-    });
     sandbox
       .stub(ArmDeployImpl.prototype, "executeDeployment")
       .rejects(new Error("mocked deploy error"));
@@ -154,6 +148,13 @@ describe("Arm driver deploy", () => {
     };
 
     const res = await driver.run(deployArgs, mockedDriverContext);
+    assert.isTrue(res.isErr());
+  });
+
+  it("error handle", async () => {
+    sandbox.stub(ArmDeployImpl.prototype, "run").throws("mocked deploy error");
+
+    const res = await driver.run({} as any, mockedDriverContext);
     assert.isTrue(res.isErr());
   });
 });

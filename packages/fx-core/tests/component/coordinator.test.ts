@@ -18,6 +18,7 @@ import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { MyTokenCredential } from "../plugins/solution/util";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
+import { provisionUtils } from "../../src/component/provisionUtils";
 
 describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
@@ -126,29 +127,24 @@ describe("component coordinator test", () => {
           unresolvedPlaceHolders: [],
         })
       );
-    sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
-    sandbox
-      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
-      .resolves(new MyTokenCredential());
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
-      subscriptionId: "mockSubId",
-      tenantId: "mockTenantId",
-      subscriptionName: "mockSubName",
-    });
-    sandbox.stub(resourceGroupHelper, "askResourceGroupInfoV3").resolves(
+    sandbox.stub(provisionUtils, "ensureSubscription").resolves(
+      ok({
+        subscriptionId: "mockSubId",
+        tenantId: "mockTenantId",
+        subscriptionName: "mockSubName",
+      })
+    );
+
+    sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
       ok({
         createNewResourceGroup: true,
         name: "test-rg",
         location: "East US",
       })
     );
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ version: "1", projectId: "mockPID", isFromSample: false }));
-    sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
     sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
       if (config.name === "env") {
         return ok({ type: "success", result: "dev" });

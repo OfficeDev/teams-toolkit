@@ -672,8 +672,9 @@ export async function updateManifestV3(
     projectPath: ctx.projectPath!,
     platform: inputs.platform,
   };
-  await envUtil.readEnv(ctx.projectPath!, state.ENV_NAME!);
+  await envUtil.readEnv(inputs.projectPath!, state.ENV_NAME!);
 
+  // render manifest
   let manifest: any;
   const manifestResult = await manifestUtils.getManifestV3(manifestTemplatePath, state, false);
   if (manifestResult.isErr()) {
@@ -696,6 +697,7 @@ export async function updateManifestV3(
     manifest = manifestResult.value;
   }
 
+  // read built manifest file
   if (!(await fs.pathExists(manifestFileName))) {
     const res = await buildDriver.run(args, driverContext);
     if (res.isErr()) {

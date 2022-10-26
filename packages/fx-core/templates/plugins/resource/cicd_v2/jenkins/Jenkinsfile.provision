@@ -1,0 +1,79 @@
+{{=<% %>=}}
+// This is just an example workflow for provision.
+// The example workflow is expected to run on Ubuntu stable versions, for example, 20.04lts and later.
+// You should customize it to meet your own requirements.
+pipeline {
+    // To customize the agent field, please refer to https://www.jenkins.io/doc/book/pipeline/syntax/#agent.
+    agent any
+
+    // Manually trigger this workflow.
+    // To customize triggers, please refer to https://www.jenkins.io/doc/book/pipeline/syntax/#triggers.
+    // triggers { pollSCM('H */4 * * 1-5') }
+
+    // To learn more about environment, please refer to https://www.jenkins.io/doc/book/pipeline/syntax/#environment.
+    environment {
+        M365_ACCOUNT_NAME = credentials('M365_ACCOUNT_NAME')
+        M365_ACCOUNT_PASSWORD = credentials('M365_ACCOUNT_PASSWORD')
+        M365_TENANT_ID = credentials('M365_TENANT_ID')
+        // To enable M365 account login by non-interactive mode. 
+        CI_ENABLED = 'true'
+
+        // To specify the env name for multi-env feature.
+        TEAMSFX_ENV_NAME = '<%env_name%>'
+    }
+
+    stages {
+        // Setup environment.
+        stage('Setup environment') {
+            steps {
+                // Install the local dev dependency of @microsoft/teamsfx-cli. 
+                // 'npm ci' is used here to install dependencies and it depends on package-lock.json.
+                // If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.          
+                sh 'npm ci'
+                // Check the version of teamsfx.
+                sh 'npx teamsfx -v'
+            }
+        }
+<%#hosting_type_contains_azure%>
+
+        stage('Login Azure by service principal') {
+            environment {
+              SP_NAME = credentials('AZURE_SERVICE_PRINCIPAL_NAME') 
+              SP_PASSWORD = credentials('AZURE_SERVICE_PRINCIPAL_PASSWORD') 
+              TENANT_ID = credentials('AZURE_TENANT_ID') 
+            }
+            steps {
+                sh 'npx teamsfx account login azure --service-principal --username ${SP_NAME} --password ${SP_PASSWORD} --tenant ${TENANT_ID}'
+            } 
+        }
+<%/hosting_type_contains_azure%>
+
+        // We suggest to do the `npx teamsfx provision` step manually or in a separate pipeline. The following steps are for your reference.
+        // After provisioning, you should commit necessary files under .fx into the repository.
+        stage('Provision hosting environment') {
+<%#hosting_type_contains_azure%>            
+            environment {
+                AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
+<%#cloud_resources_contains_sql%>
+                SQL_ADMIN_NAME = credentials('SQL_ADMIN_NAME')
+                SQL_PASSWORD = credentials('SQL_PASSWORD')
+<%/cloud_resources_contains_sql%>
+            }
+<%/hosting_type_contains_azure%>
+            steps {
+                sh 'npx teamsfx provision<%#hosting_type_contains_azure%> --subscription ${AZURE_SUBSCRIPTION_ID}<%/hosting_type_contains_azure%> --env ${TEAMSFX_ENV_NAME}<%#cloud_resources_contains_sql%> --sql-admin-name ${SQL_ADMIN_NAME} --sql-password ${SQL_PASSWORD}<%/cloud_resources_contains_sql%>'
+            }
+        }
+
+        stage('Commit provision configs if necessary') {
+            steps {
+                sh 'git config user.name "azdo-agent"'
+                sh 'git config user.email "azdo-agent@azure.com"'
+                sh 'git add .'
+                sh 'git commit -m "chore: commit provision configs"'
+                // Using awk to extract origin and branch name.
+                sh 'git push `echo $GIT_BRANCH | awk -F\'/\' \'{print $1, "HEAD:"$2}\'`'
+            }
+        }
+    }
+}

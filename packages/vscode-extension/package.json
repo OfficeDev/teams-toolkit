@@ -807,7 +807,7 @@
             ]
           },
           "args": {
-            "oneOf": [
+            "anyOf": [
               {
                 "type": "object",
                 "required": [

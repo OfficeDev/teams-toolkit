@@ -3,4 +3,4 @@ const config = {
   botPassword: process.env.BOT_PASSWORD,
 };
 
-export default config;
+module.exports = config;

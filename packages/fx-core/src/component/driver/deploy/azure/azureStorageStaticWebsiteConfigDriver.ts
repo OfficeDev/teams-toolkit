@@ -13,11 +13,16 @@ import {
 } from "../../../utils/azureResourceOperation";
 import { BlobServiceClient, BlobServiceProperties } from "@azure/storage-blob";
 import { FxError, Result } from "@microsoft/teamsfx-api";
+import { hooks } from "@feathersjs/hooks";
+import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
+import { TelemetryConstant } from "../../../constant/commonConstant";
+
+const ACTION_NAME = "configure/storage";
 
 /**
  * enable static website for azure storage account
  */
-@Service("configure/storage")
+@Service(ACTION_NAME)
 export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
   protected static readonly STORAGE_CONFIG_ARGS = asFactory<AzureStorageStaticWebsiteConfigArgs>({
     storageResourceId: asString,
@@ -28,6 +33,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
   protected static readonly RESOURCE_PATTERN =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i;
 
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.PROVISION_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     return wrapRun(() => this.config(args, context));
   }

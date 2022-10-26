@@ -1,0 +1,71 @@
+{{=<% %>=}}
+# This is just an example workflow for continuous deployment.
+# You should customize it to meet your own requirements.
+name: 'Continuous Deployment'
+on:
+  # When new commits are pushed onto the main branch.
+  push:
+    branches:
+      - main
+jobs:
+  buildAndDeploy:
+    runs-on: ubuntu-latest
+    # You can uncomment the line below to use environments (refer to https://docs.github.com/en/actions/reference/environments). 
+    #environment: test_environment
+    env:
+<%#hosting_type_contains_spfx%>
+      M365_ACCOUNT_NAME: ${{secrets.M365_ACCOUNT_NAME}}
+      M365_ACCOUNT_PASSWORD: ${{secrets.M365_ACCOUNT_PASSWORD}}
+      M365_TENANT_ID: ${{secrets.M365_TENANT_ID}}
+<%/hosting_type_contains_spfx%>
+      # To specify the env name for multi-env feature.
+      TEAMSFX_ENV_NAME: <%env_name%>
+
+    steps:
+      # Setup environment.
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          
+      - name: Checkout the code
+        uses: actions/checkout@v2
+        
+      # Build the project.
+      # The way to build the current project depends on how you scaffold it.
+      # Different folder structures require different commands set.
+      # 'npm ci' is used here to install dependencies and it depends on package-lock.json.
+      # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
+      - name: Build the project
+        run: <%build_script%>
+
+      # Run unit test.
+      # Currently, no opinionated solution for unit test provided during scaffolding, so,
+      # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
+      # - name: Run Unit Test
+      #   run: npm run test
+
+<%#hosting_type_contains_azure%>
+      # Login Azure by service principal.
+      # Service principal for Azure is used, and to create Azure service principal for use, refer to https://github.com/OfficeDev/TeamsFx/tree/dev/docs/cicd_insider#how-to-create-azure-service-principals-for-use.
+      - name: Login Azure by service principal 
+        uses: OfficeDev/teamsfx-cli-action@v1
+        with:
+          commands: account login azure 
+          service-principal: true
+          username: ${{secrets.AZURE_SERVICE_PRINCIPAL_NAME}}
+          password: ${{secrets.AZURE_SERVICE_PRINCIPAL_PASSWORD}}
+          tenant: ${{secrets.AZURE_TENANT_ID}}
+      
+<%/hosting_type_contains_azure%>
+      - name: Deploy to hosting environment
+        uses: OfficeDev/teamsfx-cli-action@v1
+        with:
+          commands: deploy
+          env: ${{env.TEAMSFX_ENV_NAME}}
+<%#cloud_resources_contains_apim%>
+          # Below are default values. You should update them if anything is customized.
+          api-version: v1
+          open-api-document: openapi/openapi.json
+          api-prefix: <%api_prefix%>
+<%/cloud_resources_contains_apim%>
+

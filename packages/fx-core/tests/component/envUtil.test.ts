@@ -27,6 +27,7 @@ describe("env utils", () => {
     if (encRes.isErr()) throw encRes.error;
     const encrypted = encRes.value;
     sandbox.stub(fs, "readFile").resolves(("SECRET_ABC=" + encrypted) as any);
+    sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
     const res = await envUtil.readEnv(".", "dev");
     assert.isTrue(res.isOk());
@@ -41,7 +42,8 @@ describe("env utils", () => {
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
     const res = await envUtil.writeEnv(".", "dev", { SECRET_ABC: decrypted });
     assert.isTrue(res.isOk());
-    value = value!.substr("SECRET_ABC=".length);
+    assert.isDefined(value);
+    value = value!.substring("SECRET_ABC=".length);
     const decRes = await cryptoProvider.decrypt(value);
     if (decRes.isErr()) throw decRes.error;
     assert.isTrue(decRes.isOk());
@@ -52,6 +54,7 @@ describe("env utils", () => {
     const encRes = await cryptoProvider.encrypt(decrypted);
     if (encRes.isErr()) throw encRes.error;
     const encrypted = encRes.value;
+    sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").resolves(("SECRET_ABC=" + encrypted) as any);
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
     class MyClass {
@@ -80,11 +83,10 @@ describe("env utils", () => {
       return Promise.resolve();
     });
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
-    const map = new Map<string, string>();
-    map.set("SECRET_ABC", decrypted);
+    const envs = { SECRET_ABC: decrypted };
     class MyClass {
       async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-        ctx!.envOutput = map;
+        ctx!.envVars = envs;
         return ok(undefined);
       }
     }

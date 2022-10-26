@@ -277,9 +277,9 @@ export class Coordinator {
     const cycles = [projectModel.registerApp, projectModel.provision, projectModel.configureApp];
     for (const cycle of cycles) {
       if (!cycle) continue;
-      const res = await cycle.run(ctx);
-      if (res.isErr()) return err(res.error);
-      let unresolvedPlaceHolders = res.value.unresolvedPlaceHolders;
+      let runRes = await cycle.run(ctx);
+      if (runRes.isErr()) return err(runRes.error);
+      let unresolvedPlaceHolders = runRes.value.unresolvedPlaceHolders;
       if (unresolvedPlaceHolders.length > 0) {
         if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) {
           const ensureRes = await provisionUtils.ensureSubscription(
@@ -315,13 +315,13 @@ export class Coordinator {
             );
           }
         }
+        if (unresolvedPlaceHolders.length === 0) {
+          runRes = await cycle.run(ctx);
+          if (runRes.isErr()) return err(runRes.error);
+        }
       }
-      if (unresolvedPlaceHolders.length === 0) {
-        const res = await cycle.run(ctx);
-        if (res.isErr()) return err(res.error);
-        const newOutput = envUtil.map2object(res.value.env);
-        merge(output, newOutput);
-      }
+      const newOutput = envUtil.map2object(runRes.value.env);
+      merge(output, newOutput);
     }
     return ok(output);
   }

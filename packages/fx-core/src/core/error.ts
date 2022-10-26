@@ -389,3 +389,13 @@ export class NoCapabilityFoundError extends UserError {
     });
   }
 }
+
+export class NoAadManifestExistError extends UserError {
+  constructor(filePath: string) {
+    super({
+      source: CoreSource,
+      message: getDefaultString("error.aad.AadManifestNotExistError", filePath),
+      displayMessage: getLocalizedString("error.aad.AadManifestNotExistError", filePath),
+    });
+  }
+}

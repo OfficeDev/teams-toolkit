@@ -1013,6 +1013,10 @@ export async function runCommand(
         result = await core.deployArtifacts(inputs);
         break;
       }
+      case Stage.deployAad: {
+        result = await core.deployAadManifest(inputs);
+        break;
+      }
       case Stage.publish: {
         result = await core.publishApplication(inputs);
         break;
@@ -2224,19 +2228,22 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
       env
     );
 
-    let warningMsg = localize("teamstoolkit.handlers.grantPermissionWarning");
-    let helpUrl = AzureAssignRoleHelpUrl;
-    if (globalVariables.isSPFxProject) {
-      warningMsg = localize("teamstoolkit.handlers.grantPermissionWarningSpfx");
-      helpUrl = SpfxManageSiteAdminUrl;
+    // Will not show help messages in V3
+    if (!isV3Enabled()) {
+      let warningMsg = localize("teamstoolkit.handlers.grantPermissionWarning");
+      let helpUrl = AzureAssignRoleHelpUrl;
+      if (globalVariables.isSPFxProject) {
+        warningMsg = localize("teamstoolkit.handlers.grantPermissionWarningSpfx");
+        helpUrl = SpfxManageSiteAdminUrl;
+      }
+
+      showGrantSuccessMessageWithGetHelpButton(grantSucceededMsg + " " + warningMsg, helpUrl);
+
+      VsCodeLogInstance.info(grantSucceededMsg);
+      VsCodeLogInstance.warning(
+        warningMsg + localize("teamstoolkit.handlers.referLinkForMoreDetails") + helpUrl
+      );
     }
-
-    showGrantSuccessMessageWithGetHelpButton(grantSucceededMsg + " " + warningMsg, helpUrl);
-
-    VsCodeLogInstance.info(grantSucceededMsg);
-    VsCodeLogInstance.warning(
-      warningMsg + localize("teamstoolkit.handlers.referLinkForMoreDetails") + helpUrl
-    );
   } catch (e) {
     result = wrapError(e);
   }
@@ -3203,7 +3210,11 @@ export async function deployAadAppManifest(args: any[]): Promise<Result<null, Fx
     const envName = selectedEnv.value;
     inputs.env = envName;
   }
-  return await runCommand(Stage.deploy, inputs);
+  if (isV3Enabled()) {
+    return await runCommand(Stage.deployAad, inputs);
+  } else {
+    return await runCommand(Stage.deploy, inputs);
+  }
 }
 
 export async function selectTutorialsHandler(args?: any[]): Promise<Result<unknown, FxError>> {

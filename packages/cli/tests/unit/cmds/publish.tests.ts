@@ -129,16 +129,4 @@ describe("Publish Command Tests", function () {
       expect(e.name).equals("NotSupportedProjectType");
     }
   });
-
-  it("Publish Command Running Check (VS)", async () => {
-    const cmd = new Publish();
-    cmd["params"] = params;
-    const args = {
-      "manifest-folder": "real",
-      "teams-app-id": "real",
-    };
-    await cmd.handler(args);
-    expect(telemetryEvents).deep.equals([TelemetryEvent.PublishStart, TelemetryEvent.Publish]);
-    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
-  });
 });

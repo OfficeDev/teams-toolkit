@@ -17,7 +17,7 @@ constructor(ssoToken: string, config: OnBehalfOfCredentialAuthConfig);
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  ssoToken | string | User token provided by Teams SSO feature. |
-|  config | [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) | The authentication configuration. Use environment variables if not provided. |
+|  config | [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) | The authentication configuration. |
 
 ## Exceptions
 

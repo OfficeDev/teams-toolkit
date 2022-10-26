@@ -47,9 +47,10 @@ export class BotSsoExecutionDialog extends ComponentDialog {
 
   /**
    * Creates a new instance of the BotSsoExecutionDialog.
-   * @param dedupStorage Helper storage to remove duplicated messages
-   * @param settings The list of scopes for which the token will have access
-   * @param teamsfx {@link TeamsFx} instance for authentication
+   * @param {@link Storage} dedupStorage Helper storage to remove duplicated messages
+   * @param {@link TeamsBotSsoPromptSettings} settings The list of scopes for which the token will have access
+   * @param {@link TeamsFx} teamsfx instance for authentication
+   * @param {string} dialogName custom dialog name
    */
   constructor(
     dedupStorage: Storage,
@@ -57,6 +58,14 @@ export class BotSsoExecutionDialog extends ComponentDialog {
     teamsfx: TeamsFx,
     dialogName?: string
   );
+  /**
+   * Creates a new instance of the BotSsoExecutionDialog.
+   * @param {@link Storage} dedupStorage Helper storage to remove duplicated messages
+   * @param {@link TeamsBotSsoPromptSettings} settings The list of scopes for which the token will have access
+   * @param {@link OnBehalfOfCredentialAuthConfig} authConfig The authentication configuration.
+   * @param {string} initiateLoginEndpoint Login URL for Teams to redirect to.
+   * @param {string} dialogName custom dialog name
+   */
   constructor(
     dedupStorage: Storage,
     ssoPromptSettings: TeamsBotSsoPromptSettings,

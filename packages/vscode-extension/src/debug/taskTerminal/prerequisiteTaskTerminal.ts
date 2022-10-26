@@ -43,22 +43,22 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
         prerequisites: maskArrayValue(this.args.prerequisites, Object.values(Prerequisite)),
       }),
     };
-    return Correlator.runWithId(commonUtils.startLocalDebugSession(), async () => {
-      const additionalProperties: { [key: string]: string } = {
-        [TelemetryProperty.DebugIsTransparentTask]: "true",
-      };
-      {
-        // If we know this session is concurrently running with another session, send that correlationId in `debug-all-start` event.
-        // Mostly, this happens when user stops debugging while preLaunchTasks are running and immediately hit F5 again.
-        const session = commonUtils.getLocalDebugSession();
-        if (session.id !== commonUtils.DebugNoSessionId) {
-          additionalProperties[TelemetryProperty.DebugConcurrentCorrelationId] = session.id;
-          // Indicates in which stage (of the first F5) the user hits F5 again.
-          additionalProperties[TelemetryProperty.DebugConcurrentLastEventName] =
-            localTelemetryReporter.getLastEventName();
-        }
+    const additionalProperties: { [key: string]: string } = {
+      [TelemetryProperty.DebugIsTransparentTask]: "true",
+    };
+    {
+      // If we know this session is concurrently running with another session, send that correlationId in `debug-all-start` event.
+      // Mostly, this happens when user stops debugging while preLaunchTasks are running and immediately hit F5 again.
+      const session = commonUtils.getLocalDebugSession();
+      if (session.id !== commonUtils.DebugNoSessionId) {
+        additionalProperties[TelemetryProperty.DebugConcurrentCorrelationId] = session.id;
+        // Indicates in which stage (of the first F5) the user hits F5 again.
+        additionalProperties[TelemetryProperty.DebugConcurrentLastEventName] =
+          localTelemetryReporter.getLastEventName();
       }
+    }
 
+    return Correlator.runWithId(commonUtils.startLocalDebugSession(), async () => {
       if (commonUtils.checkAndSkipDebugging()) {
         throw new Error(DebugSessionExists);
       }

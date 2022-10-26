@@ -30,12 +30,23 @@ export class AppCredential implements TokenCredential {
    * @remarks
    * Only works in in server side.
    *
-   * @param {AuthenticationConfiguration} authConfig - The authentication configuration. Use environment variables if not provided.
+   * @param {AppCredentialAuthConfig} authConfig - The authentication configuration.
    *
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret or tenant id is not found in config.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    */
   constructor(authConfig: AppCredentialAuthConfig);
+  /**
+   * Constructor of AppCredential.
+   *
+   * @remarks
+   * Only works in in server side.
+   *
+   * @param {AuthenticationConfiguration} authConfig - The authentication configuration. Use environment variables if not provided.
+   *
+   * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret or tenant id is not found in config.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
+   */
   constructor(authConfig: AuthenticationConfiguration);
   constructor(authConfig: AppCredentialAuthConfig | AuthenticationConfiguration) {
     internalLogger.info("Create M365 tenant credential");

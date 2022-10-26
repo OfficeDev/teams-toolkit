@@ -20,7 +20,7 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
   /**
    * Constructor of MsGraphAuthProvider.
    *
-   * @param {TeamsFx} teamsfx - Used to provide configuration and auth.
+   * @param {TeamsFxConfiguration} teamsfx - Used to provide configuration and auth.
    * @param {string | string[]} scopes - The list of scopes for which the token will have access.
    *
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
@@ -28,6 +28,16 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
    * @returns An instance of MsGraphAuthProvider.
    */
   constructor(teamsfx: TeamsFxConfiguration, scopes?: string | string[]);
+  /**
+   * Constructor of MsGraphAuthProvider.
+   *
+   * @param {TokenCredential} credential - credential used to provide configuration and auth.
+   * @param {string | string[]} scopes - The list of scopes for which the token will have access.
+   *
+   * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+   *
+   * @returns An instance of MsGraphAuthProvider.
+   */
   constructor(credential: TokenCredential, scopes?: string | string[]);
   constructor(
     credentialOrTeamsFx: TeamsFxConfiguration | TokenCredential,

@@ -1541,13 +1541,21 @@ export interface RunnableTask<T> {
 }
 
 // @public
-export type SelectFileConfig = UIConfig<string>;
+export type SelectFileConfig = UIConfig<string> & {
+    filters?: {
+        [name: string]: string[];
+    };
+};
 
 // @public (undocumented)
 export type SelectFileResult = InputResult<string>;
 
 // @public
-export type SelectFilesConfig = UIConfig<string[]>;
+export type SelectFilesConfig = UIConfig<string[]> & {
+    filters?: {
+        [name: string]: string[];
+    };
+};
 
 // @public (undocumented)
 export type SelectFilesResult = InputResult<string[]>;

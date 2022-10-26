@@ -111,12 +111,36 @@ export interface InputTextConfig extends UIConfig<string> {
 /**
  * single file selector config
  */
-export type SelectFileConfig = UIConfig<string>;
+export type SelectFileConfig = UIConfig<string> & {
+  /**
+   * A set of file filters that are used by the dialog. Each entry is a human-readable label,
+   * like "TypeScript", and an array of extensions, e.g.
+   * ```ts
+   * {
+   *     'Images': ['png', 'jpg']
+   *     'TypeScript': ['ts', 'tsx']
+   * }
+   * ```
+   */
+  filters?: { [name: string]: string[] };
+};
 
 /**
  * multiple files selector config
  */
-export type SelectFilesConfig = UIConfig<string[]>;
+export type SelectFilesConfig = UIConfig<string[]> & {
+  /**
+   * A set of file filters that are used by the dialog. Each entry is a human-readable label,
+   * like "TypeScript", and an array of extensions, e.g.
+   * ```ts
+   * {
+   *     'Images': ['png', 'jpg']
+   *     'TypeScript': ['ts', 'tsx']
+   * }
+   * ```
+   */
+  filters?: { [name: string]: string[] };
+};
 
 /**
  * folder selector config

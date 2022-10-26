@@ -5,6 +5,7 @@
 
 import { Inputs, Platform, QTreeNode, Stage } from "@microsoft/teamsfx-api";
 import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
+import { Options } from "yargs";
 
 export const cliSource = "TeamsfxCLI";
 export const cliName = "teamsfx";
@@ -17,11 +18,28 @@ export const RootFolderNode = new QTreeNode({
   default: "./",
 });
 
+export const RootFolderOptions: { [_: string]: Options } = {
+  folder: {
+    type: "string",
+    global: false,
+    description: "Select root folder of the project",
+    default: "./",
+  },
+};
+
 export const EnvNodeNoCreate = new QTreeNode({
   type: "text",
   name: "env",
   title: "Select an existing environment for the project",
 });
+
+export const EnvOptions: { [_: string]: Options } = {
+  env: {
+    type: "string",
+    global: false,
+    description: "Select an existing environment for the project",
+  },
+};
 
 export const SubscriptionNode = new QTreeNode({
   type: "text",

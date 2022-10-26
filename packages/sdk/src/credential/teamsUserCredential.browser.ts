@@ -49,6 +49,25 @@ export class TeamsUserCredential implements TokenCredential {
    *    initiateLoginEndpoint: "https://localhost:3000/auth-start.html",
    *    clientId: "xxx"
    * }
+   * const credential = new TeamsUserCredential(config);
+   * ```
+   *
+   * @param {TeamsUserCredentialAuthConfig} authConfig - The authentication configuration.
+   *
+   * @throws {@link ErrorCode|InvalidConfiguration} when client id, initiate login endpoint or simple auth endpoint is not found in config.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
+   */
+  constructor(authConfig: TeamsUserCredentialAuthConfig);
+  // eslint-disable-next-line no-secrets/no-secrets
+  /**
+   * Constructor of TeamsUserCredential.
+   * @deprecated
+   * @example
+   * ```typescript
+   * const config: AuthenticationConfiguration = {
+   *    initiateLoginEndpoint: "https://localhost:3000/auth-start.html",
+   *    clientId: "xxx"
+   * }
    * // Use default configuration provided by Teams Toolkit
    * const credential = new TeamsUserCredential();
    * // Use a customized configuration
@@ -60,7 +79,6 @@ export class TeamsUserCredential implements TokenCredential {
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, initiate login endpoint or simple auth endpoint is not found in config.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    */
-  constructor(authConfig: TeamsUserCredentialAuthConfig);
   constructor(authConfig: AuthenticationConfiguration);
   constructor(authConfig: TeamsUserCredentialAuthConfig | AuthenticationConfiguration) {
     internalLogger.info("Create teams user credential");

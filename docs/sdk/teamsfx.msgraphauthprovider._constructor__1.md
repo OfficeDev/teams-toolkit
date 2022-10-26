@@ -4,7 +4,7 @@
 
 ## MsGraphAuthProvider.(constructor)
 
-Constructs a new instance of the `MsGraphAuthProvider` class
+Constructor of MsGraphAuthProvider.
 
 <b>Signature:</b>
 
@@ -16,6 +16,10 @@ constructor(credential: TokenCredential, scopes?: string | string[]);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  credential | TokenCredential |  |
-|  scopes | string \| string\[\] |  |
+|  credential | TokenCredential | credential used to provide configuration and auth. |
+|  scopes | string \| string\[\] | The list of scopes for which the token will have access. |
+
+## Exceptions
+
+[InvalidParameter](./teamsfx.errorcode.md) when scopes is not a valid string or string array.
 

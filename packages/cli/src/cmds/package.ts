@@ -3,20 +3,36 @@
 
 "use strict";
 
-import { Argv, Options } from "yargs";
-import * as path from "path";
-import { FxError, err, ok, Result, Func, Stage, Inputs } from "@microsoft/teamsfx-api";
+import { Argv } from "yargs";
+import path from "path";
+import {
+  FxError,
+  err,
+  ok,
+  Result,
+  Func,
+  TemplateFolderName,
+  AppPackageFolderName,
+  BuildFolderName,
+} from "@microsoft/teamsfx-api";
+import { isV3Enabled, environmentManager } from "@microsoft/teamsfx-core";
 import activate from "../activate";
-import { YargsCommand } from "../yargsCommand";
-import { getSystemInputs, askTargetEnvironment } from "../utils";
+import {
+  RootFolderOptions,
+  EnvOptions,
+  BuildPackageOptions,
+  ManifestFilePathParamName,
+  OutputZipPathParamName,
+  OutputManifestParamName,
+} from "../constants";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import HelpParamGenerator from "../helpParamGenerator";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { getSystemInputs, askTargetEnvironment } from "../utils";
+import { YargsCommand } from "../yargsCommand";
 
 export default class Package extends YargsCommand {
   public readonly commandHead = `package`;
@@ -24,13 +40,11 @@ export default class Package extends YargsCommand {
   public readonly description = "Build your Teams app into a package for publishing.";
 
   public builder(yargs: Argv): Argv<any> {
-    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.build);
-    return yargs.version(false).options(this.params);
+    if (isV3Enabled()) yargs.options(BuildPackageOptions);
+    return yargs.version(false).options(RootFolderOptions).options(EnvOptions);
   }
 
-  public async runCommand(args: {
-    [argName: string]: string | string[];
-  }): Promise<Result<null, FxError>> {
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.BuildStart);
 
@@ -40,7 +54,8 @@ export default class Package extends YargsCommand {
       return err(result.error);
     }
     const core = result.value;
-    let inputs: Inputs;
+    const inputs = getSystemInputs(rootFolder, args.env);
+    inputs.ignoreEnvInfo = false;
     {
       const func: Func = {
         namespace: "fx-solution-azure",
@@ -48,25 +63,32 @@ export default class Package extends YargsCommand {
         params: {},
       };
 
-      if (!args.env) {
+      if (!inputs.env) {
         // include local env in interactive question
         const selectedEnv = await askTargetEnvironment(rootFolder);
         if (selectedEnv.isErr()) {
           CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
           return err(selectedEnv.error);
         }
-        args.env = selectedEnv.value;
+        inputs.env = selectedEnv.value;
       }
 
-      if (args.env === environmentManager.getLocalEnvName()) {
-        func.params.type = "localDebug";
-        inputs = getSystemInputs(rootFolder);
-        inputs.ignoreEnvInfo = false;
-        inputs.env = args.env;
+      if (isV3Enabled()) {
+        func.params = {
+          manifestTemplatePath:
+            args[ManifestFilePathParamName] ??
+            `${rootFolder}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
+          ouptutZipPath:
+            args[OutputZipPathParamName] ??
+            `${rootFolder}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`,
+          outputJsonPath:
+            args[OutputManifestParamName] ??
+            `${rootFolder}/${BuildFolderName}/${AppPackageFolderName}/manifest.${inputs.env}.json`,
+          env: inputs.env,
+        };
       } else {
-        func.params.type = "remote";
-        inputs = getSystemInputs(rootFolder, args.env as any);
-        inputs.ignoreEnvInfo = false;
+        func.params.type =
+          inputs.env === environmentManager.getLocalEnvName() ? "localDebug" : "remote";
       }
 
       const result = await core.executeUserTask!(func, inputs);

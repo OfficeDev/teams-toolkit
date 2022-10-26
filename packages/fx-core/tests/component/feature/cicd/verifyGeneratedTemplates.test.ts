@@ -30,6 +30,7 @@ import { convertToAlphanumericOnly } from "../../../../src/common/utils";
 import { EnvInfoV3 } from "@microsoft/teamsfx-api/build/v3";
 import sinon from "sinon";
 import { getTemplatesFolder } from "../../../../src/folder";
+import { isV3Enabled } from "../../../../src/common/tools";
 
 describe("Add ci cd workflow", () => {
   const cicdPlugin: CICDImpl = new CICDImpl();
@@ -79,7 +80,7 @@ describe("Add ci cd workflow", () => {
           getTemplatesFolder(),
           "plugins",
           "resource",
-          "cicd",
+          isV3Enabled() ? "cicd" : "cicd_v2",
           providerKind
         );
 
@@ -186,7 +187,7 @@ describe("Add ci cd workflow", () => {
             getTemplatesFolder(),
             "plugins",
             "resource",
-            "cicd",
+            isV3Enabled() ? "cicd" : "cicd_v2",
             providerKind
           );
 

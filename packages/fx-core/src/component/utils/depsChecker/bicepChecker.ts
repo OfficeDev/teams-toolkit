@@ -96,7 +96,7 @@ export async function ensureBicepForDriver(
     outputErrorMessage(ctx as any, platform ? { platform: platform } : undefined);
     throw err;
   }
-  return bicepChecker.getBicepCommand();
+  return bicepChecker.getBicepExecPath();
 }
 
 function outputErrorMessage(ctx: SolutionContext | v2.Context, inputs?: Inputs) {
@@ -341,7 +341,7 @@ class BicepChecker {
     return "bicep";
   }
 
-  private getBicepExecPath(): string {
+  public getBicepExecPath(): string {
     return path.join(this.getBicepInstallDir(), this.getBicepFileName());
   }
 

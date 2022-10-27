@@ -29,6 +29,7 @@ describe("Arm driver deploy", () => {
     azureAccountProvider: new MockAzureAccountProvider(),
     telemetryReporter: new MockTelemetryReporter(),
     ui: new MockUserInteraction(),
+    projectPath: "./",
   };
   const driver = new ArmDeployDriver();
 
@@ -75,6 +76,7 @@ describe("Arm driver deploy", () => {
     };
 
     let res = await driver.run(deployArgs, mockedDriverContext);
+    console.log(res._unsafeUnwrapErr);
     assert.isTrue(res.isOk());
 
     deployArgs = {

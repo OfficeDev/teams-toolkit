@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import path from "path";
+import * as path from "path";
 import { TemplateType } from "../constant";
 import { deploymentOutput, templateArgs } from "../interface";
 import { DriverContext } from "../../interface/commonArgs";
@@ -18,13 +18,17 @@ export function hasBicepTemplate(args: templateArgs[]): boolean {
 }
 
 export function getFileExtension(filename: string): string {
+  if (!filename) {
+    return "";
+  }
   const ext = path.extname(filename).toLowerCase();
   return ext ? ext.substring(1) : ext;
 }
 
-// TODO: should update when context get path property
-export function getPath(path: string, context: DriverContext): string {
-  return path;
+export function getAbsolutePath(relativeOrAbsolutePath: string, projectPath: string): string {
+  return path.isAbsolute(relativeOrAbsolutePath)
+    ? relativeOrAbsolutePath
+    : path.join(projectPath, relativeOrAbsolutePath);
 }
 
 export function convertOutputs(outputs: deploymentOutput[]): Map<string, string> {

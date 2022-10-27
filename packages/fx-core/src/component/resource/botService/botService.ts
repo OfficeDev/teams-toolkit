@@ -110,8 +110,8 @@ export class BotService extends AzureResource {
 
     const regRes = await botRegistration.createBotRegistration(
       context.tokenProvider.m365TokenProvider,
-      botName,
       aadDisplayName,
+      botName,
       botConfig
     );
 

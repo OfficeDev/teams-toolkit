@@ -20,6 +20,7 @@ import {
 } from "./generatorAction";
 import {
   getSampleInfoFromName,
+  getSampleRelativePath,
   renderTemplateFileData,
   renderTemplateFileName,
   sampleDefaultOnActionError,
@@ -82,7 +83,7 @@ export class Generator {
       destination: destinationPath,
       logProvider: ctx.logProvider,
       zipUrl: sample.link,
-      relativePath: sample.relativePath,
+      relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
     await actionContext?.progressBar?.next(ProgressMessages.generateSample);

@@ -17,6 +17,10 @@ import { Service } from "typedi";
 
 const actionName = "teamsApp/configure";
 
+const outputNames = {
+  TEAMS_APP_ID: "TEAMS_APP_ID",
+};
+
 @Service(actionName)
 export class ConfigureTeamsAppDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
@@ -55,12 +59,12 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       );
       context.logProvider.info(message);
       context.ui?.showMessage("info", message, false);
-      return ok(new Map([["teamsAppId", appDefinition.teamsAppId!]]));
+      return ok(new Map([[outputNames.TEAMS_APP_ID, appDefinition.teamsAppId!]]));
     } catch (e: any) {
       return err(
         AppStudioResultFactory.SystemError(
-          AppStudioError.TeamsAppCreateFailedError.name,
-          AppStudioError.TeamsAppCreateFailedError.message(e)
+          AppStudioError.TeamsAppUpdateFailedError.name,
+          AppStudioError.TeamsAppUpdateFailedError.message(e)
         )
       );
     }

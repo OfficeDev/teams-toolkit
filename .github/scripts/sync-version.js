@@ -46,7 +46,7 @@ function updateFileDeps(file, deps) {
                 continue;
             }
             fileChange = true;
-            if(semver.prerelease(value)){
+            if(semver.prerelease(value)[0] === "alpha" || semver.prerelease(value)[0] === "beta"){
                 dep_[key] = value;
             } else {
                 dep_[key] = `^${value}`;

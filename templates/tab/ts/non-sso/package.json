@@ -5,8 +5,8 @@
     "dependencies": {
         "@fluentui/react-northstar": "^0.62.0",
         "@microsoft/teams-js": "^2.2.0",
-        "@microsoft/teamsfx": "2.0.0-rc.0",
-        "@microsoft/teamsfx-react": "2.0.0-rc",
+        "@microsoft/teamsfx": "^2.0.0-rc.0",
+        "@microsoft/teamsfx-react": "^2.0.0-rc.0",
         "axios": "^0.21.1",
         "react": "^16.14.0",
         "react-dom": "^16.14.0",

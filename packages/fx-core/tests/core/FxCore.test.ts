@@ -44,7 +44,7 @@ import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
 import AdmZip from "adm-zip";
 import { NoAadManifestExistError } from "../../src/core/error";
 import "../../src/component/driver/aad/update";
-import * as envUtil from "../../src/component/utils/envUtil";
+import { envUtil } from "../../src/component/utils/envUtil";
 import { YamlParser } from "../../src/component/configManager/parser";
 import { ILifecycle, LifecycleName, Output } from "../../src/component/configManager/interface";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
@@ -398,7 +398,7 @@ describe("apply yaml template", async () => {
     const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
     before(() => {
-      sandbox.stub(envUtil, "readEnv").resolves(ok(new Map()));
+      sandbox.stub(envUtil, "readEnv").resolves(ok({}));
       sandbox.stub(YamlParser.prototype, "parse").resolves(err(mockedError));
     });
 
@@ -422,7 +422,7 @@ describe("apply yaml template", async () => {
     const sandbox = sinon.createSandbox();
 
     before(() => {
-      sandbox.stub(envUtil, "readEnv").resolves(ok(new Map()));
+      sandbox.stub(envUtil, "readEnv").resolves(ok({}));
       sandbox.stub(YamlParser.prototype, "parse").resolves(ok({}));
     });
 
@@ -454,7 +454,7 @@ describe("apply yaml template", async () => {
     }
 
     before(() => {
-      sandbox.stub(envUtil, "readEnv").resolves(ok(new Map()));
+      sandbox.stub(envUtil, "readEnv").resolves(ok({}));
       sandbox.stub(YamlParser.prototype, "parse").resolves(
         ok({
           provision: new MockedProvision(),

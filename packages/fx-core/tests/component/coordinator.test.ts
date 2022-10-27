@@ -21,7 +21,6 @@ describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
-  const context = createContextV3();
   let mockedEnvRestore: RestoreFn | undefined;
 
   afterEach(() => {
@@ -44,23 +43,14 @@ describe("component coordinator test", () => {
       .stub(settingsUtil, "readSettings")
       .resolves(ok({ projectId: "mockId", version: "1", isFromSample: false }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    // const inputs: Inputs = {
-    //   platform: Platform.VSCode,
-    //   folder: ".",
-    //   [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo.id,
-    //   [CoreQuestionNames.Samples]: "hello-world-tab",
-    // };
-    // const res = await coordinator.create(context, inputs);
-    // assert.isTrue(res.isOk());
-
-    const inputs2: Inputs = {
+    const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo.id,
       [CoreQuestionNames.Samples]: "hello-world-tab",
     };
     const fxCore = new FxCore(tools);
-    const res2 = await fxCore.createProject(inputs2);
+    const res2 = await fxCore.createProject(inputs);
     assert.isTrue(res2.isOk());
   });
 
@@ -71,18 +61,7 @@ describe("component coordinator test", () => {
       .stub(settingsUtil, "readSettings")
       .resolves(ok({ projectId: "mockId", version: "1", isFromSample: false }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    // const inputs: Inputs = {
-    //   platform: Platform.VSCode,
-    //   folder: ".",
-    //   [CoreQuestionNames.AppName]: randomAppName(),
-    //   [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes.id,
-    //   [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
-    //   [CoreQuestionNames.ProgrammingLanguage]: "javascript",
-    // };
-    // const res = await coordinator.create(context, inputs);
-    // assert.isTrue(res.isOk());
-
-    const inputs2: Inputs = {
+    const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: randomAppName(),
@@ -91,7 +70,7 @@ describe("component coordinator test", () => {
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
     };
     const fxCore = new FxCore(tools);
-    const res2 = await fxCore.createProject(inputs2);
+    const res2 = await fxCore.createProject(inputs);
     assert.isTrue(res2.isOk());
   });
 
@@ -220,6 +199,70 @@ describe("component coordinator test", () => {
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isOk());
+  });
+
+  it("deploy happy path", async () => {
+    const mockProjectModel: ProjectModel = {
+      deploy: {
+        name: "deploy",
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.deployArtifacts(inputs);
+    assert.isTrue(res.isOk());
+  });
+
+  it("publish happy path", async () => {
+    const mockProjectModel: ProjectModel = {
+      publish: {
+        name: "publish",
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.publishApplication(inputs);
     assert.isTrue(res.isOk());
   });
 });

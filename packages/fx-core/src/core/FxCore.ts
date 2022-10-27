@@ -310,6 +310,19 @@ export class FxCore implements v3.ICore {
     );
   }
 
+  async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    return isV3Enabled() ? this.deployArtifactsNew(inputs) : this.deployArtifactsOld(inputs);
+  }
+
+  @hooks([ErrorHandlerMW, EnvLoaderMW])
+  async deployArtifactsNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.deploy);
+    inputs.stage = Stage.deploy;
+    const context = createDriverContext(inputs);
+    const res = await coordinator.deploy(context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    return ok(Void);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -323,7 +336,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
-  async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async deployArtifactsOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
     const context = createContextV3();
@@ -385,7 +398,9 @@ export class FxCore implements v3.ICore {
     if (res.isErr()) return err(res.error);
     return ok(Void);
   }
-
+  async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return isV3Enabled() ? this.publishApplicationNew(inputs) : this.publishApplicationOld(inputs);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -399,7 +414,10 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
-  async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async publishApplicationOld(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
     const context = createContextV3();
@@ -412,7 +430,15 @@ export class FxCore implements v3.ICore {
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
-
+  @hooks([ErrorHandlerMW, EnvLoaderMW])
+  async publishApplicationNew(inputs: Inputs): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.publish);
+    inputs.stage = Stage.publish;
+    const context = createDriverContext(inputs);
+    const res = await coordinator.publish(context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    return ok(Void);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,

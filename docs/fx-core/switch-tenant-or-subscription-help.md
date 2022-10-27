@@ -199,7 +199,7 @@ You can manually update Teams app id in `state.{env}.json` file, e.g. remove the
 An error with name "AlreadyCreatedBotNotExist" may pop up when local debugging a bot project while the bot id is provided in `state.local.json` file. This usually happens when you have local debugged a project with one Microsoft 365 account, and then switched to another account in the same tenant and run local debugging. To resolve it, you can either add the new account as the owner of the existing bot, or create a new bot.
 
 #### Add Bot Owner
-You need to know who owns the existing bot, and visit https://dev.botframework.com/bots with the account how owns the bot now. And then you could add owners in the "Settings" page.     
+You need to know who owns the existing bot, and visit https://dev.botframework.com/bots with the account owning the bot now. And then you could add owners in the "Settings" page.     
 ![image](../images/fx-core/preview/add-bot-owner.png)
 
 #### Create a New Bot

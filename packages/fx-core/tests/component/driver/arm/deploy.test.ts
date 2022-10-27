@@ -7,6 +7,7 @@ import { createSandbox } from "sinon";
 import { setTools } from "../../../../src/core/globalVars";
 import {
   MockAzureAccountProvider,
+  MockLogProvider,
   MockTelemetryReporter,
   MockTools,
   MockUserInteraction,
@@ -29,6 +30,7 @@ describe("Arm driver deploy", () => {
     azureAccountProvider: new MockAzureAccountProvider(),
     telemetryReporter: new MockTelemetryReporter(),
     ui: new MockUserInteraction(),
+    logProvider: new MockLogProvider(),
     projectPath: "./",
   };
   const driver = new ArmDeployDriver();

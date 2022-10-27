@@ -12,9 +12,6 @@ import {
   templateBetaVersion,
   templateFileExt,
 } from "./constant";
-import { FetchZipFromUrlError, TemplateZipFallbackError, UnzipError } from "./error";
-import { GeneratorAction, GeneratorActionName } from "./generatorAction";
-import { GeneratorContext } from "./generatorAction";
 import { SampleInfo, sampleProvider } from "../../common/samples";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
@@ -220,37 +217,4 @@ export function zipFolder(folderPath: string): AdmZip {
   const zip = new AdmZip();
   zip.addLocalFolder(folderPath);
   return zip;
-}
-
-export async function templateDefaultOnActionError(
-  action: GeneratorAction,
-  context: GeneratorContext,
-  error: Error
-) {
-  switch (action.name) {
-    case GeneratorActionName.FetchTemplateUrlWithTag:
-    case GeneratorActionName.FetchZipFromUrl:
-      break;
-    case GeneratorActionName.FetchTemplateZipFromLocal:
-      throw new TemplateZipFallbackError();
-    case GeneratorActionName.Unzip:
-      throw new UnzipError();
-    default:
-      throw new Error(error.message);
-  }
-}
-
-export async function sampleDefaultOnActionError(
-  action: GeneratorAction,
-  context: GeneratorContext,
-  error: Error
-) {
-  switch (action.name) {
-    case GeneratorActionName.FetchZipFromUrl:
-      throw new FetchZipFromUrlError(context.zipUrl!, error);
-    case GeneratorActionName.Unzip:
-      throw new UnzipError();
-    default:
-      throw new Error(error.message);
-  }
 }

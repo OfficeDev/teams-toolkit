@@ -6,6 +6,7 @@ import * as util from "util";
 
 import { UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { HelpLinks } from "../../common/constants";
 
 export const errorSource = "debugHandler";
 
@@ -68,3 +69,20 @@ export function InvalidTabBaseUrlError(): UserError {
     getLocalizedString("error.debugHandler.InvalidTabBaseUrlError")
   );
 }
+
+export const AlreadyCreatedBotNotExist = (botId: string) => {
+  return new UserError({
+    source: "RegisterBot",
+    name: "AlreadyCreatedBotNotExist",
+    message: getLocalizedString(
+      "plugins.bot.FailedToGetAlreadyCreatedBot",
+      botId,
+      HelpLinks.SwitchAccountOrSub
+    ),
+    displayMessage: getLocalizedString(
+      "plugins.bot.FailedToGetAlreadyCreatedBot",
+      botId,
+      HelpLinks.SwitchAccountOrSub
+    ),
+  });
+};

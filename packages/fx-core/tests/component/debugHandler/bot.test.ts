@@ -399,10 +399,7 @@ describe("BotDebugHandler", () => {
       sinon.stub(AppStudioClient, "getBotRegistration").callsFake(async (_token, id) => {
         return undefined;
       });
-      let registerBotCalled = false;
-      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {
-        registerBotCalled = true;
-      });
+      sinon.stub(AppStudioClient, "createBotRegistration").throws();
       sinon.stub(AppStudioClient, "updateMessageEndpoint").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
@@ -433,7 +430,6 @@ describe("BotDebugHandler", () => {
       const result = await runDebugActions(handler.getActions());
       chai.assert(result.isErr());
       chai.assert(!registerAADCalled);
-      chai.assert(!registerBotCalled);
       if (result.isErr()) {
         chai.assert(result.error.name, "AlreadyCreatedBotNotExist");
       }

@@ -12,10 +12,11 @@ import {
   err,
   Bicep,
   ActionContext,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { compileHandlebarsTemplateString } from "../../../common/tools";
+import { AppStudioScopes, compileHandlebarsTemplateString } from "../../../common/tools";
 import { BotServiceOutputs, ComponentNames } from "../../constants";
 import { getComponent } from "../../workflow";
 import { AzureResource } from "../azureResource";
@@ -31,6 +32,8 @@ import { MaxLengths } from "./constants";
 import { CommonStrings, PluginLocalDebug } from "./strings";
 import { BotRegistrationFactory, BotRegistrationKind } from "./botRegistration/factory";
 import { normalizeName } from "../../utils";
+import { AppStudioClient } from "./appStudio/appStudioClient";
+import { AlreadyCreatedBotNotExist } from "../../debugHandler/error";
 
 const errorSource = "BotService";
 function _checkThrowSomethingMissing<T>(key: string, value: T | undefined): T {
@@ -80,6 +83,7 @@ export class BotService extends AzureResource {
     // init bot state
     context.envInfo.state[ComponentNames.TeamsBot] ||= {};
     const teamsBotState = context.envInfo.state[ComponentNames.TeamsBot];
+    const hasBotIdInEnvBefore = !!teamsBotState && !!teamsBotState.botId;
 
     const botRegistration: BotRegistration = BotRegistrationFactory.create(
       context.envInfo.envName === "local" ? BotRegistrationKind.Local : BotRegistrationKind.Remote
@@ -108,19 +112,37 @@ export class BotService extends AzureResource {
             botPassword: teamsBotState.botPassword,
           };
 
-    const regRes = await botRegistration.createBotRegistration(
-      context.tokenProvider.m365TokenProvider,
-      aadDisplayName,
-      botName,
-      botConfig
-    );
+    try {
+      const regRes = await botRegistration.createBotRegistration(
+        context.tokenProvider.m365TokenProvider,
+        aadDisplayName,
+        botName,
+        botConfig
+      );
+      if (regRes.isErr()) return err(regRes.error);
 
-    if (regRes.isErr()) return err(regRes.error);
-
-    // Update states for bot aad configs.
-    teamsBotState.botId = regRes.value.botId;
-    teamsBotState.botPassword = regRes.value.botPassword;
-    return ok(undefined);
+      // Update states for bot aad configs.
+      teamsBotState.botId = regRes.value.botId;
+      teamsBotState.botPassword = regRes.value.botPassword;
+      return ok(undefined);
+    } catch (e) {
+      if (context.envInfo.envName === "local" && hasBotIdInEnvBefore) {
+        const tokenResult = await context.tokenProvider.m365TokenProvider.getAccessToken({
+          scopes: AppStudioScopes,
+        });
+        if (tokenResult.isErr()) {
+          throw tokenResult.error;
+        }
+        const result = await AppStudioClient.getBotRegistration(tokenResult.value, botConfig.botId);
+        if (!result) {
+          throw AlreadyCreatedBotNotExist(botConfig.botId);
+        } else {
+          throw e;
+        }
+      } else {
+        throw e;
+      }
+    }
   }
   @hooks([
     ActionExecutionMW({

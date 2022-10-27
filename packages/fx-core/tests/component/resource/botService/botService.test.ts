@@ -2,11 +2,13 @@
 // Licensed under the MIT license.
 
 import {
+  err,
   InputsWithProjectPath,
   M365TokenProvider,
   ok,
   Platform,
   ResourceContextV3,
+  SystemError,
   TokenRequest,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -63,7 +65,7 @@ describe("Bot service", () => {
   });
   it("wrap app studio error", async () => {
     context.envInfo.state[ComponentNames.TeamsBot] = {
-      botId: "botID",
+      botId: "",
       botPassword: "botPassword",
     };
     sandbox.stub(AppStudioClient, "getBotRegistration").rejects({
@@ -88,13 +90,17 @@ describe("Bot service", () => {
     const telemetryStub = sandbox
       .stub(context.telemetryReporter, "sendTelemetryErrorEvent")
       .resolves();
+    sandbox.stub(GraphClient, "registerAadApp").resolves({
+      clientId: "clientId",
+      clientSecret: "clientSecret",
+    });
 
     context.projectSetting.components.push({
       name: ComponentNames.BotService,
       provision: true,
     });
     context.envInfo.state[ComponentNames.TeamsBot] = {
-      botId: "botID",
+      botId: "",
       botPassword: "botPassword",
     };
     sandbox.stub(AppStudioClient, "getBotRegistration").rejects({
@@ -120,5 +126,80 @@ describe("Bot service", () => {
     assert.equal(props?.[TelemetryKeys.StatusCode], "500");
     assert.equal(props?.[TelemetryKeys.Url], "<create-bot-registration>");
     assert.equal(props?.[TelemetryKeys.Method], "post");
+  });
+
+  it("local bot registration error with existing bot id and cannot get bot", async () => {
+    context.envInfo.state[ComponentNames.TeamsBot] = {
+      botId: "botId",
+      botPassword: "botPassword",
+    };
+    sandbox.stub(AppStudioClient, "getBotRegistration").returns(Promise.resolve(undefined));
+    sandbox.stub(AppStudioClient, "createBotRegistration").throws();
+    sandbox.stub(GraphClient, "registerAadApp").resolves({
+      clientId: "clientId",
+      clientSecret: "clientSecret",
+    });
+    const res = await component.provision(context as ResourceContextV3, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      const error = res.error;
+      assert.equal(error.name, "AlreadyCreatedBotNotExist");
+    }
+  });
+
+  it("local bot registration error with existing bot id but can get bot", async () => {
+    context.envInfo.state[ComponentNames.TeamsBot] = {
+      botId: "botId",
+      botPassword: "botPassword",
+    };
+    sandbox.stub(AppStudioClient, "getBotRegistration").returns(
+      Promise.resolve({
+        botId: "botId",
+        name: "",
+        iconUrl: "",
+        messagingEndpoint: "",
+        description: "",
+        callingEndpoint: "",
+      })
+    );
+    sandbox.stub(AppStudioClient, "createBotRegistration").throws();
+    sandbox.stub(GraphClient, "registerAadApp").resolves({
+      clientId: "clientId",
+      clientSecret: "clientSecret",
+    });
+    const res = await component.provision(context as ResourceContextV3, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      const error = res.error;
+      assert.equal(error.name, "UnhandledError");
+    }
+  });
+
+  it("local bot registration error with existing bot id but cannot get access token", async () => {
+    context = utils.createContextV3() as ResourceContextV3;
+    context.envInfo = newEnvInfoV3("local");
+    sandbox
+      .stub(context.tokenProvider.m365TokenProvider, "getAccessToken")
+      .onFirstCall()
+      .resolves(ok("token"))
+      .onSecondCall()
+      .resolves(err(new SystemError("error", "errorName", "", "")));
+
+    context.envInfo.state[ComponentNames.TeamsBot] = {
+      botId: "botId",
+      botPassword: "botPassword",
+    };
+    sandbox.stub(AppStudioClient, "getBotRegistration").returns(Promise.resolve(undefined));
+    sandbox.stub(AppStudioClient, "createBotRegistration").throws();
+    sandbox.stub(GraphClient, "registerAadApp").resolves({
+      clientId: "clientId",
+      clientSecret: "clientSecret",
+    });
+    const res = await component.provision(context as ResourceContextV3, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      const error = res.error;
+      assert.equal(error.name, "errorName");
+    }
   });
 });

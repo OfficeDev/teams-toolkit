@@ -27,6 +27,7 @@ describe("teamsApp/create", async () => {
     m365TokenProvider: new MockedM365Provider(),
     logProvider: new MockedLogProvider(),
     ui: new MockedUserInteraction(),
+    projectPath: "./",
   };
 
   const appDef: AppDefinition = {

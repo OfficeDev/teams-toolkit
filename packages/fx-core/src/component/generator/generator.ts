@@ -12,19 +12,19 @@ import {
 import { errorSource } from "../code/tab/constants";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { FetchZipFromUrlError, TemplateZipFallbackError, UnzipError } from "./error";
 import {
   SampleActionSeq,
   GeneratorAction,
   TemplateActionSeq,
   GeneratorContext,
+  GeneratorActionName,
 } from "./generatorAction";
 import {
   getSampleInfoFromName,
   getSampleRelativePath,
   renderTemplateFileData,
   renderTemplateFileName,
-  sampleDefaultOnActionError,
-  templateDefaultOnActionError,
 } from "./utils";
 
 export class Generator {
@@ -116,5 +116,38 @@ export class Generator {
       [TelemetryProperty.GenerateFallback]: context.fallbackZipPath ? "true" : "false", // Track fallback cases.
     });
     context.logProvider.info(`Finish generating ${context.name}`);
+  }
+}
+
+async function templateDefaultOnActionError(
+  action: GeneratorAction,
+  context: GeneratorContext,
+  error: Error
+): Promise<void> {
+  switch (action.name) {
+    case GeneratorActionName.FetchTemplateUrlWithTag:
+    case GeneratorActionName.FetchZipFromUrl:
+      break;
+    case GeneratorActionName.FetchTemplateZipFromLocal:
+      throw new TemplateZipFallbackError();
+    case GeneratorActionName.Unzip:
+      throw new UnzipError();
+    default:
+      throw new Error(error.message);
+  }
+}
+
+async function sampleDefaultOnActionError(
+  action: GeneratorAction,
+  context: GeneratorContext,
+  error: Error
+): Promise<void> {
+  switch (action.name) {
+    case GeneratorActionName.FetchZipFromUrl:
+      throw new FetchZipFromUrlError(context.zipUrl!, error);
+    case GeneratorActionName.Unzip:
+      throw new UnzipError();
+    default:
+      throw new Error(error.message);
   }
 }

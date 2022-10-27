@@ -390,7 +390,6 @@ export async function getQuestionsForAddFeatureV3(
   options.push(MessageExtensionNewUIItem);
   options.push(SingleSignOnOptionItem);
   options.push(ApiConnectionOptionItem);
-  options.push(TabSPFxNewUIItem);
 
   if (inputs.platform === Platform.CLI_HELP) {
     options.push(CicdOptionItem);

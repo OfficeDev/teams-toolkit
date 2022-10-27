@@ -547,6 +547,7 @@ export class ManifestUtils {
       manifest.configurableTabs = [];
       manifest.staticTabs = [];
       manifest.webApplicationInfo = undefined;
+      manifest.validDomains = [];
     }
 
     // Adjust template for samples with unnecessary placeholders

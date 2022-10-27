@@ -57,7 +57,8 @@ export class CreateTeamsAppDriver implements StepDriver {
         outputZipPath: `${context.projectPath}/build/appPackage/appPackage.${state.ENV_NAME}.zip`,
         outputJsonPath: `${context.projectPath}/build/appPackage/manifest.${state.ENV_NAME}.json`,
       },
-      context
+      context,
+      true
     );
     if (result.isErr()) {
       return result;

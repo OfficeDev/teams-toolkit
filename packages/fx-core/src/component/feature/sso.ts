@@ -94,7 +94,7 @@ export class SSO {
       if (res.isErr()) return err(res.error);
       const bicepRes = await bicepUtils.persistBiceps(
         inputs.projectPath,
-        convertToAlphanumericOnly(context.projectSetting.appName),
+        convertToAlphanumericOnly(context.projectSetting.appName!),
         res.value
       );
       if (bicepRes.isErr()) {

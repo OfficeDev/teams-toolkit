@@ -820,7 +820,7 @@ export class FxCore implements v3.ICore {
     if (!ProjectSettingsHelper.isSpfx(ctx.projectSettings)) {
       await copyParameterJson(
         inputs.projectPath!,
-        ctx.projectSettings!.appName,
+        ctx.projectSettings!.appName!,
         inputs.targetEnvName!,
         inputs.sourceEnvName!
       );

@@ -574,7 +574,7 @@ export class ProvisionUtils {
     const resourceGroupNameFromEnvConfig = envInfo.config.azure?.resourceGroupName;
     const resourceGroupNameFromState = envInfo.state.solution.resourceGroupName;
     const resourceGroupLocationFromState = envInfo.state.solution.location;
-    const appName = convertToAlphanumericOnly(ctx.projectSetting.appName);
+    const appName = convertToAlphanumericOnly(ctx.projectSetting.appName!);
     const defaultResourceGroupName = `${snakeCase(appName)}${"-" + envInfo.envName}-rg`;
     let resourceGroupInfo: ResourceGroupInfo;
     const telemetryProperties: { [key: string]: string } = {};
@@ -1064,7 +1064,7 @@ export async function handleConfigFilesWhenSwitchAccount(
 
   const updateAzureParametersRes = await updateAzureParameters(
     inputs.projectPath,
-    context.projectSetting.appName,
+    context.projectSetting.appName!,
     envInfo.envName,
     hasSwitchedM365Tenant,
     hasSwitchedSubscription,

@@ -89,7 +89,7 @@ export class CICDProvider {
       hosting_type_contains_spfx: hasSPFxTab(projectSettingsV3),
       hosting_type_contains_azure: hasAzureResourceV3(projectSettingsV3),
       cloud_resources_contains_sql: hasSQL(projectSettingsV3),
-      api_prefix: convertToAlphanumericOnly(context.projectSetting.appName),
+      api_prefix: convertToAlphanumericOnly(context.projectSetting.appName!),
       cloud_resources_contains_apim: hasAPIM(projectSettingsV3),
     };
 

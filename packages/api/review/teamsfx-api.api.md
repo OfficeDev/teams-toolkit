@@ -1353,7 +1353,7 @@ export interface ProjectConfigV3 {
 // @public
 export interface ProjectSettings {
     // (undocumented)
-    appName: string;
+    appName?: string;
     // (undocumented)
     defaultFunctionName?: string;
     // (undocumented)

@@ -44,7 +44,7 @@ export class Generator {
   ): Promise<Result<undefined, FxError>> {
     const appName = ctx.projectSetting?.appName;
     const projectId = ctx.projectSetting?.projectId;
-    const nameReplaceMap = { ...{ appName: appName }, ...ctx.templateVariables };
+    const nameReplaceMap = { ...{ appName: appName! }, ...ctx.templateVariables };
     const dataReplaceMap = { ...{ projectId: projectId }, ...nameReplaceMap };
     const generatorContext: GeneratorContext = {
       name: `${templateName}-${language}`,

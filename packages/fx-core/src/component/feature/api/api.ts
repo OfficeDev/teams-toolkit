@@ -154,7 +154,7 @@ export class TeamsApi {
 
     const bicepRes = await bicepUtils.persistBiceps(
       inputs.projectPath,
-      convertToAlphanumericOnly(projectSettings.appName),
+      convertToAlphanumericOnly(projectSettings.appName!),
       biceps
     );
     if (bicepRes.isErr()) return bicepRes;

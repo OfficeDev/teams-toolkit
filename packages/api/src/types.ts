@@ -182,7 +182,7 @@ export interface EnvMeta {
  * project static settings
  */
 export interface ProjectSettings {
-  appName: string;
+  appName?: string;
   version?: string;
   projectId: string;
   programmingLanguage?: string;

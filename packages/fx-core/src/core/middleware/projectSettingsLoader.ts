@@ -15,6 +15,7 @@ import {
   ok,
   ProjectSettings,
   ProjectSettingsFileName,
+  ProjectSettingsV3,
   Result,
   SolutionContext,
   Stage,
@@ -97,18 +98,34 @@ export async function loadProjectSettingsByProjectPath(
   isMultiEnvEnabled = false
 ): Promise<Result<ProjectSettings, FxError>> {
   try {
-    const settingsFile = isMultiEnvEnabled
-      ? getProjectSettingsPath(projectPath)
-      : path.resolve(projectPath, `.${ConfigFolderName}`, "settings.json");
-    const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
-    if (!projectSettings.projectId) {
-      projectSettings.projectId = uuid.v4();
-      sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
-        [TelemetryProperty.ProjectId]: projectSettings.projectId,
-      });
+    if (isV3Enabled()) {
+      const settingsFile = path.resolve(projectPath, `.${ConfigFolderName}`, "settings.json");
+      const settings = await fs.readJson(settingsFile);
+      const projectSettings: ProjectSettings = {
+        projectId: settings.trackingId,
+        version: settings.version,
+      };
+      if (!projectSettings.projectId) {
+        projectSettings.projectId = uuid.v4();
+        sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
+          [TelemetryProperty.ProjectId]: projectSettings.projectId,
+        });
+      }
+      return ok(projectSettings);
+    } else {
+      const settingsFile = isMultiEnvEnabled
+        ? getProjectSettingsPath(projectPath)
+        : path.resolve(projectPath, `.${ConfigFolderName}`, "settings.json");
+      const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
+      if (!projectSettings.projectId) {
+        projectSettings.projectId = uuid.v4();
+        sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
+          [TelemetryProperty.ProjectId]: projectSettings.projectId,
+        });
+      }
+      globalVars.isVS = isVSProject(projectSettings);
+      return ok(convertProjectSettingsV2ToV3(projectSettings, projectPath));
     }
-    globalVars.isVS = isVSProject(projectSettings);
-    return ok(convertProjectSettingsV2ToV3(projectSettings, projectPath));
   } catch (e) {
     return err(ReadFileError(e));
   }
@@ -153,10 +170,14 @@ export function shouldIgnored(ctx: CoreHookContext): boolean {
 }
 
 export function getProjectSettingsPath(projectPath: string) {
-  return path.resolve(
-    projectPath,
-    `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    ProjectSettingsFileName
-  );
+  if (isV3Enabled()) {
+    return path.resolve(projectPath, `.${ConfigFolderName}`, "settings.json");
+  } else {
+    return path.resolve(
+      projectPath,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      ProjectSettingsFileName
+    );
+  }
 }

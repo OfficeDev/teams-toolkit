@@ -623,7 +623,7 @@ async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<P
 
   const appName = projectSettings.appName;
   //config.dev.json
-  const configDev = getConfigDevJson(appName);
+  const configDev = getConfigDevJson(appName!);
 
   // migrate skipAddingSqlUser
   const envDefault = await fs.readJson(envDefaultFilePath);
@@ -1172,7 +1172,7 @@ export async function generateBicepsV3(
   {
     const bicepRes = await bicepUtils.persistBiceps(
       inputs.projectPath,
-      convertToAlphanumericOnly(context.projectSetting.appName),
+      convertToAlphanumericOnly(context.projectSetting.appName!),
       biceps
     );
     if (bicepRes.isErr()) return bicepRes;

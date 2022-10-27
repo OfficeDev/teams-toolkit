@@ -12,6 +12,7 @@ import {
   StaticPlatforms,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
+import { isV3Enabled } from "../../common/tools";
 import { convertProjectSettingsV3ToV2 } from "../../component/migrate";
 import { WriteFileError } from "../error";
 import { TOOLS } from "../globalVars";
@@ -37,12 +38,14 @@ export const ProjectSettingsWriterMW: Middleware = async (
       return;
     let projectSettings = ctx.projectSettings;
     if (projectSettings === undefined) return;
-    projectSettings = convertProjectSettingsV3ToV2(projectSettings as ProjectSettingsV3);
     try {
-      const solutionSettings = projectSettings.solutionSettings;
-      if (solutionSettings) {
-        if (!solutionSettings.activeResourcePlugins) solutionSettings.activeResourcePlugins = [];
-        if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
+      if (!isV3Enabled()) {
+        projectSettings = convertProjectSettingsV3ToV2(projectSettings as ProjectSettingsV3);
+        const solutionSettings = projectSettings.solutionSettings;
+        if (solutionSettings) {
+          if (!solutionSettings.activeResourcePlugins) solutionSettings.activeResourcePlugins = [];
+          if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
+        }
       }
       const settingFile = getProjectSettingsPath(inputs.projectPath);
       await fs.writeFile(settingFile, JSON.stringify(projectSettings, null, 4));

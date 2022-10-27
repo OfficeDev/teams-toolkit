@@ -348,7 +348,7 @@ export class TeamsfxCore {
       const endpoint = inputs[CoreQuestionNames.ExistingTabEndpoint] as string;
       const createEnvResult = await createEnvWithName(
         environmentManager.getDefaultEnvName(),
-        projectSettings.appName,
+        projectSettings.appName!,
         inputs as InputsWithProjectPath,
         isInitExistingApp ? endpoint : undefined
       );
@@ -358,7 +358,7 @@ export class TeamsfxCore {
 
       const createLocalEnvResult = await createEnvWithName(
         environmentManager.getLocalEnvName(),
-        projectSettings.appName,
+        projectSettings.appName!,
         inputs as InputsWithProjectPath,
         isInitExistingApp ? endpoint : undefined
       );

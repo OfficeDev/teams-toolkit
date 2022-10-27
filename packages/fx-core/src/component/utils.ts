@@ -520,7 +520,7 @@ export async function generateConfigBiceps(
       if (res.isErr()) return err(res.error);
       const persistRes = await bicepUtils.persistBiceps(
         inputs.projectPath,
-        convertToAlphanumericOnly(context.projectSetting.appName),
+        convertToAlphanumericOnly(context.projectSetting.appName!),
         res.value
       );
       if (persistRes.isErr()) return persistRes;

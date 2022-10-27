@@ -60,7 +60,8 @@
             "presentation": {
                 "group": "all",
                 "hidden": true
-            }
+            },
+            "internalConsoleOptions": "neverOpen"
         }
     ],
     "compounds": [
@@ -70,7 +71,7 @@
                 "Launch Bot (Edge)",
                 "Attach to Bot"
             ],
-            "preLaunchTask": "Pre Debug Check & Start All",
+            "preLaunchTask": "Start Teams App Locally",
             "presentation": {
                 "group": "all",
                 "order": 1
@@ -83,7 +84,7 @@
                 "Launch Bot (Chrome)",
                 "Attach to Bot"
             ],
-            "preLaunchTask": "Pre Debug Check & Start All",
+            "preLaunchTask": "Start Teams App Locally",
             "presentation": {
                 "group": "all",
                 "order": 2

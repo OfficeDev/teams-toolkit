@@ -332,20 +332,27 @@ export class Coordinator {
 
   @hooks([
     ActionExecutionMW({
-      question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return await getQuestionsForDeployV3(context, inputs, context.envInfo!);
-      },
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.Deploy,
       telemetryComponentName: "coordinator",
     }),
   ])
   async deploy(
-    context: ResourceContextV3,
+    ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    //TODO call deploy actions
+    const parser = new YamlParser();
+    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const maybeProjectModel = await parser.parse(templatePath);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    if (projectModel.deploy) {
+      const runRes = await projectModel.deploy.run(ctx);
+      if (runRes.isErr()) return err(runRes.error);
+    }
     return ok(undefined);
   }
 
@@ -357,11 +364,21 @@ export class Coordinator {
     }),
   ])
   async publish(
-    context: ResourceContextV3,
+    ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    //TODO call publish actions
+    const parser = new YamlParser();
+    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const maybeProjectModel = await parser.parse(templatePath);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    if (projectModel.publish) {
+      const runRes = await projectModel.publish.run(ctx);
+      if (runRes.isErr()) return err(runRes.error);
+    }
     return ok(undefined);
   }
 }

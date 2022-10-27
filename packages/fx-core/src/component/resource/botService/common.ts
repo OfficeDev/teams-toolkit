@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Uuid } from "node-ts-uuid";
-import { MaxLengths } from "./constants";
 
 export function genUUID(): string {
   return Uuid.generate();

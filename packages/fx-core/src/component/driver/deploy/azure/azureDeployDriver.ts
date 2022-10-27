@@ -119,6 +119,13 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     try {
       res = await AzureDeployDriver.AXIOS_INSTANCE.post(zipDeployEndpoint, zipBuffer, config);
     } catch (e) {
+      if (axios.isAxiosError(e)) {
+        await logger?.error(
+          `Upload zip file failed with response status code: ${
+            e.response?.status ?? "NA"
+          }, message: ${JSON.stringify(e.response?.data)}`
+        );
+      }
       throw DeployExternalApiCallError.zipDeployError(e);
     }
 
@@ -150,6 +157,13 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
       try {
         res = await AzureDeployDriver.AXIOS_INSTANCE.get(location, config);
       } catch (e) {
+        if (axios.isAxiosError(e)) {
+          await logger?.error(
+            `Check deploy status failed with response status code: ${
+              e.response?.status ?? "NA"
+            }, message: ${JSON.stringify(e.response?.data)}`
+          );
+        }
         throw DeployExternalApiCallError.deployStatusError(e);
       }
 

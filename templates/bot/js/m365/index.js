@@ -7,7 +7,7 @@ const restify = require("restify");
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 const { BotFrameworkAdapter } = require("botbuilder");
 const { TeamsBot } = require("./teamsBot");
-const { default: config } = require("./config");
+const config = require("./config");
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about adapters.

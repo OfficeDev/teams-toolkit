@@ -53,6 +53,30 @@ export const CollaboratorEmailNode = new QTreeNode({
   title: "Input email address of collaborator",
 });
 
+export const ManifestFilePathParamName = "manifest-file-path";
+export const OutputZipPathParamName = "output-zip-path";
+export const OutputManifestParamName = "output-manifest-path";
+export const BuildPackageOptions: { [_: string]: Options } = {
+  [ManifestFilePathParamName]: {
+    type: "string",
+    global: false,
+    description:
+      "Select the Teams app manifest template path, default to '${root}/templates/appPackage/manifest.template.json'",
+  },
+  [OutputZipPathParamName]: {
+    type: "string",
+    global: false,
+    description:
+      "Select the output path of the zipped app package, default to '${root}/build/appPackage/appPackage.${env}.json'",
+  },
+  [OutputManifestParamName]: {
+    type: "string",
+    global: false,
+    description:
+      "Select the output path of the generated manifest path, default to '${root}/build/appPackage/manifest.${env}.json'",
+  },
+};
+
 export const templates = sampleProvider.SampleCollection.samples.map((sample) => {
   return {
     tags: sample.tags,

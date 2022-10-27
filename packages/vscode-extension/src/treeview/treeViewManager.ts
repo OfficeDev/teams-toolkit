@@ -66,22 +66,20 @@ class TreeViewManager {
       );
       developmentTreeviewProvider.refresh();
     }
-    if (TreatmentVariableValue.previewTreeViewCommand) {
-      const developmentTreeviewProvider = this.getTreeView(
-        "teamsfx-development"
-      ) as CommandsTreeViewProvider;
-      const developmentCommands = developmentTreeviewProvider.getCommands();
-      developmentCommands.push(
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.previewTitle"),
-          localize("teamstoolkit.commandsTreeViewProvider.previewDescription"),
-          "fx-extension.debug",
-          undefined,
-          { name: "debug-alt", custom: false }
-        )
-      );
-      developmentTreeviewProvider.refresh();
-    }
+    const developmentTreeviewProvider = this.getTreeView(
+      "teamsfx-development"
+    ) as CommandsTreeViewProvider;
+    const developmentCommands = developmentTreeviewProvider.getCommands();
+    developmentCommands.push(
+      new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.previewTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.previewDescription"),
+        "fx-extension.debug",
+        undefined,
+        { name: "debug-alt", custom: false }
+      )
+    );
+    developmentTreeviewProvider.refresh();
   }
 
   public getTreeView(viewName: string) {

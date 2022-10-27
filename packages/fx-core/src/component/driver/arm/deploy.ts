@@ -8,7 +8,7 @@ import { Constants } from "./constant";
 import { deployArgs } from "./interface";
 import { ArmDeployImpl } from "./deployImpl";
 import { FxError, Result } from "@microsoft/teamsfx-api";
-import { wrapRun } from "../../utils/common";
+import { WrapDriverContext, wrapRun } from "../util/wrapUtil";
 
 @Service(Constants.actionName) // DO NOT MODIFY the service name
 export class ArmDeployDriver implements StepDriver {
@@ -16,7 +16,8 @@ export class ArmDeployDriver implements StepDriver {
     args: deployArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    const impl = new ArmDeployImpl(args, context);
-    return wrapRun(() => impl.run());
+    const wrapContext = new WrapDriverContext(context, Constants.actionName, Constants.actionName);
+    const impl = new ArmDeployImpl(args, wrapContext);
+    return wrapRun(wrapContext, () => impl.run());
   }
 }

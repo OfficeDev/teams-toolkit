@@ -4,7 +4,7 @@
 
 ## TeamsBotSsoPrompt.(constructor)
 
-Constructs a new instance of the `TeamsBotSsoPrompt` class
+Constructor of TeamsBotSsoPrompt.
 
 <b>Signature:</b>
 
@@ -16,8 +16,14 @@ constructor(authConfig: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: s
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  authConfig | [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) |  |
-|  initiateLoginEndpoint | string |  |
-|  dialogId | string |  |
-|  settings | [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) |  |
+|  authConfig | [OnBehalfOfCredentialAuthConfig](./teamsfx.onbehalfofcredentialauthconfig.md) | Used to provide configuration and auth |
+|  initiateLoginEndpoint | string | Login URL for Teams to redirect to |
+|  dialogId | string | Unique ID of the dialog within its parent <code>DialogSet</code> or <code>ComponentDialog</code>. |
+|  settings | [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | Settings used to configure the prompt. |
+
+## Exceptions
+
+[InvalidParameter](./teamsfx.errorcode.md) when scopes is not a valid string or string array.
+
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
 

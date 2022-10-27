@@ -10,7 +10,7 @@ import {
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 
-export type DriverContext = {
+export interface DriverContext {
   azureAccountProvider: AzureAccountProvider;
   m365TokenProvider: M365TokenProvider;
   ui: UserInteraction | undefined;
@@ -18,7 +18,7 @@ export type DriverContext = {
   telemetryReporter: TelemetryReporter;
   projectPath: string;
   platform: Platform;
-};
+}
 
 export type AzureResourceInfo = {
   subscriptionId: string;

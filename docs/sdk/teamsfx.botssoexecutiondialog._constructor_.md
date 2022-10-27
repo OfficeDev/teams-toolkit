@@ -16,8 +16,8 @@ constructor(dedupStorage: Storage, ssoPromptSettings: TeamsBotSsoPromptSettings,
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  dedupStorage | Storage | Helper storage to remove duplicated messages |
+|  dedupStorage | Storage |  |
 |  ssoPromptSettings | [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) |  |
-|  teamsfx | [TeamsFx](./teamsfx.teamsfx.md) | [TeamsFx](./teamsfx.teamsfx.md) instance for authentication |
-|  dialogName | string |  |
+|  teamsfx | [TeamsFx](./teamsfx.teamsfx.md) |  |
+|  dialogName | string | custom dialog name |
 

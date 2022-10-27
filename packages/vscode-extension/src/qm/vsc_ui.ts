@@ -464,11 +464,15 @@ export class VsCodeUI implements UserInteraction {
         async (resolve): Promise<void> => {
           // set options
           quickPick.items = [
-            {
-              id: "default",
-              label: localize("teamstoolkit.qm.defaultFolder"),
-              description: config.default,
-            },
+            ...(config.default
+              ? [
+                  {
+                    id: "default",
+                    label: localize("teamstoolkit.qm.defaultFolder"),
+                    description: config.default,
+                  },
+                ]
+              : []),
             {
               id: "browse",
               label: `$(folder) ${localize("teamstoolkit.qm.browse")}`,
@@ -541,28 +545,23 @@ export class VsCodeUI implements UserInteraction {
 
   async selectFileInQuickPick(
     config: SelectFileConfig,
-    type: "file" | "files" | "folder",
+    type: "file" | "files",
     defaultValue?: string
   ): Promise<Result<SelectFileResult, FxError>>;
   async selectFileInQuickPick(
     config: SelectFilesConfig,
-    type: "file" | "files" | "folder",
+    type: "file" | "files",
     defaultValue?: string
   ): Promise<Result<SelectFilesResult, FxError>>;
   async selectFileInQuickPick(
-    config: SelectFolderConfig,
-    type: "file" | "files" | "folder",
-    defaultValue?: string
-  ): Promise<Result<SelectFolderResult, FxError>>;
-  async selectFileInQuickPick(
-    config: UIConfig<any>,
-    type: "file" | "files" | "folder",
+    config: UIConfig<any> & { filters?: { [name: string]: string[] } },
+    type: "file" | "files",
     defaultValue?: string
   ): Promise<Result<InputResult<string[] | string>, FxError>> {
     /// TODO: use generic constraints.
     const disposables: Disposable[] = [];
     try {
-      const quickPick: QuickPick<QuickPickItem> = window.createQuickPick();
+      const quickPick: QuickPick<FxQuickPickItem> = window.createQuickPick();
       quickPick.title = config.title;
       if (config.step && config.step > 1) {
         quickPick.buttons = [QuickInputButtons.Back];
@@ -574,89 +573,66 @@ export class VsCodeUI implements UserInteraction {
       quickPick.canSelectMany = false;
       let fileSelectorIsOpen = false;
       return await new Promise(async (resolve) => {
-        const onDidAccept = () => {
-          const result = quickPick.items[0].detail;
-          if (result && result.length > 0) {
-            if (type === "files") {
-              resolve(ok({ type: "success", result: result.split(";") }));
+        // set options
+        quickPick.items = [
+          ...(defaultValue
+            ? [
+                {
+                  id: "default",
+                  label: localize("teamstoolkit.qm.defaultFile"),
+                  description: defaultValue,
+                },
+              ]
+            : []),
+          {
+            id: "browse",
+            label: `$(file) ${localize("teamstoolkit.qm.browse")}`,
+          },
+        ];
+
+        const onDidAccept = async () => {
+          const selectedItems = quickPick.selectedItems;
+          if (selectedItems && selectedItems.length > 0) {
+            const item = selectedItems[0];
+            if (item.id === "default") {
+              resolve(ok({ type: "success", result: config.default }));
             } else {
-              resolve(ok({ type: "success", result: result }));
+              fileSelectorIsOpen = true;
+              const uriList: Uri[] | undefined = await window.showOpenDialog({
+                defaultUri: config.default ? Uri.file(config.default) : undefined,
+                canSelectFiles: true,
+                canSelectFolders: false,
+                canSelectMany: type === "files",
+                filters: config.filters,
+                title: config.title,
+              });
+              if (uriList && uriList.length > 0) {
+                if (type === "files") {
+                  const results = uriList.map((u) => u.fsPath);
+                  resolve(ok({ type: "success", result: results }));
+                } else {
+                  const result = uriList[0].fsPath;
+                  resolve(ok({ type: "success", result: result }));
+                }
+              } else {
+                resolve(err(UserCancelError));
+              }
             }
           }
         };
 
         disposables.push(
+          quickPick.onDidAccept(onDidAccept),
           quickPick.onDidHide(() => {
             if (fileSelectorIsOpen === false) resolve(err(UserCancelError));
           }),
           quickPick.onDidTriggerButton((button) => {
             if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
-            else onDidAccept();
           })
         );
 
-        /// set items
-        quickPick.items = [
-          {
-            label:
-              config.prompt ||
-              localize(
-                type === "folder" ? "teamstoolkit.qm.selectFolder" : "teamstoolkit.qm.selectFile"
-              ),
-            detail: defaultValue,
-          },
-        ];
-        const showFileSelectDialog = async function (defaultUrl?: string) {
-          fileSelectorIsOpen = true;
-          const uriList: Uri[] | undefined = await window.showOpenDialog({
-            defaultUri: defaultUrl ? Uri.file(defaultUrl) : undefined,
-            canSelectFiles: type === "file" || type === "files",
-            canSelectFolders: type === "folder",
-            canSelectMany: type === "files",
-            title: config.title,
-          });
-          fileSelectorIsOpen = false;
-          if (uriList && uriList.length > 0) {
-            if (type === "files") {
-              const results = uriList.map((u) => u.fsPath);
-              const resultString = results.join(";");
-              quickPick.items = [
-                {
-                  label: config.prompt || localize("teamstoolkit.qm.selectFile"),
-                  detail: resultString,
-                },
-              ];
-              resolve(ok({ type: "success", result: results }));
-            } else {
-              const result = uriList[0].fsPath;
-              quickPick.items = [
-                {
-                  label:
-                    config.prompt ||
-                    localize(
-                      type === "folder"
-                        ? "teamstoolkit.qm.selectFolder"
-                        : "teamstoolkit.qm.selectFile"
-                    ),
-                  detail: result,
-                },
-              ];
-              resolve(ok({ type: "success", result: result }));
-            }
-          } else {
-            resolve(err(UserCancelError));
-          }
-        };
-        const onDidChangeSelection = async function (
-          items: readonly QuickPickItem[]
-        ): Promise<any> {
-          const defaultUrl = items[0].detail;
-          await showFileSelectDialog(defaultUrl);
-        };
-        disposables.push(quickPick.onDidChangeSelection(onDidChangeSelection));
         disposables.push(quickPick);
         quickPick.show();
-        await showFileSelectDialog(defaultValue);
       });
     } finally {
       disposables.forEach((d) => {

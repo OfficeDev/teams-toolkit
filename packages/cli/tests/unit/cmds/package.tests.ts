@@ -4,7 +4,17 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
-import { err, Func, FxError, Inputs, ok, UserError } from "@microsoft/teamsfx-api";
+import {
+  AppPackageFolderName,
+  BuildFolderName,
+  err,
+  Func,
+  FxError,
+  Inputs,
+  ok,
+  TemplateFolderName,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 
 import Package from "../../../src/cmds/package";
@@ -20,6 +30,8 @@ import * as Utils from "../../../src/utils";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
 import { NotSupportedProjectType } from "../../../src/error";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import path from "path";
 
 describe("Package Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -27,8 +39,10 @@ describe("Package Command Tests", function () {
   let options: string[] = [];
   let telemetryEvents: string[] = [];
   let telemetryEventStatus: string | undefined = undefined;
+  let mockedEnvRestore: RestoreFn = () => {};
 
   afterEach(() => {
+    mockedEnvRestore();
     sandbox.restore();
   });
 
@@ -87,6 +101,37 @@ describe("Package Command Tests", function () {
           method: "buildPackage",
           params: {
             type: "remote",
+          },
+        });
+        if (inputs.projectPath?.includes("real")) return ok("");
+        else return err(NotSupportedProjectType());
+      });
+    const cmd = new Package();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+      env: "dev",
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.BuildStart, TelemetryEvent.Build]);
+    expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
+  });
+
+  it("Package Command Running Check", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    sandbox
+      .stub(FxCore.prototype, "executeUserTask")
+      .callsFake(async (func: Func, inputs: Inputs) => {
+        const root = path.resolve("real");
+        expect(func).deep.equals({
+          namespace: "fx-solution-azure",
+          method: "buildPackage",
+          params: {
+            manifestTemplatePath: `${root}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
+            ouptutZipPath: `${root}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`,
+            outputJsonPath: `${root}/${BuildFolderName}/${AppPackageFolderName}/manifest.${inputs.env}.json`,
+            env: inputs.env,
           },
         });
         if (inputs.projectPath?.includes("real")) return ok("");

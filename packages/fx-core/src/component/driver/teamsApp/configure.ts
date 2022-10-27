@@ -13,9 +13,11 @@ import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { Service } from "typedi";
 
 const actionName = "teamsApp/configure";
 
+@Service(actionName)
 export class ConfigureTeamsAppDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(

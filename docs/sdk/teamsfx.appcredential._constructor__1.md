@@ -4,7 +4,7 @@
 
 ## AppCredential.(constructor)
 
-Constructs a new instance of the `AppCredential` class
+Constructor of AppCredential.
 
 <b>Signature:</b>
 
@@ -16,5 +16,15 @@ constructor(authConfig: AuthenticationConfiguration);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  authConfig | [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) |  |
+|  authConfig | [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | The authentication configuration. Use environment variables if not provided. |
+
+## Exceptions
+
+[InvalidConfiguration](./teamsfx.errorcode.md) when client id, client secret or tenant id is not found in config.
+
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is nodeJS.
+
+## Remarks
+
+Only works in in server side.
 

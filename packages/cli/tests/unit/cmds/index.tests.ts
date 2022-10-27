@@ -7,10 +7,12 @@ import yargs from "yargs";
 
 import { registerCommands } from "../../../src/cmds/index";
 import { expect } from "../utils";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Register Commands Tests", function () {
   const sandbox = sinon.createSandbox();
   let registeredCommands: string[] = [];
+  let restoreFn: RestoreFn | undefined = undefined;
 
   before(() => {
     sandbox
@@ -20,10 +22,16 @@ describe("Register Commands Tests", function () {
       });
     sandbox.stub(yargs, "options").returns(yargs);
     sandbox.stub(yargs, "positional").returns(yargs);
+    restoreFn = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
   });
 
   after(() => {
     sandbox.restore();
+    if (restoreFn) {
+      restoreFn();
+    }
   });
 
   beforeEach(() => {
@@ -45,5 +53,6 @@ describe("Register Commands Tests", function () {
     expect(registeredCommands).includes("publish");
     expect(registeredCommands).includes("config");
     expect(registeredCommands).includes("preview");
+    expect(registeredCommands).includes("apply");
   });
 });

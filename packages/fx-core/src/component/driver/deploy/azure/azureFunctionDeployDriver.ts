@@ -11,9 +11,15 @@ import { TokenCredential } from "@azure/core-http";
 import { FxError, Result } from "@microsoft/teamsfx-api";
 import { wrapRun } from "../../../utils/common";
 import { ProgressMessages } from "../../../messages";
+import { hooks } from "@feathersjs/hooks";
+import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
+import { TelemetryConstant } from "../../../constant/commonConstant";
 
-@Service("azureFunctions/deploy")
+const ACTION_NAME = "azureFunctions/deploy";
+
+@Service(ACTION_NAME)
 export class AzureFunctionDeployDriver implements StepDriver {
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new AzureFunctionDeployDriverImpl(args, context);
     return wrapRun(

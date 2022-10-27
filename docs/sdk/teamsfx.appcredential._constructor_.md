@@ -16,7 +16,7 @@ constructor(authConfig: AppCredentialAuthConfig);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  authConfig | [AppCredentialAuthConfig](./teamsfx.appcredentialauthconfig.md) | The authentication configuration. Use environment variables if not provided. |
+|  authConfig | [AppCredentialAuthConfig](./teamsfx.appcredentialauthconfig.md) | The authentication configuration. |
 
 ## Exceptions
 

@@ -1,0 +1,65 @@
+{{=<% %>=}}
+# This is just an example workflow for provision.
+# You should customize it to meet your own requirements.
+name: 'Provision'
+on:
+  # Manually trigger this workflow, and you should pick the right branch.
+  workflow_dispatch:
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    # You can uncomment the line below to use environments (refer to https://docs.github.com/en/actions/reference/environments). 
+    #environment: test_environment
+    env:
+      M365_ACCOUNT_NAME: ${{secrets.M365_ACCOUNT_NAME}}
+      M365_ACCOUNT_PASSWORD: ${{secrets.M365_ACCOUNT_PASSWORD}}
+      M365_TENANT_ID: ${{secrets.M365_TENANT_ID}}
+      # To specify the env name for multi-env feature.
+      TEAMSFX_ENV_NAME: <%env_name%>
+
+    steps:
+      # Setup environment.
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+<%#hosting_type_contains_azure%>
+      # Login Azure by service principal.
+      # Service principal for Azure is used, and to create Azure service principal for use, refer to https://github.com/OfficeDev/TeamsFx/tree/dev/docs/cicd_insider#how-to-create-azure-service-principals-for-use.
+      - name: Login Azure by service principal 
+        uses: OfficeDev/teamsfx-cli-action@v1
+        with:
+          commands: account login azure 
+          service-principal: true
+          username: ${{secrets.AZURE_SERVICE_PRINCIPAL_NAME}}
+          password: ${{secrets.AZURE_SERVICE_PRINCIPAL_PASSWORD}}
+          tenant: ${{secrets.AZURE_TENANT_ID}}
+
+<%/hosting_type_contains_azure%>
+      # We suggest to do the `teamsfx provision` step manually or in a separate workflow. The following steps are for your reference.
+      # After provisioning, you should commit necessary files under .fx into the repository.
+      - name: Provision hosting environment
+        uses: OfficeDev/teamsfx-cli-action@v1
+        with:
+          commands: provision
+<%#hosting_type_contains_azure%>
+          subscription: ${{secrets.AZURE_SUBSCRIPTION_ID}}
+<%/hosting_type_contains_azure%>
+          env: ${{env.TEAMSFX_ENV_NAME}}
+<%#cloud_resources_contains_sql%>
+          sql-admin-name: ${{secrets.SQL_ADMIN_NAME}}
+          sql-password: ${{secrets.SQL_PASSWORD}}
+<%/cloud_resources_contains_sql%>
+
+      - name: Commit provision configs if necessary
+        env:
+          BRANCH: ${{github.ref}}
+        run: |
+          git config user.name "github-agent"
+          git config user.email "github-agent@github.com"
+          git add .
+          git commit -m "chore: commit provision configs"
+          git push origin ${BRANCH}

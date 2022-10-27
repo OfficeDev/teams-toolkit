@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { BuildArgs } from "../interface/buildAndDeployArgs";
-import { asFactory, asOptional, asString, checkMissingArgs, asRecord } from "../../utils/common";
+import { asFactory, asString, checkMissingArgs } from "../../utils/common";
 import { execute } from "../../code/utils";
 import { ExecuteCommandError } from "../../error/componentError";
 import { DeployConstant } from "../../constant/deployConstant";
@@ -32,7 +32,6 @@ export abstract class BaseBuildDriver {
   protected static asBuildArgs = asFactory<BuildArgs>({
     workingDirectory: asString,
     args: asString,
-    env: asOptional(asRecord),
   });
 
   protected toBuildArgs(): BuildArgs {
@@ -43,10 +42,9 @@ export abstract class BaseBuildDriver {
     const args = this.toBuildArgs();
     const commandSuffix = checkMissingArgs("BuildCommand", args.args).trim();
     const command = `${this.buildPrefix} ${commandSuffix}`;
-    const env = args.env ? args.env : undefined;
     await this.progressBar?.start(`Run command ${command} at ${args.workingDirectory}`);
     try {
-      const output = await execute(command, args.workingDirectory, this.logProvider, env);
+      const output = await execute(command, args.workingDirectory, this.logProvider);
       await this.logProvider.debug(`execute ${command} output is ${output}`);
       await this.progressBar?.end(true);
     } catch (e) {

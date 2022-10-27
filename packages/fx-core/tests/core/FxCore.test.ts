@@ -1,7 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs, Platform, Stage, Ok, Err, FxError, UserError } from "@microsoft/teamsfx-api";
+import {
+  Inputs,
+  Platform,
+  Stage,
+  Ok,
+  Err,
+  FxError,
+  UserError,
+  SystemError,
+  err,
+  ok,
+  Result,
+} from "@microsoft/teamsfx-api";
 import { assert, expect } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -32,6 +44,10 @@ import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
 import AdmZip from "adm-zip";
 import { NoAadManifestExistError } from "../../src/core/error";
 import "../../src/component/driver/aad/update";
+import { envUtil } from "../../src/component/utils/envUtil";
+import { YamlParser } from "../../src/component/configManager/parser";
+import { ILifecycle, LifecycleName, Output } from "../../src/component/configManager/interface";
+import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -314,6 +330,152 @@ describe("Core basic APIs", () => {
         assert.equal("Select a programming language.", placeholder);
       }
     }
+  });
+});
+
+describe("apply yaml template", async () => {
+  const tools = new MockTools();
+  beforeEach(() => {
+    setTools(tools);
+  });
+  describe("when run with missing input", async () => {
+    it("should return error when projectPath is undefined", async () => {
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: undefined,
+      };
+      const res = await core.apply(inputs, "", "provision");
+      assert.isTrue(
+        res.isErr() &&
+          res.error.name === "InvalidInput" &&
+          res.error.message.includes("projectPath")
+      );
+    });
+
+    it("should return error when env is undefined", async () => {
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        env: undefined,
+      };
+      const res = await core.apply(inputs, "", "provision");
+      assert.isTrue(
+        res.isErr() && res.error.name === "InvalidInput" && res.error.message.includes("env")
+      );
+    });
+  });
+
+  describe("when readEnv returns error", async () => {
+    const sandbox = sinon.createSandbox();
+
+    const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
+
+    before(() => {
+      sandbox.stub(envUtil, "readEnv").resolves(err(mockedError));
+    });
+
+    after(() => {
+      sandbox.restore();
+    });
+
+    it("should return error too", async () => {
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        env: "dev",
+      };
+      const res = await core.apply(inputs, "./", "provision");
+      assert.isTrue(res.isErr() && res.error.name === "mockedError");
+    });
+  });
+
+  describe("when YamlParser returns error", async () => {
+    const sandbox = sinon.createSandbox();
+
+    const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
+
+    before(() => {
+      sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+      sandbox.stub(YamlParser.prototype, "parse").resolves(err(mockedError));
+    });
+
+    after(() => {
+      sandbox.restore();
+    });
+
+    it("should return error too", async () => {
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        env: "dev",
+      };
+      const res = await core.apply(inputs, "./", "provision");
+      assert.isTrue(res.isErr() && res.error.name === "mockedError");
+    });
+  });
+
+  describe("when running against an empty yaml file", async () => {
+    const sandbox = sinon.createSandbox();
+
+    before(() => {
+      sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+      sandbox.stub(YamlParser.prototype, "parse").resolves(ok({}));
+    });
+
+    after(() => {
+      sandbox.restore();
+    });
+
+    it("should return ok", async () => {
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        env: "dev",
+      };
+      const res = await core.apply(inputs, "./", "provision");
+      assert.isTrue(res.isOk());
+    });
+  });
+
+  describe("when lifecycle returns error", async () => {
+    const sandbox = sinon.createSandbox();
+
+    class MockedProvision implements ILifecycle {
+      name: LifecycleName = "provision";
+      public async run(ctx: DriverContext): Promise<Result<Output, FxError>> {
+        const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
+        return err(mockedError);
+      }
+    }
+
+    before(() => {
+      sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+      sandbox.stub(YamlParser.prototype, "parse").resolves(
+        ok({
+          provision: new MockedProvision(),
+        })
+      );
+    });
+
+    after(() => {
+      sandbox.restore();
+    });
+
+    it("should return error", async () => {
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+        env: "dev",
+      };
+      const res = await core.apply(inputs, "./", "provision");
+      assert.isTrue(res.isErr() && res.error.name === "mockedError");
+    });
   });
 });
 

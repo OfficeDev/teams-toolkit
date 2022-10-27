@@ -24,6 +24,7 @@ import { AppStudioError } from "../../resource/appManifest/errors";
 import { TelemetryPropertyKey } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { Service } from "typedi";
 
 const actionName = "teamsApp/configure";
 
@@ -31,6 +32,7 @@ const outputKeys = {
   publishedAppId: "TEAMS_APP_PUBLISHED_APP_ID",
 };
 
+@Service(actionName)
 export class PublishAppPackageDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(

@@ -1,35 +1,64 @@
 import { ok, err, FxError, Result } from "@microsoft/teamsfx-api";
+import _ from "lodash";
 import { Container } from "typedi";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { StepDriver } from "../driver/interface/stepDriver";
 import { DriverNotFoundError } from "./error";
 import { DriverDefinition, LifecycleName, ILifecycle, Output, DriverInstance } from "./interface";
 
+type UnresolvedPlaceHolders = string[];
+
 // Replace placeholders in the driver definitions' `with` field inplace
 // and returns unresolved placeholders
-function resolvePlaceHolders(defs: DriverDefinition[]): string[] {
+function resolvePlaceHolders(defs: DriverDefinition[]): UnresolvedPlaceHolders {
   const unresolvedVars: string[] = [];
   for (const def of defs) {
-    const args = def.with as Record<string, string>;
+    const args = def.with as Record<string, unknown>;
     for (const k in args) {
       const val = args[k];
-      const placeHolderReg = /\${{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}/g;
-      let matches = placeHolderReg.exec(val);
-      let newVal = val;
-      while (matches != null) {
-        const envVar = matches[1];
-        const envVal = process.env[envVar];
-        if (!envVal) {
-          unresolvedVars.push(envVar);
-        } else {
-          newVal = newVal.replace(matches[0], envVal);
-        }
-        matches = placeHolderReg.exec(val);
-      }
-      args[k] = newVal;
+      args[k] = resolve(val, unresolvedVars);
     }
   }
   return unresolvedVars;
+}
+
+function resolve(input: unknown, unresolvedPlaceHolders: UnresolvedPlaceHolders): unknown {
+  if (input === undefined || input === null) {
+    return input;
+  } else if (typeof input === "string") {
+    return resolveString(input, unresolvedPlaceHolders);
+  } else if (Array.isArray(input)) {
+    const newArray: unknown[] = [];
+    for (const e of input) {
+      newArray.push(resolve(e, unresolvedPlaceHolders));
+    }
+    return newArray;
+  } else if (input !== null && typeof input === "object") {
+    const newObj = _.cloneDeep(input) as Record<string, unknown>;
+    Object.keys(newObj).forEach((key) => {
+      newObj[key] = resolve(newObj[key], unresolvedPlaceHolders);
+    });
+    return newObj;
+  } else {
+    return input;
+  }
+}
+
+function resolveString(val: string, unresolvedPlaceHolders: UnresolvedPlaceHolders): string {
+  const placeHolderReg = /\${{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}/g;
+  let matches = placeHolderReg.exec(val);
+  let newVal = val;
+  while (matches != null) {
+    const envVar = matches[1];
+    const envVal = process.env[envVar];
+    if (!envVal) {
+      unresolvedPlaceHolders.push(envVar);
+    } else {
+      newVal = newVal.replace(matches[0], envVal);
+    }
+    matches = placeHolderReg.exec(val);
+  }
+  return newVal;
 }
 
 export class Lifecycle implements ILifecycle {

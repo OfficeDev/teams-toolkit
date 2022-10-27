@@ -49,9 +49,9 @@ export class CreateAppPackageDriver implements StepDriver {
     const zipFileDir = path.dirname(zipFileName);
     await fs.mkdir(zipFileDir, { recursive: true });
 
-    const jsonFileName = args.outputJsonPath;
+    let jsonFileName = args.outputJsonPath;
     if (!path.isAbsolute(jsonFileName)) {
-      zipFileName = path.join(context.projectPath, jsonFileName);
+      jsonFileName = path.join(context.projectPath, jsonFileName);
     }
     const jsonFileDir = path.dirname(jsonFileName);
     await fs.mkdir(jsonFileDir, { recursive: true });

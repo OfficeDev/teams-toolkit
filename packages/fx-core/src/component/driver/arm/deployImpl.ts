@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DriverContext } from "../interface/commonArgs";
-import { Constants, TemplateType } from "./constant";
+import { Constants, TelemetryProperties, TemplateType } from "./constant";
 import { deployArgs, deploymentOutput, templateArgs } from "./interface";
 import { validateArgs } from "./validator";
 import { hasBicepTemplate, getPath, convertOutputs, getFileExtension } from "./util/util";
-import { FxError, ok, Result, SystemError } from "@microsoft/teamsfx-api";
+import { FxError, ok, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { ConstantString, PluginDisplayName } from "../../../common/constants";
 import * as fs from "fs-extra";
 import { expandEnvironmentVariable } from "../../utils/common";
@@ -16,16 +15,17 @@ import { Deployment, DeploymentMode, ResourceManagementClient } from "@azure/arm
 import { SolutionError } from "../../constants";
 import { InvalidParameterUserError } from "../aad/error/invalidParameterUserError";
 import { ensureBicepForDriver } from "../../utils/depsChecker/bicepChecker";
+import { WrapDriverContext } from "../util/wrapUtil";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
 export class ArmDeployImpl {
   args: deployArgs;
-  context: DriverContext;
+  context: WrapDriverContext;
   bicepCommand?: string;
   client?: ResourceManagementClient;
 
-  constructor(args: deployArgs, context: DriverContext) {
+  constructor(args: deployArgs, context: WrapDriverContext) {
     this.args = args;
     this.context = context;
   }
@@ -33,7 +33,6 @@ export class ArmDeployImpl {
   public async run(): Promise<Map<string, string>> {
     await this.validateArgs();
     await this.createClient();
-
     const needBicepCli = hasBicepTemplate(this.args.templates);
     if (needBicepCli) {
       this.bicepCommand = await this.ensureBicepCli();
@@ -55,7 +54,7 @@ export class ArmDeployImpl {
     }
   }
 
-  private async ensureBicepCli(): Promise<string> {
+  public async ensureBicepCli(): Promise<string> {
     return await ensureBicepForDriver(this.context, this.args.bicepCliVersion!);
   }
 
@@ -74,7 +73,7 @@ export class ArmDeployImpl {
 
   async deployTemplates(): Promise<Result<deploymentOutput[], FxError>> {
     const outputs: deploymentOutput[] = [];
-    // TODO: add progressBar
+    this.setTelemetries();
     await Promise.all(
       this.args.templates.map(async (template) => {
         const res = await this.deployTemplate(template);
@@ -89,16 +88,30 @@ export class ArmDeployImpl {
   async deployTemplate(
     templateArg: templateArgs
   ): Promise<Result<deploymentOutput | undefined, FxError>> {
-    const parameters = await this.getDeployParameters(templateArg.parameters);
-    const template = await this.getDeployTemplate(templateArg.path);
-    const deploymentParameters: Deployment = {
-      properties: {
-        parameters: parameters.parameters,
-        template: template as any,
-        mode: "Incremental" as DeploymentMode,
-      },
-    };
-    return this.executeDeployment(templateArg, deploymentParameters);
+    try {
+      const progressBar = this.context.createProgressBar(
+        `Deploy arm: ${templateArg.deploymentName}`,
+        1
+      );
+      const parameters = await this.getDeployParameters(templateArg.parameters);
+      const template = await this.getDeployTemplate(templateArg.path);
+      const deploymentParameters: Deployment = {
+        properties: {
+          parameters: parameters.parameters,
+          template: template as any,
+          mode: "Incremental" as DeploymentMode,
+        },
+      };
+      progressBar?.end(true);
+      return this.executeDeployment(templateArg, deploymentParameters);
+    } catch (error) {
+      throw new UserError(
+        Constants.actionName,
+        "FailedToDeployArmTemplate",
+        getDefaultString("driver.arm.error.deploy"),
+        getLocalizedString("driver.arm.error.deploy", templateArg.deploymentName, error.message)
+      );
+    }
   }
 
   async executeDeployment(
@@ -147,5 +160,22 @@ export class ArmDeployImpl {
         getLocalizedString("driver.arm.deploy.error.CompileBicepFailed", err.message)
       );
     }
+  }
+
+  private setTelemetries(): void {
+    let bicepCount = 0;
+    let jsonCount = 0;
+    for (const template of this.args.templates) {
+      const templateType = getFileExtension(template.path);
+      if (templateType === TemplateType.Bicep) {
+        bicepCount++;
+      } else {
+        jsonCount++;
+      }
+    }
+    this.context.addTelemetryProperties({
+      [TelemetryProperties.bicepTemplateCount]: bicepCount.toString(),
+      [TelemetryProperties.jsonTemplateCount]: jsonCount.toString(),
+    });
   }
 }

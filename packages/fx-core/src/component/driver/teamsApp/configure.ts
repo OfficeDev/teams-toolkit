@@ -15,7 +15,7 @@ import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
 
-const actionName = "teamsApp/configure";
+const actionName = "teamsApp/update";
 
 const outputNames = {
   TEAMS_APP_ID: "TEAMS_APP_ID",

@@ -10,13 +10,12 @@ import { envUtil } from "../utils/envUtil";
 
 export const EnvLoaderMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
   const inputs = ctx.arguments[0] as Inputs;
-  let env = inputs.env;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
     ctx.result = err(new NoProjectOpenedError());
     return;
   }
-  if (!env) {
+  if (!inputs.env) {
     const question = SelectEnvQuestion;
     const envListRes = await envUtil.listEnv(projectPath);
     if (envListRes.isErr()) {
@@ -34,11 +33,8 @@ export const EnvLoaderMW: Middleware = async (ctx: HookContext, next: NextFuncti
       ctx.result = err(UserCancelError);
       return;
     }
-    env = inputs.env;
   }
-  if (env) {
-    await envUtil.readEnv(projectPath, env);
-  }
+  await envUtil.readEnv(projectPath, inputs.env);
   await next();
 };
 

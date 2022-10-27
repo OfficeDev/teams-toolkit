@@ -23,38 +23,88 @@
         "full": "{{config.manifest.description.full}}"
     },
     "accentColor": "#FFFFFF",
-    "bots": [
+    "bots": [],
+    "composeExtensions": [
         {
             "botId": "{{state.fx-resource-bot.botId}}",
-            "scopes": [
-                "personal",
-                "team",
-                "groupchat"
-            ],
-            "supportsFiles": false,
-            "isNotificationOnly": false,
-            "commandLists": [
+            "commands": [
                 {
-                    "scopes": [
-                        "personal",
-                        "team",
-                        "groupchat"
+                    "id": "createCard",
+                    "context": [
+                        "compose"
                     ],
-                    "commands": [
+                    "description": "Command to run action to create a Card from Compose Box",
+                    "title": "Create Card",
+                    "type": "action",
+                    "parameters": [
                         {
-                            "title": "welcome",
-                            "description": "Resend welcome card of this Bot"
+                            "name": "title",
+                            "title": "Card title",
+                            "description": "Title for the card",
+                            "inputType": "text"
                         },
                         {
-                            "title": "learn",
-                            "description": "Learn about Adaptive Card and Bot Command"
+                            "name": "subTitle",
+                            "title": "Subtitle",
+                            "description": "Subtitle for the card",
+                            "inputType": "text"
+                        },
+                        {
+                            "name": "text",
+                            "title": "Text",
+                            "description": "Text for the card",
+                            "inputType": "textarea"
                         }
                     ]
+                },
+                {
+                    "id": "shareMessage",
+                    "context": [
+                        "message"
+                    ],
+                    "description": "Test command to run action on message context (message sharing)",
+                    "title": "Share Message",
+                    "type": "action",
+                    "parameters": [
+                        {
+                            "name": "includeImage",
+                            "title": "Include Image",
+                            "description": "Include image in Hero Card",
+                            "inputType": "toggle"
+                        }
+                    ]
+                },
+                {
+                    "id": "searchQuery",
+                    "context": [
+                        "compose",
+                        "commandBox"
+                    ],
+                    "description": "Test command to run query",
+                    "title": "Search",
+                    "type": "query",
+                    "parameters": [
+                        {
+                            "name": "searchQuery",
+                            "title": "Search Query",
+                            "description": "Your search query",
+                            "inputType": "text"
+                        }
+                    ]
+                }
+            ],
+            "messageHandlers": [
+                {
+                    "type": "link",
+                    "value": {
+                        "domains": [
+                            "*.botframework.com"
+                        ]
+                    }
                 }
             ]
         }
     ],
-    "composeExtensions": [],
     "configurableTabs": [],
     "staticTabs": [],
     "permissions": [

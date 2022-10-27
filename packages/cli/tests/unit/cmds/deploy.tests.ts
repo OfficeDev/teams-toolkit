@@ -13,9 +13,10 @@ import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import * as constants from "../../../src/constants";
 import { expect } from "../utils";
-import { NotSupportedProjectType } from "../../../src/error";
+import { EnvNotSpecified, NotSupportedProjectType } from "../../../src/error";
 import UI from "../../../src/userInteraction";
 import LogProvider from "../../../src/commonlib/log";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Deploy Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -33,6 +34,7 @@ describe("Deploy Command Tests", function () {
     "api-version": {},
     "include-app-manifest": {},
   };
+  let mockedEnvRestore: RestoreFn = () => {};
 
   before(() => {
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
@@ -90,6 +92,10 @@ describe("Deploy Command Tests", function () {
     allArguments = new Map<string, any>();
   });
 
+  afterEach(() => {
+    mockedEnvRestore();
+  });
+
   it("Builder Check", () => {
     const cmd = new Deploy();
     cmd.builder(yargs);
@@ -123,6 +129,19 @@ describe("Deploy Command Tests", function () {
     };
     await cmd.handler(args);
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
+  });
+
+  it("Deploy Command Running -- 1 component", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    const cmd = new Deploy();
+    cmd["params"] = params;
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+      components: ["a"],
+    };
+    await expect(cmd.handler(args)).to.be.rejectedWith(EnvNotSpecified);
   });
 
   it("Deploy Command Running -- deployArtifacts error", async () => {

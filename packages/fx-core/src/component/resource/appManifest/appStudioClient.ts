@@ -104,7 +104,7 @@ export namespace AppStudioClient {
         const error = AppStudioResultFactory.UserError(
           AppStudioError.TeamsAppCreateConflictError.name,
           AppStudioError.TeamsAppCreateConflictError.message(),
-          HelpLinks.SwtichTenantOrSub
+          HelpLinks.SwitchAccountOrSub
         );
         throw error;
       }

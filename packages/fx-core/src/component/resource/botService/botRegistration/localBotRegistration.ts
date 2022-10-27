@@ -7,12 +7,12 @@ import { AppStudioScopes } from "../../../../common/tools";
 import { AppStudioClient } from "../appStudio/appStudioClient";
 import { BotRegistration, BotAuthType, BotAadCredentials } from "./botRegistration";
 import { Messages } from "../messages";
-import { makeBotName } from "../common";
 
 export class LocalBotRegistration extends BotRegistration {
   public async createBotRegistration(
     m365TokenProvider: M365TokenProvider,
     aadDisplayName: string,
+    botName: string,
     botConfig?: BotAadCredentials,
     botAuthType: BotAuthType = BotAuthType.AADApp,
     logProvider?: LogProvider
@@ -37,7 +37,7 @@ export class LocalBotRegistration extends BotRegistration {
     // Register a new bot registration.
     const initialBotReg: IBotRegistration = {
       botId: botAadCredentials.botId,
-      name: makeBotName(aadDisplayName),
+      name: botName,
       description: "",
       iconUrl: "",
       messagingEndpoint: "",

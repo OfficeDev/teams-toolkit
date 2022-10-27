@@ -42,7 +42,6 @@ export class Alias {
 
 export class MaxLengths {
   public static readonly AAD_DISPLAY_NAME = 120;
-  public static readonly BOT_NAME = 35;
 }
 
 export class TelemetryKeys {

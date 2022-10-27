@@ -28,8 +28,9 @@ import { BotRegistration, BotAadCredentials } from "./botRegistration/botRegistr
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "./resourceNameFactory";
 import { MaxLengths } from "./constants";
-import { CommonStrings } from "./strings";
+import { CommonStrings, PluginLocalDebug } from "./strings";
 import { BotRegistrationFactory, BotRegistrationKind } from "./botRegistration/factory";
+import { normalizeName } from "../../utils";
 
 const errorSource = "BotService";
 function _checkThrowSomethingMissing<T>(key: string, value: T | undefined): T {
@@ -94,7 +95,8 @@ export class BotService extends AzureResource {
       context.projectSetting.appName,
       MaxLengths.AAD_DISPLAY_NAME
     );
-
+    const botName =
+      normalizeName(context.projectSetting.appName) + PluginLocalDebug.LOCAL_DEBUG_SUFFIX;
     const botConfig: BotAadCredentials =
       context.envInfo.config.bot?.appId && context.envInfo.config.bot?.appPassword
         ? {
@@ -108,6 +110,7 @@ export class BotService extends AzureResource {
 
     const regRes = await botRegistration.createBotRegistration(
       context.tokenProvider.m365TokenProvider,
+      botName,
       aadDisplayName,
       botConfig
     );

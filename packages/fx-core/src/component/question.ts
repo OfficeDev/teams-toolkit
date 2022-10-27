@@ -104,19 +104,19 @@ export async function getQuestionsForProvisionV3(
   context: v2.Context,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  // if (inputs.platform === Platform.CLI_HELP) {
-  //   const node = new QTreeNode({ type: "group" });
-  //   node.addChild(new QTreeNode(AskSubscriptionQuestion));
-  //   node.addChild(buildQuestionNode());
-  //   return ok(node);
-  // } else {
-  //   const node = new QTreeNode({ type: "group" });
-  //   if (hasAzureResourceV3(context.projectSetting as ProjectSettingsV3)) {
-  //     node.addChild(new QTreeNode(AskSubscriptionQuestion));
-  //   }
-  //   return ok(node);
-  // }
-  return ok(undefined);
+  if (inputs.platform === Platform.CLI_HELP) {
+    const node = new QTreeNode({ type: "group" });
+    node.addChild(new QTreeNode(AskSubscriptionQuestion));
+    node.addChild(buildQuestionNode());
+    return ok(node);
+  } else {
+    // const node = new QTreeNode({ type: "group" });
+    // if (hasAzureResourceV3(context.projectSetting as ProjectSettingsV3)) {
+    //   node.addChild(new QTreeNode(AskSubscriptionQuestion));
+    // }
+    // return ok(node);
+    return ok(undefined);
+  }
 }
 
 export async function getQuestionsForDeployV3(

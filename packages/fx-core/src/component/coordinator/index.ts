@@ -260,8 +260,8 @@ export class Coordinator {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<DotenvParseOutput, FxError>> {
-    if (inputs["subscription-id"]) {
-      process.env.AZURE_SUBSCRIPTION_ID = inputs["subscription-id"];
+    if (inputs["subscription"]) {
+      process.env.AZURE_SUBSCRIPTION_ID = inputs["subscription"];
     }
     if (inputs["resource-group"]) {
       process.env.AZURE_RESOURCE_GROUP_NAME = inputs["resource-group"];

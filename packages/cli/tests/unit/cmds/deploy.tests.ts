@@ -5,7 +5,7 @@ import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
 import { err, FxError, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
 
 import Deploy from "../../../src/cmds/deploy";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -17,6 +17,7 @@ import { EnvNotSpecified, NotSupportedProjectType } from "../../../src/error";
 import UI from "../../../src/userInteraction";
 import LogProvider from "../../../src/commonlib/log";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import CLIUIInstance from "../../../src/userInteraction";
 
 describe("Deploy Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -79,6 +80,9 @@ describe("Deploy Command Tests", function () {
       allArguments.set(key, value);
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
+    sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
+    sandbox.stub(environmentManager, "getLocalEnvName").resolves(ok(["local"]));
+    CLIUIInstance.interactive = false;
   });
 
   after(() => {
@@ -131,7 +135,7 @@ describe("Deploy Command Tests", function () {
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
   });
 
-  it("Deploy Command Running -- 1 component", async () => {
+  it("Deploy Command Running -- V3", async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3: "true",
     });

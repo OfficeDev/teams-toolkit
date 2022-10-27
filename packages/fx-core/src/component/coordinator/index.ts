@@ -301,7 +301,7 @@ export class Coordinator {
           unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")
         ) {
           const folderName = path.parse(ctx.projectPath).name;
-          const suffix = process.env.RESOURCE_SUFFIX || "";
+          const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
           const defaultRg = `rg-${folderName}${suffix}-${inputs.env}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
             ctx.azureAccountProvider,

@@ -171,9 +171,6 @@ describe("env utils", () => {
     };
     const res = await my.myMethod(inputs);
     assert.isTrue(res.isErr());
-    if (res.isErr()) {
-      assert.equal(res.error.name, "UserCancel");
-    }
   });
   it("EnvWriterMW", async () => {
     let value = "";

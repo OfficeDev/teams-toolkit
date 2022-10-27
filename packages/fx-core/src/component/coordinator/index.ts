@@ -300,10 +300,14 @@ export class Coordinator {
           process.env.AZURE_SUBSCRIPTION_ID &&
           unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")
         ) {
+          const folderName = path.parse(ctx.projectPath).name;
+          const suffix = process.env.RESOURCE_SUFFIX || "";
+          const defaultRg = `rg-${folderName}${suffix}-${inputs.env}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
             ctx.azureAccountProvider,
             process.env.AZURE_SUBSCRIPTION_ID,
-            process.env.AZURE_RESOURCE_GROUP_NAME
+            process.env.AZURE_RESOURCE_GROUP_NAME,
+            defaultRg
           );
           if (ensureRes.isErr()) return err(ensureRes.error);
           const rgInfo = ensureRes.value;

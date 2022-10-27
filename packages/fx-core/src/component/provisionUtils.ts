@@ -469,7 +469,8 @@ export class ProvisionUtils {
   async ensureResourceGroup(
     azureAccountProvider: AzureAccountProvider,
     subscriptionId: string,
-    givenResourceGroupName?: string
+    givenResourceGroupName?: string,
+    defaultResourceGroupName?: string
   ): Promise<Result<ResourceGroupInfo, FxError>> {
     const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
     if (azureToken === undefined) {
@@ -504,11 +505,11 @@ export class ProvisionUtils {
         }
       }
     } else {
-      const defaultResourceGroupName = "teams-app-rg";
+      const defaultRG = defaultResourceGroupName || "teams-app-rg";
       const rgRes = await resourceGroupHelper.askResourceGroupInfoV3(
         azureAccountProvider,
         rmClient,
-        defaultResourceGroupName
+        defaultRG
       );
       if (rgRes.isErr()) return err(rgRes.error);
       resourceGroupInfo = rgRes.value;

@@ -879,6 +879,7 @@
   "plugins.bot.SomethingNotFound": "%s is not found.",
   "plugins.bot.SomethingNotExisting": "%s is not existing.",
   "plugins.bot.FailedToCreate": "Failed to create %s",
+  "plugins.bot.FailedToGetAlreadyCreatedBot": "Could not get bot with id %s which was created before. \nThis could happen if the bot was created by another account. Visit %s to learn more.",
   "plugins.bot.FailedToProvision": "Failed to provision %s.",
   "plugins.bot.FailedToUpdateConfigs": "Failed to update configs for %s",
   "plugins.bot.FailedListPublishingCredentials": "Failed to list publishing credentials.",

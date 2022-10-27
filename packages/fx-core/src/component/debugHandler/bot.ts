@@ -17,6 +17,7 @@ import {
   ProjectSettingsV3,
   Result,
   TelemetryReporter,
+  UserError,
   UserInteraction,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -38,6 +39,8 @@ import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 import { AppStudioClient } from "../resource/botService/appStudio/appStudioClient";
 import { GraphClient } from "../resource/botService/botRegistration/graphClient";
 import { checkM365Tenant } from "./utils";
+import { getLocalizedString } from "../../common/localizeUtils";
+import { HelpLinks } from "../../common/constants";
 
 const botDebugMessages = {
   registeringAAD: "Registering the AAD app which is required to create the bot ...",
@@ -74,6 +77,7 @@ export class BotDebugHandler {
   private projectSettingsV3?: ProjectSettingsV3;
   private cryptoProvider?: CryptoProvider;
   private envInfoV3?: v3.EnvInfoV3;
+  private hasBotIdInEnvBefore?: boolean;
 
   constructor(
     projectPath: string,
@@ -170,6 +174,7 @@ export class BotDebugHandler {
           this.ui,
           this.cryptoProvider
         );
+        this.hasBotIdInEnvBefore = !!this.envInfoV3?.state[ComponentNames.TeamsBot]?.botId;
         if (checkResult.isErr()) {
           return err(checkResult.error);
         }
@@ -242,6 +247,24 @@ export class BotDebugHandler {
             `${botUrl}${this.envInfoV3!.state[ComponentNames.TeamsBot].botId}`
           ),
         ]);
+      } else if (this.hasBotIdInEnvBefore) {
+        const botId = this.envInfoV3!.state[ComponentNames.TeamsBot].botId;
+        return err(
+          new UserError({
+            source: "RegisterBot",
+            name: "AlreadyCreatedBotNotExist",
+            message: getLocalizedString(
+              "plugins.bot.FailedToGetAlreadyCreatedBot",
+              botId,
+              HelpLinks.SwitchAccountOrSub
+            ),
+            displayMessage: getLocalizedString(
+              "plugins.bot.FailedToGetAlreadyCreatedBot",
+              botId,
+              HelpLinks.SwitchAccountOrSub
+            ),
+          })
+        );
       }
 
       const botReg: IBotRegistration = {

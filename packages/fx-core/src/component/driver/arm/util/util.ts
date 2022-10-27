@@ -4,7 +4,6 @@
 import * as path from "path";
 import { TemplateType } from "../constant";
 import { deploymentOutput, templateArgs } from "../interface";
-import { DriverContext } from "../../interface/commonArgs";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 
 export function hasBicepTemplate(args: templateArgs[]): boolean {

@@ -122,6 +122,21 @@ describe("Arm driver deploy", () => {
     } as any;
     res = await driver.run(deployArgs, mockedDriverContext);
     assert.isTrue(res.isErr());
+
+    deployArgs = {
+      subscriptionId: "00000000-0000-0000-0000-000000000000",
+      resourceGroupName: "mock-group",
+      bicepCliVersion: "",
+      templates: [
+        {
+          path: "C:/mock-template",
+          parameters: "",
+          deploymentName: "",
+        },
+      ],
+    } as any;
+    res = await driver.run(deployArgs, mockedDriverContext);
+    assert.isTrue(res.isErr());
   });
 
   it("deploy error", async () => {

@@ -469,7 +469,6 @@ export class FxCore implements v3.ICore {
       );
       res = ok(path);
     } else if (func.method === "validateManifest") {
-      // TODO: load environment variables into process.env
       if (isV3Enabled()) {
         const driver: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
         const args: ValidateTeamsAppArgs = {
@@ -484,6 +483,7 @@ export class FxCore implements v3.ICore {
           projectPath: context.projectPath!,
           platform: inputs.platform,
         };
+        await envUtil.readEnv(context.projectPath!, func.params.env);
         res = await driver.run(args, driverContext);
       } else {
         const component = Container.get("app-manifest") as any;
@@ -506,6 +506,7 @@ export class FxCore implements v3.ICore {
           projectPath: context.projectPath!,
           platform: inputs.platform,
         };
+        await envUtil.readEnv(context.projectPath!, func.params.env);
         res = await driver.run(args, driverContext);
       } else {
         const component = Container.get("app-manifest") as any;

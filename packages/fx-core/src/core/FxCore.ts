@@ -233,7 +233,7 @@ export class FxCore implements v3.ICore {
     return isV3Enabled() ? this.provisionResourcesNew(inputs) : this.provisionResourcesOld(inputs);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
   async provisionResourcesNew(
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -314,7 +314,7 @@ export class FxCore implements v3.ICore {
     return isV3Enabled() ? this.deployArtifactsNew(inputs) : this.deployArtifactsOld(inputs);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW])
   async deployArtifactsNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
@@ -430,11 +430,8 @@ export class FxCore implements v3.ICore {
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
-  async publishApplicationNew(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW])
+  async publishApplicationNew(inputs: Inputs): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
     const context = createDriverContext(inputs);

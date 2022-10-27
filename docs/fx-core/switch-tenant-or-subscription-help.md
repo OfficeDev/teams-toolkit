@@ -203,7 +203,7 @@ You need to know who owns the existing bot, and visit https://dev.botframework.c
 ![image](../images/fx-core/preview/add-bot-owner.png)
 
 #### Create a New Bot
-You can manually update `state.local.json` by setting the value of "botId" to an empty string, and Teams Toolkit to create a new bot and AAD app for you wen you start local debugging again.
+You can manually update `state.local.json` by setting the value of "botId" to an empty string. Teams Toolkit will create a new bot and AAD app for you wen you start local debugging again.
 ```
 "fx-resource-bot": {
         ...

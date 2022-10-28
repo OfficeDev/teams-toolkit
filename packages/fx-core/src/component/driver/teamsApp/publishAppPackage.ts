@@ -11,6 +11,7 @@ import {
   Platform,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
+import * as path from "path";
 import AdmZip from "adm-zip";
 import { hooks } from "@feathersjs/hooks/lib";
 import { StepDriver } from "../interface/stepDriver";
@@ -39,15 +40,20 @@ export class PublishAppPackageDriver implements StepDriver {
     args: PublishAppPackageArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    if (!(await fs.pathExists(args.appPackagePath))) {
+    let appPackagePath = args.appPackagePath;
+    if (!path.isAbsolute(appPackagePath)) {
+      appPackagePath = path.join(context.projectPath, appPackagePath);
+    }
+
+    if (!(await fs.pathExists(appPackagePath))) {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(args.appPackagePath)
+          AppStudioError.FileNotFoundError.message(appPackagePath)
         )
       );
     }
-    const archivedFile = await fs.readFile(args.appPackagePath);
+    const archivedFile = await fs.readFile(appPackagePath);
 
     const zipEntries = new AdmZip(archivedFile).getEntries();
 

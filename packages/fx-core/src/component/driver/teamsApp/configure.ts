@@ -3,6 +3,7 @@
 
 import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
+import * as path from "path";
 import { hooks } from "@feathersjs/hooks/lib";
 import { StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
@@ -36,15 +37,20 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     }
     const appStudioToken = appStudioTokenRes.value;
 
-    if (!(await fs.pathExists(args.appPackagePath))) {
+    let appPackagePath = args.appPackagePath;
+    if (!path.isAbsolute(appPackagePath)) {
+      appPackagePath = path.join(context.projectPath, appPackagePath);
+    }
+
+    if (!(await fs.pathExists(appPackagePath))) {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(args.appPackagePath)
+          AppStudioError.FileNotFoundError.message(appPackagePath)
         )
       );
     }
-    const archivedFile = await fs.readFile(args.appPackagePath);
+    const archivedFile = await fs.readFile(appPackagePath);
 
     try {
       const appDefinition = await AppStudioClient.importApp(

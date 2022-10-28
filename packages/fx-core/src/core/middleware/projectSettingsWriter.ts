@@ -9,6 +9,7 @@ import {
   Inputs,
   ProjectSettingsV3,
   Result,
+  Settings,
   StaticPlatforms,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
@@ -39,17 +40,26 @@ export const ProjectSettingsWriterMW: Middleware = async (
     let projectSettings = ctx.projectSettings;
     if (projectSettings === undefined) return;
     try {
-      if (!isV3Enabled()) {
+      if (isV3Enabled()) {
+        const settings: Settings = {
+          trackingId: projectSettings.projectId,
+          version: projectSettings.version!,
+        };
+        const settingFile = getProjectSettingsPath(inputs.projectPath);
+        await fs.writeFile(settingFile, JSON.stringify(settings, null, 4));
+        TOOLS?.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
+      } else {
         projectSettings = convertProjectSettingsV3ToV2(projectSettings as ProjectSettingsV3);
         const solutionSettings = projectSettings.solutionSettings;
         if (solutionSettings) {
           if (!solutionSettings.activeResourcePlugins) solutionSettings.activeResourcePlugins = [];
           if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
         }
+
+        const settingFile = getProjectSettingsPath(inputs.projectPath);
+        await fs.writeFile(settingFile, JSON.stringify(projectSettings, null, 4));
+        TOOLS?.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
       }
-      const settingFile = getProjectSettingsPath(inputs.projectPath);
-      await fs.writeFile(settingFile, JSON.stringify(projectSettings, null, 4));
-      TOOLS?.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
     } catch (e) {
       if ((ctx.result as Result<any, FxError>).isOk()) {
         ctx.result = err(WriteFileError(e));

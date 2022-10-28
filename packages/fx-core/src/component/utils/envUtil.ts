@@ -1,4 +1,4 @@
-import { err, FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result, SettingsFolderName, UserError } from "@microsoft/teamsfx-api";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import fs from "fs-extra";
@@ -12,7 +12,7 @@ export class EnvUtil {
     projectPath: string,
     env: string
   ): Promise<Result<dotenv.DotenvParseOutput, FxError>> {
-    const dotEnvFilePath = path.join(projectPath, ".fx", `.env.${env}`);
+    const dotEnvFilePath = path.join(projectPath, SettingsFolderName, `.env.${env}`);
     if (!(await fs.pathExists(dotEnvFilePath))) {
       return err(
         new UserError({
@@ -72,7 +72,7 @@ export class EnvUtil {
     return ok(undefined);
   }
   async listEnv(projectPath: string): Promise<Result<string[], FxError>> {
-    const folder = path.join(projectPath, ".fx");
+    const folder = path.join(projectPath, SettingsFolderName);
     const list = await fs.readdir(folder);
     const envs = list
       .filter((fileName) => fileName.startsWith(".env."))

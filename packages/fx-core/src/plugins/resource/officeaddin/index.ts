@@ -64,7 +64,7 @@ export class OfficeAddinPlugin implements v2.ResourcePlugin {
     process.chdir(addinRoot);
     try {
       const jsonData = new projectsJsonData();
-      const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, false);
+      const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, true);
 
       // Copy project template files from project repository
       if (projectRepoBranchInfo.repo) {
@@ -79,11 +79,8 @@ export class OfficeAddinPlugin implements v2.ResourcePlugin {
         await childProcessExec(cmdLine);
 
         // modify manifest guid and DisplayName
-        await OfficeAddinManifest.modifyManifestFile(
-          `${join(addinRoot, jsonData.getManifestPath(template) as string)}`,
-          "random",
-          `${name}`
-        );
+        const manifestPath = join(addinRoot, jsonData.getManifestPath(template) as string);
+        await OfficeAddinManifest.modifyManifestFile(manifestPath, "random", name);
       }
       process.chdir(workingDir);
       return ok(Void);

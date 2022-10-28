@@ -545,7 +545,7 @@ export class DevPreviewManifest implements DevPreviewSchema {
   localizationInfo?: ILocalizationInfo;
 
   developer: IDeveloper = {
-    name: "Teams App, Inc.",
+    name: "Contoso",
     mpnId: "",
     websiteUrl: "https://localhost:3000",
     privacyUrl: "https://localhost:3000/privacy",

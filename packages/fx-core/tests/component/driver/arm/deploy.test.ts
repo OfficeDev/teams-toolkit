@@ -5,7 +5,13 @@ import { assert } from "chai";
 import "mocha";
 import { createSandbox } from "sinon";
 import { setTools } from "../../../../src/core/globalVars";
-import { MockAzureAccountProvider, MockTools } from "../../../core/utils";
+import {
+  MockAzureAccountProvider,
+  MockLogProvider,
+  MockTelemetryReporter,
+  MockTools,
+  MockUserInteraction,
+} from "../../../core/utils";
 import { MockedM365Provider } from "../../../plugins/solution/util";
 import { ArmDeployDriver } from "../../../../src/component/driver/arm/deploy";
 import fs from "fs-extra";
@@ -22,6 +28,10 @@ describe("Arm driver deploy", () => {
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),
     azureAccountProvider: new MockAzureAccountProvider(),
+    telemetryReporter: new MockTelemetryReporter(),
+    ui: new MockUserInteraction(),
+    logProvider: new MockLogProvider(),
+    projectPath: "./",
   };
   const driver = new ArmDeployDriver();
 
@@ -111,6 +121,58 @@ describe("Arm driver deploy", () => {
       templates: [],
     } as any;
     res = await driver.run(deployArgs, mockedDriverContext);
+    assert.isTrue(res.isErr());
+
+    deployArgs = {
+      subscriptionId: "00000000-0000-0000-0000-000000000000",
+      resourceGroupName: "mock-group",
+      bicepCliVersion: "",
+      templates: [
+        {
+          path: "C:/mock-template",
+          parameters: "",
+          deploymentName: "",
+        },
+      ],
+    } as any;
+    res = await driver.run(deployArgs, mockedDriverContext);
+    assert.isTrue(res.isErr());
+  });
+
+  it("deploy error", async () => {
+    sandbox.stub(fs, "readFile").resolves("{}" as any);
+    sandbox.stub(cpUtils, "executeCommand").resolves("{}" as any);
+    sandbox
+      .stub(ArmDeployImpl.prototype, "executeDeployment")
+      .rejects(new Error("mocked deploy error"));
+    sandbox.stub(bicepChecker, "getAvailableBicepVersions").resolves([bicepCliVersion]);
+    sandbox.stub(ArmDeployImpl.prototype, "ensureBicepCli").resolves();
+    const deployArgs = {
+      subscriptionId: "00000000-0000-0000-0000-000000000000",
+      resourceGroupName: "mock-group",
+      bicepCliVersion: bicepCliVersion,
+      templates: [
+        {
+          path: "mock-template.bicep",
+          parameters: "mock-parameters.json",
+          deploymentName: "mock-deployment",
+        },
+        {
+          path: "mock-template2.json",
+          parameters: "mock-parameters2.json",
+          deploymentName: "mock-deployment2",
+        },
+      ],
+    };
+
+    const res = await driver.run(deployArgs, mockedDriverContext);
+    assert.isTrue(res.isErr());
+  });
+
+  it("error handle", async () => {
+    sandbox.stub(ArmDeployImpl.prototype, "run").throws("mocked deploy error");
+
+    const res = await driver.run({} as any, mockedDriverContext);
     assert.isTrue(res.isErr());
   });
 });

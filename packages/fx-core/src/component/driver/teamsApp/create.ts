@@ -24,6 +24,7 @@ import { AppStudioError } from "../../resource/appManifest/errors";
 import { Constants } from "../../resource/appManifest/constants";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { Service } from "typedi";
 
 const actionName = "teamsApp/create";
 
@@ -31,6 +32,7 @@ const outputNames = {
   TEAMS_APP_ID: "TEAMS_APP_ID",
 };
 
+@Service(actionName)
 export class CreateTeamsAppDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
@@ -55,7 +57,8 @@ export class CreateTeamsAppDriver implements StepDriver {
         outputZipPath: `${context.projectPath}/build/appPackage/appPackage.${state.ENV_NAME}.zip`,
         outputJsonPath: `${context.projectPath}/build/appPackage/manifest.${state.ENV_NAME}.json`,
       },
-      context
+      context,
+      true
     );
     if (result.isErr()) {
       return result;

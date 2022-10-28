@@ -8,14 +8,12 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProjectSettingsV3,
   ResourceContextV3,
   Result,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
 import { Container } from "typedi";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { environmentManager } from "../../core/environment";
 import { InvalidInputError } from "../../core/error";
 import { getQuestionsForCreateProjectV2 } from "../../core/middleware/questionModel";
 import {
@@ -67,9 +65,13 @@ import {
 import { Generator } from "../generator/generator";
 import { convertToLangKey } from "../code/utils";
 import { downloadSampleHook } from "../../core/downloadSample";
-import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import * as uuid from "uuid";
 import { settingsUtil } from "../utils/settingsUtil";
+import { DriverContext } from "../driver/interface/commonArgs";
+import { DotenvParseOutput } from "dotenv";
+import { YamlParser } from "../configManager/parser";
+import { provisionUtils } from "../provisionUtils";
+import { envUtil } from "../utils/envUtil";
 
 export enum TemplateNames {
   Tab = "tab",
@@ -254,30 +256,103 @@ export class Coordinator {
     }),
   ])
   async provision(
-    ctx: ResourceContextV3,
+    ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    //TODO call provision actions
-    return ok(undefined);
+  ): Promise<Result<DotenvParseOutput, FxError>> {
+    if (inputs["subscription"]) {
+      process.env.AZURE_SUBSCRIPTION_ID = inputs["subscription"];
+    }
+    if (inputs["resource-group"]) {
+      process.env.AZURE_RESOURCE_GROUP_NAME = inputs["resource-group"];
+    }
+    const output: DotenvParseOutput = {};
+    const parser = new YamlParser();
+    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const maybeProjectModel = await parser.parse(templatePath);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    const cycles = [projectModel.registerApp, projectModel.provision, projectModel.configureApp];
+    for (const cycle of cycles) {
+      if (!cycle) continue;
+      let runRes = await cycle.run(ctx);
+      if (runRes.isErr()) return err(runRes.error);
+      let unresolvedPlaceHolders = runRes.value.unresolvedPlaceHolders;
+      if (unresolvedPlaceHolders.length > 0) {
+        if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) {
+          const ensureRes = await provisionUtils.ensureSubscription(
+            ctx.azureAccountProvider,
+            process.env.AZURE_SUBSCRIPTION_ID
+          );
+          if (ensureRes.isErr()) return err(ensureRes.error);
+          const subInfo = ensureRes.value;
+          if (subInfo && subInfo.subscriptionId) {
+            process.env.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
+            output.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
+            unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
+              (ph) => ph !== "AZURE_SUBSCRIPTION_ID"
+            );
+          }
+        }
+        if (
+          process.env.AZURE_SUBSCRIPTION_ID &&
+          unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")
+        ) {
+          const folderName = path.parse(ctx.projectPath).name;
+          const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
+          const defaultRg = `rg-${folderName}${suffix}-${inputs.env}`;
+          const ensureRes = await provisionUtils.ensureResourceGroup(
+            ctx.azureAccountProvider,
+            process.env.AZURE_SUBSCRIPTION_ID,
+            process.env.AZURE_RESOURCE_GROUP_NAME,
+            defaultRg
+          );
+          if (ensureRes.isErr()) return err(ensureRes.error);
+          const rgInfo = ensureRes.value;
+          if (rgInfo) {
+            process.env.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
+            output.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
+            unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
+              (ph) => ph !== "AZURE_RESOURCE_GROUP_NAME"
+            );
+          }
+        }
+        if (unresolvedPlaceHolders.length === 0) {
+          runRes = await cycle.run(ctx);
+          if (runRes.isErr()) return err(runRes.error);
+        }
+      }
+      const newOutput = envUtil.map2object(runRes.value.env);
+      merge(output, newOutput);
+    }
+    return ok(output);
   }
 
   @hooks([
     ActionExecutionMW({
-      question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return await getQuestionsForDeployV3(context, inputs, context.envInfo!);
-      },
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.Deploy,
       telemetryComponentName: "coordinator",
     }),
   ])
   async deploy(
-    context: ResourceContextV3,
+    ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    //TODO call deploy actions
+    const parser = new YamlParser();
+    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const maybeProjectModel = await parser.parse(templatePath);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    if (projectModel.deploy) {
+      const runRes = await projectModel.deploy.run(ctx);
+      if (runRes.isErr()) return err(runRes.error);
+    }
     return ok(undefined);
   }
 
@@ -289,11 +364,21 @@ export class Coordinator {
     }),
   ])
   async publish(
-    context: ResourceContextV3,
+    ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    //TODO call publish actions
+    const parser = new YamlParser();
+    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const maybeProjectModel = await parser.parse(templatePath);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    if (projectModel.publish) {
+      const runRes = await projectModel.publish.run(ctx);
+      if (runRes.isErr()) return err(runRes.error);
+    }
     return ok(undefined);
   }
 }

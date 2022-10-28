@@ -73,7 +73,8 @@ const botTemplateComment =
   "# TeamsFx will overwrite the following variable values when running debug. They are used by the bot code.";
 const teamsfxComment =
   "# TeamsFx will overwrite the following variable values when running debug. They are used by TeamsFx SDK.";
-const customizedComment = "# Following environment variables can be customized per your needs.";
+const customizedComment =
+  "# Following variables can be customized or you can add your owns." + os.EOL + "# FOO=BAR";
 
 export class LocalEnvProvider {
   public static readonly LocalEnvFileName: string = ".env.teamsfx.local";
@@ -204,13 +205,13 @@ export class LocalEnvProvider {
       needEOL = true;
     }
 
+    if (needEOL) {
+      await fs.appendFile(envPath, os.EOL);
+    }
+    if (customizedComment) {
+      await fs.appendFile(envPath, `${customizedComment}${os.EOL}`);
+    }
     if (Object.keys(envs.customized).length > 0) {
-      if (needEOL) {
-        await fs.appendFile(envPath, os.EOL);
-      }
-      if (customizedComment) {
-        await fs.appendFile(envPath, `${customizedComment}${os.EOL}`);
-      }
       const customizedEntries = Object.entries(envs.customized);
       for (const [key, value] of customizedEntries) {
         await fs.appendFile(envPath, `${key}=${value}${os.EOL}`);

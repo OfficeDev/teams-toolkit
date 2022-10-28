@@ -55,7 +55,10 @@ class TreeViewManager {
         "teamsfx-development"
       ) as CommandsTreeViewProvider;
       const developmentCommands = developmentTreeviewProvider.getCommands();
-      developmentCommands.push(
+      // after "Preview your Teams app" command, the adaptive card will be shown
+      developmentCommands.splice(
+        4,
+        0,
         new TreeViewCommand(
           localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard"),
           localize("teamstoolkit.commandsTreeViewProvider.previewACDescription"),
@@ -66,20 +69,6 @@ class TreeViewManager {
       );
       developmentTreeviewProvider.refresh();
     }
-    const developmentTreeviewProvider = this.getTreeView(
-      "teamsfx-development"
-    ) as CommandsTreeViewProvider;
-    const developmentCommands = developmentTreeviewProvider.getCommands();
-    developmentCommands.push(
-      new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.previewTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.previewDescription"),
-        "fx-extension.debug",
-        undefined,
-        { name: "debug-alt", custom: false }
-      )
-    );
-    developmentTreeviewProvider.refresh();
   }
 
   public getTreeView(viewName: string) {
@@ -162,18 +151,19 @@ class TreeViewManager {
         TreeCategory.GettingStarted
       ),
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.addFeatureTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.addFeatureDescription"),
-        "fx-extension.addFeature",
-        "addFeature",
-        { name: "teamsfx-add-feature", custom: false }
+        localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.tutorialDescription"),
+        "fx-extension.selectTutorials",
+        undefined,
+        { name: "tasklist", custom: false },
+        TreeCategory.GettingStarted
       ),
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew"),
-        localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription"),
-        "fx-extension.openManifest",
-        "manifestEditor",
-        { name: "edit", custom: false }
+        localize("teamstoolkit.commandsTreeViewProvider.previewTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.previewDescription"),
+        "fx-extension.debug",
+        undefined,
+        { name: "debug-alt", custom: false }
       ),
       ...(isV3Enabled()
         ? [
@@ -293,14 +283,6 @@ class TreeViewManager {
 
   private registerHelper(disposables: vscode.Disposable[]) {
     const helpCommand = [
-      new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.tutorialDescription"),
-        "fx-extension.selectTutorials",
-        undefined,
-        { name: "tasklist", custom: false },
-        TreeCategory.GettingStarted
-      ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.documentationTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.documentationDescription"),

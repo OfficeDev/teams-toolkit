@@ -3225,14 +3225,6 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
     options: [
       {
         id: "cardActionResponse",
-        label: `$(file-code)${localize("teamstoolkit.tutorials.cardActionResponse.label")}`,
-        description: "recommended",
-        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
-        groupName: "Teams app scenario guides",
-        data: "https://aka.ms/teamsfx-card-action-response",
-      },
-      {
-        id: "cardActionResponse2",
         label: `${localize("teamstoolkit.tutorials.cardActionResponse.label")}`,
         description: "recommended",
         detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),

@@ -23,6 +23,7 @@ import { CoreHookContext } from "../../src/core/types";
 import { MockTools } from "../core/utils";
 import { setTools } from "../../src/core/globalVars";
 import { environmentManager } from "../../src/core/environment";
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("env utils", () => {
   const tools = new MockTools();
   setTools(tools);
@@ -34,8 +35,19 @@ describe("env utils", () => {
     version: "1",
     isFromSample: false,
   };
+  let mockedEnvRestore: RestoreFn | undefined;
+
   afterEach(() => {
     sandbox.restore();
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
+  });
+
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
   });
   it("envUtil.readEnv", async () => {
     const encRes = await cryptoProvider.encrypt(decrypted);

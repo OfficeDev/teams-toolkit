@@ -574,6 +574,10 @@ export class FxCore implements v3.ICore {
     }
     return res;
   }
+
+  /**
+   * Warning: this API only works for CLI_HELP, it has no business with interactive run for CLI!
+   */
   @hooks([ErrorHandlerMW])
   async getQuestions(
     stage: Stage,

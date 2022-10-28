@@ -31,9 +31,8 @@ describe("env utils", () => {
   const cryptoProvider = new LocalCrypto("mockProjectId");
   const decrypted = "123";
   const mockSettings: Settings = {
-    projectId: "mockProjectId",
+    trackingId: "mockProjectId",
     version: "1",
-    isFromSample: false,
   };
   let mockedEnvRestore: RestoreFn | undefined;
 

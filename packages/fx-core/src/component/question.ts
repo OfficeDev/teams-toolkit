@@ -220,7 +220,7 @@ export async function getQuestionsForDeployV3(
     const aadManifestFilePathNode = new QTreeNode({
       name: Constants.AAD_MANIFEST_FILE,
       type: "singleFile",
-      title: "Please enter the aad manifest file path.",
+      title: getLocalizedString("core.aad.aadManifestFilePath"),
       default: "",
     });
     node.addChild(aadNode);

@@ -10,7 +10,7 @@
       "name": "Launch new command (non-interactive)",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/cli.js",
-      "args": ["deploy", "aad-manifest", "--folder", "C:\\Users\\wenyutang.FAREAST\\TeamsApps\\wenytest102701", "--interactive", "false"],
+      "args": ["new", "--interactive", "false"],
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/../fx-core/build/**/*.js",

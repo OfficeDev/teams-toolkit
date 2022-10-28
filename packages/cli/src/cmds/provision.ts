@@ -1,24 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
+import { Result, FxError, err, ok, Void, Stage } from "@microsoft/teamsfx-api";
 import path from "path";
 import { Argv } from "yargs";
-
-import { FxError, err, ok, Result, Stage, Void } from "@microsoft/teamsfx-api";
-
 import activate from "../activate";
-import { getSystemInputs, setSubscriptionId } from "../utils";
-import { YargsCommand } from "../yargsCommand";
+import { sqlPasswordQustionName, sqlPasswordConfirmQuestionName } from "../constants";
+import HelpParamGenerator from "../helpParamGenerator";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import HelpParamGenerator from "../helpParamGenerator";
-import { sqlPasswordConfirmQuestionName, sqlPasswordQustionName } from "../constants";
+import { getSystemInputs, setSubscriptionId, askTargetEnvironment } from "../utils";
+import { YargsCommand } from "../yargsCommand";
 
 export class ProvisionManifest extends YargsCommand {
   public readonly commandHead = "manifest";
@@ -111,6 +107,15 @@ export default class Provision extends YargsCommand {
       }
     }
     const inputs = getSystemInputs(rootFolder, args.env);
+    if (!inputs.env) {
+      // include local env in interactive question
+      const selectedEnv = await askTargetEnvironment(rootFolder);
+      if (selectedEnv.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, selectedEnv.error);
+        return err(selectedEnv.error);
+      }
+      inputs.env = selectedEnv.value;
+    }
 
     if (this.resourceGroupParam in args) {
       inputs.targetResourceGroupName = args[this.resourceGroupParam];

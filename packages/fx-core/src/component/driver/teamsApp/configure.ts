@@ -14,6 +14,7 @@ import { AppStudioError } from "../../resource/appManifest/errors";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
+import { getAbsolutePath } from "../../utils/common";
 
 const actionName = "teamsApp/update";
 
@@ -35,8 +36,8 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       return err(appStudioTokenRes.error);
     }
     const appStudioToken = appStudioTokenRes.value;
-
-    if (!(await fs.pathExists(args.appPackagePath))) {
+    const appPackagePath = getAbsolutePath(args.appPackagePath, context.projectPath);
+    if (!(await fs.pathExists(appPackagePath))) {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
@@ -44,7 +45,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
         )
       );
     }
-    const archivedFile = await fs.readFile(args.appPackagePath);
+    const archivedFile = await fs.readFile(appPackagePath);
 
     try {
       const appDefinition = await AppStudioClient.importApp(

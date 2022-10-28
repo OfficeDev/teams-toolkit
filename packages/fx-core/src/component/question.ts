@@ -99,6 +99,7 @@ import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
 import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { Constants } from "./resource/aadApp/constants";
 import { functionNameQuestion } from "./feature/api/question";
+import path from "path";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -216,7 +217,14 @@ export async function getQuestionsForDeployV3(
       title: getLocalizedString("core.aad.includeAadQuestionTitle"),
       default: "no",
     });
+    const aadManifestFilePathNode = new QTreeNode({
+      name: Constants.AAD_MANIFEST_FILE,
+      type: "singleFile",
+      title: "Please enter the aad manifest file path.",
+      default: "",
+    });
     node.addChild(aadNode);
+    node.addChild(aadManifestFilePathNode);
   }
   if (selectableComponents.includes(ComponentNames.AppManifest)) {
     const appManifestNode = new QTreeNode({

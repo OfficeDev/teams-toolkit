@@ -110,7 +110,20 @@ export default class Deploy extends YargsCommand {
         }
       }
       promptSPFxUpgrade(rootFolder);
-      const result = await core.deployArtifacts(inputs);
+      let result;
+      if (inputs[this.deployPluginNodeName].includes("fx-resource-aad-app-for-teams")) {
+        result = await core.deployAadManifest(inputs);
+        if (result.isErr()) {
+          CliTelemetry.sendTelemetryErrorEvent(
+            TelemetryEvent.DeployAad,
+            result.error,
+            makeEnvRelatedProperty(rootFolder, inputs)
+          );
+
+          return err(result.error);
+        }
+      }
+      result = await core.deployArtifacts(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(
           TelemetryEvent.Deploy,

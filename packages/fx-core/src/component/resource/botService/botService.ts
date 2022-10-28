@@ -96,7 +96,7 @@ export class BotService extends AzureResource {
       MaxLengths.AAD_DISPLAY_NAME
     );
     const botName =
-      normalizeName(context.projectSetting.appName) + PluginLocalDebug.LOCAL_DEBUG_SUFFIX;
+      normalizeName(context.projectSetting.appName!) + PluginLocalDebug.LOCAL_DEBUG_SUFFIX;
     const botConfig: BotAadCredentials =
       context.envInfo.config.bot?.appId && context.envInfo.config.bot?.appPassword
         ? {

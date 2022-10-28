@@ -96,7 +96,7 @@ export async function ensureBicepForDriver(
     outputErrorMessage(ctx as any, platform ? { platform: platform } : undefined);
     throw err;
   }
-  return bicepChecker.getBicepExecPath();
+  return bicepChecker.getBicepCommand();
 }
 
 function outputErrorMessage(ctx: SolutionContext | v2.Context, inputs?: Inputs) {
@@ -310,6 +310,9 @@ class BicepChecker {
   }
 
   private isVersionSupported(version: string): boolean {
+    if (this._version) {
+      return this._version === version;
+    }
     return supportedVersions.some((supported) => version.includes(supported));
   }
 
@@ -341,7 +344,7 @@ class BicepChecker {
     return "bicep";
   }
 
-  public getBicepExecPath(): string {
+  private getBicepExecPath(): string {
     return path.join(this.getBicepInstallDir(), this.getBicepFileName());
   }
 

@@ -13,7 +13,6 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProjectSettingsFileName,
   ProjectSettingsV3,
   ResourceContextV3,
   Result,
@@ -115,6 +114,7 @@ import { SolutionTelemetryProperty } from "./constants";
 import { getQuestionsForCreateProjectV2 } from "../core/middleware/questionModel";
 import { Constants } from "./resource/aadApp/constants";
 import { executeConcurrently } from "./utils/executor";
+import { getProjectSettingsPath } from "../core/middleware/projectSettingsLoader";
 @Service("fx")
 export class TeamsfxCore {
   name = "fx";
@@ -716,12 +716,7 @@ export class TeamsfxCore {
 export async function preCheck(projectPath: string): Promise<Result<undefined, FxError>> {
   const existFiles = new Array<string>();
   // 0. check if projectSettings.json exists
-  const settingsFile = path.resolve(
-    projectPath,
-    `.${ConfigFolderName}`,
-    "configs",
-    ProjectSettingsFileName
-  );
+  const settingsFile = getProjectSettingsPath(projectPath);
   if (await fs.pathExists(settingsFile)) {
     existFiles.push(settingsFile);
   }

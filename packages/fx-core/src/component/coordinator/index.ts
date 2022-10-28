@@ -179,9 +179,8 @@ export class Coordinator {
     const projectSettingsRes = await settingsUtil.readSettings(projectPath);
     if (projectSettingsRes.isOk()) {
       const settings = projectSettingsRes.value;
-      settings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
-      settings.isFromSample = scratch === ScratchOptionNo.id;
-      inputs.projectId = settings.projectId;
+      settings.trackingId = inputs.projectId ? inputs.projectId : uuid.v4();
+      inputs.projectId = settings.trackingId;
       await settingsUtil.writeSettings(projectPath, settings);
     }
     if (inputs.platform === Platform.VSCode) {

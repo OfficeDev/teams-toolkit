@@ -9,8 +9,8 @@ import * as uuid from "uuid";
 export async function readSettings(projectPath: string): Promise<Result<Settings, FxError>> {
   const filePath = path.resolve(projectPath, ".fx", "projectSettings.json");
   const settings: Settings = await fs.readJson(filePath);
-  if (!settings.projectId) {
-    settings.projectId = uuid.v4();
+  if (!settings.trackingId) {
+    settings.trackingId = uuid.v4();
   }
   return ok(settings);
 }

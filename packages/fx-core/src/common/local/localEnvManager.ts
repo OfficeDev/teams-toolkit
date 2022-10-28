@@ -8,7 +8,6 @@ import {
   Json,
   LogProvider,
   ProjectSettings,
-  ProjectSettingsFileName,
   TelemetryReporter,
   UserError,
   UserInteraction,
@@ -31,7 +30,10 @@ import { LocalCertificate, LocalCertificateManager } from "./localCertificateMan
 import { DepsManager } from "../deps-checker/depsManager";
 import { LocalStateProvider } from "../localStateProvider";
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
-import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
+import {
+  getProjectSettingsPath,
+  loadProjectSettingsByProjectPath,
+} from "../../core/middleware/projectSettingsLoader";
 import { convertEnvStateV3ToV2 } from "../../component/migrate";
 import { getNgrokTunnelFromApi } from "../../component/debug/util/ngrok";
 import { LocalEnvKeys, LocalEnvProvider } from "../../component/debugHandler/localEnvProvider";
@@ -152,12 +154,7 @@ export class LocalEnvManager {
 
   public async getProjectSettings(projectPath: string): Promise<ProjectSettings> {
     return await this.retry(async () => {
-      const projectSettingsPath = path.resolve(
-        projectPath,
-        `.${ConfigFolderName}`,
-        InputConfigsFolderName,
-        ProjectSettingsFileName
-      );
+      const projectSettingsPath = getProjectSettingsPath(projectPath);
 
       if (!(await fs.pathExists(projectSettingsPath))) {
         throw new UserError(

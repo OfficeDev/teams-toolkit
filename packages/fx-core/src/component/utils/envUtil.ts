@@ -16,7 +16,7 @@ export async function readEnv(
   if (settingsRes.isErr()) {
     return err(settingsRes.error);
   }
-  const projectId = settingsRes.value.projectId;
+  const projectId = settingsRes.value.trackingId;
   const cryptoProvider = new LocalCrypto(projectId);
   for (const key of Object.keys(envs)) {
     if (key.startsWith("SECRET_")) {
@@ -43,7 +43,7 @@ export async function writeEnv(
   if (settingsRes.isErr()) {
     return err(settingsRes.error);
   }
-  const projectId = settingsRes.value.projectId;
+  const projectId = settingsRes.value.trackingId;
   const cryptoProvider = new LocalCrypto(projectId);
   const envPath = path.join(projectPath, ".fx", `.env.${env}`);
   const array: string[] = [];

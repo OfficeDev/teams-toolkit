@@ -17,6 +17,9 @@ import {
   ProjectSettingsFileName,
   ProjectSettingsV3,
   Result,
+  Settings,
+  SettingsFileName,
+  SettingsFolderName,
   SolutionContext,
   Stage,
   StaticPlatforms,
@@ -99,8 +102,8 @@ export async function loadProjectSettingsByProjectPath(
 ): Promise<Result<ProjectSettings, FxError>> {
   try {
     if (isV3Enabled()) {
-      const settingsFile = path.resolve(projectPath, `.${ConfigFolderName}`, "settings.json");
-      const settings = await fs.readJson(settingsFile);
+      const settingsFile = path.resolve(projectPath, SettingsFolderName, SettingsFileName);
+      const settings: Settings = await fs.readJson(settingsFile);
       const projectSettings: ProjectSettings = {
         projectId: settings.trackingId,
         version: settings.version,
@@ -171,7 +174,7 @@ export function shouldIgnored(ctx: CoreHookContext): boolean {
 
 export function getProjectSettingsPath(projectPath: string) {
   if (isV3Enabled()) {
-    return path.resolve(projectPath, `.${ConfigFolderName}`, "settings.json");
+    return path.resolve(projectPath, SettingsFolderName, SettingsFileName);
   } else {
     return path.resolve(
       projectPath,

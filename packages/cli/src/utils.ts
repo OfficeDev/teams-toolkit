@@ -33,10 +33,16 @@ import {
   ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 
-import { ConfigNotFoundError, UserdataNotFound, EnvUndefined, ReadFileError } from "./error";
+import {
+  ConfigNotFoundError,
+  UserdataNotFound,
+  EnvUndefined,
+  ReadFileError,
+  EnvNotSpecified,
+} from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags, SUPPORTED_SPFX_VERSION } from "./constants";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, isV3Enabled } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
 import CLIUIInstance from "./userInteraction";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
@@ -345,6 +351,9 @@ export function getTeamsAppTelemetryInfoByEnv(
  * Ask user to select environment, local is included
  */
 export async function askTargetEnvironment(projectDir: string): Promise<Result<string, FxError>> {
+  if (isV3Enabled() && !CLIUIInstance.interactive) {
+    return err(new EnvNotSpecified());
+  }
   const envProfilesResult = await environmentManager.listRemoteEnvConfigs(projectDir);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);

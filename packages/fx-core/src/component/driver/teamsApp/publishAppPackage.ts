@@ -26,7 +26,7 @@ import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
 
-const actionName = "teamsApp/configure";
+const actionName = "teamsApp/publishAppPackage";
 
 const outputKeys = {
   publishedAppId: "TEAMS_APP_PUBLISHED_APP_ID",
@@ -113,7 +113,7 @@ export class PublishAppPackageDriver implements StepDriver {
         archivedFile,
         appStudioTokenRes.value
       );
-      result = new Map([["publishedAppId", appId]]);
+      result = new Map([[outputKeys.publishedAppId, appId]]);
       telemetryProps[TelemetryPropertyKey.updateExistingApp] = "false";
     }
 

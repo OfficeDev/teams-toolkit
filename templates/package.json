@@ -45,6 +45,24 @@
         "tab/js/m365",
         "tab/ts/m365"
     ],
+    "templatesV3": [
+        "notification-http-timer-trigger-js",
+        "notification-http-timer-trigger-ts",
+        "notification-http-trigger-js",
+        "notification-http-trigger-ts",
+        "notification-timer-trigger-js",
+        "notification-timer-trigger-ts",
+        "notification-restify-js",
+        "notification-restify-ts",
+        "command-and-response-js",
+        "command-and-response-ts",
+        "m365-tab-js",
+        "m365-tab-ts",
+        "sso-tab-js",
+        "sso-tab-ts",
+        "non-sso-tab-js",
+        "non-sso-tab-ts"
+    ],
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^4.19.0",
         "@typescript-eslint/parser": "^4.19.0",

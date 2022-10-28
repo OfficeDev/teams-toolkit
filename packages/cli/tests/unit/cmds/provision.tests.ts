@@ -13,7 +13,7 @@ import {
   SubscriptionInfo,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
 
 import Provision, { ProvisionManifest } from "../../../src/cmds/provision";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -22,16 +22,23 @@ import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import * as constants from "../../../src/constants";
 import * as Utils from "../../../src/utils";
 import { expect } from "../utils";
-import { NotFoundSubscriptionId, NotSupportedProjectType } from "../../../src/error";
+import {
+  EnvNotSpecified,
+  NotFoundSubscriptionId,
+  NotSupportedProjectType,
+} from "../../../src/error";
 import UI from "../../../src/userInteraction";
 import LogProvider from "../../../src/commonlib/log";
 import { AzureAccountManager } from "../../../src/commonlib/azureLoginCI";
+import CLIUIInstance from "../../../src/userInteraction";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Provision Command Tests", function () {
   const sandbox = sinon.createSandbox();
   let telemetryEvents: string[] = [];
   let logs: string[] = [];
   let allArguments = new Map<string, any>();
+  let mockedEnvRestore: RestoreFn = () => {};
 
   const existedSubId = "existedSubId";
 
@@ -65,6 +72,9 @@ describe("Provision Command Tests", function () {
       }
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
+    sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
+    sandbox.stub(environmentManager, "getLocalEnvName").resolves(ok(["local"]));
+    CLIUIInstance.interactive = false;
   });
 
   after(() => {
@@ -75,6 +85,10 @@ describe("Provision Command Tests", function () {
     telemetryEvents = [];
     logs = [];
     allArguments = new Map<string, any>();
+  });
+
+  afterEach(() => {
+    mockedEnvRestore();
   });
 
   it("Builder Check", () => {
@@ -92,6 +106,19 @@ describe("Provision Command Tests", function () {
     await cmd.handler(args);
     expect(allArguments.get(constants.sqlPasswordConfirmQuestionName)).equals("123");
     expect(telemetryEvents).deep.equals([TelemetryEvent.ProvisionStart, TelemetryEvent.Provision]);
+  });
+
+  it("Provision Command Running -- V3 error", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    const cmd = new Provision();
+    const args = {
+      interactive: false,
+      [constants.RootFolderNode.data.name as string]: "real",
+      [constants.sqlPasswordQustionName]: "123",
+    };
+    await expect(cmd.handler(args)).to.be.rejectedWith(EnvNotSpecified);
   });
 
   it("Provision Command Running -- setSubscriptionId error", async () => {

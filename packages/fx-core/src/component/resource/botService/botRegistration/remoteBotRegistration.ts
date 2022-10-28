@@ -9,6 +9,7 @@ export class RemoteBotRegistration extends BotRegistration {
   public async createBotRegistration(
     m365TokenProvider: M365TokenProvider,
     aadDisplayName: string,
+    botName: string,
     botConfig?: BotAadCredentials,
     botAuthType: BotAuthType = BotAuthType.AADApp,
     logProvider?: LogProvider

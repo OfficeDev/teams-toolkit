@@ -32,7 +32,8 @@ describe("LocalEnvProvider", () => {
     "# TeamsFx will overwrite the following variable values when running debug. They are used by the bot code.";
   const teamsfxComment =
     "# TeamsFx will overwrite the following variable values when running debug. They are used by TeamsFx SDK.";
-  const customizedComment = "# Following environment variables can be customized per your needs.";
+  const customizedComment =
+    "# Following variables can be customized or you can add your owns." + os.EOL + "# FOO=BAR";
 
   afterEach(() => {
     sinon.restore();

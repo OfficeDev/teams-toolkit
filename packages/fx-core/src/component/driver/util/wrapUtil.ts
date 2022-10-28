@@ -10,9 +10,11 @@ import {
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { ErrorConstants } from "../../constants";
 import { BaseComponentInnerError } from "../../error/componentError";
 import { TeamsFxTelemetryReporter } from "../../utils/teamsFxTelemetryReporter";
+import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 
 interface StringMap {
@@ -105,5 +107,8 @@ function getError(context: WrapDriverContext, error: any): FxError {
       displayMessage: ErrorConstants.unhandledErrorMessage,
     });
   }
+  context.logProvider?.error(
+    getLocalizedString(logMessageKeys.failExecuteDriver, context.eventName, error.message)
+  );
   return fxError;
 }

@@ -11,6 +11,7 @@ import {
   Inputs,
   ok,
   OptionItem,
+  Platform,
   QTreeNode,
   Result,
   traverse,
@@ -19,7 +20,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../common/constants";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
-import { desensitize } from "../../core/middleware/questionModel";
+import { TOOLS } from "../../core/globalVars";
 import {
   CoreQuestionNames,
   newResourceGroupNameQuestion,
@@ -261,6 +262,17 @@ export class ResourceGroupHelper {
     rmClient: ResourceManagementClient,
     defaultResourceGroupName: string
   ): Promise<Result<ResourceGroupInfo, FxError>> {
+    return this.askResourceGroupInfoV3(azureAccountProvider, rmClient, defaultResourceGroupName);
+  }
+
+  /**
+   * Ask user to create a new resource group or use an existing resource group  V3
+   */
+  async askResourceGroupInfoV3(
+    azureAccountProvider: AzureAccountProvider,
+    rmClient: ResourceManagementClient,
+    defaultResourceGroupName: string
+  ): Promise<Result<ResourceGroupInfo, FxError>> {
     const listRgRes = await this.listResourceGroups(rmClient);
     if (listRgRes.isErr()) return err(listRgRes.error);
 
@@ -275,23 +287,17 @@ export class ResourceGroupHelper {
       getLocationsRes.value,
       rmClient
     );
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
     if (node) {
-      const res = await traverse(node, inputs, ctx.userInteraction);
+      const res = await traverse(node, inputs, TOOLS.ui);
       if (res.isErr()) {
-        ctx.logProvider?.debug(
+        TOOLS.logProvider?.debug(
           `[${PluginDisplayName.Solution}] failed to run question model for target resource group.`
         );
         return err(res.error);
       }
-
-      const desensitized = desensitize(node, inputs);
-      ctx.logProvider?.info(
-        `[${
-          PluginDisplayName.Solution
-        }] success to run question model for resource group, answers:${JSON.stringify(
-          desensitized
-        )}`
-      );
     }
     const targetResourceGroupName = inputs.targetResourceGroupName;
     if (!targetResourceGroupName || typeof targetResourceGroupName !== "string") {

@@ -4,8 +4,8 @@
 import { Constants, TelemetryProperties, TemplateType } from "./constant";
 import { deployArgs, deploymentOutput, templateArgs } from "./interface";
 import { validateArgs } from "./validator";
-import { hasBicepTemplate, getPath, convertOutputs, getFileExtension } from "./util/util";
-import { FxError, ok, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { hasBicepTemplate, getAbsolutePath, convertOutputs, getFileExtension } from "./util/util";
+import { err, FxError, ok, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { ConstantString, PluginDisplayName } from "../../../common/constants";
 import * as fs from "fs-extra";
 import { expandEnvironmentVariable } from "../../utils/common";
@@ -79,6 +79,8 @@ export class ArmDeployImpl {
         const res = await this.deployTemplate(template);
         if (res.isOk() && res.value) {
           outputs.push(res.value);
+        } else if (res.isErr()) {
+          throw res.error;
         }
       })
     );
@@ -102,15 +104,17 @@ export class ArmDeployImpl {
           mode: "Incremental" as DeploymentMode,
         },
       };
+      const res = await this.executeDeployment(templateArg, deploymentParameters);
       progressBar?.end(true);
-      return this.executeDeployment(templateArg, deploymentParameters);
+      return res;
     } catch (error) {
-      throw new UserError(
+      const fxError = new UserError(
         Constants.actionName,
         "FailedToDeployArmTemplate",
-        getDefaultString("driver.arm.error.deploy"),
+        getDefaultString("driver.arm.error.deploy", templateArg.deploymentName, error.message),
         getLocalizedString("driver.arm.error.deploy", templateArg.deploymentName, error.message)
       );
+      return err(fxError);
     }
   }
 
@@ -118,16 +122,21 @@ export class ArmDeployImpl {
     templateArg: templateArgs,
     deploymentParameters: Deployment
   ): Promise<Result<deploymentOutput | undefined, FxError>> {
-    const result = await this.client?.deployments.beginCreateOrUpdateAndWait(
-      this.args.resourceGroupName,
-      templateArg.deploymentName,
-      deploymentParameters
-    );
-    return ok(result?.properties?.outputs);
+    try {
+      const result = await this.client?.deployments.beginCreateOrUpdateAndWait(
+        this.args.resourceGroupName,
+        templateArg.deploymentName,
+        deploymentParameters
+      );
+      return ok(result?.properties?.outputs);
+    } catch (error) {
+      // TODO: fetch error reason and throw
+      throw error;
+    }
   }
 
   private async getDeployParameters(parameters: string): Promise<any> {
-    const filePath = getPath(parameters, this.context);
+    const filePath = getAbsolutePath(parameters, this.context.projectPath);
     const template = await fs.readFile(filePath, ConstantString.UTF8Encoding);
     const parameterJsonString = expandEnvironmentVariable(template);
     return JSON.parse(parameterJsonString);
@@ -135,7 +144,7 @@ export class ArmDeployImpl {
 
   private async getDeployTemplate(templatePath: string): Promise<string> {
     const templateType = getFileExtension(templatePath);
-    const filePath = getPath(templatePath, this.context);
+    const filePath = getAbsolutePath(templatePath, this.context.projectPath);
     let templateJsonString;
     if (templateType === TemplateType.Bicep) {
       templateJsonString = await this.compileBicepToJson(filePath);
@@ -156,9 +165,7 @@ export class ArmDeployImpl {
       );
       return JSON.parse(result);
     } catch (err) {
-      throw new Error(
-        getLocalizedString("driver.arm.deploy.error.CompileBicepFailed", err.message)
-      );
+      throw new Error(getDefaultString("driver.arm.error.CompileBicepFailed", err.message));
     }
   }
 

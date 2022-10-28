@@ -58,6 +58,15 @@ class DriverThatLowercase implements StepDriver {
   }
 }
 
+class DriverThatHasNestedArgs implements StepDriver {
+  async run(
+    args: { key: [{ key1: string }] },
+    context: DriverContext
+  ): Promise<Result<Map<string, string>, FxError>> {
+    return ok(new Map([["OUTPUT_D", args.key.map((e) => e.key1).join(",")]]));
+  }
+}
+
 describe("v3 lifecyle", () => {
   describe("when driver name not found", () => {
     const sandbox = sinon.createSandbox();
@@ -224,13 +233,17 @@ describe("v3 lifecyle", () => {
         .withArgs(sandbox.match("DriverThatCapitalize"))
         .returns(true)
         .withArgs(sandbox.match("DriverThatLowercase"))
+        .returns(true)
+        .withArgs(sandbox.match("DriverThatHasNestedArgs"))
         .returns(true);
       sandbox
         .stub(Container, "get")
         .withArgs(sandbox.match("DriverThatCapitalize"))
         .returns(new DriverThatCapitalize())
         .withArgs(sandbox.match("DriverThatLowercase"))
-        .returns(new DriverThatLowercase());
+        .returns(new DriverThatLowercase())
+        .withArgs(sandbox.match("DriverThatHasNestedArgs"))
+        .returns(new DriverThatHasNestedArgs());
     });
 
     after(() => {
@@ -276,6 +289,24 @@ describe("v3 lifecyle", () => {
           result.value.env.get("OUTPUT_C") === "hello yyy"
       );
     });
+
+    it("should replace all placeholders for every driver with nested args", async () => {
+      const driverDefs: DriverDefinition[] = [];
+      driverDefs.push({
+        uses: "DriverThatHasNestedArgs",
+        with: {
+          key: [{ key1: "hello ${{ SOME_ENV_VAR }}" }, { key1: "hello ${{ OTHER_ENV_VAR }}" }],
+        },
+      });
+
+      const lifecycle = new Lifecycle("configureApp", driverDefs);
+      const result = await lifecycle.run(mockedDriverContext);
+      assert(
+        result.isOk() &&
+          result.value.unresolvedPlaceHolders.length === 0 &&
+          result.value.env.get("OUTPUT_D") === "hello xxx,hello yyy"
+      );
+    });
   });
 
   describe("when run with unresolved placeholders", async () => {
@@ -309,6 +340,31 @@ describe("v3 lifecyle", () => {
       driverDefs.push({
         uses: "DriverThatLowercase",
         with: { INPUT_A: "${{CCC}} Hello ${{OTHER_ENV_VAR}}" },
+      });
+
+      const lifecycle = new Lifecycle("configureApp", driverDefs);
+      const result = await lifecycle.run(mockedDriverContext);
+      assert(
+        result.isOk() &&
+          result.value.unresolvedPlaceHolders.length === 5 &&
+          result.value.unresolvedPlaceHolders.some((x) => x === "SOME_ENV_VAR") &&
+          result.value.unresolvedPlaceHolders.some((x) => x === "AAA") &&
+          result.value.unresolvedPlaceHolders.some((x) => x === "BBB") &&
+          result.value.unresolvedPlaceHolders.some((x) => x === "CCC") &&
+          result.value.unresolvedPlaceHolders.some((x) => x === "OTHER_ENV_VAR") &&
+          result.value.env.size === 0
+      );
+    });
+
+    it("should return unresolved placeholders with nested argument", async () => {
+      const driverDefs: DriverDefinition[] = [];
+      driverDefs.push({
+        uses: "DriverThatCapitalize",
+        with: { INPUT_A: ["hello ${{ SOME_ENV_VAR }} ${{AAA}} ${{BBB}}"] },
+      });
+      driverDefs.push({
+        uses: "DriverThatLowercase",
+        with: { INPUT_A: { a: "${{CCC}} Hello ${{OTHER_ENV_VAR}}" } },
       });
 
       const lifecycle = new Lifecycle("configureApp", driverDefs);

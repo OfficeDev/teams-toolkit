@@ -12,6 +12,7 @@ export class LocalBotRegistration extends BotRegistration {
   public async createBotRegistration(
     m365TokenProvider: M365TokenProvider,
     aadDisplayName: string,
+    botName: string,
     botConfig?: BotAadCredentials,
     botAuthType: BotAuthType = BotAuthType.AADApp,
     logProvider?: LogProvider
@@ -36,7 +37,7 @@ export class LocalBotRegistration extends BotRegistration {
     // Register a new bot registration.
     const initialBotReg: IBotRegistration = {
       botId: botAadCredentials.botId,
-      name: aadDisplayName,
+      name: botName,
       description: "",
       iconUrl: "",
       messagingEndpoint: "",

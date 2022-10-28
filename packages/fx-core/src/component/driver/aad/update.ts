@@ -57,6 +57,18 @@ export class UpdateAadAppDriver implements StepDriver {
         throw new MissingFieldInManifestUserError(actionName, "id", helpLink);
       }
 
+      // Output actual manifest to project folder first for better troubleshooting experience
+      const outputFileAbsolutePath = this.getAbsolutePath(args.outputFilePath, context.projectPath);
+      await fs.ensureDir(path.dirname(outputFileAbsolutePath));
+      await fs.writeFile(outputFileAbsolutePath, JSON.stringify(manifest, null, 4), "utf8");
+      context.logProvider?.info(
+        getLocalizedString(logMessageKeys.outputAadAppManifest, outputFileAbsolutePath)
+      );
+
+      context.logProvider?.info(
+        getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
+      );
+
       // MS Graph API does not allow adding new OAuth permissions and pre authorize it within one request
       // So split update AAD app to two requests:
       // 1. If there's preAuthorizedApplications, remove it temporary and update AAD app to create possible new permission
@@ -68,18 +80,6 @@ export class UpdateAadAppDriver implements StepDriver {
       }
       // 2. Update AAD app again with full manifest to set preAuthorizedApplications
       await aadAppClient.updateAadApp(manifest);
-
-      // Output actual manifest to project folder
-      const outputFileAbsolutePath = this.getAbsolutePath(args.outputFilePath, context.projectPath);
-      await fs.ensureDir(path.dirname(outputFileAbsolutePath));
-      await fs.writeFile(outputFileAbsolutePath, JSON.stringify(manifest, null, 4), "utf8");
-      context.logProvider?.info(
-        getLocalizedString(logMessageKeys.outputAadAppManifest, outputFileAbsolutePath)
-      );
-
-      context.logProvider?.info(
-        getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
-      );
 
       return ok(
         new Map(

@@ -48,6 +48,8 @@ registerApp:
     # AAD_APP_OAUTH_AUTHORITY: the OAUTH authority of AAD app
 
   - uses: teamsApp/create # Creates a Teams app
+    with:
+      manifestTemplatePath: ./templates/appPackage/manifest.template.json # Path to manifest
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
@@ -60,14 +62,21 @@ configureApp:
 
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
     with:
-      manifestTemplate: ./.fx/appPackage/manifest.template.json # Relative path to this file. Environment variables in manifest will be replaced before apply to Teams app
+      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # TEAMS_APP_ID: the id of Teams app
 
 publish:
-  - uses: teamsApp/createAppPackage # Generate a Teams app manifest package which can be used to publish the app
+  - uses: teamsApp/validate
     with:
-      manifestTemplate: ./.fx/appPackage/manifest.template.json # Relative path to this file
-      outputPath: ./build/manifest.${{TEAMSFX_ENV}}.zip # Relative path to this file. TEAMSFX_ENV is a built-in environment variable whose value is current environment's name.
-
+      manifestTemplatePath: ./templates/appPackage/manifest.template.json # Path to manifest template
+  - uses: teamsApp/createAppPackage
+    with:
+      manifestTemplatePath: ./templates/appPackage/manifest.template.json # Path to manifest template
+      outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
+      outputJsonPath: ./build/manifest.${{TEAMSFX_ENV}}.json
   - uses: teamsApp/publishAppPackage # Publish the app to Teams app catalog
     with:
-      zipPath: ./build/manifest.${{TEAMSFX_ENV}}.zip # Relative path to this file. TEAMSFX_ENV is a built-in environment variable whose value is current environment's name.
+      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
+  # Output: following environment variable will be persisted in current environment's .env file.
+  # TEAMS_APP_PUBLISHED_APP_ID: app id in Teams tenant app catalog.

@@ -110,11 +110,12 @@ export async function getQuestionsForProvisionV3(
     node.addChild(buildQuestionNode());
     return ok(node);
   } else {
-    const node = new QTreeNode({ type: "group" });
-    if (hasAzureResourceV3(context.projectSetting as ProjectSettingsV3)) {
-      node.addChild(new QTreeNode(AskSubscriptionQuestion));
-    }
-    return ok(node);
+    // const node = new QTreeNode({ type: "group" });
+    // if (hasAzureResourceV3(context.projectSetting as ProjectSettingsV3)) {
+    //   node.addChild(new QTreeNode(AskSubscriptionQuestion));
+    // }
+    // return ok(node);
+    return ok(undefined);
   }
 }
 
@@ -659,3 +660,12 @@ export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestio
     },
   };
 }
+
+export const SelectEnvQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "env",
+  title: getLocalizedString("core.QuestionSelectTargetEnvironment.title"),
+  staticOptions: [],
+  skipSingleOption: true,
+  forgetLastValue: true,
+};

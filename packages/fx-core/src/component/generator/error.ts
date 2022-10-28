@@ -37,20 +37,6 @@ export class FetchZipFromUrlError extends BaseComponentInnerError {
   }
 }
 
-export class FetchSampleUrlWithTagError extends BaseComponentInnerError {
-  constructor(innerError: Error) {
-    super(
-      errorSource,
-      "SystemError",
-      "FetchSampleUrlWithTagError",
-      "error.generator.FetchSampleUrlWithTagError",
-      undefined,
-      ["plugins.frontend.checkNetworkTip"],
-      innerError.message
-    );
-  }
-}
-
 export class MissKeyError extends BaseComponentInnerError {
   constructor(keyName: string) {
     super(errorSource, "SystemError", "MissKeyError", "error.generator.MissKeyError", [keyName]);

@@ -547,6 +547,7 @@ export class ManifestUtils {
       manifest.configurableTabs = [];
       manifest.staticTabs = [];
       manifest.webApplicationInfo = undefined;
+      manifest.validDomains = [];
     }
 
     // Adjust template for samples with unnecessary placeholders
@@ -598,11 +599,11 @@ export class ManifestUtils {
       }
     }
 
+    manifest = JSON.parse(resolvedManifestString);
+
     if (!isUUID(manifest.id)) {
       manifest.id = v4();
     }
-
-    manifest = JSON.parse(resolvedManifestString);
 
     // dynamically set validDomains for manifest, which can be refactored by static manifest templates
     if (isLocalDebug || manifest.validDomains?.length === 0) {

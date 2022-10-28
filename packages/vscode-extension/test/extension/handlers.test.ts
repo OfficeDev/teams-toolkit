@@ -355,6 +355,70 @@ describe("handlers", () => {
       }
     });
 
+    it("openConfigStateFile() - env - FileNotFound", async () => {
+      const env = "local";
+      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
+      const projectSettings: ProjectSettings = {
+        appName: "myapp",
+        version: "1.0.0",
+        projectId: "123",
+      };
+      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
+      await fs.mkdir(configFolder, { recursive: true });
+      const settingsFile = path.resolve(configFolder, ProjectSettingsFileName);
+      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
+
+      sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
+      });
+
+      const res = await handlers.openConfigStateFile([{ type: "env" }]);
+      await fs.remove(tmpDir);
+
+      if (res) {
+        chai.assert.isTrue(res.isErr());
+        chai.assert.equal(res.error.name, ExtensionErrors.EnvFileNotFoundError);
+      }
+    });
+
+    it("openConfigStateFile() - InvalidArgs", async () => {
+      const env = "local";
+      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
+      const projectSettings: ProjectSettings = {
+        appName: "myapp",
+        version: "1.0.0",
+        projectId: "123",
+      };
+      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
+      await fs.mkdir(configFolder, { recursive: true });
+      const settingsFile = path.resolve(configFolder, ProjectSettingsFileName);
+      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
+
+      sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
+      });
+
+      const res = await handlers.openConfigStateFile([]);
+      await fs.remove(tmpDir);
+
+      if (res) {
+        chai.assert.isTrue(res.isErr());
+        chai.assert.equal(res.error.name, ExtensionErrors.InvalidArgs);
+      }
+    });
+
     it("create sample with projectid", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");

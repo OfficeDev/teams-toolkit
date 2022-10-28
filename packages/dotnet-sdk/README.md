@@ -95,7 +95,7 @@ catch (ExceptionWithCode e)
         {      
             new StringTrigger("helloworld")
         };
-
+    
         // Handle your command and send response to Teams chat
         public async Task<ICommandResponse> HandleCommandAsync(ITurnContext turnContext, CommandMessage message, CancellationToken cancellationToken = default)
         {
@@ -119,7 +119,7 @@ catch (ExceptionWithCode e)
                 Commands = new List<ITeamsCommandHandler> { sp.GetService<SampleCommandHandler>() }
             }
         };
-
+    
         return new ConversationBot(options);
     });
     ```
@@ -132,20 +132,20 @@ catch (ExceptionWithCode e)
         using Microsoft.Bot.Builder;
         using Microsoft.Bot.Builder.Integration.AspNet.Core;
         using Microsoft.TeamsFx.Conversation;
-
+    
         [Route("api/messages")]
         [ApiController]
         public class BotController : ControllerBase
         {
             private readonly ConversationBot _conversation;
             private readonly IBot _bot;
-
+    
             public BotController(ConversationBot conversation, IBot bot)
             {
                 _conversation = conversation;
                 _bot = bot;
             }
-
+    
             [HttpPost]
             public async Task PostAsync(CancellationToken cancellationToken = default)
             {
@@ -177,7 +177,7 @@ catch (ExceptionWithCode e)
                 BotAppId = botAppId, // Your bot app ID
             },
         };
-
+    
         return new ConversationBot(options);
     });
     ```
@@ -190,20 +190,20 @@ catch (ExceptionWithCode e)
         using Microsoft.Bot.Builder;
         using Microsoft.Bot.Builder.Integration.AspNet.Core;
         using Microsoft.TeamsFx.Conversation;
-
+    
         [Route("api/messages")]
         [ApiController]
         public class BotController : ControllerBase
         {
             private readonly ConversationBot _conversation;
             private readonly IBot _bot;
-
+    
             public BotController(ConversationBot conversation, IBot bot)
             {
                 _conversation = conversation;
                 _bot = bot;
             }
-
+    
             [HttpPost]
             public async Task PostAsync(CancellationToken cancellationToken = default)
             {
@@ -227,7 +227,7 @@ catch (ExceptionWithCode e)
         foreach (var installation in installations)
         {
             await installation.SendMessage("Hello.", cancellationToken);
-
+    
             // Or, send adaptive card (need to build your own card object)
             // await installation.SendAdaptiveCard(cardObject, cancellationToken);
         }
@@ -248,7 +248,7 @@ catch (ExceptionWithCode e)
         /// The value should be the same as the `verb` property which you define in your adaptive card JSON.
         /// </summary>
         public string TriggerVerb => "doStuff";
-
+    
         /// <summary>
         /// Indicate how your acrion response card is sent in the conversation.
         /// By default, the response card can only be updated for the interactor who trigger the action.
@@ -260,13 +260,13 @@ catch (ExceptionWithCode e)
         {
             // Send invoke response with text message
             return InvokeResponseFactory.TextMessage("[ACK] Successfully!");
-
+    
             /**
              * If you want to send invoke response with adaptive card, you can:
              *
              * return InvokeResponseFactory.AdaptiveCard(JsonConvert.DeserializeObject(<your-card-json>));
              */
-
+    
             /**
              * If you want to send invoke response with error message, you can:
              *
@@ -280,7 +280,7 @@ catch (ExceptionWithCode e)
     ```csharp
     // create action handler instance
     builder.Services.AddSingleton<DoStuffActionHandler>();
-
+    
     // create conversation bot with adaptive card action feature enabled.
     builder.Services.AddSingleton(sp =>
     {
@@ -293,7 +293,7 @@ catch (ExceptionWithCode e)
                 Actions = new List<IAdaptiveCardActionHandler> { sp.GetService<DoStuffActionHandler>() }
             }
         };
-
+    
         return new ConversationBot(options);
     });
     ```
@@ -306,20 +306,20 @@ catch (ExceptionWithCode e)
         using Microsoft.Bot.Builder;
         using Microsoft.Bot.Builder.Integration.AspNet.Core;
         using Microsoft.TeamsFx.Conversation;
-
+    
         [Route("api/messages")]
         [ApiController]
         public class BotController : ControllerBase
         {
             private readonly ConversationBot _conversation;
             private readonly IBot _bot;
-
+    
             public BotController(ConversationBot conversation, IBot bot)
             {
                 _conversation = conversation;
                 _bot = bot;
             }
-
+    
             [HttpPost]
             public async Task PostAsync(CancellationToken cancellationToken = default)
             {
@@ -341,10 +341,10 @@ If there is an existing project created in VS2019, you can use the following ste
 1. Open project in VS2022 and change project target framework to ".NET 6".
 
 2. Upgrade dependencies:
-  `Microsoft.TeamsFx.SimpleAuth` to `0.1.2`,
-  `Newtonsoft.Json` to `13.0.1`,
-  `Microsoft.Graph` to `4.12.0`,
-  `Microsoft.Fast.Components.FluentUI` to `1.1.0`.
+    `Microsoft.TeamsFx.SimpleAuth` to `0.1.2`,
+    `Newtonsoft.Json` to `13.0.1`,
+    `Microsoft.Graph` to `4.12.0`,
+    `Microsoft.Fast.Components.FluentUI` to `1.1.0`.
 
 3. Add following lines in appsettings.{Environment}.json file after "ALLOWED_APP_IDS".
 ```json
@@ -400,6 +400,19 @@ If there is an existing project created in VS2022 17.1 Preview, you can use the 
 - In Solution Explorer:
 1. Right click project file and choose "Manage User Secrets".
 2. Change key name "CLIENT_SECRET" to "TeamsFx:Authentication:ClientSecret".
+
+### Upgrade from 1.2.0-rc to 1.3.0 (Update projects to use TeamsJS V.2.0)
+
+Teams Toolkit provides users with a template `TeamsJSBlazorInterop.js`, which consists of multiple commonly used Teams JS SDK API. Users can add more APIs if needed. As suggested, even if you intend your app to only run in Teams (and not Office and Outlook), best practice is to start referencing the latest TeamsJS (*v.2.0* or later) as soon as convenient, in order to benefit from the latest improvements, new features, and support (even for Teams-only apps). 
+
+Starting from TeamsFx .NET SDK 1.3.0, TeamsJS V2 are referenced. Though previously scaffolded projects still work with TeamsFx .NET SDK 1.3.0, we suggest you replace the `TeamsJSBlazorInterop.js` under `./wwwroot/js` with the latest one from [here](https://github.com/OfficeDev/TeamsFx/blob/main/templates/tab/csharp/default/wwwroot/js/TeamsJsBlazorInterop.js). Two APIs in the file are updated with new function name to align with renamed TeamsJS APIs. `initializeWithContext()` is removed.
+
+| Original Function              | New Function                  |
+| ------------------------------ | ----------------------------- |
+| setFrameContext()              | setCurrentFrame()             |
+| registerChangeSettingHandler() | registerChangeConfigHandler() |
+
+For more APIs, please [visit the TeamsJS documentation to learn more](https://learn.microsoft.com/en-us/microsoftteams/platform/tabs/how-to/using-teams-client-sdk?tabs=javascript%2Cmanifest-teams-toolkit).
 
 ### Configure Logging
 `ILogger` is used to print logs. You can configure logging in appsettings.{Environment}.json. [Visit the ASP.NET documentation to learn more](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-5.0#configure-logging-1) 

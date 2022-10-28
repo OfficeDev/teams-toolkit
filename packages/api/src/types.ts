@@ -302,5 +302,4 @@ export type MaybePromise<T> = T | Promise<T>;
 export interface Settings {
   version: string;
   projectId: string;
-  isFromSample: boolean;
 }

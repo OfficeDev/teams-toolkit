@@ -1569,8 +1569,6 @@ export type SelectFolderResult = InputResult<string>;
 // @public
 export interface Settings {
     // (undocumented)
-    isFromSample: boolean;
-    // (undocumented)
     projectId: string;
     // (undocumented)
     version: string;

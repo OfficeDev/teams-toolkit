@@ -178,19 +178,31 @@ export class Coordinator {
     }
 
     // generate unique projectId in projectSettings.json
-    const projectSettingsRes = await settingsUtil.readSettings(projectPath);
-    if (projectSettingsRes.isOk()) {
-      const settings = projectSettingsRes.value;
-      settings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
-      settings.isFromSample = scratch === ScratchOptionNo.id;
-      inputs.projectId = settings.projectId;
-      await settingsUtil.writeSettings(projectPath, settings);
-    }
+    const ensureRes = await this.ensureProjectId(inputs, projectPath);
+    if (ensureRes.isErr()) return err(ensureRes.error);
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
     }
     context.projectPath = projectPath;
     return ok(projectPath);
+  }
+
+  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    //TODO call generator to generate .fx folder
+    const ensureRes = await this.ensureProjectId(inputs, inputs.projectPath!);
+    if (ensureRes.isErr()) return err(ensureRes.error);
+    return ok(undefined);
+  }
+
+  async ensureProjectId(inputs: Inputs, projectPath: string): Promise<Result<undefined, FxError>> {
+    // generate unique projectId in projectSettings.json
+    const settingsRes = await settingsUtil.readSettings(projectPath);
+    if (settingsRes.isErr()) return err(settingsRes.error);
+    const settings = settingsRes.value;
+    settings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
+    inputs.projectId = settings.projectId;
+    await settingsUtil.writeSettings(projectPath, settings);
+    return ok(undefined);
   }
 
   /**

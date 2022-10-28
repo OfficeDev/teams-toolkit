@@ -7,6 +7,7 @@ import { createSandbox } from "sinon";
 import { setTools } from "../../../../src/core/globalVars";
 import {
   MockAzureAccountProvider,
+  MockLogProvider,
   MockTelemetryReporter,
   MockTools,
   MockUserInteraction,
@@ -29,6 +30,8 @@ describe("Arm driver deploy", () => {
     azureAccountProvider: new MockAzureAccountProvider(),
     telemetryReporter: new MockTelemetryReporter(),
     ui: new MockUserInteraction(),
+    logProvider: new MockLogProvider(),
+    projectPath: "./",
   };
   const driver = new ArmDeployDriver();
 
@@ -116,6 +119,21 @@ describe("Arm driver deploy", () => {
       resourceGroupName: "mock-group",
       bicepCliVersion: "",
       templates: [],
+    } as any;
+    res = await driver.run(deployArgs, mockedDriverContext);
+    assert.isTrue(res.isErr());
+
+    deployArgs = {
+      subscriptionId: "00000000-0000-0000-0000-000000000000",
+      resourceGroupName: "mock-group",
+      bicepCliVersion: "",
+      templates: [
+        {
+          path: "C:/mock-template",
+          parameters: "",
+          deploymentName: "",
+        },
+      ],
     } as any;
     res = await driver.run(deployArgs, mockedDriverContext);
     assert.isTrue(res.isErr());

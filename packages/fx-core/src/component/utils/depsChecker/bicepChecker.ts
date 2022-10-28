@@ -310,6 +310,9 @@ class BicepChecker {
   }
 
   private isVersionSupported(version: string): boolean {
+    if (this._version) {
+      return this._version === version;
+    }
     return supportedVersions.some((supported) => version.includes(supported));
   }
 

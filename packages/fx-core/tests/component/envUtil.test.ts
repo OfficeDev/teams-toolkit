@@ -22,6 +22,8 @@ import { ContextInjectorMW } from "../../src/core/middleware/contextInjector";
 import { CoreHookContext } from "../../src/core/types";
 import { MockTools } from "../core/utils";
 import { setTools } from "../../src/core/globalVars";
+import { environmentManager } from "../../src/core/environment";
+import mockedEnv, { RestoreFn } from "mocked-env";
 describe("env utils", () => {
   const tools = new MockTools();
   setTools(tools);
@@ -33,8 +35,19 @@ describe("env utils", () => {
     version: "1",
     isFromSample: false,
   };
+  let mockedEnvRestore: RestoreFn | undefined;
+
   afterEach(() => {
     sandbox.restore();
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
+  });
+
+  beforeEach(() => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
   });
   it("envUtil.readEnv", async () => {
     const encRes = await cryptoProvider.encrypt(decrypted);
@@ -80,6 +93,22 @@ describe("env utils", () => {
   it("envUtil.listEnv", async () => {
     sandbox.stub(fs, "readdir").resolves([".env.dev", ".env.prod"] as any);
     const res = await envUtil.listEnv(".");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(res.value, ["dev", "prod"]);
+    }
+  });
+  it("environmentManager.listAllEnvConfigs", async () => {
+    sandbox.stub(fs, "readdir").resolves([".env.dev", ".env.prod"] as any);
+    const res = await environmentManager.listAllEnvConfigs(".");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(res.value, ["dev", "prod"]);
+    }
+  });
+  it("environmentManager.listRemoteEnvConfigs", async () => {
+    sandbox.stub(fs, "readdir").resolves([".env.dev", ".env.prod", ".env.local"] as any);
+    const res = await environmentManager.listRemoteEnvConfigs(".");
     assert.isTrue(res.isOk());
     if (res.isOk()) {
       assert.deepEqual(res.value, ["dev", "prod"]);

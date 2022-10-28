@@ -342,7 +342,7 @@ describe("handlers", () => {
         selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
       });
 
-      const res = await handlers.openConfigStateFile([]);
+      const res = await handlers.openConfigStateFile([{ type: "state" }]);
       await fs.remove(tmpDir);
 
       if (res) {

@@ -25,6 +25,7 @@ import { Constants } from "../../resource/appManifest/constants";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
+import { AppDefinition } from "../../resource/appManifest/interfaces/appDefinition";
 
 const actionName = "teamsApp/create";
 
@@ -94,7 +95,7 @@ export class CreateTeamsAppDriver implements StepDriver {
     const manifestString = manifestFile.getData().toString();
     const manifest = JSON.parse(manifestString) as TeamsAppManifest;
     const teamsAppId = manifest.id;
-    let createdAppDefinition;
+    let createdAppDefinition: AppDefinition;
     if (teamsAppId) {
       try {
         createdAppDefinition = await AppStudioClient.getApp(

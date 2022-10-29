@@ -19,6 +19,7 @@ const actionName = "teamsApp/update";
 
 const outputNames = {
   TEAMS_APP_ID: "TEAMS_APP_ID",
+  TEAMS_APP_TENANT_ID: "TEAMS_APP_TENANT_ID",
 };
 
 @Service(actionName)
@@ -59,7 +60,12 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       );
       context.logProvider.info(message);
       context.ui?.showMessage("info", message, false);
-      return ok(new Map([[outputNames.TEAMS_APP_ID, appDefinition.teamsAppId!]]));
+      return ok(
+        new Map([
+          [outputNames.TEAMS_APP_ID, appDefinition.teamsAppId!],
+          [outputNames.TEAMS_APP_TENANT_ID, appDefinition.tenantId!],
+        ])
+      );
     } catch (e: any) {
       return err(
         AppStudioResultFactory.SystemError(

@@ -12,12 +12,13 @@ import {
   MockTools,
   MockUserInteraction,
 } from "../core/utils";
-import { MyTokenCredential } from "../plugins/solution/util";
+import { MockedTelemetryReporter, MyTokenCredential } from "../plugins/solution/util";
 import { assert } from "console";
 import { setTools } from "../../src/core/globalVars";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as backupFile from "../../src/component/utils/backupFiles";
 import * as appSettingsUtils from "../../src/component/code/appSettingUtils";
+import fs from "fs-extra";
 
 const expect = chai.expect;
 
@@ -1102,22 +1103,47 @@ describe("provisionUtils", () => {
       expect(res.isOk()).equal(true);
     });
 
+    it("do nothing if tenant matches and send telemetry", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "tid",
+      });
+      const m365TokenProvider = new MockM365TokenProvider();
+      const telemetryReporter = new MockedTelemetryReporter();
+      mocker.stub(m365TokenProvider, "getJsonObject").resolves(ok({ tid: "tid" }));
+      const reporter = mocker.stub(telemetryReporter, "sendTelemetryEvent").resolves();
+
+      const res = await provisionUtils.handleWhenTenantSwitchedV3(
+        m365TokenProvider,
+        "dev",
+        "projectPath",
+        false,
+        telemetryReporter
+      );
+      expect(res.isOk()).equal(true);
+      expect(reporter.calledOnce).equal(true);
+    });
+
     it("backup if tenant switched", async () => {
       mockedEnvRestore = mockedEnv({
         TEAMS_APP_TENANT_ID: "old_tid",
       });
       const m365TokenProvider = new MockM365TokenProvider();
+      const telemetryReporter = new MockedTelemetryReporter();
+      const reporter = mocker.stub(telemetryReporter, "sendTelemetryEvent").resolves();
       mocker.stub(m365TokenProvider, "getJsonObject").resolves(ok({ tid: "tid" }));
+      mocker.stub(fs, "pathExists").resolves(false);
       const backup = mocker.stub(backupFile, "backupV3Files").resolves(ok(undefined));
 
       const res = await provisionUtils.handleWhenTenantSwitchedV3(
         m365TokenProvider,
         "dev",
         "projectPath",
-        false
+        false,
+        telemetryReporter
       );
       expect(res.isOk()).equal(true);
       expect(backup.calledOnce).equal(true);
+      expect(reporter.calledOnce).equal(true);
     });
 
     it("processing envs and backup if tenant switched", async () => {
@@ -1130,6 +1156,7 @@ describe("provisionUtils", () => {
       const m365TokenProvider = new MockM365TokenProvider();
       mocker.stub(m365TokenProvider, "getJsonObject").resolves(ok({ tid: "tid" }));
       const backup = mocker.stub(backupFile, "backupV3Files").resolves(ok(undefined));
+      mocker.stub(fs, "pathExists").resolves(false);
 
       const res = await provisionUtils.handleWhenTenantSwitchedV3(
         m365TokenProvider,
@@ -1141,7 +1168,7 @@ describe("provisionUtils", () => {
       expect(backup.calledOnce).equal(true);
     });
 
-    it("processing envs and backup if tenant switched for CSharp project", async () => {
+    it("processing envs and backup if tenant switched for CSharp project in local environment", async () => {
       mockedEnvRestore = mockedEnv({
         TEAMS_APP_TENANT_ID: "old_tid",
         TEAMS_APP_ID: "old_teams_app_id",
@@ -1154,16 +1181,47 @@ describe("provisionUtils", () => {
         .stub(appSettingsUtils, "resetAppSettingsDevelopment")
         .resolves(ok(undefined));
       const backup = mocker.stub(backupFile, "backupV3Files").resolves(ok(undefined));
+      mocker.stub(fs, "pathExists").resolves(false);
 
       const res = await provisionUtils.handleWhenTenantSwitchedV3(
         m365TokenProvider,
-        "dev",
+        "local",
         "projectPath",
         true
       );
       expect(res.isOk()).equal(true);
       expect(backup.calledOnce).equal(true);
       expect(appSettings.calledOnce).equal(true);
+    });
+
+    it("processing envs and backup if tenant switched for CSharp project in non-local environment", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "old_tid",
+        TEAMS_APP_ID: "old_teams_app_id",
+        BOT_ID: "old_bot_id",
+        AAD_APP_CLIENT_ID: "old_aad_app_client_id",
+      });
+      const m365TokenProvider = new MockM365TokenProvider();
+      mocker.stub(m365TokenProvider, "getJsonObject").resolves(ok({ tid: "tid" }));
+      const appSettings = mocker
+        .stub(appSettingsUtils, "resetAppSettingsDevelopment")
+        .resolves(ok(undefined));
+      const telemetryReporter = new MockedTelemetryReporter();
+      const reporter = mocker.stub(telemetryReporter, "sendTelemetryEvent").resolves();
+      const backup = mocker.stub(backupFile, "backupV3Files").resolves(ok(undefined));
+      mocker.stub(fs, "pathExists").resolves(false);
+
+      const res = await provisionUtils.handleWhenTenantSwitchedV3(
+        m365TokenProvider,
+        "dev",
+        "projectPath",
+        true,
+        telemetryReporter
+      );
+      expect(res.isOk()).equal(true);
+      expect(backup.calledOnce).equal(true);
+      expect(appSettings.notCalled).equal(true);
+      expect(reporter.calledOnce).equal(true);
     });
 
     it("backup error", async () => {
@@ -1203,10 +1261,11 @@ describe("provisionUtils", () => {
         .stub(appSettingsUtils, "resetAppSettingsDevelopment")
         .resolves(err(new SystemError("source", "error", "msg", "msg")));
       const backup = mocker.stub(backupFile, "backupV3Files").resolves(ok(undefined));
+      mocker.stub(fs, "pathExists").resolves(false);
 
       const res = await provisionUtils.handleWhenTenantSwitchedV3(
         m365TokenProvider,
-        "dev",
+        "local",
         "projectPath",
         true
       );
@@ -1216,6 +1275,61 @@ describe("provisionUtils", () => {
       }
       expect(backup.calledOnce).equal(true);
       expect(appSettings.calledOnce).equal(true);
+    });
+
+    it("error when local debug with notification store", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "old_tid",
+        TEAMS_APP_ID: "old_teams_app_id",
+        BOT_ID: "old_bot_id",
+        AAD_APP_CLIENT_ID: "old_aad_app_client_id",
+      });
+      const m365TokenProvider = new MockM365TokenProvider();
+      mocker.stub(m365TokenProvider, "getJsonObject").resolves(ok({ tid: "tid" }));
+      const appSettings = mocker
+        .stub(appSettingsUtils, "resetAppSettingsDevelopment")
+        .resolves(ok(undefined));
+      const backup = mocker.stub(backupFile, "backupV3Files").resolves(ok(undefined));
+      mocker.stub(fs, "pathExists").resolves(true);
+
+      const res = await provisionUtils.handleWhenTenantSwitchedV3(
+        m365TokenProvider,
+        "local",
+        "projectPath",
+        true
+      );
+      expect(res.isErr()).equal(true);
+      if (res.isErr()) {
+        expect(res.error.name).equal(SolutionError.CannotLocalDebugInDifferentTenant);
+      }
+      expect(backup.notCalled).equal(true);
+      expect(appSettings.notCalled).equal(true);
+    });
+
+    it("continue when provision with local notification store", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "old_tid",
+        TEAMS_APP_ID: "old_teams_app_id",
+        BOT_ID: "old_bot_id",
+        AAD_APP_CLIENT_ID: "old_aad_app_client_id",
+      });
+      const m365TokenProvider = new MockM365TokenProvider();
+      mocker.stub(m365TokenProvider, "getJsonObject").resolves(ok({ tid: "tid" }));
+      const appSettings = mocker
+        .stub(appSettingsUtils, "resetAppSettingsDevelopment")
+        .resolves(ok(undefined));
+      const backup = mocker.stub(backupFile, "backupV3Files").resolves(ok(undefined));
+      mocker.stub(fs, "pathExists").resolves(true);
+
+      const res = await provisionUtils.handleWhenTenantSwitchedV3(
+        m365TokenProvider,
+        "dev",
+        "projectPath",
+        true
+      );
+      expect(res.isOk()).equal(true);
+      expect(backup.calledOnce).equal(true);
+      expect(appSettings.notCalled).equal(true);
     });
   });
 });

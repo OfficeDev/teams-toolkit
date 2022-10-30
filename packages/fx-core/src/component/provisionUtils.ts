@@ -18,6 +18,7 @@ import {
   Result,
   SubscriptionInfo,
   SystemError,
+  TelemetryReporter,
   TokenProvider,
   UserError,
   v2,
@@ -60,6 +61,7 @@ import fs from "fs-extra";
 import { updateAzureParameters } from "./arm";
 import path from "path";
 import { DeployConfigsConstants } from "../common/azure-hosting/hostingConstant";
+import { BotDebugHandler } from "./debugHandler";
 interface M365TenantRes {
   tenantIdInToken: string;
   tenantUserName: string;
@@ -883,14 +885,33 @@ export class ProvisionUtils {
     m365TokenProvider: M365TokenProvider,
     env: string,
     projectPath: string,
-    isCSharpProject: boolean
+    isCSharpProject: boolean,
+    telemetryReporter?: TelemetryReporter
   ): Promise<Result<undefined, FxError>> {
     const hasSwitchedRes = await hasTenantSwitchedV3(m365TokenProvider);
     if (hasSwitchedRes.isErr()) {
       return err(hasSwitchedRes.error);
     }
-    const hasSwitched = hasSwitchedRes.value;
-    if (hasSwitched) {
+    const value = hasSwitchedRes.value;
+
+    if (value.hasSwitched) {
+      if (
+        env == "local" &&
+        (await fs.pathExists(`${projectPath}/bot/.notification.localstore.json`))
+      ) {
+        const errorMessage = getLocalizedString(
+          "core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount",
+          value.currentM365Tenant,
+          "bot/.notification.localstore.json"
+        );
+        return err(
+          new UserError(
+            "DebugHandler",
+            SolutionError.CannotLocalDebugInDifferentTenant,
+            errorMessage
+          )
+        );
+      }
       if (process.env.TEAMS_APP_ID) {
         process.env.TEAMS_APP_ID = "";
       }
@@ -905,17 +926,28 @@ export class ProvisionUtils {
 
       const res = await backupV3Files(env, projectPath, isCSharpProject);
       if (res.isOk()) {
-        if (isCSharpProject) {
+        if (env === "local" && isCSharpProject) {
           const appSettingsRes = await resetAppSettingsDevelopment(projectPath);
           if (appSettingsRes.isErr()) {
             return err(appSettingsRes.error);
           }
         }
+        telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckM365Tenant, {
+          [TelemetryProperty.HasSwitchedM365Tenant]: "true",
+          [SolutionTelemetryProperty.M365TenantId]: value.currentM365Tenant,
+          [SolutionTelemetryProperty.PreviousM365TenantId]: value.previousM365Tenant!,
+        });
         return ok(undefined);
       } else {
         return err(res.error);
       }
     }
+
+    telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckM365Tenant, {
+      [TelemetryProperty.HasSwitchedM365Tenant]: "false",
+      [SolutionTelemetryProperty.M365TenantId]: value.currentM365Tenant,
+      [SolutionTelemetryProperty.PreviousM365TenantId]: value.previousM365Tenant ?? "",
+    });
 
     return ok(undefined);
   }
@@ -1180,9 +1212,14 @@ export async function handleConfigFilesWhenSwitchAccount(
   return ok(undefined);
 }
 
+interface checkTenantRes {
+  previousM365Tenant: string | undefined;
+  currentM365Tenant: string;
+  hasSwitched: boolean;
+}
 export async function hasTenantSwitchedV3(
   m365TokenProvider: M365TokenProvider
-): Promise<Result<boolean, FxError>> {
+): Promise<Result<checkTenantRes, FxError>> {
   const appStudioTokenJsonRes = await m365TokenProvider.getJsonObject({
     scopes: AppStudioScopes,
   });
@@ -1191,11 +1228,15 @@ export async function hasTenantSwitchedV3(
   }
 
   const token = appStudioTokenJsonRes.value;
-  const tenantId = token["tid"];
+  const tenantId = token["tid"] as string;
 
   const hasSwitched =
     !!process.env.TEAMS_APP_TENANT_ID && process.env.TEAMS_APP_TENANT_ID !== tenantId;
-  return ok(hasSwitched);
+  return ok({
+    previousM365Tenant: process.env.TEAMS_APP_TENANT_ID,
+    currentM365Tenant: tenantId,
+    hasSwitched,
+  });
 }
 
 export const provisionUtils = new ProvisionUtils();

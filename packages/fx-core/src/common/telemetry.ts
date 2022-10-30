@@ -118,6 +118,7 @@ export enum TelemetryEvent {
   DeploymentInfoNotFound = "deployment-info-not-found",
   InstallScriptNotFound = "install-script-not-found",
   SkipDeploy = "skip-deploy",
+  CheckM365Tenant = "check-m365-tenant",
 }
 
 export enum TelemetrySuccess {

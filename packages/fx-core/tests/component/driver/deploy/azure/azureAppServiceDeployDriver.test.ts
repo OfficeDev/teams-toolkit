@@ -46,8 +46,12 @@ describe("Azure App Service Deploy Driver test", () => {
 
   it("deploy happy path", async () => {
     const deploy = new AzureAppServiceDeployDriver();
-    /*const fh = await fs.open("test.txt", "a");
-    await fs.close(fh);*/
+    const fh = await fs.open(path.join(sysTmp, folder, "test.txt"), "a");
+    await fs.close(fh);
+    await fs.writeFile(path.join(sysTmp, folder, "ignore"), "ignore", {
+      encoding: "utf8",
+      flag: "a",
+    });
     const args = {
       workingDirectory: sysTmp,
       distributionPath: `./${folder}`,

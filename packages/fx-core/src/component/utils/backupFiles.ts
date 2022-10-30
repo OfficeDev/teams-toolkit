@@ -23,6 +23,7 @@ const configFolder = `.${ConfigFolderName}/configs`;
 const azureParameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const stateFolder = `.${ConfigFolderName}/states`;
 const stateFileNameTemplate = `state.${EnvNamePlaceholder}.json`;
+const envFileNameTemplate = `.env.${EnvNamePlaceholder}`;
 const userDateFileNameTemplate = `${EnvNamePlaceholder}.userdata`;
 const jsonSuffix = ".json";
 const userDataSuffix = ".userdata";
@@ -248,4 +249,48 @@ async function generateReport(backupFolder: string, isVSPlatform: boolean, ctx: 
   } catch (error) {
     // do nothing
   }
+}
+
+export async function backupV3Files(
+  env: string,
+  projectPath: string,
+  isCSharpProject: boolean
+): Promise<Result<undefined, FxError>> {
+  const time = formatDate();
+  const backupFolder = await getBackupFolder(projectPath);
+
+  const envFileBackupRes = await backupFxFile(
+    projectPath,
+    env,
+    envFileNameTemplate,
+    ".fx",
+    backupFolder,
+    time,
+    ""
+  );
+  if (envFileBackupRes.isErr()) {
+    return err(envFileBackupRes.error);
+  }
+
+  // Back up appsettings.Development.json
+  if (env === "local" && isCSharpProject) {
+    const sourceFilePath = path.join(projectPath, appSettingsFileName);
+    const appSettingsBackupRes = await backupSrcFile(
+      sourceFilePath,
+      appSettingsFileName,
+      backupFolder,
+      time,
+      jsonSuffix
+    );
+    if (appSettingsBackupRes.isErr()) {
+      return err(appSettingsBackupRes.error);
+    }
+  }
+
+  // update .gitignore
+  if (await fs.pathExists(backupFolder)) {
+    await addPathToGitignore(projectPath, backupFolder, TOOLS.logProvider);
+  }
+
+  return ok(undefined);
 }

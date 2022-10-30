@@ -3,11 +3,15 @@ import { fileEncoding, TestFilePath } from "../../constants";
 import os from "os";
 import path from "path";
 import fs from "fs-extra";
-import { backupFiles } from "../../../src/component/utils/backupFiles";
+import { backupFiles, backupV3Files } from "../../../src/component/utils/backupFiles";
 import { expect } from "chai";
 import { MockTools } from "../../core/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockContext } from "../../component/feature/apiconnector/utils";
+import sinon from "sinon";
+import * as projectMigrator from "../../../src/core/middleware/projectMigrator";
+import { SolutionError } from "../../../src/component/constants";
+import { PathLike } from "fs";
 
 describe("update Azure parameters", async () => {
   const parameterFileNameTemplate = (env: string) => `azure.parameters.${env}.json`;
@@ -284,5 +288,119 @@ describe("update Azure parameters", async () => {
     expect(
       files[0].includes("appsettings.Development") || files[1].includes("appsettings.Development")
     );
+  });
+});
+
+describe("backup v3 files", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(async () => {
+    sandbox.restore();
+  });
+  it("Back up v3 files succeeds", async () => {
+    const copy = sandbox.stub(fs, "copyFile").resolves();
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "readdir").callsFake((path: PathLike) => {
+      return [] as any;
+    });
+    sandbox.stub(fs, "pathExists").callsFake((file: string) => {
+      return true;
+    });
+    const updateGitIgnore = sandbox.stub(projectMigrator, "addPathToGitignore").resolves();
+
+    const res = await backupV3Files("local", TestHelper.rootDir, false);
+
+    expect(res.isOk()).equal(true);
+    expect(updateGitIgnore.calledOnce).equal(true);
+    expect(copy.calledOnce).equal(true);
+  });
+
+  it("Back up v3 files error", async () => {
+    const copy = sandbox.stub(fs, "copyFile").throws();
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "pathExists").callsFake((file: string) => {
+      if (file === path.join(TestHelper.rootDir, ".backup")) {
+        return false;
+      }
+      return true;
+    });
+    const updateGitIgnore = sandbox.stub(projectMigrator, "addPathToGitignore").resolves();
+
+    const res = await backupV3Files("local", TestHelper.rootDir, false);
+
+    expect(res.isErr()).equal(true);
+    if (res.isErr()) {
+      expect(res.error.name).equal(SolutionError.FailedToBackupFiles);
+    }
+    expect(updateGitIgnore.calledOnce).equal(false);
+    expect(copy.calledOnce).equal(true);
+  });
+
+  it("not update gitignore", async () => {
+    const copy = sandbox.stub(fs, "copyFile").resolves();
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "pathExists").callsFake((file: string) => {
+      if (file === path.join(TestHelper.rootDir, ".backup")) {
+        return false;
+      }
+      return true;
+    });
+    const updateGitIgnore = sandbox.stub(projectMigrator, "addPathToGitignore").resolves();
+
+    const res = await backupV3Files("local", TestHelper.rootDir, false);
+
+    expect(res.isOk()).equal(true);
+    expect(updateGitIgnore.calledOnce).equal(false);
+    expect(copy.calledOnce).equal(true);
+  });
+
+  it("backup files for CSharp project local env succeeds", async () => {
+    const copy = sandbox.stub(fs, "copyFile").resolves();
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "pathExists").callsFake((file: string) => {
+      if (file === path.join(TestHelper.rootDir, ".backup")) {
+        return false;
+      }
+      return true;
+    });
+
+    const res = await backupV3Files("local", TestHelper.rootDir, true);
+
+    expect(res.isOk()).equal(true);
+    expect(copy.calledTwice).equal(true);
+  });
+
+  it("backup app settings failed", async () => {
+    const copy = sandbox.stub(fs, "copyFile").onFirstCall().resolves().onSecondCall().throws();
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "pathExists").callsFake((file: string) => {
+      if (file === path.join(TestHelper.rootDir, ".backup")) {
+        return false;
+      }
+      return true;
+    });
+
+    const res = await backupV3Files("local", TestHelper.rootDir, true);
+
+    expect(res.isErr()).equal(true);
+    expect(copy.calledTwice).equal(true);
+    if (res.isErr()) {
+      expect(res.error.name).equal(SolutionError.FailedToBackupFiles);
+    }
+  });
+
+  it("backup files for CSharp project non-local env succeeds", async () => {
+    const copy = sandbox.stub(fs, "copyFile").resolves();
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "pathExists").callsFake((file: string) => {
+      if (file === path.join(TestHelper.rootDir, ".backup")) {
+        return false;
+      }
+      return true;
+    });
+
+    const res = await backupV3Files("dev", TestHelper.rootDir, true);
+
+    expect(res.isOk()).equal(true);
+    expect(copy.calledOnce).equal(true);
   });
 });

@@ -1,4 +1,4 @@
-import { err, ok, Platform, UserError, v2 } from "@microsoft/teamsfx-api";
+import { err, ok, Platform, SystemError, UserError, v2 } from "@microsoft/teamsfx-api";
 import "mocha";
 import chai from "chai";
 import * as sinon from "sinon";
@@ -15,6 +15,9 @@ import {
 import { MyTokenCredential } from "../plugins/solution/util";
 import { assert } from "console";
 import { setTools } from "../../src/core/globalVars";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import * as backupFile from "../../src/component/utils/backupFiles";
+import * as appSettingsUtils from "../../src/component/code/appSettingUtils";
 
 const expect = chai.expect;
 
@@ -1038,6 +1041,181 @@ describe("provisionUtils", () => {
       mocker.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("mockRG"));
       const res = await provisionUtils.ensureResourceGroup(azureAccountProvider, "mockSubId");
       assert(res.isOk());
+    });
+  });
+
+  describe("handleWhenTenantSwitchedV3", () => {
+    const mocker = sinon.createSandbox();
+    let mockedEnvRestore: RestoreFn | undefined;
+
+    afterEach(() => {
+      mocker.restore();
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
+    });
+
+    it("get json object error", async () => {
+      const m365TokenProvider = new MockM365TokenProvider();
+      mocker
+        .stub(m365TokenProvider, "getJsonObject")
+        .resolves(err(new UserError("m365", "cancel", "msg", "msg")));
+
+      const res = await provisionUtils.handleWhenTenantSwitchedV3(
+        m365TokenProvider,
+        "dev",
+        "projectPath",
+        false
+      );
+      expect(res.isErr()).equal(true);
+      if (res.isErr()) {
+        expect(res.error.source).equal("m365");
+      }
+    });
+
+    it("do nothing if no stored tenant id", async () => {
+      const m365TokenProvider = new MockM365TokenProvider();
+      mocker.stub(m365TokenProvider, "getJsonObject").resolves(ok({ tid: "tid" }));
+
+      const res = await provisionUtils.handleWhenTenantSwitchedV3(
+        m365TokenProvider,
+        "dev",
+        "projectPath",
+        false
+      );
+      expect(res.isOk()).equal(true);
+    });
+
+    it("do nothing if tenant matches", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "tid",
+      });
+      const m365TokenProvider = new MockM365TokenProvider();
+      mocker.stub(m365TokenProvider, "getJsonObject").resolves(ok({ tid: "tid" }));
+
+      const res = await provisionUtils.handleWhenTenantSwitchedV3(
+        m365TokenProvider,
+        "dev",
+        "projectPath",
+        false
+      );
+      expect(res.isOk()).equal(true);
+    });
+
+    it("backup if tenant switched", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "old_tid",
+      });
+      const m365TokenProvider = new MockM365TokenProvider();
+      mocker.stub(m365TokenProvider, "getJsonObject").resolves(ok({ tid: "tid" }));
+      const backup = mocker.stub(backupFile, "backupV3Files").resolves(ok(undefined));
+
+      const res = await provisionUtils.handleWhenTenantSwitchedV3(
+        m365TokenProvider,
+        "dev",
+        "projectPath",
+        false
+      );
+      expect(res.isOk()).equal(true);
+      expect(backup.calledOnce).equal(true);
+    });
+
+    it("processing envs and backup if tenant switched", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "old_tid",
+        TEAMS_APP_ID: "old_teams_app_id",
+        BOT_ID: "old_bot_id",
+        AAD_APP_CLIENT_ID: "old_aad_app_client_id",
+      });
+      const m365TokenProvider = new MockM365TokenProvider();
+      mocker.stub(m365TokenProvider, "getJsonObject").resolves(ok({ tid: "tid" }));
+      const backup = mocker.stub(backupFile, "backupV3Files").resolves(ok(undefined));
+
+      const res = await provisionUtils.handleWhenTenantSwitchedV3(
+        m365TokenProvider,
+        "dev",
+        "projectPath",
+        false
+      );
+      expect(res.isOk()).equal(true);
+      expect(backup.calledOnce).equal(true);
+    });
+
+    it("processing envs and backup if tenant switched for CSharp project", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "old_tid",
+        TEAMS_APP_ID: "old_teams_app_id",
+        BOT_ID: "old_bot_id",
+        AAD_APP_CLIENT_ID: "old_aad_app_client_id",
+      });
+      const m365TokenProvider = new MockM365TokenProvider();
+      mocker.stub(m365TokenProvider, "getJsonObject").resolves(ok({ tid: "tid" }));
+      const appSettings = mocker
+        .stub(appSettingsUtils, "resetAppSettingsDevelopment")
+        .resolves(ok(undefined));
+      const backup = mocker.stub(backupFile, "backupV3Files").resolves(ok(undefined));
+
+      const res = await provisionUtils.handleWhenTenantSwitchedV3(
+        m365TokenProvider,
+        "dev",
+        "projectPath",
+        true
+      );
+      expect(res.isOk()).equal(true);
+      expect(backup.calledOnce).equal(true);
+      expect(appSettings.calledOnce).equal(true);
+    });
+
+    it("backup error", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "old_tid",
+        AAD_APP_CLIENT_ID: "old_aad_app_client_id",
+      });
+      const m365TokenProvider = new MockM365TokenProvider();
+      mocker.stub(m365TokenProvider, "getJsonObject").resolves(ok({ tid: "tid" }));
+      const backup = mocker
+        .stub(backupFile, "backupV3Files")
+        .resolves(err(new SystemError("source", "error", "msg", "msg")));
+
+      const res = await provisionUtils.handleWhenTenantSwitchedV3(
+        m365TokenProvider,
+        "dev",
+        "projectPath",
+        false
+      );
+      expect(res.isErr()).equal(true);
+      if (res.isErr()) {
+        expect(res.error.name).equal("error");
+      }
+      expect(backup.calledOnce).equal(true);
+    });
+
+    it("handle app settings error", async () => {
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "old_tid",
+        TEAMS_APP_ID: "old_teams_app_id",
+        BOT_ID: "old_bot_id",
+        AAD_APP_CLIENT_ID: "old_aad_app_client_id",
+      });
+      const m365TokenProvider = new MockM365TokenProvider();
+      mocker.stub(m365TokenProvider, "getJsonObject").resolves(ok({ tid: "tid" }));
+      const appSettings = mocker
+        .stub(appSettingsUtils, "resetAppSettingsDevelopment")
+        .resolves(err(new SystemError("source", "error", "msg", "msg")));
+      const backup = mocker.stub(backupFile, "backupV3Files").resolves(ok(undefined));
+
+      const res = await provisionUtils.handleWhenTenantSwitchedV3(
+        m365TokenProvider,
+        "dev",
+        "projectPath",
+        true
+      );
+      expect(res.isErr()).equal(true);
+      if (res.isErr()) {
+        expect(res.error.name).equal("error");
+      }
+      expect(backup.calledOnce).equal(true);
+      expect(appSettings.calledOnce).equal(true);
     });
   });
 });

@@ -51,7 +51,7 @@ import {
   ComponentNames,
   PathConstants,
 } from "./constants";
-import { backupFiles } from "./utils/backupFiles";
+import { backupFiles, backupV3Files } from "./utils/backupFiles";
 import { resourceGroupHelper, ResourceGroupInfo } from "./utils/ResourceGroupHelper";
 import { resetAppSettingsDevelopment } from "./code/appSettingUtils";
 import { AppStudioScopes } from "./resource/appManifest/constants";
@@ -877,6 +877,48 @@ export class ProvisionUtils {
 
     return ok(Void);
   }
+
+  // For v3
+  async handleWhenTenantSwitchedV3(
+    m365TokenProvider: M365TokenProvider,
+    env: string,
+    projectPath: string,
+    isCSharpProject: boolean
+  ): Promise<Result<undefined, FxError>> {
+    const hasSwitchedRes = await hasTenantSwitchedV3(m365TokenProvider);
+    if (hasSwitchedRes.isErr()) {
+      return err(hasSwitchedRes.error);
+    }
+    const hasSwitched = hasSwitchedRes.value;
+    if (hasSwitched) {
+      if (process.env.TEAMS_APP_ID) {
+        process.env.TEAMS_APP_ID = "";
+      }
+
+      if (process.env.BOT_ID) {
+        process.env.BOT_ID = "";
+      }
+
+      if (process.env.AAD_APP_CLIENT_ID) {
+        process.env.AAD_APP_CLIENT_ID = "";
+      }
+
+      const res = await backupV3Files(env, projectPath, isCSharpProject);
+      if (res.isOk()) {
+        if (isCSharpProject) {
+          const appSettingsRes = await resetAppSettingsDevelopment(projectPath);
+          if (appSettingsRes.isErr()) {
+            return err(appSettingsRes.error);
+          }
+        }
+        return ok(undefined);
+      } else {
+        return err(res.error);
+      }
+    }
+
+    return ok(undefined);
+  }
 }
 
 export function getSubscriptionId(state: Json): string {
@@ -1136,6 +1178,24 @@ export async function handleConfigFilesWhenSwitchAccount(
   }
 
   return ok(undefined);
+}
+
+export async function hasTenantSwitchedV3(
+  m365TokenProvider: M365TokenProvider
+): Promise<Result<boolean, FxError>> {
+  const appStudioTokenJsonRes = await m365TokenProvider.getJsonObject({
+    scopes: AppStudioScopes,
+  });
+  if (appStudioTokenJsonRes.isErr()) {
+    return err(appStudioTokenJsonRes.error);
+  }
+
+  const token = appStudioTokenJsonRes.value;
+  const tenantId = token["tid"];
+
+  const hasSwitched =
+    !!process.env.TEAMS_APP_TENANT_ID && process.env.TEAMS_APP_TENANT_ID !== tenantId;
+  return ok(hasSwitched);
 }
 
 export const provisionUtils = new ProvisionUtils();

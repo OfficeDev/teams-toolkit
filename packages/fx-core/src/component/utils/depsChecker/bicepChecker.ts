@@ -296,7 +296,8 @@ class BicepChecker {
 
   private async handleInstallCompleted() {
     this._telemetry?.sendTelemetryEvent(DepsCheckerEvent.bicepInstallCompleted);
-    await this._logger?.info(Messages.finishInstallBicep.replace("@NameVersion", displayBicepName));
+    const displayName = this._version ? `${BicepName} (${this._version})` : displayBicepName;
+    await this._logger?.info(Messages.finishInstallBicep.replace("@NameVersion", displayName));
   }
 
   private async handleInstallFailed(): Promise<void> {

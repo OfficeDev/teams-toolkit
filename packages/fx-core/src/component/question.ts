@@ -99,7 +99,6 @@ import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
 import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { Constants } from "./resource/aadApp/constants";
 import { functionNameQuestion } from "./feature/api/question";
-import path from "path";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,

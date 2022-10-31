@@ -107,7 +107,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   // capabilities
   let capNode: QTreeNode;
   if (isPreviewFeaturesEnabled()) {
-    const capQuestion = createCapabilityQuestionPreview();
+    const capQuestion = createCapabilityQuestionPreview(inputs);
     capNode = new QTreeNode(capQuestion);
   } else {
     const capQuestion = createCapabilityQuestion();

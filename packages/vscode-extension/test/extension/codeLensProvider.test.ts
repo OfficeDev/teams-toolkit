@@ -7,11 +7,16 @@ import {
   ManifestTemplateCodeLensProvider,
   PlaceholderCodeLens,
 } from "../../src/codeLensProvider";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import * as vscode from "vscode";
 import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
 
 describe("Manifest codelens", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it("Template codelens", async () => {
     const document = <vscode.TextDocument>{
       fileName: "manifest.template.json",
@@ -31,7 +36,6 @@ describe("Manifest codelens", () => {
       command: "fx-extension.openPreviewFile",
       arguments: [{ fsPath: document.fileName }],
     });
-    sinon.restore();
   });
 
   it("Template codelens - V3", async () => {
@@ -65,12 +69,12 @@ describe("Manifest codelens", () => {
       command: "fx-extension.openSchema",
       arguments: [{ url: url }],
     });
-    sinon.restore();
   });
 
   it("ResolveEnvironmentVariableCodelens", async () => {
     sinon.stub(commonTools, "isV3Enabled").returns(true);
     sinon.stub(envUtil, "readEnv").resolves(ok({}));
+    sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
 
     const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0));
     const lens: PlaceholderCodeLens = new PlaceholderCodeLens("${{ TEAMS_APP_ID }}", range);
@@ -107,7 +111,6 @@ describe("Manifest codelens", () => {
       command: "fx-extension.editManifestTemplate",
       arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
     });
-    sinon.restore();
   });
 });
 

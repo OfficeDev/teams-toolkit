@@ -10,7 +10,9 @@ import {
   NotImplementedError,
   LogProvider,
 } from "@microsoft/teamsfx-api";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import { GraphScopes } from "../../../../common/tools";
+import { logMessageKeys } from "./constants";
 import { GraphClient } from "./graphClient";
 
 export enum BotAuthType {
@@ -35,11 +37,14 @@ export class BotRegistration {
     m365TokenProvider: M365TokenProvider,
     aadDisplayName: string,
     botConfig?: BotAadCredentials,
-    botAuthType: BotAuthType = BotAuthType.AADApp
+    botAuthType: BotAuthType = BotAuthType.AADApp,
+    logProvider?: LogProvider
   ): Promise<Result<BotAadCredentials, FxError>> {
+    logProvider?.info(getLocalizedString(logMessageKeys.startCreateBotAadApp));
     if (botAuthType === BotAuthType.AADApp) {
       if (botConfig?.botId && botConfig?.botPassword) {
         // Existing bot aad scenario.
+        logProvider?.info(getLocalizedString(logMessageKeys.skipCreateBotAadApp));
         return ok(botConfig);
       } else {
         // Create a new bot aad app.
@@ -54,12 +59,17 @@ export class BotRegistration {
         const graphToken = graphTokenRes.value;
 
         // Call GraphClient.
-        const aadAppCredential = await GraphClient.registerAadApp(graphToken, aadDisplayName);
-
-        return ok({
-          botId: aadAppCredential.clientId,
-          botPassword: aadAppCredential.clientSecret,
-        });
+        try {
+          const aadAppCredential = await GraphClient.registerAadApp(graphToken, aadDisplayName);
+          logProvider?.info(getLocalizedString(logMessageKeys.successCreateBotAadApp));
+          return ok({
+            botId: aadAppCredential.clientId,
+            botPassword: aadAppCredential.clientSecret,
+          });
+        } catch (e) {
+          logProvider?.info(getLocalizedString(logMessageKeys.failCreateBotAadApp, e.genMessage()));
+          throw e;
+        }
       }
     } else {
       // Suppose === BotAuthType.Identity

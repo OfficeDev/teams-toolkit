@@ -37,10 +37,10 @@ export class Generator {
     }),
   ])
   public static async generateTemplate(
-    templateName: string,
-    language: string,
-    destinationPath: string,
     ctx: ContextV3,
+    destinationPath: string,
+    templateName: string,
+    language?: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const appName = ctx.projectSetting?.appName;
@@ -48,7 +48,7 @@ export class Generator {
     const nameReplaceMap = { ...{ appName: appName }, ...ctx.templateVariables };
     const dataReplaceMap = { ...{ projectId: projectId }, ...nameReplaceMap };
     const generatorContext: GeneratorContext = {
-      name: `${templateName}-${language}`,
+      name: language ? `${templateName}-${language}` : templateName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
       fileNameReplaceFn: (fileName: string, fileData: Buffer) =>
@@ -71,9 +71,9 @@ export class Generator {
     }),
   ])
   public static async generateSample(
-    sampleName: string,
-    destinationPath: string,
     ctx: ContextV3,
+    destinationPath: string,
+    sampleName: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const sample = getSampleInfoFromName(sampleName);

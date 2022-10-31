@@ -10,7 +10,7 @@ import {
   HostTypeOptionOfficeAddin,
   HostTypeOptionSPFx,
   MessageExtensionItem,
-  OfficeAddinItem,
+  OfficeAddinItems,
   TabOptionItem,
 } from "../../plugins/solution/fx-solution/question";
 import { isAADEnabled, IsSimpleAuthEnabled } from "../tools";
@@ -32,9 +32,16 @@ export class ProjectSettingsHelper {
   public static includeOfficeAddin(projectSettings: ProjectSettings | undefined): boolean {
     const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
     const cap = solutionSettings?.capabilities || [];
+    const addinOptionIds: string[] = [
+      ...OfficeAddinItems.map((item) => {
+        return item.id;
+      }),
+    ];
     return (
       solutionSettings?.hostType === HostTypeOptionOfficeAddin.id &&
-      cap.includes(OfficeAddinItem.id)
+      addinOptionIds.some((id) => {
+        return cap.includes(id);
+      })
     );
   }
 

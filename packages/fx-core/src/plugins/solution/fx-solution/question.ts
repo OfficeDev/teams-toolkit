@@ -11,6 +11,18 @@ import {
 } from "@microsoft/teamsfx-api";
 import { isBotNotificationEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import projectsJsonData from "../../resource/officeaddin/config/projectsJsonData";
+
+const jsonData = new projectsJsonData();
+
+export const OfficeAddinItems: OptionItem[] = jsonData
+  .getProjectTemplateNames()
+  .map((template) => ({
+    id: template,
+    label: jsonData.getProjectDisplayName(template),
+    detail: jsonData.getProjectDetails(template),
+    groupName: getLocalizedString("core.options.separator.addin"),
+  }));
 
 export const OfficeAddinItem: OptionItem = {
   id: "office-addin",

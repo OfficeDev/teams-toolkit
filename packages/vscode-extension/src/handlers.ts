@@ -433,6 +433,26 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   return result;
 }
 
+export async function createNewAddinProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
+  const inputs = getSystemInputs();
+  inputs["projectType"] = "addin";
+  const result = await runCommand(Stage.create, inputs);
+  if (result.isErr()) {
+    return err(result.error);
+  }
+
+  const projectPathUri = result.value as Uri;
+  if (await isExistingTabApp(projectPathUri.fsPath)) {
+    // show local preview button for existing tab app
+    await openFolder(projectPathUri, false, true, args);
+  } else {
+    // show local debug button by default
+    await openFolder(projectPathUri, true, false, args);
+  }
+  return result;
+}
+
 export async function initProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InitProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.init);

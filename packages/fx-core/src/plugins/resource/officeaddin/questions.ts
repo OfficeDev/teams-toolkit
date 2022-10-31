@@ -16,22 +16,11 @@ export enum QuestionName {
 }
 
 // TODO: localize the strings
-export const AddinTemplateSelectQuestion: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: QuestionName.AddinTemplateSelectQuestion,
-  title: "Add-in template type",
-  staticOptions: jsonData
-    .getProjectTemplateNames()
-    .map((template) => ({ label: jsonData.getProjectDisplayName(template), id: template })),
-  default: "teams-manifest",
-  placeholder: "This is placeholder",
-};
-
 export const AddinNameQuestion: TextInputQuestion = {
   type: "text",
   name: QuestionName.AddinNameQuestion,
   title: "Add-in name",
-  default: "office-addin",
+  default: "office addin",
 };
 
 export const AddinLanguageQuestion: SingleSelectQuestion = {
@@ -40,12 +29,12 @@ export const AddinLanguageQuestion: SingleSelectQuestion = {
   title: "Add-in Language",
   staticOptions: [],
   dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-    const template = inputs[AddinTemplateSelectQuestion.name];
+    const template = getTemplate(inputs);
     const options = jsonData.getSupportedScriptTypes(template);
     return options.map((language) => ({ label: language, id: language }));
   },
   default: async (inputs: Inputs): Promise<string> => {
-    const template = inputs[AddinTemplateSelectQuestion.name];
+    const template = getTemplate(inputs);
     const options = jsonData.getSupportedScriptTypes(template);
     return options[0];
   },
@@ -59,7 +48,7 @@ export const OfficeHostQuestion: SingleSelectQuestion = {
   title: "Add-in Host",
   staticOptions: [],
   dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-    const template = inputs[AddinTemplateSelectQuestion.name];
+    const template = getTemplate(inputs);
     const options = jsonData.getHostTemplateNames(template);
     return options.map((host) => ({
       label: jsonData.getHostDisplayName(host) as string,
@@ -67,10 +56,21 @@ export const OfficeHostQuestion: SingleSelectQuestion = {
     }));
   },
   default: async (inputs: Inputs): Promise<string> => {
-    const template = inputs[AddinTemplateSelectQuestion.name];
+    const template = getTemplate(inputs);
     const options = jsonData.getHostTemplateNames(template);
     return options[0];
   },
   placeholder: "This is placeholder",
   skipSingleOption: true,
 };
+
+export function getTemplate(inputs: Inputs): string {
+  const capabilities: string[] = inputs["capabilities"];
+  const templates: string[] = jsonData.getProjectTemplateNames();
+
+  const foundTemplate = templates.find((template) => {
+    return capabilities.includes(template);
+  });
+
+  return foundTemplate ?? "";
+}

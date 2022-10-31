@@ -139,6 +139,13 @@ class TreeViewManager {
         { name: "new-folder", custom: false }
       ),
       new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.createAddinProjectTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.createAddinProjectDescription"),
+        "fx-extension.createAddin",
+        "createAddinProject",
+        { name: "new-folder", custom: false }
+      ),
+      new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.samplesTitleNew"),
         localize("teamstoolkit.commandsTreeViewProvider.samplesDescription"),
         "fx-extension.openSamples",

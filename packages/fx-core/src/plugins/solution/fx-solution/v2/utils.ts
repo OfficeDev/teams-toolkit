@@ -41,7 +41,7 @@ import {
   M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
   NotificationOptionItem,
-  OfficeAddinItem,
+  OfficeAddinItems,
   TabNonSsoItem,
   TabOptionItem,
   TabSPFxItem,
@@ -274,6 +274,12 @@ export function fillInSolutionSettings(
   answers: Inputs
 ): Result<Void, FxError> {
   const solutionSettings = (projectSettings.solutionSettings as AzureSolutionSettings) || {};
+  const addinOptionIds: string[] = [
+    ...OfficeAddinItems.map((item) => {
+      return item.id;
+    }),
+  ];
+
   let capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
   if (isAadManifestEnabled()) {
     if (capabilities.includes(TabOptionItem.id)) {
@@ -330,10 +336,13 @@ export function fillInSolutionSettings(
   } else if (capabilities.includes(M365SearchAppOptionItem.id)) {
     capabilities = [MessageExtensionItem.id];
     hostType = HostTypeOptionAzure.id;
-  } else if (isOfficeAddinEnabled() && capabilities.includes(OfficeAddinItem.id)) {
-    // Hard code Tab here, so that createEnv can pass.
-    // Needs to be changed once we figure out how office addin works with other resources.
-    capabilities = [OfficeAddinItem.id];
+  } else if (
+    isOfficeAddinEnabled() &&
+    addinOptionIds.some((id) => {
+      return capabilities.includes(id);
+    })
+  ) {
+    //capabilities = [OfficeAddinItem.id];
     hostType = HostTypeOptionOfficeAddin.id;
   }
   if (!hostType) {

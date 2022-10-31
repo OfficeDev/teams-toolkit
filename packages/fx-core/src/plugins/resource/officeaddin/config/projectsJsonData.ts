@@ -33,6 +33,10 @@ export default class projectsJsonData {
     return this.m_projectJsonData.projectTypes[_.toLower(projectType)].displayname;
   }
 
+  getProjectDetails(projectType: string): string {
+    return this.m_projectJsonData.projectTypes[_.toLower(projectType)].detail;
+  }
+
   getParsedProjectJsonData(): unknown {
     return this.m_projectJsonData;
   }

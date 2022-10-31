@@ -20,10 +20,10 @@ import { UndefinedProjectPathError } from "./errors";
 import { mkdir } from "fs-extra";
 import { join, resolve } from "path";
 import {
-  AddinTemplateSelectQuestion,
   AddinNameQuestion,
   AddinLanguageQuestion,
   OfficeHostQuestion,
+  getTemplate,
 } from "./questions";
 import { helperMethods } from "./helperMethods";
 import { OfficeAddinManifest } from "office-addin-manifest";
@@ -53,7 +53,7 @@ export class OfficeAddinPlugin implements v2.ResourcePlugin {
     }
 
     // You can access the answers(id of options selected) to the questions defined in getQuestionsForScaffolding();
-    const template = inputs[AddinTemplateSelectQuestion.name] as string;
+    const template = getTemplate(inputs);
     const name = inputs[AddinNameQuestion.name];
     const addinRoot = resolve(projectRoot, name);
     const language = inputs[AddinLanguageQuestion.name];
@@ -64,7 +64,7 @@ export class OfficeAddinPlugin implements v2.ResourcePlugin {
     process.chdir(addinRoot);
     try {
       const jsonData = new projectsJsonData();
-      const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, false);
+      const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, true);
 
       // Copy project template files from project repository
       if (projectRepoBranchInfo.repo) {
@@ -97,14 +97,12 @@ export class OfficeAddinPlugin implements v2.ResourcePlugin {
     ctx: v2.Context,
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const nameNode = new QTreeNode(AddinNameQuestion);
+    nameNode.addChild(new QTreeNode(AddinLanguageQuestion));
+    nameNode.addChild(new QTreeNode(OfficeHostQuestion));
+
     const root = new QTreeNode({ type: "group" });
-    const templateNode = new QTreeNode(AddinTemplateSelectQuestion);
-
-    root.addChild(templateNode);
-    root.addChild(new QTreeNode(AddinNameQuestion));
-
-    templateNode.addChild(new QTreeNode(AddinLanguageQuestion));
-    templateNode.addChild(new QTreeNode(OfficeHostQuestion));
+    root.addChild(nameNode);
 
     return ok(root);
   }

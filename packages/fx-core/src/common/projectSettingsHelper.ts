@@ -15,7 +15,7 @@ import {
   BotSsoItem,
   TabOptionItem,
   TabSPFxItem,
-  OfficeAddinItem,
+  OfficeAddinItems,
   HostTypeOptionOfficeAddin,
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
@@ -37,7 +37,13 @@ export function validateProjectSettings(projectSettings: ProjectSettings): strin
     TabSPFxItem.id,
     TabSsoItem.id,
     BotSsoItem.id,
-    ...(isOfficeAddinEnabled() ? [OfficeAddinItem.id] : []),
+    ...(isOfficeAddinEnabled()
+      ? [
+          ...OfficeAddinItems.map((item) => {
+            return item.id;
+          }),
+        ]
+      : []),
   ]);
   if (validateRes) {
     return `solutionSettings.capabilities validation failed: ${validateRes}`;

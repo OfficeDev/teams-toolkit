@@ -33,6 +33,7 @@ class CommandController {
     this.mutex = new Mutex();
     this.exclusiveCommands = new Set([
       "fx-extension.create",
+      "fx-extension.createAddin",
       "fx-extension.init",
       "fx-extension.addFeature",
       "fx-extension.openManifest",

@@ -46,7 +46,7 @@ import {
   MessageExtensionItem,
   MessageExtensionNewUIItem,
   NotificationOptionItem,
-  OfficeAddinItem,
+  OfficeAddinItems,
   SingleSignOnOptionItem,
   TabNewUIOptionItem,
   TabNonSsoItem,
@@ -228,7 +228,13 @@ export async function getQuestionsForScaffoldingPreview(
         ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
         M365SsoLaunchPageOptionItem.id,
         M365SearchAppOptionItem.id,
-        ...(isOfficeAddinEnabled() ? [OfficeAddinItem.id] : []),
+        ...(isOfficeAddinEnabled()
+          ? [
+              ...OfficeAddinItems.map((item) => {
+                return item.id;
+              }),
+            ]
+          : []),
       ],
     };
 
@@ -349,7 +355,12 @@ export async function getOfficeAddinQuestions(
             return "Invalid inputs";
           }
           const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
-          if (cap === OfficeAddinItem.id) {
+          const addinOptionIds: string[] = [
+            ...OfficeAddinItems.map((item) => {
+              return item.id;
+            }),
+          ];
+          if (addinOptionIds.includes(cap)) {
             return undefined;
           }
           return "Office Addin is not selected";

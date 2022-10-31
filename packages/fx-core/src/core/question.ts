@@ -40,7 +40,7 @@ import {
   TabSPFxNewUIItem,
   MessageExtensionNewUIItem,
   BotNewUIOptionItem,
-  OfficeAddinItem,
+  OfficeAddinItems,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -295,9 +295,9 @@ export function createCapabilityForOfficeAddin(): SingleSelectQuestion {
     name: CoreQuestionNames.Capabilities,
     title: getLocalizedString("core.createCapabilityQuestion.title"),
     type: "singleSelect",
-    staticOptions: [OfficeAddinItem],
+    staticOptions: OfficeAddinItems,
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
-    skipSingleOption: true,
+    skipSingleOption: false,
   };
 }
 
@@ -334,6 +334,10 @@ export function createCapabilityQuestionPreview(): SingleSelectQuestion {
   if (isExistingTabAppEnabled()) {
     staticOptions.splice(2, 0, ExistingTabOptionItem);
   }
+
+  // if (isOfficeAddinEnabled()) {
+  //   staticOptions.splice(staticOptions.length, 0, ...OfficeAddinItems);
+  // }
 
   return {
     name: CoreQuestionNames.Capabilities,
@@ -550,11 +554,16 @@ export const ScratchOptionNoVSC: OptionItem = {
   detail: getLocalizedString("core.ScratchOptionNoVSC.detail"),
 };
 
-// TODO: localize the strings
 export const CreateNewOfficeAddinOption: OptionItem = {
-  id: "create-office-addin",
-  label: "Create an Office Addin",
-  detail: `Create an Office Addin`,
+  id: "newAddin",
+  label: `$(new-folder) ${getLocalizedString("core.NewOfficeAddinOptionVSC.label")}`,
+  detail: getLocalizedString("core.NewOfficeAddinOptionVSC.detail"),
+};
+
+export const CreateNewOfficeAddinSampleOption: OptionItem = {
+  id: "newAddinSample",
+  label: `$(heart) ${getLocalizedString("core.NewOfficeAddinSampleOptionVSC.label")}`,
+  detail: getLocalizedString("core.NewOfficeAddinSampleOptionVSC.detail"),
 };
 
 export const RuntimeOptionNodeJs: OptionItem = {
@@ -602,13 +611,27 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
     staticOptions.push(ScratchOptionYes);
     staticOptions.push(ScratchOptionNo);
   }
-  if (isOfficeAddinEnabled()) {
-    staticOptions.push(CreateNewOfficeAddinOption);
-  }
   return {
     type: "singleSelect",
     name: CoreQuestionNames.CreateFromScratch,
     title: getLocalizedString("core.getCreateNewOrFromSampleQuestion.title"),
+    staticOptions,
+    default: ScratchOptionYes.id,
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
+    skipSingleOption: true,
+  };
+}
+
+export function getCreateNewOrFromSampleAddinQuestion(platform: Platform): SingleSelectQuestion {
+  const staticOptions: OptionItem[] = [];
+  if (platform === Platform.VSCode) {
+    staticOptions.push(CreateNewOfficeAddinOption);
+    //staticOptions.push(CreateNewOfficeAddinSampleOption);
+  }
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.CreateFromScratch,
+    title: getLocalizedString("core.getCreateNewOrFromSampleAddinQuestion.title"),
     staticOptions,
     default: ScratchOptionYes.id,
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),

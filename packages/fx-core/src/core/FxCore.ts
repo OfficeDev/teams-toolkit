@@ -51,6 +51,7 @@ import {
   ExistingTabOptionItem,
   SingleSignOnOptionItem,
   ComponentNames,
+  AadConstants,
 } from "../component/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
@@ -371,7 +372,10 @@ export class FxCore implements v3.ICore {
     inputs.stage = Stage.deployAad;
     const updateAadClient = Container.get("aadApp/update") as any;
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
-    const manifestTemplatePath: string = path.join(inputs.projectPath!, ".fx", "aad.template.json");
+    const manifestTemplatePath: string = path.join(
+      inputs.projectPath!,
+      AadConstants.DefaultTemplateFileName
+    );
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new NoAadManifestExistError(manifestTemplatePath));
     }

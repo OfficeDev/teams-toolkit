@@ -23,7 +23,10 @@ export abstract class BaseBuildDriver {
 
   constructor(args: unknown, context: DriverContext) {
     this.args = this.toBuildArgs();
-    this.workingDirectory = path.join(context.projectPath, this.args.workingDirectory);
+    // if working dir is not absolute path, then join the path with project path
+    this.workingDirectory = path.isAbsolute(this.args.workingDirectory)
+      ? this.args.workingDirectory
+      : path.join(context.projectPath, this.args.workingDirectory);
     this.progressBarName = `Building project ${this.workingDirectory}`;
     this.progressBar = context.ui?.createProgressBar(this.progressBarName, this.progressBarSteps);
     this.logProvider = context.logProvider;

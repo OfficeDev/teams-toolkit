@@ -145,7 +145,7 @@ export const TaskDefaultValue = Object.freeze({
     },
   },
   npmInstall: {
-    npmInstallArgs: ["--no-audit"],
+    npmInstallArgs: ["--no-audit", "--legacy-peer-deps"],
   },
   startLocalTunnel: {
     ngrokArgs: "http 3978 --log=stdout --log-format=logfmt",

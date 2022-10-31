@@ -302,6 +302,13 @@ export class Coordinator {
         ) {
           const folderName = path.parse(ctx.projectPath).name;
           const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
+          if (!process.env.RESOURCE_SUFFIX) {
+            process.env.RESOURCE_SUFFIX = suffix;
+            output.RESOURCE_SUFFIX = suffix;
+            unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
+              (ph) => ph !== "RESOURCE_SUFFIX"
+            );
+          }
           const defaultRg = `rg-${folderName}${suffix}-${inputs.env}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
             ctx.azureAccountProvider,

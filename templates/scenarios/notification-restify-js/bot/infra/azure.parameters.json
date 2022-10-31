@@ -12,7 +12,7 @@
         "value": "${{SECRET_BOT_PASSWORD}}"
       },
       "webAppSKU": {
-        "value": "F1"
+        "value": "B1"
       }
     }
   }

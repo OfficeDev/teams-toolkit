@@ -7,6 +7,7 @@ import {
   err,
   FxError,
   IConfigurableTab,
+  Inputs,
   InputsWithProjectPath,
   IStaticTab,
   ok,
@@ -54,7 +55,8 @@ export class SPFxGenerator {
   ])
   public static async generate(
     context: ContextV3,
-    inputs: InputsWithProjectPath
+    inputs: Inputs,
+    destinationPath: string
   ): Promise<Result<undefined, FxError>> {
     const ui = context.userInteraction;
     const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
@@ -67,7 +69,7 @@ export class SPFxGenerator {
       if (!isAddSpfx) {
         solutionName = context.projectSetting.appName;
       } else {
-        const yorcPath = path.join(inputs.projectPath, "SPFx", ".yo-rc.json");
+        const yorcPath = path.join(destinationPath, "SPFx", ".yo-rc.json");
         if (!(await fs.pathExists(yorcPath))) {
           throw NoConfigurationError();
         }
@@ -140,7 +142,7 @@ export class SPFxGenerator {
         args.push("--solution-name", solutionName);
       }
       await cpUtils.executeCommand(
-        isAddSpfx ? path.join(inputs.projectPath, "SPFx") : inputs.projectPath,
+        isAddSpfx ? path.join(destinationPath, "SPFx") : destinationPath,
         context.logProvider,
         {
           timeout: 2 * 60 * 1000,
@@ -150,9 +152,9 @@ export class SPFxGenerator {
         ...args
       );
 
-      const newPath = path.join(inputs.projectPath, "SPFx");
+      const newPath = path.join(destinationPath, "SPFx");
       if (!isAddSpfx) {
-        const currentPath = path.join(inputs.projectPath, solutionName!);
+        const currentPath = path.join(destinationPath, solutionName!);
         await fs.rename(currentPath, newPath);
       }
 
@@ -199,7 +201,7 @@ export class SPFxGenerator {
             templateFolder,
             isOfficialSPFx() ? "./solution/README.md" : "./solution/prereleaseREADME.md"
           ),
-          `${path.resolve(inputs.projectPath, inputs.folder || "SPFx")}/README.md`
+          `${path.resolve(destinationPath, inputs.folder || "SPFx")}/README.md`
         );
       }
 
@@ -221,12 +223,12 @@ export class SPFxGenerator {
 
         const addCapRes = await manifestProvider.addCapabilities(
           context,
-          inputs,
+          { ...inputs, projectPath: destinationPath },
           capabilitiesToAddManifest
         );
         if (addCapRes.isErr()) return err(addCapRes.error);
       } else {
-        const appDirectory = await getAppDirectory(inputs.projectPath);
+        const appDirectory = await getAppDirectory(destinationPath);
         await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
 
         const remoteConfigurableSnippet: IConfigurableTab = {
@@ -250,7 +252,11 @@ export class SPFxGenerator {
         );
 
         for (const capability of capabilitiesToAddManifest) {
-          const addCapRes = await manifestProvider.updateCapability(context, inputs, capability);
+          const addCapRes = await manifestProvider.updateCapability(
+            context,
+            { ...inputs, projectPath: destinationPath },
+            capability
+          );
           if (addCapRes.isErr()) return err(addCapRes.error);
         }
       }

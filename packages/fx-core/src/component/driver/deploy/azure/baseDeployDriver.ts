@@ -25,7 +25,7 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
     await this.context.logProvider.debug("start deploy process");
 
     const deployArgs = BaseDeployDriver.asDeployArgs(this.args);
-    this.workingDirectory = deployArgs.workingDirectory;
+    this.workingDirectory = path.join(this.workingDirectory, deployArgs.workingDirectory);
     // call real deploy
     await this.wrapErrorHandler(async () => {
       await this.deploy(deployArgs);

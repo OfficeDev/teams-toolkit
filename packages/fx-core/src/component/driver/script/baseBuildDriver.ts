@@ -8,9 +8,10 @@ import { ExecuteCommandError } from "../../error/componentError";
 import { DeployConstant } from "../../constant/deployConstant";
 import { IProgressHandler, LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../interface/commonArgs";
+import * as path from "path";
 
 export abstract class BaseBuildDriver {
-  args: unknown;
+  args: BuildArgs;
   progressBarName: string;
   progressBarSteps = 1;
   workingDirectory?: string;
@@ -21,8 +22,8 @@ export abstract class BaseBuildDriver {
   abstract buildPrefix: string;
 
   constructor(args: unknown, context: DriverContext) {
-    this.args = args;
-    this.workingDirectory = this.toBuildArgs().workingDirectory;
+    this.args = this.toBuildArgs();
+    this.workingDirectory = path.join(context.projectPath, this.args.workingDirectory);
     this.progressBarName = `Building project ${this.workingDirectory}`;
     this.progressBar = context.ui?.createProgressBar(this.progressBarName, this.progressBarSteps);
     this.logProvider = context.logProvider;
@@ -39,18 +40,17 @@ export abstract class BaseBuildDriver {
   }
 
   async run(): Promise<Map<string, string>> {
-    const args = this.toBuildArgs();
-    const commandSuffix = checkMissingArgs("BuildCommand", args.args).trim();
+    const commandSuffix = checkMissingArgs("BuildCommand", this.args.args).trim();
     const command = `${this.buildPrefix} ${commandSuffix}`;
-    await this.progressBar?.start(`Run command ${command} at ${args.workingDirectory}`);
+    await this.progressBar?.start(`Run command ${command} at ${this.workingDirectory}`);
     try {
-      const output = await execute(command, args.workingDirectory, this.logProvider);
+      const output = await execute(command, this.workingDirectory, this.logProvider);
       await this.logProvider.debug(`execute ${command} output is ${output}`);
       await this.progressBar?.end(true);
     } catch (e) {
       throw ExecuteCommandError.fromErrorOutput(
         DeployConstant.DEPLOY_ERROR_TYPE,
-        [command, args.workingDirectory ?? ""],
+        [command, this.workingDirectory ?? ""],
         e
       );
     }

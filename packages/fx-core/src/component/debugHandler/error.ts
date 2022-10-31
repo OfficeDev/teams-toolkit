@@ -70,7 +70,7 @@ export function InvalidTabBaseUrlError(): UserError {
   );
 }
 
-export const AlreadyCreatedBotNotExist = (botId: string) => {
+export const AlreadyCreatedBotNotExist = (botId: string | undefined, innerError: any) => {
   return new UserError({
     source: "RegisterBot",
     name: "AlreadyCreatedBotNotExist",
@@ -84,5 +84,6 @@ export const AlreadyCreatedBotNotExist = (botId: string) => {
       botId,
       HelpLinks.SwitchAccountOrSub
     ),
+    error: innerError,
   });
 };

@@ -17,6 +17,7 @@ import { getAppStudioEndpoint } from "../../appManifest/constants";
 import { ResourceContextV3 } from "@microsoft/teamsfx-api";
 import { CheckThrowSomethingMissing } from "../../../error";
 import { FxBotPluginResultFactory } from "../result";
+import { AlreadyCreatedBotNotExist } from "../../../debugHandler";
 
 export class AppStudioClient {
   private static baseUrl = getAppStudioEndpoint();
@@ -77,10 +78,11 @@ export class AppStudioClient {
   public static async createBotRegistration(
     token: string,
     registration: IBotRegistration,
+    isIdFromState?: boolean,
     context?: ResourceContextV3
   ): Promise<void> {
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
-
+    let create = false;
     let response = undefined;
     try {
       if (registration.botId) {
@@ -91,10 +93,16 @@ export class AppStudioClient {
         }
       }
 
+      create = true;
       response = await RetryHandler.Retry(() =>
         axiosInstance.post(`${AppStudioClient.baseUrl}/api/botframework`, registration)
       );
     } catch (e) {
+      if (create && isIdFromState) {
+        // Handle exception when creating bot with botId from state for local environment failed.
+        // Will get bot resigreation again. If the bot does not exist which happens when user switched account in same tenant, we will throw AlreadyCreatedBotNotExist error with help link guiding users to fix by themselves.
+        throw AlreadyCreatedBotNotExist(registration.botId, e);
+      }
       e.teamsfxUrlName = "<create-bot-registration>";
       throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION, e);
     }

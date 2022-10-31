@@ -263,16 +263,11 @@ export class BotDebugHandler {
         callingEndpoint: "",
       };
 
-      try {
-        await AppStudioClient.createBotRegistration(tokenResult.value, botReg);
-      } catch (e) {
-        if (this.hasBotIdInEnvBefore) {
-          const botId = this.envInfoV3!.state[ComponentNames.TeamsBot].botId;
-          return err(AlreadyCreatedBotNotExist(botId));
-        } else {
-          throw e;
-        }
-      }
+      await AppStudioClient.createBotRegistration(
+        tokenResult.value,
+        botReg,
+        this.hasBotIdInEnvBefore
+      );
 
       return ok([
         util.format(

@@ -25,7 +25,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { wrapError } from "./errors";
 import { CheckThrowSomethingMissing } from "../../error";
-import { BotRegistration, BotAadCredentials } from "./botRegistration/botRegistration";
+import { BotRegistration, BotAadCredentials, BotAuthType } from "./botRegistration/botRegistration";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "./resourceNameFactory";
 import { MaxLengths } from "./constants";
@@ -112,37 +112,19 @@ export class BotService extends AzureResource {
             botPassword: teamsBotState.botPassword,
           };
 
-    try {
-      const regRes = await botRegistration.createBotRegistration(
-        context.tokenProvider.m365TokenProvider,
-        aadDisplayName,
-        botName,
-        botConfig
-      );
-      if (regRes.isErr()) return err(regRes.error);
+    const regRes = await botRegistration.createBotRegistration(
+      context.tokenProvider.m365TokenProvider,
+      aadDisplayName,
+      botName,
+      botConfig,
+      hasBotIdInEnvBefore
+    );
+    if (regRes.isErr()) return err(regRes.error);
 
-      // Update states for bot aad configs.
-      teamsBotState.botId = regRes.value.botId;
-      teamsBotState.botPassword = regRes.value.botPassword;
-      return ok(undefined);
-    } catch (e) {
-      if (context.envInfo.envName === "local" && hasBotIdInEnvBefore) {
-        const tokenResult = await context.tokenProvider.m365TokenProvider.getAccessToken({
-          scopes: AppStudioScopes,
-        });
-        if (tokenResult.isErr()) {
-          throw tokenResult.error;
-        }
-        const result = await AppStudioClient.getBotRegistration(tokenResult.value, botConfig.botId);
-        if (!result) {
-          throw AlreadyCreatedBotNotExist(botConfig.botId);
-        } else {
-          throw e;
-        }
-      } else {
-        throw e;
-      }
-    }
+    // Update states for bot aad configs.
+    teamsBotState.botId = regRes.value.botId;
+    teamsBotState.botPassword = regRes.value.botPassword;
+    return ok(undefined);
   }
   @hooks([
     ActionExecutionMW({

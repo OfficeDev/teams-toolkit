@@ -43,6 +43,7 @@ import { cpUtils } from "../../common/deps-checker";
 import { DefaultManifestProvider } from "../resource/appManifest/manifestProvider";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../resource/appManifest/constants";
 import { TelemetryEvents } from "../resource/spfx/utils/telemetryEvents";
+import { Generator } from "./generator";
 
 export class SPFxGenerator {
   @hooks([
@@ -58,27 +59,34 @@ export class SPFxGenerator {
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
+    const yeomanRes = await this.doYeomanScaffold(context, inputs, destinationPath);
+    if (yeomanRes.isErr()) return err(yeomanRes.error);
+
+    const templateRes = await Generator.generateTemplate(
+      isOfficialSPFx() ? Constants.TEMPLATE_NAME : Constants.TEMPLATE_NAME_PRERELEASE,
+      "ts",
+      destinationPath,
+      context
+    );
+    if (templateRes.isErr()) return err(templateRes.error);
+
+    return ok(undefined);
+  }
+
+  private static async doYeomanScaffold(
+    context: ContextV3,
+    inputs: Inputs,
+    destinationPath: string
+  ): Promise<Result<undefined, FxError>> {
     const ui = context.userInteraction;
     const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ui);
     try {
-      const isAddSpfx = inputs.stage === Stage.addFeature;
       const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
-      const framework = (inputs[SPFXQuestionNames.framework_type] as string) ?? undefined;
-      let solutionName: string | undefined = undefined;
-
-      if (!isAddSpfx) {
-        solutionName = context.projectSetting.appName;
-      } else {
-        const yorcPath = path.join(destinationPath, "SPFx", ".yo-rc.json");
-        if (!(await fs.pathExists(yorcPath))) {
-          throw NoConfigurationError();
-        }
-      }
+      const framework = inputs[SPFXQuestionNames.framework_type] as string;
+      const solutionName = context.projectSetting.appName;
 
       const componentName = Utils.normalizeComponentName(webpartName);
       const componentNameCamelCase = camelCase(componentName);
-      const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
-      const replaceMap: Map<string, string> = new Map();
 
       await progressHandler?.next(ScaffoldProgressMessage.DependencyCheck);
 
@@ -142,7 +150,7 @@ export class SPFxGenerator {
         args.push("--solution-name", solutionName);
       }
       await cpUtils.executeCommand(
-        isAddSpfx ? path.join(destinationPath, "SPFx") : destinationPath,
+        destinationPath,
         context.logProvider,
         {
           timeout: 2 * 60 * 1000,
@@ -153,10 +161,8 @@ export class SPFxGenerator {
       );
 
       const newPath = path.join(destinationPath, "SPFx");
-      if (!isAddSpfx) {
-        const currentPath = path.join(destinationPath, solutionName!);
-        await fs.rename(currentPath, newPath);
-      }
+      const currentPath = path.join(destinationPath, solutionName!);
+      await fs.rename(currentPath, newPath);
 
       await progressHandler?.next(ScaffoldProgressMessage.UpdateManifest);
       const manifestPath = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.manifest.json`;
@@ -171,8 +177,11 @@ export class SPFxGenerator {
       const matchHashComment = new RegExp(/(\/\/ .*)/, "gi");
       const manifestJson = JSON.parse(manifestString.replace(matchHashComment, "").trim());
       const componentId = manifestJson.id;
-      replaceMap.set(PlaceHolders.componentId, componentId);
-      replaceMap.set(PlaceHolders.componentNameUnescaped, webpartName);
+      if (!context.templateVariables) {
+        context.templateVariables = {};
+      }
+      context.templateVariables["componentId"] = componentId;
+      context.templateVariables["webpartName"] = webpartName;
 
       // remove dataVersion() function, related issue: https://github.com/SharePoint/sp-dev-docs/issues/6469
       const webpartFile = `${newPath}/src/webparts/${componentNameCamelCase}/${componentName}WebPart.ts`;
@@ -192,73 +201,6 @@ export class SPFxGenerator {
       const debugPath = `${newPath}/.vscode`;
       if (await fs.pathExists(debugPath)) {
         await fs.remove(debugPath);
-      }
-
-      // update readme
-      if (!isAddSpfx) {
-        await fs.copyFile(
-          path.resolve(
-            templateFolder,
-            isOfficialSPFx() ? "./solution/README.md" : "./solution/prereleaseREADME.md"
-          ),
-          `${path.resolve(destinationPath, inputs.folder || "SPFx")}/README.md`
-        );
-      }
-
-      const manifestProvider =
-        (context as ContextV3).manifestProvider || new DefaultManifestProvider();
-      const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
-      const remoteStaticSnippet: IStaticTab = {
-        entityId: componentId,
-        name: webpartName,
-        contentUrl: util.format(ManifestTemplate.REMOTE_CONTENT_URL, componentId, componentId),
-        websiteUrl: ManifestTemplate.WEBSITE_URL,
-        scopes: ["personal"],
-      };
-      if (isAddSpfx) {
-        capabilitiesToAddManifest.push({
-          name: "staticTab",
-          snippet: remoteStaticSnippet,
-        });
-
-        const addCapRes = await manifestProvider.addCapabilities(
-          context,
-          { ...inputs, projectPath: destinationPath },
-          capabilitiesToAddManifest
-        );
-        if (addCapRes.isErr()) return err(addCapRes.error);
-      } else {
-        const appDirectory = await getAppDirectory(destinationPath);
-        await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE_CONSOLIDATE), replaceMap);
-
-        const remoteConfigurableSnippet: IConfigurableTab = {
-          configurationUrl: util.format(
-            ManifestTemplate.REMOTE_CONFIGURATION_URL,
-            componentId,
-            componentId
-          ),
-          canUpdateConfiguration: true,
-          scopes: ["team"],
-        };
-        capabilitiesToAddManifest.push(
-          {
-            name: "staticTab",
-            snippet: remoteStaticSnippet,
-          },
-          {
-            name: "configurableTab",
-            snippet: remoteConfigurableSnippet,
-          }
-        );
-
-        for (const capability of capabilitiesToAddManifest) {
-          const addCapRes = await manifestProvider.updateCapability(
-            context,
-            { ...inputs, projectPath: destinationPath },
-            capability
-          );
-          if (addCapRes.isErr()) return err(addCapRes.error);
-        }
       }
 
       await progressHandler?.end(true);

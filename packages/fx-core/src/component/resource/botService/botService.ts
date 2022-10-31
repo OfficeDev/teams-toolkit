@@ -12,11 +12,10 @@ import {
   err,
   Bicep,
   ActionContext,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import { AppStudioScopes, compileHandlebarsTemplateString } from "../../../common/tools";
+import { compileHandlebarsTemplateString } from "../../../common/tools";
 import { BotServiceOutputs, ComponentNames } from "../../constants";
 import { getComponent } from "../../workflow";
 import { AzureResource } from "../azureResource";
@@ -25,15 +24,13 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { wrapError } from "./errors";
 import { CheckThrowSomethingMissing } from "../../error";
-import { BotRegistration, BotAadCredentials, BotAuthType } from "./botRegistration/botRegistration";
+import { BotRegistration, BotAadCredentials } from "./botRegistration/botRegistration";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "./resourceNameFactory";
 import { MaxLengths } from "./constants";
 import { CommonStrings, PluginLocalDebug } from "./strings";
 import { BotRegistrationFactory, BotRegistrationKind } from "./botRegistration/factory";
 import { normalizeName } from "../../utils";
-import { AppStudioClient } from "./appStudio/appStudioClient";
-import { AlreadyCreatedBotNotExist } from "../../debugHandler/error";
 
 const errorSource = "BotService";
 function _checkThrowSomethingMissing<T>(key: string, value: T | undefined): T {

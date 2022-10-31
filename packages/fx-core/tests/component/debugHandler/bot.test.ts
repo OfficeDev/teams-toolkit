@@ -20,6 +20,7 @@ import {
 
 import { ComponentNames } from "../../../src/component/constants";
 import {
+  AlreadyCreatedBotNotExist,
   DebugArgumentEmptyError,
   InvalidExistingBotArgsError,
 } from "../../../src/component/debugHandler/error";
@@ -355,7 +356,7 @@ describe("BotDebugHandler", () => {
       sinon.restore();
     });
 
-    it("get bot failed with id from envInfo", async () => {
+    it("create bot error with id from state", async () => {
       const projectSettingV3: ProjectSettingsV3 = {
         appName: "unit-test",
         projectId: "11111111-1111-1111-1111-111111111111",
@@ -399,7 +400,9 @@ describe("BotDebugHandler", () => {
       sinon.stub(AppStudioClient, "getBotRegistration").callsFake(async (_token, id) => {
         return undefined;
       });
-      sinon.stub(AppStudioClient, "createBotRegistration").throws();
+      sinon
+        .stub(AppStudioClient, "createBotRegistration")
+        .throws(AlreadyCreatedBotNotExist(botId, ""));
       sinon.stub(AppStudioClient, "updateMessageEndpoint").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");
@@ -431,7 +434,7 @@ describe("BotDebugHandler", () => {
       chai.assert(result.isErr());
       chai.assert(!registerAADCalled);
       if (result.isErr()) {
-        chai.assert(result.error.name, "AlreadyCreatedBotNotExist");
+        chai.assert.equal(result.error.name, "AlreadyCreatedBotNotExist");
       }
       sinon.restore();
     });

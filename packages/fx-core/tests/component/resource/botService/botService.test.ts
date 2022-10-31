@@ -2,13 +2,11 @@
 // Licensed under the MIT license.
 
 import {
-  err,
   InputsWithProjectPath,
   M365TokenProvider,
   ok,
   Platform,
   ResourceContextV3,
-  SystemError,
   TokenRequest,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -28,6 +26,7 @@ import { AppManifest } from "../../../../src/component/resource/appManifest/appM
 import { provisionUtils } from "../../../../src/component/provisionUtils";
 import { TelemetryKeys } from "../../../../src/component/resource/botService/constants";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
+import { AlreadyCreatedBotNotExist } from "../../../../src/component/debugHandler/error";
 
 describe("Bot service", () => {
   const tools = new MockTools();
@@ -134,7 +133,9 @@ describe("Bot service", () => {
       botPassword: "botPassword",
     };
     sandbox.stub(AppStudioClient, "getBotRegistration").returns(Promise.resolve(undefined));
-    sandbox.stub(AppStudioClient, "createBotRegistration").throws();
+    sandbox
+      .stub(AppStudioClient, "createBotRegistration")
+      .throws(AlreadyCreatedBotNotExist("botId", ""));
     sandbox.stub(GraphClient, "registerAadApp").resolves({
       clientId: "clientId",
       clientSecret: "clientSecret",
@@ -144,62 +145,6 @@ describe("Bot service", () => {
     if (res.isErr()) {
       const error = res.error;
       assert.equal(error.name, "AlreadyCreatedBotNotExist");
-    }
-  });
-
-  it("local bot registration error with existing bot id but can get bot", async () => {
-    context.envInfo.state[ComponentNames.TeamsBot] = {
-      botId: "botId",
-      botPassword: "botPassword",
-    };
-    sandbox.stub(AppStudioClient, "getBotRegistration").returns(
-      Promise.resolve({
-        botId: "botId",
-        name: "",
-        iconUrl: "",
-        messagingEndpoint: "",
-        description: "",
-        callingEndpoint: "",
-      })
-    );
-    sandbox.stub(AppStudioClient, "createBotRegistration").throws();
-    sandbox.stub(GraphClient, "registerAadApp").resolves({
-      clientId: "clientId",
-      clientSecret: "clientSecret",
-    });
-    const res = await component.provision(context as ResourceContextV3, inputs);
-    assert.isTrue(res.isErr());
-    if (res.isErr()) {
-      const error = res.error;
-      assert.equal(error.name, "UnhandledError");
-    }
-  });
-
-  it("local bot registration error with existing bot id but cannot get access token", async () => {
-    context = utils.createContextV3() as ResourceContextV3;
-    context.envInfo = newEnvInfoV3("local");
-    sandbox
-      .stub(context.tokenProvider.m365TokenProvider, "getAccessToken")
-      .onFirstCall()
-      .resolves(ok("token"))
-      .onSecondCall()
-      .resolves(err(new SystemError("error", "errorName", "", "")));
-
-    context.envInfo.state[ComponentNames.TeamsBot] = {
-      botId: "botId",
-      botPassword: "botPassword",
-    };
-    sandbox.stub(AppStudioClient, "getBotRegistration").returns(Promise.resolve(undefined));
-    sandbox.stub(AppStudioClient, "createBotRegistration").throws();
-    sandbox.stub(GraphClient, "registerAadApp").resolves({
-      clientId: "clientId",
-      clientSecret: "clientSecret",
-    });
-    const res = await component.provision(context as ResourceContextV3, inputs);
-    assert.isTrue(res.isErr());
-    if (res.isErr()) {
-      const error = res.error;
-      assert.equal(error.name, "errorName");
     }
   });
 });

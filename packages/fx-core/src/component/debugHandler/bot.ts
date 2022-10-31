@@ -17,7 +17,6 @@ import {
   ProjectSettingsV3,
   Result,
   TelemetryReporter,
-  UserError,
   UserInteraction,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -34,12 +33,7 @@ import { genUUID } from "../resource/botService/common";
 import { ResourceNameFactory } from "../resource/botService/resourceNameFactory";
 import { ComponentNames } from "../constants";
 import { DebugAction } from "./common";
-import {
-  errorSource,
-  DebugArgumentEmptyError,
-  InvalidExistingBotArgsError,
-  AlreadyCreatedBotNotExist,
-} from "./error";
+import { errorSource, DebugArgumentEmptyError, InvalidExistingBotArgsError } from "./error";
 import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 import { AppStudioClient } from "../resource/botService/appStudio/appStudioClient";
 import { GraphClient } from "../resource/botService/botRegistration/graphClient";

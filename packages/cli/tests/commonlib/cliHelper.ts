@@ -264,6 +264,15 @@ export class CliHelper {
         timeout: timeout,
       });
 
+      await execAsync(
+        `sed -i 's/"appName": ".*"/"appName": "${appName}"/' ./${appName}/.fx/configs/projectSettings.json`,
+        {
+          cwd: testFolder,
+          env: processEnv ? processEnv : process.env,
+          timeout: timeout,
+        }
+      );
+
       const message = `scaffold project to ${path.resolve(
         testFolder,
         appName

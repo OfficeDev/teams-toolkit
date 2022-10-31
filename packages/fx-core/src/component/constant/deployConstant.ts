@@ -29,4 +29,8 @@ export class DeployConstant {
   public static readonly SAS_TOKEN_LIFE_TIME_PADDING = DeployConstant.DAY_IN_MS;
   // The time at which the Azure storage shared access signature becomes invalid.
   public static readonly SAS_TOKEN_LIFE_TIME = DeployConstant.DAY_IN_MS * 3;
+  // default index document for Azure storage static website
+  public static readonly DEFAULT_INDEX_DOCUMENT = "index.html";
+  // default error document for Azure storage static website
+  public static readonly DEFAULT_ERROR_DOCUMENT = DeployConstant.DEFAULT_INDEX_DOCUMENT;
 }

@@ -137,7 +137,7 @@ export class Coordinator {
       inputs.projectPath = projectPath;
       await fs.ensureDir(projectPath);
 
-      const res = await Generator.generateSample(sampleId, projectPath, context);
+      const res = await Generator.generateSample(context, projectPath, sampleId);
       if (res.isErr()) return err(res.error);
 
       await downloadSampleHook(sampleId, projectPath);
@@ -170,7 +170,7 @@ export class Coordinator {
       const templateName = Feature2TemplateName[`${feature}:${trigger}`];
       if (templateName) {
         const langKey = convertToLangKey(language);
-        const res = await Generator.generateTemplate(templateName, langKey, projectPath, context);
+        const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
         if (res.isErr()) return err(res.error);
       }
       merge(actionContext?.telemetryProps, {

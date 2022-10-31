@@ -9,6 +9,7 @@ import { FxBotPluginResultFactory as ResultFactory, FxResult } from "./result";
 import { CommonHostingError } from "../../../common/azure-hosting/hostingError";
 import { CreateAppError, CreateSecretError } from "../aadApp/errors";
 import { GraphErrorCodes } from "../aadApp/errorCodes";
+import { HelpLinks } from "../../../common/constants";
 
 export const ErrorType = {
   USER: "User",
@@ -231,3 +232,21 @@ export function wrapError(e: InnerError): FxResult {
     return ResultFactory.SystemError(UnhandledErrorCode, [errorMsg, errorMsg], innerError);
   }
 }
+
+export const AlreadyCreatedBotNotExist = (botId: string | undefined, innerError: any) => {
+  return new UserError({
+    source: "RegisterBot",
+    name: "AlreadyCreatedBotNotExist",
+    message: getLocalizedString(
+      "plugins.bot.FailedToGetAlreadyCreatedBot",
+      botId,
+      HelpLinks.SwitchAccountOrSub
+    ),
+    displayMessage: getLocalizedString(
+      "plugins.bot.FailedToGetAlreadyCreatedBot",
+      botId,
+      HelpLinks.SwitchAccountOrSub
+    ),
+    error: innerError,
+  });
+};

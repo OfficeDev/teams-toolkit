@@ -960,6 +960,8 @@ export interface Inputs extends Json {
     // (undocumented)
     targetSubscriptionId?: string;
     // (undocumented)
+    taskOrientedTemplateNaming?: boolean;
+    // (undocumented)
     vscodeEnv?: VsCodeEnv;
 }
 

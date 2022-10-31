@@ -5,6 +5,7 @@ import { IBotRegistration } from "./interfaces/IBotRegistration";
 
 import { AxiosInstance, AxiosResponse, default as axios } from "axios";
 import {
+  AlreadyCreatedBotNotExist,
   BotRegistrationNotFoundError,
   ConfigUpdatingError,
   MessageEndpointUpdatingError,
@@ -77,10 +78,11 @@ export class AppStudioClient {
   public static async createBotRegistration(
     token: string,
     registration: IBotRegistration,
+    isIdFromState?: boolean,
     context?: ResourceContextV3
   ): Promise<void> {
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
-
+    let create = false;
     let response = undefined;
     try {
       if (registration.botId) {
@@ -91,11 +93,17 @@ export class AppStudioClient {
         }
       }
 
+      create = true;
       response = await RetryHandler.Retry(() =>
         axiosInstance.post(`${AppStudioClient.baseUrl}/api/botframework`, registration)
       );
     } catch (e) {
       e.teamsfxUrlName = "<create-bot-registration>";
+      if (create && isIdFromState) {
+        // Handle exception when creating bot with botId from state for local environment failed.
+        // Will get bot resigreation again. If the bot does not exist which happens when user switched account in same tenant, we will throw AlreadyCreatedBotNotExist error with help link guiding users to fix by themselves.
+        throw AlreadyCreatedBotNotExist(registration.botId, e);
+      }
       throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION, e);
     }
 

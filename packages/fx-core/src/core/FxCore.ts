@@ -530,10 +530,10 @@ export class FxCore implements v3.ICore {
           ui: context.userInteraction,
           logProvider: context.logProvider,
           telemetryReporter: context.telemetryReporter,
-          projectPath: context.projectPath!,
+          projectPath: inputs.projectPath!,
           platform: inputs.platform,
         };
-        await envUtil.readEnv(context.projectPath!, func.params.env);
+        // await envUtil.readEnv(context.projectPath!, func.params.env);
         res = await driver.run(args, driverContext);
       } else {
         const component = Container.get("app-manifest") as any;
@@ -553,10 +553,10 @@ export class FxCore implements v3.ICore {
           ui: context.userInteraction,
           logProvider: context.logProvider,
           telemetryReporter: context.telemetryReporter,
-          projectPath: context.projectPath!,
+          projectPath: inputs.projectPath!,
           platform: inputs.platform,
         };
-        await envUtil.readEnv(context.projectPath!, func.params.env);
+        // await envUtil.readEnv(context.projectPath!, func.params.env);
         res = await driver.run(args, driverContext);
       } else {
         const component = Container.get("app-manifest") as any;

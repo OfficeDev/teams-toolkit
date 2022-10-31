@@ -3,6 +3,7 @@
 
 import { BaseComponentInnerError, PrerequisiteError } from "../error/componentError";
 import { err, FxError, ok, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import path from "path";
 
 /**
  * check parameter, throw error if value is null or undefined
@@ -18,8 +19,8 @@ export function checkMissingArgs<T>(name: string, value: T | null | undefined): 
 
 export function asOptional<T>(as: (s: unknown, key: string) => T) {
   return function (s: unknown, key: string): T | undefined {
-    if (s === undefined) {
-      return s;
+    if (s === undefined || s === null) {
+      return undefined;
     }
     return as(s, key);
   };
@@ -122,4 +123,12 @@ export function isKvPairEqual<T>(kv1: { [key: string]: T }, kv2: { [key: string]
     !Object.keys(l).some((key) => r[key] !== l[key]);
 
   return _compare(kv1, kv2) && _compare(kv2, kv1);
+}
+
+export function getAbsolutePath(relativeOrAbsolutePath: string, projectPath: string): string {
+  relativeOrAbsolutePath = relativeOrAbsolutePath || "";
+  projectPath = projectPath || "";
+  return path.isAbsolute(relativeOrAbsolutePath)
+    ? relativeOrAbsolutePath
+    : path.join(projectPath, relativeOrAbsolutePath);
 }

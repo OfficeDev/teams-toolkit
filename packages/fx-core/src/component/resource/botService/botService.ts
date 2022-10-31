@@ -80,6 +80,7 @@ export class BotService extends AzureResource {
     // init bot state
     context.envInfo.state[ComponentNames.TeamsBot] ||= {};
     const teamsBotState = context.envInfo.state[ComponentNames.TeamsBot];
+    const hasBotIdInEnvBefore = !!teamsBotState && !!teamsBotState.botId;
 
     const botRegistration: BotRegistration = BotRegistrationFactory.create(
       context.envInfo.envName === "local" ? BotRegistrationKind.Local : BotRegistrationKind.Remote
@@ -112,9 +113,9 @@ export class BotService extends AzureResource {
       context.tokenProvider.m365TokenProvider,
       aadDisplayName,
       botName,
-      botConfig
+      botConfig,
+      hasBotIdInEnvBefore
     );
-
     if (regRes.isErr()) return err(regRes.error);
 
     // Update states for bot aad configs.

@@ -19,6 +19,10 @@ import { MyTokenCredential } from "../../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { MockUserInteraction } from "../../../../core/utils";
+import * as os from "os";
+import * as uuid from "uuid";
+import * as path from "path";
+import * as fs from "fs-extra";
 
 function getMockStorageAccount1() {
   return {
@@ -32,6 +36,17 @@ function getMockStorageAccount1() {
 
 describe("Azure Storage Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
+  const sysTmp = os.tmpdir();
+  const folder = uuid.v4();
+  const testFolder = path.join(sysTmp, folder);
+
+  before(async () => {
+    await fs.mkdirs(testFolder);
+  });
+
+  after(async () => {
+    fs.rmSync(testFolder, { recursive: true, force: true });
+  });
 
   beforeEach(() => {
     sandbox.stub(tools, "waitSeconds").resolves();
@@ -44,8 +59,8 @@ describe("Azure Storage Deploy Driver test", () => {
   it("deploy to storage happy path", async () => {
     const deploy = new AzureStorageDeployDriver();
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;
@@ -84,8 +99,8 @@ describe("Azure Storage Deploy Driver test", () => {
   it("get azure account credential error", async () => {
     const deploy = new AzureStorageDeployDriver();
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
@@ -117,8 +132,8 @@ describe("Azure Storage Deploy Driver test", () => {
     const mockStorageManagementClient = new StorageManagementClient(new MyTokenCredential(), "id");
     mockStorageManagementClient.storageAccounts = getMockStorageAccount1() as any;
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
     } as DeployArgs;

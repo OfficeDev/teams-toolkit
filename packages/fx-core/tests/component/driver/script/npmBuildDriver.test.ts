@@ -37,6 +37,7 @@ describe("NPM Build Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
+      projectPath: "./",
     } as DriverContext;
     sandbox.stub(utils, "execute").resolves();
     const res = await driver.run(args, context);
@@ -53,6 +54,7 @@ describe("NPM Build Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
+      projectPath: "./",
     } as DriverContext;
     sandbox.stub(utils, "execute").throws(new Error("error"));
     const res = await driver.run(args, context);

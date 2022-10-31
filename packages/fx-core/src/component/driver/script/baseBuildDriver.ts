@@ -22,7 +22,7 @@ export abstract class BaseBuildDriver {
   abstract buildPrefix: string;
 
   constructor(args: unknown, context: DriverContext) {
-    this.args = this.toBuildArgs();
+    this.args = BaseBuildDriver.toBuildArgs(args);
     // if working dir is not absolute path, then join the path with project path
     this.workingDirectory = path.isAbsolute(this.args.workingDirectory)
       ? this.args.workingDirectory
@@ -38,8 +38,8 @@ export abstract class BaseBuildDriver {
     args: asString,
   });
 
-  protected toBuildArgs(): BuildArgs {
-    return BaseBuildDriver.asBuildArgs(this.args);
+  protected static toBuildArgs(args: unknown): BuildArgs {
+    return BaseBuildDriver.asBuildArgs(args);
   }
 
   async run(): Promise<Map<string, string>> {

@@ -265,7 +265,7 @@ export class CliHelper {
       });
 
       await execAsync(
-        `sed -i 's/"appName": ".*"/"appName": "${appName}"/' ./${appName}/.fx/configs/projectSettings.json`,
+        `sed -i 's/"appName": ".*"/"appName": "${appName}"/' ./${appName}/.fx/configs/projectSettings.json `,
         {
           cwd: testFolder,
           env: processEnv ? processEnv : process.env,

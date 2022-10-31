@@ -26,7 +26,7 @@ import { AppManifest } from "../../../../src/component/resource/appManifest/appM
 import { provisionUtils } from "../../../../src/component/provisionUtils";
 import { TelemetryKeys } from "../../../../src/component/resource/botService/constants";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
-import { AlreadyCreatedBotNotExist } from "../../../../src/component/debugHandler/error";
+import { AlreadyCreatedBotNotExist } from "../../../../src/component/resource/botService/errors";
 
 describe("Bot service", () => {
   const tools = new MockTools();

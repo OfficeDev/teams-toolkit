@@ -20,7 +20,6 @@ import {
 
 import { ComponentNames } from "../../../src/component/constants";
 import {
-  AlreadyCreatedBotNotExist,
   DebugArgumentEmptyError,
   InvalidExistingBotArgsError,
 } from "../../../src/component/debugHandler/error";
@@ -38,6 +37,7 @@ import { BotDebugArgs, BotDebugHandler } from "../../../src/component/debugHandl
 import { AadAppCredentials } from "../../../src/component/resource/botService/AadAppCredentials";
 import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
 import * as utils from "../../../src/component/debugHandler/utils";
+import { AlreadyCreatedBotNotExist } from "../../../src/component/resource/botService/errors";
 
 describe("BotDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");

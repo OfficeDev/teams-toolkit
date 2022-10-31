@@ -5,6 +5,7 @@ import { IBotRegistration } from "./interfaces/IBotRegistration";
 
 import { AxiosInstance, AxiosResponse, default as axios } from "axios";
 import {
+  AlreadyCreatedBotNotExist,
   BotRegistrationNotFoundError,
   ConfigUpdatingError,
   MessageEndpointUpdatingError,
@@ -17,7 +18,6 @@ import { getAppStudioEndpoint } from "../../appManifest/constants";
 import { ResourceContextV3 } from "@microsoft/teamsfx-api";
 import { CheckThrowSomethingMissing } from "../../../error";
 import { FxBotPluginResultFactory } from "../result";
-import { AlreadyCreatedBotNotExist } from "../../../debugHandler";
 
 export class AppStudioClient {
   private static baseUrl = getAppStudioEndpoint();

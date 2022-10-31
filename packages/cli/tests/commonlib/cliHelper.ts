@@ -258,12 +258,13 @@ export class CliHelper {
       });
 
       //  change original template name to appName
-      await execAsync(`sed -i 's/"name": ".*"/"name": "${appName}"/' .fx/configs.projectSettings.json `, {
+      await execAsync(`mv ./${templateFolderName} ./${appName}`, {
         cwd: testFolder,
         env: processEnv ? processEnv : process.env,
         timeout: timeout,
       });
-      await execAsync(`mv ./${templateFolderName} ./${appName}`, {
+
+      await execAsync(`sed -i 's/"name": ".*"/"name": "${appName}"/' ./${appName}.fx/configs.projectSettings.json `, {
         cwd: testFolder,
         env: processEnv ? processEnv : process.env,
         timeout: timeout,

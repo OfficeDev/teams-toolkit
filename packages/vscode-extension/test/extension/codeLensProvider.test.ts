@@ -1,9 +1,11 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as fs from "fs-extra";
+import { envUtil } from "@microsoft/teamsfx-core";
+import { ok } from "@microsoft/teamsfx-api";
 import {
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
+  PlaceholderCodeLens,
 } from "../../src/codeLensProvider";
 import * as vscode from "vscode";
 import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
@@ -64,6 +66,21 @@ describe("Manifest codelens", () => {
       arguments: [{ url: url }],
     });
     sinon.restore();
+  });
+
+  it("ResolveEnvironmentVariableCodelens", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(true);
+    sinon.stub(envUtil, "readEnv").resolves(ok({}));
+
+    const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0));
+    const lens: PlaceholderCodeLens = new PlaceholderCodeLens("${{ TEAMS_APP_ID }}", range);
+    const manifestProvider = new ManifestTemplateCodeLensProvider();
+    const cts = new vscode.CancellationTokenSource();
+
+    const res = await manifestProvider.resolveCodeLens(lens, cts.token);
+    chai.assert.equal(res.command?.command, "fx-extension.openConfigState");
+    chai.assert.isTrue(res.command?.title.includes("👉"));
+    chai.expect(res.command?.arguments).to.deep.equal([{ type: "env", from: "manifest" }]);
   });
 
   it("Preview codelens", async () => {

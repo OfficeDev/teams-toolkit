@@ -41,12 +41,14 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
    */
   protected async packageToZip(args: DeployStepArgs, context: DeployContext): Promise<Buffer> {
     const ig = await this.handleIgnore(args, context);
+    const source = path.join(args.workingDirectory, args.distributionPath);
     const zipFilePath = path.join(
-      args.distributionPath,
+      source,
       DeployConstant.DEPLOYMENT_TMP_FOLDER,
       DeployConstant.DEPLOYMENT_ZIP_CACHE_FILE
     );
-    return await zipFolderAsync(args.distributionPath, zipFilePath, ig);
+    await this.context.logProvider?.debug(`start zip dist folder ${source}`);
+    return await zipFolderAsync(source, zipFilePath, ig);
   }
 
   protected async handleIgnore(args: DeployStepArgs, context: DeployContext): Promise<Ignore> {

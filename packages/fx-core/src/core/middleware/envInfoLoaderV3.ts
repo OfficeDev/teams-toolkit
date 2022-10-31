@@ -18,7 +18,9 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
+import { isV3Enabled } from "../../common/tools";
 import { ComponentNames } from "../../component/constants";
+import { EnvLoaderMW } from "../../component/middleware/envMW";
 import { LocalCrypto } from "../crypto";
 import { environmentManager, newEnvInfoV3 } from "../environment";
 import {
@@ -48,6 +50,11 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
     if (shouldIgnored(ctx)) {
       await next();
+      return;
+    }
+
+    if (isV3Enabled()) {
+      await EnvLoaderMW(ctx, next);
       return;
     }
 

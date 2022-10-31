@@ -28,7 +28,6 @@ import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
 import { defaultTimeoutInMs, defaultTryLimits } from "../../../src/component/generator/constant";
-import axios from "axios";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -90,7 +89,7 @@ describe("Generator error", async () => {
 
   it("fetch sample zip from url error", async () => {
     sandbox.stub(fetchZipFromUrlAction, "run").throws(new Error("test"));
-    const result = await Generator.generateSample("bot-sso", tmpDir, ctx);
+    const result = await Generator.generateSample(ctx, tmpDir, "bot-sso");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "FetchZipFromUrlError");
     }
@@ -99,7 +98,7 @@ describe("Generator error", async () => {
   it("template fallback error", async () => {
     sandbox.stub(fetchTemplateUrlWithTagAction, "run").throws(new Error("test"));
     sandbox.stub(fetchTemplateZipFromLocalAction, "run").throws(new Error("test"));
-    const result = await Generator.generateTemplate("bot", "ts", tmpDir, ctx);
+    const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "TemplateZipFallbackError");
     }
@@ -110,7 +109,7 @@ describe("Generator error", async () => {
     sandbox.stub(fetchZipFromUrlAction, "run").resolves();
     sandbox.stub(fetchTemplateZipFromLocalAction, "run").resolves();
     sandbox.stub(unzipAction, "run").throws(new Error("test"));
-    const result = await Generator.generateTemplate("bot", "ts", tmpDir, ctx);
+    const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "UnzipError");
     }
@@ -134,14 +133,14 @@ describe("Generator happy path", async () => {
   it("external sample", async () => {
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
     const sampleName = "bot-proactive-messaging-teamsfx";
-    const result = await Generator.generateSample(sampleName, tmpDir, context);
+    const result = await Generator.generateSample(context, tmpDir, sampleName);
     assert.isTrue(result.isOk());
   });
 
   it("teamsfx sample", async () => {
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
     const sampleName = "bot-sso";
-    const result = await Generator.generateSample(sampleName, tmpDir, context);
+    const result = await Generator.generateSample(context, tmpDir, sampleName);
     assert.isTrue(result.isOk());
   });
 
@@ -158,7 +157,7 @@ describe("Generator happy path", async () => {
       .resolves(new AdmZip(path.join(tmpDir, "test.zip")));
     const templateName = "bot";
     const language = "ts";
-    const result = await Generator.generateTemplate(templateName, language, tmpDir, context);
+    const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
     assert.isTrue(result.isOk());
   });
 
@@ -174,7 +173,7 @@ describe("Generator happy path", async () => {
 
     let success = false;
     try {
-      await Generator.generateTemplate(templateName, language, tmpDir, context);
+      await Generator.generateTemplate(context, tmpDir, templateName, language);
       success = true;
     } catch (e) {
       assert.fail(e.toString());

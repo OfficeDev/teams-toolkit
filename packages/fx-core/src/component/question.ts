@@ -283,9 +283,9 @@ export async function getQuestionsForAddFeatureV3(
     const manifestRes = await manifestUtils.readAppManifest(inputs.projectPath!);
     if (manifestRes.isErr()) return err(manifestRes.error);
     const manifest = manifestRes.value;
-    const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
-    const botExceedLimit = manifest.bots!.length > 0;
-    const meExceedLimit = manifest.composeExtensions!.length > 0;
+    const canAddTab = !manifest.staticTabs || manifest.staticTabs.length < STATIC_TABS_MAX_ITEMS;
+    const botExceedLimit = !manifest.bots || manifest.bots.length > 0;
+    const meExceedLimit = !manifest.composeExtensions || manifest.composeExtensions.length > 0;
     const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
     const teamsBot = getComponent(ctx.projectSetting as ProjectSettingsV3, ComponentNames.TeamsBot);
     const alreadyHasNewBot =

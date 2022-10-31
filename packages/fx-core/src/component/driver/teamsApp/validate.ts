@@ -13,6 +13,7 @@ import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { HelpLinks } from "../../../common/constants";
+import { getAbsolutePath } from "../../utils/common";
 
 const actionName = "teamsApp/validate";
 
@@ -26,7 +27,7 @@ export class ValidateTeamsAppDriver implements StepDriver {
   ): Promise<Result<Map<string, string>, FxError>> {
     const state = this.loadCurrentState();
     const manifestRes = await manifestUtils.getManifestV3(
-      args.manifestTemplatePath,
+      getAbsolutePath(args.manifestTemplatePath, context.projectPath),
       state,
       withEmptyCapabilities
     );

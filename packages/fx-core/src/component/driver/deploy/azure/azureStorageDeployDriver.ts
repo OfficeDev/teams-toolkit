@@ -62,7 +62,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
     );
     // upload all to storage
     const ig = await this.handleIgnore(args, this.context);
-    const sourceFolder = args.distributionPath;
+    const sourceFolder = path.join(args.workingDirectory, args.distributionPath);
     const tasks: Promise<BlobUploadCommonResponse>[] = [];
     await forEachFileAndDir(
       sourceFolder,
@@ -80,7 +80,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
         tasks.push(client.uploadFile(filePath, options));
       },
       (itemPath: string) => {
-        return ig.test(path.relative(sourceFolder, itemPath)).unignored;
+        return !ig.test(path.relative(sourceFolder, itemPath)).ignored;
       }
     );
     const responses = await Promise.all(tasks);

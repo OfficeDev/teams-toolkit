@@ -10,7 +10,8 @@ import { getDefaultString, getLocalizedString } from "../../common/localizeUtils
 export class EnvUtil {
   async readEnv(
     projectPath: string,
-    env: string
+    env: string,
+    loadToProcessEnv = true
   ): Promise<Result<dotenv.DotenvParseOutput, FxError>> {
     const dotEnvFilePath = path.join(projectPath, ".fx", `.env.${env}`);
     if (!(await fs.pathExists(dotEnvFilePath))) {
@@ -38,7 +39,9 @@ export class EnvUtil {
         envs[key] = decryptRes.value;
       }
     }
-    merge(process.env, envs);
+    if (loadToProcessEnv) {
+      merge(process.env, envs);
+    }
     return ok(envs);
   }
 

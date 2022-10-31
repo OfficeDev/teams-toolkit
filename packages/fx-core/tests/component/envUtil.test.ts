@@ -61,6 +61,19 @@ describe("env utils", () => {
     assert.isTrue(res.isOk());
     assert.equal(process.env.SECRET_ABC, decrypted);
   });
+
+  it("envUtil.readEnv - loadToProcessEnv false", async () => {
+    const encRes = await cryptoProvider.encrypt(decrypted);
+    if (encRes.isErr()) throw encRes.error;
+    const encrypted = encRes.value;
+    sandbox.stub(fs, "readFile").resolves(("SECRET_ABC=" + encrypted) as any);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    const res = await envUtil.readEnv(".", "dev", false);
+    assert.isTrue(res.isOk());
+    assert.equal(process.env.SECRET_ABC, decrypted);
+  });
+
   it("envUtil.readEnv fail", async () => {
     sandbox
       .stub(settingsUtil, "readSettings")

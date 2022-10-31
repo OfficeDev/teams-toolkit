@@ -311,7 +311,23 @@ export function createCapabilityForDotNet(): SingleSelectQuestion {
   };
 }
 
-export function createCapabilityQuestionPreview(): SingleSelectQuestion {
+export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQuestion {
+  // AB test for notification/command/workflow bot template naming
+  if (inputs?.taskOrientedTemplateNaming) {
+    NotificationOptionItem.label = `$(hubot) ${getLocalizedString(
+      "core.NotificationOption.label.abTest"
+    )}`;
+    NotificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
+    CommandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
+      "core.CommandAndResponseOption.label.abTest"
+    )}`;
+    CommandAndResponseOptionItem.detail = getLocalizedString(
+      "core.CommandAndResponseOption.detail.abTest"
+    );
+    WorkflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
+    WorkflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
+  }
+
   // new capabilities question order
   const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
 

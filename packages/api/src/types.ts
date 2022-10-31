@@ -251,6 +251,7 @@ export interface Inputs extends Json {
   existingResources?: string[];
   locale?: string;
   isM365?: boolean;
+  taskOrientedTemplateNaming?: boolean; // AB test for notification/command/workflow bot template naming
 }
 
 export interface ProjectConfig {

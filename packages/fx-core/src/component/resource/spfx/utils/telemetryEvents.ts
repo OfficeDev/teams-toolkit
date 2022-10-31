@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 export enum TelemetryEvents {
+  Generate = "generate",
   EnsureYoStart = "ensure-yo-start",
   EnsureYo = "ensure-yo",
   EnsureSharepointGeneratorStart = "ensure-sharepoint-generator-start",

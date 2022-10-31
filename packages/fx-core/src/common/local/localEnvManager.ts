@@ -3,8 +3,6 @@
 "use strict";
 
 import {
-  ConfigFolderName,
-  InputConfigsFolderName,
   Json,
   LogProvider,
   ProjectSettings,

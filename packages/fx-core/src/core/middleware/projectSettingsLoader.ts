@@ -15,7 +15,6 @@ import {
   ok,
   ProjectSettings,
   ProjectSettingsFileName,
-  ProjectSettingsV3,
   Result,
   Settings,
   SettingsFileName,

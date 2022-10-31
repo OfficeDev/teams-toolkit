@@ -10,6 +10,7 @@ import {
   Platform,
   ResourceContextV3,
   Result,
+  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
 import { Container } from "typedi";
@@ -267,7 +268,7 @@ export class Coordinator {
     }
     const output: DotenvParseOutput = {};
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, "teamsfx.yml");
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -342,7 +343,7 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, "teamsfx.yml");
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -368,7 +369,7 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, "teamsfx.yml");
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);

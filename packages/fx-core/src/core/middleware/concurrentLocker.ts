@@ -23,7 +23,7 @@ import { CoreSource, InvalidProjectError, NoProjectOpenedError, PathNotExistErro
 import { shouldIgnored } from "./projectSettingsLoader";
 import crypto from "crypto";
 import * as os from "os";
-import { waitSeconds } from "../../common/tools";
+import { isV3Enabled, waitSeconds } from "../../common/tools";
 
 let doingTask: string | undefined = undefined;
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
@@ -40,7 +40,9 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     ctx.result = err(new PathNotExistError(inputs.projectPath));
     return;
   }
-  const configFolder = path.join(inputs.projectPath, SettingsFolderName);
+  const configFolder = isV3Enabled()
+    ? path.join(inputs.projectPath, SettingsFolderName)
+    : path.join(inputs.projectPath, `.${ConfigFolderName}`);
   if (!(await fs.pathExists(configFolder))) {
     ctx.result = err(new InvalidProjectError(configFolder));
     return;

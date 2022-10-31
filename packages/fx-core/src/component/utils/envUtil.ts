@@ -53,7 +53,7 @@ export class EnvUtil {
     }
     const projectId = settingsRes.value.trackingId;
     const cryptoProvider = new LocalCrypto(projectId);
-    const dotEnvFilePath = path.join(projectPath, ".fx", `.env.${env}`);
+    const dotEnvFilePath = path.join(projectPath, SettingsFolderName, `.env.${env}`);
     const readEnvRes = await this.readEnv(projectPath, env);
     const existingEnvs = readEnvRes.isOk() ? readEnvRes.value : {};
     merge(existingEnvs, envs);

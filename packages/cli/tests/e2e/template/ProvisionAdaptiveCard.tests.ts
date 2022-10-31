@@ -44,7 +44,7 @@ describe("teamsfx new template", function () {
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath, `--resource-group ${appName}`);
+    await CliHelper.provisionProject(projectPath);
 
     // Validate Provision
     const context = await readContextMultiEnv(projectPath, env);

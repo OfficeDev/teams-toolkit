@@ -362,9 +362,9 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvLoaderMW,
+    EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
-    EnvWriterMW,
+    EnvInfoWriterMW_V3(),
   ])
   async deployAadManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deployAad);

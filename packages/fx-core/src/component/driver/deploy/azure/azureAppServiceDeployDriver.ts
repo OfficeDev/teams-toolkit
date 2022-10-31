@@ -31,7 +31,7 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
   progressBarName = `Deploying ${this.workingDirectory ?? ""} to Azure App Service`;
   progressBarSteps = 5;
   pattern =
-    /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/serverFarms\/([^\/]*)/i;
+    /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/sites\/([^\/]*)/i;
 
   async azureDeploy(
     args: DeployStepArgs,

@@ -89,7 +89,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     await this.progressBar?.next(ProgressMessages.getAzureAccountInfoForDeploy);
     const config = await this.createAzureDeployConfig(azureResource, azureCredential);
     await this.progressBar?.next(ProgressMessages.getAzureUploadEndpoint);
-    const endpoint = this.getZipDeployEndpoint(azureResource.resourceGroupName);
+    const endpoint = this.getZipDeployEndpoint(azureResource.instanceId);
     await this.progressBar?.next(ProgressMessages.uploadZipFileToAzure);
     const location = await AzureDeployDriver.zipDeployPackage(
       endpoint,
@@ -129,7 +129,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
       throw DeployExternalApiCallError.zipDeployError(e);
     }
 
-    if (res?.status !== HttpStatusCode.OK) {
+    if (res?.status !== HttpStatusCode.OK && res?.status !== HttpStatusCode.ACCEPTED) {
       if (res?.status) {
         await logger?.error(`Deployment is failed with error code: ${res.status}.`);
       }

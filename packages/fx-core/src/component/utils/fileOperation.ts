@@ -73,12 +73,17 @@ export async function zipFolderAsync(
       }
     },
     (itemPath: string) => {
-      return ig.test(path.relative(sourceDir, itemPath)).unignored;
+      return !ig.test(path.relative(sourceDir, itemPath)).ignored;
     }
   );
 
   await Promise.all(tasks);
   removeLegacyFileInZip(zip, zipFiles);
+  // save to cache if exists
+  if (cache && tasks) {
+    await fs.mkdirs(path.dirname(cache));
+    await fs.writeFile(cache, zip.toBuffer());
+  }
 
   return zip.toBuffer();
 }

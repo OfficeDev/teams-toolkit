@@ -18,8 +18,8 @@ export function checkMissingArgs<T>(name: string, value: T | null | undefined): 
 
 export function asOptional<T>(as: (s: unknown, key: string) => T) {
   return function (s: unknown, key: string): T | undefined {
-    if (s === undefined) {
-      return s;
+    if (s === undefined || s === null) {
+      return undefined;
     }
     return as(s, key);
   };

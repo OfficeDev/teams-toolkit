@@ -88,10 +88,17 @@ describe("v3 lifecyle", () => {
       const lifecycle = new Lifecycle("configureApp", driverDefs);
       const result = await lifecycle.run(mockedDriverContext);
       assert(result.isErr() && result.error.name === "DriverNotFoundError");
+
+      const execResult = await lifecycle.execute(mockedDriverContext);
+      assert(
+        execResult.isErr() &&
+          execResult.error.kind === "Failure" &&
+          execResult.error.error.name === "DriverNotFoundError"
+      );
     });
   });
 
-  describe("when run with multiple drivers", () => {
+  describe("when run/execute with multiple drivers", () => {
     class DriverThatReturnsError implements StepDriver {
       async run(
         args: unknown,
@@ -153,6 +160,14 @@ describe("v3 lifecyle", () => {
           result.value.env.get("OUTPUT_A") === "VALUE_A" &&
           result.value.env.get("OUTPUT_B") === "VALUE_B"
       );
+
+      const execResult = await lifecycle.execute(mockedDriverContext);
+      assert(
+        execResult.isOk() &&
+          execResult.value.size === 2 &&
+          execResult.value.get("OUTPUT_A") === "VALUE_A" &&
+          execResult.value.get("OUTPUT_B") === "VALUE_B"
+      );
     });
 
     it("should return error if one of the driver returns error", async () => {
@@ -177,10 +192,22 @@ describe("v3 lifecyle", () => {
       const lifecycle = new Lifecycle("configureApp", driverDefs);
       const result = await lifecycle.run(mockedDriverContext);
       assert(result.isErr() && result.error.name === "fakeError");
+
+      const execResult = await lifecycle.execute(mockedDriverContext);
+      assert(
+        execResult.isErr() &&
+          execResult.error.kind === "PartialSuccess" &&
+          execResult.error.reason.kind === "DriverError" &&
+          execResult.error.reason.failedDriver.uses === "DriverThatReturnsError" &&
+          execResult.error.reason.error.name === "fakeError" &&
+          execResult.error.env.size === 2 &&
+          execResult.error.env.get("OUTPUT_A") === "VALUE_A" &&
+          execResult.error.env.get("OUTPUT_B") === "VALUE_B"
+      );
     });
   });
 
-  describe("when run with valid placeholders", async () => {
+  describe("when run/execute with valid placeholders", async () => {
     const sandbox = sinon.createSandbox();
     let restoreFn: RestoreFn | undefined = undefined;
 
@@ -203,23 +230,37 @@ describe("v3 lifecyle", () => {
     });
 
     it("should replace all placeholders", async () => {
-      const driverDefs: DriverDefinition[] = [];
+      let driverDefs: DriverDefinition[] = [];
       driverDefs.push({
         uses: "DriverThatCapitalize",
         with: { INPUT_A: "hello ${{ SOME_ENV_VAR }}" },
       });
 
-      const lifecycle = new Lifecycle("configureApp", driverDefs);
+      let lifecycle = new Lifecycle("configureApp", driverDefs);
       const result = await lifecycle.run(mockedDriverContext);
       assert(
         result.isOk() &&
           result.value.unresolvedPlaceHolders.length === 0 &&
           result.value.env.get("OUTPUT") === "HELLO XXX"
       );
+
+      assert((driverDefs[0].with as any).INPUT_A === "hello xxx");
+
+      driverDefs = [];
+      driverDefs.push({
+        uses: "DriverThatCapitalize",
+        with: { INPUT_A: "hello ${{ SOME_ENV_VAR }}" },
+      });
+
+      lifecycle = new Lifecycle("configureApp", driverDefs);
+      const execResult = await lifecycle.execute(mockedDriverContext);
+      assert(execResult.isOk() && execResult.value.get("OUTPUT") === "HELLO XXX");
+
+      assert((driverDefs[0].with as any).INPUT_A === "hello xxx");
     });
   });
 
-  describe("when run with multiple valid placeholders", async () => {
+  describe("when dealing with multiple valid placeholders", async () => {
     const sandbox = sinon.createSandbox();
     let restoreFn: RestoreFn | undefined = undefined;
 
@@ -254,23 +295,33 @@ describe("v3 lifecyle", () => {
     });
 
     it("should replace all placeholders for a single driver", async () => {
-      const driverDefs: DriverDefinition[] = [];
+      let driverDefs: DriverDefinition[] = [];
       driverDefs.push({
         uses: "DriverThatCapitalize",
         with: { INPUT_A: "hello ${{ SOME_ENV_VAR }} and ${{OTHER_ENV_VAR}}" },
       });
 
-      const lifecycle = new Lifecycle("configureApp", driverDefs);
+      let lifecycle = new Lifecycle("configureApp", driverDefs);
       const result = await lifecycle.run(mockedDriverContext);
       assert(
         result.isOk() &&
           result.value.unresolvedPlaceHolders.length === 0 &&
           result.value.env.get("OUTPUT") === "HELLO XXX AND YYY"
       );
+
+      driverDefs = [];
+      driverDefs.push({
+        uses: "DriverThatCapitalize",
+        with: { INPUT_A: "hello ${{ SOME_ENV_VAR }} and ${{OTHER_ENV_VAR}}" },
+      });
+
+      lifecycle = new Lifecycle("configureApp", driverDefs);
+      const execResult = await lifecycle.execute(mockedDriverContext);
+      assert(execResult.isOk() && execResult.value.get("OUTPUT") === "HELLO XXX AND YYY");
     });
 
     it("should replace all placeholders for every driver", async () => {
-      const driverDefs: DriverDefinition[] = [];
+      let driverDefs: DriverDefinition[] = [];
       driverDefs.push({
         uses: "DriverThatCapitalize",
         with: { INPUT_A: "hello ${{ SOME_ENV_VAR }}" },
@@ -280,7 +331,7 @@ describe("v3 lifecyle", () => {
         with: { INPUT_A: "Hello ${{OTHER_ENV_VAR}}" },
       });
 
-      const lifecycle = new Lifecycle("configureApp", driverDefs);
+      let lifecycle = new Lifecycle("configureApp", driverDefs);
       const result = await lifecycle.run(mockedDriverContext);
       assert(
         result.isOk() &&
@@ -288,10 +339,28 @@ describe("v3 lifecyle", () => {
           result.value.env.get("OUTPUT") === "HELLO XXX" &&
           result.value.env.get("OUTPUT_C") === "hello yyy"
       );
+
+      driverDefs = [];
+      driverDefs.push({
+        uses: "DriverThatCapitalize",
+        with: { INPUT_A: "hello ${{ SOME_ENV_VAR }}" },
+      });
+      driverDefs.push({
+        uses: "DriverThatLowercase",
+        with: { INPUT_A: "Hello ${{OTHER_ENV_VAR}}" },
+      });
+
+      lifecycle = new Lifecycle("configureApp", driverDefs);
+      const execResult = await lifecycle.execute(mockedDriverContext);
+      assert(
+        execResult.isOk() &&
+          execResult.value.get("OUTPUT") === "HELLO XXX" &&
+          execResult.value.get("OUTPUT_C") === "hello yyy"
+      );
     });
 
     it("should replace all placeholders for every driver with nested args", async () => {
-      const driverDefs: DriverDefinition[] = [];
+      let driverDefs: DriverDefinition[] = [];
       driverDefs.push({
         uses: "DriverThatHasNestedArgs",
         with: {
@@ -299,17 +368,52 @@ describe("v3 lifecyle", () => {
         },
       });
 
-      const lifecycle = new Lifecycle("configureApp", driverDefs);
+      let lifecycle = new Lifecycle("configureApp", driverDefs);
       const result = await lifecycle.run(mockedDriverContext);
       assert(
         result.isOk() &&
           result.value.unresolvedPlaceHolders.length === 0 &&
           result.value.env.get("OUTPUT_D") === "hello xxx,hello yyy"
       );
+
+      driverDefs = [];
+      driverDefs.push({
+        uses: "DriverThatHasNestedArgs",
+        with: {
+          key: [{ key1: "hello ${{ SOME_ENV_VAR }}" }, { key1: "hello ${{ OTHER_ENV_VAR }}" }],
+        },
+      });
+
+      lifecycle = new Lifecycle("configureApp", driverDefs);
+      const execResult = await lifecycle.execute(mockedDriverContext);
+      assert(execResult.isOk() && execResult.value.get("OUTPUT_D") === "hello xxx,hello yyy");
+    });
+
+    describe("execute()", async () => {
+      it("should resolve inter-driver dependency", async () => {
+        const driverDefs: DriverDefinition[] = [];
+        driverDefs.push({
+          uses: "DriverThatCapitalize",
+          with: { INPUT_A: "hello ${{ SOME_ENV_VAR }}" },
+        });
+        // OUTPUT is a placeholder for the output of the previous driver
+        driverDefs.push({
+          uses: "DriverThatLowercase",
+          with: { INPUT_A: "Hello ${{OUTPUT}}" },
+        });
+
+        const lifecycle = new Lifecycle("configureApp", driverDefs);
+        const result = await lifecycle.execute(mockedDriverContext);
+        assert(
+          result.isOk() &&
+            result.value.get("OUTPUT") === "HELLO XXX" &&
+            result.value.get("OUTPUT_C") === "hello hello xxx"
+        );
+      });
     });
   });
 
-  describe("when run with unresolved placeholders", async () => {
+  describe("when dealing with unresolved placeholders", async () => {
     const sandbox = sinon.createSandbox();
 
     before(() => {
@@ -354,6 +458,29 @@ describe("v3 lifecyle", () => {
           result.value.unresolvedPlaceHolders.some((x) => x === "OTHER_ENV_VAR") &&
           result.value.env.size === 0
       );
+
+      const unresolved = lifecycle.resolvePlaceholders();
+      assert(
+        unresolved.length === 5 &&
+          unresolved.some((x) => x === "SOME_ENV_VAR") &&
+          unresolved.some((x) => x === "AAA") &&
+          unresolved.some((x) => x === "BBB") &&
+          unresolved.some((x) => x === "CCC") &&
+          unresolved.some((x) => x === "OTHER_ENV_VAR")
+      );
+
+      const execResult = await lifecycle.execute(mockedDriverContext);
+      // execute() will fail at first driver because of unresolved placeholders and stops
+      assert(
+        execResult.isErr() &&
+          execResult.error.kind === "PartialSuccess" &&
+          execResult.error.reason.kind === "UnresolvedPlaceholders" &&
+          execResult.error.reason.unresolvedPlaceHolders.length === 3 &&
+          execResult.error.reason.unresolvedPlaceHolders.some((x) => x === "SOME_ENV_VAR") &&
+          execResult.error.reason.unresolvedPlaceHolders.some((x) => x === "AAA") &&
+          execResult.error.reason.unresolvedPlaceHolders.some((x) => x === "BBB") &&
+          execResult.error.reason.failedDriver.uses === "DriverThatCapitalize"
+      );
     });
 
     it("should return unresolved placeholders with nested argument", async () => {
@@ -378,6 +505,29 @@ describe("v3 lifecyle", () => {
           result.value.unresolvedPlaceHolders.some((x) => x === "CCC") &&
           result.value.unresolvedPlaceHolders.some((x) => x === "OTHER_ENV_VAR") &&
           result.value.env.size === 0
+      );
+
+      const unresolved = lifecycle.resolvePlaceholders();
+      assert(
+        unresolved.length === 5 &&
+          unresolved.some((x) => x === "SOME_ENV_VAR") &&
+          unresolved.some((x) => x === "AAA") &&
+          unresolved.some((x) => x === "BBB") &&
+          unresolved.some((x) => x === "CCC") &&
+          unresolved.some((x) => x === "OTHER_ENV_VAR")
+      );
+
+      const execResult = await lifecycle.execute(mockedDriverContext);
+      // execute() will fail at first driver because of unresolved placeholders and stops
+      assert(
+        execResult.isErr() &&
+          execResult.error.kind === "PartialSuccess" &&
+          execResult.error.reason.kind === "UnresolvedPlaceholders" &&
+          execResult.error.reason.unresolvedPlaceHolders.length === 3 &&
+          execResult.error.reason.unresolvedPlaceHolders.some((x) => x === "SOME_ENV_VAR") &&
+          execResult.error.reason.unresolvedPlaceHolders.some((x) => x === "AAA") &&
+          execResult.error.reason.unresolvedPlaceHolders.some((x) => x === "BBB") &&
+          execResult.error.reason.failedDriver.uses === "DriverThatCapitalize"
       );
     });
   });

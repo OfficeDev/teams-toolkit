@@ -34,7 +34,11 @@ export const EnvLoaderMW: Middleware = async (ctx: HookContext, next: NextFuncti
       return;
     }
   }
-  await envUtil.readEnv(projectPath, inputs.env);
+  const res = await envUtil.readEnv(projectPath, inputs.env);
+  if (res.isErr()) {
+    ctx.result = err(res.error);
+    return;
+  }
   await next();
 };
 
@@ -45,6 +49,10 @@ export const EnvWriterMW: Middleware = async (ctx: CoreHookContext, next: NextFu
   const projectPath = inputs.projectPath;
   const envVars = ctx.envVars;
   if (projectPath && env && envVars) {
-    await envUtil.writeEnv(projectPath, env, envVars);
+    const res = await envUtil.writeEnv(projectPath, env, envVars);
+    if (res.isErr()) {
+      ctx.result = err(res.error);
+      return;
+    }
   }
 };

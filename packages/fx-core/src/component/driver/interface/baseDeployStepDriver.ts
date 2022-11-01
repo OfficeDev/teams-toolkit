@@ -10,12 +10,13 @@ export abstract class BaseDeployStepDriver {
   context: DeployContext;
   progressBarName = "Deploying";
   progressBarSteps = 1;
-  workingDirectory?: string;
+  workingDirectory: string;
   protected progressBar?: IProgressHandler;
 
   constructor(args: unknown, context: DriverContext) {
     this.args = args;
     this.progressBar = context.ui?.createProgressBar(this.progressBarName, this.progressBarSteps);
+    this.workingDirectory = context.projectPath;
     this.context = {
       azureAccountProvider: context.azureAccountProvider,
       progressBar: this.progressBar,

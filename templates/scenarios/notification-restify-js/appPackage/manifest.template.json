@@ -11,8 +11,8 @@
         "termsOfUseUrl": "https://www.example.com/termofuse"
     },
     "icons": {
-        "color": "./resources/color.png",
-        "outline": "./resources/outline.png"
+        "color": "resources/color.png",
+        "outline": "resources/outline.png"
     },
     "name": {
         "short": "notification-bot",

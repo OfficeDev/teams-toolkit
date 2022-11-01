@@ -51,6 +51,7 @@ import {
   ExistingTabOptionItem,
   SingleSignOnOptionItem,
   ComponentNames,
+  AadConstants,
 } from "../component/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
@@ -371,7 +372,9 @@ export class FxCore implements v3.ICore {
     inputs.stage = Stage.deployAad;
     const updateAadClient = Container.get("aadApp/update") as any;
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
-    const manifestTemplatePath: string = path.join(inputs.projectPath!, ".fx", "aad.template.json");
+    const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
+      ? inputs.AAD_MANIFEST_FILE
+      : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new NoAadManifestExistError(manifestTemplatePath));
     }
@@ -711,7 +714,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
-    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       context.envInfo = ctx.envInfoV3;
       const res = await grantPermission(
@@ -743,7 +746,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
-    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       context.envInfo = ctx.envInfoV3;
       const res = await checkPermission(
@@ -775,7 +778,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
-    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       context.envInfo = ctx.envInfoV3;
       const res = await listCollaborator(
@@ -871,7 +874,7 @@ export class FxCore implements v3.ICore {
     if (!ProjectSettingsHelper.isSpfx(ctx.projectSettings)) {
       await copyParameterJson(
         inputs.projectPath!,
-        ctx.projectSettings!.appName,
+        ctx.projectSettings!.appName!,
         inputs.targetEnvName!,
         inputs.sourceEnvName!
       );
@@ -963,28 +966,41 @@ export class FxCore implements v3.ICore {
     driverContext: DriverContext,
     env: string
   ): Promise<Result<Void, FxError>> {
-    const runResult = await lifecycle.run(driverContext);
+    const runResult = await lifecycle.execute(driverContext);
     if (runResult.isOk()) {
-      const result = runResult.value;
-      if (result.unresolvedPlaceHolders.length != 0) {
-        await driverContext.logProvider.warning(
-          `Unresolved placeholders: ${result.unresolvedPlaceHolders.join(", ")}`
-        );
-        return ok(Void);
-      } else {
-        await driverContext.logProvider.info(`Lifecycle ${lifecycle.name} succeeded`);
-        const writeResult = await envUtil.writeEnv(
-          driverContext.projectPath,
-          env,
-          envUtil.map2object(runResult.value.env)
-        );
-        return writeResult.map(() => Void);
-      }
-    } else {
-      await driverContext.logProvider.error(
-        `Failed to run ${lifecycle.name} due to ${runResult.error.name}: ${runResult.error.message}`
+      await driverContext.logProvider.info(`Lifecycle ${lifecycle.name} succeeded`);
+      const writeResult = await envUtil.writeEnv(
+        driverContext.projectPath,
+        env,
+        envUtil.map2object(runResult.value)
       );
-      return err(runResult.error);
+      return writeResult.map(() => Void);
+    } else {
+      const error = runResult.error;
+      if (error.kind === "Failure") {
+        await driverContext.logProvider.error(
+          `Failed to run ${lifecycle.name} due to ${error.error.name}: ${error.error.message}`
+        );
+        return err(error.error);
+      } else {
+        try {
+          const failedDriver = error.reason.failedDriver;
+          if (error.reason.kind === "UnresolvedPlaceholders") {
+            const unresolved = error.reason.unresolvedPlaceHolders;
+            await driverContext.logProvider.warning(
+              `Unresolved placeholders: ${unresolved.join(",")} for driver ${failedDriver.uses}`
+            );
+            return ok(Void);
+          } else {
+            await driverContext.logProvider.error(
+              `Failed to run ${lifecycle.name} due to ${error.reason.error.name}: ${error.reason.error.message}. Failed driver: ${failedDriver.uses}`
+            );
+            return err(error.reason.error);
+          }
+        } finally {
+          await envUtil.writeEnv(driverContext.projectPath, env, envUtil.map2object(error.env));
+        }
+      }
     }
   }
 

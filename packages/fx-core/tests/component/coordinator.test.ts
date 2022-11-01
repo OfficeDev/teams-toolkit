@@ -1,8 +1,7 @@
-import { Inputs, ok, Platform } from "@microsoft/teamsfx-api";
+import { err, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import "mocha";
 import * as sinon from "sinon";
 import { Generator } from "../../src/component/generator/generator";
-import { createContextV3 } from "../../src/component/utils";
 import { settingsUtil } from "../../src/component/utils/settingsUtil";
 import { setTools } from "../../src/core/globalVars";
 import { CoreQuestionNames, ScratchOptionNo, ScratchOptionYes } from "../../src/core/question";
@@ -12,7 +11,11 @@ import { TabOptionItem } from "../../src/component/constants";
 import { FxCore } from "../../src/core/FxCore";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { YamlParser } from "../../src/component/configManager/parser";
-import { ProjectModel } from "../../src/component/configManager/interface";
+import {
+  ExecutionError,
+  ExecutionOutput,
+  ProjectModel,
+} from "../../src/component/configManager/interface";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { provisionUtils } from "../../src/component/provisionUtils";
@@ -74,10 +77,28 @@ describe("component coordinator test", () => {
     const mockProjectModel: ProjectModel = {
       registerApp: {
         name: "configureApp",
+        driverDefs: [],
         run: async (ctx: DriverContext) => {
           return ok({
             env: new Map(),
             unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
+          });
+        },
+        resolvePlaceholders: () => {
+          return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
+        },
+        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
+          return err({
+            kind: "PartialSuccess",
+            env: new Map(),
+            reason: {
+              kind: "UnresolvedPlaceholders",
+              failedDriver: {
+                uses: "xxx",
+                with: {},
+              },
+              unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
+            },
           });
         },
       },
@@ -143,6 +164,24 @@ describe("component coordinator test", () => {
             unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
           });
         },
+        driverDefs: [],
+        resolvePlaceholders: () => {
+          return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
+        },
+        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
+          return err({
+            kind: "PartialSuccess",
+            env: new Map(),
+            reason: {
+              kind: "UnresolvedPlaceholders",
+              failedDriver: {
+                uses: "xxx",
+                with: {},
+              },
+              unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
+            },
+          });
+        },
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -190,8 +229,8 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
-      subscription: "mockSubId",
-      "resource-group": "test-rg",
+      targetSubscriptionId: "mockSubId",
+      targetResourceGroupName: "test-rg",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -207,6 +246,13 @@ describe("component coordinator test", () => {
             env: new Map(),
             unresolvedPlaceHolders: [],
           });
+        },
+        driverDefs: [],
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
+          return ok(new Map());
         },
       },
     };
@@ -239,6 +285,13 @@ describe("component coordinator test", () => {
             env: new Map(),
             unresolvedPlaceHolders: [],
           });
+        },
+        driverDefs: [],
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
+          return ok(new Map());
         },
       },
     };

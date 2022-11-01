@@ -160,6 +160,7 @@ import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
+import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -466,7 +467,14 @@ export function getSystemInputs(): Inputs {
 
 export async function createNewProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
-  const result = await runCommand(Stage.create);
+  let inputs: Inputs | undefined;
+  if (args?.length === 1) {
+    if (!!args[0].teamsAppIdFromTdp) {
+      inputs = getSystemInputs();
+      inputs.teamsAppIdFromTdp = args[0].teamsAppIdFromTdp;
+    }
+  }
+  const result = await runCommand(Stage.create, inputs);
   if (result.isErr()) {
     return err(result.error);
   }
@@ -3507,7 +3515,16 @@ export async function scaffoldFromDeveloperPortalHandler(
     throw e;
   }
 
-  // TODO: get manifest and scaffold
-
+  try {
+    await AppStudioClient.getManifest(args[0], token);
+  } catch (e) {
+    console.log(e);
+  }
   return ok(null);
+  //  const res = await createNewProjectHandler([{teamsAppIdFromTdp: args[0]}]);
+  //  if(res.isErr()){
+  //   return err(res.error);
+  //  } else{
+  //   return ok(null);
+  //  }
 }

@@ -13,6 +13,7 @@ import { RetryHandler } from "./utils/utils";
 import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 import { getAppStudioEndpoint } from "./constants";
 import { HelpLinks } from "../../../common/constants";
+import AdmZip from "adm-zip";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -403,6 +404,39 @@ export namespace AppStudioClient {
       } else {
         throw err;
       }
+    }
+  }
+
+  export async function getManifest(
+    teamsAppId: string,
+    appStudioToken: string,
+    logProvider?: LogProvider
+  ): Promise<void> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/appdefinitions/${teamsAppId}/manifest`)
+      );
+
+      if (response && response.data) {
+        const data = response.data;
+        const buffer = Buffer.from(data, "base64");
+        const zip = new AdmZip(buffer);
+        const zipEntries = zip.getEntries(); // an array of ZipEntry records
+
+        zipEntries?.forEach(function (zipEntry) {
+          console.log(zipEntry.toString()); // outputs zip entries information
+          //if (zipEntry.entryName == "my_file.txt") {
+          const data = zipEntry.getData();
+          const b = data.toString("utf8"); // if ext not image
+          const c = data.toString("base64"); // if ext is image
+          //}
+        });
+      }
+      return;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_APP);
+      throw error;
     }
   }
 

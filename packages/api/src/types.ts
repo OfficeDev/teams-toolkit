@@ -252,6 +252,7 @@ export interface Inputs extends Json {
   locale?: string;
   isM365?: boolean;
   taskOrientedTemplateNaming?: boolean; // AB test for notification/command/workflow bot template naming
+  teamsAppIdFromTdp?: string;
 }
 
 export interface ProjectConfig {

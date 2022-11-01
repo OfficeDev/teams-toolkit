@@ -358,7 +358,6 @@ export class Coordinator {
         const reason = execError.reason;
         if (reason.kind === "DriverError") {
           error = reason.error;
-          error.source = reason.failedDriver.name!;
         } else if (reason.kind === "UnresolvedPlaceholders") {
           const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
           error = new UserError({

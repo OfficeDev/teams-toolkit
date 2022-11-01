@@ -4,7 +4,7 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
-import { err, FxError, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
+import { Err, err, FxError, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
 import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
 
 import Deploy from "../../../src/cmds/deploy";
@@ -13,6 +13,7 @@ import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import * as constants from "../../../src/constants";
 import { expect } from "../utils";
+import { assert } from "chai";
 import { EnvNotSpecified, NotSupportedProjectType } from "../../../src/error";
 import UI from "../../../src/userInteraction";
 import LogProvider from "../../../src/commonlib/log";
@@ -243,5 +244,49 @@ describe("Deploy Command Tests", function () {
     };
     await cmd.handler(args);
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
+  });
+
+  it("Deploy Command Running -- aad manifest component V3", async () => {
+    const cmd = new Deploy();
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    cmd["params"] = {
+      [constants.deployPluginNodeName]: {
+        choices: ["aad-manifest"],
+        default: ["fx-resource-aad-app-for-teams"],
+        description: "deployPluginNodeName",
+      },
+      "open-api-document": {},
+      "api-prefix": {},
+      "api-version": {},
+    };
+    (HelpParamGenerator.getQuestionRootNodeForHelp as any).restore();
+    sandbox.stub(HelpParamGenerator, "getQuestionRootNodeForHelp").callsFake(() => {
+      return new QTreeNode({
+        name: constants.deployPluginNodeName,
+        type: "multiSelect",
+        title: "deployPluginNodeName",
+        staticOptions: ["fx-resource-aad-app-for-teams"],
+      });
+    });
+
+    (FxCore.prototype.deployAadManifest as any).restore();
+    sandbox
+      .stub(FxCore.prototype, "deployAadManifest")
+      .resolves(err(new UserError("Fake_Err_msg", "Fake_Err_name", "Fake_test")));
+
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+      components: ["aad-manifest"],
+      env: "dev",
+    };
+    try {
+      await cmd.handler(args);
+    } catch (e) {
+      expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.DeployAad]);
+      expect(e).instanceOf(UserError);
+      expect(e.name).equals("Fake_Err_name");
+    }
   });
 });

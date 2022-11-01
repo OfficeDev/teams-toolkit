@@ -306,6 +306,17 @@ To make this work in your application:
     ```ts
     const path = require("path");
 
+    // Listen for incoming requests.
+    server.post("/api/messages", async (req, res) => {
+        await adapter.processActivity(req, res, async (context) => {
+        await bot.run(context);
+        }).catch((err) => {
+        if(!err.message.includes("412")) {
+            throw err;
+        }
+        })
+    });
+
     server.get(
         "/auth-*.html",
         restify.plugins.serveStatic({

@@ -138,6 +138,7 @@ import "../component/driver/deploy/spfx/deployDriver";
 import "../component/driver/script/dotnetBuildDriver";
 import "../component/driver/script/npmBuildDriver";
 import "../component/driver/script/npxBuildDriver";
+import "../component/driver/tools/installDriver";
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
@@ -242,9 +243,9 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createDriverContext(inputs);
-    const res = await coordinator.provision(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx!.envVars = res.value;
+    const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
+    ctx!.envVars = output;
+    if (error) return err(error);
     return ok(Void);
   }
   @hooks([
@@ -714,7 +715,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
-    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       context.envInfo = ctx.envInfoV3;
       const res = await grantPermission(
@@ -746,7 +747,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
-    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       context.envInfo = ctx.envInfoV3;
       const res = await checkPermission(
@@ -778,7 +779,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
-    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       context.envInfo = ctx.envInfoV3;
       const res = await listCollaborator(

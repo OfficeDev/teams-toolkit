@@ -24,14 +24,15 @@ deploy:
     with:
       workingDirectory: ./tabs
       args: install
-  - use: build/npm # Run npm command
+  - uses: npm/command # Run npm command
     with:
       workingDirectory: ./tabs
       args: run build
   - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
     with:
       workingDirectory: ./tabs
-      distributionPath: ./build # Deploy base folder
+      distributionPath: ./ # Deploy base folder
+      ignoreFile: ./.appserviceIgnore # Can be changed to any ignore file location, leave blank will ignore nothing
       resourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to
 
 registerApp:
@@ -61,6 +62,11 @@ configureApp:
   # Output: following environment variable will be persisted in current environment's .env file.
   # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 
+  - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
+    with:
+      manifestTemplatePath: ./templates/appPackage/manifest.template.json # Path to manifest template
+      outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
+      outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
@@ -75,7 +81,7 @@ publish:
     with:
       manifestTemplatePath: ./templates/appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./build/manifest.${{TEAMSFX_ENV}}.json
+      outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
   - uses: teamsApp/publishAppPackage # Publish the app to Teams app catalog
     with:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip

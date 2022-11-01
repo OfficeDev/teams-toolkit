@@ -10,6 +10,7 @@ import {
   Platform,
   ResourceContextV3,
   Result,
+  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
 import { Container } from "typedi";
@@ -181,9 +182,8 @@ export class Coordinator {
     const projectSettingsRes = await settingsUtil.readSettings(projectPath);
     if (projectSettingsRes.isOk()) {
       const settings = projectSettingsRes.value;
-      settings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
-      settings.isFromSample = scratch === ScratchOptionNo.id;
-      inputs.projectId = settings.projectId;
+      settings.trackingId = inputs.projectId ? inputs.projectId : uuid.v4();
+      inputs.projectId = settings.trackingId;
       await settingsUtil.writeSettings(projectPath, settings);
     }
     if (inputs.platform === Platform.VSCode) {
@@ -268,7 +268,7 @@ export class Coordinator {
     }
     const output: DotenvParseOutput = {};
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, "teamsfx.yml");
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -302,6 +302,13 @@ export class Coordinator {
         ) {
           const folderName = path.parse(ctx.projectPath).name;
           const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
+          if (!process.env.RESOURCE_SUFFIX) {
+            process.env.RESOURCE_SUFFIX = suffix;
+            output.RESOURCE_SUFFIX = suffix;
+            unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
+              (ph) => ph !== "RESOURCE_SUFFIX"
+            );
+          }
           const defaultRg = `rg-${folderName}${suffix}-${inputs.env}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
             ctx.azureAccountProvider,
@@ -343,7 +350,7 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, "teamsfx.yml");
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -369,7 +376,7 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, "teamsfx.yml");
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);

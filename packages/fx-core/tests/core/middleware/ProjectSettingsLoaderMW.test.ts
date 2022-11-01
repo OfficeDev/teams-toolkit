@@ -12,6 +12,8 @@ import {
   ProjectSettings,
   ProjectSettingsFileName,
   Result,
+  SettingsFileName,
+  SettingsFolderName,
   Stage,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -20,12 +22,14 @@ import * as os from "os";
 import * as path from "path";
 import fs from "fs-extra";
 import "mocha";
-import { MockProjectSettings, MockTools, randomAppName } from "../utils";
+import { MockProjectSettings, MockSettings, MockTools, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
 import { ProjectSettingsLoaderMW } from "../../../src/core/middleware/projectSettingsLoader";
 import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
 import { NoProjectOpenedError, PathNotExistError } from "../../../src/core/error";
 import { setTools } from "../../../src/core/globalVars";
+import mockedEnv from "mocked-env";
+import { isV3Enabled } from "../../../src";
 
 describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 1", () => {
   class MyClass {
@@ -70,17 +74,20 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();
   const projectSettings = MockProjectSettings(appName);
+  const settings = MockSettings();
   const inputs: Inputs = { platform: Platform.VSCode };
   inputs.projectPath = path.join(os.tmpdir(), appName);
   const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
+  const settingsFolderPath = path.resolve(inputs.projectPath, SettingsFolderName);
   const settingsFiles = [
     path.resolve(confFolderPath, "settings.json"),
     path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName),
+    path.resolve(settingsFolderPath, SettingsFileName),
   ];
 
   beforeEach(() => {
     sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
-      if (settingsFiles.includes(file)) return projectSettings;
+      if (settingsFiles.includes(file)) return isV3Enabled() ? settings : projectSettings;
       return undefined;
     });
     sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
@@ -108,5 +115,19 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
     const my = new MyClass();
     const res = await my.other(inputs);
     assert.isTrue(res.isOk() && res.value !== undefined && res.value.appName === appName);
+  });
+
+  it("success to load project settings in V3", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+
+    try {
+      const my = new MyClass();
+      const res = await my.other(inputs);
+      assert.isTrue(res.isOk() && res.value !== undefined);
+    } finally {
+      restore();
+    }
   });
 });

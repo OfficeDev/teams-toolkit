@@ -182,7 +182,7 @@ export interface EnvMeta {
  * project static settings
  */
 export interface ProjectSettings {
-  appName: string;
+  appName?: string;
   version?: string;
   projectId: string;
   programmingLanguage?: string;
@@ -298,10 +298,9 @@ export interface ResourceContextV3 extends ContextV3 {
 export type MaybePromise<T> = T | Promise<T>;
 
 /**
- * simplified project settings for v3
+ * simplified tooling settings for v3
  */
 export interface Settings {
   version: string;
-  projectId: string;
-  isFromSample: boolean;
+  trackingId: string;
 }

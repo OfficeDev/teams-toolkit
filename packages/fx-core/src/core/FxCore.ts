@@ -51,6 +51,7 @@ import {
   ExistingTabOptionItem,
   SingleSignOnOptionItem,
   ComponentNames,
+  AadConstants,
 } from "../component/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
@@ -373,7 +374,7 @@ export class FxCore implements v3.ICore {
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
     const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
       ? inputs.AAD_MANIFEST_FILE
-      : path.join(inputs.projectPath!, ".fx", "aad.template.json");
+      : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new NoAadManifestExistError(manifestTemplatePath));
     }
@@ -873,7 +874,7 @@ export class FxCore implements v3.ICore {
     if (!ProjectSettingsHelper.isSpfx(ctx.projectSettings)) {
       await copyParameterJson(
         inputs.projectPath!,
-        ctx.projectSettings!.appName,
+        ctx.projectSettings!.appName!,
         inputs.targetEnvName!,
         inputs.sourceEnvName!
       );

@@ -143,12 +143,6 @@ export class WebviewPanel {
           case Commands.LoadSampleCollection:
             this.LoadSampleCollection();
             break;
-          case Commands.GetCodeSnippets:
-            vscode.window.showInformationMessage(`Get code snippets of ${msg.data}}`);
-            break;
-          case Commands.ViewTutorial:
-            vscode.window.showInformationMessage(`View tutorial of ${msg.data}}`);
-            break;
           default:
             break;
         }

@@ -2,12 +2,13 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { IntlProvider } from "react-intl";
 import { MemoryRouter, Route } from "react-router-dom";
+
 import { initializeIcons } from "@fluentui/react/lib/Icons";
+
+import { PanelType } from "./PanelType";
 import SampleGallery from "./SampleGallery";
 import Survey from "./Survey";
-import RespondToCardActions from "./webviewDocs/respondToCardActions";
 import WorkflowBot from "./webviewDocs/workflowBot";
-import { PanelType } from "./PanelType";
 
 const language = "en";
 

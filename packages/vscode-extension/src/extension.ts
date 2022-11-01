@@ -663,8 +663,6 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.selectSubscriptionCallback, args)
   );
   context.subscriptions.push(specifySubscription);
-
-  context.subscriptions.push(vscode.commands.registerCommand("fx-extension.noop", () => {}));
 }
 
 async function initializeContextKey(isTeamsFxProject: boolean) {

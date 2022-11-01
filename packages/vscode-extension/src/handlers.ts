@@ -3256,7 +3256,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           {
             iconPath: "file-code",
             tooltip: "Open a in product tutorial",
-            command: "fx-extension.noop",
+            command: "",
           },
         ],
       },

@@ -139,6 +139,7 @@ import "../component/driver/script/dotnetBuildDriver";
 import "../component/driver/script/npmBuildDriver";
 import "../component/driver/script/npxBuildDriver";
 import "../component/driver/tools/installDriver";
+import "../component/driver/env/generate";
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;

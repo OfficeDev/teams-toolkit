@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { StepDriver } from "../interface/stepDriver";
 import { Service } from "typedi";
-import { DriverContext } from "../interface/commonArgs";
-import { FxError, Result } from "@microsoft/teamsfx-api";
-import { wrapRun } from "../../utils/common";
 import { hooks } from "@feathersjs/hooks/lib";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { TelemetryConstant } from "../../constant/commonConstant";
-import { InstallToolArgs } from "./interfaces/InstallToolArgs";
+import { FxError, Result } from "@microsoft/teamsfx-api";
 import { LocalCertificateManager } from "../../../common/local/localCertificateManager";
+import { TelemetryConstant } from "../../constant/commonConstant";
+import { wrapRun } from "../../utils/common";
+import { DriverContext } from "../interface/commonArgs";
+import { StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
+import { InstallToolArgs } from "./interfaces/InstallToolArgs";
 
 const ACTION_NAME = "tools/install";
 const outputName = Object.freeze({
@@ -22,7 +22,7 @@ const helpLink = "https://aka.ms/teamsfx-actions/tools/install";
 
 @Service(ACTION_NAME)
 export class ToolsInstallDriver implements StepDriver {
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.PROVISION_COMPONENT_NAME)])
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async run(
     args: InstallToolArgs,
     context: DriverContext

@@ -45,6 +45,7 @@ export enum TelemetryEvent {
 
   DeployStart = "deploy-start",
   Deploy = "deploy",
+  DeployAad = "deployAad",
 
   PublishStart = "publish-start",
   Publish = "publish",

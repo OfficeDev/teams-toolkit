@@ -121,6 +121,7 @@
   "core.projectVersionChecker.vscodeUseNewVersion": "Your Teams Toolkit extension no longer supports the current project, please update to the latest version and reopen this project.",
   "core.projectVersionChecker.cliUseNewVersion": "[core] Your TeamsFx CLI is too old to support current project, please update to latest version using command below:\nnpm install -g @microsoft/teamsfx-cli@latest",
   "core.aad.includeAadQuestionTitle": "Whether to deploy aad manifest",
+  "core.aad.aadManifestFilePath": "Enter the aad.template.json file path to deploy",
   "core.deployArmTemplates.StartNotice": "[%s] Start deploying ARM templates.",
   "core.deployArmTemplates.CompileBicepSuccessNotice": "[%s] Successfully compile bicep files to JSON.",
   "core.deployArmTemplates.SuccessNotice": "[%s] Successfully deploy ARM templates. Resource group name: %s. Deployment name: %s",

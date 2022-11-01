@@ -283,60 +283,54 @@ export class Coordinator {
     for (const cycle of cycles) {
       if (!cycle) continue;
       let unresolvedPlaceHolders = cycle.resolvePlaceholders();
-      if (unresolvedPlaceHolders.length > 0) {
-        if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) {
-          const ensureRes = await provisionUtils.ensureSubscription(
-            ctx.azureAccountProvider,
-            process.env.AZURE_SUBSCRIPTION_ID
+      if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) {
+        const ensureRes = await provisionUtils.ensureSubscription(
+          ctx.azureAccountProvider,
+          process.env.AZURE_SUBSCRIPTION_ID
+        );
+        if (ensureRes.isErr()) return [undefined, ensureRes.error];
+        const subInfo = ensureRes.value;
+        if (subInfo && subInfo.subscriptionId) {
+          process.env.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
+          output.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
+          unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
+            (ph) => ph !== "AZURE_SUBSCRIPTION_ID"
           );
-          if (ensureRes.isErr()) return [undefined, ensureRes.error];
-          const subInfo = ensureRes.value;
-          if (subInfo && subInfo.subscriptionId) {
-            process.env.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
-            output.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
-            unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
-              (ph) => ph !== "AZURE_SUBSCRIPTION_ID"
-            );
-          }
         }
-        if (
-          process.env.AZURE_SUBSCRIPTION_ID &&
-          unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")
-        ) {
-          const folderName = path.parse(ctx.projectPath).name;
-          const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
-          if (!process.env.RESOURCE_SUFFIX) {
-            process.env.RESOURCE_SUFFIX = suffix;
-            output.RESOURCE_SUFFIX = suffix;
-            unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
-              (ph) => ph !== "RESOURCE_SUFFIX"
-            );
-          }
-          const defaultRg = `rg-${folderName}${suffix}-${inputs.env}`;
-          const ensureRes = await provisionUtils.ensureResourceGroup(
-            ctx.azureAccountProvider,
-            process.env.AZURE_SUBSCRIPTION_ID,
-            process.env.AZURE_RESOURCE_GROUP_NAME,
-            defaultRg
+      }
+      if (
+        process.env.AZURE_SUBSCRIPTION_ID &&
+        unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")
+      ) {
+        const folderName = path.parse(ctx.projectPath).name;
+        const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
+        if (!process.env.RESOURCE_SUFFIX) {
+          process.env.RESOURCE_SUFFIX = suffix;
+          output.RESOURCE_SUFFIX = suffix;
+          unresolvedPlaceHolders = unresolvedPlaceHolders.filter((ph) => ph !== "RESOURCE_SUFFIX");
+        }
+        const defaultRg = `rg-${folderName}${suffix}-${inputs.env}`;
+        const ensureRes = await provisionUtils.ensureResourceGroup(
+          ctx.azureAccountProvider,
+          process.env.AZURE_SUBSCRIPTION_ID,
+          process.env.AZURE_RESOURCE_GROUP_NAME,
+          defaultRg
+        );
+        if (ensureRes.isErr()) return [undefined, ensureRes.error];
+        const rgInfo = ensureRes.value;
+        if (rgInfo) {
+          process.env.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
+          output.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
+          unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
+            (ph) => ph !== "AZURE_RESOURCE_GROUP_NAME"
           );
-          if (ensureRes.isErr()) return [undefined, ensureRes.error];
-          const rgInfo = ensureRes.value;
-          if (rgInfo) {
-            process.env.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
-            output.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
-            unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
-              (ph) => ph !== "AZURE_RESOURCE_GROUP_NAME"
-            );
-          }
         }
-        if (unresolvedPlaceHolders.length === 0) {
-          const execRes = await cycle.execute(ctx);
-          const result = this.convertExecuteResult(execRes);
-          merge(output, result[0]);
-          if (result[1]) {
-            return [output, result[1]];
-          }
-        }
+      }
+      const execRes = await cycle.execute(ctx);
+      const result = this.convertExecuteResult(execRes);
+      merge(output, result[0]);
+      if (result[1]) {
+        return [output, result[1]];
       }
     }
     return [output, undefined];

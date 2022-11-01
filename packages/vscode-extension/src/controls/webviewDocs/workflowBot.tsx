@@ -5,8 +5,16 @@ import "./github.scss";
 import * as React from "react";
 
 import CollapsibleStep from "./collapsibleStep";
+import ExternalLink from "./externalLink";
+import { Commands } from "../Commands";
 
 export default function WorkflowBot() {
+  const onCreateNewProject = () => {
+    vscode.postMessage({
+      command: Commands.GetCodeSnippets,
+    });
+  };
+
   return (
     <div className="markdown-body">
       <h1 id="overview-of-the-workflow-bot-template">Overview of the Workflow bot template</h1>
@@ -48,6 +56,13 @@ export default function WorkflowBot() {
           .
         </p>
       </blockquote>
+      <p>
+        If you don't have a workflow bot yet, please{" "}
+        <a href="javascript:void(0)" onClick={onCreateNewProject}>
+          create a new project
+        </a>
+        . Teams Toolkit will scaffold.
+      </p>
       <ol>
         <li>First, select the Teams Toolkit icon on the left in the VS Code toolbar.</li>
         <li>
@@ -226,9 +241,10 @@ export default function WorkflowBot() {
             Specifying the <code>type</code> as <code>Action.Execute</code> allows this Adaptive
             Card to respond with another card, which will update the UI by replacing the existing
             card. Learn more about{" "}
-            <a href="https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/overview?tabs=mobile#universal-actions">
-              Adaptive Card Universal Actions in the documentation
-            </a>
+            <ExternalLink
+              title="Adaptive Card Universal Actions in the documentation"
+              link="https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/overview?tabs=mobile#universal-actions"
+            />
             .
           </p>
           <blockquote>
@@ -454,9 +470,10 @@ module.exports = {
           </a>
         </li>
         <li>
-          <a href="https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals">
-            Teams Toolkit Documentations
-          </a>
+          <ExternalLink
+            title="Teams Toolkit Documentations"
+            link="https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals"
+          />
         </li>
         <li>
           <a href="https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli">

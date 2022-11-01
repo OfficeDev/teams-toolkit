@@ -10,6 +10,12 @@
   .collapsibleSteps {
     margin-bottom: 20px;
   }
+
+  .externalLink {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1em; /*set line height back to normal*/
+  }
 }
 
 @media (max-width: 767px) {

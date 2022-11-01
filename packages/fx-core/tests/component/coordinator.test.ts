@@ -1,4 +1,4 @@
-import { err, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
+import { err, Inputs, ok, Platform, Result, UserError } from "@microsoft/teamsfx-api";
 import "mocha";
 import * as sinon from "sinon";
 import { Generator } from "../../src/component/generator/generator";
@@ -19,6 +19,7 @@ import {
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { provisionUtils } from "../../src/component/provisionUtils";
+import { coordinator } from "../../src/component/coordinator";
 
 describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
@@ -313,5 +314,54 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.publishApplication(inputs);
     assert.isTrue(res.isOk());
+  });
+
+  it("convertExecuteResult ok", async () => {
+    const value = new Map([["key", "value"]]);
+    const res: Result<ExecutionOutput, ExecutionError> = ok(value);
+    const convertRes = coordinator.convertExecuteResult(res);
+    assert.deepEqual(convertRes[0], { key: "value" });
+    assert.isUndefined(convertRes[1]);
+  });
+
+  it("convertExecuteResult Failure", async () => {
+    const error = new UserError({ source: "test", name: "TestError", message: "test message" });
+    const res: Result<ExecutionOutput, ExecutionError> = err({ kind: "Failure", error: error });
+    const convertRes = coordinator.convertExecuteResult(res);
+    assert.deepEqual(convertRes[0], {});
+    assert.equal(convertRes[1], error);
+  });
+
+  it("convertExecuteResult PartialSuccess - DriverError", async () => {
+    const value = new Map([["key", "value"]]);
+    const error = new UserError({ source: "test", name: "TestError", message: "test message" });
+    const res: Result<ExecutionOutput, ExecutionError> = err({
+      kind: "PartialSuccess",
+      env: value,
+      reason: {
+        kind: "DriverError",
+        error: error,
+        failedDriver: { name: "TestDriver", uses: "testUse", with: "testWith" },
+      },
+    });
+    const convertRes = coordinator.convertExecuteResult(res);
+    assert.deepEqual(convertRes[0], { key: "value" });
+    assert.equal(convertRes[1], error);
+  });
+
+  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholders", async () => {
+    const value = new Map([["key", "value"]]);
+    const res: Result<ExecutionOutput, ExecutionError> = err({
+      kind: "PartialSuccess",
+      env: value,
+      reason: {
+        kind: "UnresolvedPlaceholders",
+        unresolvedPlaceHolders: ["TEST_PL"],
+        failedDriver: { name: "TestDriver", uses: "testUse", with: "testWith" },
+      },
+    });
+    const convertRes = coordinator.convertExecuteResult(res);
+    assert.deepEqual(convertRes[0], { key: "value" });
+    assert.equal(convertRes[1]!.name, "UnresolvedPlaceholders");
   });
 });

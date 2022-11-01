@@ -22,7 +22,7 @@ const helpLink = "https://aka.ms/teamsfx-actions/tools/install";
 
 @Service(ACTION_NAME)
 export class ToolsInstallDriver implements StepDriver {
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, ACTION_NAME)])
   async run(
     args: InstallToolArgs,
     context: DriverContext

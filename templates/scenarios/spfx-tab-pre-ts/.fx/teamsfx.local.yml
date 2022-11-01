@@ -1,13 +1,14 @@
 version: 1.0.0
 
 deploy:
-- uses: npm/command
+  - uses: npm/command
+      with:
+        args: install
+        srcFolder: ./SPFx
+  - uses: npx/command
     with:
-      args: install
-- uses: npx/command
-  with:
-    src: ./SPFx
-    args: gulp bundle --ship --no-color
+      src: ./SPFx
+      args: gulp bundle --ship --no-color
 
 registerApp:
   - uses: teamsApp/create # Creates a Teams app

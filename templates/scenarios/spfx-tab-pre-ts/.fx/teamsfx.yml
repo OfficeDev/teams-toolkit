@@ -1,10 +1,10 @@
 version: 1.0.0
 
 deploy:
-  - uses: build/npm # Run npm command
-    with:
-      workingDirectory: ./SPFx
-      args: install
+  - uses: npm/command
+      with:
+        args: install
+        srcFolder: ./SPFx
   - uses: npx/command
     with:
       src: ./SPFx

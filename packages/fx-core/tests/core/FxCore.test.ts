@@ -47,6 +47,7 @@ import "../../src/component/driver/aad/update";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { YamlParser } from "../../src/component/configManager/parser";
 import {
+  DriverDefinition,
   ExecutionError,
   ExecutionOutput,
   ILifecycle,
@@ -455,7 +456,7 @@ describe("apply yaml template", async () => {
 
     class MockedProvision implements ILifecycle {
       name: LifecycleName = "provision";
-      driverDefs: [];
+      driverDefs: DriverDefinition[] = [];
       public async run(ctx: DriverContext): Promise<Result<Output, FxError>> {
         return err(mockedError);
       }

@@ -44,6 +44,7 @@ export class CreateBotAadAppDriver implements StepDriver {
       const createRes = await botRegistration.createBotRegistration(
         context.m365TokenProvider,
         args.name,
+        args.name, // Just a placeholder, will not be used since bot name is handled by arm/azure.parameters.json.
         botConfig
       );
       if (createRes.isErr()) {

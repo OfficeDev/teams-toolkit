@@ -11,6 +11,7 @@ import { DriverContext } from "../../../../src/component/driver/interface/common
 import { LocalCertificateManager } from "../../../../src/common/local/localCertificateManager";
 import { UserError } from "@microsoft/teamsfx-api";
 import { CoreSource } from "../../../../src/core/error";
+import { InstallToolArgs } from "../../../../src/component/driver/tools/interfaces/InstallToolArgs";
 
 describe("Tools Install Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -90,6 +91,14 @@ describe("Tools Install Driver test", () => {
       }),
     });
     const res = await toolsInstallDriver.run({ devCert: { trust: true } }, mockedDriverContext);
+    chai.assert.isTrue(res.isErr());
+  });
+
+  it("Invalid parameter", async () => {
+    const res = await toolsInstallDriver.run(
+      { devCert: { trust: "hello" } } as unknown as InstallToolArgs,
+      mockedDriverContext
+    );
     chai.assert.isTrue(res.isErr());
   });
 });

@@ -137,7 +137,6 @@ import "../component/driver/deploy/spfx/deployDriver";
 import "../component/driver/script/dotnetBuildDriver";
 import "../component/driver/script/npmBuildDriver";
 import "../component/driver/script/npxBuildDriver";
-import "../component/driver/script/npxBuildDriver";
 import "../component/driver/tools/installDriver";
 export class FxCore implements v3.ICore {
   tools: Tools;

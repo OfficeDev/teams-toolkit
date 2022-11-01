@@ -51,7 +51,7 @@ describe("Bot service telemetry helper", () => {
       provision: true,
     });
     context.envInfo.state[ComponentNames.TeamsBot] = {
-      botId: "botID",
+      botId: "",
       botPassword: "botPassword",
     };
   });
@@ -95,6 +95,10 @@ describe("Bot service telemetry helper", () => {
       .resolves();
 
     sandbox.stub(AppStudioClient, "getBotRegistration").rejects({});
+    sandbox.stub(GraphClient, "registerAadApp").resolves({
+      clientId: "clientId",
+      clientSecret: "clientSecret",
+    });
 
     const fxComponent = new TeamsfxCore();
     const res = await fxComponent.provision(context as ResourceContextV3, inputs);

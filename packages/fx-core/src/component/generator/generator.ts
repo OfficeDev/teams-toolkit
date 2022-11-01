@@ -9,6 +9,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
+import { convertToAlphanumericOnly } from "../../common/utils";
 import { errorSource } from "../code/tab/constants";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -37,24 +38,29 @@ export class Generator {
     }),
   ])
   public static async generateTemplate(
-    templateName: string,
-    language: string,
-    destinationPath: string,
     ctx: ContextV3,
+    destinationPath: string,
+    templateName: string,
+    language?: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const appName = ctx.projectSetting?.appName;
-    const projectId = ctx.projectSetting?.projectId;
-    const nameReplaceMap = { ...{ appName: appName }, ...ctx.templateVariables };
-    const dataReplaceMap = { ...{ projectId: projectId }, ...nameReplaceMap };
+    const replaceMap = {
+      ...{
+        appName: appName,
+        ProjectName: appName,
+        SafeProjectName: convertToAlphanumericOnly(appName),
+      },
+      ...ctx.templateVariables,
+    };
     const generatorContext: GeneratorContext = {
-      name: `${templateName}-${language}`,
+      name: language ? `${templateName}-${language}` : templateName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
       fileNameReplaceFn: (fileName: string, fileData: Buffer) =>
-        renderTemplateFileName(fileName, fileData, nameReplaceMap),
+        renderTemplateFileName(fileName, fileData, replaceMap),
       fileDataReplaceFn: (fileName: string, fileData: Buffer) =>
-        renderTemplateFileData(fileName, fileData, dataReplaceMap),
+        renderTemplateFileData(fileName, fileData, replaceMap),
       onActionError: templateDefaultOnActionError,
     };
     await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
@@ -71,9 +77,9 @@ export class Generator {
     }),
   ])
   public static async generateSample(
-    sampleName: string,
-    destinationPath: string,
     ctx: ContextV3,
+    destinationPath: string,
+    sampleName: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const sample = getSampleInfoFromName(sampleName);

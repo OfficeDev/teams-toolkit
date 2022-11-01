@@ -43,6 +43,7 @@ import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
 import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskTerminal";
 import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
 import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 const customTasks = Object.freeze({
   [TaskCommand.checkPrerequisites]: {
@@ -128,6 +129,9 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         return ok(undefined);
       }
 
+      if (isV3Enabled()) {
+        return ok(undefined);
+      }
       const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
       let projectSettings: ProjectSettings;
       let localSettings: Json | undefined;

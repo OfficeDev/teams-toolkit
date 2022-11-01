@@ -373,10 +373,9 @@ export class FxCore implements v3.ICore {
     inputs.stage = Stage.deployAad;
     const updateAadClient = Container.get("aadApp/update") as any;
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
-    const manifestTemplatePath: string = path.join(
-      inputs.projectPath!,
-      AadConstants.DefaultTemplateFileName
-    );
+    const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
+      ? inputs.AAD_MANIFEST_FILE
+      : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new NoAadManifestExistError(manifestTemplatePath));
     }

@@ -103,6 +103,8 @@ export const Feature2TemplateName: any = {
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
 };
 
+const workflowFileName = "app.yml";
+
 export class Coordinator {
   @hooks([
     ActionExecutionMW({
@@ -268,7 +270,7 @@ export class Coordinator {
     }
     const output: DotenvParseOutput = {};
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, SettingsFolderName, "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -350,7 +352,7 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, SettingsFolderName, "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -376,7 +378,7 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, SettingsFolderName, "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);

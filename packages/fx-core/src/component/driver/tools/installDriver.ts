@@ -5,7 +5,6 @@ import { Service } from "typedi";
 import { hooks } from "@feathersjs/hooks/lib";
 import { FxError, Result } from "@microsoft/teamsfx-api";
 import { LocalCertificateManager } from "../../../common/local/localCertificateManager";
-import { TelemetryConstant } from "../../constant/commonConstant";
 import { wrapRun } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
 import { StepDriver } from "../interface/stepDriver";

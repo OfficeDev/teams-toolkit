@@ -83,11 +83,11 @@ describe("v3 yaml parser", () => {
       assert(result.isOk());
     });
   });
-  describe(`when parsing real teamsfx.yml`, () => {
+  describe(`when parsing real app.yml`, () => {
     // because driver resolution happens when the driver actually runs.
     it("should return ok", async () => {
       const parser = new YamlParser();
-      const result = await parser.parse(path.resolve(__dirname, "testing_data", "teamsfx.yml"));
+      const result = await parser.parse(path.resolve(__dirname, "testing_data", "app.yml"));
       assert(result.isOk());
       if (result.isOk()) {
         const model = result.value;

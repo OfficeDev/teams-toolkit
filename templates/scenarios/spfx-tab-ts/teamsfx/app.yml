@@ -2,9 +2,9 @@ version: 1.0.0
 
 deploy:
   - uses: npm/command
-      with:
-        args: install
-        srcFolder: ./SPFx
+    with:
+      args: install
+      srcFolder: ./SPFx
   - uses: npx/command
     with:
       src: ./SPFx

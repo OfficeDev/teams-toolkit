@@ -196,6 +196,33 @@ describe("env utils", () => {
       assert.equal(res.error.name, "TestError");
     }
   });
+  it("EnvLoaderMW fail with envUtil Error", async () => {
+    const encRes = await cryptoProvider.encrypt(decrypted);
+    if (encRes.isErr()) throw encRes.error;
+    const encrypted = encRes.value;
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves(("SECRET_ABC=" + encrypted) as any);
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    sandbox
+      .stub(envUtil, "readEnv")
+      .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
+    class MyClass {
+      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+        return ok(undefined);
+      }
+    }
+    hooks(MyClass, {
+      myMethod: [EnvLoaderMW],
+    });
+    const my = new MyClass();
+    const inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const res = await my.myMethod(inputs);
+    assert.isTrue(res.isErr());
+  });
   it("EnvLoaderMW cancel", async () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(tools.ui, "selectOption").resolves(err(UserCancelError));
@@ -241,7 +268,7 @@ describe("env utils", () => {
     assert.isTrue(res.isOk());
     assert.equal(process.env.SECRET_ABC, decrypted);
   });
-  it("EnvWriterMW", async () => {
+  it("EnvWriterMW success", async () => {
     let value = "";
     sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
       value = data as string;
@@ -272,5 +299,30 @@ describe("env utils", () => {
     if (decRes.isErr()) throw decRes.error;
     assert.isTrue(decRes.isOk());
     assert.equal(decRes.value, decrypted);
+  });
+
+  it("EnvWriterMW fail with envUtil Error", async () => {
+    sandbox
+      .stub(envUtil, "writeEnv")
+      .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    const envs = { SECRET_ABC: decrypted };
+    class MyClass {
+      async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+        ctx!.envVars = envs;
+        return ok(undefined);
+      }
+    }
+    hooks(MyClass, {
+      myMethod: [ContextInjectorMW, EnvWriterMW],
+    });
+    const my = new MyClass();
+    const inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const res = await my.myMethod(inputs);
+    assert.isTrue(res.isErr());
   });
 });

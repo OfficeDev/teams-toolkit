@@ -44,6 +44,7 @@ import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskT
 import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
 import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { LifecycleTaskTerminal } from "./taskTerminal/lifecycleTaskTerminal";
 
 const customTasks = Object.freeze({
   [TaskCommand.checkPrerequisites]: {
@@ -84,6 +85,19 @@ const customTasks = Object.freeze({
   },
   [TaskCommand.prepareManifest]: {
     createTerminal: (d: vscode.TaskDefinition) => new PrepareManifestTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
+  },
+  [TaskCommand.provision]: {
+    createTerminal: (d: vscode.TaskDefinition) =>
+      new LifecycleTaskTerminal(d, TaskCommand.provision),
+    presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
+  },
+  [TaskCommand.deploy]: {
+    createTerminal: (d: vscode.TaskDefinition) => new LifecycleTaskTerminal(d, TaskCommand.deploy),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,

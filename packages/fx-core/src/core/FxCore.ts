@@ -242,9 +242,9 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createDriverContext(inputs);
-    const res = await coordinator.provision(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx!.envVars = res.value;
+    const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
+    ctx!.envVars = output;
+    if (error) return err(error);
     return ok(Void);
   }
   @hooks([

@@ -11,6 +11,7 @@ import {
   ResourceContextV3,
   Result,
   SettingsFolderName,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
 import { Container } from "typedi";
@@ -73,6 +74,8 @@ import { DotenvParseOutput } from "dotenv";
 import { YamlParser } from "../configManager/parser";
 import { provisionUtils } from "../provisionUtils";
 import { envUtil } from "../utils/envUtil";
+import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { ExecutionError, ExecutionOutput } from "../configManager/interface";
 
 export enum TemplateNames {
   Tab = "tab",
@@ -259,34 +262,34 @@ export class Coordinator {
     ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<DotenvParseOutput, FxError>> {
+  ): Promise<[DotenvParseOutput | undefined, FxError | undefined]> {
+    const output: DotenvParseOutput = {};
     if (inputs["targetSubscriptionId"]) {
       process.env.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
+      output.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
     }
     if (inputs["targetResourceGroupName"]) {
       process.env.AZURE_RESOURCE_GROUP_NAME = inputs["targetResourceGroupName"];
+      output.AZURE_RESOURCE_GROUP_NAME = inputs["targetResourceGroupName"];
     }
-    const output: DotenvParseOutput = {};
     const parser = new YamlParser();
     const templatePath = path.join(ctx.projectPath, SettingsFolderName, "teamsfx.yml");
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
-      return err(maybeProjectModel.error);
+      return [undefined, maybeProjectModel.error];
     }
     const projectModel = maybeProjectModel.value;
     const cycles = [projectModel.registerApp, projectModel.provision, projectModel.configureApp];
     for (const cycle of cycles) {
       if (!cycle) continue;
-      let runRes = await cycle.run(ctx);
-      if (runRes.isErr()) return err(runRes.error);
-      let unresolvedPlaceHolders = runRes.value.unresolvedPlaceHolders;
+      let unresolvedPlaceHolders = cycle.resolvePlaceholders();
       if (unresolvedPlaceHolders.length > 0) {
         if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) {
           const ensureRes = await provisionUtils.ensureSubscription(
             ctx.azureAccountProvider,
             process.env.AZURE_SUBSCRIPTION_ID
           );
-          if (ensureRes.isErr()) return err(ensureRes.error);
+          if (ensureRes.isErr()) return [undefined, ensureRes.error];
           const subInfo = ensureRes.value;
           if (subInfo && subInfo.subscriptionId) {
             process.env.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
@@ -316,7 +319,7 @@ export class Coordinator {
             process.env.AZURE_RESOURCE_GROUP_NAME,
             defaultRg
           );
-          if (ensureRes.isErr()) return err(ensureRes.error);
+          if (ensureRes.isErr()) return [undefined, ensureRes.error];
           const rgInfo = ensureRes.value;
           if (rgInfo) {
             process.env.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
@@ -327,14 +330,50 @@ export class Coordinator {
           }
         }
         if (unresolvedPlaceHolders.length === 0) {
-          runRes = await cycle.run(ctx);
-          if (runRes.isErr()) return err(runRes.error);
+          const execRes = await cycle.execute(ctx);
+          const result = this.convertExecuteResult(execRes);
+          merge(output, result[0]);
+          if (result[1]) {
+            return [output, result[1]];
+          }
         }
       }
-      const newOutput = envUtil.map2object(runRes.value.env);
+    }
+    return [output, undefined];
+  }
+
+  convertExecuteResult(
+    execRes: Result<ExecutionOutput, ExecutionError>
+  ): [DotenvParseOutput, FxError | undefined] {
+    const output: DotenvParseOutput = {};
+    let error = undefined;
+    if (execRes.isErr()) {
+      const execError = execRes.error;
+      if (execError.kind === "Failure") {
+        error = execError.error;
+      } else {
+        const partialOutput = execError.env;
+        const newOutput = envUtil.map2object(partialOutput);
+        merge(output, newOutput);
+        const reason = execError.reason;
+        if (reason.kind === "DriverError") {
+          error = reason.error;
+          error.source = reason.failedDriver.name!;
+        } else if (reason.kind === "UnresolvedPlaceholders") {
+          const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
+          error = new UserError({
+            source: "coordinator",
+            name: "UnresolvedPlaceholders",
+            message: getDefaultString("core.error.unresolvedPlaceholders", placeholders),
+            displayMessage: getLocalizedString("core.error.unresolvedPlaceholders", placeholders),
+          });
+        }
+      }
+    } else {
+      const newOutput = envUtil.map2object(execRes.value);
       merge(output, newOutput);
     }
-    return ok(output);
+    return [output, error];
   }
 
   @hooks([
@@ -357,8 +396,9 @@ export class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
-      const runRes = await projectModel.deploy.run(ctx);
-      if (runRes.isErr()) return err(runRes.error);
+      const execRes = await projectModel.deploy.execute(ctx);
+      const result = this.convertExecuteResult(execRes);
+      if (result[1]) return err(result[1]);
     }
     return ok(undefined);
   }
@@ -383,8 +423,9 @@ export class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.publish) {
-      const runRes = await projectModel.publish.run(ctx);
-      if (runRes.isErr()) return err(runRes.error);
+      const execRes = await projectModel.publish.execute(ctx);
+      const result = this.convertExecuteResult(execRes);
+      if (result[1]) return err(result[1]);
     }
     return ok(undefined);
   }

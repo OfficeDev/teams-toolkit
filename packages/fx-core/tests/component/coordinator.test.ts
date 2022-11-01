@@ -39,9 +39,7 @@ describe("component coordinator test", () => {
   it("create project from sample", async () => {
     sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ projectId: "mockId", version: "1", isFromSample: false }));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -57,9 +55,7 @@ describe("component coordinator test", () => {
   it("create project from scratch", async () => {
     sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox
-      .stub(settingsUtil, "readSettings")
-      .resolves(ok({ projectId: "mockId", version: "1", isFromSample: false }));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -194,8 +190,8 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
-      subscription: "mockSubId",
-      "resource-group": "test-rg",
+      targetSubscriptionId: "mockSubId",
+      targetResourceGroupName: "test-rg",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);

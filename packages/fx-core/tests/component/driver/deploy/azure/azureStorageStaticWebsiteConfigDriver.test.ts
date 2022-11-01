@@ -15,7 +15,7 @@ import { MyTokenCredential } from "../../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
 import { MockUserInteraction } from "../../../../core/utils";
 
-describe("Azure App Service Deploy Driver test", () => {
+describe("Azure Storage enable static website Driver test", () => {
   const sandbox = sinon.createSandbox();
 
   function getMockStorageAccount1() {

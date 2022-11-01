@@ -51,6 +51,7 @@ import {
   ExistingTabOptionItem,
   SingleSignOnOptionItem,
   ComponentNames,
+  AadConstants,
 } from "../component/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
@@ -371,7 +372,10 @@ export class FxCore implements v3.ICore {
     inputs.stage = Stage.deployAad;
     const updateAadClient = Container.get("aadApp/update") as any;
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
-    const manifestTemplatePath: string = path.join(inputs.projectPath!, ".fx", "aad.template.json");
+    const manifestTemplatePath: string = path.join(
+      inputs.projectPath!,
+      AadConstants.DefaultTemplateFileName
+    );
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new NoAadManifestExistError(manifestTemplatePath));
     }
@@ -526,10 +530,10 @@ export class FxCore implements v3.ICore {
           ui: context.userInteraction,
           logProvider: context.logProvider,
           telemetryReporter: context.telemetryReporter,
-          projectPath: context.projectPath!,
+          projectPath: inputs.projectPath!,
           platform: inputs.platform,
         };
-        await envUtil.readEnv(context.projectPath!, func.params.env);
+        // await envUtil.readEnv(context.projectPath!, func.params.env);
         res = await driver.run(args, driverContext);
       } else {
         const component = Container.get("app-manifest") as any;
@@ -549,10 +553,10 @@ export class FxCore implements v3.ICore {
           ui: context.userInteraction,
           logProvider: context.logProvider,
           telemetryReporter: context.telemetryReporter,
-          projectPath: context.projectPath!,
+          projectPath: inputs.projectPath!,
           platform: inputs.platform,
         };
-        await envUtil.readEnv(context.projectPath!, func.params.env);
+        // await envUtil.readEnv(context.projectPath!, func.params.env);
         res = await driver.run(args, driverContext);
       } else {
         const component = Container.get("app-manifest") as any;
@@ -871,7 +875,7 @@ export class FxCore implements v3.ICore {
     if (!ProjectSettingsHelper.isSpfx(ctx.projectSettings)) {
       await copyParameterJson(
         inputs.projectPath!,
-        ctx.projectSettings!.appName,
+        ctx.projectSettings!.appName!,
         inputs.targetEnvName!,
         inputs.sourceEnvName!
       );

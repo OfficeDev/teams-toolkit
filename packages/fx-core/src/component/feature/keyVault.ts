@@ -74,7 +74,7 @@ export class KeyVaultFeature {
       effects.push("generate key-vault provision bicep");
       const persistRes = await bicepUtils.persistBiceps(
         inputs.projectPath,
-        convertToAlphanumericOnly(context.projectSetting.appName),
+        convertToAlphanumericOnly(context.projectSetting.appName!),
         res.value
       );
       if (persistRes.isErr()) return persistRes;

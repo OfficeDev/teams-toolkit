@@ -10,6 +10,7 @@ import {
   Platform,
   ResourceContextV3,
   Result,
+  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
 import { Container } from "typedi";
@@ -136,7 +137,7 @@ export class Coordinator {
       inputs.projectPath = projectPath;
       await fs.ensureDir(projectPath);
 
-      const res = await Generator.generateSample(sampleId, projectPath, context);
+      const res = await Generator.generateSample(context, projectPath, sampleId);
       if (res.isErr()) return err(res.error);
 
       await downloadSampleHook(sampleId, projectPath);
@@ -169,7 +170,7 @@ export class Coordinator {
       const templateName = Feature2TemplateName[`${feature}:${trigger}`];
       if (templateName) {
         const langKey = convertToLangKey(language);
-        const res = await Generator.generateTemplate(templateName, langKey, projectPath, context);
+        const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
         if (res.isErr()) return err(res.error);
       }
       merge(actionContext?.telemetryProps, {
@@ -181,9 +182,8 @@ export class Coordinator {
     const projectSettingsRes = await settingsUtil.readSettings(projectPath);
     if (projectSettingsRes.isOk()) {
       const settings = projectSettingsRes.value;
-      settings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
-      settings.isFromSample = scratch === ScratchOptionNo.id;
-      inputs.projectId = settings.projectId;
+      settings.trackingId = inputs.projectId ? inputs.projectId : uuid.v4();
+      inputs.projectId = settings.trackingId;
       await settingsUtil.writeSettings(projectPath, settings);
     }
     if (inputs.platform === Platform.VSCode) {
@@ -260,15 +260,15 @@ export class Coordinator {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<DotenvParseOutput, FxError>> {
-    if (inputs["subscription"]) {
-      process.env.AZURE_SUBSCRIPTION_ID = inputs["subscription"];
+    if (inputs["targetSubscriptionId"]) {
+      process.env.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
     }
-    if (inputs["resource-group"]) {
-      process.env.AZURE_RESOURCE_GROUP_NAME = inputs["resource-group"];
+    if (inputs["targetResourceGroupName"]) {
+      process.env.AZURE_RESOURCE_GROUP_NAME = inputs["targetResourceGroupName"];
     }
     const output: DotenvParseOutput = {};
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, "teamsfx.yml");
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -302,6 +302,13 @@ export class Coordinator {
         ) {
           const folderName = path.parse(ctx.projectPath).name;
           const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
+          if (!process.env.RESOURCE_SUFFIX) {
+            process.env.RESOURCE_SUFFIX = suffix;
+            output.RESOURCE_SUFFIX = suffix;
+            unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
+              (ph) => ph !== "RESOURCE_SUFFIX"
+            );
+          }
           const defaultRg = `rg-${folderName}${suffix}-${inputs.env}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
             ctx.azureAccountProvider,
@@ -343,7 +350,7 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, "teamsfx.yml");
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -369,7 +376,7 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, "teamsfx.yml");
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);

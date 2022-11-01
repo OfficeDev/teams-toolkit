@@ -168,7 +168,7 @@ export class TeamsTab {
     //persist bicep
     const bicepRes = await bicepUtils.persistBiceps(
       inputs.projectPath,
-      convertToAlphanumericOnly(context.projectSetting.appName),
+      convertToAlphanumericOnly(context.projectSetting.appName!),
       biceps
     );
     if (bicepRes.isErr()) return bicepRes;

@@ -1,0 +1,28 @@
+# TeamsFx files
+node_modules
+.fx/configs/localSettings.json
+.fx/states/*.userdata
+.DS_Store
+.env.teamsfx.local
+subscriptionInfo.json
+build
+.fx/configs/config.local.json
+.fx/states/state.local.json
+appsettings.Development.json
+# User-specific files
+*.user
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# Notification local store
+.notification.localstore.json

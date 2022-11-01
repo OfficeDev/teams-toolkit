@@ -65,7 +65,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
 
 // Register your web service as a bot with the Bot Framework
 module azureBotRegistration './botRegistration/azurebot.bicep' = {
-  name: 'Azure Bot registration'
+  name: 'Azure-Bot-registration'
   params: {
     resourceBaseName: resourceBaseName
     botAadAppClientId: botAadAppClientId

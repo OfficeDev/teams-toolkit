@@ -24,12 +24,6 @@ export function getFileExtension(filename: string): string {
   return ext ? ext.substring(1) : ext;
 }
 
-export function getAbsolutePath(relativeOrAbsolutePath: string, projectPath: string): string {
-  return path.isAbsolute(relativeOrAbsolutePath)
-    ? relativeOrAbsolutePath
-    : path.join(projectPath, relativeOrAbsolutePath);
-}
-
 export function convertOutputs(outputs: deploymentOutput[]): Map<string, string> {
   const res = new Map<string, string>();
   for (const output of outputs) {

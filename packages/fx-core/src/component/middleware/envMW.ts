@@ -9,7 +9,7 @@ import { SelectEnvQuestion } from "../question";
 import { envUtil } from "../utils/envUtil";
 
 export const EnvLoaderMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
-  const inputs = ctx.arguments[0] as Inputs;
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
     ctx.result = err(new NoProjectOpenedError());

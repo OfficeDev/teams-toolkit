@@ -2,46 +2,20 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import {
-  ContextV3,
-  err,
-  FxError,
-  IConfigurableTab,
-  Inputs,
-  InputsWithProjectPath,
-  IStaticTab,
-  ok,
-  Platform,
-  Result,
-  Stage,
-  v3,
-} from "@microsoft/teamsfx-api";
+import { ContextV3, err, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import fs from "fs-extra";
-import * as util from "util";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
 import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
-import {
-  DependencyInstallError,
-  NoConfigurationError,
-  ScaffoldError,
-} from "../resource/spfx/error";
+import { DependencyInstallError, ScaffoldError } from "../resource/spfx/error";
 import { isOfficialSPFx, Utils } from "../resource/spfx/utils/utils";
 import { camelCase } from "lodash";
-import { getTemplatesFolder } from "../../folder";
-import {
-  Constants,
-  ManifestTemplate,
-  PlaceHolders,
-  ScaffoldProgressMessage,
-} from "../resource/spfx/utils/constants";
+import { Constants, ScaffoldProgressMessage } from "../resource/spfx/utils/constants";
 import { YoChecker } from "../resource/spfx/depsChecker/yoChecker";
 import { GeneratorChecker } from "../resource/spfx/depsChecker/generatorChecker";
-import { getAppDirectory, isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
+import { isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tools";
 import { cpUtils } from "../../common/deps-checker";
-import { DefaultManifestProvider } from "../resource/appManifest/manifestProvider";
-import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../resource/appManifest/constants";
 import { TelemetryEvents } from "../resource/spfx/utils/telemetryEvents";
 import { Generator } from "./generator";
 

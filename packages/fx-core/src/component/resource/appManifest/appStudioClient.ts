@@ -14,6 +14,7 @@ import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 import { getAppStudioEndpoint } from "./constants";
 import { HelpLinks } from "../../../common/constants";
 import AdmZip from "adm-zip";
+import { extname } from "path";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -426,8 +427,13 @@ export namespace AppStudioClient {
 
         zipEntries?.forEach(function (zipEntry) {
           console.log(zipEntry.toString()); // outputs zip entries information
-          //if (zipEntry.entryName == "my_file.txt") {
           const data = zipEntry.getData();
+          let parsedContent: string;
+          if (extname(zipEntry.entryName) === "png") {
+          } else {
+            parsedContent = JSON.parse(data.toString("utf8"));
+          }
+
           const b = data.toString("utf8"); // if ext not image
           const c = data.toString("base64"); // if ext is image
           //}

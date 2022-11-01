@@ -8,6 +8,7 @@ import * as React from "react";
 import { Commands } from "../Commands";
 import CollapsibleStep from "./collapsibleStep";
 import ExternalLink from "./externalLink";
+import CodeSnippet from "./codeSnippet";
 
 export default function WorkflowBot() {
   const onCreateNewProject = () => {
@@ -15,6 +16,24 @@ export default function WorkflowBot() {
       command: Commands.CreateNewProject,
     });
   };
+
+  const codeSnippet1 = `{ 
+  "type": "AdaptiveCard", 
+  "body": [
+    ...
+    {
+      "type": "ActionSet",
+      "actions": [
+        {
+          "type": "Action.Execute",
+          "title": "DoSomething",
+          "verb": "doSomething" 
+        }
+      ]
+    },
+    ...
+  ]
+}`;
 
   return (
     <div className="markdown-body">
@@ -215,29 +234,7 @@ export default function WorkflowBot() {
           <p>
             Here&#39;s a sample action with type <code>Action.Execute</code>:
           </p>
-          <div className="code">
-            <pre>
-              <code className="language-json">
-                {`{ 
-  "type": "AdaptiveCard", 
-  "body": [
-    ...
-    {
-      "type": "ActionSet",
-      "actions": [
-        {
-          "type": "Action.Execute",
-          "title": "DoSomething",
-          "verb": "doSomething" 
-        }
-      ]
-    },
-    ... 
-  ]
-} `}
-              </code>
-            </pre>
-          </div>
+          <CodeSnippet language="language-json" data={codeSnippet1} />
           <p>
             Specifying the <code>type</code> as <code>Action.Execute</code> allows this Adaptive
             Card to respond with another card, which will update the UI by replacing the existing

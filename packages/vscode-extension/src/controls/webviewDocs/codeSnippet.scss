@@ -1,0 +1,16 @@
+.codeSnippet {
+  display: flex;
+  flex-direction: column;
+
+  .codeTitle {
+    display: flex;
+    justify-content: flex-end;
+    background-color: var(--vscode-list-dropBackground);
+
+    button {
+      padding: 5px;
+      background-color: var(--vscode-list-dropBackground);
+      border: none;
+    }
+  }
+}

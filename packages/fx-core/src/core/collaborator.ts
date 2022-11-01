@@ -239,7 +239,7 @@ export class CollaborationUtil {
 export async function listCollaborator(
   ctx: ContextV3,
   inputs: v2.InputsWithProjectPath,
-  envInfo: v3.EnvInfoV3,
+  envInfo: v3.EnvInfoV3 | undefined,
   tokenProvider: TokenProvider,
   telemetryProps?: Json
 ): Promise<Result<ListCollaboratorResult, FxError>> {
@@ -249,7 +249,7 @@ export async function listCollaborator(
   }
   const user = result.value;
   if (!isV3Enabled()) {
-    const stateResult: CollaborationStateResult = getCurrentCollaborationState(envInfo, user);
+    const stateResult: CollaborationStateResult = getCurrentCollaborationState(envInfo!, user);
     if (stateResult.state != CollaborationState.OK) {
       if (inputs.platform === Platform.CLI && stateResult.message) {
         ctx.userInteraction.showMessage("warn", stateResult.message, false);
@@ -294,7 +294,7 @@ export async function listCollaborator(
   const aadAppId: string = aadOwners[0]?.resourceId ?? "";
   const aadAppTenantId = isV3Enabled()
     ? user.tenantId
-    : envInfo.state[ComponentNames.AppManifest]?.tenantId;
+    : envInfo!.state[ComponentNames.AppManifest]?.tenantId;
 
   for (const teamsAppOwner of teamsAppOwners) {
     const aadOwner = aadOwners.find((owner) => owner.userObjectId === teamsAppOwner.userObjectId);
@@ -324,7 +324,7 @@ export async function listCollaborator(
       },
       { content: user.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
       ...getPrintEnvMessage(
-        isV3Enabled() ? inputs.env : envInfo.envName,
+        isV3Enabled() ? inputs.env : envInfo!.envName,
         getLocalizedString("core.collaboration.StartingListAllTeamsAppOwners")
       ),
       { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },
@@ -392,7 +392,7 @@ export async function listCollaborator(
       ? inputs.env
         ? getHashedEnv(inputs.env)
         : undefined
-      : getHashedEnv(envInfo.envName);
+      : getHashedEnv(envInfo!.envName);
     telemetryProps[SolutionTelemetryProperty.CollaboratorCount] = collaborators.length.toString();
     telemetryProps[SolutionTelemetryProperty.AadOwnerCount] = aadOwnerCount.toString();
   }
@@ -434,7 +434,7 @@ function getCurrentCollaborationState(
 export async function checkPermission(
   ctx: ContextV3,
   inputs: v2.InputsWithProjectPath,
-  envInfo: v3.EnvInfoV3,
+  envInfo: v3.EnvInfoV3 | undefined,
   tokenProvider: TokenProvider,
   telemetryProps?: Json
 ): Promise<Result<PermissionsResult, FxError>> {
@@ -444,7 +444,7 @@ export async function checkPermission(
   }
 
   if (!isV3Enabled()) {
-    const stateResult = getCurrentCollaborationState(envInfo, result.value);
+    const stateResult = getCurrentCollaborationState(envInfo!, result.value);
 
     if (stateResult.state != CollaborationState.OK) {
       if (inputs.platform === Platform.CLI && stateResult.message) {
@@ -462,7 +462,7 @@ export async function checkPermission(
     // TODO: get tenant id from .env
     const aadAppTenantId = isV3Enabled()
       ? userInfo.tenantId
-      : envInfo.state[ComponentNames.AppManifest]?.tenantId;
+      : envInfo!.state[ComponentNames.AppManifest]?.tenantId;
     const message = [
       {
         content: getLocalizedString("core.collaboration.AccountUsedToCheck"),
@@ -470,7 +470,7 @@ export async function checkPermission(
       },
       { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
       ...getPrintEnvMessage(
-        isV3Enabled() ? inputs.env : envInfo.envName,
+        isV3Enabled() ? inputs.env : envInfo!.envName,
         getLocalizedString("core.collaboration.StaringCheckPermission")
       ),
       { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },
@@ -565,7 +565,7 @@ export async function checkPermission(
 export async function grantPermission(
   ctx: ContextV3,
   inputs: v2.InputsWithProjectPath,
-  envInfo: v3.EnvInfoV3,
+  envInfo: v3.EnvInfoV3 | undefined,
   tokenProvider: TokenProvider,
   telemetryProps?: Json
 ): Promise<Result<PermissionsResult, FxError>> {
@@ -579,7 +579,7 @@ export async function grantPermission(
       return err(result.error);
     }
     if (!isV3Enabled()) {
-      const stateResult = getCurrentCollaborationState(envInfo, result.value);
+      const stateResult = getCurrentCollaborationState(envInfo!, result.value);
       if (stateResult.state != CollaborationState.OK) {
         if (inputs.platform === Platform.CLI && stateResult.message) {
           ctx.userInteraction.showMessage("warn", stateResult.message, false);
@@ -633,7 +633,7 @@ export async function grantPermission(
       // TODO: get tenant id from .env
       const aadAppTenantId = isV3Enabled()
         ? result.value.tenantId
-        : envInfo.state[ComponentNames.AppManifest]?.tenantId;
+        : envInfo!.state[ComponentNames.AppManifest]?.tenantId;
       const message = [
         {
           content: getLocalizedString("core.collaboration.AccountToGrantPermission"),
@@ -641,7 +641,7 @@ export async function grantPermission(
         },
         { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
         ...getPrintEnvMessage(
-          isV3Enabled() ? inputs.env : envInfo.envName,
+          isV3Enabled() ? inputs.env : envInfo!.envName,
           getLocalizedString("core.collaboration.StartingGrantPermission")
         ),
         { content: getLocalizedString("core.collaboration.TenantId"), color: Colors.BRIGHT_WHITE },

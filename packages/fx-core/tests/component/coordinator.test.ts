@@ -190,8 +190,8 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
-      subscription: "mockSubId",
-      "resource-group": "test-rg",
+      targetSubscriptionId: "mockSubId",
+      targetResourceGroupName: "test-rg",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);

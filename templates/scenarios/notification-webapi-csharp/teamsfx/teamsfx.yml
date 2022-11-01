@@ -23,7 +23,7 @@ deploy:
   - uses: dotnet/command
     with:
       workingDirectory: ./
-      args: publish -configuration Release --runtime win-x86 --self-contained
+      args: publish --configuration Release --runtime win-x86 --self-contained
   - uses: azureAppService/deploy
     with:
       workingDirectory: ./

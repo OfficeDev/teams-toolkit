@@ -717,9 +717,7 @@ export class FxCore implements v3.ICore {
     }
     if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      if (!isV3Enabled()) {
-        context.envInfo = ctx.envInfoV3;
-      }
+      context.envInfo = ctx.envInfoV3;
       const res = await grantPermission(
         context,
         inputs as v2.InputsWithProjectPath,
@@ -751,9 +749,7 @@ export class FxCore implements v3.ICore {
     }
     if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      if (!isV3Enabled()) {
-        context.envInfo = ctx.envInfoV3;
-      }
+      context.envInfo = ctx.envInfoV3;
       const res = await checkPermission(
         context,
         inputs as v2.InputsWithProjectPath,
@@ -785,9 +781,7 @@ export class FxCore implements v3.ICore {
     }
     if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
-      if (!isV3Enabled()) {
-        context.envInfo = ctx.envInfoV3;
-      }
+      context.envInfo = ctx.envInfoV3;
       const res = await listCollaborator(
         context,
         inputs as v2.InputsWithProjectPath,

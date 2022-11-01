@@ -180,7 +180,7 @@ export class Coordinator {
     }
 
     // generate unique projectId in projectSettings.json
-    const ensureRes = await this.ensureProjectId(inputs, projectPath);
+    const ensureRes = await this.ensureTrackingId(inputs, projectPath);
     if (ensureRes.isErr()) return err(ensureRes.error);
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
@@ -197,12 +197,12 @@ export class Coordinator {
     const context = createContextV3();
     const res = await Generator.generateTemplate(context, folder, "init-infra", undefined);
     if (res.isErr()) return err(res.error);
-    const ensureRes = await this.ensureProjectId(inputs, folder);
+    const ensureRes = await this.ensureTrackingId(inputs, folder);
     if (ensureRes.isErr()) return err(ensureRes.error);
     return ok(undefined);
   }
 
-  async ensureProjectId(inputs: Inputs, projectPath: string): Promise<Result<undefined, FxError>> {
+  async ensureTrackingId(inputs: Inputs, projectPath: string): Promise<Result<undefined, FxError>> {
     // generate unique projectId in projectSettings.json
     const settingsRes = await settingsUtil.readSettings(projectPath);
     if (settingsRes.isErr()) return err(settingsRes.error);

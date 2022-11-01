@@ -1,12 +1,13 @@
 import "highlight.js/styles/github.css";
-import "github-markdown-css/github-markdown-dark.css";
 // import hljs from "highlight.js/lib/core";
+import "./github.scss";
 import "./document.scss";
+
 import * as React from "react";
 
+import { Commands } from "../Commands";
 import CollapsibleStep from "./collapsibleStep";
 import ExternalLink from "./externalLink";
-import { Commands } from "../Commands";
 
 export default function WorkflowBot() {
   const onCreateNewProject = () => {

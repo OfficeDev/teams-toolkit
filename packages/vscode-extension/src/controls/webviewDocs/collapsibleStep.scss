@@ -10,7 +10,7 @@
   border: 1px solid var(--vscode-tab-inactiveBackground);
   padding: 13px 23px;
   background-color: var(--vscode-tab-inactiveBackground);
-  color: var(--vscode-banner-foreground);
+  color: var(--vscode-foreground);
   border-radius: 3px;
 
   &.is-open {
@@ -33,7 +33,7 @@
   padding: 0 23px;
   padding-bottom: 13px;
   background-color: var(--vscode-tab-inactiveBackground);
-  color: var(--vscode-banner-foreground);
+  color: var(--vscode-foreground);
   border-radius: 3px;
 }
 
@@ -50,6 +50,7 @@
 
 .stepTitle {
   flex: 1;
+  color: var(--vscode-foreground);
 
   p {
     font-weight: 500;

@@ -249,7 +249,7 @@ export class BotDebugHandler {
       const botReg: IBotRegistration = {
         botId: this.envInfoV3!.state[ComponentNames.TeamsBot].botId,
         name:
-          convertToAlphanumericOnly(this.projectSettingsV3!.appName) +
+          convertToAlphanumericOnly(this.projectSettingsV3!.appName!) +
           PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
         description: "",
         iconUrl: "",

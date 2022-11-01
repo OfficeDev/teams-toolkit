@@ -59,7 +59,7 @@ export class ApiCodeProvider {
     const workingDir = path.join(inputs.projectPath, folder);
     const functionName = inputs[QuestionKey.functionName];
     const variables = {
-      appName: appName,
+      appName: appName!,
       functionName: functionName,
     };
     await actionContext?.progressBar?.next(ProgressMessages.scaffoldApi);

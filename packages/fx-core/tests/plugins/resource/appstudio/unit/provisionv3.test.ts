@@ -113,7 +113,7 @@ describe("Provision Teams app with Azure", () => {
 
   it("Register Teams app with user provided zip", async () => {
     sandbox.stub<any, any>(fs, "pathExists").resolves(true);
-    inputs.appPackagePath = path.join(os.tmpdir(), projectSettings.appName);
+    inputs.appPackagePath = path.join(os.tmpdir(), projectSettings.appName!);
     sandbox.stub(AppStudioClient, "getApp").throws(new Error("404"));
     sandbox.stub(AppStudioClient, "importApp").resolves(appDef);
     const teamsAppId = await plugin.provisionForCLI(
@@ -127,7 +127,7 @@ describe("Provision Teams app with Azure", () => {
 
   it("Register Teams app with user provided zip - file not found", async () => {
     sandbox.stub<any, any>(fs, "pathExists").resolves(false);
-    inputs.appPackagePath = path.join(os.tmpdir(), projectSettings.appName);
+    inputs.appPackagePath = path.join(os.tmpdir(), projectSettings.appName!);
     const teamsAppId = await plugin.provisionForCLI(
       context,
       inputs,
@@ -142,7 +142,7 @@ describe("Provision Teams app with Azure", () => {
 
   it("Update Teams app with user provided zip", async () => {
     sandbox.stub<any, any>(fs, "pathExists").resolves(true);
-    inputs.appPackagePath = path.join(os.tmpdir(), projectSettings.appName);
+    inputs.appPackagePath = path.join(os.tmpdir(), projectSettings.appName!);
     const error = new Error();
     (error.name as any) = 409;
     sandbox.stub(AppStudioClient, "getApp").resolves(appDef);

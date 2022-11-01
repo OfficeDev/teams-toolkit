@@ -1,4 +1,4 @@
-import { err, FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result, SettingsFolderName, UserError } from "@microsoft/teamsfx-api";
 import * as dotenv from "dotenv";
 import * as path from "path";
 import fs from "fs-extra";
@@ -13,7 +13,7 @@ export class EnvUtil {
     env: string,
     loadToProcessEnv = true
   ): Promise<Result<dotenv.DotenvParseOutput, FxError>> {
-    const dotEnvFilePath = path.join(projectPath, ".fx", `.env.${env}`);
+    const dotEnvFilePath = path.join(projectPath, SettingsFolderName, `.env.${env}`);
     if (!(await fs.pathExists(dotEnvFilePath))) {
       return err(
         new UserError({
@@ -29,7 +29,7 @@ export class EnvUtil {
     if (settingsRes.isErr()) {
       return err(settingsRes.error);
     }
-    const projectId = settingsRes.value.projectId;
+    const projectId = settingsRes.value.trackingId;
     const cryptoProvider = new LocalCrypto(projectId);
     for (const key of Object.keys(envs)) {
       if (key.startsWith("SECRET_")) {
@@ -54,9 +54,9 @@ export class EnvUtil {
     if (settingsRes.isErr()) {
       return err(settingsRes.error);
     }
-    const projectId = settingsRes.value.projectId;
+    const projectId = settingsRes.value.trackingId;
     const cryptoProvider = new LocalCrypto(projectId);
-    const dotEnvFilePath = path.join(projectPath, ".fx", `.env.${env}`);
+    const dotEnvFilePath = path.join(projectPath, SettingsFolderName, `.env.${env}`);
     const readEnvRes = await this.readEnv(projectPath, env);
     const existingEnvs = readEnvRes.isOk() ? readEnvRes.value : {};
     merge(existingEnvs, envs);
@@ -75,7 +75,7 @@ export class EnvUtil {
     return ok(undefined);
   }
   async listEnv(projectPath: string): Promise<Result<string[], FxError>> {
-    const folder = path.join(projectPath, ".fx");
+    const folder = path.join(projectPath, SettingsFolderName);
     const list = await fs.readdir(folder);
     const envs = list
       .filter((fileName) => fileName.startsWith(".env."))

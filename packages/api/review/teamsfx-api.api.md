@@ -1355,7 +1355,7 @@ export interface ProjectConfigV3 {
 // @public
 export interface ProjectSettings {
     // (undocumented)
-    appName: string;
+    appName?: string;
     // (undocumented)
     defaultFunctionName?: string;
     // (undocumented)
@@ -1571,12 +1571,16 @@ export type SelectFolderResult = InputResult<string>;
 // @public
 export interface Settings {
     // (undocumented)
-    isFromSample: boolean;
-    // (undocumented)
-    projectId: string;
+    trackingId: string;
     // (undocumented)
     version: string;
 }
+
+// @public (undocumented)
+export const SettingsFileName = "settings.json";
+
+// @public (undocumented)
+export const SettingsFolderName = "teamsfx";
 
 // @public
 export interface ShellAction extends ActionBase {

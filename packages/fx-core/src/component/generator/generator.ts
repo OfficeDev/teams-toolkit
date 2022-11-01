@@ -47,9 +47,9 @@ export class Generator {
     const appName = ctx.projectSetting?.appName;
     const replaceMap = {
       ...{
-        appName: appName,
-        ProjectName: appName,
-        SafeProjectName: convertToAlphanumericOnly(appName),
+        appName: appName!,
+        ProjectName: appName!,
+        SafeProjectName: convertToAlphanumericOnly(appName!),
       },
       ...ctx.templateVariables,
     };

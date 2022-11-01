@@ -63,10 +63,10 @@ export class SPFxGenerator {
     if (yeomanRes.isErr()) return err(yeomanRes.error);
 
     const templateRes = await Generator.generateTemplate(
-      isOfficialSPFx() ? Constants.TEMPLATE_NAME : Constants.TEMPLATE_NAME_PRERELEASE,
-      "ts",
+      context,
       destinationPath,
-      context
+      isOfficialSPFx() ? Constants.TEMPLATE_NAME : Constants.TEMPLATE_NAME_PRERELEASE,
+      "ts"
     );
     if (templateRes.isErr()) return err(templateRes.error);
 

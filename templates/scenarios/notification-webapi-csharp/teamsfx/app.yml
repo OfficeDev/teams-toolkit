@@ -26,7 +26,7 @@ deploy:
       args: publish --configuration Release --runtime win-x86 --self-contained
   - uses: azureAppService/deploy
     with:
-      workingDirectory: ./
+      workingDirectory: .
       # deploy base folder
       distributionPath: ./bin/Release/net6.0/win-x86
       # the resource id of the cloud resource to be deployed to

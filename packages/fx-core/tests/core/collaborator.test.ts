@@ -965,15 +965,9 @@ describe("Collaborator APIs for V3", () => {
       );
 
       inputs.platform == Platform.CLI;
-      const envInfo: v3.EnvInfoV3 = {
-        envName: "dev",
-        state: {
-          solution: {},
-        },
-        config: {},
-      };
+      inputs.env = "dev";
 
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, undefined, tokenProvider);
       assert.isTrue(result.isOk() && result.value.collaborators!.length === 1);
     });
 
@@ -1005,15 +999,9 @@ describe("Collaborator APIs for V3", () => {
         .resolves(err(new UserError("source", "errorName", "errorMessage")));
 
       inputs.platform == Platform.CLI;
-      const envInfo: v3.EnvInfoV3 = {
-        envName: "dev",
-        state: {
-          solution: {},
-        },
-        config: {},
-      };
+      inputs.env = "dev";
 
-      const result = await listCollaborator(ctx, inputs, envInfo, tokenProvider);
+      const result = await listCollaborator(ctx, inputs, undefined, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === "errorName");
     });
 
@@ -1067,15 +1055,9 @@ describe("Collaborator APIs for V3", () => {
 
       inputs.platform == Platform.CLI;
       inputs.email = "your_collaborator@yourcompany.com";
-      const envInfo: v3.EnvInfoV3 = {
-        envName: "dev",
-        state: {
-          solution: {},
-        },
-        config: {},
-      };
+      inputs.env = "dev";
 
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, undefined, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
     });
 
@@ -1125,16 +1107,10 @@ describe("Collaborator APIs for V3", () => {
         });
 
       inputs.platform == Platform.CLI;
+      inputs.env = "dev";
       inputs.email = "your_collaborator@yourcompany.com";
-      const envInfo: v3.EnvInfoV3 = {
-        envName: "dev",
-        state: {
-          solution: {},
-        },
-        config: {},
-      };
 
-      const result = await grantPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await grantPermission(ctx, inputs, undefined, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === "errorName");
     });
 
@@ -1187,15 +1163,9 @@ describe("Collaborator APIs for V3", () => {
         });
 
       inputs.platform == Platform.CLI;
-      const envInfo: v3.EnvInfoV3 = {
-        envName: "dev",
-        state: {
-          solution: {},
-        },
-        config: {},
-      };
+      inputs.env = "dev";
 
-      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await checkPermission(ctx, inputs, undefined, tokenProvider);
       assert.isTrue(result.isOk() && result.value.permissions!.length === 2);
     });
 
@@ -1245,15 +1215,9 @@ describe("Collaborator APIs for V3", () => {
         });
 
       inputs.platform == Platform.CLI;
-      const envInfo: v3.EnvInfoV3 = {
-        envName: "dev",
-        state: {
-          solution: {},
-        },
-        config: {},
-      };
+      inputs.env = "dev";
 
-      const result = await checkPermission(ctx, inputs, envInfo, tokenProvider);
+      const result = await checkPermission(ctx, inputs, undefined, tokenProvider);
       assert.isTrue(result.isErr() && result.error.name === "errorName");
     });
   });

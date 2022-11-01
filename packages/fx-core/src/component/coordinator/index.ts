@@ -203,7 +203,7 @@ export class Coordinator {
   }
 
   async ensureTrackingId(inputs: Inputs, projectPath: string): Promise<Result<undefined, FxError>> {
-    // generate unique projectId in projectSettings.json
+    // generate unique trackingId in settings.json
     const settingsRes = await settingsUtil.readSettings(projectPath);
     if (settingsRes.isErr()) return err(settingsRes.error);
     const settings = settingsRes.value;

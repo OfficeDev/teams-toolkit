@@ -89,38 +89,11 @@ describe("component coordinator test", () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
         execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return err({
-            kind: "PartialSuccess",
-            env: new Map(),
-            reason: {
-              kind: "UnresolvedPlaceholders",
-              failedDriver: {
-                uses: "xxx",
-                with: {},
-              },
-              unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-            },
-          });
+          return ok(new Map());
         },
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
-    sandbox
-      .stub(mockProjectModel.registerApp!, "run")
-      .onFirstCall()
-      .resolves(
-        ok({
-          env: new Map(),
-          unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-        })
-      )
-      .onSecondCall()
-      .resolves(
-        ok({
-          env: new Map(),
-          unresolvedPlaceHolders: [],
-        })
-      );
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -159,49 +132,22 @@ describe("component coordinator test", () => {
     const mockProjectModel: ProjectModel = {
       registerApp: {
         name: "configureApp",
+        driverDefs: [],
         run: async (ctx: DriverContext) => {
           return ok({
             env: new Map(),
             unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
           });
         },
-        driverDefs: [],
         resolvePlaceholders: () => {
-          return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
+          return [];
         },
         execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return err({
-            kind: "PartialSuccess",
-            env: new Map(),
-            reason: {
-              kind: "UnresolvedPlaceholders",
-              failedDriver: {
-                uses: "xxx",
-                with: {},
-              },
-              unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-            },
-          });
+          return ok(new Map());
         },
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
-    sandbox
-      .stub(mockProjectModel.registerApp!, "run")
-      .onFirstCall()
-      .resolves(
-        ok({
-          env: new Map(),
-          unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-        })
-      )
-      .onSecondCall()
-      .resolves(
-        ok({
-          env: new Map(),
-          unresolvedPlaceHolders: [],
-        })
-      );
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));

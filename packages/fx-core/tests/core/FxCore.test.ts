@@ -46,7 +46,15 @@ import { NoAadManifestExistError } from "../../src/core/error";
 import "../../src/component/driver/aad/update";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { YamlParser } from "../../src/component/configManager/parser";
-import { ILifecycle, LifecycleName, Output } from "../../src/component/configManager/interface";
+import {
+  DriverDefinition,
+  ExecutionError,
+  ExecutionOutput,
+  ILifecycle,
+  LifecycleName,
+  Output,
+  UnresolvedPlaceholders,
+} from "../../src/component/configManager/interface";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 
 describe("Core basic APIs", () => {
@@ -470,12 +478,24 @@ describe("apply yaml template", async () => {
 
   describe("when lifecycle returns error", async () => {
     const sandbox = sinon.createSandbox();
+    const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
     class MockedProvision implements ILifecycle {
       name: LifecycleName = "provision";
+      driverDefs: DriverDefinition[] = [];
       public async run(ctx: DriverContext): Promise<Result<Output, FxError>> {
-        const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
         return err(mockedError);
+      }
+
+      public resolvePlaceholders(): UnresolvedPlaceholders {
+        return [];
+      }
+
+      public async execute(ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> {
+        return err({
+          kind: "Failure",
+          error: mockedError,
+        });
       }
     }
 

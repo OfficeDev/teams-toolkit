@@ -196,7 +196,7 @@ async function consolidateLocalRemote(ctx: CoreHookContext): Promise<boolean> {
   );
   try {
     // add local environment
-    const appName = getLocalAppName(projectSettings.appName);
+    const appName = getLocalAppName(projectSettings.appName!);
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectConsolidateAddLocalEnvStart, {
       [TelemetryProperty.NeedMigrateAadManifest]: needMigrateAadManifest ? "true" : "false",
     });

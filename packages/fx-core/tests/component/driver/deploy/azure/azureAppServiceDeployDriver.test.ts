@@ -18,26 +18,46 @@ import * as fileOpt from "../../../../../src/component/utils/fileOperation";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
 import { MockUserInteraction } from "../../../../core/utils";
+import * as os from "os";
+import * as path from "path";
+import * as uuid from "uuid";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
+  const sysTmp = os.tmpdir();
+  const folder = uuid.v4();
+  const testFolder = path.join(sysTmp, folder);
 
-  beforeEach(() => {
+  before(async () => {
+    await fs.mkdirs(testFolder);
+  });
+
+  after(async () => {
+    fs.rmSync(testFolder, { recursive: true, force: true });
+  });
+
+  beforeEach(async () => {
     sandbox.stub(tools, "waitSeconds").resolves();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     sandbox.restore();
   });
 
   it("deploy happy path", async () => {
     const deploy = new AzureAppServiceDeployDriver();
+    const fh = await fs.open(path.join(sysTmp, folder, "test.txt"), "a");
+    await fs.close(fh);
+    await fs.writeFile(path.join(sysTmp, folder, "ignore"), "ignore", {
+      encoding: "utf8",
+      flag: "a",
+    });
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
-        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/serverFarms/some-server-farm",
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
@@ -63,6 +83,7 @@ describe("Azure App Service Deploy Driver test", () => {
     } as Models.WebAppsListPublishingCredentialsResponse);
     sandbox.stub(fs, "readFileSync").resolves("test");
     // mock klaw
+    // sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "post").resolves({
       status: 200,
@@ -80,11 +101,11 @@ describe("Azure App Service Deploy Driver test", () => {
   it("resource id error", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: "/",
+      distributionPath: "/",
       ignoreFile: "./ignore",
       resourceId:
-        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/serverFarms",
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",
     } as DeployArgs;
     const context = {
       logProvider: new TestLogProvider(),
@@ -98,8 +119,8 @@ describe("Azure App Service Deploy Driver test", () => {
   it("missing resource id", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
       ignoreFile: "./ignore",
     } as DeployArgs;
     const context = {
@@ -113,11 +134,11 @@ describe("Azure App Service Deploy Driver test", () => {
   it("deploy with ignore file not exists", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
-        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/serverFarms/some-server-farm",
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
@@ -158,11 +179,11 @@ describe("Azure App Service Deploy Driver test", () => {
   it("zip deploy to azure error", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
-        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/serverFarms/some-server-farm",
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),

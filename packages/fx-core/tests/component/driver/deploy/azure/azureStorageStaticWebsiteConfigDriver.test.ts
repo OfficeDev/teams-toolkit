@@ -15,7 +15,7 @@ import { MyTokenCredential } from "../../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
 import { MockUserInteraction } from "../../../../core/utils";
 
-describe("Azure App Service Deploy Driver test", () => {
+describe("Azure Storage enable static website Driver test", () => {
   const sandbox = sinon.createSandbox();
 
   function getMockStorageAccount1() {
@@ -76,6 +76,45 @@ describe("Azure App Service Deploy Driver test", () => {
           "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
         indexPage: "index.html",
         errorPage: "error.html",
+      },
+      context
+    );
+
+    sinon.assert.calledOnce(caller);
+    chai.assert.equal(res.isOk(), true);
+  });
+
+  it("Azure Storage use default", async () => {
+    const driver = new AzureStorageStaticWebsiteConfigDriver();
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      ui: new MockUserInteraction(),
+      logProvider: new TestLogProvider(),
+    } as DriverContext;
+    // fake azure credentials
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
+
+    // fake sas account token
+    const mockStorageManagementClient = new StorageManagementClient(new MyTokenCredential(), "id");
+    mockStorageManagementClient.storageAccounts = getMockStorageAccount1() as any;
+    sandbox.stub(armStorage, "StorageManagementClient").returns(mockStorageManagementClient);
+
+    // fake properties
+    sandbox.stub(BlobServiceClient.prototype, "getProperties").resolves({
+      staticWebsite: {
+        enabled: false,
+      },
+    } as ServiceGetPropertiesResponse);
+
+    const caller = sandbox.stub(BlobServiceClient.prototype, "setProperties").resolves();
+
+    const res = await driver.run(
+      {
+        storageResourceId:
+          "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
+        errorPage: null,
       },
       context
     );

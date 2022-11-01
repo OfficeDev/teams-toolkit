@@ -26,6 +26,7 @@ import { AppManifest } from "../../../../src/component/resource/appManifest/appM
 import { provisionUtils } from "../../../../src/component/provisionUtils";
 import { TelemetryKeys } from "../../../../src/component/resource/botService/constants";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
+import { AlreadyCreatedBotNotExist } from "../../../../src/component/resource/botService/errors";
 
 describe("Bot service", () => {
   const tools = new MockTools();
@@ -63,7 +64,7 @@ describe("Bot service", () => {
   });
   it("wrap app studio error", async () => {
     context.envInfo.state[ComponentNames.TeamsBot] = {
-      botId: "botID",
+      botId: "",
       botPassword: "botPassword",
     };
     sandbox.stub(AppStudioClient, "getBotRegistration").rejects({
@@ -88,13 +89,17 @@ describe("Bot service", () => {
     const telemetryStub = sandbox
       .stub(context.telemetryReporter, "sendTelemetryErrorEvent")
       .resolves();
+    sandbox.stub(GraphClient, "registerAadApp").resolves({
+      clientId: "clientId",
+      clientSecret: "clientSecret",
+    });
 
     context.projectSetting.components.push({
       name: ComponentNames.BotService,
       provision: true,
     });
     context.envInfo.state[ComponentNames.TeamsBot] = {
-      botId: "botID",
+      botId: "",
       botPassword: "botPassword",
     };
     sandbox.stub(AppStudioClient, "getBotRegistration").rejects({
@@ -120,5 +125,26 @@ describe("Bot service", () => {
     assert.equal(props?.[TelemetryKeys.StatusCode], "500");
     assert.equal(props?.[TelemetryKeys.Url], "<create-bot-registration>");
     assert.equal(props?.[TelemetryKeys.Method], "post");
+  });
+
+  it("local bot registration error with existing bot id and cannot get bot", async () => {
+    context.envInfo.state[ComponentNames.TeamsBot] = {
+      botId: "botId",
+      botPassword: "botPassword",
+    };
+    sandbox.stub(AppStudioClient, "getBotRegistration").returns(Promise.resolve(undefined));
+    sandbox
+      .stub(AppStudioClient, "createBotRegistration")
+      .throws(AlreadyCreatedBotNotExist("botId", ""));
+    sandbox.stub(GraphClient, "registerAadApp").resolves({
+      clientId: "clientId",
+      clientSecret: "clientSecret",
+    });
+    const res = await component.provision(context as ResourceContextV3, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      const error = res.error;
+      assert.equal(error.name, "AlreadyCreatedBotNotExist");
+    }
   });
 });

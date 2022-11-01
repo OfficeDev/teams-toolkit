@@ -1042,3 +1042,7 @@ export const BotFeatureIds = [
 ];
 
 export const TabFeatureIds = [TabOptionItem.id, TabNonSsoItem.id, M365SsoLaunchPageOptionItem.id];
+
+export const AadConstants = {
+  DefaultTemplateFileName: "aad.manifest.template.json",
+};

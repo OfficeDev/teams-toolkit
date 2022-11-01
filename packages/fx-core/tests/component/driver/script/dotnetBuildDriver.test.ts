@@ -29,12 +29,12 @@ describe("Dotnet Build Driver test", () => {
     const args = {
       workingDirectory: "./",
       args: "build",
-      env: { a: "b" },
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
+      projectPath: "./",
     } as DriverContext;
     sandbox.stub(utils, "execute").resolves();
     const res = await driver.run(args, context);
@@ -50,6 +50,7 @@ describe("Dotnet Build Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
+      projectPath: "./",
     } as DriverContext;
     sandbox.stub(utils, "execute").throws(new Error("error"));
     const res = await driver.run(args, context);

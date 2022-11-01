@@ -159,6 +159,7 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { TreatmentVariableValue } from "./exp/treatmentVariables";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -982,6 +983,7 @@ export async function runCommand(
 
     inputs = defaultInputs ? defaultInputs : getSystemInputs();
     inputs.stage = stage;
+    inputs.taskOrientedTemplateNaming = TreatmentVariableValue.taskOrientedTemplateNaming;
 
     switch (stage) {
       case Stage.create: {
@@ -2793,25 +2795,45 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
   }
 
   let sourcePath: string;
-  let isConfig = false;
-  if (args && args.length > 0 && args[0].type === "config") {
-    isConfig = true;
-    sourcePath = path.resolve(
-      `${workspacePath}/.${ConfigFolderName}/${InputConfigsFolderName}/`,
-      EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
-    );
+  if (args && args.length > 0) {
+    if (args[0].type === "config") {
+      sourcePath = path.resolve(
+        `${workspacePath}/.${ConfigFolderName}/${InputConfigsFolderName}/`,
+        EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
+      );
+    } else if (args[0].type === "state") {
+      sourcePath = path.resolve(
+        `${workspacePath}/.${ConfigFolderName}/${StatesFolderName}/`,
+        EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
+      );
+    } else {
+      sourcePath = path.resolve(`${workspacePath}/.${ConfigFolderName}/.env.${env.value}`);
+    }
   } else {
-    sourcePath = path.resolve(
-      `${workspacePath}/.${ConfigFolderName}/${StatesFolderName}/`,
-      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
+    const invalidArgsError = new SystemError(
+      ExtensionSource,
+      ExtensionErrors.InvalidArgs,
+      util.format(localize("teamstoolkit.handlers.invalidArgs"), args ? JSON.stringify(args) : args)
     );
+    showError(invalidArgsError);
+    ExtTelemetry.sendTelemetryErrorEvent(telemetryName, invalidArgsError);
+    return err(invalidArgsError);
   }
 
   if (!(await fs.pathExists(sourcePath))) {
-    if (isConfig) {
+    if (args[0].type === "config") {
       const noEnvError = new UserError(
         ExtensionSource,
         ExtensionErrors.EnvConfigNotFoundError,
+        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env.value)
+      );
+      showError(noEnvError);
+      ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
+      return err(noEnvError);
+    } else if (args[0].type === "env") {
+      const noEnvError = new UserError(
+        ExtensionSource,
+        ExtensionErrors.EnvFileNotFoundError,
         util.format(localize("teamstoolkit.handlers.findEnvFailed"), env.value)
       );
       showError(noEnvError);

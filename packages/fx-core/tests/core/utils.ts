@@ -33,6 +33,7 @@ import {
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
+  Settings,
   SingleSelectConfig,
   SingleSelectResult,
   Solution,
@@ -498,6 +499,13 @@ export function MockProjectSettings(appName: string): ProjectSettings {
         PluginNames.APPST,
       ],
     } as AzureSolutionSettings,
+  };
+}
+
+export function MockSettings(): Settings {
+  return {
+    trackingId: uuid.v4(),
+    version: "3.0.0",
   };
 }
 

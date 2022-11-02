@@ -5,19 +5,35 @@ import "./document.scss";
 
 import * as React from "react";
 
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
+import CodeSnippet from "./codeSnippet";
 import CollapsibleStep from "./collapsibleStep";
 import ExternalLink from "./externalLink";
-import CodeSnippet from "./codeSnippet";
 
 export default function WorkflowBot() {
   const onCreateNewProject = () => {
     vscode.postMessage({
       command: Commands.CreateNewProject,
     });
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.InteractWithInProductDoc,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
+          [TelemetryProperty.Action]: "create-new-project",
+        },
+      },
+    });
   };
 
-  const codeSnippet1 = `{ 
+  const codeSnippets = [
+    `{ 
   "type": "AdaptiveCard", 
   "body": [
     ...
@@ -33,7 +49,48 @@ export default function WorkflowBot() {
     },
     ...
   ]
-}`;
+}`,
+    `{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "TextBlock",
+      "size": "Medium",
+      "weight": "Bolder",
+      "text": "A sample response to DoSomething."
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.4"
+}`,
+    `const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const { AdaptiveCardResponse, InvokeResponseFactory } = require("@microsoft/teamsfx");
+const responseCard = require("../adaptiveCards/doSomethingResponse.json");
+
+class DoSomethingActionHandler { 
+    triggerVerb = "doSomething";
+
+    async handleActionInvoked(context, message) { 
+        const responseCardJson = AdaptiveCards.declare(responseCard).render(actionData);
+        return InvokeResponseFactory.adaptiveCard(responseCardJson);
+    } 
+} 
+
+module.exports = {
+
+  DoSomethingActionHandler,
+}`,
+    `const conversationBot = new ConversationBot({ 
+  ... 
+  cardAction: { 
+    enabled: true, 
+    actions: [ 
+      new DoStuffActionHandler(),
+      new DoSomethingActionHandler() 
+    ], 
+  } 
+}); `,
+  ];
 
   return (
     <div className="markdown-body">
@@ -225,7 +282,11 @@ export default function WorkflowBot() {
       </h2>
       <p>Follow steps below to add more actions and responses to extend the workflow bot:</p>
       <div className="collapsibleSteps">
-        <CollapsibleStep step={1} title="Add an action to your Adaptive Card">
+        <CollapsibleStep
+          step={1}
+          title="Add an action to your Adaptive Card"
+          tag="workflow-bot-step1"
+        >
           <p>
             Adding new actions (buttons) to an Adaptive Card is as simple as defining them in the
             JSON file. Add a new <code>DoSomething</code> action to the{" "}
@@ -234,7 +295,7 @@ export default function WorkflowBot() {
           <p>
             Here&#39;s a sample action with type <code>Action.Execute</code>:
           </p>
-          <CodeSnippet language="language-json" data={codeSnippet1} />
+          <CodeSnippet language="language-json" data={codeSnippets[0]} tag="workflow-bot-step1" />
           <p>
             Specifying the <code>type</code> as <code>Action.Execute</code> allows this Adaptive
             Card to respond with another card, which will update the UI by replacing the existing
@@ -260,31 +321,13 @@ export default function WorkflowBot() {
         </CollapsibleStep>
       </div>
       <div className="collapsibleSteps">
-        <CollapsibleStep step={2} title="Respond with a new Adaptive Card">
+        <CollapsibleStep step={2} title="Respond with a new Adaptive Card" tag="workflow-bot-step2">
           <p>
             For each action, you can display a new Adaptive Card as a response to the user. Create a
             new file, <code>bot/src/adaptiveCards/doSomethingResponse.json</code> to use as a
             response for the <code>DoSomething</code> action created in the previous step:
           </p>
-          <div className="code">
-            <pre>
-              <code className="language-json">
-                {`{
-  "type": "AdaptiveCard",
-  "body": [
-    {
-      "type": "TextBlock",
-      "size": "Medium",
-      "weight": "Bolder",
-      "text": "A sample response to DoSomething."
-    }
-  ],
-  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-  "version": "1.4"
-}`}
-              </code>
-            </pre>
-          </div>
+          <CodeSnippet language="language-json" data={codeSnippets[1]} tag="workflow-bot-step2" />
           <p>
             You can use the <a href="https://adaptivecards.io/designer/">Adaptive Card Designer</a>{" "}
             to help visually design your Adaptive Card UI.
@@ -292,36 +335,18 @@ export default function WorkflowBot() {
         </CollapsibleStep>
       </div>
       <div className="collapsibleSteps">
-        <CollapsibleStep step={3} title="Handle the new action">
+        <CollapsibleStep step={3} title="Handle the new action" tag="workflow-bot-step3">
           <p>
             The TeamsFx SDK provides a convenient class,{" "}
             <code>TeamsFxAdaptiveCardActionHandler</code>, to handle when an action from an Adaptive
             Card is invoked. Create a new file,{" "}
             <code>bot/src/cardActions/doSomethingActionHandler.js</code>:
           </p>
-          <div className="code">
-            <pre>
-              <code className="language-typescript">
-                {`const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
-const { AdaptiveCardResponse, InvokeResponseFactory } = require("@microsoft/teamsfx");
-const responseCard = require("../adaptiveCards/doSomethingResponse.json");
-
-class DoSomethingActionHandler { 
-    triggerVerb = "doSomething";
-
-    async handleActionInvoked(context, message) { 
-        const responseCardJson = AdaptiveCards.declare(responseCard).render(actionData);
-        return InvokeResponseFactory.adaptiveCard(responseCardJson);
-    } 
-} 
-
-module.exports = {
-
-  DoSomethingActionHandler,
-}`}
-              </code>
-            </pre>
-          </div>
+          <CodeSnippet
+            language="language-typescript"
+            data={codeSnippets[2]}
+            tag="workflow-bot-step3"
+          />
           <blockquote>
             <p>Please note:</p>
             <ul>
@@ -352,7 +377,7 @@ module.exports = {
         </CollapsibleStep>
       </div>
       <div className="collapsibleSteps">
-        <CollapsibleStep step={4} title="Register the new handler">
+        <CollapsibleStep step={4} title="Register the new handler" tag="workflow-bot-step4">
           <p>
             Each new card action needs to be configured in the <code>ConversationBot</code>, which
             powers the conversational flow of the workflow bot template. Navigate to the{" "}
@@ -368,22 +393,11 @@ module.exports = {
               and add the handler to <code>actions</code> array:
             </li>
           </ol>
-          <div className="code">
-            <pre>
-              <code className="language-typescript">
-                {`const conversationBot = new ConversationBot({ 
-  ... 
-  cardAction: { 
-    enabled: true, 
-    actions: [ 
-      new DoStuffActionHandler(),
-      new DoSomethingActionHandler() 
-    ], 
-  } 
-}); `}
-              </code>
-            </pre>
-          </div>
+          <CodeSnippet
+            language="language-typescript"
+            data={codeSnippets[3]}
+            tag="workflow-bot-step4"
+          />
         </CollapsibleStep>
       </div>
       <p>

@@ -26,6 +26,8 @@ import {
   ProjectSettingsV3,
   InputConfigsFolderName,
   ProjectSettingsFileName,
+  SettingsFileName,
+  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { exec, ExecOptions } from "child_process";
@@ -985,25 +987,38 @@ export function getFixedCommonProjectSettings(rootPath: string | undefined) {
   }
 
   try {
-    const projectSettingsPath = path.join(
-      rootPath,
-      `.${ConfigFolderName}`,
-      InputConfigsFolderName,
-      ProjectSettingsFileName
-    );
+    if (isV3Enabled()) {
+      const settingsPath = path.join(rootPath, SettingsFolderName, SettingsFileName);
 
-    if (!projectSettingsPath || !fs.pathExistsSync(projectSettingsPath)) {
-      return undefined;
+      if (!settingsPath || !fs.pathExistsSync(settingsPath)) {
+        return undefined;
+      }
+
+      const settings = fs.readJsonSync(settingsPath);
+      return {
+        projectId: settings?.trackingId ?? undefined,
+      };
+    } else {
+      const projectSettingsPath = path.join(
+        rootPath,
+        `.${ConfigFolderName}`,
+        InputConfigsFolderName,
+        ProjectSettingsFileName
+      );
+
+      if (!projectSettingsPath || !fs.pathExistsSync(projectSettingsPath)) {
+        return undefined;
+      }
+
+      const projectSettings = fs.readJsonSync(projectSettingsPath);
+      return {
+        projectId: projectSettings?.projectId ?? undefined,
+        isFromSample: projectSettings?.isFromSample ?? undefined,
+        programmingLanguage: projectSettings?.programmingLanguage ?? undefined,
+        hostType: projectSettings?.solutionSettings?.hostType ?? undefined,
+        isM365: projectSettings?.isM365 ?? false,
+      };
     }
-
-    const projectSettings = fs.readJsonSync(projectSettingsPath);
-    return {
-      projectId: projectSettings?.projectId ?? undefined,
-      isFromSample: projectSettings?.isFromSample ?? undefined,
-      programmingLanguage: projectSettings?.programmingLanguage ?? undefined,
-      hostType: projectSettings?.solutionSettings?.hostType ?? undefined,
-      isM365: projectSettings?.isM365 ?? false,
-    };
   } catch {
     return undefined;
   }

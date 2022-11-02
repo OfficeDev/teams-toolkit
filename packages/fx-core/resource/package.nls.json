@@ -32,6 +32,7 @@
   "core.error.FailedToCreateResourceGroup.exist": "Failed to create resource group '%s': the resource group exists",
   "core.error.resourceGroupNotFound": "Resource group '%s' does not exist, please specify an existing resource group.",
   "core.error.resourceGroupNotFound2": "Resource group '%s' does not exist, please check the '%s' file.",
+  "core.error.unresolvedPlaceholders": "There are unresolved placeholders in '.yml' file: %s",
   "core.deploy.FailedToDeployBeforeProvision": "Failed to deploy because the resources have not been provisioned yet. Make sure you do the provision first. Click Get Help to learn more about why you need to provision.",
   "core.deploy.noCapabilityFound": "No capability found to %s. Click Get Help to learn more about how to add capabilities.",
   "core.deploy.successNotice": "'%s' successfully deployed to the cloud.",
@@ -121,6 +122,7 @@
   "core.projectVersionChecker.vscodeUseNewVersion": "Your Teams Toolkit extension no longer supports the current project, please update to the latest version and reopen this project.",
   "core.projectVersionChecker.cliUseNewVersion": "[core] Your TeamsFx CLI is too old to support current project, please update to latest version using command below:\nnpm install -g @microsoft/teamsfx-cli@latest",
   "core.aad.includeAadQuestionTitle": "Whether to deploy aad manifest",
+  "core.aad.aadManifestFilePath": "Enter the aad.template.json file path to deploy",
   "core.deployArmTemplates.StartNotice": "[%s] Start deploying ARM templates.",
   "core.deployArmTemplates.CompileBicepSuccessNotice": "[%s] Successfully compile bicep files to JSON.",
   "core.deployArmTemplates.SuccessNotice": "[%s] Successfully deploy ARM templates. Resource group name: %s. Deployment name: %s",
@@ -603,11 +605,17 @@
   "core.MessageExtensionOption.detail": "Hello world message extension allowing interactions via buttons and forms",
   "core.NotificationOption.label": "Notification bot",
   "core.NotificationOption.detail": "Send notification to Microsoft Teams via various triggers",
+  "core.NotificationOption.label.abTest": "Post messages to Teams",
+  "core.NotificationOption.detail.abTest": "Post messages to Microsoft Teams chat based on a schedule or HTTP request",
   "core.Option.recommend": "Recommended",
   "core.CommandAndResponseOption.label": "Command bot",
   "core.CommandAndResponseOption.detail": "Respond to simple commands in Microsoft Teams chat",
+  "core.CommandAndResponseOption.label.abTest": "Respond to app mentions and commands",
+  "core.CommandAndResponseOption.detail.abTest": "Respond to simple app mentions and commands in Microsoft Teams chat",
   "core.WorkflowOption.label": "Workflow bot",
   "core.WorkflowOption.detail": "Automate repetitive workflows for common business processes in Microsoft Teams chat",
+  "core.WorkflowOption.label.abTest": "Initiate sequential workflows",
+  "core.WorkflowOption.detail.abTest": "Automate repetitive workflows for common business processes in Microsoft Teams chat",
   "core.ExistingTabOption.label": "Embed existing web app",
   "core.ExistingTabOption.detail": "Bring your own static webpages and embed in Microsoft Teams",
   "core.ExistingTabEndpointQuestion.placeholder": "Input your existing tab endpoint",
@@ -1041,5 +1049,7 @@
   "debug.warningMessage": "To debug applications in Teams, your localhost server must be on HTTPS.\nFor Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store.\n You may skip this step, but you'll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.\nFor more information \"https://aka.ms/teamsfx-ca-certificate\".",
   "debug.warningMessage2": " You may be asked for your account credentials when installing the certificate.",
   "debug.install": "Install",
-  "driver.spfx.error.noValidAppCatelog": "There is no valid app catalog in your tenant. You can update the property 'createAppCatalogIfNotExist' in teamsfx.yml to true if you want us to create it for you or you can create it by yourself."
+  "driver.spfx.error.noValidAppCatelog": "There is no valid app catalog in your tenant. You can update the property 'createAppCatalogIfNotExist' in app.yml to true if you want us to create it for you or you can create it by yourself.",
+  "driver.tools.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s."
+
 }

@@ -347,8 +347,7 @@ describe("Other test case", () => {
     try {
       const settings: Settings = {
         version: "1.0.0",
-        projectId: "123",
-        isFromSample: false,
+        trackingId: "123",
       };
       sandbox.stub(fs, "readJsonSync").returns(settings);
       const isValid = isValidProject("aaa");

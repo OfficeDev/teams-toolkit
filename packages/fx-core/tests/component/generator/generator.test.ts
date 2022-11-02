@@ -157,6 +157,7 @@ describe("Generator happy path", async () => {
       .resolves(new AdmZip(path.join(tmpDir, "test.zip")));
     const templateName = "bot";
     const language = "ts";
+    context.templateVariables = Generator.getDefaultVariables("test");
     const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
     assert.isTrue(result.isOk());
   });

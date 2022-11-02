@@ -8,8 +8,9 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ResourceContextV3,
   Result,
+  SettingsFolderName,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
 import { Container } from "typedi";
@@ -44,11 +45,7 @@ import {
   TabNonSsoItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import {
-  getQuestionsForAddFeatureV3,
-  getQuestionsForDeployV3,
-  getQuestionsForProvisionV3,
-} from "../question";
+import { getQuestionsForAddFeatureV3, getQuestionsForProvisionV3 } from "../question";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import { globalVars } from "../../core/globalVars";
@@ -72,9 +69,12 @@ import { DotenvParseOutput } from "dotenv";
 import { YamlParser } from "../configManager/parser";
 import { provisionUtils } from "../provisionUtils";
 import { envUtil } from "../utils/envUtil";
+import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { ExecutionError, ExecutionOutput } from "../configManager/interface";
+import { createContextV3 } from "../utils";
 
 export enum TemplateNames {
-  Tab = "tab",
+  Tab = "non-sso-tab",
   SsoTab = "sso-tab",
   NotificationRestify = "notification-restify",
   NotificationWebApi = "notification-webapi",
@@ -101,6 +101,8 @@ export const Feature2TemplateName: any = {
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
 };
+
+const workflowFileName = "app.yml";
 
 export class Coordinator {
   @hooks([
@@ -169,6 +171,7 @@ export class Coordinator {
       const templateName = Feature2TemplateName[`${feature}:${trigger}`];
       if (templateName) {
         const langKey = convertToLangKey(language);
+        context.templateVariables = Generator.getDefaultVariables(appName);
         const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
         if (res.isErr()) return err(res.error);
       }
@@ -178,19 +181,37 @@ export class Coordinator {
     }
 
     // generate unique projectId in projectSettings.json
-    const projectSettingsRes = await settingsUtil.readSettings(projectPath);
-    if (projectSettingsRes.isOk()) {
-      const settings = projectSettingsRes.value;
-      settings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
-      settings.isFromSample = scratch === ScratchOptionNo.id;
-      inputs.projectId = settings.projectId;
-      await settingsUtil.writeSettings(projectPath, settings);
-    }
+    const ensureRes = await this.ensureTrackingId(inputs, projectPath);
+    if (ensureRes.isErr()) return err(ensureRes.error);
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
     }
     context.projectPath = projectPath;
     return ok(projectPath);
+  }
+
+  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    const folder = inputs[QuestionRootFolder.name] as string;
+    if (!folder) {
+      return err(InvalidInputError("folder is undefined"));
+    }
+    const context = createContextV3();
+    const res = await Generator.generateTemplate(context, folder, "init-infra", undefined);
+    if (res.isErr()) return err(res.error);
+    const ensureRes = await this.ensureTrackingId(inputs, folder);
+    if (ensureRes.isErr()) return err(ensureRes.error);
+    return ok(undefined);
+  }
+
+  async ensureTrackingId(inputs: Inputs, projectPath: string): Promise<Result<undefined, FxError>> {
+    // generate unique trackingId in settings.json
+    const settingsRes = await settingsUtil.readSettings(projectPath);
+    if (settingsRes.isErr()) return err(settingsRes.error);
+    const settings = settingsRes.value;
+    settings.trackingId = inputs.projectId ? inputs.projectId : uuid.v4();
+    inputs.projectId = settings.trackingId;
+    await settingsUtil.writeSettings(projectPath, settings);
+    return ok(undefined);
   }
 
   /**
@@ -259,75 +280,111 @@ export class Coordinator {
     ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<DotenvParseOutput, FxError>> {
-    if (inputs["subscription"]) {
-      process.env.AZURE_SUBSCRIPTION_ID = inputs["subscription"];
-    }
-    if (inputs["resource-group"]) {
-      process.env.AZURE_RESOURCE_GROUP_NAME = inputs["resource-group"];
-    }
+  ): Promise<[DotenvParseOutput | undefined, FxError | undefined]> {
     const output: DotenvParseOutput = {};
+    if (inputs["targetSubscriptionId"]) {
+      process.env.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
+      output.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
+    }
+    if (inputs["targetResourceGroupName"]) {
+      process.env.AZURE_RESOURCE_GROUP_NAME = inputs["targetResourceGroupName"];
+      output.AZURE_RESOURCE_GROUP_NAME = inputs["targetResourceGroupName"];
+    }
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
-      return err(maybeProjectModel.error);
+      return [undefined, maybeProjectModel.error];
     }
     const projectModel = maybeProjectModel.value;
     const cycles = [projectModel.registerApp, projectModel.provision, projectModel.configureApp];
     for (const cycle of cycles) {
       if (!cycle) continue;
-      let runRes = await cycle.run(ctx);
-      if (runRes.isErr()) return err(runRes.error);
-      let unresolvedPlaceHolders = runRes.value.unresolvedPlaceHolders;
-      if (unresolvedPlaceHolders.length > 0) {
-        if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) {
-          const ensureRes = await provisionUtils.ensureSubscription(
-            ctx.azureAccountProvider,
-            process.env.AZURE_SUBSCRIPTION_ID
+      let unresolvedPlaceHolders = cycle.resolvePlaceholders();
+      if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) {
+        const ensureRes = await provisionUtils.ensureSubscription(
+          ctx.azureAccountProvider,
+          process.env.AZURE_SUBSCRIPTION_ID
+        );
+        if (ensureRes.isErr()) return [undefined, ensureRes.error];
+        const subInfo = ensureRes.value;
+        if (subInfo && subInfo.subscriptionId) {
+          process.env.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
+          output.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
+          unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
+            (ph) => ph !== "AZURE_SUBSCRIPTION_ID"
           );
-          if (ensureRes.isErr()) return err(ensureRes.error);
-          const subInfo = ensureRes.value;
-          if (subInfo && subInfo.subscriptionId) {
-            process.env.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
-            output.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
-            unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
-              (ph) => ph !== "AZURE_SUBSCRIPTION_ID"
-            );
-          }
-        }
-        if (
-          process.env.AZURE_SUBSCRIPTION_ID &&
-          unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")
-        ) {
-          const folderName = path.parse(ctx.projectPath).name;
-          const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
-          const defaultRg = `rg-${folderName}${suffix}-${inputs.env}`;
-          const ensureRes = await provisionUtils.ensureResourceGroup(
-            ctx.azureAccountProvider,
-            process.env.AZURE_SUBSCRIPTION_ID,
-            process.env.AZURE_RESOURCE_GROUP_NAME,
-            defaultRg
-          );
-          if (ensureRes.isErr()) return err(ensureRes.error);
-          const rgInfo = ensureRes.value;
-          if (rgInfo) {
-            process.env.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
-            output.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
-            unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
-              (ph) => ph !== "AZURE_RESOURCE_GROUP_NAME"
-            );
-          }
-        }
-        if (unresolvedPlaceHolders.length === 0) {
-          runRes = await cycle.run(ctx);
-          if (runRes.isErr()) return err(runRes.error);
         }
       }
-      const newOutput = envUtil.map2object(runRes.value.env);
+      if (
+        process.env.AZURE_SUBSCRIPTION_ID &&
+        unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")
+      ) {
+        const folderName = path.parse(ctx.projectPath).name;
+        const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
+        if (!process.env.RESOURCE_SUFFIX) {
+          process.env.RESOURCE_SUFFIX = suffix;
+          output.RESOURCE_SUFFIX = suffix;
+          unresolvedPlaceHolders = unresolvedPlaceHolders.filter((ph) => ph !== "RESOURCE_SUFFIX");
+        }
+        const defaultRg = `rg-${folderName}${suffix}-${inputs.env}`;
+        const ensureRes = await provisionUtils.ensureResourceGroup(
+          ctx.azureAccountProvider,
+          process.env.AZURE_SUBSCRIPTION_ID,
+          process.env.AZURE_RESOURCE_GROUP_NAME,
+          defaultRg
+        );
+        if (ensureRes.isErr()) return [undefined, ensureRes.error];
+        const rgInfo = ensureRes.value;
+        if (rgInfo) {
+          process.env.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
+          output.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
+          unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
+            (ph) => ph !== "AZURE_RESOURCE_GROUP_NAME"
+          );
+        }
+      }
+      const execRes = await cycle.execute(ctx);
+      const result = this.convertExecuteResult(execRes);
+      merge(output, result[0]);
+      if (result[1]) {
+        return [output, result[1]];
+      }
+    }
+    return [output, undefined];
+  }
+
+  convertExecuteResult(
+    execRes: Result<ExecutionOutput, ExecutionError>
+  ): [DotenvParseOutput, FxError | undefined] {
+    const output: DotenvParseOutput = {};
+    let error = undefined;
+    if (execRes.isErr()) {
+      const execError = execRes.error;
+      if (execError.kind === "Failure") {
+        error = execError.error;
+      } else {
+        const partialOutput = execError.env;
+        const newOutput = envUtil.map2object(partialOutput);
+        merge(output, newOutput);
+        const reason = execError.reason;
+        if (reason.kind === "DriverError") {
+          error = reason.error;
+        } else if (reason.kind === "UnresolvedPlaceholders") {
+          const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
+          error = new UserError({
+            source: "coordinator",
+            name: "UnresolvedPlaceholders",
+            message: getDefaultString("core.error.unresolvedPlaceholders", placeholders),
+            displayMessage: getLocalizedString("core.error.unresolvedPlaceholders", placeholders),
+          });
+        }
+      }
+    } else {
+      const newOutput = envUtil.map2object(execRes.value);
       merge(output, newOutput);
     }
-    return ok(output);
+    return [output, error];
   }
 
   @hooks([
@@ -343,15 +400,16 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
-      const runRes = await projectModel.deploy.run(ctx);
-      if (runRes.isErr()) return err(runRes.error);
+      const execRes = await projectModel.deploy.execute(ctx);
+      const result = this.convertExecuteResult(execRes);
+      if (result[1]) return err(result[1]);
     }
     return ok(undefined);
   }
@@ -369,15 +427,16 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, ".fx", "teamsfx.yml");
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.publish) {
-      const runRes = await projectModel.publish.run(ctx);
-      if (runRes.isErr()) return err(runRes.error);
+      const execRes = await projectModel.publish.execute(ctx);
+      const result = this.convertExecuteResult(execRes);
+      if (result[1]) return err(result[1]);
     }
     return ok(undefined);
   }

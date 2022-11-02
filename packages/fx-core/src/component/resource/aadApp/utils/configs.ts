@@ -272,7 +272,7 @@ export class ProvisionConfig {
     inputs: v2.InputsWithProjectPath,
     localSettings: v2.LocalSettings
   ): Promise<Result<any, FxError>> {
-    this.setDisplayName(ctx.projectSetting.appName);
+    this.setDisplayName(ctx.projectSetting.appName!);
     const permissionRes = await getPermissionRequest(inputs.projectPath);
     if (permissionRes.isErr()) {
       return err(permissionRes.error);
@@ -293,7 +293,7 @@ export class ProvisionConfig {
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3
   ): Promise<Result<any, FxError>> {
-    this.setDisplayName(ctx.projectSetting.appName);
+    this.setDisplayName(ctx.projectSetting.appName!);
     const permissionRes = await getPermissionRequest(inputs.projectPath);
     if (permissionRes.isErr()) {
       return err(permissionRes.error);
@@ -311,7 +311,7 @@ export class ProvisionConfig {
     return ok(undefined);
   }
   public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
-    this.setDisplayName(ctx.projectSettings!.appName);
+    this.setDisplayName(ctx.projectSettings!.appName!);
 
     if (!isAadManifestEnabled()) {
       this.permissionRequest = await ConfigUtils.getPermissionRequest(ctx);

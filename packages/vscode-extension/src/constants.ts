@@ -35,6 +35,7 @@ export enum AadManifestDeployConstants {
 
 export const manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
 export const manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;
+export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;
 
 export const SUPPORTED_SPFX_VERSION = "1.15.0";
 export const SUPPORTED_SPFX_PRERELEASE_VERSION = "1.16.0-beta.1";

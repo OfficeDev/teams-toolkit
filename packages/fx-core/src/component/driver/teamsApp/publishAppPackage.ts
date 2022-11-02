@@ -25,6 +25,7 @@ import { TelemetryPropertyKey } from "../../resource/appManifest/utils/telemetry
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
+import { getAbsolutePath } from "../../utils/common";
 
 const actionName = "teamsApp/publishAppPackage";
 
@@ -39,7 +40,8 @@ export class PublishAppPackageDriver implements StepDriver {
     args: PublishAppPackageArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    if (!(await fs.pathExists(args.appPackagePath))) {
+    const appPackagePath = getAbsolutePath(args.appPackagePath, context.projectPath);
+    if (!(await fs.pathExists(appPackagePath))) {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
@@ -47,7 +49,7 @@ export class PublishAppPackageDriver implements StepDriver {
         )
       );
     }
-    const archivedFile = await fs.readFile(args.appPackagePath);
+    const archivedFile = await fs.readFile(appPackagePath);
 
     const zipEntries = new AdmZip(archivedFile).getEntries();
 

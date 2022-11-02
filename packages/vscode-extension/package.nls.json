@@ -242,6 +242,7 @@
     "teamstoolkit.handlers.editSecretTitle": "Edit the decrypted secret value",
     "teamstoolkit.handlers.fileNotFound": "%s not found, cannot open it.",
     "teamstoolkit.handlers.findEnvFailed": "Can not find project environment %s.",
+    "teamstoolkit.handlers.invalidArgs": "Invalid args: %s.",
     "teamstoolkit.handlers.getHelp": "Get Help",
     "teamstoolkit.handlers.grantPermissionSucceeded": "Added account: '%s' to the environment '%s' as the Teams app owner.",
     "teamstoolkit.handlers.grantPermissionWarning": "If added user cannot access Azure resources, you need to manually setup access policy via Azure portal. ",

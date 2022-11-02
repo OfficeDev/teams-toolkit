@@ -25,7 +25,10 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
     await this.context.logProvider.debug("start deploy process");
 
     const deployArgs = BaseDeployDriver.asDeployArgs(this.args);
-    this.workingDirectory = deployArgs.workingDirectory;
+    // if working dir is not absolute path, then join the path with project path
+    this.workingDirectory = path.isAbsolute(deployArgs.workingDirectory)
+      ? deployArgs.workingDirectory
+      : path.join(this.workingDirectory, deployArgs.workingDirectory);
     // call real deploy
     await this.wrapErrorHandler(async () => {
       await this.deploy(deployArgs);
@@ -41,7 +44,7 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
    */
   protected async packageToZip(args: DeployStepArgs, context: DeployContext): Promise<Buffer> {
     const ig = await this.handleIgnore(args, context);
-    const source = path.join(args.workingDirectory, args.distributionPath);
+    const source = path.join(this.workingDirectory, args.distributionPath);
     const zipFilePath = path.join(
       source,
       DeployConstant.DEPLOYMENT_TMP_FOLDER,
@@ -55,7 +58,7 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
     // always add deploy temp folder into ignore list
     const ig = ignore().add(DeployConstant.DEPLOYMENT_TMP_FOLDER);
     if (args.ignoreFile) {
-      const ignoreFilePath = path.join(args.workingDirectory, args.ignoreFile);
+      const ignoreFilePath = path.join(this.workingDirectory, args.ignoreFile);
       if (await fs.pathExists(ignoreFilePath)) {
         const ignoreFileContent = await fs.readFile(ignoreFilePath);
         ignoreFileContent
@@ -67,7 +70,7 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
           });
       } else {
         await context.logProvider.warning(
-          `already set deploy ignore file ${args.ignoreFile} but file not exists in ${args.workingDirectory}, skip ignore!`
+          `already set deploy ignore file ${args.ignoreFile} but file not exists in ${this.workingDirectory}, skip ignore!`
         );
       }
     }

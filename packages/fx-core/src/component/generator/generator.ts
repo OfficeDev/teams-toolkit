@@ -9,6 +9,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
+import { convertToAlphanumericOnly } from "../../common/utils";
 import { errorSource } from "../code/tab/constants";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -28,6 +29,13 @@ import {
 } from "./utils";
 
 export class Generator {
+  public static getDefaultVariables(appName: string): { [key: string]: string } {
+    return {
+      appName: appName,
+      ProjectName: appName,
+      SafeProjectName: convertToAlphanumericOnly(appName),
+    };
+  }
   @hooks([
     ActionExecutionMW({
       enableProgressBar: true,
@@ -43,18 +51,15 @@ export class Generator {
     language?: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const appName = ctx.projectSetting?.appName;
-    const projectId = ctx.projectSetting?.projectId;
-    const nameReplaceMap = { ...{ appName: appName }, ...ctx.templateVariables };
-    const dataReplaceMap = { ...{ projectId: projectId }, ...nameReplaceMap };
+    const replaceMap = ctx.templateVariables;
     const generatorContext: GeneratorContext = {
       name: language ? `${templateName}-${language}` : templateName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      fileNameReplaceFn: (fileName: string, fileData: Buffer) =>
-        renderTemplateFileName(fileName, fileData, nameReplaceMap),
-      fileDataReplaceFn: (fileName: string, fileData: Buffer) =>
-        renderTemplateFileData(fileName, fileData, dataReplaceMap),
+      fileNameReplaceFn: (fileName, fileData) =>
+        renderTemplateFileName(fileName, fileData, replaceMap),
+      fileDataReplaceFn: (fileName, fileData) =>
+        renderTemplateFileData(fileName, fileData, replaceMap),
       onActionError: templateDefaultOnActionError,
     };
     await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);

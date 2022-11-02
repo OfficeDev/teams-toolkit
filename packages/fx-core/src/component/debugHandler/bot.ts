@@ -17,7 +17,6 @@ import {
   ProjectSettingsV3,
   Result,
   TelemetryReporter,
-  UserError,
   UserInteraction,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -39,8 +38,6 @@ import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 import { AppStudioClient } from "../resource/botService/appStudio/appStudioClient";
 import { GraphClient } from "../resource/botService/botRegistration/graphClient";
 import { checkM365Tenant } from "./utils";
-import { getLocalizedString } from "../../common/localizeUtils";
-import { HelpLinks } from "../../common/constants";
 
 const botDebugMessages = {
   registeringAAD: "Registering the AAD app which is required to create the bot ...",
@@ -247,30 +244,12 @@ export class BotDebugHandler {
             `${botUrl}${this.envInfoV3!.state[ComponentNames.TeamsBot].botId}`
           ),
         ]);
-      } else if (this.hasBotIdInEnvBefore) {
-        const botId = this.envInfoV3!.state[ComponentNames.TeamsBot].botId;
-        return err(
-          new UserError({
-            source: "RegisterBot",
-            name: "AlreadyCreatedBotNotExist",
-            message: getLocalizedString(
-              "plugins.bot.FailedToGetAlreadyCreatedBot",
-              botId,
-              HelpLinks.SwitchAccountOrSub
-            ),
-            displayMessage: getLocalizedString(
-              "plugins.bot.FailedToGetAlreadyCreatedBot",
-              botId,
-              HelpLinks.SwitchAccountOrSub
-            ),
-          })
-        );
       }
 
       const botReg: IBotRegistration = {
         botId: this.envInfoV3!.state[ComponentNames.TeamsBot].botId,
         name:
-          convertToAlphanumericOnly(this.projectSettingsV3!.appName) +
+          convertToAlphanumericOnly(this.projectSettingsV3!.appName!) +
           PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
         description: "",
         iconUrl: "",
@@ -278,7 +257,11 @@ export class BotDebugHandler {
         callingEndpoint: "",
       };
 
-      await AppStudioClient.createBotRegistration(tokenResult.value, botReg);
+      await AppStudioClient.createBotRegistration(
+        tokenResult.value,
+        botReg,
+        this.hasBotIdInEnvBefore
+      );
 
       return ok([
         util.format(

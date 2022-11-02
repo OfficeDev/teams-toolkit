@@ -4,25 +4,36 @@ import { Container } from "typedi";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { StepDriver } from "../driver/interface/stepDriver";
 import { DriverNotFoundError } from "./error";
-import { DriverDefinition, LifecycleName, ILifecycle, Output, DriverInstance } from "./interface";
+import {
+  DriverDefinition,
+  LifecycleName,
+  ILifecycle,
+  Output,
+  DriverInstance,
+  UnresolvedPlaceholders,
+  ExecutionError,
+  ExecutionOutput,
+} from "./interface";
 
-type UnresolvedPlaceHolders = string[];
+function resolveDriverDef(def: DriverDefinition, unresolved: UnresolvedPlaceholders): void {
+  const args = def.with as Record<string, unknown>;
+  for (const k in args) {
+    const val = args[k];
+    args[k] = resolve(val, unresolved);
+  }
+}
 
 // Replace placeholders in the driver definitions' `with` field inplace
 // and returns unresolved placeholders
-function resolvePlaceHolders(defs: DriverDefinition[]): UnresolvedPlaceHolders {
+function resolvePlaceHolders(defs: DriverDefinition[]): UnresolvedPlaceholders {
   const unresolvedVars: string[] = [];
   for (const def of defs) {
-    const args = def.with as Record<string, unknown>;
-    for (const k in args) {
-      const val = args[k];
-      args[k] = resolve(val, unresolvedVars);
-    }
+    resolveDriverDef(def, unresolvedVars);
   }
   return unresolvedVars;
 }
 
-function resolve(input: unknown, unresolvedPlaceHolders: UnresolvedPlaceHolders): unknown {
+function resolve(input: unknown, unresolvedPlaceHolders: UnresolvedPlaceholders): unknown {
   if (input === undefined || input === null) {
     return input;
   } else if (typeof input === "string") {
@@ -44,7 +55,7 @@ function resolve(input: unknown, unresolvedPlaceHolders: UnresolvedPlaceHolders)
   }
 }
 
-function resolveString(val: string, unresolvedPlaceHolders: UnresolvedPlaceHolders): string {
+function resolveString(val: string, unresolvedPlaceHolders: UnresolvedPlaceholders): string {
   const placeHolderReg = /\${{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}/g;
   let matches = placeHolderReg.exec(val);
   let newVal = val;
@@ -63,10 +74,57 @@ function resolveString(val: string, unresolvedPlaceHolders: UnresolvedPlaceHolde
 
 export class Lifecycle implements ILifecycle {
   name: LifecycleName;
-  private driverDefs: DriverDefinition[];
+  driverDefs: DriverDefinition[];
   constructor(name: LifecycleName, driverDefs: DriverDefinition[]) {
     this.driverDefs = driverDefs;
     this.name = name;
+  }
+
+  resolvePlaceholders(): UnresolvedPlaceholders {
+    return resolvePlaceHolders(this.driverDefs);
+  }
+
+  async execute(ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> {
+    const maybeDrivers = this.getDrivers();
+    if (maybeDrivers.isErr()) {
+      return err({ kind: "Failure", error: maybeDrivers.error });
+    }
+    const drivers = maybeDrivers.value;
+    const envOutput = new Map<string, string>();
+    for (const driver of drivers) {
+      const unresolved: UnresolvedPlaceholders = [];
+      resolveDriverDef(driver, unresolved);
+      if (unresolved.length > 0) {
+        return err({
+          kind: "PartialSuccess",
+          env: envOutput,
+          reason: {
+            kind: "UnresolvedPlaceholders",
+            failedDriver: driver,
+            unresolvedPlaceHolders: unresolved,
+          },
+        });
+      }
+
+      const result = await driver.instance.run(driver.with, ctx);
+      if (result.isErr()) {
+        return err({
+          kind: "PartialSuccess",
+          env: envOutput,
+          reason: {
+            kind: "DriverError",
+            failedDriver: driver,
+            error: result.error,
+          },
+        });
+      }
+      for (const [envVar, value] of result.value) {
+        envOutput.set(envVar, value);
+        process.env[envVar] = value;
+      }
+    }
+
+    return ok(envOutput);
   }
 
   async run(ctx: DriverContext): Promise<Result<Output, FxError>> {

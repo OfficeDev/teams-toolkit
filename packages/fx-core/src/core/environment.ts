@@ -302,7 +302,7 @@ class EnvironmentManager {
     };
     const projectSettings = await loadProjectSettings(inputs, true);
     if (projectSettings.isOk()) {
-      const appName = getLocalAppName(projectSettings.value.appName);
+      const appName = getLocalAppName(projectSettings.value.appName!);
       const newEnvConfig = environmentManager.newEnvConfigData(appName);
       const res = await environmentManager.writeEnvConfig(
         inputs.projectPath!,

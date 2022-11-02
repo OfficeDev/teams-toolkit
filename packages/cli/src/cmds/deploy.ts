@@ -29,6 +29,7 @@ import {
   promptSPFxUpgrade,
 } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
@@ -110,7 +111,23 @@ export default class Deploy extends YargsCommand {
         }
       }
       promptSPFxUpgrade(rootFolder);
-      const result = await core.deployArtifacts(inputs);
+      let result;
+      if (
+        isV3Enabled() &&
+        inputs[this.deployPluginNodeName].includes("fx-resource-aad-app-for-teams")
+      ) {
+        result = await core.deployAadManifest(inputs);
+        if (result.isErr()) {
+          CliTelemetry.sendTelemetryErrorEvent(
+            TelemetryEvent.DeployAad,
+            result.error,
+            makeEnvRelatedProperty(rootFolder, inputs)
+          );
+
+          return err(result.error);
+        }
+      }
+      result = await core.deployArtifacts(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(
           TelemetryEvent.Deploy,

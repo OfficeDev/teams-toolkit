@@ -41,6 +41,100 @@ describe("Test AppStudio APIs", () => {
       }
     });
 
+    it("Existing bot", async () => {
+      // Arrange
+      const accessToken = "anything";
+      const botReg: IBotRegistration = {
+        botId: "anything",
+        name: "anything",
+        description: "",
+        iconUrl: "",
+        messagingEndpoint: "",
+        callingEndpoint: "",
+      };
+
+      const retry = sinon
+        .stub(RetryHandler, "Retry")
+        .onFirstCall()
+        .resolves({
+          status: 200,
+          data: {},
+        })
+        .onSecondCall()
+        .rejects();
+
+      // Act
+      try {
+        await AppStudioClient.createBotRegistration(accessToken, botReg);
+        chai.assert(retry.calledOnce);
+      } catch {
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
+    });
+
+    it("create failed with existing id from state", async () => {
+      // Arrange
+      const accessToken = "anything";
+      const botReg: IBotRegistration = {
+        botId: "anything",
+        name: "anything",
+        description: "",
+        iconUrl: "",
+        messagingEndpoint: "",
+        callingEndpoint: "",
+      };
+
+      const retry = sinon
+        .stub(RetryHandler, "Retry")
+        .onFirstCall()
+        .resolves({
+          status: 404,
+        })
+        .onSecondCall()
+        .rejects();
+
+      // Act
+      try {
+        await AppStudioClient.createBotRegistration(accessToken, botReg, true);
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert(e instanceof UserError);
+        chai.assert.equal((e as UserError).name, "AlreadyCreatedBotNotExist");
+        chai.assert(retry.calledTwice);
+      }
+    });
+
+    it("create failed with existing id not from state", async () => {
+      // Arrange
+      const accessToken = "anything";
+      const botReg: IBotRegistration = {
+        botId: "anything",
+        name: "anything",
+        description: "",
+        iconUrl: "",
+        messagingEndpoint: "",
+        callingEndpoint: "",
+      };
+
+      const retry = sinon
+        .stub(RetryHandler, "Retry")
+        .onFirstCall()
+        .resolves({
+          status: 404,
+        })
+        .onSecondCall()
+        .rejects();
+
+      // Act
+      try {
+        await AppStudioClient.createBotRegistration(accessToken, botReg, false);
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        chai.assert.isFalse(e instanceof UserError);
+        chai.assert(retry.calledTwice);
+      }
+    });
+
     it("Empty Data", async () => {
       // Arrange
       const accessToken = "anything";

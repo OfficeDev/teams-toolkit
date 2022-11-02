@@ -18,6 +18,7 @@ import {
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { getResourceGroupInPortal } from "@microsoft/teamsfx-core/build/common/tools";
 import { PluginNames, GLOBAL_CONFIG } from "@microsoft/teamsfx-core/build/component/constants";
+import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { localize } from "../utils/localizeUtils";
@@ -393,4 +394,22 @@ export class Step {
   getPrefix(): string {
     return `(${this.currentStep++}/${this.totalSteps})`;
   }
+}
+
+export async function getV3TeamsAppId(projectPath: string, env: string): Promise<string> {
+  const result = await envUtil.readEnv(projectPath, env);
+  if (result.isErr()) {
+    throw result.error;
+  }
+
+  const teamsAppId = result.value.TEAMS_APP_ID;
+  if (teamsAppId === undefined) {
+    throw new UserError(
+      ExtensionSource,
+      ExtensionErrors.TeamsAppIdNotFoundError,
+      `TEAMS_APP_ID is missing in ${env} environment.`
+    );
+  }
+
+  return teamsAppId;
 }

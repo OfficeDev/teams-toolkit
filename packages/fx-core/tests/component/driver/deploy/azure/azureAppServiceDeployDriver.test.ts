@@ -101,8 +101,8 @@ describe("Azure App Service Deploy Driver test", () => {
   it("resource id error", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: "/",
+      distributionPath: "/",
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites",

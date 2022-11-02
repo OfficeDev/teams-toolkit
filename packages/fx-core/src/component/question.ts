@@ -217,6 +217,16 @@ export async function getQuestionsForDeployV3(
       default: "no",
     });
     node.addChild(aadNode);
+    if (CLIPlatforms.includes(inputs.platform)) {
+      // this question only works on CLI.
+      const aadManifestFilePathNode = new QTreeNode({
+        name: Constants.AAD_MANIFEST_FILE,
+        type: "singleFile",
+        title: getLocalizedString("core.aad.aadManifestFilePath"),
+        default: "",
+      });
+      node.addChild(aadManifestFilePathNode);
+    }
   }
   if (selectableComponents.includes(ComponentNames.AppManifest)) {
     const appManifestNode = new QTreeNode({
@@ -276,9 +286,9 @@ export async function getQuestionsForAddFeatureV3(
     const manifestRes = await manifestUtils.readAppManifest(inputs.projectPath!);
     if (manifestRes.isErr()) return err(manifestRes.error);
     const manifest = manifestRes.value;
-    const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
-    const botExceedLimit = manifest.bots!.length > 0;
-    const meExceedLimit = manifest.composeExtensions!.length > 0;
+    const canAddTab = !manifest.staticTabs || manifest.staticTabs.length < STATIC_TABS_MAX_ITEMS;
+    const botExceedLimit = !manifest.bots || manifest.bots.length > 0;
+    const meExceedLimit = !manifest.composeExtensions || manifest.composeExtensions.length > 0;
     const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
     const teamsBot = getComponent(ctx.projectSetting as ProjectSettingsV3, ComponentNames.TeamsBot);
     const alreadyHasNewBot =

@@ -879,7 +879,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
       method: "buildPackage",
       params: {
         manifestTemplatePath: manifestTemplatePath,
-        ouptutZipPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`,
+        outputZipPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`,
         outputJsonPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env}.json`,
         env: env,
       },

@@ -757,7 +757,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     // Use default manifest template
     // Throw error if not exists and remind user to use CLI
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
+    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.template.json`;
 
     if (!(await fs.pathExists(manifestTemplatePath))) {
       const error = new UserError(
@@ -849,7 +849,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     // Use default manifest template
     // Throw error if not exists and remind user to use CLI
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
+    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.template.json`;
 
     if (!(await fs.pathExists(manifestTemplatePath))) {
       const error = new UserError(

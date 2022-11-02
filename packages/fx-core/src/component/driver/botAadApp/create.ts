@@ -14,7 +14,6 @@ import { wrapRun } from "../../utils/common";
 import {
   BotRegistration,
   BotAadCredentials,
-  BotAuthType,
 } from "../../resource/botService/botRegistration/botRegistration";
 import { RemoteBotRegistration } from "../../resource/botService/botRegistration/remoteBotRegistration";
 import { hooks } from "@feathersjs/hooks/lib";
@@ -59,7 +58,7 @@ export class CreateBotAadAppDriver implements StepDriver {
         args.name,
         args.name,
         botConfig,
-        BotAuthType.AADApp,
+        undefined, // Use default value of BotAuthType.AADApp
         context.logProvider
       );
       if (createRes.isErr()) {

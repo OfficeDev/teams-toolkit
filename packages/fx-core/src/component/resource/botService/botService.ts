@@ -112,7 +112,9 @@ export class BotService extends AzureResource {
       context.tokenProvider.m365TokenProvider,
       aadDisplayName,
       botName,
-      botConfig
+      botConfig,
+      undefined, // Use default value of BotAuthType.AADApp
+      context.logProvider
     );
 
     if (regRes.isErr()) return err(regRes.error);

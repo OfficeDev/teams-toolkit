@@ -39,7 +39,11 @@ import {
   NodeNotRecommendedError,
 } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { LocalEnvProvider } from "@microsoft/teamsfx-core/build/component/debugHandler";
-import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
+import {
+  AppStudioScopes,
+  getSideloadingStatus,
+  isV3Enabled,
+} from "@microsoft/teamsfx-core/build/common/tools";
 import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 
 import * as fs from "fs-extra";
@@ -754,28 +758,30 @@ function checkM365Account(
         }
       }
 
-      const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-      const projectSettings = await localEnvManager.getProjectSettings(
-        globalVariables.workspaceUri!.fsPath
-      );
-      const localEnvInfo = await localEnvManager.getLocalEnvInfo(
-        globalVariables.workspaceUri!.fsPath,
-        {
-          projectId: projectSettings.projectId,
-        }
-      );
-
       let hasSwitchedM365Tenant = false;
-      const tenantIdFromState: string | undefined =
-        localEnvInfo?.state?.solution?.teamsAppTenantId ||
-        localEnvInfo?.state?.[PluginNames.AAD]?.tenantId ||
-        localEnvInfo?.state?.[PluginNames.APPST]?.tenantId;
-      if (tenantId && tenantIdFromState && tenantIdFromState !== tenantId) {
-        hasSwitchedM365Tenant = true;
-        showNotification(
-          localize("teamstoolkit.localDebug.switchM365AccountWarning"),
-          "https://aka.ms/teamsfx-switch-tenant-or-subscription-help"
+      if (!isV3Enabled()) {
+        const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+        const projectSettings = await localEnvManager.getProjectSettings(
+          globalVariables.workspaceUri!.fsPath
         );
+        const localEnvInfo = await localEnvManager.getLocalEnvInfo(
+          globalVariables.workspaceUri!.fsPath,
+          {
+            projectId: projectSettings.projectId,
+          }
+        );
+
+        const tenantIdFromState: string | undefined =
+          localEnvInfo?.state?.solution?.teamsAppTenantId ||
+          localEnvInfo?.state?.[PluginNames.AAD]?.tenantId ||
+          localEnvInfo?.state?.[PluginNames.APPST]?.tenantId;
+        if (tenantId && tenantIdFromState && tenantIdFromState !== tenantId) {
+          hasSwitchedM365Tenant = true;
+          showNotification(
+            localize("teamstoolkit.localDebug.switchM365AccountWarning"),
+            "https://aka.ms/teamsfx-switch-tenant-or-subscription-help"
+          );
+        }
       }
       return {
         checker: Checker.M365Account,
@@ -1367,12 +1373,16 @@ async function getOrderedCheckersForTask(
       ExtTelemetry.reporter,
       VS_CODE_UI
     );
-    const projectPath = globalVariables.workspaceUri!.fsPath;
-    const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-    const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, projectPath);
-    const nodeDep = await getNodeDep(activeDeps);
-    if (nodeDep) {
-      checkers.push({ info: { checker: nodeDep }, fastFail: true });
+    if (isV3Enabled()) {
+      checkers.push({ info: { checker: DepsType.AzureNode }, fastFail: true });
+    } else {
+      const projectPath = globalVariables.workspaceUri!.fsPath;
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+      const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, projectPath);
+      const nodeDep = await getNodeDep(activeDeps);
+      if (nodeDep) {
+        checkers.push({ info: { checker: nodeDep }, fastFail: true });
+      }
     }
   }
   if (prerequisites.includes(Prerequisite.m365Account)) {

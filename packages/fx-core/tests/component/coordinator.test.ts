@@ -1,4 +1,4 @@
-import { err, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
+import { err, Inputs, ok, Platform, Result, UserError } from "@microsoft/teamsfx-api";
 import "mocha";
 import * as sinon from "sinon";
 import { Generator } from "../../src/component/generator/generator";
@@ -19,6 +19,7 @@ import {
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { provisionUtils } from "../../src/component/provisionUtils";
+import { coordinator } from "../../src/component/coordinator";
 
 describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
@@ -88,38 +89,11 @@ describe("component coordinator test", () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
         execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return err({
-            kind: "PartialSuccess",
-            env: new Map(),
-            reason: {
-              kind: "UnresolvedPlaceholders",
-              failedDriver: {
-                uses: "xxx",
-                with: {},
-              },
-              unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-            },
-          });
+          return ok(new Map());
         },
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
-    sandbox
-      .stub(mockProjectModel.registerApp!, "run")
-      .onFirstCall()
-      .resolves(
-        ok({
-          env: new Map(),
-          unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-        })
-      )
-      .onSecondCall()
-      .resolves(
-        ok({
-          env: new Map(),
-          unresolvedPlaceHolders: [],
-        })
-      );
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -158,49 +132,22 @@ describe("component coordinator test", () => {
     const mockProjectModel: ProjectModel = {
       registerApp: {
         name: "configureApp",
+        driverDefs: [],
         run: async (ctx: DriverContext) => {
           return ok({
             env: new Map(),
             unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
           });
         },
-        driverDefs: [],
         resolvePlaceholders: () => {
-          return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
+          return [];
         },
         execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return err({
-            kind: "PartialSuccess",
-            env: new Map(),
-            reason: {
-              kind: "UnresolvedPlaceholders",
-              failedDriver: {
-                uses: "xxx",
-                with: {},
-              },
-              unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-            },
-          });
+          return ok(new Map());
         },
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
-    sandbox
-      .stub(mockProjectModel.registerApp!, "run")
-      .onFirstCall()
-      .resolves(
-        ok({
-          env: new Map(),
-          unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-        })
-      )
-      .onSecondCall()
-      .resolves(
-        ok({
-          env: new Map(),
-          unresolvedPlaceHolders: [],
-        })
-      );
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
@@ -313,5 +260,79 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.publishApplication(inputs);
     assert.isTrue(res.isOk());
+  });
+
+  it("convertExecuteResult ok", async () => {
+    const value = new Map([["key", "value"]]);
+    const res: Result<ExecutionOutput, ExecutionError> = ok(value);
+    const convertRes = coordinator.convertExecuteResult(res);
+    assert.deepEqual(convertRes[0], { key: "value" });
+    assert.isUndefined(convertRes[1]);
+  });
+
+  it("convertExecuteResult Failure", async () => {
+    const error = new UserError({ source: "test", name: "TestError", message: "test message" });
+    const res: Result<ExecutionOutput, ExecutionError> = err({ kind: "Failure", error: error });
+    const convertRes = coordinator.convertExecuteResult(res);
+    assert.deepEqual(convertRes[0], {});
+    assert.equal(convertRes[1], error);
+  });
+
+  it("convertExecuteResult PartialSuccess - DriverError", async () => {
+    const value = new Map([["key", "value"]]);
+    const error = new UserError({ source: "test", name: "TestError", message: "test message" });
+    const res: Result<ExecutionOutput, ExecutionError> = err({
+      kind: "PartialSuccess",
+      env: value,
+      reason: {
+        kind: "DriverError",
+        error: error,
+        failedDriver: { name: "TestDriver", uses: "testUse", with: "testWith" },
+      },
+    });
+    const convertRes = coordinator.convertExecuteResult(res);
+    assert.deepEqual(convertRes[0], { key: "value" });
+    assert.equal(convertRes[1], error);
+  });
+
+  it("convertExecuteResult PartialSuccess - UnresolvedPlaceholders", async () => {
+    const value = new Map([["key", "value"]]);
+    const res: Result<ExecutionOutput, ExecutionError> = err({
+      kind: "PartialSuccess",
+      env: value,
+      reason: {
+        kind: "UnresolvedPlaceholders",
+        unresolvedPlaceHolders: ["TEST_PL"],
+        failedDriver: { name: "TestDriver", uses: "testUse", with: "testWith" },
+      },
+    });
+    const convertRes = coordinator.convertExecuteResult(res);
+    assert.deepEqual(convertRes[0], { key: "value" });
+    assert.equal(convertRes[1]!.name, "UnresolvedPlaceholders");
+  });
+
+  it("init infra", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    assert.isTrue(res.isOk());
+  });
+
+  it("init infra without fold", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    assert.isTrue(res.isErr());
   });
 });

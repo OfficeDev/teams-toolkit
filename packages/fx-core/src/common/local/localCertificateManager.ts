@@ -22,6 +22,7 @@ import { getDefaultString, getLocalizedString } from "../localizeUtils";
 
 const installText = getLocalizedString("debug.install");
 const learnMoreText = getLocalizedString("core.provision.learnMore");
+// TODO(xiaofhua): update help link for v3
 const learnMoreUrl = "https://aka.ms/teamsfx-ca-certificate";
 const warningMessage = getLocalizedString("debug.warningMessage");
 const confirmMessage = warningMessage + getLocalizedString("debug.warningMessage2");

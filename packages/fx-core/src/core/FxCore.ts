@@ -138,6 +138,8 @@ import "../component/driver/deploy/spfx/deployDriver";
 import "../component/driver/script/dotnetBuildDriver";
 import "../component/driver/script/npmBuildDriver";
 import "../component/driver/script/npxBuildDriver";
+import "../component/driver/tools/installDriver";
+import "../component/driver/env/generate";
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
@@ -209,6 +211,15 @@ export class FxCore implements v3.ICore {
     return ok(inputs.projectPath!);
   }
 
+  /**
+   * "teamsfx init infra" CLI command
+   */
+  @hooks([ErrorHandlerMW])
+  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    const res = await coordinator.initInfra(inputs);
+    return res;
+  }
+
   @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async createProjectOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
@@ -242,9 +253,9 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createDriverContext(inputs);
-    const res = await coordinator.provision(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx!.envVars = res.value;
+    const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
+    ctx!.envVars = output;
+    if (error) return err(error);
     return ok(Void);
   }
   @hooks([
@@ -372,10 +383,9 @@ export class FxCore implements v3.ICore {
     inputs.stage = Stage.deployAad;
     const updateAadClient = Container.get("aadApp/update") as any;
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
-    const manifestTemplatePath: string = path.join(
-      inputs.projectPath!,
-      AadConstants.DefaultTemplateFileName
-    );
+    const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
+      ? inputs.AAD_MANIFEST_FILE
+      : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new NoAadManifestExistError(manifestTemplatePath));
     }
@@ -715,7 +725,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
-    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       context.envInfo = ctx.envInfoV3;
       const res = await grantPermission(
@@ -747,7 +757,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
-    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       context.envInfo = ctx.envInfoV3;
       const res = await checkPermission(
@@ -779,7 +789,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
-    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       context.envInfo = ctx.envInfoV3;
       const res = await listCollaborator(

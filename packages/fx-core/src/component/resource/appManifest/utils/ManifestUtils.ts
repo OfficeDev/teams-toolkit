@@ -50,7 +50,11 @@ import Mustache from "mustache";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { HelpLinks } from "../../../../common/constants";
 import { ComponentNames } from "../../../constants";
-import { compileHandlebarsTemplateString, getAppDirectory } from "../../../../common/tools";
+import {
+  compileHandlebarsTemplateString,
+  getAppDirectory,
+  isV3Enabled,
+} from "../../../../common/tools";
 import { hasTab } from "../../../../common/projectSettingsHelperV3";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../../utils/common";
 
@@ -88,7 +92,9 @@ export class ManifestUtils {
 
   async getTeamsAppManifestPath(projectPath: string): Promise<string> {
     const templateFolder = await getProjectTemplatesFolderPath(projectPath);
-    const filePath = path.join(templateFolder, "appPackage", "manifest.template.json");
+    const filePath = isV3Enabled()
+      ? path.join(projectPath, "appPackage", "manifest.template.json")
+      : path.join(templateFolder, "appPackage", "manifest.template.json");
     return filePath;
   }
 

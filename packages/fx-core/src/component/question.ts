@@ -217,6 +217,16 @@ export async function getQuestionsForDeployV3(
       default: "no",
     });
     node.addChild(aadNode);
+    if (CLIPlatforms.includes(inputs.platform)) {
+      // this question only works on CLI.
+      const aadManifestFilePathNode = new QTreeNode({
+        name: Constants.AAD_MANIFEST_FILE,
+        type: "singleFile",
+        title: getLocalizedString("core.aad.aadManifestFilePath"),
+        default: "",
+      });
+      node.addChild(aadManifestFilePathNode);
+    }
   }
   if (selectableComponents.includes(ComponentNames.AppManifest)) {
     const appManifestNode = new QTreeNode({

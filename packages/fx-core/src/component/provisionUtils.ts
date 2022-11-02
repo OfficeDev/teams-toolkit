@@ -589,7 +589,7 @@ export class ProvisionUtils {
     const resourceGroupNameFromState = envInfo.state.solution.resourceGroupName;
     const resourceGroupLocationFromState = envInfo.state.solution.location;
     const appName = convertToAlphanumericOnly(ctx.projectSetting.appName!);
-    const defaultResourceGroupName = `${snakeCase(appName)}${"-" + envInfo.envName}-rg`;
+    const defaultResourceGroupName = `${appName.replace(" ", "_")}${"-" + envInfo.envName}-rg`;
     let resourceGroupInfo: ResourceGroupInfo;
     const telemetryProperties: { [key: string]: string } = {};
     if (inputs.env) {

@@ -64,7 +64,7 @@ const parameterName = "parameters";
 const solutionName = "solution";
 const InvalidTemplateErrorCode = "InvalidTemplate";
 
-type DeployContext = {
+export type DeployContext = {
   ctx: SolutionContext;
   finished: boolean;
   client: ResourceManagementClient;
@@ -310,60 +310,71 @@ export async function doDeployArmTemplatesV3(
     await result;
     return ok(undefined);
   } catch (error) {
-    // return the error if the template is invalid
-    if (error.code === InvalidTemplateErrorCode) {
+    return handleArmDeploymentError(error, deployCtx);
+  }
+}
+
+export async function handleArmDeploymentError(
+  error: any,
+  deployCtx: DeployContext
+): Promise<Result<undefined, FxError>> {
+  // return the error if the template is invalid
+  if (error.code === InvalidTemplateErrorCode) {
+    return err(
+      new UserError({
+        error,
+        source: SolutionSource,
+        name: SolutionError.FailedToValidateArmTemplates,
+      })
+    );
+  }
+
+  // try to get deployment error
+  const result = await wrapGetDeploymentError(
+    deployCtx,
+    deployCtx.resourceGroupName,
+    deployCtx.deploymentName
+  );
+  if (result.isOk()) {
+    const deploymentError = result.value;
+
+    // return thrown error if deploymentError is empty
+    if (!deploymentError) {
       return err(
         new UserError({
           error,
           source: SolutionSource,
-          name: SolutionError.FailedToValidateArmTemplates,
+          name: SolutionError.FailedToDeployArmTemplatesToAzure,
         })
       );
     }
+    const deploymentErrorObj = formattedDeploymentError(deploymentError);
+    const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
+    let errorMessage = getLocalizedString(
+      "core.deployArmTemplates.FailNotice",
+      PluginDisplayName.Solution,
+      deployCtx.resourceGroupName,
+      deployCtx.deploymentName
+    );
+    errorMessage += getLocalizedString(
+      "core.deployArmTemplates.DeploymentErrorWithHelplink",
+      error.message,
+      deploymentErrorMessage,
+      HelpLinks.ArmHelpLink
+    );
+    const notificationMessage = getNotificationMessage(deploymentError, deployCtx.deploymentName);
+    const returnError = new UserError({
+      message: errorMessage,
+      source: SolutionSource,
+      name: SolutionError.FailedToDeployArmTemplatesToAzure,
+      helpLink: HelpLinks.ArmHelpLink,
+      displayMessage: notificationMessage,
+    });
+    returnError.innerError = new DeploymentErrorMessage(JSON.stringify(deploymentErrorObj));
 
-    // try to get deployment error
-    const result = await wrapGetDeploymentError(deployCtx, resourceGroupName, deploymentName);
-    if (result.isOk()) {
-      const deploymentError = result.value;
-
-      // return thrown error if deploymentError is empty
-      if (!deploymentError) {
-        return err(
-          new UserError({
-            error,
-            source: SolutionSource,
-            name: SolutionError.FailedToDeployArmTemplatesToAzure,
-          })
-        );
-      }
-      const deploymentErrorObj = formattedDeploymentError(deploymentError);
-      const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
-      let errorMessage = getLocalizedString(
-        "core.deployArmTemplates.FailNotice",
-        PluginDisplayName.Solution,
-        resourceGroupName,
-        deploymentName
-      );
-      errorMessage += getLocalizedString(
-        "core.deployArmTemplates.DeploymentErrorWithHelplink",
-        error.message,
-        deploymentErrorMessage,
-        HelpLinks.ArmHelpLink
-      );
-      const notificationMessage = getNotificationMessage(deploymentError, deploymentName);
-      const returnError = new UserError({
-        message: errorMessage,
-        source: SolutionSource,
-        name: SolutionError.FailedToDeployArmTemplatesToAzure,
-        helpLink: HelpLinks.ArmHelpLink,
-        displayMessage: notificationMessage,
-      });
-      returnError.innerError = new DeploymentErrorMessage(JSON.stringify(deploymentErrorObj));
-
-      return err(returnError);
-    } else {
-      return result;
-    }
+    return err(returnError);
+  } else {
+    return result;
   }
 }
 

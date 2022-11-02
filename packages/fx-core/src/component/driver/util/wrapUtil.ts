@@ -70,11 +70,14 @@ export async function wrapRun(
   const eventName = context.eventName;
   try {
     context.wrapTelemetryReporter?.sendStartEvent({ eventName });
+    context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, eventName));
     const res = await exec();
     context.wrapTelemetryReporter?.sendEndEvent({
       eventName,
       properties: context.telemetryProperties,
     });
+    context.logProvider?.info(getLocalizedString(logMessageKeys.successExecuteDriver, eventName));
+    context.endProgressBars(true);
     return ok(res);
   } catch (error: any) {
     const fxError = getError(context, error);
@@ -85,6 +88,7 @@ export async function wrapRun(
       },
       fxError
     );
+    context.endProgressBars(false);
     return err(fxError);
   }
 }
@@ -107,8 +111,5 @@ function getError(context: WrapDriverContext, error: any): FxError {
       displayMessage: ErrorConstants.unhandledErrorMessage,
     });
   }
-  context.logProvider?.error(
-    getLocalizedString(logMessageKeys.failExecuteDriver, context.eventName, error.message)
-  );
   return fxError;
 }

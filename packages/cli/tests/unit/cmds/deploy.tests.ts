@@ -81,8 +81,7 @@ describe("Deploy Command Tests", function () {
       allArguments.set(key, value);
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
-    sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
-    sandbox.stub(environmentManager, "getLocalEnvName").resolves(ok(["local"]));
+    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
     CLIUIInstance.interactive = false;
   });
 

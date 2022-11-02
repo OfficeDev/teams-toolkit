@@ -825,14 +825,14 @@ async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   if (!isValidProject(projectPath)) {
     return err(new InvalidProjectError());
   }
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(projectPath!);
+  const envProfilesResult = await environmentManager.listAllEnvConfigs(projectPath!);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }
   const config: SingleSelectConfig = {
     name: "targetEnvName",
     title: "Select an environment",
-    options: envProfilesResult.value.concat(["local"]),
+    options: envProfilesResult.value,
   };
   const selectedEnv = await VS_CODE_UI.selectOption(config);
   if (selectedEnv.isErr()) {

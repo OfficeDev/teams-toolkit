@@ -86,8 +86,7 @@ describe("Publish Command Tests", function () {
       else return err(NotSupportedProjectType());
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
-    sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
-    sandbox.stub(environmentManager, "getLocalEnvName").resolves(ok(["local"]));
+    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
     CLIUIInstance.interactive = false;
   });
 

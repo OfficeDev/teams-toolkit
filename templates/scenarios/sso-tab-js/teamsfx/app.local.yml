@@ -1,0 +1,18 @@
+version: 1.0.0
+
+provision:
+
+
+deploy:
+  - uses: npm/command # Run npm command
+    with:
+      workingDirectory: .
+      args: install --no-audit
+  
+  - uses: tools/install # Install dependencies
+    with:
+      devCert:
+        trust: true
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # SSL_CRT_FILE: certificate file
+    # SSL_KEY_FILE: certificate key

@@ -130,4 +130,16 @@ describe("aadAppCreate", async () => {
       }
     );
   });
+
+  it("should throw error when GraphClient throws errors", async () => {
+    sinon.stub(GraphClient, "registerAadApp").throwsException();
+    const args: any = {
+      name: expectedDisplayName,
+    };
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
+      (error) => {
+        expect(error instanceof UnhandledSystemError).to.be.true;
+      }
+    );
+  });
 });

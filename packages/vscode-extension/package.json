@@ -1042,11 +1042,11 @@
               {
                 "type": "object",
                 "required": [
-                  "configFile",
+                  "template",
                   "env"
                 ],
                 "properties": {
-                  "configFile": {
+                  "template": {
                     "type": "string"
                   },
                   "env": {

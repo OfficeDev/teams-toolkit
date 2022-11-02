@@ -5,15 +5,7 @@ import { Constants, TelemetryProperties, TemplateType } from "./constant";
 import { deployArgs, deploymentOutput, templateArgs } from "./interface";
 import { validateArgs } from "./validator";
 import { hasBicepTemplate, convertOutputs, getFileExtension } from "./util/util";
-import {
-  err,
-  FxError,
-  ok,
-  Result,
-  SolutionContext,
-  SystemError,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { FxError, ok, Result, SolutionContext, SystemError } from "@microsoft/teamsfx-api";
 import { ConstantString, PluginDisplayName } from "../../../common/constants";
 import * as fs from "fs-extra";
 import { expandEnvironmentVariable, getAbsolutePath } from "../../utils/common";

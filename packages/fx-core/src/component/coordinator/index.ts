@@ -8,7 +8,6 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ResourceContextV3,
   Result,
   SettingsFolderName,
   UserError,
@@ -46,11 +45,7 @@ import {
   TabNonSsoItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import {
-  getQuestionsForAddFeatureV3,
-  getQuestionsForDeployV3,
-  getQuestionsForProvisionV3,
-} from "../question";
+import { getQuestionsForAddFeatureV3, getQuestionsForProvisionV3 } from "../question";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import { globalVars } from "../../core/globalVars";
@@ -76,9 +71,10 @@ import { provisionUtils } from "../provisionUtils";
 import { envUtil } from "../utils/envUtil";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { ExecutionError, ExecutionOutput } from "../configManager/interface";
+import { createContextV3 } from "../utils";
 
 export enum TemplateNames {
-  Tab = "tab",
+  Tab = "non-sso-tab",
   SsoTab = "sso-tab",
   NotificationRestify = "notification-restify",
   NotificationWebApi = "notification-webapi",
@@ -175,6 +171,7 @@ export class Coordinator {
       const templateName = Feature2TemplateName[`${feature}:${trigger}`];
       if (templateName) {
         const langKey = convertToLangKey(language);
+        context.templateVariables = Generator.getDefaultVariables(appName);
         const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
         if (res.isErr()) return err(res.error);
       }
@@ -184,18 +181,37 @@ export class Coordinator {
     }
 
     // generate unique projectId in projectSettings.json
-    const projectSettingsRes = await settingsUtil.readSettings(projectPath);
-    if (projectSettingsRes.isOk()) {
-      const settings = projectSettingsRes.value;
-      settings.trackingId = inputs.projectId ? inputs.projectId : uuid.v4();
-      inputs.projectId = settings.trackingId;
-      await settingsUtil.writeSettings(projectPath, settings);
-    }
+    const ensureRes = await this.ensureTrackingId(inputs, projectPath);
+    if (ensureRes.isErr()) return err(ensureRes.error);
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
     }
     context.projectPath = projectPath;
     return ok(projectPath);
+  }
+
+  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    const folder = inputs[QuestionRootFolder.name] as string;
+    if (!folder) {
+      return err(InvalidInputError("folder is undefined"));
+    }
+    const context = createContextV3();
+    const res = await Generator.generateTemplate(context, folder, "init-infra", undefined);
+    if (res.isErr()) return err(res.error);
+    const ensureRes = await this.ensureTrackingId(inputs, folder);
+    if (ensureRes.isErr()) return err(ensureRes.error);
+    return ok(undefined);
+  }
+
+  async ensureTrackingId(inputs: Inputs, projectPath: string): Promise<Result<undefined, FxError>> {
+    // generate unique trackingId in settings.json
+    const settingsRes = await settingsUtil.readSettings(projectPath);
+    if (settingsRes.isErr()) return err(settingsRes.error);
+    const settings = settingsRes.value;
+    settings.trackingId = inputs.projectId ? inputs.projectId : uuid.v4();
+    inputs.projectId = settings.trackingId;
+    await settingsUtil.writeSettings(projectPath, settings);
+    return ok(undefined);
   }
 
   /**

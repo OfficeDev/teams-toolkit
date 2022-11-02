@@ -29,6 +29,13 @@ import {
 } from "./utils";
 
 export class Generator {
+  public static getDefaultVariables(appName: string): { [key: string]: string } {
+    return {
+      appName: appName,
+      ProjectName: appName,
+      SafeProjectName: convertToAlphanumericOnly(appName),
+    };
+  }
   @hooks([
     ActionExecutionMW({
       enableProgressBar: true,
@@ -44,22 +51,14 @@ export class Generator {
     language?: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const appName = ctx.projectSetting?.appName;
-    const replaceMap = {
-      ...{
-        appName: appName!,
-        ProjectName: appName!,
-        SafeProjectName: convertToAlphanumericOnly(appName!),
-      },
-      ...ctx.templateVariables,
-    };
+    const replaceMap = ctx.templateVariables;
     const generatorContext: GeneratorContext = {
       name: language ? `${templateName}-${language}` : templateName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      fileNameReplaceFn: (fileName: string, fileData: Buffer) =>
+      fileNameReplaceFn: (fileName, fileData) =>
         renderTemplateFileName(fileName, fileData, replaceMap),
-      fileDataReplaceFn: (fileName: string, fileData: Buffer) =>
+      fileDataReplaceFn: (fileName, fileData) =>
         renderTemplateFileData(fileName, fileData, replaceMap),
       onActionError: templateDefaultOnActionError,
     };

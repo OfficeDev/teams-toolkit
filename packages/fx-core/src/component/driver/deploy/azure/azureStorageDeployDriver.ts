@@ -62,7 +62,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
     );
     // upload all to storage
     const ig = await this.handleIgnore(args, this.context);
-    const sourceFolder = path.join(args.workingDirectory, args.distributionPath);
+    const sourceFolder = path.join(this.workingDirectory, args.distributionPath);
     const tasks: Promise<BlobUploadCommonResponse>[] = [];
     await forEachFileAndDir(
       sourceFolder,

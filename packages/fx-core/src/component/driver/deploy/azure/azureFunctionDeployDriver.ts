@@ -51,7 +51,7 @@ export class AzureFunctionDeployDriverImpl extends AzureDeployDriver {
   }
 
   async restartFunctionApp(azureResource: AzureResourceInfo): Promise<void> {
-    await this.context.logProvider.info("Restarting function app...");
+    await this.context.logProvider.debug("Restarting function app...");
     try {
       await this.managementClient?.webApps?.restart(
         azureResource.resourceGroupName,

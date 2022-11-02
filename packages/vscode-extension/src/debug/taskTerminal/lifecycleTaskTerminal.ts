@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import * as path from "path";
 import * as vscode from "vscode";
 import { FxError, Inputs, Platform, Result, Void } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
@@ -56,6 +57,10 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
       throw BaseTaskTerminal.taskDefinitionError("env");
     }
 
+    const resolvedConfigFile = path.resolve(
+      globalVariables.workspaceUri?.fsPath ?? "",
+      BaseTaskTerminal.resolveTeamsFxVariables(this.args.configFile)
+    );
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: globalVariables.workspaceUri?.fsPath,
@@ -63,7 +68,7 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
       env: this.args.env,
     };
 
-    const res = await core.apply(inputs, this.args.configFile, this.lifecycle);
+    const res = await core.apply(inputs, resolvedConfigFile, this.lifecycle);
     return res;
   }
 }

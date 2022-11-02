@@ -125,12 +125,6 @@ export class ArmDeployImpl {
       progressBar?.end(true);
       return res;
     } catch (error) {
-      // const fxError = new UserError(
-      //   Constants.actionName,
-      //   "FailedToDeployArmTemplate",
-      //   getDefaultString("driver.arm.error.deploy", templateArg.deploymentName, error.message),
-      //   getLocalizedString("driver.arm.error.deploy", templateArg.deploymentName, error.message)
-      // );
       const errRes = handleArmDeploymentError(error, deployCtx);
       return errRes;
     }

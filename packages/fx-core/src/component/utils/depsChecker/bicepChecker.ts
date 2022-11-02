@@ -84,7 +84,10 @@ export async function ensureBicepForDriver(
 ): Promise<string> {
   const bicepChecker = new BicepChecker(ctx.logProvider, ctx.telemetryReporter, version);
   try {
-    await bicepChecker.install();
+    const isPrivateBicepInstalled: boolean = await bicepChecker.isPrivateBicepInstalled();
+    if (!isPrivateBicepInstalled) {
+      await bicepChecker.install();
+    }
   } catch (err) {
     ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
     await displayLearnMore(
@@ -328,7 +331,7 @@ class BicepChecker {
     }
   }
 
-  private async isPrivateBicepInstalled(): Promise<boolean> {
+  public async isPrivateBicepInstalled(): Promise<boolean> {
     try {
       const version = await this.queryVersion(this.getBicepExecPath());
       return this.isVersionSupported(version);

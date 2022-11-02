@@ -2,8 +2,8 @@
 Provide the utilities to run TeamsFx project locally.
 
 ## Getting started
-### Install the `@microsoft/teamsfx-run-utilities` package
-`npm install @microsoft/teamsfx-run-utilities`
+### Install the `@microsoft/teamsfx-run-utils` package
+`npm install @microsoft/teamsfx-run-utils`
 
 ### Load environment variables
 ```javascript

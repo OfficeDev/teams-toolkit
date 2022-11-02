@@ -14,7 +14,7 @@ import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 
 export interface LifecycleArgs {
-  configFile?: string;
+  template?: string;
   env?: string;
 }
 
@@ -33,7 +33,7 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
     const telemetryProperties = {
       [TelemetryProperty.DebugTaskId]: this.taskTerminalId,
       [TelemetryProperty.DebugTaskArgs]: JSON.stringify({
-        configFile: maskValue(this.args.configFile),
+        template: maskValue(this.args.template),
         env: maskValue(this.args.env),
       }),
       [TelemetryProperty.DebugLifecycle]: this.lifecycle,
@@ -49,17 +49,17 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
   }
 
   private async _do(): Promise<Result<Void, FxError>> {
-    if (!this.args?.configFile) {
-      throw BaseTaskTerminal.taskDefinitionError("configFile");
+    if (!this.args?.template) {
+      throw BaseTaskTerminal.taskDefinitionError("template");
     }
 
     if (!this.args?.env) {
       throw BaseTaskTerminal.taskDefinitionError("env");
     }
 
-    const resolvedConfigFile = path.resolve(
+    const resolvedTemplate = path.resolve(
       globalVariables.workspaceUri?.fsPath ?? "",
-      BaseTaskTerminal.resolveTeamsFxVariables(this.args.configFile)
+      BaseTaskTerminal.resolveTeamsFxVariables(this.args.template)
     );
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -68,7 +68,7 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
       env: this.args.env,
     };
 
-    const res = await core.apply(inputs, resolvedConfigFile, this.lifecycle);
+    const res = await core.apply(inputs, resolvedTemplate, this.lifecycle);
     return res;
   }
 }

@@ -757,7 +757,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     // Use default manifest template
     // Throw error if not exists and remind user to use CLI
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
+    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.template.json`;
 
     if (!(await fs.pathExists(manifestTemplatePath))) {
       const error = new UserError(
@@ -825,14 +825,14 @@ async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   if (!isValidProject(projectPath)) {
     return err(new InvalidProjectError());
   }
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(projectPath!);
+  const envProfilesResult = await environmentManager.listAllEnvConfigs(projectPath!);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }
   const config: SingleSelectConfig = {
     name: "targetEnvName",
     title: "Select an environment",
-    options: envProfilesResult.value.concat(["local"]),
+    options: envProfilesResult.value,
   };
   const selectedEnv = await VS_CODE_UI.selectOption(config);
   if (selectedEnv.isErr()) {
@@ -849,7 +849,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     // Use default manifest template
     // Throw error if not exists and remind user to use CLI
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
+    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.template.json`;
 
     if (!(await fs.pathExists(manifestTemplatePath))) {
       const error = new UserError(
@@ -879,7 +879,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
       method: "buildPackage",
       params: {
         manifestTemplatePath: manifestTemplatePath,
-        ouptutZipPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`,
+        outputZipPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`,
         outputJsonPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env}.json`,
         env: env,
       },

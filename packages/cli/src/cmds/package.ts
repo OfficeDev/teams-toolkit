@@ -63,6 +63,7 @@ export default class Package extends YargsCommand {
         params: {},
       };
 
+      // TODO: remove when V3 is auto enabled
       if (!inputs.env) {
         // include local env in interactive question
         const selectedEnv = await askTargetEnvironment(rootFolder);

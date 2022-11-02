@@ -138,6 +138,8 @@ import "../component/driver/deploy/spfx/deployDriver";
 import "../component/driver/script/dotnetBuildDriver";
 import "../component/driver/script/npmBuildDriver";
 import "../component/driver/script/npxBuildDriver";
+import "../component/driver/tools/installDriver";
+import "../component/driver/env/generate";
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
@@ -209,6 +211,15 @@ export class FxCore implements v3.ICore {
     return ok(inputs.projectPath!);
   }
 
+  /**
+   * "teamsfx init infra" CLI command
+   */
+  @hooks([ErrorHandlerMW])
+  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    const res = await coordinator.initInfra(inputs);
+    return res;
+  }
+
   @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async createProjectOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
@@ -242,9 +253,9 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createDriverContext(inputs);
-    const res = await coordinator.provision(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx!.envVars = res.value;
+    const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
+    ctx!.envVars = output;
+    if (error) return err(error);
     return ok(Void);
   }
   @hooks([

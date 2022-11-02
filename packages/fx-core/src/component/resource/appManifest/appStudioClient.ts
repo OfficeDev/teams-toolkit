@@ -13,6 +13,7 @@ import { RetryHandler } from "./utils/utils";
 import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 import { getAppStudioEndpoint } from "./constants";
 import { HelpLinks } from "../../../common/constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -403,6 +404,28 @@ export namespace AppStudioClient {
       } else {
         throw err;
       }
+    }
+  }
+
+  export async function getAppPackage(
+    teamsAppId: string,
+    appStudioToken: string,
+    logProvider?: LogProvider
+  ): Promise<any> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/appdefinitions/${teamsAppId}/manifest`)
+      );
+
+      if (response && response.data) {
+        return response.data;
+      } else {
+        throw new Error(getLocalizedString("plugins.appstudio.emptyAppPackage", teamsAppId));
+      }
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_APP_PACKAGE);
+      throw error;
     }
   }
 

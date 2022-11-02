@@ -354,14 +354,14 @@ export async function askTargetEnvironment(projectDir: string): Promise<Result<s
   if (isV3Enabled() && !CLIUIInstance.interactive) {
     return err(new EnvNotSpecified());
   }
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(projectDir);
+  const envProfilesResult = await environmentManager.listAllEnvConfigs(projectDir);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }
   const config: SingleSelectConfig = {
     name: "targetEnvName",
     title: "Select an environment",
-    options: envProfilesResult.value.concat([environmentManager.getLocalEnvName()]),
+    options: envProfilesResult.value,
   };
   const selectedEnv = await CLIUIInstance.selectOption(config);
   if (selectedEnv.isErr()) {

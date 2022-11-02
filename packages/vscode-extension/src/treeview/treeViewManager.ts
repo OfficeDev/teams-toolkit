@@ -175,7 +175,15 @@ class TreeViewManager {
               { name: "organization", custom: false }
             ),
           ]
-        : []),
+        : [
+            new TreeViewCommand(
+              localize("teamstoolkit.commandsTreeViewProvider.manifestEditorTitleNew"),
+              localize("teamstoolkit.commandsTreeViewProvider.manifestEditorDescription"),
+              "fx-extension.openManifest",
+              "manifestEditor",
+              { name: "edit", custom: false }
+            ),
+          ]),
     ];
 
     const developmentProvider = new CommandsTreeViewProvider(developmentCommands);

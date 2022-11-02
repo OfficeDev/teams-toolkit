@@ -325,11 +325,20 @@ describe("component coordinator test", () => {
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      folder: ".",
+      projectPath: ".",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.initInfra(inputs);
     assert.isTrue(res.isOk());
+  });
+
+  it("init infra without projectPath", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    assert.isTrue(res.isErr());
   });
 
   it("getSettings", async () => {

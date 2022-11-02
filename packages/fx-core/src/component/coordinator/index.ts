@@ -191,14 +191,14 @@ export class Coordinator {
   }
 
   async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    const folder = inputs[QuestionRootFolder.name] as string;
-    if (!folder) {
-      return err(InvalidInputError("folder is undefined"));
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(InvalidInputError("projectPath is undefined"));
     }
     const context = createContextV3();
-    const res = await Generator.generateTemplate(context, folder, "init-infra", undefined);
+    const res = await Generator.generateTemplate(context, projectPath, "init-infra", undefined);
     if (res.isErr()) return err(res.error);
-    const ensureRes = await this.ensureTrackingId(inputs, folder);
+    const ensureRes = await this.ensureTrackingId(inputs, projectPath);
     if (ensureRes.isErr()) return err(ensureRes.error);
     return ok(undefined);
   }

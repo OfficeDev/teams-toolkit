@@ -29,6 +29,7 @@ import {
   ProjectSettingsV3,
   QTreeNode,
   Result,
+  Settings,
   Stage,
   StatesFolderName,
   Tools,
@@ -140,6 +141,8 @@ import "../component/driver/script/npmBuildDriver";
 import "../component/driver/script/npxBuildDriver";
 import "../component/driver/tools/installDriver";
 import "../component/driver/env/generate";
+import { settingsUtil } from "../component/utils/settingsUtil";
+import { DotenvConfigOutput, DotenvParseOptions, DotenvParseOutput } from "dotenv";
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
@@ -639,6 +642,18 @@ export class FxCore implements v3.ICore {
       return await apiConnectorImpl.generateQuestion(context, inputs as InputsWithProjectPath);
     }
     return ok(undefined);
+  }
+
+  async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {
+    return settingsUtil.readSettings(inputs.projectPath);
+  }
+
+  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
+  async getDotEnv(
+    inputs: InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<DotenvParseOutput | undefined, FxError>> {
+    return ok(ctx?.envVars);
   }
 
   @hooks([

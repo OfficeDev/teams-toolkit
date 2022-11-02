@@ -36,6 +36,7 @@ import {
   FxError,
   InputConfigsFolderName,
   Inputs,
+  InputsWithProjectPath,
   IProgressHandler,
   M365TokenProvider,
   ok,
@@ -275,19 +276,7 @@ export function activate(): Result<Void, FxError> {
 }
 
 export async function getIsFromSample(projectPath?: string) {
-  if (core) {
-    const input = getSystemInputs();
-    input.ignoreEnvInfo = true;
-
-    if (projectPath) {
-      input.projectPath = projectPath;
-    }
-
-    await core.getProjectConfig(input);
-
-    return core.isFromSample;
-  }
-  return undefined;
+  return false;
 }
 
 export async function getIsM365(): Promise<boolean | undefined> {
@@ -306,19 +295,26 @@ export async function getIsM365(): Promise<boolean | undefined> {
 // only used for telemetry
 export async function getSettingsVersion(): Promise<string | undefined> {
   if (core) {
-    const input = getSystemInputs();
-    input.ignoreEnvInfo = true;
+    if (isV3Enabled()) {
+      const res = await core.getSettings(getSystemInputs() as InputsWithProjectPath);
+      if (res.isOk()) {
+        return res.value.version;
+      }
+    } else {
+      const input = getSystemInputs();
+      input.ignoreEnvInfo = true;
 
-    // TODO: from the experience of 'is-from-sample':
-    // in some circumstances, getProjectConfig() returns undefined even projectSettings.json is valid.
-    // This is a workaround to prevent that. We can change to the following code after the root cause is found.
-    // const projectConfig = await core.getProjectConfig(input);
-    // ignore errors for telemetry
-    // if (projectConfig.isOk()) {
-    //   return projectConfig.value?.settings?.version;
-    // }
-    await core.getProjectConfig(input);
-    return core.settingsVersion;
+      // TODO: from the experience of 'is-from-sample':
+      // in some circumstances, getProjectConfig() returns undefined even projectSettings.json is valid.
+      // This is a workaround to prevent that. We can change to the following code after the root cause is found.
+      // const projectConfig = await core.getProjectConfig(input);
+      // ignore errors for telemetry
+      // if (projectConfig.isOk()) {
+      //   return projectConfig.value?.settings?.version;
+      // }
+      await core.getProjectConfig(input);
+      return core.settingsVersion;
+    }
   }
   return undefined;
 }

@@ -2,18 +2,22 @@
 // Licensed under the MIT license.
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
 import { err, Inputs, QTreeNode, traverse, UserCancelError } from "@microsoft/teamsfx-api";
+import { environmentManager } from "../../core/environment";
 import { NoProjectOpenedError } from "../../core/error";
 import { TOOLS } from "../../core/globalVars";
 import { CoreHookContext } from "../../core/types";
 import { SelectEnvQuestion } from "../question";
 import { envUtil } from "../utils/envUtil";
 
-export const EnvLoaderMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
+export const EnvLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
     ctx.result = err(new NoProjectOpenedError());
     return;
+  }
+  if (inputs.ignoreEnvInfo) {
+    inputs.env = environmentManager.getDefaultEnvName();
   }
   if (!inputs.env) {
     const question = SelectEnvQuestion;
@@ -39,6 +43,7 @@ export const EnvLoaderMW: Middleware = async (ctx: HookContext, next: NextFuncti
     ctx.result = err(res.error);
     return;
   }
+  ctx.envVars = res.value;
   await next();
 };
 

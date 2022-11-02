@@ -2,27 +2,17 @@
 // Licensed under the MIT license.
 
 import axios, { AxiosInstance } from "axios";
-import { SystemError, LogProvider, UserError } from "@microsoft/teamsfx-api";
+import { SystemError, LogProvider } from "@microsoft/teamsfx-api";
 import { AppDefinition } from "./interfaces/appDefinition";
 import { AppUser } from "./interfaces/appUser";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
-import {
-  Constants,
-  ErrorMessages,
-  APP_STUDIO_API_NAMES,
-  supportedLanguageCodes,
-} from "./constants";
+import { Constants, ErrorMessages, APP_STUDIO_API_NAMES } from "./constants";
 import { RetryHandler } from "./utils/utils";
 import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 import { getAppStudioEndpoint } from "./constants";
 import { HelpLinks } from "../../../common/constants";
-import AdmZip from "adm-zip";
-import { basename, extname } from "path";
-import fs from "fs-extra";
-import { AppPackage } from "./interfaces/appPackage";
-import set from "lodash/set";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -421,46 +411,15 @@ export namespace AppStudioClient {
     teamsAppId: string,
     appStudioToken: string,
     logProvider?: LogProvider
-  ): Promise<AppPackage> {
+  ): Promise<any> {
     const requester = createRequesterWithToken(appStudioToken);
     try {
       const response = await RetryHandler.Retry(() =>
         requester.get(`/api/appdefinitions/${teamsAppId}/manifest`)
       );
 
-      const appPackage: AppPackage = {};
-
       if (response && response.data) {
-        const data = response.data;
-        const buffer = Buffer.from(data, "base64");
-        const zip = new AdmZip(buffer);
-        const zipEntries = zip.getEntries(); // an array of ZipEntry records
-
-        zipEntries?.forEach(async function (zipEntry) {
-          const data = zipEntry.getData();
-          const name = zipEntry.entryName.toLowerCase();
-          switch (name) {
-            case "manifest.json":
-              appPackage.manifest = data;
-              break;
-            case "color.png":
-              appPackage.icons = { ...appPackage.icons, color: data };
-              break;
-            case "outline.png":
-              appPackage.icons = { ...appPackage.icons, outline: data };
-              break;
-            default:
-              const ext = extname(name);
-              const base = basename(name, ext);
-              // Since we don't support scene features, the remaining files are json files for language.
-              if (supportedLanguageCodes.findIndex((code) => code === base) > -1) {
-                set(appPackage, ["language", base], data);
-              } else {
-                logProvider?.warning(getLocalizedString("plugins.appstudio.unprocessedFile", name));
-              }
-          }
-        });
-        return appPackage;
+        return response.data;
       } else {
         throw new Error(getLocalizedString("plugins.appstudio.emptyAppPackage", teamsAppId));
       }

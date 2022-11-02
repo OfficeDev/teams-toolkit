@@ -1,4 +1,12 @@
-import { err, Inputs, ok, Platform, Result, UserError } from "@microsoft/teamsfx-api";
+import {
+  err,
+  Inputs,
+  InputsWithProjectPath,
+  ok,
+  Platform,
+  Result,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import "mocha";
 import * as sinon from "sinon";
 import { Generator } from "../../src/component/generator/generator";
@@ -324,15 +332,14 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isOk());
   });
 
-  it("init infra without fold", async () => {
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+  it("getSettings", async () => {
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    const inputs: Inputs = {
+    const inputs: InputsWithProjectPath = {
       platform: Platform.VSCode,
+      projectPath: ".",
     };
     const fxCore = new FxCore(tools);
-    const res = await fxCore.initInfra(inputs);
-    assert.isTrue(res.isErr());
+    const res = await fxCore.getSettings(inputs);
+    assert.isTrue(res.isOk());
   });
 });

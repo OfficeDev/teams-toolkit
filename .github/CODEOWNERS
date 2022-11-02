@@ -142,3 +142,6 @@
 
 /packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
 /packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
+
+/packages/fx-core/src/component/driver/env @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/env @swatDong @XiaofuHuang @kuojianlu @kimizhu

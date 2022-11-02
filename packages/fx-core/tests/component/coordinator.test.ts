@@ -325,9 +325,6 @@ describe("component coordinator test", () => {
   });
 
   it("init infra without projectPath", async () => {
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     const inputs: Inputs = {
       platform: Platform.VSCode,
     };

@@ -78,7 +78,7 @@ import { getDefaultString, getLocalizedString } from "../../common/localizeUtils
 import { ExecutionError, ExecutionOutput } from "../configManager/interface";
 
 export enum TemplateNames {
-  Tab = "tab",
+  Tab = "non-sso-tab",
   SsoTab = "sso-tab",
   NotificationRestify = "notification-restify",
   NotificationWebApi = "notification-webapi",

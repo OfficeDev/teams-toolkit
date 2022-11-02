@@ -16,6 +16,7 @@ import {
   VsCodeEnv,
   err,
   assembleError,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import {
@@ -90,14 +91,13 @@ const customTasks = Object.freeze({
     presentationshowReuseMessage: false,
   },
   [TaskCommand.provision]: {
-    createTerminal: (d: vscode.TaskDefinition) =>
-      new LifecycleTaskTerminal(d, TaskCommand.provision),
+    createTerminal: (d: vscode.TaskDefinition) => new LifecycleTaskTerminal(d, Stage.provision),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,
   },
   [TaskCommand.deploy]: {
-    createTerminal: (d: vscode.TaskDefinition) => new LifecycleTaskTerminal(d, TaskCommand.deploy),
+    createTerminal: (d: vscode.TaskDefinition) => new LifecycleTaskTerminal(d, Stage.deploy),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,

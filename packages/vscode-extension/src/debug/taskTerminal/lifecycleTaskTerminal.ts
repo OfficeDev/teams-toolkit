@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import * as vscode from "vscode";
-import { FxError, Inputs, Platform, Result, Void } from "@microsoft/teamsfx-api";
+import { err, ok, FxError, Result, Stage, Void } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import * as globalVariables from "../../globalVariables";
-import { core } from "../../handlers";
+import { getSystemInputs, runCommand } from "../../handlers";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import * as commonUtils from "../commonUtils";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
@@ -18,13 +18,13 @@ export interface LifecycleArgs {
   env?: string;
 }
 
-type Lifecycle = typeof LifecycleTaskTerminal.lifecycleList[number];
-
 export class LifecycleTaskTerminal extends BaseTaskTerminal {
-  public static readonly lifecycleList = ["provision", "deploy"];
   private readonly args: LifecycleArgs;
 
-  constructor(taskDefinition: vscode.TaskDefinition, private lifecycle: Lifecycle) {
+  constructor(
+    taskDefinition: vscode.TaskDefinition,
+    private stage: Stage.provision | Stage.deploy
+  ) {
     super(taskDefinition);
     this.args = taskDefinition.args as LifecycleArgs;
   }
@@ -36,7 +36,7 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
         template: maskValue(this.args.template),
         env: maskValue(this.args.env),
       }),
-      [TelemetryProperty.DebugLifecycle]: this.lifecycle,
+      [TelemetryProperty.DebugLifecycle]: this.stage,
     };
 
     return Correlator.runWithId(commonUtils.getLocalDebugSession().id, () =>
@@ -57,18 +57,14 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
       throw BaseTaskTerminal.taskDefinitionError("env");
     }
 
-    const resolvedTemplate = path.resolve(
+    const inputs = getSystemInputs();
+    inputs.env = this.args.env;
+    inputs.template = path.resolve(
       globalVariables.workspaceUri?.fsPath ?? "",
       BaseTaskTerminal.resolveTeamsFxVariables(this.args.template)
     );
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: globalVariables.workspaceUri?.fsPath,
-      correlationId: this.taskTerminalId,
-      env: this.args.env,
-    };
 
-    const res = await core.apply(inputs, resolvedTemplate, this.lifecycle);
-    return res;
+    const res = await runCommand(this.stage, inputs);
+    return res.isErr() ? err(res.error) : ok(Void);
   }
 }

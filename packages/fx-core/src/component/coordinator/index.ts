@@ -291,7 +291,8 @@ export class Coordinator {
       output.AZURE_RESOURCE_GROUP_NAME = inputs["targetResourceGroupName"];
     }
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+    const templatePath =
+      inputs["template"] ?? path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return [undefined, maybeProjectModel.error];
@@ -401,7 +402,7 @@ export class Coordinator {
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
     const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
-    const maybeProjectModel = await parser.parse(templatePath);
+    const maybeProjectModel = await parser.parse(inputs["template"] ?? templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }

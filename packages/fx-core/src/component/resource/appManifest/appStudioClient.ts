@@ -15,6 +15,7 @@ import { getAppStudioEndpoint } from "./constants";
 import { HelpLinks } from "../../../common/constants";
 import AdmZip from "adm-zip";
 import { extname } from "path";
+import fs from "fs-extra";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -425,18 +426,23 @@ export namespace AppStudioClient {
         const zip = new AdmZip(buffer);
         const zipEntries = zip.getEntries(); // an array of ZipEntry records
 
-        zipEntries?.forEach(function (zipEntry) {
+        zipEntries?.forEach(async function (zipEntry) {
+          console.log("start");
           console.log(zipEntry.toString()); // outputs zip entries information
           const data = zipEntry.getData();
+          console.log(data);
           let parsedContent: string;
-          if (extname(zipEntry.entryName) === "png") {
+          const name = zipEntry.entryName;
+          const ext = extname(zipEntry.entryName);
+          if (extname(zipEntry.entryName).toLowerCase() === ".png") {
+            parsedContent = base64AssetContent(data.toString("base64"));
           } else {
             parsedContent = JSON.parse(data.toString("utf8"));
           }
 
-          const b = data.toString("utf8"); // if ext not image
-          const c = data.toString("base64"); // if ext is image
-          //}
+          await fs.writeFile(`C:\\Users\\yuqzho\\${name}`, data);
+
+          console.log(parsedContent);
         });
       }
       return;
@@ -444,6 +450,10 @@ export namespace AppStudioClient {
       const error = wrapException(e, APP_STUDIO_API_NAMES.GET_APP);
       throw error;
     }
+  }
+
+  function base64AssetContent(base64Content: string) {
+    return `data:image/png;base64,${base64Content}`;
   }
 
   function checkUser(app: AppDefinition, newUser: AppUser): boolean {

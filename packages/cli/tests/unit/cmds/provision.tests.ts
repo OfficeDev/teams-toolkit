@@ -72,8 +72,7 @@ describe("Provision Command Tests", function () {
       }
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
-    sandbox.stub(environmentManager, "listRemoteEnvConfigs").resolves(ok(["dev"]));
-    sandbox.stub(environmentManager, "getLocalEnvName").resolves(ok(["local"]));
+    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
     CLIUIInstance.interactive = false;
   });
 

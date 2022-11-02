@@ -142,7 +142,7 @@ import "../component/driver/script/npxBuildDriver";
 import "../component/driver/tools/installDriver";
 import "../component/driver/env/generate";
 import { settingsUtil } from "../component/utils/settingsUtil";
-import { DotenvConfigOutput, DotenvParseOptions, DotenvParseOutput } from "dotenv";
+import { DotenvParseOutput } from "dotenv";
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;

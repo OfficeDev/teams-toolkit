@@ -190,7 +190,7 @@ export class Coordinator {
     return ok(projectPath);
   }
 
-  async initInfra(inputs: InputsWithProjectPath): Promise<Result<undefined, FxError>> {
+  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
     const projectPath = inputs.projectPath;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is undefined"));

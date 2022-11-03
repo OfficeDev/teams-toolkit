@@ -290,6 +290,11 @@ export class Coordinator {
       process.env.AZURE_RESOURCE_GROUP_NAME = inputs["targetResourceGroupName"];
       output.AZURE_RESOURCE_GROUP_NAME = inputs["targetResourceGroupName"];
     }
+    const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
+    if (!process.env.RESOURCE_SUFFIX) {
+      process.env.RESOURCE_SUFFIX = suffix;
+      output.RESOURCE_SUFFIX = suffix;
+    }
     const parser = new YamlParser();
     const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
     const maybeProjectModel = await parser.parse(templatePath);
@@ -321,12 +326,6 @@ export class Coordinator {
         unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")
       ) {
         const folderName = path.parse(ctx.projectPath).name;
-        const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
-        if (!process.env.RESOURCE_SUFFIX) {
-          process.env.RESOURCE_SUFFIX = suffix;
-          output.RESOURCE_SUFFIX = suffix;
-          unresolvedPlaceHolders = unresolvedPlaceHolders.filter((ph) => ph !== "RESOURCE_SUFFIX");
-        }
         const defaultRg = `rg-${folderName}${suffix}-${inputs.env}`;
         const ensureRes = await provisionUtils.ensureResourceGroup(
           ctx.azureAccountProvider,

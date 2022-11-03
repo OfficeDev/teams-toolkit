@@ -320,11 +320,13 @@ export async function setSubscriptionId(
 export function isWorkspaceSupported(workspace: string): boolean {
   const p = workspace;
 
-  const checklist: string[] = [
-    p,
-    `${p}/.${ConfigFolderName}`,
-    path.join(p, `.${ConfigFolderName}`, InputConfigsFolderName, ProjectSettingsFileName),
-  ];
+  const checklist: string[] = isV3Enabled()
+    ? [p, `${p}/${SettingsFolderName}`, path.join(p, SettingsFolderName, SettingsFileName)]
+    : [
+        p,
+        `${p}/.${ConfigFolderName}`,
+        path.join(p, `.${ConfigFolderName}`, InputConfigsFolderName, ProjectSettingsFileName),
+      ];
 
   for (const fp of checklist) {
     if (!fs.existsSync(path.resolve(fp))) {

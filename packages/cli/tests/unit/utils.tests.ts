@@ -499,6 +499,18 @@ describe("Utils Tests", function () {
       expect(result).equals(true);
     });
 
+    it("Real Path in V3", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "true",
+      });
+      try {
+        const result = utils.isWorkspaceSupported("real");
+        expect(result).equals(true);
+      } finally {
+        restore();
+      }
+    });
+
     it("Fake Path", async () => {
       const result = utils.isWorkspaceSupported("fake");
       expect(result).equals(false);

@@ -110,7 +110,15 @@ export abstract class YargsCommand {
     CliTelemetry.setReporter(reporter);
 
     {
-      await activate();
+      const result = await activate();
+      if (result.isOk()) {
+        const inputs = getSystemInputs(args.folder as string);
+        inputs.ignoreEnvInfo = true;
+        const configResult = await result.value.getProjectConfigV3(inputs);
+        if (configResult.isOk()) {
+          CliTelemetry.setIsFromSample(configResult.value?.projectSettings?.isFromSample);
+        }
+      }
     }
 
     try {

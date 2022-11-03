@@ -414,9 +414,7 @@ export class Coordinator {
       const execRes = await projectModel.deploy.execute(ctx);
       const result = this.convertExecuteResult(execRes);
       merge(output, result[0]);
-      if (result[1]) {
-        return [output, result[1]];
-      }
+      if (result[1]) return [output, result[1]];
     }
     return [output, undefined];
   }

@@ -20,6 +20,7 @@ export enum TelemetryProperty {
   ErrorMessage = "error-message",
   SampleAppName = "sample-app-name",
   ProjectId = "project-id",
+  NewProjectId = "new-project-id",
   CorrelationId = "correlation-id",
   Env = "env",
   CustomizeResourceGroupType = "customize-resource-group-type",

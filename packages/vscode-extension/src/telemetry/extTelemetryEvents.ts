@@ -135,6 +135,7 @@ export enum TelemetryEvent {
   DebugSetUpBotTask = "debug-set-up-bot-task",
   DebugSetUpSSOTask = "debug-set-up-sso-task",
   DebugPrepareManifestTask = "debug-prepare-manifest-task",
+  DebugLifecycleTask = "debug-lifecycle-task",
 
   DebugAllStart = "debug-all-start",
   DebugAll = "debug-all",
@@ -263,6 +264,7 @@ export enum TelemetryProperty {
   DebugIsTransparentTask = "debug-is-transparent-task",
   DebugTaskId = "debug-task-id",
   DebugTaskArgs = "debug-task-args",
+  DebugLifecycle = "debug-lifecycle",
   DebugPrelaunchTaskInfo = "debug-prelaunch-task-info",
   DebugNgrokLog = "debug-ngrok-log",
   DebugConfigName = "debug-config-name",

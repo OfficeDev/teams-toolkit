@@ -12,6 +12,7 @@ import {
   ProductName,
   ProjectSettings,
   Result,
+  Stage,
   v2,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
@@ -39,6 +40,7 @@ import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { localTelemetryReporter } from "./localTelemetryReporter";
+import { LifecycleTaskTerminal } from "./taskTerminal/lifecycleTaskTerminal";
 import { LocalTunnelTaskTerminal } from "./taskTerminal/localTunnelTaskTerminal";
 import { NpmInstallTaskTerminal } from "./taskTerminal/npmInstallTaskTerminal";
 import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskTerminal";
@@ -86,6 +88,18 @@ const customTasks = Object.freeze({
   },
   [TaskCommand.prepareManifest]: {
     createTerminal: (d: vscode.TaskDefinition) => new PrepareManifestTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
+  },
+  [TaskCommand.provision]: {
+    createTerminal: (d: vscode.TaskDefinition) => new LifecycleTaskTerminal(d, Stage.provision),
+    presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
+  },
+  [TaskCommand.deploy]: {
+    createTerminal: (d: vscode.TaskDefinition) => new LifecycleTaskTerminal(d, Stage.deploy),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,

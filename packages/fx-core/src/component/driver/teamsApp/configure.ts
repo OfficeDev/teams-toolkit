@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok, Platform } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { hooks } from "@feathersjs/hooks/lib";
 import { StepDriver } from "../interface/stepDriver";
@@ -60,7 +60,9 @@ export class ConfigureTeamsAppDriver implements StepDriver {
         appDefinition.teamsAppId!
       );
       context.logProvider.info(message);
-      context.ui?.showMessage("info", message, false);
+      if (context.platform === Platform.VSCode) {
+        context.ui?.showMessage("info", message, false);
+      }
       return ok(
         new Map([
           [outputNames.TEAMS_APP_ID, appDefinition.teamsAppId!],

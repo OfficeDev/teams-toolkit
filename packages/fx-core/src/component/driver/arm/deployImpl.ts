@@ -5,7 +5,7 @@ import { Constants, TelemetryProperties, TemplateType } from "./constant";
 import { deployArgs, deploymentOutput, templateArgs } from "./interface";
 import { validateArgs } from "./validator";
 import { hasBicepTemplate, convertOutputs, getFileExtension } from "./util/util";
-import { err, FxError, ok, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { FxError, ok, Result, SolutionContext, SystemError } from "@microsoft/teamsfx-api";
 import { ConstantString, PluginDisplayName } from "../../../common/constants";
 import * as fs from "fs-extra";
 import { expandEnvironmentVariable, getAbsolutePath } from "../../utils/common";
@@ -16,6 +16,7 @@ import { SolutionError } from "../../constants";
 import { InvalidParameterUserError } from "../aad/error/invalidParameterUserError";
 import { ensureBicepForDriver } from "../../utils/depsChecker/bicepChecker";
 import { WrapDriverContext } from "../util/wrapUtil";
+import { DeployContext, handleArmDeploymentError } from "../../arm";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -90,6 +91,14 @@ export class ArmDeployImpl {
   async deployTemplate(
     templateArg: templateArgs
   ): Promise<Result<deploymentOutput | undefined, FxError>> {
+    const deployCtx: DeployContext = {
+      ctx: this.context as any as SolutionContext,
+      finished: false,
+      deploymentStartTime: Date.now(),
+      client: this.client!,
+      resourceGroupName: this.args.resourceGroupName,
+      deploymentName: templateArg.deploymentName,
+    };
     try {
       const progressBar = this.context.createProgressBar(
         `Deploy arm: ${templateArg.deploymentName}`,
@@ -108,13 +117,8 @@ export class ArmDeployImpl {
       progressBar?.end(true);
       return res;
     } catch (error) {
-      const fxError = new UserError(
-        Constants.actionName,
-        "FailedToDeployArmTemplate",
-        getDefaultString("driver.arm.error.deploy", templateArg.deploymentName, error.message),
-        getLocalizedString("driver.arm.error.deploy", templateArg.deploymentName, error.message)
-      );
-      return err(fxError);
+      const errRes = handleArmDeploymentError(error, deployCtx);
+      return errRes;
     }
   }
 

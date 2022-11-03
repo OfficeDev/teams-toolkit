@@ -37,7 +37,7 @@ import {
 } from "../common/telemetry";
 import { getHashedEnv } from "../common/tools";
 import { convertToAlphanumericOnly } from "../common/utils";
-import { globalVars } from "../core/globalVars";
+import { globalVars, TOOLS } from "../core/globalVars";
 import {
   FillInAzureConfigsResult,
   GLOBAL_CONFIG,
@@ -216,9 +216,11 @@ export class ProvisionUtils {
     azureAccountProvider: AzureAccountProvider,
     givenSubscriptionId?: string
   ): Promise<Result<SubscriptionInfo, FxError>> {
+    TOOLS.logProvider.info("check whether azure account is signed in.");
     // make sure the user is logged in
     await azureAccountProvider.getIdentityCredentialAsync(true);
     if (!givenSubscriptionId) {
+      TOOLS.logProvider.info("subscription is not selected, try to select.");
       const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
       if (!subscriptionInAccount) {
         return err(
@@ -229,15 +231,19 @@ export class ProvisionUtils {
           )
         );
       } else {
+        TOOLS.logProvider.info(
+          `successful to select subscription: ${subscriptionInAccount.subscriptionId}`
+        );
         return ok(subscriptionInAccount);
       }
     }
 
     // verify valid subscription (permission)
+    TOOLS.logProvider.info("subscription is given, try to validate");
     const subscriptions = await azureAccountProvider.listSubscriptions();
-
     const foundSubscriptionInfo = findSubscriptionFromList(givenSubscriptionId, subscriptions);
     if (!foundSubscriptionInfo) {
+      TOOLS.logProvider.info("subscription validate fail");
       return err(
         new UserError(
           "coordinator",
@@ -246,7 +252,7 @@ export class ProvisionUtils {
         )
       );
     }
-
+    TOOLS.logProvider.info("subscription validate success");
     return ok(foundSubscriptionInfo);
   }
   /**

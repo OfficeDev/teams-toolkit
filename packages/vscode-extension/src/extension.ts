@@ -331,13 +331,15 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
     "addFeature"
   );
 
-  // Edit manifest file
-  registerInCommandController(
-    context,
-    "fx-extension.openManifest",
-    handlers.openManifestHandler,
-    "manifestEditor"
-  );
+  if (!isV3Enabled()) {
+    // Edit manifest file
+    registerInCommandController(
+      context,
+      "fx-extension.openManifest",
+      handlers.openManifestHandler,
+      "manifestEditor"
+    );
+  }
 
   // Open adaptive card
   registerInCommandController(

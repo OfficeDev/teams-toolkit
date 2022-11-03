@@ -36,7 +36,7 @@ deploy:
       # can be changed to any ignore file location, leave blank will ignore nothing
       ignoreFile: ./.funcignore
       # the resource id of the cloud resource to be deployed to
-      resourceId: ${{  }}
+      resourceId: ${{FUNCTION_APP_RESOURCE_ID}}
 
 registerApp:
   - uses: teamsApp/create # Creates a Teams app

@@ -157,7 +157,28 @@ describe("env utils", () => {
     const getDotEnvRes = await core.getDotEnv(inputs);
     assert.isTrue(getDotEnvRes.isOk());
   });
-
+  it("EnvLoaderMW ignoreEnvInfo", async () => {
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    class MyClass {
+      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+        return ok(undefined);
+      }
+    }
+    hooks(MyClass, {
+      myMethod: [EnvLoaderMW],
+    });
+    const my = new MyClass();
+    const inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreEnvInfo: true,
+    };
+    const res = await my.myMethod(inputs);
+    assert.isTrue(res.isOk());
+    const core = new FxCore(tools);
+    const getDotEnvRes = await core.getDotEnv(inputs);
+    assert.isTrue(getDotEnvRes.isOk());
+  });
   it("EnvLoaderMW fail without projectPath", async () => {
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {

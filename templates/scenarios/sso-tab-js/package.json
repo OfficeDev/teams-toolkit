@@ -19,7 +19,6 @@
     },
     "devDependencies": {
         "cross-env": "^7.0.3",
-        "env-cmd": "^10.1.0",
         "dotenv": "^16.0.3"
     },
     "scripts": {

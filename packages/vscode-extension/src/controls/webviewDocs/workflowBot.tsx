@@ -6,6 +6,7 @@ import "./document.scss";
 import * as React from "react";
 
 import {
+  InProductGuideInteraction,
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTriggerFrom,
@@ -27,7 +28,8 @@ export default function WorkflowBot() {
         eventName: TelemetryEvent.InteractWithInProductDoc,
         properties: {
           [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
-          [TelemetryProperty.Action]: "create-new-project",
+          [TelemetryProperty.Interaction]: InProductGuideInteraction.RunCommand,
+          [TelemetryProperty.Identifier]: "Create New Project",
         },
       },
     });
@@ -105,7 +107,7 @@ module.exports = {
             eventName: TelemetryEvent.InteractWithInProductDoc,
             properties: {
               [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
-              [TelemetryProperty.Action]: "scroll-to-bottom",
+              [TelemetryProperty.Interaction]: InProductGuideInteraction.ScrollToBottom,
               [TelemetryProperty.TutorialName]: "workflow-bot",
             },
           },
@@ -145,9 +147,10 @@ module.exports = {
           </li>
           <li>
             An{" "}
-            <a href="https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts">
-              Microsoft 365 account for development
-            </a>
+            <ExternalLink
+              title="Microsoft 365 account for development"
+              link="https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts"
+            />
           </li>
         </ul>
         <p>
@@ -155,9 +158,10 @@ module.exports = {
         </p>
         <p>
           Your app can be installed into a team, or a group chat, or as personal app. See{" "}
-          <a href="https://aka.ms/teamsfx-command-response#customize-installation">
-            Installation and Uninstallation
-          </a>
+          <ExternalLink
+            title="Installation and Uninstallation"
+            link="https://aka.ms/teamsfx-command-response#customize-installation"
+          />
           .
         </p>
       </blockquote>
@@ -172,9 +176,10 @@ module.exports = {
         <li>First, select the Teams Toolkit icon on the left in the VS Code toolbar.</li>
         <li>
           In the Account section, sign in with your{" "}
-          <a href="https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts">
-            Microsoft 365 account
-          </a>{" "}
+          <ExternalLink
+            title="Microsoft 365 account"
+            link="https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts"
+          />{" "}
           if you haven&#39;t already.
         </li>
         <li>
@@ -313,7 +318,7 @@ module.exports = {
         <CollapsibleStep
           step={1}
           title="Add an action to your Adaptive Card"
-          tag="workflow-bot-step1"
+          identifier="workflow-bot-step1"
         >
           <p>
             Adding new actions (buttons) to an Adaptive Card is as simple as defining them in the
@@ -323,7 +328,11 @@ module.exports = {
           <p>
             Here&#39;s a sample action with type <code>Action.Execute</code>:
           </p>
-          <CodeSnippet language="language-json" data={codeSnippets[0]} tag="workflow-bot-step1" />
+          <CodeSnippet
+            language="language-json"
+            data={codeSnippets[0]}
+            identifier="workflow-bot-step1"
+          />
           <p>
             Specifying the <code>type</code> as <code>Action.Execute</code> allows this Adaptive
             Card to respond with another card, which will update the UI by replacing the existing
@@ -349,21 +358,33 @@ module.exports = {
         </CollapsibleStep>
       </div>
       <div className="collapsibleSteps">
-        <CollapsibleStep step={2} title="Respond with a new Adaptive Card" tag="workflow-bot-step2">
+        <CollapsibleStep
+          step={2}
+          title="Respond with a new Adaptive Card"
+          identifier="workflow-bot-step2"
+        >
           <p>
             For each action, you can display a new Adaptive Card as a response to the user. Create a
             new file, <code>bot/src/adaptiveCards/doSomethingResponse.json</code> to use as a
             response for the <code>DoSomething</code> action created in the previous step:
           </p>
-          <CodeSnippet language="language-json" data={codeSnippets[1]} tag="workflow-bot-step2" />
+          <CodeSnippet
+            language="language-json"
+            data={codeSnippets[1]}
+            identifier="workflow-bot-step2"
+          />
           <p>
-            You can use the <a href="https://adaptivecards.io/designer/">Adaptive Card Designer</a>{" "}
+            You can use the{" "}
+            <ExternalLink
+              title="Adaptive Card Designer"
+              link="https://adaptivecards.io/designer/"
+            />{" "}
             to help visually design your Adaptive Card UI.
           </p>
         </CollapsibleStep>
       </div>
       <div className="collapsibleSteps">
-        <CollapsibleStep step={3} title="Handle the new action" tag="workflow-bot-step3">
+        <CollapsibleStep step={3} title="Handle the new action" identifier="workflow-bot-step3">
           <p>
             The TeamsFx SDK provides a convenient class,{" "}
             <code>TeamsFxAdaptiveCardActionHandler</code>, to handle when an action from an Adaptive
@@ -373,7 +394,7 @@ module.exports = {
           <CodeSnippet
             language="language-typescript"
             data={codeSnippets[2]}
-            tag="workflow-bot-step3"
+            identifier="workflow-bot-step3"
           />
           <blockquote>
             <p>Please note:</p>
@@ -405,7 +426,7 @@ module.exports = {
         </CollapsibleStep>
       </div>
       <div className="collapsibleSteps">
-        <CollapsibleStep step={4} title="Register the new handler" tag="workflow-bot-step4">
+        <CollapsibleStep step={4} title="Register the new handler" identifier="workflow-bot-step4">
           <p>
             Each new card action needs to be configured in the <code>ConversationBot</code>, which
             powers the conversational flow of the workflow bot template. Navigate to the{" "}
@@ -424,46 +445,55 @@ module.exports = {
           <CodeSnippet
             language="language-typescript"
             data={codeSnippets[3]}
-            tag="workflow-bot-step4"
+            identifier="workflow-bot-step4"
           />
         </CollapsibleStep>
       </div>
       <p>
         Congratulations, you&#39;ve just created your own workflow! To learn more about extending
         the Workflow bot template,{" "}
-        <a href="https://aka.ms/teamsfx-card-action-response">visit the documentation on GitHub</a>.
-        You can find more scenarios like:
+        <ExternalLink
+          title="visit the documentation on GitHub"
+          link="https://aka.ms/teamsfx-card-action-response"
+        />
+        . You can find more scenarios like:
       </p>
       <ul>
         <li>
-          <a href="https://aka.ms/teamsfx-card-action-response#customize-the-action-response">
-            Customize the way to respond to an action
-          </a>
+          <ExternalLink
+            title="Customize the way to respond to an action"
+            link="https://aka.ms/teamsfx-card-action-response#customize-the-action-response"
+          />
         </li>
         <li>
-          <a href="https://aka.ms/teamsfx-card-action-response#customize-the-adaptive-card-content">
-            Customize the Adaptive Card content
-          </a>
+          <ExternalLink
+            title="Customize the Adaptive Card content"
+            link="https://aka.ms/teamsfx-card-action-response#customize-the-adaptive-card-content"
+          />
         </li>
         <li>
-          <a href="https://aka.ms/teamsfx-card-action-response#auto-refresh-to-user-specific-view">
-            Create a user specific view
-          </a>
+          <ExternalLink
+            title="Create a user specific view"
+            link="https://aka.ms/teamsfx-card-action-response#auto-refresh-to-user-specific-view"
+          />
         </li>
         <li>
-          <a href="https://aka.ms/teamsfx-card-action-response#access-microsoft-graph">
-            Access Microsoft Graph
-          </a>
+          <ExternalLink
+            title="Access Microsoft Graph"
+            link="https://aka.ms/teamsfx-card-action-response#access-microsoft-graph"
+          />
         </li>
         <li>
-          <a href="https://aka.ms/teamsfx-card-action-response#connect-to-existing-apis">
-            Connect to existing APIs
-          </a>
+          <ExternalLink
+            title="Connect to existing APIs"
+            link="https://aka.ms/teamsfx-card-action-response#connect-to-existing-apis"
+          />
         </li>
         <li>
-          <a href="https://aka.ms/teamsfx-card-action-response#customize-the-initialization">
-            Change the way to initialize the bot
-          </a>
+          <ExternalLink
+            title="Change the way to initialize the bot"
+            link="https://aka.ms/teamsfx-card-action-response#customize-the-initialization"
+          />
         </li>
       </ul>
       <h2 id="extend-workflow-bot-with-other-bot-scenarios">
@@ -476,12 +506,16 @@ module.exports = {
       <p>
         The notification feature adds the ability for your application to send Adaptive Cards in
         response to external events. Follow the{" "}
-        <a href="https://aka.ms/teamsfx-card-action-response#how-to-extend-workflow-bot-with-notification-feature">
-          steps here
-        </a>{" "}
+        <ExternalLink
+          title="steps here"
+          link="https://aka.ms/teamsfx-card-action-response#how-to-extend-workflow-bot-with-notification-feature"
+        />{" "}
         to add the notification feature to your workflow bot. Refer{" "}
-        <a href="https://aka.ms/teamsfx-notification">the notification document</a> for more
-        information.
+        <ExternalLink
+          title="the notification document"
+          link="https://aka.ms/teamsfx-notification"
+        />{" "}
+        for more information.
       </p>
       <h3 id="add-command-and-responses-to-your-workflow-bot">
         Add command and responses to your workflow bot
@@ -490,24 +524,30 @@ module.exports = {
         The command and response feature adds the ability for your application to &quot;listen&quot;
         to commands sent to it via a Teams message and respond to commands with Adaptive Cards.
         Follow the{" "}
-        <a href="https://aka.ms/teamsfx-command-response#How-to-add-more-command-and-response">
-          steps here
-        </a>{" "}
+        <ExternalLink
+          title="steps here"
+          link="https://aka.ms/teamsfx-command-response#How-to-add-more-command-and-response"
+        />{" "}
         to add the command response feature to your workflow bot. Refer{" "}
-        <a href="https://aka.ms/teamsfx-command-response">the command bot document</a> for more
-        information.
+        <ExternalLink
+          title="the command bot document"
+          link="https://aka.ms/teamsfx-command-response"
+        />{" "}
+        for more information.
       </p>
       <h2 id="additional-information-and-references">Additional information and references</h2>
       <ul>
         <li>
-          <a href="https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env">
-            Manage multiple environments
-          </a>
+          <ExternalLink
+            title="Manage multiple environments"
+            link="https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env"
+          />
         </li>
         <li>
-          <a href="https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration">
-            Collaborate with others
-          </a>
+          <ExternalLink
+            title="Collaborate with others"
+            link="https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration"
+          />
         </li>
         <li>
           <ExternalLink
@@ -516,17 +556,22 @@ module.exports = {
           />
         </li>
         <li>
-          <a href="https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli">
-            Teams Toolkit CLI
-          </a>
+          <ExternalLink
+            title="Teams Toolkit CLI"
+            link="https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli"
+          />
         </li>
         <li>
-          <a href="https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-sdk">
-            TeamsFx SDK
-          </a>
+          <ExternalLink
+            title="TeamsFx SDK"
+            link="https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-sdk"
+          />
         </li>
         <li>
-          <a href="https://github.com/OfficeDev/TeamsFx-Samples">Teams Toolkit Samples</a>
+          <ExternalLink
+            title="Teams Toolkit Samples"
+            link="https://github.com/OfficeDev/TeamsFx-Samples"
+          />
         </li>
       </ul>
     </div>

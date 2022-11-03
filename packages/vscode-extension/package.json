@@ -1518,7 +1518,6 @@
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "github-markdown-css": "^5.1.0",
     "highlight.js": "^11.6.0",
     "jscodeshift": "^0.13.0",
     "jsonc-parser": "^3.0.0",

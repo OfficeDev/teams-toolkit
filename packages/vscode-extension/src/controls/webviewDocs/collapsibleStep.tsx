@@ -28,17 +28,17 @@ function StepTitle(props: { step: number; title: string }) {
 export default function CollapsibleStep(props: {
   step: number;
   title: string;
-  tag: string;
+  identifier: string;
   children: React.ReactNode;
 }) {
   const onOpen = () => {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
       data: {
-        eventName: TelemetryEvent.ExpandStep,
+        eventName: TelemetryEvent.ExpandGuideStep,
         properties: {
           [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
-          [TelemetryProperty.DocumentStep]: props.tag,
+          [TelemetryProperty.Identifier]: props.identifier,
         },
       },
     });

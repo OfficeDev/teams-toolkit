@@ -17,11 +17,10 @@ export default function ExternalLink(props: { title: string; link: string }) {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
       data: {
-        eventName: TelemetryEvent.InteractWithInProductDoc,
+        eventName: TelemetryEvent.OpenExternalLink,
         properties: {
           [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
-          [TelemetryProperty.Action]: "open-link",
-          [TelemetryProperty.Link]: props.link,
+          [TelemetryProperty.Identifier]: props.link,
         },
       },
     });

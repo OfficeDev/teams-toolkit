@@ -24,6 +24,7 @@ import { downloadSample, getSystemInputs, openFolder } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   AccountType,
+  InProductGuideInteraction,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
@@ -92,7 +93,10 @@ export class WebviewPanel {
         const panel = e.webviewPanel;
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
           [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
-          [TelemetryProperty.Action]: `${panel.visible ? "Show" : "Hide"} ${panelType}`,
+          [TelemetryProperty.Interaction]: panel.visible
+            ? InProductGuideInteraction.Show
+            : InProductGuideInteraction.Hide,
+          [TelemetryProperty.Identifier]: panelType,
         });
       },
       null,
@@ -404,7 +408,8 @@ export class WebviewPanel {
     const panelIndex = WebviewPanel.currentPanels.indexOf(this);
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
       [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
-      [TelemetryProperty.Action]: `Close ${WebviewPanel.currentPanels[panelIndex].panelType}`,
+      [TelemetryProperty.Interaction]: InProductGuideInteraction.Close,
+      [TelemetryProperty.Identifier]: panelType,
     });
 
     WebviewPanel.currentPanels.splice(panelIndex, 1);

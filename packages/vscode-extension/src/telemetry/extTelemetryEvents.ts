@@ -221,7 +221,8 @@ export enum TelemetryEvent {
   // In product documentation
   InteractWithInProductDoc = "interact-with-in-product-doc",
   CopyCodeSnippet = "copy-code-snippet",
-  ExpandStep = "expand-step",
+  ExpandGuideStep = "expand-guide-step",
+  OpenExternalLink = "open-external-link",
 
   Deactivate = "deactivate",
 }
@@ -311,10 +312,8 @@ export enum TelemetryProperty {
   // Used with ClickGetHelp
   HelpLink = "help-link",
   // Used with InteractWithInProductDoc
-  Action = "action",
-  CodeSnippet = "code-snippet",
-  DocumentStep = "document-step",
-  Link = "link",
+  Interaction = "interaction",
+  Identifier = "identifier",
 }
 
 export enum TelemetryMeasurements {
@@ -391,6 +390,14 @@ export enum VSCodeWindowChoice {
   CurrentWindow = "current-window",
   NewWindow = "new-window",
   NewWindowByDefault = "new-window-by-default",
+}
+
+export enum InProductGuideInteraction {
+  Close = "close",
+  Show = "show",
+  Hide = "hide",
+  ScrollToBottom = "scroll-to-bottom",
+  RunCommand = "run-command",
 }
 
 export const TelemetryComponentType = "extension";

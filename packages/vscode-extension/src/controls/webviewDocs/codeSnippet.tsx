@@ -9,7 +9,7 @@ import {
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
 
-export default function CodeSnippet(props: { data: string; language: string; tag: string }) {
+export default function CodeSnippet(props: { data: string; language: string; identifier: string }) {
   const onCopyCode = () => {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
@@ -17,7 +17,7 @@ export default function CodeSnippet(props: { data: string; language: string; tag
         eventName: TelemetryEvent.CopyCodeSnippet,
         properties: {
           [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
-          [TelemetryProperty.CodeSnippet]: props.tag,
+          [TelemetryProperty.Identifier]: props.identifier,
         },
       },
     });

@@ -3,12 +3,11 @@
 @description('Used to generate names for all resources in this file')
 param resourceBaseName string
 
-@description('Required when create Azure Bot service')
-param botAadAppClientId string
-
+param tabAadAppClientId string
+param tabAadAppOauthAuthorityHost string
+param tabAadAppTenantId string
 @secure()
-@description('Required by Bot Framework package in your bot project')
-param botAadAppClientSecret string
+param tabAadAppClientSecret string
 
 param webAppSKU string
 
@@ -41,6 +40,18 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: '1'
         }
+        {
+          name: 'TeamsFx__Authentication__ClientId'
+          value: tabAadAppClientId
+        }
+        {
+          name: 'TeamsFx__Authentication__ClientSecret'
+          value: tabAadAppClientSecret
+        }
+        {
+          name: 'TeamsFx__Authentication__OAuthAuthority'
+          value: uri(tabAadAppOauthAuthorityHost, tabAadAppTenantId)
+        }
       ]
       ftpsState: 'FtpsOnly'
     }
@@ -48,5 +59,6 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
 }
 
 // The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-provision-arm#output for more details.
-output BOT_AZURE_APP_SERVICE_RESOURCE_ID string = webApp.id
-output BOT_DOMAIN string = webApp.properties.defaultHostName
+output TAB_AZURE_APP_SERVICE_RESOURCE_ID  string = webApp.id
+output TAB_DOMAIN  string = webApp.properties.defaultHostName
+output TAB_ENDPOINT  string = 'https://${webApp.properties.defaultHostName}'

@@ -3,13 +3,19 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "resourceBaseName": {
-        "value": "notification${{RESOURCE_SUFFIX}}"
+        "value": "ssotab${{RESOURCE_SUFFIX}}"
       },
-      "botAadAppClientId": {
-        "value": "${{BOT_ID}}"
+      "tabAadAppClientId": {
+        "value": "${{AAD_APP_CLIENT_ID}}"
       },
-      "botAadAppClientSecret": {
-        "value": "${{SECRET_BOT_PASSWORD}}"
+      "tabAadAppClientSecret": {
+        "value": "${{SECRET_AAD_APP_CLIENT_SECRET}}"
+      },
+      "tabAadAppOauthAuthorityHost": {
+        "value": "${{AAD_APP_OAUTH_AUTHORITY_HOST}}"
+      },
+      "tabAadAppTenantId": {
+        "value": "${{AAD_APP_TENANT_ID}}"
       },
       "webAppSKU": {
         "value": "F1"

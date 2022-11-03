@@ -24,7 +24,6 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { snakeCase } from "lodash";
 import { v4 as uuidv4 } from "uuid";
 import { PluginDisplayName } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -60,7 +59,8 @@ import fs from "fs-extra";
 import { updateAzureParameters } from "./arm";
 import path from "path";
 import { DeployConfigsConstants } from "../common/azure-hosting/hostingConstant";
-interface M365TenantRes {
+import { DriverContext } from "./driver/interface/commonArgs";
+export interface M365TenantRes {
   tenantIdInToken: string;
   tenantUserName: string;
 }
@@ -768,7 +768,14 @@ export class ProvisionUtils {
     }
     return ok({ tenantIdInToken, tenantUserName });
   }
-
+  async askForProvisionConsentV3(
+    ctx: DriverContext,
+    m365tenant?: M365TenantRes,
+    azureSubInfo?: SubscriptionInfo
+  ): Promise<Result<undefined, FxError>> {
+    //TODO
+    return ok(undefined);
+  }
   async askForProvisionConsent(
     ctx: v2.Context,
     azureAccountProvider: AzureAccountProvider,

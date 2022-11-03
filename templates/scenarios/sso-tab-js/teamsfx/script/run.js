@@ -12,10 +12,9 @@ if (args[0] && fs.existsSync(args[0])) {
 	process.env.BROWSER = "none";
 	process.env.HTTPS = true;
 	process.env.PORT = 53000;
-	process.env.GENERATE_SOURCEMAP=false;
 	process.env.REACT_APP_CLIENT_ID = envs.AAD_APP_CLIENT_ID;
 	process.env.REACT_APP_START_LOGIN_PAGE_URL = `${envs.TAB_ENDPOINT}/auth-start.html`;
 }
 
 // launch service locally by executing npm command
-cp.spawn(/^win/.test(process.platform) ? "npm.cmd" : "npm", ["run", "dev"], { stdio: "inherit" });
+cp.spawn(/^win/.test(process.platform) ? "npm.cmd" : "npm", ["run", "start"], { stdio: "inherit" });

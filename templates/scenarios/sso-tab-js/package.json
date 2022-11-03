@@ -22,7 +22,6 @@
         "dotenv": "^16.0.3"
     },
     "scripts": {
-        "dev": "react-scripts start",
         "start": "cross-env GENERATE_SOURCEMAP=false react-scripts start",
         "install:teamsfx": "npm install",
         "build": "cross-env GENERATE_SOURCEMAP=false react-scripts build",

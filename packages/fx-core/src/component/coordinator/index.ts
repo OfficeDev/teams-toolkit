@@ -296,7 +296,9 @@ export class Coordinator {
       output.RESOURCE_SUFFIX = suffix;
     }
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+    const templatePath =
+      inputs["workflowFilePath"] ??
+      path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return [undefined, maybeProjectModel.error];
@@ -399,7 +401,9 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+    const templatePath =
+      inputs["workflowFilePath"] ??
+      path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);

@@ -105,15 +105,15 @@ export const Feature2TemplateName: any = {
 
 const workflowFileName = "app.yml";
 
-const M365actions = [
-  "botAadApp/create",
-  "teamsApp/create",
-  "teamsApp/update",
-  "aadApp/create",
-  "aadApp/update",
-  "m365Bot/create",
-  "m365Bot/update",
-];
+// const M365actions = [
+//   "botAadApp/create",
+//   "teamsApp/create",
+//   "teamsApp/update",
+//   "aadApp/create",
+//   "aadApp/update",
+//   "m365Bot/create",
+//   "m365Bot/update",
+// ];
 const AzureActions = ["arm/deploy"];
 
 export class Coordinator {

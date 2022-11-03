@@ -9,6 +9,7 @@ import ServerConnection from "../src/serverConnection";
 import { Duplex } from "stream";
 import { Inputs, ok, Platform, Stage } from "@microsoft/teamsfx-api";
 import { setFunc } from "../src/customizedFuncAdapter";
+import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -132,6 +133,21 @@ describe("serverConnections", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns("test");
     sandbox.replace(connection["core"], "buildArtifacts", fake);
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.buildArtifactsRequest(inputs as Inputs, token as CancellationToken);
+    res.then((data) => {
+      assert.equal(data, ok("test"));
+    });
+  });
+
+  it("buildArtifactsRequest - V3", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns("test");
+    sandbox.replace(connection["core"], "buildArtifacts", fake);
+    sandbox.stub(tools, "isV3Enabled").returns(true);
     const inputs = {
       platform: "vs",
     };

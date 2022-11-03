@@ -55,6 +55,9 @@
             "type": "shell",
             "command": "node teamsfx/script/run.js teamsfx/.env.local",
             "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
             "problemMatcher": {
                 "pattern": {
                     "regexp": "^.*$",

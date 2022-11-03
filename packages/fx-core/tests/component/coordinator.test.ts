@@ -28,6 +28,7 @@ import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { provisionUtils } from "../../src/component/provisionUtils";
 import { coordinator } from "../../src/component/coordinator";
+import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 
 describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
@@ -82,11 +83,20 @@ describe("component coordinator test", () => {
     assert.isTrue(res2.isOk());
   });
 
-  it("provision happy path (create rg)", async () => {
+  it("provision happy path from zero", async () => {
     const mockProjectModel: ProjectModel = {
       registerApp: {
         name: "configureApp",
-        driverDefs: [],
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: undefined,
+          },
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
         run: async (ctx: DriverContext) => {
           return ok({
             env: new Map(),
@@ -112,7 +122,6 @@ describe("component coordinator test", () => {
         subscriptionName: "mockSubName",
       })
     );
-
     sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
       ok({
         createNewResourceGroup: true,
@@ -120,6 +129,18 @@ describe("component coordinator test", () => {
         location: "East US",
       })
     );
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
+      ok({
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
+      })
+    );
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "mockSubId",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
     sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
       if (config.name === "env") {
         return ok({ type: "success", result: "dev" });
@@ -136,11 +157,20 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isOk());
   });
 
-  it("provision happy path (with inputs)", async () => {
+  it("provision happy path with CLI inputs", async () => {
     const mockProjectModel: ProjectModel = {
       registerApp: {
         name: "configureApp",
-        driverDefs: [],
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: undefined,
+          },
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
         run: async (ctx: DriverContext) => {
           return ok({
             env: new Map(),
@@ -148,7 +178,7 @@ describe("component coordinator test", () => {
           });
         },
         resolvePlaceholders: () => {
-          return [];
+          return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
         execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
           return ok(new Map());
@@ -159,21 +189,19 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureSubscription").resolves(
+    sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
       ok({
-        subscriptionId: "mockSubId",
-        tenantId: "mockTenantId",
-        subscriptionName: "mockSubName",
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
       })
     );
-
-    sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
-      ok({
-        createNewResourceGroup: true,
-        name: "test-rg",
-        location: "East US",
-      })
-    );
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "mockSubId",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
     sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
       if (config.name === "env") {
         return ok({ type: "success", result: "dev" });
@@ -186,12 +214,65 @@ describe("component coordinator test", () => {
       projectPath: ".",
       targetSubscriptionId: "mockSubId",
       targetResourceGroupName: "test-rg",
+      targetResourceLocationName: "Ease US",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isOk());
   });
-
+  it("provision failed with CLI inputs: create resource group failed", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: undefined,
+          },
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
+          });
+        },
+        resolvePlaceholders: () => {
+          return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
+        },
+        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
+          return ok(new Map());
+        },
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox
+      .stub(resourceGroupHelper, "createNewResourceGroup")
+      .resolves(err(new UserError({ source: "test", name: "OtherError" })));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      targetSubscriptionId: "mockSubId",
+      targetResourceGroupName: "test-rg",
+      targetResourceLocationName: "Ease US",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isErr());
+  });
   it("provision happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
       registerApp: {

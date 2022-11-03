@@ -24,7 +24,6 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { snakeCase } from "lodash";
 import { v4 as uuidv4 } from "uuid";
 import { PluginDisplayName } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
@@ -52,11 +51,7 @@ import {
   PathConstants,
 } from "./constants";
 import { backupFiles } from "./utils/backupFiles";
-import {
-  AzureSubscription,
-  resourceGroupHelper,
-  ResourceGroupInfo,
-} from "./utils/ResourceGroupHelper";
+import { resourceGroupHelper, ResourceGroupInfo } from "./utils/ResourceGroupHelper";
 import { resetAppSettingsDevelopment } from "./code/appSettingUtils";
 import { AppStudioScopes } from "./resource/appManifest/constants";
 import { isCSharpProject, resetEnvInfoWhenSwitchM365 } from "./utils";

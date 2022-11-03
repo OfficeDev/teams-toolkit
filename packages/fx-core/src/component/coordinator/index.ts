@@ -384,12 +384,10 @@ export class Coordinator {
     let containsAzure = false;
     cycles.forEach((cycle) => {
       cycle!.driverDefs?.forEach((def) => {
-        if (def.name) {
-          if (M365actions.includes(def.name)) {
-            containsM365 = true;
-          } else if (AzureActions.includes(def.name)) {
-            containsAzure = true;
-          }
+        if (M365actions.includes(def.uses)) {
+          containsM365 = true;
+        } else if (AzureActions.includes(def.uses)) {
+          containsAzure = true;
         }
       });
     });
@@ -405,23 +403,25 @@ export class Coordinator {
     let azureSubInfo = undefined;
     if (containsAzure) {
       azureSubInfo = await ctx.azureAccountProvider.getSelectedSubscription(true);
-      return [
-        undefined,
-        new UserError(
-          "coordinator",
-          "SubscriptionNotFound",
-          getLocalizedString("core.provision.subscription.failToSelect")
-        ),
-      ];
+      if (!azureSubInfo) {
+        return [
+          undefined,
+          new UserError(
+            "coordinator",
+            "SubscriptionNotFound",
+            getLocalizedString("core.provision.subscription.failToSelect")
+          ),
+        ];
+      }
     }
-
-    const consentRes = await provisionUtils.askForProvisionConsentV3(
-      ctx,
-      m365tenantInfo,
-      azureSubInfo
-    );
-    if (consentRes.isErr()) return [undefined, consentRes.error];
-
+    if (m365tenantInfo || azureSubInfo) {
+      const consentRes = await provisionUtils.askForProvisionConsentV3(
+        ctx,
+        m365tenantInfo,
+        azureSubInfo
+      );
+      if (consentRes.isErr()) return [undefined, consentRes.error];
+    }
     // 5. execute
     for (const cycle of cycles) {
       const execRes = await cycle!.execute(ctx);

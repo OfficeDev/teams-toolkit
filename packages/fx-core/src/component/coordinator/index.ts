@@ -105,15 +105,15 @@ export const Feature2TemplateName: any = {
 
 const workflowFileName = "app.yml";
 
-// const M365actions = [
-//   "botAadApp/create",
-//   "teamsApp/create",
-//   "teamsApp/update",
-//   "aadApp/create",
-//   "aadApp/update",
-//   "m365Bot/create",
-//   "m365Bot/update",
-// ];
+const M365Actions = [
+  "botAadApp/create",
+  "teamsApp/create",
+  "teamsApp/update",
+  "aadApp/create",
+  "aadApp/update",
+  "m365Bot/create",
+  "m365Bot/update",
+];
 const AzureActions = ["arm/deploy"];
 
 export class Coordinator {
@@ -384,7 +384,7 @@ export class Coordinator {
     let containsAzure = false;
     cycles.forEach((cycle) => {
       cycle!.driverDefs?.forEach((def) => {
-        if (M365actions.includes(def.uses)) {
+        if (M365Actions.includes(def.uses)) {
           containsM365 = true;
         } else if (AzureActions.includes(def.uses)) {
           containsAzure = true;
@@ -414,7 +414,7 @@ export class Coordinator {
         ];
       }
     }
-    if (m365tenantInfo || azureSubInfo) {
+    if (azureSubInfo) {
       const consentRes = await provisionUtils.askForProvisionConsentV3(
         ctx,
         m365tenantInfo,

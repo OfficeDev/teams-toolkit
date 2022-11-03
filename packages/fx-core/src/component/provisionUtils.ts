@@ -52,7 +52,11 @@ import {
   PathConstants,
 } from "./constants";
 import { backupFiles } from "./utils/backupFiles";
-import { resourceGroupHelper, ResourceGroupInfo } from "./utils/ResourceGroupHelper";
+import {
+  AzureSubscription,
+  resourceGroupHelper,
+  ResourceGroupInfo,
+} from "./utils/ResourceGroupHelper";
 import { resetAppSettingsDevelopment } from "./code/appSettingUtils";
 import { AppStudioScopes } from "./resource/appManifest/constants";
 import { isCSharpProject, resetEnvInfoWhenSwitchM365 } from "./utils";
@@ -60,7 +64,8 @@ import fs from "fs-extra";
 import { updateAzureParameters } from "./arm";
 import path from "path";
 import { DeployConfigsConstants } from "../common/azure-hosting/hostingConstant";
-interface M365TenantRes {
+import { DriverContext } from "./driver/interface/commonArgs";
+export interface M365TenantRes {
   tenantIdInToken: string;
   tenantUserName: string;
 }
@@ -768,7 +773,14 @@ export class ProvisionUtils {
     }
     return ok({ tenantIdInToken, tenantUserName });
   }
-
+  async askForProvisionConsentV3(
+    ctx: DriverContext,
+    m365tenant?: M365TenantRes,
+    azureSubInfo?: SubscriptionInfo
+  ): Promise<Result<undefined, FxError>> {
+    //TODO
+    return ok(undefined);
+  }
   async askForProvisionConsent(
     ctx: v2.Context,
     azureAccountProvider: AzureAccountProvider,

@@ -47,8 +47,8 @@ export type TeamsContextWithCredential = {
 /**
  * Initialize TeamsFx SDK with customized configuration.
  *
- * @param teamsfxConfig - custom configuration to override default ones.
- * @returns TeamsFxContext object
+ * @param authConfig - custom configuration to override default ones.
+ * @returns TeamsContextWithCredential object
  *
  * @beta
  */

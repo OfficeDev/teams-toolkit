@@ -63,7 +63,7 @@ export class CreateBotAadAppDriver implements StepDriver {
         context.logProvider
       );
       if (createRes.isErr()) {
-        throw err(createRes.error);
+        throw createRes.error;
       }
 
       progressHandler?.end(true);

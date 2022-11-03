@@ -12,6 +12,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { GraphScopes } from "../../../../common/tools";
+import { CreateAADAppError } from "../errors";
 import { logMessageKeys } from "./constants";
 import { GraphClient } from "./graphClient";
 
@@ -68,7 +69,7 @@ export class BotRegistration {
           });
         } catch (e) {
           logProvider?.info(getLocalizedString(logMessageKeys.failCreateBotAadApp, e.genMessage()));
-          throw e;
+          return err(e);
         }
       }
     } else {

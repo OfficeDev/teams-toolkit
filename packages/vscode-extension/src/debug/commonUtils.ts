@@ -78,10 +78,6 @@ export function getBotLocalEnv(
   return getLocalEnvWithPrefix(env, constants.botLocalEnvPrefix);
 }
 
-export async function isFxProject(folderPath: string): Promise<boolean> {
-  return fs.pathExists(path.join(folderPath, `.${ConfigFolderName}`));
-}
-
 export async function hasTeamsfxBackend(): Promise<boolean> {
   if (!globalVariables.workspaceUri) {
     return false;

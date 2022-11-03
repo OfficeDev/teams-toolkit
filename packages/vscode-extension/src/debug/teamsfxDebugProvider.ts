@@ -1,21 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import * as vscode from "vscode";
 
-import M365TokenInstance from "../commonlib/m365Login";
-import { getTeamsAppInternalId } from "./teamsAppInstallation";
-import * as commonUtils from "./commonUtils";
-import { showError } from "../handlers";
-import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
-import { Host, Hub } from "./constants";
-import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
-import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+
 import VsCodeLogInstance from "../commonlib/log";
-import { sideloadingDisplayMessages } from "./constants";
+import M365TokenInstance from "../commonlib/m365Login";
+import { showError } from "../handlers";
+import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import * as commonUtils from "./commonUtils";
+import { Host, Hub, sideloadingDisplayMessages } from "./constants";
+import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
+import { getTeamsAppInternalId } from "./teamsAppInstallation";
+import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
 
 export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
   teamsfxIsRemote?: boolean;
@@ -60,7 +61,8 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       if (!folder) {
         return debugConfiguration;
       }
-      if (!(await commonUtils.isFxProject(folder.uri.fsPath))) {
+
+      if (!isValidProject(folder.uri.fsPath)) {
         return debugConfiguration;
       }
 

@@ -28,6 +28,8 @@ export class Constants {
   public static readonly SUPPORTED_NODE_VERSION_PRERELEASE = ["16"];
   public static readonly SUPPORTED_NPM_VERSION_PRERELEASE = ["7", "8"];
   public static readonly SPFX_HELP_LINK = "https://aka.ms/teamsfx-spfx-help";
+  public static readonly TEMPLATE_NAME = "spfx-tab";
+  public static readonly TEMPLATE_NAME_PRERELEASE = "spfx-tab-pre";
 }
 
 export class PlaceHolders {

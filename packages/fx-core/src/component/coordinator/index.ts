@@ -69,6 +69,7 @@ import { DotenvParseOutput } from "dotenv";
 import { YamlParser } from "../configManager/parser";
 import { provisionUtils } from "../provisionUtils";
 import { envUtil } from "../utils/envUtil";
+import { SPFxGenerator } from "../generator/spfxGenerator";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { ExecutionError, ExecutionOutput } from "../configManager/interface";
 import { createContextV3 } from "../utils";
@@ -163,18 +164,23 @@ export class Coordinator {
       const feature = inputs.capabilities as string;
       delete inputs.folder;
 
-      if (feature === M365SsoLaunchPageOptionItem.id || feature === M365SearchAppOptionItem.id) {
-        context.projectSetting.isM365 = true;
-        inputs.isM365 = true;
-      }
-      const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
-      const templateName = Feature2TemplateName[`${feature}:${trigger}`];
-      if (templateName) {
-        const langKey = convertToLangKey(language);
-        context.templateVariables = Generator.getDefaultVariables(appName);
-        const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
+      if (feature === TabSPFxNewUIItem.id) {
+        const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
+      } else {
+        if (feature === M365SsoLaunchPageOptionItem.id || feature === M365SearchAppOptionItem.id) {
+          context.projectSetting.isM365 = true;
+          inputs.isM365 = true;
+        }
+        const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
+        const templateName = Feature2TemplateName[`${feature}:${trigger}`];
+        if (templateName) {
+          const langKey = convertToLangKey(language);
+          const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
+          if (res.isErr()) return err(res.error);
+        }
       }
+
       merge(actionContext?.telemetryProps, {
         [TelemetryProperty.Feature]: feature,
       });

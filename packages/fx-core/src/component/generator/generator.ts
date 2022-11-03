@@ -10,9 +10,9 @@ import {
   TelemetryProperty,
 } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
-import { errorSource } from "../code/tab/constants";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { errorSource } from "./constant";
 import { FetchZipFromUrlError, TemplateZipFallbackError, UnzipError } from "./error";
 import {
   SampleActionSeq,

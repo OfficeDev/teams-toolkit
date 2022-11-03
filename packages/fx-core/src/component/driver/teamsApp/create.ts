@@ -9,6 +9,7 @@ import {
   Result,
   err,
   ok,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
@@ -119,7 +120,9 @@ export class CreateTeamsAppDriver implements StepDriver {
           createdAppDefinition.teamsAppId!
         );
         context.logProvider.info(message);
-        context.ui?.showMessage("info", message, false);
+        if (context.platform === Platform.VSCode) {
+          context.ui?.showMessage("info", message, false);
+        }
         return ok(
           new Map([
             [outputNames.TEAMS_APP_ID, createdAppDefinition.teamsAppId!],

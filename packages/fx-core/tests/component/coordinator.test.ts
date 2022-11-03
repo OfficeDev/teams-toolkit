@@ -192,6 +192,43 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isOk());
   });
 
+  it("provision happy path (debug)", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
+          return ok(new Map());
+        },
+      },
+    };
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      workflowFilePath: "./app.local.yml",
+      env: "local",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    if (res.isErr()) {
+      console.log(res?.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+
   it("deploy happy path", async () => {
     const mockProjectModel: ProjectModel = {
       deploy: {
@@ -228,6 +265,43 @@ describe("component coordinator test", () => {
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.deployArtifacts(inputs);
+    assert.isTrue(res.isOk());
+  });
+
+  it("deploy happy path (debug)", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
+          return ok(new Map());
+        },
+      },
+    };
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      workflowFilePath: "./app.local.yml",
+      env: "local",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.deployArtifacts(inputs);
+    if (res.isErr()) {
+      console.log(res?.error);
+    }
     assert.isTrue(res.isOk());
   });
 

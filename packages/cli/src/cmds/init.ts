@@ -1,73 +1,81 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
+import { Result, FxError, err, ok } from "@microsoft/teamsfx-api";
+import path from "path";
 import { Argv } from "yargs";
-import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
 import activate from "../activate";
-import { YargsCommand } from "../yargsCommand";
-import { getSystemInputs } from "../utils";
+import * as constants from "../constants";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import HelpParamGenerator from "../helpParamGenerator";
-import * as uuid from "uuid";
-import * as fs from "fs-extra";
-import * as path from "path";
-import { NotFoundInputedFolder } from "../error";
+import { getSystemInputs } from "../utils";
+import { YargsCommand } from "../yargsCommand";
 
-export default class Init extends YargsCommand {
-  public readonly commandHead = `init`;
+export class InitInfra extends YargsCommand {
+  public readonly commandHead = `infra`;
   public readonly command = this.commandHead;
-  public readonly description = "Initialize an existing application.";
+  // TODO: change the string.
+  public readonly description = "Initialize the infrastructure of the project.";
 
   public builder(yargs: Argv): Argv<any> {
-    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.init);
-    if (this.params) {
-      yargs.options(this.params);
-    }
-    return yargs.version(false);
+    return yargs.options(constants.RootFolderOptions);
   }
 
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.InitProjectStart);
-
-    if (!(await fs.pathExists(rootFolder))) {
-      CliTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.InitProject,
-        NotFoundInputedFolder(rootFolder)
-      );
-      return err(NotFoundInputedFolder(rootFolder));
-    }
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.InitInfraStart);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.InitProject, result.error);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.InitInfra, result.error);
       return err(result.error);
     }
 
     const core = result.value;
     const inputs = getSystemInputs(rootFolder);
-    inputs.projectId = inputs.projectId ?? uuid.v4();
-    inputs.folder = inputs.folder ?? rootFolder;
 
-    const initResult = await core.init(inputs);
+    const initResult = await core.initInfra(inputs);
     if (initResult.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.InitProject, initResult.error);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.InitInfra, initResult.error);
       return err(initResult.error);
     }
 
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.InitProject, {
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.InitInfra, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.NewProjectId]: inputs.projectId,
     });
+    return ok(null);
+  }
+}
+
+export default class Init extends YargsCommand {
+  public readonly commandHead = `init`;
+  public readonly command = `${this.commandHead} <part>`;
+  // TODO: change the string.
+  public readonly description = "Initialize the project for using Teams Toolkit.";
+
+  public readonly subCommands: YargsCommand[] = [new InitInfra()];
+
+  public builder(yargs: Argv): Argv<any> {
+    this.subCommands.forEach((cmd) => {
+      yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
+    });
+    return yargs
+      .options("part", {
+        choices: this.subCommands.map((c) => c.commandHead),
+        global: false,
+        hidden: true,
+      })
+      .version(false)
+      .hide("interactive");
+  }
+
+  public async runCommand(args: any): Promise<Result<null, FxError>> {
     return ok(null);
   }
 }

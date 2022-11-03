@@ -102,6 +102,8 @@ export const TaskCommand = Object.freeze({
   setUpBot: "debug-set-up-bot",
   setUpSSO: "debug-set-up-sso",
   prepareManifest: "debug-prepare-manifest",
+  provision: "provision",
+  deploy: "deploy",
 });
 
 export const TaskOverallLabel = Object.freeze({

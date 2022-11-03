@@ -59,7 +59,7 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
 
     const inputs = getSystemInputs();
     inputs.env = this.args.env;
-    inputs.template = path.resolve(
+    inputs.workflowFilePath = path.resolve(
       globalVariables.workspaceUri?.fsPath ?? "",
       BaseTaskTerminal.resolveTeamsFxVariables(this.args.template)
     );

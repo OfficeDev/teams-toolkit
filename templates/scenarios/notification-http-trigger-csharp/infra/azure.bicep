@@ -96,7 +96,6 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
 }
 
 output BOT_DOMAIN string = functionApp.properties.defaultHostName
-output APP_SERVICE_PLAN_NAME string = serverfarmsName
-output FUNCTION_APP_RESOURCE_ID string = functionApp.id
-output FUNCTION_ENDPOINT string = 'https://${functionApp.properties.defaultHostName}'
+output BOT_AZURE_FUNCTION_APP_RESOURCE_ID string = functionApp.id
+output BOT_FUNCTION_ENDPOINT string = 'https://${functionApp.properties.defaultHostName}'
 

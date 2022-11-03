@@ -55,7 +55,7 @@ export interface ActionOption {
 
 export function ActionExecutionMW(action: ActionOption): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
-    const componentName = ctx.self?.constructor.name || action.componentName;
+    const componentName = action.componentName || ctx.self?.constructor.name;
     const telemetryComponentName = action.telemetryComponentName || componentName;
     const methodName = ctx.method!;
     const actionName = `${componentName}.${methodName}`;

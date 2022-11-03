@@ -12,7 +12,7 @@ import {
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { errorSource } from "./constant";
+import { errorSource, componentName } from "./constant";
 import { FetchZipFromUrlError, TemplateZipFallbackError, UnzipError } from "./error";
 import {
   SampleActionSeq,
@@ -41,6 +41,7 @@ export class Generator {
       enableProgressBar: true,
       progressTitle: ProgressTitles.generateTemplate,
       progressSteps: 1,
+      componentName: componentName,
       errorSource: errorSource,
     }),
   ])
@@ -72,6 +73,7 @@ export class Generator {
       enableProgressBar: true,
       progressTitle: ProgressTitles.generateSample,
       progressSteps: 1,
+      componentName: componentName,
       errorSource: errorSource,
     }),
   ])

@@ -53,7 +53,7 @@
         {
             "label": "Start frontend",
             "type": "shell",
-            "command": "npm run dev:teamsfx",
+            "command": "node teamsfx/script/run.js teamsfx/.env.local",
             "isBackground": true,
             "problemMatcher": {
                 "pattern": {

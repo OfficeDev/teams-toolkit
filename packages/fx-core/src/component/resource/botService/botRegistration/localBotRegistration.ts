@@ -18,7 +18,13 @@ export class LocalBotRegistration extends BotRegistration {
     botAuthType: BotAuthType = BotAuthType.AADApp,
     logProvider?: LogProvider
   ): Promise<Result<BotAadCredentials, FxError>> {
-    const botAadRes = await super.createBotAadApp(m365TokenProvider, aadDisplayName, botConfig);
+    const botAadRes = await super.createBotAadApp(
+      m365TokenProvider,
+      aadDisplayName,
+      botConfig,
+      botAuthType,
+      logProvider
+    );
     if (botAadRes.isErr()) {
       return err(botAadRes.error);
     }

@@ -804,6 +804,12 @@
               {
                 "const": "debug-prepare-manifest",
                 "description": "%teamstoolkit.taskDefinitions.command.manifest.description%"
+              },
+              {
+                "const": "provision"
+              },
+              {
+                "const": "deploy"
               }
             ]
           },
@@ -1030,6 +1036,22 @@
                       },
                       {}
                     ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "required": [
+                  "template",
+                  "env"
+                ],
+                "properties": {
+                  "template": {
+                    "type": "string"
+                  },
+                  "env": {
+                    "type": "string"
                   }
                 },
                 "additionalProperties": false

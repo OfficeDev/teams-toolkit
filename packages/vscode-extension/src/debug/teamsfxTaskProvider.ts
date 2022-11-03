@@ -16,6 +16,7 @@ import {
   VsCodeEnv,
   err,
   assembleError,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import {
@@ -44,6 +45,7 @@ import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskT
 import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
 import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { LifecycleTaskTerminal } from "./taskTerminal/lifecycleTaskTerminal";
 
 const customTasks = Object.freeze({
   [TaskCommand.checkPrerequisites]: {
@@ -84,6 +86,18 @@ const customTasks = Object.freeze({
   },
   [TaskCommand.prepareManifest]: {
     createTerminal: (d: vscode.TaskDefinition) => new PrepareManifestTaskTerminal(d),
+    presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
+  },
+  [TaskCommand.provision]: {
+    createTerminal: (d: vscode.TaskDefinition) => new LifecycleTaskTerminal(d, Stage.provision),
+    presentationReveal: vscode.TaskRevealKind.Never,
+    presentationEcho: false,
+    presentationshowReuseMessage: false,
+  },
+  [TaskCommand.deploy]: {
+    createTerminal: (d: vscode.TaskDefinition) => new LifecycleTaskTerminal(d, Stage.deploy),
     presentationReveal: vscode.TaskRevealKind.Never,
     presentationEcho: false,
     presentationshowReuseMessage: false,

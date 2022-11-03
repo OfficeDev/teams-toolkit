@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, ok, err, ManifestUtil } from "@microsoft/teamsfx-api";
+import { Result, FxError, ok, err, ManifestUtil, Platform } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import { StepDriver } from "../interface/stepDriver";
@@ -77,7 +77,10 @@ export class ValidateTeamsAppDriver implements StepDriver {
       return err(validationFailed);
     }
     const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
-    context.ui?.showMessage("info", validationSuccess, false);
+    context.logProvider.info(validationSuccess);
+    if (context.platform === Platform.VSCode) {
+      context.ui?.showMessage("info", validationSuccess, false);
+    }
     return ok(new Map());
   }
 

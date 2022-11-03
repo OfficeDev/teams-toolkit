@@ -12,7 +12,7 @@ import {
   TelemetrySuccess,
 } from "../../../src/telemetry/cliTelemetryEvents";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
-import Init from "../../../src/cmds/init";
+import Init, { InitInfra } from "../../../src/cmds/init";
 import { expect, TestFolder } from "../utils";
 
 describe("Init Command Tests", () => {
@@ -41,9 +41,7 @@ describe("Init Command Tests", () => {
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });
-    sandbox.stub(FxCore.prototype, "init").callsFake(async (_inputs: Inputs) => {
-      return ok("");
-    });
+    sandbox.stub(FxCore.prototype, "initInfra").resolves(ok(undefined));
     sandbox
       .stub(CliTelemetry, "sendTelemetryEvent")
       .callsFake((eventName: string, options?: { [_: string]: string }) => {
@@ -71,37 +69,19 @@ describe("Init Command Tests", () => {
     telemetryEventStatus = undefined;
   });
 
-  const cmd = new Init();
   it("Builder Check", () => {
+    const cmd = new Init();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(["init"]);
+    expect(registeredCommands).deep.equals(["init <part>", "infra"]);
   });
 
   it("Command Running Check", async () => {
+    const cmd = new InitInfra();
     const args = {
-      "app-name": "init-app-ut",
       folder: TestFolder,
     };
     await cmd.handler(args);
-    expect(telemetryEvents).deep.equals([
-      TelemetryEvent.InitProjectStart,
-      TelemetryEvent.InitProject,
-    ]);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.InitInfraStart, TelemetryEvent.InitInfra]);
     expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
-  });
-
-  it("Input Wrong Folder Path Check", async () => {
-    try {
-      await cmd.handler({ folder: "/unknownFolder" });
-    } catch (e) {
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("NotFoundInputFolder");
-    }
-
-    expect(telemetryEvents).deep.equals([
-      TelemetryEvent.InitProjectStart,
-      TelemetryEvent.InitProject,
-    ]);
-    expect(telemetryEventStatus).equals(TelemetrySuccess.No);
   });
 });

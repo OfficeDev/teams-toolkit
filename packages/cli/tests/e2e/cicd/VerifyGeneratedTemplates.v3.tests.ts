@@ -16,6 +16,7 @@ import { it } from "@microsoft/extra-shot-mocha";
 import Mustache from "mustache";
 import * as fs from "fs-extra";
 import { CICDProviderFactory } from "../../../../fx-core/src/component/feature/cicd/provider/factory";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 describe("Verify generated templates & readme V3", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -41,7 +42,7 @@ describe("Verify generated templates & readme V3", function () {
         getTemplatesFolder(),
         "plugins",
         "resource",
-        "cicd",
+        isV3Enabled() ? "cicd" : "cicd_v2",
         providerName
       );
       const templatePromises = ["ci", "cd", "provision", "publish"].map(async (template) => {

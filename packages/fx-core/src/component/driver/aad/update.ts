@@ -65,10 +65,6 @@ export class UpdateAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.outputAadAppManifest, outputFileAbsolutePath)
       );
 
-      context.logProvider?.info(
-        getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
-      );
-
       // MS Graph API does not allow adding new OAuth permissions and pre authorize it within one request
       // So split update AAD app to two requests:
       // 1. If there's preAuthorizedApplications, remove it temporary and update AAD app to create possible new permission
@@ -80,6 +76,10 @@ export class UpdateAadAppDriver implements StepDriver {
       }
       // 2. Update AAD app again with full manifest to set preAuthorizedApplications
       await aadAppClient.updateAadApp(manifest);
+
+      context.logProvider?.info(
+        getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
+      );
 
       return ok(
         new Map(

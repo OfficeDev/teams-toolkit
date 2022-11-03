@@ -401,8 +401,9 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
-    const maybeProjectModel = await parser.parse(inputs["template"] ?? templatePath);
+    const templatePath =
+      inputs["template"] ?? path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+    const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
     }

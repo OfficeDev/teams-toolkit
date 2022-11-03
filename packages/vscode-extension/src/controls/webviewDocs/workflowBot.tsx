@@ -14,6 +14,7 @@ import { Commands } from "../Commands";
 import CodeSnippet from "./codeSnippet";
 import CollapsibleStep from "./collapsibleStep";
 import ExternalLink from "./externalLink";
+import { useEffect } from "react";
 
 export default function WorkflowBot() {
   const onCreateNewProject = () => {
@@ -91,6 +92,33 @@ module.exports = {
   } 
 }); `,
   ];
+
+  let scrollToBottom = false;
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!scrollToBottom && window.scrollY > 2500) {
+        scrollToBottom = true;
+        vscode.postMessage({
+          command: Commands.SendTelemetryEvent,
+          data: {
+            eventName: TelemetryEvent.InteractWithInProductDoc,
+            properties: {
+              [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
+              [TelemetryProperty.Action]: "scroll-to-bottom",
+              [TelemetryProperty.TutorialName]: "workflow-bot",
+            },
+          },
+        });
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   return (
     <div className="markdown-body">

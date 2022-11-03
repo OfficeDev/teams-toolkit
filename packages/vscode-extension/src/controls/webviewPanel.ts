@@ -87,6 +87,18 @@ export class WebviewPanel {
     // This happens when the user closes the panel or when the panel is closed programatically
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
 
+    this.panel.onDidChangeViewState(
+      (e) => {
+        const panel = e.webviewPanel;
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
+          [TelemetryProperty.Action]: `${panel.visible ? "Show" : "Hide"} ${panelType}`,
+        });
+      },
+      null,
+      globalVariables.context.subscriptions
+    );
+
     // Handle messages from the webview
     this.panel.webview.onDidReceiveMessage(
       async (msg) => {
@@ -389,7 +401,13 @@ export class WebviewPanel {
   };
 
   public dispose() {
-    WebviewPanel.currentPanels.splice(WebviewPanel.currentPanels.indexOf(this), 1);
+    const panelIndex = WebviewPanel.currentPanels.indexOf(this);
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
+      [TelemetryProperty.Action]: `Close ${WebviewPanel.currentPanels[panelIndex].panelType}`,
+    });
+
+    WebviewPanel.currentPanels.splice(panelIndex, 1);
 
     AzureAccountManager.removeStatusChangeMap("quick-start-webview");
 

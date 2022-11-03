@@ -3,49 +3,51 @@
 
 import * as vscode from "vscode";
 
-import * as constants from "./constants";
-import * as commonUtils from "./commonUtils";
 import {
-  ok,
+  assembleError,
+  err,
   FxError,
   Json,
+  ok,
   ProductName,
   ProjectSettings,
   Result,
+  Stage,
   v2,
   VsCodeEnv,
-  err,
-  assembleError,
-  Stage,
 } from "@microsoft/teamsfx-api";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import {
   FolderName,
-  LocalEnvManager,
   ITaskDefinition,
+  LocalEnvManager,
   ProgrammingLanguage,
-  TaskDefinition,
   TaskCommand,
+  TaskDefinition,
 } from "@microsoft/teamsfx-core/build/common/local";
-import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
-import { vscodeLogger } from "./depsChecker/vscodeLogger";
-import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
+import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+
 import VsCodeLogInstance from "../commonlib/log";
 import { detectVsCodeEnv, showError } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
-import { vscodeHelper } from "./depsChecker/vscodeHelper";
-import { localTelemetryReporter } from "./localTelemetryReporter";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
-import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTerminal";
-import { NpmInstallTaskTerminal } from "./taskTerminal/npmInstallTaskTerminal";
-import { LocalTunnelTaskTerminal } from "./taskTerminal/localTunnelTaskTerminal";
-import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
-import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskTerminal";
-import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
-import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
+import * as commonUtils from "./commonUtils";
+import * as constants from "./constants";
+import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
+import { vscodeHelper } from "./depsChecker/vscodeHelper";
+import { vscodeLogger } from "./depsChecker/vscodeLogger";
+import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
+import { localTelemetryReporter } from "./localTelemetryReporter";
 import { LifecycleTaskTerminal } from "./taskTerminal/lifecycleTaskTerminal";
+import { LocalTunnelTaskTerminal } from "./taskTerminal/localTunnelTaskTerminal";
+import { NpmInstallTaskTerminal } from "./taskTerminal/npmInstallTaskTerminal";
+import { PrepareManifestTaskTerminal } from "./taskTerminal/prepareManifestTaskTerminal";
+import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTerminal";
+import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
+import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
+import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
 
 const customTasks = Object.freeze({
   [TaskCommand.checkPrerequisites]: {
@@ -139,13 +141,15 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     if (vscode.workspace.workspaceFolders) {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
       const workspacePath: string = workspaceFolder.uri.fsPath;
-      if (!(await commonUtils.isFxProject(workspacePath))) {
-        return ok(undefined);
-      }
 
       if (isV3Enabled()) {
         return ok(undefined);
       }
+
+      if (!isValidProject(workspacePath)) {
+        return ok(undefined);
+      }
+
       const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
       let projectSettings: ProjectSettings;
       let localSettings: Json | undefined;

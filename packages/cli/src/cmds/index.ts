@@ -24,6 +24,7 @@ import Env from "./env";
 import M365 from "./m365/m365";
 import { ManifestValidate } from "./validate";
 import { ApplyCommand } from "./apply";
+import Init from "./init";
 
 export const commands: YargsCommand[] = [
   new Account(),
@@ -50,6 +51,7 @@ export function registerCommands(yargs: Argv): void {
   }
   if (isV3Enabled()) {
     commands.push(new ApplyCommand());
+    commands.push(new Init());
   }
 
   commands.forEach((command) => {

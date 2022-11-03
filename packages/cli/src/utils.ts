@@ -31,6 +31,8 @@ import {
   InputConfigsFolderName,
   SingleSelectConfig,
   ProjectSettingsV3,
+  SettingsFolderName,
+  SettingsFileName,
 } from "@microsoft/teamsfx-api";
 
 import {
@@ -156,12 +158,14 @@ export function getEnvFilePath(
 }
 
 export function getSettingsFilePath(projectFolder: string) {
-  return path.join(
-    projectFolder,
-    `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    ProjectSettingsFileName
-  );
+  return isV3Enabled()
+    ? path.join(projectFolder, SettingsFolderName, SettingsFileName)
+    : path.join(
+        projectFolder,
+        `.${ConfigFolderName}`,
+        InputConfigsFolderName,
+        ProjectSettingsFileName
+      );
 }
 
 export function getSecretFilePath(
@@ -237,7 +241,14 @@ export function readSettingsFileSync(projectFolder: string): Result<Json, FxErro
 
   try {
     const settings = fs.readJsonSync(filePath);
-    return ok(settings);
+    if (isV3Enabled()) {
+      return ok({
+        projectId: settings.trackingId,
+        version: settings.version,
+      });
+    } else {
+      return ok(settings);
+    }
   } catch (e) {
     return err(ReadFileError(e));
   }

@@ -78,7 +78,7 @@ export default class Package extends YargsCommand {
         func.params = {
           manifestTemplatePath:
             args[ManifestFilePathParamName] ??
-            `${rootFolder}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
+            `${rootFolder}/${AppPackageFolderName}/manifest.template.json`,
           ouptutZipPath:
             args[OutputZipPathParamName] ??
             `${rootFolder}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`,

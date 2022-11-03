@@ -317,17 +317,14 @@ describe("component coordinator test", () => {
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      folder: ".",
+      projectPath: ".",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.initInfra(inputs);
     assert.isTrue(res.isOk());
   });
 
-  it("init infra without fold", async () => {
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
-    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+  it("init infra without projectPath", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
     };

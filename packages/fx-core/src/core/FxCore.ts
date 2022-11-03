@@ -329,15 +329,17 @@ export class FxCore implements v3.ICore {
     return isV3Enabled() ? this.deployArtifactsNew(inputs) : this.deployArtifactsOld(inputs);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
   async deployArtifactsNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
     const context = createDriverContext(inputs);
-    const res = await coordinator.deploy(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
+    const [output, error] = await coordinator.deploy(context, inputs as InputsWithProjectPath);
+    ctx!.envVars = output;
+    if (error) return err(error);
     return ok(Void);
   }
+
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,

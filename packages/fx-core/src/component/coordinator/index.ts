@@ -399,22 +399,26 @@ export class Coordinator {
     ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<[DotenvParseOutput | undefined, FxError | undefined]> {
+    const output: DotenvParseOutput = {};
     const parser = new YamlParser();
     const templatePath =
       inputs["workflowFilePath"] ??
       path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
-      return err(maybeProjectModel.error);
+      return [undefined, maybeProjectModel.error];
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
       const execRes = await projectModel.deploy.execute(ctx);
       const result = this.convertExecuteResult(execRes);
-      if (result[1]) return err(result[1]);
+      merge(output, result[0]);
+      if (result[1]) {
+        return [output, result[1]];
+      }
     }
-    return ok(undefined);
+    return [output, undefined];
   }
 
   @hooks([

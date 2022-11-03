@@ -3,10 +3,16 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "resourceBaseName": {
-        "value": "ssotab${{RESOURCE_SUFFIX}}"
+        "value": "notification${{RESOURCE_SUFFIX}}"
       },
-      "storageSku": {
-        "value": "Standard_LRS"
+      "botAadAppClientId": {
+        "value": "${{BOT_ID}}"
+      },
+      "botAadAppClientSecret": {
+        "value": "${{SECRET_BOT_PASSWORD}}"
+      },
+      "webAppSKU": {
+        "value": "F1"
       }
     }
   }

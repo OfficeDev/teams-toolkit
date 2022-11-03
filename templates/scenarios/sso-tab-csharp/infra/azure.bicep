@@ -1,25 +1,52 @@
+@maxLength(20)
+@minLength(4)
+@description('Used to generate names for all resources in this file')
 param resourceBaseName string
-param storageSku string
 
-param storageName string = resourceBaseName
+@description('Required when create Azure Bot service')
+param botAadAppClientId string
+
+@secure()
+@description('Required by Bot Framework package in your bot project')
+param botAadAppClientSecret string
+
+param webAppSKU string
+
+param serverfarmsName string = resourceBaseName
+param webAppName string = resourceBaseName
 param location string = resourceGroup().location
 
-// Azure Storage that hosts your static web site
-resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
-  kind: 'StorageV2'
+// Compute resources for your Web App
+resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
+  kind: 'app'
   location: location
-  name: storageName
-  properties: {
-    supportsHttpsTrafficOnly: true
-  }
+  name: serverfarmsName
   sku: {
-    name: storageSku
+    name: webAppSKU
   }
 }
 
-var siteDomain = replace(replace(storage.properties.primaryEndpoints.web, 'https://', ''), '/', '')
+// Web App that hosts your bot
+resource webApp 'Microsoft.Web/sites@2021-02-01' = {
+  kind: 'app'
+  location: location
+  name: webAppName
+  properties: {
+    serverFarmId: serverfarm.id
+    httpsOnly: true
+    siteConfig: {
+      alwaysOn: true
+      appSettings: [
+        {
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '1'
+        }
+      ]
+      ftpsState: 'FtpsOnly'
+    }
+  }
+}
 
 // The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-provision-arm#output for more details.
-output TAB_AZURE_STORAGE_RESOURCE_ID string = storage.id // used in deploy stage
-output TAB_DOMAIN string = siteDomain
-output TAB_ENDPOINT string = 'https://${siteDomain}'
+output BOT_AZURE_APP_SERVICE_RESOURCE_ID string = webApp.id
+output BOT_DOMAIN string = webApp.properties.defaultHostName

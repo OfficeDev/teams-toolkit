@@ -1030,6 +1030,7 @@
   "configManager.error.driverNotFound": "Driver %s not found for step %s",
   "configManager.error.yamlParsing": "Error parsing yaml file at path %s. Reason: %s",
   "configManager.error.invalidLifecycle": "The schema of lifecycle %s is invalid",
+  "configManager.error.invalidEnvField": "The env field of action %s in lifecycle %s is invalid.",
   "botRegistration.ProgressBar.creatingBotAadApp": "Creating bot aad app.",
   "botRegistration.log.startCreateBotAadApp": "Creating bot aad app.",
   "botRegistration.log.successCreateBotAadApp": "Bot aad app created successfully.",

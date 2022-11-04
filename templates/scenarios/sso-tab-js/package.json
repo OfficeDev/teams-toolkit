@@ -18,6 +18,7 @@
         "react-scripts": "^5.0.1"
     },
     "devDependencies": {
+        "@microsoft/teamsfx-run-utils": "alpha",
         "cross-env": "^7.0.3",
         "dotenv": "^16.0.3"
     },

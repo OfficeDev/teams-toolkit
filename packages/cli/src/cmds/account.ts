@@ -31,7 +31,7 @@ import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { getColorizedString, setSubscriptionId, toLocaleLowerCase, toYargsOptions } from "../utils";
 import { checkIsOnline } from "../commonlib/codeFlowLogin";
-import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   const appStudioTokenJsonRes = await M365TokenProvider.getJsonObject({ scopes: AppStudioScopes });
@@ -389,7 +389,7 @@ export default class Account extends YargsCommand {
     new AccountShow(),
     new AccountLogin(),
     new AccountLogout(),
-    new AccountSet(),
+    ...(isV3Enabled() ? [] : [new AccountSet()]),
   ];
 
   public builder(yargs: Argv): Argv<any> {

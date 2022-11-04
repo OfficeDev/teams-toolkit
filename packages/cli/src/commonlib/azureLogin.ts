@@ -47,7 +47,7 @@ import CLIUIInstance from "../userInteraction";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { isWorkspaceSupported } from "../utils";
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 
 const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
@@ -382,11 +382,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     for (let i = 0; i < list.length; ++i) {
       const item = list[i];
       if (item.subscriptionId === subscriptionId) {
-        await this.saveSubscription({
-          subscriptionId: item.subscriptionId,
-          subscriptionName: item.subscriptionName,
-          tenantId: item.tenantId,
-        });
+        // await this.saveSubscription({
+        //   subscriptionId: item.subscriptionId,
+        //   subscriptionName: item.subscriptionName,
+        //   tenantId: item.tenantId,
+        // });
         AzureAccountManager.tenantId = item.tenantId;
         AzureAccountManager.teamsFxTokenCredential.setTenantId(item.tenantId);
         AzureAccountManager.subscriptionId = item.subscriptionId;
@@ -473,6 +473,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async readSubscription(): Promise<SubscriptionInfo | undefined> {
+    if (isV3Enabled()) {
+      return undefined;
+    }
     const subscriptionFilePath = await this.getSubscriptionInfoPath();
     if (!subscriptionFilePath || !fs.existsSync(subscriptionFilePath)) {
       const solutionSubscriptionInfo = await this.getSubscriptionInfoFromEnv();

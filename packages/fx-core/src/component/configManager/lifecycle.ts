@@ -21,6 +21,12 @@ function resolveDriverDef(def: DriverDefinition, unresolved: UnresolvedPlacehold
     const val = args[k];
     args[k] = resolve(val, unresolved);
   }
+  if (def.env) {
+    for (const k in def.env) {
+      const val = def.env[k];
+      def.env[k] = resolveString(val, unresolved);
+    }
+  }
 }
 
 // Replace placeholders in the driver definitions' `with` field inplace
@@ -104,6 +110,12 @@ export class Lifecycle implements ILifecycle {
             unresolvedPlaceHolders: unresolved,
           },
         });
+      }
+
+      if (driver.env) {
+        for (const [envVar, value] of Object.entries(driver.env)) {
+          process.env[envVar] = value;
+        }
       }
 
       const result = await driver.instance.run(driver.with, ctx);

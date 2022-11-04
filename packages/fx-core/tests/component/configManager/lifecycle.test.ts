@@ -15,7 +15,7 @@ import {
   MockedUserInteraction,
 } from "../../plugins/solution/util";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
-import { Platform, Result, FxError, ok, err } from "@microsoft/teamsfx-api";
+import { Platform, Result, FxError, ok, err, SystemError } from "@microsoft/teamsfx-api";
 import { StepDriver } from "../../../src/component/driver/interface/stepDriver";
 
 const mockedDriverContext: DriverContext = {
@@ -64,6 +64,21 @@ class DriverThatHasNestedArgs implements StepDriver {
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     return ok(new Map([["OUTPUT_D", args.key.map((e) => e.key1).join(",")]]));
+  }
+}
+
+const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
+
+class DriverThatUsesEnvField implements StepDriver {
+  async run(
+    args: { key: [{ key1: string }] },
+    context: DriverContext
+  ): Promise<Result<Map<string, string>, FxError>> {
+    if (process.env["ENV_VAR1"]) {
+      return ok(new Map([["OUTPUT_E", process.env["ENV_VAR1"]]]));
+    } else {
+      return err(mockedError);
+    }
   }
 }
 
@@ -276,6 +291,8 @@ describe("v3 lifecyle", () => {
         .withArgs(sandbox.match("DriverThatLowercase"))
         .returns(true)
         .withArgs(sandbox.match("DriverThatHasNestedArgs"))
+        .returns(true)
+        .withArgs(sandbox.match("DriverThatUsesEnvField"))
         .returns(true);
       sandbox
         .stub(Container, "get")
@@ -284,7 +301,9 @@ describe("v3 lifecyle", () => {
         .withArgs(sandbox.match("DriverThatLowercase"))
         .returns(new DriverThatLowercase())
         .withArgs(sandbox.match("DriverThatHasNestedArgs"))
-        .returns(new DriverThatHasNestedArgs());
+        .returns(new DriverThatHasNestedArgs())
+        .withArgs(sandbox.match("DriverThatUsesEnvField"))
+        .returns(new DriverThatUsesEnvField());
     });
 
     after(() => {
@@ -410,6 +429,21 @@ describe("v3 lifecyle", () => {
             result.value.get("OUTPUT_C") === "hello hello xxx"
         );
       });
+
+      it("should resolve placeholders in env field", async () => {
+        const driverDefs: DriverDefinition[] = [];
+        driverDefs.push({
+          uses: "DriverThatUsesEnvField",
+          with: {},
+          env: {
+            ENV_VAR1: "hello ${{ SOME_ENV_VAR }}",
+          },
+        });
+
+        const lifecycle = new Lifecycle("configureApp", driverDefs);
+        const result = await lifecycle.execute(mockedDriverContext);
+        assert(result.isOk() && result.value.get("OUTPUT_E") === "hello xxx");
+      });
     });
   });
 
@@ -422,13 +456,17 @@ describe("v3 lifecyle", () => {
         .withArgs(sandbox.match("DriverThatCapitalize"))
         .returns(true)
         .withArgs(sandbox.match("DriverThatLowercase"))
+        .returns(true)
+        .withArgs(sandbox.match("DriverThatUsesEnvField"))
         .returns(true);
       sandbox
         .stub(Container, "get")
         .withArgs(sandbox.match("DriverThatCapitalize"))
         .returns(new DriverThatCapitalize())
         .withArgs(sandbox.match("DriverThatLowercase"))
-        .returns(new DriverThatLowercase());
+        .returns(new DriverThatLowercase())
+        .withArgs(sandbox.match("DriverThatUsesEnvField"))
+        .returns(new DriverThatUsesEnvField());
     });
 
     after(() => {
@@ -529,6 +567,29 @@ describe("v3 lifecyle", () => {
           execResult.error.reason.unresolvedPlaceHolders.some((x) => x === "BBB") &&
           execResult.error.reason.failedDriver.uses === "DriverThatCapitalize"
       );
+    });
+
+    describe("execute()", async () => {
+      it("should return unresolved placeholders in env field", async () => {
+        const driverDefs: DriverDefinition[] = [];
+        driverDefs.push({
+          uses: "DriverThatUsesEnvField",
+          with: {},
+          env: {
+            ENV_VAR1: "hello ${{ SOME_ENV_VAR }}",
+          },
+        });
+
+        const lifecycle = new Lifecycle("configureApp", driverDefs);
+        const result = await lifecycle.execute(mockedDriverContext);
+        assert(
+          result.isErr() &&
+            result.error.kind === "PartialSuccess" &&
+            result.error.reason.kind === "UnresolvedPlaceholders" &&
+            result.error.reason.unresolvedPlaceHolders.some((x) => x === "SOME_ENV_VAR") &&
+            result.error.reason.failedDriver.uses === "DriverThatUsesEnvField"
+        );
+      });
     });
   });
 });

@@ -98,6 +98,9 @@
   "core.progress.uploadZipFileToAzure": "Uploading application package to Azure.",
   "core.progress.checkAzureDeployStatus": "Waiting for Azure deployment to complete.",
   "core.progress.restartAzureFunctionApp": "Restarting Azure Function App.",
+  "core.progress.getAzureStorageDeployCredential": "Retrieving Azure Storage account deployment credential.",
+  "core.progress.clearStorageExistsBlobs": "Cleaning up Azure Storage exists blob files.",
+  "core.progress.uploadFilesToStorage": "Uploading files to Azure Storage account.",
   "core.log.updateFunctionAppSettings": "Updating Azure Function app settings.",
   "core.error.programmingLanguageInvalid": "Invalid programming language found in project settings.",
   "core.Notification.ReadMore": "Read more",
@@ -1054,5 +1057,7 @@
   "driver.spfx.error.noValidAppCatelog": "There is no valid app catalog in your tenant. You can update the property 'createAppCatalogIfNotExist' in app.yml to true if you want us to create it for you or you can create it by yourself.",
   "driver.tools.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.env.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
-  "driver.env.error.unhandledError": "Unhandled error happened in %s action: %s"
+  "driver.env.error.unhandledError": "Unhandled error happened in %s action: %s",
+  "driver.env.error.folderNotExist": "Folder %s does not exist.",
+  "driver.deploy.error.noFileFindInDistributionFolder": "No file is found in distribution folder. Please check if the distribution folder is empty or you have ignored everything."
 }

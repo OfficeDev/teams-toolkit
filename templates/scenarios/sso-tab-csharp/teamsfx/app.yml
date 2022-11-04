@@ -16,12 +16,12 @@ deploy:
   - uses: dotnet/command
     with:
       workingDirectory: ./
-      args: publish --configuration Release --runtime win-x86 --self-contained
+      args: publish --configuration Release
   - uses: azureAppService/deploy
     with:
       workingDirectory: .
       # deploy base folder
-      distributionPath: ./bin/Release/net6.0/win-x86
+      distributionPath: ./bin/Release/net6.0/publish
       # the resource id of the cloud resource to be deployed to
       resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}}
 

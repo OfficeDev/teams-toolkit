@@ -1,4 +1,4 @@
-# 1.3.0
+# 1.2.0 -rc.2
 
 - Update to use Teams JS SDK V2
 

@@ -138,13 +138,15 @@ describe("Generator happy path", async () => {
   });
 
   it("teamsfx sample", async () => {
+    const actionContext = { telemetryProps: {} };
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
     const sampleName = "bot-sso";
-    const result = await Generator.generateSample(context, tmpDir, sampleName);
+    const result = await Generator.generateSample(context, tmpDir, sampleName, actionContext);
     assert.isTrue(result.isOk());
   });
 
   it("template", async () => {
+    const actionContext = { telemetryProps: {} };
     const inputDir = path.join(tmpDir, "input");
     await fs.ensureDir(inputDir);
     const fileData = "{{appName}}";
@@ -158,7 +160,13 @@ describe("Generator happy path", async () => {
     const templateName = "bot";
     const language = "ts";
     context.templateVariables = Generator.getDefaultVariables("test");
-    const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
+    const result = await Generator.generateTemplate(
+      context,
+      tmpDir,
+      templateName,
+      language,
+      actionContext
+    );
     assert.isTrue(result.isOk());
   });
 

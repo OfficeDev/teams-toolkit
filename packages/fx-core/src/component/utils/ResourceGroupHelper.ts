@@ -113,8 +113,8 @@ export class ResourceGroupHelper {
     if (maybeExist.value) {
       return err(
         new UserError(
-          SolutionSource,
-          SolutionError.FailedToCreateResourceGroup,
+          "coordinator",
+          "ResourceGroupExists",
           getLocalizedString("core.error.FailedToCreateResourceGroup.exist", resourceGroupName)
         )
       );

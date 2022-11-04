@@ -98,3 +98,19 @@ export class DeployTimeoutError extends BaseComponentInnerError {
     return new DeployTimeoutError("DeployTimeoutError", "plugins.bot.CheckDeployStatusTimeout");
   }
 }
+
+/**
+ * user input case some logic error
+ */
+export class DeployUserInputError extends BaseComponentInnerError {
+  constructor(name: string, messageKey: string) {
+    super(DeployConstant.DEPLOY_ERROR_TYPE, "UserError", name, messageKey);
+  }
+
+  static noFilesFindInDistFolder(): DeployUserInputError {
+    return new DeployUserInputError(
+      "NoFilesFindInDistFolder",
+      "driver.deploy.error.noFileFindInDistributionFolder"
+    );
+  }
+}

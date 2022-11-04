@@ -20,10 +20,9 @@
     "devDependencies": {
         "@microsoft/teamsfx-run-utils": "alpha",
         "cross-env": "^7.0.3",
-        "env-cmd": "^10.1.0"
+        "dotenv": "^16.0.3"
     },
     "scripts": {
-        "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run start",
         "start": "cross-env GENERATE_SOURCEMAP=false react-scripts start",
         "install:teamsfx": "npm install",
         "build": "cross-env GENERATE_SOURCEMAP=false react-scripts build",

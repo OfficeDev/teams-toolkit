@@ -4,6 +4,7 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   CLIPlatforms,
+  ContextV3,
   err,
   FxError,
   Inputs,
@@ -11,12 +12,18 @@ import {
   QTreeNode,
   Result,
   traverse,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { isCLIDotNetEnabled, isPreviewFeaturesEnabled } from "../../common/featureFlags";
-import { deepCopy, isExistingTabAppEnabled } from "../../common/tools";
+import { AppStudioScopes, deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
 import { getNotificationTriggerQuestionNode } from "../../component/question";
-import { ExistingTabOptionItem, TabSPFxItem } from "../../component/constants";
+import {
+  BotOptionItem,
+  ExistingTabOptionItem,
+  TabNewUIOptionItem,
+  TabSPFxItem,
+} from "../../component/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
 import { TOOLS } from "../globalVars";
 import {
@@ -37,6 +44,13 @@ import {
   ScratchOptionYes,
 } from "../question";
 import { CoreHookContext } from "../types";
+import { AppStudioClient } from "../../component/resource/appManifest/appStudioClient";
+import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
+import {
+  containsUnsupportedFeature,
+  needTabCode,
+  shouldSkipAskForCapability,
+} from "../../component/resource/appManifest/utils/utils";
 
 /**
  * This middleware will help to collect input from question flow
@@ -97,7 +111,9 @@ export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<strin
 async function getQuestionsForCreateProjectWithoutDotNet(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
+  const node = new QTreeNode(
+    getCreateNewOrFromSampleQuestion(inputs.platform, !!inputs.teamsAppFromTdp)
+  );
 
   // create new
   const createNew = new QTreeNode({ type: "group" });
@@ -113,7 +129,11 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     const capQuestion = createCapabilityQuestion();
     capNode = new QTreeNode(capQuestion);
   }
-  createNew.addChild(capNode);
+
+  // if(!shouldSkipAskForCapability(teamsAppDefinition)){
+  //  createNew.addChild(capNode);
+  //  inputs.capabilities = needTabCode(teamsAppDefinition!)? TabNewUIOptionItem.id: BotOptionItem.id;
+  // }
 
   const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
   if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
@@ -149,7 +169,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   }
 
   createNew.addChild(new QTreeNode(QuestionRootFolder));
-  createNew.addChild(new QTreeNode(createAppNameQuestion()));
+  createNew.addChild(new QTreeNode(createAppNameQuestion(inputs.teamsAppFromTdp?.appName)));
 
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);

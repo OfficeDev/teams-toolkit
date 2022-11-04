@@ -1246,7 +1246,7 @@ describe("handlers", () => {
       const progressHandler = new ProgressHandler("title", 1);
       const startProgress = sinon.stub(progressHandler, "start").resolves();
       const endProgress = sinon.stub(progressHandler, "end").resolves();
-      sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
+      sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok({ appId: "id" }));
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);

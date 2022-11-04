@@ -466,7 +466,14 @@ export function getSystemInputs(): Inputs {
 
 export async function createNewProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
-  const result = await runCommand(Stage.create);
+  let inputs: Inputs | undefined;
+  if (args?.length === 1) {
+    if (!!args[0].teamsAppFromTdp) {
+      inputs = getSystemInputs();
+      inputs.teamsAppFromTdp = args[0].teamsAppFromTdp;
+    }
+  }
+  const result = await runCommand(Stage.create, inputs);
   if (result.isErr()) {
     return err(result.error);
   }
@@ -3480,7 +3487,7 @@ export async function scaffoldFromDeveloperPortalHandler(
     1
   );
   await progressBar.start();
-  let token = "";
+  let appDefinition = undefined;
   try {
     const tokenRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
       { scopes: AppStudioScopes },
@@ -3497,7 +3504,7 @@ export async function scaffoldFromDeveloperPortalHandler(
       await progressBar.end(false);
       return err(tokenRes.error);
     }
-    token = tokenRes.value;
+    appDefinition = tokenRes.value;
     await progressBar.end(true);
   } catch (e) {
     vscode.window.showErrorMessage(
@@ -3507,7 +3514,7 @@ export async function scaffoldFromDeveloperPortalHandler(
     throw e;
   }
 
-  // TODO: get manifest and scaffold
+  const res = await createNewProjectHandler([{ teamsAppFromTdp: appDefinition }]);
 
   return ok(null);
 }

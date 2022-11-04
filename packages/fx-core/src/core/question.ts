@@ -69,11 +69,15 @@ export enum CoreQuestionNames {
 export const ProjectNamePattern =
   '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*&|\u0000-\u001F]*[^"\\s.<>:\\?/*&|\u0000-\u001F]$';
 
-export function createAppNameQuestion(validateProjectPathExistence = true): TextInputQuestion {
+export function createAppNameQuestion(
+  defaultAppName?: string,
+  validateProjectPathExistence = true
+): TextInputQuestion {
   const question: TextInputQuestion = {
     type: "text",
     name: CoreQuestionNames.AppName,
     title: "Application name",
+    default: defaultAppName,
     validation: {
       validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
         const schema = {
@@ -614,11 +618,19 @@ export function getRuntimeQuestion(): SingleSelectQuestion {
   };
 }
 
-export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSelectQuestion {
+export function getCreateNewOrFromSampleQuestion(
+  platform: Platform,
+  isFromTdp: boolean
+): SingleSelectQuestion {
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
-    staticOptions.push(ScratchOptionYesVSC);
-    staticOptions.push(ScratchOptionNoVSC);
+    if (isFromTdp) {
+      // We will never create project from samples if the teams app id is from a request from Developer Portal.
+      staticOptions.push(ScratchOptionYesVSC);
+    } else {
+      staticOptions.push(ScratchOptionYesVSC);
+      staticOptions.push(ScratchOptionNoVSC);
+    }
   } else {
     staticOptions.push(ScratchOptionYes);
     staticOptions.push(ScratchOptionNo);
@@ -630,7 +642,7 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
     staticOptions,
     default: ScratchOptionYes.id,
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
-    skipSingleOption: true,
+    skipSingleOption: true, // This need to be set to true to make sure we could skip asking for this question if launching from Developer Portal.
     forgetLastValue: true,
   };
 }

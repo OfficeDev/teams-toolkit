@@ -46,7 +46,7 @@
         "tab/ts/m365"
     ],
     "templatesV3": [
-        "init-infra",
+        "common/init-infra",
         "js/notification-http-timer-trigger",
         "js/notification-http-trigger",
         "js/notification-timer-trigger",

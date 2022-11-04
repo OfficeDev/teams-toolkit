@@ -1035,6 +1035,9 @@
                       },
                       {}
                     ]
+                  },
+                  "env": {
+                    "type": "string"
                   }
                 },
                 "additionalProperties": false

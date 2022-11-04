@@ -809,12 +809,12 @@ export class ProvisionUtils {
               ? "Error"
               : confirm === provisionText
               ? "Provision"
-              : "",
+              : "Cancel",
           }
         : {}
     );
     if (confirm !== provisionText) {
-      return err(new UserError(SolutionSource, "CancelProvision", "CancelProvision"));
+      return err(new UserError("coordinator", "CancelProvision", "CancelProvision"));
     }
 
     return ok(undefined);

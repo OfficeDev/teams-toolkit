@@ -877,6 +877,18 @@ async function runBackgroundAsyncTasks(
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewB", true);
   }
+  TreatmentVariableValue.inProductDoc = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.InProductDoc,
+      true
+    )) as boolean | undefined;
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.guideTreatment",
+    TreatmentVariableValue.inProductDoc
+  );
 
   ExtTelemetry.isFromSample = await handlers.getIsFromSample();
   ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();

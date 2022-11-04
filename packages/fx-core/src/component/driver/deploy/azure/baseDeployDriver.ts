@@ -15,7 +15,7 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
   protected static readonly emptyMap = new Map<string, string>();
 
   protected static asDeployArgs = asFactory<DeployArgs>({
-    workingDirectory: asString,
+    workingDirectory: asOptional(asString),
     distributionPath: asString,
     ignoreFile: asOptional(asString),
     resourceId: asString,
@@ -25,10 +25,16 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
     await this.context.logProvider.debug("start deploy process");
 
     const deployArgs = BaseDeployDriver.asDeployArgs(this.args);
+    // if working directory not set, use current working directory
+    deployArgs.workingDirectory = deployArgs.workingDirectory ?? "./";
     // if working dir is not absolute path, then join the path with project path
     this.workingDirectory = path.isAbsolute(deployArgs.workingDirectory)
       ? deployArgs.workingDirectory
       : path.join(this.workingDirectory, deployArgs.workingDirectory);
+    // if distribution path is not absolute path, then join the path with project path
+    this.distDirectory = path.isAbsolute(deployArgs.distributionPath)
+      ? deployArgs.distributionPath
+      : path.join(this.workingDirectory, deployArgs.distributionPath);
     // call real deploy
     await this.wrapErrorHandler(async () => {
       await this.deploy(deployArgs);
@@ -44,14 +50,17 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
    */
   protected async packageToZip(args: DeployStepArgs, context: DeployContext): Promise<Buffer> {
     const ig = await this.handleIgnore(args, context);
-    const source = path.join(this.workingDirectory, args.distributionPath);
     const zipFilePath = path.join(
-      source,
+      this.distDirectory,
       DeployConstant.DEPLOYMENT_TMP_FOLDER,
       DeployConstant.DEPLOYMENT_ZIP_CACHE_FILE
     );
-    await this.context.logProvider?.debug(`start zip dist folder ${source}`);
-    return await zipFolderAsync(source, zipFilePath, ig);
+    await this.context.logProvider?.debug(`start zip dist folder ${this.distDirectory}`);
+    const res = await zipFolderAsync(this.distDirectory, zipFilePath, ig);
+    await this.context.logProvider?.debug(
+      `zip dist folder ${this.distDirectory} to ${zipFilePath} complete`
+    );
+    return res;
   }
 
   protected async handleIgnore(args: DeployStepArgs, context: DeployContext): Promise<Ignore> {

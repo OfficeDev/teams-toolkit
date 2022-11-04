@@ -8,11 +8,10 @@ import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import semver from "semver";
+import { isV3Enabled } from "../../common/tools";
 
 let userCancelFlag = false;
 const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
-
-const currentSupportProjectVersion = "< 3.0.0";
 
 export const ProjectVersionCheckerMW: Middleware = async (
   ctx: CoreHookContext,
@@ -38,6 +37,7 @@ async function needToShowUpdateDialog(ctx: CoreHookContext) {
 
   const currentProjectVersion = projectSettings.version;
   if (currentProjectVersion) {
+    const currentSupportProjectVersion = isV3Enabled() ? "< 4.0.0" : "< 3.0.0"; // declare the const at the beginning after cleared V3 feature flag
     if (!semver.satisfies(currentProjectVersion, currentSupportProjectVersion)) {
       return true;
     }

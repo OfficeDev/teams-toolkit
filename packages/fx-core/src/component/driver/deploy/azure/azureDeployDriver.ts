@@ -25,6 +25,8 @@ import {
 import { AzureResourceInfo } from "../../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
 import { ProgressMessages } from "../../../messages";
+import * as fs from "fs-extra";
+import { PrerequisiteError } from "../../../error/componentError";
 
 export abstract class AzureDeployDriver extends BaseDeployDriver {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -37,18 +39,22 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
   abstract pattern: RegExp;
 
   async deploy(args: DeployArgs): Promise<void> {
-    const dist = checkMissingArgs("deployDist", args.distributionPath);
-    const src = checkMissingArgs("deploySrc", args.workingDirectory);
-
+    // check root path exists
+    if (!(await fs.pathExists(this.workingDirectory))) {
+      throw PrerequisiteError.folderNotExists(
+        DeployConstant.DEPLOY_ERROR_TYPE,
+        this.workingDirectory
+      );
+    }
+    // check distribution folder exists
+    if (!(await fs.pathExists(this.distDirectory))) {
+      throw PrerequisiteError.folderNotExists(DeployConstant.DEPLOY_ERROR_TYPE, this.distDirectory);
+    }
     const resourceId = checkMissingArgs("resourceId", args.resourceId);
     const azureResource = this.parseResourceId(resourceId);
     const azureCredential = await getAzureAccountCredential(this.context.azureAccountProvider);
 
-    return await this.azureDeploy(
-      { workingDirectory: src, distributionPath: dist, ignoreFile: args.ignoreFile },
-      azureResource,
-      azureCredential
-    );
+    return await this.azureDeploy({ ignoreFile: args.ignoreFile }, azureResource, azureCredential);
   }
 
   /**
@@ -87,9 +93,12 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     await this.progressBar?.next(ProgressMessages.packingCode);
     const zipBuffer = await this.packageToZip(args, this.context);
     await this.progressBar?.next(ProgressMessages.getAzureAccountInfoForDeploy);
+    await this.context.logProvider.debug("Start to get Azure account info for deploy");
     const config = await this.createAzureDeployConfig(azureResource, azureCredential);
+    await this.context.logProvider.debug("Get Azure account info for deploy complete");
     await this.progressBar?.next(ProgressMessages.getAzureUploadEndpoint);
     const endpoint = this.getZipDeployEndpoint(azureResource.instanceId);
+    await this.context.logProvider.debug(`Start to upload code to ${endpoint}`);
     await this.progressBar?.next(ProgressMessages.uploadZipFileToAzure);
     const location = await AzureDeployDriver.zipDeployPackage(
       endpoint,
@@ -97,8 +106,11 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
       config,
       this.context.logProvider
     );
+    await this.context.logProvider.debug("Upload code to Azure complete");
     await this.progressBar?.next(ProgressMessages.checkAzureDeployStatus);
+    await this.context.logProvider.debug("Start to check Azure deploy status");
     await AzureDeployDriver.checkDeployStatus(location, config, this.context.logProvider);
+    await this.context.logProvider.debug("Check Azure deploy status complete");
   }
 
   /**

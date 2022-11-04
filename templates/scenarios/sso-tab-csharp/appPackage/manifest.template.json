@@ -7,8 +7,8 @@
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "${{TAB_ENDPOINT}}",
-        "privacyUrl": "${{TAB_ENDPOINT}}/index.html#/privacy",
-        "termsOfUseUrl": "${{TAB_ENDPOINT}}/index.html#/termsofuse"
+        "privacyUrl": "${{TAB_ENDPOINT}}/privacy",
+        "termsOfUseUrl": "${{TAB_ENDPOINT}}/termsofuse"
     },
     "icons": {
         "color": "resources/color.png",
@@ -27,7 +27,7 @@
     "composeExtensions": [],
     "configurableTabs": [
         {
-            "configurationUrl": "${{TAB_ENDPOINT}}/index.html#/config",
+            "configurationUrl": "${{TAB_ENDPOINT}}/config",
             "canUpdateConfiguration": true,
             "scopes": [
                 "team",
@@ -39,8 +39,8 @@
         {
             "entityId": "index",
             "name": "Personal Tab",
-            "contentUrl": "${{TAB_ENDPOINT}}/index.html#/tab",
-            "websiteUrl": "${{TAB_ENDPOINT}}/index.html#/tab",
+            "contentUrl": "${{TAB_ENDPOINT}}/tab",
+            "websiteUrl": "${{TAB_ENDPOINT}}/tab",
             "scopes": [
                 "personal"
             ]

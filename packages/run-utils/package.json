@@ -40,6 +40,13 @@
   "publishConfig": {
     "access": "public"
   },
+  "files": [
+    "lib/*js",
+    "lib/*js.map",
+    "lib/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"

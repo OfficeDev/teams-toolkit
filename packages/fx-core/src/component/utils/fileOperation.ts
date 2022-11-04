@@ -8,6 +8,7 @@ import ignore, { Ignore } from "ignore";
 import path from "path";
 import glob from "glob";
 import { DeployConstant } from "../constant/deployConstant";
+import { DeployUserInputError } from "../error/deployError";
 
 /**
  * Asynchronously zip a folder and return buffer
@@ -76,6 +77,10 @@ export async function zipFolderAsync(
       return !ig.test(path.relative(sourceDir, itemPath)).ignored;
     }
   );
+
+  if (!tasks) {
+    throw DeployUserInputError.noFilesFindInDistFolder();
+  }
 
   await Promise.all(tasks);
   removeLegacyFileInZip(zip, zipFiles);

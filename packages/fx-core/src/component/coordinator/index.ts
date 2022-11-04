@@ -74,6 +74,7 @@ import { getDefaultString, getLocalizedString } from "../../common/localizeUtils
 import { ExecutionError, ExecutionOutput } from "../configManager/interface";
 import { createContextV3 } from "../utils";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
+import { getResourceGroupInPortal } from "../../common/tools";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -438,6 +439,29 @@ export class Coordinator {
         return [output, result[1]];
       }
     }
+
+    // 6. show provisioned resources
+    if (azureSubInfo) {
+      const url = getResourceGroupInPortal(
+        azureSubInfo.subscriptionId,
+        azureSubInfo.tenantId,
+        process.env.AZURE_RESOURCE_GROUP_NAME
+      );
+      const msg = getLocalizedString("core.provision.successNotice", folderName);
+      if (url) {
+        const title = getLocalizedString("core.provision.viewResources");
+        ctx.ui?.showMessage("info", msg, false, title).then((result: any) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === title) {
+            ctx.ui?.openUrl(url);
+          }
+        });
+      } else {
+        ctx.ui?.showMessage("info", msg, false);
+      }
+      ctx.logProvider.info(msg);
+    }
+
     return [output, undefined];
   }
 

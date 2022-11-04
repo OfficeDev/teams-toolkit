@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as os from "os";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import { Container } from "typedi";

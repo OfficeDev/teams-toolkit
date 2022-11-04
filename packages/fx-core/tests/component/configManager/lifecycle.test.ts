@@ -456,13 +456,17 @@ describe("v3 lifecyle", () => {
         .withArgs(sandbox.match("DriverThatCapitalize"))
         .returns(true)
         .withArgs(sandbox.match("DriverThatLowercase"))
+        .returns(true)
+        .withArgs(sandbox.match("DriverThatUsesEnvField"))
         .returns(true);
       sandbox
         .stub(Container, "get")
         .withArgs(sandbox.match("DriverThatCapitalize"))
         .returns(new DriverThatCapitalize())
         .withArgs(sandbox.match("DriverThatLowercase"))
-        .returns(new DriverThatLowercase());
+        .returns(new DriverThatLowercase())
+        .withArgs(sandbox.match("DriverThatUsesEnvField"))
+        .returns(new DriverThatUsesEnvField());
     });
 
     after(() => {
@@ -563,6 +567,29 @@ describe("v3 lifecyle", () => {
           execResult.error.reason.unresolvedPlaceHolders.some((x) => x === "BBB") &&
           execResult.error.reason.failedDriver.uses === "DriverThatCapitalize"
       );
+    });
+
+    describe("execute()", async () => {
+      it("should return unresolved placeholders in env field", async () => {
+        const driverDefs: DriverDefinition[] = [];
+        driverDefs.push({
+          uses: "DriverThatUsesEnvField",
+          with: {},
+          env: {
+            ENV_VAR1: "hello ${{ SOME_ENV_VAR }}",
+          },
+        });
+
+        const lifecycle = new Lifecycle("configureApp", driverDefs);
+        const result = await lifecycle.execute(mockedDriverContext);
+        assert(
+          result.isErr() &&
+            result.error.kind === "PartialSuccess" &&
+            result.error.reason.kind === "UnresolvedPlaceholders" &&
+            result.error.reason.unresolvedPlaceHolders.some((x) => x === "SOME_ENV_VAR") &&
+            result.error.reason.failedDriver.uses === "DriverThatUsesEnvField"
+        );
+      });
     });
   });
 });

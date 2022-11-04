@@ -1,4 +1,12 @@
-import { err, ok, Platform, SubscriptionInfo, UserError, v2 } from "@microsoft/teamsfx-api";
+import {
+  err,
+  ok,
+  Platform,
+  SubscriptionInfo,
+  SystemError,
+  UserError,
+  v2,
+} from "@microsoft/teamsfx-api";
 import "mocha";
 import chai from "chai";
 import * as sinon from "sinon";
@@ -1111,6 +1119,65 @@ describe("provisionUtils", () => {
       if (res.isErr()) {
         chai.assert.equal(res.error.name, "CancelProvision");
       }
+    });
+
+    it("confirm provision error", async () => {
+      const ctx = {
+        ui: new MockedUserInteraction(),
+        azureAccountProvider: new MockedAzureAccountProvider(),
+        telemetryReporter: new MockTelemetryReporter(),
+      };
+      mocker.stub(ctx.azureAccountProvider, "getJsonObject").resolves({ unique_name: "name" });
+      mocker.stub(ctx.ui, "showMessage").resolves(err(new SystemError("error", "error", "", "")));
+      mocker.stub(ctx.telemetryReporter, "sendTelemetryEvent").resolves();
+      const azureSubInfo: SubscriptionInfo = {
+        subscriptionName: "sub",
+        subscriptionId: "sub-id",
+        tenantId: "tenant-id",
+      };
+      const m365tenant: M365TenantRes = {
+        tenantUserName: "m365-name",
+        tenantIdInToken: "tenantId",
+      };
+
+      const res = await provisionUtils.askForProvisionConsentV3(
+        ctx as any,
+        m365tenant,
+        azureSubInfo,
+        "test"
+      );
+
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, "error");
+      }
+    });
+
+    it("not trigger if missing UI", async () => {
+      const ctx = {
+        azureAccountProvider: new MockedAzureAccountProvider(),
+        telemetryReporter: new MockTelemetryReporter(),
+      };
+      mocker.stub(ctx.azureAccountProvider, "getJsonObject").resolves({ unique_name: "name" });
+      mocker.stub(ctx.telemetryReporter, "sendTelemetryEvent").resolves();
+      const azureSubInfo: SubscriptionInfo = {
+        subscriptionName: "sub",
+        subscriptionId: "sub-id",
+        tenantId: "tenant-id",
+      };
+      const m365tenant: M365TenantRes = {
+        tenantUserName: "m365-name",
+        tenantIdInToken: "tenantId",
+      };
+
+      const res = await provisionUtils.askForProvisionConsentV3(
+        ctx as any,
+        m365tenant,
+        azureSubInfo,
+        "test"
+      );
+
+      chai.assert.isTrue(res.isOk());
     });
   });
 });

@@ -426,7 +426,8 @@ export class Coordinator {
       const consentRes = await provisionUtils.askForProvisionConsentV3(
         ctx,
         m365tenantInfo,
-        azureSubInfo
+        azureSubInfo,
+        inputs.env
       );
       if (consentRes.isErr()) return [undefined, consentRes.error];
     }

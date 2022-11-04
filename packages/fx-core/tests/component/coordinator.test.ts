@@ -404,7 +404,7 @@ describe("component coordinator test", () => {
         tenantUserName: "mockM365UserName",
       })
     );
-    // sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",

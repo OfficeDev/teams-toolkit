@@ -770,10 +770,56 @@ export class ProvisionUtils {
   }
   async askForProvisionConsentV3(
     ctx: DriverContext,
-    m365tenant?: M365TenantRes,
-    azureSubInfo?: SubscriptionInfo
+    m365tenant: M365TenantRes | undefined,
+    azureSubInfo: SubscriptionInfo,
+    envName: string | undefined
   ): Promise<Result<undefined, FxError>> {
-    //TODO
+    const azureTokenJson = await ctx.azureAccountProvider.getJsonObject();
+    const username = (azureTokenJson as any).unique_name || "";
+
+    const azureAccountInfo = getLocalizedString("core.provision.azureAccount", username);
+    const azureSubscriptionInfo = getLocalizedString(
+      "core.provision.azureSubscription",
+      azureSubInfo.subscriptionName
+    );
+    const m365AccountInfo = getLocalizedString(
+      "core.provision.m365Account",
+      m365tenant?.tenantUserName
+    );
+    const accountsInfo = [azureAccountInfo, azureSubscriptionInfo, m365AccountInfo].join("\n");
+
+    const confirmMsg = getLocalizedString("core.provision.confirmEnvAndCostNotice", envName);
+    const provisionText = getLocalizedString("core.provision.provision");
+
+    const confirmRes = await ctx.ui?.showMessage(
+      "warn",
+      accountsInfo + "\n\n" + confirmMsg,
+      true,
+      provisionText
+    );
+    if (!!confirmRes && confirmRes.isErr()) {
+      return err(confirmRes.error);
+    }
+    const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
+    ctx.telemetryReporter?.sendTelemetryEvent(
+      TelemetryEvent.ConfirmProvision,
+      envName
+        ? {
+            [TelemetryProperty.Env]: getHashedEnv(envName),
+            [SolutionTelemetryProperty.SubscriptionId]: azureSubInfo.subscriptionId,
+            [SolutionTelemetryProperty.M365TenantId]: m365tenant?.tenantIdInToken ?? "",
+            [SolutionTelemetryProperty.ConfirmRes]: !confirm
+              ? "Error"
+              : confirm === provisionText
+              ? "Provision"
+              : "Cancel",
+          }
+        : {}
+    );
+    if (!!confirm && confirm !== provisionText) {
+      return err(new UserError("coordinator", "CancelProvision", "CancelProvision"));
+    }
+
     return ok(undefined);
   }
   async askForProvisionConsent(

@@ -12,28 +12,18 @@ provision:
       bicepCliVersion: v0.9.1 # Teams Toolkit will download this bicep CLI version from github for you, will use bicep CLI in PATH if you remove this config.
     # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-provision-arm#output for more details on the naming conversion rule.
 
-  - uses: configure/storage
-    with:
-      storageResourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}}
-      indexPage: index.html
-      errorPage: error.html
-    # Output: N/A
-
 deploy:
-  - uses: npm/command # Run npm command
+  - uses: dotnet/command
+    with:
+      workingDirectory: ./
+      args: publish --configuration Release
+  - uses: azureAppService/deploy
     with:
       workingDirectory: .
-      args: install
-  - uses: npm/command # Run npm command
-    with:
-      workingDirectory: .
-      args: run build
-  - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
-    with:
-      workingDirectory: .
-      distributionPath: . # Deploy base folder
-      ignoreFile: ./.appserviceIgnore # Can be changed to any ignore file location, leave blank will ignore nothing
-      resourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to
+      # deploy base folder
+      distributionPath: ./bin/Release/net6.0/publish
+      # the resource id of the cloud resource to be deployed to
+      resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}}
 
 registerApp:
   - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty

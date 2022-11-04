@@ -54,7 +54,6 @@ describe("useTeamsUserCredential() hook tests", () => {
     expect(result.current.themeString).toBe("default");
 
     await waitForNextUpdate();
-    console.log("ddd");
     expect(result.current.error).toBeUndefined();
     expect(result.current.loading).toBe(false);
     expect(result.current.inTeams).toBe(true);
@@ -66,7 +65,6 @@ describe("useTeamsUserCredential() hook tests", () => {
       return { error: "useData error", loading: false };
     });
     const { result } = renderHook(() => useTeamsUserCredential(authConfig));
-    console.log(result);
     expect(result.current.teamsUserCredential).toBeUndefined;
     expect(result.current.error).toBe("useData error");
     expect(result.current.loading).toBe(false);

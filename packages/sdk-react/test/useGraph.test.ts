@@ -159,7 +159,6 @@ describe("useGraphWithCredential() hook tests", () => {
 
     let authenticatedGraph: Client | undefined;
     let graphScope: string[] | undefined;
-    console.log("aaa");
     const { result, waitForNextUpdate } = renderHook(() =>
       useGraphWithCredential(
         (graph: Client, credential: teamsfxlib.TeamsUserCredential, scope: string[]) => {
@@ -169,23 +168,18 @@ describe("useGraphWithCredential() hook tests", () => {
         }
       )
     );
-    console.log("bbb");
 
     expect(result.current.reload).toBeDefined();
     expect(result.current.data).toBe(undefined);
     expect(result.current.error).toBe(undefined);
     expect(result.current.loading).toBe(true);
-    console.log("ccc");
     await waitForNextUpdate();
-    console.log("ddd");
     expect(result.current.data).toBe("graph data");
-    console.log("eee");
 
     expect(result.current.error).toBe(undefined);
     expect(result.current.loading).toBe(false);
 
     expect(graphScope && graphScope[0]).toBe("User.Read");
-    console.log("fff");
   });
 
   it("call login() automatically when user has not consented", async () => {

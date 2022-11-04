@@ -64,8 +64,8 @@ export class Generator {
     await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
     await this.generate(generatorContext, TemplateActionSeq);
     merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.GenerateName]: generatorContext.name,
-      [TelemetryProperty.GenerateFallback]: generatorContext.fallbackZipPath ? "true" : "false", // Track fallback cases.
+      [TelemetryProperty.TemplateName]: generatorContext.name,
+      [TelemetryProperty.Fallback]: generatorContext.fallbackZipPath ? "true" : "false", // Track fallback cases.
     });
     return ok(undefined);
   }
@@ -100,7 +100,7 @@ export class Generator {
     await actionContext?.progressBar?.next(ProgressMessages.generateSample);
     await this.generate(generatorContext, SampleActionSeq);
     merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.GenerateName]: generatorContext.name,
+      [TelemetryProperty.SampleName]: generatorContext.name,
     });
     return ok(undefined);
   }

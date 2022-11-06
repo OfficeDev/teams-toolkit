@@ -41,7 +41,6 @@ import {
 } from "../component/constants";
 import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { AppDefinition } from "../component/resource/appManifest/interfaces/appDefinition";
 import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
 
 export enum CoreQuestionNames {
@@ -622,19 +621,11 @@ export function getRuntimeQuestion(): SingleSelectQuestion {
   };
 }
 
-export function getCreateNewOrFromSampleQuestion(
-  platform: Platform,
-  isFromTdp: boolean
-): SingleSelectQuestion {
+export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSelectQuestion {
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
-    if (isFromTdp) {
-      // We will never create project from samples if the teams app id is from a request from Developer Portal.
-      staticOptions.push(ScratchOptionYesVSC);
-    } else {
-      staticOptions.push(ScratchOptionYesVSC);
-      staticOptions.push(ScratchOptionNoVSC);
-    }
+    staticOptions.push(ScratchOptionYesVSC);
+    staticOptions.push(ScratchOptionNoVSC);
   } else {
     staticOptions.push(ScratchOptionYes);
     staticOptions.push(ScratchOptionNo);
@@ -646,7 +637,7 @@ export function getCreateNewOrFromSampleQuestion(
     staticOptions,
     default: ScratchOptionYes.id,
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
-    skipSingleOption: true, // This need to be set to true to make sure we could skip asking for this question if launching from Developer Portal.
+    skipSingleOption: true,
     forgetLastValue: true,
   };
 }
@@ -692,51 +683,51 @@ export const ExistingTabEndpointQuestion: TextInputQuestion = {
   },
 };
 
-export const tabContentUrlQuestion = (
-  contentUrl: string,
-  tabName: string
-): SingleSelectQuestion => {
-  return {
-    type: "singleSelect",
-    name: getTabContentUrlQuestionName(tabName), // tab name is unique
-    title: `Update ContentUrl for ${tabName}`,
-    staticOptions: [updateContentUrlYes, updateContentUrlNo(contentUrl)],
-    default: updateContentUrlYes.id,
-    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
-    forgetLastValue: true,
-  };
-};
+// export const tabContentUrlQuestion = (
+//   contentUrl: string,
+//   tabName: string
+// ): SingleSelectQuestion => {
+//   return {
+//     type: "singleSelect",
+//     name: getTabContentUrlQuestionName(tabName), // tab name is unique
+//     title: `Update ContentUrl for ${tabName}`,
+//     staticOptions: [updateContentUrlYes, updateContentUrlNo(contentUrl)],
+//     default: updateContentUrlYes.id,
+//     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
+//     forgetLastValue: true,
+//   };
+// };
 
-export const tabWebsiteUrlQuestion = (
-  webSiteUrl: string,
-  tabName: string
-): SingleSelectQuestion => {
-  return {
-    type: "singleSelect",
-    name: getTabWebsiteUrlQuestionName(tabName), // tab name is unique
-    title: `Update WebsiteUrl for ${tabName}`,
-    staticOptions: [updateContentUrlYes, updateContentUrlNo(webSiteUrl)],
-    default: updateContentUrlYes.id,
-    placeholder: getLocalizedString("core.updateWebsiteUrlQuestion.title"),
-    forgetLastValue: true,
-  };
-};
+// export const tabWebsiteUrlQuestion = (
+//   webSiteUrl: string,
+//   tabName: string
+// ): SingleSelectQuestion => {
+//   return {
+//     type: "singleSelect",
+//     name: getTabWebsiteUrlQuestionName(tabName), // tab name is unique
+//     title: `Update WebsiteUrl for ${tabName}`,
+//     staticOptions: [updateContentUrlYes, updateContentUrlNo(webSiteUrl)],
+//     default: updateContentUrlYes.id,
+//     placeholder: getLocalizedString("core.updateWebsiteUrlQuestion.title"),
+//     forgetLastValue: true,
+//   };
+// };
 
-export function getTabContentUrlQuestionNames(tabs: StaticTab[]): string[] {
-  return tabs.map((o) => getTabContentUrlQuestionName(o.name));
-}
+// export function getTabContentUrlQuestionNames(tabs: StaticTab[]): string[] {
+//   return tabs.map((o) => getTabContentUrlQuestionName(o.name));
+// }
 
-export function getTabWebsiteUrlQuestionNames(tabs: StaticTab[]): string[] {
-  return tabs.map((o) => getTabWebsiteUrlQuestionName(o.name));
-}
+// export function getTabWebsiteUrlQuestionNames(tabs: StaticTab[]): string[] {
+//   return tabs.map((o) => getTabWebsiteUrlQuestionName(o.name));
+// }
 
-function getTabContentUrlQuestionName(tabName: string): string {
-  return `${tabName}-${CoreQuestionNames.ReplaceContentUrl}`;
-}
+// function getTabContentUrlQuestionName(tabName: string): string {
+//   return `${tabName}-${CoreQuestionNames.ReplaceContentUrl}`;
+// }
 
-function getTabWebsiteUrlQuestionName(tabName: string): string {
-  return `${tabName}-${CoreQuestionNames.ReplaceWebsiteUrl}`;
-}
+// function getTabWebsiteUrlQuestionName(tabName: string): string {
+//   return `${tabName}-${CoreQuestionNames.ReplaceWebsiteUrl}`;
+// }
 
 export const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
 

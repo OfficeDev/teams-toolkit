@@ -62,10 +62,6 @@ export function needBotCode(appDefinition: AppDefinition): boolean {
   return isBot || isMessageExtension;
 }
 
-export function shouldSkipAskForCapability(appDefinition: AppDefinition | undefined): boolean {
-  return !!appDefinition && (needTabCode(appDefinition) || needBotCode(appDefinition));
-}
-
 export function containsUnsupportedFeature(appDefinition: AppDefinition): boolean {
   const hasScene = appDefinition?.meetingExtensionDefinition?.scenes?.length;
   const hasConnector = !!appDefinition?.connectors?.length;

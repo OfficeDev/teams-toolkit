@@ -16,10 +16,16 @@ import { isCLIDotNetEnabled, isPreviewFeaturesEnabled } from "../../common/featu
 import { deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
 import { getNotificationTriggerQuestionNode } from "../../component/question";
-import { ExistingTabOptionItem, TabSPFxItem } from "../../component/constants";
+import {
+  BotOptionItem,
+  ExistingTabOptionItem,
+  TabNewUIOptionItem,
+  TabSPFxItem,
+} from "../../component/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
 import { TOOLS } from "../globalVars";
 import {
+  CoreQuestionNames,
   createAppNameQuestion,
   createCapabilityForDotNet,
   createCapabilityQuestion,
@@ -35,15 +41,15 @@ import {
   SampleSelect,
   ScratchOptionNo,
   ScratchOptionYes,
-  tabContentUrlQuestion,
+  ScratchOptionYesVSC,
   tabsContentUrlQuestion,
   tabsWebsitetUrlQuestion,
-  tabWebsiteUrlQuestion,
 } from "../question";
 import { CoreHookContext } from "../types";
 import {
   isPersonalApp,
-  shouldSkipAskForCapability,
+  needBotCode,
+  needTabCode,
 } from "../../component/resource/appManifest/utils/utils";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
@@ -107,9 +113,16 @@ export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<strin
 async function getQuestionsForCreateProjectWithoutDotNet(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  const node = new QTreeNode(
-    getCreateNewOrFromSampleQuestion(inputs.platform, !!inputs.teamsAppFromTdp)
-  );
+  if (inputs.teamsAppFromTdp) {
+    // If toolkit is activated by a request from Developer Portal, we will always create a project from scratch.
+    inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC.id;
+    inputs[CoreQuestionNames.Capabilities] = needTabCode(inputs.teamsAppFromTdp)
+      ? TabNewUIOptionItem.id
+      : needBotCode(inputs.teamsaAppFromTdp)
+      ? BotOptionItem.id
+      : undefined;
+  }
+  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
 
   // create new
   const createNew = new QTreeNode({ type: "group" });
@@ -117,54 +130,48 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   createNew.condition = { equals: ScratchOptionYes.id };
 
   // capabilities
-  if (!shouldSkipAskForCapability(inputs.teamsAppFromTdp)) {
-    let capNode: QTreeNode;
-    if (isPreviewFeaturesEnabled()) {
-      const capQuestion = createCapabilityQuestionPreview(inputs);
-      capNode = new QTreeNode(capQuestion);
-    } else {
-      const capQuestion = createCapabilityQuestion();
-      capNode = new QTreeNode(capQuestion);
-    }
-
-    const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
-    if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
-    if (triggerNodeRes.value) {
-      capNode.addChild(triggerNodeRes.value);
-    }
-    const spfxNode = await getSPFxScaffoldQuestion();
-    if (spfxNode) {
-      spfxNode.condition = { equals: TabSPFxItem.id };
-      capNode.addChild(spfxNode);
-    }
-
-    // Language
-    const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-    if (isPreviewFeaturesEnabled()) {
-      programmingLanguage.condition = {
-        notEquals: ExistingTabOptionItem.id,
-      };
-    } else {
-      programmingLanguage.condition = {
-        minItems: 1,
-        excludes: ExistingTabOptionItem.id,
-      };
-    }
-    capNode.addChild(programmingLanguage);
-
-    // existing tab endpoint
-    if (isExistingTabAppEnabled()) {
-      const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
-      existingTabEndpoint.condition = {
-        equals: ExistingTabOptionItem.id,
-      };
-      capNode.addChild(existingTabEndpoint);
-    }
+  let capNode: QTreeNode;
+  if (isPreviewFeaturesEnabled()) {
+    const capQuestion = createCapabilityQuestionPreview(inputs);
+    capNode = new QTreeNode(capQuestion);
   } else {
-    // Skip ask for capability if user have added features for the teams app in Developer Portal.
-    // Only basic tab or bot capability are supported.
-    const programmingLanguageNode = new QTreeNode(ProgrammingLanguageQuestion);
-    createNew.addChild(programmingLanguageNode);
+    const capQuestion = createCapabilityQuestion();
+    capNode = new QTreeNode(capQuestion);
+  }
+  createNew.addChild(capNode);
+
+  const triggerNodeRes = await getNotificationTriggerQuestionNode(inputs);
+  if (triggerNodeRes.isErr()) return err(triggerNodeRes.error);
+  if (triggerNodeRes.value) {
+    capNode.addChild(triggerNodeRes.value);
+  }
+  const spfxNode = await getSPFxScaffoldQuestion();
+  if (spfxNode) {
+    spfxNode.condition = { equals: TabSPFxItem.id };
+    capNode.addChild(spfxNode);
+  }
+
+  // Language
+  const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+  if (isPreviewFeaturesEnabled()) {
+    programmingLanguage.condition = {
+      notEquals: ExistingTabOptionItem.id,
+    };
+  } else {
+    programmingLanguage.condition = {
+      minItems: 1,
+      excludes: ExistingTabOptionItem.id,
+    };
+  }
+  capNode.addChild(programmingLanguage);
+
+  // existing tab endpoint
+  if (isExistingTabAppEnabled()) {
+    const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion);
+    existingTabEndpoint.condition = {
+      equals: ExistingTabOptionItem.id,
+    };
+    capNode.addChild(existingTabEndpoint);
   }
 
   createNew.addChild(new QTreeNode(QuestionRootFolder));
@@ -237,41 +244,41 @@ async function getQuestionsForCreateProjectWithDotNet(
   return ok(runtimeNode.trim());
 }
 
-async function getQuestionsForUpdateTabUrls(
-  appDefinition: AppDefinition
-): Promise<QTreeNode | undefined> {
-  if (!isPersonalApp(appDefinition)) {
-    return undefined;
-  }
+// async function getQuestionsForUpdateTabUrls(
+//   appDefinition: AppDefinition
+// ): Promise<QTreeNode | undefined> {
+//   if (!isPersonalApp(appDefinition)) {
+//     return undefined;
+//   }
 
-  const updateTabUrls = new QTreeNode({ type: "group" });
-  for (let index = 0; index < appDefinition.staticTabs!.length; index++) {
-    const webSiteUrl = appDefinition.staticTabs![index].websiteUrl;
-    const contentUrl = appDefinition.staticTabs![index].contentUrl;
-    if (webSiteUrl) {
-      updateTabUrls.addChild(
-        new QTreeNode(
-          tabWebsiteUrlQuestion(
-            appDefinition.staticTabs![index].websiteUrl,
-            appDefinition.staticTabs![index].name
-          )
-        )
-      );
-    }
-    if (contentUrl) {
-      updateTabUrls.addChild(
-        new QTreeNode(
-          tabContentUrlQuestion(
-            appDefinition.staticTabs![index].contentUrl,
-            appDefinition.staticTabs![index].name
-          )
-        )
-      );
-    }
-  }
+//   const updateTabUrls = new QTreeNode({ type: "group" });
+//   for (let index = 0; index < appDefinition.staticTabs!.length; index++) {
+//     const webSiteUrl = appDefinition.staticTabs![index].websiteUrl;
+//     const contentUrl = appDefinition.staticTabs![index].contentUrl;
+//     if (webSiteUrl) {
+//       updateTabUrls.addChild(
+//         new QTreeNode(
+//           tabWebsiteUrlQuestion(
+//             appDefinition.staticTabs![index].websiteUrl,
+//             appDefinition.staticTabs![index].name
+//           )
+//         )
+//       );
+//     }
+//     if (contentUrl) {
+//       updateTabUrls.addChild(
+//         new QTreeNode(
+//           tabContentUrlQuestion(
+//             appDefinition.staticTabs![index].contentUrl,
+//             appDefinition.staticTabs![index].name
+//           )
+//         )
+//       );
+//     }
+//   }
 
-  return updateTabUrls;
-}
+//   return updateTabUrls;
+// }
 
 // V2 I wrote
 async function getQuestionsForUpdateStaticTabUrls(

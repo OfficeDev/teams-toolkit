@@ -144,6 +144,7 @@ import "../component/driver/tools/installDriver";
 import "../component/driver/env/generate";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
+import { containsUnsupportedFeature } from "../component/resource/appManifest/utils/utils";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -209,6 +210,10 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
+    if (!!inputs.teamsAppFromTdp && containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
+      // should never happen as we do same check on Developer Portal.
+      return err(InvalidInputError("Teams app contains unsupported features"));
+    }
     const res = await coordinator.create(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;

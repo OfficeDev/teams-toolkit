@@ -174,31 +174,6 @@ export class Coordinator {
       projectPath = path.join(folder, appName);
       inputs.projectPath = projectPath;
 
-      let appPackage: AppPackage;
-      if (inputs.teamsAppFromTdp) {
-        const appPackageRes = await AppStudio.getAppPackage(
-          inputs.teamsAppFromTdp.teamsAppId,
-          context.tokenProvider!.m365TokenProvider,
-          context.logProvider
-        );
-        if (appPackageRes.isErr()) {
-          return err(appPackageRes.error);
-        }
-
-        if (!inputs.capabilities) {
-          inputs.capabilities = needTabCode(inputs.teamsAppFromTdp)
-            ? TabNewUIOptionItem.id
-            : needBotCode(inputs.teamsaAppFromTdp)
-            ? BotOptionItem.id
-            : undefined;
-          if (!inputs.capabilities) {
-            // should never happen.
-            return err(InvalidInputError("Capability is undefined."));
-          }
-        }
-        appPackage = appPackageRes.value;
-      }
-
       await fs.ensureDir(projectPath);
 
       // set isVS global var when creating project

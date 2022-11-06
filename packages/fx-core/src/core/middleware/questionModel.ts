@@ -4,7 +4,6 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   CLIPlatforms,
-  ContextV3,
   err,
   FxError,
   Inputs,
@@ -12,18 +11,12 @@ import {
   QTreeNode,
   Result,
   traverse,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import { isCLIDotNetEnabled, isPreviewFeaturesEnabled } from "../../common/featureFlags";
-import { AppStudioScopes, deepCopy, isExistingTabAppEnabled } from "../../common/tools";
+import { deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
 import { getNotificationTriggerQuestionNode } from "../../component/question";
-import {
-  BotOptionItem,
-  ExistingTabOptionItem,
-  TabNewUIOptionItem,
-  TabSPFxItem,
-} from "../../component/constants";
+import { ExistingTabOptionItem, TabSPFxItem } from "../../component/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
 import { TOOLS } from "../globalVars";
 import {
@@ -50,7 +43,6 @@ import {
 import { CoreHookContext } from "../types";
 import {
   isPersonalApp,
-  needTabCode,
   shouldSkipAskForCapability,
 } from "../../component/resource/appManifest/utils/utils";
 import { convertToAlphanumericOnly } from "../../common/utils";

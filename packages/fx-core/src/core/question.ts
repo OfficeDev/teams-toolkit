@@ -761,7 +761,7 @@ export const tabsContentUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion =
     name: CoreQuestionNames.ReplaceContentUrl,
     title: "Select all tab that you want to update its content url to " + defaultTabLocalHostUrl,
     staticOptions: tabs.map((o) => tabContentUrlOptionItem(o)),
-    default: tabs.map((o) => `${o.name}-contentUrl`),
+    default: tabs.map((o) => `${o.name}${contentUrlSuffix}`),
     placeholder: "Select any number of options you like",
     forgetLastValue: true,
   };
@@ -773,15 +773,18 @@ export const tabsWebsitetUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion 
     name: CoreQuestionNames.ReplaceWebsiteUrl,
     title: "Select all tab that you want to update its website url to " + defaultTabLocalHostUrl,
     staticOptions: tabs.map((o) => tabWebsiteUrlOptionItem(o)),
-    default: tabs.map((o) => `${o.name}-websiteUrl`),
+    default: tabs.map((o) => `${o.name}${websiteUrlSuffix}`),
     placeholder: "Select any number of options you like",
     forgetLastValue: true,
   };
 };
 
+const contentUrlSuffix = "-contentUrl";
+const websiteUrlSuffix = "-websiteUrl";
+
 export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
   return {
-    id: `${tab.name}-contentUrl`,
+    id: `${tab.name}${contentUrlSuffix}`,
     label: tab.name,
     //description: "update the content url from "+ tab.contentUrl + " to " + defaultTabLocalHostUrl,
     detail: "update the content url from " + tab.contentUrl + " to " + defaultTabLocalHostUrl,
@@ -790,9 +793,9 @@ export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
 
 export const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
   return {
-    id: `${tab.name}-websiteUrl`,
+    id: `${tab.name}${websiteUrlSuffix}`,
     label: tab.name,
     //description: "update the content url from "+ tab.contentUrl + " to " + defaultTabLocalHostUrl,
-    detail: "update the content url from " + tab.contentUrl + " to " + defaultTabLocalHostUrl,
+    detail: "update the website url from " + tab.websiteUrl + " to " + defaultTabLocalHostUrl,
   };
 };

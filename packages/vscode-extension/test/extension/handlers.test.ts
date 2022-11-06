@@ -1246,14 +1246,24 @@ describe("handlers", () => {
       const progressHandler = new ProgressHandler("title", 1);
       const startProgress = sinon.stub(progressHandler, "start").resolves();
       const endProgress = sinon.stub(progressHandler, "end").resolves();
-      sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok({ appId: "id" }));
+      sinon
+        .stub(M365TokenInstance, "signInWhenInitiatedFromTdp")
+        .resolves(ok({ appId: "mock-id" }));
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
-      const showErrorMessage = sinon.stub(vscode.window, "showErrorMessage");
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const createProject = sinon.spy(handlers.core, "createProject");
+      sinon.stub(vscode.commands, "executeCommand");
+      sinon.stub(globalState, "globalStateUpdate");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
 
+      chai.assert.equal(createProject.args[0][0].teamsAppFromTdp.appId, "mock-id");
       chai.assert.equal(res.isOk(), true);
       chai.assert.equal(createProgressBar.calledOnce, true);
       chai.assert.equal(startProgress.calledOnce, true);

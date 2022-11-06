@@ -43,8 +43,6 @@ import {
   CommandAndResponseOptionItem,
   TabOptionItem,
   TabNonSsoItem,
-  TabNewUIOptionItem,
-  BotOptionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { getQuestionsForAddFeatureV3, getQuestionsForProvisionV3 } from "../question";
@@ -77,9 +75,6 @@ import { ExecutionError, ExecutionOutput } from "../configManager/interface";
 import { createContextV3 } from "../utils";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../../common/tools";
-import * as AppStudio from "../../component/resource/appManifest/appStudio";
-import { AppPackage } from "../resource/appManifest/interfaces/appPackage";
-import { needBotCode, needTabCode } from "../resource/appManifest/utils/utils";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",

@@ -118,9 +118,9 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC.id;
     inputs[CoreQuestionNames.Capabilities] = needTabCode(inputs.teamsAppFromTdp)
       ? TabNewUIOptionItem.id
-      : needBotCode(inputs.teamsaAppFromTdp)
+      : needBotCode(inputs.teamsAppFromTdp)
       ? BotOptionItem.id
-      : undefined;
+      : inputs[CoreQuestionNames.Capabilities];
   }
   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
 
@@ -150,7 +150,6 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     spfxNode.condition = { equals: TabSPFxItem.id };
     capNode.addChild(spfxNode);
   }
-
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
   if (isPreviewFeaturesEnabled()) {

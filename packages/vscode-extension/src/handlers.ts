@@ -3489,22 +3489,22 @@ export async function scaffoldFromDeveloperPortalHandler(
   await progressBar.start();
   let appDefinition = undefined;
   try {
-    const tokenRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
+    const appDefinitionRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
       { scopes: AppStudioScopes },
       args[0]
     );
-    if (tokenRes.isErr()) {
-      if ((tokenRes.error as any).displayMessage) {
-        window.showErrorMessage((tokenRes.error as any).displayMessage);
+    if (appDefinitionRes.isErr()) {
+      if ((appDefinitionRes.error as any).displayMessage) {
+        window.showErrorMessage((appDefinitionRes.error as any).displayMessage);
       } else {
         vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.generalError.message")
         );
       }
       await progressBar.end(false);
-      return err(tokenRes.error);
+      return err(appDefinitionRes.error);
     }
-    appDefinition = tokenRes.value;
+    appDefinition = appDefinitionRes.value;
     await progressBar.end(true);
   } catch (e) {
     vscode.window.showErrorMessage(
@@ -3515,6 +3515,9 @@ export async function scaffoldFromDeveloperPortalHandler(
   }
 
   const res = await createNewProjectHandler([{ teamsAppFromTdp: appDefinition }]);
+  if (res.isErr()) {
+    return err(res.error);
+  }
 
   return ok(null);
 }

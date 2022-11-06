@@ -128,14 +128,18 @@ describe("component coordinator test", () => {
     const appDefinition: AppDefinition = {
       teamsAppId: "mock-id",
       appId: "mock-id",
-      staticTabs: [
+      bots: [
         {
-          name: "tab1",
-          entityId: "tab1",
-          contentUrl: "mock-contentUrl",
-          websiteUrl: "mock-websiteUrl",
-          context: [],
+          botId: "mock-bot-id",
+          isNotificationOnly: false,
+          needsChannelSelector: false,
+          supportsCalling: false,
+          supportsFiles: false,
+          supportsVideo: false,
           scopes: [],
+          teamCommands: [],
+          groupChatCommands: [],
+          personalCommands: [],
         },
       ],
     };
@@ -146,13 +150,38 @@ describe("component coordinator test", () => {
       [CoreQuestionNames.AppName]: randomAppName(),
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
       teamsAppFromTdp: appDefinition,
-      [CoreQuestionNames.ReplaceWebsiteUrl]: ["tab1"],
-      [CoreQuestionNames.ReplaceContentUrl]: [],
     };
     const fxCore = new FxCore(tools);
-    const res2 = await fxCore.createProject(inputs);
+    const res = await fxCore.createProject(inputs);
 
-    assert.isTrue(res2.isOk());
+    assert.isTrue(res.isOk());
+  });
+
+  it("create project for app with no features from Developer Portal", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const appDefinition: AppDefinition = {
+      teamsAppId: "mock-id",
+      appId: "mock-id",
+    };
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      teamsAppFromTdp: appDefinition,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
   });
 
   it("provision happy path from zero", async () => {

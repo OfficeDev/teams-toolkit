@@ -41,6 +41,8 @@ import {
 } from "../component/constants";
 import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { ResourceManagementClient } from "@azure/arm-resources";
+import { AppDefinition } from "../component/resource/appManifest/interfaces/appDefinition";
+import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -64,6 +66,8 @@ export enum CoreQuestionNames {
   NewTargetEnvName = "newTargetEnvName",
   ExistingTabEndpoint = "existing-tab-endpoint",
   SafeProjectName = "safeProjectName",
+  ReplaceContentUrl = "replaceContentUrl",
+  ReplaceWebsiteUrl = "replaceWebsiteUrl",
 }
 
 export const ProjectNamePattern =
@@ -686,4 +690,109 @@ export const ExistingTabEndpointQuestion: TextInputQuestion = {
       return undefined;
     },
   },
+};
+
+export const tabContentUrlQuestion = (
+  contentUrl: string,
+  tabName: string
+): SingleSelectQuestion => {
+  return {
+    type: "singleSelect",
+    name: getTabContentUrlQuestionName(tabName), // tab name is unique
+    title: `Update ContentUrl for ${tabName}`,
+    staticOptions: [updateContentUrlYes, updateContentUrlNo(contentUrl)],
+    default: updateContentUrlYes.id,
+    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+};
+
+export const tabWebsiteUrlQuestion = (
+  webSiteUrl: string,
+  tabName: string
+): SingleSelectQuestion => {
+  return {
+    type: "singleSelect",
+    name: getTabWebsiteUrlQuestionName(tabName), // tab name is unique
+    title: `Update WebsiteUrl for ${tabName}`,
+    staticOptions: [updateContentUrlYes, updateContentUrlNo(webSiteUrl)],
+    default: updateContentUrlYes.id,
+    placeholder: getLocalizedString("core.updateWebsiteUrlQuestion.title"),
+    forgetLastValue: true,
+  };
+};
+
+export function getTabContentUrlQuestionNames(tabs: StaticTab[]): string[] {
+  return tabs.map((o) => getTabContentUrlQuestionName(o.name));
+}
+
+export function getTabWebsiteUrlQuestionNames(tabs: StaticTab[]): string[] {
+  return tabs.map((o) => getTabWebsiteUrlQuestionName(o.name));
+}
+
+function getTabContentUrlQuestionName(tabName: string): string {
+  return `${tabName}-${CoreQuestionNames.ReplaceContentUrl}`;
+}
+
+function getTabWebsiteUrlQuestionName(tabName: string): string {
+  return `${tabName}-${CoreQuestionNames.ReplaceWebsiteUrl}`;
+}
+
+export const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
+
+export const updateContentUrlYes: OptionItem = {
+  id: "yes",
+  label: "Yes", //todo:
+  detail: `Use ${defaultTabLocalHostUrl}`,
+};
+
+export const updateContentUrlNo = (contentUrl: string): OptionItem => {
+  return {
+    id: "no",
+    label: "No", //todo:
+    detail: `Keep contentUrl as ${contentUrl}`,
+  };
+};
+
+// v2 I wrote
+export const tabsContentUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion => {
+  return {
+    type: "multiSelect",
+    name: CoreQuestionNames.ReplaceContentUrl,
+    title: "Select all tab that you want to update its content url to " + defaultTabLocalHostUrl,
+    staticOptions: tabs.map((o) => tabContentUrlOptionItem(o)),
+    default: tabs.map((o) => `${o.name}-contentUrl`),
+    placeholder: "Select any number of options you like",
+    forgetLastValue: true,
+  };
+};
+
+export const tabsWebsitetUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion => {
+  return {
+    type: "multiSelect",
+    name: CoreQuestionNames.ReplaceWebsiteUrl,
+    title: "Select all tab that you want to update its website url to " + defaultTabLocalHostUrl,
+    staticOptions: tabs.map((o) => tabWebsiteUrlOptionItem(o)),
+    default: tabs.map((o) => `${o.name}-websiteUrl`),
+    placeholder: "Select any number of options you like",
+    forgetLastValue: true,
+  };
+};
+
+export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
+  return {
+    id: `${tab.name}-contentUrl`,
+    label: tab.name,
+    //description: "update the content url from "+ tab.contentUrl + " to " + defaultTabLocalHostUrl,
+    detail: "update the content url from " + tab.contentUrl + " to " + defaultTabLocalHostUrl,
+  };
+};
+
+export const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
+  return {
+    id: `${tab.name}-websiteUrl`,
+    label: tab.name,
+    //description: "update the content url from "+ tab.contentUrl + " to " + defaultTabLocalHostUrl,
+    detail: "update the content url from " + tab.contentUrl + " to " + defaultTabLocalHostUrl,
+  };
 };

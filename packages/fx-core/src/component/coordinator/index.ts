@@ -43,6 +43,8 @@ import {
   CommandAndResponseOptionItem,
   TabOptionItem,
   TabNonSsoItem,
+  TabNewUIOptionItem,
+  BotOptionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { getQuestionsForAddFeatureV3, getQuestionsForProvisionV3 } from "../question";
@@ -75,6 +77,9 @@ import { ExecutionError, ExecutionOutput } from "../configManager/interface";
 import { createContextV3 } from "../utils";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../../common/tools";
+import * as AppStudio from "../../component/resource/appManifest/appStudio";
+import { AppPackage } from "../resource/appManifest/interfaces/appPackage";
+import { needBotCode, needTabCode } from "../resource/appManifest/utils/utils";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -168,6 +173,31 @@ export class Coordinator {
       }
       projectPath = path.join(folder, appName);
       inputs.projectPath = projectPath;
+
+      let appPackage: AppPackage;
+      if (inputs.teamsAppFromTdp) {
+        const appPackageRes = await AppStudio.getAppPackage(
+          inputs.teamsAppFromTdp.teamsAppId,
+          context.tokenProvider!.m365TokenProvider,
+          context.logProvider
+        );
+        if (appPackageRes.isErr()) {
+          return err(appPackageRes.error);
+        }
+
+        if (!inputs.capabilities) {
+          inputs.capabilities = needTabCode(inputs.teamsAppFromTdp)
+            ? TabNewUIOptionItem.id
+            : needBotCode(inputs.teamsaAppFromTdp)
+            ? BotOptionItem.id
+            : undefined;
+          if (!inputs.capabilities) {
+            // should never happen.
+            return err(InvalidInputError("Capability is undefined."));
+          }
+        }
+        appPackage = appPackageRes.value;
+      }
 
       await fs.ensureDir(projectPath);
 

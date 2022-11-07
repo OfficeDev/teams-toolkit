@@ -145,7 +145,9 @@ describe("Generator happy path", async () => {
   });
 
   it("template", async () => {
-    const inputDir = path.join(tmpDir, "input");
+    const templateName = "bot";
+    const language = "ts";
+    const inputDir = path.join(tmpDir, "input", templateName);
     await fs.ensureDir(inputDir);
     const fileData = "{{appName}}";
     await fs.writeFile(path.join(inputDir, "test.txt.tpl"), fileData);
@@ -155,8 +157,6 @@ describe("Generator happy path", async () => {
     sandbox
       .stub(generatorUtils, "fetchZipFromUrl")
       .resolves(new AdmZip(path.join(tmpDir, "test.zip")));
-    const templateName = "bot";
-    const language = "ts";
     context.templateVariables = Generator.getDefaultVariables("test");
     const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
     assert.isTrue(result.isOk());

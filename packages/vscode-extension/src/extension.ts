@@ -746,7 +746,9 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   const manifestTemplateSelector = {
     language: "json",
     scheme: "file",
-    pattern: `**/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
+    pattern: isV3Enabled()
+      ? `**/${AppPackageFolderName}/manifest.template.json`
+      : `**/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
   };
   const manifestPreviewSelector = {
     language: "json",

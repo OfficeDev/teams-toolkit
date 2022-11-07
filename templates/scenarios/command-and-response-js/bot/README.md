@@ -122,7 +122,7 @@ class DoSomethingCommandHandler {
 
     async handleCommandReceived(context, message) {
         // verify the command arguments which are received from the client if needed.
-        console.log(`Bot received message: ${message.text}`);
+        console.log(`App received message: ${message.text}`);
 
         const cardData = {
           title: "doSomething command is added",
@@ -150,7 +150,7 @@ const { ConversationBot } = require("@microsoft/teamsfx");
 const { HelloWorldCommandHandler } = require("../helloworldCommandHandler");
 const { DoSomethingCommandHandler} = require("../doSomethingCommandHandler")
 
-const commandBot = new ConversationBot({
+const commandApp = new ConversationBot({
     //...
     command: {
         enabled: true,
@@ -161,7 +161,7 @@ const commandBot = new ConversationBot({
 });
 
 module.exports = {
-  commandBot,
+  commandApp,
 };
 ```
 

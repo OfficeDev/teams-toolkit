@@ -89,6 +89,9 @@ export class Generator {
     sampleName: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.SampleName]: sampleName,
+    });
     const sample = getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
     const generatorContext: GeneratorContext = {
@@ -99,9 +102,7 @@ export class Generator {
       relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
-    merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.SampleName]: generatorContext.name,
-    });
+
     await actionContext?.progressBar?.next(ProgressMessages.generateSample);
     await this.generate(generatorContext, SampleActionSeq);
     return ok(undefined);

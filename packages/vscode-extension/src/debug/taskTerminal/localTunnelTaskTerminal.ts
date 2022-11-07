@@ -8,7 +8,16 @@ import * as kill from "tree-kill";
 import * as util from "util";
 import * as vscode from "vscode";
 
-import { assembleError, err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
+import {
+  assembleError,
+  err,
+  FxError,
+  ok,
+  Result,
+  SystemError,
+  UserError,
+  Void,
+} from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import {
@@ -131,7 +140,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     this.outputStartMessage();
     return this.resolveArgs().then((v) =>
       this.outputStepMessage(v.ngrokArgs, v.ngrokPath).then(() =>
-        this.startNgrokChildProcess(v.ngrokArgs, v.ngrokPath, v.env)
+        this.startNgrokChildProcess(v.ngrokArgs, v.ngrokPath)
       )
     );
   }
@@ -139,14 +148,9 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   private async resolveArgs(): Promise<{
     ngrokArgs: string[];
     ngrokPath: string;
-    env: string;
   }> {
     if (!this.args.ngrokArgs) {
       throw BaseTaskTerminal.taskDefinitionError("ngrokArgs");
-    }
-
-    if (isV3Enabled() && !this.args.env) {
-      throw BaseTaskTerminal.taskDefinitionError("env");
     }
 
     const ngrokArgs = !Array.isArray(this.args.ngrokArgs)
@@ -160,14 +164,12 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     return {
       ngrokArgs: ngrokArgs,
       ngrokPath: ngrokPath,
-      env: this.args.env!,
     };
   }
 
   private startNgrokChildProcess(
     ngrokArgs: string[],
-    ngrokPath: string,
-    env: string
+    ngrokPath: string
   ): Promise<Result<Void, FxError>> {
     const timeouts: NodeJS.Timeout[] = [];
     return new Promise<Result<Void, FxError>>((resolve, reject) => {
@@ -184,12 +186,15 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
         this.log += data.toString();
         const line = data.toString().replace(/\n/g, "\r\n");
         this.writeEmitter.fire(line);
-        this.saveNgrokEndpointFromLog(line, env).then((res) => {
-          if (res) {
-            timeouts.forEach((t) => clearTimeout(t));
-          }
-        });
-
+        if (!this.status.endpoint && !this.args.tunnelInspection) {
+          this.findAndSaveNgrokEndpointFromLog(line).then((res) => {
+            if (res.isOk() && res.value) {
+              timeouts.forEach((t) => clearTimeout(t));
+            } else if (res.isErr()) {
+              resolve(res);
+            }
+          });
+        }
         this.saveNgrokTunnelInspectionFromLog(line);
       });
 
@@ -246,22 +251,48 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       for (let i = ngrokTimeInterval; i < ngrokTimeout; i += ngrokTimeInterval) {
         timeouts.push(
           setTimeout(() => {
-            this.saveNgrokEndpointFromApi(env).then((res) => {
-              if (res.isOk() && res.value) {
-                timeouts.forEach((t) => clearTimeout(t));
-              }
-            });
+            if (!this.status.endpoint) {
+              this.findAndSaveNgrokEndpointFromApi().then((res) => {
+                if (res.isOk() && res.value) {
+                  timeouts.forEach((t) => clearTimeout(t));
+                } else if (res.isErr()) {
+                  resolve(res);
+                }
+              });
+            }
           }, i)
         );
       }
 
       timeouts.push(
         setTimeout(() => {
-          this.saveNgrokEndpointFromApi(env).then((res) => {
-            if (res.isErr()) {
-              resolve(res);
-            }
-          });
+          if (!this.status.endpoint) {
+            this.findAndSaveNgrokEndpointFromApi().then((res) => {
+              if (res.isOk() && !res.value) {
+                const webServiceUrl = this.getWebServiceUrl();
+                resolve(
+                  err(
+                    new UserError(
+                      ExtensionSource,
+                      ExtensionErrors.TunnelEndpointNotFoundError,
+                      util.format(
+                        getDefaultString("teamstoolkit.localDebug.tunnelEndpointNotFoundError"),
+                        webServiceUrl
+                      ),
+                      util.format(
+                        localize(
+                          "teamstoolkit.localDebug.tunnelEndpointNotFoundError",
+                          webServiceUrl
+                        )
+                      )
+                    )
+                  )
+                );
+              } else if (res.isErr()) {
+                resolve(res);
+              }
+            });
+          }
         }, ngrokTimeout)
       );
     }).finally(() => {
@@ -269,24 +300,24 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     });
   }
 
-  private async saveNgrokEndpointFromLog(data: string, env: string): Promise<boolean> {
+  private async findAndSaveNgrokEndpointFromLog(data: string): Promise<Result<boolean, FxError>> {
     try {
-      if (this.status.endpoint || this.args.tunnelInspection) {
-        return false;
-      }
       const matches = data.match(ngrokEndpointRegex);
       if (matches && matches?.length > 3) {
         const ngrokTunnelInfo = { src: matches[2], dist: matches[3] };
+        const saveEnvRes = await this.saveNgrokEndpointToEnv(ngrokTunnelInfo.dist);
+        if (saveEnvRes.isErr()) {
+          return err(saveEnvRes.error);
+        }
         this.isOutputSummary = true;
         this.status.endpoint = ngrokTunnelInfo;
-        await this.saveNgrokEndpointToEnv(ngrokTunnelInfo.dist, env);
-        this.outputSuccessSummary(ngrokTunnelInfo);
-        return true;
+        await this.outputSuccessSummary(ngrokTunnelInfo);
+        return ok(true);
       }
     } catch {
       // Return false
     }
-    return false;
+    return ok(false);
   }
 
   private saveNgrokTunnelInspectionFromLog(data: string): boolean {
@@ -303,51 +334,58 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     return false;
   }
 
-  private async saveNgrokEndpointFromApi(env: string): Promise<Result<boolean, FxError>> {
-    let webServiceUrl: string | undefined = undefined;
+  private async findAndSaveNgrokEndpointFromApi(): Promise<Result<boolean, FxError>> {
     try {
-      if (this.status.endpoint) {
-        return ok(false);
-      }
       const localEnvManager = new LocalEnvManager();
-      webServiceUrl =
-        this.args.tunnelInspection ?? this.status.tunnelInspection ?? defaultNgrokWebServiceUrl;
+      const webServiceUrl = this.getWebServiceUrl();
       const endpoint = await localEnvManager.getNgrokTunnelFromApi(webServiceUrl);
       if (endpoint) {
+        const saveEnvRes = await this.saveNgrokEndpointToEnv(endpoint.dist);
+        if (saveEnvRes.isErr()) {
+          return err(saveEnvRes.error);
+        }
         this.isOutputSummary = true;
         this.status.endpoint = endpoint;
-        await this.saveNgrokEndpointToEnv(endpoint.dist, env);
-        this.outputSuccessSummary(endpoint);
+        await this.outputSuccessSummary(endpoint);
         return ok(true);
       }
     } catch {
-      // Return TunnelEndpointNotFoundError
+      // Return false
     }
-    return err(
-      new UserError(
-        ExtensionSource,
-        ExtensionErrors.TunnelEndpointNotFoundError,
-        util.format(
-          getDefaultString("teamstoolkit.localDebug.tunnelEndpointNotFoundError"),
-          webServiceUrl
-        ),
-        util.format(localize("teamstoolkit.localDebug.tunnelEndpointNotFoundError", webServiceUrl))
-      )
-    );
+    return ok(false);
   }
 
-  private async saveNgrokEndpointToEnv(endpoint: string, env: string): Promise<void> {
-    if (!isV3Enabled()) {
-      return;
+  private getWebServiceUrl(): string {
+    return this.args.tunnelInspection ?? this.status.tunnelInspection ?? defaultNgrokWebServiceUrl;
+  }
+
+  private async saveNgrokEndpointToEnv(endpoint: string): Promise<Result<Void, FxError>> {
+    try {
+      if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !this.args.env) {
+        return ok(Void);
+      }
+
+      const url = new URL(endpoint);
+      const envVars = {
+        [outputName.endpoint]: url.origin,
+        [outputName.domain]: url.hostname,
+      };
+
+      const res = await envUtil.writeEnv(
+        globalVariables.workspaceUri.fsPath,
+        this.args.env,
+        envVars
+      );
+      return res.isOk() ? ok(Void) : err(res.error);
+    } catch (error: any) {
+      return err(
+        new SystemError({
+          error: error,
+          source: ExtensionSource,
+          name: ExtensionErrors.TunnelEnvError,
+        })
+      );
     }
-
-    const url = new URL(endpoint);
-    const envVars = {
-      [outputName.endpoint]: url.origin,
-      [outputName.domain]: url.hostname,
-    };
-
-    await envUtil.writeEnv(globalVariables.workspaceUri?.fsPath ?? "", env, envVars);
   }
 
   private outputStartMessage(): void {

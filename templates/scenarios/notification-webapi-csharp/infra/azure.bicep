@@ -38,10 +38,6 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
       alwaysOn: true
       appSettings: [
         {
-          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
-          value: 'true' // Execute build steps on your site during deployment
-        }
-        {
           name: 'RUNNING_ON_AZURE'
           value: '1'
         }

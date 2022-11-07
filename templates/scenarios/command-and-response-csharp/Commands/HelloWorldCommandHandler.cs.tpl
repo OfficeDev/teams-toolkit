@@ -29,7 +29,7 @@ namespace {{SafeProjectName}}.Commands
 
         public async Task<ICommandResponse> HandleCommandAsync(ITurnContext turnContext, CommandMessage message, CancellationToken cancellationToken = default)
         {
-            _logger?.LogInformation($"Bot received message: {message.Text}");
+            _logger?.LogInformation($"App received message: {message.Text}");
 
             // Read adaptive card template
             var cardTemplate = await File.ReadAllTextAsync(_adaptiveCardFilePath, cancellationToken);
@@ -39,8 +39,8 @@ namespace {{SafeProjectName}}.Commands
             (
                 new HelloWorldModel
                 {
-                    Title = "Your Hello World Bot is Running",
-                    Body = "Congratulations! Your hello world bot is running. Click the documentation below to learn more about Bots and the Teams Toolkit.",
+                    Title = "Your Hello World App is Running",
+                    Body = "Congratulations! Your Hello World App is running. Open the documentation below to learn more about how to build applications with the Teams Toolkit.",
                 }
             );
 

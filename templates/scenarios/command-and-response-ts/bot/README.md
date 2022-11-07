@@ -128,7 +128,7 @@ export class DoSomethingCommandHandler implements TeamsFxBotCommandHandler {
         message: CommandMessage
     ): Promise<string | Partial<Activity>> {
         // verify the command arguments which are received from the client if needed.
-        console.log(`Bot received message: ${message.text}`);
+        console.log(`App received message: ${message.text}`);
 
         const cardData: CardData = {
           title: "doSomething command is added",
@@ -153,7 +153,7 @@ import { HelloWorldCommandHandler } from "../helloworldCommandHandler";
 import { DoSomethingCommandHandler } from "../doSomethingCommandHandler";
 import { ConversationBot } from "@microsoft/teamsfx";
 
-const commandBot = new ConversationBot({
+const commandApp = new ConversationBot({
     //...
     command: {
         enabled: true,

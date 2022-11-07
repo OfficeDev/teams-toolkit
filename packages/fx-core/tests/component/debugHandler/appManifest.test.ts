@@ -38,6 +38,10 @@ describe("AppManifestDebugHandler", () => {
   const ui = new MockUserInteraction();
 
   describe("prepare", () => {
+    beforeEach(() => {
+      sinon.stub(fs, "writeFile").callsFake(async () => {});
+    });
+
     afterEach(() => {
       sinon.restore();
     });

@@ -332,7 +332,7 @@ export class FxCore implements v3.ICore {
     return isV3Enabled() ? this.deployArtifactsNew(inputs) : this.deployArtifactsOld(inputs);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
+  @hooks([ProcessEnvRestorerMW, ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
   async deployArtifactsNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
@@ -452,7 +452,7 @@ export class FxCore implements v3.ICore {
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
-  @hooks([ErrorHandlerMW, EnvLoaderMW])
+  @hooks([ProcessEnvRestorerMW, ErrorHandlerMW, EnvLoaderMW])
   async publishApplicationNew(inputs: Inputs): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
@@ -488,6 +488,7 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([
+    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
@@ -662,6 +663,7 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([
+    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
@@ -727,6 +729,7 @@ export class FxCore implements v3.ICore {
     return ok(config);
   }
   @hooks([
+    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
@@ -760,6 +763,7 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([
+    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
@@ -792,6 +796,7 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([
+    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
@@ -824,6 +829,7 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([
+    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
@@ -864,6 +870,7 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([
+    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,

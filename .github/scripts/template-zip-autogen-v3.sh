@@ -13,19 +13,19 @@ fi
 TEMPLATE_OUTPUT_DIR=$1
 mkdir -p ${TEMPLATE_OUTPUT_DIR}
 
-TEMPLATE_BASE_DIR = "./templates/scenarios"
+TEMPLATE_BASE_DIR="./templates/scenarios"
 cd ${TEMPLATE_BASE_DIR}
-TEMPLATE_PATHS=$(ls -d ./*/)
+TEMPLATE_NAMES=$(ls -d *)
 cd -
 
-for TEMPLATE_PATH in ${TEMPLATE_PATHS[@]}; do
-
+for TEMPLATE_NAME in ${TEMPLATE_NAMES[@]}; do
+    TEMPLATE_PATH=${TEMPLATE_BASE_DIR}/${TEMPLATE_NAME}
     if [ ! -d ${TEMPLATE_PATH} ]; then
         echo "The folder ${TEMPLATE_PATH} does not exist."
         exit -1
     fi
 
-    cd ${TEMPLATE_BASE_DIR}/${TEMPLATE_PATH}
-    zip -rq ${TEMPLATE_OUTPUT_DIR}/${TEMPLATE}.zip .
+    cd ${TEMPLATE_PATH}
+    zip -rq ${TEMPLATE_OUTPUT_DIR}/${TEMPLATE_NAME}.zip .
     cd -
 done

@@ -49,6 +49,9 @@ deploy:
       resourceId: ${{ BOT_AZURE_APP_SERVICE_RESOURCE_ID }}
     
   - uses: npm/command
+    env:
+      REACT_APP_ENV_VAR1: xxx
+      REACT_APP_ENV_VAR2: yyy
     with:
       srcFolder: ./tab
       args: install:teamsfx

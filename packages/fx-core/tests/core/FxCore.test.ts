@@ -56,6 +56,7 @@ import {
   UnresolvedPlaceholders,
 } from "../../src/component/configManager/interface";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
+import { Readable, Writable } from "stream";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -535,3 +536,65 @@ function mockV3Project(): string {
 async function deleteTestProject(appName: string) {
   await fs.remove(path.join(os.tmpdir(), appName));
 }
+
+describe("createEnvCopyV3", async () => {
+  const tools = new MockTools();
+  const sandbox = sinon.createSandbox();
+  const sourceEnvContent = [
+    "# this is a comment",
+    "TEAMSFX_ENV=dev",
+    "",
+    "_KEY1=value1",
+    "KEY2=value2",
+    "SECRET_KEY3=xxxx",
+  ];
+  const sourceEnvStr = sourceEnvContent.join(os.EOL);
+
+  const writeStreamContent: string[] = [];
+  // fs.WriteStream's full interface is too hard to mock. We only use write() and end() so we just mock them here.
+  class MockedWriteStream {
+    write(chunk: any, callback?: ((error: Error | null | undefined) => void) | undefined): boolean {
+      writeStreamContent.push(chunk);
+      return true;
+    }
+    end(): boolean {
+      return true;
+    }
+  }
+
+  before(() => {
+    sandbox.stub(fs, "readFile").resolves(Buffer.from(sourceEnvStr, "utf8"));
+    sandbox.stub<any, any>(fs, "createWriteStream").returns(new MockedWriteStream());
+  });
+
+  after(() => {
+    sandbox.restore();
+  });
+
+  it("should create new .env file with desired content", async () => {
+    const core = new FxCore(tools);
+    const res = await core.createEnvCopyV3("newEnv", "dev", "./");
+    assert(res.isOk());
+    assert(
+      writeStreamContent[0] === `${sourceEnvContent[0]}${os.EOL}`,
+      "comments should be copied"
+    );
+    assert(
+      writeStreamContent[1] === `TEAMSFX_ENV=newEnv${os.EOL}`,
+      "TEAMSFX_ENV's value should be new env name"
+    );
+    assert(writeStreamContent[2] === `${os.EOL}`, "empty line should be coped");
+    assert(
+      writeStreamContent[3] === `_KEY1=${os.EOL}`,
+      "key starts with _ should be copied with empty value"
+    );
+    assert(
+      writeStreamContent[4] === `KEY2=${os.EOL}`,
+      "key not starts with _ should be copied with empty value"
+    );
+    assert(
+      writeStreamContent[5] === `SECRET_KEY3=${os.EOL}`,
+      "key not starts with SECRET_ should be copied with empty value"
+    );
+  });
+});

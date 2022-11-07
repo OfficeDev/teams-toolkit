@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as fs from "fs-extra";
+import * as os from "os";
+import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import { Container } from "typedi";
@@ -143,6 +144,7 @@ import "../component/driver/tools/installDriver";
 import "../component/driver/env/generate";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
+
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
@@ -329,15 +331,17 @@ export class FxCore implements v3.ICore {
     return isV3Enabled() ? this.deployArtifactsNew(inputs) : this.deployArtifactsOld(inputs);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
   async deployArtifactsNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
     const context = createDriverContext(inputs);
-    const res = await coordinator.deploy(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
+    const [output, error] = await coordinator.deploy(context, inputs as InputsWithProjectPath);
+    ctx!.envVars = output;
+    if (error) return err(error);
     return ok(Void);
   }
+
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -866,7 +870,8 @@ export class FxCore implements v3.ICore {
     ContextInjectorMW,
   ])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    if (!ctx) return err(new ObjectIsUndefinedError("createEnv input stuff"));
+    if (!ctx || !inputs.projectPath)
+      return err(new ObjectIsUndefinedError("createEnv input stuff"));
     const projectSettings = ctx.projectSettings;
     if (!projectSettings) {
       return ok(Void);
@@ -881,6 +886,14 @@ export class FxCore implements v3.ICore {
       !createEnvCopyInput.sourceEnvName
     ) {
       return err(UserCancelError);
+    }
+
+    if (isV3Enabled()) {
+      return this.createEnvCopyV3(
+        createEnvCopyInput.targetEnvName,
+        createEnvCopyInput.sourceEnvName,
+        inputs.projectPath
+      );
     }
 
     const createEnvResult = await this.createEnvCopy(
@@ -906,6 +919,36 @@ export class FxCore implements v3.ICore {
       );
     }
 
+    return ok(Void);
+  }
+
+  async createEnvCopyV3(
+    targetEnvName: string,
+    sourceEnvName: string,
+    projectPath: string
+  ): Promise<Result<Void, FxError>> {
+    const sourceDotEnvFile = environmentManager.getDotEnvPath(sourceEnvName, projectPath);
+    const source = await fs.readFile(sourceDotEnvFile);
+    const targetDotEnvFile = environmentManager.getDotEnvPath(targetEnvName, projectPath);
+    const writeStream = fs.createWriteStream(targetDotEnvFile);
+    source
+      .toString()
+      .split(/\r?\n/)
+      .forEach((line) => {
+        const reg = /^([a-zA-Z_][a-zA-Z0-9_]*=)/g;
+        const match = reg.exec(line);
+        if (match) {
+          if (match[1].startsWith("TEAMSFX_ENV=")) {
+            writeStream.write(`TEAMSFX_ENV=${targetEnvName}${os.EOL}`);
+          } else {
+            writeStream.write(`${match[1]}${os.EOL}`);
+          }
+        } else {
+          writeStream.write(`${line.trim()}${os.EOL}`);
+        }
+      });
+
+    writeStream.end();
     return ok(Void);
   }
 

@@ -49,7 +49,7 @@ export class CreateBotAadAppDriver implements StepDriver {
       const botAadAppState = this.loadCurrentState();
       const botConfig: BotAadCredentials = {
         botId: botAadAppState.BOT_ID ?? "",
-        botPassword: botAadAppState.BOT_PASSWORD ?? "",
+        botPassword: botAadAppState.SECRET_BOT_PASSWORD ?? "",
       };
       const botRegistration: BotRegistration = new RemoteBotRegistration();
       progressHandler?.start(getLocalizedString(progressBarKeys.creatingBotAadApp));
@@ -72,7 +72,7 @@ export class CreateBotAadAppDriver implements StepDriver {
       );
       return new Map([
         ["BOT_ID", createRes.value.botId],
-        ["BOT_PASSWORD", createRes.value.botPassword],
+        ["SECRET_BOT_PASSWORD", createRes.value.botPassword],
       ]);
     } catch (error) {
       progressHandler?.end(false);
@@ -117,7 +117,7 @@ export class CreateBotAadAppDriver implements StepDriver {
   private loadCurrentState(): CreateBotAadAppOutput {
     return {
       BOT_ID: process.env.BOT_ID,
-      BOT_PASSWORD: process.env.BOT_PASSWORD,
+      SECRET_BOT_PASSWORD: process.env.BOT_PASSWORD,
     };
   }
 }

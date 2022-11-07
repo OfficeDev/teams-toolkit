@@ -144,6 +144,7 @@ import "../component/driver/tools/installDriver";
 import "../component/driver/env/generate";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
+import { ProcessEnvRestorerMW } from "../component/middleware/processEnvRestorerMW";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -250,7 +251,7 @@ export class FxCore implements v3.ICore {
     return isV3Enabled() ? this.provisionResourcesNew(inputs) : this.provisionResourcesOld(inputs);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
+  @hooks([ProcessEnvRestorerMW, ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
   async provisionResourcesNew(
     inputs: Inputs,
     ctx?: CoreHookContext

@@ -61,10 +61,12 @@ export class Generator {
         renderTemplateFileData(fileName, fileData, replaceMap),
       onActionError: templateDefaultOnActionError,
     };
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.TemplateName]: generatorContext.name,
+    });
     await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
     await this.generate(generatorContext, TemplateActionSeq);
     merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.TemplateName]: generatorContext.name,
       [TelemetryProperty.Fallback]: generatorContext.fallbackZipPath ? "true" : "false", // Track fallback cases.
     });
     return ok(undefined);
@@ -97,11 +99,11 @@ export class Generator {
       relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
-    await actionContext?.progressBar?.next(ProgressMessages.generateSample);
-    await this.generate(generatorContext, SampleActionSeq);
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.SampleName]: generatorContext.name,
     });
+    await actionContext?.progressBar?.next(ProgressMessages.generateSample);
+    await this.generate(generatorContext, SampleActionSeq);
     return ok(undefined);
   }
 

@@ -186,6 +186,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
         this.log += data.toString();
         const line = data.toString().replace(/\n/g, "\r\n");
         this.writeEmitter.fire(line);
+
         if (!this.status.endpoint && !this.args.tunnelInspection) {
           this.findAndSaveNgrokEndpointFromLog(line).then((res) => {
             if (res.isOk() && res.value) {
@@ -195,6 +196,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
             }
           });
         }
+
         this.saveNgrokTunnelInspectionFromLog(line);
       });
 
@@ -205,46 +207,14 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       });
 
       this.childProc.on("error", (error) => {
-        resolve(
-          err(
-            new UserError(
-              ExtensionSource,
-              ExtensionErrors.NgrokProcessError,
-              util.format(
-                getDefaultString("teamstoolkit.localDebug.ngrokProcessError"),
-                error?.message ?? ""
-              ) +
-                " " +
-                openTerminalMessage(),
-              util.format(
-                localize("teamstoolkit.localDebug.ngrokProcessError"),
-                error?.message ?? ""
-              ) +
-                " " +
-                openTerminalDisplayMessage()
-            )
-          )
-        );
+        resolve(err(LocalTunnelError.NgrokProcessError(error)));
       });
 
       this.childProc.on("close", (code: number) => {
         if (code === 0) {
           resolve(ok(Void));
         } else {
-          resolve(
-            err(
-              new UserError(
-                ExtensionSource,
-                ExtensionErrors.NgrokStoppedError,
-                util.format(getDefaultString("teamstoolkit.localDebug.ngrokStoppedError"), code) +
-                  " " +
-                  openTerminalMessage(),
-                util.format(localize("teamstoolkit.localDebug.ngrokStoppedError"), code) +
-                  " " +
-                  openTerminalDisplayMessage()
-              )
-            )
-          );
+          resolve(err(LocalTunnelError.NgrokStoppedError(code)));
         }
       });
 
@@ -270,24 +240,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
             this.findAndSaveNgrokEndpointFromApi().then((res) => {
               if (res.isOk() && !res.value) {
                 const webServiceUrl = this.getWebServiceUrl();
-                resolve(
-                  err(
-                    new UserError(
-                      ExtensionSource,
-                      ExtensionErrors.TunnelEndpointNotFoundError,
-                      util.format(
-                        getDefaultString("teamstoolkit.localDebug.tunnelEndpointNotFoundError"),
-                        webServiceUrl
-                      ),
-                      util.format(
-                        localize(
-                          "teamstoolkit.localDebug.tunnelEndpointNotFoundError",
-                          webServiceUrl
-                        )
-                      )
-                    )
-                  )
-                );
+                resolve(err(LocalTunnelError.TunnelEndpointNotFoundError(webServiceUrl)));
               } else if (res.isErr()) {
                 resolve(res);
               }
@@ -378,13 +331,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       );
       return res.isOk() ? ok(Void) : err(res.error);
     } catch (error: any) {
-      return err(
-        new SystemError({
-          error: error,
-          source: ExtensionSource,
-          name: ExtensionErrors.TunnelEnvError,
-        })
-      );
+      return err(LocalTunnelError.TunnelEnvError(error));
     }
   }
 
@@ -499,33 +446,19 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     });
   }
 
+  // TODO: remove getNgrokEndpoint after v3 enabled
   public static async getNgrokEndpoint(): Promise<string> {
     if (this.ngrokTaskTerminals.size > 2) {
-      throw new UserError(
-        ExtensionSource,
-        ExtensionErrors.MultipleTunnelServiceError,
-        getDefaultString("teamstoolkit.localDebug.multipleTunnelServiceError"),
-        localize("teamstoolkit.localDebug.multipleTunnelServiceError")
-      );
+      throw LocalTunnelError.MultipleTunnelServiceError();
     }
 
     if (this.ngrokTaskTerminals.size === 0) {
-      throw new UserError(
-        ExtensionSource,
-        ExtensionErrors.NoTunnelServiceError,
-        getDefaultString("teamstoolkit.localDebug.noTunnelServiceError"),
-        localize("teamstoolkit.localDebug.noTunnelServiceError")
-      );
+      throw LocalTunnelError.NoTunnelServiceError();
     }
 
     const terminalStatus = [...this.ngrokTaskTerminals.values()][0];
     if (!terminalStatus.endpoint) {
-      throw new UserError(
-        ExtensionSource,
-        ExtensionErrors.TunnelServiceNotStartedError,
-        getDefaultString("teamstoolkit.localDebug.tunnelServiceNotStartedError"),
-        localize("teamstoolkit.localDebug.tunnelServiceNotStartedError")
-      );
+      throw LocalTunnelError.TunnelServiceNotStartedError();
     }
     return terminalStatus.endpoint.dist;
   }
@@ -539,12 +472,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       res.details.binFolders.length === 0 ||
       !res.command
     ) {
-      throw new UserError(
-        ExtensionSource,
-        ExtensionErrors.NgrokNotFoundError,
-        getDefaultString("teamstoolkit.localDebug.ngrokNotFoundError"),
-        localize("teamstoolkit.localDebug.ngrokNotFoundError")
-      );
+      throw LocalTunnelError.NgrokNotFoundError();
     }
     return path.resolve(res.details.binFolders[0], res.command);
   }
@@ -576,3 +504,77 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     }
   }
 }
+
+const LocalTunnelError = Object.freeze({
+  NgrokProcessError: (error: any) =>
+    new UserError(
+      ExtensionSource,
+      ExtensionErrors.NgrokProcessError,
+      util.format(
+        getDefaultString("teamstoolkit.localDebug.ngrokProcessError"),
+        error?.message ?? ""
+      ) +
+        " " +
+        openTerminalMessage(),
+      util.format(localize("teamstoolkit.localDebug.ngrokProcessError"), error?.message ?? "") +
+        " " +
+        openTerminalDisplayMessage()
+    ),
+
+  NgrokStoppedError: (code: number) =>
+    new UserError(
+      ExtensionSource,
+      ExtensionErrors.NgrokStoppedError,
+      util.format(getDefaultString("teamstoolkit.localDebug.ngrokStoppedError"), code) +
+        " " +
+        openTerminalMessage(),
+      util.format(localize("teamstoolkit.localDebug.ngrokStoppedError"), code) +
+        " " +
+        openTerminalDisplayMessage()
+    ),
+
+  TunnelEndpointNotFoundError: (webServiceUrl: string) =>
+    new UserError(
+      ExtensionSource,
+      ExtensionErrors.TunnelEndpointNotFoundError,
+      util.format(
+        getDefaultString("teamstoolkit.localDebug.tunnelEndpointNotFoundError"),
+        webServiceUrl
+      ),
+      util.format(localize("teamstoolkit.localDebug.tunnelEndpointNotFoundError", webServiceUrl))
+    ),
+  TunnelEnvError: (error: any) =>
+    new SystemError({
+      error: error,
+      source: ExtensionSource,
+      name: ExtensionErrors.TunnelEnvError,
+    }),
+  NgrokNotFoundError: () =>
+    new UserError(
+      ExtensionSource,
+      ExtensionErrors.NgrokNotFoundError,
+      getDefaultString("teamstoolkit.localDebug.ngrokNotFoundError"),
+      localize("teamstoolkit.localDebug.ngrokNotFoundError")
+    ),
+  MultipleTunnelServiceError: () =>
+    new UserError(
+      ExtensionSource,
+      ExtensionErrors.MultipleTunnelServiceError,
+      getDefaultString("teamstoolkit.localDebug.multipleTunnelServiceError"),
+      localize("teamstoolkit.localDebug.multipleTunnelServiceError")
+    ),
+  NoTunnelServiceError: () =>
+    new UserError(
+      ExtensionSource,
+      ExtensionErrors.NoTunnelServiceError,
+      getDefaultString("teamstoolkit.localDebug.noTunnelServiceError"),
+      localize("teamstoolkit.localDebug.noTunnelServiceError")
+    ),
+  TunnelServiceNotStartedError: () =>
+    new UserError(
+      ExtensionSource,
+      ExtensionErrors.TunnelServiceNotStartedError,
+      getDefaultString("teamstoolkit.localDebug.tunnelServiceNotStartedError"),
+      localize("teamstoolkit.localDebug.tunnelServiceNotStartedError")
+    ),
+});

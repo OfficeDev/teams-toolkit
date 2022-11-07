@@ -543,11 +543,12 @@ const LocalTunnelError = Object.freeze({
       util.format(localize("teamstoolkit.localDebug.tunnelEndpointNotFoundError", webServiceUrl))
     ),
   TunnelEnvError: (error: any) =>
-    new SystemError({
-      error: error,
-      source: ExtensionSource,
-      name: ExtensionErrors.TunnelEnvError,
-    }),
+    new UserError(
+      ExtensionSource,
+      ExtensionErrors.TunnelEnvError,
+      util.format(getDefaultString("teamstoolkit.localDebug.tunnelEnvError"), error?.message ?? ""),
+      util.format(localize("teamstoolkit.localDebug.tunnelEnvError"), error?.message ?? "")
+    ),
   NgrokNotFoundError: () =>
     new UserError(
       ExtensionSource,

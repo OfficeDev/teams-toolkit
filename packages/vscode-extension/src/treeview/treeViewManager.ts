@@ -67,6 +67,20 @@ class TreeViewManager {
           { name: "eye", custom: false }
         )
       );
+      if (TreatmentVariableValue.inProductDoc) {
+        developmentCommands.splice(
+          2,
+          1,
+          new TreeViewCommand(
+            localize("teamstoolkit.commandsTreeViewProvider.guideTitle"),
+            localize("teamstoolkit.commandsTreeViewProvider.tutorialDescription"),
+            "fx-extension.selectTutorials",
+            undefined,
+            { name: "tasklist", custom: false },
+            TreeCategory.GettingStarted
+          )
+        );
+      }
       developmentTreeviewProvider.refresh();
     }
   }
@@ -150,26 +164,13 @@ class TreeViewManager {
         { name: "library", custom: false },
         TreeCategory.GettingStarted
       ),
-      ...(TreatmentVariableValue.inProductDoc
-        ? [
-            new TreeViewCommand(
-              localize("teamstoolkit.commandsTreeViewProvider.guideTitle"),
-              localize("teamstoolkit.commandsTreeViewProvider.tutorialDescription"),
-              "fx-extension.selectTutorials",
-              undefined,
-              { name: "tasklist", custom: false },
-              TreeCategory.GettingStarted
-            ),
-          ]
-        : [
-            new TreeViewCommand(
-              localize("teamstoolkit.commandsTreeViewProvider.addFeatureTitle"),
-              localize("teamstoolkit.commandsTreeViewProvider.addFeatureDescription"),
-              "fx-extension.addFeature",
-              "addFeature",
-              { name: "teamsfx-add-feature", custom: false }
-            ),
-          ]),
+      new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.addFeatureTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.addFeatureDescription"),
+        "fx-extension.addFeature",
+        "addFeature",
+        { name: "teamsfx-add-feature", custom: false }
+      ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.previewTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.previewDescription"),

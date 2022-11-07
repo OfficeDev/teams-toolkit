@@ -173,7 +173,7 @@ export class WebviewPanel {
     );
 
     // Set the webview's initial html content
-    this.panel.webview.html = this.getHtmlForWebview(panelType);
+    this.panel.webview.html = this.getHtmlForWebview(panelType, this.panel.webview);
   }
 
   private async downloadSampleApp(msg: any) {
@@ -344,7 +344,7 @@ export class WebviewPanel {
     }
   }
 
-  private getHtmlForWebview(panelType: PanelType) {
+  private getHtmlForWebview(panelType: PanelType, webview: vscode.Webview) {
     const scriptBasePathOnDisk = vscode.Uri.file(
       path.join(globalVariables.context.extensionPath, "out/")
     );
@@ -353,7 +353,7 @@ export class WebviewPanel {
     const scriptPathOnDisk = vscode.Uri.file(
       path.join(globalVariables.context.extensionPath, "out/src", "client.js")
     );
-    const scriptUri = scriptPathOnDisk.with({ scheme: "vscode-resource" });
+    const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
 
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();

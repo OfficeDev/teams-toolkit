@@ -7,7 +7,6 @@ import * as path from "path";
 import * as kill from "tree-kill";
 import * as util from "util";
 import * as vscode from "vscode";
-
 import {
   assembleError,
   err,
@@ -18,6 +17,7 @@ import {
   UserError,
   Void,
 } from "@microsoft/teamsfx-api";
+import { envUtil, isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import {
@@ -47,7 +47,6 @@ import { vscodeLogger } from "../depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "../depsChecker/vscodeTelemetry";
 import { DefaultPlaceholder, localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { envUtil, isV3Enabled } from "@microsoft/teamsfx-core";
 
 const ngrokTimeout = 1 * 60 * 1000;
 const ngrokTimeInterval = 10 * 1000;

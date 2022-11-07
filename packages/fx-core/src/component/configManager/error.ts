@@ -49,3 +49,17 @@ export class InvalidLifecycleError extends UserError {
     super(errorOptions);
   }
 }
+
+export class InvalidEnvFieldError extends UserError {
+  constructor(actionName: string, lifecycle: LifecycleName) {
+    const key = "configManager.error.invalidEnvField";
+    const errorOptions: UserErrorOptions = {
+      source: component,
+      name: "InvalidEnvFieldError",
+      message: getDefaultString(key, actionName, lifecycle),
+      displayMessage: getLocalizedString(key, actionName, lifecycle),
+    };
+    // errorOptions.helpLink = helpLink;
+    super(errorOptions);
+  }
+}

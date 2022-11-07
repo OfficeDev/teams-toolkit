@@ -31,7 +31,7 @@ deploy:
   - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
     with:
       workingDirectory: .
-      distributionPath: . # Deploy base folder
+      distributionPath: ./build # Deploy base folder
       ignoreFile: ./.appserviceIgnore # Can be changed to any ignore file location, leave blank will ignore nothing
       resourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to
 
@@ -39,7 +39,7 @@ registerApp:
   - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
     with:
       name: sso-tab-aad # Note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
-      generateClientSecret: true # If the value is false, the driver will not generate client secret for you
+      generateClientSecret: true # If the value is false, the action will not generate client secret for you
     # Output: following environment variable will be persisted in current environment's .env file.
     # AAD_APP_CLIENT_ID: the client id of AAD app
     # AAD_APP_CLIENT_SECRET: the client secret of AAD app

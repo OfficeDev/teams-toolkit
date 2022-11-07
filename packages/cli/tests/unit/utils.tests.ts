@@ -40,8 +40,9 @@ import {
 import * as utils from "../../src/utils";
 import { expect } from "./utils";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
 import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
+import mockedEnv from "mocked-env";
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
 const staticOptions2: apis.StaticOptions = [
   { id: "a", cliName: "aa", label: "aaa" },
@@ -336,7 +337,14 @@ describe("Utils Tests", function () {
         if (path.includes("realbuterror")) {
           throw Error("realbuterror");
         } else {
-          return {};
+          if (isV3Enabled()) {
+            return {
+              trackingId: "trackingId",
+              version: "3.0.0",
+            };
+          } else {
+            return {};
+          }
         }
       });
     });
@@ -348,6 +356,21 @@ describe("Utils Tests", function () {
     it("Real Path", () => {
       const result = readSettingsFileSync("real");
       expect(result.isOk() ? result.value : result.error).deep.equals({});
+    });
+
+    it("Real Path in V3", () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "true",
+      });
+      try {
+        const result = readSettingsFileSync("real");
+        expect(result.isOk() ? result.value : result.error).deep.equals({
+          projectId: "trackingId",
+          version: "3.0.0",
+        });
+      } finally {
+        restore();
+      }
     });
 
     it("Real Path but cannot read", () => {
@@ -474,6 +497,18 @@ describe("Utils Tests", function () {
     it("Real Path", async () => {
       const result = utils.isWorkspaceSupported("real");
       expect(result).equals(true);
+    });
+
+    it("Real Path in V3", async () => {
+      const restore = mockedEnv({
+        TEAMSFX_V3: "true",
+      });
+      try {
+        const result = utils.isWorkspaceSupported("real");
+        expect(result).equals(true);
+      } finally {
+        restore();
+      }
     });
 
     it("Fake Path", async () => {

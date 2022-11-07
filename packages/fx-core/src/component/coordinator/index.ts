@@ -74,6 +74,8 @@ import { getDefaultString, getLocalizedString } from "../../common/localizeUtils
 import { ExecutionError, ExecutionOutput } from "../configManager/interface";
 import { createContextV3 } from "../utils";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
+import { getResourceGroupInPortal } from "../../common/tools";
+import { getBotTroubleShootMessage } from "../core";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -188,6 +190,7 @@ export class Coordinator {
         const templateName = Feature2TemplateName[`${feature}:${trigger}`];
         if (templateName) {
           const langKey = convertToLangKey(language);
+          context.templateVariables = Generator.getDefaultVariables(appName);
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);
         }
@@ -424,7 +427,8 @@ export class Coordinator {
       const consentRes = await provisionUtils.askForProvisionConsentV3(
         ctx,
         m365tenantInfo,
-        azureSubInfo
+        azureSubInfo,
+        inputs.env
       );
       if (consentRes.isErr()) return [undefined, consentRes.error];
     }
@@ -437,6 +441,29 @@ export class Coordinator {
         return [output, result[1]];
       }
     }
+
+    // 6. show provisioned resources
+    if (azureSubInfo) {
+      const url = getResourceGroupInPortal(
+        azureSubInfo.subscriptionId,
+        azureSubInfo.tenantId,
+        process.env.AZURE_RESOURCE_GROUP_NAME
+      );
+      const msg = getLocalizedString("core.provision.successNotice", folderName);
+      if (url) {
+        const title = getLocalizedString("core.provision.viewResources");
+        ctx.ui?.showMessage("info", msg, false, title).then((result: any) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === title) {
+            ctx.ui?.openUrl(url);
+          }
+        });
+      } else {
+        ctx.ui?.showMessage("info", msg, false);
+      }
+      ctx.logProvider.info(msg);
+    }
+
     return [output, undefined];
   }
 
@@ -484,22 +511,32 @@ export class Coordinator {
     ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<[DotenvParseOutput | undefined, FxError | undefined]> {
+    const output: DotenvParseOutput = {};
     const parser = new YamlParser();
     const templatePath =
       inputs["workflowFilePath"] ??
       path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
-      return err(maybeProjectModel.error);
+      return [undefined, maybeProjectModel.error];
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
       const execRes = await projectModel.deploy.execute(ctx);
       const result = this.convertExecuteResult(execRes);
-      if (result[1]) return err(result[1]);
+      merge(output, result[0]);
+      if (result[1]) return [output, result[1]];
+
+      // show message box after deploy
+      const botTroubleShootMsg = getBotTroubleShootMessage(false);
+      const msg =
+        getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
+        botTroubleShootMsg.textForLogging;
+      ctx.logProvider.info(msg);
+      ctx.ui?.showMessage("info", msg, false);
     }
-    return ok(undefined);
+    return [output, undefined];
   }
 
   @hooks([

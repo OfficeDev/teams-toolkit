@@ -2,6 +2,9 @@ import "./codeSnippet.scss";
 
 import * as React from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+
+import { Icon } from "@fluentui/react";
+
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -27,7 +30,12 @@ export default function CodeSnippet(props: { data: string; language: string; ide
     <div className="codeSnippet">
       <div className="codeTitle">
         <CopyToClipboard text={props.data} onCopy={onCopyCode}>
-          <button>Copy</button>
+          <div className="copyButton">
+            <span>
+              <Icon iconName="Copy" />
+            </span>
+            <button>Copy</button>
+          </div>
         </CopyToClipboard>
       </div>
       <div className="code">

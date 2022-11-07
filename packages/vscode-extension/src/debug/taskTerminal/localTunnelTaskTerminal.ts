@@ -7,16 +7,7 @@ import * as path from "path";
 import * as kill from "tree-kill";
 import * as util from "util";
 import * as vscode from "vscode";
-import {
-  assembleError,
-  err,
-  FxError,
-  ok,
-  Result,
-  SystemError,
-  UserError,
-  Void,
-} from "@microsoft/teamsfx-api";
+import { assembleError, err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import { envUtil, isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";

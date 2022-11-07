@@ -75,6 +75,7 @@ import { ExecutionError, ExecutionOutput } from "../configManager/interface";
 import { createContextV3 } from "../utils";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../../common/tools";
+import { getBotTroubleShootMessage } from "../core";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -526,6 +527,14 @@ export class Coordinator {
       const result = this.convertExecuteResult(execRes);
       merge(output, result[0]);
       if (result[1]) return [output, result[1]];
+
+      // show message box after deploy
+      const botTroubleShootMsg = getBotTroubleShootMessage(false);
+      const msg =
+        getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
+        botTroubleShootMsg.textForLogging;
+      ctx.logProvider.info(msg);
+      ctx.ui?.showMessage("info", msg, false);
     }
     return [output, undefined];
   }

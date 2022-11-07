@@ -95,6 +95,14 @@ describe("Provision Command Tests", function () {
     cmd.builder(yargs);
   });
 
+  it("Builder Check V3", () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    const cmd = new Provision();
+    cmd.builder(yargs);
+  });
+
   it("Provision Command Running -- with sqlPasswordQustionName", async () => {
     const cmd = new Provision();
     const args = {

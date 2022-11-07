@@ -2,10 +2,16 @@
 // Licensed under the MIT license.
 
 import { Result, FxError, err, ok, Void, Stage } from "@microsoft/teamsfx-api";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
-import { sqlPasswordQustionName, sqlPasswordConfirmQuestionName } from "../constants";
+import {
+  sqlPasswordQustionName,
+  sqlPasswordConfirmQuestionName,
+  EnvOptions,
+  RootFolderOptions,
+} from "../constants";
 import HelpParamGenerator from "../helpParamGenerator";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
@@ -74,6 +80,17 @@ export default class Provision extends YargsCommand {
   public readonly subCommands = [new ProvisionManifest()];
 
   public builder(yargs: Argv): Argv<any> {
+    this.subCommands.forEach((cmd) => {
+      yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
+    });
+    if (isV3Enabled()) {
+      return yargs
+        .hide("interactive")
+        .version(false)
+        .options(EnvOptions)
+        .options(RootFolderOptions);
+    }
+
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.provision);
     yargs.option(this.resourceGroupParam, {
       require: false,
@@ -82,9 +99,6 @@ export default class Provision extends YargsCommand {
       global: false,
     });
 
-    this.subCommands.forEach((cmd) => {
-      yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    });
     return yargs.version(false).options(this.params);
   }
 

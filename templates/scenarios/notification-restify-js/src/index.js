@@ -1,5 +1,5 @@
 const notificationTemplate = require("./adaptiveCards/notification-default.json");
-const { bot } = require("./internal/initialize");
+const { notificationApp } = require("./internal/initialize");
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
 const restify = require("restify");
 
@@ -15,7 +15,7 @@ server.post(
   restify.plugins.queryParser(),
   restify.plugins.bodyParser(), // Add more parsers if needed
   async (req, res) => {
-    for (const target of await bot.notification.installations()) {
+    for (const target of await notificationApp.notification.installations()) {
       await target.sendAdaptiveCard(
         AdaptiveCards.declare(notificationTemplate).render({
           title: "New Event Occurred!",
@@ -72,5 +72,5 @@ server.post(
 
 // Bot Framework message handler.
 server.post("/api/messages", async (req, res) => {
-  await bot.requestHandler(req, res);
+  await notificationApp.requestHandler(req, res);
 });

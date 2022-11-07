@@ -2,7 +2,7 @@ const { ConversationBot } = require("@microsoft/teamsfx");
 const config = require("./config");
 
 // Create bot.
-const bot = new ConversationBot({
+const notificationApp = new ConversationBot({
   // The bot id and password to create BotFrameworkAdapter.
   // See https://aka.ms/about-bot-adapter to learn more about adapters.
   adapterConfig: {
@@ -16,5 +16,5 @@ const bot = new ConversationBot({
 });
 
 module.exports = {
-  bot,
+  notificationApp,
 };

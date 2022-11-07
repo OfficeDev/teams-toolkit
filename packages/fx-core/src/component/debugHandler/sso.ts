@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import fs from "fs-extra";
 import { cloneDeep } from "lodash";
 import * as path from "path";
 import * as util from "util";
@@ -34,7 +35,10 @@ import { TelemetryEvent } from "../../common/telemetry";
 import { getAllowedAppIds, objectToMap } from "../../common/tools";
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
-import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
+import {
+  getProjectSettingsPath,
+  loadProjectSettingsByProjectPath,
+} from "../../core/middleware/projectSettingsLoader";
 import { ComponentNames } from "../constants";
 import { convertEnvStateV3ToV2 } from "../migrate";
 import { DebugAction } from "./common";
@@ -161,6 +165,10 @@ export class SSODebugHandler {
       if (projectSettingsResult.isErr()) {
         return err(projectSettingsResult.error);
       }
+
+      // save project settings as the project id may be updated
+      const projectSettingsPath = getProjectSettingsPath(this.projectPath);
+      await fs.writeFile(projectSettingsPath, JSON.stringify(projectSettingsResult.value, null, 4));
 
       this.projectSettingsV3 = projectSettingsResult.value as ProjectSettingsV3;
       this.cryptoProvider = new LocalCrypto(this.projectSettingsV3.projectId);

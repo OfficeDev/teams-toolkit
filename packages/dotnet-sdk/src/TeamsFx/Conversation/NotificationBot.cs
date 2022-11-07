@@ -116,18 +116,18 @@ namespace Microsoft.TeamsFx.Conversation
         }
 
         /// <summary>
-        /// Returns the first <see cref="Member"/> where predicate is true, and undefined otherwise.
+        /// Returns the first <see cref="Member"/> where predicate is true, and null otherwise.
         /// </summary>
         /// <param name="predicate">
         /// Find calls predicate once for each member of the installation, 
         /// until it finds one where predicate returns true. If such a member is found, 
-        /// find immediately returns that member.Otherwise, find returns undefined.
+        /// find immediately returns that member.Otherwise, find returns null.
         /// </param>
         /// <param name="scope">The scope to find members from the installations. 
         /// (personal chat, group chat, Teams channel)
         /// </param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The first <see cref="Member"/> where predicate is true, and undefined otherwise.</returns>
+        /// <returns>The first <see cref="Member"/> where predicate is true, and null otherwise.</returns>
         /// <exception cref="ArgumentNullException">Throws when predicate is null.</exception>
         public async Task<Member> FindMemberAsync(
             Func<Member, Task<bool>> predicate,
@@ -199,15 +199,16 @@ namespace Microsoft.TeamsFx.Conversation
         }
 
         /// <summary>
-        /// Returns the first <see cref="Channel"/> where predicate is true, and undefined otherwise.
+        /// Returns the first <see cref="Channel"/> where predicate is true, and null otherwise.
+        /// (Ensure the bot app is installed into the `General` channel, otherwise null will be returned.)
         /// </summary>
         /// <param name="predicate">
         /// Find calls predicate once for each channel of the installation, 
         /// until it finds one where predicate returns true. If such a channel is found, 
-        /// find immediately returns that channel.Otherwise, find returns undefined.
+        /// find immediately returns that channel.Otherwise, find returns null.
         /// </param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The first <see cref="Channel"/> where predicate is true, and undefined otherwise.</returns>
+        /// <returns>The first <see cref="Channel"/> where predicate is true, and null otherwise.</returns>
         /// <exception cref="ArgumentNullException">Throws when predicate is null.</exception>
         public async Task<Channel> FindChannelAsync(
             Func<Channel, TeamDetails, Task<bool>> predicate,
@@ -240,6 +241,7 @@ namespace Microsoft.TeamsFx.Conversation
 
         /// <summary>
         /// Returns all <see cref="Channel"/> where predicate is true, and empty array otherwise.
+        /// (Ensure the bot app is installed into the `General` channel, otherwise empty array will be returned.)
         /// </summary>
         /// <param name="predicate">Predicate find calls predicate for each channel of the installation.</param>
         /// <param name="cancellationToken">The cancellation token.</param>

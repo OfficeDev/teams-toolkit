@@ -20,20 +20,17 @@ provision:
     # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-provision-arm#output for more details on the naming conversion rule.
 
 deploy:
-  - uses: npm/command
+  - uses: dotnet/command
     with:
-      args: install
-  - uses: npm/command
-    with:
-      args: run build
+      workingDirectory: ./
+      args: publish --configuration Release --runtime win-x86 --self-contained
   - uses: azureFunctions/deploy
     with:
+      workingDirectory: .
       # deploy base folder
-      distributionPath: ./
-      # can be changed to any ignore file location, leave blank will ignore nothing
-      ignoreFile: ./.funcignore
+      distributionPath: ./bin/Release/net6.0/win-x86/publish
       # the resource id of the cloud resource to be deployed to
-      resourceId: ${{BOT_AZURE_FUNCTION_APP_RESOURCE_ID}}
+      resourceId: ${{BOT_AZURE_APP_SERVICE_RESOURCE_ID}}
 
 registerApp:
   - uses: teamsApp/create # Creates a Teams app

@@ -87,8 +87,9 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
   }
 }
 
+var functionAppSettingsName = split(functionApp.id, '/')[8]
 resource functionAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
-  name: '${functionAppName}/appsettings'
+  name: '${functionAppSettingsName}/appsettings'
   properties: {
     BOT_ID: botAadAppClientId // ID of your bot
     BOT_PASSWORD: botAadAppClientSecret // Secret of your bot

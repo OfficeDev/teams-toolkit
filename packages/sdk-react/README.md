@@ -73,6 +73,27 @@ const { loading, error, data, reload } = useGraph(
   );
 ```
 
+> Note: `useGraph()` has been deprecated and will be removed in the future release. Please use `useGraphWithCredential()` instead as below:
+
+```ts
+const { loading, error, data, reload } = useGraphWithCredential(
+    async (graph, teamsUserCredential, scope) => {
+      // Call graph api directly to get user profile information
+      const profile = await graph.api("/me").get();
+
+      let photoUrl = "";
+      try {
+        const photo = await graph.api("/me/photo/$value").get();
+        photoUrl = URL.createObjectURL(photo);
+      } catch {
+        // Could not fetch photo from user's profile, return empty string as placeholder.
+      }
+      return { profile, photoUrl };
+    },
+    { scope: ["User.Read"] }
+  );
+```
+
 #### 2. Render Graph data with React
 
 You can bind the `reload` function with a button to refresh data on demand.
@@ -106,11 +127,19 @@ If you want to manually set the initial theme, please pass the config object to 
 Initialize TeamsFx and Teams JS SDK, in a development environment, verbose logging message will be printed to console.
 It returns the TeamsFx instance as data.
 If you want to customize TeamsFx like customizing setting, please pass the config object to `useTeamsFx()`.
+> Note: `useTeamsFx()` has been deprecated and will be removed in the future release. Please use `useTeamsUserCredential()` instead as below:
+
+```ts
+const authConfig: TeamsUserCredentialAuthConfig = {
+  clientId: process.env.REACT_APP_CLIENT_ID,
+  initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+}
+const { loading, theme, themeString, teamsfx } = useTeamsFx(authConfig);
+```
 
 ### useGraph
 This hook function leverage `useData` to call Graph API. It will execute the fetchGraphDataAsync function that the developer passes in first.
-If user has not consented to the scopes of AAD resources, `useGraph()` will automatically call `teamsfx.login()` to pop up the consent dialog.
-So, developers can focus on the business logic of how to fetch Microsoft Graph data.
+If user has not consented to the scopes of AAD resources, `useGraph()`, `useGraphWithCredential` will automatically call login function to pop up the consent dialog. So, developers can focus on the business logic of how to fetch Microsoft Graph data.
 
 ## Next steps
 

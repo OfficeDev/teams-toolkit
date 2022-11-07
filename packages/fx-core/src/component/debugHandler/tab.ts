@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import fs from "fs-extra";
 import { cloneDeep } from "lodash";
 import * as path from "path";
 import * as util from "util";
@@ -23,7 +24,10 @@ import {
 
 import { LocalCrypto } from "../../core/crypto";
 import { environmentManager } from "../../core/environment";
-import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
+import {
+  getProjectSettingsPath,
+  loadProjectSettingsByProjectPath,
+} from "../../core/middleware/projectSettingsLoader";
 import { ComponentNames, PathConstants } from "../constants";
 import { DebugAction } from "./common";
 import { DebugArgumentEmptyError, errorSource, InvalidTabBaseUrlError } from "./error";
@@ -109,6 +113,11 @@ export class TabDebugHandler {
       if (projectSettingsResult.isErr()) {
         return err(projectSettingsResult.error);
       }
+
+      // save project settings as the project id may be updated
+      const projectSettingsPath = getProjectSettingsPath(this.projectPath);
+      await fs.writeFile(projectSettingsPath, JSON.stringify(projectSettingsResult.value, null, 4));
+
       this.projectSettingsV3 = projectSettingsResult.value as ProjectSettingsV3;
 
       this.cryptoProvider = new LocalCrypto(this.projectSettingsV3.projectId);

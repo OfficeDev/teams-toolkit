@@ -306,11 +306,23 @@ To make this work in your application:
     ```ts
     const path = require("path");
 
-    server.get(
-        "/auth-*.html",
-        restify.plugins.serveStatic({
-            directory: path.join(__dirname, "public"),
+    // Listen for incoming requests.
+    server.post("/api/messages", async (req, res) => {
+      await adapter.processActivity(req, res, async (context) => {
+        await bot.run(context);
+      }).catch((err) => {
+        // Error message including "412" means it is waiting for user's consent, which is a normal process of SSO, sholdn't throw this error.
+        if(!err.message.includes("412")) {
+            throw err;
+          }
         })
+    });
+
+    server.get(
+      "/auth-*.html",
+      restify.plugins.serveStatic({
+        directory: path.join(__dirname, "public"),
+      })
     );
     ```
 1. Override `handleTeamsMessagingExtensionQuery` interface under `bot/teamsBot`. You can follow the sample code in the `handleMessageExtensionQueryWithToken` to do your own query logic.

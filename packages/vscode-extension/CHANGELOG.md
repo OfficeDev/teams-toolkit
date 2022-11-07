@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.1.1 - Nov 02, 2022
+
+Enhancements:
+
+- Improved experience to obtain a Microsoft Graph client in [@microsoft/teamsfx](https://www.npmjs.com/package/@microsoft/teamsfx) with separated configration interfaces for different authentication flows.
+- Included `useTeams` hook in [@microsoft/teamsfx-react](https://www.npmjs.com/package/@microsoft/teamsfx-react) package. Thanks to its original author [Wictor Wilén](https://github.com/wictorwilen) who first developed this hook in [msteams-react-base-component](https://github.com/wictorwilen/msteams-react-base-component) package.
+- Upgraded [@microsoft/teamsfx](https://www.npmjs.com/package/@microsoft/teamsfx) to `2.0.0` that's compatible with [@microsoft/teamjs](https://www.npmjs.com/package/@microsoft/teams-js) `2.0.0` and above.
+- Added a shortcut to debug and preview your Teams application from left side tree view under `DEVELOPMENT` section.
+
 ## 4.1.0 - Oct 17, 2022
 
 New features:

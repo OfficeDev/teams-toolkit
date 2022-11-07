@@ -1274,11 +1274,12 @@ describe("provisionUtils", () => {
       chai.assert.isTrue(res.isOk());
     });
 
-    it("provisioned before and differnt tenant", async () => {
+    it("provisioned before and switch tenant", async () => {
       const actions = ["aadApp/create"];
       const tenantId = "tid";
       mockedEnvRestore = mockedEnv({
         TEAMS_APP_TENANT_ID: "old-tid",
+        AAD_APP_CLIENT_ID: "aad-id",
       });
 
       const res = await provisionUtils.ensureM365TenantMatchesV3(
@@ -1290,16 +1291,17 @@ describe("provisionUtils", () => {
 
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        console.log(res.error.message);
         chai.assert.isTrue(res.error.message.includes("AAD_APP_CLIENT_ID"));
       }
     });
 
-    it("provisioned before and differnt tenant with bot", async () => {
+    it("provisioned before and switch tenant", async () => {
       const actions = ["aadApp/create", "m365Bot/create"];
       const tenantId = "tid";
       mockedEnvRestore = mockedEnv({
         TEAMS_APP_TENANT_ID: "old-tid",
+        AAD_APP_CLIENT_ID: "aad-id",
+        BOT_ID: "bot-id",
       });
 
       const res = await provisionUtils.ensureM365TenantMatchesV3(
@@ -1311,9 +1313,30 @@ describe("provisionUtils", () => {
 
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        console.log(res.error.message);
         chai.assert.isTrue(res.error.message.includes("AAD_APP_CLIENT_ID"));
         chai.assert.isTrue(res.error.message.includes("BOT_ID"));
+      }
+    });
+
+    it("provisioned before and switch tenant missing id", async () => {
+      const actions = ["aadApp/create", "botAadApp/create"];
+      const tenantId = "tid";
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "old-tid",
+        AAD_APP_CLIENT_ID: "aad-id",
+      });
+
+      const res = await provisionUtils.ensureM365TenantMatchesV3(
+        actions,
+        tenantId,
+        "local",
+        "coorinator"
+      );
+
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.isTrue(res.error.message.includes("AAD_APP_CLIENT_ID"));
+        chai.assert.isFalse(res.error.message.includes("BOT_ID"));
       }
     });
   });

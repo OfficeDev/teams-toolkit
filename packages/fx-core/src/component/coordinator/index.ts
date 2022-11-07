@@ -355,16 +355,16 @@ export class Coordinator {
         return [undefined, tenantInfoInTokenRes.error];
       }
       m365tenantInfo = tenantInfoInTokenRes.value;
-    }
 
-    const checkM365TenatRes = await provisionUtils.ensureM365TenantMatchesV3(
-      tenantSwitchCheckActions,
-      m365tenantInfo?.tenantIdInToken,
-      inputs.env,
-      "coordinator"
-    );
-    if (checkM365TenatRes.isErr()) {
-      return [undefined, checkM365TenatRes.error];
+      const checkM365TenatRes = await provisionUtils.ensureM365TenantMatchesV3(
+        tenantSwitchCheckActions,
+        m365tenantInfo?.tenantIdInToken,
+        inputs.env,
+        "coordinator"
+      );
+      if (checkM365TenatRes.isErr()) {
+        return [undefined, checkM365TenatRes.error];
+      }
     }
 
     // 4. pre-requisites check

@@ -851,7 +851,7 @@ export class ProvisionUtils {
     }
     const msg = getLocalizedString(
       "error.m365tenantcheck.tenantNotMatch",
-      keysNeedToUpdate.join(","),
+      keysNeedToUpdate.join(", "),
       env
     );
 

@@ -21,12 +21,12 @@ namespace {{SafeProjectName}}
                 .AddJsonFile(Path.Combine(context.ApplicationRootPath, $"appsettings.{context.EnvironmentName}.json"), optional: true, reloadOnChange: false);
 
             // Prepare Configuration for ConfigurationBotFrameworkAuthentication
-            var configuration = builder.ConfigurationBuilder.Build();
+            var config = builder.ConfigurationBuilder.Build().Get<ConfigOptions>();
             builder.ConfigurationBuilder.AddInMemoryCollection(new Dictionary<string, string>()
             {
                 { "MicrosoftAppType", "MultiTenant" },
-                { "MicrosoftAppId", configuration.GetSection("BOT_ID")?.Value ?? string.Empty },
-                { "MicrosoftAppPassword", configuration.GetSection("BOT_PASSWORD")?.Value ?? string.Empty },
+                { "MicrosoftAppId", config.BOT_ID },
+                { "MicrosoftAppPassword", config.BOT_PASSWORD },
             });
         }
 

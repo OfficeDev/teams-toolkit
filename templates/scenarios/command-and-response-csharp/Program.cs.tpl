@@ -12,9 +12,10 @@ builder.Services.AddHttpClient("WebClient", client => client.Timeout = TimeSpan.
 builder.Services.AddHttpContextAccessor();
 
 // Prepare Configuration for ConfigurationBotFrameworkAuthentication
+var config = builder.Configuration.Get<ConfigOptions>();
 builder.Configuration["MicrosoftAppType"] = "MultiTenant";
-builder.Configuration["MicrosoftAppId"] = builder.Configuration.GetSection("BOT_ID")?.Value;
-builder.Configuration["MicrosoftAppPassword"] = builder.Configuration.GetSection("BOT_PASSWORD")?.Value;
+builder.Configuration["MicrosoftAppId"] = config.BOT_ID;
+builder.Configuration["MicrosoftAppPassword"] = config.BOT_PASSWORD;
 
 // Create the Bot Framework Authentication to be used with the Bot Adapter.
 builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();

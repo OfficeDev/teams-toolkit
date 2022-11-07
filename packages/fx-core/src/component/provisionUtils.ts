@@ -782,18 +782,21 @@ export class ProvisionUtils {
       "core.provision.azureSubscription",
       azureSubInfo.subscriptionName
     );
-    const m365AccountInfo = getLocalizedString(
-      "core.provision.m365Account",
-      m365tenant?.tenantUserName
-    );
-    const accountsInfo = [azureAccountInfo, azureSubscriptionInfo, m365AccountInfo].join("\n");
+    const accountsInfo = [azureAccountInfo, azureSubscriptionInfo];
+    if (m365tenant) {
+      const m365AccountInfo = getLocalizedString(
+        "core.provision.m365Account",
+        m365tenant?.tenantUserName
+      );
+      accountsInfo.push(m365AccountInfo);
+    }
 
     const confirmMsg = getLocalizedString("core.provision.confirmEnvAndCostNotice", envName);
     const provisionText = getLocalizedString("core.provision.provision");
 
     const confirmRes = await ctx.ui?.showMessage(
       "warn",
-      accountsInfo + "\n\n" + confirmMsg,
+      accountsInfo.join("\n") + "\n\n" + confirmMsg,
       true,
       provisionText
     );
@@ -821,6 +824,40 @@ export class ProvisionUtils {
     }
 
     return ok(undefined);
+  }
+
+  async ensureM365TenantMatchesV3(
+    actions: string[],
+    tenantId: string | undefined,
+    env: string | undefined,
+    source: string
+  ): Promise<Result<undefined, FxError>> {
+    if (actions.length === 0 || !tenantId) {
+      return ok(undefined);
+    }
+
+    const hasSwitched =
+      !!process.env.TEAMS_APP_TENANT_ID && process.env.TEAMS_APP_TENANT_ID !== tenantId;
+    const keysNeedToUpdate: string[] = [];
+    if (actions.includes("aadApp/create")) {
+      if (process.env.AAD_APP_CLIENT_ID) {
+        keysNeedToUpdate.push("AAD_APP_CLIENT_ID");
+      }
+    }
+    if (actions.includes("botAadApp/create") || actions.includes("m365Bot/create")) {
+      if (process.env.BOT_ID) {
+        keysNeedToUpdate.push("BOT_ID");
+      }
+    }
+    const msg = getLocalizedString(
+      "error.m365tenantcheck.tenantNotMatch",
+      keysNeedToUpdate.join(","),
+      env
+    );
+
+    return !hasSwitched
+      ? ok(undefined)
+      : err(new UserError(source, "M365TenantNotMatch", msg, msg));
   }
   async askForProvisionConsent(
     ctx: v2.Context,

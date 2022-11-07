@@ -28,6 +28,7 @@ import {
 } from "../plugins/solution/util";
 import { assert } from "console";
 import { setTools } from "../../src/core/globalVars";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 const expect = chai.expect;
 
@@ -1089,6 +1090,31 @@ describe("provisionUtils", () => {
       chai.assert.isTrue(res.isOk());
     });
 
+    it("confirm provision without m365 successfully", async () => {
+      const ctx = {
+        ui: new MockedUserInteraction(),
+        azureAccountProvider: new MockedAzureAccountProvider(),
+        telemetryReporter: new MockTelemetryReporter(),
+      };
+      mocker.stub(ctx.azureAccountProvider, "getJsonObject").resolves({ unique_name: "name" });
+      const ui = mocker.stub(ctx.ui, "showMessage").resolves(ok("Provision"));
+      mocker.stub(ctx.telemetryReporter, "sendTelemetryEvent").resolves();
+      const azureSubInfo: SubscriptionInfo = {
+        subscriptionName: "sub",
+        subscriptionId: "sub-id",
+        tenantId: "tenant-id",
+      };
+      const res = await provisionUtils.askForProvisionConsentV3(
+        ctx as any,
+        undefined,
+        azureSubInfo,
+        "test"
+      );
+
+      chai.assert.isFalse((ui.args[0][1] as string).includes("365"));
+      chai.assert.isTrue(res.isOk());
+    });
+
     it("confirm provision cancel", async () => {
       const ctx = {
         ui: new MockedUserInteraction(),
@@ -1178,6 +1204,117 @@ describe("provisionUtils", () => {
       );
 
       chai.assert.isTrue(res.isOk());
+    });
+  });
+
+  describe("ensureM365TenantMatchesV3", () => {
+    let mockedEnvRestore: RestoreFn | undefined;
+
+    afterEach(() => {
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
+    });
+    it("no related actions", async () => {
+      const actions: string[] = [];
+      const tenantId = "tid";
+
+      const res = await provisionUtils.ensureM365TenantMatchesV3(
+        actions,
+        tenantId,
+        "local",
+        "coorinator"
+      );
+
+      chai.assert.isTrue(res.isOk());
+    });
+
+    it("missing tenant id", async () => {
+      const actions = ["aadApp/create"];
+      const tenantId = "";
+
+      const res = await provisionUtils.ensureM365TenantMatchesV3(
+        actions,
+        tenantId,
+        "local",
+        "coorinator"
+      );
+
+      chai.assert.isTrue(res.isOk());
+    });
+
+    it("not provisioned before", async () => {
+      const actions = ["aadApp/create"];
+      const tenantId = "tid";
+
+      const res = await provisionUtils.ensureM365TenantMatchesV3(
+        actions,
+        tenantId,
+        "local",
+        "coorinator"
+      );
+
+      chai.assert.isTrue(res.isOk());
+    });
+
+    it("provisioned before and same tenant", async () => {
+      const actions = ["aadApp/create"];
+      const tenantId = "tid";
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "tid",
+      });
+
+      const res = await provisionUtils.ensureM365TenantMatchesV3(
+        actions,
+        tenantId,
+        "local",
+        "coorinator"
+      );
+
+      chai.assert.isTrue(res.isOk());
+    });
+
+    it("provisioned before and differnt tenant", async () => {
+      const actions = ["aadApp/create"];
+      const tenantId = "tid";
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "old-tid",
+      });
+
+      const res = await provisionUtils.ensureM365TenantMatchesV3(
+        actions,
+        tenantId,
+        "local",
+        "coorinator"
+      );
+
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        console.log(res.error.message);
+        chai.assert.isTrue(res.error.message.includes("AAD_APP_CLIENT_ID"));
+      }
+    });
+
+    it("provisioned before and differnt tenant with bot", async () => {
+      const actions = ["aadApp/create", "m365Bot/create"];
+      const tenantId = "tid";
+      mockedEnvRestore = mockedEnv({
+        TEAMS_APP_TENANT_ID: "old-tid",
+      });
+
+      const res = await provisionUtils.ensureM365TenantMatchesV3(
+        actions,
+        tenantId,
+        "local",
+        "coorinator"
+      );
+
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        console.log(res.error.message);
+        chai.assert.isTrue(res.error.message.includes("AAD_APP_CLIENT_ID"));
+        chai.assert.isTrue(res.error.message.includes("BOT_ID"));
+      }
     });
   });
 });

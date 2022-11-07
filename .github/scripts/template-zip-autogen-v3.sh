@@ -13,8 +13,10 @@ fi
 TEMPLATE_OUTPUT_DIR=$1
 mkdir -p ${TEMPLATE_OUTPUT_DIR}
 
-TEMPLATE_LIST=$(jq -r '.templatesV3[]' ./templates/package.json)
-TEMPLATE_PATHS=$(ls -d ./templates/scenarios/*/)
+TEMPLATE_BASE_DIR = "./templates/scenarios"
+cd ${TEMPLATE_BASE_DIR}
+TEMPLATE_PATHS=$(ls -d ./*/)
+cd -
 
 for TEMPLATE_PATH in ${TEMPLATE_PATHS[@]}; do
 
@@ -23,9 +25,7 @@ for TEMPLATE_PATH in ${TEMPLATE_PATHS[@]}; do
         exit -1
     fi
 
-    ARR=(${TEMPLATE_PATH//// }) # split template path by '/'
-    TEMPLATE=(${ARR[3]})
-    cd ${TEMPLATE_PATH}
+    cd ${TEMPLATE_BASE_DIR}/${TEMPLATE_PATH}
     zip -rq ${TEMPLATE_OUTPUT_DIR}/${TEMPLATE}.zip .
     cd -
 done

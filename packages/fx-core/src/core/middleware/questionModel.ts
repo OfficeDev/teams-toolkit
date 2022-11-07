@@ -243,43 +243,6 @@ async function getQuestionsForCreateProjectWithDotNet(
   return ok(runtimeNode.trim());
 }
 
-// async function getQuestionsForUpdateTabUrls(
-//   appDefinition: AppDefinition
-// ): Promise<QTreeNode | undefined> {
-//   if (!isPersonalApp(appDefinition)) {
-//     return undefined;
-//   }
-
-//   const updateTabUrls = new QTreeNode({ type: "group" });
-//   for (let index = 0; index < appDefinition.staticTabs!.length; index++) {
-//     const webSiteUrl = appDefinition.staticTabs![index].websiteUrl;
-//     const contentUrl = appDefinition.staticTabs![index].contentUrl;
-//     if (webSiteUrl) {
-//       updateTabUrls.addChild(
-//         new QTreeNode(
-//           tabWebsiteUrlQuestion(
-//             appDefinition.staticTabs![index].websiteUrl,
-//             appDefinition.staticTabs![index].name
-//           )
-//         )
-//       );
-//     }
-//     if (contentUrl) {
-//       updateTabUrls.addChild(
-//         new QTreeNode(
-//           tabContentUrlQuestion(
-//             appDefinition.staticTabs![index].contentUrl,
-//             appDefinition.staticTabs![index].name
-//           )
-//         )
-//       );
-//     }
-//   }
-
-//   return updateTabUrls;
-// }
-
-// V2 I wrote
 async function getQuestionsForUpdateStaticTabUrls(
   appDefinition: AppDefinition
 ): Promise<QTreeNode | undefined> {

@@ -962,6 +962,8 @@ export interface Inputs extends Json {
     // (undocumented)
     taskOrientedTemplateNaming?: boolean;
     // (undocumented)
+    teamsAppFromTdp?: any;
+    // (undocumented)
     vscodeEnv?: VsCodeEnv;
 }
 

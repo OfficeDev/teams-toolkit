@@ -43,6 +43,7 @@ import {
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
+import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
 
 const SERVER_PORT = 0;
 const cachePlugin = new CryptoCachePlugin(m365CacheName);
@@ -274,7 +275,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
   async signInWhenInitiatedFromTdp(
     tokenRequest: TokenRequest,
     teamsAppId: string
-  ): Promise<Result<string, FxError>> {
+  ): Promise<Result<AppDefinition, FxError>> {
     await M365Login.codeFlowInstance.reloadCache();
     const tokenRes = await this.getAccessToken(tokenRequest, true);
 
@@ -287,13 +288,13 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
         tokenRes.value
       );
       if (checkAccountRes.isOk()) {
-        return ok(tokenRes.value as any);
+        return ok(checkAccountRes.value as any);
       } else {
         return err(checkAccountRes.error);
       }
     } else {
       if (tokenRes.error.name === ExtensionErrors.UserCancel) {
-        return tokenRes;
+        return err(tokenRes.error);
       }
 
       // accountId in cache has been set to undefined if acquiring token silently for the cached account failed.
@@ -306,7 +307,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
           newTokenRes.value
         );
         if (checkAccountRes.isOk()) {
-          return ok(newTokenRes.value as any);
+          return ok(checkAccountRes.value as any);
         } else {
           return err(checkAccountRes.error);
         }
@@ -333,15 +334,19 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     tokenRequest: TokenRequest,
     teamsAppId: string,
     token: any
-  ): Promise<Result<string, FxError>> {
+  ): Promise<Result<AppDefinition, FxError>> {
     const maxSwitchTimes = 3;
     let switchTimes = 0;
     let currentToken = token;
     while (switchTimes < maxSwitchTimes) {
       try {
-        await AppStudioClient.getApp(teamsAppId, currentToken, VsCodeLogInstance);
+        const appDefinition = await AppStudioClient.getApp(
+          teamsAppId,
+          currentToken,
+          VsCodeLogInstance
+        );
         VsCodeLogInstance.info(`Signed in with correct Microsoft 365 account.`);
-        return ok(token as any);
+        return ok(appDefinition as AppDefinition);
       } catch (error: any) {
         VsCodeLogInstance.error(
           `Failed to get app with ${M365Login.codeFlowInstance.account?.username}`

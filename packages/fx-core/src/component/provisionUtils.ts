@@ -838,7 +838,7 @@ export class ProvisionUtils {
 
     const hasSwitched =
       !!process.env.TEAMS_APP_TENANT_ID && process.env.TEAMS_APP_TENANT_ID !== tenantId;
-    const keysNeedToUpdate: string[] = [];
+    const keysNeedToUpdate: string[] = ["TEAMS_APP_TENANT_ID"];
     if (actions.includes("aadApp/create")) {
       if (process.env.AAD_APP_CLIENT_ID) {
         keysNeedToUpdate.push("AAD_APP_CLIENT_ID");

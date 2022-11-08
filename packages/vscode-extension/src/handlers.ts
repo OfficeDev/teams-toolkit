@@ -36,6 +36,7 @@ import {
   FxError,
   InputConfigsFolderName,
   Inputs,
+  InputsWithProjectPath,
   IProgressHandler,
   M365TokenProvider,
   ok,
@@ -317,8 +318,15 @@ export async function getSettingsVersion(): Promise<string | undefined> {
     // if (projectConfig.isOk()) {
     //   return projectConfig.value?.settings?.version;
     // }
-    await core.getProjectConfig(input);
-    return core.settingsVersion;
+    if (isV3Enabled()) {
+      const settings = await core.getSettings(input as InputsWithProjectPath);
+      if (settings.isOk()) {
+        return settings.value?.version;
+      }
+    } else {
+      await core.getProjectConfig(input);
+      return core.settingsVersion;
+    }
   }
   return undefined;
 }

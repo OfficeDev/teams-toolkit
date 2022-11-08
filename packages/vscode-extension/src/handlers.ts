@@ -2789,8 +2789,9 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
   }
 
   let sourcePath: string;
-  let env = args[0].env;
+  let env;
   if (args && args.length > 0) {
+    env = args[0].env;
     if (!env) {
       const envRes: Result<string | undefined, FxError> = await askTargetEnvironment();
       if (envRes.isErr()) {

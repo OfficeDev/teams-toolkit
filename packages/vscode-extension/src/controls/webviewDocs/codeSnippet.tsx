@@ -46,9 +46,6 @@ export default function CodeSnippet(props: {
         </CopyToClipboard>
       </div>
       <div className="code">
-        {/* <pre>
-          <code className={props.language}>{props.data}</code>
-        </pre> */}
         <SyntaxHighlighter
           language={props.language}
           style={props.theme === "light" ? a11yLight : a11yDark}

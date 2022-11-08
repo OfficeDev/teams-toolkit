@@ -2,7 +2,7 @@
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
     "manifestVersion": "1.14",
     "version": "1.0.0",
-    "id": "{{state.fx-resource-appstudio.teamsAppId}}",
+    "id": "{{TEAMS_APP_ID}}",
     "packageName": "com.microsoft.teams.extension",
     "developer": {
         "name": "Teams App, Inc.",
@@ -11,22 +11,22 @@
         "termsOfUseUrl": "https://www.example.com/privacy"
     },
     "icons": {
-        "color": "{{config.manifest.icons.color}}",
-        "outline": "{{config.manifest.icons.outline}}"
+        "color": "resources/color.png",
+        "outline": "resources/outline.png"
     },
     "name": {
-        "short": "{{config.manifest.appName.short}}",
-        "full": "{{config.manifest.appName.full}}"
+        "short": "message-extension-bot",
+        "full": "full name for message extension bot"
     },
     "description": {
-        "short": "{{config.manifest.description.short}}",
-        "full": "{{config.manifest.description.full}}"
+        "short": "Short description of message extension bot",
+        "full": "Full description of message extension bot"
     },
     "accentColor": "#FFFFFF",
     "bots": [],
     "composeExtensions": [
         {
-            "botId": "{{state.fx-resource-bot.botId}}",
+            "botId": "{{BOT_ID}}",
             "commands": [
                 {
                     "id": "createCard",
@@ -112,6 +112,6 @@
         "messageTeamMembers"
     ],
     "validDomains": [
-        "{{state.fx-resource-bot.domain}}"
+        "{{ME_BOT_DOMAIN}}"
     ]
 }

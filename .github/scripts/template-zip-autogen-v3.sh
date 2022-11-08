@@ -13,16 +13,19 @@ fi
 TEMPLATE_OUTPUT_DIR=$1
 mkdir -p ${TEMPLATE_OUTPUT_DIR}
 
-TEMPLATE_LIST=$(jq -r '.templatesV3[]' ./templates/package.json)
+TEMPLATE_BASE_DIR="./templates/scenarios"
+cd ${TEMPLATE_BASE_DIR}
+TEMPLATE_NAMES=$(ls -d *)
+cd -
 
-for TEMPLATE in ${TEMPLATE_LIST[@]}; do
-
-    if [ ! -d ./templates/scenarios/${TEMPLATE} ]; then
-        echo "The folder ./templates/scenarios/${TEMPLATE}  does not exist."
+for TEMPLATE_NAME in ${TEMPLATE_NAMES[@]}; do
+    TEMPLATE_PATH=${TEMPLATE_BASE_DIR}/${TEMPLATE_NAME}
+    if [ ! -d ${TEMPLATE_PATH} ]; then
+        echo "The folder ${TEMPLATE_PATH} does not exist."
         exit -1
     fi
 
-    cd ./templates/scenarios/${TEMPLATE} 
-    zip -rq ${TEMPLATE_OUTPUT_DIR}/${TEMPLATE}.zip .
+    cd ${TEMPLATE_PATH}
+    zip -rq ${TEMPLATE_OUTPUT_DIR}/${TEMPLATE_NAME}.zip .
     cd -
 done

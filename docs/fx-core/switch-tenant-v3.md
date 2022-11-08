@@ -5,12 +5,12 @@ The error may occur when you local debug or kick off provisioning resources in a
 
 
 # Mitigation
-
 1. Check your Microsoft 365 account.    
     a) If you switched to the account unintentionally , please sign out of the current account and sign in with the correct one. Continue local debugging or provision in remote environemnt.     
     b) If you plan to continue with the new account to provision resources in new tenant, please follow step 2.    
-2. To provision resources in new tenant,     
-    - Clear the value of TEAMS_APP_TENANT_ID.
-    - Clear the value of AAD_APP_CLIENT_ID if you need an AAD aap.
-    - Clear the value of BOT_ID if your project includes a Bot app.
+2. To provision resources in new tenant, 
+    - Clear values of following in `.env.{env}` file in teamsfx folder. For example, the file would be .env.dev for dev environment,
+        -  Clear the value of TEAMS_APP_TENANT_ID in .env.
+        - Clear the value of AAD_APP_CLIENT_ID if you need an AAD aap.
+        - Clear the value of BOT_ID if your project includes a Bot app.
     - Start local debugging or provision, and Teams Toolkit will provision resources in the new Microsoft 365 tenant.

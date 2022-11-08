@@ -84,12 +84,15 @@ export class GenerateAppsettingsDriver implements StepDriver {
     }
   }
 
-  private replaceProjectAppsettings(projectAppsettings: object, ymlAppsettings: object) {
+  private replaceProjectAppsettings(
+    projectAppsettings: Record<string, unknown>,
+    ymlAppsettings: Record<string, unknown>
+  ) {
     for (const item of Object.entries(ymlAppsettings)) {
       if (typeof item[1] === "string") {
         (projectAppsettings as any)[item[0]] = item[1];
-      } else if(typeof item[1] === "object") {
-        this.replaceProjectAppsettings((projectAppsettings as any)[item[0]], item[1]);
+      } else if (typeof item[1] === "object") {
+        this.replaceProjectAppsettings((projectAppsettings as any)[item[0]], item[1] as any);
       }
     }
   }

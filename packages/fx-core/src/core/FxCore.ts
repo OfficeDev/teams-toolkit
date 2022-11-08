@@ -144,7 +144,6 @@ import "../component/driver/tools/installDriver";
 import "../component/driver/env/generate";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
-import { ProcessEnvRestorerMW } from "../component/middleware/processEnvRestorerMW";
 import { containsUnsupportedFeature } from "../component/resource/appManifest/utils/utils";
 
 export class FxCore implements v3.ICore {
@@ -256,7 +255,7 @@ export class FxCore implements v3.ICore {
     return isV3Enabled() ? this.provisionResourcesNew(inputs) : this.provisionResourcesOld(inputs);
   }
 
-  @hooks([ProcessEnvRestorerMW, ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
   async provisionResourcesNew(
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -337,7 +336,7 @@ export class FxCore implements v3.ICore {
     return isV3Enabled() ? this.deployArtifactsNew(inputs) : this.deployArtifactsOld(inputs);
   }
 
-  @hooks([ProcessEnvRestorerMW, ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
   async deployArtifactsNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
@@ -457,7 +456,7 @@ export class FxCore implements v3.ICore {
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
-  @hooks([ProcessEnvRestorerMW, ErrorHandlerMW, EnvLoaderMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW])
   async publishApplicationNew(inputs: Inputs): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
@@ -493,7 +492,6 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([
-    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
@@ -668,7 +666,6 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([
-    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
@@ -734,7 +731,6 @@ export class FxCore implements v3.ICore {
     return ok(config);
   }
   @hooks([
-    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
@@ -768,7 +764,6 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([
-    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
@@ -801,7 +796,6 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([
-    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectMigratorMW,
@@ -834,7 +828,6 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([
-    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
@@ -875,7 +868,6 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([
-    ProcessEnvRestorerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,

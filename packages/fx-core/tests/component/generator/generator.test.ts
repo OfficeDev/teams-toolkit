@@ -145,18 +145,18 @@ describe("Generator happy path", async () => {
   });
 
   it("template", async () => {
+    const templateName = "command-and-response";
+    const language = "ts";
     const inputDir = path.join(tmpDir, "input");
-    await fs.ensureDir(inputDir);
+    await fs.ensureDir(path.join(inputDir, templateName));
     const fileData = "{{appName}}";
-    await fs.writeFile(path.join(inputDir, "test.txt.tpl"), fileData);
+    await fs.writeFile(path.join(inputDir, templateName, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
     zip.writeZip(path.join(tmpDir, "test.zip"));
     sandbox
       .stub(generatorUtils, "fetchZipFromUrl")
       .resolves(new AdmZip(path.join(tmpDir, "test.zip")));
-    const templateName = "bot";
-    const language = "ts";
     context.templateVariables = Generator.getDefaultVariables("test");
     const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
     assert.isTrue(result.isOk());

@@ -5,7 +5,6 @@ import "mocha";
 
 import * as chai from "chai";
 import fs from "fs-extra";
-import * as os from "os";
 import * as sinon from "sinon";
 import * as util from "util";
 
@@ -95,6 +94,7 @@ describe("AppsettingsGenerateDriver", () => {
 
     it("happy path: with target", async () => {
       const target = "path";
+      let content = {};
       const appsettings = {
         BOT_ID: "$botId$",
         BOT_PASSWORD: "$bot-password$",
@@ -106,6 +106,7 @@ describe("AppsettingsGenerateDriver", () => {
         return Buffer.from(JSON.stringify(appsettings));
       });
       sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
+        content = data;
         return;
       });
       const args: any = {
@@ -117,6 +118,46 @@ describe("AppsettingsGenerateDriver", () => {
       };
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isOk());
+      if (result.isOk()) {
+        chai.assert.equal("{\n\t\"BOT_ID\": \"BOT_ID\",\n\t\"BOT_PASSWORD\": \"BOT_PASSWORD\"\n}", content);
+      }
+    });
+
+    it("happy path: with target and customized data", async () => {
+      const target = "path";
+      let content = {};
+      const appsettings = {
+        Foo: "Bar",
+        My:
+        {
+            BOT_ID: "$botId$",
+            Foo: "Bar"
+        }
+      };
+      sinon.stub(fs, "ensureFile").callsFake(async (path) => {
+        return;
+      });
+      sinon.stub(fs, "readFileSync").callsFake((path) => {
+        return Buffer.from(JSON.stringify(appsettings));
+      });
+      sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
+        content = data;
+        return;
+      });
+      const args: any = {
+        target,
+        appsettings: {
+          My:
+          {
+              BOT_ID: "BOD_ID",
+          }
+        }
+      };
+      const result = await driver.run(args, mockedDriverContext);
+      chai.assert(result.isOk());
+      if (result.isOk()) {
+        chai.assert.equal("{\n\t\"Foo\": \"Bar\",\n\t\"My\": {\n\t\t\"BOT_ID\": \"BOD_ID\",\n\t\t\"Foo\": \"Bar\"\n\t}\n}", content);
+      }
     });
   });
 });

@@ -38,8 +38,8 @@ export class GenerateAppsettingsDriver implements StepDriver {
       this.validateArgs(args);
 
       const appSettingsJson = JSON.parse(fs.readFileSync(args.target, "utf-8"));
-      const content = { ...appSettingsJson, ...args.appsettings };
-      await fs.writeFile(args.target, JSON.stringify(content, null, "\t"), "utf-8");
+      this.replaceProjectAppsettings(appSettingsJson, args.appsettings);
+      await fs.writeFile(args.target, JSON.stringify(appSettingsJson, null, "\t"), "utf-8");
 
       return new Map();
     } catch (error) {
@@ -81,6 +81,16 @@ export class GenerateAppsettingsDriver implements StepDriver {
 
     if (invalidParameters.length > 0) {
       throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
+    }
+  }
+
+  private replaceProjectAppsettings(projectAppsettings: object, ymlAppsettings: object) {
+    for (const item of Object.entries(ymlAppsettings)) {
+      if (typeof item[1] === "string") {
+        (projectAppsettings as any)[item[0]] = item[1];
+      } else if(typeof item[1] === "object") {
+        this.replaceProjectAppsettings((projectAppsettings as any)[item[0]], item[1]);
+      }
     }
   }
 }

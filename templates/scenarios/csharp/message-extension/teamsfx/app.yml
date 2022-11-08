@@ -28,7 +28,7 @@ deploy:
       # deploy base folder
       distributionPath: ./bin/Release/net6.0/win-x86/publish
       # the resource id of the cloud resource to be deployed to
-      resourceId: ${{ME_AZURE_APP_SERVICE_RESOURCE_ID}}
+      resourceId: ${{ME_BOT_AZURE_APP_SERVICE_RESOURCE_ID}}
 
 registerApp:
   - uses: teamsApp/create # Creates a Teams app

@@ -6,6 +6,7 @@ import { ActionContext, ContextV3, FxError, Result, ok } from "@microsoft/teamsf
 import { merge } from "lodash";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { BaseComponentInnerError } from "../error/componentError";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { errorSource, componentName, commonTemplateName } from "./constant";
@@ -123,7 +124,8 @@ export class Generator {
         if (!context.onActionError) {
           throw e;
         }
-        if (e instanceof Error) await context.onActionError(action, context, e);
+        if (e instanceof Error)
+          await wrapError(() => context.onActionError!(action, context, e as Error));
       }
     }
     context.logProvider.info(`Finish generating ${context.name}`);
@@ -138,10 +140,13 @@ async function templateDefaultOnActionError(
   switch (action.name) {
     case GeneratorActionName.FetchTemplateUrlWithTag:
     case GeneratorActionName.FetchZipFromUrl:
+      await context.logProvider.info(error.message);
       break;
     case GeneratorActionName.FetchTemplateZipFromLocal:
+      await context.logProvider.error(error.message);
       throw new TemplateZipFallbackError();
     case GeneratorActionName.Unzip:
+      await context.logProvider.error(error.message);
       throw new UnzipError();
     default:
       throw new Error(error.message);
@@ -153,12 +158,25 @@ async function sampleDefaultOnActionError(
   context: GeneratorContext,
   error: Error
 ): Promise<void> {
+  await context.logProvider.error(error.message);
   switch (action.name) {
     case GeneratorActionName.FetchZipFromUrl:
-      throw new FetchZipFromUrlError(context.zipUrl!, error);
+      throw new FetchZipFromUrlError(context.zipUrl!);
     case GeneratorActionName.Unzip:
       throw new UnzipError();
     default:
       throw new Error(error.message);
+  }
+}
+
+async function wrapError(run: () => Promise<void>) {
+  try {
+    await run();
+  } catch (error) {
+    if (error instanceof BaseComponentInnerError) {
+      throw error.toFxError();
+    } else {
+      throw error;
+    }
   }
 }

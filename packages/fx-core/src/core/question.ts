@@ -691,7 +691,7 @@ export const tabsContentUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion =
     name: CoreQuestionNames.ReplaceContentUrl,
     title: getLocalizedString("core.updateContentUrlQuestion.title", defaultTabLocalHostUrl),
     staticOptions: tabs.map((o) => tabContentUrlOptionItem(o)),
-    default: tabs.map((o) => `${o.name}${contentUrlSuffix}`),
+    default: tabs.map((o) => o.name),
     placeholder: getLocalizedString("core.updateUrlQuestion.placeholder"),
     forgetLastValue: true,
   };
@@ -703,18 +703,15 @@ export const tabsWebsitetUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion 
     name: CoreQuestionNames.ReplaceWebsiteUrl,
     title: getLocalizedString("core.updateWebsiteUrlQuestion.title", defaultTabLocalHostUrl),
     staticOptions: tabs.map((o) => tabWebsiteUrlOptionItem(o)),
-    default: tabs.map((o) => `${o.name}${websiteUrlSuffix}`),
+    default: tabs.map((o) => o.name),
     placeholder: getLocalizedString("core.updateUrlQuestion.placeholder"),
     forgetLastValue: true,
   };
 };
 
-const contentUrlSuffix = "-contentUrl";
-const websiteUrlSuffix = "-websiteUrl";
-
 export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
   return {
-    id: `${tab.name}${contentUrlSuffix}`,
+    id: tab.name,
     label: tab.name,
     detail: getLocalizedString(
       "core.updateContentUrlOption.description",
@@ -726,7 +723,7 @@ export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
 
 export const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
   return {
-    id: `${tab.name}${websiteUrlSuffix}`,
+    id: tab.name,
     label: tab.name,
     detail: getLocalizedString(
       "core.updateWebsiteUrlOption.description",

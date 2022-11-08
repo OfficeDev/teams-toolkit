@@ -185,6 +185,7 @@
   "core.collaboration.Permission": ", Permission: ",
   "core.collaboration.notProvisioned": "The resources have not been provisioned yet. Please provision the resources first.",
   "core.collaboration.tenantNotMatch": "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account.",
+  "core.developerPortal.scaffold.CannotFindManifest": "Could not find manifest from the downloaded pacakge for teams app %s.",
   "plugins.spfx.questions.framework.title": "Framework",
   "plugins.spfx.questions.versionCheck.title": "Checking Node.js and NPM versions...",
   "plugins.spfx.questions.webpartName.error.duplicate": "The foler %s already exists. Please choose a different name for your component.",

@@ -69,9 +69,13 @@ import { DotenvParseOutput } from "dotenv";
 import { YamlParser } from "../configManager/parser";
 import { provisionUtils } from "../provisionUtils";
 import { envUtil } from "../utils/envUtil";
+import { SPFxGenerator } from "../generator/spfxGenerator";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { ExecutionError, ExecutionOutput } from "../configManager/interface";
 import { createContextV3 } from "../utils";
+import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
+import { getResourceGroupInPortal } from "../../common/tools";
+import { getBotTroubleShootMessage } from "../core";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -103,6 +107,17 @@ export const Feature2TemplateName: any = {
 };
 
 const workflowFileName = "app.yml";
+
+const M365Actions = [
+  "botAadApp/create",
+  "teamsApp/create",
+  "teamsApp/update",
+  "aadApp/create",
+  "aadApp/update",
+  "m365Bot/create",
+  "m365Bot/update",
+];
+const AzureActions = ["arm/deploy"];
 
 export class Coordinator {
   @hooks([
@@ -163,18 +178,24 @@ export class Coordinator {
       const feature = inputs.capabilities as string;
       delete inputs.folder;
 
-      if (feature === M365SsoLaunchPageOptionItem.id || feature === M365SearchAppOptionItem.id) {
-        context.projectSetting.isM365 = true;
-        inputs.isM365 = true;
-      }
-      const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
-      const templateName = Feature2TemplateName[`${feature}:${trigger}`];
-      if (templateName) {
-        const langKey = convertToLangKey(language);
-        context.templateVariables = Generator.getDefaultVariables(appName);
-        const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
+      if (feature === TabSPFxNewUIItem.id) {
+        const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
+      } else {
+        if (feature === M365SsoLaunchPageOptionItem.id || feature === M365SearchAppOptionItem.id) {
+          context.projectSetting.isM365 = true;
+          inputs.isM365 = true;
+        }
+        const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
+        const templateName = Feature2TemplateName[`${feature}:${trigger}`];
+        if (templateName) {
+          const langKey = convertToLangKey(language);
+          context.templateVariables = Generator.getDefaultVariables(appName);
+          const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
+          if (res.isErr()) return err(res.error);
+        }
       }
+
       merge(actionContext?.telemetryProps, {
         [TelemetryProperty.Feature]: feature,
       });
@@ -282,19 +303,8 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<[DotenvParseOutput | undefined, FxError | undefined]> {
     const output: DotenvParseOutput = {};
-    if (inputs["targetSubscriptionId"]) {
-      process.env.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
-      output.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
-    }
-    if (inputs["targetResourceGroupName"]) {
-      process.env.AZURE_RESOURCE_GROUP_NAME = inputs["targetResourceGroupName"];
-      output.AZURE_RESOURCE_GROUP_NAME = inputs["targetResourceGroupName"];
-    }
-    const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
-    if (!process.env.RESOURCE_SUFFIX) {
-      process.env.RESOURCE_SUFFIX = suffix;
-      output.RESOURCE_SUFFIX = suffix;
-    }
+
+    // 1. parse yml
     const parser = new YamlParser();
     const templatePath =
       inputs["workflowFilePath"] ??
@@ -304,54 +314,157 @@ export class Coordinator {
       return [undefined, maybeProjectModel.error];
     }
     const projectModel = maybeProjectModel.value;
-    const cycles = [projectModel.registerApp, projectModel.provision, projectModel.configureApp];
+
+    // 2. ensure RESOURCE_SUFFIX
+    const folderName = path.parse(ctx.projectPath).name;
+    if (!process.env.RESOURCE_SUFFIX) {
+      const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
+      process.env.RESOURCE_SUFFIX = suffix;
+      output.RESOURCE_SUFFIX = suffix;
+    }
+
+    const cycles = [
+      projectModel.registerApp,
+      projectModel.provision,
+      projectModel.configureApp,
+    ].filter((c) => c !== undefined);
+
+    // 3. pre-requisites check
     for (const cycle of cycles) {
-      if (!cycle) continue;
-      let unresolvedPlaceHolders = cycle.resolvePlaceholders();
+      const unresolvedPlaceHolders = cycle!.resolvePlaceholders();
+      // ensure subscription id
       if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) {
-        const ensureRes = await provisionUtils.ensureSubscription(
-          ctx.azureAccountProvider,
-          process.env.AZURE_SUBSCRIPTION_ID
-        );
-        if (ensureRes.isErr()) return [undefined, ensureRes.error];
-        const subInfo = ensureRes.value;
-        if (subInfo && subInfo.subscriptionId) {
-          process.env.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
-          output.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
-          unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
-            (ph) => ph !== "AZURE_SUBSCRIPTION_ID"
+        if (inputs["targetSubscriptionId"]) {
+          process.env.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
+          output.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
+        } else {
+          const ensureRes = await provisionUtils.ensureSubscription(
+            ctx.azureAccountProvider,
+            process.env.AZURE_SUBSCRIPTION_ID
           );
+          if (ensureRes.isErr()) return [undefined, ensureRes.error];
+          const subInfo = ensureRes.value;
+          if (subInfo && subInfo.subscriptionId) {
+            process.env.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
+            output.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
+          }
         }
       }
-      if (
-        process.env.AZURE_SUBSCRIPTION_ID &&
-        unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")
-      ) {
-        const folderName = path.parse(ctx.projectPath).name;
-        const defaultRg = `rg-${folderName}${suffix}-${inputs.env}`;
-        const ensureRes = await provisionUtils.ensureResourceGroup(
-          ctx.azureAccountProvider,
-          process.env.AZURE_SUBSCRIPTION_ID,
-          process.env.AZURE_RESOURCE_GROUP_NAME,
-          defaultRg
-        );
-        if (ensureRes.isErr()) return [undefined, ensureRes.error];
-        const rgInfo = ensureRes.value;
-        if (rgInfo) {
-          process.env.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
-          output.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
-          unresolvedPlaceHolders = unresolvedPlaceHolders.filter(
-            (ph) => ph !== "AZURE_RESOURCE_GROUP_NAME"
+      // ensure resource group
+      if (unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")) {
+        const cliInputRG = inputs["targetResourceGroupName"];
+        const cliInputLocation = inputs["targetResourceLocationName"];
+        if (cliInputRG && cliInputLocation) {
+          // targetResourceGroupName is from CLI inputs, which means create resource group if not exists
+          const createRgRes = await resourceGroupHelper.createNewResourceGroup(
+            cliInputRG,
+            ctx.azureAccountProvider,
+            process.env.AZURE_SUBSCRIPTION_ID!,
+            cliInputLocation
           );
+          if (createRgRes.isErr()) {
+            const error = createRgRes.error;
+            if (error.name !== "ResourceGroupExists") {
+              return [undefined, error];
+            }
+          }
+          process.env.AZURE_RESOURCE_GROUP_NAME = cliInputRG;
+          output.AZURE_RESOURCE_GROUP_NAME = cliInputRG;
+        } else {
+          const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${inputs.env}`;
+          const ensureRes = await provisionUtils.ensureResourceGroup(
+            ctx.azureAccountProvider,
+            process.env.AZURE_SUBSCRIPTION_ID!,
+            process.env.AZURE_RESOURCE_GROUP_NAME,
+            defaultRg
+          );
+          if (ensureRes.isErr()) return [undefined, ensureRes.error];
+          const rgInfo = ensureRes.value;
+          if (rgInfo) {
+            process.env.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
+            output.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
+          }
         }
       }
-      const execRes = await cycle.execute(ctx);
+    }
+
+    // 4. consent
+    let containsM365 = false;
+    let containsAzure = false;
+    cycles.forEach((cycle) => {
+      cycle!.driverDefs?.forEach((def) => {
+        if (M365Actions.includes(def.uses)) {
+          containsM365 = true;
+        } else if (AzureActions.includes(def.uses)) {
+          containsAzure = true;
+        }
+      });
+    });
+
+    let m365tenantInfo = undefined;
+    if (containsM365) {
+      const tenantInfoInTokenRes = await provisionUtils.getM365TenantId(ctx.m365TokenProvider);
+      if (tenantInfoInTokenRes.isErr()) {
+        return [undefined, tenantInfoInTokenRes.error];
+      }
+      m365tenantInfo = tenantInfoInTokenRes.value;
+    }
+    let azureSubInfo = undefined;
+    if (containsAzure) {
+      azureSubInfo = await ctx.azureAccountProvider.getSelectedSubscription(true);
+      if (!azureSubInfo) {
+        return [
+          undefined,
+          new UserError(
+            "coordinator",
+            "SubscriptionNotFound",
+            getLocalizedString("core.provision.subscription.failToSelect")
+          ),
+        ];
+      }
+    }
+    if (azureSubInfo) {
+      const consentRes = await provisionUtils.askForProvisionConsentV3(
+        ctx,
+        m365tenantInfo,
+        azureSubInfo,
+        inputs.env
+      );
+      if (consentRes.isErr()) return [undefined, consentRes.error];
+      await ctx.azureAccountProvider.setSubscription(azureSubInfo.subscriptionId);
+    }
+    // 5. execute
+    for (const cycle of cycles) {
+      const execRes = await cycle!.execute(ctx);
       const result = this.convertExecuteResult(execRes);
       merge(output, result[0]);
       if (result[1]) {
         return [output, result[1]];
       }
     }
+
+    // 6. show provisioned resources
+    if (azureSubInfo) {
+      const url = getResourceGroupInPortal(
+        azureSubInfo.subscriptionId,
+        azureSubInfo.tenantId,
+        process.env.AZURE_RESOURCE_GROUP_NAME
+      );
+      const msg = getLocalizedString("core.provision.successNotice", folderName);
+      if (url) {
+        const title = getLocalizedString("core.provision.viewResources");
+        ctx.ui?.showMessage("info", msg, false, title).then((result: any) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === title) {
+            ctx.ui?.openUrl(url);
+          }
+        });
+      } else {
+        ctx.ui?.showMessage("info", msg, false);
+      }
+      ctx.logProvider.info(msg);
+    }
+
     return [output, undefined];
   }
 
@@ -399,22 +512,32 @@ export class Coordinator {
     ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<[DotenvParseOutput | undefined, FxError | undefined]> {
+    const output: DotenvParseOutput = {};
     const parser = new YamlParser();
     const templatePath =
       inputs["workflowFilePath"] ??
       path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
-      return err(maybeProjectModel.error);
+      return [undefined, maybeProjectModel.error];
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
       const execRes = await projectModel.deploy.execute(ctx);
       const result = this.convertExecuteResult(execRes);
-      if (result[1]) return err(result[1]);
+      merge(output, result[0]);
+      if (result[1]) return [output, result[1]];
+
+      // show message box after deploy
+      const botTroubleShootMsg = getBotTroubleShootMessage(false);
+      const msg =
+        getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
+        botTroubleShootMsg.textForLogging;
+      ctx.logProvider.info(msg);
+      ctx.ui?.showMessage("info", msg, false);
     }
-    return ok(undefined);
+    return [output, undefined];
   }
 
   @hooks([

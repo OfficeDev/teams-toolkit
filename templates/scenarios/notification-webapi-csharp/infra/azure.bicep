@@ -38,14 +38,6 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
       alwaysOn: true
       appSettings: [
         {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~14' // Set NodeJS version to 14.x for your site
-        }
-        {
-          name: 'SCM_SCRIPT_GENERATOR_ARGS'
-          value: '--node' // Register as node server
-        }
-        {
           name: 'RUNNING_ON_AZURE'
           value: '1'
         }

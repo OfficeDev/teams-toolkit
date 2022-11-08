@@ -14,20 +14,18 @@ export type Step = {
 };
 
 export type DeployArgs = {
-  workingDirectory: string;
+  workingDirectory?: string;
   distributionPath: string;
   ignoreFile?: string;
   resourceId: string;
 };
 
 export type DeployStepArgs = {
-  workingDirectory: string;
-  distributionPath: string;
   ignoreFile?: string;
 };
 
 export type BuildArgs = {
-  workingDirectory: string;
+  workingDirectory?: string;
   args: string;
 };
 

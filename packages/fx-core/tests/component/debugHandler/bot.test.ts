@@ -4,6 +4,7 @@
 import "mocha";
 
 import * as chai from "chai";
+import fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
 
@@ -48,6 +49,10 @@ describe("BotDebugHandler", () => {
   const ui = new MockUserInteraction();
 
   describe("setUp", () => {
+    beforeEach(() => {
+      sinon.stub(fs, "writeFile").callsFake(async () => {});
+    });
+
     afterEach(() => {
       sinon.restore();
     });

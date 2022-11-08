@@ -193,7 +193,7 @@ namespace Microsoft.TeamsFx.Conversation
         /// Get team details from this bot installation
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The team details if bot is installed into a team, otherwise returns undefined.</returns>
+        /// <returns>The team details if bot is installed into a team, otherwise returns null.</returns>
         public async Task<TeamDetails> GetTeamDetailsAsync(CancellationToken cancellationToken = default)
         {
             if (Type != NotificationTargetType.Channel)

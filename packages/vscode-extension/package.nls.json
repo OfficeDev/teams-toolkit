@@ -327,6 +327,7 @@
     "teamstoolkit.localDebug.ngrokTimeoutError": "Timeout waiting for starting ngrok.",
     "teamstoolkit.localDebug.tunnelServiceNotStartedError": "The tunnel service hasn't been started. Please wait for a moment or restart the local tunnel task.",
     "teamstoolkit.localDebug.tunnelEndpointNotFoundError": "Failed to find the tunnel endpoint. Teams toolkit try to get the first HTTPS URL from %s and failed.",
+    "teamstoolkit.localDebug.tunnelEnvError": "Failed to save environment variables. %s",
     "teamstoolkit.migrateTeamsManifest.progressTitle": "Upgrade Teams Manifest to Extend in Outlook and Office",
     "teamstoolkit.migrateTeamsManifest.selectFileConfig.name": "Select Teams Manifest to Upgrade",
     "teamstoolkit.migrateTeamsManifest.selectFileConfig.title": "Select Teams Manifest to Upgrade",

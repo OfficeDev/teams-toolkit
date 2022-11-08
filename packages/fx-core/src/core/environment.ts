@@ -279,6 +279,10 @@ class EnvironmentManager {
     return match !== null;
   }
 
+  public getDotEnvPath(envName: string, projectPath: string): string {
+    return path.join(projectPath, "teamsfx", `.env.${envName}`);
+  }
+
   public getEnvConfigPath(envName: string, projectPath: string): string {
     const basePath = this.getEnvConfigsFolder(projectPath);
     return path.resolve(basePath, EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName));

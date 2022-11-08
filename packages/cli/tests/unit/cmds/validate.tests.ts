@@ -16,6 +16,7 @@ import { ManifestValidate } from "../../../src/cmds/validate";
 import { expect } from "../utils";
 import * as constants from "../../../src/constants";
 import { NotSupportedProjectType } from "../../../src/error";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("teamsfx validate", () => {
   const sandbox = sinon.createSandbox();
@@ -23,8 +24,10 @@ describe("teamsfx validate", () => {
   let options: string[] = [];
   let telemetryEvents: string[] = [];
   let telemetryEventStatus: string | undefined = undefined;
+  let mockedEnvRestore: RestoreFn = () => {};
 
   afterEach(() => {
+    mockedEnvRestore();
     sandbox.restore();
   });
 
@@ -71,6 +74,14 @@ describe("teamsfx validate", () => {
     const cmd = new ManifestValidate();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     expect(registeredCommands).deep.equals(["validate"]);
+  });
+
+  it("Builder Check V3", () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    const cmd = new ManifestValidate();
+    cmd.builder(yargs);
   });
 
   it("Validate Command Running Check", async () => {

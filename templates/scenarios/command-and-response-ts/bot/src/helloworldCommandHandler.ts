@@ -15,12 +15,12 @@ export class HelloWorldCommandHandler implements TeamsFxBotCommandHandler {
     context: TurnContext,
     message: CommandMessage
   ): Promise<string | Partial<Activity> | void> {
-    console.log(`Bot received message: ${message.text}`);
+    console.log(`App received message: ${message.text}`);
 
     // Render your adaptive card for reply message
     const cardData: CardData = {
-      title: "Your Hello World Bot is Running",
-      body: "Congratulations! Your hello world bot is running. Click the documentation below to learn more about Bots and the Teams Toolkit.",
+      title: "Your Hello World App is Running",
+      body: "Congratulations! Your Hello World App is running. Open the documentation below to learn more about how to build applications with the Teams Toolkit.",
     };
 
     const cardJson = AdaptiveCards.declare(helloWorldCard).render(cardData);

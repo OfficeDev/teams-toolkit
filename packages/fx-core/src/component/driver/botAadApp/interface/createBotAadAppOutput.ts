@@ -3,5 +3,5 @@
 
 export interface CreateBotAadAppOutput {
   BOT_ID?: string;
-  BOT_PASSWORD?: string;
+  SECRET_BOT_PASSWORD?: string;
 }

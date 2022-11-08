@@ -16,10 +16,16 @@ import { isCLIDotNetEnabled, isPreviewFeaturesEnabled } from "../../common/featu
 import { deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
 import { getNotificationTriggerQuestionNode } from "../../component/question";
-import { ExistingTabOptionItem, TabSPFxItem } from "../../component/constants";
+import {
+  BotOptionItem,
+  ExistingTabOptionItem,
+  TabNewUIOptionItem,
+  TabSPFxItem,
+} from "../../component/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
 import { TOOLS } from "../globalVars";
 import {
+  CoreQuestionNames,
   createAppNameQuestion,
   createCapabilityForDotNet,
   createCapabilityQuestion,
@@ -35,8 +41,18 @@ import {
   SampleSelect,
   ScratchOptionNo,
   ScratchOptionYes,
+  ScratchOptionYesVSC,
+  tabsContentUrlQuestion,
+  tabsWebsitetUrlQuestion,
 } from "../question";
 import { CoreHookContext } from "../types";
+import {
+  isPersonalApp,
+  needBotCode,
+  needTabCode,
+} from "../../component/resource/appManifest/utils/utils";
+import { convertToAlphanumericOnly } from "../../common/utils";
+import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
 
 /**
  * This middleware will help to collect input from question flow
@@ -97,6 +113,15 @@ export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<strin
 async function getQuestionsForCreateProjectWithoutDotNet(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (inputs.teamsAppFromTdp) {
+    // If toolkit is activated by a request from Developer Portal, we will always create a project from scratch.
+    inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC.id;
+    inputs[CoreQuestionNames.Capabilities] = needTabCode(inputs.teamsAppFromTdp)
+      ? TabNewUIOptionItem.id
+      : needBotCode(inputs.teamsAppFromTdp)
+      ? BotOptionItem.id
+      : inputs[CoreQuestionNames.Capabilities];
+  }
   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
 
   // create new
@@ -149,8 +174,18 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   }
 
   createNew.addChild(new QTreeNode(QuestionRootFolder));
-  createNew.addChild(new QTreeNode(createAppNameQuestion()));
+  const defaultName = !inputs.teamsAppFromTdp?.appName
+    ? undefined
+    : convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
+  createNew.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
 
+  if (!!inputs.teamsAppFromTdp) {
+    //const updateTabUrls = await getQuestionsForUpdateTabUrls(inputs.teamsAppFromTdp);
+    const updateTabUrls = await getQuestionsForUpdateStaticTabUrls(inputs.teamsAppFromTdp);
+    if (updateTabUrls) {
+      createNew.addChild(updateTabUrls);
+    }
+  }
   // create from sample
   const sampleNode = new QTreeNode(SampleSelect);
   node.addChild(sampleNode);
@@ -206,6 +241,28 @@ async function getQuestionsForCreateProjectWithDotNet(
   runtimeNode.addChild(new QTreeNode(createAppNameQuestion()));
 
   return ok(runtimeNode.trim());
+}
+
+async function getQuestionsForUpdateStaticTabUrls(
+  appDefinition: AppDefinition
+): Promise<QTreeNode | undefined> {
+  if (!isPersonalApp(appDefinition)) {
+    return undefined;
+  }
+
+  const updateTabUrls = new QTreeNode({ type: "group" });
+  const tabs = appDefinition.staticTabs!;
+  const tabsWithContentUrls = tabs.filter((o) => !!o.contentUrl);
+  const tabsWithWebsiteUrls = tabs.filter((o) => !!o.websiteUrl);
+  if (tabsWithWebsiteUrls.length > 0) {
+    updateTabUrls.addChild(new QTreeNode(tabsWebsitetUrlQuestion(tabsWithWebsiteUrls)));
+  }
+
+  if (tabsWithContentUrls.length > 0) {
+    updateTabUrls.addChild(new QTreeNode(tabsContentUrlQuestion(tabsWithContentUrls)));
+  }
+
+  return updateTabUrls;
 }
 
 export async function getQuestionsForCreateProjectV2(

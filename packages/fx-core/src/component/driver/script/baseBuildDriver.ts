@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { BuildArgs } from "../interface/buildAndDeployArgs";
-import { asFactory, asString, checkMissingArgs } from "../../utils/common";
+import { asFactory, asOptional, asString, checkMissingArgs } from "../../utils/common";
 import { execute } from "../../code/utils";
 import { ExecuteCommandError } from "../../error/componentError";
 import { DeployConstant } from "../../constant/deployConstant";
@@ -23,6 +23,7 @@ export abstract class BaseBuildDriver {
 
   constructor(args: unknown, context: DriverContext) {
     this.args = BaseBuildDriver.toBuildArgs(args);
+    this.args.workingDirectory = this.args.workingDirectory ?? "./";
     // if working dir is not absolute path, then join the path with project path
     this.workingDirectory = path.isAbsolute(this.args.workingDirectory)
       ? this.args.workingDirectory
@@ -34,7 +35,7 @@ export abstract class BaseBuildDriver {
   }
 
   protected static asBuildArgs = asFactory<BuildArgs>({
-    workingDirectory: asString,
+    workingDirectory: asOptional(asString),
     args: asString,
   });
 
@@ -45,7 +46,8 @@ export abstract class BaseBuildDriver {
   async run(): Promise<Map<string, string>> {
     const commandSuffix = checkMissingArgs("BuildCommand", this.args.args).trim();
     const command = `${this.buildPrefix} ${commandSuffix}`;
-    await this.progressBar?.start(`Run command ${command} at ${this.workingDirectory}`);
+    await this.progressBar?.start();
+    await this.progressBar?.next(`Run command ${command} at ${this.workingDirectory}`);
     try {
       const output = await execute(command, this.workingDirectory, this.logProvider);
       await this.logProvider.debug(`execute ${command} output is ${output}`);

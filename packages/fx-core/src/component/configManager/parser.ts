@@ -1,7 +1,7 @@
 import { FxError, Result, ok, err } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { load } from "js-yaml";
-import { InvalidLifecycleError, YamlParsingError } from "./error";
+import { InvalidEnvFieldError, InvalidLifecycleError, YamlParsingError } from "./error";
 import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./interface";
 import { Lifecycle } from "./lifecycle";
 
@@ -14,8 +14,25 @@ function parseLifecycles(obj: Record<string, unknown>): Result<RawProjectModel, 
         return err(new InvalidLifecycleError(name));
       }
       for (const elem of value) {
-        if (!("uses" in elem && "with" in elem)) {
+        if (
+          !(
+            "uses" in elem &&
+            "with" in elem &&
+            typeof elem["uses"] === "string" &&
+            typeof elem["with"] === "object"
+          )
+        ) {
           return err(new InvalidLifecycleError(name));
+        }
+        if (elem["env"]) {
+          if (typeof elem["env"] !== "object" || Array.isArray(elem["env"])) {
+            return err(new InvalidEnvFieldError(elem["uses"], name));
+          }
+          for (const envVar in elem["env"]) {
+            if (typeof elem["env"][envVar] !== "string") {
+              return err(new InvalidEnvFieldError(elem["uses"], name));
+            }
+          }
         }
       }
       result[name] = value;

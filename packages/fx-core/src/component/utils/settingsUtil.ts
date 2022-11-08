@@ -18,6 +18,7 @@ export async function readSettings(projectPath: string): Promise<Result<Settings
   const settings: Settings = await fs.readJson(filePath);
   if (!settings.trackingId) {
     settings.trackingId = uuid.v4();
+    await fs.writeFile(filePath, JSON.stringify(settings, null, 4));
   }
   return ok(settings);
 }

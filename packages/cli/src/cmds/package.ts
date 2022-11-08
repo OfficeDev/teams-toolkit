@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
 import { Argv } from "yargs";
 import path from "path";
 import {
@@ -11,7 +9,6 @@ import {
   ok,
   Result,
   Func,
-  TemplateFolderName,
   AppPackageFolderName,
   BuildFolderName,
 } from "@microsoft/teamsfx-api";
@@ -57,12 +54,6 @@ export default class Package extends YargsCommand {
     const inputs = getSystemInputs(rootFolder, args.env);
     inputs.ignoreEnvInfo = false;
     {
-      const func: Func = {
-        namespace: "fx-solution-azure",
-        method: "buildPackage",
-        params: {},
-      };
-
       // TODO: remove when V3 is auto enabled
       if (!inputs.env) {
         // include local env in interactive question
@@ -74,12 +65,20 @@ export default class Package extends YargsCommand {
         inputs.env = selectedEnv.value;
       }
 
+      const func: Func = {
+        namespace: "fx-solution-azure",
+        method: "buildPackage",
+        params: {
+          type: inputs.env === environmentManager.getLocalEnvName() ? "localDebug" : "remote",
+        },
+      };
+
       if (isV3Enabled()) {
         func.params = {
           manifestTemplatePath:
             args[ManifestFilePathParamName] ??
-            `${rootFolder}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
-          ouptutZipPath:
+            `${rootFolder}/${AppPackageFolderName}/manifest.template.json`,
+          outputZipPath:
             args[OutputZipPathParamName] ??
             `${rootFolder}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`,
           outputJsonPath:
@@ -87,9 +86,6 @@ export default class Package extends YargsCommand {
             `${rootFolder}/${BuildFolderName}/${AppPackageFolderName}/manifest.${inputs.env}.json`,
           env: inputs.env,
         };
-      } else {
-        func.params.type =
-          inputs.env === environmentManager.getLocalEnvName() ? "localDebug" : "remote";
       }
 
       const result = await core.executeUserTask!(func, inputs);

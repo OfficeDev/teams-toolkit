@@ -1,21 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import * as vscode from "vscode";
 
-import M365TokenInstance from "../commonlib/m365Login";
-import { getTeamsAppInternalId } from "./teamsAppInstallation";
-import * as commonUtils from "./commonUtils";
-import { showError } from "../handlers";
-import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
-import { Host, Hub } from "./constants";
-import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
-import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+
 import VsCodeLogInstance from "../commonlib/log";
-import { sideloadingDisplayMessages } from "./constants";
+import M365TokenInstance from "../commonlib/m365Login";
+import { showError } from "../handlers";
+import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import * as commonUtils from "./commonUtils";
+import { Host, Hub, sideloadingDisplayMessages } from "./constants";
+import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
+import { getTeamsAppInternalId } from "./teamsAppInstallation";
+import { terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
 
 export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
   teamsfxIsRemote?: boolean;
@@ -60,7 +61,8 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       if (!folder) {
         return debugConfiguration;
       }
-      if (!(await commonUtils.isFxProject(folder.uri.fsPath))) {
+
+      if (!isValidProject(folder.uri.fsPath)) {
         return debugConfiguration;
       }
 
@@ -76,12 +78,12 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       let sideloadingType = SideloadingType.unknown;
 
       const localAppIdPlaceholder = "${localTeamsAppId}";
-      if (url.includes(localAppIdPlaceholder)) {
+      if (!isV3Enabled() && url.includes(localAppIdPlaceholder)) {
         sideloadingType = SideloadingType.local;
       }
 
       const appIdPlaceholder = "${teamsAppId}";
-      if (url.includes(appIdPlaceholder)) {
+      if (!isV3Enabled() && url.includes(appIdPlaceholder)) {
         sideloadingType = SideloadingType.remote;
       }
 
@@ -90,16 +92,15 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       const localInternalIdPlaceholder = "${localTeamsAppInternalId}";
       const host = new URL(url).host;
       if (
-        url.includes(localInternalIdPlaceholder) ||
-        host === Host.outlook ||
-        host === Host.office
+        !isV3Enabled() &&
+        (url.includes(localInternalIdPlaceholder) || host === Host.outlook || host === Host.office)
       ) {
         sideloadingType = SideloadingType.m365Local;
       }
 
       const v3MatchPattern = /\$\{(.+):teamsAppId\}/;
       const v3MatchResult = url.match(v3MatchPattern);
-      if (v3MatchResult) {
+      if (isV3Enabled() && v3MatchResult) {
         sideloadingType =
           v3MatchResult[1] === environmentManager.getLocalEnvName()
             ? SideloadingType.v3Local
@@ -108,7 +109,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
 
       const v3M365MatchPattern = /\$\{(.+):teamsAppInternalId\}/;
       const v3M365MatchResult = url.match(v3M365MatchPattern);
-      if (v3M365MatchResult) {
+      if (isV3Enabled() && v3M365MatchResult) {
         sideloadingType = SideloadingType.v3M365Local;
       }
 

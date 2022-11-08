@@ -1,13 +1,13 @@
 import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
 import * as restify from "restify";
 import notificationTemplate from "./adaptiveCards/notification-default.json";
-import { bot } from "./internal/initialize";
+import { notificationApp } from "./internal/initialize";
 import { CardData } from "./cardModels";
 
 // Create HTTP server.
 const server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, () => {
-  console.log(`\nBot Started, ${server.name} listening to ${server.url}`);
+  console.log(`\nApp Started, ${server.name} listening to ${server.url}`);
 });
 
 // Register an API endpoint with `restify`.
@@ -28,7 +28,7 @@ server.post(
   async (req, res) => {
     // By default this function will iterate all the installation points and send an Adaptive Card
     // to every installation.
-    for (const target of await bot.notification.installations()) {
+    for (const target of await notificationApp.notification.installations()) {
       await target.sendAdaptiveCard(
         AdaptiveCards.declare<CardData>(notificationTemplate).render({
           title: "New Event Occurred!",
@@ -95,5 +95,5 @@ server.post(
 // Bot Framework endpoint. If you customize this route, update the Bot registration
 // in `/templates/provision/bot.bicep`.
 server.post("/api/messages", async (req, res) => {
-  await bot.requestHandler(req, res);
+  await notificationApp.requestHandler(req, res);
 });

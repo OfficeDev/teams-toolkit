@@ -50,6 +50,13 @@ export class ProgressMessages {
   static readonly restartAzureFunctionApp = getLocalizedString(
     "core.progress.restartAzureFunctionApp"
   );
+  static readonly getAzureStorageAccountInfo = getLocalizedString(
+    "core.progress.getAzureStorageDeployCredential"
+  );
+  static readonly clearStorageExistsBlobs = getLocalizedString(
+    "core.progress.clearStorageExistsBlobs"
+  );
+  static readonly uploadFilesToStorage = getLocalizedString("core.progress.uploadFilesToStorage");
 }
 
 export class LogMessages {

@@ -22,6 +22,7 @@ export type DriverDefinition = {
   name?: string;
   uses: string;
   with: unknown;
+  env?: Record<string, string>;
 };
 
 export type DriverInstance = DriverDefinition & { instance: StepDriver };

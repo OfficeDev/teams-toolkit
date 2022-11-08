@@ -145,3 +145,5 @@
 
 /packages/fx-core/src/component/driver/env @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/tests/component/driver/env @swatDong @XiaofuHuang @kuojianlu @kimizhu
+
+/packages/run-utils @swatDong @XiaofuHuang @kuojianlu @kimizhu

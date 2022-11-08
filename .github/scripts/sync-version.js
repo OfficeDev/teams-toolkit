@@ -18,6 +18,7 @@ function updateTemplatesDeps(templateDir, templateList) {
         const pkgPath = path.join(repoRoot, pkgDir, "package.json");
         const pkgName = require(pkgPath).name;
         const pkgVersion = require(pkgPath).version;
+        console.log('====================== updateTemplatesDeps: ', pkgName, " ver:",pkgVersion);
         templatesDeps[`${pkgName}`] = pkgVersion;
     }
     for (let file of depPkgs) {

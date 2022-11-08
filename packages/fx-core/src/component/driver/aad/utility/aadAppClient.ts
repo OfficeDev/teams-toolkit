@@ -72,7 +72,7 @@ export class AadAppClient {
         retryCondition: (error) =>
           axiosRetry.isNetworkError(error) ||
           axiosRetry.isRetryableError(error) ||
-          this.isHttpClientError(error), // also retry 4xx (usually 404) error since AAD need sometime to sync created AAD app data
+          this.is404Error(error), // also retry 404 error since AAD need sometime to sync created AAD app data
       },
     });
 
@@ -82,14 +82,20 @@ export class AadAppClient {
   public async updateAadApp(manifest: AADManifest): Promise<void> {
     const objectId = manifest.id!; // You need to ensure the object id exists in manifest
     const requestBody = AadManifestHelper.manifestToApplication(manifest);
-    await this.axios.patch(`applications/${objectId}`, requestBody);
+    await this.axios.patch(`applications/${objectId}`, requestBody, {
+      "axios-retry": {
+        retries: this.retryNumber,
+        retryDelay: axiosRetry.exponentialDelay,
+        retryCondition: (error) =>
+          axiosRetry.isNetworkError(error) ||
+          axiosRetry.isRetryableError(error) ||
+          this.is404Error(error), // also retry 404 error since AAD need sometime to sync created AAD app data
+      },
+    });
   }
 
-  // only use it to retry 4xx errors for create client secret requests right after AAD app creation (usually 404)
-  private isHttpClientError(error: AxiosError<any>): boolean {
-    return (
-      error.code !== "ECONNABORTED" &&
-      (!error.response || (error.response.status >= 400 && error.response.status <= 499))
-    );
+  // only use it to retry 404 errors for create client secret / update AAD app requests right after AAD app creation
+  private is404Error(error: AxiosError<any>): boolean {
+    return error.code !== "ECONNABORTED" && (!error.response || error.response.status === 404);
   }
 }

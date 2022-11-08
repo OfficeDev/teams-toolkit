@@ -28,12 +28,14 @@ Alternately, you can use the Package Manager.
 ```
 
 ### How to choose version
+
 For .NET 5 projects (VS 2019): Choose version < 0.3.0-rc.
 For .NET 6 projects (VS 2022): Choose version >= 0.3.0-rc.
 
 ### Using Teams User Credential in Teams Tab app
 
 1. Add authentication options in appsettings.{Environment}.json file.
+
 ```json
 "TeamsFx": {
     "Authentication": {
@@ -43,7 +45,9 @@ For .NET 6 projects (VS 2022): Choose version >= 0.3.0-rc.
     }
 }
 ```
+
 2. Add `TeamsFx` to services during startup.
+
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
@@ -51,16 +55,22 @@ public void ConfigureServices(IServiceCollection services)
     services.AddTeamsFx(Configuration.GetSection("TeamsFx"));
 }
 ```
+
 3. Add the required namespaces to the `_Imports.razor` file.
+
 ```csharp
 @using Microsoft.TeamsFx
 ```
+
 4. Inject the registered TeamsFx services for any page that needs them.
+
 ```csharp
 @inject TeamsFx teamsfx
 @inject TeamsUserCredential teamsUserCredential
 ```
+
 5. Call `teamsUserCredential.GetTokenAsync()` to get access token or pass `teamsUserCredential` to other functions.
+
 ```csharp
 try
 {
@@ -84,269 +94,282 @@ catch (ExceptionWithCode e)
 ### Using Conversation Bot for Command and Response
 
 1. Add your command handler class which implements the `ITeamsCommandHandler` interface.
-    - Define your trigger patters in the `TriggerPatterns` property, you can use `StringTrigger` or `RegExpTrigger`.
-    - Handle your command in `HandleCommandAsync` function, and return an `ActivityCommandResponse` or `TextommandResponse` object as the command response.
 
-    ```csharp
-    public class SampleCommandHandler : ITeamsCommandHandler
-    {
-        // Define your trigger patterns
-        public IEnumerable<ITriggerPattern> TriggerPatterns => new List<ITriggerPattern>
-        {      
-            new StringTrigger("helloworld")
-        };
+   - Define your trigger patters in the `TriggerPatterns` property, you can use `StringTrigger` or `RegExpTrigger`.
+   - Handle your command in `HandleCommandAsync` function, and return an `ActivityCommandResponse` or `TextommandResponse` object as the command response.
 
-        // Handle your command and send response to Teams chat
-        public async Task<ICommandResponse> HandleCommandAsync(ITurnContext turnContext, CommandMessage message, CancellationToken cancellationToken = default)
-        {
-            // TODO: provide your implementation here.
-            return new TextCommandResponse("This is a sample response!");
-        }
-    }
-    ```
+   ```csharp
+   public class SampleCommandHandler : ITeamsCommandHandler
+   {
+       // Define your trigger patterns
+       public IEnumerable<ITriggerPattern> TriggerPatterns => new List<ITriggerPattern>
+       {
+           new StringTrigger("helloworld")
+       };
+
+       // Handle your command and send response to Teams chat
+       public async Task<ICommandResponse> HandleCommandAsync(ITurnContext turnContext, CommandMessage message, CancellationToken cancellationToken = default)
+       {
+           // TODO: provide your implementation here.
+           return new TextCommandResponse("This is a sample response!");
+       }
+   }
+   ```
 
 2. Initialize the command bot and register your commands in your app's startup (usually it's in `Program.cs` or `Startup.cs`)
-    ```csharp
-    builder.Services.AddSingleton<SampleCommandHandler>();
-    builder.Services.AddSingleton(sp =>
-    {
-        var options = new ConversationOptions()
-        {
-            // NOTE: you need to register your CloudAdapter into your service before conversation bot initialization.
-            Adapter = sp.GetService<CloudAdapter>(),
-            Command = new CommandOptions()
-            {
-                Commands = new List<ITeamsCommandHandler> { sp.GetService<SampleCommandHandler>() }
-            }
-        };
 
-        return new ConversationBot(options);
-    });
-    ```
+   ```csharp
+   builder.Services.AddSingleton<SampleCommandHandler>();
+   builder.Services.AddSingleton(sp =>
+   {
+       var options = new ConversationOptions()
+       {
+           // NOTE: you need to register your CloudAdapter into your service before conversation bot initialization.
+           Adapter = sp.GetService<CloudAdapter>(),
+           Command = new CommandOptions()
+           {
+               Commands = new List<ITeamsCommandHandler> { sp.GetService<SampleCommandHandler>() }
+           }
+       };
+
+       return new ConversationBot(options);
+   });
+   ```
 
 3. Use the conversation bot in your bot controller
-    ```csharp
-    namespace SampleTeamsApp.Controllers
-    {
-        using Microsoft.AspNetCore.Mvc;
-        using Microsoft.Bot.Builder;
-        using Microsoft.Bot.Builder.Integration.AspNet.Core;
-        using Microsoft.TeamsFx.Conversation;
 
-        [Route("api/messages")]
-        [ApiController]
-        public class BotController : ControllerBase
-        {
-            private readonly ConversationBot _conversation;
-            private readonly IBot _bot;
+   ```csharp
+   namespace SampleTeamsApp.Controllers
+   {
+       using Microsoft.AspNetCore.Mvc;
+       using Microsoft.Bot.Builder;
+       using Microsoft.Bot.Builder.Integration.AspNet.Core;
+       using Microsoft.TeamsFx.Conversation;
 
-            public BotController(ConversationBot conversation, IBot bot)
-            {
-                _conversation = conversation;
-                _bot = bot;
-            }
+       [Route("api/messages")]
+       [ApiController]
+       public class BotController : ControllerBase
+       {
+           private readonly ConversationBot _conversation;
+           private readonly IBot _bot;
 
-            [HttpPost]
-            public async Task PostAsync(CancellationToken cancellationToken = default)
-            {
-                await (_conversation.Adapter as CloudAdapter).ProcessAsync
-                (
-                    Request,
-                    Response,
-                    _bot,
-                    cancellationToken
-                );
-            }
-        }
-    }
-    ```
+           public BotController(ConversationBot conversation, IBot bot)
+           {
+               _conversation = conversation;
+               _bot = bot;
+           }
+
+           [HttpPost]
+           public async Task PostAsync(CancellationToken cancellationToken = default)
+           {
+               await (_conversation.Adapter as CloudAdapter).ProcessAsync
+               (
+                   Request,
+                   Response,
+                   _bot,
+                   cancellationToken
+               );
+           }
+       }
+   }
+   ```
 
 ### Using Conversation Bot for Notification
 
 1. Initialize your own bot adapter and the `ConversationBot` in your app's startup (usually it's in `Program.cs` or `Startup.cs`)
-    ```csharp
-    // Create the Conversation with notification feature enabled.
-    builder.Services.AddSingleton(sp =>
-    {
-        var options = new ConversationOptions()
-        {
-            // NOTE: you need to register your CloudAdapter into your service before conversation bot initialization.
-            Adapter = sp.GetService<CloudAdapter>(),
-            Notification = new NotificationOptions
-            {
-                BotAppId = botAppId, // Your bot app ID
-            },
-        };
 
-        return new ConversationBot(options);
-    });
-    ```
+   ```csharp
+   // Create the Conversation with notification feature enabled.
+   builder.Services.AddSingleton(sp =>
+   {
+       var options = new ConversationOptions()
+       {
+           // NOTE: you need to register your CloudAdapter into your service before conversation bot initialization.
+           Adapter = sp.GetService<CloudAdapter>(),
+           Notification = new NotificationOptions
+           {
+               BotAppId = botAppId, // Your bot app ID
+           },
+       };
+
+       return new ConversationBot(options);
+   });
+   ```
 
 2. Reference the conversation bot in your bot message controller/handler to ensure it's initialized before handling any bot message
-    ```csharp
-    namespace SampleTeamsApp.Controllers
-    {
-        using Microsoft.AspNetCore.Mvc;
-        using Microsoft.Bot.Builder;
-        using Microsoft.Bot.Builder.Integration.AspNet.Core;
-        using Microsoft.TeamsFx.Conversation;
 
-        [Route("api/messages")]
-        [ApiController]
-        public class BotController : ControllerBase
-        {
-            private readonly ConversationBot _conversation;
-            private readonly IBot _bot;
+   ```csharp
+   namespace SampleTeamsApp.Controllers
+   {
+       using Microsoft.AspNetCore.Mvc;
+       using Microsoft.Bot.Builder;
+       using Microsoft.Bot.Builder.Integration.AspNet.Core;
+       using Microsoft.TeamsFx.Conversation;
 
-            public BotController(ConversationBot conversation, IBot bot)
-            {
-                _conversation = conversation;
-                _bot = bot;
-            }
+       [Route("api/messages")]
+       [ApiController]
+       public class BotController : ControllerBase
+       {
+           private readonly ConversationBot _conversation;
+           private readonly IBot _bot;
 
-            [HttpPost]
-            public async Task PostAsync(CancellationToken cancellationToken = default)
-            {
-                await (_conversation.Adapter as CloudAdapter).ProcessAsync
-                (
-                    Request,
-                    Response,
-                    _bot,
-                    cancellationToken
-                );
-            }
-        }
-    }
-    ```
+           public BotController(ConversationBot conversation, IBot bot)
+           {
+               _conversation = conversation;
+               _bot = bot;
+           }
+
+           [HttpPost]
+           public async Task PostAsync(CancellationToken cancellationToken = default)
+           {
+               await (_conversation.Adapter as CloudAdapter).ProcessAsync
+               (
+                   Request,
+                   Response,
+                   _bot,
+                   cancellationToken
+               );
+           }
+       }
+   }
+   ```
 
 3. Send notification (called by your own controller or trigger)
-    ``` csharp
-    public async Task NotifyAsync(ConversationBot conversation, CancellationToken cancellationToken)
-    {
-        var installations = await conversation.Notification.GetInstallationsAsync(cancellationToken);
-        foreach (var installation in installations)
-        {
-            await installation.SendMessage("Hello.", cancellationToken);
 
-            // Or, send adaptive card (need to build your own card object)
-            // await installation.SendAdaptiveCard(cardObject, cancellationToken);
-        }
-    }
-    ```
+   ```csharp
+   public async Task NotifyAsync(ConversationBot conversation, CancellationToken cancellationToken)
+   {
+       var installations = await conversation.Notification.GetInstallationsAsync(cancellationToken);
+       foreach (var installation in installations)
+       {
+           await installation.SendMessage("Hello.", cancellationToken);
+
+           // Or, send adaptive card (need to build your own card object)
+           // await installation.SendAdaptiveCard(cardObject, cancellationToken);
+       }
+   }
+   ```
 
 ### Using Conversation Bot for Adaptive Card Actions
 
 1. Add your adaptive card action handler class which implements the `IAdaptiveCardActionHandler` interface.
-    - Set the `TriggerVerb` property, the value should be the same as the `verb` property of the `Action.Execute` action.
-    - Handle your action in `HandleActionInvokedAsync` function, and return an `InvokeResponse` as the action response.
 
-    ```csharp
-    public class DoStuffActionHandler : IAdaptiveCardActionHandler
-    {
-        /// <summary>
-        /// A global unique string associated with the `Action.Execute` action.
-        /// The value should be the same as the `verb` property which you define in your adaptive card JSON.
-        /// </summary>
-        public string TriggerVerb => "doStuff";
+   - Set the `TriggerVerb` property, the value should be the same as the `verb` property of the `Action.Execute` action.
+   - Handle your action in `HandleActionInvokedAsync` function, and return an `InvokeResponse` as the action response.
 
-        /// <summary>
-        /// Indicate how your acrion response card is sent in the conversation.
-        /// By default, the response card can only be updated for the interactor who trigger the action.
-        /// </summary>
-        public AdaptiveCardResponse AdaptiveCardResponse => AdaptiveCardResponse.ReplaceForInteractor;
+   ```csharp
+   public class DoStuffActionHandler : IAdaptiveCardActionHandler
+   {
+       /// <summary>
+       /// A global unique string associated with the `Action.Execute` action.
+       /// The value should be the same as the `verb` property which you define in your adaptive card JSON.
+       /// </summary>
+       public string TriggerVerb => "doStuff";
+
+       /// <summary>
+       /// Indicate how your acrion response card is sent in the conversation.
+       /// By default, the response card can only be updated for the interactor who trigger the action.
+       /// </summary>
+       public AdaptiveCardResponse AdaptiveCardResponse => AdaptiveCardResponse.ReplaceForInteractor;
 
 
-        public async Task<InvokeResponse> HandleActionInvokedAsync(ITurnContext turnContext, object cardData, CancellationToken cancellationToken = default)
-        {
-            // Send invoke response with text message
-            return InvokeResponseFactory.TextMessage("[ACK] Successfully!");
+       public async Task<InvokeResponse> HandleActionInvokedAsync(ITurnContext turnContext, object cardData, CancellationToken cancellationToken = default)
+       {
+           // Send invoke response with text message
+           return InvokeResponseFactory.TextMessage("[ACK] Successfully!");
 
-            /**
-             * If you want to send invoke response with adaptive card, you can:
-             *
-             * return InvokeResponseFactory.AdaptiveCard(JsonConvert.DeserializeObject(<your-card-json>));
-             */
+           /**
+            * If you want to send invoke response with adaptive card, you can:
+            *
+            * return InvokeResponseFactory.AdaptiveCard(JsonConvert.DeserializeObject(<your-card-json>));
+            */
 
-            /**
-             * If you want to send invoke response with error message, you can:
-             *
-             * return InvokeResponseFactory.ErrorResponse(InvokeResponseErrorCode.BadRequest, "The incoming request is invalid.");
-             */
-        }
-    }
-    ```
+           /**
+            * If you want to send invoke response with error message, you can:
+            *
+            * return InvokeResponseFactory.ErrorResponse(InvokeResponseErrorCode.BadRequest, "The incoming request is invalid.");
+            */
+       }
+   }
+   ```
 
 2. Initialize your own bot adapter and the `ConversationBot` in your app's startup (usually it's in `Program.cs` or `Startup.cs`)
-    ```csharp
-    // create action handler instance
-    builder.Services.AddSingleton<DoStuffActionHandler>();
 
-    // create conversation bot with adaptive card action feature enabled.
-    builder.Services.AddSingleton(sp =>
-    {
-        var options = new ConversationOptions()
-        {
-            // NOTE: you need to register your CloudAdapter into your service before conversation bot initialization.
-            Adapter = sp.GetService<CloudAdapter>(),
-            CardAction = new CardActionOptions()
-            {
-                Actions = new List<IAdaptiveCardActionHandler> { sp.GetService<DoStuffActionHandler>() }
-            }
-        };
+   ```csharp
+   // create action handler instance
+   builder.Services.AddSingleton<DoStuffActionHandler>();
 
-        return new ConversationBot(options);
-    });
-    ```
+   // create conversation bot with adaptive card action feature enabled.
+   builder.Services.AddSingleton(sp =>
+   {
+       var options = new ConversationOptions()
+       {
+           // NOTE: you need to register your CloudAdapter into your service before conversation bot initialization.
+           Adapter = sp.GetService<CloudAdapter>(),
+           CardAction = new CardActionOptions()
+           {
+               Actions = new List<IAdaptiveCardActionHandler> { sp.GetService<DoStuffActionHandler>() }
+           }
+       };
+
+       return new ConversationBot(options);
+   });
+   ```
 
 3. Reference the conversation bot in your bot message controller/handler to ensure it's initialized before handling any bot message
-    ```csharp
-    namespace SampleTeamsApp.Controllers
-    {
-        using Microsoft.AspNetCore.Mvc;
-        using Microsoft.Bot.Builder;
-        using Microsoft.Bot.Builder.Integration.AspNet.Core;
-        using Microsoft.TeamsFx.Conversation;
 
-        [Route("api/messages")]
-        [ApiController]
-        public class BotController : ControllerBase
-        {
-            private readonly ConversationBot _conversation;
-            private readonly IBot _bot;
+   ```csharp
+   namespace SampleTeamsApp.Controllers
+   {
+       using Microsoft.AspNetCore.Mvc;
+       using Microsoft.Bot.Builder;
+       using Microsoft.Bot.Builder.Integration.AspNet.Core;
+       using Microsoft.TeamsFx.Conversation;
 
-            public BotController(ConversationBot conversation, IBot bot)
-            {
-                _conversation = conversation;
-                _bot = bot;
-            }
+       [Route("api/messages")]
+       [ApiController]
+       public class BotController : ControllerBase
+       {
+           private readonly ConversationBot _conversation;
+           private readonly IBot _bot;
 
-            [HttpPost]
-            public async Task PostAsync(CancellationToken cancellationToken = default)
-            {
-                await (_conversation.Adapter as CloudAdapter).ProcessAsync
-                (
-                    Request,
-                    Response,
-                    _bot,
-                    cancellationToken
-                );
-            }
-        }
-    }
-    ```
+           public BotController(ConversationBot conversation, IBot bot)
+           {
+               _conversation = conversation;
+               _bot = bot;
+           }
+
+           [HttpPost]
+           public async Task PostAsync(CancellationToken cancellationToken = default)
+           {
+               await (_conversation.Adapter as CloudAdapter).ProcessAsync
+               (
+                   Request,
+                   Response,
+                   _bot,
+                   cancellationToken
+               );
+           }
+       }
+   }
+   ```
 
 ## SDK Upgrade Steps
+
 ### Upgrade from 0.1.0-rc to 0.3.0 (For projects created by Visual Studio 2019 toolkit)
+
 If there is an existing project created in VS2019, you can use the following steps to upgrade:
+
 1. Open project in VS2022 and change project target framework to ".NET 6".
 
 2. Upgrade dependencies:
-  `Microsoft.TeamsFx.SimpleAuth` to `0.1.2`,
-  `Newtonsoft.Json` to `13.0.1`,
-  `Microsoft.Graph` to `4.12.0`,
-  `Microsoft.Fast.Components.FluentUI` to `1.1.0`.
+   `Microsoft.TeamsFx.SimpleAuth` to `0.1.2`,
+   `Newtonsoft.Json` to `13.0.1`,
+   `Microsoft.Graph` to `4.12.0`,
+   `Microsoft.Fast.Components.FluentUI` to `1.1.0`.
 
 3. Add following lines in appsettings.{Environment}.json file after "ALLOWED_APP_IDS".
+
 ```json
 "ALLOWED_APP_IDS": "...",
 "TeamsFx": {
@@ -359,6 +382,7 @@ If there is an existing project created in VS2019, you can use the following ste
 ```
 
 4. Add following lines in `Startup.cs`.
+
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
@@ -366,13 +390,16 @@ public void ConfigureServices(IServiceCollection services)
     services.AddTeamsFx(Configuration.GetSection("TeamsFx"));
 }
 ```
+
 and remove following 2 lines.
+
 ```csharp
 services.AddScoped<TeamsFx>();
 services.AddScoped<TeamsUserCredential>();
 ```
 
 5. Remove following codes in `Welcome.razor`.
+
 ```csharp
 var clientId = Configuration.GetValue<string>("CLIENT_ID");
 var endpoint = MyNavigationManager.BaseUri;
@@ -391,20 +418,40 @@ private void printLog(LogLevel level, string message)
 ```
 
 ### Upgrade from 0.3.0-rc to 0.4.0-rc (For projects created by Visual Studio 2022 17.1 Preview toolkit)
+
 If there is an existing project created in VS2022 17.1 Preview, you can use the following steps to upgrade:
+
 - In `appsettings.{Environment}.json` file:
+
 1. Add `OAuthAuthority` under `TeamsFx:Authentication` and copy the value from `OAUTH_AUTHORITY`.
 2. Remove the line `"SimpleAuthEndpoint": "https://localhost:port/"`.
 3. Remove lines of configuration starting with "CLIENT_ID", "IDENTIFIER_URI", "TAB_APP_ENDPOINT", "OAUTH_AUTHORITY", "AAD_METADATA_ADDRESS", "ALLOWED_APP_IDS".
 4. Remove the Nuget dependency package "Microsoft.TeamsFx.SimpleAuth".
+
 - In Solution Explorer:
+
 1. Right click project file and choose "Manage User Secrets".
 2. Change key name "CLIENT_SECRET" to "TeamsFx:Authentication:ClientSecret".
 
+### Upgrade from 1.1.0 to 1.2.0 (Update projects to use TeamsJS V.2.0)
+
+Teams Toolkit provides users with a template `TeamsJSBlazorInterop.js`, which consists of multiple commonly used Teams JS SDK API. Users can add more APIs if needed. As suggested, even if you intend your app to only run in Teams (and not Office and Outlook), best practice is to start referencing the latest TeamsJS (_v.2.0_ or later) as soon as convenient, in order to benefit from the latest improvements, new features, and support (even for Teams-only apps).
+
+Starting from TeamsFx .NET SDK 1.2.0, TeamsJS V2 are referenced. Though previously scaffolded projects still work with TeamsFx .NET SDK 1.2.0, we suggest you replace the `TeamsJSBlazorInterop.js` under `./wwwroot/js` with the latest one from [here](https://github.com/OfficeDev/TeamsFx/blob/main/templates/tab/csharp/default/wwwroot/js/TeamsJsBlazorInterop.js). Two APIs in the file are updated with new function name to align with renamed TeamsJS APIs. `initializeWithContext()` is removed.
+
+| Original Function              | New Function                  |
+| ------------------------------ | ----------------------------- |
+| setFrameContext()              | setCurrentFrame()             |
+| registerChangeSettingHandler() | registerChangeConfigHandler() |
+
+For more APIs, please [visit the TeamsJS documentation to learn more](https://learn.microsoft.com/en-us/microsoftteams/platform/tabs/how-to/using-teams-client-sdk?tabs=javascript%2Cmanifest-teams-toolkit).
+
 ### Configure Logging
-`ILogger` is used to print logs. You can configure logging in appsettings.{Environment}.json. [Visit the ASP.NET documentation to learn more](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-5.0#configure-logging-1) 
+
+`ILogger` is used to print logs. You can configure logging in appsettings.{Environment}.json. [Visit the ASP.NET documentation to learn more](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-5.0#configure-logging-1)
 
 ### Bot
+
 Will be supported in the future.
 
 ## Data Collection.

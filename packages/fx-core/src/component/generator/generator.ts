@@ -8,7 +8,7 @@ import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { errorSource, componentName } from "./constant";
+import { errorSource, componentName, commonTemplateName } from "./constant";
 import { FetchZipFromUrlError, TemplateZipFallbackError, UnzipError } from "./error";
 import {
   SampleActionSeq,
@@ -46,13 +46,14 @@ export class Generator {
   public static async generateTemplate(
     ctx: ContextV3,
     destinationPath: string,
-    templateName: string,
+    scenario: string,
     language?: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const replaceMap = ctx.templateVariables;
     const generatorContext: GeneratorContext = {
-      name: language ? `${templateName}-${language}` : templateName,
+      name: language ?? commonTemplateName,
+      relativePath: scenario,
       destination: destinationPath,
       logProvider: ctx.logProvider,
       fileNameReplaceFn: (fileName, fileData) =>

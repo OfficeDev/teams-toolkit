@@ -16,6 +16,10 @@
     vertical-align: middle;
     line-height: 1em; /*set line height back to normal*/
   }
+
+  .code {
+    color: var(--vscode-foreground);
+  }
 }
 
 @media (max-width: 767px) {

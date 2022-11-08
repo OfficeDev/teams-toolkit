@@ -1,5 +1,3 @@
-import "highlight.js/styles/github.css";
-// import hljs from "highlight.js/lib/core";
 import "./github.scss";
 import "./document.scss";
 
@@ -97,7 +95,23 @@ module.exports = {
 
   let scrollToBottom = false;
 
+  const [theme, setTheme] = React.useState("light");
+
   useEffect(() => {
+    let currentTheme = document.body.className;
+    const prefix = "vscode-";
+    if (currentTheme.startsWith(prefix)) {
+      // strip prefix
+      currentTheme = currentTheme.substring(prefix.length);
+    }
+
+    if (currentTheme === "high-contrast") {
+      currentTheme = "dark"; // the high-contrast theme seems to be an extreme case of the dark theme
+    }
+
+    if (theme === currentTheme) return;
+    setTheme(currentTheme);
+
     const handleScroll = () => {
       if (!scrollToBottom && window.scrollY > 2500) {
         scrollToBottom = true;
@@ -143,7 +157,7 @@ module.exports = {
         <p>To run the workflow bot template in your local dev machine, you will need:</p>
         <ul>
           <li>
-            <code>Node.js</code> installed locally (recommended version: 14)
+            <code className="code">Node.js</code> installed locally (recommended version: 14)
           </li>
           <li>
             An{" "}
@@ -184,15 +198,16 @@ module.exports = {
         </li>
         <li>
           Press F5 to start debugging which launches your app in Teams using a web browser. Select{" "}
-          <code>Debug (Edge)</code> or <code>Debug (Chrome)</code>.
+          <code className="code">Debug (Edge)</code> or <code className="code">Debug (Chrome)</code>
+          .
         </li>
         <li>
           When Teams launches in the browser, select the Add button in the dialog to install your
           app to Teams.
         </li>
         <li>
-          Type or select <code>helloWorld</code> in the chat to send it to your bot - this is the
-          default command provided by the template.
+          Type or select <code className="code">helloWorld</code> in the chat to send it to your bot
+          - this is the default command provided by the template.
         </li>
         <li>
           In the response from the bot, select the <strong>DoStuff</strong> button.
@@ -211,8 +226,8 @@ module.exports = {
         />
       </p>
       <p>
-        When you click the <code>DoStuff</code> button, the above adaptive card will be updated to a
-        new card as shown below:
+        When you click the <code className="code">DoStuff</code> button, the above adaptive card
+        will be updated to a new card as shown below:
       </p>
       <p>
         <img
@@ -231,25 +246,25 @@ module.exports = {
         <tbody>
           <tr>
             <td>
-              <code>.fx</code>
+              <code className="code">.fx</code>
             </td>
             <td>Project level settings, configurations, and environment information</td>
           </tr>
           <tr>
             <td>
-              <code>.vscode</code>
+              <code className="code">.vscode</code>
             </td>
             <td>VSCode files for local debug</td>
           </tr>
           <tr>
             <td>
-              <code>bot</code>
+              <code className="code">bot</code>
             </td>
             <td>The source code for the workflow bot Teams application</td>
           </tr>
           <tr>
             <td>
-              <code>templates</code>
+              <code className="code">templates</code>
             </td>
             <td>
               Templates for the Teams application manifest and for provisioning Azure resources
@@ -272,27 +287,28 @@ module.exports = {
         <tbody>
           <tr>
             <td>
-              <code>src/index.js</code>
+              <code className="code">src/index.js</code>
             </td>
             <td>
-              Application entry point and <code>restify</code> handlers for the Workflow bot
+              Application entry point and <code className="code">restify</code> handlers for the
+              Workflow bot
             </td>
           </tr>
           <tr>
             <td>
-              <code>src/commands/helloworldCommandHandler.js</code>
+              <code className="code">src/commands/helloworldCommandHandler.js</code>
             </td>
             <td>Implementation that handles responding to a chat command</td>
           </tr>
           <tr>
             <td>
-              <code>src/adaptiveCards/helloworldCommandResponse.json</code>
+              <code className="code">src/adaptiveCards/helloworldCommandResponse.json</code>
             </td>
             <td>Defines the Adaptive Card (UI) that is displayed in response to a chat command</td>
           </tr>
           <tr>
             <td>
-              <code>src/adaptiveCards/doStuffActionResponse.json</code>
+              <code className="code">src/adaptiveCards/doStuffActionResponse.json</code>
             </td>
             <td>
               A generated Adaptive Card that is sent to Teams for the response of
@@ -301,11 +317,11 @@ module.exports = {
           </tr>
           <tr>
             <td>
-              <code>src/cardActions/doStuffActionHandler.js</code>
+              <code className="code">src/cardActions/doStuffActionHandler.js</code>
             </td>
             <td>
-              Implements the handler for the <code>doStuff</code> button displayed in the Adaptive
-              Card
+              Implements the handler for the <code className="code">doStuff</code> button displayed
+              in the Adaptive Card
             </td>
           </tr>
         </tbody>
@@ -322,21 +338,22 @@ module.exports = {
         >
           <p>
             Adding new actions (buttons) to an Adaptive Card is as simple as defining them in the
-            JSON file. Add a new <code>DoSomething</code> action to the{" "}
-            <code>src/adaptiveCards/helloworldCommandResponse.json</code> file:
+            JSON file. Add a new <code className="code">DoSomething</code> action to the{" "}
+            <code className="code">src/adaptiveCards/helloworldCommandResponse.json</code> file:
           </p>
           <p>
-            Here&#39;s a sample action with type <code>Action.Execute</code>:
+            Here&#39;s a sample action with type <code className="code">Action.Execute</code>:
           </p>
           <CodeSnippet
-            language="language-json"
+            language="json"
+            theme={theme}
             data={codeSnippets[0]}
             identifier="workflow-bot-step1"
           />
           <p>
-            Specifying the <code>type</code> as <code>Action.Execute</code> allows this Adaptive
-            Card to respond with another card, which will update the UI by replacing the existing
-            card. Learn more about{" "}
+            Specifying the <code className="code">type</code> as{" "}
+            <code className="code">Action.Execute</code> allows this Adaptive Card to respond with
+            another card, which will update the UI by replacing the existing card. Learn more about{" "}
             <ExternalLink
               title="Adaptive Card Universal Actions in the documentation"
               link="https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/overview?tabs=mobile#universal-actions"
@@ -348,11 +365,12 @@ module.exports = {
               <strong>
                 <em>NOTE:</em>
               </strong>{" "}
-              the <code>verb</code> property is required here so that the TeamsFx conversation SDK
-              can invoke the corresponding action handler when the action is invoked in Teams. You
-              should provide a global unique string for the <code>verb</code> property, otherwise
-              you may experience unexpected behavior if you&#39;re using a general string that might
-              cause a collision with other bot actions.
+              the <code className="code">verb</code> property is required here so that the TeamsFx
+              conversation SDK can invoke the corresponding action handler when the action is
+              invoked in Teams. You should provide a global unique string for the{" "}
+              <code className="code">verb</code> property, otherwise you may experience unexpected
+              behavior if you&#39;re using a general string that might cause a collision with other
+              bot actions.
             </p>
           </blockquote>
         </CollapsibleStep>
@@ -365,11 +383,13 @@ module.exports = {
         >
           <p>
             For each action, you can display a new Adaptive Card as a response to the user. Create a
-            new file, <code>bot/src/adaptiveCards/doSomethingResponse.json</code> to use as a
-            response for the <code>DoSomething</code> action created in the previous step:
+            new file, <code className="code">bot/src/adaptiveCards/doSomethingResponse.json</code>{" "}
+            to use as a response for the <code className="code">DoSomething</code> action created in
+            the previous step:
           </p>
           <CodeSnippet
-            language="language-json"
+            language="json"
+            theme={theme}
             data={codeSnippets[1]}
             identifier="workflow-bot-step2"
           />
@@ -387,12 +407,13 @@ module.exports = {
         <CollapsibleStep step={3} title="Handle the new action" identifier="workflow-bot-step3">
           <p>
             The TeamsFx SDK provides a convenient class,{" "}
-            <code>TeamsFxAdaptiveCardActionHandler</code>, to handle when an action from an Adaptive
-            Card is invoked. Create a new file,{" "}
-            <code>bot/src/cardActions/doSomethingActionHandler.js</code>:
+            <code className="code">TeamsFxAdaptiveCardActionHandler</code>, to handle when an action
+            from an Adaptive Card is invoked. Create a new file,{" "}
+            <code className="code">bot/src/cardActions/doSomethingActionHandler.js</code>:
           </p>
           <CodeSnippet
-            language="language-typescript"
+            language="typescript"
+            theme={theme}
             data={codeSnippets[2]}
             identifier="workflow-bot-step3"
           />
@@ -401,14 +422,15 @@ module.exports = {
             <ul>
               <li>
                 <p>
-                  The <code>triggerVerb</code> is the <code>verb</code> property of your action.
+                  The <code className="code">triggerVerb</code> is the{" "}
+                  <code className="code">verb</code> property of your action.
                 </p>
               </li>
               <li>
                 <p>
-                  The <code>actionData</code> is the data associated with the action, which may
-                  include dynamic user input or some contextual data provided in the{" "}
-                  <code>data</code> property of your action.
+                  The <code className="code">actionData</code> is the data associated with the
+                  action, which may include dynamic user input or some contextual data provided in
+                  the <code className="code">data</code> property of your action.
                 </p>
               </li>
               <li>
@@ -428,22 +450,25 @@ module.exports = {
       <div className="collapsibleSteps">
         <CollapsibleStep step={4} title="Register the new handler" identifier="workflow-bot-step4">
           <p>
-            Each new card action needs to be configured in the <code>ConversationBot</code>, which
-            powers the conversational flow of the workflow bot template. Navigate to the{" "}
-            <code>bot/src/internal/initialize.js</code> file and update the <code>actions</code>{" "}
-            array of the <code>cardAction</code> property.
+            Each new card action needs to be configured in the{" "}
+            <code className="code">ConversationBot</code>, which powers the conversational flow of
+            the workflow bot template. Navigate to the{" "}
+            <code className="code">bot/src/internal/initialize.js</code> file and update the{" "}
+            <code className="code">actions</code> array of the{" "}
+            <code className="code">cardAction</code> property.
           </p>
           <ol>
             <li>
-              Go to <code>bot/src/internal/initialize.js</code>;
+              Go to <code className="code">bot/src/internal/initialize.js</code>;
             </li>
             <li>
-              Update your <code>conversationBot</code> initialization to enable cardAction feature
-              and add the handler to <code>actions</code> array:
+              Update your <code className="code">conversationBot</code> initialization to enable
+              cardAction feature and add the handler to <code className="code">actions</code> array:
             </li>
           </ol>
           <CodeSnippet
-            language="language-typescript"
+            language="typescript"
+            theme={theme}
             data={codeSnippets[3]}
             identifier="workflow-bot-step4"
           />

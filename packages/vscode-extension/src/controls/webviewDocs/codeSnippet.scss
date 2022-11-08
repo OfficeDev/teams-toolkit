@@ -33,4 +33,8 @@
     border-top-right-radius: 0;
     padding-top: 0;
   }
+
+  .codeBlock {
+    background: var(--vscode-editor-background) !important;
+  }
 }

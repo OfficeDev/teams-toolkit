@@ -49,7 +49,8 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
       );
       let message;
       if (isV3Enabled()) {
-        message = await this.generateHoverMessageV3(key);
+        const spfxLocal = document.fileName.endsWith("manifest.template.local.json");
+        message = await this.generateHoverMessageV3(key, spfxLocal);
       } else {
         message = await this.generateHoverMessage(key);
       }
@@ -60,7 +61,10 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
     return undefined;
   }
 
-  private async generateHoverMessageV3(key: string): Promise<vscode.MarkdownString> {
+  private async generateHoverMessageV3(
+    key: string,
+    displayLocalValue: boolean
+  ): Promise<vscode.MarkdownString> {
     // Get environment variables
     const inputs = getSystemInputs();
     const envNamesRes = await envUtil.listEnv(inputs.projectPath!);
@@ -79,23 +83,36 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
 
     // Generate hover message
     let message = "";
-    for (const envName of envNames) {
-      const envInfo = envInfos[envName];
-      const value = envInfo[key];
+    let args;
+    if (displayLocalValue) {
+      const envName = environmentManager.getLocalEnvName();
+      const value = envInfos[envName][key];
       if (value) {
-        message += `**${envName}**: ${value} \n\n`;
+        message = `**${envName}**: ${value} \n\n`;
       } else {
-        if (envName === environmentManager.getLocalEnvName()) {
-          const commandUri = vscode.Uri.parse("command:fx-extension.pre-debug-check");
-          message += `**${envName}**: [Trigger debug to see placeholder value](${commandUri}) \n\n`;
+        const commandUri = vscode.Uri.parse("command:fx-extension.pre-debug-check");
+        message = `**${envName}**: [Trigger debug to see placeholder value](${commandUri}) \n\n`;
+      }
+      args = [{ type: "env", env: envName }];
+    } else {
+      for (const envName of envNames) {
+        const envInfo = envInfos[envName];
+        const value = envInfo[key];
+        if (value) {
+          message += `**${envName}**: ${value} \n\n`;
         } else {
-          const commandUri = vscode.Uri.parse("command:fx-extension.provision");
-          message += `**${envName}**: [Trigger Teams: Provision in the cloud command to see placeholder value](${commandUri}) \n\n`;
+          if (envName === environmentManager.getLocalEnvName()) {
+            const commandUri = vscode.Uri.parse("command:fx-extension.pre-debug-check");
+            message += `**${envName}**: [Trigger debug to see placeholder value](${commandUri}) \n\n`;
+          } else {
+            const commandUri = vscode.Uri.parse("command:fx-extension.provision");
+            message += `**${envName}**: [Trigger Teams: Provision in the cloud command to see placeholder value](${commandUri}) \n\n`;
+          }
         }
       }
+      args = [{ type: "env" }];
     }
 
-    const args = [{ type: "env" }];
     const commandUri = vscode.Uri.parse(
       `command:fx-extension.openConfigState?${encodeURIComponent(JSON.stringify(args))}`
     );

@@ -77,7 +77,11 @@ describe("Manifest codelens", () => {
     sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
 
     const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0));
-    const lens: PlaceholderCodeLens = new PlaceholderCodeLens("${{ TEAMS_APP_ID }}", range);
+    const lens: PlaceholderCodeLens = new PlaceholderCodeLens(
+      "${{ TEAMS_APP_ID }}",
+      range,
+      "manifest.template.json"
+    );
     const manifestProvider = new ManifestTemplateCodeLensProvider();
     const cts = new vscode.CancellationTokenSource();
 

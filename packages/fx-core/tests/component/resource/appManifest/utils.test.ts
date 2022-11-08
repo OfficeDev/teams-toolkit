@@ -7,6 +7,7 @@ import { MessagingExtension } from "../../../../src/component/resource/appManife
 import { StaticTab } from "../../../../src/component/resource/appManifest/interfaces/staticTab";
 import {
   CommandScope,
+  containsUnsupportedFeature,
   hasMeetingExtension,
   MeetingsContext,
   needBotCode,
@@ -300,6 +301,60 @@ describe("utils", () => {
 
       const res = hasMeetingExtension(appDefinition);
 
+      chai.assert.isTrue(res);
+    });
+  });
+
+  describe("unsupported features", () => {
+    it("contains scene", () => {
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mockAppId",
+        tenantId: "mockTenantId",
+        meetingExtensionDefinition: {
+          scenes: [
+            {
+              id: "mock-id",
+              file: "mock-file",
+              name: "mock-name",
+              preview: "preview",
+              maxAudience: 10,
+              seatsReservedForOrganizersOrPresenters: 1,
+            },
+          ],
+        },
+      };
+
+      const res = containsUnsupportedFeature(appDefinition);
+      chai.assert.isTrue(res);
+    });
+
+    it("contains connector", () => {
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mockAppId",
+        tenantId: "mockTenantId",
+        connectors: [{ name: "name", configurationUrl: "url", scopes: [] }],
+      };
+
+      const res = containsUnsupportedFeature(appDefinition);
+      chai.assert.isTrue(res);
+    });
+
+    it("contains activities", () => {
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mockAppId",
+        tenantId: "mockTenantId",
+        activities: {
+          activityTypes: [
+            {
+              type: "type",
+              description: "description",
+              templateText: "text",
+            },
+          ],
+        },
+      };
+
+      const res = containsUnsupportedFeature(appDefinition);
       chai.assert.isTrue(res);
     });
   });

@@ -12,3 +12,5 @@ export const templateAlphaVersion = "templates-0.0.0-alpha";
 export const templateBetaVersion = "templates-0.0.0-beta";
 export const sampleRepoName = "TeamsFx-Samples";
 export const errorSource = "GEN";
+export const componentName = "generator";
+export const commonTemplateName = "common";

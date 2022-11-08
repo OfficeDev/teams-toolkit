@@ -18,7 +18,7 @@ import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetr
 import { TelemetryConstant } from "../../../constant/commonConstant";
 import { DeployConstant } from "../../../constant/deployConstant";
 
-const ACTION_NAME = "configure/storage";
+const ACTION_NAME = "azureStorage/enableStaticWebsite";
 
 /**
  * enable static website for azure storage account

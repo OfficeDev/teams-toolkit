@@ -3,6 +3,7 @@ import * as sinon from "sinon";
 import { envUtil } from "@microsoft/teamsfx-core";
 import { ok } from "@microsoft/teamsfx-api";
 import {
+  AadAppTemplateCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
   PlaceholderCodeLens,
@@ -89,6 +90,22 @@ describe("Manifest codelens", () => {
     chai.assert.equal(res.command?.command, "fx-extension.openConfigState");
     chai.assert.isTrue(res.command?.title.includes("👉"));
     chai.expect(res.command?.arguments).to.deep.equal([{ type: "env", from: "manifest" }]);
+  });
+
+  it("ResolveEnvironmentVariableCodelens for AAD manifest", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(true);
+    sinon.stub(envUtil, "readEnv").resolves(ok({}));
+    sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
+
+    const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0));
+    const lens: PlaceholderCodeLens = new PlaceholderCodeLens("${{ TEAMS_APP_ID }}", range);
+    const aadProvider = new AadAppTemplateCodeLensProvider();
+    const cts = new vscode.CancellationTokenSource();
+
+    const res = await aadProvider.resolveCodeLens(lens, cts.token);
+    chai.assert.equal(res.command?.command, "fx-extension.openConfigState");
+    chai.assert.isTrue(res.command?.title.includes("👉"));
+    chai.expect(res.command?.arguments).to.deep.equal([{ type: "env", from: "aad" }]);
   });
 
   it("Preview codelens", async () => {

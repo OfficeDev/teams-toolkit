@@ -545,7 +545,11 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
     lens: vscode.CodeLens,
     _token: vscode.CancellationToken
   ): Promise<vscode.CodeLens> {
-    return resolveStateAndConfigCodeLens(lens, this.projectConfigs, this.mutex, "aad");
+    if (isV3Enabled()) {
+      return resolveEnvironmentVariablesCodeLens(lens, "aad");
+    } else {
+      return resolveStateAndConfigCodeLens(lens, this.projectConfigs, this.mutex, "aad");
+    }
   }
 
   private calculateCodeLensByRegex(document: vscode.TextDocument, regex: RegExp) {
@@ -567,11 +571,20 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
 
   private computeStateAndConfigCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
     const codeLenses = [];
-    const configCodelenses = this.calculateCodeLensByRegex(document, manifestConfigDataRegex);
-    codeLenses.push(...configCodelenses);
 
-    const stateCodelenses = this.calculateCodeLensByRegex(document, manifestStateDataRegex);
-    codeLenses.push(...stateCodelenses);
+    if (isV3Enabled()) {
+      const stateAndConfigCodelenses = this.calculateCodeLensByRegex(
+        document,
+        environmentVariableRegex
+      );
+      codeLenses.push(...stateAndConfigCodelenses);
+    } else {
+      const configCodelenses = this.calculateCodeLensByRegex(document, manifestConfigDataRegex);
+      codeLenses.push(...configCodelenses);
+
+      const stateCodelenses = this.calculateCodeLensByRegex(document, manifestStateDataRegex);
+      codeLenses.push(...stateCodelenses);
+    }
 
     return codeLenses;
   }

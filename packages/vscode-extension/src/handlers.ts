@@ -466,7 +466,14 @@ export function getSystemInputs(): Inputs {
 
 export async function createNewProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
-  const result = await runCommand(Stage.create);
+  let inputs: Inputs | undefined;
+  if (args?.length === 1) {
+    if (!!args[0].teamsAppFromTdp) {
+      inputs = getSystemInputs();
+      inputs.teamsAppFromTdp = args[0].teamsAppFromTdp;
+    }
+  }
+  const result = await runCommand(Stage.create, inputs);
   if (result.isErr()) {
     return err(result.error);
   }
@@ -3485,24 +3492,24 @@ export async function scaffoldFromDeveloperPortalHandler(
     1
   );
   await progressBar.start();
-  let token = "";
+  let appDefinition = undefined;
   try {
-    const tokenRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
+    const appDefinitionRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
       { scopes: AppStudioScopes },
       args[0]
     );
-    if (tokenRes.isErr()) {
-      if ((tokenRes.error as any).displayMessage) {
-        window.showErrorMessage((tokenRes.error as any).displayMessage);
+    if (appDefinitionRes.isErr()) {
+      if ((appDefinitionRes.error as any).displayMessage) {
+        window.showErrorMessage((appDefinitionRes.error as any).displayMessage);
       } else {
         vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.generalError.message")
         );
       }
       await progressBar.end(false);
-      return err(tokenRes.error);
+      return err(appDefinitionRes.error);
     }
-    token = tokenRes.value;
+    appDefinition = appDefinitionRes.value;
     await progressBar.end(true);
   } catch (e) {
     vscode.window.showErrorMessage(
@@ -3512,7 +3519,10 @@ export async function scaffoldFromDeveloperPortalHandler(
     throw e;
   }
 
-  // TODO: get manifest and scaffold
+  const res = await createNewProjectHandler([{ teamsAppFromTdp: appDefinition }]);
+  if (res.isErr()) {
+    return err(res.error);
+  }
 
   return ok(null);
 }

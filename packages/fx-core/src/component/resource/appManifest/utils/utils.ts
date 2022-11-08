@@ -42,14 +42,17 @@ export function renderTemplate(manifestString: string, view: any): string {
   return manifestString;
 }
 
+export function isPersonalApp(appDefinition: AppDefinition): boolean {
+  return !!appDefinition.staticTabs && appDefinition.staticTabs.length > 0;
+}
+
 export function needTabCode(appDefinition: AppDefinition): boolean {
-  const isPersonalApp = !!appDefinition.staticTabs && appDefinition.staticTabs.length > 0;
   const isGroupApp =
     !!appDefinition.configurableTabs &&
     appDefinition.configurableTabs.length > 0 &&
     groupAppConfigured(appDefinition.configurableTabs[0]);
 
-  return isPersonalApp || isGroupApp;
+  return isPersonalApp(appDefinition) || isGroupApp;
 }
 
 export function needBotCode(appDefinition: AppDefinition): boolean {
@@ -57,6 +60,14 @@ export function needBotCode(appDefinition: AppDefinition): boolean {
   const isMessageExtension =
     !!appDefinition.messagingExtensions && appDefinition.messagingExtensions.length > 0;
   return isBot || isMessageExtension;
+}
+
+export function containsUnsupportedFeature(appDefinition: AppDefinition): boolean {
+  const hasScene = appDefinition?.meetingExtensionDefinition?.scenes?.length;
+  const hasConnector = !!appDefinition?.connectors?.length;
+  const hasActivies = appDefinition?.activities?.activityTypes?.length;
+
+  return !!hasScene || !!hasConnector || !!hasActivies;
 }
 
 export function hasMeetingExtension(appDefinition: AppDefinition): boolean {

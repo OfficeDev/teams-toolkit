@@ -41,6 +41,7 @@ import {
 } from "../component/constants";
 import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { ResourceManagementClient } from "@azure/arm-resources";
+import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -64,16 +65,22 @@ export enum CoreQuestionNames {
   NewTargetEnvName = "newTargetEnvName",
   ExistingTabEndpoint = "existing-tab-endpoint",
   SafeProjectName = "safeProjectName",
+  ReplaceContentUrl = "replaceContentUrl",
+  ReplaceWebsiteUrl = "replaceWebsiteUrl",
 }
 
 export const ProjectNamePattern =
   '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*&|\u0000-\u001F]*[^"\\s.<>:\\?/*&|\u0000-\u001F]$';
 
-export function createAppNameQuestion(validateProjectPathExistence = true): TextInputQuestion {
+export function createAppNameQuestion(
+  defaultAppName?: string,
+  validateProjectPathExistence = true
+): TextInputQuestion {
   const question: TextInputQuestion = {
     type: "text",
     name: CoreQuestionNames.AppName,
     title: "Application name",
+    default: defaultAppName,
     validation: {
       validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
         const schema = {
@@ -674,4 +681,57 @@ export const ExistingTabEndpointQuestion: TextInputQuestion = {
       return undefined;
     },
   },
+};
+
+export const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
+
+export const tabsContentUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion => {
+  return {
+    type: "multiSelect",
+    name: CoreQuestionNames.ReplaceContentUrl,
+    title: getLocalizedString("core.updateContentUrlQuestion.title", defaultTabLocalHostUrl),
+    staticOptions: tabs.map((o) => tabContentUrlOptionItem(o)),
+    default: tabs.map((o) => `${o.name}${contentUrlSuffix}`),
+    placeholder: getLocalizedString("core.updateUrlQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+};
+
+export const tabsWebsitetUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion => {
+  return {
+    type: "multiSelect",
+    name: CoreQuestionNames.ReplaceWebsiteUrl,
+    title: getLocalizedString("core.updateWebsiteUrlQuestion.title", defaultTabLocalHostUrl),
+    staticOptions: tabs.map((o) => tabWebsiteUrlOptionItem(o)),
+    default: tabs.map((o) => `${o.name}${websiteUrlSuffix}`),
+    placeholder: getLocalizedString("core.updateUrlQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+};
+
+const contentUrlSuffix = "-contentUrl";
+const websiteUrlSuffix = "-websiteUrl";
+
+export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
+  return {
+    id: `${tab.name}${contentUrlSuffix}`,
+    label: tab.name,
+    detail: getLocalizedString(
+      "core.updateContentUrlOption.description",
+      tab.contentUrl,
+      defaultTabLocalHostUrl
+    ),
+  };
+};
+
+export const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
+  return {
+    id: `${tab.name}${websiteUrlSuffix}`,
+    label: tab.name,
+    detail: getLocalizedString(
+      "core.updateWebsiteUrlOption.description",
+      tab.websiteUrl,
+      defaultTabLocalHostUrl
+    ),
+  };
 };

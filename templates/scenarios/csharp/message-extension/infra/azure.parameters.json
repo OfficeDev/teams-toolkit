@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "resourceBaseName": {
-        "value": "nonssome${{RESOURCE_SUFFIX}}"
+        "value": "mebot${{RESOURCE_SUFFIX}}"
       },
       "botAadAppClientId": {
         "value": "${{BOT_ID}}"

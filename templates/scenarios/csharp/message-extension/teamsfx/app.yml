@@ -3,7 +3,7 @@ version: 1.0.0
 provision:
   - uses: botAadApp/create # Creates a new AAD app for Azure Bot service if BOT_ID environment variable is empty
     with:
-      name: notification-bot
+      name: me-bot
     # Output: following environment variable will be persisted in current environment's .env file.
     # BOT_ID: the AAD app client id created for Azure Bot
     # BOT_PASSWORD: the AAD app client secret created for Azure Bot
@@ -22,15 +22,13 @@ provision:
 deploy:
   - uses: dotnet/command
     with:
-      workingDirectory: ./
       args: publish --configuration Release --runtime win-x86 --self-contained
   - uses: azureAppService/deploy
     with:
-      workingDirectory: .
       # deploy base folder
       distributionPath: ./bin/Release/net6.0/win-x86/publish
       # the resource id of the cloud resource to be deployed to
-      resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}}
+      resourceId: ${{ME_AZURE_APP_SERVICE_RESOURCE_ID}}
 
 registerApp:
   - uses: teamsApp/create # Creates a Teams app

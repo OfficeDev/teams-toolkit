@@ -26,7 +26,7 @@
 
 4. CLI testing case should  in folder "packages/cli/tests/e2e/"
 
-   ![image-20221107165010818](/Users/ivan_chen/Library/Application Support/typora-user-images/image-20221107165010818.png)
+   ![cli_test_file_path](../../img/cli_test_file_path.png)
 
 ### Create
 
@@ -36,13 +36,13 @@ Use mocha framework to build your test
 
 Naming notations must follow below:
 
-    **normal test: XXX.tests.ts**
+**normal test: XXX.tests.ts**
 
-    **v3 test: XXX.v3.tests.ts**
+**v3 test: XXX.v3.tests.ts**
 
-    **dotnet test: XXX.dotnet.tests.ts**
+**dotnet test: XXX.dotnet.tests.ts**
 
-    #### **structure**
+#### **structure**
 
 ```typescript
 // Copyright (c) Microsoft Corporation.
@@ -114,13 +114,13 @@ import { cleanUp } from "../commonUtils";
 
 Use GitHub Action to automate your test 
 
-![image-20221108092237311](/Users/ivan_chen/Library/Application Support/typora-user-images/image-20221108092237311.png)
+![github_action_e2e](../../img/github_action_e2e.png)
 
 To trigger the runner, you need to manually click "Run workflow".
 
 select your own branch. (Make sure your change already 'git push' to your branch) and follow the instruction to input your test file path.
 
-![image-20221108092510212](/Users/ivan_chen/Library/Application Support/typora-user-images/image-20221108092510212.png)
+![run_workflow](../../img/run_workflow.png)
 
 ## Example
 

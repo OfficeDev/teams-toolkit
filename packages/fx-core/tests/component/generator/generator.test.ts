@@ -145,12 +145,12 @@ describe("Generator happy path", async () => {
   });
 
   it("template", async () => {
-    const templateName = "bot";
+    const templateName = "command-and-response";
     const language = "ts";
-    const inputDir = path.join(tmpDir, "input", templateName);
-    await fs.ensureDir(inputDir);
+    const inputDir = path.join(tmpDir, "input");
+    await fs.ensureDir(path.join(inputDir, templateName));
     const fileData = "{{appName}}";
-    await fs.writeFile(path.join(inputDir, "test.txt.tpl"), fileData);
+    await fs.writeFile(path.join(inputDir, templateName, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
     zip.writeZip(path.join(tmpDir, "test.zip"));

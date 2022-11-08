@@ -119,7 +119,7 @@ describe("AppsettingsGenerateDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isOk());
       if (result.isOk()) {
-        chai.assert.equal("{\n\t\"BOT_ID\": \"BOT_ID\",\n\t\"BOT_PASSWORD\": \"BOT_PASSWORD\"\n}", content);
+        chai.assert.equal('{\n\t"BOT_ID": "BOT_ID",\n\t"BOT_PASSWORD": "BOT_PASSWORD"\n}', content);
       }
     });
 
@@ -128,11 +128,10 @@ describe("AppsettingsGenerateDriver", () => {
       let content = {};
       const appsettings = {
         Foo: "Bar",
-        My:
-        {
-            BOT_ID: "$botId$",
-            Foo: "Bar"
-        }
+        My: {
+          BOT_ID: "$botId$",
+          Foo: "Bar",
+        },
       };
       sinon.stub(fs, "ensureFile").callsFake(async (path) => {
         return;
@@ -147,16 +146,18 @@ describe("AppsettingsGenerateDriver", () => {
       const args: any = {
         target,
         appsettings: {
-          My:
-          {
-              BOT_ID: "BOD_ID",
-          }
-        }
+          My: {
+            BOT_ID: "BOD_ID",
+          },
+        },
       };
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isOk());
       if (result.isOk()) {
-        chai.assert.equal("{\n\t\"Foo\": \"Bar\",\n\t\"My\": {\n\t\t\"BOT_ID\": \"BOD_ID\",\n\t\t\"Foo\": \"Bar\"\n\t}\n}", content);
+        chai.assert.equal(
+          '{\n\t"Foo": "Bar",\n\t"My": {\n\t\t"BOT_ID": "BOD_ID",\n\t\t"Foo": "Bar"\n\t}\n}',
+          content
+        );
       }
     });
   });

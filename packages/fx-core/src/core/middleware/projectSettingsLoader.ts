@@ -105,7 +105,7 @@ export async function loadProjectSettingsByProjectPath(
       const settings: Settings = await fs.readJson(settingsFile);
       const projectSettings: ProjectSettings = {
         projectId: settings.trackingId,
-        version: settings.version,
+        ...settings,
       };
       if (!projectSettings.projectId) {
         projectSettings.projectId = uuid.v4();

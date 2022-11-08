@@ -1571,7 +1571,7 @@ export type SelectFolderConfig = UIConfig<string>;
 export type SelectFolderResult = InputResult<string>;
 
 // @public
-export interface Settings {
+export interface Settings extends Json {
     // (undocumented)
     trackingId: string;
     // (undocumented)

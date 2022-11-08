@@ -44,7 +44,9 @@ export const ProjectSettingsWriterMW: Middleware = async (
         const settings: Settings = {
           trackingId: projectSettings.projectId,
           version: projectSettings.version!,
+          ...projectSettings,
         };
+        delete settings["projectId"];
         const settingFile = getProjectSettingsPath(inputs.projectPath);
         await fs.writeFile(settingFile, JSON.stringify(settings, null, 4));
         TOOLS?.logProvider.debug(`[core] persist project setting file: ${settingFile}`);

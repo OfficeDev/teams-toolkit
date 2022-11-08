@@ -301,7 +301,7 @@ export type MaybePromise<T> = T | Promise<T>;
 /**
  * simplified tooling settings for v3
  */
-export interface Settings {
+export interface Settings extends Json {
   version: string;
   trackingId: string;
 }

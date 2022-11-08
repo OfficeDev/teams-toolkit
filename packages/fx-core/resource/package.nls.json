@@ -1065,5 +1065,8 @@
   "driver.env.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.env.error.unhandledError": "Unhandled error happened in %s action: %s",
   "driver.env.error.folderNotExist": "Folder %s does not exist.",
-  "driver.deploy.error.noFileFindInDistributionFolder": "No file is found in distribution folder. Please check if the distribution folder is empty or you have ignored everything."
+  "driver.deploy.error.noFileFindInDistributionFolder": "No file is found in distribution folder. Please check if the distribution folder is empty or you have ignored everything.",
+  "driver.m365Bot.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
+  "driver.m365Bot.error.unhandledError": "Unhandled error happened in %s action: %s",
+  "driver.m365Bot.error.botRegistrationNotFound": "Bot registration is not found with botId %s."
 }

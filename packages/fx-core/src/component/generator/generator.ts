@@ -114,7 +114,6 @@ export class Generator {
     context: GeneratorContext,
     actions: GeneratorAction[]
   ): Promise<void> {
-    context.logProvider.info(`Start generating ${context.name}`);
     for (const action of actions) {
       try {
         await context.onActionStart?.(action, context);
@@ -128,7 +127,6 @@ export class Generator {
           await wrapError(() => context.onActionError!(action, context, e as Error));
       }
     }
-    context.logProvider.info(`Finish generating ${context.name}`);
   }
 }
 

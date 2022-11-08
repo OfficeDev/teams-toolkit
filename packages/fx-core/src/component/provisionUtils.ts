@@ -25,7 +25,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import { v4 as uuidv4 } from "uuid";
-import { PluginDisplayName } from "../common/constants";
+import { HelpLinks, PluginDisplayName } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
 import {
@@ -852,12 +852,13 @@ export class ProvisionUtils {
     const msg = getLocalizedString(
       "error.m365tenantcheck.tenantNotMatch",
       keysNeedToUpdate.join(", "),
-      env
+      env,
+      HelpLinks.SwitchTenant
     );
 
-    return !hasSwitched
-      ? ok(undefined)
-      : err(new UserError(source, "M365TenantNotMatch", msg, msg));
+    const error = new UserError(source, "M365TenantNotMatch", msg, msg);
+    error.helpLink = HelpLinks.SwitchTenant;
+    return !hasSwitched ? ok(undefined) : err(error);
   }
   async askForProvisionConsent(
     ctx: v2.Context,

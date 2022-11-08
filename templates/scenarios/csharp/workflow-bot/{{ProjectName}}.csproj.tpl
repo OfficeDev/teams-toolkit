@@ -1,8 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <RuntimeFrameworkVersion>6.0.10</RuntimeFrameworkVersion>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
@@ -17,9 +16,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
+    <PackageReference Include="AdaptiveCards.Templating" Version="1.3.1" />
     <PackageReference Include="Microsoft.Bot.Builder" Version="4.17.2" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.17.2" />
+    <PackageReference Include="Microsoft.TeamsFx" Version="1.2.0-rc.2">
+      <!-- Exclude TeamsFx wwwroot static files which are for frontend only. -->
+      <ExcludeAssets>contentFiles</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

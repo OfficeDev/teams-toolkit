@@ -9,6 +9,7 @@ export class HelpLinks {
   static readonly WhyNeedProvision = "https://aka.ms/teamsfx/whyneedprovision";
   static readonly ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
   static readonly SwitchAccountOrSub = "https://aka.ms/teamsfx-switch-account-or-subscription-help";
+  static readonly SwitchTenant = "https://aka.ms/teamsfx-switch-tenant";
 
   // TODO: short link to the docs
   static readonly HowToAddCapability = "https://aka.ms/teamsfx-how-to-add-capability";

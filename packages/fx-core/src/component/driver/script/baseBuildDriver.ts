@@ -46,7 +46,8 @@ export abstract class BaseBuildDriver {
   async run(): Promise<Map<string, string>> {
     const commandSuffix = checkMissingArgs("BuildCommand", this.args.args).trim();
     const command = `${this.buildPrefix} ${commandSuffix}`;
-    await this.progressBar?.start(`Run command ${command} at ${this.workingDirectory}`);
+    await this.progressBar?.start();
+    await this.progressBar?.next(`Run command ${command} at ${this.workingDirectory}`);
     try {
       const output = await execute(command, this.workingDirectory, this.logProvider);
       await this.logProvider.debug(`execute ${command} output is ${output}`);

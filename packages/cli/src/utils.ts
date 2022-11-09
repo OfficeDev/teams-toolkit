@@ -278,7 +278,7 @@ export function writeSecretToFile(
   secrets: dotenv.DotenvParseOutput,
   rootFolder: string,
   env: string | undefined
-): Result<null, FxError> {
+): Result<undefined, FxError> {
   const secretFileResult = getSecretFilePath(rootFolder, env);
   if (secretFileResult.isErr()) {
     return err(secretFileResult.error);
@@ -297,7 +297,7 @@ export function writeSecretToFile(
   } catch (e) {
     return err(WriteFileError(e));
   }
-  return ok(null);
+  return ok(undefined);
 }
 
 export async function setSubscriptionId(

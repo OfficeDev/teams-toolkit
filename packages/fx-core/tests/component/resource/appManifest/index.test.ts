@@ -110,6 +110,15 @@ describe("App-manifest Component", () => {
     manifest.icons.color = "resources/color.png";
     manifest.icons.outline = "resources/outline.png";
     manifest.id = "";
+    manifest.localizationInfo = {
+      defaultLanguageTag: "en",
+      additionalLanguages: [
+        {
+          languageTag: "de",
+          file: "resources/de.json",
+        },
+      ],
+    };
     sandbox.stub(manifestUtils, "getManifest").resolves(ok(manifest));
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "writeFile").resolves();

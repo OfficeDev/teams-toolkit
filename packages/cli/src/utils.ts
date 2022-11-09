@@ -53,6 +53,7 @@ import { WriteFileError } from "@microsoft/teamsfx-core/build/core/error";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
 import { hasSPFxTab } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
+import { O_CREAT, O_EXCL, O_RDWR } from "constants";
 
 export type Json = { [_: string]: any };
 
@@ -293,7 +294,8 @@ export function writeSecretToFile(
     return err(new UserdataNotFound(env!));
   }
   try {
-    fs.writeFileSync(secretFile, array.join("\n"));
+    const fd = fs.openSync(secretFile, O_CREAT | O_EXCL | O_RDWR, 0o600);
+    fs.writeFileSync(fd, array.join("\n"));
   } catch (e) {
     return err(WriteFileError(e));
   }

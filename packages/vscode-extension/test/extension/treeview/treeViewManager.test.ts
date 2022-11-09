@@ -5,7 +5,6 @@ import * as vscode from "vscode";
 import treeViewManager from "../../../src/treeview/treeViewManager";
 import { AdaptiveCardCodeLensProvider } from "../../../src/codeLensProvider";
 import { CommandsTreeViewProvider } from "../../../src/treeview/commandsTreeViewProvider";
-import { TreatmentVariableValue } from "../../../src/exp/treatmentVariables";
 
 describe("TreeViewManager", () => {
   const sandbox = sinon.createSandbox();

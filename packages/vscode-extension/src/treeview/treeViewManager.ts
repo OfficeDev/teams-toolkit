@@ -7,7 +7,6 @@ import * as vscode from "vscode";
 import { TreeCategory } from "@microsoft/teamsfx-api";
 
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
-import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { localize } from "../utils/localizeUtils";
 import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";

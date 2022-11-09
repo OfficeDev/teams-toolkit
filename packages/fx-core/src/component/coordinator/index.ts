@@ -333,22 +333,29 @@ export class Coordinator {
 
     // 2. check each cycle
     for (const cycle of cycles) {
-      cycle.resolvePlaceholders();
+      const unresolvedPlaceholders = cycle.resolvePlaceholders();
+      let firstArmDriver;
       for (const driver of cycle.driverDefs) {
         if (AzureActions.includes(driver.uses)) {
           res.needAzureLogin = true;
+          if (!firstArmDriver) {
+            firstArmDriver = driver;
+          }
         }
         if (M365Actions.includes(driver.uses)) {
           res.needM365Login = true;
         }
       }
-      const firstDriver = cycle.driverDefs[0] || undefined;
-      if (firstDriver) {
-        if (AzureActions.includes(firstDriver.uses)) {
-          const withObj = firstDriver.with as any;
-          res.resolvedAzureSubscriptionId = withObj["subscriptionId"];
-          res.resolvedAzureResourceGroupName = withObj["resourceGroupName"];
-        }
+      if (firstArmDriver) {
+        const withObj = firstArmDriver.with as any;
+        res.resolvedAzureSubscriptionId = unresolvedPlaceholders.includes("AZURE_SUBSCRIPTION_ID")
+          ? undefined
+          : withObj["subscriptionId"];
+        res.resolvedAzureResourceGroupName = unresolvedPlaceholders.includes(
+          "AZURE_RESOURCE_GROUP_NAME"
+        )
+          ? undefined
+          : withObj["resourceGroupName"];
       }
     }
     return ok(res);

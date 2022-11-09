@@ -952,7 +952,7 @@ describe("component coordinator test", () => {
     const res = await fxCore.getSettings(inputs);
     assert.isTrue(res.isOk());
   });
-  it("provision happy path from zero", async () => {
+  it("preProvisionForVS", async () => {
     const mockProjectModel: ProjectModel = {
       registerApp: {
         name: "configureApp",
@@ -972,11 +972,11 @@ describe("component coordinator test", () => {
         run: async (ctx: DriverContext) => {
           return ok({
             env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
+            unresolvedPlaceHolders: [],
           });
         },
         resolvePlaceholders: () => {
-          return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
+          return [];
         },
         execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
           return ok(new Map());

@@ -16,7 +16,6 @@ import {
   IStaticTab,
 } from "@microsoft/teamsfx-api";
 import path from "path";
-import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
 import fs from "fs-extra";
 import { environmentManager } from "../core/environment";
 import { CoreQuestionNames } from "../core/question";
@@ -201,7 +200,7 @@ async function updateEnv(appId: string, projectPath: string): Promise<Result<und
 
 function updateTabUrl(answers: string[], tabUrlType: TabUrlType, tabs: IStaticTab[] | undefined) {
   if (!tabs || tabs.length === 0) {
-    return err(new UserError("", "", "", ""));
+    return err(new ObjectIsUndefinedError("static tabs"));
   }
   answers.forEach((answer: string) => {
     const tabToUpdate = findTabBasedOnName(answer, tabs);

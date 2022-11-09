@@ -376,6 +376,7 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<[DotenvParseOutput | undefined, FxError | undefined]> {
     const output: DotenvParseOutput = {};
+    const folderName = path.parse(ctx.projectPath).name;
 
     // 1. parse yml
     const parser = new YamlParser();
@@ -388,21 +389,13 @@ export class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
 
-    // 2. ensure RESOURCE_SUFFIX
-    const folderName = path.parse(ctx.projectPath).name;
-    if (!process.env.RESOURCE_SUFFIX) {
-      const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
-      process.env.RESOURCE_SUFFIX = suffix;
-      output.RESOURCE_SUFFIX = suffix;
-    }
-
     const cycles = [
       projectModel.registerApp,
       projectModel.provision,
       projectModel.configureApp,
     ].filter((c) => c !== undefined);
 
-    // 3. M365 sign in and tenant check if needed.
+    // 2. M365 sign in and tenant check if needed.
     let containsM365 = false;
     let containsAzure = false;
     const tenantSwitchCheckActions: string[] = [];
@@ -436,6 +429,15 @@ export class Coordinator {
       );
       if (checkM365TenatRes.isErr()) {
         return [undefined, checkM365TenatRes.error];
+      }
+    }
+
+    // 3. ensure RESOURCE_SUFFIX if containsAzure
+    if (containsAzure) {
+      if (!process.env.RESOURCE_SUFFIX) {
+        const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
+        process.env.RESOURCE_SUFFIX = suffix;
+        output.RESOURCE_SUFFIX = suffix;
       }
     }
 

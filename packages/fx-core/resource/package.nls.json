@@ -1033,6 +1033,11 @@
   "driver.aadApp.error.generateSecretFailed": "Cannot generate client secret.",
   "driver.aadApp.error.unhandledError": "Unhandled error happened in %s action: %s",
   "driver.aadApp.error.invalidFieldInManifest": "Field %s is missing or invalid in AAD app manifest.",
+  "driver.aadApp.progressBar.createAadAppTitle": "Creating AAD application",
+  "driver.aadApp.progressBar.createAadAppStepMessage": "Creating AAD application",
+  "driver.aadApp.progressBar.generateClientSecretSetpMessage": "Generating client secret",
+  "driver.aadApp.progressBar.updateAadAppTitle": "Updating AAD application",
+  "driver.aadApp.progressBar.updateAadAppStepMessage":"Updating AAD application",
   "configManager.error.driverNotFound": "Driver %s not found for step %s",
   "configManager.error.yamlParsing": "Error parsing yaml file at path %s. Reason: %s",
   "configManager.error.invalidLifecycle": "The schema of lifecycle %s is invalid",
@@ -1066,5 +1071,7 @@
   "driver.env.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.env.error.unhandledError": "Unhandled error happened in %s action: %s",
   "driver.env.error.folderNotExist": "Folder %s does not exist.",
-  "driver.deploy.error.noFileFindInDistributionFolder": "No file is found in distribution folder. Please check if the distribution folder is empty or you have ignored everything."
+  "driver.deploy.error.noFileFindInDistributionFolder": "No file is found in distribution folder. Please check if the distribution folder is empty or you have ignored everything.",
+  "driver.m365Bot.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
+  "driver.m365Bot.error.unhandledError": "Unhandled error happened in %s action: %s"
 }

@@ -172,7 +172,6 @@ describe("Env Add Command Tests", function () {
     // Assert
     expect(sourceEnvName).to.equal(sourceEnvFromArgs);
     expect(newTargetEnvName).to.equal(args.name);
-    expect(vars.value.logs).to.equal("");
   });
 
   it("handles error if target env exists", async () => {

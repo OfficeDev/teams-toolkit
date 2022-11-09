@@ -243,7 +243,7 @@ describe("component coordinator test", () => {
       tenantId: "mockTenantId",
       subscriptionName: "mockSubName",
     });
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription");
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
       if (config.name === "env") {
         return ok({ type: "success", result: "dev" });
@@ -299,7 +299,7 @@ describe("component coordinator test", () => {
         subscriptionName: "mockSubName",
       })
     );
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription");
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
       ok({
         createNewResourceGroup: true,
@@ -517,7 +517,7 @@ describe("component coordinator test", () => {
       tenantId: "mockTenantId",
       subscriptionName: "mockSubName",
     });
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription");
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -578,7 +578,7 @@ describe("component coordinator test", () => {
       tenantId: "mockTenantId",
       subscriptionName: "mockSubName",
     });
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription");
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -736,7 +736,7 @@ describe("component coordinator test", () => {
       tenantId: "mockTenantId",
       subscriptionName: "mockSubName",
     });
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription");
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
       if (config.name === "env") {
         return ok({ type: "success", result: "dev" });
@@ -951,5 +951,56 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.getSettings(inputs);
     assert.isTrue(res.isOk());
+  });
+  it("preProvisionForVS", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: {
+              subscriptionId: "mockSubId",
+              resourceGroupName: "mockRG",
+            },
+          },
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
+          return ok(new Map());
+        },
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.preProvisionForVS(inputs);
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      const value = res.value;
+      assert.isTrue(value.needAzureLogin);
+      assert.isTrue(value.needM365Login);
+      assert.equal(value.resolvedAzureSubscriptionId, "mockSubId");
+      assert.equal(value.resolvedAzureResourceGroupName, "mockRG");
+    }
   });
 });

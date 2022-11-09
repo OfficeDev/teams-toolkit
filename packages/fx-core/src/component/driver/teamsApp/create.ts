@@ -11,18 +11,14 @@ import {
   ok,
   Platform,
 } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
-import AdmZip from "adm-zip";
 import { hooks } from "@feathersjs/hooks/lib";
 import { StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { CreateAppPackageDriver } from "./createAppPackage";
 import { CreateTeamsAppArgs } from "./interfaces/CreateTeamsAppArgs";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
-import { Constants } from "../../resource/appManifest/constants";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
@@ -42,9 +38,6 @@ export class CreateTeamsAppDriver implements StepDriver {
     args: CreateTeamsAppArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    const state = this.loadCurrentState();
-    let create = true;
-
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
       scopes: AppStudioScopes,
     });
@@ -53,106 +46,41 @@ export class CreateTeamsAppDriver implements StepDriver {
     }
     const appStudioToken = appStudioTokenRes.value;
 
-    const createAppPackageDriver = new CreateAppPackageDriver();
-    const result = await createAppPackageDriver.run(
-      {
-        manifestTemplatePath: args.manifestTemplatePath,
-        outputZipPath: `${context.projectPath}/build/appPackage/appPackage.${state.ENV_NAME}.zip`,
-        outputJsonPath: `${context.projectPath}/build/appPackage/manifest.${state.ENV_NAME}.json`,
-      },
-      context,
-      true
-    );
-    if (result.isErr()) {
-      return result;
-    }
+    const appDefinition: AppDefinition = {
+      appName: args.appName,
+      shortName: args.appName,
+      packageName: "com.package.name",
+      version: "1.0.0",
+      colorIcon: "/images/default-app-icons/color_192x192.png",
+      outlineIcon: "/images/default-app-icons/outline_32x32.png",
+    };
 
-    const appPackagePath = result.value.get("TEAMS_APP_PACKAGE_PATH");
-    if (!appPackagePath) {
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.InvalidInputError.name,
-          AppStudioError.InvalidInputError.message("TEAMS_APP_PACKAGE_PATH", "undefined")
-        )
+    try {
+      const createdAppDefinition = await AppStudioClient.createApp(appDefinition, appStudioToken);
+      const message = getLocalizedString(
+        "plugins.appstudio.teamsAppCreatedNotice",
+        createdAppDefinition.teamsAppId!
       );
-    }
-    if (!(await fs.pathExists(appPackagePath))) {
-      const error = AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(appPackagePath)
-      );
-      return err(error);
-    }
-    const archivedFile = await fs.readFile(appPackagePath);
-    const zipEntries = new AdmZip(archivedFile).getEntries();
-    const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
-    if (!manifestFile) {
-      const error = AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
-      );
-      return err(error);
-    }
-    const manifestString = manifestFile.getData().toString();
-    const manifest = JSON.parse(manifestString) as TeamsAppManifest;
-    const teamsAppId = manifest.id;
-    let createdAppDefinition: AppDefinition;
-    if (teamsAppId) {
-      try {
-        createdAppDefinition = await AppStudioClient.getApp(
-          teamsAppId,
-          appStudioToken,
-          context.logProvider
-        );
-        create = false;
-      } catch (error) {}
-    }
-
-    if (create) {
-      try {
-        createdAppDefinition = await AppStudioClient.importApp(
-          archivedFile,
-          appStudioTokenRes.value,
-          context.logProvider
-        );
-        const message = getLocalizedString(
-          "plugins.appstudio.teamsAppCreatedNotice",
-          createdAppDefinition.teamsAppId!
-        );
-        context.logProvider.info(message);
-        if (context.platform === Platform.VSCode) {
-          context.ui?.showMessage("info", message, false);
-        }
-        return ok(
-          new Map([
-            [outputNames.TEAMS_APP_ID, createdAppDefinition.teamsAppId!],
-            [outputNames.TEAMS_APP_TENANT_ID, createdAppDefinition.tenantId!],
-          ])
-        );
-      } catch (e: any) {
-        if (e instanceof UserError || e instanceof SystemError) {
-          return err(e);
-        } else {
-          const error = AppStudioResultFactory.SystemError(
-            AppStudioError.TeamsAppCreateFailedError.name,
-            AppStudioError.TeamsAppCreateFailedError.message(e)
-          );
-          return err(error);
-        }
+      context.logProvider.info(message);
+      if (context.platform === Platform.VSCode) {
+        context.ui?.showMessage("info", message, false);
       }
-    } else {
       return ok(
         new Map([
-          [outputNames.TEAMS_APP_ID, teamsAppId],
-          [outputNames.TEAMS_APP_TENANT_ID, createdAppDefinition!.tenantId!],
+          [outputNames.TEAMS_APP_ID, createdAppDefinition.teamsAppId!],
+          [outputNames.TEAMS_APP_TENANT_ID, createdAppDefinition.tenantId!],
         ])
       );
+    } catch (e: any) {
+      if (e instanceof UserError || e instanceof SystemError) {
+        return err(e);
+      } else {
+        const error = AppStudioResultFactory.SystemError(
+          AppStudioError.TeamsAppCreateFailedError.name,
+          AppStudioError.TeamsAppCreateFailedError.message(e)
+        );
+        return err(error);
+      }
     }
-  }
-
-  private loadCurrentState() {
-    return {
-      ENV_NAME: process.env.TEAMSFX_ENV,
-    };
   }
 }

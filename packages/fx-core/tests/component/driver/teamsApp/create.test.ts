@@ -42,7 +42,7 @@ describe("teamsApp/create", async () => {
 
   it("should throw error if file not exists", async () => {
     const args: CreateTeamsAppArgs = {
-      manifestTemplatePath: "fakePath",
+      appName: appDef.appName!,
     };
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);
@@ -54,7 +54,7 @@ describe("teamsApp/create", async () => {
 
   it("happy path", async () => {
     const args: CreateTeamsAppArgs = {
-      manifestTemplatePath: "fakePath",
+      appName: appDef.appName!,
     };
 
     const zipFileName =

@@ -118,11 +118,6 @@ describe("Manifest template hover - V3", async () => {
     sinon.stub(commonTools, "isV3Enabled").returns(true);
     sinon.stub(handlers, "core").value(new MockCore());
     sinon.stub(envUtil, "listEnv").resolves(ok(["local", "dev"]));
-    sinon.stub(envUtil, "readEnv").resolves(
-      ok({
-        ["TEAMS_APP_ID"]: v4(),
-      })
-    );
     sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
   });
 
@@ -132,6 +127,12 @@ describe("Manifest template hover - V3", async () => {
   });
 
   it("hover - match", async () => {
+    sinon.stub(envUtil, "readEnv").resolves(
+      ok({
+        ["TEAMS_APP_ID"]: v4(),
+      })
+    );
+
     const hoverProvider = new ManifestTemplateHoverProvider();
     const position = new vscode.Position(5, 15);
     const cts = new vscode.CancellationTokenSource();
@@ -144,6 +145,12 @@ describe("Manifest template hover - V3", async () => {
   });
 
   it("hover - local", async () => {
+    sinon.stub(envUtil, "readEnv").resolves(
+      ok({
+        ["TEAMS_APP_ID"]: v4(),
+      })
+    );
+
     const document: vscode.TextDocument = {
       fileName: "manifest.template.local.json",
       getText: () => {
@@ -173,11 +180,31 @@ describe("Manifest template hover - V3", async () => {
   });
 
   it("hover-undefined", async () => {
+    sinon.stub(envUtil, "readEnv").resolves(
+      ok({
+        ["TEAMS_APP_ID"]: v4(),
+      })
+    );
+
     const hoverProvider = new ManifestTemplateHoverProvider();
     const position = new vscode.Position(1, 1);
     const cts = new vscode.CancellationTokenSource();
     const hover = await hoverProvider.provideHover(document, position, cts.token);
 
     chai.assert.isTrue(hover === undefined);
+  });
+
+  it("hover - no value", async () => {
+    sinon.stub(envUtil, "readEnv").resolves(ok({}));
+
+    const hoverProvider = new ManifestTemplateHoverProvider();
+    const position = new vscode.Position(5, 15);
+    const cts = new vscode.CancellationTokenSource();
+    const hover = await hoverProvider.provideHover(document, position, cts.token);
+
+    chai.assert.isTrue(hover !== undefined);
+    if (hover !== undefined) {
+      chai.assert.isTrue(hover.contents.length > 0);
+    }
   });
 });

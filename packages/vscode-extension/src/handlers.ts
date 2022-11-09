@@ -629,14 +629,20 @@ async function previewRemote(
   progressBar: IProgressHandler
 ): Promise<Result<null, FxError>> {
   try {
-    const debugConfig = await commonUtils.getDebugConfig(false, env);
-    if (!debugConfig?.appId) {
-      const error = new UserError(
-        ExtensionSource,
-        ExtensionErrors.TeamsAppIdNotFoundError,
-        util.format(localize("teamstoolkit.handlers.teamsAppIdNotFound"), env)
-      );
-      return err(error);
+    let teamsAppId: string;
+    if (isV3Enabled()) {
+      teamsAppId = await commonUtils.getV3TeamsAppId(globalVariables.workspaceUri!.fsPath, env);
+    } else {
+      const debugConfig = await commonUtils.getDebugConfig(false, env);
+      if (!debugConfig?.appId) {
+        const error = new UserError(
+          ExtensionSource,
+          ExtensionErrors.TeamsAppIdNotFoundError,
+          util.format(localize("teamstoolkit.handlers.teamsAppIdNotFound"), env)
+        );
+        return err(error);
+      }
+      teamsAppId = debugConfig.appId;
     }
 
     const localEnvManager = new LocalEnvManager(
@@ -670,14 +676,14 @@ async function previewRemote(
 
     if (hub === constants.Hub.teams) {
       await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
-      await openHubWebClient(includeFrontend, debugConfig.appId, hub);
+      await openHubWebClient(includeFrontend, teamsAppId, hub);
     } else {
-      const shouldContinue = await showInstallAppInTeamsMessage(env, debugConfig.appId);
+      const shouldContinue = await showInstallAppInTeamsMessage(env, teamsAppId);
       if (!shouldContinue) {
         return err(UserCancelError);
       }
 
-      const internalId = await getTeamsAppInternalId(debugConfig.appId);
+      const internalId = await getTeamsAppInternalId(teamsAppId);
       if (internalId !== undefined) {
         await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
         await openHubWebClient(includeFrontend, internalId, hub);
@@ -1436,20 +1442,29 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
 export async function installAppInTeams(): Promise<string | undefined> {
   let shouldContinue = false;
   try {
-    const debugConfig = await commonUtils.getDebugConfig(
-      false,
-      environmentManager.getLocalEnvName()
-    );
-    if (debugConfig?.appId === undefined) {
-      throw new UserError(
-        ExtensionErrors.GetTeamsAppInstallationFailed,
-        ExtensionSource,
-        "Debug config not found"
+    let teamsAppId: string;
+    if (isV3Enabled()) {
+      teamsAppId = await commonUtils.getV3TeamsAppId(
+        globalVariables.workspaceUri!.fsPath,
+        environmentManager.getLocalEnvName()
       );
+    } else {
+      const debugConfig = await commonUtils.getDebugConfig(
+        false,
+        environmentManager.getLocalEnvName()
+      );
+      if (debugConfig?.appId === undefined) {
+        throw new UserError(
+          ExtensionErrors.GetTeamsAppInstallationFailed,
+          ExtensionSource,
+          "Debug config not found"
+        );
+      }
+      teamsAppId = debugConfig.appId;
     }
     shouldContinue = await showInstallAppInTeamsMessage(
       environmentManager.getLocalEnvName(),
-      debugConfig.appId
+      teamsAppId
     );
   } catch (error: any) {
     showError(error);

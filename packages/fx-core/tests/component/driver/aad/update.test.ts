@@ -11,6 +11,7 @@ import {
   MockedLogProvider,
   MockedM365Provider,
   MockedTelemetryReporter,
+  MockedUserInteraction,
 } from "../../../plugins/solution/util";
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
 import path from "path";
@@ -42,6 +43,7 @@ describe("aadAppUpdate", async () => {
     m365TokenProvider: new MockedM365Provider(),
     logProvider: new MockedLogProvider(),
     projectPath: cwd(),
+    ui: new MockedUserInteraction(),
   };
 
   let envRestore: RestoreFn | undefined;

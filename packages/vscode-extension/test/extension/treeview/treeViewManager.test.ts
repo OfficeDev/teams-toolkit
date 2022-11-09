@@ -48,7 +48,7 @@ describe("TreeViewManager", () => {
     ) as CommandsTreeViewProvider;
 
     const commands = developmentTreeviewProvider.getCommands();
-    chai.assert.equal(commands.length, 4);
+    chai.assert.equal(commands.length, 5);
 
     await treeViewManager.updateTreeViewsByContent();
 

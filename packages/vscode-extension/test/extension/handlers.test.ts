@@ -18,6 +18,7 @@ import {
   ProjectSettings,
   ProjectSettingsFileName,
   Result,
+  StaticOptions,
   Stage,
   UserError,
   Void,
@@ -55,6 +56,7 @@ import { MockCore } from "../mocks/mockCore";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { VsCodeLogProvider } from "../../src/commonlib/log";
 import { ProgressHandler } from "../../src/progressHandler";
+import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -310,6 +312,26 @@ describe("handlers", () => {
 
       const result = await handlers.treeViewPreviewHandler("local");
 
+      chai.assert.isTrue(result.isOk());
+    });
+
+    it("selectTutorialsHandler()", async () => {
+      sinon.stub(localizeUtils, "localize").returns("");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(TreatmentVariableValue, "inProductDoc").value(true);
+      let tutorialOptions: StaticOptions[] = [];
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: (options: any) => {
+          tutorialOptions = options.options;
+          return Promise.resolve(ok({ type: "success", result: { id: "test", data: "data" } }));
+        },
+        openUrl: () => Promise.resolve(ok(true)),
+      });
+
+      const result = await handlers.selectTutorialsHandler();
+
+      chai.assert.equal(tutorialOptions.length, 5);
       chai.assert.isTrue(result.isOk());
     });
   });

@@ -142,6 +142,7 @@ import "../component/driver/script/npmBuildDriver";
 import "../component/driver/script/npxBuildDriver";
 import "../component/driver/tools/installDriver";
 import "../component/driver/env/generate";
+import "../component/driver/m365Bot/createOrUpdate";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
 import { containsUnsupportedFeature } from "../component/resource/appManifest/utils/utils";

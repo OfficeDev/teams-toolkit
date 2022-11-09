@@ -78,11 +78,11 @@ export class GenerateEnvDriver implements StepDriver {
 
     if (!args.envs || typeof args.envs !== "object") {
       invalidParameters.push("envs");
-    }
-
-    for (const value of Object.values(args.envs)) {
-      if (!value || typeof value === "object") {
-        invalidParameters.push("envs");
+    } else {
+      for (const value of Object.values(args.envs)) {
+        if (!value || typeof value === "object") {
+          invalidParameters.push("envs");
+        }
       }
     }
 

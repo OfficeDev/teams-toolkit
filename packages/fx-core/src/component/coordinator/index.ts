@@ -116,8 +116,7 @@ const M365Actions = [
   "teamsApp/update",
   "aadApp/create",
   "aadApp/update",
-  "m365Bot/create",
-  "m365Bot/update",
+  "m365Bot/createOrUpdate",
 ];
 const AzureActions = ["arm/deploy"];
 const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "m365Bot/create"];

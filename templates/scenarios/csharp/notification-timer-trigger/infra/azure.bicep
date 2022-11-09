@@ -81,18 +81,17 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'SCM_ZIPDEPLOY_DONOT_PRESERVE_FILETIME'
           value: '1' // Zipdeploy files will always be updated. Detail: https://aka.ms/teamsfx-zipdeploy-donot-preserve-filetime
         }
+        {
+          name: 'BOT_ID'
+          value: botAadAppClientId
+        }
+        {
+          name: 'BOT_PASSWORD'
+          value: botAadAppClientSecret
+        }
       ]
       ftpsState: 'FtpsOnly'
     }
-  }
-}
-
-var functionAppSettingsName = split(functionApp.id, '/')[8]
-resource functionAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
-  name: '${functionAppSettingsName}/appsettings'
-  properties: {
-    BOT_ID: botAadAppClientId // ID of your bot
-    BOT_PASSWORD: botAadAppClientSecret // Secret of your bot
   }
 }
 

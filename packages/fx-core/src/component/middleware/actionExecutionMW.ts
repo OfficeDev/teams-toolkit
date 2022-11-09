@@ -59,7 +59,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
     const telemetryComponentName = action.telemetryComponentName || componentName;
     const methodName = ctx.method!;
     const actionName = `${componentName}.${methodName}`;
-    TOOLS.logProvider.info(`execute [${actionName}] start!`);
+    TOOLS.logProvider.debug(`execute ${actionName} start!`);
     const eventName = action.telemetryEventName || methodName;
     const telemetryProps = {
       [TelemetryConstants.properties.component]: telemetryComponentName,
@@ -110,6 +110,14 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         ctx.arguments.push(actionContext);
       }
       await next();
+      if (ctx.result?.isErr) {
+        if (ctx.result.isErr()) throw ctx.result.error;
+      } else if (Array.isArray(ctx.result)) {
+        // second type of return type: [value, FxError]
+        if (ctx.result.length === 2 && ctx.result[1]) {
+          throw ctx.result[1];
+        }
+      }
       if (ctx.result?.isErr && ctx.result.isErr()) throw ctx.result.error;
       // send end telemetry
       if (action.enableTelemetry) {
@@ -122,7 +130,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         );
       }
       await progressBar?.end(true);
-      TOOLS.logProvider.info(`execute [${actionName}] success!`);
+      TOOLS.logProvider.debug(`execute ${actionName} success!`);
     } catch (e) {
       await progressBar?.end(false);
       let fxError;
@@ -151,7 +159,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
           telemetryProps
         );
       }
-      TOOLS.logProvider.info(`execute [${actionName}] failed!`);
+      TOOLS.logProvider.debug(`execute ${actionName} failed!`);
       ctx.result = err(fxError);
     }
   };

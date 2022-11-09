@@ -25,8 +25,8 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
 
     let regex, matches;
     if (isV3Enabled()) {
+      matches = environmentVariableRegex.exec(line.text);
       regex = environmentVariableRegex;
-      matches = regex.exec(line.text);
     } else {
       matches = manifestStateDataRegex.exec(line.text);
       if (matches !== null) {
@@ -86,7 +86,8 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
     let args;
     if (displayLocalValue) {
       const envName = environmentManager.getLocalEnvName();
-      const value = envInfos[envName][key];
+      const envInfo = envInfos[envName];
+      const value = envInfo ? envInfo[key] : undefined;
       if (value) {
         message = `**${envName}**: ${value} \n\n`;
       } else {

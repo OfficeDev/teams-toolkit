@@ -119,7 +119,7 @@ describe("Manifest template hover - V3", async () => {
     sinon.stub(envUtil, "listEnv").resolves(ok(["local", "dev"]));
     sinon.stub(envUtil, "readEnv").resolves(
       ok({
-        ["TEAMST_APP_ID"]: v4(),
+        ["TEAMS_APP_ID"]: v4(),
       })
     );
     sinon.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
@@ -130,6 +130,35 @@ describe("Manifest template hover - V3", async () => {
   });
 
   it("hover - match", async () => {
+    const hoverProvider = new ManifestTemplateHoverProvider();
+    const position = new vscode.Position(5, 15);
+    const cts = new vscode.CancellationTokenSource();
+    const hover = await hoverProvider.provideHover(document, position, cts.token);
+
+    chai.assert.isTrue(hover !== undefined);
+    if (hover !== undefined) {
+      chai.assert.isTrue(hover.contents.length > 0);
+    }
+  });
+
+  it("hover - local", async () => {
+    const document: vscode.TextDocument = {
+      fileName: "manifest.template.local.json",
+      getText: () => {
+        return text;
+      },
+      lineAt: (line: number) => {
+        const lines = text.split("\n");
+        return {
+          lineNumber: line,
+          text: lines[line - 1],
+        };
+      },
+      getWordRangeAtPosition: (position: vscode.Position, regex?: RegExp) => {
+        return undefined;
+      },
+    } as any;
+
     const hoverProvider = new ManifestTemplateHoverProvider();
     const position = new vscode.Position(5, 15);
     const cts = new vscode.CancellationTokenSource();

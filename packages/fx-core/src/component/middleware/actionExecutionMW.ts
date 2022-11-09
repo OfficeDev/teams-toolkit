@@ -18,7 +18,7 @@ import {
   traverse,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { assign } from "lodash";
+import { assign, merge } from "lodash";
 import { TOOLS } from "../../core/globalVars";
 import { TelemetryConstants } from "../constants";
 import {
@@ -109,6 +109,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         };
         ctx.arguments.push(actionContext);
       }
+      const startTime = new Date().getTime();
       await next();
       if (ctx.result?.isErr) {
         if (ctx.result.isErr()) throw ctx.result.error;
@@ -118,8 +119,10 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
           throw ctx.result[1];
         }
       }
+      const timeCost = new Date().getTime() - startTime;
       if (ctx.result?.isErr && ctx.result.isErr()) throw ctx.result.error;
       // send end telemetry
+      merge(telemetryProps, { [TelemetryConstants.properties.timeCost]: timeCost });
       if (action.enableTelemetry) {
         sendSuccessEvent(eventName, telemetryProps);
         sendMigratedSuccessEvent(

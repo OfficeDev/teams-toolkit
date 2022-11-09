@@ -5,7 +5,11 @@ import "mocha";
 import * as sinon from "sinon";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { CreateAadAppDriver } from "../../../../src/component/driver/aad/create";
-import { MockedM365Provider, MockedTelemetryReporter } from "../../../plugins/solution/util";
+import {
+  MockedM365Provider,
+  MockedTelemetryReporter,
+  MockedUserInteraction,
+} from "../../../plugins/solution/util";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { UserError } from "@microsoft/teamsfx-api";
@@ -36,6 +40,7 @@ describe("aadAppCreate", async () => {
   const createAadAppDriver = new CreateAadAppDriver();
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),
+    ui: new MockedUserInteraction(),
   };
 
   let envRestore: RestoreFn | undefined;

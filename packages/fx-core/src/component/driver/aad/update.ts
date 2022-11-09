@@ -34,7 +34,15 @@ export class UpdateAadAppDriver implements StepDriver {
     args: UpdateAadAppArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
+    const progressBarSettings = this.getProgressBarSetting();
+    const progressHandler = context.ui?.createProgressBar(
+      progressBarSettings.title,
+      progressBarSettings.stepMessages.length
+    );
+
     try {
+      progressHandler?.start();
+      progressHandler?.next(progressBarSettings.stepMessages.shift());
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
 
       this.validateArgs(args);
@@ -80,6 +88,7 @@ export class UpdateAadAppDriver implements StepDriver {
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
+      progressHandler?.end(true);
 
       return ok(
         new Map(
@@ -88,6 +97,7 @@ export class UpdateAadAppDriver implements StepDriver {
         )
       );
     } catch (error) {
+      progressHandler?.end(false);
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
@@ -172,5 +182,14 @@ export class UpdateAadAppDriver implements StepDriver {
     return path.isAbsolute(relativeOrAbsolutePath)
       ? relativeOrAbsolutePath
       : path.join(projectPath, relativeOrAbsolutePath);
+  }
+
+  private getProgressBarSetting(): ProgressBarSetting {
+    return {
+      title: getLocalizedString("driver.aadApp.progressBar.updateAadAppTitle"),
+      stepMessages: [
+        getLocalizedString("driver.aadApp.progressBar.updateAadAppStepMessage"), // step 1
+      ],
+    };
   }
 }

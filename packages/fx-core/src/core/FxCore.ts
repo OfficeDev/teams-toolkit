@@ -1197,6 +1197,25 @@ export class FxCore implements v3.ICore {
 
     return result;
   }
+
+  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
+  async preProvisionForVS(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<
+    Result<
+      {
+        needAzureLogin: boolean;
+        needM365Login: boolean;
+        resolvedAzureSubscriptionId?: string;
+        resolvedAzureResourceGroupName?: string;
+      },
+      FxError
+    >
+  > {
+    const context = createDriverContext(inputs);
+    return coordinator.preProvisionForVS(context, inputs as InputsWithProjectPath);
+  }
 }
 
 export async function ensureBasicFolderStructure(

@@ -1,11 +1,5 @@
 version: 1.0.0
 
-deploy:
-  - uses: npm/command # Run npm command
-    with:
-      args: install --no-audit
-
-
 registerApp:
   - uses: teamsApp/create # Creates a Teams app
     with:
@@ -27,3 +21,8 @@ configureApp:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
+
+deploy:
+  - uses: npm/command # Run npm command
+    with:
+      args: install --no-audit

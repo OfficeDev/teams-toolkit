@@ -40,18 +40,6 @@ describe("teamsApp/create", async () => {
     sinon.restore();
   });
 
-  it("should throw error if file not exists", async () => {
-    const args: CreateTeamsAppArgs = {
-      appName: appDef.appName!,
-    };
-
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
-    chai.assert(result.isErr());
-    if (result.isErr()) {
-      chai.assert.equal(AppStudioError.FileNotFoundError.name, result.error.name);
-    }
-  });
-
   it("happy path", async () => {
     const args: CreateTeamsAppArgs = {
       appName: appDef.appName!,
@@ -64,7 +52,7 @@ describe("teamsApp/create", async () => {
       .stub(CreateAppPackageDriver.prototype, "run")
       .resolves(ok(new Map([["TEAMS_APP_PACKAGE_PATH", zipFileName]])));
     sinon.stub(AppStudioClient, "getApp").throws(new Error("404"));
-    sinon.stub(AppStudioClient, "importApp").resolves(appDef);
+    sinon.stub(AppStudioClient, "createApp").resolves(appDef);
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").callsFake(async () => {
       const zip = new AdmZip();

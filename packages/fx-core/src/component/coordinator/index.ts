@@ -44,6 +44,7 @@ import {
   TabOptionItem,
   TabNonSsoItem,
   MessageExtensionItem,
+  CancelError,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { getQuestionsForAddFeatureV3, getQuestionsForProvisionV3 } from "../question";
@@ -72,7 +73,7 @@ import { provisionUtils } from "../provisionUtils";
 import { envUtil } from "../utils/envUtil";
 import { SPFxGenerator } from "../generator/spfxGenerator";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
-import { ExecutionError, ExecutionOutput } from "../configManager/interface";
+import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
 import { createContextV3 } from "../utils";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../../common/tools";
@@ -288,6 +289,69 @@ export class Coordinator {
       return ok(res.value);
     }
     return ok(undefined);
+  }
+
+  async preProvisionForVS(
+    ctx: DriverContext,
+    inputs: InputsWithProjectPath
+  ): Promise<
+    Result<
+      {
+        needAzureLogin: boolean;
+        needM365Login: boolean;
+        resolvedAzureSubscriptionId?: string;
+        resolvedAzureResourceGroupName?: string;
+      },
+      FxError
+    >
+  > {
+    const res: {
+      needAzureLogin: boolean;
+      needM365Login: boolean;
+      resolvedAzureSubscriptionId?: string;
+      resolvedAzureResourceGroupName?: string;
+    } = {
+      needAzureLogin: false,
+      needM365Login: false,
+    };
+
+    // 1. parse yml to cycles
+    const parser = new YamlParser();
+    const templatePath =
+      inputs["workflowFilePath"] ??
+      path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+    const maybeProjectModel = await parser.parse(templatePath);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    const cycles: ILifecycle[] = [
+      projectModel.registerApp,
+      projectModel.provision,
+      projectModel.configureApp,
+    ].filter((c) => c !== undefined) as ILifecycle[];
+
+    // 2. check each cycle
+    for (const cycle of cycles) {
+      cycle.resolvePlaceholders();
+      for (const driver of cycle.driverDefs) {
+        if (AzureActions.includes(driver.uses)) {
+          res.needAzureLogin = true;
+        }
+        if (M365Actions.includes(driver.uses)) {
+          res.needM365Login = true;
+        }
+      }
+      const firstDriver = cycle.driverDefs[0] || undefined;
+      if (firstDriver) {
+        if (AzureActions.includes(firstDriver.uses)) {
+          const withObj = firstDriver.with as any;
+          res.resolvedAzureSubscriptionId = withObj["subscriptionId"];
+          res.resolvedAzureResourceGroupName = withObj["resourceGroupName"];
+        }
+      }
+    }
+    return ok(res);
   }
 
   @hooks([

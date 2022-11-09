@@ -96,6 +96,16 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   }
 }
 
+// Register your web service as a bot with the Bot Framework
+module azureBotRegistration './botRegistration/azurebot.bicep' = {
+  name: 'Azure-Bot-registration'
+  params: {
+    resourceBaseName: resourceBaseName
+    botAadAppClientId: botAadAppClientId
+    botAppDomain: functionApp.properties.defaultHostName
+  }
+}
+
 output BOT_DOMAIN string = functionApp.properties.defaultHostName
 output BOT_AZURE_FUNCTION_APP_RESOURCE_ID string = functionApp.id
 output BOT_FUNCTION_ENDPOINT string = 'https://${functionApp.properties.defaultHostName}'

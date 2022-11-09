@@ -43,6 +43,7 @@ import {
   CommandAndResponseOptionItem,
   TabOptionItem,
   TabNonSsoItem,
+  MessageExtensionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { getQuestionsForAddFeatureV3, getQuestionsForProvisionV3 } from "../question";
@@ -87,6 +88,7 @@ export enum TemplateNames {
   NotificationHttpTimerTrigger = "notification-http-timer-trigger",
   CommandAndResponse = "command-and-response",
   Workflow = "workflow",
+  MessageExtension = "message-extension",
 }
 
 export const Feature2TemplateName: any = {
@@ -101,8 +103,8 @@ export const Feature2TemplateName: any = {
     TemplateNames.NotificationHttpTimerTrigger,
   [`${CommandAndResponseOptionItem.id}:undefined`]: TemplateNames.CommandAndResponse,
   [`${WorkflowOptionItem.id}:undefined`]: TemplateNames.Workflow,
+  [`${MessageExtensionItem.id}:undefined`]: TemplateNames.MessageExtension,
   [`${TabOptionItem.id}:undefined`]: TemplateNames.SsoTab,
-  [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
 };
 

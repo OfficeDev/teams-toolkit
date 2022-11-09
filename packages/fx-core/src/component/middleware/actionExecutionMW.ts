@@ -65,6 +65,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       [TelemetryConstants.properties.component]: telemetryComponentName,
     };
     let progressBar;
+    let returnType: "Result" | "Array" = "Result";
     try {
       // send start telemetry
       if (action.enableTelemetry) {
@@ -112,9 +113,11 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       const startTime = new Date().getTime();
       await next();
       if (ctx.result?.isErr) {
+        returnType = "Result";
         if (ctx.result.isErr()) throw ctx.result.error;
       } else if (Array.isArray(ctx.result)) {
         // second type of return type: [value, FxError]
+        returnType = "Array";
         if (ctx.result.length === 2 && ctx.result[1]) {
           throw ctx.result[1];
         }
@@ -163,7 +166,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         );
       }
       TOOLS.logProvider.debug(`execute ${actionName} failed!`);
-      ctx.result = err(fxError);
+      if (returnType === "Result") ctx.result = err(fxError);
     }
   };
 }

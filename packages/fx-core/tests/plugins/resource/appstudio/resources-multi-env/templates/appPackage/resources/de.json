@@ -1,0 +1,8 @@
+{
+    "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.12/MicrosoftTeams.Localization.schema.json",
+    "name.short": "Name App",
+    "name.full": "Name App",
+    "description.short": "Description Short Deutsch",
+    "description.full": "Description Long Deutsch",
+    "staticTabs[0].name": "Home"
+}

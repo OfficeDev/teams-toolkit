@@ -21,6 +21,10 @@
     color: var(--vscode-breadcrumb-activeSelectionForeground);
     background-color: var(--vscode-notebook-selectedCellBackground);
   }
+
+  li span {
+    margin-left: 4px;
+  }
 }
 
 @media (max-width: 767px) {

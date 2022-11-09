@@ -7,6 +7,7 @@ import { Service } from "typedi";
 import { CreateAadAppArgs } from "./interface/createAadAppArgs";
 import { AadAppClient } from "./utility/aadAppClient";
 import { CreateAadAppOutput } from "./interface/createAadAppOutput";
+import { ProgressBarSetting } from "./interface/progressBarSetting";
 import { FxError, M365TokenProvider, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { GraphScopes } from "../../../common/tools";
 import { Constants } from "../../resource/aadApp/constants";

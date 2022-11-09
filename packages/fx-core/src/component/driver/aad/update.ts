@@ -6,6 +6,7 @@ import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
 import { Service } from "typedi";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
+import { ProgressBarSetting } from "./interface/progressBarSetting";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { AadAppClient } from "./utility/aadAppClient";

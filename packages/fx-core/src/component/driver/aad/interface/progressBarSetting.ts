@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-interface ProgressBarSetting {
+export interface ProgressBarSetting {
   title: string;
   stepMessages: string[];
 }

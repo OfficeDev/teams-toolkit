@@ -3,6 +3,7 @@
 
 import { ResourceManagementClient } from "@azure/arm-resources";
 import {
+  assembleError,
   AzureAccountProvider,
   ContextV3,
   EnvConfigFileNameTemplate,
@@ -221,20 +222,24 @@ export class ProvisionUtils {
     await azureAccountProvider.getIdentityCredentialAsync(true);
     if (!givenSubscriptionId) {
       TOOLS.logProvider.info("subscription is not selected, try to select.");
-      const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
-      if (!subscriptionInAccount) {
-        return err(
-          new UserError(
-            "coordinator",
-            SolutionError.SubscriptionNotFound,
-            getLocalizedString("core.provision.subscription.failToSelect")
-          )
-        );
-      } else {
-        TOOLS.logProvider.info(
-          `successful to select subscription: ${subscriptionInAccount.subscriptionId}`
-        );
-        return ok(subscriptionInAccount);
+      try {
+        const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
+        if (!subscriptionInAccount) {
+          return err(
+            new UserError(
+              "coordinator",
+              SolutionError.SubscriptionNotFound,
+              getLocalizedString("core.provision.subscription.failToSelect")
+            )
+          );
+        } else {
+          TOOLS.logProvider.info(
+            `successful to select subscription: ${subscriptionInAccount.subscriptionId}`
+          );
+          return ok(subscriptionInAccount);
+        }
+      } catch (e) {
+        return err(assembleError(e));
       }
     }
 

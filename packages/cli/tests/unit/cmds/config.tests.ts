@@ -6,7 +6,7 @@ import yargs, { Options } from "yargs";
 import * as dotenv from "dotenv";
 
 import { FxError, Inputs, LogLevel, Result, ok, err, UserError } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { envUtil, FxCore } from "@microsoft/teamsfx-core";
 
 import Config from "../../../src/cmds/config";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -18,6 +18,7 @@ import { expect } from "../utils";
 import * as Utils from "../../../src/utils";
 import { CliConfigOptions, UserSettings } from "../../../src/userSetttings";
 import { NonTeamsFxProjectFolder } from "../../../src/error";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Config Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -110,6 +111,7 @@ describe("Config Get Command Check", () => {
     telemetry: "on",
     envCheckerValidateDotnetSdk: "true",
   };
+  let mockedEnvRestore: RestoreFn = () => {};
 
   before(() => {
     sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
@@ -153,10 +155,17 @@ describe("Config Get Command Check", () => {
     sandbox
       .stub(Utils, "readProjectSecrets")
       .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
+    sandbox
+      .stub(envUtil, "readEnv")
+      .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
   });
 
   after(() => {
     sandbox.restore();
+  });
+
+  afterEach(() => {
+    mockedEnvRestore();
   });
 
   beforeEach(() => {
@@ -171,6 +180,20 @@ describe("Config Get Command Check", () => {
   });
 
   it("only prints all global config when running 'config get' and not in a project folder", async () => {
+    await cmd.subCommands[0].handler({
+      [constants.EnvNodeNoCreate.data.name as string]: "dev",
+    });
+
+    expect(logs.length).equals(1);
+    expect(logs[0]).includes(JSON.stringify(config, null, 2));
+
+    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
+  });
+
+  it("only prints all global config when running 'config get' and not in a project folder V3", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
     await cmd.subCommands[0].handler({
       [constants.EnvNodeNoCreate.data.name as string]: "dev",
     });
@@ -315,6 +338,7 @@ describe("Config Set Command Check", () => {
     telemetry: "on",
     envCheckerValidateDotnetSdk: "true",
   };
+  let mockedEnvRestore: RestoreFn = () => {};
 
   before(() => {
     sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
@@ -363,17 +387,38 @@ describe("Config Set Command Check", () => {
       });
     sandbox
       .stub(Utils, "writeSecretToFile")
-      .callsFake((secrets: dotenv.DotenvParseOutput, rootFolder: string): Result<null, FxError> => {
-        secretFile = secrets;
-        return ok(null);
-      });
+      .callsFake(
+        (secrets: dotenv.DotenvParseOutput, rootFolder: string): Result<undefined, FxError> => {
+          secretFile = secrets;
+          return ok(undefined);
+        }
+      );
     sandbox
       .stub(Utils, "readProjectSecrets")
       .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
+    sandbox
+      .stub(envUtil, "readEnv")
+      .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
+    sandbox
+      .stub(envUtil, "writeEnv")
+      .callsFake(
+        (
+          projectPath: string,
+          env: string,
+          secrets: dotenv.DotenvParseOutput
+        ): Promise<Result<undefined, FxError>> => {
+          secretFile = secrets;
+          return Promise.resolve(ok(undefined));
+        }
+      );
   });
 
   after(() => {
     sandbox.restore();
+  });
+
+  afterEach(() => {
+    mockedEnvRestore();
   });
 
   beforeEach(() => {
@@ -449,6 +494,21 @@ describe("Config Set Command Check", () => {
   });
 
   it("successfully set non-secret project config when running 'config set test off' in a project folder", async () => {
+    await cmd.subCommands[1].handler({
+      option: "test",
+      value: "off",
+      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+      [constants.EnvNodeNoCreate.data.name as string]: "dev",
+    });
+
+    expect(logs.length).equals(1);
+    expect(logs[0]).includes("Successfully configured project setting test.");
+    expect(secretFile.test).equals("off");
+    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
+  });
+
+  it("successfully set non-secret project config when running 'config set test off' in a project folder V3", async () => {
+    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" });
     await cmd.subCommands[1].handler({
       option: "test",
       value: "off",

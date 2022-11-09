@@ -1,32 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
+import { Result, FxError, err, LogLevel, ok } from "@microsoft/teamsfx-api";
+import { isV3Enabled, envUtil, dataNeedEncryption } from "@microsoft/teamsfx-core";
+import path from "path";
 import { Argv } from "yargs";
-import * as path from "path";
-import { YargsCommand } from "../yargsCommand";
-import { FxError, Question, Result, ok, err, LogLevel } from "@microsoft/teamsfx-api";
-import { UserSettings, CliConfigOptions } from "../userSetttings";
+import activate from "../activate";
 import CLILogProvider from "../commonlib/log";
-import {
-  readProjectSecrets,
-  writeSecretToFile,
-  getSystemInputs,
-  toYargsOptions,
-  readSettingsFileSync,
-} from "../utils";
+import { EnvOptions, RootFolderOptions } from "../constants";
+import { EnvNotSpecified, NonTeamsFxProjectFolder, ConfigNameNotFound } from "../error";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import activate from "../activate";
-import { NonTeamsFxProjectFolder, ConfigNameNotFound, EnvNotSpecified } from "../error";
-
-import * as constants from "../constants";
-import { dataNeedEncryption } from "@microsoft/teamsfx-core/build/common/tools";
+import { CliConfigOptions, UserSettings } from "../userSetttings";
+import {
+  readSettingsFileSync,
+  readProjectSecrets,
+  getSystemInputs,
+  writeSecretToFile,
+} from "../utils";
+import { YargsCommand } from "../yargsCommand";
 
 const GlobalOptions = new Set([
   CliConfigOptions.Telemetry as string,
@@ -50,10 +46,8 @@ export class ConfigGet extends YargsCommand {
         description: "User settings option",
         type: "string",
       })
-      .option("env", {
-        description: "Environment name",
-        type: "string",
-      });
+      .options(RootFolderOptions)
+      .option(EnvOptions);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -140,11 +134,13 @@ export class ConfigGet extends YargsCommand {
 
   private async printProjectConfig(
     rootFolder: string,
-    env: string | undefined,
+    env: string,
     option?: string
   ): Promise<Result<null, FxError>> {
     let found = false;
-    const result = await readProjectSecrets(rootFolder, env);
+    const result = isV3Enabled()
+      ? await envUtil.readEnv(rootFolder, env)
+      : await readProjectSecrets(rootFolder, env);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, result.error);
       return err(result.error);
@@ -194,7 +190,7 @@ export class ConfigSet extends YargsCommand {
   public readonly description = "Set user settings.";
 
   public builder(yargs: Argv): Argv<any> {
-    const result = yargs
+    return yargs
       .positional("option", {
         describe: "User settings option",
         type: "string",
@@ -202,11 +198,9 @@ export class ConfigSet extends YargsCommand {
       .positional("value", {
         describe: "Option value",
         type: "string",
-      });
-    return result.option("env", {
-      description: "Environment name",
-      type: "string",
-    });
+      })
+      .options(RootFolderOptions)
+      .options(EnvOptions);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -238,7 +232,12 @@ export class ConfigSet extends YargsCommand {
       const inProject = readSettingsFileSync(rootFolder).isOk();
       // project config
       if (inProject) {
-        const projectResult = await this.setProjectConfig(rootFolder, args.option, args.value, env);
+        const projectResult = await this.setProjectConfig(
+          rootFolder,
+          args.option,
+          args.value,
+          env!
+        );
         if (projectResult.isErr()) {
           return projectResult;
         }
@@ -278,9 +277,11 @@ export class ConfigSet extends YargsCommand {
     rootFolder: string,
     option: string,
     value: string,
-    env: string | undefined
+    env: string
   ): Promise<Result<null, FxError>> {
-    const result = await readProjectSecrets(rootFolder, env);
+    const result = isV3Enabled()
+      ? await envUtil.readEnv(rootFolder, env)
+      : await readProjectSecrets(rootFolder, env);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, result.error);
       return err(result.error);
@@ -306,9 +307,11 @@ export class ConfigSet extends YargsCommand {
       }
       secretData[option] = encrypted.value;
     }
-    const writeFileResult = writeSecretToFile(secretData, rootFolder, env);
+    const writeFileResult = isV3Enabled()
+      ? await envUtil.writeEnv(rootFolder, env, secretData)
+      : writeSecretToFile(secretData, rootFolder, env);
     if (writeFileResult.isErr()) {
-      return writeFileResult;
+      return err(writeFileResult.error);
     }
     CLILogProvider.necessaryLog(
       LogLevel.Info,
@@ -326,8 +329,6 @@ export default class Config extends YargsCommand {
   public readonly subCommands: YargsCommand[] = [new ConfigGet(), new ConfigSet()];
 
   public builder(yargs: Argv): Argv<any> {
-    const folderOption = toYargsOptions(constants.RootFolderNode.data as Question);
-    folderOption.global = true;
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
@@ -338,8 +339,8 @@ export default class Config extends YargsCommand {
         type: "boolean",
         default: false,
       })
-      .options("folder", folderOption)
-      .version(false);
+      .version(false)
+      .hide("interactive");
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

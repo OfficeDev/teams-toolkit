@@ -243,7 +243,7 @@ describe("component coordinator test", () => {
       tenantId: "mockTenantId",
       subscriptionName: "mockSubName",
     });
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription");
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
       if (config.name === "env") {
         return ok({ type: "success", result: "dev" });
@@ -299,7 +299,7 @@ describe("component coordinator test", () => {
         subscriptionName: "mockSubName",
       })
     );
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription");
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
       ok({
         createNewResourceGroup: true,
@@ -517,7 +517,7 @@ describe("component coordinator test", () => {
       tenantId: "mockTenantId",
       subscriptionName: "mockSubName",
     });
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription");
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -578,7 +578,7 @@ describe("component coordinator test", () => {
       tenantId: "mockTenantId",
       subscriptionName: "mockSubName",
     });
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription");
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -736,7 +736,7 @@ describe("component coordinator test", () => {
       tenantId: "mockTenantId",
       subscriptionName: "mockSubName",
     });
-    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription");
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
       if (config.name === "env") {
         return ok({ type: "success", result: "dev" });

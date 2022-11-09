@@ -451,7 +451,6 @@ export class Coordinator {
         inputs.env
       );
       if (consentRes.isErr()) return [undefined, consentRes.error];
-      await ctx.azureAccountProvider.setSubscription(azureSubInfo.subscriptionId);
     }
     // 6. execute
     for (const cycle of cycles) {

@@ -6,7 +6,7 @@ import { ActionContext, ContextV3, FxError, Result, ok } from "@microsoft/teamsf
 import { merge } from "lodash";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
-import { ProgressMessages, ProgressTitles } from "../messages";
+import { LogMessages, ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { errorSource, componentName, commonTemplateName } from "./constant";
 import { FetchZipFromUrlError, TemplateZipFallbackError, UnzipError } from "./error";
@@ -137,6 +137,7 @@ async function templateDefaultOnActionError(
     case GeneratorActionName.FetchTemplateUrlWithTag:
     case GeneratorActionName.FetchZipFromUrl:
       await context.logProvider.info(error.message);
+      await context.logProvider.info(LogMessages.getTemplateFromLocal);
       break;
     case GeneratorActionName.FetchTemplateZipFromLocal:
       await context.logProvider.error(error.message);

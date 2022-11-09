@@ -19,12 +19,12 @@
     }
 
     .copyButton {
-      background-color: var(--vscode-editor-background);
-      color: var(--vscode-editorActiveLineNumber-foreground);
+      background-color: var(--vscode-activeSelectionForeground);
+      color: var(--vscode-breadcrumb-activeSelectionForeground);
     }
 
     .copyButton:hover {
-      color: var(--vscode-badge-foreground);
+      color: var(--vscode-peekViewTitleLabel-foreground);
     }
   }
 
@@ -36,5 +36,6 @@
 
   .codeBlock {
     background: var(--vscode-editor-background) !important;
+    padding-bottom: 16px !important;
   }
 }

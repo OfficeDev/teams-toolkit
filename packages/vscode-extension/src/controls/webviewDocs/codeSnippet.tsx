@@ -3,7 +3,7 @@ import "./codeSnippet.scss";
 import * as React from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import SyntaxHighlighter from "react-syntax-highlighter";
-import { a11yDark, a11yLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { lightfair, dark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 import { Icon } from "@fluentui/react";
 
@@ -45,10 +45,10 @@ export default function CodeSnippet(props: {
           </div>
         </CopyToClipboard>
       </div>
-      <div className="code">
+      <div>
         <SyntaxHighlighter
           language={props.language}
-          style={props.theme === "light" ? a11yLight : a11yDark}
+          style={props.theme === "light" ? lightfair : dark}
           className="codeBlock"
         >
           {props.data}

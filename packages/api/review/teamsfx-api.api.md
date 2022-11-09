@@ -938,6 +938,8 @@ export interface Inputs extends Json {
     // (undocumented)
     ignoreEnvInfo?: boolean;
     // (undocumented)
+    inProductDoc?: boolean;
+    // (undocumented)
     isM365?: boolean;
     // (undocumented)
     locale?: string;

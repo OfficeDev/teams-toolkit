@@ -991,6 +991,7 @@ export async function runCommand(
     inputs = defaultInputs ? defaultInputs : getSystemInputs();
     inputs.stage = stage;
     inputs.taskOrientedTemplateNaming = TreatmentVariableValue.taskOrientedTemplateNaming;
+    inputs.inProductDoc = TreatmentVariableValue.inProductDoc;
 
     switch (stage) {
       case Stage.create: {
@@ -3290,7 +3291,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         id: "commandAndResponse",
         label: `${localize("teamstoolkit.tutorials.commandAndResponse.label.new")}`,
         detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
-        groupName: "Other",
+        groupName: localize("teamstoolkit.guide.development"),
         data: "https://aka.ms/teamsfx-create-command",
         buttons: [
           {
@@ -3304,7 +3305,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         id: "addSso",
         label: `${localize("teamstoolkit.tutorials.addSso.label.new")}`,
         detail: localize("teamstoolkit.tutorials.addSso.detail"),
-        groupName: "Other",
+        groupName: localize("teamstoolkit.guide.development"),
         data: "https://aka.ms/teamsfx-add-sso",
         buttons: [
           {
@@ -3318,7 +3319,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         id: "connectApi",
         label: `${localize("teamstoolkit.tutorials.connectApi.label.new")}`,
         detail: localize("teamstoolkit.tutorials.connectApi.detail"),
-        groupName: "Other",
+        groupName: localize("teamstoolkit.guide.development"),
         data: "https://aka.ms/teamsfx-connect-api",
         buttons: [
           {
@@ -3392,7 +3393,10 @@ export function openTutorialHandler(args?: any[]): Promise<Result<unknown, FxErr
     ...getTriggerFromProperty(args),
     [TelemetryProperty.TutorialName]: tutorial.id,
   });
-  if (TreatmentVariableValue.inProductDoc && tutorial.id === "cardActionResponse") {
+  if (
+    TreatmentVariableValue.inProductDoc &&
+    (tutorial.id === "cardActionResponse" || tutorial.data === "cardActionResponse")
+  ) {
     WebviewPanel.createOrShow(PanelType.RespondToCardActions);
     return Promise.resolve(ok(null));
   }

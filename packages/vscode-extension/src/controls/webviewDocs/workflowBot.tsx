@@ -14,6 +14,8 @@ import CodeSnippet from "./codeSnippet";
 import CollapsibleStep from "./collapsibleStep";
 import ExternalLink from "./externalLink";
 import { useEffect } from "react";
+import ResponseToCommand from "../../../img/webview/guide/responds-to-command.png";
+import ResponseToCardAction from "../../../img/webview/guide/responds-to-card-action.png";
 
 export default function WorkflowBot() {
   const onCreateNewProject = () => {
@@ -138,12 +140,13 @@ module.exports = {
 
   return (
     <div className="markdown-body">
-      <h1 id="overview-of-the-workflow-bot-template">Overview of the Workflow bot template</h1>
+      <h1 id="initiate-sequential-workflows-in-teams">Initiate sequential workflows in Teams</h1>
       <p>
-        This template showcases an app that responds to chat commands by displaying UI using an
-        Adaptive Card. The card has a button that demonstrates how to receive user input on the
-        card, do something like call an API, and update the UI of that card. This can be further
-        customized to create richer, more complex sequence of steps which forms a complete workflow.
+        A workflow bot allows users to interact with an Adaptive Card, enabled by the Adaptive Card
+        action handler feature. You can create a workflow bot in multiple scenarios for your users
+        to enhance the user experience, such as incident management, ticketing, approval workflow,
+        and project management cards. You can create and assign a work item with workflow bot and
+        sync the content to Azure DevOps or Jira system.
       </p>
       <p>
         The app template is built using the TeamsFx SDK, which provides a simple set of functions
@@ -180,11 +183,15 @@ module.exports = {
         </p>
       </blockquote>
       <p>
-        If you don't have a workflow bot yet, please{" "}
+        Get started by{" "}
         <a href="javascript:void(0)" onClick={onCreateNewProject}>
-          create a new project
-        </a>
-        . Teams Toolkit will scaffold.
+          creating a new workflow bot
+        </a>{" "}
+        project template, or{" "}
+        <a href="#extend-workflow-bot-with-other-bot-scenarios">
+          extend your Notification bot or Command bot
+        </a>{" "}
+        workflow features.
       </p>
       <ol>
         <li>First, select the Teams Toolkit icon on the left in the VS Code toolbar.</li>
@@ -220,20 +227,14 @@ module.exports = {
       </p>
       <p>Here is a screen shot of the application running:</p>
       <p>
-        <img
-          src="https://user-images.githubusercontent.com/10163840/192477792-dc447b3a-e304-4cd8-b4df-b1eb9d226292.png"
-          alt="Responds to command"
-        />
+        <img src={ResponseToCommand} alt="Responds to command" />
       </p>
       <p>
         When you click the <code className="code">DoStuff</code> button, the above adaptive card
         will be updated to a new card as shown below:
       </p>
       <p>
-        <img
-          src="https://user-images.githubusercontent.com/10163840/192477148-29d9edfc-085b-4d02-b3de-b47b9a456108.png"
-          alt="Responds to card action"
-        />
+        <img src={ResponseToCardAction} alt="Responds to card action" />
       </p>
       <h2 id="what-s-included-in-the-template">What&#39;s included in the template</h2>
       <table>

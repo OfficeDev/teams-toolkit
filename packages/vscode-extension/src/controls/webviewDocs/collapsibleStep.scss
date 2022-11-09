@@ -1,5 +1,5 @@
 .collapsibleStep {
-  background-color: var(--vscode-tab-inactiveBackground);
+  background-color: var(--vscode-editorHoverWidget-background);
   border-radius: 3px;
 }
 
@@ -7,10 +7,10 @@
   display: block;
   text-decoration: none;
   position: relative;
-  border: 1px solid var(--vscode-tab-inactiveBackground);
+  border: 1px solid var(--vscode-editorHoverWidget-background);
   padding: 14px 20px;
-  background-color: var(--vscode-tab-inactiveBackground);
-  color: var(--vscode-foreground);
+  background-color: var(--vscode-editorHoverWidget-background);
+  color: var(--vscode-menu-foreground);
   border-radius: 3px;
 
   &.is-open {
@@ -25,15 +25,19 @@
   }
 }
 
+.Collapsible__trigger:hover {
+  background-color: var(--vscode-sideBySideEditor-horizontalBorder);
+}
+
 .Collapsible__contentInner {
   display: block;
   text-decoration: none;
   position: relative;
-  border: 1px solid var(--vscode-tab-inactiveBackground);
+  border: 1px solid var(--vscode-editorHoverWidget-background);
   padding: 0 20px;
   padding-bottom: 20px;
-  background-color: var(--vscode-tab-inactiveBackground);
-  color: var(--vscode-foreground);
+  background-color: var(--vscode-editorHoverWidget-background);
+  color: var(--vscode-breadcrumb-activeSelectionForeground);
   border-radius: 3px;
 }
 
@@ -42,6 +46,7 @@
   align-items: center;
 
   .chevron {
+    color: var(--vscode-menu-foreground);
     width: 16px;
     height: 16px;
     transition: transform 300ms;
@@ -50,7 +55,7 @@
 
 .stepTitle {
   flex: 1;
-  color: var(--vscode-foreground);
+  color: var(--vscode-menu-foreground);
 
   p {
     font-weight: 500;

@@ -230,7 +230,7 @@ export class WebviewPanel {
       case PanelType.Survey:
         return localize("teamstoolkit.webview.surveyPageTitle");
       case PanelType.RespondToCardActions:
-        return "Respond to Card Actions";
+        return localize("teamstoolkit.tutorials.cardActionResponse.label.new");
     }
   }
 
@@ -415,7 +415,7 @@ export class WebviewPanel {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
         [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
         [TelemetryProperty.Interaction]: InProductGuideInteraction.Close,
-        [TelemetryProperty.Identifier]: panelType,
+        [TelemetryProperty.Identifier]: this.panelType,
       });
     }
 

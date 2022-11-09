@@ -674,9 +674,9 @@
   border-top: 1px solid var(--vscode-editorIndentGuide-background);
 }
 
-.markdown-body table tr:nth-child(2n) {
-  background-color: var(--vscode-list-hoverBackground);
-}
+// .markdown-body table tr:nth-child(2n) {
+//   background-color: var(--vscode-list-hoverBackground);
+// }
 
 .markdown-body table img {
   background-color: transparent;

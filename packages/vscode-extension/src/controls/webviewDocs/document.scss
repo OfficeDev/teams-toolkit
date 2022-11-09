@@ -3,7 +3,7 @@
   margin: auto 10vw;
   min-width: 256px;
   max-width: 1166px;
-  color: var(--vscode-foreground);
+  color: var(--vscode-breadcrumb-activeSelectionForeground);
   background-color: var(--vscode-editor-background);
   padding: 45px;
 
@@ -18,7 +18,8 @@
   }
 
   .code {
-    color: var(--vscode-foreground);
+    color: var(--vscode-breadcrumb-activeSelectionForeground);
+    background-color: var(--vscode-notebook-selectedCellBackground);
   }
 }
 

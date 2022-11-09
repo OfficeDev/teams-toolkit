@@ -501,7 +501,9 @@ export class Coordinator {
     // 5. consent
     let azureSubInfo = undefined;
     if (containsAzure) {
-      azureSubInfo = await ctx.azureAccountProvider.getSelectedSubscription(true);
+      await ctx.azureAccountProvider.getIdentityCredentialAsync(true); // make sure login if ensureSubScription() is not called.
+      await ctx.azureAccountProvider.setSubscription(process.env.AZURE_SUBSCRIPTION_ID!); //make sure sub is correctly set if ensureSubscription() is not called.
+      azureSubInfo = await ctx.azureAccountProvider.getSelectedSubscription(false);
       if (!azureSubInfo) {
         return [
           undefined,
@@ -521,7 +523,6 @@ export class Coordinator {
         inputs.env
       );
       if (consentRes.isErr()) return [undefined, consentRes.error];
-      await ctx.azureAccountProvider.setSubscription(azureSubInfo.subscriptionId);
     }
     // 6. execute
     for (const cycle of cycles) {

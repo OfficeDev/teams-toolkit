@@ -43,6 +43,7 @@ import {
   CommandAndResponseOptionItem,
   TabOptionItem,
   TabNonSsoItem,
+  MessageExtensionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { getQuestionsForAddFeatureV3, getQuestionsForProvisionV3 } from "../question";
@@ -87,6 +88,7 @@ export enum TemplateNames {
   NotificationHttpTimerTrigger = "notification-http-timer-trigger",
   CommandAndResponse = "command-and-response",
   Workflow = "workflow",
+  MessageExtension = "message-extension",
 }
 
 export const Feature2TemplateName: any = {
@@ -101,8 +103,8 @@ export const Feature2TemplateName: any = {
     TemplateNames.NotificationHttpTimerTrigger,
   [`${CommandAndResponseOptionItem.id}:undefined`]: TemplateNames.CommandAndResponse,
   [`${WorkflowOptionItem.id}:undefined`]: TemplateNames.Workflow,
+  [`${MessageExtensionItem.id}:undefined`]: TemplateNames.MessageExtension,
   [`${TabOptionItem.id}:undefined`]: TemplateNames.SsoTab,
-  [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
 };
 
@@ -118,6 +120,7 @@ const M365Actions = [
   "m365Bot/update",
 ];
 const AzureActions = ["arm/deploy"];
+const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "m365Bot/create"];
 
 export class Coordinator {
   @hooks([
@@ -329,7 +332,44 @@ export class Coordinator {
       projectModel.configureApp,
     ].filter((c) => c !== undefined);
 
-    // 3. pre-requisites check
+    // 3. M365 sign in and tenant check if needed.
+    let containsM365 = false;
+    let containsAzure = false;
+    const tenantSwitchCheckActions: string[] = [];
+    cycles.forEach((cycle) => {
+      cycle!.driverDefs?.forEach((def) => {
+        if (M365Actions.includes(def.uses)) {
+          containsM365 = true;
+        } else if (AzureActions.includes(def.uses)) {
+          containsAzure = true;
+        }
+
+        if (needTenantCheckActions.includes(def.uses)) {
+          tenantSwitchCheckActions.push(def.uses);
+        }
+      });
+    });
+
+    let m365tenantInfo = undefined;
+    if (containsM365) {
+      const tenantInfoInTokenRes = await provisionUtils.getM365TenantId(ctx.m365TokenProvider);
+      if (tenantInfoInTokenRes.isErr()) {
+        return [undefined, tenantInfoInTokenRes.error];
+      }
+      m365tenantInfo = tenantInfoInTokenRes.value;
+
+      const checkM365TenatRes = await provisionUtils.ensureM365TenantMatchesV3(
+        tenantSwitchCheckActions,
+        m365tenantInfo?.tenantIdInToken,
+        inputs.env,
+        "coordinator"
+      );
+      if (checkM365TenatRes.isErr()) {
+        return [undefined, checkM365TenatRes.error];
+      }
+    }
+
+    // 4. pre-requisites check
     for (const cycle of cycles) {
       const unresolvedPlaceHolders = cycle!.resolvePlaceholders();
       // ensure subscription id
@@ -388,27 +428,7 @@ export class Coordinator {
       }
     }
 
-    // 4. consent
-    let containsM365 = false;
-    let containsAzure = false;
-    cycles.forEach((cycle) => {
-      cycle!.driverDefs?.forEach((def) => {
-        if (M365Actions.includes(def.uses)) {
-          containsM365 = true;
-        } else if (AzureActions.includes(def.uses)) {
-          containsAzure = true;
-        }
-      });
-    });
-
-    let m365tenantInfo = undefined;
-    if (containsM365) {
-      const tenantInfoInTokenRes = await provisionUtils.getM365TenantId(ctx.m365TokenProvider);
-      if (tenantInfoInTokenRes.isErr()) {
-        return [undefined, tenantInfoInTokenRes.error];
-      }
-      m365tenantInfo = tenantInfoInTokenRes.value;
-    }
+    // 5. consent
     let azureSubInfo = undefined;
     if (containsAzure) {
       azureSubInfo = await ctx.azureAccountProvider.getSelectedSubscription(true);
@@ -433,7 +453,7 @@ export class Coordinator {
       if (consentRes.isErr()) return [undefined, consentRes.error];
       await ctx.azureAccountProvider.setSubscription(azureSubInfo.subscriptionId);
     }
-    // 5. execute
+    // 6. execute
     for (const cycle of cycles) {
       const execRes = await cycle!.execute(ctx);
       const result = this.convertExecuteResult(execRes);
@@ -443,7 +463,7 @@ export class Coordinator {
       }
     }
 
-    // 6. show provisioned resources
+    // 7. show provisioned resources
     if (azureSubInfo) {
       const url = getResourceGroupInPortal(
         azureSubInfo.subscriptionId,

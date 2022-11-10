@@ -1296,7 +1296,7 @@ describe("provisionUtils", () => {
     });
 
     it("provisioned before and switch tenant", async () => {
-      const actions = ["aadApp/create", "m365Bot/create"];
+      const actions = ["aadApp/create", "m365Bot/createOrUpdate"];
       const tenantId = "tid";
       mockedEnvRestore = mockedEnv({
         TEAMS_APP_TENANT_ID: "old-tid",

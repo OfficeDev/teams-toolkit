@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.1.2 - Nov 10, 2022
+Hotfix version for Teams Toolkit.
+
+-Fixed bugs in Sample Gallery.
+
 ## 4.1.1 - Nov 02, 2022
 
 Enhancements:

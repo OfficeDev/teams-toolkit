@@ -77,24 +77,28 @@ async function resolveStateAndConfigCodeLens(
 async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: string) {
   // Get environment variables
   const inputs = getSystemInputs();
+
+  let localEnvs, defaultEnvs;
   const localEnvsRes = await envUtil.readEnv(
     inputs.projectPath!,
     environmentManager.getLocalEnvName(),
     false
   );
   if (localEnvsRes.isErr()) {
-    return lens;
+    localEnvs = {};
+  } else {
+    localEnvs = localEnvsRes.value;
   }
-  const localEnvs = localEnvsRes.value;
   const defaultEnvsRes = await envUtil.readEnv(
     inputs.projectPath!,
     environmentManager.getDefaultEnvName(),
     false
   );
   if (defaultEnvsRes.isErr()) {
-    return lens;
+    defaultEnvs = {};
+  } else {
+    defaultEnvs = defaultEnvsRes.value;
   }
-  const defaultEnvs = defaultEnvsRes.value;
 
   // Get value by the key
   if (lens instanceof PlaceholderCodeLens) {
@@ -104,14 +108,22 @@ async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: 
     const localValue = localEnvs[key];
     title = `${title} ${environmentManager.getLocalEnvName()}: ${localValue}`;
 
-    const defaultValue = defaultEnvs[key];
-    title = `${title}, ${environmentManager.getDefaultEnvName()}: ${defaultValue}`;
+    if (lens.documentName.endsWith("manifest.template.local.json")) {
+      lens.command = {
+        title: title,
+        command: "fx-extension.openConfigState",
+        arguments: [{ type: "env", from: from, env: environmentManager.getLocalEnvName() }],
+      };
+    } else {
+      const defaultValue = defaultEnvs[key];
+      title = `${title}, ${environmentManager.getDefaultEnvName()}: ${defaultValue}`;
 
-    lens.command = {
-      title: title,
-      command: "fx-extension.openConfigState",
-      arguments: [{ type: "env", from: from }],
-    };
+      lens.command = {
+        title: title,
+        command: "fx-extension.openConfigState",
+        arguments: [{ type: "env", from: from }],
+      };
+    }
     return lens;
   }
 
@@ -121,6 +133,7 @@ export class PlaceholderCodeLens extends vscode.CodeLens {
   constructor(
     public readonly placeholder: string,
     range: vscode.Range,
+    public readonly documentName: string,
     command?: vscode.Command | undefined
   ) {
     super(range, command);
@@ -349,7 +362,7 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
         if (command) {
           codeLenses.push(new vscode.CodeLens(range, command));
         } else {
-          codeLenses.push(new PlaceholderCodeLens(matches[0], range, undefined));
+          codeLenses.push(new PlaceholderCodeLens(matches[0], range, document.fileName, undefined));
         }
       }
     }
@@ -550,7 +563,7 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
       const range = document.getWordRangeAtPosition(position, new RegExp(regex));
 
       if (range) {
-        codeLenses.push(new PlaceholderCodeLens(matches[0], range, undefined));
+        codeLenses.push(new PlaceholderCodeLens(matches[0], range, document.fileName, undefined));
       }
     }
     return codeLenses;

@@ -12,6 +12,7 @@ import {
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
+import { Platform } from "@microsoft/teamsfx-api";
 
 describe("teamsApp/validate", async () => {
   const teamsAppDriver = new ValidateTeamsAppDriver();
@@ -43,6 +44,20 @@ describe("teamsApp/validate", async () => {
       manifestTemplatePath:
         "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
     };
+
+    process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
+
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isOk());
+  });
+
+  it("happy path - VS", async () => {
+    const args: ValidateTeamsAppArgs = {
+      manifestTemplatePath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+    };
+
+    mockedDriverContext.platform = Platform.VS;
 
     process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
 

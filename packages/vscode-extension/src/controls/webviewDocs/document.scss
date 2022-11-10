@@ -1,0 +1,34 @@
+.markdown-body {
+  box-sizing: border-box;
+  margin: auto 10vw;
+  min-width: 256px;
+  max-width: 1166px;
+  color: var(--vscode-breadcrumb-activeSelectionForeground);
+  background-color: var(--vscode-editor-background);
+  padding: 45px;
+
+  .collapsibleSteps {
+    margin-bottom: 20px;
+  }
+
+  .externalLink {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 1em; /*set line height back to normal*/
+  }
+
+  .code {
+    color: var(--vscode-breadcrumb-activeSelectionForeground);
+    background-color: var(--vscode-notebook-selectedCellBackground);
+  }
+
+  li span {
+    margin-left: 4px;
+  }
+}
+
+@media (max-width: 767px) {
+  .markdown-body {
+    padding: 15px;
+  }
+}

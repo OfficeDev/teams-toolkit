@@ -991,6 +991,7 @@ export async function runCommand(
     inputs = defaultInputs ? defaultInputs : getSystemInputs();
     inputs.stage = stage;
     inputs.taskOrientedTemplateNaming = TreatmentVariableValue.taskOrientedTemplateNaming;
+    inputs.inProductDoc = TreatmentVariableValue.inProductDoc;
 
     switch (stage) {
       case Stage.create: {
@@ -2795,26 +2796,31 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
     return err(invalidProjectError);
   }
 
-  const env: Result<string | undefined, FxError> = await askTargetEnvironment();
-  if (env.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(telemetryName, env.error);
-    return err(env.error);
-  }
-
   let sourcePath: string;
+  let env;
   if (args && args.length > 0) {
+    env = args[0].env;
+    if (!env) {
+      const envRes: Result<string | undefined, FxError> = await askTargetEnvironment();
+      if (envRes.isErr()) {
+        ExtTelemetry.sendTelemetryErrorEvent(telemetryName, envRes.error);
+        return err(envRes.error);
+      }
+      env = envRes.value;
+    }
+
     if (args[0].type === "config") {
       sourcePath = path.resolve(
         `${workspacePath}/.${ConfigFolderName}/${InputConfigsFolderName}/`,
-        EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
+        EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env)
       );
     } else if (args[0].type === "state") {
       sourcePath = path.resolve(
         `${workspacePath}/.${ConfigFolderName}/${StatesFolderName}/`,
-        EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
+        EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
       );
     } else {
-      sourcePath = path.resolve(`${workspacePath}/.${ConfigFolderName}/.env.${env.value}`);
+      sourcePath = path.resolve(`${workspacePath}/.${ConfigFolderName}/.env.${env}`);
     }
   } else {
     const invalidArgsError = new SystemError(
@@ -2832,7 +2838,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       const noEnvError = new UserError(
         ExtensionSource,
         ExtensionErrors.EnvConfigNotFoundError,
-        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env.value)
+        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env)
       );
       showError(noEnvError);
       ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
@@ -2841,7 +2847,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       const noEnvError = new UserError(
         ExtensionSource,
         ExtensionErrors.EnvFileNotFoundError,
-        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env.value)
+        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env)
       );
       showError(noEnvError);
       ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
@@ -2849,8 +2855,8 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
     } else {
       const isLocalEnv = env.value === environmentManager.getLocalEnvName();
       const message = isLocalEnv
-        ? util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env.value)
-        : util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env.value);
+        ? util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env)
+        : util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env);
       const noEnvError = new UserError(
         ExtensionSource,
         ExtensionErrors.EnvStateNotFoundError,
@@ -3250,8 +3256,87 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
   const config: SingleSelectConfig = {
     name: "tutorialName",
-    title: "Tutorials",
-    options: [
+    title: localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),
+    options: [],
+    returnObject: true,
+  };
+  if (TreatmentVariableValue.inProductDoc) {
+    config.title = localize("teamstoolkit.commandsTreeViewProvider.guideTitle");
+    config.options = [
+      {
+        id: "cardActionResponse",
+        label: `${localize("teamstoolkit.tutorials.cardActionResponse.label.new")}`,
+        description: localize("teamstoolkit.common.recommended"),
+        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail.new"),
+        groupName: localize("teamstoolkit.guide.scenario"),
+        data: "https://aka.ms/teamsfx-card-action-response",
+        buttons: [
+          {
+            iconPath: "file-code",
+            tooltip: localize("teamstoolkit.guide.tooltip.inProduct"),
+            command: "",
+          },
+        ],
+      },
+      {
+        id: "sendNotification",
+        label: `${localize("teamstoolkit.tutorials.sendNotification.label.new")}`,
+        detail: localize("teamstoolkit.tutorials.sendNotification.detail"),
+        groupName: localize("teamstoolkit.guide.scenario"),
+        data: "https://aka.ms/teamsfx-send-notification",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "",
+          },
+        ],
+      },
+      {
+        id: "commandAndResponse",
+        label: `${localize("teamstoolkit.tutorials.commandAndResponse.label.new")}`,
+        detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-create-command",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "",
+          },
+        ],
+      },
+      {
+        id: "addSso",
+        label: `${localize("teamstoolkit.tutorials.addSso.label.new")}`,
+        detail: localize("teamstoolkit.tutorials.addSso.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-add-sso",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "",
+          },
+        ],
+      },
+      {
+        id: "connectApi",
+        label: `${localize("teamstoolkit.tutorials.connectApi.label.new")}`,
+        detail: localize("teamstoolkit.tutorials.connectApi.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-connect-api",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "",
+          },
+        ],
+      },
+    ];
+  } else {
+    config.options = [
       {
         id: "sendNotification",
         label: `${localize("teamstoolkit.tutorials.sendNotification.label")}`,
@@ -3282,9 +3367,8 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         detail: localize("teamstoolkit.tutorials.connectApi.detail"),
         data: "https://aka.ms/teamsfx-connect-api",
       },
-    ],
-    returnObject: true,
-  };
+    ];
+  }
 
   if (isExistingTabAppEnabled()) {
     config.options.splice(0, 0, {
@@ -3314,6 +3398,13 @@ export function openTutorialHandler(args?: any[]): Promise<Result<unknown, FxErr
     ...getTriggerFromProperty(args),
     [TelemetryProperty.TutorialName]: tutorial.id,
   });
+  if (
+    TreatmentVariableValue.inProductDoc &&
+    (tutorial.id === "cardActionResponse" || tutorial.data === "cardActionResponse")
+  ) {
+    WebviewPanel.createOrShow(PanelType.RespondToCardActions);
+    return Promise.resolve(ok(null));
+  }
   return VS_CODE_UI.openUrl(tutorial.data as string);
 }
 

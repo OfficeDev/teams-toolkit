@@ -83,7 +83,7 @@ configureApp:
     with:
       manifestPath: ./aad.manifest.template.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
   # Output: following environment variable will be persisted in current environment's .env file.
-  # AAD_APP_OAUTH2_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
+  # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
     with:

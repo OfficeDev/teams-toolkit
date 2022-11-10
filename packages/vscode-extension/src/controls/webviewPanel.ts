@@ -95,13 +95,15 @@ export class WebviewPanel {
       this.panel.onDidChangeViewState(
         (e) => {
           const panel = e.webviewPanel;
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
-            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
-            [TelemetryProperty.Interaction]: panel.visible
-              ? InProductGuideInteraction.Show
-              : InProductGuideInteraction.Hide,
-            [TelemetryProperty.Identifier]: panelType,
-          });
+          if (panelType === PanelType.RespondToCardActions) {
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+              [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
+              [TelemetryProperty.Interaction]: panel.visible
+                ? InProductGuideInteraction.Show
+                : InProductGuideInteraction.Hide,
+              [TelemetryProperty.Identifier]: panelType,
+            });
+          }
         },
         null,
         globalVariables.context.subscriptions

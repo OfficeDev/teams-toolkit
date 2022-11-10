@@ -50,6 +50,7 @@ import {
   BuiltInFeaturePluginNames,
   ComponentNames,
   PathConstants,
+  CoordinatorSource,
 } from "./constants";
 import { backupFiles } from "./utils/backupFiles";
 import { resourceGroupHelper, ResourceGroupInfo } from "./utils/ResourceGroupHelper";
@@ -227,7 +228,7 @@ export class ProvisionUtils {
         if (!subscriptionInAccount) {
           return err(
             new UserError(
-              "coordinator",
+              CoordinatorSource,
               SolutionError.SubscriptionNotFound,
               getLocalizedString("core.provision.subscription.failToSelect")
             )
@@ -251,7 +252,7 @@ export class ProvisionUtils {
       TOOLS.logProvider.info("subscription validate fail");
       return err(
         new UserError(
-          "coordinator",
+          CoordinatorSource,
           SolutionError.SubscriptionNotFound,
           getLocalizedString("core.provision.subscription.NotFound", givenSubscriptionId)
         )
@@ -487,7 +488,7 @@ export class ProvisionUtils {
     if (azureToken === undefined) {
       return err(
         new UserError(
-          "coordinator",
+          CoordinatorSource,
           SolutionError.NotLoginToAzure,
           getLocalizedString("core.error.notLoginToAzure")
         )

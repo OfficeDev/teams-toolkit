@@ -27,7 +27,7 @@ import {
   QuestionNewResourceGroupLocation,
   QuestionSelectResourceGroup,
 } from "../../core/question";
-import { SolutionError, SolutionSource } from "../constants";
+import { CoordinatorSource, SolutionError, SolutionSource } from "../constants";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -113,7 +113,7 @@ export class ResourceGroupHelper {
     if (maybeExist.value) {
       return err(
         new UserError(
-          "coordinator",
+          CoordinatorSource,
           "ResourceGroupExists",
           getLocalizedString("core.error.FailedToCreateResourceGroup.exist", resourceGroupName)
         )

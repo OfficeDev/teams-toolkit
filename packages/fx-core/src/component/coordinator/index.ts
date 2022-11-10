@@ -122,7 +122,7 @@ const M365Actions = [
   "m365Bot/createOrUpdate",
 ];
 const AzureActions = ["arm/deploy"];
-const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "m365Bot/create"];
+const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "m365Bot/createOrUpdate"];
 
 export class Coordinator {
   @hooks([

@@ -23,6 +23,9 @@ deploy:
   - uses: npm/command # Run npm command
     with:
       args: install
+  - uses: npm/command # Run npm command
+    with:
+      args: run build
   - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
     with:
       distributionPath: ./build # Deploy base folder

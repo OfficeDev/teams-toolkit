@@ -11,11 +11,11 @@
         "termsOfUseUrl": "https://www.example.com/termofuse"
     },
     "icons": {
-        "color": "./resources/color.png",
-        "outline": "./resources/outline.png"
+        "color": "resources/color.png",
+        "outline": "resources/outline.png"
     },
     "name": {
-        "short": "Notification-bot",
+        "short": "notification-bot",
         "full": "ful name for notification-http-timer-trigger"
     },
     "description": {

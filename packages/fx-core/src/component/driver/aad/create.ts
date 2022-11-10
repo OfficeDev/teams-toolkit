@@ -7,6 +7,7 @@ import { Service } from "typedi";
 import { CreateAadAppArgs } from "./interface/createAadAppArgs";
 import { AadAppClient } from "./utility/aadAppClient";
 import { CreateAadAppOutput } from "./interface/createAadAppOutput";
+import { ProgressBarSetting } from "./interface/progressBarSetting";
 import { FxError, M365TokenProvider, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { GraphScopes } from "../../../common/tools";
 import { Constants } from "../../resource/aadApp/constants";
@@ -42,12 +43,21 @@ export class CreateAadAppDriver implements StepDriver {
     args: CreateAadAppArgs,
     context: DriverContext
   ): Promise<Map<string, string>> {
+    const progressBarSettings = this.getProgressBarSetting();
+    const progressHandler = context.ui?.createProgressBar(
+      progressBarSettings.title,
+      progressBarSettings.stepMessages.length
+    );
     try {
+      progressHandler?.start();
+
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
 
       this.validateArgs(args);
       const aadAppClient = new AadAppClient(context.m365TokenProvider);
       const aadAppState = this.loadCurrentState();
+
+      progressHandler?.next(progressBarSettings.stepMessages.shift());
       if (!aadAppState.AAD_APP_CLIENT_ID) {
         context.logProvider?.info(
           getLocalizedString(logMessageKeys.startCreateAadApp, AAD_APP_CLIENT_ID)
@@ -64,6 +74,7 @@ export class CreateAadAppDriver implements StepDriver {
         );
       }
 
+      progressHandler?.next(progressBarSettings.stepMessages.shift());
       if (args.generateClientSecret) {
         if (!aadAppState.SECRET_AAD_APP_CLIENT_SECRET) {
           context.logProvider?.info(
@@ -95,12 +106,14 @@ export class CreateAadAppDriver implements StepDriver {
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
+      progressHandler?.end(true);
 
       return new Map(
         Object.entries(aadAppState) // convert each property to Map item
           .filter((item) => item[1] && item[1] !== "") // do not return Map item that is empty
       );
     } catch (error) {
+      progressHandler?.end(false);
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
@@ -167,5 +180,15 @@ export class CreateAadAppDriver implements StepDriver {
     state.AAD_APP_TENANT_ID = tenantId;
     state.AAD_APP_OAUTH_AUTHORITY_HOST = Constants.oauthAuthorityPrefix;
     state.AAD_APP_OAUTH_AUTHORITY = `${Constants.oauthAuthorityPrefix}/${tenantId}`;
+  }
+
+  private getProgressBarSetting(): ProgressBarSetting {
+    return {
+      title: getLocalizedString("driver.aadApp.progressBar.createAadAppTitle"),
+      stepMessages: [
+        getLocalizedString("driver.aadApp.progressBar.createAadAppStepMessage"), // step 1
+        getLocalizedString("driver.aadApp.progressBar.generateClientSecretSetpMessage"), // step 2
+      ],
+    };
   }
 }

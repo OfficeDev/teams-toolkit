@@ -155,11 +155,19 @@ After successfully add SSO in your project, you can also add a new sso command.
     import {
         CommandMessage,
         TriggerPatterns,
-        TeamsFx,
-        createMicrosoftGraphClient,
         TeamsFxBotSsoCommandHandler,
         TeamsBotSsoPromptTokenResponse,
+        OnBehalfOfUserCredential,
+        createMicrosoftGraphClientWithCredential,
+        OnBehalfOfCredentialAuthConfig,
     } from "@microsoft/teamsfx";
+
+    const oboAuthConfig: OnBehalfOfCredentialAuthConfig = {
+        authorityHost: process.env.M365_AUTHORITY_HOST,
+        clientId: process.env.M365_CLIENT_ID,
+        tenantId: process.env.M365_TENANT_ID,
+        clientSecret: process.env.M365_CLIENT_SECRET,
+    };
 
     export class PhotoSsoCommandHandler implements TeamsFxBotSsoCommandHandler {
         triggerPatterns: TriggerPatterns = "photo";
@@ -171,9 +179,10 @@ After successfully add SSO in your project, you can also add a new sso command.
         ): Promise<string | Partial<Activity> | void> {
             await context.sendActivity("Retrieving user information from Microsoft Graph ...");
 
-            const teamsfx = new TeamsFx().setSsoToken(tokenResponse.ssoToken);
-
-            const graphClient = createMicrosoftGraphClient(teamsfx, ["User.Read"]);
+            // Init OnBehalfOfUserCredential instance with SSO token
+            const oboCredential = new OnBehalfOfUserCredential(tokenResponse.ssoToken, oboAuthConfig);
+            // Add scope for your Azure AD app. For example: Mail.Read, etc.
+            const graphClient = createMicrosoftGraphClientWithCredential(oboCredential, ["User.Read"]);
 
             let photoUrl = "";
             try {
@@ -208,7 +217,17 @@ After successfully add SSO in your project, you can also add a new sso command.
     // for JavaScript:
     const { ActivityTypes } = require("botbuilder");
     require("isomorphic-fetch");
-    const { createMicrosoftGraphClient, TeamsFx } = require("@microsoft/teamsfx");
+    const {
+        OnBehalfOfUserCredential,
+        createMicrosoftGraphClientWithCredential,
+    } = require("@microsoft/teamsfx");
+
+    const oboAuthConfig = {
+        authorityHost: process.env.M365_AUTHORITY_HOST,
+        clientId: process.env.M365_CLIENT_ID,
+        tenantId: process.env.M365_TENANT_ID,
+        clientSecret: process.env.M365_CLIENT_SECRET,
+    };
 
     class PhotoSsoCommandHandler {
         triggerPatterns = "photo";
@@ -216,9 +235,11 @@ After successfully add SSO in your project, you can also add a new sso command.
         async handleCommandReceived(context, message, tokenResponse) {
             await context.sendActivity("Retrieving user information from Microsoft Graph ...");
 
-            const teamsfx = new TeamsFx().setSsoToken(tokenResponse.ssoToken);
+            // Init OnBehalfOfUserCredential instance with SSO token
+            const oboCredential = new OnBehalfOfUserCredential(tokenResponse.ssoToken, oboAuthConfig);
+            // Add scope for your Azure AD app. For example: Mail.Read, etc.
+            const graphClient = createMicrosoftGraphClientWithCredential(oboCredential, ["User.Read"]);
 
-            const graphClient = createMicrosoftGraphClient(teamsfx, ["User.Read"]);
         
             let photoUrl = "";
             try {

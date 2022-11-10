@@ -43,6 +43,7 @@ export class CreateBotAadAppDriver implements StepDriver {
       getLocalizedString(progressBarKeys.creatingBotAadApp),
       1
     );
+    await progressHandler?.start();
     try {
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
       this.validateArgs(args);
@@ -52,7 +53,8 @@ export class CreateBotAadAppDriver implements StepDriver {
         botPassword: botAadAppState.SECRET_BOT_PASSWORD ?? "",
       };
       const botRegistration: BotRegistration = new RemoteBotRegistration();
-      progressHandler?.start(getLocalizedString(progressBarKeys.creatingBotAadApp));
+
+      await progressHandler?.next(getLocalizedString(progressBarKeys.creatingBotAadApp));
       const createRes = await botRegistration.createBotRegistration(
         context.m365TokenProvider,
         args.name,
@@ -66,7 +68,7 @@ export class CreateBotAadAppDriver implements StepDriver {
         throw createRes.error;
       }
 
-      progressHandler?.end(true);
+      await progressHandler?.end(true);
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
@@ -75,7 +77,7 @@ export class CreateBotAadAppDriver implements StepDriver {
         ["SECRET_BOT_PASSWORD", createRes.value.botPassword],
       ]);
     } catch (error) {
-      progressHandler?.end(false);
+      await progressHandler?.end(false);
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
@@ -117,7 +119,7 @@ export class CreateBotAadAppDriver implements StepDriver {
   private loadCurrentState(): CreateBotAadAppOutput {
     return {
       BOT_ID: process.env.BOT_ID,
-      SECRET_BOT_PASSWORD: process.env.BOT_PASSWORD,
+      SECRET_BOT_PASSWORD: process.env.SECRET_BOT_PASSWORD,
     };
   }
 }

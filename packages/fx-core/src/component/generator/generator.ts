@@ -6,7 +6,7 @@ import { ActionContext, ContextV3, FxError, Result, ok } from "@microsoft/teamsf
 import { merge } from "lodash";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
-import { ProgressMessages, ProgressTitles } from "../messages";
+import { LogMessages, ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { errorSource, componentName, commonTemplateName } from "./constant";
 import { FetchZipFromUrlError, TemplateZipFallbackError, UnzipError } from "./error";
@@ -63,7 +63,7 @@ export class Generator {
       onActionError: templateDefaultOnActionError,
     };
     merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.TemplateName]: generatorContext.name,
+      [TelemetryProperty.TemplateName]: `${scenario}-${generatorContext.name}`,
     });
     await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
     await this.generate(generatorContext, TemplateActionSeq);
@@ -113,7 +113,6 @@ export class Generator {
     context: GeneratorContext,
     actions: GeneratorAction[]
   ): Promise<void> {
-    context.logProvider.info(`Start generating ${context.name}`);
     for (const action of actions) {
       try {
         await context.onActionStart?.(action, context);
@@ -126,7 +125,6 @@ export class Generator {
         if (e instanceof Error) await context.onActionError(action, context, e);
       }
     }
-    context.logProvider.info(`Finish generating ${context.name}`);
   }
 }
 
@@ -138,11 +136,15 @@ async function templateDefaultOnActionError(
   switch (action.name) {
     case GeneratorActionName.FetchTemplateUrlWithTag:
     case GeneratorActionName.FetchZipFromUrl:
+      await context.logProvider.info(error.message);
+      await context.logProvider.info(LogMessages.getTemplateFromLocal);
       break;
     case GeneratorActionName.FetchTemplateZipFromLocal:
-      throw new TemplateZipFallbackError();
+      await context.logProvider.error(error.message);
+      throw new TemplateZipFallbackError().toFxError();
     case GeneratorActionName.Unzip:
-      throw new UnzipError();
+      await context.logProvider.error(error.message);
+      throw new UnzipError().toFxError();
     default:
       throw new Error(error.message);
   }
@@ -153,11 +155,12 @@ async function sampleDefaultOnActionError(
   context: GeneratorContext,
   error: Error
 ): Promise<void> {
+  await context.logProvider.error(error.message);
   switch (action.name) {
     case GeneratorActionName.FetchZipFromUrl:
-      throw new FetchZipFromUrlError(context.zipUrl!, error);
+      throw new FetchZipFromUrlError(context.zipUrl!).toFxError();
     case GeneratorActionName.Unzip:
-      throw new UnzipError();
+      throw new UnzipError().toFxError();
     default:
       throw new Error(error.message);
   }

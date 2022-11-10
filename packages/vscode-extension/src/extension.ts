@@ -746,8 +746,16 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   const manifestTemplateSelector = {
     language: "json",
     scheme: "file",
-    pattern: `**/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
+    pattern: isV3Enabled()
+      ? `**/${AppPackageFolderName}/manifest.template.json`
+      : `**/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
   };
+  const localManifestTemplateSelector = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/${AppPackageFolderName}/manifest.template.local.json`,
+  };
+
   const manifestPreviewSelector = {
     language: "json",
     scheme: "file",
@@ -792,6 +800,14 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
       manifestTemplateCodeLensProvider
     )
   );
+  if (isV3Enabled()) {
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(
+        localManifestTemplateSelector,
+        manifestTemplateCodeLensProvider
+      )
+    );
+  }
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       manifestPreviewSelector,
@@ -821,6 +837,15 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(manifestTemplateSelector, manifestTemplateHoverProvider)
   );
+
+  if (isV3Enabled()) {
+    context.subscriptions.push(
+      vscode.languages.registerHoverProvider(
+        localManifestTemplateSelector,
+        manifestTemplateHoverProvider
+      )
+    );
+  }
 
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(aadAppTemplateSelector, manifestTemplateHoverProvider)

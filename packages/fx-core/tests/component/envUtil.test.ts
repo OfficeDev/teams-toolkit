@@ -135,8 +135,10 @@ describe("env utils", () => {
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").resolves(("SECRET_ABC=" + encrypted) as any);
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    process.env.SECRET_ABC = undefined;
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+        assert.equal(process.env.SECRET_ABC, decrypted);
         return ok(undefined);
       }
     }
@@ -151,7 +153,7 @@ describe("env utils", () => {
     };
     const res = await my.myMethod(inputs);
     assert.isTrue(res.isOk());
-    assert.equal(process.env.SECRET_ABC, decrypted);
+    assert.isUndefined(process.env.SECRET_ABC);
 
     const core = new FxCore(tools);
     const getDotEnvRes = await core.getDotEnv(inputs);
@@ -276,8 +278,10 @@ describe("env utils", () => {
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").resolves(("SECRET_ABC=" + encrypted) as any);
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    process.env.SECRET_ABC = undefined;
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+        assert.equal(process.env.SECRET_ABC, decrypted);
         return ok(undefined);
       }
     }
@@ -292,7 +296,7 @@ describe("env utils", () => {
     };
     const res = await my.myMethod(inputs);
     assert.isTrue(res.isOk());
-    assert.equal(process.env.SECRET_ABC, decrypted);
+    assert.isUndefined(process.env.SECRET_ABC);
   });
   it("EnvWriterMW success", async () => {
     let value = "";

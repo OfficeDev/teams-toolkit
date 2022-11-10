@@ -8,8 +8,19 @@ import { TOOLS } from "../../core/globalVars";
 import { CoreHookContext } from "../../core/types";
 import { SelectEnvQuestion } from "../question";
 import { envUtil } from "../utils/envUtil";
+import _ from "lodash";
 
 export const EnvLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
+  const envBefore = _.cloneDeep(process.env);
+  try {
+    await envLoaderMWImpl(ctx, next);
+    return;
+  } finally {
+    process.env = envBefore;
+  }
+};
+
+export const envLoaderMWImpl: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath;
   if (!projectPath) {

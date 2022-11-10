@@ -63,7 +63,7 @@ registerApp:
   - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
     with:
       name: v3sample-aad # Note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
-      generateClientSecret: true # If the value is false, the driver will not generate client secret for you
+      generateClientSecret: true # If the value is false, the action will not generate client secret for you
     # Output: following environment variable will be persisted in current environment's .env file.
     # AAD_APP_CLIENT_ID: the client id of AAD app
     # AAD_APP_CLIENT_SECRET: the client secret of AAD app
@@ -83,7 +83,7 @@ configureApp:
     with:
       manifestPath: ./aad.manifest.template.json # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
   # Output: following environment variable will be persisted in current environment's .env file.
-  # AAD_APP_OAUTH2_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
+  # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.
     with:

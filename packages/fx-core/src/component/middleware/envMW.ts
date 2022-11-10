@@ -16,7 +16,12 @@ export const EnvLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFu
     await envLoaderMWImpl(ctx, next);
     return;
   } finally {
-    process.env = envBefore;
+    const keys = Object.keys(process.env);
+    for (const k of keys) {
+      if (!(k in envBefore)) {
+        delete process.env[k];
+      }
+    }
   }
 };
 

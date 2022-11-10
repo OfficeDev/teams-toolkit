@@ -112,6 +112,6 @@
         "messageTeamMembers"
     ],
     "validDomains": [
-        "${{ME_BOT_DOMAIN}}"
+        "${{BOT_DOMAIN}}"
     ]
 }

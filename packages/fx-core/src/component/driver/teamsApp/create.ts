@@ -15,6 +15,7 @@ import fs from "fs-extra";
 import * as path from "path";
 import AdmZip from "adm-zip";
 import { v4 } from "uuid";
+import { Service } from "typedi";
 import { hooks } from "@feathersjs/hooks/lib";
 import { StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
@@ -30,10 +31,10 @@ import {
   COLOR_TEMPLATE,
   OUTLINE_TEMPLATE,
 } from "../../resource/appManifest/constants";
+import { AppDefinition } from "../../resource/appManifest/interfaces/appDefinition";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { getTemplatesFolder } from "../../../folder";
-import { Service } from "typedi";
 
 const actionName = "teamsApp/create";
 
@@ -58,10 +59,15 @@ export class CreateTeamsAppDriver implements StepDriver {
     }
     const appStudioToken = appStudioTokenRes.value;
 
+    let createdAppDefinition: AppDefinition;
     const teamsAppId = process.env.TEAMS_APP_ID;
     if (teamsAppId) {
       try {
-        await AppStudioClient.getApp(teamsAppId, appStudioToken, context.logProvider);
+        createdAppDefinition = await AppStudioClient.getApp(
+          teamsAppId,
+          appStudioToken,
+          context.logProvider
+        );
         create = false;
       } catch (error) {}
     }
@@ -91,7 +97,7 @@ export class CreateTeamsAppDriver implements StepDriver {
       const archivedFile = zip.toBuffer();
 
       try {
-        const createdAppDefinition = await AppStudioClient.importApp(
+        createdAppDefinition = await AppStudioClient.importApp(
           archivedFile,
           appStudioTokenRes.value,
           context.logProvider
@@ -122,8 +128,12 @@ export class CreateTeamsAppDriver implements StepDriver {
         }
       }
     } else {
-      // No need to update environment variables
-      return ok(new Map());
+      return ok(
+        new Map([
+          [outputNames.TEAMS_APP_ID, createdAppDefinition!.teamsAppId!],
+          [outputNames.TEAMS_APP_TENANT_ID, createdAppDefinition!.tenantId!],
+        ])
+      );
     }
   }
 }

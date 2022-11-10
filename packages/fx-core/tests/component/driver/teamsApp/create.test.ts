@@ -52,7 +52,7 @@ describe("teamsApp/create", async () => {
       .stub(CreateAppPackageDriver.prototype, "run")
       .resolves(ok(new Map([["TEAMS_APP_PACKAGE_PATH", zipFileName]])));
     sinon.stub(AppStudioClient, "getApp").throws(new Error("404"));
-    sinon.stub(AppStudioClient, "createApp").resolves(appDef);
+    sinon.stub(AppStudioClient, "importApp").resolves(appDef);
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").callsFake(async () => {
       const zip = new AdmZip();

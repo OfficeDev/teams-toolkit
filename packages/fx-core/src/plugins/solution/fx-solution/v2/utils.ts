@@ -120,6 +120,7 @@ export function extractSolutionInputs(record: Json): v2.SolutionInputs {
 }
 
 export function setActivatedResourcePluginsV2(projectSettings: ProjectSettings): void {
+  /*
   if (isOfficeAddinEnabled()) {
     // TODO: avoid hard coding activeResourcePlugins when we know how office addin co-exists
     // with existing resources.
@@ -128,6 +129,7 @@ export function setActivatedResourcePluginsV2(projectSettings: ProjectSettings):
     }
     return;
   }
+  */
   const activatedPluginNames = getAllV2ResourcePlugins()
     .filter((p) => p.activate && p.activate(projectSettings) === true)
     .map((p) => p.name);

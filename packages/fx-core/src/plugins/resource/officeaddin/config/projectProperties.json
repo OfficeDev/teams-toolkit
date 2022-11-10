@@ -14,7 +14,7 @@
             "supportedHosts": [
                 "Outlook"
             ]
-        }
+        },
     },
     "hostTypes": {
         "excel": {

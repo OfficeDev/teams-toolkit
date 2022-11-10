@@ -41,7 +41,7 @@ import { Logger } from "./logger";
 import { environmentManager } from "../../../core/environment";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { isExistingTabApp } from "../../../common";
+import { isExistingTabApp, isOfficeAddinEnabled, isOfficeAddinProject } from "../../../common";
 import { NoCapabilityFoundError } from "../../../core/error";
 import { ExistingTemplatesStat } from "./utils/existingTemplatesStat";
 
@@ -51,6 +51,9 @@ export class CICDPluginV2 implements ResourcePlugin {
   displayName = Alias.TEAMS_CICD_PLUGIN;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   activate(projectSettings: ProjectSettings): boolean {
+    if (isOfficeAddinEnabled()) {
+      return !isOfficeAddinProject(projectSettings);
+    }
     return true;
   }
 

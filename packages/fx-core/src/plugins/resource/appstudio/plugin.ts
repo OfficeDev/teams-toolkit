@@ -14,8 +14,8 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ManifestUtil,
-  SystemError,
   UserError,
+  DevPreviewManifest,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import { AppDefinition } from "./interfaces/appDefinition";
@@ -84,8 +84,9 @@ import {
   getAppDirectory,
   isAADEnabled,
   isConfigUnifyEnabled,
+  isOfficeAddinEnabled,
+  isOfficeAddinProject,
   isSPFxProject,
-  isVSProject,
 } from "../../../common";
 import {
   LocalSettingsAuthKeys,
@@ -110,6 +111,7 @@ import { getCapabilities, getManifestTemplatePath, loadManifest } from "./manife
 import { environmentManager } from "../../../core/environment";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
 import { getProjectTemplatesFolderPath } from "../../../common/utils";
+import { createDevPreviewManifest } from "./devPreviewManifest";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -566,7 +568,7 @@ export class AppStudioPluginImpl {
   }
 
   public async scaffold(ctx: PluginContext): Promise<any> {
-    let manifest: TeamsAppManifest | undefined;
+    let manifest: TeamsAppManifest | DevPreviewManifest | undefined;
     const templatesFolder = getTemplatesFolder();
 
     // cannot use getAppDirectory before creating the manifest file
@@ -590,6 +592,8 @@ export class AppStudioPluginImpl {
         );
         await fs.writeFile(`${appDir}/${MANIFEST_LOCAL}`, JSON.stringify(localManifest, null, 4));
       }
+    } else if (isOfficeAddinEnabled() && isOfficeAddinProject(ctx.projectSettings)) {
+      manifest = createDevPreviewManifest(ctx.answers);
     } else {
       const solutionSettings: AzureSolutionSettings = ctx.projectSettings
         ?.solutionSettings as AzureSolutionSettings;

@@ -63,7 +63,7 @@ export class Generator {
       onActionError: templateDefaultOnActionError,
     };
     merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.TemplateName]: generatorContext.name,
+      [TelemetryProperty.TemplateName]: `${scenario}-${generatorContext.name}`,
     });
     await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
     await this.generate(generatorContext, TemplateActionSeq);

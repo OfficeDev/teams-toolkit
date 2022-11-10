@@ -850,7 +850,7 @@ export class ProvisionUtils {
         keysNeedToUpdate.push("AAD_APP_CLIENT_ID");
       }
     }
-    if (actions.includes("botAadApp/create") || actions.includes("m365Bot/create")) {
+    if (actions.includes("botAadApp/create") || actions.includes("m365Bot/createOrUpdate")) {
       if (process.env.BOT_ID) {
         keysNeedToUpdate.push("BOT_ID");
       }

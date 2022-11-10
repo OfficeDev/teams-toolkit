@@ -45,6 +45,7 @@ import {
   TabNonSsoItem,
   MessageExtensionItem,
   CancelError,
+  CoordinatorSource,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { getQuestionsForAddFeatureV3, getQuestionsForProvisionV3 } from "../question";
@@ -78,6 +79,7 @@ import { createContextV3 } from "../utils";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { getBotTroubleShootMessage } from "../core";
+import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -131,7 +133,7 @@ export class Coordinator {
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.CreateProject,
       telemetryComponentName: "coordinator",
-      errorSource: "coordinator",
+      errorSource: CoordinatorSource,
     }),
   ])
   async create(
@@ -201,6 +203,7 @@ export class Coordinator {
 
       merge(actionContext?.telemetryProps, {
         [TelemetryProperty.Feature]: feature,
+        [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
       });
     }
 
@@ -211,6 +214,17 @@ export class Coordinator {
       await globalStateUpdate(automaticNpmInstall, true);
     }
     context.projectPath = projectPath;
+
+    if (inputs.teamsAppFromTdp) {
+      const res = await developerPortalScaffoldUtils.updateFilesForTdp(
+        context,
+        inputs.teamsAppFromTdp,
+        inputs
+      );
+      if (res.isErr()) {
+        return err(res.error);
+      }
+    }
     return ok(projectPath);
   }
 
@@ -425,7 +439,7 @@ export class Coordinator {
         tenantSwitchCheckActions,
         m365tenantInfo?.tenantIdInToken,
         inputs.env,
-        "coordinator"
+        CoordinatorSource
       );
       if (checkM365TenatRes.isErr()) {
         return [undefined, checkM365TenatRes.error];
@@ -580,7 +594,7 @@ export class Coordinator {
         } else if (reason.kind === "UnresolvedPlaceholders") {
           const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
           error = new UserError({
-            source: "coordinator",
+            source: CoordinatorSource,
             name: "UnresolvedPlaceholders",
             message: getDefaultString("core.error.unresolvedPlaceholders", placeholders),
             displayMessage: getLocalizedString("core.error.unresolvedPlaceholders", placeholders),

@@ -61,7 +61,6 @@ describe("env utils", () => {
     assert.isTrue(res.isOk());
     assert.equal(process.env.SECRET_ABC, decrypted);
   });
-
   it("envUtil.readEnv - loadToProcessEnv false", async () => {
     const encRes = await cryptoProvider.encrypt(decrypted);
     if (encRes.isErr()) throw encRes.error;
@@ -160,6 +159,25 @@ describe("env utils", () => {
     const core = new FxCore(tools);
     const getDotEnvRes = await core.getDotEnv(inputs);
     assert.isTrue(getDotEnvRes.isOk());
+  });
+  it("EnvLoaderMW failed: no yml file error", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(ok([]));
+    class MyClass {
+      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+        return ok(undefined);
+      }
+    }
+    hooks(MyClass, {
+      myMethod: [EnvLoaderMW],
+    });
+    const my = new MyClass();
+    const inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const res = await my.myMethod(inputs);
+    assert.isTrue(res.isErr());
   });
   it("EnvLoaderMW ignoreEnvInfo", async () => {
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));

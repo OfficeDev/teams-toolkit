@@ -68,35 +68,6 @@ export namespace AppStudioClient {
   }
 
   /**
-   * Create a Teams app with the given appdefinition
-   * @param appDefinition - App definition used to create Teams app
-   * @param appStudioToken
-   * @returns - App definition
-   */
-  export async function createApp(
-    appDefinition: AppDefinition,
-    appStudioToken: string
-  ): Promise<AppDefinition> {
-    const requester = createRequesterWithToken(appStudioToken);
-    try {
-      const response = await RetryHandler.Retry(() =>
-        requester.post(`/api/appdefinitions`, appDefinition, {
-          headers: { "Content-Type": "application/json" },
-        })
-      );
-      if (response && response.data) {
-        const app = <AppDefinition>response.data;
-        return app;
-      } else {
-        throw new Error(`Cannot create teams app`);
-      }
-    } catch (e: any) {
-      const error = wrapException(e, APP_STUDIO_API_NAMES.CREATE_APP_WITH_APP_DEFINITION);
-      throw error;
-    }
-  }
-
-  /**
    * Import an app registration in app studio with the given archived file and returns the app definition.
    * @param {Buffer}  file - Zip file with manifest.json and two icons
    * @param {string}  appStudioToken

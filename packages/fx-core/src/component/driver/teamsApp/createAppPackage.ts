@@ -147,7 +147,7 @@ export class CreateAppPackageDriver implements StepDriver {
       context.ui?.showMessage("info", builtSuccess, false);
     }
 
-    return ok(new Map([["TEAMS_APP_PACKAGE_PATH", zipFileName]]));
+    return ok(new Map());
   }
 
   private loadCurrentState() {

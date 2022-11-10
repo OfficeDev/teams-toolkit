@@ -10,6 +10,9 @@ export enum TelemetryEvent {
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
 
+  InitInfraStart = "init-infra-start",
+  InitInfra = "init-infra",
+
   InitProjectStart = "init-project-start",
   InitProject = "init-project",
 
@@ -45,6 +48,7 @@ export enum TelemetryEvent {
 
   DeployStart = "deploy-start",
   Deploy = "deploy",
+  DeployAad = "deployAad",
 
   PublishStart = "publish-start",
   Publish = "publish",

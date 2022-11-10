@@ -58,6 +58,7 @@ export class SPFxDeployDriver implements StepDriver {
       Constants.DeployProgressTitle,
       Object.entries(DeployProgressMessage).length
     );
+    await progressHandler?.start();
     let success = false;
     try {
       const tenant = await this.getTenant(context.m365TokenProvider);

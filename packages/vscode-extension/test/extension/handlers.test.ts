@@ -18,6 +18,7 @@ import {
   ProjectSettings,
   ProjectSettingsFileName,
   Result,
+  StaticOptions,
   Stage,
   UserError,
   Void,
@@ -55,6 +56,7 @@ import { MockCore } from "../mocks/mockCore";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { VsCodeLogProvider } from "../../src/commonlib/log";
 import { ProgressHandler } from "../../src/progressHandler";
+import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -312,6 +314,26 @@ describe("handlers", () => {
 
       chai.assert.isTrue(result.isOk());
     });
+
+    it("selectTutorialsHandler()", async () => {
+      sinon.stub(localizeUtils, "localize").returns("");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(TreatmentVariableValue, "inProductDoc").value(true);
+      let tutorialOptions: StaticOptions[] = [];
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: (options: any) => {
+          tutorialOptions = options.options;
+          return Promise.resolve(ok({ type: "success", result: { id: "test", data: "data" } }));
+        },
+        openUrl: () => Promise.resolve(ok(true)),
+      });
+
+      const result = await handlers.selectTutorialsHandler();
+
+      chai.assert.equal(tutorialOptions.length, 5);
+      chai.assert.isTrue(result.isOk());
+    });
   });
 
   describe("runCommand()", function () {
@@ -342,7 +364,7 @@ describe("handlers", () => {
         selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
       });
 
-      const res = await handlers.openConfigStateFile([]);
+      const res = await handlers.openConfigStateFile([{ type: "state" }]);
       await fs.remove(tmpDir);
 
       if (res) {
@@ -352,6 +374,70 @@ describe("handlers", () => {
           res.error.message,
           util.format(localizeUtils.localize("teamstoolkit.handlers.localStateFileNotFound"), env)
         );
+      }
+    });
+
+    it("openConfigStateFile() - env - FileNotFound", async () => {
+      const env = "local";
+      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
+      const projectSettings: ProjectSettings = {
+        appName: "myapp",
+        version: "1.0.0",
+        projectId: "123",
+      };
+      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
+      await fs.mkdir(configFolder, { recursive: true });
+      const settingsFile = path.resolve(configFolder, ProjectSettingsFileName);
+      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
+
+      sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
+      });
+
+      const res = await handlers.openConfigStateFile([{ type: "env" }]);
+      await fs.remove(tmpDir);
+
+      if (res) {
+        chai.assert.isTrue(res.isErr());
+        chai.assert.equal(res.error.name, ExtensionErrors.EnvFileNotFoundError);
+      }
+    });
+
+    it("openConfigStateFile() - InvalidArgs", async () => {
+      const env = "local";
+      const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file(tmpDir));
+      const projectSettings: ProjectSettings = {
+        appName: "myapp",
+        version: "1.0.0",
+        projectId: "123",
+      };
+      const configFolder = path.resolve(tmpDir, `.${ConfigFolderName}`, "configs");
+      await fs.mkdir(configFolder, { recursive: true });
+      const settingsFile = path.resolve(configFolder, ProjectSettingsFileName);
+      await fs.writeJSON(settingsFile, JSON.stringify(projectSettings, null, 4));
+
+      sinon.stub(globalVariables, "context").value({ extensionPath: path.resolve("../../") });
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: () => Promise.resolve(ok({ type: "success", result: env })),
+      });
+
+      const res = await handlers.openConfigStateFile([]);
+      await fs.remove(tmpDir);
+
+      if (res) {
+        chai.assert.isTrue(res.isErr());
+        chai.assert.equal(res.error.name, ExtensionErrors.InvalidArgs);
       }
     });
 
@@ -1182,14 +1268,24 @@ describe("handlers", () => {
       const progressHandler = new ProgressHandler("title", 1);
       const startProgress = sinon.stub(progressHandler, "start").resolves();
       const endProgress = sinon.stub(progressHandler, "end").resolves();
-      sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
+      sinon
+        .stub(M365TokenInstance, "signInWhenInitiatedFromTdp")
+        .resolves(ok({ appId: "mock-id" }));
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
-      const showErrorMessage = sinon.stub(vscode.window, "showErrorMessage");
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const createProject = sinon.spy(handlers.core, "createProject");
+      sinon.stub(vscode.commands, "executeCommand");
+      sinon.stub(globalState, "globalStateUpdate");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 
       const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
 
+      chai.assert.equal(createProject.args[0][0].teamsAppFromTdp.appId, "mock-id");
       chai.assert.equal(res.isOk(), true);
       chai.assert.equal(createProgressBar.calledOnce, true);
       chai.assert.equal(startProgress.calledOnce, true);

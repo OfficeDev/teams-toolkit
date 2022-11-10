@@ -24,20 +24,24 @@ import { AppStudioError } from "../../resource/appManifest/errors";
 import { TelemetryPropertyKey } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { Service } from "typedi";
+import { getAbsolutePath } from "../../utils/common";
 
-const actionName = "teamsApp/configure";
+const actionName = "teamsApp/publishAppPackage";
 
 const outputKeys = {
   publishedAppId: "TEAMS_APP_PUBLISHED_APP_ID",
 };
 
+@Service(actionName)
 export class PublishAppPackageDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: PublishAppPackageArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    if (!(await fs.pathExists(args.appPackagePath))) {
+    const appPackagePath = getAbsolutePath(args.appPackagePath, context.projectPath);
+    if (!(await fs.pathExists(appPackagePath))) {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
@@ -45,7 +49,7 @@ export class PublishAppPackageDriver implements StepDriver {
         )
       );
     }
-    const archivedFile = await fs.readFile(args.appPackagePath);
+    const archivedFile = await fs.readFile(appPackagePath);
 
     const zipEntries = new AdmZip(archivedFile).getEntries();
 
@@ -111,7 +115,7 @@ export class PublishAppPackageDriver implements StepDriver {
         archivedFile,
         appStudioTokenRes.value
       );
-      result = new Map([["publishedAppId", appId]]);
+      result = new Map([[outputKeys.publishedAppId, appId]]);
       telemetryProps[TelemetryPropertyKey.updateExistingApp] = "false";
     }
 

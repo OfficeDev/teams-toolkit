@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as fs from "fs-extra";
+import * as os from "os";
+import fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import { Container } from "typedi";
@@ -29,6 +30,7 @@ import {
   ProjectSettingsV3,
   QTreeNode,
   Result,
+  Settings,
   Stage,
   StatesFolderName,
   Tools,
@@ -50,6 +52,8 @@ import {
   CicdOptionItem,
   ExistingTabOptionItem,
   SingleSignOnOptionItem,
+  ComponentNames,
+  AadConstants,
 } from "../component/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
@@ -87,7 +91,7 @@ import {
   sendErrorTelemetryThenReturnError,
 } from "./telemetry";
 import { CoreHookContext } from "./types";
-import { createContextV3 } from "../component/utils";
+import { createContextV3, createDriverContext } from "../component/utils";
 import { preCheck } from "../component/core";
 import {
   FeatureId,
@@ -99,7 +103,6 @@ import {
 } from "../component/question";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
 import { addCicdQuestion } from "../component/feature/cicd/cicd";
-import { ComponentNames } from "../component/constants";
 import { AppManifest, publishQuestion } from "../component/resource/appManifest/appManifest";
 import { ApiConnectorImpl } from "../component/feature/apiconnector/ApiConnectorImpl";
 import { createEnvWithName } from "../component/envManager";
@@ -115,6 +118,35 @@ import { DriverContext } from "../component/driver/interface/commonArgs";
 import { coordinator } from "../component/coordinator";
 import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPackage";
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
+import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
+import { envUtil } from "../component/utils/envUtil";
+import { YamlParser } from "../component/configManager/parser";
+import { ILifecycle, LifecycleName } from "../component/configManager/interface";
+import "../component/driver/teamsApp/createAppPackage";
+import "../component/driver/teamsApp/create";
+import "../component/driver/teamsApp/configure";
+import "../component/driver/teamsApp/copyAppPackageForSPFx";
+import "../component/driver/teamsApp/publishAppPackage";
+import "../component/driver/teamsApp/validate";
+import "../component/driver/aad/create";
+import "../component/driver/aad/update";
+import "../component/driver/arm/deploy";
+import "../component/driver/botAadApp/create";
+import "../component/driver/deploy/azure/azureAppServiceDeployDriver";
+import "../component/driver/deploy/azure/azureFunctionDeployDriver";
+import "../component/driver/deploy/azure/azureStorageDeployDriver";
+import "../component/driver/deploy/azure/azureStorageStaticWebsiteConfigDriver";
+import "../component/driver/deploy/spfx/deployDriver";
+import "../component/driver/script/dotnetBuildDriver";
+import "../component/driver/script/npmBuildDriver";
+import "../component/driver/script/npxBuildDriver";
+import "../component/driver/tools/installDriver";
+import "../component/driver/env/generate";
+import "../component/driver/env/appsettingsGenerate";
+import "../component/driver/m365Bot/createOrUpdate";
+import { settingsUtil } from "../component/utils/settingsUtil";
+import { DotenvParseOutput } from "dotenv";
+import { containsUnsupportedFeature } from "../component/resource/appManifest/utils/utils";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -180,11 +212,24 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
+    if (!!inputs.teamsAppFromTdp && containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
+      // should never happen as we do same check on Developer Portal.
+      return err(InvalidInputError("Teams app contains unsupported features"));
+    }
     const res = await coordinator.create(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);
     ctx.projectSettings = context.projectSetting;
     inputs.projectPath = context.projectPath;
     return ok(inputs.projectPath!);
+  }
+
+  /**
+   * "teamsfx init infra" CLI command
+   */
+  @hooks([ErrorHandlerMW])
+  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    const res = await coordinator.initInfra(inputs);
+    return res;
   }
 
   @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
@@ -208,6 +253,23 @@ export class FxCore implements v3.ICore {
     return ok(context.projectPath!);
   }
 
+  async provisionResources(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return isV3Enabled() ? this.provisionResourcesNew(inputs) : this.provisionResourcesOld(inputs);
+  }
+
+  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
+  async provisionResourcesNew(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.provision);
+    inputs.stage = Stage.provision;
+    const context = createDriverContext(inputs);
+    const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
+    ctx!.envVars = output;
+    if (error) return err(error);
+    return ok(Void);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -221,7 +283,10 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
-  async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async provisionResourcesOld(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createContextV3();
@@ -269,6 +334,21 @@ export class FxCore implements v3.ICore {
     );
   }
 
+  async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    return isV3Enabled() ? this.deployArtifactsNew(inputs) : this.deployArtifactsOld(inputs);
+  }
+
+  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
+  async deployArtifactsNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.deploy);
+    inputs.stage = Stage.deploy;
+    const context = createDriverContext(inputs);
+    const [output, error] = await coordinator.deploy(context, inputs as InputsWithProjectPath);
+    ctx!.envVars = output;
+    if (error) return err(error);
+    return ok(Void);
+  }
+
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -282,7 +362,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
-  async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async deployArtifactsOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
     const context = createContextV3();
@@ -317,7 +397,9 @@ export class FxCore implements v3.ICore {
     inputs.stage = Stage.deployAad;
     const updateAadClient = Container.get("aadApp/update") as any;
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
-    const manifestTemplatePath: string = path.join(inputs.projectPath!, ".fx", "aad.template.json");
+    const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
+      ? inputs.AAD_MANIFEST_FILE
+      : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new NoAadManifestExistError(manifestTemplatePath));
     }
@@ -344,7 +426,9 @@ export class FxCore implements v3.ICore {
     if (res.isErr()) return err(res.error);
     return ok(Void);
   }
-
+  async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
+    return isV3Enabled() ? this.publishApplicationNew(inputs) : this.publishApplicationOld(inputs);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -358,7 +442,10 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
-  async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async publishApplicationOld(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
     const context = createContextV3();
@@ -371,7 +458,15 @@ export class FxCore implements v3.ICore {
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
-
+  @hooks([ErrorHandlerMW, EnvLoaderMW])
+  async publishApplicationNew(inputs: Inputs): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.publish);
+    inputs.stage = Stage.publish;
+    const context = createDriverContext(inputs);
+    const res = await coordinator.publish(context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    return ok(Void);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -448,7 +543,6 @@ export class FxCore implements v3.ICore {
       );
       res = ok(path);
     } else if (func.method === "validateManifest") {
-      // TODO: load environment variables into process.env
       if (isV3Enabled()) {
         const driver: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
         const args: ValidateTeamsAppArgs = {
@@ -460,9 +554,10 @@ export class FxCore implements v3.ICore {
           ui: context.userInteraction,
           logProvider: context.logProvider,
           telemetryReporter: context.telemetryReporter,
-          projectPath: context.projectPath!,
+          projectPath: inputs.projectPath!,
           platform: inputs.platform,
         };
+        // await envUtil.readEnv(context.projectPath!, func.params.env);
         res = await driver.run(args, driverContext);
       } else {
         const component = Container.get("app-manifest") as any;
@@ -482,9 +577,10 @@ export class FxCore implements v3.ICore {
           ui: context.userInteraction,
           logProvider: context.logProvider,
           telemetryReporter: context.telemetryReporter,
-          projectPath: context.projectPath!,
+          projectPath: inputs.projectPath!,
           platform: inputs.platform,
         };
+        // await envUtil.readEnv(context.projectPath!, func.params.env);
         res = await driver.run(args, driverContext);
       } else {
         const component = Container.get("app-manifest") as any;
@@ -506,6 +602,10 @@ export class FxCore implements v3.ICore {
     }
     return res;
   }
+
+  /**
+   * Warning: this API only works for CLI_HELP, it has no business with interactive run for CLI!
+   */
   @hooks([ErrorHandlerMW])
   async getQuestions(
     stage: Stage,
@@ -553,6 +653,18 @@ export class FxCore implements v3.ICore {
       return await apiConnectorImpl.generateQuestion(context, inputs as InputsWithProjectPath);
     }
     return ok(undefined);
+  }
+
+  async getSettings(inputs: InputsWithProjectPath): Promise<Result<Settings, FxError>> {
+    return settingsUtil.readSettings(inputs.projectPath);
+  }
+
+  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
+  async getDotEnv(
+    inputs: InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<DotenvParseOutput | undefined, FxError>> {
+    return ok(ctx?.envVars);
   }
 
   @hooks([
@@ -639,7 +751,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
-    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       context.envInfo = ctx.envInfoV3;
       const res = await grantPermission(
@@ -671,7 +783,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
-    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       context.envInfo = ctx.envInfoV3;
       const res = await checkPermission(
@@ -703,7 +815,7 @@ export class FxCore implements v3.ICore {
     if (!projectPath) {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
-    if (ctx && ctx.contextV2 && ctx.envInfoV3) {
+    if (ctx && ctx.contextV2 && (isV3Enabled() || ctx.envInfoV3)) {
       const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
       context.envInfo = ctx.envInfoV3;
       const res = await listCollaborator(
@@ -765,7 +877,8 @@ export class FxCore implements v3.ICore {
     ContextInjectorMW,
   ])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    if (!ctx) return err(new ObjectIsUndefinedError("createEnv input stuff"));
+    if (!ctx || !inputs.projectPath)
+      return err(new ObjectIsUndefinedError("createEnv input stuff"));
     const projectSettings = ctx.projectSettings;
     if (!projectSettings) {
       return ok(Void);
@@ -780,6 +893,14 @@ export class FxCore implements v3.ICore {
       !createEnvCopyInput.sourceEnvName
     ) {
       return err(UserCancelError);
+    }
+
+    if (isV3Enabled()) {
+      return this.createEnvCopyV3(
+        createEnvCopyInput.targetEnvName,
+        createEnvCopyInput.sourceEnvName,
+        inputs.projectPath
+      );
     }
 
     const createEnvResult = await this.createEnvCopy(
@@ -799,12 +920,42 @@ export class FxCore implements v3.ICore {
     if (!ProjectSettingsHelper.isSpfx(ctx.projectSettings)) {
       await copyParameterJson(
         inputs.projectPath!,
-        ctx.projectSettings!.appName,
+        ctx.projectSettings!.appName!,
         inputs.targetEnvName!,
         inputs.sourceEnvName!
       );
     }
 
+    return ok(Void);
+  }
+
+  async createEnvCopyV3(
+    targetEnvName: string,
+    sourceEnvName: string,
+    projectPath: string
+  ): Promise<Result<Void, FxError>> {
+    const sourceDotEnvFile = environmentManager.getDotEnvPath(sourceEnvName, projectPath);
+    const source = await fs.readFile(sourceDotEnvFile);
+    const targetDotEnvFile = environmentManager.getDotEnvPath(targetEnvName, projectPath);
+    const writeStream = fs.createWriteStream(targetDotEnvFile);
+    source
+      .toString()
+      .split(/\r?\n/)
+      .forEach((line) => {
+        const reg = /^([a-zA-Z_][a-zA-Z0-9_]*=)/g;
+        const match = reg.exec(line);
+        if (match) {
+          if (match[1].startsWith("TEAMSFX_ENV=")) {
+            writeStream.write(`TEAMSFX_ENV=${targetEnvName}${os.EOL}`);
+          } else {
+            writeStream.write(`${match[1]}${os.EOL}`);
+          }
+        } else {
+          writeStream.write(`${line.trim()}${os.EOL}`);
+        }
+      });
+
+    writeStream.end();
     return ok(Void);
   }
 
@@ -839,6 +990,94 @@ export class FxCore implements v3.ICore {
 
   async activateEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     return ok(Void);
+  }
+
+  // apply the given yaml template to current project.
+  async apply(
+    inputs: Inputs,
+    templatePath: string,
+    lifecycleName: string
+  ): Promise<Result<Void, FxError>> {
+    if (!inputs.projectPath) {
+      return err(InvalidInputError("invalid projectPath", inputs));
+    }
+    const projectPath = inputs.projectPath;
+    if (!inputs.env) {
+      return err(InvalidInputError("invalid env", inputs));
+    }
+    const env = inputs.env;
+    const lifecycleName_: LifecycleName = lifecycleName as LifecycleName;
+    const result = await envUtil.readEnv(projectPath, env);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    const parser = new YamlParser();
+    const maybeProjectModel = await parser.parse(templatePath);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+
+    const projectModel = maybeProjectModel.value;
+    const driverContext: DriverContext = {
+      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider!,
+      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider!,
+      ui: TOOLS.ui,
+      logProvider: TOOLS.logProvider,
+      telemetryReporter: TOOLS.telemetryReporter!,
+      projectPath: projectPath,
+      platform: inputs.platform,
+    };
+    const lifecycle = projectModel[lifecycleName_];
+    if (lifecycle) {
+      return this.runLifecycle(lifecycle, driverContext, env);
+    } else {
+      await driverContext.logProvider.warning(`No definition found for ${lifecycleName}`);
+      return ok(Void);
+    }
+  }
+
+  async runLifecycle(
+    lifecycle: ILifecycle,
+    driverContext: DriverContext,
+    env: string
+  ): Promise<Result<Void, FxError>> {
+    const runResult = await lifecycle.execute(driverContext);
+    if (runResult.isOk()) {
+      await driverContext.logProvider.info(`Lifecycle ${lifecycle.name} succeeded`);
+      const writeResult = await envUtil.writeEnv(
+        driverContext.projectPath,
+        env,
+        envUtil.map2object(runResult.value)
+      );
+      return writeResult.map(() => Void);
+    } else {
+      const error = runResult.error;
+      if (error.kind === "Failure") {
+        await driverContext.logProvider.error(
+          `Failed to run ${lifecycle.name} due to ${error.error.name}: ${error.error.message}`
+        );
+        return err(error.error);
+      } else {
+        try {
+          const failedDriver = error.reason.failedDriver;
+          if (error.reason.kind === "UnresolvedPlaceholders") {
+            const unresolved = error.reason.unresolvedPlaceHolders;
+            await driverContext.logProvider.warning(
+              `Unresolved placeholders: ${unresolved.join(",")} for driver ${failedDriver.uses}`
+            );
+            return ok(Void);
+          } else {
+            await driverContext.logProvider.error(
+              `Failed to run ${lifecycle.name} due to ${error.reason.error.name}: ${error.reason.error.message}. Failed driver: ${failedDriver.uses}`
+            );
+            return err(error.reason.error);
+          }
+        } finally {
+          await envUtil.writeEnv(driverContext.projectPath, env, envUtil.map2object(error.env));
+        }
+      }
+    }
   }
 
   async _init(
@@ -958,6 +1197,25 @@ export class FxCore implements v3.ICore {
     }
 
     return result;
+  }
+
+  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
+  async preProvisionForVS(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<
+    Result<
+      {
+        needAzureLogin: boolean;
+        needM365Login: boolean;
+        resolvedAzureSubscriptionId?: string;
+        resolvedAzureResourceGroupName?: string;
+      },
+      FxError
+    >
+  > {
+    const context = createDriverContext(inputs);
+    return coordinator.preProvisionForVS(context, inputs as InputsWithProjectPath);
   }
 }
 

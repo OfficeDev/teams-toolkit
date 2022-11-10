@@ -3,6 +3,7 @@
 
 import { ResourceManagementClient } from "@azure/arm-resources";
 import {
+  assembleError,
   AzureAccountProvider,
   ContextV3,
   EnvConfigFileNameTemplate,
@@ -24,9 +25,8 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { snakeCase } from "lodash";
 import { v4 as uuidv4 } from "uuid";
-import { PluginDisplayName } from "../common/constants";
+import { HelpLinks, PluginDisplayName } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { hasAzureResourceV3 } from "../common/projectSettingsHelperV3";
 import {
@@ -37,7 +37,7 @@ import {
 } from "../common/telemetry";
 import { getHashedEnv } from "../common/tools";
 import { convertToAlphanumericOnly } from "../common/utils";
-import { globalVars } from "../core/globalVars";
+import { globalVars, TOOLS } from "../core/globalVars";
 import {
   FillInAzureConfigsResult,
   GLOBAL_CONFIG,
@@ -50,6 +50,7 @@ import {
   BuiltInFeaturePluginNames,
   ComponentNames,
   PathConstants,
+  CoordinatorSource,
 } from "./constants";
 import { backupFiles } from "./utils/backupFiles";
 import { resourceGroupHelper, ResourceGroupInfo } from "./utils/ResourceGroupHelper";
@@ -60,7 +61,8 @@ import fs from "fs-extra";
 import { updateAzureParameters } from "./arm";
 import path from "path";
 import { DeployConfigsConstants } from "../common/azure-hosting/hostingConstant";
-interface M365TenantRes {
+import { DriverContext } from "./driver/interface/commonArgs";
+export interface M365TenantRes {
   tenantIdInToken: string;
   tenantUserName: string;
 }
@@ -208,47 +210,57 @@ export class ProvisionUtils {
     }
     return ok(undefined);
   }
-  // /**
-  //  * make sure subscription is correct before provision for V3
-  //  * subscriptionId is provided from .env.xxx file
-  //  */
-  // async ensureSubscription(
-  //   azureAccountProvider: AzureAccountProvider,
-  //   givenSubscriptionId?: string
-  // ): Promise<Result<SubscriptionInfo, FxError>> {
-  //   // make sure the user is logged in
-  //   await azureAccountProvider.getIdentityCredentialAsync(true);
-  //   if (!givenSubscriptionId) {
-  //     const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
-  //     if (!subscriptionInAccount) {
-  //       return err(
-  //         new UserError(
-  //           "coordinator",
-  //           SolutionError.SubscriptionNotFound,
-  //           getLocalizedString("core.provision.subscription.failToSelect")
-  //         )
-  //       );
-  //     } else {
-  //       return ok(subscriptionInAccount);
-  //     }
-  //   }
+  /**
+   * make sure subscription is correct before provision for V3
+   * subscriptionId is provided from .env.xxx file
+   */
+  async ensureSubscription(
+    azureAccountProvider: AzureAccountProvider,
+    givenSubscriptionId?: string
+  ): Promise<Result<SubscriptionInfo, FxError>> {
+    TOOLS.logProvider.info("check whether azure account is signed in.");
+    // make sure the user is logged in
+    await azureAccountProvider.getIdentityCredentialAsync(true);
+    if (!givenSubscriptionId) {
+      TOOLS.logProvider.info("subscription is not selected, try to select.");
+      try {
+        const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
+        if (!subscriptionInAccount) {
+          return err(
+            new UserError(
+              CoordinatorSource,
+              SolutionError.SubscriptionNotFound,
+              getLocalizedString("core.provision.subscription.failToSelect")
+            )
+          );
+        } else {
+          TOOLS.logProvider.info(
+            `successful to select subscription: ${subscriptionInAccount.subscriptionId}`
+          );
+          return ok(subscriptionInAccount);
+        }
+      } catch (e) {
+        return err(assembleError(e));
+      }
+    }
 
-  //   // verify valid subscription (permission)
-  //   const subscriptions = await azureAccountProvider.listSubscriptions();
-
-  //   const foundSubscriptionInfo = findSubscriptionFromList(givenSubscriptionId, subscriptions);
-  //   if (!foundSubscriptionInfo) {
-  //     return err(
-  //       new UserError(
-  //         "coordinator",
-  //         SolutionError.SubscriptionNotFound,
-  //         getLocalizedString("core.provision.subscription.NotFound", givenSubscriptionId)
-  //       )
-  //     );
-  //   }
-
-  //   return ok(foundSubscriptionInfo);
-  // }
+    // verify valid subscription (permission)
+    TOOLS.logProvider.info("subscription is given, try to validate");
+    const subscriptions = await azureAccountProvider.listSubscriptions();
+    const foundSubscriptionInfo = findSubscriptionFromList(givenSubscriptionId, subscriptions);
+    if (!foundSubscriptionInfo) {
+      TOOLS.logProvider.info("subscription validate fail");
+      return err(
+        new UserError(
+          CoordinatorSource,
+          SolutionError.SubscriptionNotFound,
+          getLocalizedString("core.provision.subscription.NotFound", givenSubscriptionId)
+        )
+      );
+    }
+    TOOLS.logProvider.info("subscription validate success");
+    return ok(foundSubscriptionInfo);
+  }
   /**
    * make sure subscription is correct before provision
    *
@@ -466,53 +478,67 @@ export class ProvisionUtils {
     }
   }
 
-  // async ensureResourceGroup(
-  //   platform: Platform,
-  //   azureAccountProvider: AzureAccountProvider,
-  //   subscriptionId: string,
-  //   givenResourceGroupName?: string,
-  //   givenResourceGroupLocation?: string
-  // ): Promise<Result<ResourceGroupInfo, FxError>> {
-  //   const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
-  //   if (azureToken === undefined) {
-  //     return err(
-  //       new UserError(
-  //         "coordinator",
-  //         SolutionError.NotLoginToAzure,
-  //         getLocalizedString("core.error.notLoginToAzure")
-  //       )
-  //     );
-  //   }
-  //   const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
-  //   let resourceGroupInfo: ResourceGroupInfo;
-  //   if (givenResourceGroupName) {
-  //     const getResourceGroupRes = await resourceGroupHelper.getResourceGroupInfo(
-  //       givenResourceGroupName,
-  //       rmClient
-  //     );
-  //     if (getResourceGroupRes.isErr()) {
-  //       // resource group not exist
-  //       if (platform === Platform.VS && givenResourceGroupLocation) {
-  //         resourceGroupInfo = {
-  //           createNewResourceGroup: true,
-  //           name: givenResourceGroupName,
-  //           location: givenResourceGroupLocation,
-  //         };
-  //       } else return err(getResourceGroupRes.error);
-  //     } else {
-  //       if (!getResourceGroupRes.value) {
-  //         return err(
-  //           new UserError(
-  //             SolutionSource,
-  //             SolutionError.ResourceGroupNotFound,
-  //             getLocalizedString("core.error.resourceGroupNotFound", givenResourceGroupName)
-  //           )
-  //         );
-  //       }
-  //     }
-  //   }
-  //   return ok(resourceGroupInfo!);
-  // }
+  async ensureResourceGroup(
+    azureAccountProvider: AzureAccountProvider,
+    subscriptionId: string,
+    givenResourceGroupName?: string,
+    defaultResourceGroupName?: string
+  ): Promise<Result<ResourceGroupInfo, FxError>> {
+    const azureToken = await azureAccountProvider.getIdentityCredentialAsync();
+    if (azureToken === undefined) {
+      return err(
+        new UserError(
+          CoordinatorSource,
+          SolutionError.NotLoginToAzure,
+          getLocalizedString("core.error.notLoginToAzure")
+        )
+      );
+    }
+    const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
+    let resourceGroupInfo: ResourceGroupInfo;
+    if (givenResourceGroupName) {
+      const getResourceGroupRes = await resourceGroupHelper.getResourceGroupInfo(
+        givenResourceGroupName,
+        rmClient
+      );
+      if (getResourceGroupRes.isErr()) {
+        return err(getResourceGroupRes.error);
+      } else {
+        if (!getResourceGroupRes.value) {
+          return err(
+            new UserError(
+              SolutionSource,
+              SolutionError.ResourceGroupNotFound,
+              getLocalizedString("core.error.resourceGroupNotFound", givenResourceGroupName)
+            )
+          );
+        } else {
+          resourceGroupInfo = getResourceGroupRes.value;
+        }
+      }
+    } else {
+      const defaultRG = defaultResourceGroupName || "teams-app-rg";
+      const rgRes = await resourceGroupHelper.askResourceGroupInfoV3(
+        azureAccountProvider,
+        rmClient,
+        defaultRG
+      );
+      if (rgRes.isErr()) return err(rgRes.error);
+      resourceGroupInfo = rgRes.value;
+    }
+    if (resourceGroupInfo && resourceGroupInfo.createNewResourceGroup) {
+      const createRgRes = await resourceGroupHelper.createNewResourceGroup(
+        resourceGroupInfo.name,
+        azureAccountProvider,
+        subscriptionId,
+        resourceGroupInfo.location
+      );
+      if (createRgRes.isErr()) {
+        return err(createRgRes.error);
+      }
+    }
+    return ok(resourceGroupInfo);
+  }
 
   /**
    * Asks common questions and puts the answers in the global namespace of SolutionConfig
@@ -574,8 +600,8 @@ export class ProvisionUtils {
     const resourceGroupNameFromEnvConfig = envInfo.config.azure?.resourceGroupName;
     const resourceGroupNameFromState = envInfo.state.solution.resourceGroupName;
     const resourceGroupLocationFromState = envInfo.state.solution.location;
-    const appName = convertToAlphanumericOnly(ctx.projectSetting.appName);
-    const defaultResourceGroupName = `${snakeCase(appName)}${"-" + envInfo.envName}-rg`;
+    const appName = convertToAlphanumericOnly(ctx.projectSetting.appName!);
+    const defaultResourceGroupName = `${appName.replace(" ", "_")}${"-" + envInfo.envName}-rg`;
     let resourceGroupInfo: ResourceGroupInfo;
     const telemetryProperties: { [key: string]: string } = {};
     if (inputs.env) {
@@ -748,7 +774,98 @@ export class ProvisionUtils {
     }
     return ok({ tenantIdInToken, tenantUserName });
   }
+  async askForProvisionConsentV3(
+    ctx: DriverContext,
+    m365tenant: M365TenantRes | undefined,
+    azureSubInfo: SubscriptionInfo,
+    envName: string | undefined
+  ): Promise<Result<undefined, FxError>> {
+    const azureTokenJson = await ctx.azureAccountProvider.getJsonObject();
+    const username = (azureTokenJson as any).unique_name || "";
 
+    const azureAccountInfo = getLocalizedString("core.provision.azureAccount", username);
+    const azureSubscriptionInfo = getLocalizedString(
+      "core.provision.azureSubscription",
+      azureSubInfo.subscriptionName
+    );
+    const accountsInfo = [azureAccountInfo, azureSubscriptionInfo];
+    if (m365tenant) {
+      const m365AccountInfo = getLocalizedString(
+        "core.provision.m365Account",
+        m365tenant?.tenantUserName
+      );
+      accountsInfo.push(m365AccountInfo);
+    }
+
+    const confirmMsg = getLocalizedString("core.provision.confirmEnvAndCostNotice", envName);
+    const provisionText = getLocalizedString("core.provision.provision");
+
+    const confirmRes = await ctx.ui?.showMessage(
+      "warn",
+      accountsInfo.join("\n") + "\n\n" + confirmMsg,
+      true,
+      provisionText
+    );
+    if (!!confirmRes && confirmRes.isErr()) {
+      return err(confirmRes.error);
+    }
+    const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
+    ctx.telemetryReporter?.sendTelemetryEvent(
+      TelemetryEvent.ConfirmProvision,
+      envName
+        ? {
+            [TelemetryProperty.Env]: getHashedEnv(envName),
+            [SolutionTelemetryProperty.SubscriptionId]: azureSubInfo.subscriptionId,
+            [SolutionTelemetryProperty.M365TenantId]: m365tenant?.tenantIdInToken ?? "",
+            [SolutionTelemetryProperty.ConfirmRes]: !confirm
+              ? "Error"
+              : confirm === provisionText
+              ? "Provision"
+              : "Cancel",
+          }
+        : {}
+    );
+    if (!!confirm && confirm !== provisionText) {
+      return err(new UserError("coordinator", "CancelProvision", "CancelProvision"));
+    }
+
+    return ok(undefined);
+  }
+
+  async ensureM365TenantMatchesV3(
+    actions: string[],
+    tenantId: string | undefined,
+    env: string | undefined,
+    source: string
+  ): Promise<Result<undefined, FxError>> {
+    if (actions.length === 0 || !tenantId) {
+      return ok(undefined);
+    }
+
+    const hasSwitched =
+      !!process.env.TEAMS_APP_TENANT_ID && process.env.TEAMS_APP_TENANT_ID !== tenantId;
+    const keysNeedToUpdate: string[] = ["TEAMS_APP_TENANT_ID"];
+    if (actions.includes("aadApp/create")) {
+      if (process.env.AAD_APP_CLIENT_ID) {
+        keysNeedToUpdate.push("AAD_APP_CLIENT_ID");
+      }
+    }
+    if (actions.includes("botAadApp/create") || actions.includes("m365Bot/create")) {
+      if (process.env.BOT_ID) {
+        keysNeedToUpdate.push("BOT_ID");
+      }
+    }
+    const msg = getLocalizedString(
+      "error.m365tenantcheck.tenantNotMatch",
+      keysNeedToUpdate.join(", "),
+      env,
+      HelpLinks.SwitchTenant
+    );
+
+    const error = new UserError(source, "M365TenantNotMatch", msg, msg);
+    error.helpLink = HelpLinks.SwitchTenant;
+    return !hasSwitched ? ok(undefined) : err(error);
+  }
   async askForProvisionConsent(
     ctx: v2.Context,
     azureAccountProvider: AzureAccountProvider,
@@ -1064,7 +1181,7 @@ export async function handleConfigFilesWhenSwitchAccount(
 
   const updateAzureParametersRes = await updateAzureParameters(
     inputs.projectPath,
-    context.projectSetting.appName,
+    context.projectSetting.appName!,
     envInfo.envName,
     hasSwitchedM365Tenant,
     hasSwitchedSubscription,

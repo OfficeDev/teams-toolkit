@@ -4,8 +4,8 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
-import { err, FxError, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { Err, err, FxError, Inputs, ok, QTreeNode, UserError } from "@microsoft/teamsfx-api";
+import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
 
 import Deploy from "../../../src/cmds/deploy";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -13,9 +13,12 @@ import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import * as constants from "../../../src/constants";
 import { expect } from "../utils";
-import { NotSupportedProjectType } from "../../../src/error";
+import { assert } from "chai";
+import { EnvNotSpecified, NotSupportedProjectType } from "../../../src/error";
 import UI from "../../../src/userInteraction";
 import LogProvider from "../../../src/commonlib/log";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import CLIUIInstance from "../../../src/userInteraction";
 
 describe("Deploy Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -33,6 +36,7 @@ describe("Deploy Command Tests", function () {
     "api-version": {},
     "include-app-manifest": {},
   };
+  let mockedEnvRestore: RestoreFn = () => {};
 
   before(() => {
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").callsFake(() => {
@@ -77,6 +81,8 @@ describe("Deploy Command Tests", function () {
       allArguments.set(key, value);
     });
     sandbox.stub(LogProvider, "necessaryLog").returns();
+    sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev", "local"]));
+    CLIUIInstance.interactive = false;
   });
 
   after(() => {
@@ -88,6 +94,10 @@ describe("Deploy Command Tests", function () {
     options = [];
     positionals = [];
     allArguments = new Map<string, any>();
+  });
+
+  afterEach(() => {
+    mockedEnvRestore();
   });
 
   it("Builder Check", () => {
@@ -123,6 +133,19 @@ describe("Deploy Command Tests", function () {
     };
     await cmd.handler(args);
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
+  });
+
+  it("Deploy Command Running -- V3", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    const cmd = new Deploy();
+    cmd["params"] = params;
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+      components: ["a"],
+    };
+    await expect(cmd.handler(args)).to.be.rejectedWith(EnvNotSpecified);
   });
 
   it("Deploy Command Running -- deployArtifacts error", async () => {
@@ -174,5 +197,95 @@ describe("Deploy Command Tests", function () {
     };
     await cmd.handler(args);
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
+  });
+
+  it("Deploy Command Running -- aad manifest component V3", async () => {
+    const cmd = new Deploy();
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    cmd["params"] = {
+      [constants.deployPluginNodeName]: {
+        choices: ["aad-manifest"],
+        default: ["fx-resource-aad-app-for-teams"],
+        description: "deployPluginNodeName",
+      },
+      "open-api-document": {},
+      "api-prefix": {},
+      "api-version": {},
+    };
+    (HelpParamGenerator.getQuestionRootNodeForHelp as any).restore();
+    sandbox.stub(HelpParamGenerator, "getQuestionRootNodeForHelp").callsFake(() => {
+      return new QTreeNode({
+        name: constants.deployPluginNodeName,
+        type: "multiSelect",
+        title: "deployPluginNodeName",
+        staticOptions: ["fx-resource-aad-app-for-teams"],
+      });
+    });
+
+    // (FxCore.prototype.deployAadManifest as any).restore();
+    sandbox.stub(FxCore.prototype, "deployAadManifest").callsFake(async (inputs: Inputs) => {
+      if (inputs["include-aad-manifest"] === "yes") return ok("");
+      else return err(NotSupportedProjectType());
+    });
+
+    (FxCore.prototype.deployArtifacts as any).restore();
+    sandbox.stub(FxCore.prototype, "deployArtifacts").callsFake(async (inputs: Inputs) => {
+      if (inputs["include-aad-manifest"] === "yes") return ok("");
+      else return err(NotSupportedProjectType());
+    });
+
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+      components: ["aad-manifest"],
+      env: "dev",
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
+  });
+
+  it("Deploy Command Running -- aad manifest component V3", async () => {
+    const cmd = new Deploy();
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    cmd["params"] = {
+      [constants.deployPluginNodeName]: {
+        choices: ["aad-manifest"],
+        default: ["fx-resource-aad-app-for-teams"],
+        description: "deployPluginNodeName",
+      },
+      "open-api-document": {},
+      "api-prefix": {},
+      "api-version": {},
+    };
+    (HelpParamGenerator.getQuestionRootNodeForHelp as any).restore();
+    sandbox.stub(HelpParamGenerator, "getQuestionRootNodeForHelp").callsFake(() => {
+      return new QTreeNode({
+        name: constants.deployPluginNodeName,
+        type: "multiSelect",
+        title: "deployPluginNodeName",
+        staticOptions: ["fx-resource-aad-app-for-teams"],
+      });
+    });
+
+    (FxCore.prototype.deployAadManifest as any).restore();
+    sandbox
+      .stub(FxCore.prototype, "deployAadManifest")
+      .resolves(err(new UserError("Fake_Err_msg", "Fake_Err_name", "Fake_test")));
+
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+      components: ["aad-manifest"],
+      env: "dev",
+    };
+    try {
+      await cmd.handler(args);
+    } catch (e) {
+      expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.DeployAad]);
+      expect(e).instanceOf(UserError);
+      expect(e.name).equals("Fake_Err_name");
+    }
   });
 });

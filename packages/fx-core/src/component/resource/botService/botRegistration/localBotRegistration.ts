@@ -14,10 +14,17 @@ export class LocalBotRegistration extends BotRegistration {
     aadDisplayName: string,
     botName: string,
     botConfig?: BotAadCredentials,
+    isIdFromState?: boolean,
     botAuthType: BotAuthType = BotAuthType.AADApp,
     logProvider?: LogProvider
   ): Promise<Result<BotAadCredentials, FxError>> {
-    const botAadRes = await super.createBotAadApp(m365TokenProvider, aadDisplayName, botConfig);
+    const botAadRes = await super.createBotAadApp(
+      m365TokenProvider,
+      aadDisplayName,
+      botConfig,
+      botAuthType,
+      logProvider
+    );
     if (botAadRes.isErr()) {
       return err(botAadRes.error);
     }
@@ -43,7 +50,7 @@ export class LocalBotRegistration extends BotRegistration {
       messagingEndpoint: "",
       callingEndpoint: "",
     };
-    await AppStudioClient.createBotRegistration(appStudioToken, initialBotReg);
+    await AppStudioClient.createBotRegistration(appStudioToken, initialBotReg, isIdFromState);
     logProvider?.info(Messages.SuccessfullyProvisionedBotRegistration);
     return ok(botAadCredentials);
   }

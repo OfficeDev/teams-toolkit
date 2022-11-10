@@ -92,6 +92,14 @@ describe("Package Command Tests", function () {
     expect(registeredCommands).deep.equals(["package"]);
   });
 
+  it("Builder Check V3", () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    const cmd = new Package();
+    cmd.builder(yargs);
+  });
+
   it("Package Command Running Check", async () => {
     sandbox
       .stub(FxCore.prototype, "executeUserTask")
@@ -116,7 +124,7 @@ describe("Package Command Tests", function () {
     expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
   });
 
-  it("Package Command Running Check", async () => {
+  it("Package Command Running Check V3", async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3: "true",
     });
@@ -128,8 +136,8 @@ describe("Package Command Tests", function () {
           namespace: "fx-solution-azure",
           method: "buildPackage",
           params: {
-            manifestTemplatePath: `${root}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`,
-            ouptutZipPath: `${root}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`,
+            manifestTemplatePath: `${root}/${AppPackageFolderName}/manifest.template.json`,
+            outputZipPath: `${root}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`,
             outputJsonPath: `${root}/${BuildFolderName}/${AppPackageFolderName}/manifest.${inputs.env}.json`,
             env: inputs.env,
           },

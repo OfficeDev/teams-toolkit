@@ -83,11 +83,12 @@ describe("v3 yaml parser", () => {
       assert(result.isOk());
     });
   });
-  describe(`when parsing real teamsfx.yml`, () => {
+
+  describe(`when parsing real app.yml`, () => {
     // because driver resolution happens when the driver actually runs.
     it("should return ok", async () => {
       const parser = new YamlParser();
-      const result = await parser.parse(path.resolve(__dirname, "testing_data", "teamsfx.yml"));
+      const result = await parser.parse(path.resolve(__dirname, "testing_data", "app.yml"));
       assert(result.isOk());
       if (result.isOk()) {
         const model = result.value;
@@ -95,6 +96,34 @@ describe("v3 yaml parser", () => {
           chai.expect(model[lifecycle]).is.not.undefined;
         }
       }
+    });
+  });
+
+  describe(`when parsing yml with invalid env field`, () => {
+    it("should return error if env field is of type string", async () => {
+      const parser = new YamlParser();
+      const result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "invalid_env_field_string.yml")
+      );
+      assert(result.isErr() && result.error.name === "InvalidEnvFieldError");
+    });
+
+    it("should return error if env field is of type string", async () => {
+      const parser = new YamlParser();
+      const result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "invalid_env_field_array.yml")
+      );
+      assert(result.isErr() && result.error.name === "InvalidEnvFieldError");
+    });
+  });
+
+  describe(`when parsing yml with valid env field`, async () => {
+    it("should return ok", async () => {
+      const parser = new YamlParser();
+      const result = await parser.parse(
+        path.resolve(__dirname, "testing_data", "valid_env_field.yml")
+      );
+      assert(result.isOk());
     });
   });
 });

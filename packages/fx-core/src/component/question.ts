@@ -110,11 +110,12 @@ export async function getQuestionsForProvisionV3(
     node.addChild(buildQuestionNode());
     return ok(node);
   } else {
-    const node = new QTreeNode({ type: "group" });
-    if (hasAzureResourceV3(context.projectSetting as ProjectSettingsV3)) {
-      node.addChild(new QTreeNode(AskSubscriptionQuestion));
-    }
-    return ok(node);
+    // const node = new QTreeNode({ type: "group" });
+    // if (hasAzureResourceV3(context.projectSetting as ProjectSettingsV3)) {
+    //   node.addChild(new QTreeNode(AskSubscriptionQuestion));
+    // }
+    // return ok(node);
+    return ok(undefined);
   }
 }
 
@@ -216,6 +217,16 @@ export async function getQuestionsForDeployV3(
       default: "no",
     });
     node.addChild(aadNode);
+    if (CLIPlatforms.includes(inputs.platform)) {
+      // this question only works on CLI.
+      const aadManifestFilePathNode = new QTreeNode({
+        name: Constants.AAD_MANIFEST_FILE,
+        type: "singleFile",
+        title: getLocalizedString("core.aad.aadManifestFilePath"),
+        default: "",
+      });
+      node.addChild(aadManifestFilePathNode);
+    }
   }
   if (selectableComponents.includes(ComponentNames.AppManifest)) {
     const appManifestNode = new QTreeNode({
@@ -275,9 +286,9 @@ export async function getQuestionsForAddFeatureV3(
     const manifestRes = await manifestUtils.readAppManifest(inputs.projectPath!);
     if (manifestRes.isErr()) return err(manifestRes.error);
     const manifest = manifestRes.value;
-    const canAddTab = manifest.staticTabs!.length < STATIC_TABS_MAX_ITEMS;
-    const botExceedLimit = manifest.bots!.length > 0;
-    const meExceedLimit = manifest.composeExtensions!.length > 0;
+    const canAddTab = !manifest.staticTabs || manifest.staticTabs.length < STATIC_TABS_MAX_ITEMS;
+    const botExceedLimit = !manifest.bots || manifest.bots.length > 0;
+    const meExceedLimit = !manifest.composeExtensions || manifest.composeExtensions.length > 0;
     const projectSettingsV3 = ctx.projectSetting as ProjectSettingsV3;
     const teamsBot = getComponent(ctx.projectSetting as ProjectSettingsV3, ComponentNames.TeamsBot);
     const alreadyHasNewBot =
@@ -659,3 +670,12 @@ export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestio
     },
   };
 }
+
+export const SelectEnvQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "env",
+  title: getLocalizedString("core.QuestionSelectTargetEnvironment.title"),
+  staticOptions: [],
+  skipSingleOption: true,
+  forgetLastValue: true,
+};

@@ -1,32 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
-import { Argv, Options } from "yargs";
-
-import { FxError, err, ok, Result, Stage, LogLevel } from "@microsoft/teamsfx-api";
-
-import { YargsCommand } from "../yargsCommand";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { Result, FxError, ok, err, LogLevel } from "@microsoft/teamsfx-api";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import {
   InvalidEnvNameError,
   ProjectEnvAlreadyExistError,
 } from "@microsoft/teamsfx-core/build/core/error";
-import * as process from "process";
-import * as os from "os";
-import CLILogProvider from "../commonlib/log";
-import { WorkspaceNotSupported } from "./preview/errors";
-import HelpParamGenerator from "../helpParamGenerator";
+import os from "os";
+import { Argv } from "yargs";
 import activate from "../activate";
-import { getSystemInputs, isWorkspaceSupported } from "../utils";
+import CLILogProvider from "../commonlib/log";
+import { RootFolderOptions, EnvOptions, EnvNodeNoCreate } from "../constants";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { EnvNodeNoCreate } from "../constants";
+import { isWorkspaceSupported, getSystemInputs } from "../utils";
+import { YargsCommand } from "../yargsCommand";
+import { WorkspaceNotSupported } from "./preview/errors";
 
 export default class Env extends YargsCommand {
   public readonly commandHead = `env`;
@@ -39,7 +33,7 @@ export default class Env extends YargsCommand {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    return yargs.version(false);
+    return yargs.hide("interactive").version(false);
   }
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     return ok(null);
@@ -53,13 +47,15 @@ class EnvAdd extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     // TODO: support --details
-    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.createEnv);
     yargs.positional("name", {
       description: "The new environment name",
       type: "string",
       require: true,
     });
-    return yargs.version(false).options(this.params).demandOption(EnvNodeNoCreate.data.name!);
+    return yargs
+      .options(RootFolderOptions)
+      .options(EnvOptions)
+      .demandOption(EnvNodeNoCreate.data.name!);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -87,7 +83,7 @@ class EnvAdd extends YargsCommand {
       return err(validNewTargetEnvResult.error);
     }
 
-    const inputs = getSystemInputs(projectDir);
+    const inputs = getSystemInputs(projectDir, args.env);
     inputs.newTargetEnvName = targetEnv;
     inputs.sourceEnvName = sourceEnv;
 
@@ -100,6 +96,10 @@ class EnvAdd extends YargsCommand {
       );
       return err(result.error);
     }
+    CLILogProvider.necessaryLog(
+      LogLevel.Info,
+      `The "${targetEnv}" environment has been created successfully, which is based on the "${sourceEnv}" environment.`
+    );
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateNewEnvironment, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -134,8 +134,7 @@ class EnvList extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     // TODO: support --details
-    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.listEnv);
-    return yargs.version(false).options(this.params);
+    return yargs.options(RootFolderOptions);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

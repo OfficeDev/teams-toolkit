@@ -41,6 +41,7 @@ import {
 } from "../component/constants";
 import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { ResourceManagementClient } from "@azure/arm-resources";
+import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -64,16 +65,22 @@ export enum CoreQuestionNames {
   NewTargetEnvName = "newTargetEnvName",
   ExistingTabEndpoint = "existing-tab-endpoint",
   SafeProjectName = "safeProjectName",
+  ReplaceContentUrl = "replaceContentUrl",
+  ReplaceWebsiteUrl = "replaceWebsiteUrl",
 }
 
 export const ProjectNamePattern =
   '^(?=(.*[\\da-zA-Z]){2})[a-zA-Z][^"<>:\\?/*&|\u0000-\u001F]*[^"\\s.<>:\\?/*&|\u0000-\u001F]$';
 
-export function createAppNameQuestion(validateProjectPathExistence = true): TextInputQuestion {
+export function createAppNameQuestion(
+  defaultAppName?: string,
+  validateProjectPathExistence = true
+): TextInputQuestion {
   const question: TextInputQuestion = {
     type: "text",
     name: CoreQuestionNames.AppName,
     title: "Application name",
+    default: defaultAppName,
     validation: {
       validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
         const schema = {
@@ -311,7 +318,56 @@ export function createCapabilityForDotNet(): SingleSelectQuestion {
   };
 }
 
-export function createCapabilityQuestionPreview(): SingleSelectQuestion {
+export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQuestion {
+  // AB test for notification/command/workflow bot template naming
+  if (inputs?.taskOrientedTemplateNaming) {
+    NotificationOptionItem.label = `$(hubot) ${getLocalizedString(
+      "core.NotificationOption.label.abTest"
+    )}`;
+    NotificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
+    CommandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
+      "core.CommandAndResponseOption.label.abTest"
+    )}`;
+    CommandAndResponseOptionItem.detail = getLocalizedString(
+      "core.CommandAndResponseOption.detail.abTest"
+    );
+    WorkflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
+    WorkflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
+  }
+
+  // AB test for in product doc
+  if (inputs?.inProductDoc) {
+    NotificationOptionItem.buttons = [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+    CommandAndResponseOptionItem.buttons = [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+    WorkflowOptionItem.data = "cardActionResponse";
+    WorkflowOptionItem.buttons = [
+      {
+        iconPath: "file-code",
+        tooltip: getLocalizedString("core.option.inProduct"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+    TabNewUIOptionItem.buttons = [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+  }
+
   // new capabilities question order
   const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
 
@@ -658,4 +714,54 @@ export const ExistingTabEndpointQuestion: TextInputQuestion = {
       return undefined;
     },
   },
+};
+
+export const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
+
+export const tabsContentUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion => {
+  return {
+    type: "multiSelect",
+    name: CoreQuestionNames.ReplaceContentUrl,
+    title: getLocalizedString("core.updateContentUrlQuestion.title", defaultTabLocalHostUrl),
+    staticOptions: tabs.map((o) => tabContentUrlOptionItem(o)),
+    default: tabs.map((o) => o.name),
+    placeholder: getLocalizedString("core.updateUrlQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+};
+
+export const tabsWebsitetUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion => {
+  return {
+    type: "multiSelect",
+    name: CoreQuestionNames.ReplaceWebsiteUrl,
+    title: getLocalizedString("core.updateWebsiteUrlQuestion.title", defaultTabLocalHostUrl),
+    staticOptions: tabs.map((o) => tabWebsiteUrlOptionItem(o)),
+    default: tabs.map((o) => o.name),
+    placeholder: getLocalizedString("core.updateUrlQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+};
+
+export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
+  return {
+    id: tab.name,
+    label: tab.name,
+    detail: getLocalizedString(
+      "core.updateContentUrlOption.description",
+      tab.contentUrl,
+      defaultTabLocalHostUrl
+    ),
+  };
+};
+
+export const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
+  return {
+    id: tab.name,
+    label: tab.name,
+    detail: getLocalizedString(
+      "core.updateWebsiteUrlOption.description",
+      tab.websiteUrl,
+      defaultTabLocalHostUrl
+    ),
+  };
 };

@@ -84,7 +84,10 @@ export async function ensureBicepForDriver(
 ): Promise<string> {
   const bicepChecker = new BicepChecker(ctx.logProvider, ctx.telemetryReporter, version);
   try {
-    await bicepChecker.install();
+    const isPrivateBicepInstalled: boolean = await bicepChecker.isPrivateBicepInstalled();
+    if (!isPrivateBicepInstalled) {
+      await bicepChecker.install();
+    }
   } catch (err) {
     ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
     await displayLearnMore(
@@ -296,7 +299,8 @@ class BicepChecker {
 
   private async handleInstallCompleted() {
     this._telemetry?.sendTelemetryEvent(DepsCheckerEvent.bicepInstallCompleted);
-    await this._logger?.info(Messages.finishInstallBicep.replace("@NameVersion", displayBicepName));
+    const displayName = this._version ? `${BicepName} (${this._version})` : displayBicepName;
+    await this._logger?.info(Messages.finishInstallBicep.replace("@NameVersion", displayName));
   }
 
   private async handleInstallFailed(): Promise<void> {
@@ -310,6 +314,9 @@ class BicepChecker {
   }
 
   private isVersionSupported(version: string): boolean {
+    if (this._version) {
+      return this._version === version;
+    }
     return supportedVersions.some((supported) => version.includes(supported));
   }
 
@@ -324,7 +331,7 @@ class BicepChecker {
     }
   }
 
-  private async isPrivateBicepInstalled(): Promise<boolean> {
+  public async isPrivateBicepInstalled(): Promise<boolean> {
     try {
       const version = await this.queryVersion(this.getBicepExecPath());
       return this.isVersionSupported(version);

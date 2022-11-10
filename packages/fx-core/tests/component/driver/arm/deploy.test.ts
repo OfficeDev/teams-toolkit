@@ -7,6 +7,7 @@ import { createSandbox } from "sinon";
 import { setTools } from "../../../../src/core/globalVars";
 import {
   MockAzureAccountProvider,
+  MockLogProvider,
   MockTelemetryReporter,
   MockTools,
   MockUserInteraction,
@@ -19,6 +20,8 @@ import { ArmDeployImpl } from "../../../../src/component/driver/arm/deployImpl";
 import { ok } from "@microsoft/teamsfx-api";
 import * as bicepChecker from "../../../../src/component/utils/depsChecker/bicepChecker";
 import axios from "axios";
+import { getAbsolutePath } from "../../../../src/component/utils/common";
+import { useUserSetEnv } from "../../../../src/core/middleware/envInfoLoaderV3";
 
 describe("Arm driver deploy", () => {
   const sandbox = createSandbox();
@@ -29,6 +32,8 @@ describe("Arm driver deploy", () => {
     azureAccountProvider: new MockAzureAccountProvider(),
     telemetryReporter: new MockTelemetryReporter(),
     ui: new MockUserInteraction(),
+    logProvider: new MockLogProvider(),
+    projectPath: "./",
   };
   const driver = new ArmDeployDriver();
 
@@ -119,6 +124,21 @@ describe("Arm driver deploy", () => {
     } as any;
     res = await driver.run(deployArgs, mockedDriverContext);
     assert.isTrue(res.isErr());
+
+    deployArgs = {
+      subscriptionId: "00000000-0000-0000-0000-000000000000",
+      resourceGroupName: "mock-group",
+      bicepCliVersion: "",
+      templates: [
+        {
+          path: "C:/mock-template",
+          parameters: "",
+          deploymentName: "",
+        },
+      ],
+    } as any;
+    res = await driver.run(deployArgs, mockedDriverContext);
+    assert.isTrue(res.isErr());
   });
 
   it("deploy error", async () => {
@@ -155,6 +175,50 @@ describe("Arm driver deploy", () => {
     sandbox.stub(ArmDeployImpl.prototype, "run").throws("mocked deploy error");
 
     const res = await driver.run({} as any, mockedDriverContext);
+    assert.isTrue(res.isErr());
+  });
+});
+
+describe("util test", () => {
+  const sandbox = createSandbox();
+  const tools = new MockTools();
+  setTools(tools);
+  const mockedDriverContext: any = {
+    m365TokenProvider: new MockedM365Provider(),
+    azureAccountProvider: new MockAzureAccountProvider(),
+    telemetryReporter: new MockTelemetryReporter(),
+    ui: new MockUserInteraction(),
+    logProvider: new MockLogProvider(),
+    projectPath: "./",
+  };
+  const driver = new ArmDeployDriver();
+
+  const bicepCliVersion = "v0.9.1";
+  beforeEach(() => {});
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("getAbsolutePath empty", () => {
+    const relativeOrAbsolutePath = undefined;
+    const projectPath = undefined;
+    const res = getAbsolutePath(
+      relativeOrAbsolutePath as unknown as string,
+      projectPath as unknown as string
+    );
+    assert.equal(res, ".");
+  });
+
+  it("getAbsolutePath absolute path", () => {
+    const relativeOrAbsolutePath = "C:/a";
+    const projectPath = "";
+    const res = getAbsolutePath(relativeOrAbsolutePath, projectPath);
+    assert.equal(relativeOrAbsolutePath, res);
+  });
+
+  it("useUserSetEnv", async () => {
+    const res = await useUserSetEnv("./", "local");
     assert.isTrue(res.isErr());
   });
 });

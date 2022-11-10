@@ -24,29 +24,14 @@ export class UnzipError extends BaseComponentInnerError {
 }
 
 export class FetchZipFromUrlError extends BaseComponentInnerError {
-  constructor(url: string, innerError: Error) {
+  constructor(url: string) {
     super(
       errorSource,
       "SystemError",
       "FetchZipFromUrlError",
       "error.generator.FetchZipFromUrlError",
       [url],
-      ["plugins.frontend.checkNetworkTip"],
-      innerError.message
-    );
-  }
-}
-
-export class FetchSampleUrlWithTagError extends BaseComponentInnerError {
-  constructor(innerError: Error) {
-    super(
-      errorSource,
-      "SystemError",
-      "FetchSampleUrlWithTagError",
-      "error.generator.FetchSampleUrlWithTagError",
-      undefined,
-      ["plugins.frontend.checkNetworkTip"],
-      innerError.message
+      ["plugins.frontend.checkNetworkTip"]
     );
   }
 }

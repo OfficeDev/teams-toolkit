@@ -60,6 +60,7 @@ import {
   createTeamsApp,
   publishTeamsApp,
   updateManifest,
+  updateManifestV3,
   updateTeamsApp,
   validateManifest,
 } from "./appStudio";
@@ -441,7 +442,11 @@ export class AppManifest implements CloudResource {
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     TelemetryUtils.init(context);
-    return await updateManifest(context, inputs);
+    if (isV3Enabled()) {
+      return await updateManifestV3(context, inputs);
+    } else {
+      return await updateManifest(context, inputs);
+    }
   }
 
   /**
@@ -496,7 +501,7 @@ export class AppManifest implements CloudResource {
   async listCollaborator(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3,
+    envInfo: v3.EnvInfoV3 | undefined,
     m365TokenProvider: M365TokenProvider,
     teamsAppIdV3?: string
   ): Promise<Result<TeamsAppAdmin[], FxError>> {
@@ -504,7 +509,7 @@ export class AppManifest implements CloudResource {
     try {
       const teamsAppId = isV3Enabled()
         ? teamsAppIdV3
-        : await this.getTeamsAppId(ctx, inputs, envInfo);
+        : await this.getTeamsAppId(ctx, inputs, envInfo!);
       if (!teamsAppId) {
         return err(
           new UserError(
@@ -570,7 +575,7 @@ export class AppManifest implements CloudResource {
   public async grantPermission(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3,
+    envInfo: v3.EnvInfoV3 | undefined,
     m365TokenProvider: M365TokenProvider,
     userInfo: AppUser,
     teamsAppIdV3?: string
@@ -582,7 +587,7 @@ export class AppManifest implements CloudResource {
 
       const teamsAppId = isV3Enabled()
         ? teamsAppIdV3
-        : await this.getTeamsAppId(ctx, inputs, envInfo);
+        : await this.getTeamsAppId(ctx, inputs, envInfo!);
       if (!teamsAppId) {
         const msgs = ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, this.name);
         return err(
@@ -643,7 +648,7 @@ export class AppManifest implements CloudResource {
   async checkPermission(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3,
+    envInfo: v3.EnvInfoV3 | undefined,
     m365TokenProvider: M365TokenProvider,
     userInfo: AppUser,
     teamsAppIdV3?: string
@@ -654,7 +659,7 @@ export class AppManifest implements CloudResource {
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
       const teamsAppId = isV3Enabled()
         ? teamsAppIdV3
-        : await this.getTeamsAppId(ctx, inputs, envInfo);
+        : await this.getTeamsAppId(ctx, inputs, envInfo!);
       if (!teamsAppId) {
         return err(
           new UserError(

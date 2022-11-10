@@ -2,7 +2,11 @@
 // Licensed under the MIT license.
 import * as vscode from "vscode";
 import { localSettingsJsonName } from "./debug/constants";
-import { manifestConfigDataRegex, manifestStateDataRegex } from "./constants";
+import {
+  environmentVariableRegex,
+  manifestConfigDataRegex,
+  manifestStateDataRegex,
+} from "./constants";
 import * as fs from "fs-extra";
 import * as parser from "jsonc-parser";
 import { Mutex } from "async-mutex";
@@ -20,6 +24,7 @@ import { convertManifestTemplateToV3 } from "@microsoft/teamsfx-core/build/compo
 import { localize } from "./utils/localizeUtils";
 import { core, getSystemInputs } from "./handlers";
 import isUUID from "validator/lib/isUUID";
+import { isV3Enabled, envUtil } from "@microsoft/teamsfx-core";
 
 async function resolveStateAndConfigCodeLens(
   lens: vscode.CodeLens,
@@ -69,10 +74,66 @@ async function resolveStateAndConfigCodeLens(
   return lens;
 }
 
+async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: string) {
+  // Get environment variables
+  const inputs = getSystemInputs();
+
+  let localEnvs, defaultEnvs;
+  const localEnvsRes = await envUtil.readEnv(
+    inputs.projectPath!,
+    environmentManager.getLocalEnvName(),
+    false
+  );
+  if (localEnvsRes.isErr()) {
+    localEnvs = {};
+  } else {
+    localEnvs = localEnvsRes.value;
+  }
+  const defaultEnvsRes = await envUtil.readEnv(
+    inputs.projectPath!,
+    environmentManager.getDefaultEnvName(),
+    false
+  );
+  if (defaultEnvsRes.isErr()) {
+    defaultEnvs = {};
+  } else {
+    defaultEnvs = defaultEnvsRes.value;
+  }
+
+  // Get value by the key
+  if (lens instanceof PlaceholderCodeLens) {
+    const key = lens.placeholder.replace(/{/g, "").replace(/}/g, "").replace(/\$/g, "");
+    let title = "👉";
+
+    const localValue = localEnvs[key];
+    title = `${title} ${environmentManager.getLocalEnvName()}: ${localValue}`;
+
+    if (lens.documentName.endsWith("manifest.template.local.json")) {
+      lens.command = {
+        title: title,
+        command: "fx-extension.openConfigState",
+        arguments: [{ type: "env", from: from, env: environmentManager.getLocalEnvName() }],
+      };
+    } else {
+      const defaultValue = defaultEnvs[key];
+      title = `${title}, ${environmentManager.getDefaultEnvName()}: ${defaultValue}`;
+
+      lens.command = {
+        title: title,
+        command: "fx-extension.openConfigState",
+        arguments: [{ type: "env", from: from }],
+      };
+    }
+    return lens;
+  }
+
+  return lens;
+}
 export class PlaceholderCodeLens extends vscode.CodeLens {
   constructor(
     public readonly placeholder: string,
     range: vscode.Range,
+    public readonly documentName: string,
     command?: vscode.Command | undefined
   ) {
     super(range, command);
@@ -186,12 +247,16 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
   public provideCodeLenses(
     document: vscode.TextDocument
   ): vscode.ProviderResult<vscode.CodeLens[]> {
-    if (document.fileName.endsWith("template.json")) {
-      // env info needs to be reloaded
-      this.projectConfigs = undefined;
-      return this.computeTemplateCodeLenses(document);
+    if (isV3Enabled()) {
+      return this.computeTemplateCodeLensesV3(document);
     } else {
-      return this.computePreviewCodeLenses(document);
+      if (document.fileName.endsWith("template.json")) {
+        // env info needs to be reloaded
+        this.projectConfigs = undefined;
+        return this.computeTemplateCodeLenses(document);
+      } else {
+        return this.computePreviewCodeLenses(document);
+      }
     }
   }
 
@@ -199,7 +264,11 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
     lens: vscode.CodeLens,
     _token: vscode.CancellationToken
   ): Promise<vscode.CodeLens> {
-    return resolveStateAndConfigCodeLens(lens, this.projectConfigs, this.mutex, "manifest");
+    if (isV3Enabled()) {
+      return resolveEnvironmentVariablesCodeLens(lens, "manifest");
+    } else {
+      return resolveStateAndConfigCodeLens(lens, this.projectConfigs, this.mutex, "manifest");
+    }
   }
 
   private computeTemplateCodeLenses(document: vscode.TextDocument) {
@@ -244,6 +313,37 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
     return codeLenses;
   }
 
+  private computeTemplateCodeLensesV3(document: vscode.TextDocument) {
+    const codeLenses: vscode.CodeLens[] = [];
+
+    // Open Schema codelens
+    const text = document.getText();
+    const regex = new RegExp(this.schemaRegex);
+    const matches = regex.exec(text);
+    if (matches != null) {
+      const match = matches[0];
+      const line = document.lineAt(document.positionAt(matches.index).line);
+      const indexOf = line.text.indexOf(match);
+      const position = new vscode.Position(line.lineNumber, indexOf);
+      const range = new vscode.Range(
+        position,
+        new vscode.Position(line.lineNumber, indexOf + match.length)
+      );
+      const url = line.text.substring(line.text.indexOf("https"), line.text.length - 2);
+      const schemaCommand = {
+        title: "Open schema",
+        command: "fx-extension.openSchema",
+        arguments: [{ url: url }],
+      };
+      codeLenses.push(new vscode.CodeLens(range, schemaCommand));
+    }
+
+    // Environment variables codelens
+    const envCodelenses = this.calculateCodeLens(document, environmentVariableRegex);
+    codeLenses.push(...envCodelenses);
+    return codeLenses;
+  }
+
   private calculateCodeLens(
     document: vscode.TextDocument,
     regex: RegExp,
@@ -262,7 +362,7 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
         if (command) {
           codeLenses.push(new vscode.CodeLens(range, command));
         } else {
-          codeLenses.push(new PlaceholderCodeLens(matches[0], range, undefined));
+          codeLenses.push(new PlaceholderCodeLens(matches[0], range, document.fileName, undefined));
         }
       }
     }
@@ -445,7 +545,11 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
     lens: vscode.CodeLens,
     _token: vscode.CancellationToken
   ): Promise<vscode.CodeLens> {
-    return resolveStateAndConfigCodeLens(lens, this.projectConfigs, this.mutex, "aad");
+    if (isV3Enabled()) {
+      return resolveEnvironmentVariablesCodeLens(lens, "aad");
+    } else {
+      return resolveStateAndConfigCodeLens(lens, this.projectConfigs, this.mutex, "aad");
+    }
   }
 
   private calculateCodeLensByRegex(document: vscode.TextDocument, regex: RegExp) {
@@ -459,7 +563,7 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
       const range = document.getWordRangeAtPosition(position, new RegExp(regex));
 
       if (range) {
-        codeLenses.push(new PlaceholderCodeLens(matches[0], range, undefined));
+        codeLenses.push(new PlaceholderCodeLens(matches[0], range, document.fileName, undefined));
       }
     }
     return codeLenses;
@@ -467,11 +571,20 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
 
   private computeStateAndConfigCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
     const codeLenses = [];
-    const configCodelenses = this.calculateCodeLensByRegex(document, manifestConfigDataRegex);
-    codeLenses.push(...configCodelenses);
 
-    const stateCodelenses = this.calculateCodeLensByRegex(document, manifestStateDataRegex);
-    codeLenses.push(...stateCodelenses);
+    if (isV3Enabled()) {
+      const stateAndConfigCodelenses = this.calculateCodeLensByRegex(
+        document,
+        environmentVariableRegex
+      );
+      codeLenses.push(...stateAndConfigCodelenses);
+    } else {
+      const configCodelenses = this.calculateCodeLensByRegex(document, manifestConfigDataRegex);
+      codeLenses.push(...configCodelenses);
+
+      const stateCodelenses = this.calculateCodeLensByRegex(document, manifestStateDataRegex);
+      codeLenses.push(...stateCodelenses);
+    }
 
     return codeLenses;
   }

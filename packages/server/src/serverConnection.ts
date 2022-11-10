@@ -12,10 +12,12 @@ import {
   ok,
   Stage,
   QTreeNode,
+  BuildFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
+import { getSideloadingStatus, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core/build/common/local";
 import { IServerConnection, Namespaces } from "./apis";
 import LogProvider from "./providers/logger";
@@ -140,21 +142,41 @@ export default class ServerConnection implements IServerConnection {
     token: CancellationToken
   ): Promise<Result<any, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
-    const func: Func = {
-      namespace: "fx-solution-azure",
-      method: "buildPackage",
-      params: {
-        type: inputs.env == environmentManager.getLocalEnvName() ? "localDebug" : "remote",
-        env: inputs.env,
-      },
-    };
+    let func: Func;
+    if (isV3Enabled()) {
+      const manifestTemplatePath = `${inputs.projectPath}/${AppPackageFolderName}/manifest.template.json`;
+      func = {
+        namespace: "fx-solution-azure",
+        method: "buildPackage",
+        params: {
+          manifestTemplatePath: manifestTemplatePath,
+          outputZipPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${inputs.env}.zip`,
+          outputJsonPath: `${inputs.projectPath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${inputs.env}.json`,
+          env: inputs.env,
+        },
+      };
+    } else {
+      func = {
+        namespace: "fx-solution-azure",
+        method: "buildPackage",
+        params: {
+          type: inputs.env == environmentManager.getLocalEnvName() ? "localDebug" : "remote",
+          env: inputs.env,
+        },
+      };
+    }
+
     const res = await Correlator.runWithId(
       corrId,
       (func, inputs) => this.core.executeUserTask(func, inputs),
       func,
       inputs
     );
-    return standardizeResult(res);
+    if (isV3Enabled() && res.isOk()) {
+      return ok(undefined);
+    } else {
+      return standardizeResult(res);
+    }
   }
 
   public async publishApplicationRequest(

@@ -77,9 +77,9 @@ export class TabCodeProvider {
     const langKey = convertToLangKey(inputs[CoreQuestionNames.ProgrammingLanguage]);
     const workingDir = path.join(inputs.projectPath, inputs.folder);
     inputs.safeProjectName =
-      inputs.safeProjectName ?? convertToAlphanumericOnly(ctx.projectSetting.appName);
+      inputs.safeProjectName ?? convertToAlphanumericOnly(ctx.projectSetting.appName!);
     const variables = {
-      ProjectName: ctx.projectSetting.appName,
+      ProjectName: ctx.projectSetting.appName!,
       SafeProjectName: inputs.safeProjectName,
     };
 
@@ -93,7 +93,7 @@ export class TabCodeProvider {
       fileNameReplaceFn: (name: string, data: Buffer): string =>
         removeTemplateExtReplaceFn(name, data).replace(
           TemplatePlaceHolders.ProjectFile,
-          ctx.projectSetting.appName
+          ctx.projectSetting.appName!
         ),
       fileDataReplaceFn: genTemplateRenderReplaceFn(variables),
       onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {

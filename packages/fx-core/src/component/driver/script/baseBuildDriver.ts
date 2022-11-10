@@ -2,15 +2,16 @@
 // Licensed under the MIT license.
 
 import { BuildArgs } from "../interface/buildAndDeployArgs";
-import { asFactory, asString, checkMissingArgs } from "../../utils/common";
+import { asFactory, asOptional, asString, checkMissingArgs } from "../../utils/common";
 import { execute } from "../../code/utils";
 import { ExecuteCommandError } from "../../error/componentError";
 import { DeployConstant } from "../../constant/deployConstant";
 import { IProgressHandler, LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../interface/commonArgs";
+import * as path from "path";
 
 export abstract class BaseBuildDriver {
-  args: unknown;
+  args: BuildArgs;
   progressBarName: string;
   progressBarSteps = 1;
   workingDirectory?: string;
@@ -21,8 +22,12 @@ export abstract class BaseBuildDriver {
   abstract buildPrefix: string;
 
   constructor(args: unknown, context: DriverContext) {
-    this.args = args;
-    this.workingDirectory = this.toBuildArgs().workingDirectory;
+    this.args = BaseBuildDriver.toBuildArgs(args);
+    this.args.workingDirectory = this.args.workingDirectory ?? "./";
+    // if working dir is not absolute path, then join the path with project path
+    this.workingDirectory = path.isAbsolute(this.args.workingDirectory)
+      ? this.args.workingDirectory
+      : path.join(context.projectPath, this.args.workingDirectory);
     this.progressBarName = `Building project ${this.workingDirectory}`;
     this.progressBar = context.ui?.createProgressBar(this.progressBarName, this.progressBarSteps);
     this.logProvider = context.logProvider;
@@ -30,27 +35,27 @@ export abstract class BaseBuildDriver {
   }
 
   protected static asBuildArgs = asFactory<BuildArgs>({
-    workingDirectory: asString,
+    workingDirectory: asOptional(asString),
     args: asString,
   });
 
-  protected toBuildArgs(): BuildArgs {
-    return BaseBuildDriver.asBuildArgs(this.args);
+  protected static toBuildArgs(args: unknown): BuildArgs {
+    return BaseBuildDriver.asBuildArgs(args);
   }
 
   async run(): Promise<Map<string, string>> {
-    const args = this.toBuildArgs();
-    const commandSuffix = checkMissingArgs("BuildCommand", args.args).trim();
+    const commandSuffix = checkMissingArgs("BuildCommand", this.args.args).trim();
     const command = `${this.buildPrefix} ${commandSuffix}`;
-    await this.progressBar?.start(`Run command ${command} at ${args.workingDirectory}`);
+    await this.progressBar?.start();
+    await this.progressBar?.next(`Run command ${command} at ${this.workingDirectory}`);
     try {
-      const output = await execute(command, args.workingDirectory, this.logProvider);
+      const output = await execute(command, this.workingDirectory, this.logProvider);
       await this.logProvider.debug(`execute ${command} output is ${output}`);
       await this.progressBar?.end(true);
     } catch (e) {
       throw ExecuteCommandError.fromErrorOutput(
         DeployConstant.DEPLOY_ERROR_TYPE,
-        [command, args.workingDirectory ?? ""],
+        [command, this.workingDirectory ?? ""],
         e
       );
     }

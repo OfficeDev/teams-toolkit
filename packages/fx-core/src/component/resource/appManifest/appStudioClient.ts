@@ -13,6 +13,7 @@ import { RetryHandler } from "./utils/utils";
 import { TelemetryEventName, TelemetryUtils } from "./utils/telemetry";
 import { getAppStudioEndpoint } from "./constants";
 import { HelpLinks } from "../../../common/constants";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -104,7 +105,7 @@ export namespace AppStudioClient {
         const error = AppStudioResultFactory.UserError(
           AppStudioError.TeamsAppCreateConflictError.name,
           AppStudioError.TeamsAppCreateConflictError.message(),
-          HelpLinks.SwtichTenantOrSub
+          HelpLinks.SwitchAccountOrSub
         );
         throw error;
       }
@@ -277,7 +278,7 @@ export namespace AppStudioClient {
       if (response && response.data) {
         if (response.data.error || response.data.errorMessage) {
           const error = new Error(response.data.error?.message || response.data.errorMessage);
-          error.name = response?.data.error.code;
+          error.name = response.data.error?.code;
           (error as any).response = response;
           (error as any).request = response.request;
           const exception = wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
@@ -403,6 +404,30 @@ export namespace AppStudioClient {
       } else {
         throw err;
       }
+    }
+  }
+
+  export async function getAppPackage(
+    teamsAppId: string,
+    appStudioToken: string,
+    logProvider?: LogProvider
+  ): Promise<any> {
+    logProvider?.info("Downloading app package for app " + teamsAppId);
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/appdefinitions/${teamsAppId}/manifest`)
+      );
+
+      if (response && response.data) {
+        logProvider?.info("Download app package successfully");
+        return response.data;
+      } else {
+        throw new Error(getLocalizedString("plugins.appstudio.emptyAppPackage", teamsAppId));
+      }
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_APP_PACKAGE);
+      throw error;
     }
   }
 

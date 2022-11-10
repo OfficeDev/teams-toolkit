@@ -4,7 +4,7 @@
 import { StepDriver } from "../../interface/stepDriver";
 import { AzureResourceInfo, DriverContext } from "../../interface/commonArgs";
 import { Service } from "typedi";
-import { asFactory, asString, wrapRun } from "../../../utils/common";
+import { asFactory, asOptional, asString, wrapRun } from "../../../utils/common";
 import { AzureStorageStaticWebsiteConfigArgs } from "../../interface/provisionArgs";
 import {
   createBlobServiceClient,
@@ -16,8 +16,9 @@ import { FxError, Result } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
+import { DeployConstant } from "../../../constant/deployConstant";
 
-const ACTION_NAME = "configure/storage";
+const ACTION_NAME = "azureStorage/enableStaticWebsite";
 
 /**
  * enable static website for azure storage account
@@ -26,8 +27,8 @@ const ACTION_NAME = "configure/storage";
 export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
   protected static readonly STORAGE_CONFIG_ARGS = asFactory<AzureStorageStaticWebsiteConfigArgs>({
     storageResourceId: asString,
-    indexPage: asString,
-    errorPage: asString,
+    indexPage: asOptional(asString),
+    errorPage: asOptional(asString),
   });
   protected static readonly RETURN_VALUE = new Map<string, string>();
   protected static readonly RESOURCE_PATTERN =
@@ -65,8 +66,8 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
 
     const properties = {
       staticWebsite: {
-        indexDocument: input.indexPage,
-        errorDocument404Path: input.errorPage,
+        indexDocument: input.indexPage ?? DeployConstant.DEFAULT_INDEX_DOCUMENT,
+        errorDocument404Path: input.errorPage ?? DeployConstant.DEFAULT_ERROR_DOCUMENT,
         enabled: true,
       },
     } as BlobServiceProperties;

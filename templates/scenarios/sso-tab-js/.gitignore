@@ -1,6 +1,0 @@
-# TeamsFx files
-node_modules
-.fx/.env.dev
-.fx/.env.local
-.DS_Store
-build

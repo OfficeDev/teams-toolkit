@@ -1,5 +1,15 @@
-const { createMicrosoftGraphClient, TeamsFx } = require("@microsoft/teamsfx");
+const {
+  OnBehalfOfUserCredential,
+  createMicrosoftGraphClientWithCredential,
+} = require("@microsoft/teamsfx");
 require("isomorphic-fetch");
+
+const oboAuthConfig = {
+  authorityHost: process.env.M365_AUTHORITY_HOST,
+  clientId: process.env.M365_CLIENT_ID,
+  tenantId: process.env.M365_TENANT_ID,
+  clientSecret: process.env.M365_CLIENT_SECRET,
+};
 
 class ProfileSsoCommandHandler {
   triggerPatterns = "profile";
@@ -7,11 +17,10 @@ class ProfileSsoCommandHandler {
   async handleCommandReceived(context, message, tokenResponse) {
     await context.sendActivity("Retrieving user information from Microsoft Graph ...");
 
-    // Init TeamsFx instance with SSO token
-    const teamsfx = new TeamsFx().setSsoToken(tokenResponse.ssoToken);
-
+    // Init OnBehalfOfUserCredential instance with SSO token
+    const oboCredential = new OnBehalfOfUserCredential(tokenResponse.ssoToken, oboAuthConfig);
     // Add scope for your Azure AD app. For example: Mail.Read, etc.
-    const graphClient = createMicrosoftGraphClient(teamsfx, ["User.Read"]);
+    const graphClient = createMicrosoftGraphClientWithCredential(oboCredential, ["User.Read"]);
 
     // Call graph api use `graph` instance to get user profile information
     const me = await graphClient.api("/me").get();

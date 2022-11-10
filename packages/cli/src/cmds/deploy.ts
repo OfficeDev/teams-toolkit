@@ -1,34 +1,35 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
-import * as path from "path";
-import { Argv, choices } from "yargs";
-
 import {
+  Stage,
+  Result,
   FxError,
   err,
-  ok,
-  Result,
-  Stage,
-  Inputs,
   MultiSelectQuestion,
   OptionItem,
+  ok,
 } from "@microsoft/teamsfx-api";
-
+import path from "path";
+import { Argv } from "yargs";
 import activate from "../activate";
-import { YargsCommand } from "../yargsCommand";
-import { flattenNodes, getSystemInputs, promptSPFxUpgrade, toLocaleLowerCase } from "../utils";
+import * as constants from "../constants";
+import HelpParamGenerator from "../helpParamGenerator";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import CLIUIInstance from "../userInteraction";
-import HelpParamGenerator from "../helpParamGenerator";
-import * as constants from "../constants";
+import {
+  toLocaleLowerCase,
+  getSystemInputs,
+  askTargetEnvironment,
+  flattenNodes,
+  promptSPFxUpgrade,
+} from "../utils";
+import { YargsCommand } from "../yargsCommand";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
@@ -61,8 +62,6 @@ export default class Deploy extends YargsCommand {
     const rootFolder = path.resolve((args.folder as string) || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.DeployStart);
 
-    CLIUIInstance.removePresetAnswers(["components"]);
-
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
@@ -71,9 +70,18 @@ export default class Deploy extends YargsCommand {
 
     const core = result.value;
 
-    let inputs: Inputs;
+    const inputs = getSystemInputs(rootFolder, args.env as any);
+    // TODO: remove when V3 is auto enabled
+    if (!inputs.env) {
+      // include local env in interactive question
+      const selectedEnv = await askTargetEnvironment(rootFolder);
+      if (selectedEnv.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, selectedEnv.error);
+        return err(selectedEnv.error);
+      }
+      inputs.env = selectedEnv.value;
+    }
     {
-      inputs = getSystemInputs(rootFolder, args.env as any);
       {
         const root = HelpParamGenerator.getQuestionRootNodeForHelp(Stage.deploy);
         const questions = flattenNodes(root!);
@@ -104,7 +112,23 @@ export default class Deploy extends YargsCommand {
         }
       }
       promptSPFxUpgrade(rootFolder);
-      const result = await core.deployArtifacts(inputs);
+      let result;
+      if (
+        isV3Enabled() &&
+        inputs[this.deployPluginNodeName].includes("fx-resource-aad-app-for-teams")
+      ) {
+        result = await core.deployAadManifest(inputs);
+        if (result.isErr()) {
+          CliTelemetry.sendTelemetryErrorEvent(
+            TelemetryEvent.DeployAad,
+            result.error,
+            makeEnvRelatedProperty(rootFolder, inputs)
+          );
+
+          return err(result.error);
+        }
+      }
+      result = await core.deployArtifacts(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(
           TelemetryEvent.Deploy,

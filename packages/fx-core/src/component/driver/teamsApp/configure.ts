@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok, Platform } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { hooks } from "@feathersjs/hooks/lib";
 import { StepDriver } from "../interface/stepDriver";
@@ -13,9 +13,17 @@ import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { Service } from "typedi";
+import { getAbsolutePath } from "../../utils/common";
 
-const actionName = "teamsApp/configure";
+const actionName = "teamsApp/update";
 
+const outputNames = {
+  TEAMS_APP_ID: "TEAMS_APP_ID",
+  TEAMS_APP_TENANT_ID: "TEAMS_APP_TENANT_ID",
+};
+
+@Service(actionName)
 export class ConfigureTeamsAppDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
@@ -29,8 +37,8 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       return err(appStudioTokenRes.error);
     }
     const appStudioToken = appStudioTokenRes.value;
-
-    if (!(await fs.pathExists(args.appPackagePath))) {
+    const appPackagePath = getAbsolutePath(args.appPackagePath, context.projectPath);
+    if (!(await fs.pathExists(appPackagePath))) {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
@@ -38,7 +46,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
         )
       );
     }
-    const archivedFile = await fs.readFile(args.appPackagePath);
+    const archivedFile = await fs.readFile(appPackagePath);
 
     try {
       const appDefinition = await AppStudioClient.importApp(
@@ -52,13 +60,20 @@ export class ConfigureTeamsAppDriver implements StepDriver {
         appDefinition.teamsAppId!
       );
       context.logProvider.info(message);
-      context.ui?.showMessage("info", message, false);
-      return ok(new Map([["teamsAppId", appDefinition.teamsAppId!]]));
+      if (context.platform === Platform.VSCode) {
+        context.ui?.showMessage("info", message, false);
+      }
+      return ok(
+        new Map([
+          [outputNames.TEAMS_APP_ID, appDefinition.teamsAppId!],
+          [outputNames.TEAMS_APP_TENANT_ID, appDefinition.tenantId!],
+        ])
+      );
     } catch (e: any) {
       return err(
         AppStudioResultFactory.SystemError(
-          AppStudioError.TeamsAppCreateFailedError.name,
-          AppStudioError.TeamsAppCreateFailedError.message(e)
+          AppStudioError.TeamsAppUpdateFailedError.name,
+          AppStudioError.TeamsAppUpdateFailedError.message(e)
         )
       );
     }

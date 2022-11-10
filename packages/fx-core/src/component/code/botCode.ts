@@ -68,7 +68,7 @@ export class BotCodeProvider {
     const lang = convertToLangKey(language);
     const workingDir = path.join(inputs.projectPath, botFolder);
     const safeProjectName =
-      inputs[CoreQuestionNames.SafeProjectName] ?? convertToAlphanumericOnly(appName);
+      inputs[CoreQuestionNames.SafeProjectName] ?? convertToAlphanumericOnly(appName!);
 
     await actionContext?.progressBar?.next(ProgressMessages.scaffoldBot);
     for (const scenario of inputs.scenarios as string[]) {
@@ -78,11 +78,11 @@ export class BotCodeProvider {
         scenario: scenario,
         dst: workingDir,
         fileDataReplaceFn: genTemplateRenderReplaceFn({
-          ProjectName: appName,
+          ProjectName: appName!,
           SafeProjectName: safeProjectName,
         }),
         fileNameReplaceFn: (name: string, data: Buffer) =>
-          name.replace(/ProjectName/, appName).replace(/\.tpl/, ""),
+          name.replace(/ProjectName/, appName!).replace(/\.tpl/, ""),
         onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
           switch (action.name) {
             case ScaffoldActionName.FetchTemplatesUrlWithTag:

@@ -1,0 +1,76 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Teams App Locally",
+            "dependsOn": [
+                "Validate prerequisites",
+                "Create resources",
+                "Set up local projects",
+                "Start services"
+            ],
+            "dependsOrder": "sequence"
+        },
+        {
+            "label": "Validate prerequisites",
+            "type": "teamsfx",
+            "command": "debug-check-prerequisites",
+            "args": {
+                "prerequisites": [
+                    "nodejs", // Validate if Node.js is installed.
+                    "m365Account", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.
+                    "portOccupancy" // Validate available ports to ensure those debug ones are not occupied.
+                ],
+                "portOccupancy": [
+                    53000 // tab service port
+                ]
+            }
+        },
+        {
+            "label": "Create resources",
+            "type": "teamsfx",
+            "command": "provision",
+            "args": {
+                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "env": "local"
+            }
+        },
+        {
+            "label": "Set up local projects",
+            "type": "teamsfx",
+            "command": "deploy",
+            "args": {
+                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "env": "local"
+            }
+        },
+        {
+            "label": "Start services",
+            "dependsOn": [
+                "Start frontend"
+            ]
+        },
+        {
+            "label": "Start frontend",
+            "type": "shell",
+            "command": "node teamsfx/script/run.js . teamsfx/.env.local",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^.*$",
+                    "file": 0,
+                    "location": 1,
+                    "message": 2
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": "Compiled|Failed|compiled|failed"
+                }
+            }
+        }
+    ]
+}

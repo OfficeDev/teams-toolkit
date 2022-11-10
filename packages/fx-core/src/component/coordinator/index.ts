@@ -8,14 +8,13 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
-  ProjectSettingsV3,
-  ResourceContextV3,
   Result,
+  SettingsFolderName,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
 import { Container } from "typedi";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { environmentManager } from "../../core/environment";
 import { InvalidInputError } from "../../core/error";
 import { getQuestionsForCreateProjectV2 } from "../../core/middleware/questionModel";
 import {
@@ -44,13 +43,12 @@ import {
   CommandAndResponseOptionItem,
   TabOptionItem,
   TabNonSsoItem,
+  MessageExtensionItem,
+  CancelError,
+  CoordinatorSource,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import {
-  getQuestionsForAddFeatureV3,
-  getQuestionsForDeployV3,
-  getQuestionsForProvisionV3,
-} from "../question";
+import { getQuestionsForAddFeatureV3, getQuestionsForProvisionV3 } from "../question";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import { globalVars } from "../../core/globalVars";
@@ -67,12 +65,24 @@ import {
 import { Generator } from "../generator/generator";
 import { convertToLangKey } from "../code/utils";
 import { downloadSampleHook } from "../../core/downloadSample";
-import { loadProjectSettingsByProjectPath } from "../../core/middleware/projectSettingsLoader";
 import * as uuid from "uuid";
 import { settingsUtil } from "../utils/settingsUtil";
+import { DriverContext } from "../driver/interface/commonArgs";
+import { DotenvParseOutput } from "dotenv";
+import { YamlParser } from "../configManager/parser";
+import { provisionUtils } from "../provisionUtils";
+import { envUtil } from "../utils/envUtil";
+import { SPFxGenerator } from "../generator/spfxGenerator";
+import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
+import { createContextV3 } from "../utils";
+import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
+import { getResourceGroupInPortal } from "../../common/tools";
+import { getBotTroubleShootMessage } from "../core";
+import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 
 export enum TemplateNames {
-  Tab = "tab",
+  Tab = "non-sso-tab",
   SsoTab = "sso-tab",
   NotificationRestify = "notification-restify",
   NotificationWebApi = "notification-webapi",
@@ -81,6 +91,7 @@ export enum TemplateNames {
   NotificationHttpTimerTrigger = "notification-http-timer-trigger",
   CommandAndResponse = "command-and-response",
   Workflow = "workflow",
+  MessageExtension = "message-extension",
 }
 
 export const Feature2TemplateName: any = {
@@ -95,10 +106,23 @@ export const Feature2TemplateName: any = {
     TemplateNames.NotificationHttpTimerTrigger,
   [`${CommandAndResponseOptionItem.id}:undefined`]: TemplateNames.CommandAndResponse,
   [`${WorkflowOptionItem.id}:undefined`]: TemplateNames.Workflow,
+  [`${MessageExtensionItem.id}:undefined`]: TemplateNames.MessageExtension,
   [`${TabOptionItem.id}:undefined`]: TemplateNames.SsoTab,
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
-  [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
 };
+
+const workflowFileName = "app.yml";
+
+const M365Actions = [
+  "botAadApp/create",
+  "teamsApp/create",
+  "teamsApp/update",
+  "aadApp/create",
+  "aadApp/update",
+  "m365Bot/createOrUpdate",
+];
+const AzureActions = ["arm/deploy"];
+const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "m365Bot/create"];
 
 export class Coordinator {
   @hooks([
@@ -109,7 +133,7 @@ export class Coordinator {
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.CreateProject,
       telemetryComponentName: "coordinator",
-      errorSource: "coordinator",
+      errorSource: CoordinatorSource,
     }),
   ])
   async create(
@@ -134,7 +158,7 @@ export class Coordinator {
       inputs.projectPath = projectPath;
       await fs.ensureDir(projectPath);
 
-      const res = await Generator.generateSample(sampleId, projectPath, context);
+      const res = await Generator.generateSample(context, projectPath, sampleId);
       if (res.isErr()) return err(res.error);
 
       await downloadSampleHook(sampleId, projectPath);
@@ -159,36 +183,73 @@ export class Coordinator {
       const feature = inputs.capabilities as string;
       delete inputs.folder;
 
-      if (feature === M365SsoLaunchPageOptionItem.id || feature === M365SearchAppOptionItem.id) {
-        context.projectSetting.isM365 = true;
-        inputs.isM365 = true;
-      }
-      const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
-      const templateName = Feature2TemplateName[`${feature}:${trigger}`];
-      if (templateName) {
-        const langKey = convertToLangKey(language);
-        const res = await Generator.generateTemplate(templateName, langKey, projectPath, context);
+      if (feature === TabSPFxNewUIItem.id) {
+        const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
+      } else {
+        if (feature === M365SsoLaunchPageOptionItem.id || feature === M365SearchAppOptionItem.id) {
+          context.projectSetting.isM365 = true;
+          inputs.isM365 = true;
+        }
+        const trigger = inputs[QuestionNames.BOT_HOST_TYPE_TRIGGER] as string;
+        const templateName = Feature2TemplateName[`${feature}:${trigger}`];
+        if (templateName) {
+          const langKey = convertToLangKey(language);
+          context.templateVariables = Generator.getDefaultVariables(appName);
+          const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
+          if (res.isErr()) return err(res.error);
+        }
       }
+
       merge(actionContext?.telemetryProps, {
         [TelemetryProperty.Feature]: feature,
+        [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
       });
     }
 
     // generate unique projectId in projectSettings.json
-    const projectSettingsRes = await settingsUtil.readSettings(projectPath);
-    if (projectSettingsRes.isOk()) {
-      const settings = projectSettingsRes.value;
-      settings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
-      settings.isFromSample = scratch === ScratchOptionNo.id;
-      inputs.projectId = settings.projectId;
-      await settingsUtil.writeSettings(projectPath, settings);
-    }
+    const ensureRes = await this.ensureTrackingId(inputs, projectPath);
+    if (ensureRes.isErr()) return err(ensureRes.error);
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
     }
     context.projectPath = projectPath;
+
+    if (inputs.teamsAppFromTdp) {
+      const res = await developerPortalScaffoldUtils.updateFilesForTdp(
+        context,
+        inputs.teamsAppFromTdp,
+        inputs
+      );
+      if (res.isErr()) {
+        return err(res.error);
+      }
+    }
     return ok(projectPath);
+  }
+
+  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(InvalidInputError("projectPath is undefined"));
+    }
+    const context = createContextV3();
+    const res = await Generator.generateTemplate(context, projectPath, "init-infra", undefined);
+    if (res.isErr()) return err(res.error);
+    const ensureRes = await this.ensureTrackingId(inputs, projectPath);
+    if (ensureRes.isErr()) return err(ensureRes.error);
+    return ok(undefined);
+  }
+
+  async ensureTrackingId(inputs: Inputs, projectPath: string): Promise<Result<undefined, FxError>> {
+    // generate unique trackingId in settings.json
+    const settingsRes = await settingsUtil.readSettings(projectPath);
+    if (settingsRes.isErr()) return err(settingsRes.error);
+    const settings = settingsRes.value;
+    settings.trackingId = inputs.projectId ? inputs.projectId : uuid.v4();
+    inputs.projectId = settings.trackingId;
+    await settingsUtil.writeSettings(projectPath, settings);
+    return ok(undefined);
   }
 
   /**
@@ -243,6 +304,76 @@ export class Coordinator {
     return ok(undefined);
   }
 
+  async preProvisionForVS(
+    ctx: DriverContext,
+    inputs: InputsWithProjectPath
+  ): Promise<
+    Result<
+      {
+        needAzureLogin: boolean;
+        needM365Login: boolean;
+        resolvedAzureSubscriptionId?: string;
+        resolvedAzureResourceGroupName?: string;
+      },
+      FxError
+    >
+  > {
+    const res: {
+      needAzureLogin: boolean;
+      needM365Login: boolean;
+      resolvedAzureSubscriptionId?: string;
+      resolvedAzureResourceGroupName?: string;
+    } = {
+      needAzureLogin: false,
+      needM365Login: false,
+    };
+
+    // 1. parse yml to cycles
+    const parser = new YamlParser();
+    const templatePath =
+      inputs["workflowFilePath"] ??
+      path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+    const maybeProjectModel = await parser.parse(templatePath);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    const cycles: ILifecycle[] = [
+      projectModel.registerApp,
+      projectModel.provision,
+      projectModel.configureApp,
+    ].filter((c) => c !== undefined) as ILifecycle[];
+
+    // 2. check each cycle
+    for (const cycle of cycles) {
+      const unresolvedPlaceholders = cycle.resolvePlaceholders();
+      let firstArmDriver;
+      for (const driver of cycle.driverDefs) {
+        if (AzureActions.includes(driver.uses)) {
+          res.needAzureLogin = true;
+          if (!firstArmDriver) {
+            firstArmDriver = driver;
+          }
+        }
+        if (M365Actions.includes(driver.uses)) {
+          res.needM365Login = true;
+        }
+      }
+      if (firstArmDriver) {
+        const withObj = firstArmDriver.with as any;
+        res.resolvedAzureSubscriptionId = unresolvedPlaceholders.includes("AZURE_SUBSCRIPTION_ID")
+          ? undefined
+          : withObj["subscriptionId"];
+        res.resolvedAzureResourceGroupName = unresolvedPlaceholders.includes(
+          "AZURE_RESOURCE_GROUP_NAME"
+        )
+          ? undefined
+          : withObj["resourceGroupName"];
+      }
+    }
+    return ok(res);
+  }
+
   @hooks([
     ActionExecutionMW({
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
@@ -254,31 +385,266 @@ export class Coordinator {
     }),
   ])
   async provision(
-    ctx: ResourceContextV3,
+    ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    //TODO call provision actions
-    return ok(undefined);
+  ): Promise<[DotenvParseOutput | undefined, FxError | undefined]> {
+    const output: DotenvParseOutput = {};
+    const folderName = path.parse(ctx.projectPath).name;
+
+    // 1. parse yml
+    const parser = new YamlParser();
+    const templatePath =
+      inputs["workflowFilePath"] ??
+      path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+    const maybeProjectModel = await parser.parse(templatePath);
+    if (maybeProjectModel.isErr()) {
+      return [undefined, maybeProjectModel.error];
+    }
+    const projectModel = maybeProjectModel.value;
+
+    const cycles = [
+      projectModel.registerApp,
+      projectModel.provision,
+      projectModel.configureApp,
+    ].filter((c) => c !== undefined);
+
+    // 2. M365 sign in and tenant check if needed.
+    let containsM365 = false;
+    let containsAzure = false;
+    const tenantSwitchCheckActions: string[] = [];
+    cycles.forEach((cycle) => {
+      cycle!.driverDefs?.forEach((def) => {
+        if (M365Actions.includes(def.uses)) {
+          containsM365 = true;
+        } else if (AzureActions.includes(def.uses)) {
+          containsAzure = true;
+        }
+
+        if (needTenantCheckActions.includes(def.uses)) {
+          tenantSwitchCheckActions.push(def.uses);
+        }
+      });
+    });
+
+    let m365tenantInfo = undefined;
+    if (containsM365) {
+      const tenantInfoInTokenRes = await provisionUtils.getM365TenantId(ctx.m365TokenProvider);
+      if (tenantInfoInTokenRes.isErr()) {
+        return [undefined, tenantInfoInTokenRes.error];
+      }
+      m365tenantInfo = tenantInfoInTokenRes.value;
+
+      const checkM365TenatRes = await provisionUtils.ensureM365TenantMatchesV3(
+        tenantSwitchCheckActions,
+        m365tenantInfo?.tenantIdInToken,
+        inputs.env,
+        CoordinatorSource
+      );
+      if (checkM365TenatRes.isErr()) {
+        return [undefined, checkM365TenatRes.error];
+      }
+    }
+
+    // 3. ensure RESOURCE_SUFFIX if containsAzure
+    if (containsAzure) {
+      if (!process.env.RESOURCE_SUFFIX) {
+        const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
+        process.env.RESOURCE_SUFFIX = suffix;
+        output.RESOURCE_SUFFIX = suffix;
+      }
+    }
+
+    // 4. pre-requisites check
+    for (const cycle of cycles) {
+      const unresolvedPlaceHolders = cycle!.resolvePlaceholders();
+      // ensure subscription id
+      if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) {
+        if (inputs["targetSubscriptionId"]) {
+          process.env.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
+          output.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
+        } else {
+          const ensureRes = await provisionUtils.ensureSubscription(
+            ctx.azureAccountProvider,
+            process.env.AZURE_SUBSCRIPTION_ID
+          );
+          if (ensureRes.isErr()) return [undefined, ensureRes.error];
+          const subInfo = ensureRes.value;
+          if (subInfo && subInfo.subscriptionId) {
+            process.env.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
+            output.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
+          }
+        }
+      }
+      // ensure resource group
+      if (unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")) {
+        const cliInputRG = inputs["targetResourceGroupName"];
+        const cliInputLocation = inputs["targetResourceLocationName"];
+        if (cliInputRG && cliInputLocation) {
+          // targetResourceGroupName is from CLI inputs, which means create resource group if not exists
+          const createRgRes = await resourceGroupHelper.createNewResourceGroup(
+            cliInputRG,
+            ctx.azureAccountProvider,
+            process.env.AZURE_SUBSCRIPTION_ID!,
+            cliInputLocation
+          );
+          if (createRgRes.isErr()) {
+            const error = createRgRes.error;
+            if (error.name !== "ResourceGroupExists") {
+              return [undefined, error];
+            }
+          }
+          process.env.AZURE_RESOURCE_GROUP_NAME = cliInputRG;
+          output.AZURE_RESOURCE_GROUP_NAME = cliInputRG;
+        } else {
+          const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${inputs.env}`;
+          const ensureRes = await provisionUtils.ensureResourceGroup(
+            ctx.azureAccountProvider,
+            process.env.AZURE_SUBSCRIPTION_ID!,
+            process.env.AZURE_RESOURCE_GROUP_NAME,
+            defaultRg
+          );
+          if (ensureRes.isErr()) return [undefined, ensureRes.error];
+          const rgInfo = ensureRes.value;
+          if (rgInfo) {
+            process.env.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
+            output.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
+          }
+        }
+      }
+    }
+
+    // 5. consent
+    let azureSubInfo = undefined;
+    if (containsAzure) {
+      await ctx.azureAccountProvider.getIdentityCredentialAsync(true); // make sure login if ensureSubScription() is not called.
+      await ctx.azureAccountProvider.setSubscription(process.env.AZURE_SUBSCRIPTION_ID!); //make sure sub is correctly set if ensureSubscription() is not called.
+      azureSubInfo = await ctx.azureAccountProvider.getSelectedSubscription(false);
+      if (!azureSubInfo) {
+        return [
+          undefined,
+          new UserError(
+            "coordinator",
+            "SubscriptionNotFound",
+            getLocalizedString("core.provision.subscription.failToSelect")
+          ),
+        ];
+      }
+    }
+    if (azureSubInfo) {
+      const consentRes = await provisionUtils.askForProvisionConsentV3(
+        ctx,
+        m365tenantInfo,
+        azureSubInfo,
+        inputs.env
+      );
+      if (consentRes.isErr()) return [undefined, consentRes.error];
+    }
+    // 6. execute
+    for (const cycle of cycles) {
+      const execRes = await cycle!.execute(ctx);
+      const result = this.convertExecuteResult(execRes);
+      merge(output, result[0]);
+      if (result[1]) {
+        return [output, result[1]];
+      }
+    }
+
+    // 7. show provisioned resources
+    if (azureSubInfo) {
+      const url = getResourceGroupInPortal(
+        azureSubInfo.subscriptionId,
+        azureSubInfo.tenantId,
+        process.env.AZURE_RESOURCE_GROUP_NAME
+      );
+      const msg = getLocalizedString("core.provision.successNotice", folderName);
+      if (url) {
+        const title = getLocalizedString("core.provision.viewResources");
+        ctx.ui?.showMessage("info", msg, false, title).then((result: any) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === title) {
+            ctx.ui?.openUrl(url);
+          }
+        });
+      } else {
+        ctx.ui?.showMessage("info", msg, false);
+      }
+      ctx.logProvider.info(msg);
+    }
+
+    return [output, undefined];
+  }
+
+  convertExecuteResult(
+    execRes: Result<ExecutionOutput, ExecutionError>
+  ): [DotenvParseOutput, FxError | undefined] {
+    const output: DotenvParseOutput = {};
+    let error = undefined;
+    if (execRes.isErr()) {
+      const execError = execRes.error;
+      if (execError.kind === "Failure") {
+        error = execError.error;
+      } else {
+        const partialOutput = execError.env;
+        const newOutput = envUtil.map2object(partialOutput);
+        merge(output, newOutput);
+        const reason = execError.reason;
+        if (reason.kind === "DriverError") {
+          error = reason.error;
+        } else if (reason.kind === "UnresolvedPlaceholders") {
+          const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
+          error = new UserError({
+            source: CoordinatorSource,
+            name: "UnresolvedPlaceholders",
+            message: getDefaultString("core.error.unresolvedPlaceholders", placeholders),
+            displayMessage: getLocalizedString("core.error.unresolvedPlaceholders", placeholders),
+          });
+        }
+      }
+    } else {
+      const newOutput = envUtil.map2object(execRes.value);
+      merge(output, newOutput);
+    }
+    return [output, error];
   }
 
   @hooks([
     ActionExecutionMW({
-      question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return await getQuestionsForDeployV3(context, inputs, context.envInfo!);
-      },
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.Deploy,
       telemetryComponentName: "coordinator",
     }),
   ])
   async deploy(
-    context: ResourceContextV3,
+    ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>> {
-    //TODO call deploy actions
-    return ok(undefined);
+  ): Promise<[DotenvParseOutput | undefined, FxError | undefined]> {
+    const output: DotenvParseOutput = {};
+    const parser = new YamlParser();
+    const templatePath =
+      inputs["workflowFilePath"] ??
+      path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+    const maybeProjectModel = await parser.parse(templatePath);
+    if (maybeProjectModel.isErr()) {
+      return [undefined, maybeProjectModel.error];
+    }
+    const projectModel = maybeProjectModel.value;
+    if (projectModel.deploy) {
+      const execRes = await projectModel.deploy.execute(ctx);
+      const result = this.convertExecuteResult(execRes);
+      merge(output, result[0]);
+      if (result[1]) return [output, result[1]];
+
+      // show message box after deploy
+      const botTroubleShootMsg = getBotTroubleShootMessage(false);
+      const msg =
+        getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
+        botTroubleShootMsg.textForLogging;
+      ctx.logProvider.info(msg);
+      ctx.ui?.showMessage("info", msg, false);
+    }
+    return [output, undefined];
   }
 
   @hooks([
@@ -289,11 +655,22 @@ export class Coordinator {
     }),
   ])
   async publish(
-    context: ResourceContextV3,
+    ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    //TODO call publish actions
+    const parser = new YamlParser();
+    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+    const maybeProjectModel = await parser.parse(templatePath);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    if (projectModel.publish) {
+      const execRes = await projectModel.publish.execute(ctx);
+      const result = this.convertExecuteResult(execRes);
+      if (result[1]) return err(result[1]);
+    }
     return ok(undefined);
   }
 }

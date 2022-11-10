@@ -83,7 +83,7 @@ export class ApimFeature {
       if (res.isErr()) return err(res.error);
       const bicepRes = await bicepUtils.persistBiceps(
         inputs.projectPath,
-        convertToAlphanumericOnly(context.projectSetting.appName),
+        convertToAlphanumericOnly(context.projectSetting.appName!),
         res.value
       );
       if (bicepRes.isErr()) return err(bicepRes.error);
@@ -122,7 +122,7 @@ export class ApimFeature {
       context.telemetryReporter,
       context.logProvider
     );
-    const appName = convertToAlphanumericOnly(context.projectSetting.appName);
+    const appName = convertToAlphanumericOnly(context.projectSetting.appName!);
     if (answer.validate) {
       await answer.validate(PluginLifeCycle.Scaffold, apimConfig, inputs.projectPath);
     }

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, ok, err, ManifestUtil } from "@microsoft/teamsfx-api";
+import { Result, FxError, ok, err, ManifestUtil, Platform } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import { StepDriver } from "../interface/stepDriver";
@@ -13,6 +13,7 @@ import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { HelpLinks } from "../../../common/constants";
+import { getAbsolutePath } from "../../utils/common";
 
 const actionName = "teamsApp/validate";
 
@@ -26,7 +27,7 @@ export class ValidateTeamsAppDriver implements StepDriver {
   ): Promise<Result<Map<string, string>, FxError>> {
     const state = this.loadCurrentState();
     const manifestRes = await manifestUtils.getManifestV3(
-      args.manifestTemplatePath,
+      getAbsolutePath(args.manifestTemplatePath, context.projectPath),
       state,
       withEmptyCapabilities
     );
@@ -76,7 +77,11 @@ export class ValidateTeamsAppDriver implements StepDriver {
       return err(validationFailed);
     }
     const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
-    context.ui?.showMessage("info", validationSuccess, false);
+    if (context.platform === Platform.VS) {
+      context.logProvider.info(validationSuccess);
+    } else {
+      context.ui?.showMessage("info", validationSuccess, false);
+    }
     return ok(new Map());
   }
 

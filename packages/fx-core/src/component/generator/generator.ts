@@ -3,61 +3,73 @@
 
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionContext, ContextV3, FxError, Result, ok } from "@microsoft/teamsfx-api";
-import {
-  Component,
-  sendTelemetryEvent,
-  TelemetryEvent,
-  TelemetryProperty,
-} from "../../common/telemetry";
-import { errorSource } from "../code/tab/constants";
-import { ProgressMessages, ProgressTitles } from "../messages";
+import { merge } from "lodash";
+import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
+import { convertToAlphanumericOnly } from "../../common/utils";
+import { LogMessages, ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
+import { errorSource, componentName, commonTemplateName } from "./constant";
+import { FetchZipFromUrlError, TemplateZipFallbackError, UnzipError } from "./error";
 import {
   SampleActionSeq,
   GeneratorAction,
   TemplateActionSeq,
   GeneratorContext,
+  GeneratorActionName,
 } from "./generatorAction";
 import {
   getSampleInfoFromName,
+  getSampleRelativePath,
   renderTemplateFileData,
   renderTemplateFileName,
-  sampleDefaultOnActionError,
-  templateDefaultOnActionError,
 } from "./utils";
 
 export class Generator {
+  public static getDefaultVariables(appName: string): { [key: string]: string } {
+    return {
+      appName: appName,
+      ProjectName: appName,
+      SafeProjectName: convertToAlphanumericOnly(appName),
+    };
+  }
   @hooks([
     ActionExecutionMW({
       enableProgressBar: true,
       progressTitle: ProgressTitles.generateTemplate,
       progressSteps: 1,
+      componentName: componentName,
       errorSource: errorSource,
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.GenerateTemplate,
     }),
   ])
   public static async generateTemplate(
-    templateName: string,
-    language: string,
-    destinationPath: string,
     ctx: ContextV3,
+    destinationPath: string,
+    scenario: string,
+    language?: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const appName = ctx.projectSetting?.appName;
-    const projectId = ctx.projectSetting?.projectId;
-    const nameReplaceMap = { ...{ appName: appName }, ...ctx.templateVariables };
-    const dataReplaceMap = { ...{ projectId: projectId }, ...nameReplaceMap };
+    const replaceMap = ctx.templateVariables;
     const generatorContext: GeneratorContext = {
-      name: `${templateName}-${language}`,
+      name: language ?? commonTemplateName,
+      relativePath: scenario,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      fileNameReplaceFn: (fileName: string, fileData: Buffer) =>
-        renderTemplateFileName(fileName, fileData, nameReplaceMap),
-      fileDataReplaceFn: (fileName: string, fileData: Buffer) =>
-        renderTemplateFileData(fileName, fileData, dataReplaceMap),
+      fileNameReplaceFn: (fileName, fileData) =>
+        renderTemplateFileName(fileName, fileData, replaceMap),
+      fileDataReplaceFn: (fileName, fileData) =>
+        renderTemplateFileData(fileName, fileData, replaceMap),
       onActionError: templateDefaultOnActionError,
     };
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.TemplateName]: `${scenario}-${generatorContext.name}`,
+    });
     await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
     await this.generate(generatorContext, TemplateActionSeq);
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.Fallback]: generatorContext.fallbackZipPath ? "true" : "false", // Track fallback cases.
+    });
     return ok(undefined);
   }
 
@@ -66,15 +78,21 @@ export class Generator {
       enableProgressBar: true,
       progressTitle: ProgressTitles.generateSample,
       progressSteps: 1,
+      componentName: componentName,
       errorSource: errorSource,
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.GenerateSample,
     }),
   ])
   public static async generateSample(
-    sampleName: string,
-    destinationPath: string,
     ctx: ContextV3,
+    destinationPath: string,
+    sampleName: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
+    merge(actionContext?.telemetryProps, {
+      [TelemetryProperty.SampleName]: sampleName,
+    });
     const sample = getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
     const generatorContext: GeneratorContext = {
@@ -82,9 +100,10 @@ export class Generator {
       destination: destinationPath,
       logProvider: ctx.logProvider,
       zipUrl: sample.link,
-      relativePath: sample.relativePath,
+      relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
+
     await actionContext?.progressBar?.next(ProgressMessages.generateSample);
     await this.generate(generatorContext, SampleActionSeq);
     return ok(undefined);
@@ -94,10 +113,6 @@ export class Generator {
     context: GeneratorContext,
     actions: GeneratorAction[]
   ): Promise<void> {
-    sendTelemetryEvent(Component.core, TelemetryEvent.GenerateStart, {
-      [TelemetryProperty.GenerateName]: context.name,
-    });
-    context.logProvider.info(`Start generating ${context.name}`);
     for (const action of actions) {
       try {
         await context.onActionStart?.(action, context);
@@ -110,10 +125,43 @@ export class Generator {
         if (e instanceof Error) await context.onActionError(action, context, e);
       }
     }
-    sendTelemetryEvent(Component.core, TelemetryEvent.Generate, {
-      [TelemetryProperty.GenerateName]: context.name,
-      [TelemetryProperty.GenerateFallback]: context.fallbackZipPath ? "true" : "false", // Track fallback cases.
-    });
-    context.logProvider.info(`Finish generating ${context.name}`);
+  }
+}
+
+async function templateDefaultOnActionError(
+  action: GeneratorAction,
+  context: GeneratorContext,
+  error: Error
+): Promise<void> {
+  switch (action.name) {
+    case GeneratorActionName.FetchTemplateUrlWithTag:
+    case GeneratorActionName.FetchZipFromUrl:
+      await context.logProvider.info(error.message);
+      await context.logProvider.info(LogMessages.getTemplateFromLocal);
+      break;
+    case GeneratorActionName.FetchTemplateZipFromLocal:
+      await context.logProvider.error(error.message);
+      throw new TemplateZipFallbackError().toFxError();
+    case GeneratorActionName.Unzip:
+      await context.logProvider.error(error.message);
+      throw new UnzipError().toFxError();
+    default:
+      throw new Error(error.message);
+  }
+}
+
+async function sampleDefaultOnActionError(
+  action: GeneratorAction,
+  context: GeneratorContext,
+  error: Error
+): Promise<void> {
+  await context.logProvider.error(error.message);
+  switch (action.name) {
+    case GeneratorActionName.FetchZipFromUrl:
+      throw new FetchZipFromUrlError(context.zipUrl!).toFxError();
+    case GeneratorActionName.Unzip:
+      throw new UnzipError().toFxError();
+    default:
+      throw new Error(error.message);
   }
 }

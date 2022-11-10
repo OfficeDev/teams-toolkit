@@ -31,12 +31,20 @@ import {
   InputConfigsFolderName,
   SingleSelectConfig,
   ProjectSettingsV3,
+  SettingsFolderName,
+  SettingsFileName,
 } from "@microsoft/teamsfx-api";
 
-import { ConfigNotFoundError, UserdataNotFound, EnvUndefined, ReadFileError } from "./error";
+import {
+  ConfigNotFoundError,
+  UserdataNotFound,
+  EnvUndefined,
+  ReadFileError,
+  EnvNotSpecified,
+} from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags, SUPPORTED_SPFX_VERSION } from "./constants";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, isV3Enabled } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
 import CLIUIInstance from "./userInteraction";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
@@ -45,6 +53,7 @@ import { WriteFileError } from "@microsoft/teamsfx-core/build/core/error";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
 import { hasSPFxTab } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
+import { O_CREAT, O_EXCL, O_RDWR } from "constants";
 
 export type Json = { [_: string]: any };
 
@@ -150,12 +159,14 @@ export function getEnvFilePath(
 }
 
 export function getSettingsFilePath(projectFolder: string) {
-  return path.join(
-    projectFolder,
-    `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    ProjectSettingsFileName
-  );
+  return isV3Enabled()
+    ? path.join(projectFolder, SettingsFolderName, SettingsFileName)
+    : path.join(
+        projectFolder,
+        `.${ConfigFolderName}`,
+        InputConfigsFolderName,
+        ProjectSettingsFileName
+      );
 }
 
 export function getSecretFilePath(
@@ -231,7 +242,14 @@ export function readSettingsFileSync(projectFolder: string): Result<Json, FxErro
 
   try {
     const settings = fs.readJsonSync(filePath);
-    return ok(settings);
+    if (isV3Enabled()) {
+      return ok({
+        projectId: settings.trackingId,
+        version: settings.version,
+      });
+    } else {
+      return ok(settings);
+    }
   } catch (e) {
     return err(ReadFileError(e));
   }
@@ -261,7 +279,7 @@ export function writeSecretToFile(
   secrets: dotenv.DotenvParseOutput,
   rootFolder: string,
   env: string | undefined
-): Result<null, FxError> {
+): Result<undefined, FxError> {
   const secretFileResult = getSecretFilePath(rootFolder, env);
   if (secretFileResult.isErr()) {
     return err(secretFileResult.error);
@@ -276,11 +294,12 @@ export function writeSecretToFile(
     return err(new UserdataNotFound(env!));
   }
   try {
-    fs.writeFileSync(secretFile, array.join("\n"));
+    const fd = fs.openSync(secretFile, O_CREAT | O_EXCL | O_RDWR, 0o600);
+    fs.writeFileSync(fd, array.join("\n"));
   } catch (e) {
     return err(WriteFileError(e));
   }
-  return ok(null);
+  return ok(undefined);
 }
 
 export async function setSubscriptionId(
@@ -303,11 +322,13 @@ export async function setSubscriptionId(
 export function isWorkspaceSupported(workspace: string): boolean {
   const p = workspace;
 
-  const checklist: string[] = [
-    p,
-    `${p}/.${ConfigFolderName}`,
-    path.join(p, `.${ConfigFolderName}`, InputConfigsFolderName, ProjectSettingsFileName),
-  ];
+  const checklist: string[] = isV3Enabled()
+    ? [p, `${p}/${SettingsFolderName}`, path.join(p, SettingsFolderName, SettingsFileName)]
+    : [
+        p,
+        `${p}/.${ConfigFolderName}`,
+        path.join(p, `.${ConfigFolderName}`, InputConfigsFolderName, ProjectSettingsFileName),
+      ];
 
   for (const fp of checklist) {
     if (!fs.existsSync(path.resolve(fp))) {
@@ -345,14 +366,17 @@ export function getTeamsAppTelemetryInfoByEnv(
  * Ask user to select environment, local is included
  */
 export async function askTargetEnvironment(projectDir: string): Promise<Result<string, FxError>> {
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(projectDir);
+  if (isV3Enabled() && !CLIUIInstance.interactive) {
+    return err(new EnvNotSpecified());
+  }
+  const envProfilesResult = await environmentManager.listAllEnvConfigs(projectDir);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }
   const config: SingleSelectConfig = {
     name: "targetEnvName",
     title: "Select an environment",
-    options: envProfilesResult.value.concat([environmentManager.getLocalEnvName()]),
+    options: envProfilesResult.value,
   };
   const selectedEnv = await CLIUIInstance.selectOption(config);
   if (selectedEnv.isErr()) {

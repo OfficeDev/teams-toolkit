@@ -1,0 +1,19 @@
+# TeamsFx files
+teamsfx/.env.dev
+teamsfx/.env.local
+.DS_Store
+build
+
+# dependencies
+node_modules/
+
+# misc
+.env
+.deployment
+.DS_Store
+
+# build
+lib/
+
+# Local data
+.notification.localstore.json

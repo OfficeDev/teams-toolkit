@@ -9,6 +9,7 @@ import {
   Result,
   err,
   ok,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
@@ -24,13 +25,17 @@ import { AppStudioError } from "../../resource/appManifest/errors";
 import { Constants } from "../../resource/appManifest/constants";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { Service } from "typedi";
+import { AppDefinition } from "../../resource/appManifest/interfaces/appDefinition";
 
 const actionName = "teamsApp/create";
 
 const outputNames = {
   TEAMS_APP_ID: "TEAMS_APP_ID",
+  TEAMS_APP_TENANT_ID: "TEAMS_APP_TENANT_ID",
 };
 
+@Service(actionName)
 export class CreateTeamsAppDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
@@ -55,7 +60,8 @@ export class CreateTeamsAppDriver implements StepDriver {
         outputZipPath: `${context.projectPath}/build/appPackage/appPackage.${state.ENV_NAME}.zip`,
         outputJsonPath: `${context.projectPath}/build/appPackage/manifest.${state.ENV_NAME}.json`,
       },
-      context
+      context,
+      true
     );
     if (result.isErr()) {
       return result;
@@ -90,27 +96,39 @@ export class CreateTeamsAppDriver implements StepDriver {
     const manifestString = manifestFile.getData().toString();
     const manifest = JSON.parse(manifestString) as TeamsAppManifest;
     const teamsAppId = manifest.id;
+    let createdAppDefinition: AppDefinition;
     if (teamsAppId) {
       try {
-        await AppStudioClient.getApp(teamsAppId, appStudioToken, context.logProvider);
+        createdAppDefinition = await AppStudioClient.getApp(
+          teamsAppId,
+          appStudioToken,
+          context.logProvider
+        );
         create = false;
       } catch (error) {}
     }
 
     if (create) {
       try {
-        const appDefinition = await AppStudioClient.importApp(
+        createdAppDefinition = await AppStudioClient.importApp(
           archivedFile,
           appStudioTokenRes.value,
           context.logProvider
         );
         const message = getLocalizedString(
           "plugins.appstudio.teamsAppCreatedNotice",
-          appDefinition.teamsAppId!
+          createdAppDefinition.teamsAppId!
         );
         context.logProvider.info(message);
-        context.ui?.showMessage("info", message, false);
-        return ok(new Map([[outputNames.TEAMS_APP_ID, appDefinition.teamsAppId!]]));
+        if (context.platform === Platform.VSCode) {
+          context.ui?.showMessage("info", message, false);
+        }
+        return ok(
+          new Map([
+            [outputNames.TEAMS_APP_ID, createdAppDefinition.teamsAppId!],
+            [outputNames.TEAMS_APP_TENANT_ID, createdAppDefinition.tenantId!],
+          ])
+        );
       } catch (e: any) {
         if (e instanceof UserError || e instanceof SystemError) {
           return err(e);
@@ -123,7 +141,12 @@ export class CreateTeamsAppDriver implements StepDriver {
         }
       }
     } else {
-      return ok(new Map([[outputNames.TEAMS_APP_ID, teamsAppId]]));
+      return ok(
+        new Map([
+          [outputNames.TEAMS_APP_ID, teamsAppId],
+          [outputNames.TEAMS_APP_TENANT_ID, createdAppDefinition!.tenantId!],
+        ])
+      );
     }
   }
 

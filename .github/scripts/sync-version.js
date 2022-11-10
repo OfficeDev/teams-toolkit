@@ -4,25 +4,24 @@ const fse = require('fs-extra')
 
 const repoRoot = path.join(__dirname, "../..");
 
-function updateTemplatesDeps() {
-    const templateDir = path.join(__dirname, "../../templates");
-    const templateDirs = require(path.join(templateDir, "package.json")).templates
-    let depPkgs  = [];
-    for(let subTempDir of templateDirs){
+function updateTemplatesDeps(templateDir, templateList) {
+    let depPkgs = [];
+    for (let subTempDir of templateList) {
         const subTempPath = path.join(templateDir, subTempDir, "package.json")
-        if(fse.existsSync(subTempPath)){
+        if (fse.existsSync(subTempPath)) {
             depPkgs.push(subTempPath)
         }
     }
     const pkgDirs = require(path.join(repoRoot, "lerna.json")).packages;
     let templatesDeps = {};
-    for(let pkgDir of pkgDirs) {
+    for (let pkgDir of pkgDirs) {
         const pkgPath = path.join(repoRoot, pkgDir, "package.json");
         const pkgName = require(pkgPath).name;
         const pkgVersion = require(pkgPath).version;
+        console.log('====================== updateTemplatesDeps: ', pkgName, " ver:",pkgVersion);
         templatesDeps[`${pkgName}`] = pkgVersion;
     }
-    for(let file of depPkgs) {
+    for (let file of depPkgs) {
         updateFileDeps(file, templatesDeps)
     }
 }
@@ -40,9 +39,9 @@ function updateFileDeps(file, deps) {
     const pkg_ = fse.readJsonSync(file);
     const dep_ = pkg_.dependencies;
     let fileChange = false;
-    for(let [key,value] of Object.entries(deps)){
-        if(dep_[key] && semver.prerelease(semver.minVersion(dep_[key]))) {
-            if(!(semver.prerelease(semver.minVersion(dep_[key])).includes("alpha") || semver.prerelease(semver.minVersion(dep_[key])).includes("rc") || semver.prerelease(semver.minVersion(dep_[key])).includes("beta"))){
+    for (let [key, value] of Object.entries(deps)) {
+        if (dep_[key] && semver.prerelease(semver.minVersion(dep_[key]))) {
+            if (!(semver.prerelease(semver.minVersion(dep_[key])).includes("alpha") || semver.prerelease(semver.minVersion(dep_[key])).includes("rc") || semver.prerelease(semver.minVersion(dep_[key])).includes("beta"))) {
                 continue;
             }
             fileChange = true;
@@ -53,7 +52,7 @@ function updateFileDeps(file, deps) {
             }
         }
     }
-    if(fileChange) {
+    if (fileChange) {
         pkg_.dependencies = dep_;
         fse.writeFileSync(file, JSON.stringify(pkg_, null, 4));
     }
@@ -62,14 +61,19 @@ function updateFileDeps(file, deps) {
 function main() {
     const pathInput = process.argv[2];
     console.log('=================', __filename, " pathInput: ", pathInput);
-    if(pathInput){
+    if (pathInput) {
         console.log('syncup ', pathInput);
         const content = getSdkDeps();
         const configFilePath = path.join(pathInput, "package.json");
         updateFileDeps(configFilePath, content);
     } else {
         console.log('syncup templates')
-        updateTemplatesDeps();
+        const templateDir = path.join(__dirname, "../../templates");
+        const templateV3Dir = path.join(templateDir, "scenarios");
+        const templateList = require(path.join(templateDir, "package.json")).templates;
+        const templateV3List = require(path.join(templateDir, "package.json")).templatesV3;
+        updateTemplatesDeps(templateDir, templateList);
+        updateTemplatesDeps(templateV3Dir, templateV3List);
     }
 }
 

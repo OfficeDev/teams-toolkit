@@ -5,7 +5,9 @@ import {
   ConfigFolderName,
   ProjectSettings,
   ProjectSettingsFileName,
+  SettingsFileName,
   Settings,
+  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
@@ -74,9 +76,9 @@ export function isValidProject(workspacePath?: string): boolean {
   if (!workspacePath) return false;
   try {
     if (isV3Enabled()) {
-      const filePath = path.resolve(workspacePath, ".fx", ProjectSettingsFileName);
+      const filePath = path.resolve(workspacePath, SettingsFolderName, SettingsFileName);
       const projectSettings: Settings = fs.readJsonSync(filePath) as Settings;
-      if (!projectSettings.projectId) {
+      if (!projectSettings.trackingId) {
         return false;
       }
       if (!projectSettings.version) {

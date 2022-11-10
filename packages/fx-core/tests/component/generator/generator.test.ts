@@ -19,29 +19,31 @@ import { MockTools } from "../../core/utils";
 import AdmZip from "adm-zip";
 import sinon from "sinon";
 import {
-  fetchSampleUrlWithTagAction,
   fetchTemplateUrlWithTagAction,
   fetchTemplateZipFromLocalAction,
   fetchZipFromUrlAction,
   unzipAction,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
-import { GeneratorContext } from "../../../src/component/generator/generatorAction";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
+import { defaultTimeoutInMs, defaultTryLimits } from "../../../src/component/generator/constant";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
+  const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
+    sandbox.restore();
     if (await fs.pathExists(tmpDir)) {
       await fs.rm(tmpDir, { recursive: true });
     }
   });
 
-  it("fetch zip url", async () => {
-    const url = await fetchTemplateZipUrl("bot.csharp.default");
-    assert.isNotEmpty(url);
+  it("fetch zip from url", async () => {
+    const url =
+      "https://github.com/OfficeDev/TeamsFx/releases/download/templates-0.0.0-alpha/bot.csharp.default.zip";
+    await generatorUtils.fetchZipFromUrl(url, defaultTryLimits, defaultTimeoutInMs);
   });
 
   it("unzip ", async () => {
@@ -85,18 +87,9 @@ describe("Generator error", async () => {
     sandbox.restore();
   });
 
-  it("fetch sample url with tag error", async () => {
-    sandbox.stub(fetchSampleUrlWithTagAction, "run").throws(new Error("test"));
-    const result = await Generator.generateSample("bot-sso", tmpDir, ctx);
-    if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "FetchSampleUrlWithTagError");
-    }
-  });
-
   it("fetch sample zip from url error", async () => {
-    sandbox.stub(fetchSampleUrlWithTagAction, "run").resolves();
     sandbox.stub(fetchZipFromUrlAction, "run").throws(new Error("test"));
-    const result = await Generator.generateSample("bot-sso", tmpDir, ctx);
+    const result = await Generator.generateSample(ctx, tmpDir, "bot-sso");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "FetchZipFromUrlError");
     }
@@ -105,7 +98,7 @@ describe("Generator error", async () => {
   it("template fallback error", async () => {
     sandbox.stub(fetchTemplateUrlWithTagAction, "run").throws(new Error("test"));
     sandbox.stub(fetchTemplateZipFromLocalAction, "run").throws(new Error("test"));
-    const result = await Generator.generateTemplate("bot", "ts", tmpDir, ctx);
+    const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "TemplateZipFallbackError");
     }
@@ -116,7 +109,7 @@ describe("Generator error", async () => {
     sandbox.stub(fetchZipFromUrlAction, "run").resolves();
     sandbox.stub(fetchTemplateZipFromLocalAction, "run").resolves();
     sandbox.stub(unzipAction, "run").throws(new Error("test"));
-    const result = await Generator.generateTemplate("bot", "ts", tmpDir, ctx);
+    const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "UnzipError");
     }
@@ -138,30 +131,35 @@ describe("Generator happy path", async () => {
   });
 
   it("external sample", async () => {
+    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
     const sampleName = "bot-proactive-messaging-teamsfx";
-    await fs.mkdir(tmpDir);
-    const result = await Generator.generateSample(sampleName, tmpDir, context);
+    const result = await Generator.generateSample(context, tmpDir, sampleName);
     assert.isTrue(result.isOk());
-    const files = await fs.readdir(tmpDir);
-    assert.isTrue(files.length > 0);
-    assert.isTrue(files.includes(".fx"));
+  });
+
+  it("teamsfx sample", async () => {
+    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
+    const sampleName = "bot-sso";
+    const result = await Generator.generateSample(context, tmpDir, sampleName);
+    assert.isTrue(result.isOk());
   });
 
   it("template", async () => {
-    const templateName = "bot";
+    const templateName = "command-and-response";
     const language = "ts";
-    await fs.mkdir(tmpDir);
+    const inputDir = path.join(tmpDir, "input");
+    await fs.ensureDir(path.join(inputDir, templateName));
+    const fileData = "{{appName}}";
+    await fs.writeFile(path.join(inputDir, templateName, "test.txt.tpl"), fileData);
+    const zip = new AdmZip();
+    zip.addLocalFolder(inputDir);
+    zip.writeZip(path.join(tmpDir, "test.zip"));
     sandbox
-      .stub(fetchTemplateUrlWithTagAction, "run")
-      .callsFake(async (context: GeneratorContext) => {
-        context.zipUrl =
-          "https://github.com/hund030/TemplatePackerDemo/releases/download/templates%400.1.0/bot_notification_ts_function_http.zip";
-      });
-    const result = await Generator.generateTemplate(templateName, language, tmpDir, context);
+      .stub(generatorUtils, "fetchZipFromUrl")
+      .resolves(new AdmZip(path.join(tmpDir, "test.zip")));
+    context.templateVariables = Generator.getDefaultVariables("test");
+    const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
     assert.isTrue(result.isOk());
-    const files = await fs.readdir(tmpDir);
-    assert.isTrue(files.length > 0);
-    assert.isTrue(files.includes(".fx"));
   });
 
   it("template from source code", async () => {
@@ -176,7 +174,7 @@ describe("Generator happy path", async () => {
 
     let success = false;
     try {
-      await Generator.generateTemplate(templateName, language, tmpDir, context);
+      await Generator.generateTemplate(context, tmpDir, templateName, language);
       success = true;
     } catch (e) {
       assert.fail(e.toString());

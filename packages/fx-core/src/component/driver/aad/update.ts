@@ -6,6 +6,7 @@ import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
 import { Service } from "typedi";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
+import { ProgressBarSetting } from "./interface/progressBarSetting";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { AadAppClient } from "./utility/aadAppClient";
@@ -34,7 +35,15 @@ export class UpdateAadAppDriver implements StepDriver {
     args: UpdateAadAppArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
+    const progressBarSettings = this.getProgressBarSetting();
+    const progressHandler = context.ui?.createProgressBar(
+      progressBarSettings.title,
+      progressBarSettings.stepMessages.length
+    );
+
     try {
+      progressHandler?.start();
+      progressHandler?.next(progressBarSettings.stepMessages.shift());
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
 
       this.validateArgs(args);
@@ -57,6 +66,14 @@ export class UpdateAadAppDriver implements StepDriver {
         throw new MissingFieldInManifestUserError(actionName, "id", helpLink);
       }
 
+      // Output actual manifest to project folder first for better troubleshooting experience
+      const outputFileAbsolutePath = this.getAbsolutePath(args.outputFilePath, context.projectPath);
+      await fs.ensureDir(path.dirname(outputFileAbsolutePath));
+      await fs.writeFile(outputFileAbsolutePath, JSON.stringify(manifest, null, 4), "utf8");
+      context.logProvider?.info(
+        getLocalizedString(logMessageKeys.outputAadAppManifest, outputFileAbsolutePath)
+      );
+
       // MS Graph API does not allow adding new OAuth permissions and pre authorize it within one request
       // So split update AAD app to two requests:
       // 1. If there's preAuthorizedApplications, remove it temporary and update AAD app to create possible new permission
@@ -69,17 +86,10 @@ export class UpdateAadAppDriver implements StepDriver {
       // 2. Update AAD app again with full manifest to set preAuthorizedApplications
       await aadAppClient.updateAadApp(manifest);
 
-      // Output actual manifest to project folder
-      const outputFileAbsolutePath = this.getAbsolutePath(args.outputFilePath, context.projectPath);
-      await fs.ensureDir(path.dirname(outputFileAbsolutePath));
-      await fs.writeFile(outputFileAbsolutePath, JSON.stringify(manifest, null, 4), "utf8");
-      context.logProvider?.info(
-        getLocalizedString(logMessageKeys.outputAadAppManifest, outputFileAbsolutePath)
-      );
-
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
+      progressHandler?.end(true);
 
       return ok(
         new Map(
@@ -88,6 +98,7 @@ export class UpdateAadAppDriver implements StepDriver {
         )
       );
     } catch (error) {
+      progressHandler?.end(false);
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
@@ -172,5 +183,14 @@ export class UpdateAadAppDriver implements StepDriver {
     return path.isAbsolute(relativeOrAbsolutePath)
       ? relativeOrAbsolutePath
       : path.join(projectPath, relativeOrAbsolutePath);
+  }
+
+  private getProgressBarSetting(): ProgressBarSetting {
+    return {
+      title: getLocalizedString("driver.aadApp.progressBar.updateAadAppTitle"),
+      stepMessages: [
+        getLocalizedString("driver.aadApp.progressBar.updateAadAppStepMessage"), // step 1
+      ],
+    };
   }
 }

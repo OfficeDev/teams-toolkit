@@ -36,6 +36,7 @@ import {
   separateSecretData,
   mapToJson,
   compileHandlebarsTemplateString,
+  isV3Enabled,
 } from "../common/tools";
 import { GLOBAL_CONFIG } from "../component/constants";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
@@ -55,6 +56,7 @@ import { Container } from "typedi";
 import { pick } from "lodash";
 import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
 import { LocalCrypto } from "./crypto";
+import { envUtil } from "../component/utils/envUtil";
 
 export interface EnvStateFiles {
   envState: string;
@@ -207,6 +209,12 @@ class EnvironmentManager {
       return err(new PathNotExistError(projectPath));
     }
 
+    if (isV3Enabled()) {
+      const allEnvsRes = await envUtil.listEnv(projectPath);
+      if (allEnvsRes.isErr()) return err(allEnvsRes.error);
+      return ok(allEnvsRes.value);
+    }
+
     const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
     if (!(await fs.pathExists(envConfigsFolder))) {
       return ok([]);
@@ -223,6 +231,13 @@ class EnvironmentManager {
   public async listRemoteEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(new PathNotExistError(projectPath));
+    }
+
+    if (isV3Enabled()) {
+      const allEnvsRes = await envUtil.listEnv(projectPath);
+      if (allEnvsRes.isErr()) return err(allEnvsRes.error);
+      const remoteEnvs = allEnvsRes.value.filter((env) => env !== this.getLocalEnvName());
+      return ok(remoteEnvs);
     }
 
     const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
@@ -264,6 +279,10 @@ class EnvironmentManager {
     return match !== null;
   }
 
+  public getDotEnvPath(envName: string, projectPath: string): string {
+    return path.join(projectPath, "teamsfx", `.env.${envName}`);
+  }
+
   public getEnvConfigPath(envName: string, projectPath: string): string {
     const basePath = this.getEnvConfigsFolder(projectPath);
     return path.resolve(basePath, EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName));
@@ -287,7 +306,7 @@ class EnvironmentManager {
     };
     const projectSettings = await loadProjectSettings(inputs, true);
     if (projectSettings.isOk()) {
-      const appName = getLocalAppName(projectSettings.value.appName);
+      const appName = getLocalAppName(projectSettings.value.appName!);
       const newEnvConfig = environmentManager.newEnvConfigData(appName);
       const res = await environmentManager.writeEnvConfig(
         inputs.projectPath!,

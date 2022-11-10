@@ -3,6 +3,7 @@
 
 import { HookContext } from "@feathersjs/hooks";
 import { Json, ProjectSettings, Solution, SolutionContext, v2, v3 } from "@microsoft/teamsfx-api";
+import * as dotenv from "dotenv";
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
   solutionContext?: SolutionContext;
@@ -17,5 +18,5 @@ export interface CoreHookContext extends HookContext {
   envInfoV3?: v3.EnvInfoV3;
   solutionV3?: v3.ISolution;
 
-  envOutput?: Map<string, string>;
+  envVars?: dotenv.DotenvParseOutput;
 }

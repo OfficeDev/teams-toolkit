@@ -159,6 +159,7 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { TreatmentVariableValue } from "./exp/treatmentVariables";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -465,7 +466,14 @@ export function getSystemInputs(): Inputs {
 
 export async function createNewProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
-  const result = await runCommand(Stage.create);
+  let inputs: Inputs | undefined;
+  if (args?.length === 1) {
+    if (!!args[0].teamsAppFromTdp) {
+      inputs = getSystemInputs();
+      inputs.teamsAppFromTdp = args[0].teamsAppFromTdp;
+    }
+  }
+  const result = await runCommand(Stage.create, inputs);
   if (result.isErr()) {
     return err(result.error);
   }
@@ -756,7 +764,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
     // Use default manifest template
     // Throw error if not exists and remind user to use CLI
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
+    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.template.json`;
 
     if (!(await fs.pathExists(manifestTemplatePath))) {
       const error = new UserError(
@@ -824,14 +832,14 @@ async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   if (!isValidProject(projectPath)) {
     return err(new InvalidProjectError());
   }
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(projectPath!);
+  const envProfilesResult = await environmentManager.listAllEnvConfigs(projectPath!);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }
   const config: SingleSelectConfig = {
     name: "targetEnvName",
     title: "Select an environment",
-    options: envProfilesResult.value.concat(["local"]),
+    options: envProfilesResult.value,
   };
   const selectedEnv = await VS_CODE_UI.selectOption(config);
   if (selectedEnv.isErr()) {
@@ -848,7 +856,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     // Use default manifest template
     // Throw error if not exists and remind user to use CLI
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestTemplatePath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.template.json`;
+    const manifestTemplatePath = `${workspacePath}/${AppPackageFolderName}/manifest.template.json`;
 
     if (!(await fs.pathExists(manifestTemplatePath))) {
       const error = new UserError(
@@ -878,7 +886,7 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
       method: "buildPackage",
       params: {
         manifestTemplatePath: manifestTemplatePath,
-        ouptutZipPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`,
+        outputZipPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`,
         outputJsonPath: `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env}.json`,
         env: env,
       },
@@ -982,6 +990,8 @@ export async function runCommand(
 
     inputs = defaultInputs ? defaultInputs : getSystemInputs();
     inputs.stage = stage;
+    inputs.taskOrientedTemplateNaming = TreatmentVariableValue.taskOrientedTemplateNaming;
+    inputs.inProductDoc = TreatmentVariableValue.inProductDoc;
 
     switch (stage) {
       case Stage.create: {
@@ -2786,33 +2796,58 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
     return err(invalidProjectError);
   }
 
-  const env: Result<string | undefined, FxError> = await askTargetEnvironment();
-  if (env.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(telemetryName, env.error);
-    return err(env.error);
-  }
-
   let sourcePath: string;
-  let isConfig = false;
-  if (args && args.length > 0 && args[0].type === "config") {
-    isConfig = true;
-    sourcePath = path.resolve(
-      `${workspacePath}/.${ConfigFolderName}/${InputConfigsFolderName}/`,
-      EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
-    );
+  let env;
+  if (args && args.length > 0) {
+    env = args[0].env;
+    if (!env) {
+      const envRes: Result<string | undefined, FxError> = await askTargetEnvironment();
+      if (envRes.isErr()) {
+        ExtTelemetry.sendTelemetryErrorEvent(telemetryName, envRes.error);
+        return err(envRes.error);
+      }
+      env = envRes.value;
+    }
+
+    if (args[0].type === "config") {
+      sourcePath = path.resolve(
+        `${workspacePath}/.${ConfigFolderName}/${InputConfigsFolderName}/`,
+        EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env)
+      );
+    } else if (args[0].type === "state") {
+      sourcePath = path.resolve(
+        `${workspacePath}/.${ConfigFolderName}/${StatesFolderName}/`,
+        EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
+      );
+    } else {
+      sourcePath = path.resolve(`${workspacePath}/.${ConfigFolderName}/.env.${env}`);
+    }
   } else {
-    sourcePath = path.resolve(
-      `${workspacePath}/.${ConfigFolderName}/${StatesFolderName}/`,
-      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
+    const invalidArgsError = new SystemError(
+      ExtensionSource,
+      ExtensionErrors.InvalidArgs,
+      util.format(localize("teamstoolkit.handlers.invalidArgs"), args ? JSON.stringify(args) : args)
     );
+    showError(invalidArgsError);
+    ExtTelemetry.sendTelemetryErrorEvent(telemetryName, invalidArgsError);
+    return err(invalidArgsError);
   }
 
   if (!(await fs.pathExists(sourcePath))) {
-    if (isConfig) {
+    if (args[0].type === "config") {
       const noEnvError = new UserError(
         ExtensionSource,
         ExtensionErrors.EnvConfigNotFoundError,
-        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env.value)
+        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env)
+      );
+      showError(noEnvError);
+      ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
+      return err(noEnvError);
+    } else if (args[0].type === "env") {
+      const noEnvError = new UserError(
+        ExtensionSource,
+        ExtensionErrors.EnvFileNotFoundError,
+        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env)
       );
       showError(noEnvError);
       ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
@@ -2820,8 +2855,8 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
     } else {
       const isLocalEnv = env.value === environmentManager.getLocalEnvName();
       const message = isLocalEnv
-        ? util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env.value)
-        : util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env.value);
+        ? util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env)
+        : util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env);
       const noEnvError = new UserError(
         ExtensionSource,
         ExtensionErrors.EnvStateNotFoundError,
@@ -3221,8 +3256,87 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
   const config: SingleSelectConfig = {
     name: "tutorialName",
-    title: "Tutorials",
-    options: [
+    title: localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),
+    options: [],
+    returnObject: true,
+  };
+  if (TreatmentVariableValue.inProductDoc) {
+    config.title = localize("teamstoolkit.commandsTreeViewProvider.guideTitle");
+    config.options = [
+      {
+        id: "cardActionResponse",
+        label: `${localize("teamstoolkit.tutorials.cardActionResponse.label.new")}`,
+        description: localize("teamstoolkit.common.recommended"),
+        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail.new"),
+        groupName: localize("teamstoolkit.guide.scenario"),
+        data: "https://aka.ms/teamsfx-card-action-response",
+        buttons: [
+          {
+            iconPath: "file-code",
+            tooltip: localize("teamstoolkit.guide.tooltip.inProduct"),
+            command: "",
+          },
+        ],
+      },
+      {
+        id: "sendNotification",
+        label: `${localize("teamstoolkit.tutorials.sendNotification.label.new")}`,
+        detail: localize("teamstoolkit.tutorials.sendNotification.detail"),
+        groupName: localize("teamstoolkit.guide.scenario"),
+        data: "https://aka.ms/teamsfx-send-notification",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "",
+          },
+        ],
+      },
+      {
+        id: "commandAndResponse",
+        label: `${localize("teamstoolkit.tutorials.commandAndResponse.label.new")}`,
+        detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-create-command",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "",
+          },
+        ],
+      },
+      {
+        id: "addSso",
+        label: `${localize("teamstoolkit.tutorials.addSso.label.new")}`,
+        detail: localize("teamstoolkit.tutorials.addSso.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-add-sso",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "",
+          },
+        ],
+      },
+      {
+        id: "connectApi",
+        label: `${localize("teamstoolkit.tutorials.connectApi.label.new")}`,
+        detail: localize("teamstoolkit.tutorials.connectApi.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-connect-api",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "",
+          },
+        ],
+      },
+    ];
+  } else {
+    config.options = [
       {
         id: "sendNotification",
         label: `${localize("teamstoolkit.tutorials.sendNotification.label")}`,
@@ -3253,9 +3367,8 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         detail: localize("teamstoolkit.tutorials.connectApi.detail"),
         data: "https://aka.ms/teamsfx-connect-api",
       },
-    ],
-    returnObject: true,
-  };
+    ];
+  }
 
   if (isExistingTabAppEnabled()) {
     config.options.splice(0, 0, {
@@ -3285,6 +3398,13 @@ export function openTutorialHandler(args?: any[]): Promise<Result<unknown, FxErr
     ...getTriggerFromProperty(args),
     [TelemetryProperty.TutorialName]: tutorial.id,
   });
+  if (
+    TreatmentVariableValue.inProductDoc &&
+    (tutorial.id === "cardActionResponse" || tutorial.data === "cardActionResponse")
+  ) {
+    WebviewPanel.createOrShow(PanelType.RespondToCardActions);
+    return Promise.resolve(ok(null));
+  }
   return VS_CODE_UI.openUrl(tutorial.data as string);
 }
 
@@ -3458,24 +3578,24 @@ export async function scaffoldFromDeveloperPortalHandler(
     1
   );
   await progressBar.start();
-  let token = "";
+  let appDefinition = undefined;
   try {
-    const tokenRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
+    const appDefinitionRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
       { scopes: AppStudioScopes },
       args[0]
     );
-    if (tokenRes.isErr()) {
-      if ((tokenRes.error as any).displayMessage) {
-        window.showErrorMessage((tokenRes.error as any).displayMessage);
+    if (appDefinitionRes.isErr()) {
+      if ((appDefinitionRes.error as any).displayMessage) {
+        window.showErrorMessage((appDefinitionRes.error as any).displayMessage);
       } else {
         vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.generalError.message")
         );
       }
       await progressBar.end(false);
-      return err(tokenRes.error);
+      return err(appDefinitionRes.error);
     }
-    token = tokenRes.value;
+    appDefinition = appDefinitionRes.value;
     await progressBar.end(true);
   } catch (e) {
     vscode.window.showErrorMessage(
@@ -3485,7 +3605,10 @@ export async function scaffoldFromDeveloperPortalHandler(
     throw e;
   }
 
-  // TODO: get manifest and scaffold
+  const res = await createNewProjectHandler([{ teamsAppFromTdp: appDefinition }]);
+  if (res.isErr()) {
+    return err(res.error);
+  }
 
   return ok(null);
 }

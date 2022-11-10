@@ -17,7 +17,7 @@ import {
   TelemetryMeasurements,
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
-import { getHashedEnv } from "@microsoft/teamsfx-core/build/common/tools";
+import { getHashedEnv, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import { TaskCommand } from "@microsoft/teamsfx-core/build/common/local/constants";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
@@ -32,8 +32,6 @@ import {
 } from "./constants";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
-import { ExtensionSurvey } from "../utils/survey";
-import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 import { localize } from "../utils/localizeUtils";
 import { VS_CODE_UI } from "../extension";
@@ -130,7 +128,12 @@ function isTeamsfxTask(task: vscode.Task): boolean {
         execution.commandLine || `${execution.command} ${(execution.args || []).join(" ")}`;
     }
     if (commandLine !== undefined) {
-      return /(npm|yarn)[\s]+(run )?[\s]*[^:\s]+:teamsfx/i.test(commandLine);
+      if (/(npm|yarn)[\s]+(run )?[\s]*[^:\s]+:teamsfx/i.test(commandLine)) {
+        return true;
+      }
+      if (isV3Enabled() && /teamsfx\/script\/.*\.js/i.test(commandLine)) {
+        return true;
+      }
     }
   }
 
@@ -265,12 +268,6 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
       localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {
         [TelemetryProperty.DebugNpmInstallName]: task.name,
       });
-
-      if (TreatmentVariableValue.isEmbeddedSurvey) {
-        // Survey triggering point
-        const survey = ExtensionSurvey.getInstance();
-        survey.activate();
-      }
 
       activeNpmInstallTasks.set(task.name, new NpmInstallTaskInfo());
     }

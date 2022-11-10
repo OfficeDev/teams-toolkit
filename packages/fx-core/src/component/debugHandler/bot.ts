@@ -78,6 +78,7 @@ export class BotDebugHandler {
   private projectSettingsV3?: ProjectSettingsV3;
   private cryptoProvider?: CryptoProvider;
   private envInfoV3?: v3.EnvInfoV3;
+  private hasBotIdInEnvBefore?: boolean;
 
   constructor(
     projectPath: string,
@@ -178,6 +179,7 @@ export class BotDebugHandler {
           this.ui,
           this.cryptoProvider
         );
+        this.hasBotIdInEnvBefore = !!this.envInfoV3?.state[ComponentNames.TeamsBot]?.botId;
         if (checkResult.isErr()) {
           return err(checkResult.error);
         }
@@ -255,7 +257,7 @@ export class BotDebugHandler {
       const botReg: IBotRegistration = {
         botId: this.envInfoV3!.state[ComponentNames.TeamsBot].botId,
         name:
-          convertToAlphanumericOnly(this.projectSettingsV3!.appName) +
+          convertToAlphanumericOnly(this.projectSettingsV3!.appName!) +
           PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
         description: "",
         iconUrl: "",
@@ -263,7 +265,11 @@ export class BotDebugHandler {
         callingEndpoint: "",
       };
 
-      await AppStudioClient.createBotRegistration(tokenResult.value, botReg);
+      await AppStudioClient.createBotRegistration(
+        tokenResult.value,
+        botReg,
+        this.hasBotIdInEnvBefore
+      );
 
       return ok([
         util.format(

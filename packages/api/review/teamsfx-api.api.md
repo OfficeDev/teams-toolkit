@@ -938,6 +938,8 @@ export interface Inputs extends Json {
     // (undocumented)
     ignoreEnvInfo?: boolean;
     // (undocumented)
+    inProductDoc?: boolean;
+    // (undocumented)
     isM365?: boolean;
     // (undocumented)
     locale?: string;
@@ -959,6 +961,10 @@ export interface Inputs extends Json {
     targetResourceLocationName?: string;
     // (undocumented)
     targetSubscriptionId?: string;
+    // (undocumented)
+    taskOrientedTemplateNaming?: boolean;
+    // (undocumented)
+    teamsAppFromTdp?: any;
     // (undocumented)
     vscodeEnv?: VsCodeEnv;
 }
@@ -1353,7 +1359,7 @@ export interface ProjectConfigV3 {
 // @public
 export interface ProjectSettings {
     // (undocumented)
-    appName: string;
+    appName?: string;
     // (undocumented)
     defaultFunctionName?: string;
     // (undocumented)
@@ -1569,12 +1575,16 @@ export type SelectFolderResult = InputResult<string>;
 // @public
 export interface Settings {
     // (undocumented)
-    isFromSample: boolean;
-    // (undocumented)
-    projectId: string;
+    trackingId: string;
     // (undocumented)
     version: string;
 }
+
+// @public (undocumented)
+export const SettingsFileName = "settings.json";
+
+// @public (undocumented)
+export const SettingsFolderName = "teamsfx";
 
 // @public
 export interface ShellAction extends ActionBase {

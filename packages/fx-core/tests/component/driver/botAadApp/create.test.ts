@@ -14,13 +14,14 @@ import {
   UnhandledSystemError,
   UnhandledUserError,
 } from "../../../../src/component/driver/botAadApp/error/unhandledError";
+import axios from "axios";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 const outputKeys = {
   BOT_ID: "BOT_ID",
-  BOT_PASSWORD: "BOT_PASSWORD",
+  SECRET_BOT_PASSWORD: "SECRET_BOT_PASSWORD",
 };
 
 describe("aadAppCreate", async () => {
@@ -75,10 +76,11 @@ describe("aadAppCreate", async () => {
     const result = await createBotAadAppDriver.handler(args, mockedDriverContext);
 
     expect(result.get(outputKeys.BOT_ID)).to.be.equal(expectedClientId);
-    expect(result.get(outputKeys.BOT_PASSWORD)).to.be.equal(expectedSecretText);
+    expect(result.get(outputKeys.SECRET_BOT_PASSWORD)).to.be.equal(expectedSecretText);
   });
 
   it("should throw user error when GraphClient failed with 4xx error", async () => {
+    sinon.stub(axios, "isAxiosError").returns(true);
     sinon.stub(GraphClient, "registerAadApp").rejects({
       isAxiosError: true,
       response: {
@@ -106,6 +108,7 @@ describe("aadAppCreate", async () => {
   });
 
   it("should throw system error when GraphClient failed with non 4xx error", async () => {
+    sinon.stub(axios, "isAxiosError").returns(true);
     sinon.stub(GraphClient, "registerAadApp").rejects({
       isAxiosError: true,
       response: {
@@ -127,6 +130,18 @@ describe("aadAppCreate", async () => {
       (error) => {
         expect(error instanceof UnhandledSystemError).to.be.true;
         expect(error.message).contains("Unhandled error happened in botAadApp/create action");
+      }
+    );
+  });
+
+  it("should throw error when GraphClient throws errors", async () => {
+    sinon.stub(GraphClient, "registerAadApp").throwsException();
+    const args: any = {
+      name: expectedDisplayName,
+    };
+    await expect(createBotAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
+      (error) => {
+        expect(error instanceof UnhandledSystemError).to.be.true;
       }
     );
   });

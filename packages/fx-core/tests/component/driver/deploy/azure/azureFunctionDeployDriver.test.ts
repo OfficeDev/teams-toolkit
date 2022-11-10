@@ -17,9 +17,23 @@ import { AzureFunctionDeployDriver } from "../../../../../src/component/driver/d
 import { MyTokenCredential } from "../../../../plugins/solution/util";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { MockUserInteraction } from "../../../../core/utils";
+import * as os from "os";
+import * as uuid from "uuid";
+import * as path from "path";
 
 describe("Azure Function Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
+  const sysTmp = os.tmpdir();
+  const folder = uuid.v4();
+  const testFolder = path.join(sysTmp, folder);
+
+  before(async () => {
+    await fs.mkdirs(testFolder);
+  });
+
+  after(async () => {
+    fs.rmSync(testFolder, { recursive: true, force: true });
+  });
 
   beforeEach(() => {
     sandbox.stub(tools, "waitSeconds").resolves();
@@ -32,8 +46,8 @@ describe("Azure Function Deploy Driver test", () => {
   it("deploy happy path", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -80,8 +94,8 @@ describe("Azure Function Deploy Driver test", () => {
   it("deploy restart error!", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -127,8 +141,8 @@ describe("Azure Function Deploy Driver test", () => {
   it("deploy restart throws", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -174,8 +188,8 @@ describe("Azure Function Deploy Driver test", () => {
   it("Zip deploy throws when upload", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -221,8 +235,8 @@ describe("Azure Function Deploy Driver test", () => {
   it("Check deploy status error", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
@@ -268,8 +282,8 @@ describe("Azure Function Deploy Driver test", () => {
   it("Check deploy throws", async () => {
     const deploy = new AzureFunctionDeployDriver();
     const args = {
-      workingDirectory: "./",
-      distributionPath: "./",
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
       ignoreFile: "./ignore",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",

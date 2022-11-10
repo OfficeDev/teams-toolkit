@@ -1,21 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
+import { Result, FxError, err, ok } from "@microsoft/teamsfx-api";
+import { getHashedEnv } from "@microsoft/teamsfx-core";
+import path from "path";
 import { Argv } from "yargs";
-import { FxError, err, ok, Result } from "@microsoft/teamsfx-api";
 import activate from "../activate";
-import { YargsCommand } from "../yargsCommand";
-import { getSystemInputs, getTeamsAppTelemetryInfoByEnv } from "../utils";
+import { RootFolderOptions, EnvOptions } from "../constants";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { getHashedEnv } from "@microsoft/teamsfx-core/build/common/tools";
-import { EnvOptions, RootFolderOptions } from "../constants";
+import { getSystemInputs, askTargetEnvironment, getTeamsAppTelemetryInfoByEnv } from "../utils";
+import { YargsCommand } from "../yargsCommand";
 
 export default class Publish extends YargsCommand {
   public readonly commandHead = `publish`;
@@ -28,6 +27,16 @@ export default class Publish extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const inputs = getSystemInputs(args.folder, args.env);
+    // TODO: remove when V3 is auto enabled
+    if (!inputs.env) {
+      // include local env in interactive question
+      const selectedEnv = await askTargetEnvironment(inputs.projectPath!);
+      if (selectedEnv.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Publish, selectedEnv.error);
+        return err(selectedEnv.error);
+      }
+      inputs.env = selectedEnv.value;
+    }
 
     const properties: { [key: string]: string } = {};
     if (inputs.env) {

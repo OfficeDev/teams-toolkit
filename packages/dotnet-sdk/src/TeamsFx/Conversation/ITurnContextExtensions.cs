@@ -20,7 +20,9 @@ namespace Microsoft.TeamsFx.Conversation
                     result = channelData?.Team?.Id;
                 }
 
-                if (result == null)
+                // Fallback to use conversation id.
+                // The conversation id is equal to team id only when the bot app is installed into the General channel.
+                if (result == null && activity.Conversation?.Name == null)
                 {
                     result = activity.Conversation?.Id;
                 }

@@ -182,7 +182,7 @@ export interface EnvMeta {
  * project static settings
  */
 export interface ProjectSettings {
-  appName: string;
+  appName?: string;
   version?: string;
   projectId: string;
   programmingLanguage?: string;
@@ -251,6 +251,9 @@ export interface Inputs extends Json {
   existingResources?: string[];
   locale?: string;
   isM365?: boolean;
+  taskOrientedTemplateNaming?: boolean; // AB test for notification/command/workflow bot template naming
+  inProductDoc?: boolean; // AB test for in product doc feature
+  teamsAppFromTdp?: any;
 }
 
 export interface ProjectConfig {
@@ -297,10 +300,9 @@ export interface ResourceContextV3 extends ContextV3 {
 export type MaybePromise<T> = T | Promise<T>;
 
 /**
- * simplified project settings for v3
+ * simplified tooling settings for v3
  */
 export interface Settings {
   version: string;
-  projectId: string;
-  isFromSample: boolean;
+  trackingId: string;
 }

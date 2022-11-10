@@ -169,12 +169,12 @@ export async function downloadSample(
       projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
       projectSettings.isFromSample = true;
       inputs.projectId = projectSettings.projectId;
-      telemetryProperties[TelemetryProperty.ProjectId] = projectSettings.projectId;
+      telemetryProperties[TelemetryProperty.NewProjectId] = projectSettings.projectId;
       if (ctx) ctx.projectSettings = projectSettings;
       if (contextV3) contextV3.projectSetting = projectSettings as ProjectSettingsV3;
       inputs.projectPath = sampleAppPath;
     } else {
-      telemetryProperties[TelemetryProperty.ProjectId] =
+      telemetryProperties[TelemetryProperty.NewProjectId] =
         "unknown, failed to set projectId in projectSettings.json";
     }
     await progress.end(true);

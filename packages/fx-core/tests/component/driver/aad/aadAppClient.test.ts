@@ -265,6 +265,7 @@ describe("AadAppClient", async () => {
 
     beforeEach(() => {
       axiosInstance = mockAxiosCreate();
+      doNotWaitBetweenEachRetry();
       aadAppClient = new AadAppClient(new MockedM365Provider());
     });
 
@@ -285,19 +286,30 @@ describe("AadAppClient", async () => {
       const expectedError = {
         error: {
           code: "Request_BadRequest",
-          message: `Resource '${expectedObjectId}' does not exist or one of its queried reference-property objects are not present.`,
+          message: `Invalid value specified for property 'signInAudience' of resource 'Application'`,
         },
       };
 
       nock("https://graph.microsoft.com/v1.0")
         .patch(`/applications/${expectedObjectId}`)
-        .reply(404, expectedError);
+        .reply(400, expectedError);
 
       await expect(aadAppClient.updateAadApp(mockedManifest))
-        .to.eventually.be.rejectedWith("Request failed with status code 404")
+        .to.eventually.be.rejectedWith("Request failed with status code 400")
         .then((error) => {
           expect(error.response.data).to.deep.equal(expectedError);
         });
+    });
+
+    it("should retry when get 404 response", async () => {
+      nock("https://graph.microsoft.com/v1.0")
+        .patch(`/applications/${expectedObjectId}`)
+        .reply(404);
+      nock("https://graph.microsoft.com/v1.0")
+        .patch(`/applications/${expectedObjectId}`)
+        .reply(204);
+
+      await expect(aadAppClient.updateAadApp(mockedManifest)).not.eventually.be.rejected;
     });
   });
 });

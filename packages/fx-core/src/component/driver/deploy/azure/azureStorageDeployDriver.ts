@@ -26,6 +26,7 @@ import { wrapRun } from "../../../utils/common";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
+import { ProgressMessages } from "../../../messages";
 
 const ACTION_NAME = "azureStorage/deploy";
 
@@ -45,24 +46,34 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i;
 
+  progressBarName = `Deploying ${this.workingDirectory ?? ""} to Azure Storage Service`;
+  progressBarSteps = 3;
+
   async azureDeploy(
     args: DeployStepArgs,
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<void> {
+    await this.progressBar?.start();
+    await this.context.logProvider.debug("Start deploying to Azure Storage Service");
+    await this.context.logProvider.debug("Get Azure Storage Service deploy credential");
+    await this.progressBar?.next(ProgressMessages.getAzureStorageAccountInfo);
     const containerClient = await AzureStorageDeployDriverImpl.createContainerClient(
       azureResource,
       azureCredential
     );
     // delete all existing blobs
+    await this.progressBar?.next(ProgressMessages.clearStorageExistsBlobs);
     await AzureStorageDeployDriverImpl.deleteAllBlobs(
       containerClient,
       azureResource.instanceId,
       this.context.logProvider
     );
+    await this.context.logProvider.debug("Uploading files to Azure Storage Service");
     // upload all to storage
+    await this.progressBar?.next(ProgressMessages.uploadFilesToStorage);
     const ig = await this.handleIgnore(args, this.context);
-    const sourceFolder = args.distributionPath;
+    const sourceFolder = this.distDirectory;
     const tasks: Promise<BlobUploadCommonResponse>[] = [];
     await forEachFileAndDir(
       sourceFolder,
@@ -80,7 +91,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
         tasks.push(client.uploadFile(filePath, options));
       },
       (itemPath: string) => {
-        return ig.test(path.relative(sourceFolder, itemPath)).unignored;
+        return !ig.test(path.relative(sourceFolder, itemPath)).ignored;
       }
     );
     const responses = await Promise.all(tasks);
@@ -88,6 +99,8 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
     if (errorResponse) {
       throw DeployExternalApiCallError.uploadToStorageError(sourceFolder, errorResponse);
     }
+    await this.context.logProvider.debug("Upload files to Azure Storage Service successfully");
+    await this.progressBar?.end(true);
     return;
   }
 

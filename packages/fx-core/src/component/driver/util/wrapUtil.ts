@@ -10,9 +10,11 @@ import {
   SystemError,
   UserError,
 } from "@microsoft/teamsfx-api";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { ErrorConstants } from "../../constants";
 import { BaseComponentInnerError } from "../../error/componentError";
 import { TeamsFxTelemetryReporter } from "../../utils/teamsFxTelemetryReporter";
+import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 
 interface StringMap {
@@ -46,6 +48,7 @@ export class WrapDriverContext {
     if (progressBar) {
       this.progressBars.push(progressBar);
       progressBar.start();
+      progressBar.next();
     }
     return progressBar;
   }
@@ -68,11 +71,14 @@ export async function wrapRun(
   const eventName = context.eventName;
   try {
     context.wrapTelemetryReporter?.sendStartEvent({ eventName });
+    context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, eventName));
     const res = await exec();
     context.wrapTelemetryReporter?.sendEndEvent({
       eventName,
       properties: context.telemetryProperties,
     });
+    context.logProvider?.info(getLocalizedString(logMessageKeys.successExecuteDriver, eventName));
+    context.endProgressBars(true);
     return ok(res);
   } catch (error: any) {
     const fxError = getError(context, error);
@@ -83,6 +89,7 @@ export async function wrapRun(
       },
       fxError
     );
+    context.endProgressBars(false);
     return err(fxError);
   }
 }

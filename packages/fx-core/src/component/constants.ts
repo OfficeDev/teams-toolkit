@@ -102,6 +102,7 @@ export const TelemetryConstants = {
     errorCode: "error-code",
     errorType: "error-type",
     errorMessage: "error-message",
+    timeCost: "time-cost",
   },
   values: {
     yes: "yes",
@@ -594,6 +595,7 @@ export enum SolutionTelemetrySuccess {
 
 export const SolutionTelemetryComponentName = "solution";
 export const SolutionSource = "Solution";
+export const CoordinatorSource = "coordinator";
 
 export class UnauthorizedToCheckResourceGroupError extends UserError {
   constructor(resourceGroupName: string, subscriptionId: string, subscriptionName: string) {
@@ -1042,3 +1044,7 @@ export const BotFeatureIds = [
 ];
 
 export const TabFeatureIds = [TabOptionItem.id, TabNonSsoItem.id, M365SsoLaunchPageOptionItem.id];
+
+export const AadConstants = {
+  DefaultTemplateFileName: "aad.manifest.template.json",
+};

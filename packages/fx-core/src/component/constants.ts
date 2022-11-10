@@ -102,6 +102,7 @@ export const TelemetryConstants = {
     errorCode: "error-code",
     errorType: "error-type",
     errorMessage: "error-message",
+    timeCost: "time-cost",
   },
   values: {
     yes: "yes",

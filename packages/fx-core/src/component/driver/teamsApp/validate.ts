@@ -77,8 +77,9 @@ export class ValidateTeamsAppDriver implements StepDriver {
       return err(validationFailed);
     }
     const validationSuccess = getLocalizedString("plugins.appstudio.validationSucceedNotice");
-    context.logProvider.info(validationSuccess);
-    if (context.platform === Platform.VSCode) {
+    if (context.platform === Platform.VS) {
+      context.logProvider.info(validationSuccess);
+    } else {
       context.ui?.showMessage("info", validationSuccess, false);
     }
     return ok(new Map());

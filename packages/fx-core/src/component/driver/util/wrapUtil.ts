@@ -48,6 +48,7 @@ export class WrapDriverContext {
     if (progressBar) {
       this.progressBars.push(progressBar);
       progressBar.start();
+      progressBar.next();
     }
     return progressBar;
   }

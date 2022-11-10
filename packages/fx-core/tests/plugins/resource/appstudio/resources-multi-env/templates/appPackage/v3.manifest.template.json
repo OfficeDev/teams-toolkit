@@ -29,5 +29,14 @@
         "identity",
         "messageTeamMembers"
     ],
-    "validDomains": []
+    "validDomains": [],
+    "localizationInfo": {
+        "defaultLanguageTag": "en",
+        "additionalLanguages": [
+            {
+                "languageTag": "de",
+                "file": "resources/de.json"
+            }
+        ]
+    }
 }

@@ -134,7 +134,7 @@ export class SPFxGenerator {
         ...args
       );
 
-      const newPath = path.join(destinationPath, "SPFx");
+      const newPath = path.join(destinationPath, "src");
       const currentPath = path.join(destinationPath, solutionName!);
       await fs.rename(currentPath, newPath);
 

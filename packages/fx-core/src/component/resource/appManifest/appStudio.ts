@@ -417,6 +417,28 @@ export async function buildTeamsAppPackage(
   dir = path.dirname(manifest.icons.outline);
   zip.addLocalFile(outlineFile, dir === "." ? "" : dir);
 
+  // localization file
+  if (
+    manifest.localizationInfo &&
+    manifest.localizationInfo.additionalLanguages &&
+    manifest.localizationInfo.additionalLanguages.length > 0
+  ) {
+    await Promise.all(
+      manifest.localizationInfo.additionalLanguages.map(async function (language: any) {
+        const file = language.file;
+        const fileName = `${appDirectory}/${file}`;
+        if (!(await fs.pathExists(fileName))) {
+          throw AppStudioResultFactory.UserError(
+            AppStudioError.FileNotFoundError.name,
+            AppStudioError.FileNotFoundError.message(fileName)
+          );
+        }
+        const dir = path.dirname(file);
+        zip.addLocalFile(fileName, dir === "." ? "" : dir);
+      })
+    );
+  }
+
   const zipFileName = path.join(buildFolderPath, `appPackage.${envInfo.envName}.zip`);
   zip.writeZip(zipFileName);
 

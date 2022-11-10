@@ -2803,26 +2803,31 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
     return err(invalidProjectError);
   }
 
-  const env: Result<string | undefined, FxError> = await askTargetEnvironment();
-  if (env.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(telemetryName, env.error);
-    return err(env.error);
-  }
-
   let sourcePath: string;
+  let env;
   if (args && args.length > 0) {
+    env = args[0].env;
+    if (!env) {
+      const envRes: Result<string | undefined, FxError> = await askTargetEnvironment();
+      if (envRes.isErr()) {
+        ExtTelemetry.sendTelemetryErrorEvent(telemetryName, envRes.error);
+        return err(envRes.error);
+      }
+      env = envRes.value;
+    }
+
     if (args[0].type === "config") {
       sourcePath = path.resolve(
         `${workspacePath}/.${ConfigFolderName}/${InputConfigsFolderName}/`,
-        EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
+        EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, env)
       );
     } else if (args[0].type === "state") {
       sourcePath = path.resolve(
         `${workspacePath}/.${ConfigFolderName}/${StatesFolderName}/`,
-        EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env.value!)
+        EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
       );
     } else {
-      sourcePath = path.resolve(`${workspacePath}/.${ConfigFolderName}/.env.${env.value}`);
+      sourcePath = path.resolve(`${workspacePath}/.${ConfigFolderName}/.env.${env}`);
     }
   } else {
     const invalidArgsError = new SystemError(
@@ -2840,7 +2845,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       const noEnvError = new UserError(
         ExtensionSource,
         ExtensionErrors.EnvConfigNotFoundError,
-        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env.value)
+        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env)
       );
       showError(noEnvError);
       ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
@@ -2849,7 +2854,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       const noEnvError = new UserError(
         ExtensionSource,
         ExtensionErrors.EnvFileNotFoundError,
-        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env.value)
+        util.format(localize("teamstoolkit.handlers.findEnvFailed"), env)
       );
       showError(noEnvError);
       ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
@@ -2857,8 +2862,8 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
     } else {
       const isLocalEnv = env.value === environmentManager.getLocalEnvName();
       const message = isLocalEnv
-        ? util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env.value)
-        : util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env.value);
+        ? util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env)
+        : util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env);
       const noEnvError = new UserError(
         ExtensionSource,
         ExtensionErrors.EnvStateNotFoundError,

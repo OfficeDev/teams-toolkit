@@ -325,12 +325,12 @@ export class WebviewPanel {
     const scriptBasePathOnDisk = vscode.Uri.file(
       path.join(globalVariables.context.extensionPath, "out/")
     );
-    const scriptBaseUri = scriptBasePathOnDisk.with({ scheme: "vscode-resource" });
+    const scriptBaseUri = this.panel.webview.asWebviewUri(scriptBasePathOnDisk);
 
     const scriptPathOnDisk = vscode.Uri.file(
       path.join(globalVariables.context.extensionPath, "out/src", "client.js")
     );
-    const scriptUri = scriptPathOnDisk.with({ scheme: "vscode-resource" });
+    const scriptUri = this.panel.webview.asWebviewUri(scriptPathOnDisk);
 
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();

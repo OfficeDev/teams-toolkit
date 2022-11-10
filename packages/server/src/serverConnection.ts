@@ -116,6 +116,9 @@ export default class ServerConnection implements IServerConnection {
     token: CancellationToken
   ): Promise<Result<Void, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
+    if (inputs.env && inputs.env === environmentManager.getLocalEnvName()) {
+      inputs.workflowFilePath = inputs.projectPath + "/teamsfx/app.local.yml";
+    }
     const res = await Correlator.runWithId(
       corrId,
       (params) => this.core.provisionResources(params),

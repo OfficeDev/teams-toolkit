@@ -26,7 +26,9 @@ export const EnvLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFu
       ctx.result = err(envListRes.error);
       return;
     }
-    question.staticOptions = envListRes.value;
+    question.staticOptions = envListRes.value.filter(
+      (env) => env !== environmentManager.getLocalEnvName()
+    );
     const res = await traverse(new QTreeNode(question), inputs, TOOLS.ui);
     if (res.isErr()) {
       TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);

@@ -14,6 +14,7 @@ import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
+import { isTDPIntegrationEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -268,6 +269,7 @@ class TreeViewManager {
   }
 
   private registerDeployment(disposables: vscode.Disposable[]) {
+    const isTdpIntegration = isTDPIntegrationEnabled();
     const deployCommand = [
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),
@@ -299,16 +301,29 @@ class TreeViewManager {
       ),
     ];
 
-    deployCommand.push(
-      new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitleNew"),
-        localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription"),
-        "fx-extension.openAppManagement",
-        undefined,
-        { name: "teamsfx-developer-portal", custom: false }
-      )
-    );
+    if (!isTdpIntegration) {
+      deployCommand.push(
+        new TreeViewCommand(
+          localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitleNew"),
+          localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription"),
+          "fx-extension.openAppManagement",
+          undefined,
+          { name: "teamsfx-developer-portal", custom: false }
+        )
+      );
+    }
 
+    if (isTdpIntegration) {
+      deployCommand.push(
+        new TreeViewCommand(
+          localize("teamstoolkit.commandsTreeViewProvider.publishInDevPortalTitle"),
+          localize("teamstoolkit.commandsTreeViewProvider.publishInDevPortalDescription"),
+          "fx-entension.publishInDeveloperPortal",
+          "publish",
+          { name: "export", custom: false }
+        )
+      );
+    }
     const deployProvider = new CommandsTreeViewProvider(deployCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-deployment", deployProvider));
     this.storeCommandsIntoMap(deployCommand);

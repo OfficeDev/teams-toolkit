@@ -49,6 +49,7 @@ import { envUtil } from "../../utils/envUtil";
 import { AppPackage } from "./interfaces/appPackage";
 import { basename, extname } from "path";
 import set from "lodash/set";
+import { CoreQuestionNames } from "../../../core/question";
 
 /**
  * Create Teams app if not exists
@@ -693,15 +694,7 @@ export async function updateManifestV3(
   const updateTeamsAppArgs: ConfigureTeamsAppArgs = {
     appPackagePath: createAppPackageArgs.outputZipPath,
   };
-  const driverContext: DriverContext = {
-    azureAccountProvider: ctx.tokenProvider!.azureAccountProvider,
-    m365TokenProvider: ctx.tokenProvider!.m365TokenProvider,
-    ui: ctx.userInteraction,
-    logProvider: ctx.logProvider,
-    telemetryReporter: ctx.telemetryReporter,
-    projectPath: ctx.projectPath!,
-    platform: inputs.platform,
-  };
+  const driverContext: DriverContext = generateDriverContext(ctx, inputs);
   await envUtil.readEnv(inputs.projectPath!, state.ENV_NAME!);
 
   // render manifest
@@ -821,6 +814,67 @@ export async function updateManifestV3(
   }
 }
 
+export async function updateManifestV3ForPublish(
+  ctx: ResourceContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<any, FxError>> {
+  const envName = process.env.TEAMSFX_ENV;
+  const teamsAppId = process.env.TEAMS_APP_ID;
+  const manifestTemplatePath = inputs[CoreQuestionNames.ManifestPath];
+  const manifestFileName = path.join(
+    inputs.projectPath,
+    BuildFolderName,
+    AppPackageFolderName,
+    `manifest.${envName}.json`
+  );
+
+  // Prepare for driver
+  const driverContext: DriverContext = generateDriverContext(ctx, inputs);
+  const buildDriver: CreateAppPackageDriver = Container.get("teamsApp/createAppPackage");
+  const createAppPackageArgs: CreateAppPackageArgs = {
+    manifestTemplatePath: manifestTemplatePath,
+    outputZipPath: path.join(
+      inputs.projectPath,
+      BuildFolderName,
+      AppPackageFolderName,
+      `appPackage.${envName}.zip`
+    ),
+    outputJsonPath: manifestFileName,
+  };
+  const updateTeamsAppArgs: ConfigureTeamsAppArgs = {
+    appPackagePath: createAppPackageArgs.outputZipPath,
+  };
+
+  await envUtil.readEnv(inputs.projectPath!, envName!);
+
+  const res = await buildDriver.run(createAppPackageArgs, driverContext);
+  if (res.isErr()) {
+    return err(res.error);
+  }
+
+  try {
+    const configureDriver: ConfigureTeamsAppDriver = Container.get("teamsApp/update");
+    const result = await configureDriver.run(updateTeamsAppArgs, driverContext);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", teamsAppId));
+    return ok(teamsAppId);
+  } catch (error) {
+    if (error.message && error.message.includes("404")) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.UpdateManifestWithInvalidAppError.name,
+          AppStudioError.UpdateManifestWithInvalidAppError.message(teamsAppId!)
+        )
+      );
+    } else {
+      return err(error);
+    }
+  }
+}
+
 export async function getAppPackage(
   teamsAppId: string,
   m365TokenProvider: M365TokenProvider,
@@ -873,4 +927,19 @@ export async function getAppPackage(
   } catch (e) {
     return err(e);
   }
+}
+
+function generateDriverContext(
+  ctx: ResourceContextV3,
+  inputs: InputsWithProjectPath
+): DriverContext {
+  return {
+    azureAccountProvider: ctx.tokenProvider!.azureAccountProvider,
+    m365TokenProvider: ctx.tokenProvider!.m365TokenProvider,
+    ui: ctx.userInteraction,
+    logProvider: ctx.logProvider,
+    telemetryReporter: ctx.telemetryReporter,
+    projectPath: ctx.projectPath!,
+    platform: inputs.platform,
+  };
 }

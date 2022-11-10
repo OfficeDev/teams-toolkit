@@ -372,6 +372,14 @@ function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) 
   // Publish to Teams
   registerInCommandController(context, "fx-extension.publish", handlers.publishHandler, "publish");
 
+  // Publish in Developer Portal
+  registerInCommandController(
+    context,
+    "fx-entension.publishInDeveloperPortal",
+    handlers.publishInDeveloperPortalHandler,
+    "publishInDeveloperPortal"
+  );
+
   // Developer Portal for Teams
   registerInCommandController(
     context,

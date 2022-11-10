@@ -3,6 +3,7 @@ import "./tree.scss";
 import { getCurrentTheme, Theme } from "./theme";
 import { TreeItem } from "./treeItem";
 import { localize } from "../../utils/localizeUtils";
+import { isTDPIntegrationEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 
 export class DeploymentView extends React.Component<any, any> {
   constructor(props: any) {
@@ -42,6 +43,7 @@ export class DeploymentView extends React.Component<any, any> {
   }
 
   render() {
+    const isTdpIntegration = isTDPIntegrationEnabled();
     return (
       <div>
         <TreeItem
@@ -76,14 +78,28 @@ export class DeploymentView extends React.Component<any, any> {
           disable={this.state.locked}
           command="fx-extension.publish"
         ></TreeItem>
-        <TreeItem
-          label="Developer Portal for Teams"
-          tooltip={localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription")}
-          icon="codicon teamsfx-developer-portal"
-          customized={true}
-          disable={false}
-          command="fx-extension.openAppManagement"
-        ></TreeItem>
+        {!isTdpIntegration && (
+          <TreeItem
+            label="Developer Portal for Teams"
+            tooltip={localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription")}
+            icon="codicon teamsfx-developer-portal"
+            customized={true}
+            disable={false}
+            command="fx-extension.openAppManagement"
+          ></TreeItem>
+        )}
+        {isTdpIntegration && (
+          <TreeItem
+            label="Publish in Developer Portal"
+            tooltip={localize(
+              "teamstoolkit.commandsTreeViewProvider.publishInDevPortalDescription"
+            )}
+            icon="codicon codicon-export"
+            customized={true}
+            disable={this.state.locked}
+            command="fx-entension.publishInDeveloperPortal"
+          ></TreeItem>
+        )}
       </div>
     );
   }

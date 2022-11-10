@@ -67,6 +67,7 @@ export enum CoreQuestionNames {
   SafeProjectName = "safeProjectName",
   ReplaceContentUrl = "replaceContentUrl",
   ReplaceWebsiteUrl = "replaceWebsiteUrl",
+  ManifestPath = "manifestPath",
 }
 
 export const ProjectNamePattern =

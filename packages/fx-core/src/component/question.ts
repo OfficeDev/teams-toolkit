@@ -5,6 +5,7 @@ import {
   ContextV3,
   DynamicPlatforms,
   err,
+  FolderQuestion,
   FuncQuestion,
   FxError,
   Inputs,
@@ -18,6 +19,7 @@ import {
   QTreeNode,
   ResourceContextV3,
   Result,
+  SingleFileQuestion,
   SingleSelectQuestion,
   Stage,
   TextInputQuestion,
@@ -80,8 +82,8 @@ import {
   getConditionOfNotificationTriggerQuestion,
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
-import { NoCapabilityFoundError } from "../core/error";
-import { ProgrammingLanguageQuestion } from "../core/question";
+import { NoCapabilityFoundError, ObjectIsUndefinedError } from "../core/error";
+import { CoreQuestionNames, ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
 import {
   isBotNotificationEnabled,
@@ -99,6 +101,8 @@ import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
 import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { Constants } from "./resource/aadApp/constants";
 import { functionNameQuestion } from "./feature/api/question";
+import path from "path";
+import fs from "fs-extra";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -782,3 +786,36 @@ export function getQuestionsForInit(
   }
   return ok(group);
 }
+export async function getQuestionsForPublishInDevPortal(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (CLIPlatforms.includes(inputs.platform)) {
+    return err(new UserError("", "", "", "")); // TODO: msg, cli not supported
+  }
+
+  if (!inputs.projectPath) {
+    return err(new ObjectIsUndefinedError("projectPath"));
+  }
+
+  const node = new QTreeNode({ type: "group" });
+  let manifestDefaultPath: string | undefined = path.join(
+    inputs.projectPath,
+    "appPackage",
+    "manifest.template.json"
+  );
+  if (!(await fs.pathExists(manifestDefaultPath))) {
+    manifestDefaultPath = undefined;
+  }
+  node.addChild(new QTreeNode(manifestFileQuestion(manifestDefaultPath)));
+  return ok(node);
+}
+
+const manifestFileQuestion = (defaultFile: string | undefined): SingleFileQuestion => {
+  return {
+    type: "singleFile",
+    name: CoreQuestionNames.ManifestPath,
+    title: getLocalizedString("core.question.manifestForPublishInDevPortal.title"),
+    placeholder: getLocalizedString("core.question.manifestForPublishInDevPortal.placeholder"),
+    default: defaultFile,
+  };
+};

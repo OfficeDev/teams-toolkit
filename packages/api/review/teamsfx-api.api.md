@@ -1790,6 +1790,8 @@ export enum Stage {
     // (undocumented)
     publish = "publish",
     // (undocumented)
+    publishInDevPortal = "publishInDevPortal",
+    // (undocumented)
     removeEnv = "removeEnv",
     // (undocumented)
     switchEnv = "switchEnv",

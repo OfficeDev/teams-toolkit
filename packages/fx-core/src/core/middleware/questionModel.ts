@@ -118,7 +118,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     // If toolkit is activated by a request from Developer Portal, we will always create a project from scratch.
     inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC.id;
     inputs[CoreQuestionNames.Capabilities] = needTabCode(inputs.teamsAppFromTdp)
-      ? TabNonSsoItem.id
+      ? TabNewUIOptionItem.id
       : needBotCode(inputs.teamsAppFromTdp)
       ? BotOptionItem.id
       : inputs[CoreQuestionNames.Capabilities];
@@ -181,7 +181,6 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   createNew.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
 
   if (!!inputs.teamsAppFromTdp) {
-    //const updateTabUrls = await getQuestionsForUpdateTabUrls(inputs.teamsAppFromTdp);
     const updateTabUrls = await getQuestionsForUpdateStaticTabUrls(inputs.teamsAppFromTdp);
     if (updateTabUrls) {
       createNew.addChild(updateTabUrls);

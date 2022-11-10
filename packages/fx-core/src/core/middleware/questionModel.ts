@@ -20,6 +20,7 @@ import {
   BotOptionItem,
   ExistingTabOptionItem,
   TabNewUIOptionItem,
+  TabNonSsoItem,
   TabSPFxItem,
 } from "../../component/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
@@ -117,7 +118,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     // If toolkit is activated by a request from Developer Portal, we will always create a project from scratch.
     inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC.id;
     inputs[CoreQuestionNames.Capabilities] = needTabCode(inputs.teamsAppFromTdp)
-      ? TabNewUIOptionItem.id
+      ? TabNonSsoItem.id
       : needBotCode(inputs.teamsAppFromTdp)
       ? BotOptionItem.id
       : inputs[CoreQuestionNames.Capabilities];

@@ -5,14 +5,15 @@
 import * as vscode from "vscode";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
+import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { localize } from "../utils/localizeUtils";
 import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 class TreeViewManager {
   private static instance: TreeViewManager;

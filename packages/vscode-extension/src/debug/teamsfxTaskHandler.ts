@@ -32,8 +32,6 @@ import {
 } from "./constants";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
-import { ExtensionSurvey } from "../utils/survey";
-import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 import { localize } from "../utils/localizeUtils";
 import { VS_CODE_UI } from "../extension";
@@ -270,12 +268,6 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
       localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {
         [TelemetryProperty.DebugNpmInstallName]: task.name,
       });
-
-      if (TreatmentVariableValue.isEmbeddedSurvey) {
-        // Survey triggering point
-        const survey = ExtensionSurvey.getInstance();
-        survey.activate();
-      }
 
       activeNpmInstallTasks.set(task.name, new NpmInstallTaskInfo());
     }

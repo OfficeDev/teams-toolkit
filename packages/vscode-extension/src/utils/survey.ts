@@ -6,7 +6,6 @@ import {
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
-import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
 import { getDefaultString, localize } from "./localizeUtils";
 
@@ -57,28 +56,16 @@ export class ExtensionSurvey {
   }
 
   public async activate(): Promise<void> {
-    if (TreatmentVariableValue.isEmbeddedSurvey) {
-      if (this.needToShow) {
+    if (this.needToShow && !this.checkSurveyInterval) {
+      this.checkSurveyInterval = setInterval(async () => {
         if (!(await this.shouldShowBanner())) {
           return;
         }
 
-        setTimeout(() => {
-          this.showSurvey();
-        }, 200);
-      }
-    } else {
-      if (this.needToShow && !this.checkSurveyInterval) {
-        this.checkSurveyInterval = setInterval(async () => {
-          if (!(await this.shouldShowBanner())) {
-            return;
-          }
-
-          if (!this.showSurveyTimeout && isValidProject(globalVariables.workspaceUri!.fsPath)) {
-            this.showSurveyTimeout = setTimeout(() => this.showSurvey(), this.timeToShowSurvey);
-          }
-        }, 2000);
-      }
+        if (!this.showSurveyTimeout && isValidProject(globalVariables.workspaceUri!.fsPath)) {
+          this.showSurveyTimeout = setTimeout(() => this.showSurvey(), this.timeToShowSurvey);
+        }
+      }, 2000);
     }
   }
 
@@ -123,18 +110,14 @@ export class ExtensionSurvey {
           message: getDefaultString("teamstoolkit.survey.takeSurvey.message"),
         });
 
-        if (TreatmentVariableValue.isEmbeddedSurvey) {
-          this.showWebviewSurvey();
-        } else {
-          vscode.commands.executeCommand(
-            "vscode.open",
-            vscode.Uri.parse(
-              `${SURVEY_URL}?o=${encodeURIComponent(process.platform)}&v=${encodeURIComponent(
-                extensionVersion
-              )}`
-            )
-          );
-        }
+        vscode.commands.executeCommand(
+          "vscode.open",
+          vscode.Uri.parse(
+            `${SURVEY_URL}?o=${encodeURIComponent(process.platform)}&v=${encodeURIComponent(
+              extensionVersion
+            )}`
+          )
+        );
 
         const disableSurveyForTime = Date.now() + this.timeToDisableSurvey;
         await globalStateUpdate(

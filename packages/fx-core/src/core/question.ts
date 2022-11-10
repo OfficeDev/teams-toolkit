@@ -335,6 +335,39 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
     WorkflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
   }
 
+  // AB test for in product doc
+  if (inputs?.inProductDoc) {
+    NotificationOptionItem.buttons = [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+    CommandAndResponseOptionItem.buttons = [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+    WorkflowOptionItem.data = "cardActionResponse";
+    WorkflowOptionItem.buttons = [
+      {
+        iconPath: "file-code",
+        tooltip: getLocalizedString("core.option.inProduct"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+    TabNewUIOptionItem.buttons = [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+  }
+
   // new capabilities question order
   const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
 
@@ -691,7 +724,7 @@ export const tabsContentUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion =
     name: CoreQuestionNames.ReplaceContentUrl,
     title: getLocalizedString("core.updateContentUrlQuestion.title", defaultTabLocalHostUrl),
     staticOptions: tabs.map((o) => tabContentUrlOptionItem(o)),
-    default: tabs.map((o) => `${o.name}${contentUrlSuffix}`),
+    default: tabs.map((o) => o.name),
     placeholder: getLocalizedString("core.updateUrlQuestion.placeholder"),
     forgetLastValue: true,
   };
@@ -703,18 +736,15 @@ export const tabsWebsitetUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion 
     name: CoreQuestionNames.ReplaceWebsiteUrl,
     title: getLocalizedString("core.updateWebsiteUrlQuestion.title", defaultTabLocalHostUrl),
     staticOptions: tabs.map((o) => tabWebsiteUrlOptionItem(o)),
-    default: tabs.map((o) => `${o.name}${websiteUrlSuffix}`),
+    default: tabs.map((o) => o.name),
     placeholder: getLocalizedString("core.updateUrlQuestion.placeholder"),
     forgetLastValue: true,
   };
 };
 
-const contentUrlSuffix = "-contentUrl";
-const websiteUrlSuffix = "-websiteUrl";
-
 export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
   return {
-    id: `${tab.name}${contentUrlSuffix}`,
+    id: tab.name,
     label: tab.name,
     detail: getLocalizedString(
       "core.updateContentUrlOption.description",
@@ -726,7 +756,7 @@ export const tabContentUrlOptionItem = (tab: StaticTab): OptionItem => {
 
 export const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
   return {
-    id: `${tab.name}${websiteUrlSuffix}`,
+    id: tab.name,
     label: tab.name,
     detail: getLocalizedString(
       "core.updateWebsiteUrlOption.description",

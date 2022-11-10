@@ -218,6 +218,12 @@ export enum TelemetryEvent {
   // To track the A/B test of choosing folder
   SelectFolder = "select-folder",
 
+  // In product documentation
+  InteractWithInProductDoc = "interact-with-in-product-doc",
+  CopyCodeSnippet = "copy-code-snippet",
+  ExpandGuideStep = "expand-guide-step",
+  OpenExternalLink = "open-external-link",
+
   Deactivate = "deactivate",
 }
 
@@ -305,6 +311,9 @@ export enum TelemetryProperty {
   HostType = "host-type",
   // Used with ClickGetHelp
   HelpLink = "help-link",
+  // Used with InteractWithInProductDoc
+  Interaction = "interaction",
+  Identifier = "identifier",
 }
 
 export enum TelemetryMeasurements {
@@ -329,6 +338,7 @@ export enum TelemetryTriggerFrom {
   WalkThrough = "WalkThrough",
   Notification = "Notification",
   QuickPick = "QuickPick",
+  InProductDoc = "InProductDoc",
   Other = "Other",
   Auto = "Auto",
   Unknow = "Unknow",
@@ -380,6 +390,14 @@ export enum VSCodeWindowChoice {
   CurrentWindow = "current-window",
   NewWindow = "new-window",
   NewWindowByDefault = "new-window-by-default",
+}
+
+export enum InProductGuideInteraction {
+  Close = "close",
+  Show = "show",
+  Hide = "hide",
+  ScrollToBottom = "scroll-to-bottom",
+  RunCommand = "run-command",
 }
 
 export const TelemetryComponentType = "extension";

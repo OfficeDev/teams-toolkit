@@ -902,6 +902,18 @@ async function runBackgroundAsyncTasks(
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewB", true);
   }
+  TreatmentVariableValue.inProductDoc = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.InProductDoc,
+      true
+    )) as boolean | undefined;
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.guideTreatment",
+    TreatmentVariableValue.inProductDoc
+  );
 
   ExtTelemetry.isFromSample = await handlers.getIsFromSample();
   ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();
@@ -921,17 +933,8 @@ async function runBackgroundAsyncTasks(
     await AzureAccountManager.updateSubscriptionInfo();
   }
 
-  TreatmentVariableValue.isEmbeddedSurvey = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.EmbeddedSurvey,
-      true
-    )) as boolean | undefined;
-  if (!TreatmentVariableValue.isEmbeddedSurvey) {
-    const survey = ExtensionSurvey.getInstance();
-    survey.activate();
-  }
+  const survey = ExtensionSurvey.getInstance();
+  survey.activate();
 
   TreatmentVariableValue.taskOrientedTemplateNaming = (await exp
     .getExpService()

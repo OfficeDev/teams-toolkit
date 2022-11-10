@@ -933,17 +933,8 @@ async function runBackgroundAsyncTasks(
     await AzureAccountManager.updateSubscriptionInfo();
   }
 
-  TreatmentVariableValue.isEmbeddedSurvey = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.EmbeddedSurvey,
-      true
-    )) as boolean | undefined;
-  if (!TreatmentVariableValue.isEmbeddedSurvey) {
-    const survey = ExtensionSurvey.getInstance();
-    survey.activate();
-  }
+  const survey = ExtensionSurvey.getInstance();
+  survey.activate();
 
   TreatmentVariableValue.taskOrientedTemplateNaming = (await exp
     .getExpService()

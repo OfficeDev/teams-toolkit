@@ -5,5 +5,5 @@ export interface CreateTeamsAppArgs {
   /**
    * Teams app short name
    */
-  appName: string;
+  name: string;
 }

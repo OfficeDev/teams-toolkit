@@ -3,11 +3,14 @@ version: 1.0.0
 registerApp:
   - uses: teamsApp/create # Creates a Teams app
     with:
-      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest
+      name: notification-bot # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
 configureApp:
+  - uses: teamsApp/validate
+    with:
+      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
   - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
     env: 
       BOT_DOMAIN: ${{TUNNEL_DOMAIN}}

@@ -11,7 +11,6 @@ import AdmZip from "adm-zip";
 import { CreateTeamsAppDriver } from "../../../../src/component/driver/teamsApp/create";
 import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
 import { CreateTeamsAppArgs } from "../../../../src/component/driver/teamsApp/interfaces/CreateTeamsAppArgs";
-import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import {
   MockedLogProvider,
   MockedM365Provider,
@@ -42,7 +41,7 @@ describe("teamsApp/create", async () => {
 
   it("happy path", async () => {
     const args: CreateTeamsAppArgs = {
-      appName: appDef.appName!,
+      name: appDef.appName!,
     };
 
     const zipFileName =

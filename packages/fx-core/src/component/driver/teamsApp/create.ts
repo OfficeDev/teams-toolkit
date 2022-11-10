@@ -74,7 +74,7 @@ export class CreateTeamsAppDriver implements StepDriver {
 
     if (create) {
       const manifest = new TeamsAppManifest();
-      manifest.name.short = args.appName;
+      manifest.name.short = args.name;
       if (teamsAppId) {
         manifest.id = teamsAppId;
       } else {

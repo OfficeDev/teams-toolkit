@@ -174,7 +174,6 @@ describe("env utils", () => {
     const inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
-      env: "dev",
     };
     const res = await my.myMethod(inputs);
     assert.isTrue(res.isErr());

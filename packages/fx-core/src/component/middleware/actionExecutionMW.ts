@@ -125,7 +125,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       const timeCost = new Date().getTime() - startTime;
       if (ctx.result?.isErr && ctx.result.isErr()) throw ctx.result.error;
       // send end telemetry
-      merge(telemetryProps, { [TelemetryConstants.properties.timeCost]: timeCost });
+      merge(telemetryProps, { [TelemetryConstants.properties.timeCost]: timeCost.toString() });
       if (action.enableTelemetry) {
         sendSuccessEvent(eventName, telemetryProps);
         sendMigratedSuccessEvent(

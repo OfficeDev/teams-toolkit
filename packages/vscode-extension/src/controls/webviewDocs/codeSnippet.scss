@@ -1,0 +1,41 @@
+.codeSnippet {
+  display: flex;
+  flex-direction: column;
+
+  .codeTitle {
+    display: flex;
+    justify-content: flex-end;
+    background-color: var(--vscode-editor-background);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+
+    button {
+      padding: 5px;
+      height: 30px;
+      background-color: var(--vscode-editor-background);
+      margin-right: 6px;
+      border: none;
+      color: inherit;
+    }
+
+    .copyButton {
+      background-color: var(--vscode-activeSelectionForeground);
+      color: var(--vscode-breadcrumb-activeSelectionForeground);
+    }
+
+    .copyButton:hover {
+      color: var(--vscode-peekViewTitleLabel-foreground);
+    }
+  }
+
+  pre {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    padding-top: 0;
+  }
+
+  .codeBlock {
+    background: var(--vscode-editor-background) !important;
+    padding-bottom: 16px !important;
+  }
+}

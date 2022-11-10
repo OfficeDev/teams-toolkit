@@ -1,14 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Inputs } from "@microsoft/teamsfx-api";
-import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
-import {
-  globalStateUpdate,
-  globalStateGet,
-} from "@microsoft/teamsfx-core/build/common/globalState";
 import * as AdmZip from "adm-zip";
 import axios from "axios";
 import { execSync } from "child_process";
@@ -17,13 +9,25 @@ import { glob } from "glob";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
-import M365TokenInstance from "../commonlib/m365Login";
+
+import { Inputs } from "@microsoft/teamsfx-api";
+import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import {
+  globalStateGet,
+  globalStateUpdate,
+} from "@microsoft/teamsfx-core/build/common/globalState";
+import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
+import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
+
 import AzureAccountManager from "../commonlib/azureLogin";
+import M365TokenInstance from "../commonlib/m365Login";
+import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
 import { downloadSample, getSystemInputs, openFolder } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   AccountType,
+  InProductGuideInteraction,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
@@ -86,6 +90,25 @@ export class WebviewPanel {
     // Listen for when the panel is disposed
     // This happens when the user closes the panel or when the panel is closed programatically
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
+
+    if (TreatmentVariableValue.inProductDoc) {
+      this.panel.onDidChangeViewState(
+        (e) => {
+          const panel = e.webviewPanel;
+          if (panelType === PanelType.RespondToCardActions) {
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+              [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
+              [TelemetryProperty.Interaction]: panel.visible
+                ? InProductGuideInteraction.Show
+                : InProductGuideInteraction.Hide,
+              [TelemetryProperty.Identifier]: panelType,
+            });
+          }
+        },
+        null,
+        globalVariables.context.subscriptions
+      );
+    }
 
     // Handle messages from the webview
     this.panel.webview.onDidReceiveMessage(
@@ -208,6 +231,8 @@ export class WebviewPanel {
         return localize("teamstoolkit.webview.samplePageTitle");
       case PanelType.Survey:
         return localize("teamstoolkit.webview.surveyPageTitle");
+      case PanelType.RespondToCardActions:
+        return localize("teamstoolkit.tutorials.cardActionResponse.label.new");
     }
   }
 
@@ -387,7 +412,16 @@ export class WebviewPanel {
   };
 
   public dispose() {
-    WebviewPanel.currentPanels.splice(WebviewPanel.currentPanels.indexOf(this), 1);
+    const panelIndex = WebviewPanel.currentPanels.indexOf(this);
+    if (TreatmentVariableValue.inProductDoc) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
+        [TelemetryProperty.Interaction]: InProductGuideInteraction.Close,
+        [TelemetryProperty.Identifier]: this.panelType,
+      });
+    }
+
+    WebviewPanel.currentPanels.splice(panelIndex, 1);
 
     AzureAccountManager.removeStatusChangeMap("quick-start-webview");
 

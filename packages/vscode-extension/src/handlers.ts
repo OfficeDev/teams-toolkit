@@ -991,6 +991,7 @@ export async function runCommand(
     inputs = defaultInputs ? defaultInputs : getSystemInputs();
     inputs.stage = stage;
     inputs.taskOrientedTemplateNaming = TreatmentVariableValue.taskOrientedTemplateNaming;
+    inputs.inProductDoc = TreatmentVariableValue.inProductDoc;
 
     switch (stage) {
       case Stage.create: {
@@ -3255,8 +3256,87 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
   const config: SingleSelectConfig = {
     name: "tutorialName",
-    title: "Tutorials",
-    options: [
+    title: localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),
+    options: [],
+    returnObject: true,
+  };
+  if (TreatmentVariableValue.inProductDoc) {
+    config.title = localize("teamstoolkit.commandsTreeViewProvider.guideTitle");
+    config.options = [
+      {
+        id: "cardActionResponse",
+        label: `${localize("teamstoolkit.tutorials.cardActionResponse.label.new")}`,
+        description: localize("teamstoolkit.common.recommended"),
+        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail.new"),
+        groupName: localize("teamstoolkit.guide.scenario"),
+        data: "https://aka.ms/teamsfx-card-action-response",
+        buttons: [
+          {
+            iconPath: "file-code",
+            tooltip: localize("teamstoolkit.guide.tooltip.inProduct"),
+            command: "",
+          },
+        ],
+      },
+      {
+        id: "sendNotification",
+        label: `${localize("teamstoolkit.tutorials.sendNotification.label.new")}`,
+        detail: localize("teamstoolkit.tutorials.sendNotification.detail"),
+        groupName: localize("teamstoolkit.guide.scenario"),
+        data: "https://aka.ms/teamsfx-send-notification",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "",
+          },
+        ],
+      },
+      {
+        id: "commandAndResponse",
+        label: `${localize("teamstoolkit.tutorials.commandAndResponse.label.new")}`,
+        detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-create-command",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "",
+          },
+        ],
+      },
+      {
+        id: "addSso",
+        label: `${localize("teamstoolkit.tutorials.addSso.label.new")}`,
+        detail: localize("teamstoolkit.tutorials.addSso.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-add-sso",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "",
+          },
+        ],
+      },
+      {
+        id: "connectApi",
+        label: `${localize("teamstoolkit.tutorials.connectApi.label.new")}`,
+        detail: localize("teamstoolkit.tutorials.connectApi.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-connect-api",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "",
+          },
+        ],
+      },
+    ];
+  } else {
+    config.options = [
       {
         id: "sendNotification",
         label: `${localize("teamstoolkit.tutorials.sendNotification.label")}`,
@@ -3287,9 +3367,8 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         detail: localize("teamstoolkit.tutorials.connectApi.detail"),
         data: "https://aka.ms/teamsfx-connect-api",
       },
-    ],
-    returnObject: true,
-  };
+    ];
+  }
 
   if (isExistingTabAppEnabled()) {
     config.options.splice(0, 0, {
@@ -3319,6 +3398,13 @@ export function openTutorialHandler(args?: any[]): Promise<Result<unknown, FxErr
     ...getTriggerFromProperty(args),
     [TelemetryProperty.TutorialName]: tutorial.id,
   });
+  if (
+    TreatmentVariableValue.inProductDoc &&
+    (tutorial.id === "cardActionResponse" || tutorial.data === "cardActionResponse")
+  ) {
+    WebviewPanel.createOrShow(PanelType.RespondToCardActions);
+    return Promise.resolve(ok(null));
+  }
   return VS_CODE_UI.openUrl(tutorial.data as string);
 }
 

@@ -335,6 +335,39 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
     WorkflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
   }
 
+  // AB test for in product doc
+  if (inputs?.inProductDoc) {
+    NotificationOptionItem.buttons = [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+    CommandAndResponseOptionItem.buttons = [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+    WorkflowOptionItem.data = "cardActionResponse";
+    WorkflowOptionItem.buttons = [
+      {
+        iconPath: "file-code",
+        tooltip: getLocalizedString("core.option.inProduct"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+    TabNewUIOptionItem.buttons = [
+      {
+        iconPath: "file-symlink-file",
+        tooltip: getLocalizedString("core.option.github"),
+        command: "fx-extension.openTutorial",
+      },
+    ];
+  }
+
   // new capabilities question order
   const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
 

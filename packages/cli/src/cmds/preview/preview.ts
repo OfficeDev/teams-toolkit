@@ -105,6 +105,8 @@ const DepsDisplayName = {
   [DepsType.Dotnet]: ".NET Core SDK",
   [DepsType.Ngrok]: "Ngrok",
   [DepsType.FuncCoreTools]: "Azure Functions Core Tools",
+  // TODO(aochengwang): maybe update app name
+  [DepsType.VxTestApp]: "VxTestApp",
 };
 
 const ProgressMessage: { [key: string]: string } = Object.freeze({

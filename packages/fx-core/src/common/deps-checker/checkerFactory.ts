@@ -9,6 +9,7 @@ import { AzureNodeChecker, SPFxNodeCheckerV1_16, SPFxNodeChecker } from "./inter
 import { FuncToolChecker } from "./internal/funcToolChecker";
 import { NgrokChecker } from "./internal/ngrokChecker";
 import { DepsType } from "./depsChecker";
+import { VxTestAppChecker } from "./internal/vxTestAppChecker";
 
 export class CheckerFactory {
   public static createChecker(
@@ -29,6 +30,8 @@ export class CheckerFactory {
         return new NgrokChecker(logger, telemetry);
       case DepsType.FuncCoreTools:
         return new FuncToolChecker(logger, telemetry);
+      case DepsType.VxTestApp:
+        return new VxTestAppChecker(logger, telemetry);
       default:
         throw Error("dependency type is undefined");
     }

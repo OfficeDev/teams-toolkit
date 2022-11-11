@@ -91,6 +91,7 @@ import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { Step } from "./commonUtils";
+import { PrerequisiteArgVxTestApp } from "./taskTerminal/prerequisiteTaskTerminal";
 
 enum Checker {
   NpmInstall = "npm package installation",
@@ -107,6 +108,7 @@ const DepsDisplayName = {
   [DepsType.Dotnet]: ".NET Core SDK",
   [DepsType.Ngrok]: "ngrok",
   [DepsType.FuncCoreTools]: "Azure Functions Core Tools",
+  [DepsType.VxTestApp]: "Video Extensibility Test App",
 };
 
 interface CheckResult {
@@ -160,6 +162,7 @@ const ProgressMessage = Object.freeze({
   [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
   [DepsType.Ngrok]: `Checking and installing ${DepsDisplayName[DepsType.Ngrok]}`,
   [DepsType.FuncCoreTools]: `Checking and installing ${DepsDisplayName[DepsType.FuncCoreTools]}`,
+  [DepsType.VxTestApp]: `Checking and installing ${DepsDisplayName[DepsType.VxTestApp]}`,
 });
 
 type NpmInstallCheckerInfo = {
@@ -368,9 +371,10 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
 export async function checkAndInstallForTask(
   prerequisites: string[],
   ports: number[] | undefined,
+  vxTestApp: PrerequisiteArgVxTestApp | undefined,
   telemetryProperties: { [key: string]: string }
 ): Promise<Result<Void, FxError>> {
-  const orderedCheckers = await getOrderedCheckersForTask(prerequisites, ports);
+  const orderedCheckers = await getOrderedCheckersForTask(prerequisites, ports, vxTestApp);
   const projectComponents = await commonUtils.getProjectComponents();
 
   const additionalTelemetryProperties = Object.assign(
@@ -598,6 +602,7 @@ function getCheckPromise(
     case DepsType.Dotnet:
     case DepsType.FuncCoreTools:
     case DepsType.Ngrok:
+    case DepsType.VxTestApp:
       return checkDependency(
         checkerInfo.checker,
         depsManager,
@@ -1364,7 +1369,8 @@ async function getOrderedCheckersForGetStarted(): Promise<PrerequisiteOrderedChe
 
 async function getOrderedCheckersForTask(
   prerequisites: string[],
-  ports?: number[]
+  ports?: number[],
+  vxTestApp?: PrerequisiteArgVxTestApp
 ): Promise<PrerequisiteOrderedChecker[]> {
   const checkers: PrerequisiteOrderedChecker[] = [];
   if (prerequisites.includes(Prerequisite.nodejs)) {
@@ -1405,10 +1411,19 @@ async function getOrderedCheckersForTask(
   const orderedDeps = DepsManager.sortBySequence(deps);
 
   for (let i = 0; i < orderedDeps.length - 1; ++i) {
-    checkers.push({ info: { checker: orderedDeps[i] }, fastFail: false });
+    checkers.push({
+      info: { checker: orderedDeps[i] },
+      fastFail: false,
+    });
   }
   if (orderedDeps.length > 0) {
     checkers.push({ info: { checker: orderedDeps[orderedDeps.length - 1] }, fastFail: true });
+  }
+  if (prerequisites.includes(Prerequisite.vxTestApp)) {
+    checkers.push({
+      info: { checker: DepsType.VxTestApp, checkerInfo: vxTestApp },
+      fastFail: false,
+    });
   }
 
   if (prerequisites.includes(Prerequisite.portOccupancy)) {

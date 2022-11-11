@@ -1,11 +1,10 @@
 import { err, FxError, ok, Result, SettingsFolderName, UserError } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import fs from "fs-extra";
-import { cloneDeep, merge, result } from "lodash";
+import { cloneDeep, merge } from "lodash";
 import { settingsUtil } from "./settingsUtil";
 import { LocalCrypto } from "../../core/crypto";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
-import { deepCopy } from "../../common/tools";
 
 export type DotenvOutput = {
   [k: string]: string;

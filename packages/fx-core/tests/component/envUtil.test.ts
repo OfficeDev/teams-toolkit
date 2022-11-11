@@ -14,7 +14,7 @@ import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
 import * as sinon from "sinon";
-import { envUtil } from "../../src/component/utils/envUtil";
+import { dotenvUtil, envUtil } from "../../src/component/utils/envUtil";
 import { settingsUtil } from "../../src/component/utils/settingsUtil";
 import { LocalCrypto } from "../../src/core/crypto";
 import { EnvLoaderMW, EnvWriterMW } from "../../src/component/middleware/envMW";
@@ -61,7 +61,15 @@ describe("env utils", () => {
     assert.isTrue(res.isOk());
     assert.equal(process.env.SECRET_ABC, decrypted);
   });
-
+  it("envUtil.readEnv silent", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
+    const res = await envUtil.readEnv(".", "dev", false, true);
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(res.value, {});
+    }
+  });
   it("envUtil.readEnv - loadToProcessEnv false", async () => {
     const encRes = await cryptoProvider.encrypt(decrypted);
     if (encRes.isErr()) throw encRes.error;
@@ -358,5 +366,30 @@ describe("env utils", () => {
     };
     const res = await my.myMethod(inputs);
     assert.isTrue(res.isErr());
+  });
+
+  it("dotenvUtil deserialize", async () => {
+    const res = dotenvUtil.deserialize("#COMMENT\n\r\nKEY=VALUE");
+    assert.deepEqual(res, {
+      lines: ["#COMMENT", "", "", { key: "KEY", value: "VALUE" }],
+      obj: { KEY: "VALUE" },
+    });
+  });
+
+  it("dotenvUtil serialize with lines", async () => {
+    const parsed = {
+      lines: ["#COMMENT", "", "", { key: "KEY", value: "VALUE" }],
+      obj: { KEY: "VALUE" },
+    };
+    const str = dotenvUtil.serialize(parsed);
+    assert.equal(str, "#COMMENT\n\n\nKEY=VALUE");
+  });
+
+  it("dotenvUtil serialize without lines", async () => {
+    const parsed = {
+      obj: { KEY: "VALUE", KEY2: "VALUE2" },
+    };
+    const str = dotenvUtil.serialize(parsed);
+    assert.equal(str, "KEY=VALUE\nKEY2=VALUE2");
   });
 });

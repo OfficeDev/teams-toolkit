@@ -184,7 +184,8 @@ export class DotenvUtil {
         } else {
           if (obj[line.key] !== undefined) {
             array.push(`${line.key}=${obj[line.key]}`);
-            delete obj[line.key]; //remove the key that already appended
+            //remove the appended key in obj
+            delete obj[line.key];
           }
         }
       });

@@ -129,6 +129,19 @@ describe("handlers", () => {
     sandbox.restore();
   });
 
+  it("getSettingsVersion in v3", async () => {
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
+    sandbox
+      .stub(MockCore.prototype, "getSettings")
+      .resolves(ok({ version: "3.0.0" } as ProjectSettings));
+    const res = await handlers.getSettingsVersion();
+    chai.assert.equal(res, "3.0.0");
+    sandbox.restore();
+  });
+
   it("openBackupConfigMd", async () => {
     const workspacePath = "test";
     const filePath = path.join(workspacePath, ".backup", "backup-config-change-logs.md");

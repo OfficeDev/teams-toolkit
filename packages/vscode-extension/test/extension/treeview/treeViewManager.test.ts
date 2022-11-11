@@ -2,10 +2,10 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 
-import treeViewManager from "../../../src/treeview/treeViewManager";
 import { AdaptiveCardCodeLensProvider } from "../../../src/codeLensProvider";
-import { CommandsTreeViewProvider } from "../../../src/treeview/commandsTreeViewProvider";
 import { TreatmentVariableValue } from "../../../src/exp/treatmentVariables";
+import { CommandsTreeViewProvider } from "../../../src/treeview/commandsTreeViewProvider";
+import treeViewManager from "../../../src/treeview/treeViewManager";
 
 describe("TreeViewManager", () => {
   const sandbox = sinon.createSandbox();

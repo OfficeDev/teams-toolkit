@@ -8,7 +8,6 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import faker from "faker";
 import fs from "fs-extra";
-import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 
 import { Constants } from "../../../../../src/component/driver/deploy/spfx/utility/constants";
@@ -45,6 +44,7 @@ describe("SPFx Deploy Driver", async () => {
     ui: new MockedUserInteraction(),
     m365TokenProvider: new MockedM365Provider(),
     platform: Platform.VSCode,
+    projectPath: "C://TeamsApp",
   };
 
   afterEach(() => {
@@ -89,6 +89,7 @@ describe("SPFx Deploy Driver", async () => {
       logProvider: new MockedLogProvider(),
       m365TokenProvider: new MockedM365Provider(),
       platform: Platform.CLI,
+      projectPath: "C://TeamsApp",
     } as any);
     expect(result.isOk()).to.be.true;
   });

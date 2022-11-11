@@ -393,7 +393,7 @@ export class Step {
 }
 
 export async function getV3TeamsAppId(projectPath: string, env: string): Promise<string> {
-  const result = await envUtil.readEnv(projectPath, env);
+  const result = await envUtil.readEnv(projectPath, env, false);
   if (result.isErr()) {
     throw result.error;
   }

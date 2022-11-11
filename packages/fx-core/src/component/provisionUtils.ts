@@ -50,6 +50,7 @@ import {
   BuiltInFeaturePluginNames,
   ComponentNames,
   PathConstants,
+  CoordinatorSource,
 } from "./constants";
 import { backupFiles } from "./utils/backupFiles";
 import { resourceGroupHelper, ResourceGroupInfo } from "./utils/ResourceGroupHelper";
@@ -227,7 +228,7 @@ export class ProvisionUtils {
         if (!subscriptionInAccount) {
           return err(
             new UserError(
-              "coordinator",
+              CoordinatorSource,
               SolutionError.SubscriptionNotFound,
               getLocalizedString("core.provision.subscription.failToSelect")
             )
@@ -251,7 +252,7 @@ export class ProvisionUtils {
       TOOLS.logProvider.info("subscription validate fail");
       return err(
         new UserError(
-          "coordinator",
+          CoordinatorSource,
           SolutionError.SubscriptionNotFound,
           getLocalizedString("core.provision.subscription.NotFound", givenSubscriptionId)
         )
@@ -487,7 +488,7 @@ export class ProvisionUtils {
     if (azureToken === undefined) {
       return err(
         new UserError(
-          "coordinator",
+          CoordinatorSource,
           SolutionError.NotLoginToAzure,
           getLocalizedString("core.error.notLoginToAzure")
         )
@@ -849,7 +850,7 @@ export class ProvisionUtils {
         keysNeedToUpdate.push("AAD_APP_CLIENT_ID");
       }
     }
-    if (actions.includes("botAadApp/create") || actions.includes("m365Bot/create")) {
+    if (actions.includes("botAadApp/create") || actions.includes("m365Bot/createOrUpdate")) {
       if (process.env.BOT_ID) {
         keysNeedToUpdate.push("BOT_ID");
       }

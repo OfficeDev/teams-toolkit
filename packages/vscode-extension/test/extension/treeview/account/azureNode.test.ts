@@ -3,6 +3,7 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 
 import { SubscriptionInfo } from "@microsoft/teamsfx-api";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 
 import { AzureAccountManager } from "../../../../src/commonlib/azureLogin";
 import { AzureAccountNode } from "../../../../src/treeview/account/azureNode";
@@ -49,6 +50,20 @@ describe("AzureNode", () => {
     chai.assert.equal(treeItem.command, undefined);
 
     chai.assert.equal(setSubscriptionStub.callCount, 1);
+  });
+
+  it("setSignedIn - v3", async () => {
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+
+    const azureNode = new AzureAccountNode(eventEmitter);
+    await azureNode.setSignedIn("test upn");
+    const treeItem = await azureNode.getTreeItem();
+
+    chai.assert.equal(treeItem.iconPath, azureIcon);
+    chai.assert.equal(treeItem.collapsibleState, vscode.TreeItemCollapsibleState.None);
+    chai.assert.equal(treeItem.label, "test upn");
+    chai.assert.equal(treeItem.contextValue, "signedinAzure");
+    chai.assert.equal(treeItem.command, undefined);
   });
 
   it("setSigningIn", async () => {

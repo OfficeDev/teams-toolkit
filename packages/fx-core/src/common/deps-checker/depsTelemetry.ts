@@ -16,3 +16,23 @@ export interface DepsTelemetry {
 
   sendSystemErrorEvent(eventName: DepsCheckerEvent, errorMessage: string, errorStack: string): void;
 }
+
+export class EmptyTelemetry implements DepsTelemetry {
+  sendEvent(
+    eventName: DepsCheckerEvent,
+    properties?: { [p: string]: string },
+    timecost?: number
+  ): void {}
+  async sendEventWithDuration(
+    eventName: DepsCheckerEvent,
+    action: () => Promise<void>
+  ): Promise<void> {
+    return await action();
+  }
+  sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {}
+  sendSystemErrorEvent(
+    eventName: DepsCheckerEvent,
+    errorMessage: string,
+    errorStack: string
+  ): void {}
+}

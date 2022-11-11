@@ -7,7 +7,10 @@ import { GetUserProfile } from "./GetUserProfile";
 export function InitTeamsFx() {
   // For usage of useTeamsFx(), please refer to: https://www.npmjs.com/package/@microsoft/teamsfx-react#useTeamsfx.
   // You need to wait until `loading == false` to use TeamsFx SDK.
-  const { loading, error, teamsfx } = useTeamsFx();
+  const { loading, error, teamsfx } = useTeamsFx({
+    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+    clientId: process.env.REACT_APP_CLIENT_ID,
+  });
 
   return (
     <div>

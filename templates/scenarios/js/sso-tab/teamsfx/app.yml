@@ -34,7 +34,7 @@ deploy:
   - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
     with:
       workingDirectory: .
-      distributionPath: ./build # Deploy base folder
+      distributionPath: ./build # Deploy base folder. This folder includes manifest files for AAD app and Teams app that should be ignored using the ignoreFile.
       ignoreFile: ./.appserviceIgnore # Can be changed to any ignore file location, leave blank will ignore nothing
       resourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to
 
@@ -53,7 +53,7 @@ registerApp:
 
   - uses: teamsApp/create # Creates a Teams app
     with:
-      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest
+      name: sso-tab # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
@@ -65,6 +65,9 @@ configureApp:
   # Output: following environment variable will be persisted in current environment's .env file.
   # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 
+  - uses: teamsApp/validate
+    with:
+      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
   - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template

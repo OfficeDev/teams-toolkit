@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
-import { err, Inputs, QTreeNode, traverse, UserCancelError } from "@microsoft/teamsfx-api";
+import {
+  err,
+  Inputs,
+  QTreeNode,
+  traverse,
+  UserCancelError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { environmentManager } from "../../core/environment";
 import { NoProjectOpenedError } from "../../core/error";
 import { TOOLS } from "../../core/globalVars";
@@ -9,6 +16,7 @@ import { CoreHookContext } from "../../core/types";
 import { SelectEnvQuestion } from "../question";
 import { envUtil } from "../utils/envUtil";
 import _ from "lodash";
+import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 
 export const EnvLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const envBefore = _.cloneDeep(process.env);
@@ -16,7 +24,14 @@ export const EnvLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFu
     await envLoaderMWImpl(ctx, next);
     return;
   } finally {
-    process.env = envBefore;
+    const keys = Object.keys(process.env);
+    for (const k of keys) {
+      if (!(k in envBefore)) {
+        delete process.env[k];
+      } else {
+        process.env[k] = envBefore[k];
+      }
+    }
   }
 };
 
@@ -35,6 +50,17 @@ export const envLoaderMWImpl: Middleware = async (ctx: CoreHookContext, next: Ne
     const envListRes = await envUtil.listEnv(projectPath);
     if (envListRes.isErr()) {
       ctx.result = err(envListRes.error);
+      return;
+    }
+    if (envListRes.value.length === 0) {
+      ctx.result = err(
+        new UserError({
+          source: "EnvLoaderMW",
+          name: "NoYmlFileError",
+          displayMessage: getLocalizedString("core.error.NoYmlFileError"),
+          message: getDefaultString("core.error.NoYmlFileError"),
+        })
+      );
       return;
     }
     question.staticOptions = envListRes.value;

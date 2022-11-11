@@ -19,9 +19,14 @@ import { checkAndInstallForTask } from "../prerequisitesHandler";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { Prerequisite, TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
 
+export interface PrerequisiteArgVxTestApp {
+  version: string;
+}
+
 export interface PrerequisiteArgs {
   prerequisites?: string[];
   portOccupancy?: number[];
+  vxTestApp?: PrerequisiteArgVxTestApp;
 }
 
 export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
@@ -77,6 +82,7 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
     const res = await checkAndInstallForTask(
       this.args.prerequisites ?? [],
       this.args.portOccupancy,
+      this.args.vxTestApp,
       telemetryProperties
     );
     const duration = this.getDurationInSeconds();

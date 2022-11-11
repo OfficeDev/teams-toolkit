@@ -412,6 +412,7 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider?: LogProvider
   ): Promise<any> {
+    logProvider?.info("Downloading app package for app " + teamsAppId);
     const requester = createRequesterWithToken(appStudioToken);
     try {
       const response = await RetryHandler.Retry(() =>
@@ -419,6 +420,7 @@ export namespace AppStudioClient {
       );
 
       if (response && response.data) {
+        logProvider?.info("Download app package successfully");
         return response.data;
       } else {
         throw new Error(getLocalizedString("plugins.appstudio.emptyAppPackage", teamsAppId));

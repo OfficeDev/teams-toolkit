@@ -1,10 +1,11 @@
 import { err, FxError, ok, Result, SettingsFolderName, UserError } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import fs from "fs-extra";
-import { merge, result } from "lodash";
+import { cloneDeep, merge, result } from "lodash";
 import { settingsUtil } from "./settingsUtil";
 import { LocalCrypto } from "../../core/crypto";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { deepCopy } from "../../common/tools";
 
 export type DotenvOutput = {
   [k: string]: string;
@@ -173,30 +174,30 @@ export class DotenvUtil {
   }
   serialize(parsed: DotenvParseResult): string {
     const array: string[] = [];
+    const obj = cloneDeep(parsed.obj);
     if (parsed.lines) {
       parsed.lines.forEach((line) => {
         if (typeof line === "string") {
           // keep comment line or empty line
           array.push(line);
         } else {
-          if (parsed.obj[line.key] !== undefined) {
-            array.push(`${line.key}=${parsed.obj[line.key]}`);
-          } else {
-            // remove omitted key-value pair
+          if (obj[line.key] !== undefined) {
+            array.push(`${line.key}=${obj[line.key]}`);
+            delete obj[line.key]; //remove the key that already appended
           }
         }
       });
-    } else {
-      for (const key of Object.keys(parsed.obj)) {
-        array.push(`${key}=${parsed.obj[key]}`);
-      }
+    }
+    //append additional keys
+    for (const key of Object.keys(obj)) {
+      array.push(`${key}=${parsed.obj[key]}`);
     }
     return array.join("\n").trim();
   }
 }
 
 export const dotenvUtil = new DotenvUtil();
-const res = dotenvUtil.deserialize("#COMMENT\n\r\nKEY=VALUE");
-console.log(res);
-res.obj["KEY"] = "VALUE@@@";
-console.log(dotenvUtil.serialize(res));
+// const res = dotenvUtil.deserialize("#COMMENT\n\r\nKEY=VALUE");
+// console.log(res);
+// res.obj["KEY"] = "VALUE@@@";
+// console.log(dotenvUtil.serialize(res));

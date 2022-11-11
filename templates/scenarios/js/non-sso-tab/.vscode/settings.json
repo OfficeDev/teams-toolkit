@@ -2,7 +2,9 @@
     "debug.onTaskErrors": "abort",
     "json.schemas": [
         {
-            "fileMatch": [],
+            "fileMatch": [
+                "/aad.*.json"
+            ],
             "schema": {}
         }
     ]

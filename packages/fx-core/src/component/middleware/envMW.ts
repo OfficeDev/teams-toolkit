@@ -28,6 +28,8 @@ export const EnvLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFu
     for (const k of keys) {
       if (!(k in envBefore)) {
         delete process.env[k];
+      } else {
+        process.env[k] = envBefore[k];
       }
     }
   }

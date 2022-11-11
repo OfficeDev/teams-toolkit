@@ -146,9 +146,11 @@ describe("env utils", () => {
     if (process.env.SECRET_ABC || process.env.SECRET_ABC === undefined) {
       delete process.env.SECRET_ABC;
     }
+    process.env.ENV_VAR = "1";
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
         assert.equal(process.env.SECRET_ABC, decrypted);
+        process.env.ENV_VAR = "2";
         return ok(undefined);
       }
     }
@@ -164,6 +166,7 @@ describe("env utils", () => {
     const res = await my.myMethod(inputs);
     assert.isTrue(res.isOk());
     assert.isUndefined(process.env.SECRET_ABC);
+    assert.equal(process.env.ENV_VAR, "1", "process.env.ENV_VAR should be restored to 1");
 
     const core = new FxCore(tools);
     const getDotEnvRes = await core.getDotEnv(inputs);

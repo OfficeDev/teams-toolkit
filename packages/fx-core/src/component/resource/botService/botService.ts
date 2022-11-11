@@ -12,7 +12,6 @@ import {
   err,
   Bicep,
   ActionContext,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
@@ -20,15 +19,10 @@ import { compileHandlebarsTemplateString } from "../../../common/tools";
 import { BotServiceOutputs, ComponentNames } from "../../constants";
 import { getComponent } from "../../workflow";
 import { AzureResource } from "../azureResource";
-import { ErrorMessage, ProgressMessages, ProgressTitles } from "../../messages";
+import { ProgressMessages, ProgressTitles } from "../../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import {
-  AlreadyCreatedBotNotExist,
-  FailedToCreateBotRegistrationError,
-  PluginError,
-  wrapError,
-} from "./errors";
+import { AlreadyCreatedBotNotExist, wrapError } from "./errors";
 import { CheckThrowSomethingMissing } from "../../error";
 import { BotRegistration, BotAadCredentials } from "./botRegistration/botRegistration";
 import * as uuid from "uuid";

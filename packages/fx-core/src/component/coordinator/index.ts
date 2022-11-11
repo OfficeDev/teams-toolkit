@@ -46,6 +46,7 @@ import {
   MessageExtensionItem,
   CancelError,
   CoordinatorSource,
+  BotOptionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { getQuestionsForAddFeatureV3, getQuestionsForProvisionV3 } from "../question";
@@ -84,6 +85,7 @@ import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 export enum TemplateNames {
   Tab = "non-sso-tab",
   SsoTab = "sso-tab",
+  M365Tab = "m365-tab",
   NotificationRestify = "notification-restify",
   NotificationWebApi = "notification-webapi",
   NotificationHttpTrigger = "notification-http-trigger",
@@ -91,7 +93,9 @@ export enum TemplateNames {
   NotificationHttpTimerTrigger = "notification-http-timer-trigger",
   CommandAndResponse = "command-and-response",
   Workflow = "workflow",
+  DefaultBot = "default-bot",
   MessageExtension = "message-extension",
+  M365MessageExtension = "m365-message-extension",
 }
 
 export const Feature2TemplateName: any = {
@@ -106,9 +110,12 @@ export const Feature2TemplateName: any = {
     TemplateNames.NotificationHttpTimerTrigger,
   [`${CommandAndResponseOptionItem.id}:undefined`]: TemplateNames.CommandAndResponse,
   [`${WorkflowOptionItem.id}:undefined`]: TemplateNames.Workflow,
+  [`${BotOptionItem.id}:undefined`]: TemplateNames.DefaultBot,
   [`${MessageExtensionItem.id}:undefined`]: TemplateNames.MessageExtension,
+  [`${M365SearchAppOptionItem.id}:undefined`]: TemplateNames.M365MessageExtension,
   [`${TabOptionItem.id}:undefined`]: TemplateNames.SsoTab,
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
+  [`${M365SsoLaunchPageOptionItem.id}:undefined`]: TemplateNames.M365Tab,
 };
 
 const workflowFileName = "app.yml";

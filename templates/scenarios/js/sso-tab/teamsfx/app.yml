@@ -34,7 +34,7 @@ deploy:
   - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
     with:
       workingDirectory: .
-      distributionPath: ./build # Deploy base folder
+      distributionPath: ./build # Deploy base folder, please ensure you ignore manifest file for AAD app and Teams App in this folder in the ignoreFile
       ignoreFile: ./.appserviceIgnore # Can be changed to any ignore file location, leave blank will ignore nothing
       resourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to
 

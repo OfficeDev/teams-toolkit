@@ -11,7 +11,7 @@ import { StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { InstallToolArgs } from "./interfaces/InstallToolArgs";
-import { DepsManager, DepsType } from "../../../common/deps-checker";
+import { DepsManager, DepsType, EmptyLogger, EmptyTelemetry } from "../../../common/deps-checker";
 import { FuncInstallationUserError } from "./error/funcInstallationUserError";
 
 const ACTION_NAME = "tools/install";
@@ -78,7 +78,7 @@ export class ToolsInstallDriverImpl {
   }
 
   async resolveFuncCoreTools(): Promise<void> {
-    const depsManager = new DepsManager();
+    const depsManager = new DepsManager(new EmptyLogger(), new EmptyTelemetry());
     const result = (
       await depsManager.ensureDependencies([DepsType.FuncCoreTools], {
         fastFail: false,

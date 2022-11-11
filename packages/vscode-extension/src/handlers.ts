@@ -446,6 +446,9 @@ export async function getAzureProjectConfigV3(): Promise<ProjectConfigV3 | undef
 }
 
 export async function getAzureSolutionSettings(): Promise<AzureSolutionSettings | undefined> {
+  if (isV3Enabled()) {
+    return undefined;
+  }
   const input = getSystemInputs();
   input.ignoreEnvInfo = true;
   const projectConfigRes = await core.getProjectConfig(input);
@@ -2572,7 +2575,11 @@ export async function cmpAccountsHandler(args: any[]) {
 
   const solutionSettings = await getAzureSolutionSettings();
   // if non-teamsfx project or Azure project then show Azure account info
-  if (!solutionSettings || (solutionSettings && "Azure" === solutionSettings.hostType)) {
+  if (
+    isV3Enabled() ||
+    !solutionSettings ||
+    (solutionSettings && "Azure" === solutionSettings.hostType)
+  ) {
     const azureAccount = await AzureAccountManager.getStatus();
     if (azureAccount.status === "SignedIn") {
       const accountInfo = azureAccount.accountInfo;

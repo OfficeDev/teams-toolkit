@@ -2,7 +2,7 @@ import React from "react";
 import "./Publish.css";
 import { Image } from "@fluentui/react-northstar";
 
-export function Publish(props: { docsUrl?: string }) {
+export function Publish(props) {
   const { docsUrl } = {
     docsUrl: "https://aka.ms/teamsfx-docs",
     ...props,

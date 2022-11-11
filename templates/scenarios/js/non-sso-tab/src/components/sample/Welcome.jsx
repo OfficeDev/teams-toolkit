@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Image, Menu } from "@fluentui/react-northstar";
 import "./Welcome.css";
 import { EditCode } from "./EditCode";
@@ -6,7 +6,7 @@ import { Deploy } from "./Deploy";
 import { Publish } from "./Publish";
 import { AddSSO } from "./AddSSO";
 
-export function Welcome(props: { environment?: string }) {
+export function Welcome(props) {
   const { environment } = {
     environment: window.location.hostname === "localhost" ? "local" : "azure",
     ...props,
@@ -18,7 +18,7 @@ export function Welcome(props: { environment?: string }) {
     }[environment] || "local environment";
 
   const steps = ["local", "azure", "publish"];
-  const friendlyStepsName: { [key: string]: string } = {
+  const friendlyStepsName = {
     local: "1. Build your app locally",
     azure: "2. Provision and Deploy to the Cloud",
     publish: "3. Publish to Teams",

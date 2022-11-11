@@ -2,7 +2,7 @@ import React from "react";
 import "./Deploy.css";
 import { Image } from "@fluentui/react-northstar";
 
-export function Deploy(props: { docsUrl?: string }) {
+export function Deploy(props) {
   const { docsUrl } = {
     docsUrl: "https://aka.ms/teamsfx-docs",
     ...props,
@@ -20,7 +20,7 @@ export function Deploy(props: { docsUrl?: string }) {
       </p>
       <p>
         To deploy your app, you can either use our CLI command "teamsfx deploy" or apply "Teams:
-        Deploy to the Cloud" in Command palette.
+        Deploy to the cloud" in Command palette.
       </p>
       <Image src="deploy.png" />
       <p>

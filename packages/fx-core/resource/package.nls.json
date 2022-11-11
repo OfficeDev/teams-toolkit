@@ -30,6 +30,7 @@
   "core.provision.subscription.failToSelect": "Failed to select subscription",
   "core.error.notLoginToAzure": "Login to Azure using the Azure Account extension",
   "core.error.FailedToCreateResourceGroup.exist": "Failed to create resource group '%s': the resource group exists",
+  "core.error.NoYmlFileError": "Failed to find yml files.",
   "core.error.resourceGroupNotFound": "Resource group '%s' does not exist, please specify an existing resource group.",
   "core.error.resourceGroupNotFound2": "Resource group '%s' does not exist, please check the '%s' file.",
   "core.error.unresolvedPlaceholders": "There are unresolved placeholders in '.yml' file: %s",

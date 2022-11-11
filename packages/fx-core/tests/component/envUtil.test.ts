@@ -169,6 +169,24 @@ describe("env utils", () => {
     const getDotEnvRes = await core.getDotEnv(inputs);
     assert.isTrue(getDotEnvRes.isOk());
   });
+  it("EnvLoaderMW failed: no yml file error", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(ok([]));
+    class MyClass {
+      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+        return ok(undefined);
+      }
+    }
+    hooks(MyClass, {
+      myMethod: [EnvLoaderMW],
+    });
+    const my = new MyClass();
+    const inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const res = await my.myMethod(inputs);
+    assert.isTrue(res.isErr());
+  });
   it("EnvLoaderMW ignoreEnvInfo", async () => {
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     class MyClass {

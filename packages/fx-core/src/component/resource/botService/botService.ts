@@ -12,6 +12,7 @@ import {
   err,
   Bicep,
   ActionContext,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
@@ -22,7 +23,7 @@ import { AzureResource } from "../azureResource";
 import { ProgressMessages, ProgressTitles } from "../../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { wrapError } from "./errors";
+import { AlreadyCreatedBotNotExist, FailedToCreateBotRegistrationError, wrapError } from "./errors";
 import { CheckThrowSomethingMissing } from "../../error";
 import { BotRegistration, BotAadCredentials } from "./botRegistration/botRegistration";
 import * as uuid from "uuid";
@@ -109,21 +110,28 @@ export class BotService extends AzureResource {
             botPassword: teamsBotState.botPassword,
           };
 
-    const regRes = await botRegistration.createBotRegistration(
-      context.tokenProvider.m365TokenProvider,
-      aadDisplayName,
-      botName,
-      botConfig,
-      hasBotIdInEnvBefore,
-      undefined, // Use default value of BotAuthType.AADApp
-      context.logProvider
-    );
-    if (regRes.isErr()) return err(regRes.error);
+    try {
+      const regRes = await botRegistration.createBotRegistration(
+        context.tokenProvider.m365TokenProvider,
+        aadDisplayName,
+        botName,
+        botConfig,
+        undefined, // Use default value of BotAuthType.AADApp
+        context.logProvider
+      );
+      if (regRes.isErr()) return err(regRes.error);
 
-    // Update states for bot aad configs.
-    teamsBotState.botId = regRes.value.botId;
-    teamsBotState.botPassword = regRes.value.botPassword;
-    return ok(undefined);
+      // Update states for bot aad configs.
+      teamsBotState.botId = regRes.value.botId;
+      teamsBotState.botPassword = regRes.value.botPassword;
+      return ok(undefined);
+    } catch (e) {
+      if (e instanceof FailedToCreateBotRegistrationError && hasBotIdInEnvBefore) {
+        throw AlreadyCreatedBotNotExist(botConfig.botId, (e as any).innerError);
+      } else {
+        throw e;
+      }
+    }
   }
   @hooks([
     ActionExecutionMW({

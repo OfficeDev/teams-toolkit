@@ -42,6 +42,10 @@ import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 import { AppStudioClient } from "../resource/botService/appStudio/appStudioClient";
 import { GraphClient } from "../resource/botService/botRegistration/graphClient";
 import { checkM365Tenant } from "./utils";
+import {
+  AlreadyCreatedBotNotExist,
+  FailedToCreateBotRegistrationError,
+} from "../resource/botService/errors";
 
 const botDebugMessages = {
   registeringAAD: "Registering the AAD app which is required to create the bot ...",
@@ -265,11 +269,16 @@ export class BotDebugHandler {
         callingEndpoint: "",
       };
 
-      await AppStudioClient.createBotRegistration(
-        tokenResult.value,
-        botReg,
-        this.hasBotIdInEnvBefore
-      );
+      try {
+        await AppStudioClient.createBotRegistration(tokenResult.value, botReg);
+      } catch (e) {
+        if (this.hasBotIdInEnvBefore && e instanceof FailedToCreateBotRegistrationError) {
+          const botId = this.envInfoV3!.state[ComponentNames.TeamsBot].botId;
+          return err(AlreadyCreatedBotNotExist(botId, (e as any).innerError));
+        } else {
+          throw e;
+        }
+      }
 
       return ok([
         util.format(

@@ -3,7 +3,7 @@ version: 1.0.0
 registerApp:
   - uses: teamsApp/create # Creates a Teams app
     with:
-      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest
+      name: tab  
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
@@ -14,6 +14,9 @@ configureApp:
         TAB_DOMAIN: localhost:53000
         TAB_ENDPOINT: https://localhost:53000
 
+  - uses: teamsApp/validate
+    with:
+      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
   - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template

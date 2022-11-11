@@ -358,7 +358,7 @@
     "teamstoolkit.preview.prepareTeamsApp": "Preparing Teams app registration...",
     "teamstoolkit.preview.progressTitle": "Preview Teams app",
     "teamstoolkit.progressHandler.prepareTask": " Prepare task.",
-    "teamstoolkit.progressHandler.reloadNotice": "%s%s%s (Notice: You can reload the window and retry if task spends too long time.)",
+    "teamstoolkit.progressHandler.reloadNotice": "%s%s%s",
     "teamstoolkit.progressHandler.showOutputLink": "Check [output window](%s) for details.",
     "teamstoolkit.progressHandler.showTerminalLink": "Check [terminal window](%s) for details.",
     "teamstoolkit.qm.browse": "Browse...",

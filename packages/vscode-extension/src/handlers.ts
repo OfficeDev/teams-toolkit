@@ -3555,6 +3555,7 @@ export async function checkSideloadingCallback(args?: any[]): Promise<Result<nul
       }
     })
     .catch((_error) => {});
+  WebviewPanel.createOrShow(PanelType.PrepareM365Account);
   return ok(null);
 }
 

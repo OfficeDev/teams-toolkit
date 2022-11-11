@@ -28,15 +28,23 @@ export default function App(props: any) {
     initialIndex = 1;
   } else if (panelType === PanelType.RespondToCardActions) {
     initialIndex = 2;
+  } else if (panelType === PanelType.PrepareM365Account) {
+    initialIndex = 3;
   }
   return (
     <MemoryRouter
-      initialEntries={["/sample-gallery", "/survey", "/respond-to-card-actions"]}
+      initialEntries={[
+        "/sample-gallery",
+        "/survey",
+        "/respond-to-card-actions",
+        "/prepare-m365-account",
+      ]}
       initialIndex={initialIndex}
     >
       <Route path="/sample-gallery" component={SampleGallery} />
       <Route path="/survey" component={Survey} />
       <Route path="/respond-to-card-actions" component={WorkflowBot} />
+      <Route path="/prepare-m365-account" component={WorkflowBot} />
     </MemoryRouter>
   );
 }

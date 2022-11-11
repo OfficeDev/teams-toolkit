@@ -135,7 +135,7 @@ describe("Bot service", () => {
     sandbox.stub(AppStudioClient, "getBotRegistration").returns(Promise.resolve(undefined));
     sandbox
       .stub(AppStudioClient, "createBotRegistration")
-      .throws(new FailedToCreateBotRegistrationError(""));
+      .throwsException(new FailedToCreateBotRegistrationError(""));
     sandbox.stub(GraphClient, "registerAadApp").resolves({
       clientId: "clientId",
       clientSecret: "clientSecret",

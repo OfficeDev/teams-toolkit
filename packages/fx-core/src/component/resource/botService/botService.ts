@@ -20,15 +20,20 @@ import { compileHandlebarsTemplateString } from "../../../common/tools";
 import { BotServiceOutputs, ComponentNames } from "../../constants";
 import { getComponent } from "../../workflow";
 import { AzureResource } from "../azureResource";
-import { ProgressMessages, ProgressTitles } from "../../messages";
+import { ErrorMessage, ProgressMessages, ProgressTitles } from "../../messages";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { AlreadyCreatedBotNotExist, FailedToCreateBotRegistrationError, wrapError } from "./errors";
+import {
+  AlreadyCreatedBotNotExist,
+  FailedToCreateBotRegistrationError,
+  PluginError,
+  wrapError,
+} from "./errors";
 import { CheckThrowSomethingMissing } from "../../error";
 import { BotRegistration, BotAadCredentials } from "./botRegistration/botRegistration";
 import * as uuid from "uuid";
 import { ResourceNameFactory } from "./resourceNameFactory";
-import { MaxLengths } from "./constants";
+import { ErrorNames, MaxLengths } from "./constants";
 import { CommonStrings, PluginLocalDebug } from "./strings";
 import { BotRegistrationFactory, BotRegistrationKind } from "./botRegistration/factory";
 import { normalizeName } from "../../utils";
@@ -126,7 +131,7 @@ export class BotService extends AzureResource {
       teamsBotState.botPassword = regRes.value.botPassword;
       return ok(undefined);
     } catch (e) {
-      if (e instanceof FailedToCreateBotRegistrationError && hasBotIdInEnvBefore) {
+      if (e.name == ErrorNames.CREATE_BOT_REGISTRATION_API_ERROR && hasBotIdInEnvBefore) {
         throw AlreadyCreatedBotNotExist(botConfig.botId, (e as any).innerError);
       } else {
         throw e;

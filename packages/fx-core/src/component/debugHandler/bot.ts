@@ -31,7 +31,7 @@ import {
   loadProjectSettingsByProjectPath,
 } from "../../core/middleware/projectSettingsLoader";
 import { IBotRegistration } from "../resource/botService/appStudio/interfaces/IBotRegistration";
-import { MaxLengths } from "../resource/botService/constants";
+import { ErrorNames, MaxLengths } from "../resource/botService/constants";
 import { PluginLocalDebug } from "../resource/botService/strings";
 import { genUUID } from "../resource/botService/common";
 import { ResourceNameFactory } from "../resource/botService/resourceNameFactory";
@@ -42,10 +42,7 @@ import { LocalEnvKeys, LocalEnvProvider } from "./localEnvProvider";
 import { AppStudioClient } from "../resource/botService/appStudio/appStudioClient";
 import { GraphClient } from "../resource/botService/botRegistration/graphClient";
 import { checkM365Tenant } from "./utils";
-import {
-  AlreadyCreatedBotNotExist,
-  FailedToCreateBotRegistrationError,
-} from "../resource/botService/errors";
+import { AlreadyCreatedBotNotExist } from "../resource/botService/errors";
 
 const botDebugMessages = {
   registeringAAD: "Registering the AAD app which is required to create the bot ...",
@@ -272,7 +269,7 @@ export class BotDebugHandler {
       try {
         await AppStudioClient.createBotRegistration(tokenResult.value, botReg);
       } catch (e) {
-        if (this.hasBotIdInEnvBefore && e instanceof FailedToCreateBotRegistrationError) {
+        if (e.name == ErrorNames.CREATE_BOT_REGISTRATION_API_ERROR && this.hasBotIdInEnvBefore) {
           const botId = this.envInfoV3!.state[ComponentNames.TeamsBot].botId;
           return err(AlreadyCreatedBotNotExist(botId, (e as any).innerError));
         } else {

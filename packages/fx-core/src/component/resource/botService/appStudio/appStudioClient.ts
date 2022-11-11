@@ -100,7 +100,7 @@ export class AppStudioClient {
       e.teamsfxUrlName = "<create-bot-registration>";
       if (create) {
         // Handle exception when creating bot failed.
-        throw new FailedToCreateBotRegistrationError(e);
+        throw new FailedToCreateBotRegistrationError(e.innerError);
       }
       throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION, e);
     }

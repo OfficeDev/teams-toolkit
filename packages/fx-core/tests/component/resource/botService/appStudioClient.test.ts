@@ -69,7 +69,7 @@ describe("Test AppStudio APIs", () => {
       // Act
       try {
         await AppStudioClient.createBotRegistration(accessToken, botReg);
-        chai.assert(retry.calledOnce);
+        chai.assert.isTrue(retry.calledOnce);
       } catch {
         chai.assert.fail(Messages.ShouldNotReachHere);
       }
@@ -101,8 +101,8 @@ describe("Test AppStudio APIs", () => {
         await AppStudioClient.createBotRegistration(accessToken, botReg);
         chai.assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
-        chai.assert(e instanceof FailedToCreateBotRegistrationError);
-        chai.assert(retry.calledTwice);
+        chai.assert.isTrue(e instanceof PluginError);
+        chai.assert.isTrue(retry.calledTwice);
       }
     });
 

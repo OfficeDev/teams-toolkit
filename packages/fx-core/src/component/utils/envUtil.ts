@@ -190,7 +190,7 @@ export class DotenvUtil {
         }
       });
     }
-    //append additional keys
+    //append additional kvs
     for (const key of Object.keys(obj)) {
       array.push(`${key}=${parsed.obj[key]}`);
     }

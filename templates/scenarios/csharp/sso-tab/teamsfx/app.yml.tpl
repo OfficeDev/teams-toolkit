@@ -15,11 +15,9 @@ provision:
 deploy:
   - uses: dotnet/command
     with:
-      workingDirectory: ./
       args: publish --configuration Release --runtime win-x86 --self-contained
   - uses: azureAppService/deploy
     with:
-      workingDirectory: .
       # deploy base folder
       distributionPath: ./bin/Release/net6.0/win-x86/publish
       # the resource id of the cloud resource to be deployed to

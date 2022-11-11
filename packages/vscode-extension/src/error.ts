@@ -43,6 +43,7 @@ export enum ExtensionErrors {
   NgrokStoppedError = "NgrokStoppedError",
   NgrokProcessError = "NgrokProcessError",
   NgrokNotFoundError = "NgrokNotFoundError",
+  NgrokInstallationError = "NgrokInstallationError",
   TunnelServiceNotStartedError = "TunnelServiceNotStartedError",
   TunnelEndpointNotFoundError = "TunnelEndpointNotFoundError",
   TunnelEnvError = "TunnelEnvError",

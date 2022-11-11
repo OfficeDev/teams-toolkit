@@ -324,6 +324,7 @@
     "teamstoolkit.localDebug.ngrokStoppedError": "Ngrok has been stopped with exit code '%s'.",
     "teamstoolkit.localDebug.ngrokProcessError": "Failed to start ngrok. %s",
     "teamstoolkit.localDebug.ngrokNotFoundError": "Ngrok is not installed by TeamsFx. See teamsfx-debug-tasks#debug-check-prerequisites for how to install the ngrok.",
+    "teamstoolkit.localDebug.ngrokInstallationError": "Failed to install Ngrok. %s",
     "teamstoolkit.localDebug.ngrokTimeoutError": "Timeout waiting for starting ngrok.",
     "teamstoolkit.localDebug.tunnelServiceNotStartedError": "The tunnel service hasn't been started. Please wait for a moment or restart the local tunnel task.",
     "teamstoolkit.localDebug.tunnelEndpointNotFoundError": "Failed to find the tunnel endpoint. Teams toolkit try to get the first HTTPS URL from %s and failed.",

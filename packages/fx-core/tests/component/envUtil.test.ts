@@ -375,7 +375,13 @@ describe("env utils", () => {
       obj: { KEY: "VALUE" },
     });
   });
-
+  it("dotenvUtil deserialize empty", async () => {
+    const res = dotenvUtil.deserialize("");
+    assert.deepEqual(res, {
+      lines: [""],
+      obj: {},
+    });
+  });
   it("dotenvUtil serialize with lines", async () => {
     const parsed = {
       lines: ["#COMMENT", "", "", { key: "KEY", value: "VALUE" }],

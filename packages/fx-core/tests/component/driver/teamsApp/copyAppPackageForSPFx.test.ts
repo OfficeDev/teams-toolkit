@@ -5,12 +5,9 @@ import "mocha";
 import * as sinon from "sinon";
 import chai from "chai";
 import fs from "fs-extra";
-import { TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
 import { CopyAppPackageForSPFxDriver } from "../../../../src/component/driver/teamsApp/copyAppPackageForSPFx";
 import { CopyAppPackageForSPFxArgs } from "../../../../src/component/driver/teamsApp/interfaces/CopyAppPackageForSPFxArgs";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
-import { MockedM365Provider } from "../../../plugins/solution/util";
-import { manifestUtils } from "../../../../src/component/resource/appManifest/utils/ManifestUtils";
 import chaiAsPromised from "chai-as-promised";
 import AdmZip from "adm-zip";
 import { Constants } from "../../../../src/component/resource/appManifest/constants";
@@ -24,7 +21,7 @@ describe("teamsApp/copyAppPackageForSPFx", async () => {
     appPackagePath: "./teamsApp/a.zip",
     spfxFolder: "./SPFx",
   };
-  const mockedDriverContext: any = {};
+  const mockedDriverContext: any = { projectPath: "C://TeamsApp" };
 
   afterEach(() => {
     sinon.restore();

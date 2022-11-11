@@ -107,7 +107,10 @@ export class SPFxDeployDriver implements StepDriver {
         }
       }
 
-      const appPackage = await this.getPackagePath(deployArgs.packageSolutionPath);
+      const packageSolutionPath = path.isAbsolute(deployArgs.packageSolutionPath)
+        ? deployArgs.packageSolutionPath
+        : path.join(context.projectPath, deployArgs.packageSolutionPath);
+      const appPackage = await this.getPackagePath(packageSolutionPath);
       if (!(await fs.pathExists(appPackage))) {
         throw new NoSPPackageError(appPackage);
       }
@@ -131,7 +134,7 @@ export class SPFxDeployDriver implements StepDriver {
         }
       }
 
-      const appID = await this.getAppID(deployArgs.packageSolutionPath);
+      const appID = await this.getAppID(packageSolutionPath);
       await SPOClient.deployAppPackage(spoToken, appID);
       const guidance = getLocalizedString(
         "plugins.spfx.deployNotice",

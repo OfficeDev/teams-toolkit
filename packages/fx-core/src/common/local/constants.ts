@@ -168,4 +168,5 @@ export const Prerequisite = Object.freeze({
   ngrok: "ngrok",
   dotnet: "dotnet",
   portOccupancy: "portOccupancy",
+  vxTestApp: "vxTestApp", // TODO(aochengwang): maybe change app name
 });

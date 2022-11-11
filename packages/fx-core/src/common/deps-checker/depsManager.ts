@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { DepsLogger, EmptyLogger } from "./depsLogger";
-import { DepsTelemetry } from "./depsTelemetry";
+import { DepsTelemetry, EmptyTelemetry } from "./depsTelemetry";
 import { DependencyStatus, DepsChecker, DepsType } from "./depsChecker";
 import { CheckerFactory } from "./checkerFactory";
 
@@ -25,16 +25,9 @@ export class DepsManager {
   private readonly emptyLogger: DepsLogger;
   private readonly telemetry: DepsTelemetry;
 
-  constructor(logger: DepsLogger, telemetry: DepsTelemetry) {
-    if (!logger) {
-      throw Error("Logger is undefined.");
-    }
-    if (!telemetry) {
-      throw Error("Logger is undefined.");
-    }
-
-    this.logger = logger;
-    this.telemetry = telemetry;
+  constructor(logger?: DepsLogger, telemetry?: DepsTelemetry) {
+    this.logger = logger ?? new EmptyLogger();
+    this.telemetry = telemetry ?? new EmptyTelemetry();
     this.emptyLogger = new EmptyLogger();
   }
 

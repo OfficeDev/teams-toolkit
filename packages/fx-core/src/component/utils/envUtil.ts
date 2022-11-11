@@ -183,6 +183,8 @@ export class DotenvUtil {
         } else {
           if (obj[line.key] !== undefined) {
             array.push(`${line.key}=${obj[line.key]}`);
+          } else {
+            array.push(`${line.key}=${line.value}`);
           }
         }
       });

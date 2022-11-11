@@ -184,6 +184,7 @@ export class DotenvUtil {
           if (obj[line.key] !== undefined) {
             // use kv in obj
             array.push(`${line.key}=${obj[line.key]}`);
+            delete obj[line.key];
           } else {
             // keep original kv in lines
             array.push(`${line.key}=${line.value}`);

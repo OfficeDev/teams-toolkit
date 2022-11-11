@@ -41,17 +41,21 @@ export function execute(
 
     logger?.info(`Start to run command: "${command}" on path: "${workingDir}".`);
 
-    exec(command, { cwd: workingDir, env: { ...process.env, ...env } }, (error, stdout, stderr) => {
-      if (error) {
-        logger?.error(`Failed to run command: "${command}" on path: "${workingDir}".`);
-        logger?.error(stdout);
-        if (stderr) {
-          logger?.error(stderr);
+    exec(
+      command,
+      { cwd: workingDir, env: { ...process.env, ...env } },
+      async (error, stdout, stderr) => {
+        if (error) {
+          await logger?.error(`Failed to run command: "${command}" on path: "${workingDir}".`);
+          await logger?.error(stdout);
+          if (stderr) {
+            await logger?.error(stderr);
+          }
+          reject(error);
         }
-        reject(error);
+        await logger?.debug(stdout);
+        resolve(stdout);
       }
-      logger?.debug(stdout);
-      resolve(stdout);
-    });
+    );
   });
 }

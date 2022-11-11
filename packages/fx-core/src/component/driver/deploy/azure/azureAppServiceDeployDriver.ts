@@ -12,6 +12,7 @@ import { wrapRun } from "../../../utils/common";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
+import { DeployConstant } from "../../../constant/deployConstant";
 
 const ACTION_NAME = "azureAppService/deploy";
 
@@ -38,8 +39,15 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<void> {
+    const startTime = Date.now();
     await this.progressBar?.start();
     await this.zipDeploy(args, azureResource, azureCredential);
     await this.progressBar?.end(true);
+    if (startTime + DeployConstant.DEPLOY_OVER_TIME < Date.now()) {
+      await this.context.logProvider?.info(
+        `Deploying to Azure App Service takes a long time. Consider referring to this document to optimize your deployment: 
+        https://learn.microsoft.com/en-us/azure/app-service/deploy-run-package`
+      );
+    }
   }
 }

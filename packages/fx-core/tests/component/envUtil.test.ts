@@ -406,12 +406,19 @@ describe("env utils", () => {
   it("dotenvUtil serialize with lines", async () => {
     const parsed = {
       lines: ["#COMMENT", "", "", { key: "KEY2", value: "VALUE2" }],
-      obj: { KEY: "VALUE", KEY2: "VALUE2" },
+      obj: { KEY: "VALUE", KEY2: "VALUE3" },
     };
     const str = dotenvUtil.serialize(parsed);
-    assert.equal(str, "#COMMENT\n\n\nKEY2=VALUE2\nKEY=VALUE");
+    assert.equal(str, "#COMMENT\n\n\nKEY2=VALUE3\nKEY=VALUE");
   });
-
+  it("dotenvUtil serialize with lines case 2", async () => {
+    const parsed = {
+      lines: ["#COMMENT", "", "", { key: "KEY2", value: "VALUE2" }],
+      obj: { KEY3: "VALUE3" },
+    };
+    const str = dotenvUtil.serialize(parsed);
+    assert.equal(str, "#COMMENT\n\n\nKEY2=VALUE2\nKEY3=VALUE3");
+  });
   it("dotenvUtil serialize without lines", async () => {
     const parsed = {
       obj: { KEY: "VALUE", KEY2: "VALUE2" },

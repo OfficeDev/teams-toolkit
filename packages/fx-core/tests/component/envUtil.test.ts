@@ -406,7 +406,7 @@ describe("env utils", () => {
   it("dotenvUtil serialize with lines", async () => {
     const parsed = {
       lines: ["#COMMENT", "", "", { key: "KEY2", value: "VALUE2" }],
-      obj: { KEY: "VALUE", KEY2: "VALUE2" },
+      obj: { KEY: "VALUE" },
     };
     const str = dotenvUtil.serialize(parsed);
     assert.equal(str, "#COMMENT\n\n\nKEY2=VALUE2\nKEY=VALUE");

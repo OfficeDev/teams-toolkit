@@ -175,6 +175,7 @@ export class DotenvUtil {
   serialize(parsed: DotenvParseResult): string {
     const array: string[] = [];
     const obj = cloneDeep(parsed.obj);
+    //append lines
     if (parsed.lines) {
       parsed.lines.forEach((line) => {
         if (typeof line === "string") {

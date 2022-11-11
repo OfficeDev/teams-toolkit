@@ -14,11 +14,10 @@
         "react-scripts": "^5.0.1"
     },
     "devDependencies": {
-        "cross-env": "^7.0.3",
-        "env-cmd": "^10.1.0"
+        "@microsoft/teamsfx-run-utils": "alpha",
+        "cross-env": "^7.0.3"
     },
     "scripts": {
-        "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run start",
         "start": "react-scripts start",
         "install:teamsfx": "npm install",
         "build": "react-scripts build",

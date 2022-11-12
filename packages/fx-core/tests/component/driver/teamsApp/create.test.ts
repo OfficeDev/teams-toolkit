@@ -11,7 +11,6 @@ import AdmZip from "adm-zip";
 import { CreateTeamsAppDriver } from "../../../../src/component/driver/teamsApp/create";
 import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
 import { CreateTeamsAppArgs } from "../../../../src/component/driver/teamsApp/interfaces/CreateTeamsAppArgs";
-import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import {
   MockedLogProvider,
   MockedM365Provider,
@@ -40,21 +39,9 @@ describe("teamsApp/create", async () => {
     sinon.restore();
   });
 
-  it("should throw error if file not exists", async () => {
-    const args: CreateTeamsAppArgs = {
-      manifestTemplatePath: "fakePath",
-    };
-
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
-    chai.assert(result.isErr());
-    if (result.isErr()) {
-      chai.assert.equal(AppStudioError.FileNotFoundError.name, result.error.name);
-    }
-  });
-
   it("happy path", async () => {
     const args: CreateTeamsAppArgs = {
-      manifestTemplatePath: "fakePath",
+      name: appDef.appName!,
     };
 
     const zipFileName =

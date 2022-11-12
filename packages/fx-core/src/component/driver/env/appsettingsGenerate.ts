@@ -8,7 +8,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { wrapRun } from "../../utils/common";
+import { getAbsolutePath, wrapRun } from "../../utils/common";
 import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { StepDriver } from "../interface/stepDriver";
@@ -36,10 +36,10 @@ export class GenerateAppsettingsDriver implements StepDriver {
   ): Promise<Map<string, string>> {
     try {
       this.validateArgs(args);
-
-      const appSettingsJson = JSON.parse(fs.readFileSync(args.target, "utf-8"));
+      const appsettingsPath = getAbsolutePath(args.target, context.projectPath);
+      const appSettingsJson = JSON.parse(fs.readFileSync(appsettingsPath, "utf-8"));
       this.replaceProjectAppsettings(appSettingsJson, args.appsettings);
-      await fs.writeFile(args.target, JSON.stringify(appSettingsJson, null, "\t"), "utf-8");
+      await fs.writeFile(appsettingsPath, JSON.stringify(appSettingsJson, null, "\t"), "utf-8");
 
       return new Map();
     } catch (error) {

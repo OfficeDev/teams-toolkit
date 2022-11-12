@@ -32,6 +32,7 @@ import { coordinator } from "../../src/component/coordinator";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import fs from "fs-extra";
 import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
+import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
 
 describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
@@ -91,6 +92,7 @@ describe("component coordinator test", () => {
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(developerPortalScaffoldUtils, "updateFilesForTdp").resolves(ok(undefined));
     const appDefinition: AppDefinition = {
       teamsAppId: "mock-id",
       appId: "mock-id",
@@ -121,11 +123,14 @@ describe("component coordinator test", () => {
     assert.isTrue(res2.isOk());
   });
 
-  it("create project for app with bot feature from Developer Portal", async () => {
+  it("create project for app with bot feature from Developer Portal with updating files failed", async () => {
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox
+      .stub(developerPortalScaffoldUtils, "updateFilesForTdp")
+      .resolves(err(new UserError("coordinator", "error", "msg", "msg")));
     const appDefinition: AppDefinition = {
       teamsAppId: "mock-id",
       appId: "mock-id",
@@ -155,7 +160,10 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.createProject(inputs);
 
-    assert.isTrue(res.isOk());
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.equal(res.error.name, "error");
+    }
   });
 
   it("create project for app with no features from Developer Portal", async () => {
@@ -163,6 +171,7 @@ describe("component coordinator test", () => {
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(developerPortalScaffoldUtils, "updateFilesForTdp").resolves(ok(undefined));
     const appDefinition: AppDefinition = {
       teamsAppId: "mock-id",
       appId: "mock-id",

@@ -1,12 +1,12 @@
 version: 1.0.0
 
 provision:
-  - uses: botAadApp/create # Creates a new AAD app for Azure Bot service if BOT_ID environment variable is empty
+  - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
     with:
       name: workflow-bot
     # Output: following environment variable will be persisted in current environment's .env file.
-    # BOT_ID: the AAD app client id created for Azure Bot
-    # BOT_PASSWORD: the AAD app client secret created for Azure Bot
+    # BOT_ID: the AAD app client id created for Bot Registration.
+    # SECRET_BOT_PASSWORD: the AAD app client secret created for Bot Registration.
 
   - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:
@@ -33,11 +33,14 @@ deploy:
 registerApp:
   - uses: teamsApp/create # Creates a Teams app
     with:
-      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest
+      name: workflow-bot # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
 configureApp:
+  - uses: teamsApp/validate
+    with:
+      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
   - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
@@ -48,18 +51,3 @@ configureApp:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
-
-publish:
-  - uses: teamsApp/validate
-    with:
-      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
-  - uses: teamsApp/createAppPackage
-    with:
-      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
-      outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
-  - uses: teamsApp/publishAppPackage # Publish the app to Teams app catalog
-    with:
-      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-  # Output: following environment variable will be persisted in current environment's .env file.
-  # TEAMS_APP_PUBLISHED_APP_ID: app id in Teams tenant app catalog.

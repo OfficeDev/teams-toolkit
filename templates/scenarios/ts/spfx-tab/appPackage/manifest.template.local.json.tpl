@@ -12,16 +12,16 @@
         "termsOfUseUrl": "https://www.microsoft.com/en-us/servicesagreement"
     },
     "name": {
-        "short": "{{config.manifest.appName.short}}",
-        "full": "{{config.manifest.appName.full}}"
+        "short": "spfx-tab",
+        "full": "Full name for spfx-tab"
     },
     "description": {
-        "short": "{{config.manifest.description.short}}",
-        "full": "{{config.manifest.description.full}}"
+        "short": "Short description of spfx-tab",
+        "full": "Full description of spfx-tab"
     },
     "icons": {
-        "color": "{{config.manifest.icons.color}}",
-        "outline": "{{config.manifest.icons.outline}}"
+        "color": "resources/color.png",
+        "outline": "resources/outline.png"
     },
     "accentColor": "#004578",
     "staticTabs": [

@@ -45,7 +45,7 @@ import { VS_CODE_UI } from "../extension";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as commonUtils from "../debug/commonUtils";
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { getSubscriptionInfoFromEnv } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
@@ -356,6 +356,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * set tenantId and subscriptionId
    */
   async setSubscription(subscriptionId: string): Promise<void> {
+    if (isV3Enabled()) {
+      return;
+    }
     if (this.isUserLogin()) {
       const azureAccount: AzureAccount =
         vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;

@@ -54,7 +54,6 @@ import {
 
 import * as packageJson from "../../package.json";
 import { ExtensionErrors, ExtensionSource } from "../error";
-import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";

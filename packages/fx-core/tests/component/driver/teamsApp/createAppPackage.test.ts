@@ -51,9 +51,6 @@ describe("teamsApp/createAppPackage", async () => {
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isOk());
-    if (result.isOk()) {
-      chai.assert(result.value.has("TEAMS_APP_PACKAGE_PATH"));
-    }
     if (await fs.pathExists(args.outputZipPath)) {
       await fs.remove(args.outputZipPath);
     }
@@ -75,9 +72,6 @@ describe("teamsApp/createAppPackage", async () => {
 
     const result = await teamsAppDriver.run(args, mockedDriverContext, true);
     chai.assert(result.isOk());
-    if (result.isOk()) {
-      chai.assert(result.value.has("TEAMS_APP_PACKAGE_PATH"));
-    }
     if (await fs.pathExists(args.outputZipPath)) {
       await fs.remove(args.outputZipPath);
     }

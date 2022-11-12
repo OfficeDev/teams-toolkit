@@ -19,6 +19,7 @@ export class DepsManager {
     DepsType.Dotnet,
     DepsType.FuncCoreTools,
     DepsType.Ngrok,
+    DepsType.VxTestApp,
   ];
 
   private readonly logger: DepsLogger;

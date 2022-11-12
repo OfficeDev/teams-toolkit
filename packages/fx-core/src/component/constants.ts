@@ -595,6 +595,7 @@ export enum SolutionTelemetrySuccess {
 
 export const SolutionTelemetryComponentName = "solution";
 export const SolutionSource = "Solution";
+export const CoordinatorSource = "coordinator";
 
 export class UnauthorizedToCheckResourceGroupError extends UserError {
   constructor(resourceGroupName: string, subscriptionId: string, subscriptionName: string) {

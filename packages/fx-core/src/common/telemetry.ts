@@ -45,6 +45,7 @@ export enum TelemetryProperty {
   HasSwitchedSubscription = "has-switched-subscription",
   HasSwitchedM365Tenant = "has-switched-m365",
   CustomizeSubscriptionType = "customize-subscription-type",
+  IsFromTdp = "is-from-developer-portal",
 }
 
 export enum TelemetryEvent {

@@ -11,8 +11,8 @@
         "termsOfUseUrl": "${{TAB_ENDPOINT}}/index.html#/termsofuse"
     },
     "icons": {
-        "color": "./resources/color.png",
-        "outline": "./resources/outline.png"
+        "color": "resources/color.png",
+        "outline": "resources/outline.png"
     },
     "name": {
         "short": "tab",

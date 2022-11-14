@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-export interface CreateOrUpdateM365BotArgs {
+export interface CreateOrUpdateBotFrameworkBotArgs {
   botId: string;
   name: string;
   messagingEndpoint: string;

@@ -16,23 +16,23 @@ import { StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
-import { CreateOrUpdateM365BotArgs } from "./interface/createOrUpdateM365BotArgs";
+import { CreateOrUpdateBotFrameworkBotArgs } from "./interface/createOrUpdateBotFrameworkBotArgs";
 
-const actionName = "m365Bot/createOrUpdate";
-const helpLink = "https://aka.ms/teamsfx-actions/m365Bot-createOrUpdate";
+const actionName = "botFramework/createOrUpdateBot";
+const helpLink = "https://aka.ms/teamsfx-actions/botFramework-createOrUpdateBot";
 
 @Service(actionName) // DO NOT MODIFY the service name
-export class CreateOrUpdateM365BotDriver implements StepDriver {
+export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
-    args: CreateOrUpdateM365BotArgs,
+    args: CreateOrUpdateBotFrameworkBotArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     return wrapRun(() => this.handler(args, context));
   }
 
   private async handler(
-    args: CreateOrUpdateM365BotArgs,
+    args: CreateOrUpdateBotFrameworkBotArgs,
     context: DriverContext
   ): Promise<Map<string, string>> {
     try {
@@ -81,7 +81,7 @@ export class CreateOrUpdateM365BotDriver implements StepDriver {
     }
   }
 
-  private validateArgs(args: CreateOrUpdateM365BotArgs): void {
+  private validateArgs(args: CreateOrUpdateBotFrameworkBotArgs): void {
     const invalidParameters: string[] = [];
 
     if (!args.botId || typeof args.botId !== "string") {

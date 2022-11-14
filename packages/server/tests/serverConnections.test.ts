@@ -83,6 +83,36 @@ describe("serverConnections", () => {
     });
   });
 
+  it("preProvisionResourcesRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns({
+      needAzureLogin: true,
+      needM365Login: true,
+      resolvedAzureSubscriptionId: undefined,
+      resolvedAzureResourceGroupName: undefined,
+    });
+    sandbox.replace(connection["core"], "preProvisionForVS", fake);
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.preProvisionResourcesRequest(
+      inputs as Inputs,
+      token as CancellationToken
+    );
+    res.then((data) => {
+      assert.equal(
+        data,
+        ok({
+          needAzureLogin: true,
+          needM365Login: true,
+          resolvedAzureSubscriptionId: undefined,
+          resolvedAzureResourceGroupName: undefined,
+        })
+      );
+    });
+  });
+
   it("provisionResourcesRequest", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns("test");

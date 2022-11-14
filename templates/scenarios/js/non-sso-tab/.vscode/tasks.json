@@ -2,74 +2,44 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Start Teams App Locally",
+            "label": "Pre Debug Check & Start All",
             "dependsOn": [
-                "Validate prerequisites",
-                "Create resources",
-                "Set up local projects",
-                "Start services"
+                "validate local prerequisites",
+                "prepare local environment",
+                "Start All"
             ],
             "dependsOrder": "sequence"
         },
         {
-            "label": "Validate prerequisites",
-            "type": "teamsfx",
-            "command": "debug-check-prerequisites",
-            "args": {
-                "prerequisites": [
-                    "nodejs", // Validate if Node.js is installed.
-                    "m365Account", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.
-                    "portOccupancy" // Validate available ports to ensure those debug ones are not occupied.
-                ],
-                "portOccupancy": [
-                    53000 // tab service port
-                ]
+            "label": "validate local prerequisites",
+            "type": "shell",
+            "command": "exit ${command:fx-extension.validate-local-prerequisites}",
+            "presentation": {
+                "reveal": "never"
             }
         },
         {
-            "label": "Create resources",
-            "type": "teamsfx",
-            "command": "provision",
-            "args": {
-                "template": "${workspaceFolder}/teamsfx/app.local.yml",
-                "env": "local"
+            "label": "prepare local environment",
+            "type": "shell",
+            "command": "exit ${command:fx-extension.pre-debug-check}",
+            "presentation": {
+                "reveal": "never"
             }
         },
         {
-            "label": "Set up local projects",
-            "type": "teamsfx",
-            "command": "deploy",
-            "args": {
-                "template": "${workspaceFolder}/teamsfx/app.local.yml",
-                "env": "local"
-            }
-        },
-        {
-            "label": "Start services",
+            "label": "Start All",
             "dependsOn": [
-                "Start frontend"
+                "Start Frontend"
             ]
         },
         {
-            "label": "Start frontend",
+            "label": "Start Frontend",
             "type": "shell",
-            "command": "node teamsfx/script/run.js . teamsfx/.env.local",
+            "command": "npm run dev:teamsfx",
             "isBackground": true,
+            "problemMatcher": "$teamsfx-frontend-watch",
             "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": {
-                "pattern": {
-                    "regexp": "^.*$",
-                    "file": 0,
-                    "location": 1,
-                    "message": 2
-                },
-                "background": {
-                    "activeOnStart": true,
-                    "beginsPattern": ".*",
-                    "endsPattern": "Compiled|Failed|compiled|failed"
-                }
+                "cwd": "${workspaceFolder}/tabs"
             }
         }
     ]

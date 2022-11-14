@@ -1,5 +1,5 @@
 {
-    "name": "notificationbot",
+    "name": "{{appName}}",
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit Notification Bot Sample",
     "author": "Microsoft",

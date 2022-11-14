@@ -1,5 +1,5 @@
 {
-  "name": "echobot",
+  "name": "{%appName%}",
   "version": "1.0.0",
   "description": "Microsoft Teams Toolkit hello world Bot sample",
   "author": "Microsoft",

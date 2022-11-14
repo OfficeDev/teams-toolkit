@@ -22,18 +22,15 @@ provision:
 deploy:
   - uses: npm/command # Run npm command
     with:
-      workingDirectory: .
       args: install
   - uses: npm/command # Run npm command
     env:
       REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
       REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
     with:
-      workingDirectory: .
       args: run build
   - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
     with:
-      workingDirectory: .
       distributionPath: ./build # Deploy base folder. This folder includes manifest files for AAD app and Teams app that should be ignored using the ignoreFile.
       ignoreFile: ./.appserviceIgnore # Can be changed to any ignore file location, leave blank will ignore nothing
       resourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to

@@ -6,7 +6,7 @@ import { UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 const errorCode = "InvalidParameter";
-const messageKey = "driver.m365Bot.error.invalidParameter";
+const messageKey = "driver.botFramework.error.invalidParameter";
 
 export class InvalidParameterUserError extends UserError {
   constructor(actionName: string, invalidParameters: string | string[], helpLink: string) {

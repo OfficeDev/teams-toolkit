@@ -24,10 +24,6 @@ deploy:
     with:
       workingDirectory: .
       args: install
-  - uses: npm/command
-    with:
-      workingDirectory: .
-      args: run build
   - uses: azureFunctions/deploy
     with:
       workingDirectory: .

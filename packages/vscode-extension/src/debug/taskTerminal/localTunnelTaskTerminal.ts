@@ -504,10 +504,13 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       }
       const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
       const res = (
-        await depsManager.ensureDependencies([DepsType.Ngrok], {
-          fastFail: true,
-          doctor: true,
-        })
+        await depsManager.ensureDependencies(
+          [{ depsType: DepsType.Ngrok, installOptions: undefined }],
+          {
+            fastFail: true,
+            doctor: true,
+          }
+        )
       )?.[0];
       if (
         !res.isInstalled ||

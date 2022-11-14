@@ -22,11 +22,9 @@ provision:
 deploy:
   - uses: npm/command
     with:
-      workingDirectory: .
       args: install
   - uses: azureFunctions/deploy
     with:
-      workingDirectory: .
       # deploy base folder
       distributionPath: ./
       # can be changed to any ignore file location, leave blank will ignore nothing

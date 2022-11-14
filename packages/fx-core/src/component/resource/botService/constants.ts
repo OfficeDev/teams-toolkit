@@ -25,6 +25,7 @@ export class ErrorNames {
   public static readonly MSG_ENDPOINT_UPDATING_ERROR = "MessageEndpointUpdatingError";
   public static readonly COMMAND_EXECUTION_ERROR = "CommandExecutionError";
   public static readonly CALL_APPSTUDIO_API_ERROR = "CallAppStudioAPIError";
+  public static readonly CREATE_BOT_REGISTRATION_API_ERROR = "CreateBotRegistrationApiError";
 
   // User Exceptions
   public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";

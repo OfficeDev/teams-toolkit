@@ -55,7 +55,7 @@ export class CreateOrUpdateM365BotDriver implements StepDriver {
           iconUrl: args.iconUrl ?? "",
           callingEndpoint: "",
         };
-        await AppStudioClient.createBotRegistration(tokenResult.value, botRegistration, false);
+        await AppStudioClient.createBotRegistration(tokenResult.value, botRegistration);
       } else {
         botRegistration.messagingEndpoint = args.messagingEndpoint;
         botRegistration.name = args.name;

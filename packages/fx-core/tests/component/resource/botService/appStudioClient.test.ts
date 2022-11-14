@@ -7,7 +7,10 @@ import { AppStudioClient } from "../../../../src/component/resource/botService/a
 import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
 import * as sinon from "sinon";
 import { IBotRegistration } from "../../../../src/component/resource/botService/appStudio/interfaces/IBotRegistration";
-import { PluginError } from "../../../../src/component/resource/botService/errors";
+import {
+  FailedToCreateBotRegistrationError,
+  PluginError,
+} from "../../../../src/component/resource/botService/errors";
 import { Messages } from "./messages";
 import { UserError } from "@microsoft/teamsfx-api";
 
@@ -66,7 +69,7 @@ describe("Test AppStudio APIs", () => {
       // Act
       try {
         await AppStudioClient.createBotRegistration(accessToken, botReg);
-        chai.assert(retry.calledOnce);
+        chai.assert.isTrue(retry.calledOnce);
       } catch {
         chai.assert.fail(Messages.ShouldNotReachHere);
       }
@@ -95,43 +98,11 @@ describe("Test AppStudio APIs", () => {
 
       // Act
       try {
-        await AppStudioClient.createBotRegistration(accessToken, botReg, true);
+        await AppStudioClient.createBotRegistration(accessToken, botReg);
         chai.assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
-        chai.assert(e instanceof UserError);
-        chai.assert.equal((e as UserError).name, "AlreadyCreatedBotNotExist");
-        chai.assert(retry.calledTwice);
-      }
-    });
-
-    it("create failed with existing id not from state", async () => {
-      // Arrange
-      const accessToken = "anything";
-      const botReg: IBotRegistration = {
-        botId: "anything",
-        name: "anything",
-        description: "",
-        iconUrl: "",
-        messagingEndpoint: "",
-        callingEndpoint: "",
-      };
-
-      const retry = sinon
-        .stub(RetryHandler, "Retry")
-        .onFirstCall()
-        .resolves({
-          status: 404,
-        })
-        .onSecondCall()
-        .rejects();
-
-      // Act
-      try {
-        await AppStudioClient.createBotRegistration(accessToken, botReg, false);
-        chai.assert.fail(Messages.ShouldNotReachHere);
-      } catch (e) {
-        chai.assert.isFalse(e instanceof UserError);
-        chai.assert(retry.calledTwice);
+        chai.assert.isTrue(e instanceof PluginError);
+        chai.assert.isTrue(retry.calledTwice);
       }
     });
 

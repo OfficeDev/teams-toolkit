@@ -38,7 +38,7 @@ import { BotDebugArgs, BotDebugHandler } from "../../../src/component/debugHandl
 import { AadAppCredentials } from "../../../src/component/resource/botService/AadAppCredentials";
 import { MockLogProvider, MockTelemetryReporter, MockUserInteraction } from "../../core/utils";
 import * as utils from "../../../src/component/debugHandler/utils";
-import { AlreadyCreatedBotNotExist } from "../../../src/component/resource/botService/errors";
+import { FailedToCreateBotRegistrationError } from "../../../src/component/resource/botService/errors";
 
 describe("BotDebugHandler", () => {
   const projectPath = path.resolve(__dirname, "data");
@@ -407,7 +407,7 @@ describe("BotDebugHandler", () => {
       });
       sinon
         .stub(AppStudioClient, "createBotRegistration")
-        .throws(AlreadyCreatedBotNotExist(botId, ""));
+        .throws(new FailedToCreateBotRegistrationError(""));
       sinon.stub(AppStudioClient, "updateMessageEndpoint").callsFake(async () => {});
       sinon.stub(environmentManager, "writeEnvState").callsFake(async () => {
         return ok("");

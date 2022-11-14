@@ -58,7 +58,6 @@ export class DepsManager {
     const result: DependencyStatus[] = [];
     let shouldInstall = true;
     for (const type of orderedDeps) {
-      // ensureDependencies is only for < v3 so it does'nt need installOptions
       const status: DependencyStatus = await this.resolve(type, shouldInstall, doctor);
       result.push(status);
 

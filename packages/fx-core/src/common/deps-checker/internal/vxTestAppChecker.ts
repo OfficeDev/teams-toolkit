@@ -1,19 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as fs from "fs-extra";
-import * as path from "path";
 
-import { DepsCheckerError, VxTestAppCheckError } from "../depsError";
+import { DepsCheckerError } from "../depsError";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DepsChecker, DependencyStatus, DepsType, InstallOptions } from "../depsChecker";
+import { DepsChecker, DependencyStatus, DepsType } from "../depsChecker";
 import { isWindows } from "../util";
-import { vxTestAppInstallHelpLink } from "../constant";
 
 // TODO: maybe change app name
 const VxTestAppCommand = isWindows() ? "vxTestApp.exe" : "vxTestApp";
-const VxTestAppDirInProject = path.join(".tools", "vxTestApp");
-const VxTestAppExecutableRelativePath = path.join(isWindows() ? "vxTestApp.exe" : "vxTestApp");
 
 export class VxTestAppChecker implements DepsChecker {
   private readonly _logger: DepsLogger;
@@ -24,22 +19,7 @@ export class VxTestAppChecker implements DepsChecker {
     this._telemetry = telemetry;
   }
 
-  public async resolve(installOptions?: InstallOptions): Promise<DependencyStatus> {
-    const installInfo = await this.getInstallationInfo(installOptions);
-    if (installInfo.isInstalled) {
-      return installInfo;
-    }
-    if (installInfo.error) {
-      return installInfo;
-    }
-    // const globalVersions = await this.getGlobalVersions();
-    // if (installOptions?.version) {
-    //   if (globalVersions.includes(installOptions.version)) {
-    //     await this.createLinkForVersion(installOptions.version, installOptions.projectPath);
-    //     return await this.getInstallationInfo(installOptions);
-    //   }
-    // }
-
+  public async resolve(): Promise<DependencyStatus> {
     return {
       name: DepsType.VxTestApp,
       type: DepsType.VxTestApp,
@@ -47,78 +27,23 @@ export class VxTestAppChecker implements DepsChecker {
       command: VxTestAppCommand,
       details: {
         isLinuxSupported: false,
-        supportedVersions: installOptions?.version === undefined ? [] : [installOptions.version],
+        supportedVersions: [],
       },
-      error: new DepsCheckerError("VxTestAppChecker not implemented", ""),
+      error: new DepsCheckerError("VxTestAppChecker is not implemented", ""),
     };
   }
 
-  public getGlobalVersion() {}
-
-  public async getInstallationInfo(installOptions?: InstallOptions): Promise<DependencyStatus> {
-    if (installOptions?.projectPath === undefined) {
-      this._logger;
-      return VxTestAppChecker.newDependencyStatusForInstallError(
-        new VxTestAppCheckError(
-          "installOptions.projectPath is undefined",
-          vxTestAppInstallHelpLink
-        ),
-        installOptions?.version
-      );
-    }
-    const projectPath: string = installOptions.projectPath;
-    const vxTestAppExecutable = path.join(
-      projectPath,
-      VxTestAppDirInProject,
-      VxTestAppExecutableRelativePath
-    );
-    if (!fs.pathExistsSync(vxTestAppExecutable)) {
-      return VxTestAppChecker.newDependencyStatusForNotInstalled(installOptions.version);
-    }
-    // TODO(aochengwang):
-    //   1. check executable permission for non-Windows OS
-    //   2. check whether version is supported
+  public async getInstallationInfo(): Promise<DependencyStatus> {
     return {
       name: DepsType.VxTestApp,
       type: DepsType.VxTestApp,
-      isInstalled: true,
+      isInstalled: false,
       command: VxTestAppCommand,
       details: {
         isLinuxSupported: false,
-        supportedVersions: installOptions.version === undefined ? [] : [installOptions.version],
+        supportedVersions: [],
       },
       error: undefined,
-    };
-  }
-
-  private static newDependencyStatusForNotInstalled(version?: string): DependencyStatus {
-    return {
-      name: DepsType.VxTestApp,
-      type: DepsType.VxTestApp,
-      isInstalled: false,
-      command: VxTestAppCommand,
-      details: {
-        isLinuxSupported: false,
-        supportedVersions: version === undefined ? [] : [version],
-      },
-      error: undefined,
-    };
-  }
-
-  private static newDependencyStatusForInstallError(
-    error: DepsCheckerError,
-    version?: string
-  ): DependencyStatus {
-    return {
-      name: DepsType.VxTestApp,
-      type: DepsType.VxTestApp,
-      isInstalled: false,
-      command: VxTestAppCommand,
-      details: {
-        isLinuxSupported: false,
-        supportedVersions: version === undefined ? [] : [version],
-      },
-      error: error,
     };
   }
 }

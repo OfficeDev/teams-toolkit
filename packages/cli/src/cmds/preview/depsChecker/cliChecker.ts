@@ -40,10 +40,4 @@ export class CliDepsChecker {
         return false;
     }
   }
-
-  public static async getDependency(dep: DepsType): Promise<Dependency> {
-    // Currently only VxTestAppChecker needs installOptions but is not supported in CLI.
-    // So always pass undefined to installOptions.
-    return { depsType: dep, installOptions: undefined };
-  }
 }

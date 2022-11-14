@@ -849,7 +849,7 @@ async function checkNode(
       try {
         VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
         const nodeStatus = (
-          await depsManager.ensureDependencies([{ depsType: nodeDep }], {
+          await depsManager.ensureDependencies([nodeDep], {
             fastFail: false,
             doctor: true,
           })
@@ -891,19 +891,18 @@ async function checkDependency(
       `${prefix} ${ProgressMessage[nonNodeDep.depsType]} ...`
     );
 
-    const depsStatus = await localTelemetryReporter.runWithTelemetryGeneric(
+    const dep = await localTelemetryReporter.runWithTelemetryGeneric(
       TelemetryEvent.DebugPrereqsCheckDependencies,
       async (ctx: TelemetryContext) => {
         ctx.properties[TelemetryProperty.DebugPrereqsDepsType] = nonNodeDep.depsType;
-        return await depsManager.ensureDependencies([nonNodeDep], {
-          fastFail: false,
-          doctor: true,
-        });
+        return await depsManager.ensureDependency(
+          nonNodeDep.depsType,
+          true,
+          nonNodeDep.installOptions
+        );
       },
-      (result: DependencyStatus[]) => {
-        // This error object is only for telemetry.
-        // Input is one dependency, so result is at most one.
-        const error = result.length > 0 && result[0].error;
+      (result: DependencyStatus) => {
+        const error = result.error;
         if (error instanceof DepsCheckerError) {
           // TODO: Currently there is no user/system error info from DepsCheckerError.
           // So assuming UserError for now.
@@ -920,10 +919,6 @@ async function checkDependency(
       additionalTelemetryProperties
     );
 
-    if (depsStatus.length == 0) {
-      throw new Error("Deps checker result is not returned.");
-    }
-    const dep = depsStatus[0];
     return {
       checker: dep.name,
       result: dep.isInstalled

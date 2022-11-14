@@ -87,10 +87,7 @@ export class VSCodeDepsChecker {
       return [];
     }
     const options: DepsOptions = { fastFail: true };
-    const dependencies: Dependency[] = deps.map((dep) => {
-      return { depsType: dep, installOptions: undefined };
-    });
-    return await this.depsManager.ensureDependencies(dependencies, options);
+    return await this.depsManager.ensureDependencies(deps, options);
   }
 
   private async handleLinux(depsStatus: DependencyStatus[]): Promise<boolean> {

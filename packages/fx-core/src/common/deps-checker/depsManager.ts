@@ -3,7 +3,7 @@
 
 import { DepsLogger, EmptyLogger } from "./depsLogger";
 import { DepsTelemetry } from "./depsTelemetry";
-import { Dependency, DependencyStatus, DepsChecker, DepsType } from "./depsChecker";
+import { Dependency, DependencyStatus, DepsChecker, DepsType, InstallOptions } from "./depsChecker";
 import { CheckerFactory } from "./checkerFactory";
 
 export type DepsOptions = {
@@ -47,18 +47,23 @@ export class DepsManager {
    * @param options If fastFail is false, it will continue even if one of the dependencies fails to install. Default value is true.
    */
   public async ensureDependencies(
-    dependencies: Dependency[],
+    dependencies: DepsType[],
     { fastFail = true, doctor = false }: DepsOptions
   ): Promise<DependencyStatus[]> {
     if (!dependencies || dependencies.length == 0) {
       return [];
     }
 
-    const orderedDeps: Dependency[] = DepsManager.sortDependenciesBySequence(dependencies);
+    const orderedDeps: DepsType[] = DepsManager.sortBySequence(dependencies);
     const result: DependencyStatus[] = [];
     let shouldInstall = true;
     for (const type of orderedDeps) {
-      const status: DependencyStatus = await this.resolve(type, shouldInstall, doctor);
+      // ensureDependencies is only for < v3 so it does'nt need installOptions
+      const status: DependencyStatus = await this.resolve(
+        { depsType: type, installOptions: undefined },
+        shouldInstall,
+        doctor
+      );
       result.push(status);
 
       if (fastFail && !status.isInstalled) {
@@ -66,6 +71,14 @@ export class DepsManager {
       }
     }
     return result;
+  }
+
+  public async ensureDependency(
+    depsType: DepsType,
+    doctor = false,
+    options?: InstallOptions
+  ): Promise<DependencyStatus> {
+    return await this.resolve({ depsType, installOptions: options }, true, doctor);
   }
 
   /**

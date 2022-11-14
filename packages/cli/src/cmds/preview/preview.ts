@@ -1288,9 +1288,8 @@ export default class Preview extends YargsCommand {
           const bar = CLIUIInstance.createProgressBar(DepsDisplayName[dep], 1);
           await bar.start(ProgressMessage[dep]);
           await bar.next(ProgressMessage[dep]);
-          const dependency = await CliDepsChecker.getDependency(dep);
           const depStatus = (
-            await depsManager.ensureDependencies([dependency], {
+            await depsManager.ensureDependencies([dep], {
               fastFail: false,
               doctor: true,
             })
@@ -1375,7 +1374,7 @@ export default class Preview extends YargsCommand {
 
     try {
       nodeStatus = (
-        await depsManager.ensureDependencies([{ depsType: node }], {
+        await depsManager.ensureDependencies([node], {
           fastFail: false,
           doctor: true,
         })

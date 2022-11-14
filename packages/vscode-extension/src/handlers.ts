@@ -292,7 +292,7 @@ export async function getIsFromSample(projectPath?: string) {
 }
 
 export async function getIsM365(): Promise<boolean | undefined> {
-  if (core) {
+  if (core && isV3Enabled()) {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
     const res = await core.getProjectConfig(input);

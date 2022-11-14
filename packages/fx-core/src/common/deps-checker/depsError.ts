@@ -67,11 +67,3 @@ export class BackendExtensionsInstallError extends DepsCheckerError {
     Object.setPrototypeOf(this, BackendExtensionsInstallError.prototype);
   }
 }
-
-export class VxTestAppCheckError extends DepsCheckerError {
-  constructor(message: string, helpLink: string) {
-    super(message, helpLink);
-
-    Object.setPrototypeOf(this, VxTestAppCheckError.prototype);
-  }
-}

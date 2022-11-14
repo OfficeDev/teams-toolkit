@@ -149,7 +149,7 @@ describe("Generator happy path", async () => {
     const language = "ts";
     const inputDir = path.join(tmpDir, "input");
     await fs.ensureDir(path.join(inputDir, templateName));
-    const fileData = "{{appName}}";
+    const fileData = "{%appName%}";
     await fs.writeFile(path.join(inputDir, templateName, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);

@@ -13,7 +13,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
 import { DeployConstant } from "../../../constant/deployConstant";
-import { ProgressMessages } from "../../../messages";
+import { getLocalizedMessage, ProgressMessages } from "../../../messages";
 
 const ACTION_NAME = "azureAppService/deploy";
 
@@ -47,7 +47,7 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
     await this.progressBar?.end(true);
     if (cost > DeployConstant.DEPLOY_OVER_TIME) {
       await this.context.logProvider?.info(
-        `Deploying to Azure App Service takes a long time. Consider referring to this document to optimize your deployment: 
+        `${getLocalizedMessage("driver.deploy.notice.deployAcceleration")}
         https://learn.microsoft.com/en-us/azure/app-service/deploy-run-package`
       );
     }

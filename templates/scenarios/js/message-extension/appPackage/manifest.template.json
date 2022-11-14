@@ -11,16 +11,16 @@
         "termsOfUseUrl": "https://www.example.com/privacy"
     },
     "icons": {
-        "color": "{{config.manifest.icons.color}}",
-        "outline": "{{config.manifest.icons.outline}}"
+        "color": "resources/color.png",
+        "outline": "resources/outline.png"
     },
     "name": {
-        "short": "{{config.manifest.appName.short}}",
-        "full": "{{config.manifest.appName.full}}"
+        "short": "Message Extension",
+        "full": "full name for Message Extension"
     },
     "description": {
-        "short": "{{config.manifest.description.short}}",
-        "full": "{{config.manifest.description.full}}"
+        "short": "short description of message extension",
+        "full": "full description of message extension"
     },
     "accentColor": "#FFFFFF",
     "bots": [],

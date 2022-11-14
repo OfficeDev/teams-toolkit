@@ -181,7 +181,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
               url = url.replace(localAppIdPlaceholder, appId);
               break;
             case SideloadingType.remote:
-              url.replace(appIdPlaceholder, appId);
+              url = url.replace(appIdPlaceholder, appId);
               break;
             case SideloadingType.m365Local:
               {

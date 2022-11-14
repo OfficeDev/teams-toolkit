@@ -11,7 +11,7 @@
       },
       "hotReloadProfile": "aspnetcore"
     },
-    "{{ProjectName}}": {
+    "{%ProjectName%}": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,

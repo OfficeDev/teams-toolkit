@@ -1,4 +1,3 @@
-{{=<% %>=}}
 {
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
     "manifestVersion": "1.14",
@@ -26,9 +25,9 @@
     "accentColor": "#004578",
     "staticTabs": [
         {
-            "entityId": "<%componentId%>",
-            "name": "<%webpartName%>",
-            "contentUrl": "https://{teamSiteDomain}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest=/_layouts/15/teamshostedapp.aspx%3Fteams%26personal%26componentId=<%componentId%>%26forceLocale={locale}",
+            "entityId": "{%componentId%}",
+            "name": "{%webpartName%}",
+            "contentUrl": "https://{teamSiteDomain}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest=/_layouts/15/teamshostedapp.aspx%3Fteams%26personal%26componentId={%componentId%}%26forceLocale={locale}",
             "websiteUrl": "https://products.office.com/en-us/sharepoint/collaboration",
             "scopes": [
                 "personal"
@@ -37,7 +36,7 @@
     ],
     "configurableTabs": [
         {
-            "configurationUrl": "https://{teamSiteDomain}{teamSitePath}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest={teamSitePath}/_layouts/15/teamshostedapp.aspx%3FopenPropertyPane=true%26teams%26componentId=<%componentId%>%26forceLocale={locale}",
+            "configurationUrl": "https://{teamSiteDomain}{teamSitePath}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest={teamSitePath}/_layouts/15/teamshostedapp.aspx%3FopenPropertyPane=true%26teams%26componentId={%componentId%}%26forceLocale={locale}",
             "canUpdateConfiguration": true,
             "scopes": [
                 "team"
@@ -62,4 +61,3 @@
         "id": "00000003-0000-0ff1-ce00-000000000000"
     }
 }
-<%={{ }}=%>

@@ -1,6 +1,6 @@
 using Microsoft.Bot.Builder;
 
-namespace {{SafeProjectName}}
+namespace {%SafeProjectName%}
 {
     /// <summary>
     /// An empty bot handler.

@@ -13,7 +13,7 @@
     }
     //// Uncomment following profile to debug project only (without launching Teams)
     //,
-    //"{{ProjectName}}": {
+    //"{%ProjectName%}": {
     //  "commandName": "Project",
     //  "commandLineArgs": "host start --port 5130 --pause-on-error",
     //  "dotnetRunMessages": "true",

@@ -5,7 +5,7 @@ using Microsoft.Bot.Schema.Teams;
 
 using Newtonsoft.Json.Linq;
 
-namespace {{SafeProjectName}}.Bot;
+namespace {%SafeProjectName%}.Bot;
 
 public class TeamsMessageExtension : TeamsActivityHandler
 {
@@ -138,7 +138,7 @@ public class TeamsMessageExtension : TeamsActivityHandler
     }
     protected override Task<MessagingExtensionResponse> OnTeamsMessagingExtensionSelectItemAsync(ITurnContext<IInvokeActivity> turnContext, JObject query, CancellationToken cancellationToken)
     {
-        // The Preview card's Tap should have a Value property assigned, this will be returned to the bot in this event. 
+        // The Preview card's Tap should have a Value property assigned, this will be returned to the bot in this event.
         var (packageId, version, description, projectUrl, iconUrl) = query.ToObject<(string, string, string, string, string)>();
 
         // We take every row of the results and wrap them in cards wrapped in in MessagingExtensionAttachment objects.
@@ -177,7 +177,7 @@ public class TeamsMessageExtension : TeamsActivityHandler
         });
     }
 
-    // Generate a set of substrings to illustrate the idea of a set of results coming back from a query. 
+    // Generate a set of substrings to illustrate the idea of a set of results coming back from a query.
     private async Task<IEnumerable<(string, string, string, string, string)>> FindPackages(string text)
     {
         var obj = JObject.Parse(await (new HttpClient()).GetStringAsync($"https://azuresearch-usnc.nuget.org/query?q=id:{text}"));

@@ -83,7 +83,6 @@ export class BotRegistration {
     aadDisplayName: string,
     botName: string,
     botConfig?: BotAadCredentials,
-    isIdFromState?: boolean,
     botAuthType: BotAuthType = BotAuthType.AADApp,
     logProvider?: LogProvider
   ): Promise<Result<BotAadCredentials, FxError>> {

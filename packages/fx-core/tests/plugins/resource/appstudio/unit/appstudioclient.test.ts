@@ -8,6 +8,7 @@ import axios from "axios";
 import { v4 as uuid } from "uuid";
 import { AppStudioClient } from "../../../../../src/component/resource/appManifest/appStudioClient";
 import { AppDefinition } from "../../../../../src/component/resource/appManifest/interfaces/appDefinition";
+import { AppUser } from "../../../../../src/component/resource/appManifest/interfaces/appUser";
 import { AppStudioError } from "../../../../../src/component/resource/appManifest/errors";
 import { TelemetryUtils } from "../../../../../src/component/resource/appManifest/utils/telemetry";
 import { RetryHandler } from "../../../../../src/component/resource/appManifest/utils/utils";
@@ -327,6 +328,41 @@ describe("App Studio API Test", () => {
         await AppStudioClient.publishTeamsAppUpdate("", Buffer.from(""), appStudioToken);
       } catch (error) {
         chai.assert.include(error.message, xCorrelationId);
+      }
+    });
+  });
+
+  describe("grantPermission", () => {
+    it("API Failure", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "error",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+      sinon.stub(fakeAxiosInstance, "get").resolves({ data: appDef });
+
+      const appUser: AppUser = {
+        tenantId: uuid(),
+        aadId: uuid(),
+        displayName: "fake",
+        userPrincipalName: "fake",
+        isAdministrator: false,
+      };
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any as PluginContext;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.grantPermission(appDef.teamsAppId!, appStudioToken, appUser);
+      } catch (e) {
+        chai.assert.equal(e.name, error.name);
       }
     });
   });

@@ -14,7 +14,6 @@ export class LocalBotRegistration extends BotRegistration {
     aadDisplayName: string,
     botName: string,
     botConfig?: BotAadCredentials,
-    isIdFromState?: boolean,
     botAuthType: BotAuthType = BotAuthType.AADApp,
     logProvider?: LogProvider
   ): Promise<Result<BotAadCredentials, FxError>> {
@@ -50,7 +49,7 @@ export class LocalBotRegistration extends BotRegistration {
       messagingEndpoint: "",
       callingEndpoint: "",
     };
-    await AppStudioClient.createBotRegistration(appStudioToken, initialBotReg, isIdFromState);
+    await AppStudioClient.createBotRegistration(appStudioToken, initialBotReg);
     logProvider?.info(Messages.SuccessfullyProvisionedBotRegistration);
     return ok(botAadCredentials);
   }

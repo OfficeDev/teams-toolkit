@@ -16,7 +16,7 @@ import { setTools } from "../../src/core/globalVars";
 import { CoreQuestionNames, ScratchOptionNo, ScratchOptionYes } from "../../src/core/question";
 import { MockTools, randomAppName } from "../core/utils";
 import { assert } from "chai";
-import { TabOptionItem } from "../../src/component/constants";
+import { M365SsoLaunchPageOptionItem, TabOptionItem } from "../../src/component/constants";
 import { FxCore } from "../../src/core/FxCore";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { YamlParser } from "../../src/component/configManager/parser";
@@ -85,6 +85,25 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);
     assert.isTrue(res2.isOk());
+  });
+
+  it("create m365 project from scratch", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes.id,
+      [CoreQuestionNames.Capabilities]: M365SsoLaunchPageOptionItem.id,
+      [CoreQuestionNames.ProgrammingLanguage]: "typescript",
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+    assert.isTrue(res2.isOk());
+    assert.isTrue(inputs.isM365);
   });
 
   it("create project for app with tab features from Developer Portal", async () => {

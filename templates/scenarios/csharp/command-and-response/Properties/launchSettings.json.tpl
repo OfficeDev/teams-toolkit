@@ -13,7 +13,7 @@
     }
     //// Uncomment following profile to debug project only (without launching Teams)
     //,
-    //"{{ProjectName}}": {
+    //"{%ProjectName%}": {
     //  "commandName": "Project",
     //  "dotnetRunMessages": "true",
     //  "applicationUrl": "https://localhost:7130;http://localhost:5130",

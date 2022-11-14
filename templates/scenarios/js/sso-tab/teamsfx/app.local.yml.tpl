@@ -59,6 +59,5 @@ deploy:
 
   - uses: npm/command # Run npm command
     with:
-      workingDirectory: .
       args: install --no-audit
 <%={{ }}=%>

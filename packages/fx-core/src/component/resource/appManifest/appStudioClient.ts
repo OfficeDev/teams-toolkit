@@ -402,6 +402,7 @@ export namespace AppStudioClient {
       if (err?.message?.indexOf("Request failed with status code 400") >= 0) {
         await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app.userList);
       } else {
+        wrapException(err, APP_STUDIO_API_NAMES.UPDATE_OWNER);
         throw err;
       }
     }

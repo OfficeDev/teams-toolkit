@@ -38,8 +38,10 @@ import { SUPPORTED_SPFX_VERSION } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugCommonUtils from "../../src/debug/commonUtils";
+import * as teamsAppInstallation from "../../src/debug/teamsAppInstallation";
 import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
 import * as debugProvider from "../../src/debug/teamsfxDebugProvider";
+import * as taskHandler from "../../src/debug/teamsfxTaskHandler";
 import { ExtensionErrors } from "../../src/error";
 import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
@@ -1303,6 +1305,63 @@ describe("handlers", () => {
       chai.assert.equal(createProgressBar.calledOnce, true);
       chai.assert.equal(startProgress.calledOnce, true);
       chai.assert.equal(endProgress.calledOnceWithExactly(true), true);
+    });
+  });
+
+  describe("installAppInTeams", () => {
+    beforeEach(() => {
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("v3: happ path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "getV3TeamsAppId").returns(Promise.resolve("appId"));
+      sinon
+        .stub(teamsAppInstallation, "showInstallAppInTeamsMessage")
+        .returns(Promise.resolve(true));
+      const result = await handlers.installAppInTeams();
+      chai.assert.equal(result, undefined);
+    });
+
+    it("v3: user cancel", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "getV3TeamsAppId").returns(Promise.resolve("appId"));
+      sinon
+        .stub(teamsAppInstallation, "showInstallAppInTeamsMessage")
+        .returns(Promise.resolve(false));
+      sinon.stub(taskHandler, "terminateAllRunningTeamsfxTasks").callsFake(() => {});
+      sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
+      const result = await handlers.installAppInTeams();
+      chai.assert.equal(result, "1");
+    });
+
+    it("v2: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "getDebugConfig").returns(
+        Promise.resolve({
+          appId: "appId",
+          env: "local",
+        })
+      );
+      sinon
+        .stub(teamsAppInstallation, "showInstallAppInTeamsMessage")
+        .returns(Promise.resolve(true));
+      const result = await handlers.installAppInTeams();
+      chai.assert.equal(result, undefined);
+    });
+
+    it("v2: no appId", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "getDebugConfig").returns(Promise.resolve(undefined));
+      sinon.stub(handlers, "showError").callsFake(async () => {});
+      sinon.stub(taskHandler, "terminateAllRunningTeamsfxTasks").callsFake(() => {});
+      sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
+      const result = await handlers.installAppInTeams();
+      chai.assert.equal(result, "1");
     });
   });
 });

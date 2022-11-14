@@ -5,7 +5,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as constants from "./constants";
-import { ConfigFolderName, InputConfigsFolderName, UserError } from "@microsoft/teamsfx-api";
+import { UserError } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { core, getSystemInputs, showError } from "../handlers";
@@ -16,8 +16,8 @@ import {
   getProjectComponents as coreGetProjectComponents,
 } from "@microsoft/teamsfx-core/build/common/local";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { getResourceGroupInPortal } from "@microsoft/teamsfx-core/build/common/tools";
-import { PluginNames, GLOBAL_CONFIG } from "@microsoft/teamsfx-core/build/component/constants";
+import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "../error";
@@ -234,70 +234,27 @@ export async function getLocalTeamsAppId(): Promise<string | undefined> {
 
 export async function getLocalBotId(): Promise<string | undefined> {
   try {
-    const result = environmentManager.getEnvStateFilesPath(
-      environmentManager.getLocalEnvName(),
-      globalVariables.workspaceUri!.fsPath
-    );
-    const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
-    return envJson[PluginNames.BOT].botId;
-  } catch {
-    return undefined;
-  }
-}
-
-export async function getBotId(env: string): Promise<string | undefined> {
-  try {
-    if (env === environmentManager.getLocalEnvName()) {
-      return await getLocalBotId();
-    }
-
-    const result = environmentManager.getEnvStateFilesPath(
-      env,
-      globalVariables.workspaceUri!.fsPath
-    );
-    const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
-    return envJson[PluginNames.BOT].botId;
-  } catch {
-    return undefined;
-  }
-}
-
-async function getResourceBaseName(env: string): Promise<string | undefined> {
-  try {
-    const azureParametersFilePath = path.join(
-      globalVariables.workspaceUri!.fsPath,
-      `.${ConfigFolderName}`,
-      InputConfigsFolderName,
-      `azure.parameters.${env}.json`
-    );
-    const azureParametersJson = JSON.parse(fs.readFileSync(azureParametersFilePath, "utf-8"));
-    let result: string = azureParametersJson.parameters.provisionParameters.value.resourceBaseName;
-    const placeholder = "{{state.solution.resourceNameSuffix}}";
-    if (result.includes(placeholder)) {
-      const envStateFilesPath = environmentManager.getEnvStateFilesPath(
-        env,
+    if (isV3Enabled()) {
+      const result = await envUtil.readEnv(
+        globalVariables.workspaceUri!.fsPath,
+        environmentManager.getLocalEnvName(),
+        false
+      );
+      if (result.isErr()) {
+        return undefined;
+      }
+      return result.value.BOT_ID;
+    } else {
+      const result = environmentManager.getEnvStateFilesPath(
+        environmentManager.getLocalEnvName(),
         globalVariables.workspaceUri!.fsPath
       );
-      const envJson = JSON.parse(fs.readFileSync(envStateFilesPath.envState, "utf8"));
-      result = result.replace(placeholder, envJson[PluginNames.SOLUTION].resourceNameSuffix);
+      const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
+      return envJson[PluginNames.BOT].botId;
     }
-    return result;
   } catch {
     return undefined;
   }
-}
-
-export async function getBotOutlookChannelLink(env: string): Promise<string> {
-  const result = environmentManager.getEnvStateFilesPath(env, globalVariables.workspaceUri!.fsPath);
-  const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
-  const tenantId = envJson[GLOBAL_CONFIG].tenantId;
-  const subscriptionId = envJson[GLOBAL_CONFIG].subscriptionId;
-  const resourceGroupName = envJson[GLOBAL_CONFIG].resourceGroupName;
-
-  const resourceGroupLink = getResourceGroupInPortal(subscriptionId, tenantId, resourceGroupName);
-  const resourceBaseName = await getResourceBaseName(env);
-
-  return `${resourceGroupLink}/providers/Microsoft.BotService/botServices/${resourceBaseName}/channelsReact`;
 }
 
 export async function loadPackageJson(path: string): Promise<any> {

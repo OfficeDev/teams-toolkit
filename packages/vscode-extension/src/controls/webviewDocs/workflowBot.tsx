@@ -1,5 +1,5 @@
-import "./github.scss";
-import "./document.scss";
+import "./components/github.scss";
+import "./components/document.scss";
 
 import * as React from "react";
 
@@ -10,9 +10,9 @@ import {
   TelemetryTriggerFrom,
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
-import CodeSnippet from "./codeSnippet";
-import CollapsibleStep from "./collapsibleStep";
-import ExternalLink from "./externalLink";
+import CodeSnippet from "./components/codeSnippet";
+import CollapsibleStep from "./components/collapsibleStep";
+import ExternalLink from "./components/externalLink";
 import { useEffect } from "react";
 import ResponseToCommand from "../../../img/webview/guide/responds-to-command.png";
 import ResponseToCardAction from "../../../img/webview/guide/responds-to-card-action.png";

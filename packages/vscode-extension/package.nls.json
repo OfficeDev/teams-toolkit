@@ -417,7 +417,7 @@
     "teamstoolkit.webview.invalidFolder": "Invalid folder",
     "teamstoolkit.webview.samplePageTitle": "Samples",
     "teamstoolkit.webview.surveyPageTitle": "Teams Toolkit Survey",
-    "teamstoolkit.webview.preparem365PageTitle": "Prepare a qualified Microsoft 365 Account",
+    "teamstoolkit.webview.accountHelp": "Account help",
     "teamstoolkit.webview.unzipPackage": "Unzipping the sample package",
     "teamstoolkit.taskDefinitions.command.prerequisites.description": "Validate and install prerequisites.\n See https://aka.ms/teamsfx-check-prerequisites-task for how to customize following args.",
     "teamstoolkit.taskDefinitions.command.tab.description": "Set up tab.\n See https://aka.ms/teamsfx-debug-set-up-tab-task for how to customize following args.",

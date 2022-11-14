@@ -7,9 +7,9 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTriggerFrom,
-} from "../../telemetry/extTelemetryEvents";
-import { Commands } from "../Commands";
-import { Chevron } from "../resources";
+} from "../../../telemetry/extTelemetryEvents";
+import { Commands } from "../../Commands";
+import { Chevron } from "../../resources";
 
 function StepTitle(props: { step: number; title: string }) {
   return (

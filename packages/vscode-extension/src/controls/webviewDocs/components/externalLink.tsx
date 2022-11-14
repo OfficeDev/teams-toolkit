@@ -4,9 +4,9 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTriggerFrom,
-} from "../../telemetry/extTelemetryEvents";
-import { Commands } from "../Commands";
-import { ExternalLink as ExternalLinkIcon } from "../resources";
+} from "../../../telemetry/extTelemetryEvents";
+import { Commands } from "../../Commands";
+import { ExternalLink as ExternalLinkIcon } from "../../resources";
 
 export default function ExternalLink(props: { title: string; link: string }) {
   const onOpenLink = () => {

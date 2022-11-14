@@ -293,9 +293,21 @@
 
 .markdown-body blockquote {
   margin: 0;
-  padding: 0 1em;
-  color: #8b949e;
-  border-left: .25em solid #30363d;
+  padding: 0.5em 1em;
+  background-color: var(--vscode-textBlockQuote-background);
+  border-left: .25em solid var(--vscode-textBlockQuote-border);
+}
+
+.markdown-body button {
+  background-color: var(--vscode-button-background);
+  border: 0;
+  padding: 0.5em 1em;
+  border-radius: 2px;
+  font-size: 16px;
+}
+
+.markdown-body button:hover {
+  background-color: var(--vscode-button-hoverBackground);
 }
 
 .markdown-body ul,

@@ -3,9 +3,9 @@
 import { DepsCheckerError } from "./depsError";
 
 export interface DepsChecker {
-  getInstallationInfo(): Promise<DependencyStatus>;
+  getInstallationInfo(installOptions?: InstallOptions): Promise<DependencyStatus>;
 
-  resolve(): Promise<DependencyStatus>;
+  resolve(installOptions?: InstallOptions): Promise<DependencyStatus>;
 }
 
 export type DependencyStatus = {
@@ -39,4 +39,16 @@ export enum DepsType {
   FuncCoreTools = "func-core-tools",
   Ngrok = "ngrok",
   VxTestApp = "vx-test-app", // TODO(aochengwang): maybe change app name
+}
+
+export interface BaseInstallOptions {
+  projectPath?: string;
+  version?: string;
+}
+
+export type InstallOptions = BaseInstallOptions;
+
+export interface Dependency {
+  depsType: DepsType;
+  installOptions?: InstallOptions;
 }

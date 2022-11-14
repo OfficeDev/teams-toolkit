@@ -4,7 +4,7 @@
 import { DepsCheckerError } from "../depsError";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DepsChecker, DependencyStatus, DepsType } from "../depsChecker";
+import { DepsChecker, DependencyStatus, DepsType, InstallOptions } from "../depsChecker";
 import { isWindows } from "../util";
 
 // TODO: maybe change app name
@@ -19,7 +19,7 @@ export class VxTestAppChecker implements DepsChecker {
     this._telemetry = telemetry;
   }
 
-  public async resolve(): Promise<DependencyStatus> {
+  public async resolve(installOptions?: InstallOptions): Promise<DependencyStatus> {
     return {
       name: DepsType.VxTestApp,
       type: DepsType.VxTestApp,
@@ -33,7 +33,7 @@ export class VxTestAppChecker implements DepsChecker {
     };
   }
 
-  public async getInstallationInfo(): Promise<DependencyStatus> {
+  public async getInstallationInfo(installOptions?: InstallOptions): Promise<DependencyStatus> {
     return {
       name: DepsType.VxTestApp,
       type: DepsType.VxTestApp,

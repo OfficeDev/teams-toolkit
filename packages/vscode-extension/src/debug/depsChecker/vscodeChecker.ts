@@ -3,6 +3,7 @@
 
 import {
   defaultHelpLink,
+  Dependency,
   DependencyStatus,
   DepsCheckerEvent,
   DepsLogger,
@@ -79,12 +80,17 @@ export class VSCodeDepsChecker {
     return (await this.depsManager.getStatus([dep]))[0];
   }
 
+  // ensure() is only used by SPFx and old projects (before local debug customization)
+  // So it does need dep.installOptions
   private async ensure(deps: DepsType[]): Promise<DependencyStatus[]> {
     if (deps.length == 0) {
       return [];
     }
     const options: DepsOptions = { fastFail: true };
-    return await this.depsManager.ensureDependencies(deps, options);
+    const dependencies: Dependency[] = deps.map((dep) => {
+      return { depsType: dep, installOptions: undefined };
+    });
+    return await this.depsManager.ensureDependencies(dependencies, options);
   }
 
   private async handleLinux(depsStatus: DependencyStatus[]): Promise<boolean> {

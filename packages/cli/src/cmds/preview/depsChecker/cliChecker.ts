@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { Dependency, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import {
   isNodeCheckerEnabled,
   isDotnetCheckerEnabled,
@@ -39,5 +39,11 @@ export class CliDepsChecker {
       default:
         return false;
     }
+  }
+
+  public static async getDependency(dep: DepsType): Promise<Dependency> {
+    // Currently only VxTestAppChecker needs installOptions but is not supported in CLI.
+    // So always pass undefined to installOptions.
+    return { depsType: dep, installOptions: undefined };
   }
 }

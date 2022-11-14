@@ -56,7 +56,11 @@ describe("All checkers E2E test", async () => {
       this.skip();
     }
 
-    const depsTypes = [DepsType.AzureNode, DepsType.FuncCoreTools, DepsType.Dotnet];
+    const depsTypes = [
+      { depsType: DepsType.AzureNode },
+      { depsType: DepsType.FuncCoreTools },
+      { depsType: DepsType.Dotnet },
+    ];
     const depsManger = new DepsManager(logger, new TestTelemetry());
 
     const depsStatus = await depsManger.ensureDependencies(depsTypes, { fastFail: true });
@@ -102,7 +106,7 @@ describe("All checkers E2E test", async () => {
     chai.assert.isTrue(await isNonEmptyDir(backendOutputPath));
 
     // verify get deps status
-    const depsStatusFromQuery = await depsManger.getStatus(depsTypes);
+    const depsStatusFromQuery = await depsManger.getStatusWithInstallOptions(depsTypes);
     for (const status of depsStatusFromQuery) {
       chai.assert.isTrue(status.isInstalled);
     }
@@ -129,7 +133,12 @@ describe("All checkers E2E test", async () => {
       this.skip();
     }
 
-    const depsTypes = [DepsType.Ngrok, DepsType.AzureNode, DepsType.FuncCoreTools, DepsType.Dotnet];
+    const depsTypes = [
+      { depsType: DepsType.Ngrok },
+      { depsType: DepsType.AzureNode },
+      { depsType: DepsType.FuncCoreTools },
+      { depsType: DepsType.Dotnet },
+    ];
     const depsManger = new DepsManager(logger, new TestTelemetry());
     const depsStatus = await depsManger.ensureDependencies(depsTypes, { fastFail: true });
 
@@ -179,7 +188,12 @@ describe("All checkers E2E test", async () => {
       this.skip();
     }
 
-    const depsTypes = [DepsType.Ngrok, DepsType.AzureNode, DepsType.FuncCoreTools, DepsType.Dotnet];
+    const depsTypes = [
+      { depsType: DepsType.Ngrok },
+      { depsType: DepsType.AzureNode },
+      { depsType: DepsType.FuncCoreTools },
+      { depsType: DepsType.Dotnet },
+    ];
     const depsManger = new DepsManager(logger, new TestTelemetry());
 
     const depsStatus = await depsManger.ensureDependencies(depsTypes, { fastFail: true });
@@ -235,7 +249,12 @@ describe("All checkers E2E test", async () => {
       this.skip();
     }
 
-    const depsTypes = [DepsType.Ngrok, DepsType.AzureNode, DepsType.FuncCoreTools, DepsType.Dotnet];
+    const depsTypes = [
+      { depsType: DepsType.Ngrok },
+      { depsType: DepsType.AzureNode },
+      { depsType: DepsType.FuncCoreTools },
+      { depsType: DepsType.Dotnet },
+    ];
     const depsManger = new DepsManager(logger, new TestTelemetry());
     const depsStatus = await depsManger.ensureDependencies(depsTypes, { fastFail: true });
 

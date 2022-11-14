@@ -3,7 +3,7 @@
 
 import { DepsLogger, EmptyLogger } from "./depsLogger";
 import { DepsTelemetry } from "./depsTelemetry";
-import { DependencyStatus, DepsChecker, DepsType } from "./depsChecker";
+import { Dependency, DependencyStatus, DepsChecker, DepsType } from "./depsChecker";
 import { CheckerFactory } from "./checkerFactory";
 
 export type DepsOptions = {
@@ -47,14 +47,14 @@ export class DepsManager {
    * @param options If fastFail is false, it will continue even if one of the dependencies fails to install. Default value is true.
    */
   public async ensureDependencies(
-    dependencies: DepsType[],
+    dependencies: Dependency[],
     { fastFail = true, doctor = false }: DepsOptions
   ): Promise<DependencyStatus[]> {
     if (!dependencies || dependencies.length == 0) {
       return [];
     }
 
-    const orderedDeps: DepsType[] = DepsManager.sortBySequence(dependencies);
+    const orderedDeps: Dependency[] = DepsManager.sortDependenciesBySequence(dependencies);
     const result: DependencyStatus[] = [];
     let shouldInstall = true;
     for (const type of orderedDeps) {
@@ -68,32 +68,44 @@ export class DepsManager {
     return result;
   }
 
+  /**
+   * @deprecated
+   * Get status without installOptions. Only used in legacy code.
+   */
   public async getStatus(depsTypes: DepsType[]): Promise<DependencyStatus[]> {
-    if (!depsTypes || depsTypes.length == 0) {
+    return this.getStatusWithInstallOptions(
+      depsTypes.map((dep) => {
+        return { depsType: dep, installOptions: undefined };
+      })
+    );
+  }
+
+  public async getStatusWithInstallOptions(deps: Dependency[]): Promise<DependencyStatus[]> {
+    if (!deps || deps.length == 0) {
       return [];
     }
     const result: DependencyStatus[] = [];
-    for (const type of depsTypes) {
-      result.push(await this.resolve(type, false));
+    for (const dep of deps) {
+      result.push(await this.resolve(dep, false));
     }
     return result;
   }
 
   private async resolve(
-    type: DepsType,
+    dependency: Dependency,
     shouldInstall: boolean,
     doctor = false
   ): Promise<DependencyStatus> {
     const checker: DepsChecker = CheckerFactory.createChecker(
-      type,
+      dependency.depsType,
       doctor ? this.emptyLogger : this.logger,
       this.telemetry
     );
 
     if (shouldInstall) {
-      return await checker.resolve();
+      return await checker.resolve(dependency.installOptions);
     } else {
-      return await checker.getInstallationInfo();
+      return await checker.getInstallationInfo(dependency.installOptions);
     }
   }
 
@@ -101,5 +113,14 @@ export class DepsManager {
     return dependencies
       .filter((value) => value != null)
       .sort((a, b) => DepsManager.depsOrders.indexOf(a) - DepsManager.depsOrders.indexOf(b));
+  }
+
+  public static sortDependenciesBySequence(dependencies: Dependency[]): Dependency[] {
+    return dependencies
+      .filter((value) => value != null)
+      .sort(
+        (a, b) =>
+          DepsManager.depsOrders.indexOf(a.depsType) - DepsManager.depsOrders.indexOf(b.depsType)
+      );
   }
 }

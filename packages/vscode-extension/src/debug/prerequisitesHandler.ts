@@ -37,6 +37,7 @@ import {
   validationSettingsHelpLink,
   NodeNotSupportedError,
   NodeNotRecommendedError,
+  Dependency,
 } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { LocalEnvProvider } from "@microsoft/teamsfx-core/build/component/debugHandler";
 import {
@@ -91,7 +92,10 @@ import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { Step } from "./commonUtils";
-import { PrerequisiteArgVxTestApp } from "./taskTerminal/prerequisiteTaskTerminal";
+import {
+  PrerequisiteArgs,
+  PrerequisiteArgVxTestApp,
+} from "./taskTerminal/prerequisiteTaskTerminal";
 
 enum Checker {
   NpmInstall = "npm package installation",
@@ -174,6 +178,7 @@ type NpmInstallCheckerInfo = {
   displayName?: string;
 };
 type PortCheckerInfo = { checker: Checker.Ports; ports: number[] };
+type VxTestAppCheckerInfo = { checker: DepsType.VxTestApp; vxTestApp: { version: string } };
 type PrerequisiteCheckerInfo = { checker: Checker | DepsType; [key: string]: any };
 
 type PrerequisiteOrderedChecker = {
@@ -602,9 +607,21 @@ function getCheckPromise(
     case DepsType.Dotnet:
     case DepsType.FuncCoreTools:
     case DepsType.Ngrok:
+      return checkDependency(
+        { depsType: checkerInfo.checker },
+        depsManager,
+        step.getPrefix(),
+        additionalTelemetryProperties
+      );
     case DepsType.VxTestApp:
       return checkDependency(
-        checkerInfo.checker,
+        {
+          depsType: checkerInfo.checker,
+          installOptions: {
+            version: (checkerInfo as VxTestAppCheckerInfo)?.vxTestApp?.version,
+            projectPath: vscode.workspace.workspaceFolders?.[0]?.uri?.fsPath,
+          },
+        },
         depsManager,
         step.getPrefix(),
         additionalTelemetryProperties
@@ -835,7 +852,7 @@ async function checkNode(
       try {
         VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
         const nodeStatus = (
-          await depsManager.ensureDependencies([nodeDep], {
+          await depsManager.ensureDependencies([{ depsType: nodeDep }], {
             fastFail: false,
             doctor: true,
           })
@@ -867,18 +884,20 @@ async function checkNode(
 }
 
 async function checkDependency(
-  nonNodeDep: DepsType,
+  nonNodeDep: Dependency,
   depsManager: DepsManager,
   prefix: string,
   additionalTelemetryProperties: { [key: string]: string }
 ): Promise<CheckResult> {
   try {
-    VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nonNodeDep]} ...`);
+    VsCodeLogInstance.outputChannel.appendLine(
+      `${prefix} ${ProgressMessage[nonNodeDep.depsType]} ...`
+    );
 
     const depsStatus = await localTelemetryReporter.runWithTelemetryGeneric(
       TelemetryEvent.DebugPrereqsCheckDependencies,
       async (ctx: TelemetryContext) => {
-        ctx.properties[TelemetryProperty.DebugPrereqsDepsType] = nonNodeDep;
+        ctx.properties[TelemetryProperty.DebugPrereqsDepsType] = nonNodeDep.depsType;
         return await depsManager.ensureDependencies([nonNodeDep], {
           fastFail: false,
           doctor: true,
@@ -925,7 +944,7 @@ async function checkDependency(
     };
   } catch (error: any) {
     return {
-      checker: DepsDisplayName[nonNodeDep],
+      checker: DepsDisplayName[nonNodeDep.depsType],
       result: ResultStatus.failed,
       error: handleDepsCheckerError(error),
     };
@@ -1421,7 +1440,7 @@ async function getOrderedCheckersForTask(
   }
   if (prerequisites.includes(Prerequisite.vxTestApp)) {
     checkers.push({
-      info: { checker: DepsType.VxTestApp, checkerInfo: vxTestApp },
+      info: { checker: DepsType.VxTestApp, vxTestApp: vxTestApp },
       fastFail: false,
     });
   }

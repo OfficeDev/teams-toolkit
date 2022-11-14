@@ -59,6 +59,12 @@ export class CreateTeamsAppDriver implements StepDriver {
     }
     const appStudioToken = appStudioTokenRes.value;
 
+    const progressHandler = context.ui?.createProgressBar(
+      getLocalizedString("driver.teamsApp.progressBar.createTeamsAppTitle"),
+      1
+    );
+    progressHandler?.start();
+
     let createdAppDefinition: AppDefinition;
     const teamsAppId = process.env.TEAMS_APP_ID;
     if (teamsAppId) {
@@ -71,6 +77,10 @@ export class CreateTeamsAppDriver implements StepDriver {
         create = false;
       } catch (error) {}
     }
+
+    progressHandler?.next(
+      getLocalizedString("driver.teamsApp.progressBar.createTeamsAppStepMessage")
+    );
 
     if (create) {
       const manifest = new TeamsAppManifest();
@@ -110,6 +120,7 @@ export class CreateTeamsAppDriver implements StepDriver {
         if (context.platform === Platform.VSCode) {
           context.ui?.showMessage("info", message, false);
         }
+        progressHandler?.end(true);
         return ok(
           new Map([
             [outputNames.TEAMS_APP_ID, createdAppDefinition.teamsAppId!],
@@ -117,6 +128,7 @@ export class CreateTeamsAppDriver implements StepDriver {
           ])
         );
       } catch (e: any) {
+        progressHandler?.end(false);
         if (e instanceof UserError || e instanceof SystemError) {
           return err(e);
         } else {
@@ -128,6 +140,7 @@ export class CreateTeamsAppDriver implements StepDriver {
         }
       }
     } else {
+      progressHandler?.end(true);
       return ok(
         new Map([
           [outputNames.TEAMS_APP_ID, createdAppDefinition!.teamsAppId!],

@@ -50,7 +50,7 @@ describe("Generator utils", () => {
     const inputDir = path.join(tmpDir, "input");
     const outputDir = path.join(tmpDir, "output");
     await fs.ensureDir(inputDir);
-    const fileData = "{{appName}}";
+    const fileData = "{%appName%}";
     await fs.writeFile(path.join(inputDir, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);

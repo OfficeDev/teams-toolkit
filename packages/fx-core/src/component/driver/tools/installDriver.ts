@@ -78,9 +78,10 @@ export class ToolsInstallDriverImpl {
   }
 
   async resolveFuncCoreTools(): Promise<void> {
+    const installOptions = {};
     const depsManager = new DepsManager(new EmptyLogger(), new EmptyTelemetry());
     const result = (
-      await depsManager.ensureDependencies([DepsType.FuncCoreTools], {
+      await depsManager.ensureDependencies([{ depsType: DepsType.FuncCoreTools, installOptions }], {
         fastFail: false,
         doctor: true,
       })

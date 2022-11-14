@@ -1077,5 +1077,13 @@
   "driver.env.error.folderNotExist": "Folder %s does not exist.",
   "driver.deploy.error.noFileFindInDistributionFolder": "No file is found in distribution folder. Please check if the distribution folder is empty or you have ignored everything.",
   "driver.m365Bot.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
-  "driver.m365Bot.error.unhandledError": "Unhandled error happened in %s action: %s"
+  "driver.m365Bot.error.unhandledError": "Unhandled error happened in %s action: %s",
+  "driver.teamsApp.progressBar.createTeamsAppTitle": "Create Teams app",
+  "driver.teamsApp.progressBar.createTeamsAppStepMessage": "Creating Teams app",
+  "driver.teamsApp.progressBar.updateTeamsAppTitle": "Update Teams app",
+  "driver.teamsApp.progressBar.updateTeamsAppStepMessage": "Updating Teams app",
+  "driver.teamsApp.progressBar.publishTeamsAppTitle": "Publish Teams app",
+  "driver.teamsApp.progressBar.publishTeamsAppStep1": "Checking if the Teams app has already been submitted to tenant App Catalog",
+  "driver.teamsApp.progressBar.publishTeamsAppStep2.1": "Update published Teams app",
+  "driver.teamsApp.progressBar.publishTeamsAppStep2.2": "Publishing Teams app"
 }

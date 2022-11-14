@@ -79,8 +79,6 @@ export class VSCodeDepsChecker {
     return (await this.depsManager.getStatus([dep]))[0];
   }
 
-  // ensure() is only used by SPFx and old projects (before local debug customization)
-  // So it does need dep.installOptions
   private async ensure(deps: DepsType[]): Promise<DependencyStatus[]> {
     if (deps.length == 0) {
       return [];

@@ -356,9 +356,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * set tenantId and subscriptionId
    */
   async setSubscription(subscriptionId: string): Promise<void> {
-    if (isV3Enabled()) {
-      return;
-    }
     if (this.isUserLogin()) {
       const azureAccount: AzureAccount =
         vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
@@ -373,8 +370,12 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
             subscriptionName: item.subscription.displayName!,
             tenantId: item.session.tenantId,
           };
-          await this.saveSubscription(subscriptionInfo);
-          await accountTreeViewProviderInstance.azureAccountNode.setSubscription(subscriptionInfo);
+          if (!isV3Enabled()) {
+            await this.saveSubscription(subscriptionInfo);
+            await accountTreeViewProviderInstance.azureAccountNode.setSubscription(
+              subscriptionInfo
+            );
+          }
           return;
         }
       }

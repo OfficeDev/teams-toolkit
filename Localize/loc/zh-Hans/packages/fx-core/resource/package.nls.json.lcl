@@ -13,54 +13,81 @@
       <Item ItemId=";botRegistration.ProgressBar.creatingBotAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating bot aad app.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在创建机器人 aad 应用。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";botRegistration.log.failCreateBotAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to create bot aad app. Error message: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[未能创建机器人 aad 应用。错误消息: %s。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";botRegistration.log.skipCreateBotAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Bot aad app creation skipped.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已跳过机器人 aad 应用创建。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";botRegistration.log.startCreateBotAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating bot aad app.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[创建机器人 aad 应用。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";botRegistration.log.successCreateBotAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Bot aad app created successfully.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已成功创建机器人 AAD 应用。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";configManager.error.driverNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Driver %s not found for step %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[找不到步骤 %s 的驱动程序 %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";configManager.error.invalidEnvField" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The env field of action %s in lifecycle %s is invalid.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[生命周期 %s 中操作 %s 的 env 字段无效。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";configManager.error.invalidLifecycle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The schema of lifecycle %s is invalid]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[生命周期 %s 的架构无效]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";configManager.error.yamlParsing" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Error parsing yaml file at path %s. Reason: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[分析路径 %s 处的 yaml 文件时出错。原因: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -292,6 +319,9 @@
       <Item ItemId=";core.CommandAndResponseOption.detail.abTest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Respond to simple app mentions and commands in Microsoft Teams chat]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[在 Microsoft Teams 聊天中回复简单的应用提及和命令]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -307,6 +337,9 @@
       <Item ItemId=";core.CommandAndResponseOption.label.abTest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Respond to app mentions and commands]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[回复应用提及和命令]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -499,6 +532,9 @@
       <Item ItemId=";core.NotificationOption.detail.abTest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Post messages to Microsoft Teams chat based on a schedule or HTTP request]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[根据计划或 HTTP 请求将消息发布到 Microsoft Teams 聊天]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -514,6 +550,9 @@
       <Item ItemId=";core.NotificationOption.label.abTest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Post messages to Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[将消息发布到 Teams]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -949,12 +988,18 @@
       <Item ItemId=";core.WorkflowOption.label.abTest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Initiate sequential workflows]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[启动顺序工作流]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.aad.aadManifestFilePath" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enter the aad.template.json file path to deploy]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[输入要部署的 aad.template.json 文件路径]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1000,8 +1045,8 @@
       <Item ItemId=";core.addCapability.addCapabilitiesNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Capabilities %s have been successfully added to your project. F5 to debug the application or trigger 'Teams: Provision in the cloud' to create resources.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[功能 %s 已成功添加到项目中。F5 以本地调试应用程序或触发“Teams: 在云中预配”，以在 Azure 订阅中创建资源以进行托管。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已成功将功能 %s 添加到项目中。F5 用于调试应用程序或触发“Teams: 在云中预配”以创建资源。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Capabilities %s have been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.]]></Val>
@@ -1012,8 +1057,8 @@
       <Item ItemId=";core.addCapability.addCapabilitiesNoticeForCli" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Capabilities %s have been successfully added to your project. Run 'teamsfx provision' to create resources.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[功能 %s 已成功添加到项目中。运行“teamsfx 预配”，以在 Azure 订阅中创建用于托管的资源。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已成功将功能 %s 添加到项目中。运行“teamsfx 预配”以创建资源。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Capabilities %s have been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting.]]></Val>
@@ -1024,8 +1069,8 @@
       <Item ItemId=";core.addCapability.addCapabilityNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Capability %s has been successfully added to your project. F5 to debug the application or trigger 'Teams: Provision in the cloud' to create resources.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[功能 %s 已成功添加到项目中。F5 以本地调试应用程序或触发“Teams: 在云中预配”，以在 Azure 订阅中创建资源以进行托管。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[功能 %s 已成功添加到项目中。F5 用于调试应用程序或触发“Teams: 在云中预配”以创建资源。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Capability %s has been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.]]></Val>
@@ -1036,8 +1081,8 @@
       <Item ItemId=";core.addCapability.addCapabilityNoticeForCli" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Capability %s has been successfully added to your project. Run 'teamsfx provision' to create resources.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[功能 %s 已成功添加到项目中。运行“teamsfx 预配”，以在 Azure 订阅中创建用于托管的资源。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已成功将功能 %s 添加到项目中。运行“teamsfx 预配”以创建资源。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Capability %s has been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting.]]></Val>
@@ -1639,48 +1684,72 @@
       <Item ItemId=";core.collaboration.collaborationAppTypeQuestion.grantPermission.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please select app type you want to grant permission for]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[请选择要为其授予权限的应用类型]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.collaboration.collaborationAppTypeQuestion.listCollaborator.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please select app type you want to list collaborator for]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[请选择要列出协作者的应用类型]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.collaboration.collaborationCommandQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please select how you want to manage your collaboration]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[请选择希望如何管理协作]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.collaboration.error.dotEnvFileNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to find your .env File.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[找不到 .env 文件。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.collaboration.error.failedToGetTeamsAppId" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to find Teams app id in your .env file. Please correctly set the value with key '%s' in your .env file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[未能在 .env 文件中找到 Teams 应用 ID。请在 .env 文件中使用密钥“%s”正确设置该值。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.collaboration.error.failedToLoadDotEnvFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to load your .env File. Reason: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[未能加载 .env 文件。原因: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.collaboration.notProvisioned" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The resources have not been provisioned yet. Please provision the resources first.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[尚未预配资源。请先预配资源。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.collaboration.tenantNotMatch" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[帐户的租户 ID 与预配的 Azure AD 应用不匹配。请检查你是否使用错误的帐户登录。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1777,8 +1846,8 @@
       <Item ItemId=";core.consolidateLocalRemote.SuccessMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Congratulations! You have successfully upgraded your Teams App project structure. We have added config.local.json for debug and manifest.template.json for both Teams app running locally and remotely. And we have backed up localSettings.json, manifest.local.template.json and manifest.remote.template.json to .backup folder.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[祝贺! 已成功升级 Teams 应用项目结构。我们为本地和远程运行的 Teams 应用添加了用于本地调试和 manifest.template.json 的 config.local.json。我们已将 localSettings.json、manifest.local.template.json 和 manifest.remote.template.json 备份到 .backup 文件夹。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[祝贺! 已成功升级 Teams 应用项目结构。我们为调试添加了 config.local.json，并为本地和远程运行的 Teams 应用添加了 manifest.template.json。我们已将 localSettings.json、manifest.local.template.json 和 manifest.remote.template.json 备份到 .backup 文件夹。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Congratulations! You have successfully upgraded your Teams App project structure. We have added config.local.json for local debug and manifest.template.json for both Teams app running locally and remotely. And we have backed up localSettings.json, manifest.local.template.json and manifest.remote.template.json to .backup folder.]]></Val>
@@ -1798,8 +1867,8 @@
       <Item ItemId=";core.consolidateLocalRemoteWithAadManifest.SuccessMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Congratulations! You have successfully upgraded your Teams App project structure. We have added config.local.json for debug, manifest.template.json for both Teams app running locally and remotely and aad.template.json for AAD manifest template. And we have backed up localSettings.json, manifest.local.template.json, manifest.remote.template.json, projectSettings.json to .backup folder.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[祝贺! 已成功升级 Teams 应用项目结构。我们为本地调试添加了 config.local.json，为本地和远程运行的 Teams 应用添加了 manifest.template.json，为 AAD 清单模板添加了 aad.template.json。我们已将 localSettings.json、manifest.local.template.json、manifest.remote.template.json、projectSettings.json 备份到 .backup 文件夹。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[祝贺! 你已成功升级 Teams 应用项目结构。我们为调试添加了 config.local.json，为本地和远程运行的 Teams 应用添加了 manifest.template.json，为 AAD 清单模板添加了 aad.template.json。我们已将 localSettings.json、manifest.local.template.json、manifest.remote.template.json、projectSettings.json 备份到 .backup 文件夹。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Congratulations! You have successfully upgraded your Teams App project structure. We have added config.local.json for local debug, manifest.template.json for both Teams app running locally and remotely and aad.template.json for AAD manifest template. And we have backed up localSettings.json, manifest.local.template.json, manifest.remote.template.json, projectSettings.json to .backup folder.]]></Val>
@@ -1867,8 +1936,8 @@
       <Item ItemId=";core.createCapabilityQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select a capability]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[至少选择 1 个功能]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[选择功能]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Select at least 1 capability]]></Val>
@@ -2236,18 +2305,27 @@
       <Item ItemId=";core.error.FailedToCreateResourceGroup.exist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to create resource group '%s': the resource group exists]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法创建资源组“%s”: 资源组已存在]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.error.notLoginToAzure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Login to Azure using the Azure Account extension]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[使用 Azure 帐户扩展登录到 Azure]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.error.programmingLanguageInvalid" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Invalid programming language found in project settings.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[在项目设置中找到无效的编程语言。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2263,12 +2341,18 @@
       <Item ItemId=";core.error.resourceGroupNotFound2" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Resource group '%s' does not exist, please check the '%s' file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[资源组“%s”不存在，请检查“%s”文件。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.error.unresolvedPlaceholders" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[There are unresolved placeholders in '.yml' file: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[“.yml” 文件中存在未解析的占位符: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2458,8 +2542,8 @@
       <Item ItemId=";core.localDebug.tenantConfirmNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You already run debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched Mirosoft 365 account to re-use the previous debug resource. If you really want to switch tenant for debug, you can delete the local file(s) (%s) and re-run debug.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[你已在另一租户“%s”中运行 Teams 应用的本地调试。可以注销 %s 并使用匹配的 Mirosoft 365 帐户登录，以重新使用以前的本地调试资源。如果确实要切换租户以进行本地调试，则可以删除本地文件(%s)，然后重新运行本地调试。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[你已在另一租户“%s”中运行 Teams 应用的调试。可以注销 %s 并使用匹配的 Mirosoft 365 帐户登录，以重用以前的调试资源。如果确实要切换租户以进行调试，则可以删除本地文件(%s)，然后重新运行调试。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched Mirosoft 365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.]]></Val>
@@ -2470,8 +2554,8 @@
       <Item ItemId=";core.localDebug.tenantConfirmNoticeWhenAllowSwitchAccount" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You already run debug for the Teams app in another tenant '%s'. If you really want to switch tenant for debug, you can delete the local file(s) (%s) and re-run debug.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[你已在另一租户“%s”中运行 Teams 应用的本地调试。如果确实要切换租户以进行本地调试，则可以删除本地文件(%s)，然后重新运行本地调试。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[你已在另一租户“%s”中运行 Teams 应用的调试。如果确实要切换租户以进行调试，则可以删除本地文件(%s)，然后重新运行调试。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[You already run local debug for the Teams app in another tenant '%s'. If you really want to switch tenant for local debug, you can delete the local file(s) (%s) and re-run local debug.]]></Val>
@@ -2482,6 +2566,9 @@
       <Item ItemId=";core.log.updateFunctionAppSettings" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating Azure Function app settings.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[更新 Azure 函数应用设置。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2524,24 +2611,36 @@
       <Item ItemId=";core.option.cancel" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cancel]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[取消]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.option.confirm" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Confirm]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[确认]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.option.deploy" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Deploy]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[部署]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.option.learnMore" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn more]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[了解详细信息]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2557,6 +2656,9 @@
       <Item ItemId=";core.option.upgrade" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upgrade]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[升级]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2608,194 +2710,287 @@
       <Item ItemId=";core.progress.buildingApi" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Building Api]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在生成 API]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.buildingApi.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Building Function Api.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在生成函数 API。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.buildingBot" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Building Bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在生成机器人]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.buildingBot.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Installing dependencies.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在安装依赖项。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.buildingTab" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Building Tab]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在生成选项卡]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.buildingTab.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Building Tab frontend project]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在生成选项卡前端项目]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.checkAzureDeployStatus" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Waiting for Azure deployment to complete.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在等待 Azure 部署完成。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.clearStorageAccount" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cleaning up Azure Storage account.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在清理 Azure 存储帐户。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.clearStorageExistsBlobs" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cleaning up Azure Storage exists blob files.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在清理 Azure 存储现有 blob 文件。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.configureStorage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Configuring Tab]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在配置选项卡]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.enableStaticWebsite" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enabling Azure Storage account static website.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在启用 Azure 存储帐户静态网站。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.generateSample" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Generating Sample]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在生成示例]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.generateSample.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Downloading and unzipping Sample]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在下载和解压缩示例]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.generateTemplate" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Generating Template]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在生成模板]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.generateTemplate.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Downloading and unzipping Template]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在下载和解压缩模板]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.getAzureAccountInfoForDeploy" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Retrieving Azure account information.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在检索 Azure 帐户信息。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.getAzureStorageDeployCredential" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Retrieving Azure Storage account deployment credential.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在检索 Azure 存储帐户部署凭据。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.getAzureUploadEndpoint" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Retrieving Azure upload endpoint.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在检索 Azure 上传终结点。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.getDeploymentSrcAndDest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Retrieving deployment source and destination.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在检索部署源和目标。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.packingCode" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating application package.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在创建应用程序包。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.provisionBot" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Registering Bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在注册机器人]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.restartAzureFunctionApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Restarting Azure Function App.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在重启 Azure 函数应用。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.scaffoldApi" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Scaffolding Api]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在搭建 API 基架]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.scaffoldApi.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Scaffolding Function Api project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[基架函数 API 项目。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.scaffoldBot" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Scaffolding Bot]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在搭建机器人基架。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.scaffoldBot.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Retrieving templates.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在检索模板。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.scaffoldTab" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Scaffolding Tab]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在搭建选项卡基架]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.scaffoldTab.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Scaffolding Tab frontend project.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在搭建选项卡前端项目基架。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.uploadFilesToStorage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Uploading files to Azure Storage account.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在将文件上传到 Azure 存储帐户。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.uploadTabToStorage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Uploading Tab frontend to Azure Storage account.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在将选项卡前端上传到 Azure 存储帐户。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.progress.uploadZipFileToAzure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Uploading application package to Azure.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在将应用程序包上传到 Azure。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.projectVersionChecker.cliUseNewVersion" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[[core]5D; Your TeamsFx CLI is too old to support current project, please upgrade to the latest version using command below:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[[核心]5D; TeamsFx CLI 太旧，无法支持当前项目，请使用以下命令更新到最新版本: ]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[[核心]5D; 你的 TeamsFx CLI 太旧，无法支持当前项目，请使用以下命令升级到最新版本:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[[core]5D; Your TeamsFx CLI is too old to support current project, please update to latest version using command below:]A;npm install -g @microsoft/teamsfx-cli@latest]]></Val>
@@ -2806,8 +3001,8 @@
       <Item ItemId=";core.projectVersionChecker.vscodeUseNewVersion" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your Teams Toolkit extension no longer supports the current project, please upgrade the extension to the latest version and try to open this project again.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[你的 Teams 工具包扩展太旧，无法支持当前项目，请将扩展更新为最新版本，然后尝试再次打开此项目]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[你的 Teams 工具包扩展不再支持当前项目，请将扩展升级到最新版本，然后尝试再次打开此项目。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Your Teams Toolkit extension is too old to support current project, please update the extension to latest version and try to open this project again]]></Val>
@@ -2959,30 +3154,45 @@
       <Item ItemId=";core.provision.subscription.NotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The subscription '%s' is not found in the current account, please use the right Azure account.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[当前帐户中找不到订阅“%s”，请使用正确的 Azure 帐户。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.provision.subscription.NotFoundConfig" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The subscription '%s' for '%s' environment is not found in the current account, please use the right Azure account or check the '%s' file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[在当前帐户中找不到“%s”环境的订阅“%s”，请使用正确的 Azure 帐户或检查“%s”文件。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.provision.subscription.NotFoundParam" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The subscription '%s' for '%s' environment is not found in the current account, please use the right Azure account or check the subscription parameter.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[在当前帐户中找不到“%s”环境的订阅“%s”，请使用正确的 Azure 帐户或检查订阅参数。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.provision.subscription.NotFoundState" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The subscription '%s' for '%s' environment is not found in the current account, please use the right Azure account.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[在当前帐户中找不到“%s”环境的订阅“%s”，请使用正确的 Azure 帐户。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.provision.subscription.failToSelect" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to select subscription]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[未能选择订阅]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3034,6 +3244,9 @@
       <Item ItemId=";core.provision.viewResources" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[View provisioned resources]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[查看预配的资源:]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3076,12 +3289,18 @@
       <Item ItemId=";core.question.AzureResourcesQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select a resource (optional)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[选择资源(可选)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.question.AzureResourcesQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cloud resources]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[云资源]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3127,48 +3346,72 @@
       <Item ItemId=";core.updateContentUrlOption.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[update the content url from %s to %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[将内容 URL 从 %s 更新到 %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.updateContentUrlQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select all personal apps to update content urls to %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[选择所有个人应用以将内容 URL 更新为 %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.updateUrlQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select any number of options you like]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[选择任意数量的喜欢的选项]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.updateWebsiteUrlOption.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[update the website url from %s to %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[将网站 URL 从 %s 更新为 %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.updateWebsiteUrlQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select all personal apps to update website urls to %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[选择所有个人应用以将网站 URL 更新为 %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";debug.install" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Install]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[安装]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";debug.warningMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[To debug applications in Teams, your localhost server must be on HTTPS.]A;For Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store.]A; You may skip this step, but you'll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.]A;For more information "https://aka.ms/teamsfx-ca-certificate".]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[要在 Teams 中调试应用程序，localhost 服务器必须在 HTTPS 上。]A;如果要让 Teams 信任工具包使用的自签名 SSL 证书，必须将自签名证书添加到证书存储。]A;可以跳过此步骤，但在 Teams 中调试应用时，必须在新的浏览器窗口中手动信任安全连接。]A;有关详细信息，请访问 “https://aka.ms/teamsfx-ca-certificate”。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";debug.warningMessage2" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[ You may be asked for your account credentials when installing the certificate.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ 安装证书时，系统可能要求你提供帐户凭据。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3187,6 +3430,9 @@
       <Item ItemId=";depChecker.NodeNotRecommended" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions). It may cause problems if you continue to debug.]A;]A;Click "Learn more" to learn more about the supported Node.js versions.]A;]A;(If you just installed Node.js (@SupportedVersions), restart Visual Studio Code for the change to take effect.)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Node.js (@CurrentVersion)不在受支持的版本列表(@SupportedVersions)中。如果继续调试，可能会导致出现问题。]A;]A;单击“了解详细信息”以详细了解受支持的 Node.js 版本。]A;]A;(如果刚刚安装了 Node.js (@SupportedVersions)，请重启 Visual Studio Code 以使更改生效。)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3256,24 +3502,36 @@
       <Item ItemId=";depChecker.failToInstallBicep" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to install @NameVersion]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法安装 @NameVersion]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";depChecker.failToInstallBicepDialog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to install @NameVersion. please click Learn More to install @NameVersion manually and restart Visual Studio Code.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法安装 @NameVersion。请单击“了解详细信息”以手动安装 @NameVersion 并重启 Visual Studio Code。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";depChecker.failToInstallBicepOutputCLI" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to install @NameVersion. please read this wiki(@HelpLink) to install @NameVersion manually.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法安装 @NameVersion。请阅读此 wiki(@HelpLink)以手动安装 @NameVersion。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";depChecker.failToInstallBicepOutputVSC" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to install @NameVersion. please read this wiki(@HelpLink) to install @NameVersion manually and restart Visual Studio Code.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法安装 @NameVersion。请阅读此 wiki(@HelpLink)以手动安装 @NameVersion 并重启 Visual Studio Code。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3325,6 +3583,9 @@
       <Item ItemId=";depChecker.finishInstallBicep" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully installed @NameVersion.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已成功安装 @NameVersion。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3358,6 +3619,9 @@
       <Item ItemId=";depChecker.globalFuncNodeNotMatched" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your own Node.js(@NodeVersion) is incompatible with your own Azure Functions Core Tools(@FuncVersion). Please make sure your own Azure Functions Core Tools works with your Node.js version. See (@link) to Azure Functions supported Node.js versions.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[你的 Node.js(@NodeVersion)与自己的 Azure Functions Core Tools(@FuncVersion)不兼容。请确保自己的 Azure Functions Core Tools 适用于 Node.js 版本。请参阅(@link)以获取 Azure Functions 支持的 Node.js 版本。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3421,6 +3685,9 @@
       <Item ItemId=";depChecker.portableFuncNodeNotMatched" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your own Node.js(@NodeVersion) is incompatible with Teams Toolkit Azure Functions Core Tools(@FuncVersion). Go to @Link to install Node.js (@RecommendedVersion is recommended).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[你自己的 Node.js(@NodeVersion)与 Teams 工具包 Azure Functions Core Tools(@FuncVersion)不兼容。转到 @Link 以安装 Node.js (建议采用 @RecommendedVersion)。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3454,90 +3721,135 @@
       <Item ItemId=";driver.aadApp.error.generateSecretFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot generate client secret.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法生成客户端密码。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.error.invalidFieldInManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Field %s is missing or invalid in AAD app manifest.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[AAD 应用清单中缺少字段 %s 或该字段无效。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.error.invalidParameter" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Following parameter is missing or invalid for %s action: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[以下参数对于 %s 操作缺失或无效: %s。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.error.missingEnv" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[%s Environment variable %s is not set.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[未设置 %s 环境变量 %s。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.error.unhandledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unhandled error happened in %s action: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s 操作中发生了未经处理的错误: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.log.failExecuteDriver" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to execute action %s. Error message: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法执行操作 %s。错误消息: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.log.outputAadAppManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[AAD app manifest content is written to %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[AAD 应用清单内容已写入 %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.log.skipCreateAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment variable %s already exist, skipping new AAD app creation step.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[环境变量 %s 已存在，正在跳过新的 AAD 应用创建步骤。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.log.skipGenerateClientSecret" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment variable %s already exist, skipping AAD app client secret generation step.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[环境变量 %s 已存在，正在跳过 AAD 应用客户端密码生成步骤。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.log.startCreateAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment variable %s does not exist, creating a new AAD app...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[环境变量 %s 不存在，正在创建新的 AAD 应用...]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.log.startExecuteDriver" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Executing action %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在执行操作 %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.log.startGenerateClientSecret" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment variable %s does not exist, generating client secret for AAD app...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[环境变量 %s 不存在，正在为 AAD 应用生成客户端密码...]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.log.successCreateAadApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully created AAD app.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已成功创建 AAD 应用。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.log.successGenerateClientSecret" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully generated client secret.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已成功生成客户端密码。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.addApp.log.successExecuteDriver" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Action %s executed successfully]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已成功执行操作 %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3553,66 +3865,99 @@
       <Item ItemId=";driver.arm.error.deploy" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to deploy arm template %s: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[未能部署 arm 模板 %s: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.arm.error.outputConversionFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[There is a duplicated key %s in arm deployment output]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[arm 部署输出中存在重复的密钥 %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.botAadApp.log.failExecuteDriver" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to execute action %s. Error message: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[未能执行操作 %s。错误消息: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.botAadApp.log.startExecuteDriver" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Executing action %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[正在执行操作 %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.botAadApp.log.successExecuteDriver" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Action %s executed successfully]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[已成功执行操作 %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.deploy.error.noFileFindInDistributionFolder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No file is found in distribution folder. Please check if the distribution folder is empty or you have ignored everything.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[在分发文件夹中找不到文件。请检查分发文件夹是否为空或是否已忽略所有内容。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.env.error.folderNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Folder %s does not exist.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[文件夹 %s 不存在。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.env.error.invalidParameter" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Following parameter is missing or invalid for %s action: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[以下参数缺失或对 %s 操作无效: %s。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.env.error.unhandledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unhandled error happened in %s action: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s 操作中发生了未经处理的错误: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.spfx.error.noValidAppCatelog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[There is no valid app catalog in your tenant. You can update the property 'createAppCatalogIfNotExist' in app.yml to true if you want us to create it for you or you can create it by yourself.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[租户中不存在有效的应用目录。如果希望我们为你创建属性，则可以将 app.yml 中的属性 “createAppCatalogIfNotExist” 更新为 true，或者可以自行创建。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.tools.error.invalidParameter" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Following parameter is missing or invalid for %s action: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[以下参数缺失或对 %s 操作无效: %s。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3679,6 +4024,9 @@
       <Item ItemId=";error.DotEnvFileNotExistError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Environment %s not found. Make sure the .env.%s file exist.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[找不到环境 %s。请确保 .env.%s 文件存在。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3712,6 +4060,9 @@
       <Item ItemId=";error.FailedToGetAzureCredential" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to get azure credential]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[未能获取 Azure 凭据]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4150,8 +4501,8 @@
       <Item ItemId=";error.aad.AadManifestMissingIdentifierUris" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[identifierUris property is missing or invalid in AAD manifest file, you need to run provision or debug first]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[AAD 清单文件中缺少 identifierUris 属性或该属性无效，需要先运行预配或本地调试]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[AAD 清单文件中缺少 identifierUris 属性或该属性无效，需要先运行预配或调试]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[identifierUris property is missing or invalid in AAD manifest file, you need to run provision or local debug first]]></Val>
@@ -4171,8 +4522,8 @@
       <Item ItemId=";error.aad.AadManifestMissingObjectId" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[id property is missing or invalid in AAD manifest file, you need to run provision or debug first]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[AAD 清单文件中缺少 id 属性或该属性无效，需要先运行预配或本地调试]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[AAD 清单文件中缺少 ID 属性或该属性无效，需要先运行预配或调试]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[id property is missing or invalid in AAD manifest file, you need to run provision or local debug first]]></Val>
@@ -4183,8 +4534,8 @@
       <Item ItemId=";error.aad.AadManifestMissingReplyUrlsWithType" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[replyUrlsWithType property is missing or invalid in AAD manifest file, you need to run provision or debug first]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[replyUrlsWithType 属性在 AAD 清单文件中缺失或无效，需要先运行预配或本地调试]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[AAD 清单文件中缺少 replyUrlsWithType 属性或该属性无效，需要先运行预配或调试]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[replyUrlsWithType property is missing or invalid in AAD manifest file, you need to run provision or local debug first]]></Val>
@@ -4204,6 +4555,9 @@
       <Item ItemId=";error.aad.AadManifestNotExistError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[AAD manifest doesn't exist in %s, please use the CLI to specify an AAD manifest to deploy.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s 中不存在 AAD 清单，请使用 CLI 指定要部署的 AAD 清单。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4219,8 +4573,8 @@
       <Item ItemId=";error.aad.AadManifestNotProvisioned" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or debug first. Click Get Help to learn more about why you need to provision or debug.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[无法生成 AAD 清单，因为尚未预配资源。需要先运行预配或本地调试。单击“获取帮助”以详细了解需要预配或本地调试的原因。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法生成 AAD 清单，因为尚未预配资源。需要先运行预配或调试。单击“获取帮助”以详细了解需要预配或调试的原因。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to generate AAD manifest because the resources have not been provisioned yet. You need to run provision or local debug first. Click Get Help to learn more about why you need to provision or local debug.]]></Val>
@@ -4876,8 +5230,8 @@
       <Item ItemId=";error.appstudio.getLocalConfigFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Missing configuration data for manifest. You may need to run 'debug' first. %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[缺少清单的配置数据。可能需要先运行“本地调试”。%s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[缺少清单的配置数据。可能需要先运行“调试”。%s]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Missing configuration data for manifest. You may need to run 'Local debug' first. %s]]></Val>
@@ -4906,6 +5260,9 @@
       <Item ItemId=";error.appstudio.incorrectLocalConfig" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Missing configuration data for manifest.  %s Please remove the state.local.json file and try again.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[缺少清单的配置数据。 %s 请删除 state.local.json 文件，然后重试。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4948,8 +5305,8 @@
       <Item ItemId=";error.appstudio.localTeamsAppCreateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to create debug Teams app in Developer Portal, due to %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[由于 %s，无法在开发人员门户中创建本地调试 Teams 应用]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[由于 %s，无法在开发人员门户中创建调试 Teams 应用]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to create local debug Teams app in Developer Portal, due to %s]]></Val>
@@ -4960,8 +5317,8 @@
       <Item ItemId=";error.appstudio.localTeamsAppUpdateFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to update debug Teams app in Developer Portal, due to %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[由于 %s，无法在开发人员门户中更新本地调试 Teams 应用]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[由于 %s，无法在开发人员门户中更新调试 Teams 应用]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to update local debug Teams app in Developer Portal, due to %s]]></Val>
@@ -5128,8 +5485,8 @@
       <Item ItemId=";error.appstudio.updateManifestInvalidApp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot find teams app with id %s. You must run debug or provision first before updating manifest to Teams platform.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[找不到 ID 为 %s 的团队应用。在将清单更新到 Teams 平台之前，必须先运行本地调试或预配。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[找不到 ID 为 %s 的 Teams 应用。在将清单更新到 Teams 平台之前，必须先运行调试或预配。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Cannot find teams app with id %s. You must run local debug or provision first before updating manifest to Teams platform.]]></Val>
@@ -5230,8 +5587,8 @@
       <Item ItemId=";error.debugHandler.InvalidTabBaseUrlError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[baseUrl must be a valid https url.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[baseUrl 必须采用 “https://localhost:{port}” 格式。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[baseUrl 必须是有效的 HTTPS URL。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[baseUrl must be in the format of 'https://localhost:{port}'.]]></Val>
@@ -5677,6 +6034,9 @@
       <Item ItemId=";error.generator.FetchSampleUrlWithTagError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to get sample url with tag]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法获取带有标记的示例 URL]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5692,6 +6052,9 @@
       <Item ItemId=";error.generator.MissKeyError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to find key %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[找不到密钥 %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5716,18 +6079,27 @@
       <Item ItemId=";error.m365tenantcheck.tenantNotMatch" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You are now using a different Microsoft 365 tenant from what you previously used. Please make sure you use the correct account. If you intend to switch to this tenant, please clear the value of %s in %s env file so that Teams Toolkit will provision resources in your currently signed-in tenant.]A;Visit %s to learn more.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[你现在使用的 Microsoft 365 租户与之前使用的租户不同。请确保使用正确的帐户。如果打算切换到此租户，请清除 %s env 文件中 %s 的值，以便 Teams 工具包在当前登录的租户中预配资源。]A;请访问 %s 以了解详细信息。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.rgCheckBaseError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to check the existence of resource group '%s' in subscription '%']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法检查订阅“%”中是否存在资源组“%s”]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";error.rgUnauthorizedError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Unauthorized to check the existence of resource group '%s' in subscription '%s'. Please check your Azure subscription.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[未经授权，无法检查订阅“%s”中是否存在资源组“%s”。请检查你的 Azure 订阅。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -6007,8 +6379,8 @@
       <Item ItemId=";plugins.aad.NoSelection" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No Azure AD app found. Will not update permissions. You need to run provision or debug first.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[找不到 Azure AD 应用。不会更新权限。需要先运行预配或本地调试。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[找不到 Azure AD 应用。将不会更新权限。需要先运行预配或调试。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[No Azure AD app found. Will not update permissions. You need to run provision or local debug first.]]></Val>
@@ -6433,8 +6805,8 @@
       <Item ItemId=";plugins.apiConnector.getQuestionEndpoint.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enter an API endpoint for debugging.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[输入用于本地调试的 API 终结点。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[输入用于调试的 API 终结点。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Enter an API endpoint for local debugging.]]></Val>
@@ -7006,12 +7378,18 @@
       <Item ItemId=";plugins.appstudio.emptyAppPackage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Could not find any files in the package of app %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[在应用 %s 的包中找不到任何文件。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.appstudio.lastModified" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Last Modified: %s]A;]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[上次修改时间: %s]A;]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7045,6 +7423,9 @@
       <Item ItemId=";plugins.appstudio.overwriteAndUpdate" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Overwrite and update]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[覆盖并更新]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7060,12 +7441,18 @@
       <Item ItemId=";plugins.appstudio.previewAndUpdate" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Preview and update]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[审阅并更新]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";plugins.appstudio.previewOnly" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Preview only]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[仅供预览]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7216,6 +7603,9 @@
       <Item ItemId=";plugins.appstudio.unprocessedFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[%s was not processed by Teams Toolkit.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 工具包未处理 %s。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7276,6 +7666,9 @@
       <Item ItemId=";plugins.appstudio.viewDevPortal" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[View in Developer Portal]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[在开发人员门户中查看]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7567,6 +7960,9 @@
       <Item ItemId=";plugins.bot.FailedToGetAlreadyCreatedBot" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Could not get bot with id %s which was created before. ]A;This could happen if the bot was created by another account. Visit %s to learn more.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[无法获取之前创建的 ID 为 %s 的机器人。]A;如果该机器人是由另一个帐户创建的，则可能会发生这种情况。请访问 %s 以了解详细信息。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -9157,6 +9553,9 @@
       <Item ItemId=";plugins.spfx.error.noConfiguration" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[There's no .yo-rc.json file in your SPFx project, please add the configuration file and try again.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SPFx 项目中没有 .yo-rc.json 文件，请添加配置文件，然后重试。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -9307,8 +9706,8 @@
       <Item ItemId=";plugins.sql.getQuestionAdminName.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure SQL server admin username]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SQL 的管理员名称]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure SQL Server 管理员用户名]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Admin name of SQL]]></Val>
@@ -9319,8 +9718,8 @@
       <Item ItemId=";plugins.sql.getQuestionAdminName.validation.sqlUserNameContainsNonAlphanumeric" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure SQL server admin username cannot include non-alphanumeric characters]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SQL 管理员用户名不能包含非字母数字字符]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure SQL Server 管理员用户名不能包含非字母数字字符]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[SQL admin user name cannot include non-alphanumeric characters]]></Val>
@@ -9331,8 +9730,8 @@
       <Item ItemId=";plugins.sql.getQuestionAdminName.validation.sqlUserNameContainsSqlIdentifier" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure SQL server admin username cannot be empty]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SQL 管理员用户名不能为空]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure SQL Server 管理员用户名不能为空]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[SQL admin user name cannot be empty]]></Val>
@@ -9343,8 +9742,8 @@
       <Item ItemId=";plugins.sql.getQuestionAdminName.validation.sqlUserNameEmpty" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure SQL server admin username cannot be empty]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SQL 管理员用户名不能为空]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure SQL Server 管理员用户名不能为空]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[SQL admin user name cannot be empty]]></Val>
@@ -9355,8 +9754,8 @@
       <Item ItemId=";plugins.sql.getQuestionAdminName.validation.sqlUserNameStartWithNumber" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure SQL server admin username cannot start with a number]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SQL 管理员用户名不能以数字开头]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure SQL Server 管理员用户名不能以数字开头]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[SQL admin user name cannot start with a number]]></Val>
@@ -9367,8 +9766,8 @@
       <Item ItemId=";plugins.sql.getQuestionAdminPassword.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure SQL server admin password]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SQL 的管理员密码]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure SQL Server 管理员密码]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Admin password of SQL]]></Val>
@@ -9388,8 +9787,8 @@
       <Item ItemId=";plugins.sql.getQuestionAdminPassword.validation.sqlPasswordEmpty" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure SQL server admin password cannot be empty]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SQL 管理员密码不能为空]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure SQL Server 管理员密码不能为空]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[SQL admin password cannot be empty]]></Val>
@@ -9400,8 +9799,8 @@
       <Item ItemId=";plugins.sql.getQuestionAdminPassword.validation.sqlPasswordLengthGreatThan128" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure SQL server admin password must be no more than 128 characters in length]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SQL 管理员密码长度不能超过 128 个字符]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure SQL Server 管理员密码长度不能超过 128 个字符]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[SQL admin password must be no more than 128 characters in length]]></Val>
@@ -9412,8 +9811,8 @@
       <Item ItemId=";plugins.sql.getQuestionAdminPassword.validation.sqlPasswordLengthLessThan8" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure SQL server admin password must be at least 8 characters in length]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SQL 管理员密码长度必须为至少 8 个字符]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure SQL Server 管理员密码长度必须至少为 8 个字符]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[SQL admin password must be at least 8 characters in length]]></Val>
@@ -9433,8 +9832,8 @@
       <Item ItemId=";plugins.sql.getQuestionConfirmPassword.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Confirm Azure SQL server admin password]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[确认 SQL 的管理员密码]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[确认 Azure SQL Server 管理员密码]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Confirm admin password of SQL]]></Val>

@@ -3,7 +3,7 @@ version: 1.0.0
 registerApp:
   - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
     with:
-      name: {{appName}}-aad # Note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
+      name: {%appName%}-aad # Note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
       generateClientSecret: true # If the value is false, the action will not generate client secret for you
     # Output: following environment variable will be persisted in current environment's .env file.
     # AAD_APP_CLIENT_ID: the client id of AAD app
@@ -15,11 +15,10 @@ registerApp:
 
   - uses: teamsApp/create # Creates a Teams app
     with:
-      name: {{appName}} # Teams app name
+      name: {%appName%} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
-{{=<% %>=}}
 configureApp:
   - uses: env/generate # Generate env to .env file
     with:
@@ -60,4 +59,3 @@ deploy:
   - uses: npm/command # Run npm command
     with:
       args: install --no-audit
-<%={{ }}=%>

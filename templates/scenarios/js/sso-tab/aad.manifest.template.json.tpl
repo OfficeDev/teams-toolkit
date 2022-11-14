@@ -1,10 +1,7 @@
-{{=<% %>=}}
 {
     "id": "${{AAD_APP_OBJECT_ID}}",
     "appId": "${{AAD_APP_CLIENT_ID}}",
-<%={{ }}=%>
-    "name": "{{appName}}-aad",
-{{=<% %>=}}
+    "name": "{%appName%}-aad",
     "accessTokenAcceptedVersion": 2,
     "signInAudience": "AzureADMyOrg",
     "optionalClaims": {
@@ -110,4 +107,3 @@
         }
     ]
 }
-<%={{ }}=%>

@@ -1,4 +1,3 @@
-{{=<% %>=}}
 {
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
     "manifestVersion": "1.14",
@@ -15,16 +14,14 @@
         "color": "resources/color.png",
         "outline": "resources/outline.png"
     },
-<%={{ }}=%>
     "name": {
-        "short": "{{appName}}",
-        "full": "Full name for {{appName}}"
+        "short": "{%appName%}",
+        "full": "Full name for {%appName%}"
     },
     "description": {
-        "short": "Short description of {{appName}}",
-        "full": "Full description of {{appName}}"
+        "short": "Short description of {%appName%}",
+        "full": "Full description of {%appName%}"
     },
-{{=<% %>=}}
     "accentColor": "#FFFFFF",
     "bots": [],
     "composeExtensions": [],
@@ -61,4 +58,3 @@
         "resource": "api://${{TAB_DOMAIN}}/${{AAD_APP_CLIENT_ID}}"
     }
 }
-<%={{ }}=%>

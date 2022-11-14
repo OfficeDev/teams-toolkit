@@ -50,6 +50,7 @@ export class ProgressMessages {
   static readonly restartAzureFunctionApp = getLocalizedString(
     "core.progress.restartAzureFunctionApp"
   );
+  static readonly restartAzureService = getLocalizedString("core.progress.restartAzureFunctionApp");
   static readonly getAzureStorageAccountInfo = getLocalizedString(
     "core.progress.getAzureStorageDeployCredential"
   );

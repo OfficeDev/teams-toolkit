@@ -83,13 +83,14 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
    * @param args local file needed to be deployed
    * @param azureResource azure resource info
    * @param azureCredential azure user login credential
+   * @return the zip deploy time cost
    * @protected
    */
   protected async zipDeploy(
     args: DeployStepArgs,
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
-  ): Promise<void> {
+  ): Promise<number> {
     await this.progressBar?.next(ProgressMessages.packingCode);
     const zipBuffer = await this.packageToZip(args, this.context);
     await this.progressBar?.next(ProgressMessages.getAzureAccountInfoForDeploy);
@@ -100,6 +101,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     const endpoint = this.getZipDeployEndpoint(azureResource.instanceId);
     await this.context.logProvider.debug(`Start to upload code to ${endpoint}`);
     await this.progressBar?.next(ProgressMessages.uploadZipFileToAzure);
+    const startTime = Date.now();
     const location = await AzureDeployDriver.zipDeployPackage(
       endpoint,
       zipBuffer,
@@ -111,6 +113,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     await this.context.logProvider.debug("Start to check Azure deploy status");
     await AzureDeployDriver.checkDeployStatus(location, config, this.context.logProvider);
     await this.context.logProvider.debug("Check Azure deploy status complete");
+    return Date.now() - startTime;
   }
 
   /**
@@ -245,5 +248,17 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
       maxBodyLength: Infinity,
       timeout: DeployConstant.DEPLOY_TIMEOUT_IN_MS,
     };
+  }
+
+  protected async restartFunctionApp(azureResource: AzureResourceInfo): Promise<void> {
+    await this.context.logProvider.debug("Restarting function app...");
+    try {
+      await this.managementClient?.webApps?.restart(
+        azureResource.resourceGroupName,
+        azureResource.instanceId
+      );
+    } catch (e) {
+      throw DeployExternalApiCallError.restartWebAppError(e);
+    }
   }
 }

@@ -13,6 +13,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
 import { DeployConstant } from "../../../constant/deployConstant";
+import { ProgressMessages } from "../../../messages";
 
 const ACTION_NAME = "azureAppService/deploy";
 
@@ -30,7 +31,7 @@ export class AzureAppServiceDeployDriver implements StepDriver {
 
 export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
   progressBarName = `Deploying ${this.workingDirectory ?? ""} to Azure App Service`;
-  progressBarSteps = 5;
+  progressBarSteps = 6;
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/sites\/([^\/]*)/i;
 
@@ -39,11 +40,12 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<void> {
-    const startTime = Date.now();
     await this.progressBar?.start();
-    await this.zipDeploy(args, azureResource, azureCredential);
+    const cost = await this.zipDeploy(args, azureResource, azureCredential);
+    await this.progressBar?.next(ProgressMessages.restartAzureService);
+    await this.restartFunctionApp(azureResource);
     await this.progressBar?.end(true);
-    if (startTime + DeployConstant.DEPLOY_OVER_TIME < Date.now()) {
+    if (cost > DeployConstant.DEPLOY_OVER_TIME) {
       await this.context.logProvider?.info(
         `Deploying to Azure App Service takes a long time. Consider referring to this document to optimize your deployment: 
         https://learn.microsoft.com/en-us/azure/app-service/deploy-run-package`

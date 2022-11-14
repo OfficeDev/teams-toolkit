@@ -94,6 +94,7 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
+    sandbox.stub(client.webApps, "restart").resolves();
     const res = await deploy.run(args, context);
     expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
   });
@@ -163,6 +164,7 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
+    sandbox.stub(client.webApps, "restart").resolves();
     // read deploy zip file error
     sandbox
       .stub(fs, "readFile")

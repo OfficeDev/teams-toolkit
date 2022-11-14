@@ -1085,7 +1085,7 @@
   "driver.teamsApp.progressBar.publishTeamsAppTitle": "Publish Teams app",
   "driver.teamsApp.progressBar.publishTeamsAppStep1": "Checking if the Teams app has already been submitted to tenant App Catalog",
   "driver.teamsApp.progressBar.publishTeamsAppStep2.1": "Update published Teams app",
-  "driver.teamsApp.progressBar.publishTeamsAppStep2.2": "Publishing Teams app"
+  "driver.teamsApp.progressBar.publishTeamsAppStep2.2": "Publishing Teams app",
   "driver.botFramework.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.botFramework.error.unhandledError": "Unhandled error happened in %s action: %s"
 }

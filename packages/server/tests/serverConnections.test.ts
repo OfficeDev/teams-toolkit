@@ -83,6 +83,20 @@ describe("serverConnections", () => {
     });
   });
 
+  it("preProvisionResourcesRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns("test");
+    sandbox.replace(connection["core"], "preProvisionForVS", fake);
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.provisionResourcesRequest(inputs as Inputs, token as CancellationToken);
+    res.then((data) => {
+      assert.equal(data, ok("test"));
+    });
+  });
+
   it("provisionResourcesRequest", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns("test");

@@ -1,5 +1,5 @@
 {
-    "name": "{{appName}}",
+    "name": "{%appName%}",
     "version": "0.0.1",
     "description": "",
     "author": "",

@@ -92,10 +92,7 @@ import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { Step } from "./commonUtils";
-import {
-  PrerequisiteArgs,
-  PrerequisiteArgVxTestApp,
-} from "./taskTerminal/prerequisiteTaskTerminal";
+import { PrerequisiteArgVxTestApp } from "./taskTerminal/prerequisiteTaskTerminal";
 
 enum Checker {
   NpmInstall = "npm package installation",

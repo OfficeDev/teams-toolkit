@@ -95,26 +95,14 @@ export class CICDImpl {
       // 4. Send notification messages.
       const messages = [];
       if (created.length > 0) {
-        if (inputs.platform === Platform.CLI) {
-          messages.push(
-            getLocalizedString(
-              "plugins.cicd.result.scaffold.created.cli",
-              created.join(", "),
-              providerIdToLabel(providerName),
-              envName
-            )
-          );
-        } else if (inputs.platform === Platform.VSCode) {
-          messages.push(
-            getLocalizedString(
-              "plugins.cicd.result.scaffold.created",
-              created.join(", "),
-              providerIdToLabel(providerName),
-              envName,
-              VSCodeExtensionCommand.openReadme
-            )
-          );
-        }
+        messages.push(
+          getLocalizedString(
+            "plugins.cicd.result.scaffold.created",
+            created.join(", "),
+            providerIdToLabel(providerName),
+            envName
+          )
+        );
       }
       if (skipped.length > 0) {
         messages.push(

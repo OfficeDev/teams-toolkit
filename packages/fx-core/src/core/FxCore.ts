@@ -231,7 +231,14 @@ export class FxCore implements v3.ICore {
     const res = await coordinator.initInfra(inputs);
     return res;
   }
-
+  /**
+   * "teamsfx init debug" CLI command
+   */
+  @hooks([ErrorHandlerMW])
+  async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    const res = await coordinator.initDebug(inputs);
+    return res;
+  }
   @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async createProjectOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {

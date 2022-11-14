@@ -246,7 +246,7 @@ export interface BaseQuestion {
     forgetLastValue?: boolean;
     name: string;
     step?: number;
-    title?: string;
+    title?: string | LocalFunc<string | undefined>;
     totalSteps?: number;
     value?: unknown;
 }
@@ -2084,7 +2084,7 @@ export interface UserInputQuestion extends BaseQuestion {
     default?: string | string[] | LocalFunc<string | string[] | undefined>;
     placeholder?: string | LocalFunc<string | undefined>;
     prompt?: string | LocalFunc<string | undefined>;
-    title: string;
+    title: string | LocalFunc<string | undefined>;
     type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text";
     validation?: ValidationSchema;
     validationHelp?: string;

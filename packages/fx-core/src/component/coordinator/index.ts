@@ -49,7 +49,11 @@ import {
   BotOptionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { getQuestionsForAddFeatureV3, getQuestionsForProvisionV3 } from "../question";
+import {
+  getQuestionsForAddFeatureV3,
+  getQuestionsForInit,
+  getQuestionsForProvisionV3,
+} from "../question";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import { globalVars } from "../../core/globalVars";
@@ -235,6 +239,17 @@ export class Coordinator {
     return ok(projectPath);
   }
 
+  @hooks([
+    ActionExecutionMW({
+      question: (context, inputs) => {
+        return getQuestionsForInit("infra");
+      },
+      enableTelemetry: true,
+      telemetryEventName: "init-infra",
+      telemetryComponentName: "coordinator",
+      errorSource: CoordinatorSource,
+    }),
+  ])
   async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
     const projectPath = inputs.projectPath;
     if (!projectPath) {
@@ -242,6 +257,30 @@ export class Coordinator {
     }
     const context = createContextV3();
     const res = await Generator.generateTemplate(context, projectPath, "init-infra", undefined);
+    if (res.isErr()) return err(res.error);
+    const ensureRes = await this.ensureTrackingId(inputs, projectPath);
+    if (ensureRes.isErr()) return err(ensureRes.error);
+    return ok(undefined);
+  }
+
+  @hooks([
+    ActionExecutionMW({
+      question: (context, inputs) => {
+        return getQuestionsForInit("debug");
+      },
+      enableTelemetry: true,
+      telemetryEventName: "init-debug",
+      telemetryComponentName: "coordinator",
+      errorSource: CoordinatorSource,
+    }),
+  ])
+  async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(InvalidInputError("projectPath is undefined"));
+    }
+    const context = createContextV3();
+    const res = await Generator.generateTemplate(context, projectPath, "init-debug", undefined);
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(inputs, projectPath);
     if (ensureRes.isErr()) return err(ensureRes.error);

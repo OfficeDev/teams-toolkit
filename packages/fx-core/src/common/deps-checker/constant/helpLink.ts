@@ -18,3 +18,5 @@ export const dotnetManualInstallHelpLink = `${defaultHelpLink}#dotnetnotfound`;
 export const dotnetNotSupportTargetVersionHelpLink = `${defaultHelpLink}#dotnetnotsupporttargetversion`;
 
 export const ngrokInstallHelpLink = `${defaultHelpLink}#failtoinstallngrok`;
+
+export const vxTestAppInstallHelpLink = `${defaultHelpLink}#vxtestappinstallhelplink`;

@@ -47,8 +47,3 @@ export interface BaseInstallOptions {
 }
 
 export type InstallOptions = BaseInstallOptions;
-
-export interface Dependency {
-  depsType: DepsType;
-  installOptions?: InstallOptions;
-}

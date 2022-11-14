@@ -3,7 +3,6 @@
 
 import {
   defaultHelpLink,
-  Dependency,
   DependencyStatus,
   DepsCheckerEvent,
   DepsLogger,

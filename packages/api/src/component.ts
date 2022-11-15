@@ -45,4 +45,5 @@ export interface CloudResource {
 export interface ActionContext {
   progressBar?: IProgressHandler;
   telemetryProps?: Record<string, string>;
+  telemetryMeasures?: Record<string, number>;
 }

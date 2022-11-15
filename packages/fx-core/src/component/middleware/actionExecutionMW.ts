@@ -64,6 +64,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
     const telemetryProps = {
       [TelemetryConstants.properties.component]: telemetryComponentName,
     };
+    const telemetryMeasures: Record<string, number> = {};
     let progressBar;
     let returnType: "Result" | "Array" = "Result";
     try {
@@ -107,6 +108,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         const actionContext: ActionContext = {
           progressBar: progressBar,
           telemetryProps: telemetryProps,
+          telemetryMeasures: telemetryMeasures,
         };
         ctx.arguments.push(actionContext);
       }
@@ -125,14 +127,15 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       const timeCost = new Date().getTime() - startTime;
       if (ctx.result?.isErr && ctx.result.isErr()) throw ctx.result.error;
       // send end telemetry
-      merge(telemetryProps, { [TelemetryConstants.properties.timeCost]: timeCost });
+      merge(telemetryMeasures, { [TelemetryConstants.properties.timeCost]: timeCost });
       if (action.enableTelemetry) {
-        sendSuccessEvent(eventName, telemetryProps);
+        sendSuccessEvent(eventName, telemetryProps, telemetryMeasures);
         sendMigratedSuccessEvent(
           eventName,
           ctx.arguments[0] as ContextV3,
           ctx.arguments[1] as InputsWithProjectPath,
-          telemetryProps
+          telemetryProps,
+          telemetryMeasures
         );
       }
       await progressBar?.end(true);

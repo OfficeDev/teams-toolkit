@@ -56,7 +56,7 @@
     "@azure/arm-apimanagement": "^8.0.0",
     "@azure/arm-appservice": "^13.0.0",
     "@azure/arm-botservice": "^2.0.0",
-    "@azure/arm-resources": "^5.0.1",
+    "@azure/arm-resources": "~5.0.1",
     "@azure/arm-sql": "^9.0.0",
     "@azure/arm-storage": "^17.2.1",
     "@azure/arm-subscriptions": "^5.0.0",

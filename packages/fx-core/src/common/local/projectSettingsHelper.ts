@@ -9,6 +9,7 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionOfficeAddin,
   HostTypeOptionSPFx,
+  ImportAddinProjectItem,
   MessageExtensionItem,
   OfficeAddinItems,
   TabOptionItem,
@@ -36,6 +37,7 @@ export class ProjectSettingsHelper {
       ...OfficeAddinItems.map((item) => {
         return item.id;
       }),
+      ImportAddinProjectItem.id,
     ];
     return (
       solutionSettings?.hostType === HostTypeOptionOfficeAddin.id &&

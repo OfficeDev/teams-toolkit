@@ -24,6 +24,15 @@ export const OfficeAddinItems: OptionItem[] = jsonData
     groupName: getLocalizedString("core.options.separator.addin"),
   }));
 
+// TODO: add localization strings
+export const ImportAddinProjectItem: OptionItem = {
+  id: "import-addin-project",
+  label: "Import Add-in",
+  cliName: "import",
+  detail: "Import an office independent add-in project",
+  groupName: getLocalizedString("core.options.separator.addin"),
+};
+
 export const OfficeAddinItem: OptionItem = {
   id: "office-addin",
   label: "office addin label",

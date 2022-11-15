@@ -73,10 +73,12 @@ export function generateTasks(
     // adds entries into tasks
     const addinName = inputs["addin-name"];
     const hostName = inputs["addin-host"];
-    tasks.push(preDebugCheckAndStartOffice(hostName));
-    tasks.push(installAddinDependencies(addinName));
-    tasks.push(debugAddin(addinName, hostName));
-    tasks.push(stopAddinDebugger(addinName));
+    if (addinName && hostName) {
+      tasks.push(preDebugCheckAndStartOffice(hostName));
+      tasks.push(installAddinDependencies(addinName));
+      tasks.push(debugAddin(addinName, hostName));
+      tasks.push(stopAddinDebugger(addinName));
+    }
   }
 
   return tasks;

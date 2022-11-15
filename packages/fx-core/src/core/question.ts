@@ -41,6 +41,7 @@ import {
   MessageExtensionNewUIItem,
   BotNewUIOptionItem,
   OfficeAddinItems,
+  ImportAddinProjectItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -295,7 +296,7 @@ export function createCapabilityForOfficeAddin(): SingleSelectQuestion {
     name: CoreQuestionNames.Capabilities,
     title: getLocalizedString("core.createCapabilityQuestion.title"),
     type: "singleSelect",
-    staticOptions: OfficeAddinItems,
+    staticOptions: [...OfficeAddinItems, ImportAddinProjectItem],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     skipSingleOption: false,
   };
@@ -337,6 +338,7 @@ export function createCapabilityQuestionPreview(): SingleSelectQuestion {
 
   // if (isOfficeAddinEnabled()) {
   //   staticOptions.splice(staticOptions.length, 0, ...OfficeAddinItems);
+  //   staticOptions.splice(staticOptions.length, 0, ImportAddinProjectItem);
   // }
 
   return {

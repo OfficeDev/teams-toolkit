@@ -63,9 +63,11 @@ export default class projectsJsonData {
 
   getHostTemplateNames(projectType: string): string[] {
     let hosts: string[] = [];
-    for (const key in this.m_projectJsonData.projectTypes) {
-      if (key === projectType) {
-        hosts = this.m_projectJsonData.projectTypes[key].supportedHosts;
+    if (projectType) {
+      for (const key in this.m_projectJsonData.projectTypes) {
+        if (key === projectType) {
+          hosts = this.m_projectJsonData.projectTypes[key].supportedHosts;
+        }
       }
     }
     return hosts;
@@ -73,15 +75,17 @@ export default class projectsJsonData {
 
   getSupportedScriptTypes(projectType: string): string[] {
     const scriptTypes: string[] = [];
-    for (const template in this.m_projectJsonData.projectTypes[projectType].templates) {
-      let scriptType = "";
-      if (template === "javascript") {
-        scriptType = "JavaScript";
-      } else if (template === "typescript") {
-        scriptType = "TypeScript";
-      }
+    if (projectType) {
+      for (const template in this.m_projectJsonData.projectTypes[projectType].templates) {
+        let scriptType = "";
+        if (template === "javascript") {
+          scriptType = "JavaScript";
+        } else if (template === "typescript") {
+          scriptType = "TypeScript";
+        }
 
-      scriptTypes.push(scriptType);
+        scriptTypes.push(scriptType);
+      }
     }
     return scriptTypes;
   }

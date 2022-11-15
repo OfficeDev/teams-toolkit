@@ -37,6 +37,7 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionOfficeAddin,
   HostTypeOptionSPFx,
+  ImportAddinProjectItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
@@ -340,9 +341,10 @@ export function fillInSolutionSettings(
     hostType = HostTypeOptionAzure.id;
   } else if (
     isOfficeAddinEnabled() &&
-    addinOptionIds.some((id) => {
+    (addinOptionIds.some((id) => {
       return capabilities.includes(id);
-    })
+    }) ||
+      capabilities.includes(ImportAddinProjectItem.id))
   ) {
     //capabilities = [OfficeAddinItem.id];
     hostType = HostTypeOptionOfficeAddin.id;

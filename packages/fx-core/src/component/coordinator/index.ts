@@ -265,17 +265,16 @@ export class Coordinator {
       errorSource: CoordinatorSource,
     }),
   ])
-  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async initInfra(context: ContextV3, inputs: Inputs): Promise<Result<undefined, FxError>> {
     const projectPath = inputs.projectPath;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is undefined"));
     }
-    const context = createContextV3();
-    const capability = inputs.capability;
     const editor = inputs.editor;
+    const capability = inputs.capability;
     const spfx = inputs.spfx;
-    if (!capability) return err(InvalidInputError("capability is undefined"));
     if (!editor) return err(InvalidInputError("editor is undefined"));
+    if (!capability) return err(InvalidInputError("capability is undefined"));
     const templateName = InitTemplateName[`infra:${editor}:${capability}:${spfx}`];
     const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
     if (res.isErr()) return err(res.error);
@@ -295,17 +294,16 @@ export class Coordinator {
       errorSource: CoordinatorSource,
     }),
   ])
-  async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async initDebug(context: ContextV3, inputs: Inputs): Promise<Result<undefined, FxError>> {
     const projectPath = inputs.projectPath;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is undefined"));
     }
-    const context = createContextV3();
-    const capability = inputs.capability;
     const editor = inputs.editor;
+    const capability = inputs.capability;
     const spfx = inputs.spfx;
-    if (!capability) return err(InvalidInputError("capability is undefined"));
     if (!editor) return err(InvalidInputError("editor is undefined"));
+    if (!capability) return err(InvalidInputError("capability is undefined"));
     const templateName = InitTemplateName[`debug:${editor}:${capability}:${spfx}`];
     if (editor === "vsc") {
       const exists = await fs.pathExists(path.join(projectPath, ".vscode"));

@@ -228,7 +228,7 @@ export class FxCore implements v3.ICore {
    */
   @hooks([ErrorHandlerMW])
   async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    const res = await coordinator.initInfra(inputs);
+    const res = await coordinator.initInfra(createContextV3(), inputs);
     return res;
   }
   /**
@@ -236,7 +236,7 @@ export class FxCore implements v3.ICore {
    */
   @hooks([ErrorHandlerMW])
   async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    const res = await coordinator.initDebug(inputs);
+    const res = await coordinator.initDebug(createContextV3(), inputs);
     return res;
   }
   @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])

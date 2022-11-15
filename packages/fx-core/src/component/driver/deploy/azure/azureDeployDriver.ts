@@ -86,7 +86,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
    * @return the zip deploy time cost
    * @protected
    */
-  protected async zipDeploy(
+  public async zipDeploy(
     args: DeployStepArgs,
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential

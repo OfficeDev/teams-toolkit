@@ -3,7 +3,10 @@
 
 import * as sinon from "sinon";
 import "mocha";
-import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
+import {
+  AzureAppServiceDeployDriver,
+  AzureAppServiceDeployDriverImpl,
+} from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
 import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
 import * as appService from "@azure/arm-appservice";
 import * as tools from "../../../../../src/common/tools";
@@ -218,5 +221,27 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
+  });
+
+  it("zip deploy need acceleration", async () => {
+    const args = {
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+    } as DeployArgs;
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    context.logProvider.info = async (msg: string | Array<any>) => {
+      console.log(msg);
+      return Promise.resolve(true);
+    };
+    const deploy = new AzureAppServiceDeployDriverImpl(args, context);
+    sandbox.stub(deploy, "zipDeploy").resolves(5_000_000);
+    await deploy.run();
   });
 });

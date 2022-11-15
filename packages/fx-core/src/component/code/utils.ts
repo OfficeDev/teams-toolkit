@@ -47,13 +47,17 @@ export function execute(
       async (error, stdout, stderr) => {
         if (error) {
           await logger?.error(`Failed to run command: "${command}" on path: "${workingDir}".`);
-          await logger?.error(stdout);
+          if (stdout) {
+            await logger?.error(stdout);
+          }
           if (stderr) {
             await logger?.error(stderr);
           }
           reject(error);
         }
-        await logger?.debug(stdout);
+        if (stdout) {
+          await logger?.debug(stdout);
+        }
         resolve(stdout);
       }
     );

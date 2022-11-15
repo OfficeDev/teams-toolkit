@@ -40,6 +40,12 @@ export class PublishAppPackageDriver implements StepDriver {
     args: PublishAppPackageArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
+    const progressHandler = context.ui?.createProgressBar(
+      getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppTitle"),
+      2
+    );
+    progressHandler?.start();
+
     const appPackagePath = getAbsolutePath(args.appPackagePath, context.projectPath);
     if (!(await fs.pathExists(appPackagePath))) {
       return err(
@@ -76,6 +82,8 @@ export class PublishAppPackageDriver implements StepDriver {
     let result;
     const telemetryProps: { [key: string]: string } = {};
 
+    progressHandler?.next(getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep1"));
+
     const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioTokenRes.value);
     if (existApp) {
       let executePublishUpdate = false;
@@ -98,6 +106,9 @@ export class PublishAppPackageDriver implements StepDriver {
       if (res?.isOk() && res.value === confirm) executePublishUpdate = true;
 
       if (executePublishUpdate) {
+        progressHandler?.next(
+          getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.1")
+        );
         const appId = await AppStudioClient.publishTeamsAppUpdate(
           manifest.id,
           archivedFile,
@@ -107,9 +118,13 @@ export class PublishAppPackageDriver implements StepDriver {
         // TODO: how to send telemetry with own properties
         telemetryProps[TelemetryPropertyKey.updateExistingApp] = "true";
       } else {
+        progressHandler?.end(true);
         return err(UserCancelError);
       }
     } else {
+      progressHandler?.next(
+        getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2")
+      );
       const appId = await AppStudioClient.publishTeamsApp(
         manifest.id,
         archivedFile,
@@ -118,6 +133,8 @@ export class PublishAppPackageDriver implements StepDriver {
       result = new Map([[outputKeys.publishedAppId, appId]]);
       telemetryProps[TelemetryPropertyKey.updateExistingApp] = "false";
     }
+
+    progressHandler?.end(true);
 
     context.logProvider.info(`Publish success!`);
     if (context.platform === Platform.CLI) {

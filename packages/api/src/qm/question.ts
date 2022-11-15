@@ -52,7 +52,7 @@ export interface BaseQuestion {
   /**
    * human readable meaningful display name of the question
    */
-  title?: string;
+  title?: string | LocalFunc<string | undefined>;
 
   /**
    * the answer of the question
@@ -101,7 +101,7 @@ export interface UserInputQuestion extends BaseQuestion {
   /**
    * title is required for human input question
    */
-  title: string;
+  title: string | LocalFunc<string | undefined>;
   /**
    * placeholder in the input text box
    * placeholder can have dynamic value defined by a function with type `LocalFunc<string | undefined>`

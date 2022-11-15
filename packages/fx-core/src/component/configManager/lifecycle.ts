@@ -1,6 +1,7 @@
 import { ok, err, FxError, Result, LogProvider } from "@microsoft/teamsfx-api";
 import _ from "lodash";
 import { Container } from "typedi";
+import { mapToJson } from "../../common/tools";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { StepDriver } from "../driver/interface/stepDriver";
 import { DriverNotFoundError } from "./error";
@@ -95,9 +96,17 @@ export class Lifecycle implements ILifecycle {
   async execute(ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> {
     ctx.logProvider.info(`[${component}]Executing lifecycle ${this.name}`);
     const result = await this.executeImpl(ctx);
-    ctx.logProvider.info(
-      `[${component}]Finished Executing lifecycle ${this.name}. Result: ${JSON.stringify(result)}`
-    );
+    if (result.isOk()) {
+      ctx.logProvider.info(
+        `[${component}]Finished Executing lifecycle ${this.name}. Result: ${JSON.stringify(
+          mapToJson(result.value)
+        )}`
+      );
+    } else {
+      ctx.logProvider.info(
+        `[${component}]Finished Executing lifecycle ${this.name}. Result: ${JSON.stringify(result)}`
+      );
+    }
     return result;
   }
 

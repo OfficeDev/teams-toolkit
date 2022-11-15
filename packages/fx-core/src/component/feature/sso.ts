@@ -23,6 +23,7 @@ import { convertToAlphanumericOnly } from "../../common/utils";
 import { sendErrorTelemetryThenReturnError } from "../../core/telemetry";
 import {
   AddSsoParameters,
+  Language,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
@@ -44,12 +45,17 @@ import "../resource/azureSql";
 import "../resource/identity";
 import { generateConfigBiceps, bicepUtils } from "../utils";
 import { getComponent } from "../workflow";
+import { isV3Enabled } from "../../common/tools";
+import { createAuthFiles } from "../resource/aadApp/utils";
 
 @Service("sso")
 export class SSO {
   name = "sso";
 
   async add(context: ContextV3, inputs: InputsWithProjectPath): Promise<Result<any, FxError>> {
+    if (isV3Enabled()) {
+      return addSsoV3(context, inputs);
+    }
     context.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSsoStart, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     });
@@ -233,6 +239,35 @@ export class SSO {
     }
     return res;
   }
+}
+
+async function addSsoV3(
+  context: ContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<any, FxError>> {
+  context.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSsoStart, {
+    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+  });
+
+  const res = await createAuthFiles(inputs, Language.CSharp, false, false, true);
+  if (res.isErr()) {
+    if (res.isErr()) {
+      return err(
+        sendErrorTelemetryThenReturnError(
+          SolutionTelemetryEvent.AddSso,
+          res.error,
+          context.telemetryReporter
+        )
+      );
+    }
+  }
+
+  context.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSso, {
+    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+    [SolutionTelemetryProperty.Success]: TelemetryConstants.values.yes,
+  });
+
+  return ok(undefined);
 }
 
 export interface updateComponents {

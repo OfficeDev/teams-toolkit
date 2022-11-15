@@ -30,7 +30,8 @@ export class Constants {
   public static readonly BOT_REGISTRATION: string = "BotRegistration";
   public static readonly CREATE_BOT_REGISTRATION: string = "createBotRegistration";
   public static readonly UPDATE_MESSAGE_ENDPOINT: string = "updateMessageEndpoint";
-  public static readonly UPDATE_BOT_REGISTRATION: string = "updateBotRegistration";
+  public static readonly CREATE_OR_UPDATE_BOT_REGISTRATION: string =
+    "createOrUpdateBotRegistration";
   public static readonly MSI_FOR_BOT: string = "MSI Support for Bot";
 }
 
@@ -97,7 +98,10 @@ export class BotRegistration {
     botRegistration: IBotRegistration
   ): Promise<Result<undefined, FxError>> {
     return err(
-      new NotImplementedError(Constants.BOT_REGISTRATION, Constants.UPDATE_BOT_REGISTRATION)
+      new NotImplementedError(
+        Constants.BOT_REGISTRATION,
+        Constants.CREATE_OR_UPDATE_BOT_REGISTRATION
+      )
     );
   }
   public async updateMessageEndpoint(

@@ -10,13 +10,11 @@ export class Utils {
   ): IBotRegistration {
     return {
       botId: local.botId ?? remote.botId,
-      name: local.name ? local.name : remote.name,
-      description: local.description ? local.description : remote.description,
-      iconUrl: local.iconUrl ? local.iconUrl : remote.iconUrl,
-      messagingEndpoint: local.messagingEndpoint
-        ? local.messagingEndpoint
-        : remote.messagingEndpoint,
-      callingEndpoint: local.callingEndpoint ? local.callingEndpoint : remote.callingEndpoint,
+      name: local.name || remote.name,
+      description: local.description || remote.description,
+      iconUrl: local.iconUrl || remote.iconUrl,
+      messagingEndpoint: local.messagingEndpoint || remote.messagingEndpoint,
+      callingEndpoint: local.callingEndpoint || remote.callingEndpoint,
     };
   }
 }

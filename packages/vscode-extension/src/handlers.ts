@@ -58,6 +58,7 @@ import {
   UserError,
   Void,
   VsCodeEnv,
+  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import { AddSsoParameters } from "@microsoft/teamsfx-core/build/component/constants";
 import {
@@ -2835,7 +2836,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
         EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
       );
     } else {
-      sourcePath = path.resolve(`${workspacePath}/.${ConfigFolderName}/.env.${env}`);
+      sourcePath = path.resolve(`${workspacePath}/${SettingsFolderName}/.env.${env}`);
     }
   } else {
     const invalidArgsError = new SystemError(

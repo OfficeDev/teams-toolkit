@@ -124,7 +124,7 @@ describe("Tools Install Driver test", () => {
           binFolders: ["~/.fx/bin/func/node_modules/.bin"],
         },
       });
-      const res = await toolsInstallDriver.run({ func: { version: 4 } }, mockedDriverContext);
+      const res = await toolsInstallDriver.run({ func: true }, mockedDriverContext);
       chai.assert.isTrue(res.isOk());
     });
 
@@ -142,7 +142,7 @@ describe("Tools Install Driver test", () => {
         },
         error: new DepsCheckerError("test message", "test link"),
       });
-      const res = await toolsInstallDriver.run({ func: { version: 4 } }, mockedDriverContext);
+      const res = await toolsInstallDriver.run({ func: true }, mockedDriverContext);
       chai.assert.isTrue(res.isErr());
     });
 
@@ -160,7 +160,7 @@ describe("Tools Install Driver test", () => {
         },
         error: new DepsCheckerError("warning message", "test link"),
       });
-      const res = await toolsInstallDriver.run({ func: { version: 4 } }, mockedDriverContext);
+      const res = await toolsInstallDriver.run({ func: true }, mockedDriverContext);
       chai.assert.isTrue(res.isOk());
     });
 

@@ -47,7 +47,7 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
     await this.progressBar?.end(true);
     if (cost > DeployConstant.DEPLOY_OVER_TIME) {
       await this.context.logProvider?.info(
-        `${getLocalizedMessage("driver.deploy.notice.deployAcceleration")}
+        `${getLocalizedMessage("driver.deploy.notice.deployAcceleration").localized}
         https://learn.microsoft.com/en-us/azure/app-service/deploy-run-package`
       );
     }

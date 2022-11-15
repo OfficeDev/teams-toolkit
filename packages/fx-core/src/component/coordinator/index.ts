@@ -122,6 +122,21 @@ export const Feature2TemplateName: any = {
   [`${M365SsoLaunchPageOptionItem.id}:undefined`]: TemplateNames.M365Tab,
 };
 
+export const InitTemplateName: any = {
+  ["debug:vsc:tab:true"]: "init-debug-vsc-spfx-tab",
+  ["debug:vsc:tab:false"]: "init-debug-vsc-tab",
+  ["debug:vs:tab:true"]: "init-debug-vs-spfx-tab",
+  ["debug:vs:tab:false"]: "init-debug-vs-tab",
+  ["debug:vsc:bot:undefined"]: "init-debug-vsc-bot",
+  ["debug:vs:bot:undefined"]: "init-debug-vs-bot",
+  ["infra:vsc:tab:true"]: "init-infra-vsc-spfx-tab",
+  ["infra:vsc:tab:false"]: "init-infra-vsc-tab",
+  ["infra:vs:tab:true"]: "init-infra-vs-spfx-tab",
+  ["infra:vs:tab:false"]: "init-infra-vs-tab",
+  ["infra:vsc:bot:undefined"]: "init-infra-vsc-bot",
+  ["infra:vs:bot:undefined"]: "init-infra-vs-bot",
+};
+
 const workflowFileName = "app.yml";
 
 const M365Actions = [
@@ -256,7 +271,13 @@ export class Coordinator {
       return err(InvalidInputError("projectPath is undefined"));
     }
     const context = createContextV3();
-    const res = await Generator.generateTemplate(context, projectPath, "init-infra", undefined);
+    const capability = inputs.capability;
+    const editor = inputs.editor;
+    const spfx = inputs.spfx;
+    if (!capability) return err(InvalidInputError("capability is undefined"));
+    if (!editor) return err(InvalidInputError("editor is undefined"));
+    const templateName = InitTemplateName[`infra:${editor}:${capability}:${spfx}`];
+    const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(inputs, projectPath);
     if (ensureRes.isErr()) return err(ensureRes.error);
@@ -280,7 +301,19 @@ export class Coordinator {
       return err(InvalidInputError("projectPath is undefined"));
     }
     const context = createContextV3();
-    const res = await Generator.generateTemplate(context, projectPath, "init-debug", undefined);
+    const capability = inputs.capability;
+    const editor = inputs.editor;
+    const spfx = inputs.spfx;
+    if (!capability) return err(InvalidInputError("capability is undefined"));
+    if (!editor) return err(InvalidInputError("editor is undefined"));
+    const templateName = InitTemplateName[`debug:${editor}:${capability}:${spfx}`];
+    if (editor === "vsc") {
+      const exists = await fs.pathExists(path.join(projectPath, ".vscode"));
+      if (exists) {
+        context.templateVariables = { dotVscodeFolderName: ".vscode-teamsfx" };
+      }
+    }
+    const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(inputs, projectPath);
     if (ensureRes.isErr()) return err(ensureRes.error);
@@ -292,7 +325,7 @@ export class Coordinator {
     const settingsRes = await settingsUtil.readSettings(projectPath);
     if (settingsRes.isErr()) return err(settingsRes.error);
     const settings = settingsRes.value;
-    settings.trackingId = inputs.projectId ? inputs.projectId : uuid.v4();
+    settings.trackingId = settings.trackingId || inputs.projectId || uuid.v4();
     inputs.projectId = settings.trackingId;
     await settingsUtil.writeSettings(projectPath, settings);
     return ok(undefined);

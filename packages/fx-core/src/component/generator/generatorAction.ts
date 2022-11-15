@@ -9,13 +9,14 @@ import { getTemplatesFolder } from "../../folder";
 import { MissKeyError } from "./error";
 import { FeatureFlagName } from "../../common/constants";
 import { LogProvider } from "@microsoft/teamsfx-api";
+import { defaultTimeoutInMs, defaultTryLimits } from "./constant";
 
 export interface GeneratorContext {
   name: string;
   destination: string;
   logProvider: LogProvider;
-  tryLimits: number;
-  timeoutInMs: number;
+  tryLimits?: number;
+  timeoutInMs?: number;
   relativePath?: string;
   zipUrl?: string;
   zip?: AdmZip;
@@ -85,8 +86,8 @@ export const fetchTemplateUrlWithTagAction: GeneratorAction = {
 
     context.zipUrl = await fetchTemplateZipUrl(
       context.name,
-      context.tryLimits,
-      context.timeoutInMs
+      context.tryLimits ?? defaultTryLimits,
+      context.timeoutInMs ?? defaultTimeoutInMs
     );
   },
 };
@@ -101,7 +102,11 @@ export const fetchZipFromUrlAction: GeneratorAction = {
     if (!context.zipUrl) {
       throw new MissKeyError("zipUrl");
     }
-    context.zip = await fetchZipFromUrl(context.zipUrl, context.tryLimits, context.timeoutInMs);
+    context.zip = await fetchZipFromUrl(
+      context.zipUrl,
+      context.tryLimits ?? defaultTryLimits,
+      context.timeoutInMs ?? defaultTimeoutInMs
+    );
   },
 };
 

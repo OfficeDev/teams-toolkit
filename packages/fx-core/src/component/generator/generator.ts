@@ -12,9 +12,6 @@ import {
   errorSource,
   componentName,
   commonTemplateName,
-  templateDefaultTryLimits,
-  templateDefaultTimeoutInMs,
-  sampleDefaultTryLimits,
   sampleDefaultTimeoutInMs,
 } from "./constant";
 import { FetchZipFromUrlError, TemplateZipFallbackError, UnzipError } from "./error";
@@ -64,8 +61,6 @@ export class Generator {
       relativePath: `${scenario}/`,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      tryLimits: templateDefaultTryLimits,
-      timeoutInMs: templateDefaultTimeoutInMs,
       fileNameReplaceFn: (fileName, fileData) =>
         renderTemplateFileName(fileName, fileData, replaceMap),
       fileDataReplaceFn: (fileName, fileData) =>
@@ -110,7 +105,6 @@ export class Generator {
       destination: destinationPath,
       logProvider: ctx.logProvider,
       zipUrl: sample.link,
-      tryLimits: sampleDefaultTryLimits,
       timeoutInMs: sampleDefaultTimeoutInMs,
       relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,

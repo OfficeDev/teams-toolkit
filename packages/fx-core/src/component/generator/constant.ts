@@ -5,9 +5,8 @@ export const templateTagListUrl =
   "https://github.com/OfficeDev/TeamsFx/releases/download/template-tag-list/template-tags.txt";
 export const templateDownloadBaseUrl = "https://github.com/OfficeDev/TeamsFx/releases/download";
 
-export const templateDefaultTryLimits = 1;
-export const templateDefaultTimeoutInMs = 20000;
-export const sampleDefaultTryLimits = 1;
+export const defaultTryLimits = 1;
+export const defaultTimeoutInMs = 20000;
 export const sampleDefaultTimeoutInMs = 40000;
 export const templateFileExt = ".tpl";
 export const templateAlphaVersion = "templates-0.0.0-alpha";

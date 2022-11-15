@@ -27,10 +27,7 @@ import {
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
-import {
-  templateDefaultTimeoutInMs,
-  templateDefaultTryLimits,
-} from "../../../src/component/generator/constant";
+import { defaultTimeoutInMs, defaultTryLimits } from "../../../src/component/generator/constant";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -46,7 +43,7 @@ describe("Generator utils", () => {
   it("fetch zip from url", async () => {
     const url =
       "https://github.com/OfficeDev/TeamsFx/releases/download/templates-0.0.0-alpha/bot.csharp.default.zip";
-    await generatorUtils.fetchZipFromUrl(url, templateDefaultTryLimits, templateDefaultTimeoutInMs);
+    await generatorUtils.fetchZipFromUrl(url, defaultTryLimits, defaultTimeoutInMs);
   });
 
   it("unzip ", async () => {
@@ -84,10 +81,9 @@ describe("Generator utils", () => {
       (fileName: string, fileData: Buffer) => renderTemplateFileName(fileName, fileData, {}),
       (fileName: string, fileData: Buffer) =>
         renderTemplateFileData(fileName, fileData, { appName: "test" }),
-      ""
+      "test1"
     );
-    const content = await fs.readFile(path.join(outputDir, "test.txt"), "utf8");
-    assert.equal(content, "test");
+    assert.isFalse(await fs.pathExists(path.join(outputDir, "test.txt")));
   });
 
   it("get sample info from name", async () => {

@@ -15,12 +15,12 @@
         "outline": "resources/outline.png"
     },
     "name": {
-        "short": "non-sso-tab",
-        "full": "Full name for non-sso-tab"
+        "short": "{%appName%}",
+        "full": "Full name for {%appName%}"
     },
     "description": {
-        "short": "Short description of non-sso-tab",
-        "full": "Full description of non-sso-tab"
+        "short": "Short description of {%appName%}",
+        "full": "Full description of {%appName%}"
     },
     "accentColor": "#FFFFFF",
     "bots": [],

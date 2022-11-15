@@ -15,12 +15,12 @@
         "outline": "resources/outline.png"
     },
     "name": {
-        "short": "message-extension-bot",
-        "full": "full name for message extension bot"
+        "short": "{%appName%}",
+        "full": "full name for {%appName%}"
     },
     "description": {
-        "short": "Short description of message extension bot",
-        "full": "Full description of message extension bot"
+        "short": "Short description of {%appName%}",
+        "full": "Full description of {%appName%}"
     },
     "accentColor": "#FFFFFF",
     "bots": [],

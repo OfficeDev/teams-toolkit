@@ -3,7 +3,7 @@ version: 1.0.0
 provision:
   - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
     with:
-      name: command-bot
+      name: {%appName%}
     # Output: following environment variable will be persisted in current environment's .env file.
     # BOT_ID: the AAD app client id created for Bot Registration.
     # SECRET_BOT_PASSWORD: the AAD app client secret created for Bot Registration.
@@ -33,7 +33,7 @@ deploy:
 registerApp:
   - uses: teamsApp/create # Creates a Teams app
     with:
-      name: command-bot # Teams app name
+      name: {%appName%} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 

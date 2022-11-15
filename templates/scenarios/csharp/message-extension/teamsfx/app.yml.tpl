@@ -3,7 +3,7 @@ version: 1.0.0
 provision:
   - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
     with:
-      name: notification-bot
+      name: {%appName%}
     # Output: following environment variable will be persisted in current environment's .env file.
     # BOT_ID: the AAD app client id created for Bot Registration.
     # SECRET_BOT_PASSWORD: the AAD app client secret created for Bot Registration.
@@ -13,9 +13,9 @@ provision:
       subscriptionId: ${{AZURE_SUBSCRIPTION_ID}} # The AZURE_SUBSCRIPTION_ID is a built-in environment variable. TeamsFx will ask you select one subscription if its value is empty. You're free to reference other environment varialbe here, but TeamsFx will not ask you to select subscription if it's empty in this case.
       resourceGroupName: ${{AZURE_RESOURCE_GROUP_NAME}} # The AZURE_RESOURCE_GROUP_NAME is a built-in environment variable. TeamsFx will ask you to select or create one resource group if its value is empty. You're free to reference other environment varialbe here, but TeamsFx will not ask you to select or create resource grouop if it's empty in this case.
       templates:
-      - path: ./infra/azure.bicep
-        parameters: ./infra/azure.parameters.json
-        deploymentName: Create-resources-for-bot
+       - path: ./infra/azure.bicep # Relative path to this file
+         parameters: ./infra/azure.parameters.json # Relative path to this file. Placeholders will be replaced with corresponding environment variable before ARM deployment.
+         deploymentName: Create-resources-for-tab # Required when deploy ARM template
       bicepCliVersion: v0.9.1 # Teams Toolkit will download this bicep CLI version from github for you, will use bicep CLI in PATH if you remove this config.
     # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-provision-arm#output for more details on the naming conversion rule.
 
@@ -23,17 +23,17 @@ deploy:
   - uses: dotnet/command
     with:
       args: publish --configuration Release --runtime win-x86 --self-contained
-  - uses: azureFunctions/deploy
+  - uses: azureAppService/deploy
     with:
       # deploy base folder
       distributionPath: ./bin/Release/net6.0/win-x86/publish
       # the resource id of the cloud resource to be deployed to
-      resourceId: ${{BOT_AZURE_FUNCTION_APP_RESOURCE_ID}}
+      resourceId: ${{BOT_AZURE_APP_SERVICE_RESOURCE_ID}}
 
 registerApp:
   - uses: teamsApp/create # Creates a Teams app
     with:
-      name: notification-bot # Teams app name
+      name: {%appName%} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 

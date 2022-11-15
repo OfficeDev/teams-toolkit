@@ -63,6 +63,8 @@ export interface ActionContext {
     // (undocumented)
     progressBar?: IProgressHandler;
     // (undocumented)
+    telemetryMeasures?: Record<string, number>;
+    // (undocumented)
     telemetryProps?: Record<string, string>;
 }
 

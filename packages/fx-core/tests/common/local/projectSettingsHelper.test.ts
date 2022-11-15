@@ -195,13 +195,11 @@ describe("ProjectSettingsHelper", () => {
   });
 
   it("Existing tab app", () => {
-    let projectSettings = {
+    const projectSettings = {
       appName: "unit-test",
       projectId: "11111111-1111-1111-1111-111111111111",
-      solutionSettings: {},
     } as unknown as ProjectSettings;
-    projectSettings = convertProjectSettingsV2ToV3(projectSettings, ".");
     const existingTabApp = isExistingTabApp(projectSettings);
-    chai.assert.isTrue(existingTabApp);
+    chai.assert.isFalse(existingTabApp);
   });
 });

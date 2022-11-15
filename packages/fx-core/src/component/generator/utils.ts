@@ -122,8 +122,8 @@ export async function fetchTemplateZipUrl(
 
 export async function fetchZipFromUrl(
   url: string,
-  tryLimits: number,
-  timeoutInMs: number
+  tryLimits = defaultTryLimits,
+  timeoutInMs = defaultTimeoutInMs
 ): Promise<AdmZip> {
   const res: AxiosResponse<any> = await sendRequestWithTimeout(
     async (cancelToken) => {

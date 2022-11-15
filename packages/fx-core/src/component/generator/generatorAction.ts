@@ -102,11 +102,7 @@ export const fetchZipFromUrlAction: GeneratorAction = {
     if (!context.zipUrl) {
       throw new MissKeyError("zipUrl");
     }
-    context.zip = await fetchZipFromUrl(
-      context.zipUrl,
-      context.tryLimits ?? defaultTryLimits,
-      context.timeoutInMs ?? defaultTimeoutInMs
-    );
+    context.zip = await fetchZipFromUrl(context.zipUrl, context.tryLimits, context.timeoutInMs);
   },
 };
 

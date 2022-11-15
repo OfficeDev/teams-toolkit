@@ -69,6 +69,27 @@ describe("Generator utils", () => {
     assert.equal(content, "test");
   });
 
+  it("unzip with relative path", async () => {
+    const inputDir = path.join(tmpDir, "input");
+    const outputDir = path.join(tmpDir, "output");
+    await fs.ensureDir(inputDir);
+    const fileData = "{%appName%}";
+    await fs.writeFile(path.join(inputDir, "test.txt.tpl"), fileData);
+    const zip = new AdmZip();
+    zip.addLocalFolder(inputDir);
+    zip.writeZip(path.join(tmpDir, "test.zip"));
+    await generatorUtils.unzip(
+      new AdmZip(path.join(tmpDir, "test.zip")),
+      outputDir,
+      (fileName: string, fileData: Buffer) => renderTemplateFileName(fileName, fileData, {}),
+      (fileName: string, fileData: Buffer) =>
+        renderTemplateFileData(fileName, fileData, { appName: "test" }),
+      ""
+    );
+    const content = await fs.readFile(path.join(outputDir, "test.txt"), "utf8");
+    assert.equal(content, "test");
+  });
+
   it("get sample info from name", async () => {
     const sampleName = "test";
     try {

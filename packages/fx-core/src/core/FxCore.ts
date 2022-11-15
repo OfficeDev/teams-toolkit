@@ -1231,11 +1231,14 @@ export class FxCore implements v3.ICore {
   }
 
   @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
-  async publishInDevPortal(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
-    setCurrentStage(Stage.publishInDevPortal);
-    inputs.stage = Stage.publishInDevPortal;
+  async publishInDeveloperPortal(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.publishInDeveloperPortal);
+    inputs.stage = Stage.publishInDeveloperPortal;
     const context = createContextV3();
-    return await coordinator.publishInDevPortal(context, inputs as InputsWithProjectPath);
+    return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
   }
 }
 

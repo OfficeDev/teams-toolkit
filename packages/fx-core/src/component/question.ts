@@ -786,7 +786,7 @@ export function getQuestionsForInit(
   }
   return ok(group);
 }
-export async function getQuestionsForPublishInDevPortal(
+export async function getQuestionsForPublishInDeveloperPortal(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!inputs.projectPath) {
@@ -810,8 +810,10 @@ const manifestFileQuestion = (defaultFile: string | undefined): SingleFileQuesti
   return {
     type: "singleFile",
     name: CoreQuestionNames.ManifestPath,
-    title: getLocalizedString("core.question.manifestForPublishInDevPortal.title"),
-    placeholder: getLocalizedString("core.question.manifestForPublishInDevPortal.placeholder"),
+    title: getLocalizedString("core.question.manifestForPublishInDeveloperPortal.title"),
+    placeholder: getLocalizedString(
+      "core.question.manifestForPublishInDeveloperPortal.placeholder"
+    ),
     default: defaultFile,
   };
 };

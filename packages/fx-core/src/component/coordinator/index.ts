@@ -58,7 +58,7 @@ import {
   getQuestionsForProvisionV3,
   InitOptionNo,
   InitOptionYes,
-  getQuestionsForPublishInDevPortal,
+  getQuestionsForPublishInDeveloperPortal,
 } from "../question";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -772,15 +772,15 @@ export class Coordinator {
   @hooks([
     ActionExecutionMW({
       question: (context, inputs) => {
-        return getQuestionsForPublishInDevPortal(inputs);
+        return getQuestionsForPublishInDeveloperPortal(inputs);
       },
       enableTelemetry: true,
-      telemetryEventName: TelemetryEvent.PublishInDevPortal,
+      telemetryEventName: TelemetryEvent.PublishInDeveloperPortal,
       telemetryComponentName: "coordinator",
       errorSource: CoordinatorSource,
     }),
   ])
-  async publishInDevPortal(
+  async publishInDeveloperPortal(
     ctx: ContextV3,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext

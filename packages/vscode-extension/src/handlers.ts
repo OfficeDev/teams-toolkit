@@ -969,7 +969,7 @@ export async function publishInDeveloperPortalHandler(
   args?: any[]
 ): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart, getTriggerFromProperty(args));
-  return await runCommand(Stage.publishInDevPortal);
+  return await runCommand(Stage.publishInDeveloperPortal);
 }
 
 export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {
@@ -1067,8 +1067,8 @@ export async function runCommand(
         result = await core.listCollaborator(inputs);
         break;
       }
-      case Stage.publishInDevPortal: {
-        result = await core.publishInDevPortal(inputs);
+      case Stage.publishInDeveloperPortal: {
+        result = await core.publishInDeveloperPortal(inputs);
         break;
       }
       default:
@@ -3595,11 +3595,13 @@ export async function selectSubscriptionCallback(args?: any[]): Promise<Result<n
 export async function scaffoldFromDeveloperPortalHandler(
   args?: any[]
 ): Promise<Result<null, FxError>> {
-  if (!args || args.length !== 1) {
+  if (!args || args.length < 1) {
     // should never happen
     return ok(null);
   }
 
+  const loginHint = args.length < 2 ? undefined : args[1];
+  const appId = args[0];
   const progressBar = VS_CODE_UI.createProgressBar(
     localize("teamstoolkit.devPortalIntegration.checkM365Account.progressTitle"),
     1
@@ -3609,7 +3611,7 @@ export async function scaffoldFromDeveloperPortalHandler(
   try {
     const appDefinitionRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
       { scopes: AppStudioScopes },
-      args[0]
+      appId
     );
     if (appDefinitionRes.isErr()) {
       if ((appDefinitionRes.error as any).displayMessage) {

@@ -843,7 +843,6 @@ export async function updateManifestV3ForPublish(
     return err(result.error);
   }
 
-  ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", teamsAppId));
   return ok(teamsAppId);
 }
 

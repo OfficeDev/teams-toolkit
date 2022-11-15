@@ -86,8 +86,8 @@ export const fetchTemplateUrlWithTagAction: GeneratorAction = {
 
     context.zipUrl = await fetchTemplateZipUrl(
       context.name,
-      context.tryLimits ?? defaultTryLimits,
-      context.timeoutInMs ?? defaultTimeoutInMs
+      context.tryLimits,
+      context.timeoutInMs
     );
   },
 };

@@ -20,9 +20,12 @@ provision:
     # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-provision-arm#output for more details on the naming conversion rule.
 
 deploy:
-  - uses: npm/command # Run npm command
+  - uses: npm/command
     with:
       args: install
+  - uses: npm/command
+    with:
+      args: run build
   - uses: azureAppService/deploy # Deploy bits to Azure App Serivce
     with:
       distributionPath: . # Deploy base folder

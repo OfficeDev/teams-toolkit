@@ -113,15 +113,6 @@ export async function forEachFileAndDir(
   });
 }
 
-function removeLegacyFileInZip(zip: AdmZip, existenceFiles: Set<string>): void {
-  zip
-    .getEntries()
-    .filter((entry) => !existenceFiles.has(entry.name))
-    .forEach((entry) => {
-      zip.deleteFile(entry.name);
-    });
-}
-
 async function readZip(cache: string): Promise<AdmZip | undefined> {
   try {
     const content = await fs.readFile(cache);

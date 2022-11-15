@@ -1774,6 +1774,10 @@ export enum Stage {
     // (undocumented)
     init = "init",
     // (undocumented)
+    initDebug = "initDebug",
+    // (undocumented)
+    initInfra = "initInfra",
+    // (undocumented)
     listCollaborator = "listCollaborator",
     // (undocumented)
     listEnv = "listEnv",

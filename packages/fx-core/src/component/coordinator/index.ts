@@ -671,7 +671,7 @@ export class Coordinator {
         } else if (reason.kind === "UnresolvedPlaceholders") {
           const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
           error = new UserError({
-            source: CoordinatorSource,
+            source: reason.failedDriver.uses,
             name: "UnresolvedPlaceholders",
             message: getDefaultString("core.error.unresolvedPlaceholders", placeholders),
             displayMessage: getLocalizedString("core.error.unresolvedPlaceholders", placeholders),

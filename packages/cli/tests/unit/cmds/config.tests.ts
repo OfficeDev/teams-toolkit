@@ -507,7 +507,7 @@ describe("Config Set Command Check", () => {
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
   });
 
-  it("successfully set non-secret project config when running 'config set test off' in a project folder V3", async () => {
+  it("failed to set non-secret project config when running 'config set test off' in a project folder V3", async () => {
     mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" });
     await cmd.subCommands[1].handler({
       option: "test",
@@ -517,8 +517,7 @@ describe("Config Set Command Check", () => {
     });
 
     expect(logs.length).equals(1);
-    expect(logs[0]).includes("Successfully configured project setting test.");
-    expect(secretFile.test).equals("off");
+    expect(logs[0]).includes("No user setting");
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
   });
 

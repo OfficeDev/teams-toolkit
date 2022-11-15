@@ -4,10 +4,10 @@
 import { Result, FxError, err, LogLevel, ok } from "@microsoft/teamsfx-api";
 import { isV3Enabled, envUtil, dataNeedEncryption } from "@microsoft/teamsfx-core";
 import path from "path";
-import { Argv } from "yargs";
+import { Argv, PositionalOptions } from "yargs";
 import activate from "../activate";
 import CLILogProvider from "../commonlib/log";
-import { EnvOptions, RootFolderOptions } from "../constants";
+import { EnvOptions, OptionsMap, RootFolderOptions } from "../constants";
 import { EnvNotSpecified, NonTeamsFxProjectFolder, ConfigNameNotFound } from "../error";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
@@ -24,30 +24,49 @@ import {
 } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 
-const GlobalOptions = new Set([
-  CliConfigOptions.Telemetry as string,
-  CliConfigOptions.EnvCheckerValidateDotnetSdk as string,
-  CliConfigOptions.EnvCheckerValidateFuncCoreTools as string,
-  CliConfigOptions.EnvCheckerValidateNode as string,
-  CliConfigOptions.EnvCheckerValidateNgrok as string,
-  CliConfigOptions.TrustDevCert as string,
-  CliConfigOptions.Interactive as string,
-  // CliConfigOptions.AutomaticNpmInstall as string,
-]);
+const GlobalOptionNames = isV3Enabled()
+  ? new Set([CliConfigOptions.Telemetry as string, CliConfigOptions.Interactive as string])
+  : new Set([
+      CliConfigOptions.Telemetry as string,
+      CliConfigOptions.EnvCheckerValidateDotnetSdk as string,
+      CliConfigOptions.EnvCheckerValidateFuncCoreTools as string,
+      CliConfigOptions.EnvCheckerValidateNode as string,
+      CliConfigOptions.EnvCheckerValidateNgrok as string,
+      CliConfigOptions.TrustDevCert as string,
+      CliConfigOptions.Interactive as string,
+      // CliConfigOptions.AutomaticNpmInstall as string,
+    ]);
+
+export const GlobalOptions: OptionsMap = {
+  global: {
+    alias: "g",
+    describe: "The scope of config",
+    type: "boolean",
+    default: false,
+  },
+};
+
+export const ConfigOptionOptions: PositionalOptions = {
+  type: "string",
+  description: isV3Enabled() ? "User settings option" : "The option name of user global settings",
+  array: isV3Enabled(),
+  choices: isV3Enabled() ? Array.from(GlobalOptionNames.values()) : undefined,
+};
+
+export const ConfigValueOptions: PositionalOptions = {
+  type: "string",
+  description: isV3Enabled() ? "Option value" : "The option value of user global settings",
+};
 
 export class ConfigGet extends YargsCommand {
   public readonly commandHead = `get`;
   public readonly command = `${this.commandHead} [option]`;
-  public readonly description = "Get user settings.";
+  public readonly description = isV3Enabled() ? "Get user global settings." : "Get user settings.";
 
   public builder(yargs: Argv): Argv<any> {
-    return yargs
-      .positional("option", {
-        description: "User settings option",
-        type: "string",
-      })
-      .options(RootFolderOptions)
-      .option(EnvOptions);
+    yargs.positional("option", ConfigOptionOptions);
+    if (!isV3Enabled()) yargs.options(RootFolderOptions).option(EnvOptions);
+    return yargs;
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -74,9 +93,9 @@ export class ConfigGet extends YargsCommand {
         }
       }
     } else {
-      if (GlobalOptions.has(args.option) || args.global) {
+      if (GlobalOptionNames.has(args.option) || args.global || isV3Enabled()) {
         // global config
-        if (!args.global) {
+        if (!args.global && !isV3Enabled()) {
           CLILogProvider.necessaryLog(
             LogLevel.Warning,
             "Showing global config. You can add '-g' to specify global scope."
@@ -124,7 +143,7 @@ export class ConfigGet extends YargsCommand {
     }
 
     const config = result.value;
-    if (option && GlobalOptions.has(option)) {
+    if (option && GlobalOptionNames.has(option)) {
       CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config[option], null, 2), true);
     } else {
       CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config, null, 2), true);
@@ -190,25 +209,16 @@ export class ConfigSet extends YargsCommand {
   public readonly description = "Set user settings.";
 
   public builder(yargs: Argv): Argv<any> {
-    return yargs
-      .positional("option", {
-        describe: "User settings option",
-        type: "string",
-      })
-      .positional("value", {
-        describe: "Option value",
-        type: "string",
-      })
-      .options(RootFolderOptions)
-      .options(EnvOptions);
+    if (!isV3Enabled()) yargs.options(RootFolderOptions).options(EnvOptions);
+    return yargs.positional("option", ConfigOptionOptions).positional("value", ConfigValueOptions);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
 
-    if (GlobalOptions.has(args.option) || args.global) {
+    if (GlobalOptionNames.has(args.option) || args.global || isV3Enabled()) {
       // global config
-      if (!args.global) {
+      if (!args.global && !isV3Enabled()) {
         CLILogProvider.necessaryLog(
           LogLevel.Warning,
           "Setting user config. You can add '-g' to specify global scope."
@@ -259,7 +269,7 @@ export class ConfigSet extends YargsCommand {
   }
 
   private async setGlobalConfig(option: string, value: string): Promise<Result<null, FxError>> {
-    if (GlobalOptions.has(option)) {
+    if (GlobalOptionNames.has(option)) {
       const opt = { [option]: value };
       const result = UserSettings.setConfigSync(opt);
       if (result.isErr()) {
@@ -332,15 +342,17 @@ export default class Config extends YargsCommand {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
+    if (!isV3Enabled()) yargs.options(GlobalOptions);
     return yargs
-      .options("global", {
-        alias: "g",
-        describe: "scope of config",
-        type: "boolean",
-        default: false,
+      .options("action", {
+        description: `${this.subCommands.map((cmd) => cmd.commandHead).join("|")}`,
+        type: "string",
+        choices: this.subCommands.map((cmd) => cmd.commandHead),
+        global: false,
       })
       .version(false)
-      .hide("interactive");
+      .hide("interactive")
+      .hide("action");
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

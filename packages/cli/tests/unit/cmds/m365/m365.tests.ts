@@ -203,4 +203,14 @@ describe("M365", () => {
     const finalLog = logs[logs.length - 1];
     expect(finalLog).equals(JSON.stringify({ foo: "bar" }));
   });
+
+  it("M365 LaunchInfo command (undefined)", async () => {
+    const m365 = new M365();
+    const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");
+    expect(launchInfo).not.undefined;
+
+    const result = await launchInfo!.runCommand({});
+    expect(result).not.undefined;
+    expect(result.isErr()).to.be.true;
+  });
 });

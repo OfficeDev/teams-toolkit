@@ -10,6 +10,7 @@ import {
   Platform,
   Result,
   SettingsFolderName,
+  UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
@@ -53,6 +54,8 @@ import {
   getQuestionsForAddFeatureV3,
   getQuestionsForInit,
   getQuestionsForProvisionV3,
+  InitOptionNo,
+  InitOptionYes,
 } from "../question";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -266,6 +269,7 @@ export class Coordinator {
     }),
   ])
   async initInfra(context: ContextV3, inputs: Inputs): Promise<Result<undefined, FxError>> {
+    if (inputs.proceed === InitOptionNo.id) return err(UserCancelError);
     const projectPath = inputs.projectPath;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is undefined"));
@@ -295,6 +299,7 @@ export class Coordinator {
     }),
   ])
   async initDebug(context: ContextV3, inputs: Inputs): Promise<Result<undefined, FxError>> {
+    if (inputs.proceed === InitOptionNo.id) return err(UserCancelError);
     const projectPath = inputs.projectPath;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is undefined"));

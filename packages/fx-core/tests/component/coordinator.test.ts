@@ -969,6 +969,22 @@ describe("component coordinator test", () => {
     }
     assert.isTrue(res.isOk());
   });
+  it("init infra cancel", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      editor: "vsc",
+      capability: "tab",
+      spfx: "true",
+      proceed: "false",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    assert.isTrue(res.isErr());
+  });
   it("init infra happy path with question model", async () => {
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
@@ -978,6 +994,58 @@ describe("component coordinator test", () => {
         return ok({ type: "success", result: "vsc" });
       } else if (config.name === "capability") {
         return ok({ type: "success", result: "tab" });
+      } else if (config.name === "spfx") {
+        return ok({ type: "success", result: "true" });
+      } else if (config.name === "proceed") {
+        return ok({ type: "success", result: "true" });
+      }
+      return ok({ type: "success", result: "" });
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+  it("init infra happy path with question model 2", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config: SingleSelectConfig) => {
+      if (config.name === "editor") {
+        return ok({ type: "success", result: "vsc" });
+      } else if (config.name === "capability") {
+        return ok({ type: "success", result: "bot" });
+      } else if (config.name === "proceed") {
+        return ok({ type: "success", result: "true" });
+      }
+      return ok({ type: "success", result: "" });
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+  it("init infra happy path with question model 3", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config: SingleSelectConfig) => {
+      if (config.name === "editor") {
+        return ok({ type: "success", result: "vs" });
+      } else if (config.name === "capability") {
+        return ok({ type: "success", result: "bot" });
       } else if (config.name === "proceed") {
         return ok({ type: "success", result: "true" });
       }
@@ -1038,7 +1106,23 @@ describe("component coordinator test", () => {
     const res = await fxCore.initDebug(inputs);
     assert.isTrue(res.isOk());
   });
-
+  it("init debug cancel", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      editor: "vsc",
+      capability: "tab",
+      spfx: "true",
+      proceed: "false",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initDebug(inputs);
+    assert.isTrue(res.isOk());
+  });
   it("init debug fail without projectPath", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,

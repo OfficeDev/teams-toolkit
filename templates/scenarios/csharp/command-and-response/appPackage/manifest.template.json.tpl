@@ -15,12 +15,12 @@
         "outline": "resources/outline.png"
     },
     "name": {
-        "short": "command-bot",
-        "full": "Full name for command-bot"
+        "short": "{%appName%}",
+        "full": "Full name for {%appName%}"
     },
     "description": {
-        "short": "Short description of command-bot",
-        "full": "Full description of command-bot"
+        "short": "Short description of {%appName%}",
+        "full": "Full description of {%appName%}"
     },
     "accentColor": "#FFFFFF",
     "bots": [

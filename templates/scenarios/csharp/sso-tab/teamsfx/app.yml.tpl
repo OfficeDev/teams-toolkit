@@ -12,33 +12,23 @@ provision:
       bicepCliVersion: v0.9.1 # Teams Toolkit will download this bicep CLI version from github for you, will use bicep CLI in PATH if you remove this config.
     # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-provision-arm#output for more details on the naming conversion rule.
 
-  - uses: azureStorage/enableStaticWebsite
-    with:
-      storageResourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}}
-      indexPage: index.html
-      errorPage: error.html
-    # Output: N/A
-
 deploy:
-  - uses: npm/command # Run npm command
+  - uses: dotnet/command
     with:
-      args: install
-  - uses: npm/command # Run npm command
-    env:
-      REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
-      REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
+      workingDirectory: ./
+      args: publish --configuration Release --runtime win-x86 --self-contained
+  - uses: azureAppService/deploy
     with:
-      args: run build
-  - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
-    with:
-      distributionPath: ./build # Deploy base folder. This folder includes manifest files for AAD app and Teams app that should be ignored using the ignoreFile.
-      ignoreFile: ./.appserviceIgnore # Can be changed to any ignore file location, leave blank will ignore nothing
-      resourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to
+      workingDirectory: .
+      # deploy base folder
+      distributionPath: ./bin/Release/net6.0/win-x86/publish
+      # the resource id of the cloud resource to be deployed to
+      resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}}
 
 registerApp:
   - uses: aadApp/create # Creates a new AAD app to authenticate users if AAD_APP_CLIENT_ID environment variable is empty
     with:
-      name: sso-tab-aad # Note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
+      name: {%appName%}-aad # Note: when you run configure/aadApp, the AAD app name will be updated based on the definition of manifest. If you don't want to change the name, ensure the name in AAD manifest is same with the name defined here.
       generateClientSecret: true # If the value is false, the action will not generate client secret for you
     # Output: following environment variable will be persisted in current environment's .env file.
     # AAD_APP_CLIENT_ID: the client id of AAD app
@@ -50,7 +40,7 @@ registerApp:
 
   - uses: teamsApp/create # Creates a Teams app
     with:
-      name: sso-tab # Teams app name
+      name: {%appName%} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
@@ -75,18 +65,3 @@ configureApp:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to this file. This is the path for built zip file.
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
-
-publish:
-  - uses: teamsApp/validate
-    with:
-      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
-  - uses: teamsApp/createAppPackage
-    with:
-      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
-      outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
-  - uses: teamsApp/publishAppPackage # Publish the app to Teams app catalog
-    with:
-      appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
-  # Output: following environment variable will be persisted in current environment's .env file.
-  # TEAMS_APP_PUBLISHED_APP_ID: app id in Teams tenant app catalog.

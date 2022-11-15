@@ -7,27 +7,27 @@
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "${{TAB_ENDPOINT}}",
-        "privacyUrl": "${{TAB_ENDPOINT}}/index.html#/privacy",
-        "termsOfUseUrl": "${{TAB_ENDPOINT}}/index.html#/termsofuse"
+        "privacyUrl": "${{TAB_ENDPOINT}}/privacy",
+        "termsOfUseUrl": "${{TAB_ENDPOINT}}/termsofuse"
     },
     "icons": {
         "color": "resources/color.png",
         "outline": "resources/outline.png"
     },
     "name": {
-        "short": "sso-tab",
-        "full": "Full name for sso-tab"
+        "short": "{%appName%}",
+        "full": "Full name for {%appName%}"
     },
     "description": {
-        "short": "Short description of sso-tab",
-        "full": "Full description of sso-tab"
+        "short": "Short description of {%appName%}",
+        "full": "Full description of {%appName%}"
     },
     "accentColor": "#FFFFFF",
     "bots": [],
     "composeExtensions": [],
     "configurableTabs": [
         {
-            "configurationUrl": "${{TAB_ENDPOINT}}/index.html#/config",
+            "configurationUrl": "${{TAB_ENDPOINT}}/config",
             "canUpdateConfiguration": true,
             "scopes": [
                 "team",
@@ -39,8 +39,8 @@
         {
             "entityId": "index",
             "name": "Personal Tab",
-            "contentUrl": "${{TAB_ENDPOINT}}/index.html#/tab",
-            "websiteUrl": "${{TAB_ENDPOINT}}/index.html#/tab",
+            "contentUrl": "${{TAB_ENDPOINT}}/tab",
+            "websiteUrl": "${{TAB_ENDPOINT}}/tab",
             "scopes": [
                 "personal"
             ]
@@ -52,9 +52,5 @@
     ],
     "validDomains": [
         "${{TAB_DOMAIN}}"
-    ],
-    "webApplicationInfo": {
-        "id": "${{AAD_APP_CLIENT_ID}}",
-        "resource": "api://${{TAB_DOMAIN}}/${{AAD_APP_CLIENT_ID}}"
-    }
+    ]
 }

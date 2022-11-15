@@ -15,12 +15,12 @@
         "outline": "resources/outline.png"
     },
     "name": {
-        "short": "workflow-bot",
-        "full": "Full name for workflow-bot"
+        "short": "{%appName%}",
+        "full": "Full name for {%appName%}"
     },
     "description": {
-        "short": "Short description of workflow-bot",
-        "full": "Full description of workflow-bot"
+        "short": "Short description of {%appName%}",
+        "full": "Full description of {%appName%}"
     },
     "accentColor": "#FFFFFF",
     "bots": [
@@ -32,22 +32,7 @@
                 "groupchat"
             ],
             "supportsFiles": false,
-            "isNotificationOnly": false,
-            "commandLists": [
-                {
-                    "scopes": [
-                        "personal",
-                        "team",
-                        "groupchat"
-                    ],
-                    "commands": [
-                        {
-                            "title": "helloWorld",
-                            "description": "A helloworld command to send a welcome message"
-                        }
-                    ]
-                }
-            ]
+            "isNotificationOnly": false
         }
     ],
     "composeExtensions": [],

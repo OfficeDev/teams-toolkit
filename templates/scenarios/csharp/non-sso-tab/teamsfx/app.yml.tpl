@@ -28,7 +28,7 @@ deploy:
 registerApp:
   - uses: teamsApp/create # Creates a Teams app
     with:
-      name: non-sso-tab # Teams app name
+      name: {%appName%} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 

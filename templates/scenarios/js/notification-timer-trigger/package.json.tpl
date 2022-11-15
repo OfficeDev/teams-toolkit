@@ -1,11 +1,10 @@
 {
-    "name": "{{appName}}",
+    "name": "{%appName%}",
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit Notification Bot Sample",
     "author": "Microsoft",
     "license": "MIT",
     "scripts": {
-        "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run dev",
         "dev": "func start --javascript --language-worker=\"--inspect=9239\" --port \"3978\" --cors \"*\"",
         "prepare-storage:teamsfx": "azurite --silent --location ./_storage_emulator --debug ./_storage_emulator/debug.log",
         "start": "npx func start",
@@ -22,6 +21,6 @@
     },
     "devDependencies": {
         "azurite": "^3.16.0",
-        "env-cmd": "^10.1.0"
+        "@microsoft/teamsfx-run-utils": "alpha"
     }
 }

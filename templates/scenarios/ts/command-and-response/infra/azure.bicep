@@ -10,10 +10,11 @@ param botAadAppClientId string
 @description('Required by Bot Framework package in your bot project')
 param botAadAppClientSecret string
 
+param webAppSKU string
+
 param serverfarmsName string = resourceBaseName
 param webAppName string = resourceBaseName
 param location string = resourceGroup().location
-param webAppSKU string
 
 // Compute resources for your Web App
 resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
@@ -63,8 +64,8 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
 }
 
 // Register your web service as a bot with the Bot Framework
-module azureBotRegistration 'botRegistration/azurebot.bicep' = {
-  name: 'Azure Bot registration'
+module azureBotRegistration './botRegistration/azurebot.bicep' = {
+  name: 'Azure-Bot-registration'
   params: {
     resourceBaseName: resourceBaseName
     botAadAppClientId: botAadAppClientId

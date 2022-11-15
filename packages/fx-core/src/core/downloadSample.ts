@@ -74,12 +74,7 @@ export async function saveFilesRecursively(
   await Promise.all(
     zip
       .getEntries()
-      .filter(
-        (entry) =>
-          !entry.isDirectory &&
-          entry.entryName.includes(appFolder) &&
-          entry.entryName.split("/").includes(appFolder)
-      )
+      .filter((entry) => !entry.isDirectory && entry.entryName.includes(`${appFolder}/`))
       .map(async (entry) => {
         const entryPath = entry.entryName.substring(
           entry.entryName.indexOf(appFolder) + appFolder.length
@@ -156,7 +151,11 @@ export async function downloadSample(
       throw new FetchSampleError(sample.id);
     }
     await progress.next("Unzipping the sample package");
-    await saveFilesRecursively(new AdmZip(fetchRes.value.data), sampleId, sampleAppPath);
+    await saveFilesRecursively(
+      new AdmZip(fetchRes.value.data),
+      sample.relativePath ?? sampleId,
+      sampleAppPath
+    );
     await downloadSampleHook(sampleId, sampleAppPath);
     await progress.next("Update project settings");
     const loadInputs: Inputs = {

@@ -679,3 +679,103 @@ export const SelectEnvQuestion: SingleSelectQuestion = {
   skipSingleOption: true,
   forgetLastValue: true,
 };
+
+export const InitEditorVSCode: OptionItem = {
+  id: "vsc",
+  label: getLocalizedString("core.InitEditorVsc"),
+  description: getLocalizedString("core.InitEditorVscDesc"),
+};
+
+export const InitEditorVS: OptionItem = {
+  id: "vs",
+  label: getLocalizedString("core.InitEditorVs"),
+  description: getLocalizedString("core.InitEditorVsDesc"),
+};
+
+export const InitCapabilityTab: OptionItem = {
+  id: "tab",
+  label: "Tab",
+  description: getLocalizedString("core.InitCapabilityTab"),
+};
+
+export const InitCapabilityBot: OptionItem = {
+  id: "bot",
+  label: "Bot",
+  description: getLocalizedString("core.InitCapabilityBot"),
+};
+
+export const InitOptionYes: OptionItem = {
+  id: "true",
+  label: getLocalizedString("core.InitOptionYes"),
+};
+export const InitOptionNo: OptionItem = {
+  id: "false",
+  label: getLocalizedString("core.InitOptionNo"),
+};
+export const InitEditorQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "editor",
+  title: getLocalizedString("core.InitEditorTitle"),
+  staticOptions: [InitEditorVSCode, InitEditorVS],
+};
+export const InitCapabilityQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "capability",
+  title: getLocalizedString("core.InitCapabilityTitle"),
+  staticOptions: [InitCapabilityTab, InitCapabilityBot],
+};
+export const InitIsSPFxQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "spfx",
+  title: getLocalizedString("core.InitIsSPFxTitle"),
+  staticOptions: [InitOptionNo, InitOptionYes],
+};
+export const InitDebugProceedQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "proceed",
+  title: (inputs: Inputs) => {
+    let fileList;
+    if (inputs["editor"] === InitEditorVSCode.id) {
+      fileList =
+        "teamsfx/\n   - app.local.yml\n   - settings.json\n   - run.js\n.vscode/\n   - launch.json\n   - settings.json\n   - tasks.json";
+    } else {
+      fileList = "teamsfx/\n   - app.local.yml\n   - settings.json";
+    }
+    return getLocalizedString("core.InitGenerateConfirm", fileList);
+  },
+  staticOptions: [InitOptionNo, InitOptionYes],
+  default: InitOptionYes.id,
+};
+export const InitInfraProceedQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "proceed",
+  title: (inputs: Inputs) => {
+    let fileList;
+    if (inputs["editor"] === InitEditorVSCode.id) {
+      fileList =
+        inputs["capability"] === InitCapabilityBot.id
+          ? "teamsfx/\n  - app.yml\n  - settings.json\ninfra/\n  botRegistration/\n    - azurebot.bicep\n    - readme.md\n  - azure.bicep\n  - azure.parameters.json"
+          : "teamsfx/\n  - app.yml\n  - settings.json\ninfra/\n  - azure.bicep\n  - azure.parameters.json";
+    } else {
+      fileList = "teamsfx/\n   - app.yml\n   - settings.json";
+    }
+    return getLocalizedString("core.InitGenerateConfirm", fileList);
+  },
+  staticOptions: [InitOptionNo, InitOptionYes],
+  default: InitOptionYes.id,
+};
+export function getQuestionsForInit(
+  type: "debug" | "infra"
+): Result<QTreeNode | undefined, FxError> {
+  const group = new QTreeNode({ type: "group" });
+  group.addChild(new QTreeNode(InitEditorQuestion));
+  const capabilityNode = new QTreeNode(InitCapabilityQuestion);
+  group.addChild(capabilityNode);
+  const SPFxNode = new QTreeNode(InitIsSPFxQuestion);
+  SPFxNode.condition = { equals: InitCapabilityTab.id };
+  capabilityNode.addChild(SPFxNode);
+  group.addChild(
+    new QTreeNode(type === "debug" ? InitDebugProceedQuestion : InitInfraProceedQuestion)
+  );
+  return ok(group);
+}

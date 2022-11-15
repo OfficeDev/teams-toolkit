@@ -17,6 +17,9 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { CreateOrUpdateM365BotArgs } from "./interface/createOrUpdateM365BotArgs";
+import { BotRegistration } from "../../resource/botService/botRegistration/botRegistration";
+import { LocalBotRegistration } from "../../resource/botService/botRegistration/localBotRegistration";
+import { IBotRegistration } from "../../resource/botService/appStudio/interfaces/IBotRegistration";
 
 const actionName = "m365Bot/createOrUpdate";
 const helpLink = "https://aka.ms/teamsfx-actions/m365Bot-createOrUpdate";
@@ -38,32 +41,20 @@ export class CreateOrUpdateM365BotDriver implements StepDriver {
     try {
       this.validateArgs(args);
 
-      const tokenResult = await context.m365TokenProvider.getAccessToken({
-        scopes: AppStudioScopes,
-      });
-      if (tokenResult.isErr()) {
-        throw tokenResult.error;
-      }
+      const botRegistrationData: IBotRegistration = {
+        botId: args.botId,
+        name: args.name,
+        description: args.description ?? "",
+        iconUrl: args.iconUrl ?? "",
+        messagingEndpoint: args.messagingEndpoint,
+        callingEndpoint: "",
+      };
 
-      let botRegistration = await AppStudioClient.getBotRegistration(tokenResult.value, args.botId);
-      if (!botRegistration) {
-        botRegistration = {
-          botId: args.botId,
-          name: args.name,
-          messagingEndpoint: args.messagingEndpoint,
-          description: args.description ?? "",
-          iconUrl: args.iconUrl ?? "",
-          callingEndpoint: "",
-        };
-        await AppStudioClient.createBotRegistration(tokenResult.value, botRegistration);
-      } else {
-        botRegistration.messagingEndpoint = args.messagingEndpoint;
-        botRegistration.name = args.name;
-        botRegistration.description = args.description ?? botRegistration.description;
-        botRegistration.iconUrl = args.iconUrl ?? botRegistration.iconUrl;
-        await AppStudioClient.updateBotRegistration(tokenResult.value, botRegistration);
-      }
-
+      const botRegistration: BotRegistration = new LocalBotRegistration();
+      await botRegistration.createOrUpdateBotRegistration(
+        context.m365TokenProvider,
+        botRegistrationData
+      );
       return new Map();
     } catch (error) {
       if (error instanceof UserError || error instanceof SystemError) {

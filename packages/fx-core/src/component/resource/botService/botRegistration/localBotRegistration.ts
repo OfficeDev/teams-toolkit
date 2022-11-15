@@ -7,6 +7,7 @@ import { AppStudioScopes } from "../../../../common/tools";
 import { AppStudioClient } from "../appStudio/appStudioClient";
 import { BotRegistration, BotAuthType, BotAadCredentials } from "./botRegistration";
 import { Messages } from "../messages";
+import { Utils } from "./utils";
 
 export class LocalBotRegistration extends BotRegistration {
   public async createBotRegistration(
@@ -52,6 +53,40 @@ export class LocalBotRegistration extends BotRegistration {
     await AppStudioClient.createBotRegistration(appStudioToken, initialBotReg);
     logProvider?.info(Messages.SuccessfullyProvisionedBotRegistration);
     return ok(botAadCredentials);
+  }
+
+  public async createOrUpdateBotRegistration(
+    m365TokenProvider: M365TokenProvider,
+    botRegistration: IBotRegistration
+  ): Promise<Result<undefined, FxError>> {
+    // 1. Get bot registration from remote.
+    // 2. If Not Found, Then create a new bot registration.
+    // 3. Else:
+    //      3.1 Merge bot registration (remote + passed-in, respect passed-in).
+    //      3.2 Update bot registration.
+    const appStudioTokenRes = await m365TokenProvider.getAccessToken({
+      scopes: AppStudioScopes,
+    });
+    if (appStudioTokenRes.isErr()) {
+      return err(appStudioTokenRes.error);
+    }
+    const appStudioToken = appStudioTokenRes.value;
+    const remoteBotRegistration = await AppStudioClient.getBotRegistration(
+      appStudioToken,
+      botRegistration.botId!
+    );
+    if (!remoteBotRegistration) {
+      // Not Found case.
+      await AppStudioClient.createBotRegistration(appStudioToken, botRegistration);
+    } else {
+      // Update bot registration.
+      const mergedBotRegistration = Utils.mergeIBotRegistration(
+        botRegistration,
+        remoteBotRegistration
+      );
+      await AppStudioClient.updateBotRegistration(appStudioToken, mergedBotRegistration);
+    }
+    return ok(undefined);
   }
 
   public async updateMessageEndpoint(

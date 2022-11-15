@@ -896,11 +896,11 @@ async function runBackgroundAsyncTasks(
     isExistingUser !== "no"
   );
   if (TreatmentVariableValue.welcomeViewStyle === "A") {
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewA", true);
-  } else if (TreatmentVariableValue.welcomeViewStyle === "B") {
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
+  } else if (TreatmentVariableValue.welcomeViewStyle === "B") {
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewB", true);
+    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
   }
   TreatmentVariableValue.inProductDoc = (await exp
     .getExpService()

@@ -1,12 +1,11 @@
 {
-  "name": "echobot",
+  "name": "{%appName%}",
   "version": "1.0.0",
   "description": "Microsoft Teams Toolkit hello world Bot sample",
   "author": "Microsoft",
   "license": "MIT",
   "main": "./lib/index.js",
   "scripts": {
-    "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run dev",
     "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./index.ts",
     "build": "tsc --build && shx cp -r ./adaptiveCards ./lib/",
     "start": "node ./lib/index.js",
@@ -24,8 +23,8 @@
     "restify": "^8.5.1"
   },
   "devDependencies": {
+    "@microsoft/teamsfx-run-utils": "alpha",
     "@types/restify": "8.4.2",
-    "env-cmd": "^10.1.0",
     "ts-node": "^10.4.0",
     "typescript": "^4.4.4",
     "nodemon": "^2.0.7",

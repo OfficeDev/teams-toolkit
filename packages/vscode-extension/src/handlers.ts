@@ -3475,9 +3475,6 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
     case "fx-extension.publish": {
       return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-publish");
     }
-    case "fx-entension.publishInDeveloperPortal": {
-      return VS_CODE_UI.openUrl("https://learn.microsoft.com/en-us/microsoftteams/manage-apps");
-    }
   }
   return Promise.resolve(ok(false));
 }

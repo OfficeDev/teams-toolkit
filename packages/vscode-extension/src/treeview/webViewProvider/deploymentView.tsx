@@ -97,7 +97,7 @@ export class DeploymentView extends React.Component<any, any> {
             icon="codicon codicon-export"
             customized={true}
             disable={this.state.locked}
-            command="fx-entension.publishInDeveloperPortal"
+            command="fx-extension.publishInDeveloperPortal"
           ></TreeItem>
         )}
       </div>

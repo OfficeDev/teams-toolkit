@@ -789,10 +789,6 @@ export function getQuestionsForInit(
 export async function getQuestionsForPublishInDevPortal(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (CLIPlatforms.includes(inputs.platform)) {
-    return err(new UserError("", "", "", "")); // TODO: msg, cli not supported
-  }
-
   if (!inputs.projectPath) {
     return err(new ObjectIsUndefinedError("projectPath"));
   }

@@ -1121,7 +1121,7 @@ describe("component coordinator test", () => {
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.initDebug(inputs);
-    assert.isTrue(res.isOk());
+    assert.isTrue(res.isErr());
   });
   it("init debug fail without projectPath", async () => {
     const inputs: Inputs = {

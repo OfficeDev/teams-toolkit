@@ -149,7 +149,7 @@ export async function unzip(
 ): Promise<void> {
   let entries: AdmZip.IZipEntry[] = zip.getEntries().filter((entry) => !entry.isDirectory);
   if (relativePath) {
-    entries = entries.filter((entry) => entry.entryName.split("/")[0] == relativePath);
+    entries = entries.filter((entry) => entry.entryName.startsWith(relativePath));
   }
 
   for (const entry of entries) {

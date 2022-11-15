@@ -61,7 +61,7 @@ export class Generator {
     const replaceMap = ctx.templateVariables;
     const generatorContext: GeneratorContext = {
       name: language ?? commonTemplateName,
-      relativePath: scenario,
+      relativePath: `${scenario}/`,
       destination: destinationPath,
       logProvider: ctx.logProvider,
       tryLimits: templateDefaultTryLimits,

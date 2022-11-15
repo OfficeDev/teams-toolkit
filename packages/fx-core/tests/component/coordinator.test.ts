@@ -6,6 +6,7 @@ import {
   Platform,
   Result,
   SingleSelectConfig,
+  Stage,
   UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -1288,5 +1289,16 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isErr());
+  });
+
+  it("getQuestionsForInit", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    const fxCore = new FxCore(tools);
+    const res1 = await fxCore.getQuestions(Stage.initDebug, inputs);
+    assert.isTrue(res1.isOk());
+    const res2 = await fxCore.getQuestions(Stage.initInfra, inputs);
+    assert.isTrue(res2.isOk());
   });
 });

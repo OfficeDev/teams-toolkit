@@ -73,6 +73,20 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<Void, FxError>>;
+  preProvisionResourcesRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<
+    Result<
+      {
+        needAzureLogin: boolean;
+        needM365Login: boolean;
+        resolvedAzureSubscriptionId?: string;
+        resolvedAzureResourceGroupName?: string;
+      },
+      FxError
+    >
+  >;
   deployArtifactsRequest: (
     inputs: Inputs,
     token: CancellationToken

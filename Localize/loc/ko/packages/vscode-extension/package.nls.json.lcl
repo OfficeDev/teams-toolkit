@@ -13,8 +13,8 @@
       <Item ItemId=";teamstoolkit.PrerequisitesValidationError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Prerequisites Check Failed, please fix all issues above then debug again. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[필수 구성 요소를 확인하지 못했습니다. 위의 모든 문제를 해결한 다음, 로컬 디버그를 다시 시도하세요. 필수 구성 요소 확인 및 설치를 무시하려는 경우 Visual Studio Code 설정에서 사용하지 않도록 설정할 수 있습니다.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[필수 구성 요소 확인 실패, 위의 모든 문제를 수정한 다음 다시 디버그하세요. 필수 구성 요소를 확인하고 설치하지 않으려면 Visual Studio Code 설정에서 비활성화할 수 있습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Prerequisites Check Failed, please fix all issues above then local debug again. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.]]></Val>
@@ -184,6 +184,9 @@
       <Item ItemId=";teamstoolkit.accountTree.switchingM365" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Microsoft 365: Switching...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Microsoft 365: 전환 중...]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -358,6 +361,9 @@
       <Item ItemId=";teamstoolkit.capabilities.untrustedWorkspaces.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The Teams Toolkit extension supports limited features in untrusted workspaces.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 도구 키트 확장은 신뢰할 수 없는 작업 영역에서 제한된 기능을 지원합니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -607,8 +613,8 @@
       <Item ItemId=";teamstoolkit.commands.debug.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select and Start Debugging Teams App]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams 앱 선택 및 디버그 시작]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[디버깅 Teams 앱 선택 및 시작]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Select and Start Debuging Teams App]]></Val>
@@ -760,8 +766,8 @@
       <Item ItemId=";teamstoolkit.commands.localDebug.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Debug]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[로컬 디버그]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[디버그]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Local debug]]></Val>
@@ -784,6 +790,9 @@
       <Item ItemId=";teamstoolkit.commands.manageCollaborator.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Manage M365 Teams App (with AAD app) Collaborators]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[M365 Teams 앱 관리(AAD 앱 사용) 공동 작업자]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1525,12 +1534,18 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.manageCollaboratorDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Manage M365 Teams App (with AAD app) Collaborators]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[M365 Teams 앱 관리(AAD 앱 사용) 공동 작업자]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.manageCollaboratorTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Manage Collaborator]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[공동 작업자 관리]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1582,6 +1597,9 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.openFromTdp.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot run command when opening project from Developer Portal. Try again when creation is finished.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[개발자 포털에서 프로젝트를 열 때 명령을 실행할 수 없습니다. 생성이 완료되면 다시 시도하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1954,66 +1972,99 @@
       <Item ItemId=";teamstoolkit.devPortalIntegration.appStudioLogin.loginCancel" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Sign in canceled. You need to sign in with the correct Microsoft 365 account to proceed. Please try again from Developer Portal.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[로그인이 취소되었습니다. 계속하려면 올바른 Microsoft 365 계정으로 로그인해야 합니다. 개발자 포털에서 다시 시도하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.devPortalIntegration.appStudioLogin.message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please log in to your Microsoft 365 account to proceed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[계속하려면 Microsoft 365 계정에 로그인하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.devPortalIntegration.appStudioSwitchAccount.message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please log in to the correct Microsoft 365 account to proceed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[계속하려면 올바른 Microsoft 365 계정에 로그인하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.devPortalIntegration.blockingMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please wait until finish processing previous request.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[이전 요청 처리가 완료될 때까지 기다리세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.devPortalIntegration.checkM365Account.progressTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Checking Microsoft 365 account...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Microsoft 365 계정 확인 중...]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.devPortalIntegration.generalError.message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please try again from Developer Portal and make sure to sign in with the correct Microsoft 365 account.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[개발자 포털에서 다시 시도하고 올바른 Microsoft 365 계정으로 로그인했는지 확인하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.devPortalIntegration.getTeamsAppError.message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit failed to get your Teams app. Please try again from Developer Portal and make sure to sign in with the correct Microsoft 365 account.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 도구 키트에서 Teams 앱을 가져오지 못했습니다. 개발자 포털에서 다시 시도하고 올바른 Microsoft 365 계정으로 로그인했는지 확인하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.devPortalIntegration.invalidLink" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Invalid link]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[유효하지 않은 링크]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.devPortalIntegration.signInCancel.message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Canceled signing in. You need to sign in with the correct Microsoft 365 account to proceed. Please try again from Developer Portal.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[로그인을 취소했습니다. 계속하려면 올바른 Microsoft 365 계정으로 로그인해야 합니다. 개발자 포털에서 다시 시도하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.devPortalIntegration.switchAccount" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Switch account]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[계정 전환]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.devPortalIntegration.switchAccountCancel.message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Canceled switching account. You need to sign in with the correct Microsoft 365 account to proceed. Please try again from Developer Portal.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[계정 전환이 취소되었습니다. 계속하려면 올바른 Microsoft 365 계정으로 로그인해야 합니다. 개발자 포털에서 다시 시도하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2260,6 +2311,9 @@
       <Item ItemId=";teamstoolkit.handlers.defaultManifestTemplateNotExists" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Manifest template file not found in %s. You can use CLI with your own template file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s에서 매니페스트 템플릿 파일을 찾을 수 없습니다. 고유한 템플릿 파일과 함께 CLI를 사용할 수 있습니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2347,6 +2401,9 @@
       <Item ItemId=";teamstoolkit.handlers.invalidArgs" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Invalid args: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[잘못된 인수: %s.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2383,8 +2440,8 @@
       <Item ItemId=";teamstoolkit.handlers.localDebugTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Debug]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[로컬 디버그]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[디버그]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Local debug]]></Val>
@@ -2422,8 +2479,8 @@
       <Item ItemId=";teamstoolkit.handlers.localStateFileNotFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[State file not found in environment %s. You must run `debug` first to generate related state file.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[%s 환경에서 상태 파일을 찾을 수 없습니다. 관련 상태 파일을 생성하려면 먼저 `Local debug`를 실행해야 합니다.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[%s 환경에서 상태 파일을 찾을 수 없습니다. 관련 상태 파일을 생성하려면 먼저 `디버그`를 실행해야 합니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[State file not found in environment %s. You must run `Local debug` first to generate related state file.]]></Val>
@@ -2443,6 +2500,9 @@
       <Item ItemId=";teamstoolkit.handlers.loginCacheFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to get login account token from cache. You could try signing out and signing back in to your Azure Account using Teams Toolkit tree view or command palette]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[캐시에서 로그인 계정 토큰을 가져오지 못했습니다. Teams 도구 키트 트리 보기 또는 명령 팔레트를 사용하여 Azure 계정에서 로그아웃했다가 다시 로그인할 수 있습니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2851,8 +2911,8 @@
       <Item ItemId=";teamstoolkit.localDebug.ngrokProcessError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to start ngrok. %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[ngrok을 시작하지 못했습니다. %s 자세한 오류 정보는 [터미널]5D;(%s)을 확인하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ngrok을 시작하지 못했습니다. %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to start ngrok. %s Please check the [terminal]5D;(%s) for detailed error information.]]></Val>
@@ -2863,8 +2923,8 @@
       <Item ItemId=";teamstoolkit.localDebug.ngrokStoppedError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Ngrok has been stopped with exit code '%s'.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Ngrok이 종료 코드 '%s'과(와) 함께 중지되었습니다. 자세한 오류 정보는 [터미널]5D;(%s)을 확인하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ngrok이 종료 코드 '%s'과(와) 함께 중지되었습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Ngrok has been stopped with exit code '%s'. Please check the [terminal]5D;(%s) for detailed error information.]]></Val>
@@ -2902,8 +2962,8 @@
       <Item ItemId=";teamstoolkit.localDebug.npmInstallFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Install npm packages task failed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[npm 패키지 설치 작업이 실패했습니다. 세부 정보를 보려면 %s을(를) 확인하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[npm 패키지 설치 작업이 실패했습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Install npm packages task failed. Please check the %s to see the details.]]></Val>
@@ -2941,8 +3001,8 @@
       <Item ItemId=";teamstoolkit.localDebug.portWarning" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Changing port(s) in package.json may break debug. Ensure all port changes are expected or refer to documentation by clicking `Learn More` button. (%s package.json location: %s)]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[package.json에서 포트를 변경하면 로컬 디버그가 중단될 수 있습니다. 모든 포트 변경이 필요한지 확인하거나 '자세한 정보' 단추를 클릭하여 설명서를 참조하세요. (%s package.json 위치: %s)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[package.json에서 포트를 변경하면 디버그가 중단될 수 있습니다. 모든 포트 변경이 예상되는지 확인하거나 `자세히 알아보기` 버튼을 클릭하여 설명서를 참조하세요. (%s package.json 위치: %s)]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Changing port(s) in package.json may break local debug. Ensure all port changes are expected or refer to documentation by clicking `Learn More` button. (%s package.json location: %s)]]></Val>
@@ -2962,8 +3022,8 @@
       <Item ItemId=";teamstoolkit.localDebug.prepareManifestFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Build & upload Teams manifest task failed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[빌드 및 Teams 매니페스트 작업을 업로드하지 못했습니다. 세부 정보를 보려면 %s을(를) 확인하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 매니페스트 작업을 빌드 및 업로드하지 못했습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Build & upload Teams manifest task failed. Please check the %s to see the details.]]></Val>
@@ -2974,8 +3034,8 @@
       <Item ItemId=";teamstoolkit.localDebug.prerequisitesCheckFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Prerequisites Check Failed. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[필수 구성 요소 확인에 실패했습니다. 세부 정보를 보려면 %s을(를) 확인하세요. 필수 구성 요소의 확인 및 설치를 우회하려는 경우 Visual Studio Code 설정에서 이를 비활성화할 수 있습니다.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[필수 구성 요소 확인에 실패했습니다. 필수 구성 요소를 확인하고 설치하지 않으려면 Visual Studio Code 설정에서 비활성화할 수 있습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Prerequisites Check Failed. Please check the %s to see the details. If you wish to bypass checking and installing any prerequisites, you can disable them in Visual Studio Code settings.]]></Val>
@@ -2986,8 +3046,8 @@
       <Item ItemId=";teamstoolkit.localDebug.prerequisitesCheckTaskFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Validate & install prerequisites failed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[유효성 검사 및 필수 구성 요소를 설치하지 못했습니다. 세부 정보를 보려면 %s을(를) 확인하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[필수 구성 요소의 유효성 검사 및 설치에 실패했습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Validate & install prerequisites failed. Please check the %s to see the details.]]></Val>
@@ -2998,8 +3058,8 @@
       <Item ItemId=";teamstoolkit.localDebug.setUpBotFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Set up bot task failed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[봇 fask를 설정하지 못했습니다. 세부 정보를 보려면 %s을(를) 확인하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[봇 작업을 설정하지 못했습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Set up bot fask failed. Please check the %s to see the details.]]></Val>
@@ -3010,8 +3070,8 @@
       <Item ItemId=";teamstoolkit.localDebug.setUpSSOFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Set up SSO task failed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SSO 작업 설정에 실패했습니다. 자세한 내용을 보려면 %s을(를) 확인하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SSO 설정 작업에 실패했습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Set up SSO task failed. Please check the %s to see the details.]]></Val>
@@ -3022,8 +3082,8 @@
       <Item ItemId=";teamstoolkit.localDebug.setUpTabFailure" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Set up tab task failed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[탭 작업 설정에 실패했습니다. 자세한 내용을 보려면 %s을(를) 확인하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[탭 설정 작업이 실패했습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Set up tab task failed. Please check the %s to see the details.]]></Val>
@@ -3034,6 +3094,9 @@
       <Item ItemId=";teamstoolkit.localDebug.showDetail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please check the %s to see the details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[자세한 내용을 보려면 %s을(를) 확인하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3049,6 +3112,9 @@
       <Item ItemId=";teamstoolkit.localDebug.taskCancelError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The task is canceled.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[작업이 취소됩니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3073,8 +3139,8 @@
       <Item ItemId=";teamstoolkit.localDebug.tunnelEndpointNotFoundError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to find the tunnel endpoint. Teams toolkit try to get the first HTTPS URL from %s and failed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[터널 URL을 찾지 못했습니다.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[터널 엔드포인트를 찾지 못했습니다. Teams 도구 키트가 %s에서 첫 번째 HTTPS URL을 가져오려고 했지만 실패했습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Failed to find the tunnel url.]]></Val>
@@ -3085,6 +3151,9 @@
       <Item ItemId=";teamstoolkit.localDebug.tunnelEnvError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to save environment variables. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[환경 변수를 저장하지 못했습니다. %에스]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3109,6 +3178,9 @@
       <Item ItemId=";teamstoolkit.manageCollaborator.grantPermission.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Grant Permission]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[권한 부여]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3124,6 +3196,9 @@
       <Item ItemId=";teamstoolkit.manageCollaborator.listCollaborator.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[List Collaborator]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[공동 작업자 나열]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3409,6 +3484,9 @@
       <Item ItemId=";teamstoolkit.progressHandler.showTerminalLink" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Check [terminal window]5D;(%s) for details.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[자세한 내용은 [터미널 창]5D;(%s)을 확인하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3424,6 +3502,9 @@
       <Item ItemId=";teamstoolkit.qm.defaultFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Default file(s)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[기본 파일]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3619,18 +3700,27 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.args.manifest.appPackagePathTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams app package path]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 앱 패키지 경로]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.ngrokArgs.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The arguments passed to the ngrok install command.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ngrok install 명령에 전달된 인수입니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.args.ngrokPath.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The ngrok path.]A;If undefined, use Teams Toolkit ngrok, otherwise use provided ngrok.]A;e.g."ngrokPath": "ngrok" | "C:/sample/path/ngrok" | "./bot/node_modules/ngrok/bin/ngrok"]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ngrok 경로입니다.]A;정의되지 않은 경우 Teams 도구 키트 ngrok를 사용하고, 그렇지 않으면 제공된 ngrok를 사용합니다.]A;예: "ngrokPath": "ngrok" | "C:/sample/path/ngrok" | "./bot/node_modules/ngrok/bin/ngrok"]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3718,8 +3808,8 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.args.prerequisites.portsTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Validate available ports to ensure those debug ones are not occupied.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[사용 가능한 포트의 유효성을 검사하여 해당 로컬 디버그 포트가 사용되지 않는지 확인합니다.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[사용 가능한 포트를 확인하여 해당 디버그 포트가 사용되지 않는지 확인합니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Validate available ports to ensure those local debug ones are not occupied.]]></Val>
@@ -3811,14 +3901,17 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.args.tunnelInspection.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Tunnel inspection.]A;If undefined, get endpoint from log first, then the first PublicURL from default inspection "http://127.0.0.1:4040/api/tunnels"]A;Otherwise, use provided inspection (the first PublicURL).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[터널 검사.]A;정의되지 않은 경우 먼저 로그에서 엔드포인트를 가져온 다음 기본 검사 "http://127.0.0.1:4040/api/tunnels"에서 첫 번째 PublicURL을 가져옵니다.]A;그렇지 않으면 제공된 검사(첫 번째 PublicURL)를 사용합니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.taskDefinitions.command.bot.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Set up bot.]A; See https://aka.ms/teamsfx-debug-set-up-bot-task for how to customize following args.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[봇을 설정합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot을 참조하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[봇을 설정합니다.]A; 다음 인수를 맞춤설정하는 방법은 https://aka.ms/teamsfx-debug-set-up-bot-task를 참조하세요.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Set up bot.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-bot for how to customize following args.]]></Val>
@@ -3829,8 +3922,8 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.command.manifest.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Build and upload Teams manifest.]A; See https://aka.ms/teamsfx-debug-prepare-manifest-task for how to customize following args.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams 매니페스트를 빌드하고 업로드합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest를 참조하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 매니페스트를 빌드하고 업로드합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-prepare-manifest-task를 참조하세요.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Build and upload Teams manifest.]A; See https://aka.ms/teamsfx-debug-tasks#debug-prepare-manifest for how to customize following args.]]></Val>
@@ -3841,8 +3934,8 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.command.npmInstall.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Install npm packages.]A; See https://aka.ms/teamsfx-npm-package-task for how to customize following args.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[npm 패키지를 설치합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-tasks#debug-npm-install을 참조하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[npm 패키지를 설치합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-npm-package-task를 참조하세요.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Install npm packages.]A; See https://aka.ms/teamsfx-debug-tasks#debug-npm-install for how to customize following args.]]></Val>
@@ -3853,8 +3946,8 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.command.prerequisites.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Validate and install prerequisites.]A; See https://aka.ms/teamsfx-check-prerequisites-task for how to customize following args.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[필수 구성 요소를 확인하고 설치합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-tasks#debug-check-prerequisites를 참조하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[필수 구성 요소를 확인하고 설치합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-check-prerequisites-task를 참조하세요.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Validate and install prerequisites.]A; See https://aka.ms/teamsfx-debug-tasks#debug-check-prerequisites for how to customize following args.]]></Val>
@@ -3865,8 +3958,8 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.command.sso.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Set up SSO.]A; See https://aka.ms/teamsfx-debug-set-up-sso-task for how to customize following args.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SSO를 설정합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-tasks#debug-set-up-sso를 참조하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SSO를 설정합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-set-up-sso-task를 참조하세요.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Set up SSO.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-sso for how to customize following args.]]></Val>
@@ -3877,8 +3970,8 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.command.startLocalTunnel.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Start the local tunnel service.]A; See https://aka.ms/teamsfx-local-tunnel-task for how to customize following args.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[로컬 터널 서비스를 시작합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-tasks#debug-start-local-tunnel을 참조하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[로컬 터널 서비스를 시작합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-local-tunnel-task를 참조하세요.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Start the local tunnel service.]A; See https://aka.ms/teamsfx-debug-tasks#debug-start-local-tunnel for how to customize following args.]]></Val>
@@ -3889,8 +3982,8 @@
       <Item ItemId=";teamstoolkit.taskDefinitions.command.tab.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Set up tab.]A; See https://aka.ms/teamsfx-debug-set-up-tab-task for how to customize following args.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[탭을 설정합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab을 참조하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[탭을 설정합니다.]A; 다음 인수를 사용자 지정하는 방법은 https://aka.ms/teamsfx-debug-set-up-tab-task를 참조하세요.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Set up tab.]A; See https://aka.ms/teamsfx-debug-tasks#debug-set-up-tab for how to customize following args.]]></Val>
@@ -3919,12 +4012,18 @@
       <Item ItemId=";teamstoolkit.tutorials.cardActionResponse.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Automate workflows for common business processes with Adaptive Cards in conversation]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[대화에서 적응형 카드를 사용하여 일반적인 비즈니스 프로세스에 대한 워크플로 자동화]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.tutorials.cardActionResponse.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Respond to card actions in Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams에서 카드 작업에 응답]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

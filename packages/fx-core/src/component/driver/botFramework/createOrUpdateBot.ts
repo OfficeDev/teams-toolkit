@@ -49,10 +49,15 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
       };
 
       const botRegistration: BotRegistration = new LocalBotRegistration();
-      await botRegistration.createOrUpdateBotRegistration(
+      const result = await botRegistration.createOrUpdateBotRegistration(
         context.m365TokenProvider,
         botRegistrationData
       );
+
+      if (result.isErr()) {
+        throw result.error;
+      }
+
       return new Map();
     } catch (error) {
       if (error instanceof UserError || error instanceof SystemError) {

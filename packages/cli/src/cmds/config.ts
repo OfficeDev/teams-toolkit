@@ -4,7 +4,7 @@
 import { Result, FxError, err, LogLevel, ok } from "@microsoft/teamsfx-api";
 import { isV3Enabled, envUtil, dataNeedEncryption } from "@microsoft/teamsfx-core";
 import path from "path";
-import { Argv, PositionalOptions } from "yargs";
+import { Argv, positional, PositionalOptions } from "yargs";
 import activate from "../activate";
 import CLILogProvider from "../commonlib/log";
 import { EnvOptions, OptionsMap, RootFolderOptions } from "../constants";
@@ -24,20 +24,21 @@ import {
 } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 
-const GlobalOptionNames = isV3Enabled()
-  ? new Set([CliConfigOptions.Telemetry as string, CliConfigOptions.Interactive as string])
-  : new Set([
-      CliConfigOptions.Telemetry as string,
-      CliConfigOptions.EnvCheckerValidateDotnetSdk as string,
-      CliConfigOptions.EnvCheckerValidateFuncCoreTools as string,
-      CliConfigOptions.EnvCheckerValidateNode as string,
-      CliConfigOptions.EnvCheckerValidateNgrok as string,
-      CliConfigOptions.TrustDevCert as string,
-      CliConfigOptions.Interactive as string,
-      // CliConfigOptions.AutomaticNpmInstall as string,
-    ]);
+const GlobalOptionNames = () =>
+  isV3Enabled()
+    ? new Set([CliConfigOptions.Telemetry as string, CliConfigOptions.Interactive as string])
+    : new Set([
+        CliConfigOptions.Telemetry as string,
+        CliConfigOptions.EnvCheckerValidateDotnetSdk as string,
+        CliConfigOptions.EnvCheckerValidateFuncCoreTools as string,
+        CliConfigOptions.EnvCheckerValidateNode as string,
+        CliConfigOptions.EnvCheckerValidateNgrok as string,
+        CliConfigOptions.TrustDevCert as string,
+        CliConfigOptions.Interactive as string,
+        // CliConfigOptions.AutomaticNpmInstall as string,
+      ]);
 
-export const GlobalOptions: OptionsMap = {
+const GlobalOptions: OptionsMap = {
   global: {
     alias: "g",
     describe: "The scope of config",
@@ -46,16 +47,20 @@ export const GlobalOptions: OptionsMap = {
   },
 };
 
-export const ConfigOptionOptions: PositionalOptions = {
-  type: "string",
-  description: isV3Enabled() ? "User settings option" : "The option name of user global settings",
-  array: isV3Enabled(),
-  choices: isV3Enabled() ? Array.from(GlobalOptionNames.values()) : undefined,
+const ConfigOptionOptions: () => PositionalOptions = () => {
+  return {
+    type: "string",
+    description: isV3Enabled() ? "User settings option" : "The option name of user global settings",
+    array: isV3Enabled(),
+    choices: isV3Enabled() ? Array.from(GlobalOptionNames().values()) : undefined,
+  };
 };
 
-export const ConfigValueOptions: PositionalOptions = {
-  type: "string",
-  description: isV3Enabled() ? "Option value" : "The option value of user global settings",
+const ConfigValueOptions: () => PositionalOptions = () => {
+  return {
+    type: "string",
+    description: isV3Enabled() ? "Option value" : "The option value of user global settings",
+  };
 };
 
 export class ConfigGet extends YargsCommand {
@@ -64,7 +69,7 @@ export class ConfigGet extends YargsCommand {
   public readonly description = isV3Enabled() ? "Get user global settings." : "Get user settings.";
 
   public builder(yargs: Argv): Argv<any> {
-    yargs.positional("option", ConfigOptionOptions);
+    yargs.positional("option", ConfigOptionOptions());
     if (!isV3Enabled()) yargs.options(RootFolderOptions).option(EnvOptions);
     return yargs;
   }
@@ -93,7 +98,7 @@ export class ConfigGet extends YargsCommand {
         }
       }
     } else {
-      if (GlobalOptionNames.has(args.option) || args.global || isV3Enabled()) {
+      if (GlobalOptionNames().has(args.option) || args.global || isV3Enabled()) {
         // global config
         if (!args.global && !isV3Enabled()) {
           CLILogProvider.necessaryLog(
@@ -143,7 +148,7 @@ export class ConfigGet extends YargsCommand {
     }
 
     const config = result.value;
-    if (option && GlobalOptionNames.has(option)) {
+    if (option && GlobalOptionNames().has(option)) {
       CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config[option], null, 2), true);
     } else {
       CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config, null, 2), true);
@@ -210,13 +215,15 @@ export class ConfigSet extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     if (!isV3Enabled()) yargs.options(RootFolderOptions).options(EnvOptions);
-    return yargs.positional("option", ConfigOptionOptions).positional("value", ConfigValueOptions);
+    return yargs
+      .positional("option", ConfigOptionOptions())
+      .positional("value", ConfigValueOptions());
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
 
-    if (GlobalOptionNames.has(args.option) || args.global || isV3Enabled()) {
+    if (GlobalOptionNames().has(args.option) || args.global || isV3Enabled()) {
       // global config
       if (!args.global && !isV3Enabled()) {
         CLILogProvider.necessaryLog(
@@ -269,7 +276,7 @@ export class ConfigSet extends YargsCommand {
   }
 
   private async setGlobalConfig(option: string, value: string): Promise<Result<null, FxError>> {
-    if (GlobalOptionNames.has(option)) {
+    if (GlobalOptionNames().has(option)) {
       const opt = { [option]: value };
       const result = UserSettings.setConfigSync(opt);
       if (result.isErr()) {

@@ -99,6 +99,18 @@ describe("Config Command Tests", function () {
     expect(options).includes(RootFolderNode.data.name, JSON.stringify(options));
     expect(positionals).deep.equals(["option", "option", "value"], JSON.stringify(positionals));
   });
+
+  it("has configured proper parameters V3", () => {
+    const cmd = new Config();
+    cmd.builder(yargs);
+    expect(registeredCommands).deep.equals(
+      ["get [option]", "set <option> <value>"],
+      JSON.stringify(registeredCommands)
+    );
+    expect(options).includes("global", JSON.stringify(options));
+    expect(options).includes(RootFolderNode.data.name, JSON.stringify(options));
+    expect(positionals).deep.equals(["option", "option", "value"], JSON.stringify(positionals));
+  });
 });
 
 describe("Config Get Command Check", () => {

@@ -99,6 +99,7 @@ import {
   getQuestionsForAddFeatureV3,
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
+  getQuestionsForInit,
   getQuestionsForProvisionV3,
 } from "../component/question";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
@@ -228,10 +229,17 @@ export class FxCore implements v3.ICore {
    */
   @hooks([ErrorHandlerMW])
   async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    const res = await coordinator.initInfra(inputs);
+    const res = await coordinator.initInfra(createContextV3(), inputs);
     return res;
   }
-
+  /**
+   * "teamsfx init debug" CLI command
+   */
+  @hooks([ErrorHandlerMW])
+  async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    const res = await coordinator.initDebug(createContextV3(), inputs);
+    return res;
+  }
   @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async createProjectOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
@@ -622,6 +630,10 @@ export class FxCore implements v3.ICore {
       return await getQuestionsForDeployV3(context, inputs);
     } else if (stage === Stage.provision) {
       return await getQuestionsForProvisionV3(context, inputs);
+    } else if (stage === Stage.initDebug) {
+      return await getQuestionsForInit("debug");
+    } else if (stage === Stage.initInfra) {
+      return await getQuestionsForInit("infra");
     }
     return ok(undefined);
   }

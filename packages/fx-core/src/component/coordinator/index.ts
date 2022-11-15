@@ -10,6 +10,7 @@ import {
   Platform,
   Result,
   SettingsFolderName,
+  UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
@@ -49,7 +50,13 @@ import {
   BotOptionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { getQuestionsForAddFeatureV3, getQuestionsForProvisionV3 } from "../question";
+import {
+  getQuestionsForAddFeatureV3,
+  getQuestionsForInit,
+  getQuestionsForProvisionV3,
+  InitOptionNo,
+  InitOptionYes,
+} from "../question";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import { globalVars } from "../../core/globalVars";
@@ -116,6 +123,21 @@ export const Feature2TemplateName: any = {
   [`${TabOptionItem.id}:undefined`]: TemplateNames.SsoTab,
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
   [`${M365SsoLaunchPageOptionItem.id}:undefined`]: TemplateNames.M365Tab,
+};
+
+export const InitTemplateName: any = {
+  ["debug:vsc:tab:true"]: "init-debug-vsc-spfx-tab",
+  ["debug:vsc:tab:false"]: "init-debug-vsc-tab",
+  ["debug:vs:tab:true"]: "init-debug-vs-spfx-tab",
+  ["debug:vs:tab:false"]: "init-debug-vs-tab",
+  ["debug:vsc:bot:undefined"]: "init-debug-vsc-bot",
+  ["debug:vs:bot:undefined"]: "init-debug-vs-bot",
+  ["infra:vsc:tab:true"]: "init-infra-vsc-spfx-tab",
+  ["infra:vsc:tab:false"]: "init-infra-vsc-tab",
+  ["infra:vs:tab:true"]: "init-infra-vs-spfx-tab",
+  ["infra:vs:tab:false"]: "init-infra-vs-tab",
+  ["infra:vsc:bot:undefined"]: "init-infra-vsc-bot",
+  ["infra:vs:bot:undefined"]: "init-infra-vs-bot",
 };
 
 const workflowFileName = "app.yml";
@@ -239,13 +261,66 @@ export class Coordinator {
     return ok(projectPath);
   }
 
-  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  @hooks([
+    ActionExecutionMW({
+      question: (context, inputs) => {
+        return getQuestionsForInit("infra");
+      },
+      enableTelemetry: true,
+      telemetryEventName: "init-infra",
+      telemetryComponentName: "coordinator",
+      errorSource: CoordinatorSource,
+    }),
+  ])
+  async initInfra(context: ContextV3, inputs: Inputs): Promise<Result<undefined, FxError>> {
+    if (inputs.proceed === InitOptionNo.id) return err(UserCancelError);
     const projectPath = inputs.projectPath;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is undefined"));
     }
-    const context = createContextV3();
-    const res = await Generator.generateTemplate(context, projectPath, "init-infra", undefined);
+    const editor = inputs.editor;
+    const capability = inputs.capability;
+    const spfx = inputs.spfx;
+    if (!editor) return err(InvalidInputError("editor is undefined"));
+    if (!capability) return err(InvalidInputError("capability is undefined"));
+    const templateName = InitTemplateName[`infra:${editor}:${capability}:${spfx}`];
+    const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
+    if (res.isErr()) return err(res.error);
+    const ensureRes = await this.ensureTrackingId(inputs, projectPath);
+    if (ensureRes.isErr()) return err(ensureRes.error);
+    return ok(undefined);
+  }
+
+  @hooks([
+    ActionExecutionMW({
+      question: (context, inputs) => {
+        return getQuestionsForInit("debug");
+      },
+      enableTelemetry: true,
+      telemetryEventName: "init-debug",
+      telemetryComponentName: "coordinator",
+      errorSource: CoordinatorSource,
+    }),
+  ])
+  async initDebug(context: ContextV3, inputs: Inputs): Promise<Result<undefined, FxError>> {
+    if (inputs.proceed === InitOptionNo.id) return err(UserCancelError);
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(InvalidInputError("projectPath is undefined"));
+    }
+    const editor = inputs.editor;
+    const capability = inputs.capability;
+    const spfx = inputs.spfx;
+    if (!editor) return err(InvalidInputError("editor is undefined"));
+    if (!capability) return err(InvalidInputError("capability is undefined"));
+    const templateName = InitTemplateName[`debug:${editor}:${capability}:${spfx}`];
+    if (editor === "vsc") {
+      const exists = await fs.pathExists(path.join(projectPath, ".vscode"));
+      if (exists) {
+        context.templateVariables = { dotVscodeFolderName: ".vscode-teamsfx" };
+      }
+    }
+    const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(inputs, projectPath);
     if (ensureRes.isErr()) return err(ensureRes.error);
@@ -257,7 +332,7 @@ export class Coordinator {
     const settingsRes = await settingsUtil.readSettings(projectPath);
     if (settingsRes.isErr()) return err(settingsRes.error);
     const settings = settingsRes.value;
-    settings.trackingId = inputs.projectId ? inputs.projectId : uuid.v4();
+    settings.trackingId = settings.trackingId || inputs.projectId || uuid.v4();
     inputs.projectId = settings.trackingId;
     await settingsUtil.writeSettings(projectPath, settings);
     return ok(undefined);
@@ -605,7 +680,7 @@ export class Coordinator {
         } else if (reason.kind === "UnresolvedPlaceholders") {
           const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
           error = new UserError({
-            source: CoordinatorSource,
+            source: reason.failedDriver.uses,
             name: "UnresolvedPlaceholders",
             message: getDefaultString("core.error.unresolvedPlaceholders", placeholders),
             displayMessage: getLocalizedString("core.error.unresolvedPlaceholders", placeholders),

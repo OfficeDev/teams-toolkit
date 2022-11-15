@@ -27,7 +27,10 @@ import {
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
-import { defaultTimeoutInMs, defaultTryLimits } from "../../../src/component/generator/constant";
+import {
+  templateDefaultTimeoutInMs,
+  templateDefaultTryLimits,
+} from "../../../src/component/generator/constant";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -43,7 +46,7 @@ describe("Generator utils", () => {
   it("fetch zip from url", async () => {
     const url =
       "https://github.com/OfficeDev/TeamsFx/releases/download/templates-0.0.0-alpha/bot.csharp.default.zip";
-    await generatorUtils.fetchZipFromUrl(url, defaultTryLimits, defaultTimeoutInMs);
+    await generatorUtils.fetchZipFromUrl(url, templateDefaultTryLimits, templateDefaultTimeoutInMs);
   });
 
   it("unzip ", async () => {

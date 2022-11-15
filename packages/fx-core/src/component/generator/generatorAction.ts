@@ -5,7 +5,6 @@ import AdmZip from "adm-zip";
 import path from "path";
 import { fetchZipFromUrl, fetchTemplateZipUrl, unzip, zipFolder } from "./utils";
 import fs from "fs-extra";
-import { defaultTimeoutInMs, defaultTryLimits } from "./constant";
 import { getTemplatesFolder } from "../../folder";
 import { MissKeyError } from "./error";
 import { FeatureFlagName } from "../../common/constants";
@@ -15,6 +14,8 @@ export interface GeneratorContext {
   name: string;
   destination: string;
   logProvider: LogProvider;
+  tryLimits: number;
+  timeoutInMs: number;
   relativePath?: string;
   zipUrl?: string;
   zip?: AdmZip;
@@ -82,7 +83,11 @@ export const fetchTemplateUrlWithTagAction: GeneratorAction = {
       return;
     }
 
-    context.zipUrl = await fetchTemplateZipUrl(context.name);
+    context.zipUrl = await fetchTemplateZipUrl(
+      context.name,
+      context.tryLimits,
+      context.timeoutInMs
+    );
   },
 };
 
@@ -96,7 +101,7 @@ export const fetchZipFromUrlAction: GeneratorAction = {
     if (!context.zipUrl) {
       throw new MissKeyError("zipUrl");
     }
-    context.zip = await fetchZipFromUrl(context.zipUrl, defaultTryLimits, defaultTimeoutInMs);
+    context.zip = await fetchZipFromUrl(context.zipUrl, context.tryLimits, context.timeoutInMs);
   },
 };
 

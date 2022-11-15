@@ -5,8 +5,6 @@ import Mustache from "mustache";
 import path from "path";
 import * as fs from "fs-extra";
 import {
-  defaultTimeoutInMs,
-  defaultTryLimits,
   placeholderDelimiters,
   sampleRepoName,
   templateAlphaVersion,
@@ -109,8 +107,8 @@ export async function fetchTagList(
 
 export async function fetchTemplateZipUrl(
   name: string,
-  tryLimits = defaultTryLimits,
-  timeoutInMs = defaultTimeoutInMs
+  tryLimits: number,
+  timeoutInMs: number
 ): Promise<string> {
   const tags = await fetchTagList(templateTagListURL, tryLimits, timeoutInMs);
   const selectedTag = selectTemplateTag(tags.replace(/\r/g, "").split("\n"));

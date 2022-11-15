@@ -17,6 +17,11 @@ import { DepsChecker, DependencyStatus, DepsType, InstallOptions } from "../deps
 import { isWindows } from "../util";
 import { vxTestAppInstallHelpLink } from "../constant";
 
+interface InstallOptionsSafe {
+  version: string;
+  projectPath: string;
+}
+
 // TODO: maybe change app name
 const VxTestAppExecutableName = isWindows()
   ? "video-extensibility-test-app.exe"
@@ -29,13 +34,9 @@ const VxTestAppGlobalBasePath = path.join(
   `video-extensibility-test-app`
 );
 const VxTestAppDownloadTimeoutMillis = 5 * 60 * 1000;
+// TODO: change to 
 const VxTestAppDownloadUrlTemplate =
-  "https://alexwang.blob.core.windows.net/public/video-extensibility-test-app-@platform-@arch.zip";
-
-interface InstallOptionsSafe {
-  version: string;
-  projectPath: string;
-}
+  "https://alexwang.blob.core.windows.net/public/testapp-v@version/video-extensibility-test-app-@platform-@arch.zip";
 
 /**
  * Download a file from URL and save to a temporary file.

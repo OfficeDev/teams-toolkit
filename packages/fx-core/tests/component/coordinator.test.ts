@@ -66,10 +66,34 @@ describe("component coordinator test", () => {
       [CoreQuestionNames.Samples]: "hello-world-tab",
     };
     const fxCore = new FxCore(tools);
-    const res2 = await fxCore.createProject(inputs);
-    assert.isTrue(res2.isOk());
+    const res = await fxCore.createProject(inputs);
+    assert.isTrue(res.isOk());
   });
-
+  it("create project from sample rename folder", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
+    sandbox
+      .stub(fs, "readdir")
+      .onFirstCall()
+      .resolves(["abc"] as any)
+      .onSecondCall()
+      .resolves([]);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo.id,
+      [CoreQuestionNames.Samples]: "hello-world-tab",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isTrue(res.value.endsWith("_1"));
+    }
+  });
   it("create project from scratch", async () => {
     sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));

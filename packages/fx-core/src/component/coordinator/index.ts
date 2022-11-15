@@ -188,12 +188,9 @@ export class Coordinator {
         throw InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs);
       }
       projectPath = path.join(folder, sampleId);
-
-      if ((await fs.pathExists(projectPath)) && (await fs.readdir(projectPath)).length > 0) {
-        let suffix = 1;
-        while (await fs.pathExists(projectPath)) {
-          projectPath = path.join(folder, `${sampleId}_${suffix++}`);
-        }
+      let suffix = 1;
+      while ((await fs.pathExists(projectPath)) && (await fs.readdir(projectPath)).length > 0) {
+        projectPath = path.join(folder, `${sampleId}_${suffix++}`);
       }
 
       inputs.projectPath = projectPath;

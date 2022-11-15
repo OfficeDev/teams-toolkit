@@ -3498,6 +3498,10 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
   return Promise.resolve(ok(false));
 }
 
+export async function openAccountHelpHandler(args?: any[]) {
+  WebviewPanel.createOrShow(PanelType.AccountHelp);
+}
+
 export async function signinM365Callback(args?: any[]): Promise<Result<null, FxError>> {
   let node: M365AccountNode | undefined;
   if (args && args.length > 1) {
@@ -3555,7 +3559,7 @@ export async function checkSideloadingCallback(args?: any[]): Promise<Result<nul
       }
     })
     .catch((_error) => {});
-  WebviewPanel.createOrShow(PanelType.AccountHelp);
+  openAccountHelpHandler();
   return ok(null);
 }
 

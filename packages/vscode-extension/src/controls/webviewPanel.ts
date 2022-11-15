@@ -176,6 +176,7 @@ export class WebviewPanel {
 
     // Set the webview's initial html content
     this.panel.webview.html = this.getHtmlForWebview(panelType);
+    this.panel.iconPath = this.getWebviewPanelIconPath(panelType);
   }
 
   private async downloadSampleApp(msg: any) {
@@ -390,6 +391,13 @@ export class WebviewPanel {
       text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
     return text;
+  }
+
+  private getWebviewPanelIconPath(panelType: PanelType) {
+    if (panelType === PanelType.AccountHelp) {
+      return vscode.Uri.file(path.join(globalVariables.context.extensionPath, "img/font/m365.svg"));
+    }
+    return undefined;
   }
 
   isValidNode = () => {

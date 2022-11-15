@@ -308,6 +308,7 @@
 
 .markdown-body button:hover {
   background-color: var(--vscode-button-hoverBackground);
+  cursor: pointer;
 }
 
 .markdown-body ul,

@@ -57,7 +57,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { tools } from "../handlers";
+import { tools, openAccountHelpHandler } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryDebugDevCertStatus,
@@ -730,6 +730,7 @@ async function ensureM365Account(
       ctx.properties[TelemetryProperty.DebugIsSideloadingAllowed] = `${isSideloadingEnabled}`;
       if (isSideloadingEnabled === false) {
         // sideloading disabled
+        openAccountHelpHandler();
         return err(
           new UserError(
             ExtensionSource,

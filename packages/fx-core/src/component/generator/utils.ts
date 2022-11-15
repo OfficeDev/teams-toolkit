@@ -7,6 +7,7 @@ import * as fs from "fs-extra";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,
+  placeholderDelimiters,
   sampleRepoName,
   templateAlphaVersion,
   templateBetaVersion,
@@ -184,7 +185,7 @@ export function renderTemplateFileData(
 ): string | Buffer {
   //only mustache files with name ending with .tpl
   if (path.extname(fileName) === templateFileExt) {
-    return Mustache.render(fileData.toString(), variables);
+    return Mustache.render(fileData.toString(), variables, {}, placeholderDelimiters);
   }
   // Return Buffer instead of string if the file is not a template. Because `toString()` may break binary resources, like png files.
   return fileData;
@@ -195,7 +196,10 @@ export function renderTemplateFileName(
   fileData: Buffer,
   variables?: { [key: string]: string }
 ): string {
-  return Mustache.render(fileName, variables).replace(templateFileExt, "");
+  return Mustache.render(fileName, variables, {}, placeholderDelimiters).replace(
+    templateFileExt,
+    ""
+  );
 }
 
 export function getSampleInfoFromName(sampleName: string): SampleInfo {

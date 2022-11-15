@@ -13,7 +13,7 @@
     }
     //// Uncomment following profile to debug project only (without launching Teams)
     //,
-    //"{{ProjectName}}": {
+    //"{%ProjectName%}": {
     //  "commandName": "Project",
     //  "dotnetRunMessages": "true",
     //  "launchBrowser": true,

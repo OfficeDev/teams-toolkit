@@ -48,6 +48,7 @@ export default class ServerConnection implements IServerConnection {
       this.getQuestionsRequest.bind(this),
       this.createProjectRequest.bind(this),
       this.localDebugRequest.bind(this),
+      this.preProvisionResourcesRequest.bind(this),
       this.provisionResourcesRequest.bind(this),
       this.deployArtifactsRequest.bind(this),
       this.buildArtifactsRequest.bind(this),
@@ -106,6 +107,29 @@ export default class ServerConnection implements IServerConnection {
     const res = await Correlator.runWithId(
       corrId,
       (params) => this.core.localDebug(params),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async preProvisionResourcesRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<
+    Result<
+      {
+        needAzureLogin: boolean;
+        needM365Login: boolean;
+        resolvedAzureSubscriptionId?: string | undefined;
+        resolvedAzureResourceGroupName?: string | undefined;
+      },
+      FxError
+    >
+  > {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => this.core.preProvisionForVS(params),
       inputs
     );
     return standardizeResult(res);

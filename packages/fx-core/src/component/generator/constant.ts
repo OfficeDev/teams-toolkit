@@ -14,3 +14,4 @@ export const sampleRepoName = "TeamsFx-Samples";
 export const errorSource = "GEN";
 export const componentName = "generator";
 export const commonTemplateName = "common";
+export const placeholderDelimiters: [string, string] = ["{%", "%}"];

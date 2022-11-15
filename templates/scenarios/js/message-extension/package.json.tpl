@@ -1,5 +1,5 @@
 {
-  "name": "teams-conversation-bot",
+  "name": "{%appName%}",
   "version": "1.0.0",
   "msteams": {
     "teamsAppId": null

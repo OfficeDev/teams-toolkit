@@ -5,8 +5,10 @@ import { Mutex } from "async-mutex";
 import * as vscode from "vscode";
 
 import { FxError, LocalEnvironmentName, ok, Result, Void } from "@microsoft/teamsfx-api";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+
 import * as globalVariables from "../globalVariables";
 import { DynamicNode } from "./dynamicNode";
 import { EnvironmentNode } from "./environmentTreeItem";
@@ -32,7 +34,11 @@ export class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<Dyna
   }
 
   public async reloadEnvironments(): Promise<Result<Void, FxError>> {
-    if (!globalVariables.workspaceUri || !isValidProject(globalVariables.workspaceUri.fsPath)) {
+    if (
+      !globalVariables.workspaceUri ||
+      !isValidProject(globalVariables.workspaceUri.fsPath) ||
+      isV3Enabled()
+    ) {
       return ok(Void);
     }
     return await this.mutex.runExclusive(async () => {

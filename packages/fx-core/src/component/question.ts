@@ -765,7 +765,8 @@ export const InitInfraProceedQuestion: SingleSelectQuestion = {
   default: InitOptionYes.id,
 };
 export function getQuestionsForInit(
-  type: "debug" | "infra"
+  type: "debug" | "infra",
+  inputs: Inputs
 ): Result<QTreeNode | undefined, FxError> {
   const group = new QTreeNode({ type: "group" });
   group.addChild(new QTreeNode(InitEditorQuestion));
@@ -774,8 +775,10 @@ export function getQuestionsForInit(
   const SPFxNode = new QTreeNode(InitIsSPFxQuestion);
   SPFxNode.condition = { equals: InitCapabilityTab.id };
   capabilityNode.addChild(SPFxNode);
-  group.addChild(
-    new QTreeNode(type === "debug" ? InitDebugProceedQuestion : InitInfraProceedQuestion)
-  );
+  if (inputs.platform !== Platform.CLI_HELP) {
+    group.addChild(
+      new QTreeNode(type === "debug" ? InitDebugProceedQuestion : InitInfraProceedQuestion)
+    );
+  }
   return ok(group);
 }

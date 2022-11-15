@@ -48,7 +48,7 @@ describe("Generator utils", () => {
   it("fetch zip from url", async () => {
     const url =
       "https://github.com/OfficeDev/TeamsFx/releases/download/templates-0.0.0-alpha/bot.csharp.default.zip";
-    await generatorUtils.fetchZipFromUrl(url, defaultTryLimits, defaultTimeoutInMs);
+    await generatorUtils.fetchZipFromUrl(url);
   });
 
   it("unzip ", async () => {
@@ -153,19 +153,6 @@ describe("Generator happy path", async () => {
     if (await fs.pathExists(tmpDir)) {
       await fs.rm(tmpDir, { recursive: true });
     }
-  });
-
-  it("Generator context", async () => {
-    const generatorContext: GeneratorContext = {
-      name: "bot-sso",
-      destination: "test",
-      logProvider: context.logProvider,
-      zipUrl: "test-link",
-      timeoutInMs: sampleDefaultTimeoutInMs,
-      relativePath: "test-relativePath",
-      onActionError: sampleDefaultOnActionError,
-    };
-    assert.isNotNull(generatorContext);
   });
 
   it("external sample", async () => {

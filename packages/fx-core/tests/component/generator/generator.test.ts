@@ -12,7 +12,7 @@ import {
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
-import { Generator } from "../../../src/component/generator/generator";
+import { Generator, sampleDefaultOnActionError } from "../../../src/component/generator/generator";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
@@ -22,12 +22,17 @@ import {
   fetchTemplateUrlWithTagAction,
   fetchTemplateZipFromLocalAction,
   fetchZipFromUrlAction,
+  GeneratorContext,
   unzipAction,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
-import { defaultTimeoutInMs, defaultTryLimits } from "../../../src/component/generator/constant";
+import {
+  defaultTimeoutInMs,
+  defaultTryLimits,
+  sampleDefaultTimeoutInMs,
+} from "../../../src/component/generator/constant";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -43,14 +48,14 @@ describe("Generator utils", () => {
   it("fetch zip from url", async () => {
     const url =
       "https://github.com/OfficeDev/TeamsFx/releases/download/templates-0.0.0-alpha/bot.csharp.default.zip";
-    await generatorUtils.fetchZipFromUrl(url, defaultTryLimits, defaultTimeoutInMs);
+    await generatorUtils.fetchZipFromUrl(url);
   });
 
   it("unzip ", async () => {
     const inputDir = path.join(tmpDir, "input");
     const outputDir = path.join(tmpDir, "output");
     await fs.ensureDir(inputDir);
-    const fileData = "{{appName}}";
+    const fileData = "{%appName%}";
     await fs.writeFile(path.join(inputDir, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
@@ -64,6 +69,26 @@ describe("Generator utils", () => {
     );
     const content = await fs.readFile(path.join(outputDir, "test.txt"), "utf8");
     assert.equal(content, "test");
+  });
+
+  it("unzip with relative path", async () => {
+    const inputDir = path.join(tmpDir, "input");
+    const outputDir = path.join(tmpDir, "output");
+    await fs.ensureDir(inputDir);
+    const fileData = "{%appName%}";
+    await fs.writeFile(path.join(inputDir, "test.txt.tpl"), fileData);
+    const zip = new AdmZip();
+    zip.addLocalFolder(inputDir);
+    zip.writeZip(path.join(tmpDir, "test.zip"));
+    await generatorUtils.unzip(
+      new AdmZip(path.join(tmpDir, "test.zip")),
+      outputDir,
+      (fileName: string, fileData: Buffer) => renderTemplateFileName(fileName, fileData, {}),
+      (fileName: string, fileData: Buffer) =>
+        renderTemplateFileData(fileName, fileData, { appName: "test" }),
+      "test1"
+    );
+    assert.isFalse(await fs.pathExists(path.join(outputDir, "test.txt")));
   });
 
   it("get sample info from name", async () => {
@@ -149,7 +174,7 @@ describe("Generator happy path", async () => {
     const language = "ts";
     const inputDir = path.join(tmpDir, "input");
     await fs.ensureDir(path.join(inputDir, templateName));
-    const fileData = "{{appName}}";
+    const fileData = "{%appName%}";
     await fs.writeFile(path.join(inputDir, templateName, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);

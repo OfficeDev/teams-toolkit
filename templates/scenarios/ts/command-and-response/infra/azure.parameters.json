@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "resourceBaseName": {
-        "value": "command${{RESOURCE_SUFFIX}}"
+        "value": "commandbot${{RESOURCE_SUFFIX}}"
       },
       "botAadAppClientId": {
         "value": "${{BOT_ID}}"
@@ -12,7 +12,7 @@
         "value": "${{SECRET_BOT_PASSWORD}}"
       },
       "webAppSKU": {
-        "value": "F1"
+        "value": "B1"
       }
     }
   }

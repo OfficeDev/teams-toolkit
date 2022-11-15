@@ -8,15 +8,11 @@ export interface InstallToolArgs {
   devCert?: DevCertArgs;
 
   /**
-   * trust local certificate
+   * Install Azure Functions Core Tools
    */
-  func?: FuncArgs;
+  func?: boolean;
 }
 
 interface DevCertArgs {
   trust: boolean;
-}
-
-interface FuncArgs {
-  version: number;
 }

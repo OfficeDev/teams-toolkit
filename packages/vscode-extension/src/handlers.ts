@@ -58,6 +58,7 @@ import {
   UserError,
   Void,
   VsCodeEnv,
+  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import { AddSsoParameters } from "@microsoft/teamsfx-core/build/component/constants";
 import {
@@ -292,7 +293,7 @@ export async function getIsFromSample(projectPath?: string) {
 }
 
 export async function getIsM365(): Promise<boolean | undefined> {
-  if (core) {
+  if (core && !isV3Enabled()) {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
     const res = await core.getProjectConfig(input);
@@ -2835,7 +2836,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
         EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
       );
     } else {
-      sourcePath = path.resolve(`${workspacePath}/.${ConfigFolderName}/.env.${env}`);
+      sourcePath = path.resolve(`${workspacePath}/${SettingsFolderName}/.env.${env}`);
     }
   } else {
     const invalidArgsError = new SystemError(

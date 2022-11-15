@@ -134,7 +134,7 @@ export class Generator {
   }
 }
 
-async function templateDefaultOnActionError(
+export async function templateDefaultOnActionError(
   action: GeneratorAction,
   context: GeneratorContext,
   error: Error
@@ -156,7 +156,7 @@ async function templateDefaultOnActionError(
   }
 }
 
-async function sampleDefaultOnActionError(
+export async function sampleDefaultOnActionError(
   action: GeneratorAction,
   context: GeneratorContext,
   error: Error

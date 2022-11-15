@@ -12,7 +12,7 @@ import {
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
-import { Generator } from "../../../src/component/generator/generator";
+import { Generator, sampleDefaultOnActionError } from "../../../src/component/generator/generator";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
@@ -22,12 +22,17 @@ import {
   fetchTemplateUrlWithTagAction,
   fetchTemplateZipFromLocalAction,
   fetchZipFromUrlAction,
+  GeneratorContext,
   unzipAction,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
-import { defaultTimeoutInMs, defaultTryLimits } from "../../../src/component/generator/constant";
+import {
+  defaultTimeoutInMs,
+  defaultTryLimits,
+  sampleDefaultTimeoutInMs,
+} from "../../../src/component/generator/constant";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -148,6 +153,19 @@ describe("Generator happy path", async () => {
     if (await fs.pathExists(tmpDir)) {
       await fs.rm(tmpDir, { recursive: true });
     }
+  });
+
+  it("Generator context", async () => {
+    const generatorContext: GeneratorContext = {
+      name: "bot-sso",
+      destination: "test",
+      logProvider: context.logProvider,
+      zipUrl: "test-link",
+      timeoutInMs: sampleDefaultTimeoutInMs,
+      relativePath: "test-relativePath",
+      onActionError: sampleDefaultOnActionError,
+    };
+    assert.isNotNull(generatorContext);
   });
 
   it("external sample", async () => {

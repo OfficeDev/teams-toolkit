@@ -22,15 +22,12 @@ provision:
 deploy:
   - uses: npm/command # Run npm command
     with:
-      workingDirectory: .
-      args: install
+      args: install --production
   - uses: npm/command # Run npm command
     with:
-      workingDirectory: .
-      args: run build
+      args: run build --if-present
   - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
     with:
-      workingDirectory: .
       distributionPath: ./build # Deploy base folder
       ignoreFile: ./.appserviceIgnore # Can be changed to any ignore file location, leave blank will ignore nothing
       resourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to

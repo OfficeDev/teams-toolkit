@@ -99,6 +99,18 @@ describe("Config Command Tests", function () {
     expect(options).includes(RootFolderNode.data.name, JSON.stringify(options));
     expect(positionals).deep.equals(["option", "option", "value"], JSON.stringify(positionals));
   });
+
+  it("has configured proper parameters V3", () => {
+    const cmd = new Config();
+    cmd.builder(yargs);
+    expect(registeredCommands).deep.equals(
+      ["get [option]", "set <option> <value>"],
+      JSON.stringify(registeredCommands)
+    );
+    expect(options).includes("global", JSON.stringify(options));
+    expect(options).includes(RootFolderNode.data.name, JSON.stringify(options));
+    expect(positionals).deep.equals(["option", "option", "value"], JSON.stringify(positionals));
+  });
 });
 
 describe("Config Get Command Check", () => {
@@ -152,9 +164,12 @@ describe("Config Get Command Check", () => {
         }
         return err(NonTeamsFxProjectFolder());
       });
-    sandbox
-      .stub(Utils, "readProjectSecrets")
-      .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
+    sandbox.stub(Utils, "readProjectSecrets").callsFake((projectFolder, env) => {
+      if (projectFolder.includes("fake")) {
+        return Promise.resolve(err(NonTeamsFxProjectFolder()));
+      }
+      return Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc")));
+    });
     sandbox
       .stub(envUtil, "readEnv")
       .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
@@ -270,6 +285,16 @@ describe("Config Get Command Check", () => {
     expect(logs[0]).includes("test: abc");
 
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
+  });
+
+  it("throw error when the project is not TTK project", async () => {
+    await expect(
+      cmd.subCommands[0].handler({
+        option: "test",
+        [constants.RootFolderNode.data.name as string]: "fakeProjectFolder",
+        [constants.EnvNodeNoCreate.data.name as string]: "dev",
+      })
+    ).rejected;
   });
 
   it("only prints specific project config that needs decryption when running 'config get test' in a project folder", async () => {
@@ -507,7 +532,7 @@ describe("Config Set Command Check", () => {
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
   });
 
-  it("successfully set non-secret project config when running 'config set test off' in a project folder V3", async () => {
+  it("failed to set non-secret project config when running 'config set test off' in a project folder V3", async () => {
     mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" });
     await cmd.subCommands[1].handler({
       option: "test",
@@ -517,8 +542,7 @@ describe("Config Set Command Check", () => {
     });
 
     expect(logs.length).equals(1);
-    expect(logs[0]).includes("Successfully configured project setting test.");
-    expect(secretFile.test).equals("off");
+    expect(logs[0]).includes("No user setting");
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
   });
 

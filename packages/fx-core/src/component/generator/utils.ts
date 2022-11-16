@@ -10,8 +10,9 @@ import {
   placeholderDelimiters,
   sampleRepoName,
   templateAlphaVersion,
-  templateBetaVersion,
   templateFileExt,
+  templateRcVersion,
+  templateV3Version,
 } from "./constant";
 import { SampleInfo, sampleProvider } from "../../common/samples";
 import AdmZip from "adm-zip";
@@ -27,17 +28,15 @@ const templateTagPrefix = templateConfig.tagPrefix;
 const templateTagListURL = templateConfig.tagListURL;
 
 function selectTemplateTag(tags: string[]): string | undefined {
-  return templateAlphaVersion;
-  // if (preRelease === "alpha") {
-  //   return templateAlphaVersion;
-  // }
-  // if (preRelease === "beta") {
-  //   return templateBetaVersion;
-  // }
-  // const versionPattern = preRelease ? `0.0.0-${preRelease}` : templateVersion;
-  // const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));
-  // const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
-  // return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
+  if (preRelease === "alpha" || templateVersion.includes("alpha")) {
+    return templateAlphaVersion;
+  }
+  if (templateVersion.includes("rc")) {
+    return templateRcVersion;
+  }
+  const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));
+  const selectedVersion = semver.maxSatisfying(versionList, templateV3Version);
+  return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
 }
 
 async function sendRequestWithRetry<T>(

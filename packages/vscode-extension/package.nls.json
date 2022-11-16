@@ -107,7 +107,7 @@
     "teamstoolkit.commandsTreeViewProvider.addCICDWorkflows.running": "Adding CI/CD workflows...",
     "teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsDescription": "Create workflow automation templates for Github, Azure DevOps and Jenkins",
     "teamstoolkit.commandsTreeViewProvider.addCICDWorkflowsTitle": "Add CI/CD Workflows",
-    "teamstoolkit.commandsTreeViewProvider.addEnvironmentDescription": "Add Environment",
+    "teamstoolkit.commandsTreeViewProvider.addEnvironmentDescription": "Make a copy of existing environment file",
     "teamstoolkit.commandsTreeViewProvider.addEnvironmentTitle": "Add Environment",
     "teamstoolkit.commandsTreeViewProvider.addFeature.blockTooltip": "Cannot run command when adding features. Try again when adding operation is finished.",
     "teamstoolkit.commandsTreeViewProvider.addFeature.running": "Adding features...",

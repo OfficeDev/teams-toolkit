@@ -16,7 +16,12 @@ import { Generator } from "../../src/component/generator/generator";
 import { settingsUtil } from "../../src/component/utils/settingsUtil";
 import { setTools } from "../../src/core/globalVars";
 import { CoreQuestionNames, ScratchOptionNo, ScratchOptionYes } from "../../src/core/question";
-import { MockTools, randomAppName } from "../core/utils";
+import {
+  MockAzureAccountProvider,
+  MockM365TokenProvider,
+  MockTools,
+  randomAppName,
+} from "../core/utils";
 import { assert } from "chai";
 import { M365SsoLaunchPageOptionItem, TabOptionItem } from "../../src/component/constants";
 import { FxCore } from "../../src/core/FxCore";
@@ -35,6 +40,8 @@ import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelp
 import fs from "fs-extra";
 import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
 import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
+import { createContextV3 } from "../../src/component/utils";
+import * as appStudio from "../../src/component/resource/appManifest/appStudio";
 
 describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
@@ -1356,5 +1363,68 @@ describe("component coordinator test", () => {
     assert.isTrue(res1.isOk());
     const res2 = await fxCore.getQuestions(Stage.initInfra, inputs);
     assert.isTrue(res2.isOk());
+  });
+  describe("publishInDeveloperPortal", () => {
+    afterEach(() => {
+      sandbox.restore();
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
+    });
+    it("missing token provider", async () => {
+      const context = createContextV3();
+      context.tokenProvider = undefined;
+      const inputs: InputsWithProjectPath = {
+        platform: Platform.VSCode,
+        projectPath: "project-path",
+        [CoreQuestionNames.ManifestPath]: "manifest-path",
+      };
+      const res = await coordinator.publishInDeveloperPortal(context, inputs);
+      assert.isTrue(res.isErr());
+    });
+
+    it("success", async () => {
+      const context = createContextV3();
+      context.tokenProvider = {
+        m365TokenProvider: new MockM365TokenProvider(),
+        azureAccountProvider: new MockAzureAccountProvider(),
+      };
+      sandbox
+        .stub(context.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(ok({ unique_name: "test" }));
+      sandbox.stub(appStudio, "updateManifestV3ForPublish").resolves(ok("appId"));
+      const openUrl = sandbox.stub(context.userInteraction, "openUrl").resolves(ok(true));
+      const inputs: InputsWithProjectPath = {
+        platform: Platform.VSCode,
+        projectPath: "project-path",
+        [CoreQuestionNames.ManifestPath]: "manifest-path",
+      };
+
+      const res = await coordinator.publishInDeveloperPortal(context, inputs);
+      assert.isTrue(res.isOk());
+      assert.isTrue(openUrl.calledOnce);
+    });
+
+    it("update manifest error", async () => {
+      const context = createContextV3();
+      context.tokenProvider = {
+        m365TokenProvider: new MockM365TokenProvider(),
+        azureAccountProvider: new MockAzureAccountProvider(),
+      };
+      sandbox
+        .stub(appStudio, "updateManifestV3ForPublish")
+        .resolves(err(new UserError("source", "error", "", "")));
+      const inputs: InputsWithProjectPath = {
+        platform: Platform.VSCode,
+        projectPath: "project-path",
+        [CoreQuestionNames.ManifestPath]: "manifest-path",
+      };
+
+      const res = await coordinator.publishInDeveloperPortal(context, inputs);
+      assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        assert.equal(res.error.name, "error");
+      }
+    });
   });
 });

@@ -1,0 +1,44 @@
+{
+    "name": "{%appName%}",
+    "version": "1.0.0",
+    "description": "Microsoft Teams Toolkit Workflow Bot Sample",
+    "author": "Microsoft",
+    "license": "MIT",
+    "main": "./src/index.js",
+    "scripts": {
+<<<<<<< HEAD:templates/scenarios/ts/workflow/package.json
+        "dev": "nodemon --watch ./src --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./src/index.ts",
+        "build": "tsc --build && shx cp -r ./src/adaptiveCards ./lib/src",
+        "start": "node ./lib/src/index.js",
+        "watch": "nodemon --watch ./src --exec \"npm run start\"",
+=======
+        "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run dev",
+        "dev": "nodemon --inspect=9239 --signal SIGINT ./src/index.js",
+        "start": "node ./src/index.js",
+        "watch": "nodemon ./src/index.js",
+>>>>>>> 9dedabfb2b932ad9017fe25d9b093b06eac49090:templates/scenarios/ts/workflow/package.json.tpl
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com"
+    },
+    "dependencies": {
+        "@microsoft/adaptivecards-tools": "^1.0.0",
+        "@microsoft/teamsfx": "^1.2.0",
+        "restify": "^8.5.1"
+    },
+    "devDependencies": {
+<<<<<<< HEAD:templates/scenarios/ts/workflow/package.json
+        "@types/restify": "8.4.2",
+        "@microsoft/teamsfx-run-utils": "alpha",
+        "nodemon": "^2.0.7",
+        "shx": "^0.3.4",
+        "ts-node": "^10.4.0",
+        "typescript": "^4.4.4"
+=======
+        "env-cmd": "^10.1.0",
+        "nodemon": "^2.0.7"
+>>>>>>> 9dedabfb2b932ad9017fe25d9b093b06eac49090:templates/scenarios/ts/workflow/package.json.tpl
+    }
+}

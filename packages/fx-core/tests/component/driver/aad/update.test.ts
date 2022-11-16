@@ -23,6 +23,7 @@ import {
 } from "../../../../src/component/driver/aad/error/unhandledError";
 import { InvalidParameterUserError } from "../../../../src/component/driver/aad/error/invalidParameterUserError";
 import { cwd } from "process";
+import { MissingEnvUserError } from "../../../../src/component/driver/aad/error/missingEnvError";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -234,8 +235,9 @@ describe("aadAppUpdate", async () => {
     let result = await updateAadAppDriver.run(args, mockedDriverContext);
 
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr()).is.instanceOf(MissingFieldInManifestUserError).and.include({
-      message: "Field id is missing or invalid in AAD app manifest.", // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
+    expect(result._unsafeUnwrapErr()).is.instanceOf(MissingEnvUserError).and.include({
+      message:
+        "Failed to generate AAD app manifest. Environment variable AAD_APP_OBJECT_ID is not set.", // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
       source: "aadApp/update",
     });
 
@@ -539,5 +541,27 @@ describe("aadAppUpdate", async () => {
     expect(endTelemetry.properties["error-message"])
       .contain("Unhandled error happened in aadApp/update action")
       .and.contain("Internal server error");
+  });
+
+  it("should throw error when missing required environment variable in manifest", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const args = {
+      manifestTemplatePath: path.join(testAssetsRoot, "manifestWithMissingEnv.json"),
+      outputFilePath: path.join(outputRoot, "manifest.output.json"),
+    };
+
+    const result = await updateAadAppDriver.run(args, mockedDriverContext);
+
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr()).is.instanceOf(MissingEnvUserError).and.include({
+      message:
+        "Failed to generate AAD app manifest. Environment variable AAD_APP_NAME, APPLICATION_NAME is not set.",
+      source: "aadApp/update",
+    });
   });
 });

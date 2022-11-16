@@ -13,6 +13,9 @@ export enum TelemetryEvent {
   InitInfraStart = "init-infra-start",
   InitInfra = "init-infra",
 
+  InitDebugStart = "init-debug-start",
+  InitDebug = "init-debug",
+
   InitProjectStart = "init-project-start",
   InitProject = "init-project",
 

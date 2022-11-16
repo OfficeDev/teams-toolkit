@@ -114,9 +114,10 @@ export class DepsHandler {
       return false;
     }
     // local sdk version lager than sdk version in config.
-    else if (semver.gte(deps[sdkName], "1.0.0")) {
-      return false;
-    } else if (semver.lt(deps[sdkName], "3.0.0")) {
+    else if (
+      semver.gte(semver.minVersion(deps[sdkName])!, "1.0.0") &&
+      semver.lt(semver.minVersion(deps[sdkName])!, "3.0.0")
+    ) {
       return false;
     } else {
       throw ResultFactory.UserError(

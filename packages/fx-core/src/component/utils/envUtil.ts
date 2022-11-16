@@ -160,7 +160,7 @@ export class DotenvUtil {
               value = value.substring(0, index).trim();
             }
           }
-          obj[key] = value;
+          if (value) obj[key] = value;
           lines.push(
             inlineComment
               ? { key: key, value: value, comment: inlineComment }

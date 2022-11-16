@@ -389,35 +389,33 @@ describe("env utils", () => {
     assert.isTrue(res.isErr());
   });
 
-  it("dotenvUtil deserialize", async () => {
-    const res = dotenvUtil.deserialize("#COMMENT\n\r\nKEY=VALUE #COMMENT2");
-    assert.deepEqual(res, {
-      lines: ["#COMMENT", "", "", { key: "KEY", value: "VALUE", comment: "#COMMENT2" }],
-      obj: { KEY: "VALUE" },
+  it("dotenvUtil deserialize & serialize", async () => {
+    const original = "#COMMENT\n\n\nKEY=VALUE #COMMENT2\nKEY2='VALUE2'\nKEY3=\"VALUE3\"";
+    const expected = "#COMMENT\n\n\nKEY=VALUE #COMMENT2\nKEY2=VALUE2\nKEY3=VALUE3";
+    const parsed = dotenvUtil.deserialize(original);
+    assert.deepEqual(parsed, {
+      lines: [
+        "#COMMENT",
+        "",
+        "",
+        { key: "KEY", value: "VALUE", comment: "#COMMENT2" },
+        { key: "KEY2", value: "VALUE2" },
+        { key: "KEY3", value: "VALUE3" },
+      ],
+      obj: { KEY: "VALUE", KEY2: "VALUE2", KEY3: "VALUE3" },
     });
+    const serialized = dotenvUtil.serialize(parsed);
+    assert.equal(serialized, expected);
   });
-  it("dotenvUtil deserialize empty", async () => {
-    const res = dotenvUtil.deserialize("");
-    assert.deepEqual(res, {
+  it("dotenvUtil deserialize & serialize empty", async () => {
+    const original = "";
+    const parsed = dotenvUtil.deserialize(original);
+    assert.deepEqual(parsed, {
       lines: [""],
       obj: {},
     });
-  });
-  it("dotenvUtil serialize with lines", async () => {
-    const parsed = {
-      lines: ["#COMMENT", "", "", { key: "KEY2", value: "VALUE2" }],
-      obj: { KEY: "VALUE", KEY2: "VALUE3" },
-    };
-    const str = dotenvUtil.serialize(parsed);
-    assert.equal(str, "#COMMENT\n\n\nKEY2=VALUE3\nKEY=VALUE");
-  });
-  it("dotenvUtil serialize with lines case 2", async () => {
-    const parsed = {
-      lines: ["#COMMENT", "", "", { key: "KEY2", value: "VALUE2", comment: "#COMMENT2" }],
-      obj: { KEY3: "VALUE3" },
-    };
-    const str = dotenvUtil.serialize(parsed);
-    assert.equal(str, "#COMMENT\n\n\nKEY2=VALUE2 #COMMENT2\nKEY3=VALUE3");
+    const serialized = dotenvUtil.serialize(parsed);
+    assert.equal(serialized, original);
   });
   it("dotenvUtil serialize without lines", async () => {
     const parsed = {

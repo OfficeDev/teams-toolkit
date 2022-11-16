@@ -146,7 +146,7 @@ export class DotenvUtil {
           let inlineComment;
           const dQuoted = value[0] === '"' && value[value.length - 1] === '"';
           const sQuoted = value[0] === "'" && value[value.length - 1] === "'";
-          if (sQuoted || sQuoted) {
+          if (sQuoted || dQuoted) {
             value = value.substring(1, value.length - 1);
             if (dQuoted) {
               value = value.replace(NEW_LINE_RE, NEW_LINE);
@@ -161,7 +161,11 @@ export class DotenvUtil {
             }
           }
           obj[key] = value;
-          lines.push({ key: key, value: value, comment: inlineComment });
+          lines.push(
+            inlineComment
+              ? { key: key, value: value, comment: inlineComment }
+              : { key: key, value: value }
+          );
         } else {
           lines.push(line);
         }

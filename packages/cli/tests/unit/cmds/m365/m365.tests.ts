@@ -137,15 +137,17 @@ describe("M365", () => {
     expect(finalLog).equals("Unacquiring done.");
   });
 
-  it("M365 Unacquire command (file-path)", async () => {
+  it("M365 Unacquire command (manifest-id)", async () => {
     const m365 = new M365();
     const unacquire = m365.subCommands.find((cmd) => cmd.commandHead === "unacquire");
     expect(unacquire).not.undefined;
 
-    axiosPostResponses["/dev/v1/users/packages"] = {
+    axiosPostResponses["/catalog/v1/users/titles/launchInfo"] = {
       data: {
-        titlePreview: {
-          titleId: "test-title-id",
+        acquisition: {
+          titleId: {
+            id: "test-title-id",
+          },
         },
       },
     };
@@ -153,7 +155,7 @@ describe("M365", () => {
       status: 200,
     };
 
-    await unacquire!.handler({ "file-path": "test" });
+    await unacquire!.handler({ "manifest-id": "test" });
     expect(logs.length).greaterThan(0);
     const finalLog = logs[logs.length - 1];
     expect(finalLog).equals("Unacquiring done.");
@@ -176,15 +178,17 @@ describe("M365", () => {
     expect(finalLog).equals(JSON.stringify({ foo: "bar" }));
   });
 
-  it("M365 LaunchInfo command (file-path)", async () => {
+  it("M365 LaunchInfo command (manifest-id)", async () => {
     const m365 = new M365();
     const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");
     expect(launchInfo).not.undefined;
 
-    axiosPostResponses["/dev/v1/users/packages"] = {
+    axiosPostResponses["/catalog/v1/users/titles/launchInfo"] = {
       data: {
-        titlePreview: {
-          titleId: "test-title-id",
+        acquisition: {
+          titleId: {
+            id: "test-title-id",
+          },
         },
       },
     };
@@ -194,9 +198,19 @@ describe("M365", () => {
       },
     };
 
-    await launchInfo!.handler({ "file-path": "test" });
+    await launchInfo!.handler({ "manifest-id": "test" });
     expect(logs.length).greaterThan(0);
     const finalLog = logs[logs.length - 1];
     expect(finalLog).equals(JSON.stringify({ foo: "bar" }));
+  });
+
+  it("M365 LaunchInfo command (undefined)", async () => {
+    const m365 = new M365();
+    const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");
+    expect(launchInfo).not.undefined;
+
+    const result = await launchInfo!.runCommand({});
+    expect(result).not.undefined;
+    expect(result.isErr()).to.be.true;
   });
 });

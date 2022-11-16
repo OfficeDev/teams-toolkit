@@ -102,23 +102,43 @@ export class PackageService {
     }
   }
 
-  public async retrieveTitleId(token: string, manifestPath: string): Promise<string> {
+  public async retrieveTitleId(token: string, manifestId: string): Promise<string> {
     try {
-      const data = await fs.readFile(manifestPath);
-      const content = new FormData();
-      content.append("package", data);
       CLILogProvider.necessaryLog(LogLevel.Info, "Retrieve TitleId ...");
-      const uploadHeaders = content.getHeaders();
-      uploadHeaders["Authorization"] = `Bearer ${token}`;
-      const uploadResponse = await this.axiosInstance.post(
-        "/dev/v1/users/packages",
-        content.getBuffer(),
+      const launchInfo = await this.axiosInstance.post(
+        `/catalog/v1/users/titles/launchInfo`,
         {
-          headers: uploadHeaders,
+          Id: manifestId,
+          IdType: "ManifestId",
+          Filter: {
+            SupportedElementTypes: [
+              // "Extensions", // Extensions require ClientDetails to be determined later
+              "OfficeAddIns",
+              "ExchangeAddIns",
+              "FirstPartyPages",
+              "Dynamics",
+              "AAD",
+              "LineOfBusiness",
+              "StaticTabs",
+              "ComposeExtensions",
+              "Bots",
+              "GraphConnector",
+              "ConfigurableTabs",
+              "Activities",
+              "MeetingExtensionDefinition",
+            ],
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
-      const titleId = uploadResponse.data.titlePreview.titleId;
+      const titleId =
+        (launchInfo.data.acquisition?.titleId?.id as string) ??
+        (launchInfo.data.acquisition?.titleId as string);
       CLILogProvider.debug(`TitleId: ${titleId}`);
       return titleId;
     } catch (error: any) {
@@ -154,7 +174,7 @@ export class PackageService {
     }
   }
 
-  public async getLaunchInfo(token: string, titleId: string): Promise<void> {
+  public async getLaunchInfo(token: string, titleId: string): Promise<unknown> {
     try {
       CLILogProvider.necessaryLog(LogLevel.Info, `Getting LaunchInfo with TitleId ${titleId} ...`);
       const launchInfo = await this.axiosInstance.get(
@@ -163,7 +183,7 @@ export class PackageService {
           params: {
             SupportedElementTypes:
               // eslint-disable-next-line no-secrets/no-secrets
-              "Extension,OfficeAddIn,ExchangeAddIn,FirstPartyPages,Dynamics,AAD,LineOfBusiness,LaunchPage,MessageExtension,Bot",
+              "Extensions,OfficeAddIns,ExchangeAddIns,FirstPartyPages,Dynamics,AAD,LineOfBusiness,StaticTabs,ComposeExtensions,Bots,GraphConnector,ConfigurableTabs,Activities,MeetingExtensionDefinition",
           },
           headers: {
             Authorization: `Bearer ${token}`,
@@ -171,6 +191,7 @@ export class PackageService {
         }
       );
       CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(launchInfo.data), true);
+      return launchInfo.data;
     } catch (error: any) {
       CLILogProvider.necessaryLog(LogLevel.Error, "Get LaunchInfo failed.");
       if (error.response) {

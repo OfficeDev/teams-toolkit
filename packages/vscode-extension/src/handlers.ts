@@ -968,7 +968,10 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
 export async function publishInDeveloperPortalHandler(
   args?: any[]
 ): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart, getTriggerFromProperty(args));
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.PublishInDeveloperPortalStart,
+    getTriggerFromProperty(args)
+  );
   return await runCommand(Stage.publishInDeveloperPortal);
 }
 

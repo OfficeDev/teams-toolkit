@@ -5,9 +5,12 @@ param resourceBaseName string
 
 param botServiceName string = resourceBaseName
 param botServiceSku string = 'F0'
-param botDisplayName string = resourceBaseName
+@maxLength(42)
+param botDisplayName string
 param botAadAppClientId string
 param botAppDomain string
+
+
 
 // Register your web service as a bot with the Bot Framework
 resource botService 'Microsoft.BotService/botServices@2021-03-01' = {

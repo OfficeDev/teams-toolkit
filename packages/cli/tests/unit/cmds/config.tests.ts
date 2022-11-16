@@ -164,9 +164,12 @@ describe("Config Get Command Check", () => {
         }
         return err(NonTeamsFxProjectFolder());
       });
-    sandbox
-      .stub(Utils, "readProjectSecrets")
-      .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
+    sandbox.stub(Utils, "readProjectSecrets").callsFake((projectFolder, env) => {
+      if (projectFolder.includes("fake")) {
+        return Promise.resolve(err(NonTeamsFxProjectFolder()));
+      }
+      return Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc")));
+    });
     sandbox
       .stub(envUtil, "readEnv")
       .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
@@ -282,6 +285,16 @@ describe("Config Get Command Check", () => {
     expect(logs[0]).includes("test: abc");
 
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
+  });
+
+  it("throw error when the project is not TTK project", async () => {
+    await expect(
+      cmd.subCommands[0].handler({
+        option: "test",
+        [constants.RootFolderNode.data.name as string]: "fakeProjectFolder",
+        [constants.EnvNodeNoCreate.data.name as string]: "dev",
+      })
+    ).rejected;
   });
 
   it("only prints specific project config that needs decryption when running 'config get test' in a project folder", async () => {

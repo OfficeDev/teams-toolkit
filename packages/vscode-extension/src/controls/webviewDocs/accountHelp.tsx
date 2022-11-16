@@ -62,20 +62,33 @@ export default function PrepareM365Account() {
 
   return (
     <div className="markdown-body">
-      <h1 id="create-your-development-environment">Create your development environment</h1>
-      <h2 id="why">Why</h2>
+      <h1 id="prepare-a-qualified-Microsoft-365-account-for-Teams-app-development">
+        Prepare a Qualified Microsoft 365 Account for Teams App Development
+      </h1>
+      <h2 id="account-requirements ">Account Requirements </h2>
       <p>
-        Before you can run your Teams app, you will need the right permissions to install apps in
-        your organization. For development, we recommend creating your own, free, Teams development
-        environment by creating a Microsoft 365 developer program account. After signing up, you
-        will be able to log in to your own Teams environment with all the right permissions to run
-        your apps. Learn more about the sideloading permissions that are required by visiting the{" "}
-        <ExternalLink
-          title="Microsoft 365 developer program documentation"
-          link="https://learn.microsoft.com/en-us/microsoft-365/developer/"
-        />
-        .
+        The following two conditions are required for Teams app development:
+        <ol>
+          <li>
+            The Microsoft 365 account should be your work or school account, not your personal
+            account.
+          </li>
+          <li>
+            The Microsoft 365 account should be granted with sideloading permission to update the
+            Teams app.
+          </li>
+        </ol>
       </p>
+      <p>
+        Sideloading is the permission of your Microsoft 365 account to upload the Teams app to Teams
+        client. You can contact your tenant administrator to turn on the sideloading permission for
+        your organization.{" "}
+      </p>
+      <p>
+        Or you can create a free qualified Microsoft 365 development account to resolve the above
+        issues you may have.
+      </p>
+
       <h2 id="how">How</h2>
       <div className="collapsibleSteps">
         <CollapsibleStep
@@ -95,7 +108,7 @@ export default function PrepareM365Account() {
             For more information, visit the{" "}
             <ExternalLink
               title="Set up a developer subscription documentation"
-              link="https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/overview?tabs=mobile#universal-actions"
+              link="https://learn.microsoft.com/en-us/office/developer-program/microsoft-365-developer-program-get-started"
             />
           </p>
           <p>Once successfully registered, you will see this page:</p>

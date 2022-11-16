@@ -38,7 +38,7 @@ describe("NodeChecker E2E Test", async () => {
         fakeProjectPath,
         ".tools",
         "video-extensibility-test-app",
-        "video-extensibility-test-app.exe"
+        isWindows() ? "video-extensibility-test-app.exe" : "video-extensibility-test-app"
       )]: "",
     });
     const checker = new VxTestAppChecker(new TestLogger(), new TestTelemetry());

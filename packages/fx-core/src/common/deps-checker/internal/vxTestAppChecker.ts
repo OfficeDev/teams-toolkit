@@ -15,14 +15,13 @@ import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DepsChecker, DependencyStatus, DepsType, InstallOptions } from "../depsChecker";
 import { isWindows } from "../util";
-import { vxTestAppInstallHelpLink } from "../constant";
+import { Messages, vxTestAppInstallHelpLink } from "../constant";
 
 interface InstallOptionsSafe {
   version: string;
   projectPath: string;
 }
 
-// TODO: maybe change app name
 const VxTestAppExecutableName = isWindows()
   ? "video-extensibility-test-app.exe"
   : "video-extensibility-test-app";
@@ -34,7 +33,7 @@ const VxTestAppGlobalBasePath = path.join(
   `video-extensibility-test-app`
 );
 const VxTestAppDownloadTimeoutMillis = 5 * 60 * 1000;
-// TODO: change to 
+// TODO: change to GitHub release after new VxTestApp is released.
 const VxTestAppDownloadUrlTemplate =
   "https://alexwang.blob.core.windows.net/public/testapp-v@version/video-extensibility-test-app-@platform-@arch.zip";
 
@@ -56,7 +55,11 @@ async function downloadToTempFile(
     });
     response.data.pipe(writer);
     if (response.status !== 200) {
-      throw new Error(`Failed to download from ${url}, HTTP status code ${response.status}`);
+      throw new Error(
+        Messages.failToDownloadFromUrl
+          .replace(/@Url/g, url)
+          .replace(/@Status/g, response.status.toString())
+      );
     }
 
     await new Promise<void>((resolve, reject) => {
@@ -88,6 +91,80 @@ export class VxTestAppChecker implements DepsChecker {
   constructor(logger: DepsLogger, telemetry: DepsTelemetry) {
     this._logger = logger;
     this._telemetry = telemetry;
+  }
+
+  public async resolve(installOptions?: InstallOptions): Promise<DependencyStatus> {
+    if (!this.isValidInstallOptions(installOptions)) {
+      return VxTestAppChecker.newDependencyStatusForInstallError(
+        new VxTestAppCheckError(
+          Messages.failToValidateVxTestAppInstallOptions,
+          vxTestAppInstallHelpLink
+        )
+      );
+    }
+
+    // check installation in project dir
+    const installInfo = await this.getInstallationInfo(installOptions);
+    if (installInfo.isInstalled) {
+      return installInfo;
+    }
+
+    // ensure vxTestApp is installed in global dir
+    const globalInstallDir = path.join(VxTestAppGlobalBasePath, installOptions.version);
+    if (!(await this.isValidInstalltion(globalInstallDir, installOptions.version))) {
+      await fs.remove(globalInstallDir);
+      await this.installVersion(installOptions.version, globalInstallDir);
+    }
+
+    // ensure vxTestApp is installed in project dir
+    const projectInstallDir = path.join(installOptions.projectPath, VxTestAppDirRelPath);
+    await this.createSymlink(globalInstallDir, projectInstallDir);
+    // TODO: need to chmod to add executable permission for non-Windows OS
+    if (!(await this.isValidInstalltion(projectInstallDir, installOptions.version))) {
+      return VxTestAppChecker.newDependencyStatusForInstallError(
+        new VxTestAppCheckError(Messages.failToValidateVxTestApp, vxTestAppInstallHelpLink)
+      );
+    }
+
+    return {
+      name: DepsType.VxTestApp,
+      type: DepsType.VxTestApp,
+      isInstalled: true,
+      command: VxTestAppExecutableName,
+      details: {
+        isLinuxSupported: false,
+        supportedVersions: [installOptions.version],
+      },
+      error: undefined,
+    };
+  }
+
+  public async getInstallationInfo(installOptions?: InstallOptions): Promise<DependencyStatus> {
+    if (!this.isValidInstallOptions(installOptions)) {
+      return VxTestAppChecker.newDependencyStatusForInstallError(
+        new VxTestAppCheckError(
+          Messages.failToValidateVxTestAppInstallOptions,
+          vxTestAppInstallHelpLink
+        )
+      );
+    }
+
+    const installDir = path.join(installOptions.projectPath, VxTestAppDirRelPath);
+    if (!(await this.isValidInstalltion(installDir, installOptions.version))) {
+      return VxTestAppChecker.newDependencyStatusForNotInstalled(installOptions.version);
+    }
+
+    return {
+      name: DepsType.VxTestApp,
+      type: DepsType.VxTestApp,
+      isInstalled: true,
+      command: VxTestAppExecutableName,
+      details: {
+        isLinuxSupported: false,
+        supportedVersions: [installOptions.version],
+      },
+      error: undefined,
+    };
   }
 
   private async installVersion(version: string, installDir: string): Promise<void> {
@@ -125,77 +202,6 @@ export class VxTestAppChecker implements DepsChecker {
       /* Only used for Windows. Directory junction is similar to directory link but does not require admin permission. */
       "junction"
     );
-  }
-
-  public async resolve(installOptions?: InstallOptions): Promise<DependencyStatus> {
-    if (!this.isValidInstallOptions(installOptions)) {
-      return VxTestAppChecker.newDependencyStatusForInstallError(
-        new VxTestAppCheckError("Invalid installOptions", vxTestAppInstallHelpLink)
-      );
-    }
-
-    // check install in project dir
-    const installInfo = await this.getInstallationInfo(installOptions);
-    if (installInfo.isInstalled) {
-      return installInfo;
-    }
-
-    // ensure vxTestApp is installed in global dir
-    const globalInstallDir = path.join(VxTestAppGlobalBasePath, installOptions.version);
-    if (!(await this.isValidInstalltion(globalInstallDir, installOptions.version))) {
-      await fs.remove(globalInstallDir);
-      await this.installVersion(installOptions.version, globalInstallDir);
-    }
-
-    // ensure vxTestApp is installed in project dir
-    const projectInstallDir = path.join(installOptions.projectPath, VxTestAppDirRelPath);
-    await this.createSymlink(globalInstallDir, projectInstallDir);
-    // TODO: need to chmod to add executable permission for non-Windows OS
-    if (!(await this.isValidInstalltion(projectInstallDir, installOptions.version))) {
-      return VxTestAppChecker.newDependencyStatusForInstallError(
-        new VxTestAppCheckError(
-          "Failed to validate installation in project.",
-          vxTestAppInstallHelpLink
-        )
-      );
-    }
-
-    return {
-      name: DepsType.VxTestApp,
-      type: DepsType.VxTestApp,
-      isInstalled: true,
-      command: VxTestAppExecutableName,
-      details: {
-        isLinuxSupported: false,
-        supportedVersions: [installOptions.version],
-      },
-      error: undefined,
-    };
-  }
-
-  public async getInstallationInfo(installOptions?: InstallOptions): Promise<DependencyStatus> {
-    if (!this.isValidInstallOptions(installOptions)) {
-      return VxTestAppChecker.newDependencyStatusForInstallError(
-        new VxTestAppCheckError("Invalid installOptions", vxTestAppInstallHelpLink)
-      );
-    }
-
-    const installDir = path.join(installOptions.projectPath, VxTestAppDirRelPath);
-    if (!(await this.isValidInstalltion(installDir, installOptions.version))) {
-      return VxTestAppChecker.newDependencyStatusForNotInstalled(installOptions.version);
-    }
-
-    return {
-      name: DepsType.VxTestApp,
-      type: DepsType.VxTestApp,
-      isInstalled: true,
-      command: VxTestAppExecutableName,
-      details: {
-        isLinuxSupported: false,
-        supportedVersions: [installOptions.version],
-      },
-      error: undefined,
-    };
   }
 
   private async isValidInstalltion(installDir: string, version: string): Promise<boolean> {

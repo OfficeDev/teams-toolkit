@@ -19,4 +19,4 @@ export const dotnetNotSupportTargetVersionHelpLink = `${defaultHelpLink}#dotnetn
 
 export const ngrokInstallHelpLink = `${defaultHelpLink}#failtoinstallngrok`;
 
-export const vxTestAppInstallHelpLink = `${defaultHelpLink}#failtoinstallteamsvideoextensiontestapp`;
+export const vxTestAppInstallHelpLink = `${defaultHelpLink}#failtoinstallteamsvideoextensibilitytestapp`;

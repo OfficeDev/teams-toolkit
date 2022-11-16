@@ -53,7 +53,7 @@
             "name": "Start Teams workbench (Edge)",
             "type": "pwa-msedge",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
             "webRoot": "${workspaceRoot}/SPFx",
             "sourceMaps": true,
             "sourceMapPathOverrides": {
@@ -72,7 +72,7 @@
             "name": "Start Teams workbench (Chrome)",
             "type": "pwa-chrome",
             "request": "launch",
-            "url": "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
+            "url": "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
             "webRoot": "${workspaceRoot}/SPFx",
             "sourceMaps": true,
             "sourceMapPathOverrides": {

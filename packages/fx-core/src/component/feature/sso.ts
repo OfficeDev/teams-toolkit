@@ -251,15 +251,13 @@ async function addSsoV3(
 
   const res = await createAuthFiles(inputs, Language.CSharp, false, false, true);
   if (res.isErr()) {
-    if (res.isErr()) {
-      return err(
-        sendErrorTelemetryThenReturnError(
-          SolutionTelemetryEvent.AddSso,
-          res.error,
-          context.telemetryReporter
-        )
-      );
-    }
+    return err(
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.AddSso,
+        res.error,
+        context.telemetryReporter
+      )
+    );
   }
 
   context.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSso, {

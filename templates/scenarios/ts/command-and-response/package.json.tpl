@@ -1,7 +1,7 @@
 {
     "name": "{%appName%}",
     "version": "1.0.0",
-    "description": "Microsoft Teams Toolkit Workflow Bot Sample",
+    "description": "Microsoft Teams Toolkit Command and Response Bot Sample",
     "author": "Microsoft",
     "license": "MIT",
     "main": "./lib/index.js",

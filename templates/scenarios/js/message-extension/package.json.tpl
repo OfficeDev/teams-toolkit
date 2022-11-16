@@ -4,7 +4,7 @@
   "msteams": {
     "teamsAppId": null
   },
-  "description": "Microsoft Teams Toolkit hello world Bot sample",
+  "description": "Microsoft Teams Toolkit message extension Bot sample",
   "author": "Microsoft",
   "license": "MIT",
   "main": "index.js",

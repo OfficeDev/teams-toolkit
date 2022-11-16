@@ -16,7 +16,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
 
-const actionName = "teamsApp/update";
+export const actionName = "teamsApp/update";
 
 const outputNames = {
   TEAMS_APP_ID: "TEAMS_APP_ID",

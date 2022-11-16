@@ -235,7 +235,7 @@ export class Constants {
   public static readonly INCLUDE_APP_MANIFEST = "include-app-manifest";
   public static readonly READ_MORE = getLocalizedString("core.Notification.ReadMore");
   public static readonly VIEW_DEVELOPER_PORTAL = getLocalizedString(
-    "plugins.appstudio.viewDevPortal"
+    "plugins.appstudio.viewDeveloperPortal"
   );
   public static readonly DEVELOPER_PORTAL_APP_PACKAGE_URL =
     "https://dev.teams.microsoft.com/apps/%s/app-package";

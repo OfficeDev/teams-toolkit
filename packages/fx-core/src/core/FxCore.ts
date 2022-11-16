@@ -1236,6 +1236,17 @@ export class FxCore implements v3.ICore {
     const context = createDriverContext(inputs);
     return coordinator.preProvisionForVS(context, inputs as InputsWithProjectPath);
   }
+
+  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
+  async publishInDeveloperPortal(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.publishInDeveloperPortal);
+    inputs.stage = Stage.publishInDeveloperPortal;
+    const context = createContextV3();
+    return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
+  }
 }
 
 export async function ensureBasicFolderStructure(

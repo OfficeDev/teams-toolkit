@@ -72,6 +72,8 @@ export namespace ExtTelemetry {
         return TelemetryEvent.CreateNewEnvironment;
       case Stage.grantPermission:
         return TelemetryEvent.GrantPermission;
+      case Stage.publishInDeveloperPortal:
+        return TelemetryEvent.PublishInDeveloperPortal;
       default:
         return undefined;
     }

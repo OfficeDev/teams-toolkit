@@ -49,6 +49,9 @@ import { envUtil } from "../../utils/envUtil";
 import { AppPackage } from "./interfaces/appPackage";
 import { basename, extname } from "path";
 import set from "lodash/set";
+import { CoreQuestionNames } from "../../../core/question";
+import { actionName as createAppPackageActionName } from "../../driver/teamsApp/createAppPackage";
+import { actionName as configureTeamsAppActionName } from "../../driver/teamsApp/configure";
 
 /**
  * Create Teams app if not exists
@@ -679,29 +682,16 @@ export async function updateManifestV3(
   );
 
   // Prepare for driver
-  const buildDriver: CreateAppPackageDriver = Container.get("teamsApp/createAppPackage");
-  const createAppPackageArgs: CreateAppPackageArgs = {
-    manifestTemplatePath: manifestTemplatePath,
-    outputZipPath: path.join(
-      inputs.projectPath,
-      BuildFolderName,
-      AppPackageFolderName,
-      `appPackage.${state.ENV_NAME}.zip`
-    ),
-    outputJsonPath: manifestFileName,
-  };
+  const buildDriver: CreateAppPackageDriver = Container.get(createAppPackageActionName);
+  const createAppPackageArgs = generateCreateAppPackageArgs(
+    inputs.projectPath,
+    manifestTemplatePath,
+    state.ENV_NAME!
+  );
   const updateTeamsAppArgs: ConfigureTeamsAppArgs = {
     appPackagePath: createAppPackageArgs.outputZipPath,
   };
-  const driverContext: DriverContext = {
-    azureAccountProvider: ctx.tokenProvider!.azureAccountProvider,
-    m365TokenProvider: ctx.tokenProvider!.m365TokenProvider,
-    ui: ctx.userInteraction,
-    logProvider: ctx.logProvider,
-    telemetryReporter: ctx.telemetryReporter,
-    projectPath: ctx.projectPath!,
-    platform: inputs.platform,
-  };
+  const driverContext: DriverContext = generateDriverContext(ctx, inputs);
   await envUtil.readEnv(inputs.projectPath!, state.ENV_NAME!);
 
   // render manifest
@@ -782,7 +772,7 @@ export async function updateManifestV3(
       }
     }
 
-    const configureDriver: ConfigureTeamsAppDriver = Container.get("teamsApp/update");
+    const configureDriver: ConfigureTeamsAppDriver = Container.get(configureTeamsAppActionName);
     const result = await configureDriver.run(updateTeamsAppArgs, driverContext);
     if (result.isErr()) {
       return err(result.error);
@@ -819,6 +809,41 @@ export async function updateManifestV3(
       return err(error);
     }
   }
+}
+
+export async function updateManifestV3ForPublish(
+  ctx: ResourceContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<any, FxError>> {
+  const envName = process.env.TEAMSFX_ENV;
+  const teamsAppId = process.env.TEAMS_APP_ID;
+  const manifestTemplatePath = inputs[CoreQuestionNames.ManifestPath];
+
+  const driverContext: DriverContext = generateDriverContext(ctx, inputs);
+  const buildDriver: CreateAppPackageDriver = Container.get(createAppPackageActionName);
+  const createAppPackageArgs = generateCreateAppPackageArgs(
+    inputs.projectPath,
+    manifestTemplatePath,
+    envName!
+  );
+  const updateTeamsAppArgs: ConfigureTeamsAppArgs = {
+    appPackagePath: createAppPackageArgs.outputZipPath,
+  };
+
+  await envUtil.readEnv(inputs.projectPath!, envName!);
+
+  const res = await buildDriver.run(createAppPackageArgs, driverContext);
+  if (res.isErr()) {
+    return err(res.error);
+  }
+
+  const configureDriver: ConfigureTeamsAppDriver = Container.get(configureTeamsAppActionName);
+  const result = await configureDriver.run(updateTeamsAppArgs, driverContext);
+  if (result.isErr()) {
+    return err(result.error);
+  }
+
+  return ok(teamsAppId);
 }
 
 export async function getAppPackage(
@@ -873,4 +898,43 @@ export async function getAppPackage(
   } catch (e) {
     return err(e);
   }
+}
+
+function generateDriverContext(
+  ctx: ResourceContextV3,
+  inputs: InputsWithProjectPath
+): DriverContext {
+  return {
+    azureAccountProvider: ctx.tokenProvider!.azureAccountProvider,
+    m365TokenProvider: ctx.tokenProvider!.m365TokenProvider,
+    ui: ctx.userInteraction,
+    logProvider: ctx.logProvider,
+    telemetryReporter: ctx.telemetryReporter,
+    projectPath: ctx.projectPath!,
+    platform: inputs.platform,
+  };
+}
+
+function generateCreateAppPackageArgs(
+  projectPath: string,
+  manifestTemplatePath: string,
+  envName: string
+): CreateAppPackageArgs {
+  const manifestFileName = path.join(
+    projectPath,
+    BuildFolderName,
+    AppPackageFolderName,
+    `manifest.${envName}.json`
+  );
+
+  return {
+    manifestTemplatePath: manifestTemplatePath,
+    outputZipPath: path.join(
+      projectPath,
+      BuildFolderName,
+      AppPackageFolderName,
+      `appPackage.${envName}.zip`
+    ),
+    outputJsonPath: manifestFileName,
+  };
 }

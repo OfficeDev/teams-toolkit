@@ -1,6 +1,7 @@
 import { hooks } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
+  assembleError,
   ContextV3,
   err,
   FxError,
@@ -609,7 +610,11 @@ export class Coordinator {
     let azureSubInfo = undefined;
     if (containsAzure) {
       await ctx.azureAccountProvider.getIdentityCredentialAsync(true); // make sure login if ensureSubScription() is not called.
-      await ctx.azureAccountProvider.setSubscription(process.env.AZURE_SUBSCRIPTION_ID!); //make sure sub is correctly set if ensureSubscription() is not called.
+      try {
+        await ctx.azureAccountProvider.setSubscription(process.env.AZURE_SUBSCRIPTION_ID!); //make sure sub is correctly set if ensureSubscription() is not called.
+      } catch (e) {
+        return [undefined, assembleError(e)];
+      }
       azureSubInfo = await ctx.azureAccountProvider.getSelectedSubscription(false);
       if (!azureSubInfo) {
         return [

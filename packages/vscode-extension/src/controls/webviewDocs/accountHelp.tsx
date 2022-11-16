@@ -65,7 +65,7 @@ export default function PrepareM365Account() {
       <h1 id="prepare-a-qualified-Microsoft-365-account-for-Teams-app-development">
         Prepare a Qualified Microsoft 365 Account for Teams App Development
       </h1>
-      <h2 id="account-requirements ">Account Requirements </h2>
+      <h2 id="account-requirements">Account Requirements </h2>
       <p>
         The following two conditions are required for Teams app development:
         <ol>

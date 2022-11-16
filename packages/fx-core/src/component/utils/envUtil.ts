@@ -120,12 +120,11 @@ export class EnvUtil {
 
 export const envUtil = new EnvUtil();
 
-const NEWLINE = "\n";
-const RE_INI_KEY_VAL = /^\s*([\w.-]+)\s*=\s*(.*)?\s*$/;
-const RE_NEWLINES = /\\n/g;
-const NEWLINES_MATCH = /\n|\r|\r\n/;
-
-type DotenvParsedLine = string | { key: string; value: string };
+const KEY_VALUE_PAIR_RE = /^\s*([\w.-]+)\s*=\s*(.*)?\s*$/;
+const NEW_LINE_RE = /\\n/g;
+const NEW_LINE_SPLITTER = /\n|\r|\r\n/;
+const NEW_LINE = "\n";
+type DotenvParsedLine = string | { key: string; value: string; comment: string };
 export interface DotenvParseResult {
   lines?: DotenvParsedLine[];
   obj: DotenvOutput;
@@ -135,36 +134,34 @@ export class DotenvUtil {
   deserialize(src: string | Buffer): DotenvParseResult {
     const lines: DotenvParsedLine[] = [];
     const obj: DotenvOutput = {};
-    // convert Buffers before splitting into lines and processing
     src
       .toString()
-      .split(NEWLINES_MATCH)
+      .split(NEW_LINE_SPLITTER)
       .forEach(function (line, idx) {
-        // matching "KEY' and 'VAL' in 'KEY=VAL'
-        const keyValueArr = line.match(RE_INI_KEY_VAL);
-        // matched?
-        if (keyValueArr != null) {
-          const key = keyValueArr[1];
-          // default undefined or missing values to empty string
-          let val = keyValueArr[2] || "";
-          const end = val.length - 1;
-          const isDoubleQuoted = val[0] === '"' && val[end] === '"';
-          const isSingleQuoted = val[0] === "'" && val[end] === "'";
-
-          // if single or double quoted, remove quotes
-          if (isSingleQuoted || isDoubleQuoted) {
-            val = val.substring(1, end);
-
-            // if double quoted, expand newlines
-            if (isDoubleQuoted) {
-              val = val.replace(RE_NEWLINES, NEWLINE);
+        const kvMatchArray = line.match(KEY_VALUE_PAIR_RE);
+        if (kvMatchArray !== null) {
+          // match key-value pair
+          const key = kvMatchArray[1];
+          let value = kvMatchArray[2] || "";
+          let inlineComment = "";
+          const dQuoted = value[0] === '"' && value[value.length - 1] === '"';
+          const sQuoted = value[0] === "'" && value[value.length - 1] === "'";
+          if (sQuoted || sQuoted) {
+            value = value.substring(1, value.length - 1);
+            if (dQuoted) {
+              value = value.replace(NEW_LINE_RE, NEW_LINE);
             }
           } else {
-            // remove surrounding whitespace
-            val = val.trim();
+            value = value.trim();
+            //try to match comment starter
+            const index = value.indexOf("#");
+            if (index >= 0) {
+              inlineComment = value.substring(index);
+              value = value.substring(0, index).trim();
+            }
           }
-          obj[key] = val;
-          lines.push({ key: key, value: val });
+          obj[key] = value;
+          lines.push({ key: key, value: value, comment: inlineComment });
         } else {
           lines.push(line);
         }
@@ -183,11 +180,11 @@ export class DotenvUtil {
         } else {
           if (obj[line.key] !== undefined) {
             // use kv in obj
-            array.push(`${line.key}=${obj[line.key]}`);
+            array.push(`${line.key}=${obj[line.key]}${line.comment ? " " + line.comment : ""}`);
             delete obj[line.key];
           } else {
             // keep original kv in lines
-            array.push(`${line.key}=${line.value}`);
+            array.push(`${line.key}=${line.value}${line.comment ? " " + line.comment : ""}`);
           }
         }
       });
@@ -201,7 +198,7 @@ export class DotenvUtil {
 }
 
 export const dotenvUtil = new DotenvUtil();
-// const res = dotenvUtil.deserialize("#COMMENT\n\r\nKEY=VALUE");
+// const res = dotenvUtil.deserialize("#COMMENT\n\n\nKEY=VALUE#COMMENT2");
 // console.log(res);
 // res.obj["KEY"] = "VALUE@@@";
 // console.log(dotenvUtil.serialize(res));

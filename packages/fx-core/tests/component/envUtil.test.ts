@@ -390,9 +390,9 @@ describe("env utils", () => {
   });
 
   it("dotenvUtil deserialize", async () => {
-    const res = dotenvUtil.deserialize("#COMMENT\n\r\nKEY=VALUE");
+    const res = dotenvUtil.deserialize("#COMMENT\n\r\nKEY=VALUE #COMMENT2");
     assert.deepEqual(res, {
-      lines: ["#COMMENT", "", "", { key: "KEY", value: "VALUE" }],
+      lines: ["#COMMENT", "", "", { key: "KEY", value: "VALUE", comment: "#COMMENT2" }],
       obj: { KEY: "VALUE" },
     });
   });
@@ -405,7 +405,7 @@ describe("env utils", () => {
   });
   it("dotenvUtil serialize with lines", async () => {
     const parsed = {
-      lines: ["#COMMENT", "", "", { key: "KEY2", value: "VALUE2" }],
+      lines: ["#COMMENT", "", "", { key: "KEY2", value: "VALUE2", comment: "" }],
       obj: { KEY: "VALUE", KEY2: "VALUE3" },
     };
     const str = dotenvUtil.serialize(parsed);
@@ -413,11 +413,11 @@ describe("env utils", () => {
   });
   it("dotenvUtil serialize with lines case 2", async () => {
     const parsed = {
-      lines: ["#COMMENT", "", "", { key: "KEY2", value: "VALUE2" }],
+      lines: ["#COMMENT", "", "", { key: "KEY2", value: "VALUE2", comment: "#COMMENT2" }],
       obj: { KEY3: "VALUE3" },
     };
     const str = dotenvUtil.serialize(parsed);
-    assert.equal(str, "#COMMENT\n\n\nKEY2=VALUE2\nKEY3=VALUE3");
+    assert.equal(str, "#COMMENT\n\n\nKEY2=VALUE2 #COMMENT2\nKEY3=VALUE3");
   });
   it("dotenvUtil serialize without lines", async () => {
     const parsed = {

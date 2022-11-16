@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
 import { Inputs, Platform, QTreeNode, Stage } from "@microsoft/teamsfx-api";
 import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
 import { Options } from "yargs";
+
+export type OptionsMap = { [_: string]: Options };
 
 export const cliSource = "TeamsfxCLI";
 export const cliName = "teamsfx";
@@ -18,7 +18,7 @@ export const RootFolderNode = new QTreeNode({
   default: "./",
 });
 
-export const RootFolderOptions: { [_: string]: Options } = {
+export const RootFolderOptions: OptionsMap = {
   folder: {
     type: "string",
     global: false,
@@ -33,7 +33,7 @@ export const EnvNodeNoCreate = new QTreeNode({
   title: "Select an existing environment for the project",
 });
 
-export const EnvOptions: { [_: string]: Options } = {
+export const EnvOptions: OptionsMap = {
   env: {
     type: "string",
     global: false,
@@ -56,7 +56,7 @@ export const CollaboratorEmailNode = new QTreeNode({
 export const ManifestFilePathParamName = "manifest-file-path";
 export const OutputZipPathParamName = "output-zip-path";
 export const OutputManifestParamName = "output-manifest-path";
-export const BuildPackageOptions: { [_: string]: Options } = {
+export const BuildPackageOptions: OptionsMap = {
   [ManifestFilePathParamName]: {
     type: "string",
     global: false,

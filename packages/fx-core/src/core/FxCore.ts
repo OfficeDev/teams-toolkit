@@ -273,10 +273,17 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createDriverContext(inputs);
-    const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
-    ctx!.envVars = output;
-    if (error) return err(error);
-    return ok(Void);
+    try {
+      const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
+      ctx!.envVars = output;
+      if (error) return err(error);
+      return ok(Void);
+    } finally {
+      //reset subscription
+      try {
+        TOOLS.tokenProvider.azureAccountProvider.setSubscription("");
+      } catch (e) {}
+    }
   }
   @hooks([
     ErrorHandlerMW,
@@ -631,9 +638,9 @@ export class FxCore implements v3.ICore {
     } else if (stage === Stage.provision) {
       return await getQuestionsForProvisionV3(context, inputs);
     } else if (stage === Stage.initDebug) {
-      return await getQuestionsForInit("debug");
+      return await getQuestionsForInit("debug", inputs);
     } else if (stage === Stage.initInfra) {
-      return await getQuestionsForInit("infra");
+      return await getQuestionsForInit("infra", inputs);
     }
     return ok(undefined);
   }

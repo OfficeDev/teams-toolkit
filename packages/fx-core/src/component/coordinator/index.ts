@@ -1,6 +1,7 @@
 import { hooks } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
+  assembleError,
   ContextV3,
   err,
   FxError,
@@ -188,6 +189,11 @@ export class Coordinator {
         throw InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs);
       }
       projectPath = path.join(folder, sampleId);
+      let suffix = 1;
+      while ((await fs.pathExists(projectPath)) && (await fs.readdir(projectPath)).length > 0) {
+        projectPath = path.join(folder, `${sampleId}_${suffix++}`);
+      }
+
       inputs.projectPath = projectPath;
       await fs.ensureDir(projectPath);
 
@@ -264,7 +270,7 @@ export class Coordinator {
   @hooks([
     ActionExecutionMW({
       question: (context, inputs) => {
-        return getQuestionsForInit("infra");
+        return getQuestionsForInit("infra", inputs);
       },
       enableTelemetry: true,
       telemetryEventName: "init-infra",
@@ -294,7 +300,7 @@ export class Coordinator {
   @hooks([
     ActionExecutionMW({
       question: (context, inputs) => {
-        return getQuestionsForInit("debug");
+        return getQuestionsForInit("debug", inputs);
       },
       enableTelemetry: true,
       telemetryEventName: "init-debug",
@@ -604,7 +610,11 @@ export class Coordinator {
     let azureSubInfo = undefined;
     if (containsAzure) {
       await ctx.azureAccountProvider.getIdentityCredentialAsync(true); // make sure login if ensureSubScription() is not called.
-      await ctx.azureAccountProvider.setSubscription(process.env.AZURE_SUBSCRIPTION_ID!); //make sure sub is correctly set if ensureSubscription() is not called.
+      try {
+        await ctx.azureAccountProvider.setSubscription(process.env.AZURE_SUBSCRIPTION_ID!); //make sure sub is correctly set if ensureSubscription() is not called.
+      } catch (e) {
+        return [undefined, assembleError(e)];
+      }
       azureSubInfo = await ctx.azureAccountProvider.getSelectedSubscription(false);
       if (!azureSubInfo) {
         return [

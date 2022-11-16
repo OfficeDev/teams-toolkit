@@ -6,6 +6,7 @@ import {
   Platform,
   Result,
   SingleSelectConfig,
+  Stage,
   UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -66,10 +67,34 @@ describe("component coordinator test", () => {
       [CoreQuestionNames.Samples]: "hello-world-tab",
     };
     const fxCore = new FxCore(tools);
-    const res2 = await fxCore.createProject(inputs);
-    assert.isTrue(res2.isOk());
+    const res = await fxCore.createProject(inputs);
+    assert.isTrue(res.isOk());
   });
-
+  it("create project from sample rename folder", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
+    sandbox
+      .stub(fs, "readdir")
+      .onFirstCall()
+      .resolves(["abc"] as any)
+      .onSecondCall()
+      .resolves([]);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo.id,
+      [CoreQuestionNames.Samples]: "hello-world-tab",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isTrue(res.value.endsWith("_1"));
+    }
+  });
   it("create project from scratch", async () => {
     sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -785,7 +810,63 @@ describe("component coordinator test", () => {
       assert.equal(res.error.name, "checkM365TenantError");
     }
   });
-
+  it("provision failed with no subscription permission", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: undefined,
+          },
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
+          return ok(new Map());
+        },
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
+      ok({
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
+      })
+    );
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "mockSubId",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
+    sandbox
+      .stub(tools.tokenProvider.azureAccountProvider, "setSubscription")
+      .rejects(new UserError({ source: "Test", name: "NoPermission" }));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isErr());
+  });
   it("deploy happy path", async () => {
     const mockProjectModel: ProjectModel = {
       deploy: {
@@ -1264,5 +1345,16 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isErr());
+  });
+
+  it("getQuestionsForInit", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    const fxCore = new FxCore(tools);
+    const res1 = await fxCore.getQuestions(Stage.initDebug, inputs);
+    assert.isTrue(res1.isOk());
+    const res2 = await fxCore.getQuestions(Stage.initInfra, inputs);
+    assert.isTrue(res2.isOk());
   });
 });

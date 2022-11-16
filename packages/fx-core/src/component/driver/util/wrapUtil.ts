@@ -108,8 +108,8 @@ function getError(context: WrapDriverContext, error: any): FxError {
       error,
       source: context.eventName,
       name: ErrorConstants.unhandledError,
-      message: ErrorConstants.unhandledErrorMessage,
-      displayMessage: ErrorConstants.unhandledErrorMessage,
+      message: error.message,
+      displayMessage: error.message,
     });
   }
   return fxError;

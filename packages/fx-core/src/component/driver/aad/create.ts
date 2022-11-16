@@ -49,7 +49,7 @@ export class CreateAadAppDriver implements StepDriver {
       progressBarSettings.stepMessages.length
     );
     try {
-      progressHandler?.start();
+      await progressHandler?.start();
 
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
 
@@ -57,7 +57,7 @@ export class CreateAadAppDriver implements StepDriver {
       const aadAppClient = new AadAppClient(context.m365TokenProvider);
       const aadAppState = this.loadCurrentState();
 
-      progressHandler?.next(progressBarSettings.stepMessages.shift());
+      await progressHandler?.next(progressBarSettings.stepMessages.shift());
       if (!aadAppState.AAD_APP_CLIENT_ID) {
         context.logProvider?.info(
           getLocalizedString(logMessageKeys.startCreateAadApp, AAD_APP_CLIENT_ID)
@@ -74,7 +74,7 @@ export class CreateAadAppDriver implements StepDriver {
         );
       }
 
-      progressHandler?.next(progressBarSettings.stepMessages.shift());
+      await progressHandler?.next(progressBarSettings.stepMessages.shift());
       if (args.generateClientSecret) {
         if (!aadAppState.SECRET_AAD_APP_CLIENT_SECRET) {
           context.logProvider?.info(
@@ -106,14 +106,14 @@ export class CreateAadAppDriver implements StepDriver {
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
-      progressHandler?.end(true);
+      await progressHandler?.end(true);
 
       return new Map(
         Object.entries(aadAppState) // convert each property to Map item
           .filter((item) => item[1] && item[1] !== "") // do not return Map item that is empty
       );
     } catch (error) {
-      progressHandler?.end(false);
+      await progressHandler?.end(false);
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)

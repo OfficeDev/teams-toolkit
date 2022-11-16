@@ -42,8 +42,8 @@ export class UpdateAadAppDriver implements StepDriver {
     );
 
     try {
-      progressHandler?.start();
-      progressHandler?.next(progressBarSettings.stepMessages.shift());
+      await progressHandler?.start();
+      await progressHandler?.next(progressBarSettings.stepMessages.shift());
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
 
       this.validateArgs(args);
@@ -89,7 +89,7 @@ export class UpdateAadAppDriver implements StepDriver {
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
-      progressHandler?.end(true);
+      await progressHandler?.end(true);
 
       return ok(
         new Map(
@@ -98,7 +98,7 @@ export class UpdateAadAppDriver implements StepDriver {
         )
       );
     } catch (error) {
-      progressHandler?.end(false);
+      await progressHandler?.end(false);
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)

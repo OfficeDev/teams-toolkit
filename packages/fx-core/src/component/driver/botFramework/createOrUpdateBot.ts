@@ -7,8 +7,6 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { AppStudioScopes } from "../../../common/tools";
-import { AppStudioClient } from "../../resource/botService/appStudio/appStudioClient";
 import { wrapRun } from "../../utils/common";
 import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
@@ -17,6 +15,9 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { CreateOrUpdateBotFrameworkBotArgs } from "./interface/createOrUpdateBotFrameworkBotArgs";
+import { BotRegistration } from "../../resource/botService/botRegistration/botRegistration";
+import { LocalBotRegistration } from "../../resource/botService/botRegistration/localBotRegistration";
+import { IBotRegistration } from "../../resource/botService/appStudio/interfaces/IBotRegistration";
 
 const actionName = "botFramework/createOrUpdateBot";
 const helpLink = "https://aka.ms/teamsfx-actions/botFramework-createOrUpdateBot";
@@ -38,30 +39,23 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
     try {
       this.validateArgs(args);
 
-      const tokenResult = await context.m365TokenProvider.getAccessToken({
-        scopes: AppStudioScopes,
-      });
-      if (tokenResult.isErr()) {
-        throw tokenResult.error;
-      }
+      const botRegistrationData: IBotRegistration = {
+        botId: args.botId,
+        name: args.name,
+        description: args.description ?? "",
+        iconUrl: args.iconUrl ?? "",
+        messagingEndpoint: args.messagingEndpoint,
+        callingEndpoint: "",
+      };
 
-      let botRegistration = await AppStudioClient.getBotRegistration(tokenResult.value, args.botId);
-      if (!botRegistration) {
-        botRegistration = {
-          botId: args.botId,
-          name: args.name,
-          messagingEndpoint: args.messagingEndpoint,
-          description: args.description ?? "",
-          iconUrl: args.iconUrl ?? "",
-          callingEndpoint: "",
-        };
-        await AppStudioClient.createBotRegistration(tokenResult.value, botRegistration);
-      } else {
-        botRegistration.messagingEndpoint = args.messagingEndpoint;
-        botRegistration.name = args.name;
-        botRegistration.description = args.description ?? botRegistration.description;
-        botRegistration.iconUrl = args.iconUrl ?? botRegistration.iconUrl;
-        await AppStudioClient.updateBotRegistration(tokenResult.value, botRegistration);
+      const botRegistration: BotRegistration = new LocalBotRegistration();
+      const result = await botRegistration.createOrUpdateBotRegistration(
+        context.m365TokenProvider,
+        botRegistrationData
+      );
+
+      if (result.isErr()) {
+        throw result.error;
       }
 
       return new Map();

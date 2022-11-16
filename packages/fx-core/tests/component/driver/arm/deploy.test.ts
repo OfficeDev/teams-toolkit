@@ -22,6 +22,7 @@ import * as bicepChecker from "../../../../src/component/utils/depsChecker/bicep
 import axios from "axios";
 import { getAbsolutePath } from "../../../../src/component/utils/common";
 import { useUserSetEnv } from "../../../../src/core/middleware/envInfoLoaderV3";
+import { convertOutputs } from "../../../../src/component/driver/arm/util/util";
 
 describe("Arm driver deploy", () => {
   const sandbox = createSandbox();
@@ -220,5 +221,24 @@ describe("util test", () => {
   it("useUserSetEnv", async () => {
     const res = await useUserSetEnv("./", "local");
     assert.isTrue(res.isErr());
+  });
+
+  it("convert output", () => {
+    const mockOutput = [
+      {
+        tabOutput: {
+          type: "Object",
+          value: {
+            keyA: {
+              type: "string",
+              value: "valueA",
+            },
+            KeyB: 1,
+          },
+        },
+      },
+    ];
+    const res = convertOutputs(mockOutput);
+    assert.isNotEmpty(res);
   });
 });

@@ -1,13 +1,9 @@
 {
-    "name": "teamsfx-template-tab",
+    "name": "{%appName%}",
     "version": "0.1.0",
     "private": true,
     "dependencies": {
         "@fluentui/react-northstar": "^0.62.0",
-        "@microsoft/mgt-element": "^2.6.2",
-        "@microsoft/mgt-react": "^2.6.2",
-        "@microsoft/mgt-teamsfx-provider": "^2.6.2",
-        "@microsoft/microsoft-graph-client": "^3.0.1",
         "@microsoft/teams-js": "^2.2.0",
         "@microsoft/teamsfx": "^2.0.0",
         "@microsoft/teamsfx-react": "^2.0.0",
@@ -27,10 +23,9 @@
         "typescript": "^4.1.2"
     },
     "scripts": {
-        "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run start",
-        "start": "cross-env GENERATE_SOURCEMAP=false react-scripts start",
+        "start": "react-scripts start",
         "install:teamsfx": "npm install",
-        "build": "cross-env GENERATE_SOURCEMAP=false react-scripts build",
+        "build": "react-scripts build",
         "build:teamsfx": "cross-env-shell \"env-cmd -f .env.teamsfx.${TEAMS_FX_ENV} npm run build\"",
         "build:teamsfx:dev": "cross-env TEAMS_FX_ENV=dev npm run build:teamsfx",
         "eject": "react-scripts eject"

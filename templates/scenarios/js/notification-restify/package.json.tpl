@@ -1,5 +1,5 @@
 {
-    "name": "notification-restify-bot",
+    "name": "{%appName%}",
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit Notification Bot Sample (Restify)",
     "author": "Microsoft",

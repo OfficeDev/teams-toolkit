@@ -7,6 +7,8 @@ import * as chai from "chai";
 import { ProjectSettings, ProjectSettingsV3 } from "@microsoft/teamsfx-api";
 
 import { ProjectSettingsHelper } from "../../../src/common/local/projectSettingsHelper";
+import { isExistingTabApp } from "../../../src/common/projectSettingsHelper";
+
 import { convertProjectSettingsV2ToV3 } from "../../../src/component/migrate";
 
 describe("ProjectSettingsHelper", () => {
@@ -190,5 +192,14 @@ describe("ProjectSettingsHelper", () => {
     chai.assert.isFalse(includeBot);
     chai.assert.isFalse(includeAAD);
     chai.assert.isFalse(includeSimpleAuth);
+  });
+
+  it("Existing tab app", () => {
+    const projectSettings = {
+      appName: "unit-test",
+      projectId: "11111111-1111-1111-1111-111111111111",
+    } as unknown as ProjectSettings;
+    const existingTabApp = isExistingTabApp(projectSettings);
+    chai.assert.isFalse(existingTabApp);
   });
 });

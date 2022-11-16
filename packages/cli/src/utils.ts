@@ -465,7 +465,6 @@ export function getProjectId(rootfolder: string | undefined): any {
   } catch (e) {
     return undefined;
   }
-  return undefined;
 }
 
 export function getSystemInputs(projectPath?: string, env?: string): Inputs {

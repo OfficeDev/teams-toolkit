@@ -20,6 +20,11 @@ describe("FrontendUtils", async () => {
       const res = execute("wrong command");
       chai.expect(res).be.rejectedWith(Error);
     });
+
+    it("should fail but still get stdout", function () {
+      const res = execute("echo 1 && wrong command");
+      chai.expect(res).be.rejectedWith(Error);
+    });
   });
 
   describe("isKvPairEqual", async () => {

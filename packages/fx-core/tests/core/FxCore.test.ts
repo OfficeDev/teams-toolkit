@@ -13,6 +13,7 @@ import {
   err,
   ok,
   Result,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { assert, expect } from "chai";
 import fs from "fs-extra";
@@ -57,6 +58,7 @@ import {
 } from "../../src/component/configManager/interface";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { Readable, Writable } from "stream";
+import { coordinator } from "../../src/component/coordinator";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -596,5 +598,35 @@ describe("createEnvCopyV3", async () => {
       writeStreamContent[5] === `SECRET_KEY3=${os.EOL}`,
       "key not starts with SECRET_ should be copied with empty value"
     );
+  });
+});
+
+describe("publishInDeveloperPortal", () => {
+  const tools = new MockTools();
+  const sandbox = sinon.createSandbox();
+
+  before(() => {
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+  });
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("success", async () => {
+    const core = new FxCore(tools);
+    const inputs: Inputs = {
+      env: "local",
+      projectPath: "project-path",
+      platform: Platform.VSCode,
+      [CoreQuestionNames.ManifestPath]: "manifest-path",
+    };
+    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(coordinator, "publishInDeveloperPortal").resolves(ok(Void));
+    const res = await core.publishInDeveloperPortal(inputs);
+
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
   });
 });

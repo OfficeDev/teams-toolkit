@@ -85,13 +85,14 @@ const questionVisitor = async function (
   if (inputs[question.name] !== undefined) {
     return ok({ type: "skip", result: inputs[question.name] });
   }
+  const title = (await getCallFuncValue(inputs, question.title)) as string;
   if (question.type === "func") {
     try {
       let res: any;
       if (ui.executeFunction) {
         res = await ui.executeFunction({
           name: question.name,
-          title: question.title ?? "Executing operation...",
+          title: title ?? "Executing operation...",
           func: question.func,
           inputs: inputs,
         });
@@ -124,7 +125,7 @@ const questionVisitor = async function (
       const inputQuestion = question as TextInputQuestion;
       return await ui.inputText({
         name: question.name,
-        title: question.title,
+        title: title,
         password: (inputQuestion as TextInputQuestion).password,
         default: defaultValue as string,
         placeholder: placeholder,
@@ -151,7 +152,7 @@ const questionVisitor = async function (
       if (question.type === "singleSelect") {
         return await ui.selectOption({
           name: question.name,
-          title: question.title,
+          title: title,
           options: res.options,
           returnObject: selectQuestion.returnObject,
           default: defaultValue as string,
@@ -168,7 +169,7 @@ const questionVisitor = async function (
           : undefined;
         return await ui.selectOptions({
           name: question.name,
-          title: question.title,
+          title: title,
           options: res.options,
           returnObject: selectQuestion.returnObject,
           default: defaultValue as string[],
@@ -186,7 +187,7 @@ const questionVisitor = async function (
         : undefined;
       return await ui.selectFiles({
         name: question.name,
-        title: question.title,
+        title: title,
         placeholder: placeholder,
         prompt: prompt,
         step: step,
@@ -199,7 +200,7 @@ const questionVisitor = async function (
         : undefined;
       return await ui.selectFile({
         name: question.name,
-        title: question.title,
+        title: title,
         placeholder: placeholder,
         prompt: prompt,
         default: defaultValue as string,
@@ -213,7 +214,7 @@ const questionVisitor = async function (
         : undefined;
       return await ui.selectFolder({
         name: question.name,
-        title: question.title,
+        title: title,
         placeholder: placeholder,
         prompt: prompt,
         default: defaultValue as string,

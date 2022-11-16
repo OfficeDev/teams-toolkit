@@ -99,9 +99,9 @@ class M365Unacquire extends YargsCommand {
         description: "Title ID of the acquired M365 App",
         type: "string",
       })
-      .option("file-path", {
+      .option("manifest-id", {
         require: false,
-        description: "Path to the App manifest zip package",
+        description: "Manifest ID of the acquired M365 App",
         type: "string",
       })
       .example(
@@ -109,8 +109,8 @@ class M365Unacquire extends YargsCommand {
         "Remove the acquired M365 App by Title ID"
       )
       .example(
-        "teamsfx m365 unacquire --file-path appPackage.zip",
-        "Remove the acquired M365 App by App Package"
+        "teamsfx m365 unacquire --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "Remove the acquired M365 App by Manifest ID"
       );
     return yargs.version(false);
   }
@@ -120,20 +120,20 @@ class M365Unacquire extends YargsCommand {
 
     const packageService = new PackageService(sideloadingServiceEndpoint);
     let titleId = args["title-id"];
-    const manifestPath = args["file-path"];
-    if (titleId === undefined && manifestPath === undefined) {
+    const manifestId = args["manifest-id"];
+    if (titleId === undefined && manifestId === undefined) {
       return err(
         new UserError(
           cliSource,
           "InvalidInput",
-          "Either `title-id` or `file-path` should be provided."
+          "Either `title-id` or `manifest-id` should be provided."
         )
       );
     }
 
     const tokenAndUpn = await getTokenAndUpn();
     if (titleId === undefined) {
-      titleId = await packageService.retrieveTitleId(tokenAndUpn[0], manifestPath);
+      titleId = await packageService.retrieveTitleId(tokenAndUpn[0], manifestId);
     }
     await packageService.unacquire(tokenAndUpn[0], titleId);
     return ok(Void);
@@ -152,9 +152,9 @@ class M365LaunchInfo extends YargsCommand {
         description: "Title ID of the acquired M365 App",
         type: "string",
       })
-      .option("file-path", {
+      .option("manifest-id", {
         require: false,
-        description: "Path to the App manifest zip package",
+        description: "Manifest ID of the acquired M365 App",
         type: "string",
       })
       .example(
@@ -162,8 +162,8 @@ class M365LaunchInfo extends YargsCommand {
         "Get launch information of the acquired M365 App by Title ID"
       )
       .example(
-        "teamsfx m365 launchinfo --file-path appPackage.zip",
-        "Get launch information of the acquired M365 App by App Package"
+        "teamsfx m365 launchinfo --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "Get launch information of the acquired M365 App by Manifest ID"
       );
     return yargs.version(false);
   }
@@ -173,20 +173,20 @@ class M365LaunchInfo extends YargsCommand {
 
     const packageService = new PackageService(sideloadingServiceEndpoint);
     let titleId = args["title-id"];
-    const manifestPath = args["file-path"];
-    if (titleId === undefined && manifestPath === undefined) {
+    const manifestId = args["manifest-id"];
+    if (titleId === undefined && manifestId === undefined) {
       return err(
         new UserError(
           cliSource,
           "InvalidInput",
-          "Either `title-id` or `file-path` should be provided."
+          "Either `title-id` or `manifest-id` should be provided."
         )
       );
     }
 
     const tokenAndUpn = await getTokenAndUpn();
     if (titleId === undefined) {
-      titleId = await packageService.retrieveTitleId(tokenAndUpn[0], manifestPath);
+      titleId = await packageService.retrieveTitleId(tokenAndUpn[0], manifestId);
     }
     await packageService.getLaunchInfo(tokenAndUpn[0], titleId);
     return ok(Void);

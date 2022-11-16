@@ -372,4 +372,10 @@ describe("question for v3", () => {
       }
     }
   });
+
+  it("getQuestionsForAddFeatureSubCommand", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+    };
+  });
 });

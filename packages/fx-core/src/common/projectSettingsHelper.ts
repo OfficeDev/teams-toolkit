@@ -21,7 +21,7 @@ import {
   BuiltInFeaturePluginNames,
 } from "../component/constants";
 import * as uuid from "uuid";
-import { isV3Enabled } from "./tools";
+import { isExistingTabAppEnabled, isV3Enabled } from "./tools";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -137,6 +137,10 @@ export function getAzurePlugins(excludeAad = false): string[] {
 }
 
 export function isExistingTabApp(projectSettings: ProjectSettings): boolean {
+  if (!isExistingTabAppEnabled()) {
+    return false;
+  }
+
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (!solutionSettings) {
     return true;

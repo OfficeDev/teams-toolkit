@@ -108,7 +108,8 @@ class NewTemplate extends YargsCommand {
       })
       .options(RootFolderNodeData.name, {
         type: "string",
-        description: RootFolderNodeData.type != "func" ? RootFolderNodeData.title : "unknown",
+        description:
+          RootFolderNodeData.type != "func" ? (RootFolderNodeData.title as string) : "unknown",
         default: RootFolderNodeData.default,
       });
     return yargs;

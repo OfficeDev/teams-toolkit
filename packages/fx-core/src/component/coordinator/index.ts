@@ -1,6 +1,7 @@
 import { hooks } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
+  assembleError,
   ContextV3,
   err,
   FxError,
@@ -8,14 +9,17 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
+  ResourceContextV3,
   Result,
   SettingsFolderName,
+  UserCancelError,
   UserError,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
 import { Container } from "typedi";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { InvalidInputError } from "../../core/error";
+import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
 import { getQuestionsForCreateProjectV2 } from "../../core/middleware/questionModel";
 import {
   CoreQuestionNames,
@@ -49,7 +53,14 @@ import {
   BotOptionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { getQuestionsForAddFeatureV3, getQuestionsForProvisionV3 } from "../question";
+import {
+  getQuestionsForAddFeatureV3,
+  getQuestionsForInit,
+  getQuestionsForProvisionV3,
+  InitOptionNo,
+  InitOptionYes,
+  getQuestionsForPublishInDeveloperPortal,
+} from "../question";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import { globalVars } from "../../core/globalVars";
@@ -76,11 +87,12 @@ import { envUtil } from "../utils/envUtil";
 import { SPFxGenerator } from "../generator/spfxGenerator";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
-import { createContextV3 } from "../utils";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { getBotTroubleShootMessage } from "../core";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
+import { updateManifestV3ForPublish } from "../resource/appManifest/appStudio";
+import { AppStudioScopes } from "../resource/appManifest/constants";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -116,6 +128,21 @@ export const Feature2TemplateName: any = {
   [`${TabOptionItem.id}:undefined`]: TemplateNames.SsoTab,
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
   [`${M365SsoLaunchPageOptionItem.id}:undefined`]: TemplateNames.M365Tab,
+};
+
+export const InitTemplateName: any = {
+  ["debug:vsc:tab:true"]: "init-debug-vsc-spfx-tab",
+  ["debug:vsc:tab:false"]: "init-debug-vsc-tab",
+  ["debug:vs:tab:true"]: "init-debug-vs-spfx-tab",
+  ["debug:vs:tab:false"]: "init-debug-vs-tab",
+  ["debug:vsc:bot:undefined"]: "init-debug-vsc-bot",
+  ["debug:vs:bot:undefined"]: "init-debug-vs-bot",
+  ["infra:vsc:tab:true"]: "init-infra-vsc-spfx-tab",
+  ["infra:vsc:tab:false"]: "init-infra-vsc-tab",
+  ["infra:vs:tab:true"]: "init-infra-vs-spfx-tab",
+  ["infra:vs:tab:false"]: "init-infra-vs-tab",
+  ["infra:vsc:bot:undefined"]: "init-infra-vsc-bot",
+  ["infra:vs:bot:undefined"]: "init-infra-vs-bot",
 };
 
 const workflowFileName = "app.yml";
@@ -166,6 +193,11 @@ export class Coordinator {
         throw InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs);
       }
       projectPath = path.join(folder, sampleId);
+      let suffix = 1;
+      while ((await fs.pathExists(projectPath)) && (await fs.readdir(projectPath)).length > 0) {
+        projectPath = path.join(folder, `${sampleId}_${suffix++}`);
+      }
+
       inputs.projectPath = projectPath;
       await fs.ensureDir(projectPath);
 
@@ -239,13 +271,66 @@ export class Coordinator {
     return ok(projectPath);
   }
 
-  async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  @hooks([
+    ActionExecutionMW({
+      question: (context, inputs) => {
+        return getQuestionsForInit("infra", inputs);
+      },
+      enableTelemetry: true,
+      telemetryEventName: "init-infra",
+      telemetryComponentName: "coordinator",
+      errorSource: CoordinatorSource,
+    }),
+  ])
+  async initInfra(context: ContextV3, inputs: Inputs): Promise<Result<undefined, FxError>> {
+    if (inputs.proceed === InitOptionNo.id) return err(UserCancelError);
     const projectPath = inputs.projectPath;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is undefined"));
     }
-    const context = createContextV3();
-    const res = await Generator.generateTemplate(context, projectPath, "init-infra", undefined);
+    const editor = inputs.editor;
+    const capability = inputs.capability;
+    const spfx = inputs.spfx;
+    if (!editor) return err(InvalidInputError("editor is undefined"));
+    if (!capability) return err(InvalidInputError("capability is undefined"));
+    const templateName = InitTemplateName[`infra:${editor}:${capability}:${spfx}`];
+    const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
+    if (res.isErr()) return err(res.error);
+    const ensureRes = await this.ensureTrackingId(inputs, projectPath);
+    if (ensureRes.isErr()) return err(ensureRes.error);
+    return ok(undefined);
+  }
+
+  @hooks([
+    ActionExecutionMW({
+      question: (context, inputs) => {
+        return getQuestionsForInit("debug", inputs);
+      },
+      enableTelemetry: true,
+      telemetryEventName: "init-debug",
+      telemetryComponentName: "coordinator",
+      errorSource: CoordinatorSource,
+    }),
+  ])
+  async initDebug(context: ContextV3, inputs: Inputs): Promise<Result<undefined, FxError>> {
+    if (inputs.proceed === InitOptionNo.id) return err(UserCancelError);
+    const projectPath = inputs.projectPath;
+    if (!projectPath) {
+      return err(InvalidInputError("projectPath is undefined"));
+    }
+    const editor = inputs.editor;
+    const capability = inputs.capability;
+    const spfx = inputs.spfx;
+    if (!editor) return err(InvalidInputError("editor is undefined"));
+    if (!capability) return err(InvalidInputError("capability is undefined"));
+    const templateName = InitTemplateName[`debug:${editor}:${capability}:${spfx}`];
+    if (editor === "vsc") {
+      const exists = await fs.pathExists(path.join(projectPath, ".vscode"));
+      if (exists) {
+        context.templateVariables = { dotVscodeFolderName: ".vscode-teamsfx" };
+      }
+    }
+    const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(inputs, projectPath);
     if (ensureRes.isErr()) return err(ensureRes.error);
@@ -257,7 +342,7 @@ export class Coordinator {
     const settingsRes = await settingsUtil.readSettings(projectPath);
     if (settingsRes.isErr()) return err(settingsRes.error);
     const settings = settingsRes.value;
-    settings.trackingId = inputs.projectId ? inputs.projectId : uuid.v4();
+    settings.trackingId = settings.trackingId || inputs.projectId || uuid.v4();
     inputs.projectId = settings.trackingId;
     await settingsUtil.writeSettings(projectPath, settings);
     return ok(undefined);
@@ -460,7 +545,7 @@ export class Coordinator {
     // 3. ensure RESOURCE_SUFFIX if containsAzure
     if (containsAzure) {
       if (!process.env.RESOURCE_SUFFIX) {
-        const suffix = process.env.RESOURCE_SUFFIX || Math.random().toString(36).slice(5);
+        const suffix = process.env.RESOURCE_SUFFIX || uuid.v4().slice(0, 8);
         process.env.RESOURCE_SUFFIX = suffix;
         output.RESOURCE_SUFFIX = suffix;
       }
@@ -529,7 +614,11 @@ export class Coordinator {
     let azureSubInfo = undefined;
     if (containsAzure) {
       await ctx.azureAccountProvider.getIdentityCredentialAsync(true); // make sure login if ensureSubScription() is not called.
-      await ctx.azureAccountProvider.setSubscription(process.env.AZURE_SUBSCRIPTION_ID!); //make sure sub is correctly set if ensureSubscription() is not called.
+      try {
+        await ctx.azureAccountProvider.setSubscription(process.env.AZURE_SUBSCRIPTION_ID!); //make sure sub is correctly set if ensureSubscription() is not called.
+      } catch (e) {
+        return [undefined, assembleError(e)];
+      }
       azureSubInfo = await ctx.azureAccountProvider.getSelectedSubscription(false);
       if (!azureSubInfo) {
         return [
@@ -605,7 +694,7 @@ export class Coordinator {
         } else if (reason.kind === "UnresolvedPlaceholders") {
           const placeholders = reason.unresolvedPlaceHolders?.join(",") || "";
           error = new UserError({
-            source: CoordinatorSource,
+            source: reason.failedDriver.uses,
             name: "UnresolvedPlaceholders",
             message: getDefaultString("core.error.unresolvedPlaceholders", placeholders),
             displayMessage: getLocalizedString("core.error.unresolvedPlaceholders", placeholders),
@@ -683,6 +772,43 @@ export class Coordinator {
       if (result[1]) return err(result[1]);
     }
     return ok(undefined);
+  }
+
+  @hooks([
+    ActionExecutionMW({
+      question: (context, inputs) => {
+        return getQuestionsForPublishInDeveloperPortal(inputs);
+      },
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.PublishInDeveloperPortal,
+      telemetryComponentName: "coordinator",
+      errorSource: CoordinatorSource,
+    }),
+  ])
+  async publishInDeveloperPortal(
+    ctx: ContextV3,
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
+  ): Promise<Result<Void, FxError>> {
+    // update teams app
+    if (!ctx.tokenProvider) {
+      return err(new ObjectIsUndefinedError("tokenProvider"));
+    }
+    const updateRes = await updateManifestV3ForPublish(ctx as ResourceContextV3, inputs);
+    if (updateRes.isErr()) {
+      return err(updateRes.error);
+    }
+    let loginHint = "";
+    const accountRes = await ctx.tokenProvider.m365TokenProvider.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    if (accountRes.isOk()) {
+      loginHint = accountRes.value.unique_name as string;
+    }
+    await ctx.userInteraction.openUrl(
+      `https://dev.teams.microsoft.com/apps/${updateRes.value}/distributions/app-catalog?login_hint=${loginHint}&referrer=teamstoolkit_${inputs.platform}`
+    );
+    return ok(Void);
   }
 }
 

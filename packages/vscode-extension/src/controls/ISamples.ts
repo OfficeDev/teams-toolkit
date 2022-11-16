@@ -9,6 +9,7 @@ interface SampleInfo {
   link: string;
   suggested: boolean;
   url: string;
+  relativePath?: string;
 }
 
 interface SampleCollection {
@@ -35,5 +36,6 @@ type SampleDetailProps = {
   description: string;
   sampleAppFolder: string;
   sampleAppUrl: string;
+  relativePath?: string;
   highlightSample: (id: string) => void;
 };

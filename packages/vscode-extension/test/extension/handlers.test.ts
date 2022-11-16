@@ -57,6 +57,7 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { VsCodeLogProvider } from "../../src/commonlib/log";
 import { ProgressHandler } from "../../src/progressHandler";
 import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
+import { assert } from "console";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -1202,7 +1203,7 @@ describe("handlers", () => {
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
 
-      const res = await handlers.scaffoldFromDeveloperPortalHandler(["1", "2"]);
+      const res = await handlers.scaffoldFromDeveloperPortalHandler([]);
 
       chai.assert.equal(res.isOk(), true);
       chai.assert.equal(createProgressBar.notCalled, true);
@@ -1303,6 +1304,28 @@ describe("handlers", () => {
       chai.assert.equal(createProgressBar.calledOnce, true);
       chai.assert.equal(startProgress.calledOnce, true);
       chai.assert.equal(endProgress.calledOnceWithExactly(true), true);
+    });
+  });
+
+  describe("publishInDeveloperPortalHandler", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("publish in developer portal", async () => {
+      //const mockCore = new MockCore();
+      sinon.stub(handlers, "core").value(new MockCore());
+      const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(vscode.commands, "executeCommand");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+
+      const res = await handlers.publishInDeveloperPortalHandler();
+      if (res.isErr()) {
+        console.log(res.error);
+      }
+      chai.assert.isTrue(publish.calledOnce);
     });
   });
 });

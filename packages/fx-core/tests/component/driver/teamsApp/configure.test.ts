@@ -20,7 +20,7 @@ import { AppStudioClient } from "../../../../src/component/resource/appManifest/
 import { AppDefinition } from "./../../../../src/component/resource/appManifest/interfaces/appDefinition";
 import { Constants } from "./../../../../src/component/resource/appManifest/constants";
 
-describe("teamsApp/configure", async () => {
+describe("teamsApp/update", async () => {
   const teamsAppDriver = new ConfigureTeamsAppDriver();
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),

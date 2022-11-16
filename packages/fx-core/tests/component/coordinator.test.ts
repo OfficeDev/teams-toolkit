@@ -5,6 +5,8 @@ import {
   ok,
   Platform,
   Result,
+  SingleSelectConfig,
+  Stage,
   UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -14,7 +16,12 @@ import { Generator } from "../../src/component/generator/generator";
 import { settingsUtil } from "../../src/component/utils/settingsUtil";
 import { setTools } from "../../src/core/globalVars";
 import { CoreQuestionNames, ScratchOptionNo, ScratchOptionYes } from "../../src/core/question";
-import { MockTools, randomAppName } from "../core/utils";
+import {
+  MockAzureAccountProvider,
+  MockM365TokenProvider,
+  MockTools,
+  randomAppName,
+} from "../core/utils";
 import { assert } from "chai";
 import { M365SsoLaunchPageOptionItem, TabOptionItem } from "../../src/component/constants";
 import { FxCore } from "../../src/core/FxCore";
@@ -33,6 +40,8 @@ import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelp
 import fs from "fs-extra";
 import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
 import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
+import { createContextV3 } from "../../src/component/utils";
+import * as appStudio from "../../src/component/resource/appManifest/appStudio";
 
 describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
@@ -65,10 +74,34 @@ describe("component coordinator test", () => {
       [CoreQuestionNames.Samples]: "hello-world-tab",
     };
     const fxCore = new FxCore(tools);
-    const res2 = await fxCore.createProject(inputs);
-    assert.isTrue(res2.isOk());
+    const res = await fxCore.createProject(inputs);
+    assert.isTrue(res.isOk());
   });
-
+  it("create project from sample rename folder", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(fs, "pathExists").onFirstCall().resolves(true).onSecondCall().resolves(false);
+    sandbox
+      .stub(fs, "readdir")
+      .onFirstCall()
+      .resolves(["abc"] as any)
+      .onSecondCall()
+      .resolves([]);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo.id,
+      [CoreQuestionNames.Samples]: "hello-world-tab",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isTrue(res.value.endsWith("_1"));
+    }
+  });
   it("create project from scratch", async () => {
     sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -784,7 +817,63 @@ describe("component coordinator test", () => {
       assert.equal(res.error.name, "checkM365TenantError");
     }
   });
-
+  it("provision failed with no subscription permission", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: undefined,
+          },
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
+          return ok(new Map());
+        },
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
+      ok({
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
+      })
+    );
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "mockSubId",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
+    sandbox
+      .stub(tools.tokenProvider.azureAccountProvider, "setSubscription")
+      .rejects(new UserError({ source: "Test", name: "NoPermission" }));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      env: "dev",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isErr());
+  });
   it("deploy happy path", async () => {
     const mockProjectModel: ProjectModel = {
       deploy: {
@@ -949,25 +1038,205 @@ describe("component coordinator test", () => {
     assert.equal(convertRes[1]!.name, "UnresolvedPlaceholders");
   });
 
-  it("init infra", async () => {
+  it("init infra happy path", async () => {
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      editor: "vsc",
+      capability: "tab",
+      spfx: "true",
+      proceed: "true",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.initInfra(inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
     assert.isTrue(res.isOk());
   });
-
-  it("init infra without projectPath", async () => {
+  it("init infra cancel", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      editor: "vsc",
+      capability: "tab",
+      spfx: "true",
+      proceed: "false",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("init infra happy path with question model", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config: SingleSelectConfig) => {
+      if (config.name === "editor") {
+        return ok({ type: "success", result: "vsc" });
+      } else if (config.name === "capability") {
+        return ok({ type: "success", result: "tab" });
+      } else if (config.name === "spfx") {
+        return ok({ type: "success", result: "true" });
+      } else if (config.name === "proceed") {
+        return ok({ type: "success", result: "true" });
+      }
+      return ok({ type: "success", result: "" });
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+  it("init infra happy path with question model 2", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config: SingleSelectConfig) => {
+      if (config.name === "editor") {
+        return ok({ type: "success", result: "vsc" });
+      } else if (config.name === "capability") {
+        return ok({ type: "success", result: "bot" });
+      } else if (config.name === "proceed") {
+        return ok({ type: "success", result: "true" });
+      }
+      return ok({ type: "success", result: "" });
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+  it("init infra happy path with question model 3", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config: SingleSelectConfig) => {
+      if (config.name === "editor") {
+        return ok({ type: "success", result: "vs" });
+      } else if (config.name === "capability") {
+        return ok({ type: "success", result: "bot" });
+      } else if (config.name === "proceed") {
+        return ok({ type: "success", result: "true" });
+      }
+      return ok({ type: "success", result: "" });
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+  it("init infra fail without projectPath", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.initInfra(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("init infra fail without editor", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("init infra fail without capability", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      editor: "vsc",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("init debug happy path", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      editor: "vsc",
+      capability: "tab",
+      spfx: "true",
+      proceed: "true",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initDebug(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("init debug cancel", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      editor: "vsc",
+      capability: "tab",
+      spfx: "true",
+      proceed: "false",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initDebug(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("init debug fail without projectPath", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initDebug(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("init debug fail without editor", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initDebug(inputs);
+    assert.isTrue(res.isErr());
+  });
+
+  it("init debug fail without capability", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      editor: "vsc",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initDebug(inputs);
     assert.isTrue(res.isErr());
   });
 
@@ -1083,5 +1352,79 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isErr());
+  });
+
+  it("getQuestionsForInit", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+    };
+    const fxCore = new FxCore(tools);
+    const res1 = await fxCore.getQuestions(Stage.initDebug, inputs);
+    assert.isTrue(res1.isOk());
+    const res2 = await fxCore.getQuestions(Stage.initInfra, inputs);
+    assert.isTrue(res2.isOk());
+  });
+  describe("publishInDeveloperPortal", () => {
+    afterEach(() => {
+      sandbox.restore();
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
+    });
+    it("missing token provider", async () => {
+      const context = createContextV3();
+      context.tokenProvider = undefined;
+      const inputs: InputsWithProjectPath = {
+        platform: Platform.VSCode,
+        projectPath: "project-path",
+        [CoreQuestionNames.ManifestPath]: "manifest-path",
+      };
+      const res = await coordinator.publishInDeveloperPortal(context, inputs);
+      assert.isTrue(res.isErr());
+    });
+
+    it("success", async () => {
+      const context = createContextV3();
+      context.tokenProvider = {
+        m365TokenProvider: new MockM365TokenProvider(),
+        azureAccountProvider: new MockAzureAccountProvider(),
+      };
+      sandbox
+        .stub(context.tokenProvider.m365TokenProvider, "getJsonObject")
+        .resolves(ok({ unique_name: "test" }));
+      sandbox.stub(appStudio, "updateManifestV3ForPublish").resolves(ok("appId"));
+      const openUrl = sandbox.stub(context.userInteraction, "openUrl").resolves(ok(true));
+      const inputs: InputsWithProjectPath = {
+        platform: Platform.VSCode,
+        projectPath: "project-path",
+        [CoreQuestionNames.ManifestPath]: "manifest-path",
+      };
+
+      const res = await coordinator.publishInDeveloperPortal(context, inputs);
+      assert.isTrue(res.isOk());
+      assert.isTrue(openUrl.calledOnce);
+    });
+
+    it("update manifest error", async () => {
+      const context = createContextV3();
+      context.tokenProvider = {
+        m365TokenProvider: new MockM365TokenProvider(),
+        azureAccountProvider: new MockAzureAccountProvider(),
+      };
+      sandbox
+        .stub(appStudio, "updateManifestV3ForPublish")
+        .resolves(err(new UserError("source", "error", "", "")));
+      const inputs: InputsWithProjectPath = {
+        platform: Platform.VSCode,
+        projectPath: "project-path",
+        [CoreQuestionNames.ManifestPath]: "manifest-path",
+      };
+
+      const res = await coordinator.publishInDeveloperPortal(context, inputs);
+      assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        assert.equal(res.error.name, "error");
+      }
+    });
   });
 });

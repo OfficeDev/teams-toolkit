@@ -34,7 +34,7 @@ class SampleProvider {
           configuration: sample.configuration,
           link: sample.packageLink ?? sampleConfig.defaultPackageLink,
           suggested: sample.suggested,
-          url: sample.url ?? sampleConfig.baseUrl,
+          url: sample.relativePath ? sample.url : sample.url ?? sampleConfig.baseUrl,
           relativePath: sample.relativePath,
         } as SampleInfo;
       });

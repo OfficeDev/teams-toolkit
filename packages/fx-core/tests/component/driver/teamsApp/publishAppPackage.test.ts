@@ -7,7 +7,7 @@ import chai from "chai";
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
 import { v4 as uuid } from "uuid";
-import { TeamsAppManifest, ok, UserCancelError } from "@microsoft/teamsfx-api";
+import { TeamsAppManifest, ok, UserCancelError, Platform } from "@microsoft/teamsfx-api";
 import { PublishAppPackageDriver } from "../../../../src/component/driver/teamsApp/publishAppPackage";
 import { PublishAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/PublishAppPackageArgs";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
@@ -98,5 +98,30 @@ describe("teamsApp/publishAppPackage", async () => {
     if (result.isErr()) {
       chai.assert.equal(result.error.name, UserCancelError.name);
     }
+  });
+
+  it("happy path - update published app", async () => {
+    const args: PublishAppPackageArgs = {
+      appPackagePath: "fakepath",
+    };
+
+    mockedDriverContext.platform = Platform.CLI;
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      zip.addFile("color.png", new Buffer(""));
+      zip.addFile("outlie.png", new Buffer(""));
+
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+    sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves(state);
+    sinon.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
+    sinon.stub(mockedDriverContext.ui, "showMessage").resolves(ok("Confirm"));
+
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert.isTrue(result.isOk());
   });
 });

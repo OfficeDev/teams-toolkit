@@ -372,6 +372,14 @@ function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) 
   // Publish to Teams
   registerInCommandController(context, "fx-extension.publish", handlers.publishHandler, "publish");
 
+  // Publish in Developer Portal
+  registerInCommandController(
+    context,
+    "fx-extension.publishInDeveloperPortal",
+    handlers.publishInDeveloperPortalHandler,
+    "publishInDeveloperPortal"
+  );
+
   // Developer Portal for Teams
   registerInCommandController(
     context,
@@ -896,11 +904,11 @@ async function runBackgroundAsyncTasks(
     isExistingUser !== "no"
   );
   if (TreatmentVariableValue.welcomeViewStyle === "A") {
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewA", true);
-  } else if (TreatmentVariableValue.welcomeViewStyle === "B") {
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
+  } else if (TreatmentVariableValue.welcomeViewStyle === "B") {
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewB", true);
+    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
   }
   TreatmentVariableValue.inProductDoc = (await exp
     .getExpService()

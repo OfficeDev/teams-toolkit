@@ -124,7 +124,7 @@ const KEY_VALUE_PAIR_RE = /^\s*([\w.-]+)\s*=\s*(.*)?\s*$/;
 const NEW_LINE_RE = /\\n/g;
 const NEW_LINE_SPLITTER = /\n|\r|\r\n/;
 const NEW_LINE = "\n";
-type DotenvParsedLine = string | { key: string; value: string; comment: string };
+type DotenvParsedLine = string | { key: string; value: string; comment?: string };
 export interface DotenvParseResult {
   lines?: DotenvParsedLine[];
   obj: DotenvOutput;
@@ -143,7 +143,7 @@ export class DotenvUtil {
           // match key-value pair
           const key = kvMatchArray[1];
           let value = kvMatchArray[2] || "";
-          let inlineComment = "";
+          let inlineComment;
           const dQuoted = value[0] === '"' && value[value.length - 1] === '"';
           const sQuoted = value[0] === "'" && value[value.length - 1] === "'";
           if (sQuoted || sQuoted) {

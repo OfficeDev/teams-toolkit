@@ -18,14 +18,24 @@
         "react-scripts": "^5.0.1"
     },
     "devDependencies": {
+<<<<<<< HEAD
         "@microsoft/teamsfx-run-utils": "alpha",
+=======
+>>>>>>> f11ea6b69b109a550f0cc78070c4e111b507ec32
         "cross-env": "^7.0.3",
         "env-cmd": "^10.1.0"
     },
     "scripts": {
+<<<<<<< HEAD
         "start": "cross-env GENERATE_SOURCEMAP=false react-scripts start",
         "install:teamsfx": "npm install",
         "build": "cross-env GENERATE_SOURCEMAP=false react-scripts build",
+=======
+        "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run start",
+        "start": "react-scripts start",
+        "install:teamsfx": "npm install",
+        "build": "react-scripts build",
+>>>>>>> f11ea6b69b109a550f0cc78070c4e111b507ec32
         "build:teamsfx": "cross-env-shell \"env-cmd -f .env.teamsfx.${TEAMS_FX_ENV} npm run build\"",
         "build:teamsfx:dev": "cross-env TEAMS_FX_ENV=dev npm run build:teamsfx",
         "eject": "react-scripts eject",

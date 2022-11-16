@@ -4,7 +4,7 @@
 import { Result, FxError, err, LogLevel, ok } from "@microsoft/teamsfx-api";
 import { isV3Enabled, envUtil, dataNeedEncryption } from "@microsoft/teamsfx-core";
 import path from "path";
-import { Argv, positional, PositionalOptions } from "yargs";
+import { Argv, PositionalOptions } from "yargs";
 import activate from "../activate";
 import CLILogProvider from "../commonlib/log";
 import { EnvOptions, OptionsMap, RootFolderOptions } from "../constants";

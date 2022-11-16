@@ -1049,6 +1049,7 @@
   "driver.aadApp.error.generateSecretFailed": "Cannot generate client secret.",
   "driver.aadApp.error.unhandledError": "Unhandled error happened in %s action: %s",
   "driver.aadApp.error.invalidFieldInManifest": "Field %s is missing or invalid in AAD app manifest.",
+  "driver.aadApp.error.generateManifestFailed": "Failed to generate AAD app manifest.",
   "driver.aadApp.progressBar.createAadAppTitle": "Creating AAD application",
   "driver.aadApp.progressBar.createAadAppStepMessage": "Creating AAD application",
   "driver.aadApp.progressBar.generateClientSecretSetpMessage": "Generating client secret",

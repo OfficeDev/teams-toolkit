@@ -728,7 +728,7 @@ export const tabsContentUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion =
   return {
     type: "multiSelect",
     name: CoreQuestionNames.ReplaceContentUrl,
-    title: getLocalizedString("core.updateContentUrlQuestion.title", defaultTabLocalHostUrl),
+    title: getLocalizedString("core.updateContentUrlQuestion.title"),
     staticOptions: tabs.map((o) => tabContentUrlOptionItem(o)),
     default: tabs.map((o) => o.name),
     placeholder: getLocalizedString("core.updateUrlQuestion.placeholder"),
@@ -740,7 +740,7 @@ export const tabsWebsitetUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion 
   return {
     type: "multiSelect",
     name: CoreQuestionNames.ReplaceWebsiteUrl,
-    title: getLocalizedString("core.updateWebsiteUrlQuestion.title", defaultTabLocalHostUrl),
+    title: getLocalizedString("core.updateWebsiteUrlQuestion.title"),
     staticOptions: tabs.map((o) => tabWebsiteUrlOptionItem(o)),
     default: tabs.map((o) => o.name),
     placeholder: getLocalizedString("core.updateUrlQuestion.placeholder"),

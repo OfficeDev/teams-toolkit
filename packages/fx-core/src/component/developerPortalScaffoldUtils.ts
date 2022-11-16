@@ -154,16 +154,17 @@ async function updateManifest(
   }
 
   // manifest: bot
-  if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToRepaceBotId)) {
-    manifest.bots = existingManifestTemplate.bots;
-    manifest.validDomains = existingManifestTemplate.validDomains;
-  }
+  if (inputs[CoreQuestionNames.ReplaceBotIds]) {
+    if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToRepaceBotId)) {
+      manifest.bots = existingManifestTemplate.bots;
+      manifest.validDomains = existingManifestTemplate.validDomains;
+    }
 
-  // manifest: message extension
-  if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToReplaceMessageExtensionBotId)) {
-    manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_V3;
-    manifest.composeExtensions[0].botId = "${{BOT_ID}}";
-    manifest.validDomains = existingManifestTemplate.validDomains;
+    if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToReplaceMessageExtensionBotId)) {
+      manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_V3;
+      manifest.composeExtensions[0].botId = "${{BOT_ID}}";
+      manifest.validDomains = existingManifestTemplate.validDomains;
+    }
   }
 
   // manifest: developer

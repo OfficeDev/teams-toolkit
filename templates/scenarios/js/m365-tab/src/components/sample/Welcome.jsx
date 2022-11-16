@@ -45,7 +45,7 @@ export function Welcome(props) {
       return userInfo;
     }
   });
-  const userName = (loading || error) ? "": data.displayName;
+  const userName = loading || error ? "" : data.displayName;
   const hubName = useData(async () => {
     await app.initialize();
     const context = await app.getContext();
@@ -56,9 +56,7 @@ export function Welcome(props) {
       <div className="narrow page-padding">
         <Image src="hello.png" />
         <h1 className="center">Congratulations{userName ? ", " + userName : ""}!</h1>
-        {hubName && (
-          <p className="center">Your app is running in {hubName}</p>
-        )}
+        {hubName && <p className="center">Your app is running in {hubName}</p>}
         <p className="center">Your app is running in your {friendlyEnvironmentName}</p>
         <Menu defaultActiveIndex={0} items={items} underlined secondary />
         <div className="sections">

@@ -41,6 +41,7 @@ class CommandController {
       "fx-extension.deploy",
       "fx-extension.publish",
       "fx-extension.openFromTdp",
+      "fx-extension.publishInDeveloperPortal",
     ]);
   }
 

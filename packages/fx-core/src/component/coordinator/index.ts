@@ -9,15 +9,17 @@ import {
   InputsWithProjectPath,
   ok,
   Platform,
+  ResourceContextV3,
   Result,
   SettingsFolderName,
   UserCancelError,
   UserError,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { merge } from "lodash";
 import { Container } from "typedi";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
-import { InvalidInputError } from "../../core/error";
+import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
 import { getQuestionsForCreateProjectV2 } from "../../core/middleware/questionModel";
 import {
   CoreQuestionNames,
@@ -57,6 +59,7 @@ import {
   getQuestionsForProvisionV3,
   InitOptionNo,
   InitOptionYes,
+  getQuestionsForPublishInDeveloperPortal,
 } from "../question";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -84,11 +87,12 @@ import { envUtil } from "../utils/envUtil";
 import { SPFxGenerator } from "../generator/spfxGenerator";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
-import { createContextV3 } from "../utils";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { getBotTroubleShootMessage } from "../core";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
+import { updateManifestV3ForPublish } from "../resource/appManifest/appStudio";
+import { AppStudioScopes } from "../resource/appManifest/constants";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -768,6 +772,43 @@ export class Coordinator {
       if (result[1]) return err(result[1]);
     }
     return ok(undefined);
+  }
+
+  @hooks([
+    ActionExecutionMW({
+      question: (context, inputs) => {
+        return getQuestionsForPublishInDeveloperPortal(inputs);
+      },
+      enableTelemetry: true,
+      telemetryEventName: TelemetryEvent.PublishInDeveloperPortal,
+      telemetryComponentName: "coordinator",
+      errorSource: CoordinatorSource,
+    }),
+  ])
+  async publishInDeveloperPortal(
+    ctx: ContextV3,
+    inputs: InputsWithProjectPath,
+    actionContext?: ActionContext
+  ): Promise<Result<Void, FxError>> {
+    // update teams app
+    if (!ctx.tokenProvider) {
+      return err(new ObjectIsUndefinedError("tokenProvider"));
+    }
+    const updateRes = await updateManifestV3ForPublish(ctx as ResourceContextV3, inputs);
+    if (updateRes.isErr()) {
+      return err(updateRes.error);
+    }
+    let loginHint = "";
+    const accountRes = await ctx.tokenProvider.m365TokenProvider.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    if (accountRes.isOk()) {
+      loginHint = accountRes.value.unique_name as string;
+    }
+    await ctx.userInteraction.openUrl(
+      `https://dev.teams.microsoft.com/apps/${updateRes.value}/distributions/app-catalog?login_hint=${loginHint}&referrer=teamstoolkit_${inputs.platform}`
+    );
+    return ok(Void);
   }
 }
 

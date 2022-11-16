@@ -121,6 +121,7 @@ export enum TelemetryEvent {
   DeploymentInfoNotFound = "deployment-info-not-found",
   InstallScriptNotFound = "install-script-not-found",
   SkipDeploy = "skip-deploy",
+  PublishInDeveloperPortal = "publish-in-developer-portal",
 }
 
 export enum TelemetrySuccess {

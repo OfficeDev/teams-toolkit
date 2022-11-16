@@ -14,7 +14,7 @@ import axios from "axios";
 import { SystemError, UserError, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import { getUuid } from "../../../common/tools";
-import { expandEnvironmentVariable } from "../../utils/common";
+import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
 import { AadManifestHelper } from "../../resource/aadApp/utils/aadManifestHelper";
 import { AADManifest } from "../../resource/aadApp/interfaces/AADManifest";
 import { MissingFieldInManifestUserError } from "./error/invalidFieldInManifestError";
@@ -23,9 +23,13 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { logMessageKeys } from "./utility/constants";
+import { MissingEnvUserError } from "./error/missingEnvError";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
+const driverConstants = {
+  generateManifestFailedMessageKey: "driver.aadApp.error.generateManifestFailed",
+};
 
 // logic from src\component\resource\aadApp\aadAppManifestManager.ts
 @Service(actionName) // DO NOT MODIFY the service name
@@ -168,6 +172,7 @@ export class UpdateAadAppDriver implements StepDriver {
       }
 
       const manifestString = expandEnvironmentVariable(manifestTemplate);
+      this.validateManifestString(manifestString);
       const manifest: AADManifest = JSON.parse(manifestString);
       AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
       return manifest;
@@ -192,5 +197,17 @@ export class UpdateAadAppDriver implements StepDriver {
         getLocalizedString("driver.aadApp.progressBar.updateAadAppStepMessage"), // step 1
       ],
     };
+  }
+
+  private validateManifestString(manifestString: string) {
+    const unresolvedEnvironmentVariable = getEnvironmentVariables(manifestString);
+    if (unresolvedEnvironmentVariable && unresolvedEnvironmentVariable.length > 0) {
+      throw new MissingEnvUserError(
+        actionName,
+        unresolvedEnvironmentVariable,
+        helpLink,
+        driverConstants.generateManifestFailedMessageKey
+      );
+    }
   }
 }

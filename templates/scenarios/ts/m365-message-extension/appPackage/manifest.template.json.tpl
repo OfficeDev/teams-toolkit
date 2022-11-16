@@ -15,12 +15,12 @@
         "outline": "resources/outline.png"
     },
     "name": {
-        "short": "M365 Message Extension",
-        "full": "full name for M365 Message Extension"
+        "short": "{%appName%}",
+        "full": "full name for {%appName%}"
     },
     "description": {
-        "short": "short description of M365 message extension",
-        "full": "full description of M365 message extension"
+        "short": "short description of {%appName%}",
+        "full": "full description of {%appName%}"
     },
     "accentColor": "#FFFFFF",
     "bots": [],

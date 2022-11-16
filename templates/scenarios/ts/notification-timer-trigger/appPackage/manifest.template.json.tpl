@@ -15,12 +15,12 @@
         "outline": "resources/outline.png"
     },
     "name": {
-        "short": "notification-bot",
-        "full": "ful name for notification-http-timer-trigger"
+        "short": "{%appName%}",
+        "full": "ful name for {%appName%}"
     },
     "description": {
-        "short": "short description for notification-http-timer-trigger",
-        "full": "full description for notification-http-timer-trigger"
+        "short": "short description for {%appName%}",
+        "full": "full description for {%appName%}"
     },
     "accentColor": "#FFFFFF",
     "bots": [

@@ -15,7 +15,7 @@
         "outline": "resources/outline.png"
     },
     "name": {
-        "short": "command-bot",
+        "short": "{%appName%}",
         "full": "Full name for command-bot"
     },
     "description": {

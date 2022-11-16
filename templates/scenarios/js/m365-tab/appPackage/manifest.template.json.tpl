@@ -15,12 +15,12 @@
         "outline": "./resources/outline.png"
     },
     "name": {
-        "short": "m365-tab",
-        "full": "Full name for m365-tab"
+        "short": "{%appName%}",
+        "full": "Full name for {%appName%}"
     },
     "description": {
-        "short": "Short description of m365-tab",
-        "full": "Full description of m365-tab"
+        "short": "Short description of {%appName%}",
+        "full": "Full description of {%appName%}"
     },
     "accentColor": "#FFFFFF",
     "bots": [],

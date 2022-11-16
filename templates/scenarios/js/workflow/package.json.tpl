@@ -6,7 +6,6 @@
     "license": "MIT",
     "main": "./src/index.js",
     "scripts": {
-        "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run dev",
         "dev": "nodemon --inspect=9239 --signal SIGINT ./src/index.js",
         "start": "node ./src/index.js",
         "watch": "nodemon ./src/index.js",
@@ -22,7 +21,7 @@
         "restify": "^8.5.1"
     },
     "devDependencies": {
-        "env-cmd": "^10.1.0",
+        "@microsoft/teamsfx-run-utils": "alpha",
         "nodemon": "^2.0.7"
     }
 }

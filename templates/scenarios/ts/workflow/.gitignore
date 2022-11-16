@@ -1,3 +1,7 @@
+# TeamsFx files
+teamsfx/.env.dev
+teamsfx/.env.local
+
 # dependencies
 node_modules/
 

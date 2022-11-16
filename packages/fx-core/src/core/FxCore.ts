@@ -273,10 +273,17 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createDriverContext(inputs);
-    const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
-    ctx!.envVars = output;
-    if (error) return err(error);
-    return ok(Void);
+    try {
+      const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
+      ctx!.envVars = output;
+      if (error) return err(error);
+      return ok(Void);
+    } finally {
+      //reset subscription
+      try {
+        TOOLS.tokenProvider.azureAccountProvider.setSubscription("");
+      } catch (e) {}
+    }
   }
   @hooks([
     ErrorHandlerMW,

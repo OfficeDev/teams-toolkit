@@ -3,7 +3,6 @@
 
 import { DeployStepArgs } from "../../interface/buildAndDeployArgs";
 import { AzureDeployDriver } from "./azureDeployDriver";
-import { DeployExternalApiCallError } from "../../../error/deployError";
 import { Service } from "typedi";
 import { StepDriver } from "../../interface/stepDriver";
 import { AzureResourceInfo, DriverContext } from "../../interface/commonArgs";
@@ -48,17 +47,5 @@ export class AzureFunctionDeployDriverImpl extends AzureDeployDriver {
     await this.progressBar?.next(ProgressMessages.restartAzureFunctionApp);
     await this.restartFunctionApp(azureResource);
     await this.progressBar?.end(true);
-  }
-
-  async restartFunctionApp(azureResource: AzureResourceInfo): Promise<void> {
-    await this.context.logProvider.debug("Restarting function app...");
-    try {
-      await this.managementClient?.webApps?.restart(
-        azureResource.resourceGroupName,
-        azureResource.instanceId
-      );
-    } catch (e) {
-      throw DeployExternalApiCallError.restartWebAppError(e);
-    }
   }
 }

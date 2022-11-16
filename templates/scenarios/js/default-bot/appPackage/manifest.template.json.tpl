@@ -15,12 +15,12 @@
         "outline": "resources/outline.png"
     },
     "name": {
-        "short": "bot",
-        "full": "full name for bot"
+        "short": "{%appName%}",
+        "full": "full name for {%appName%}"
     },
     "description": {
-        "short": "short description for bot",
-        "full": "full description for bot"
+        "short": "short description for {%appName%}",
+        "full": "full description for {%appName%}"
     },
     "accentColor": "#FFFFFF",
     "bots": [

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Result, FxError, err, LogLevel, ok } from "@microsoft/teamsfx-api";
-import { isV3Enabled, envUtil, dataNeedEncryption } from "@microsoft/teamsfx-core";
+import { isV3Enabled, dataNeedEncryption } from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv, PositionalOptions } from "yargs";
 import activate from "../activate";
@@ -162,9 +162,7 @@ export class ConfigGet extends YargsCommand {
     option?: string
   ): Promise<Result<null, FxError>> {
     let found = false;
-    const result = isV3Enabled()
-      ? await envUtil.readEnv(rootFolder, env)
-      : await readProjectSecrets(rootFolder, env);
+    const result = await readProjectSecrets(rootFolder, env);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, result.error);
       return err(result.error);
@@ -296,9 +294,7 @@ export class ConfigSet extends YargsCommand {
     value: string,
     env: string
   ): Promise<Result<null, FxError>> {
-    const result = isV3Enabled()
-      ? await envUtil.readEnv(rootFolder, env)
-      : await readProjectSecrets(rootFolder, env);
+    const result = await readProjectSecrets(rootFolder, env);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, result.error);
       return err(result.error);
@@ -324,9 +320,7 @@ export class ConfigSet extends YargsCommand {
       }
       secretData[option] = encrypted.value;
     }
-    const writeFileResult = isV3Enabled()
-      ? await envUtil.writeEnv(rootFolder, env, secretData)
-      : writeSecretToFile(secretData, rootFolder, env);
+    const writeFileResult = writeSecretToFile(secretData, rootFolder, env);
     if (writeFileResult.isErr()) {
       return err(writeFileResult.error);
     }

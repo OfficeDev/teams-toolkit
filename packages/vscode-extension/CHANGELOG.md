@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1.3 - Nov 17, 2022
+
+Enhancements:
+- Bump up version of [@microsoft/teamsfx](https://www.npmjs.com/package/@microsoft/teamsfx) used in templates and samples to `2.0.0` that depends on [@microsoft/teams-js](https://www.npmjs.com/package/@microsoft/teams-js) version `2.0.0` and above. Starting from this version, it enables [Teams app to run in Outlook and Office.](https://learn.microsoft.com/microsoftteams/platform/m365-apps/overview)
+- A/B testing on in-product documentation to display tutorial articles inside Visual Studio Code.
+
 ## 4.1.2 - Nov 10, 2022
 Hotfix version for Teams Toolkit.
 

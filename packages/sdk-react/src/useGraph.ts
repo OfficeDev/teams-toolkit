@@ -18,9 +18,9 @@ type GraphOption = {
   teamsfx?: TeamsFx;
 };
 
-type GraphOptionWithAuthConfig = {
+type GraphOptionWithCredential = {
   scope?: string[];
-  authConfig?: TeamsUserCredentialAuthConfig;
+  credential?: TeamsUserCredential;
 };
 
 /**
@@ -86,17 +86,17 @@ export function useGraphWithCredential<T>(
     credential: TeamsUserCredential,
     scope: string[]
   ) => Promise<T>,
-  options?: GraphOptionWithAuthConfig
+  options?: GraphOptionWithCredential
 ): Data<T> {
   let credential: TeamsUserCredential;
-  if (!options?.authConfig) {
+  if (!options?.credential) {
     const authConfig: TeamsUserCredentialAuthConfig = {
       clientId: process.env.REACT_APP_CLIENT_ID,
       initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
     };
     credential = new TeamsUserCredential(authConfig);
   } else {
-    credential = new TeamsUserCredential(options.authConfig);
+    credential = options?.credential;
   }
 
   let scope: string[];

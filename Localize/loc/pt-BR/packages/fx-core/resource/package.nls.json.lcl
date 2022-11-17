@@ -75,10 +75,13 @@
       </Item>
       <Item ItemId=";configManager.error.invalidLifecycle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[The schema of lifecycle %s is invalid]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
+          <Val><![CDATA[The schema of lifecycle %s is invalid. It is expected to be an array of actions. If you want to remove all actions inside it, please remove the whole lifecyle.]]></Val>
+          <Tgt Cat="Text" Stat="Update" Orig="New">
             <Val><![CDATA[O esquema do ciclo de vida %s é inválido]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[The schema of lifecycle %s is invalid]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -403,6 +406,78 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Estrutura do SharePoint (SPFx)]]></Val>
           </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.InitCapabilityBot" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Your app contains Bot capabilities]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.InitCapabilityTab" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Your app contains Tab capabilities]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.InitCapabilityTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams Toolkit: Select the capability of your app]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.InitEditorTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams Toolkit: Select your development environment]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.InitEditorVs" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Visual Studio (.NET)]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.InitEditorVsDesc" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are developing with Visual Studio and using .NET]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.InitEditorVsc" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Visual Studio Code (JS/TS)]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.InitEditorVscDesc" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[You are developing with Visual Studio Code and using JS/TS]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.InitGenerateConfirm" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams Toolkit: Teams Toolkit will generate the following files, would you like to proceed? ]A;%s]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.InitIsSPFxTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams Toolkit: Are you developing with SPFx?]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.InitOptionNo" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.InitOptionYes" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Yes]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2302,12 +2377,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.developerPortal.scaffold.CannotFindManifest" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Could not find manifest from the downloaded pacakge for teams app %s.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.error.FailedToCreateResourceGroup.exist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to create resource group '%s': the resource group exists]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Falha ao criar grupo de recursos '%s': o grupo de recursos existe]]></Val>
           </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.error.NoYmlFileError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to find yml files.]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2635,6 +2722,18 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.option.github" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open a GitHub guide]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.option.inProduct" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open a in-product guide]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.option.learnMore" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn more]]></Val>
@@ -2902,6 +3001,12 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Reiniciando o Aplicativo de Funções do Azure.]]></Val>
           </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.progress.restartAzureService" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Restarting Azure Service.]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3301,6 +3406,18 @@
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Recursos da nuvem]]></Val>
           </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.question.manifestForPublishInDeveloperPortal.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Select your mainifest file]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.question.manifestForPublishInDeveloperPortal.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Manifest file]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3718,6 +3835,12 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.aadApp.error.generateManifestFailed" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to generate AAD app manifest.]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.aadApp.error.generateSecretFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot generate client secret.]]></Val>
@@ -3844,6 +3967,36 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.aadApp.progressBar.createAadAppStepMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Creating AAD application]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.aadApp.progressBar.createAadAppTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Creating AAD application]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.aadApp.progressBar.generateClientSecretSetpMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Generating client secret]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.aadApp.progressBar.updateAadAppStepMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating AAD application]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.aadApp.progressBar.updateAadAppTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating AAD application]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.addApp.log.successExecuteDriver" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Action %s executed successfully]]></Val>
@@ -3907,12 +4060,36 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.botFramework.error.invalidParameter" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Following parameter is missing or invalid for %s action: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[O parâmetro a seguir está ausente ou é inválido para a %s ação: %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.botFramework.error.unhandledError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unhandled error happened in %s action: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ocorreu um erro sem tratamento na %s: ação %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.deploy.error.noFileFindInDistributionFolder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No file is found in distribution folder. Please check if the distribution folder is empty or you have ignored everything.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Nenhum arquivo foi encontrado na pasta de distribuição. Verifique se a pasta de distribuição está vazia ou se você ignorou tudo.]]></Val>
           </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.deploy.notice.deployAcceleration" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Deploying to Azure App Service takes a long time. Consider referring to this document to optimize your deployment:]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3943,12 +4120,84 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.m365Bot.error.invalidParameter" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Following parameter is missing or invalid for %s action: %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[O parâmetro a seguir está ausente ou é inválido para a %s ação: %s.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.m365Bot.error.unhandledError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unhandled error happened in %s action: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ocorreu um erro sem tratamento na %s: ação %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.spfx.error.noValidAppCatelog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[There is no valid app catalog in your tenant. You can update the property 'createAppCatalogIfNotExist' in app.yml to true if you want us to create it for you or you can create it by yourself.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Não há um catálogo de aplicativos válido em seu locatário. Você pode atualizar a propriedade 'createAppCatalogIfNotExist' em app.yml para true se quiser que a criemos para você ou crie-a por conta própria.]]></Val>
           </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.teamsApp.progressBar.createTeamsAppStepMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Creating Teams app]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.teamsApp.progressBar.createTeamsAppTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create Teams app]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.teamsApp.progressBar.publishTeamsAppStep1" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Checking if the Teams app has already been submitted to tenant App Catalog]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.teamsApp.progressBar.publishTeamsAppStep2.1" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update published Teams app]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.teamsApp.progressBar.publishTeamsAppStep2.2" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publishing Teams app]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.teamsApp.progressBar.publishTeamsAppTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publish Teams app]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.teamsApp.progressBar.updateTeamsAppStepMessage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Updating Teams app]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.teamsApp.progressBar.updateTeamsAppTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Update Teams app]]></Val>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.tools.error.funcInstallationError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to check and install Azure Functions Core Tools.]]></Val>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7663,7 +7912,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";plugins.appstudio.viewDevPortal" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";plugins.appstudio.viewDeveloperPortal" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[View in Developer Portal]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -8601,19 +8850,13 @@
       </Item>
       <Item ItemId=";plugins.cicd.result.scaffold.created" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Workflow automation - including %s using %s for %s environment - has been successfully added to your project. Follow the instructions in [README]5D;(%s) to configure your workflow(s).]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[A automação do fluxo de trabalho - incluindo %s usando %s para o ambiente %s - foi adicionada com êxito ao seu projeto. Siga as instruções em [LEIAME]5D;(%s) para configurar seu(s) fluxo de trabalho(s) de trabalho.]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";plugins.cicd.result.scaffold.created.cli" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
           <Val><![CDATA[Workflow automation - including %s using %s for %s environment - has been successfully added to your project. Follow the instructions in README file to configure your workflow(s).]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[A automação do fluxo de trabalho - incluindo %s usando %s para o ambiente %s - foi adicionada com êxito ao seu projeto. Siga as instruções no arquivo LEIAME para configurar seu(s) fluxo de trabalho(s) de trabalho.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Workflow automation - including %s using %s for %s environment - has been successfully added to your project. Follow the instructions in [README]5D;(%s) to configure your workflow(s).]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

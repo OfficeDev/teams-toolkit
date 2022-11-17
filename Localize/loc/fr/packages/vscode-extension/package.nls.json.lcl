@@ -1459,6 +1459,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.guideTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[View how-to guides]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Afficher les guides pratiques]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.initProject.blockTooltip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Cannot run command when initializing. Try again when initialization is finished.]]></Val>
@@ -1614,10 +1623,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Preview and Debug Adaptive Cards]]></Val>
+          <Val><![CDATA[Preview and debug Adaptive Cards]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Aperçu et débogage des cartes adaptatives]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Preview and Debug Adaptive Cards]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -1731,6 +1743,24 @@
           <Val><![CDATA[Publish to Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Publier dans Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.publishInDevPortalDescription" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publish in Developer Portal]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Publier dans Developer Portal]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.commandsTreeViewProvider.publishInDevPortalTitle" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Publish in Developer Portal]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Publier dans Developer Portal]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -1933,6 +1963,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.common.recommended" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Recommended]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Recommandé]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.common.signOutOf" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Sign out of '%s'?]]></Val>
@@ -2124,6 +2163,42 @@
           <Val><![CDATA[The Teams Toolkit requires a Microsoft 365 account. This is the account that you use to log in to Microsoft Teams. The Teams Toolkit will use this account to manage applications and service principals.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[La boîte à outils Teams nécessite un compte Microsoft 365. Il s’agit du compte que vous utilisez pour vous connecter à Microsoft Teams. La boîte à outils Teams utilisera ce compte pour gérer les applications et les principaux de service.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.guide.development" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams app development guides]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Guides de développement d’applications Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.guide.scenario" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Teams app scenario guides]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Guides de scénario d’application Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.guide.tooltip.github" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open a GitHub guide]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ouvrir un guide GitHub]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.guide.tooltip.inProduct" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Open a in-product guide]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ouvrir un guide dans le produit]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2899,6 +2974,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.localDebug.ngrokInstallationError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to install Ngrok. %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Échec de l’installation de Ngrok. %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.localDebug.ngrokNotFoundError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Ngrok is not installed by TeamsFx. See teamsfx-debug-tasks#debug-check-prerequisites for how to install the ngrok.]]></Val>
@@ -3465,10 +3549,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.progressHandler.reloadNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[%s%s%s (Notice: You can reload the window and retry if task spends too long time.)]]></Val>
+          <Val><![CDATA[%s%s%s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[%s%s%s (Remarque : vous pouvez recharger la fenêtre et réessayer si la tâche prend trop de temps.)]]></Val>
+            <Val><![CDATA[%s/%s/%s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[%s%s%s (Notice: You can reload the window and retry if task spends too long time.)]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3993,10 +4080,13 @@
       </Item>
       <Item ItemId=";teamstoolkit.tutorials.addSso.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Develop a single sign-on feature for the Teams Launch pages and bot capability]]></Val>
+          <Val><![CDATA[Develop a single sign-on feature for the Teams Launch pages and bot capability.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Développer une fonctionnalité d’authentification unique pour les pages de lancement Teams et la fonctionnalité de bot]]></Val>
+            <Val><![CDATA[Développer une fonctionnalité d’authentification unique pour les pages de lancement Teams et la fonctionnalité de bot.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Develop a single sign-on feature for the Teams Launch pages and bot capability]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4009,11 +4099,32 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.tutorials.addSso.label.new" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Develop single sign-on experience in Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Développer l’expérience d’authentification unique dans Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.tutorials.cardActionResponse.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Automate workflows for common business processes with Adaptive Cards in conversation]]></Val>
+          <Val><![CDATA[Automate workflows for common business processes with Adaptive Cards in conversation.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Automatiser les flux de travail pour les processus métier courants avec Cartes adaptatives dans la conversation]]></Val>
+            <Val><![CDATA[Automatiser les flux de travail pour les processus métier courants avec Cartes adaptatives dans la conversation.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Automate workflows for common business processes with Adaptive Cards in conversation]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.tutorials.cardActionResponse.detail.new" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Automate repetitive workflows for common business processes in conversation]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Automatiser les workflows répétitifs pour les processus métier courants dans la conversation]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4027,12 +4138,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.tutorials.cardActionResponse.label.new" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Initiate sequential workflows in Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Lancer des workflows séquentiels dans Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.tutorials.commandAndResponse.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Automate repetitive tasks with a simple command and response in conversation]]></Val>
+          <Val><![CDATA[Automate repetitive tasks with a simple command and response in conversation.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Automatiser les tâches répétitives à l’aide d’une simple commande et d’une réponse dans la conversation.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Automate repetitive tasks with a simple command and response in conversation]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4045,16 +4168,37 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";teamstoolkit.tutorials.connectApi.detail" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";teamstoolkit.tutorials.commandAndResponse.label.new" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Connect to an API with authentication support using TeamsFx SDK]]></Val>
+          <Val><![CDATA[Respond to chat commands in Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Connecter à une API avec prise en charge de l’authentification à l’aide du Kit de développement logiciel (SDK) TeamsFx]]></Val>
+            <Val><![CDATA[Répondre aux commandes de conversation dans Teams]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";teamstoolkit.tutorials.connectApi.detail" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Connect to an API with authentication support using TeamsFx SDK.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Connecter à une API avec prise en charge de l’authentification à l’aide du Kit de développement logiciel (SDK) TeamsFx.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Connect to an API with authentication support using TeamsFx SDK]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";teamstoolkit.tutorials.connectApi.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Connect to an API]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Connecter à une API]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.tutorials.connectApi.label.new" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Connect to an API]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
@@ -4083,14 +4227,26 @@
       </Item>
       <Item ItemId=";teamstoolkit.tutorials.sendNotification.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Send notifications to Teams from your web services with Bot or incoming webhook]]></Val>
+          <Val><![CDATA[Send notifications to Teams from your web services with Bot or incoming webhook.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Envoyer des notifications à Teams à partir de vos services web avec bot ou webhook entrant]]></Val>
+            <Val><![CDATA[Envoyer des notifications à Teams à partir de vos services web avec bot ou webhook entrant.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Send notifications to Teams from your web services with Bot or incoming webhook]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.tutorials.sendNotification.label" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Send notification to Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Envoyer une notification à Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";teamstoolkit.tutorials.sendNotification.label.new" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Send notification to Teams]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

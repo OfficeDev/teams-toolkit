@@ -112,7 +112,7 @@ import { openHubWebClient } from "./debug/launch";
 import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
 import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { selectAndDebug } from "./debug/runIconHandler";
-import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./debug/teamsAppInstallation";
+import * as teamsAppInstallation from "./debug/teamsAppInstallation";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
@@ -684,12 +684,15 @@ async function previewRemote(
       await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
       await openHubWebClient(includeFrontend, debugConfig.appId, hub);
     } else {
-      const shouldContinue = await showInstallAppInTeamsMessage(env, debugConfig.appId);
+      const shouldContinue = await teamsAppInstallation.showInstallAppInTeamsMessage(
+        env,
+        debugConfig.appId
+      );
       if (!shouldContinue) {
         return err(UserCancelError);
       }
 
-      const internalId = await getTeamsAppInternalId(debugConfig.appId);
+      const internalId = await teamsAppInstallation.getTeamsAppInternalId(debugConfig.appId);
       if (internalId !== undefined) {
         await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
         await openHubWebClient(includeFrontend, internalId, hub);
@@ -1463,20 +1466,29 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
 export async function installAppInTeams(): Promise<string | undefined> {
   let shouldContinue = false;
   try {
-    const debugConfig = await commonUtils.getDebugConfig(
-      false,
-      environmentManager.getLocalEnvName()
-    );
-    if (debugConfig?.appId === undefined) {
-      throw new UserError(
-        ExtensionErrors.GetTeamsAppInstallationFailed,
-        ExtensionSource,
-        "Debug config not found"
+    let teamsAppId: string;
+    if (isV3Enabled()) {
+      teamsAppId = await commonUtils.getV3TeamsAppId(
+        globalVariables.workspaceUri!.fsPath,
+        environmentManager.getLocalEnvName()
       );
+    } else {
+      const debugConfig = await commonUtils.getDebugConfig(
+        false,
+        environmentManager.getLocalEnvName()
+      );
+      if (debugConfig?.appId === undefined) {
+        throw new UserError(
+          ExtensionErrors.GetTeamsAppInstallationFailed,
+          ExtensionSource,
+          "Debug config not found"
+        );
+      }
+      teamsAppId = debugConfig.appId;
     }
-    shouldContinue = await showInstallAppInTeamsMessage(
+    shouldContinue = await teamsAppInstallation.showInstallAppInTeamsMessage(
       environmentManager.getLocalEnvName(),
-      debugConfig.appId
+      teamsAppId
     );
   } catch (error: any) {
     showError(error);

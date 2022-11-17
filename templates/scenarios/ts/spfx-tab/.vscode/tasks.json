@@ -57,11 +57,11 @@
             "type": "process",
             "command": "node",
             "args": [
-                "${workspaceFolder}/node_modules/gulp/bin/gulp.js",
+                "${workspaceFolder}/src/node_modules/gulp/bin/gulp.js",
                 "trust-dev-cert"
             ],
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}/src"
             },
             "dependsOn": "Set up local projects"
         },
@@ -70,7 +70,7 @@
             "type": "process",
             "command": "node",
             "args": [
-                "${workspaceFolder}/node_modules/gulp/bin/gulp.js",
+                "${workspaceFolder}/src/node_modules/gulp/bin/gulp.js",
                 "serve",
                 "--nobrowser"
             ],
@@ -93,7 +93,7 @@
             ],
             "isBackground": true,
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}/src"
             },
             "dependsOn": "gulp trust-dev-cert"
         },

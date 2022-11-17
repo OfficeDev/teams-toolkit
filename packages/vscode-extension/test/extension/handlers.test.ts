@@ -1336,6 +1336,10 @@ describe("handlers", () => {
       sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
     });
 
+    afterEach(() => {
+      sinon.restore();
+    })
+
     it("v3: happ path", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
       sinon.stub(debugCommonUtils, "getV3TeamsAppId").returns(Promise.resolve("appId"));

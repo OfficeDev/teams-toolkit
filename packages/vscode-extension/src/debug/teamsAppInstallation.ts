@@ -12,37 +12,61 @@ import * as commonUtils from "./commonUtils";
 import axios from "axios";
 import { UserError, SystemError } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { GraphScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { GraphScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import { openUrlWithNewProfile } from "./launch";
 
 export async function showInstallAppInTeamsMessage(env: string, appId: string): Promise<boolean> {
   const isLocal = env === environmentManager.getLocalEnvName();
-  const botId = isLocal ? await commonUtils.getLocalBotId() : undefined;
+  const botId = await commonUtils.getBotId(env);
 
   let messages: string[] = [];
   const items = [localize("teamstoolkit.localDebug.installApp.installInTeams")];
-  if (isLocal) {
-    if (botId) {
-      messages = [
-        localize("teamstoolkit.localDebug.installApp.bot.description"),
-        localize("teamstoolkit.localDebug.installApp.bot.guide1"),
-        localize("teamstoolkit.localDebug.installApp.bot.guide2"),
-        localize("teamstoolkit.localDebug.installApp.bot.finish"),
-      ];
-      items.push(localize("teamstoolkit.localDebug.installApp.bot.configureOutlook"));
+  if (isV3Enabled()) {
+    if (isLocal) {
+      if (botId) {
+        messages = [
+          localize("teamstoolkit.localDebug.installApp.bot.description"),
+          localize("teamstoolkit.localDebug.installApp.bot.guide1"),
+          localize("teamstoolkit.localDebug.installApp.bot.guide2"),
+          localize("teamstoolkit.localDebug.installApp.bot.finish"),
+        ];
+        items.push(localize("teamstoolkit.localDebug.installApp.bot.configureOutlook"));
+      } else {
+        messages = [
+          localize("teamstoolkit.localDebug.installApp.description"),
+          localize("teamstoolkit.localDebug.installApp.guide"),
+          localize("teamstoolkit.localDebug.installApp.finish"),
+        ];
+      }
     } else {
       messages = [
-        localize("teamstoolkit.localDebug.installApp.description"),
+        localize("teamstoolkit.preview.installApp.description"),
         localize("teamstoolkit.localDebug.installApp.guide"),
         localize("teamstoolkit.localDebug.installApp.finish"),
       ];
     }
   } else {
-    messages = [
-      localize("teamstoolkit.preview.installApp.description"),
-      localize("teamstoolkit.localDebug.installApp.guide"),
-      localize("teamstoolkit.localDebug.installApp.finish"),
-    ];
+    messages = botId
+      ? [
+          isLocal
+            ? localize("teamstoolkit.localDebug.installApp.bot.description")
+            : localize("teamstoolkit.preview.installApp.bot.description"),
+          localize("teamstoolkit.localDebug.installApp.bot.guide1"),
+          isLocal
+            ? localize("teamstoolkit.localDebug.installApp.bot.guide2")
+            : localize("teamstoolkit.preview.installApp.bot.guide2"),
+          localize("teamstoolkit.localDebug.installApp.bot.finish"),
+        ]
+      : [
+          isLocal
+            ? localize("teamstoolkit.localDebug.installApp.description")
+            : localize("teamstoolkit.preview.installApp.description"),
+          localize("teamstoolkit.localDebug.installApp.guide"),
+          localize("teamstoolkit.localDebug.installApp.finish"),
+        ];
+    if (botId) {
+      items.push(localize("teamstoolkit.localDebug.installApp.bot.configureOutlook"));
+    }
   }
   items.push(localize("teamstoolkit.localDebug.installApp.continue"));
   const message = messages.join("\n\n");
@@ -59,9 +83,22 @@ export async function showInstallAppInTeamsMessage(env: string, appId: string): 
     } else if (
       result.value === localize("teamstoolkit.localDebug.installApp.bot.configureOutlook")
     ) {
-      const url = `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
-      if (!(await openUrlWithNewProfile(url))) {
-        await VS_CODE_UI.openUrl(url);
+      if (isV3Enabled()) {
+        const url = `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
+        if (!(await openUrlWithNewProfile(url))) {
+          await VS_CODE_UI.openUrl(url);
+        }
+      } else {
+        let url: string;
+        if (isLocal) {
+          url = `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`;
+          if (!(await openUrlWithNewProfile(url))) {
+            await VS_CODE_UI.openUrl(url);
+          }
+        } else {
+          url = await commonUtils.getBotOutlookChannelLink(env);
+          await VS_CODE_UI.openUrl(url);
+        }
       }
       return await showInstallAppInTeamsMessage(env, appId);
     } else if (result.value === localize("teamstoolkit.localDebug.installApp.continue")) {

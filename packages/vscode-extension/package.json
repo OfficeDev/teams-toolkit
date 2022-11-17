@@ -82,10 +82,17 @@
         }
       },
       "teamsfx-m365": {
-        "description": "Microsoft 365 icon in account tree view",
+        "description": "Microsoft 365 icon in command tree view",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E002"
+        }
+      },
+      "teamsfx-add-environment": {
+        "description": "Microsoft 365 icon in command tree view",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E004"
         }
       }
     },

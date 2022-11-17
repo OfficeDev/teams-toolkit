@@ -49,6 +49,7 @@ describe("SPFxGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
+      "app-name": "spfxTestApp",
     };
     const doYeomanScaffoldStub = sinon
       .stub(SPFxGenerator, "doYeomanScaffold" as any)
@@ -73,6 +74,7 @@ describe("SPFxGenerator", function () {
       [SPFXQuestionNames.framework_type]: "none",
       [SPFXQuestionNames.webpart_desp]: "test",
       [SPFXQuestionNames.webpart_name]: "hello",
+      "app-name": "spfxTestApp",
     };
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
@@ -88,6 +90,7 @@ describe("SPFxGenerator", function () {
       [SPFXQuestionNames.framework_type]: "react",
       [SPFXQuestionNames.webpart_desp]: "test",
       [SPFXQuestionNames.webpart_name]: "hello",
+      "app-name": "spfxTestApp",
     };
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
@@ -103,6 +106,7 @@ describe("SPFxGenerator", function () {
       [SPFXQuestionNames.framework_type]: "minimal",
       [SPFXQuestionNames.webpart_desp]: "test",
       [SPFXQuestionNames.webpart_name]: "hello",
+      "app-name": "spfxTestApp",
     };
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
@@ -119,6 +123,7 @@ describe("SPFxGenerator", function () {
       [SPFXQuestionNames.webpart_desp]: "test",
       [SPFXQuestionNames.webpart_name]:
         "extremelylongextremelylongextremelylongextremelylongspfxwebpartname",
+      "app-name": "spfxTestApp",
     };
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 

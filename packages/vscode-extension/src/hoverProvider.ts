@@ -13,7 +13,6 @@ import {
 } from "./constants";
 import { core, getSystemInputs } from "./handlers";
 import { getProvisionSucceedFromEnv } from "./utils/commonUtils";
-import { TelemetryProperty, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import { DotenvParseOutput } from "dotenv";
 
 export class ManifestTemplateHoverProvider implements vscode.HoverProvider {

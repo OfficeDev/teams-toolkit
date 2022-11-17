@@ -28,6 +28,7 @@ function StepTitle(props: { step: number; title: string }) {
 export default function CollapsibleStep(props: {
   step: number;
   title: string;
+  triggerFrom: TelemetryTriggerFrom;
   identifier: string;
   children: React.ReactNode;
 }) {
@@ -37,7 +38,7 @@ export default function CollapsibleStep(props: {
       data: {
         eventName: TelemetryEvent.ExpandGuideStep,
         properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
+          [TelemetryProperty.TriggerFrom]: props.triggerFrom,
           [TelemetryProperty.Identifier]: props.identifier,
         },
       },

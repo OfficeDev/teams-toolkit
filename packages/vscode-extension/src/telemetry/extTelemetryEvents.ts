@@ -227,6 +227,9 @@ export enum TelemetryEvent {
   ExpandGuideStep = "expand-guide-step",
   OpenExternalLink = "open-external-link",
 
+  // ITP account help in product documentation
+  ClickITPButton = "click-itp-button",
+
   Deactivate = "deactivate",
 
   // Create from developer portal
@@ -346,6 +349,7 @@ export enum TelemetryTriggerFrom {
   Notification = "Notification",
   QuickPick = "QuickPick",
   InProductDoc = "InProductDoc",
+  AccountHelp = "AccountHelp",
   Other = "Other",
   Auto = "Auto",
   Unknow = "Unknow",

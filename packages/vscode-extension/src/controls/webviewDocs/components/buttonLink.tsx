@@ -6,9 +6,8 @@ import {
   TelemetryTriggerFrom,
 } from "../../../telemetry/extTelemetryEvents";
 import { Commands } from "../../Commands";
-import { ExternalLink as ExternalLinkIcon } from "../../resources";
 
-export default function ExternalLink(props: {
+export default function ButtonLink(props: {
   title: string;
   link: string;
   triggerFrom: TelemetryTriggerFrom;
@@ -33,11 +32,8 @@ export default function ExternalLink(props: {
   return (
     <span>
       <a href="javascript:void(0)" onClick={onOpenLink}>
-        {props.title}
+        <button>{props.title}</button>
       </a>
-      <span className="externalLink">
-        <ExternalLinkIcon />
-      </span>
     </span>
   );
 }

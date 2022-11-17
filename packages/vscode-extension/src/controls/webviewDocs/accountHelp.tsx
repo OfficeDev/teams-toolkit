@@ -3,22 +3,15 @@ import "./components/document.scss";
 
 import * as React from "react";
 
-import {
-  InProductGuideInteraction,
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetryTriggerFrom,
-} from "../../telemetry/extTelemetryEvents";
-import { Commands } from "../Commands";
+import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import CollapsibleStep from "./components/collapsibleStep";
 import ExternalLink from "./components/externalLink";
 import { useEffect } from "react";
 import M365Sandbox from "../../../img/webview/accountHelp/m365-dev-program-instant-sandbox.png";
 import M365Account from "../../../img/webview/accountHelp/ttk-m365-account.png";
+import ButtonLink from "./components/buttonLink";
 
 export default function PrepareM365Account() {
-  let scrollToBottom = false;
-
   const [theme, setTheme] = React.useState("light");
 
   useEffect(() => {
@@ -35,29 +28,6 @@ export default function PrepareM365Account() {
 
     if (theme === currentTheme) return;
     setTheme(currentTheme);
-
-    const handleScroll = () => {
-      if (!scrollToBottom && window.scrollY > 2500) {
-        scrollToBottom = true;
-        vscode.postMessage({
-          command: Commands.SendTelemetryEvent,
-          data: {
-            eventName: TelemetryEvent.InteractWithInProductDoc,
-            properties: {
-              [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
-              [TelemetryProperty.Interaction]: InProductGuideInteraction.ScrollToBottom,
-              [TelemetryProperty.TutorialName]: "workflow-bot",
-            },
-          },
-        });
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
   }, []);
 
   return (
@@ -94,21 +64,25 @@ export default function PrepareM365Account() {
         <CollapsibleStep
           step={1}
           title="Create Microsoft 365 Development Account"
+          triggerFrom={TelemetryTriggerFrom.AccountHelp}
           identifier="account-help-step1"
         >
           <p>
             Select the button below to create an instant sandbox and get your developer account.
           </p>
           <p>
-            <a href="https://developer.microsoft.com/en-us/microsoft-365/dev-program">
-              <button>Sign up for Microsoft 365 developer program for free</button>
-            </a>
+            <ButtonLink
+              title="Sign up for Microsoft 365 developer program for free"
+              link="https://developer.microsoft.com/en-us/microsoft-365/dev-program"
+              triggerFrom={TelemetryTriggerFrom.AccountHelp}
+            />
           </p>
           <p>
             For more information, visit the{" "}
             <ExternalLink
               title="Set up a developer subscription documentation"
               link="https://learn.microsoft.com/en-us/office/developer-program/microsoft-365-developer-program-get-started"
+              triggerFrom={TelemetryTriggerFrom.AccountHelp}
             />
           </p>
           <p>Once successfully registered, you will see this page:</p>
@@ -127,6 +101,7 @@ export default function PrepareM365Account() {
         <CollapsibleStep
           step={2}
           title="Use your development account in Teams Toolkit for Visual Studio Code"
+          triggerFrom={TelemetryTriggerFrom.AccountHelp}
           identifier="account-help-step2"
         >
           <p>

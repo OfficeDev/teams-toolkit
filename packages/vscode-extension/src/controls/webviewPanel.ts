@@ -91,24 +91,30 @@ export class WebviewPanel {
     // This happens when the user closes the panel or when the panel is closed programatically
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
 
-    if (TreatmentVariableValue.inProductDoc) {
-      this.panel.onDidChangeViewState(
-        (e) => {
-          const panel = e.webviewPanel;
-          if (panelType === PanelType.RespondToCardActions) {
-            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
-              [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
-              [TelemetryProperty.Interaction]: panel.visible
-                ? InProductGuideInteraction.Show
-                : InProductGuideInteraction.Hide,
-              [TelemetryProperty.Identifier]: panelType,
-            });
-          }
-        },
-        null,
-        globalVariables.context.subscriptions
-      );
-    }
+    this.panel.onDidChangeViewState(
+      (e) => {
+        const panel = e.webviewPanel;
+        if (TreatmentVariableValue.inProductDoc && panelType === PanelType.RespondToCardActions) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
+            [TelemetryProperty.Interaction]: panel.visible
+              ? InProductGuideInteraction.Show
+              : InProductGuideInteraction.Hide,
+            [TelemetryProperty.Identifier]: panelType,
+          });
+        } else if (panelType === PanelType.AccountHelp) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.AccountHelp,
+            [TelemetryProperty.Interaction]: panel.visible
+              ? InProductGuideInteraction.Show
+              : InProductGuideInteraction.Hide,
+            [TelemetryProperty.Identifier]: panelType,
+          });
+        }
+      },
+      null,
+      globalVariables.context.subscriptions
+    );
 
     // Handle messages from the webview
     this.panel.webview.onDidReceiveMessage(
@@ -423,9 +429,15 @@ export class WebviewPanel {
 
   public dispose() {
     const panelIndex = WebviewPanel.currentPanels.indexOf(this);
-    if (TreatmentVariableValue.inProductDoc) {
+    if (TreatmentVariableValue.inProductDoc && this.panelType === PanelType.RespondToCardActions) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
         [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
+        [TelemetryProperty.Interaction]: InProductGuideInteraction.Close,
+        [TelemetryProperty.Identifier]: this.panelType,
+      });
+    } else if (this.panelType === PanelType.AccountHelp) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.AccountHelp,
         [TelemetryProperty.Interaction]: InProductGuideInteraction.Close,
         [TelemetryProperty.Identifier]: this.panelType,
       });

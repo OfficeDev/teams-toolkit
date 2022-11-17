@@ -106,7 +106,7 @@ export namespace AadAppManifestManager {
       const manifest: AADManifest = JSON.parse(manifestString);
       manifest.identifierUris = manifest.identifierUris.filter((item) => !!item);
       manifest.replyUrlsWithType = manifest.replyUrlsWithType.filter((item) =>
-        item.url.startsWith("https")
+        isValidURL(item.url)
       );
 
       AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
@@ -160,5 +160,26 @@ export namespace AadAppManifestManager {
       delete (item as any).lang;
       delete (item as any).origin;
     });
+  }
+
+  function isValidURL(url: string) {
+    try {
+      const urlObj = new URL(url);
+
+      // "customSchema://" is valid URL but not a valid redirect URL
+      if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") {
+        // trim end "/" characters
+        const trimmedUrl = url.replace(/\/+$/g, "");
+        if (trimmedUrl.endsWith(":")) {
+          return false;
+        } else {
+          return true;
+        }
+      }
+
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 }

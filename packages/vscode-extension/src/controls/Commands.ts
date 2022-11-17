@@ -8,7 +8,6 @@ export enum Commands {
   SigninM365 = "sign-in-m365",
   SigninAzure = "sign-in-azure",
   CreateNewProject = "create-new-project",
-  CreateNewAddinProject = "create-new-addin-project",
   SwitchPanel = "switch-panel",
   InitAccountInfo = "init-account-info",
   UpdateGlobalStepsDone = "update-global-steps-done",

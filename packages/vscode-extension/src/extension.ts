@@ -159,12 +159,6 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     handlers.createNewProjectHandler,
     "createProject"
   );
-  registerInCommandController(
-    context,
-    "fx-extension.createAddin",
-    handlers.createNewAddinProjectHandler,
-    "createAddinProject"
-  );
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.getNewProjectPath", async (...args) => {
       if (!isSupportAutoOpenAPI()) {

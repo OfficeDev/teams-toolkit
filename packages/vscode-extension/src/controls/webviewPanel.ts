@@ -128,12 +128,6 @@ export class WebviewPanel {
               TelemetryTriggerFrom.Webview
             );
             break;
-          case Commands.CreateNewAddinProject:
-            await vscode.commands.executeCommand(
-              "fx-extension.createAddin",
-              TelemetryTriggerFrom.Webview
-            );
-            break;
           case Commands.SwitchPanel:
             WebviewPanel.createOrShow(msg.data);
             break;

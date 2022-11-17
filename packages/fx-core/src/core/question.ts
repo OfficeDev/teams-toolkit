@@ -298,7 +298,7 @@ export function createCapabilityForOfficeAddin(): SingleSelectQuestion {
     type: "singleSelect",
     staticOptions: [...OfficeAddinItems, ImportAddinProjectItem],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
-    skipSingleOption: false,
+    skipSingleOption: true,
   };
 }
 
@@ -336,6 +336,7 @@ export function createCapabilityQuestionPreview(): SingleSelectQuestion {
     staticOptions.splice(2, 0, ExistingTabOptionItem);
   }
 
+  // Add office add-in options to list of capabilities
   // if (isOfficeAddinEnabled()) {
   //   staticOptions.splice(staticOptions.length, 0, ...OfficeAddinItems);
   //   staticOptions.splice(staticOptions.length, 0, ImportAddinProjectItem);
@@ -562,12 +563,6 @@ export const CreateNewOfficeAddinOption: OptionItem = {
   detail: getLocalizedString("core.NewOfficeAddinOptionVSC.detail"),
 };
 
-export const CreateNewOfficeAddinSampleOption: OptionItem = {
-  id: "newAddinSample",
-  label: `$(heart) ${getLocalizedString("core.NewOfficeAddinSampleOptionVSC.label")}`,
-  detail: getLocalizedString("core.NewOfficeAddinSampleOptionVSC.detail"),
-};
-
 export const RuntimeOptionNodeJs: OptionItem = {
   id: "nodejs",
   label: "Node.js",
@@ -608,6 +603,7 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
     staticOptions.push(ScratchOptionYesVSC);
+    staticOptions.push(CreateNewOfficeAddinOption);
     staticOptions.push(ScratchOptionNoVSC);
   } else {
     staticOptions.push(ScratchOptionYes);
@@ -617,23 +613,6 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
     type: "singleSelect",
     name: CoreQuestionNames.CreateFromScratch,
     title: getLocalizedString("core.getCreateNewOrFromSampleQuestion.title"),
-    staticOptions,
-    default: ScratchOptionYes.id,
-    placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
-    skipSingleOption: true,
-  };
-}
-
-export function getCreateNewOrFromSampleAddinQuestion(platform: Platform): SingleSelectQuestion {
-  const staticOptions: OptionItem[] = [];
-  if (platform === Platform.VSCode) {
-    staticOptions.push(CreateNewOfficeAddinOption);
-    //staticOptions.push(CreateNewOfficeAddinSampleOption);
-  }
-  return {
-    type: "singleSelect",
-    name: CoreQuestionNames.CreateFromScratch,
-    title: getLocalizedString("core.getCreateNewOrFromSampleAddinQuestion.title"),
     staticOptions,
     default: ScratchOptionYes.id,
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),

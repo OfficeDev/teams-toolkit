@@ -43,7 +43,6 @@ import {
   CreateNewOfficeAddinOption,
   ExistingTabEndpointQuestion,
   getCreateNewOrFromSampleQuestion,
-  getCreateNewOrFromSampleAddinQuestion,
   getRuntimeQuestion,
   ProgrammingLanguageQuestion,
   ProgrammingLanguageQuestionForDotNet,
@@ -497,13 +496,10 @@ async function addTeamsQuestions(inputs: Inputs, node: QTreeNode): Promise<Resul
 async function getQuestionsForCreateProjectWithoutDotNet(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  let node;
-  if (isOfficeAddinEnabled() && inputs["projectType"] === "addin") {
-    node = new QTreeNode(getCreateNewOrFromSampleAddinQuestion(inputs.platform));
+  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
+  await addTeamsQuestions(inputs, node);
+  if (isOfficeAddinEnabled()) {
     await addOfficeAddinQuestions(inputs, node);
-  } else {
-    node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
-    await addTeamsQuestions(inputs, node);
   }
 
   return ok(node.trim());

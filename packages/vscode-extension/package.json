@@ -42,7 +42,6 @@
   "activationEvents": [
     "onStartupFinished",
     "onCommand:fx-extension.create",
-    "onCommand:fx-extension.createAddin",
     "onCommand:fx-extension.getNewProjectPath",
     "onCommand:fx-extension.openDeploymentTreeview",
     "onCommand:fx-extension.openDocument",
@@ -93,7 +92,7 @@
     "viewsWelcome": [
       {
         "view": "teamsfx-empty-project",
-        "contents": "To start Teams app development experience, create a project or explore our samples. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D), [Tutorials](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D) or [Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[Create a new Office Add-in](command:fx-extension.createAddin?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)",
+        "contents": "To start Teams app development experience, create a project or explore our samples. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D), [Tutorials](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D) or [Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)",
         "enablement": "fx-extension.initialized"
       },
       {
@@ -438,11 +437,6 @@
         "command": "fx-extension.create",
         "title": "%teamstoolkit.commands.createProject.title%",
         "category": "Teams"
-      },
-      {
-        "command": "fx-extension.createAddin",
-        "title": "%teamstoolkit.commands.createAddinProject.title%",
-        "category": "Addin"
       },
       {
         "command": "fx-extension.cmpAccounts",

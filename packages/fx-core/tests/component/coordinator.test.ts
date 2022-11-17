@@ -1083,7 +1083,7 @@ describe("component coordinator test", () => {
       editor: "aaa",
       capability: "tab",
       spfx: "true",
-      proceed: "false",
+      proceed: "true",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.initInfra(inputs);
@@ -1236,7 +1236,7 @@ describe("component coordinator test", () => {
       editor: "aaa",
       capability: "tab",
       spfx: "true",
-      proceed: "false",
+      proceed: "true",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.initDebug(inputs);

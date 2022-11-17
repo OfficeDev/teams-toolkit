@@ -281,7 +281,7 @@ export class FxCore implements v3.ICore {
     } finally {
       //reset subscription
       try {
-        TOOLS.tokenProvider.azureAccountProvider.setSubscription("");
+        await TOOLS.tokenProvider.azureAccountProvider.setSubscription("");
       } catch (e) {}
     }
   }

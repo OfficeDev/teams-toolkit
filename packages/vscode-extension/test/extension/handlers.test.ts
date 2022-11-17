@@ -1338,7 +1338,7 @@ describe("handlers", () => {
 
     afterEach(() => {
       sinon.restore();
-    })
+    });
 
     it("v3: happ path", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);

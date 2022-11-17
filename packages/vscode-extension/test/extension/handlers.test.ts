@@ -1182,6 +1182,10 @@ describe("handlers", () => {
   });
 
   describe("scaffoldFromDeveloperPortalHandler", async () => {
+    beforeEach(() => {
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    });
     afterEach(() => {
       sinon.restore();
     });
@@ -1292,8 +1296,6 @@ describe("handlers", () => {
         .returns(progressHandler);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const createProject = sinon.spy(handlers.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
       sinon.stub(globalState, "globalStateUpdate");
@@ -1315,7 +1317,6 @@ describe("handlers", () => {
     });
 
     it("publish in developer portal", async () => {
-      //const mockCore = new MockCore();
       sinon.stub(handlers, "core").value(new MockCore());
       const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");

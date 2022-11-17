@@ -207,6 +207,7 @@ describe("component coordinator test", () => {
       folder: ".",
       [CoreQuestionNames.AppName]: randomAppName(),
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      [CoreQuestionNames.ReplaceBotIds]: ["bot"],
       teamsAppFromTdp: appDefinition,
     };
     const fxCore = new FxCore(tools);

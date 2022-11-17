@@ -134,7 +134,6 @@ export class ArmDeployImpl {
       );
       return ok(result?.properties?.outputs);
     } catch (error) {
-      // TODO: fetch error reason and throw
       throw error;
     }
   }

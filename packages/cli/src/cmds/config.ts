@@ -84,7 +84,7 @@ export class ConfigGet extends YargsCommand {
       if (globalResult.isErr()) {
         return globalResult;
       }
-      if (!args.global && inProject) {
+      if (!args.global && inProject && !isV3Enabled()) {
         let env: string | undefined = undefined;
         if (args.env) {
           env = args.env;

@@ -3304,7 +3304,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           {
             iconPath: "file-code",
             tooltip: localize("teamstoolkit.guide.tooltip.inProduct"),
-            command: "",
+            command: "fx-extension.openTutorial",
           },
         ],
       },
@@ -3318,7 +3318,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           {
             iconPath: "file-symlink-file",
             tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "",
+            command: "fx-extension.openTutorial",
           },
         ],
       },
@@ -3332,7 +3332,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           {
             iconPath: "file-symlink-file",
             tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "",
+            command: "fx-extension.openTutorial",
           },
         ],
       },
@@ -3346,7 +3346,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           {
             iconPath: "file-symlink-file",
             tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "",
+            command: "fx-extension.openTutorial",
           },
         ],
       },
@@ -3360,7 +3360,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           {
             iconPath: "file-symlink-file",
             tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "",
+            command: "fx-extension.openTutorial",
           },
         ],
       },

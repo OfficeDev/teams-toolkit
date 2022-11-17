@@ -24,6 +24,7 @@ import AdmZip from "adm-zip";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { unzip } from "../../../common/template-utils/templatesUtils";
 import { getTemplatesFolder } from "../../../folder";
+import { isV3Enabled } from "../../../common/tools";
 
 export function convertContext(context: ContextV3, inputs: InputsWithProjectPath): PluginContext {
   const projectSetting = convertProjectSettingsV3ToV2(context.projectSetting);
@@ -81,13 +82,30 @@ export async function createAuthFiles(
     return err(e);
   }
 
-  const authFolder = path.join(projectPath!, isVsProject ? "Auth" : "auth");
+  const authFolder = path.join(
+    projectPath!,
+    isV3Enabled() ? AddSsoParameters.V3AuthFolder : isVsProject ? "Auth" : "auth"
+  );
   const tabFolder = path.join(authFolder, AddSsoParameters.Tab);
   const botFolder = path.join(authFolder, AddSsoParameters.Bot);
   try {
     const authFolderExists = await fs.pathExists(authFolder);
     if (!authFolderExists) {
       await fs.ensureDir(authFolder);
+    }
+
+    if (isV3Enabled()) {
+      const templateFolder = getTemplatesFolder();
+      const v3TemplateFolder = path.join(
+        templateFolder,
+        AddSsoParameters.filePath,
+        AddSsoParameters.V3
+      );
+
+      const sampleZip = new AdmZip();
+      sampleZip.addLocalFolder(v3TemplateFolder);
+      await unzip(sampleZip, authFolder);
+      return ok(undefined);
     }
 
     if (needTab) {
@@ -214,10 +232,13 @@ export async function createAuthFiles(
       }
     }
   } catch (error) {
-    if (needTab && (await fs.pathExists(tabFolder))) {
+    if (isV3Enabled() && (await fs.pathExists(authFolder))) {
+      await fs.remove(authFolder);
+    }
+    if (!isV3Enabled() && needTab && (await fs.pathExists(tabFolder))) {
       await fs.remove(tabFolder);
     }
-    if (needBot && (await fs.pathExists(botFolder))) {
+    if (!isV3Enabled() && needBot && (await fs.pathExists(botFolder))) {
       await fs.remove(botFolder);
     }
     const e = new SystemError(

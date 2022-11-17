@@ -33,6 +33,7 @@ describe("teamsApp/create", async () => {
     appName: "fake",
     teamsAppId: uuid(),
     userList: [],
+    tenantId: uuid(),
   };
 
   afterEach(() => {
@@ -66,5 +67,32 @@ describe("teamsApp/create", async () => {
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     console.log(JSON.stringify(result));
     chai.assert.isTrue(result.isOk());
+  });
+
+  it("app exists", async () => {
+    const args: CreateTeamsAppArgs = {
+      name: appDef.appName!,
+    };
+
+    process.env.TEAMS_APP_ID = uuid();
+    sinon.stub(AppStudioClient, "getApp").resolves(appDef);
+
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    console.log(JSON.stringify(result));
+    chai.assert.isTrue(result.isOk());
+
+    process.env.TEAMS_APP_ID = undefined;
+  });
+
+  it("API failure", async () => {
+    const args: CreateTeamsAppArgs = {
+      name: appDef.appName!,
+    };
+    sinon.stub(AppStudioClient, "getApp").throws(new Error("404"));
+    sinon.stub(AppStudioClient, "importApp").throws(new Error("409"));
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert.isTrue(result.isErr());
   });
 });

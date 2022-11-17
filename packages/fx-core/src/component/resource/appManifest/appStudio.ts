@@ -41,12 +41,17 @@ import { manifestUtils } from "./utils/ManifestUtils";
 import { environmentManager } from "../../../core/environment";
 import { Constants, supportedLanguageCodes } from "./constants";
 import { CreateAppPackageDriver } from "../../driver/teamsApp/createAppPackage";
+import { ConfigureTeamsAppDriver } from "../../driver/teamsApp/configure";
 import { CreateAppPackageArgs } from "../../driver/teamsApp/interfaces/CreateAppPackageArgs";
+import { ConfigureTeamsAppArgs } from "../../driver/teamsApp/interfaces/ConfigureTeamsAppArgs";
 import { DriverContext } from "../../driver/interface/commonArgs";
 import { envUtil } from "../../utils/envUtil";
 import { AppPackage } from "./interfaces/appPackage";
 import { basename, extname } from "path";
 import set from "lodash/set";
+import { CoreQuestionNames } from "../../../core/question";
+import { actionName as createAppPackageActionName } from "../../driver/teamsApp/createAppPackage";
+import { actionName as configureTeamsAppActionName } from "../../driver/teamsApp/configure";
 
 /**
  * Create Teams app if not exists
@@ -677,26 +682,16 @@ export async function updateManifestV3(
   );
 
   // Prepare for driver
-  const buildDriver: CreateAppPackageDriver = Container.get("teamsApp/createAppPackage");
-  const args: CreateAppPackageArgs = {
-    manifestTemplatePath: manifestTemplatePath,
-    outputZipPath: path.join(
-      inputs.projectPath,
-      BuildFolderName,
-      AppPackageFolderName,
-      `appPackage.${state.ENV_NAME}.zip`
-    ),
-    outputJsonPath: manifestFileName,
+  const buildDriver: CreateAppPackageDriver = Container.get(createAppPackageActionName);
+  const createAppPackageArgs = generateCreateAppPackageArgs(
+    inputs.projectPath,
+    manifestTemplatePath,
+    state.ENV_NAME!
+  );
+  const updateTeamsAppArgs: ConfigureTeamsAppArgs = {
+    appPackagePath: createAppPackageArgs.outputZipPath,
   };
-  const driverContext: DriverContext = {
-    azureAccountProvider: ctx.tokenProvider!.azureAccountProvider,
-    m365TokenProvider: ctx.tokenProvider!.m365TokenProvider,
-    ui: ctx.userInteraction,
-    logProvider: ctx.logProvider,
-    telemetryReporter: ctx.telemetryReporter,
-    projectPath: ctx.projectPath!,
-    platform: inputs.platform,
-  };
+  const driverContext: DriverContext = generateDriverContext(ctx, inputs);
   await envUtil.readEnv(inputs.projectPath!, state.ENV_NAME!);
 
   // render manifest
@@ -724,7 +719,7 @@ export async function updateManifestV3(
 
   // read built manifest file
   if (!(await fs.pathExists(manifestFileName))) {
-    const res = await buildDriver.run(args, driverContext);
+    const res = await buildDriver.run(createAppPackageArgs, driverContext);
     if (res.isErr()) {
       return err(res.error);
     }
@@ -744,75 +739,111 @@ export async function updateManifestV3(
     );
 
     if (res?.isOk() && res.value === previewOnly) {
-      return await buildDriver.run(args, driverContext);
+      return await buildDriver.run(createAppPackageArgs, driverContext);
     } else if (res?.isOk() && res.value === previewUpdate) {
-      await buildDriver.run(args, driverContext);
-      const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
-        scopes: AppStudioScopes,
-      });
-      if (appStudioTokenRes.isErr()) {
-        return err(appStudioTokenRes.error);
-      }
-      const appStudioToken = appStudioTokenRes.value;
-
-      try {
-        const localUpdateTime = (await fs.stat(manifestFileName)).mtime.getTime();
-        const app = await AppStudioClient.getApp(teamsAppId!, appStudioToken, ctx.logProvider);
-        const devPortalUpdateTime = new Date(app.updatedAt!)?.getTime() ?? -1;
-        if (localUpdateTime < devPortalUpdateTime) {
-          const option = getLocalizedString("plugins.appstudio.overwriteAndUpdate");
-          const res = await ctx.userInteraction.showMessage(
-            "warn",
-            getLocalizedString("plugins.appstudio.updateOverwriteTip"),
-            true,
-            option
-          );
-          if (!(res?.isOk() && res.value === option)) {
-            return err(UserCancelError);
-          }
-        }
-
-        const configureDriver: CreateAppPackageDriver = Container.get("teamsApp/configure");
-        const result = await configureDriver.run(args, driverContext);
-        if (result.isErr()) {
-          return err(result.error);
-        }
-
-        ctx.logProvider?.info(
-          getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", teamsAppId)
-        );
-        ctx.userInteraction
-          .showMessage(
-            "info",
-            getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"),
-            false,
-            Constants.VIEW_DEVELOPER_PORTAL
-          )
-          .then((res) => {
-            if (res?.isOk() && res.value === Constants.VIEW_DEVELOPER_PORTAL) {
-              ctx.userInteraction.openUrl(
-                util.format(Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL, result.value)
-              );
-            }
-          });
-        return ok(teamsAppId);
-      } catch (error) {
-        if (error.message && error.message.includes("404")) {
-          return err(
-            AppStudioResultFactory.UserError(
-              AppStudioError.UpdateManifestWithInvalidAppError.name,
-              AppStudioError.UpdateManifestWithInvalidAppError.message(teamsAppId!)
-            )
-          );
-        } else {
-          return err(error);
-        }
-      }
+      await buildDriver.run(createAppPackageArgs, driverContext);
     } else {
       return err(UserCancelError);
     }
   }
-  return ok(undefined);
+
+  const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+    scopes: AppStudioScopes,
+  });
+  if (appStudioTokenRes.isErr()) {
+    return err(appStudioTokenRes.error);
+  }
+  const appStudioToken = appStudioTokenRes.value;
+
+  try {
+    const localUpdateTime = (await fs.stat(manifestFileName)).mtime.getTime();
+    const app = await AppStudioClient.getApp(teamsAppId!, appStudioToken, ctx.logProvider);
+    const devPortalUpdateTime = new Date(app.updatedAt!)?.getTime() ?? -1;
+    if (localUpdateTime < devPortalUpdateTime) {
+      const option = getLocalizedString("plugins.appstudio.overwriteAndUpdate");
+      const res = await ctx.userInteraction.showMessage(
+        "warn",
+        getLocalizedString("plugins.appstudio.updateOverwriteTip"),
+        true,
+        option
+      );
+      if (!(res?.isOk() && res.value === option)) {
+        return err(UserCancelError);
+      }
+    }
+
+    const configureDriver: ConfigureTeamsAppDriver = Container.get(configureTeamsAppActionName);
+    const result = await configureDriver.run(updateTeamsAppArgs, driverContext);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", teamsAppId));
+    ctx.userInteraction
+      .showMessage(
+        "info",
+        getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"),
+        false,
+        Constants.VIEW_DEVELOPER_PORTAL
+      )
+      .then((res) => {
+        if (res?.isOk() && res.value === Constants.VIEW_DEVELOPER_PORTAL) {
+          ctx.userInteraction.openUrl(
+            util.format(
+              Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL,
+              result.value.get("TEAMS_APP_ID")
+            )
+          );
+        }
+      });
+    return ok(teamsAppId);
+  } catch (error) {
+    if (error.message && error.message.includes("404")) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.UpdateManifestWithInvalidAppError.name,
+          AppStudioError.UpdateManifestWithInvalidAppError.message(teamsAppId!)
+        )
+      );
+    } else {
+      return err(error);
+    }
+  }
+}
+
+export async function updateManifestV3ForPublish(
+  ctx: ResourceContextV3,
+  inputs: InputsWithProjectPath
+): Promise<Result<any, FxError>> {
+  const envName = process.env.TEAMSFX_ENV;
+  const teamsAppId = process.env.TEAMS_APP_ID;
+  const manifestTemplatePath = inputs[CoreQuestionNames.ManifestPath];
+
+  const driverContext: DriverContext = generateDriverContext(ctx, inputs);
+  const buildDriver: CreateAppPackageDriver = Container.get(createAppPackageActionName);
+  const createAppPackageArgs = generateCreateAppPackageArgs(
+    inputs.projectPath,
+    manifestTemplatePath,
+    envName!
+  );
+  const updateTeamsAppArgs: ConfigureTeamsAppArgs = {
+    appPackagePath: createAppPackageArgs.outputZipPath,
+  };
+
+  await envUtil.readEnv(inputs.projectPath!, envName!);
+
+  const res = await buildDriver.run(createAppPackageArgs, driverContext);
+  if (res.isErr()) {
+    return err(res.error);
+  }
+
+  const configureDriver: ConfigureTeamsAppDriver = Container.get(configureTeamsAppActionName);
+  const result = await configureDriver.run(updateTeamsAppArgs, driverContext);
+  if (result.isErr()) {
+    return err(result.error);
+  }
+
+  return ok(teamsAppId);
 }
 
 export async function getAppPackage(
@@ -867,4 +898,43 @@ export async function getAppPackage(
   } catch (e) {
     return err(e);
   }
+}
+
+function generateDriverContext(
+  ctx: ResourceContextV3,
+  inputs: InputsWithProjectPath
+): DriverContext {
+  return {
+    azureAccountProvider: ctx.tokenProvider!.azureAccountProvider,
+    m365TokenProvider: ctx.tokenProvider!.m365TokenProvider,
+    ui: ctx.userInteraction,
+    logProvider: ctx.logProvider,
+    telemetryReporter: ctx.telemetryReporter,
+    projectPath: ctx.projectPath!,
+    platform: inputs.platform,
+  };
+}
+
+function generateCreateAppPackageArgs(
+  projectPath: string,
+  manifestTemplatePath: string,
+  envName: string
+): CreateAppPackageArgs {
+  const manifestFileName = path.join(
+    projectPath,
+    BuildFolderName,
+    AppPackageFolderName,
+    `manifest.${envName}.json`
+  );
+
+  return {
+    manifestTemplatePath: manifestTemplatePath,
+    outputZipPath: path.join(
+      projectPath,
+      BuildFolderName,
+      AppPackageFolderName,
+      `appPackage.${envName}.zip`
+    ),
+    outputJsonPath: manifestFileName,
+  };
 }

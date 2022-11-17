@@ -29,7 +29,7 @@ import Init from "./init";
 export const commands: YargsCommand[] = [
   new Account(),
   new New(),
-  new Add(),
+  ...(isV3Enabled() ? [] : [new Add()]),
   new Provision(),
   new Deploy(),
   new Package(),

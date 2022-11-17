@@ -152,9 +152,9 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "suggested": false,
-            "url": "https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/",
+            "url": "https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/bot-proactive-messaging-teamsfx",
             "packageLink": "https://github.com/OfficeDev/Microsoft-Teams-Samples/archive/refs/heads/main.zip",
-            "relativePath": "Microsoft-Teams-Samples-main/samples/bot-proactive-messaging-teamsfx/"
+            "relativePath": "Microsoft-Teams-Samples-main/samples/bot-proactive-messaging-teamsfx"
         },
         {
             "id": "adaptive-card-notification",

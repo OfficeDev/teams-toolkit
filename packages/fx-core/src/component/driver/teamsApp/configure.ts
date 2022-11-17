@@ -16,7 +16,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
 
-const actionName = "teamsApp/update";
+export const actionName = "teamsApp/update";
 
 const outputNames = {
   TEAMS_APP_ID: "TEAMS_APP_ID",
@@ -48,7 +48,17 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     }
     const archivedFile = await fs.readFile(appPackagePath);
 
+    const progressHandler = context.ui?.createProgressBar(
+      getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppTitle"),
+      1
+    );
+    progressHandler?.start();
+
     try {
+      progressHandler?.next(
+        getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppStepMessage")
+      );
+
       const appDefinition = await AppStudioClient.importApp(
         archivedFile,
         appStudioToken,
@@ -63,6 +73,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       if (context.platform === Platform.VSCode) {
         context.ui?.showMessage("info", message, false);
       }
+      progressHandler?.end(true);
       return ok(
         new Map([
           [outputNames.TEAMS_APP_ID, appDefinition.teamsAppId!],
@@ -70,6 +81,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
         ])
       );
     } catch (e: any) {
+      progressHandler?.end(false);
       return err(
         AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppUpdateFailedError.name,

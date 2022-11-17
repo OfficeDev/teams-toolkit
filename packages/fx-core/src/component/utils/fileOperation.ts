@@ -26,7 +26,8 @@ export async function zipFolderAsync(
   const tasks: Promise<void>[] = [];
   const zipFiles = new Set<string>();
   const ig = notIncluded ?? ignore();
-  const zip = (await readZip(cache)) || new AdmZip();
+  const cacheFile = await readZip(cache);
+  const zip = cacheFile ?? new AdmZip();
 
   const addFileIntoZip = async (
     zp: AdmZip,
@@ -78,19 +79,19 @@ export async function zipFolderAsync(
     }
   );
 
-  if (!tasks) {
+  if (!tasks && !cacheFile) {
     throw DeployUserInputError.noFilesFindInDistFolder();
   }
 
   await Promise.all(tasks);
-  removeLegacyFileInZip(zip, zipFiles);
   // save to cache if exists
+  const buffer = zip.toBuffer();
   if (cache && tasks) {
     await fs.mkdirs(path.dirname(cache));
-    await fs.writeFile(cache, zip.toBuffer());
+    await fs.writeFile(cache, buffer);
   }
 
-  return zip.toBuffer();
+  return buffer;
 }
 
 export async function forEachFileAndDir(
@@ -110,15 +111,6 @@ export async function forEachFileAndDir(
       .on("error", (err) => reject(err))
       .on("close", () => resolve({}));
   });
-}
-
-function removeLegacyFileInZip(zip: AdmZip, existenceFiles: Set<string>): void {
-  zip
-    .getEntries()
-    .filter((entry) => !existenceFiles.has(entry.name))
-    .forEach((entry) => {
-      zip.deleteFile(entry.name);
-    });
 }
 
 async function readZip(cache: string): Promise<AdmZip | undefined> {

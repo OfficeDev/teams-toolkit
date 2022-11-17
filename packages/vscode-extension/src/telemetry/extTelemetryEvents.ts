@@ -67,6 +67,9 @@ export enum TelemetryEvent {
   PublishStart = "publish-start",
   Publish = "publish",
 
+  PublishInDeveloperPortalStart = "publish-in-developer-portal-start",
+  PublishInDeveloperPortal = "publish-in-developer-portal",
+
   ManageTeamsApp = "manage-teams-app",
 
   ManageTeamsBot = "manage-teams-bot",

@@ -37,6 +37,7 @@ import {
   validationSettingsHelpLink,
   NodeNotSupportedError,
   NodeNotRecommendedError,
+  InstallOptions,
 } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { LocalEnvProvider } from "@microsoft/teamsfx-core/build/component/debugHandler";
 import {
@@ -174,12 +175,18 @@ type NpmInstallCheckerInfo = {
   displayName?: string;
 };
 type PortCheckerInfo = { checker: Checker.Ports; ports: number[] };
+type VxTestAppCheckerInfo = { checker: DepsType.VxTestApp; vxTestApp: { version: string } };
 type PrerequisiteCheckerInfo = { checker: Checker | DepsType; [key: string]: any };
 
 type PrerequisiteOrderedChecker = {
   info: PrerequisiteCheckerInfo | PrerequisiteCheckerInfo[];
   fastFail: boolean;
 };
+
+interface Dependency {
+  depsType: DepsType;
+  installOptions?: InstallOptions;
+}
 
 async function runWithCheckResultTelemetryProperties(
   eventName: string,
@@ -602,9 +609,20 @@ function getCheckPromise(
     case DepsType.Dotnet:
     case DepsType.FuncCoreTools:
     case DepsType.Ngrok:
+      return checkDependency(
+        checkerInfo.checker,
+        {}, // These dependencies doesn't need installOptions currently
+        depsManager,
+        step.getPrefix(),
+        additionalTelemetryProperties
+      );
     case DepsType.VxTestApp:
       return checkDependency(
         checkerInfo.checker,
+        {
+          version: (checkerInfo as VxTestAppCheckerInfo)?.vxTestApp?.version,
+          projectPath: vscode.workspace.workspaceFolders?.[0]?.uri?.fsPath,
+        },
         depsManager,
         step.getPrefix(),
         additionalTelemetryProperties
@@ -868,6 +886,7 @@ async function checkNode(
 
 async function checkDependency(
   nonNodeDep: DepsType,
+  installOptions: InstallOptions,
   depsManager: DepsManager,
   prefix: string,
   additionalTelemetryProperties: { [key: string]: string }
@@ -875,19 +894,14 @@ async function checkDependency(
   try {
     VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nonNodeDep]} ...`);
 
-    const depsStatus = await localTelemetryReporter.runWithTelemetryGeneric(
+    const dep = await localTelemetryReporter.runWithTelemetryGeneric(
       TelemetryEvent.DebugPrereqsCheckDependencies,
       async (ctx: TelemetryContext) => {
         ctx.properties[TelemetryProperty.DebugPrereqsDepsType] = nonNodeDep;
-        return await depsManager.ensureDependencies([nonNodeDep], {
-          fastFail: false,
-          doctor: true,
-        });
+        return await depsManager.ensureDependency(nonNodeDep, true, installOptions);
       },
-      (result: DependencyStatus[]) => {
-        // This error object is only for telemetry.
-        // Input is one dependency, so result is at most one.
-        const error = result.length > 0 && result[0].error;
+      (result: DependencyStatus) => {
+        const error = result.error;
         if (error instanceof DepsCheckerError) {
           // TODO: Currently there is no user/system error info from DepsCheckerError.
           // So assuming UserError for now.
@@ -904,10 +918,6 @@ async function checkDependency(
       additionalTelemetryProperties
     );
 
-    if (depsStatus.length == 0) {
-      throw new Error("Deps checker result is not returned.");
-    }
-    const dep = depsStatus[0];
     return {
       checker: dep.name,
       result: dep.isInstalled
@@ -1421,7 +1431,7 @@ async function getOrderedCheckersForTask(
   }
   if (prerequisites.includes(Prerequisite.vxTestApp)) {
     checkers.push({
-      info: { checker: DepsType.VxTestApp, checkerInfo: vxTestApp },
+      info: { checker: DepsType.VxTestApp, vxTestApp: vxTestApp },
       fastFail: false,
     });
   }

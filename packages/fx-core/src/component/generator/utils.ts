@@ -7,6 +7,7 @@ import * as fs from "fs-extra";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,
+  placeholderDelimiters,
   sampleRepoName,
   templateAlphaVersion,
   templateBetaVersion,
@@ -121,8 +122,8 @@ export async function fetchTemplateZipUrl(
 
 export async function fetchZipFromUrl(
   url: string,
-  tryLimits: number,
-  timeoutInMs: number
+  tryLimits = defaultTryLimits,
+  timeoutInMs = defaultTimeoutInMs
 ): Promise<AdmZip> {
   const res: AxiosResponse<any> = await sendRequestWithTimeout(
     async (cancelToken) => {
@@ -150,7 +151,7 @@ export async function unzip(
 ): Promise<void> {
   let entries: AdmZip.IZipEntry[] = zip.getEntries().filter((entry) => !entry.isDirectory);
   if (relativePath) {
-    entries = entries.filter((entry) => entry.entryName.split("/")[0] == relativePath);
+    entries = entries.filter((entry) => entry.entryName.startsWith(relativePath));
   }
 
   for (const entry of entries) {
@@ -184,7 +185,7 @@ export function renderTemplateFileData(
 ): string | Buffer {
   //only mustache files with name ending with .tpl
   if (path.extname(fileName) === templateFileExt) {
-    return Mustache.render(fileData.toString(), variables);
+    return Mustache.render(fileData.toString(), variables, {}, placeholderDelimiters);
   }
   // Return Buffer instead of string if the file is not a template. Because `toString()` may break binary resources, like png files.
   return fileData;
@@ -195,7 +196,10 @@ export function renderTemplateFileName(
   fileData: Buffer,
   variables?: { [key: string]: string }
 ): string {
-  return Mustache.render(fileName, variables).replace(templateFileExt, "");
+  return Mustache.render(fileName, variables, {}, placeholderDelimiters).replace(
+    templateFileExt,
+    ""
+  );
 }
 
 export function getSampleInfoFromName(sampleName: string): SampleInfo {

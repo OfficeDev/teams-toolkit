@@ -181,7 +181,6 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   createNew.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
 
   if (!!inputs.teamsAppFromTdp) {
-    //const updateTabUrls = await getQuestionsForUpdateTabUrls(inputs.teamsAppFromTdp);
     const updateTabUrls = await getQuestionsForUpdateStaticTabUrls(inputs.teamsAppFromTdp);
     if (updateTabUrls) {
       createNew.addChild(updateTabUrls);

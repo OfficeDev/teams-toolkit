@@ -99,7 +99,7 @@ export function toYargsOptions(data: Question): Options {
   if (defaultValue === undefined) {
     return {
       array: data.type === "multiSelect",
-      description: data.title || "",
+      description: (data.title as string) || "",
       choices: choices,
       hidden: !!(data as any).hide,
       global: false,
@@ -108,7 +108,7 @@ export function toYargsOptions(data: Question): Options {
   }
   return {
     array: data.type === "multiSelect",
-    description: data.title || "",
+    description: (data.title as string) || "",
     default: defaultValue,
     choices: choices,
     hidden: !!(data as any).hide,
@@ -465,7 +465,6 @@ export function getProjectId(rootfolder: string | undefined): any {
   } catch (e) {
     return undefined;
   }
-  return undefined;
 }
 
 export function getSystemInputs(projectPath?: string, env?: string): Inputs {

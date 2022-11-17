@@ -97,8 +97,8 @@ export class ToolsInstallDriverImpl {
     if (!!args.devCert && typeof args.devCert?.trust !== "boolean") {
       throw new InvalidParameterUserError(ACTION_NAME, "devCert.trust", helpLink);
     }
-    if (!!args.func && typeof args.func.version !== "number") {
-      throw new InvalidParameterUserError(ACTION_NAME, "func.version", helpLink);
+    if (!!args.func && typeof args.func !== "boolean") {
+      throw new InvalidParameterUserError(ACTION_NAME, "func", helpLink);
     }
   }
 }

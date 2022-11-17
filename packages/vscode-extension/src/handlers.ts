@@ -58,6 +58,7 @@ import {
   UserError,
   Void,
   VsCodeEnv,
+  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import { AddSsoParameters } from "@microsoft/teamsfx-core/build/component/constants";
 import {
@@ -292,7 +293,7 @@ export async function getIsFromSample(projectPath?: string) {
 }
 
 export async function getIsM365(): Promise<boolean | undefined> {
-  if (core) {
+  if (core && !isV3Enabled()) {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
     const res = await core.getProjectConfig(input);
@@ -967,6 +968,16 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
   return await runCommand(Stage.publish);
 }
 
+export async function publishInDeveloperPortalHandler(
+  args?: any[]
+): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.PublishInDeveloperPortalStart,
+    getTriggerFromProperty(args)
+  );
+  return await runCommand(Stage.publishInDeveloperPortal);
+}
+
 export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowOutputChannel);
   VsCodeLogInstance.outputChannel.show();
@@ -1060,6 +1071,10 @@ export async function runCommand(
       }
       case Stage.listCollaborator: {
         result = await core.listCollaborator(inputs);
+        break;
+      }
+      case Stage.publishInDeveloperPortal: {
+        result = await core.publishInDeveloperPortal(inputs);
         break;
       }
       default:
@@ -2847,7 +2862,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
         EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
       );
     } else {
-      sourcePath = path.resolve(`${workspacePath}/.${ConfigFolderName}/.env.${env}`);
+      sourcePath = path.resolve(`${workspacePath}/${SettingsFolderName}/.env.${env}`);
     }
   } else {
     const invalidArgsError = new SystemError(
@@ -3595,11 +3610,13 @@ export async function selectSubscriptionCallback(args?: any[]): Promise<Result<n
 export async function scaffoldFromDeveloperPortalHandler(
   args?: any[]
 ): Promise<Result<null, FxError>> {
-  if (!args || args.length !== 1) {
+  if (!args || args.length < 1) {
     // should never happen
     return ok(null);
   }
 
+  const loginHint = args.length < 2 ? undefined : args[1];
+  const appId = args[0];
   const progressBar = VS_CODE_UI.createProgressBar(
     localize("teamstoolkit.devPortalIntegration.checkM365Account.progressTitle"),
     1
@@ -3609,7 +3626,7 @@ export async function scaffoldFromDeveloperPortalHandler(
   try {
     const appDefinitionRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
       { scopes: AppStudioScopes },
-      args[0]
+      appId
     );
     if (appDefinitionRes.isErr()) {
       if ((appDefinitionRes.error as any).displayMessage) {

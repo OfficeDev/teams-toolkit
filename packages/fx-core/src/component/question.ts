@@ -777,7 +777,13 @@ export function getQuestionsForInit(
   const capabilityNode = new QTreeNode(InitCapabilityQuestion);
   group.addChild(capabilityNode);
   const SPFxNode = new QTreeNode(InitIsSPFxQuestion);
-  SPFxNode.condition = { equals: InitCapabilityTab.id };
+  SPFxNode.condition = {
+    validFunc: (inputs: Inputs) => {
+      if (inputs.editor === InitEditorVSCode.id && inputs.capability === InitCapabilityTab.id)
+        return undefined;
+      return "Not supported";
+    },
+  };
   capabilityNode.addChild(SPFxNode);
   if (inputs.platform !== Platform.CLI_HELP) {
     group.addChild(

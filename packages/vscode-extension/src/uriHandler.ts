@@ -29,14 +29,12 @@ export class UriHandler implements vscode.UriHandler {
       }
       const queryParamas = queryString.parse(uri.query) as QueryParams;
       if (!queryParamas.referrer) {
-        console.log("missing referrer");
         vscode.window.showErrorMessage(localize("teamstoolkit.devPortalIntegration.invalidLink"));
         return;
       }
 
       if (queryParamas.referrer === Referrer.DeveloperPortal) {
         if (!queryParamas.appId) {
-          console.log("missing app id");
           vscode.window.showErrorMessage(localize("teamstoolkit.devPortalIntegration.invalidLink"));
           return;
         }

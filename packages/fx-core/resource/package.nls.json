@@ -713,7 +713,7 @@
   "core.updateWebsiteUrlQuestion.title": "We will update the following tabs' website url for you to get started with Teams Toolkit",
   "core.updateContentUrlOption.description": "update the content url from %s to %s",
   "core.updateWebsiteUrlOption.description": "update the website url from %s to %s",
-  "core.updateUrlQuestion.placeholder": "unselect to keep with the original url",
+  "core.updateUrlQuestion.placeholder": "Unselect to keep with the original url",
   "core.AzureResourceSQL.label": "Azure SQL Database",
   "core.AzureResourceSQL.description": "Azure Function App will be also selected to access Azure SQL Database",
   "core.AzureResourceSQLNewUI.label": "Azure SQL Database",

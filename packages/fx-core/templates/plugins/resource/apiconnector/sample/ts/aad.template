@@ -7,7 +7,12 @@ import {
 
 // Load application configuration. This sample uses the client credential flow to acquire a token for your API.
 {{#if (equals config.AuthConfig.ReuseTeamsApp true)}}
-const teamsFx = new TeamsFx(IdentityType.App);
+const teamsFx = new TeamsFx(IdentityType.App, {
+  authorityHost: process.env.M365_AUTHORITY_HOST!,
+  tenantId: process.env.M365_TENANT_ID!,
+  clientId: process.env.M365_CLIENT_ID!,
+  clientSecret: process.env.M365_CLIENT_SECRET!,
+});
 {{else}}
 const teamsFx = new TeamsFx(IdentityType.App, {
   // You can replace the default authorityHost URL
@@ -25,7 +30,7 @@ const authProvider = new BearerTokenAuthProvider(
   async () => (await appCredential.getToken("<your-api-scope>"))!.token
 );
 const {{config.APIName}}Client = createApiClient(
-  teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_ENDPOINT"),
+  process.env.TEAMSFX_API_{{capitalName}}_ENDPOINT,
   authProvider
 );
 export { {{config.APIName}}Client };

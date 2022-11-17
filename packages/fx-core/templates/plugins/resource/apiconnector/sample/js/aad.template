@@ -2,7 +2,12 @@ const teamsfxSdk = require("@microsoft/teamsfx");
 
 // Load application configuration. This sample uses the client credential flow to acquire a token for your API.
 {{#if (equals config.AuthConfig.ReuseTeamsApp true)}}
-const teamsFx = new teamsfxSdk.TeamsFx(teamsfxSdk.IdentityType.App);
+const teamsFx = new teamsfxSdk.TeamsFx(teamsfxSdk.IdentityType.App, {
+  authorityHost: process.env.M365_AUTHORITY_HOST,
+  tenantId: process.env.M365_TENANT_ID,
+  clientId: process.env.M365_CLIENT_ID,
+  clientSecret: process.env.M365_CLIENT_SECRET,
+});
 {{else}}
 const teamsFx = new teamsfxSdk.TeamsFx(teamsfxSdk.IdentityType.App, {
   // You can replace the default authorityHost URL
@@ -20,7 +25,7 @@ const authProvider = new teamsfxSdk.BearerTokenAuthProvider(
   async () => (await appCredential.getToken("<your-api-scope>")).token
 );
 const {{config.APIName}}Client = teamsfxSdk.createApiClient(
-  teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_ENDPOINT"),
+  process.env.TEAMSFX_API_{{capitalName}}_ENDPOINT,
   authProvider
 );
 module.exports.{{config.APIName}}Client = {{config.APIName}}Client;

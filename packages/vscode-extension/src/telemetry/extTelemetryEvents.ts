@@ -229,7 +229,7 @@ export enum TelemetryEvent {
 
   Deactivate = "deactivate",
 
-  // Create from developer poertal
+  // Create from developer portal
   HandleUrlFromDeveloperProtalStart = "create-project-from-developer-portal-start",
   HandleUrlFromDeveloperProtal = "create-project-from-developer-portal-start",
 }

@@ -16,7 +16,7 @@ export class DriverNotFoundError extends UserError {
       message: getDefaultString(key, uses, taskName),
       displayMessage: getLocalizedString(key, uses, taskName),
     };
-    // errorOptions.helpLink = helpLink;
+    errorOptions.helpLink = "https://aka.ms/teamsfx-actions/action-not-found";
     super(errorOptions);
   }
 }
@@ -30,7 +30,7 @@ export class YamlParsingError extends UserError {
       message: getDefaultString(key, yamlPath, reason.message),
       displayMessage: getLocalizedString(key, yamlPath, reason.message),
     };
-    // errorOptions.helpLink = helpLink;
+    errorOptions.helpLink = "https://aka.ms/teamsfx-actions/yaml-parsing-error";
     super(errorOptions);
     this.innerError = reason;
   }
@@ -45,7 +45,7 @@ export class InvalidLifecycleError extends UserError {
       message: getDefaultString(key, lifecycle),
       displayMessage: getLocalizedString(key, lifecycle),
     };
-    // errorOptions.helpLink = helpLink;
+    errorOptions.helpLink = "https://aka.ms/teamsfx-actions/invalid-lifecycle-error";
     super(errorOptions);
   }
 }
@@ -59,7 +59,7 @@ export class InvalidEnvFieldError extends UserError {
       message: getDefaultString(key, actionName, lifecycle),
       displayMessage: getLocalizedString(key, actionName, lifecycle),
     };
-    // errorOptions.helpLink = helpLink;
+    errorOptions.helpLink = "https://aka.ms/teamsfx-actions/invalid-env-field-error";
     super(errorOptions);
   }
 }

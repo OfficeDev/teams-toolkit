@@ -59,7 +59,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
     const telemetryComponentName = action.telemetryComponentName || componentName;
     const methodName = ctx.method!;
     const actionName = `${componentName}.${methodName}`;
-    TOOLS.logProvider.debug(`execute ${actionName} start!`);
+    // TOOLS.logProvider.debug(`execute ${actionName} start!`);
     const eventName = action.telemetryEventName || methodName;
     const telemetryProps = {
       [TelemetryConstants.properties.component]: telemetryComponentName,
@@ -139,7 +139,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         );
       }
       await progressBar?.end(true);
-      TOOLS.logProvider.debug(`execute ${actionName} success!`);
+      // TOOLS.logProvider.debug(`execute ${actionName} success!`);
     } catch (e) {
       await progressBar?.end(false);
       let fxError;
@@ -168,7 +168,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
           telemetryProps
         );
       }
-      TOOLS.logProvider.debug(`execute ${actionName} failed!`);
+      TOOLS.logProvider.error(`execute ${actionName} failed!`);
       if (returnType === "Result") ctx.result = err(fxError);
     }
   };

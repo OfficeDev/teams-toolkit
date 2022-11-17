@@ -3,6 +3,13 @@
 @description('Used to generate names for all resources in this file')
 param resourceBaseName string
 
+@description('Required when create Azure Bot service')
+param botAadAppClientId string
+
+@secure()
+@description('Required by Bot Framework package in your bot project')
+param botAadAppClientSecret string
+
 param webAppSKU string
 
 param serverfarmsName string = resourceBaseName
@@ -32,7 +39,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
       appSettings: [
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~14' // Set NodeJS version to 14.x for your site
+          value: '~16' // Set NodeJS version to 16.x for your site
         }
         {
           name: 'SCM_SCRIPT_GENERATOR_ARGS'
@@ -42,9 +49,27 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'RUNNING_ON_AZURE'
           value: '1'
         }
+        {
+          name: 'BOT_ID'
+          value: botAadAppClientId
+        }
+        {
+          name: 'BOT_PASSWORD'
+          value: botAadAppClientSecret
+        }
       ]
       ftpsState: 'FtpsOnly'
     }
+  }
+}
+
+// Register your web service as a bot with the Bot Framework
+module azureBotRegistration './botRegistration/azurebot.bicep' = {
+  name: 'Azure-Bot-registration'
+  params: {
+    resourceBaseName: resourceBaseName
+    botAadAppClientId: botAadAppClientId
+    botAppDomain: webApp.properties.defaultHostName
   }
 }
 

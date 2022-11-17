@@ -3,6 +3,13 @@
 @description('Used to generate names for all resources in this file')
 param resourceBaseName string
 
+@description('Required when create Azure Bot service')
+param botAadAppClientId string
+
+@secure()
+@description('Required by Bot Framework package in your bot project')
+param botAadAppClientSecret string
+
 param webAppSKU string
 
 param serverfarmsName string = resourceBaseName
@@ -34,9 +41,27 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'RUNNING_ON_AZURE'
           value: '1'
         }
+        {
+          name: 'BOT_ID'
+          value: botAadAppClientId
+        }
+        {
+          name: 'BOT_PASSWORD'
+          value: botAadAppClientSecret
+        }
       ]
       ftpsState: 'FtpsOnly'
     }
+  }
+}
+
+// Register your web service as a bot with the Bot Framework
+module azureBotRegistration './botRegistration/azurebot.bicep' = {
+  name: 'Azure-Bot-registration'
+  params: {
+    resourceBaseName: resourceBaseName
+    botAadAppClientId: botAadAppClientId
+    botAppDomain: webApp.properties.defaultHostName
   }
 }
 

@@ -133,14 +133,12 @@ export const Feature2TemplateName: any = {
 export const InitTemplateName: any = {
   ["debug:vsc:tab:true"]: "init-debug-vsc-spfx-tab",
   ["debug:vsc:tab:false"]: "init-debug-vsc-tab",
-  ["debug:vs:tab:true"]: "init-debug-vs-spfx-tab",
-  ["debug:vs:tab:false"]: "init-debug-vs-tab",
+  ["debug:vs:tab:undefined"]: "init-debug-vs-tab",
   ["debug:vsc:bot:undefined"]: "init-debug-vsc-bot",
   ["debug:vs:bot:undefined"]: "init-debug-vs-bot",
   ["infra:vsc:tab:true"]: "init-infra-vsc-spfx-tab",
   ["infra:vsc:tab:false"]: "init-infra-vsc-tab",
-  ["infra:vs:tab:true"]: "init-infra-vs-spfx-tab",
-  ["infra:vs:tab:false"]: "init-infra-vs-tab",
+  ["infra:vs:tab:undefined"]: "init-infra-vs-tab",
   ["infra:vsc:bot:undefined"]: "init-infra-vsc-bot",
   ["infra:vs:bot:undefined"]: "init-infra-vs-bot",
 };

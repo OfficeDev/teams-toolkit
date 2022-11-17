@@ -3,14 +3,14 @@ version: 1.0.0
 registerApp:
   - uses: teamsApp/create # Creates a Teams app
     with:
-      name: m365-message-extension # Teams app name
+      name: {%appName%} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
 provision:
   - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
     with:
-      name: m365-message-extension
+      name: {%appName%}
     # Output: following environment variable will be persisted in current environment's .env file.
     # BOT_ID: the AAD app client id created for bot
     # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
@@ -18,7 +18,7 @@ provision:
   - uses: botFramework/createOrUpdateBot # Create or update the bot registration on dev.botframework.com
     with:
       botId: ${{BOT_ID}}
-      name: m365-message-extension
+      name: {%appName%}
       messagingEndpoint: ${{TUNNEL_ENDPOINT}}/api/messages
       description: ""
 

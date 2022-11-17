@@ -7,8 +7,8 @@
         {
             "label": "Start Teams App Locally",
             "dependsOn": [
-                "Validate & install prerequisites",
-                "Build & upload Teams manifest",
+                "Validate prerequisites",
+                "Create resources",
                 "gulp serve"
             ],
             "dependsOrder": "sequence"
@@ -16,7 +16,7 @@
         {
             // Check if all required prerequisites are installed and will install them if not.
             // See https://aka.ms/teamsfx-check-prerequisites-task to know the details and how to customize the args.
-            "label": "Validate & install prerequisites",
+            "label": "Validate prerequisites",
             "type": "teamsfx",
             "command": "debug-check-prerequisites",
             "args": {
@@ -31,31 +31,25 @@
             }
         },
         {
-            // Build and upload Teams manifest.
-            // See https://aka.ms/teamsfx-debug-prepare-manifest-task to know the details and how to customize the args.
-            "label": "Build & upload Teams manifest",
+            // Create the debug resources.
+            // See https://aka.ms/teamsfx-provision-task to know the details and how to customize the args.
+            "label": "Create resources",
             "type": "teamsfx",
-            "command": "debug-prepare-manifest",
+            "command": "provision",
             "args": {
-                //// Enter your own Teams app package path if using the existing Teams manifest. ////
-                // "appPackagePath": ""
+                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "env": "local"
             }
         },
         {
-            // Check if all the npm packages are installed and will install them if not.
-            // See https://aka.ms/teamsfx-npm-package-task to know the details and how to customize the args.
-            "label": "Install npm packages",
+            // Set up local projects.
+            // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
+            "label": "Set up local projects",
             "type": "teamsfx",
-            "command": "debug-npm-install",
+            "command": "deploy",
             "args": {
-                "projects": [
-                    {
-                        "cwd": "${workspaceFolder}/SPFx",
-                        "npmInstallArgs": [
-                            "--no-audit"
-                        ]
-                    }
-                ]
+                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "env": "local"
             }
         },
         {
@@ -63,20 +57,20 @@
             "type": "process",
             "command": "node",
             "args": [
-                "${workspaceFolder}/SPFx/node_modules/gulp/bin/gulp.js",
+                "${workspaceFolder}/src/node_modules/gulp/bin/gulp.js",
                 "trust-dev-cert"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/SPFx"
+                "cwd": "${workspaceFolder}/src"
             },
-            "dependsOn": "Install npm packages"
+            "dependsOn": "Set up local projects"
         },
         {
             "label": "gulp serve",
             "type": "process",
             "command": "node",
             "args": [
-                "${workspaceFolder}/SPFx/node_modules/gulp/bin/gulp.js",
+                "${workspaceFolder}/src/node_modules/gulp/bin/gulp.js",
                 "serve",
                 "--nobrowser"
             ],
@@ -99,7 +93,7 @@
             ],
             "isBackground": true,
             "options": {
-                "cwd": "${workspaceFolder}/SPFx"
+                "cwd": "${workspaceFolder}/src"
             },
             "dependsOn": "gulp trust-dev-cert"
         },

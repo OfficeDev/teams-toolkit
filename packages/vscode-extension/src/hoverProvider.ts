@@ -13,6 +13,7 @@ import {
 } from "./constants";
 import { core, getSystemInputs } from "./handlers";
 import { getProvisionSucceedFromEnv } from "./utils/commonUtils";
+import { TelemetryProperty, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import { DotenvParseOutput } from "dotenv";
 
 export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
@@ -91,8 +92,7 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
       if (value) {
         message = `**${envName}**: ${value} \n\n`;
       } else {
-        const commandUri = vscode.Uri.parse("command:fx-extension.pre-debug-check");
-        message = `**${envName}**: [Trigger debug to see placeholder value](${commandUri}) \n\n`;
+        message += `**${envName}** Trigger debug to see placeholder value \n\n`;
       }
       args = [{ type: "env", env: envName }];
     } else {
@@ -103,8 +103,12 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
           message += `**${envName}**: ${value} \n\n`;
         } else {
           if (envName === environmentManager.getLocalEnvName()) {
-            const commandUri = vscode.Uri.parse("command:fx-extension.pre-debug-check");
-            message += `**${envName}**: [Trigger debug to see placeholder value](${commandUri}) \n\n`;
+            if (isV3Enabled()) {
+              message += `**${envName}** Trigger debug to see placeholder value \n\n`;
+            } else {
+              const commandUri = vscode.Uri.parse("command:fx-extension.pre-debug-check");
+              message += `**${envName}**: [Trigger debug to see placeholder value](${commandUri}) \n\n`;
+            }
           } else {
             const commandUri = vscode.Uri.parse("command:fx-extension.provision");
             message += `**${envName}**: [Trigger Teams: Provision in the cloud command to see placeholder value](${commandUri}) \n\n`;

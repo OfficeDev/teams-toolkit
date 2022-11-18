@@ -354,6 +354,7 @@ export class Coordinator {
     const settingsRes = await settingsUtil.readSettings(projectPath, false);
     if (settingsRes.isErr()) return err(settingsRes.error);
     const settings = settingsRes.value;
+    if (settings.trackingId && !trackingId) return ok(settings.trackingId); // do nothing
     settings.trackingId = trackingId || uuid.v4();
     await settingsUtil.writeSettings(projectPath, settings);
     return ok(settings.trackingId);

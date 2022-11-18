@@ -24,7 +24,7 @@ import {
   unzipAction,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
 import { SampleInfo } from "../../../src/common/samples";
 

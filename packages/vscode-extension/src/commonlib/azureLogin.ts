@@ -356,6 +356,12 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * set tenantId and subscriptionId
    */
   async setSubscription(subscriptionId: string): Promise<void> {
+    if (subscriptionId === "") {
+      AzureAccountManager.tenantId = undefined;
+      AzureAccountManager.subscriptionId = undefined;
+      AzureAccountManager.subscriptionName = undefined;
+      return;
+    }
     if (this.isUserLogin()) {
       const azureAccount: AzureAccount =
         vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
@@ -478,6 +484,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         }
       }
     });
+  }
+
+  public async clearSub() {
+    await this.setSubscription("");
   }
 
   getAccountInfo(): Record<string, string> | undefined {

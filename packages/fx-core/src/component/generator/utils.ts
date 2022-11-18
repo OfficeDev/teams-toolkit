@@ -35,7 +35,7 @@ function selectTemplateTag(tags: string[]): string | undefined {
     return templateRcVersion;
   }
   const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));
-  const selectedVersion = semver.maxSatisfying(versionList, templateV3Version);
+  const selectedVersion = semver.maxSatisfying(versionList, templateVersion);
   return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
 }
 

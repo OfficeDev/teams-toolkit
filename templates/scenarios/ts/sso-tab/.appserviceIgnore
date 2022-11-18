@@ -17,3 +17,4 @@ node_modules/ts-node
 node_modules/typescript
 aad.manifest.*.json
 appPackage/*
+teamsfx/

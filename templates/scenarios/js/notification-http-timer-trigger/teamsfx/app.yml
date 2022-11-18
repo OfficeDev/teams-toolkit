@@ -22,7 +22,7 @@ provision:
 deploy:
   - uses: npm/command
     with:
-      args: install
+      args: install --production
   - uses: azureFunctions/deploy
     with:
       # deploy base folder

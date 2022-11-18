@@ -22,13 +22,13 @@ provision:
 deploy:
   - uses: npm/command # Run npm command
     with:
-      args: install
+      args: install --production
   - uses: npm/command # Run npm command
     env:
       REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
       REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
     with:
-      args: run build
+      args: run build --if-present
   - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
     with:
       distributionPath: ./build # Deploy base folder

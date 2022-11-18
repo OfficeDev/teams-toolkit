@@ -28,7 +28,7 @@ deploy:
       REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
       REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
     with:
-      args: run build
+      args: run build --if-present
   - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
     with:
       distributionPath: ./build # Deploy base folder. This folder includes manifest files for AAD app and Teams app that should be ignored using the ignoreFile.

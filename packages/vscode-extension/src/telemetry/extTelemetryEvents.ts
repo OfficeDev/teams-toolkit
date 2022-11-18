@@ -228,6 +228,10 @@ export enum TelemetryEvent {
   OpenExternalLink = "open-external-link",
 
   Deactivate = "deactivate",
+
+  // Create from developer portal
+  HandleUrlFromDeveloperProtalStart = "create-project-from-developer-portal-start",
+  HandleUrlFromDeveloperProtal = "create-project-from-developer-portal-start",
 }
 
 export enum TelemetryProperty {

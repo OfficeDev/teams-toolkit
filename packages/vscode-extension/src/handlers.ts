@@ -162,6 +162,12 @@ import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
+import {
+  isPersonalApp,
+  isGroupApp,
+  isBot,
+  isMessageExtension,
+} from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/utils";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -3615,8 +3621,17 @@ export async function scaffoldFromDeveloperPortalHandler(
     return ok(null);
   }
 
-  const loginHint = args.length < 2 ? undefined : args[1];
+  const personalTab = "personal-tab";
+  const groupTab = "group-tab";
+  const bot = "bot";
+  const messageExtension = "messaging-extension";
+
   const appId = args[0];
+  let properties: { [p: string]: string } = {
+    teamsAppId: appId,
+  };
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtalStart, properties);
+  const loginHint = args.length < 2 ? undefined : args[1];
   const progressBar = VS_CODE_UI.createProgressBar(
     localize("teamstoolkit.devPortalIntegration.checkM365Account.progressTitle"),
     1
@@ -3636,6 +3651,11 @@ export async function scaffoldFromDeveloperPortalHandler(
           localize("teamstoolkit.devPortalIntegration.generalError.message")
         );
       }
+      ExtTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.HandleUrlFromDeveloperProtal,
+        appDefinitionRes.error,
+        properties
+      );
       await progressBar.end(false);
       return err(appDefinitionRes.error);
     }
@@ -3646,13 +3666,45 @@ export async function scaffoldFromDeveloperPortalHandler(
       localize("teamstoolkit.devPortalIntegration.generalError.message")
     );
     await progressBar.end(false);
+    const error = assembleError(e);
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.HandleUrlFromDeveloperProtal,
+      error,
+      properties
+    );
     throw e;
   }
 
   const res = await createNewProjectHandler([{ teamsAppFromTdp: appDefinition }]);
+  const features = [];
+
+  if (isPersonalApp(appDefinition)) {
+    features.push(personalTab);
+  }
+
+  if (isGroupApp(appDefinition)) {
+    features.push(groupTab);
+  }
+
+  if (isBot(appDefinition)) {
+    features.push(bot);
+  }
+
+  if (isMessageExtension(appDefinition)) {
+    features.push(messageExtension);
+  }
+
+  properties = { ...properties, features: features.join(",") };
+
   if (res.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.HandleUrlFromDeveloperProtal,
+      res.error,
+      properties
+    );
     return err(res.error);
   }
 
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtal, properties);
   return ok(null);
 }

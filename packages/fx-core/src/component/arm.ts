@@ -62,7 +62,11 @@ const maxRetryTimes = 4;
 const resourceBaseName = "resourceBaseName";
 const parameterName = "parameters";
 const solutionName = "solution";
-const InvalidTemplateErrorCode = "InvalidTemplate";
+
+const ErrorCodes: { [key: string]: string } = {
+  InvalidTemplate: SolutionError.FailedToValidateArmTemplates,
+  ResourceGroupNotFound: SolutionError.ResourceGroupNotFound,
+};
 
 export type DeployContext = {
   ctx: SolutionContext;
@@ -319,12 +323,12 @@ export async function handleArmDeploymentError(
   deployCtx: DeployContext
 ): Promise<Result<undefined, FxError>> {
   // return the error if the template is invalid
-  if (error.code === InvalidTemplateErrorCode) {
+  if (Object.keys(ErrorCodes).includes(error.code)) {
     return err(
       new UserError({
         error,
         source: SolutionSource,
-        name: SolutionError.FailedToValidateArmTemplates,
+        name: ErrorCodes[error.code],
       })
     );
   }

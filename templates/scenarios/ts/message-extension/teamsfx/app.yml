@@ -25,7 +25,7 @@ deploy:
       args: install
   - uses: npm/command
     with:
-      args: run build
+      args: run build --if-present
   - uses: azureAppService/deploy # Deploy bits to Azure App Serivce
     with:
       distributionPath: . # Deploy base folder

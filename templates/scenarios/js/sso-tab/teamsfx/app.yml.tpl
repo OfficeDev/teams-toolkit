@@ -22,7 +22,7 @@ provision:
 deploy:
   - uses: npm/command # Run npm command
     with:
-      args: install
+      args: install --production
   - uses: npm/command # Run npm command
     env:
       REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}

@@ -292,6 +292,9 @@ export class Coordinator {
     if (!editor) return err(InvalidInputError("editor is undefined"));
     if (!capability) return err(InvalidInputError("capability is undefined"));
     const templateName = InitTemplateName[`infra:${editor}:${capability}:${spfx}`];
+    if (!templateName) {
+      return err(InvalidInputError("templateName is undefined"));
+    }
     const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(inputs, projectPath);
@@ -322,6 +325,9 @@ export class Coordinator {
     if (!editor) return err(InvalidInputError("editor is undefined"));
     if (!capability) return err(InvalidInputError("capability is undefined"));
     const templateName = InitTemplateName[`debug:${editor}:${capability}:${spfx}`];
+    if (!templateName) {
+      return err(InvalidInputError("templateName is undefined"));
+    }
     if (editor === "vsc") {
       const exists = await fs.pathExists(path.join(projectPath, ".vscode"));
       if (exists) {

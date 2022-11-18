@@ -1074,6 +1074,21 @@ describe("component coordinator test", () => {
     const res = await fxCore.initInfra(inputs);
     assert.isTrue(res.isErr());
   });
+  it("init infra template not found", async () => {
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      editor: "aaa",
+      capability: "tab",
+      spfx: "true",
+      proceed: "true",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    assert.isTrue(res.isErr());
+  });
   it("init infra happy path with question model", async () => {
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
@@ -1207,6 +1222,21 @@ describe("component coordinator test", () => {
       capability: "tab",
       spfx: "true",
       proceed: "false",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initDebug(inputs);
+    assert.isTrue(res.isErr());
+  });
+  it("init debug template not found", async () => {
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      editor: "aaa",
+      capability: "tab",
+      spfx: "true",
+      proceed: "true",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.initDebug(inputs);

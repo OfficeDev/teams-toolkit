@@ -28,9 +28,10 @@ export class ManifestValidate extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     if (isV3Enabled())
-      yargs.options({
+      yargs.options(RootFolderOptions).options({
         [ManifestFilePathParamName]: BuildPackageOptions[ManifestFilePathParamName],
       });
+    else yargs.options(RootFolderOptions);
     return yargs.hide("interactive").version(false).options(RootFolderOptions).options(EnvOptions);
   }
 

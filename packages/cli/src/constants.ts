@@ -61,19 +61,19 @@ export const BuildPackageOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Select the Teams app manifest template path, default to '${root}/appPackage/manifest.template.json'",
+      "Select the Teams app manifest template path, default to '${folder}/appPackage/manifest.template.json'",
   },
   [OutputZipPathParamName]: {
     type: "string",
     global: false,
     description:
-      "Select the output path of the zipped app package, default to '${root}/build/appPackage/appPackage.${env}.json'",
+      "Select the output path of the zipped app package, default to '${folder}/build/appPackage/appPackage.${env}.json'",
   },
   [OutputManifestParamName]: {
     type: "string",
     global: false,
     description:
-      "Select the output path of the generated manifest path, default to '${root}/build/appPackage/manifest.${env}.json'",
+      "Select the output path of the generated manifest path, default to '${folder}/build/appPackage/manifest.${env}.json'",
   },
 };
 

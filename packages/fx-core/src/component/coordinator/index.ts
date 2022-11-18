@@ -61,6 +61,7 @@ import {
   InitOptionNo,
   InitOptionYes,
   getQuestionsForPublishInDeveloperPortal,
+  InitEditorVSCode,
 } from "../question";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -337,7 +338,7 @@ export class Coordinator {
     if (!templateName) {
       return err(InvalidInputError("templateName is undefined"));
     }
-    if (editor === "vsc") {
+    if (editor === InitEditorVSCode.id) {
       const exists = await fs.pathExists(path.join(projectPath, ".vscode"));
       context.templateVariables = { dotVscodeFolderName: exists ? ".vscode-teamsfx" : ".vscode" };
     }

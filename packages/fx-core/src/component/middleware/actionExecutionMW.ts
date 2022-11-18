@@ -168,7 +168,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
           telemetryProps
         );
       }
-      TOOLS.logProvider.error(`execute ${actionName} failed!`);
+      // TOOLS.logProvider.error(`execute ${actionName} failed!`);
       if (returnType === "Result") ctx.result = err(fxError);
     }
   };

@@ -55,7 +55,8 @@ abstract class InitBase extends YargsCommand {
     const core = result.value;
     const inputs = getSystemInputs(rootFolder);
 
-    const initResult = await core.initInfra(inputs);
+    const initResult =
+      this.stage === Stage.initInfra ? await core.initInfra(inputs) : await core.initDebug(inputs);
     if (initResult.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(this.telemetryEvent, initResult.error);
       return err(initResult.error);

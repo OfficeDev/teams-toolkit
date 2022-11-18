@@ -740,11 +740,9 @@ export const InitDebugProceedQuestion: SingleSelectQuestion = {
   title: async (inputs: Inputs) => {
     let fileList;
     if (inputs["editor"] === InitEditorVSCode.id) {
-      const projectPath = inputs.projectPath;
-      if (!projectPath) {
-        return "projectPath is undefined";
-      }
-      const exists = await fs.pathExists(path.join(projectPath, ".vscode"));
+      const exists = inputs.projectPath
+        ? await fs.pathExists(path.join(inputs.projectPath, ".vscode"))
+        : false;
       const dotVscodeFolderName = exists ? ".vscode-teamsfx" : ".vscode";
       fileList = `  teamsfx/\n    - app.local.yml\n    - settings.json\n    - run.js\n  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n`;
     } else {

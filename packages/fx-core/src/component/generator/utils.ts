@@ -17,7 +17,7 @@ import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
 import { EOL } from "os";
 import templateConfig from "../../common/templates-config.json";
-import sampleConfig from "../../common/samples-config.json";
+import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
 
 const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
@@ -208,8 +208,11 @@ export function getSampleInfoFromName(sampleName: string): SampleInfo {
 }
 
 export function getSampleRelativePath(sampleName: string): string {
-  const sampleTag = sampleConfig.version.replace(/[^\d.]/g, "");
-  return `${sampleRepoName}-${sampleTag}/${sampleName}/`;
+  let suffix = sampleConfig.defaultPackageLink.split("/").pop()!.replace(".zip", "");
+  if (semver.coerce(suffix) && suffix.startsWith("v")) {
+    suffix = suffix.replace("v", "");
+  }
+  return `${sampleRepoName}-${suffix}/${sampleName}`;
 }
 
 export function zipFolder(folderPath: string): AdmZip {

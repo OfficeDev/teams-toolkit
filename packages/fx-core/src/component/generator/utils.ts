@@ -11,7 +11,6 @@ import {
   sampleRepoName,
   templateAlphaVersion,
   templateFileExt,
-  templateRcVersion,
 } from "./constant";
 import { SampleInfo, sampleProvider } from "../../common/samples";
 import AdmZip from "adm-zip";
@@ -27,14 +26,12 @@ const templateTagPrefix = templateConfig.tagPrefix;
 const templateTagListURL = templateConfig.tagListURL;
 
 function selectTemplateTag(tags: string[]): string | undefined {
-  if (preRelease === "alpha" || templateVersion.includes("alpha")) {
+  if (preRelease === "alpha") {
     return templateAlphaVersion;
   }
-  if (templateVersion.includes("rc")) {
-    return templateRcVersion;
-  }
+  const versionPattern = preRelease ? `0.0.0-${preRelease}` : templateVersion;
   const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));
-  const selectedVersion = semver.maxSatisfying(versionList, templateVersion);
+  const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
   return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
 }
 

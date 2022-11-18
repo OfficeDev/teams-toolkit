@@ -19,7 +19,7 @@ provision:
     with:
       botId: ${{BOT_ID}}
       name: {%appName%}
-      messagingEndpoint: ${{TUNNEL_ENDPOINT}}/api/messages
+      messagingEndpoint: ${{BOT_ENDPOINT}}/api/messages
       description: ""
 
 configureApp:

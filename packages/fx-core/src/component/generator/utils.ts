@@ -12,7 +12,6 @@ import {
   templateAlphaVersion,
   templateFileExt,
   templateRcVersion,
-  templateV3Version,
 } from "./constant";
 import { SampleInfo, sampleProvider } from "../../common/samples";
 import AdmZip from "adm-zip";

@@ -747,7 +747,7 @@ export const InitDebugProceedQuestion: SingleSelectQuestion = {
     }
     return getLocalizedString("core.InitGenerateConfirm", fileList);
   },
-  staticOptions: [InitOptionNo, InitOptionYes],
+  staticOptions: [InitOptionYes, InitOptionNo],
   default: InitOptionYes.id,
 };
 export const InitInfraProceedQuestion: SingleSelectQuestion = {
@@ -760,7 +760,7 @@ export const InitInfraProceedQuestion: SingleSelectQuestion = {
         : "  teamsfx/\n    - app.yml\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n";
     return getLocalizedString("core.InitGenerateConfirm", fileList);
   },
-  staticOptions: [InitOptionNo, InitOptionYes],
+  staticOptions: [InitOptionYes, InitOptionNo],
   default: InitOptionYes.id,
 };
 export function getQuestionsForInit(

@@ -743,7 +743,7 @@ export const InitDebugProceedQuestion: SingleSelectQuestion = {
       fileList =
         "  teamsfx/\n     - app.local.yml\n     - settings.json\n     - run.js\n.vscode/\n     - launch.json\n     - settings.json\n     - tasks.json\n";
     } else {
-      fileList = "teamsfx/\n   - app.local.yml\n   - settings.json\n";
+      fileList = "  teamsfx/\n    - app.local.yml\n    - settings.json\n";
     }
     return getLocalizedString("core.InitGenerateConfirm", fileList);
   },
@@ -761,7 +761,7 @@ export const InitInfraProceedQuestion: SingleSelectQuestion = {
           ? "  teamsfx/\n    - app.yml\n    - settings.json\n  infra/\n    botRegistration/\n      - azurebot.bicep\n      - readme.md\n    - azure.bicep\n    - azure.parameters.json\n"
           : "  teamsfx/\n    - app.yml\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n";
     } else {
-      fileList = "teamsfx/\n   - app.yml\n   - settings.json\n";
+      fileList = "  teamsfx/\n    - app.yml\n    - settings.json\n";
     }
     return getLocalizedString("core.InitGenerateConfirm", fileList);
   },

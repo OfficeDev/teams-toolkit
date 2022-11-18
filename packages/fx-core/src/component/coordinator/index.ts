@@ -335,6 +335,8 @@ export class Coordinator {
       const exists = await fs.pathExists(path.join(projectPath, ".vscode"));
       if (exists) {
         context.templateVariables = { dotVscodeFolderName: ".vscode-teamsfx" };
+      } else {
+        context.templateVariables = { dotVscodeFolderName: ".vscode" };
       }
     }
     const settingsRes = await settingsUtil.readSettings(projectPath, false);

@@ -339,11 +339,7 @@ export class Coordinator {
     }
     if (editor === "vsc") {
       const exists = await fs.pathExists(path.join(projectPath, ".vscode"));
-      if (exists) {
-        context.templateVariables = { dotVscodeFolderName: ".vscode-teamsfx" };
-      } else {
-        context.templateVariables = { dotVscodeFolderName: ".vscode" };
-      }
+      context.templateVariables = { dotVscodeFolderName: exists ? ".vscode-teamsfx" : ".vscode" };
     }
     const settingsRes = await settingsUtil.readSettings(projectPath, false);
     const originalTrackingId = settingsRes.isOk() ? settingsRes.value.trackingId : undefined;

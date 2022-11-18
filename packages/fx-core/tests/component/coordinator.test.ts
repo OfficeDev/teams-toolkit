@@ -1166,6 +1166,31 @@ describe("component coordinator test", () => {
     }
     assert.isTrue(res.isOk());
   });
+  it("init debug happy path with question model", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config: SingleSelectConfig) => {
+      if (config.name === "editor") {
+        return ok({ type: "success", result: "vs" });
+      } else if (config.name === "capability") {
+        return ok({ type: "success", result: "bot" });
+      } else if (config.name === "proceed") {
+        return ok({ type: "success", result: "true" });
+      }
+      return ok({ type: "success", result: "" });
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initDebug(inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
   it("init infra fail without projectPath", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,

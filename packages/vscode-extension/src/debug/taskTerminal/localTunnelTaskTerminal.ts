@@ -162,15 +162,6 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       ? [this.args.ngrokArgs]
       : this.args.ngrokArgs;
 
-    if (isV3Enabled()) {
-      if (!this.args.output?.domain) {
-        throw BaseTaskTerminal.taskDefinitionError("output.domain");
-      }
-      if (!this.args.output?.endpoint) {
-        throw BaseTaskTerminal.taskDefinitionError("output.endpoint");
-      }
-    }
-
     return {
       ngrokArgs: ngrokArgs,
     };

@@ -26,9 +26,6 @@ deploy:
   - uses: npm/command
     with:
       args: run build --if-present
-  - uses: npm/command
-    with:
-      args: prune --production
   - uses: azureFunctions/deploy
     with:
       # deploy base folder

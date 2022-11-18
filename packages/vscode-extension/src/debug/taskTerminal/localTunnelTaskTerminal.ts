@@ -45,10 +45,6 @@ const ngrokEndpointRegex =
   /obj=tunnels name=(?<tunnelName>.*) addr=(?<src>.*) url=(?<endpoint>https:\/\/([\S])*)/;
 const ngrokWebServiceRegex = /msg="starting web service" obj=web addr=(?<webServiceUrl>([\S])*)/;
 const defaultNgrokWebServiceUrl = "http://127.0.0.1:4040/api/tunnels";
-const outputName = {
-  endpoint: "TUNNEL_ENDPOINT",
-  domain: "TUNNEL_DOMAIN",
-};
 
 type LocalTunnelTaskStatus = {
   endpoint?: EndpointInfo;
@@ -66,6 +62,10 @@ export interface LocalTunnelArgs {
   ngrokPath?: string;
   tunnelInspection?: string;
   env?: string;
+  output?: {
+    endpoint?: string;
+    domain?: string;
+  };
 }
 
 export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
@@ -161,6 +161,15 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     const ngrokArgs = !Array.isArray(this.args.ngrokArgs)
       ? [this.args.ngrokArgs]
       : this.args.ngrokArgs;
+
+    if (isV3Enabled()) {
+      if (!this.args.output?.domain) {
+        throw BaseTaskTerminal.taskDefinitionError("output.domain");
+      }
+      if (!this.args.output?.endpoint) {
+        throw BaseTaskTerminal.taskDefinitionError("output.endpoint");
+      }
+    }
 
     return {
       ngrokArgs: ngrokArgs,
@@ -314,14 +323,20 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
 
   private async saveNgrokEndpointToEnv(endpoint: string): Promise<Result<Void, FxError>> {
     try {
-      if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !this.args.env) {
+      if (
+        !isV3Enabled() ||
+        !globalVariables.workspaceUri?.fsPath ||
+        !this.args.env ||
+        !this.args?.output?.endpoint ||
+        !this.args?.output?.domain
+      ) {
         return ok(Void);
       }
 
       const url = new URL(endpoint);
       const envVars = {
-        [outputName.endpoint]: url.origin,
-        [outputName.domain]: url.hostname,
+        [this.args.output.endpoint]: url.origin,
+        [this.args.output.domain]: url.hostname,
       };
 
       const res = await envUtil.writeEnv(

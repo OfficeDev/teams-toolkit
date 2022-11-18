@@ -24,14 +24,10 @@ provision:
 
 configureApp:
   - uses: teamsApp/validate
-    env: 
-      BOT_DOMAIN: ${{TUNNEL_DOMAIN}}
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
 
   - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
-    env: 
-      BOT_DOMAIN: ${{TUNNEL_DOMAIN}}
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip

@@ -19,18 +19,14 @@ provision:
     with:
       botId: ${{BOT_ID}}
       name: notification-bot
-      messagingEndpoint: ${{TUNNEL_ENDPOINT}}/api/messages
+      messagingEndpoint: ${{BOT_ENDPOINT}}/api/messages
       description: ""
 
 configureApp:
   - uses: teamsApp/validate
-    env: 
-      BOT_DOMAIN: ${{TUNNEL_DOMAIN}}
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
   - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
-    env: 
-      BOT_DOMAIN: ${{TUNNEL_DOMAIN}}
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip

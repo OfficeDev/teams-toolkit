@@ -314,21 +314,22 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
 
   private async saveNgrokEndpointToEnv(endpoint: string): Promise<Result<Void, FxError>> {
     try {
-      if (
-        !isV3Enabled() ||
-        !globalVariables.workspaceUri?.fsPath ||
-        !this.args.env ||
-        !this.args?.output?.endpoint ||
-        !this.args?.output?.domain
-      ) {
+      if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !this.args.env) {
         return ok(Void);
       }
 
       const url = new URL(endpoint);
-      const envVars = {
-        [this.args.output.endpoint]: url.origin,
-        [this.args.output.domain]: url.hostname,
-      };
+      const envVars: { [key: string]: string } = {};
+      if (this.args?.output?.endpoint) {
+        envVars[this.args.output.endpoint] = url.origin;
+      }
+      if (this.args?.output?.domain) {
+        envVars[this.args.output.domain] = url.hostname;
+      }
+
+      if (Object.entries(envVars).length == 0) {
+        return ok(Void);
+      }
 
       const res = await envUtil.writeEnv(
         globalVariables.workspaceUri.fsPath,

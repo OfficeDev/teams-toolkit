@@ -741,7 +741,7 @@ export const InitDebugProceedQuestion: SingleSelectQuestion = {
     let fileList;
     if (inputs["editor"] === InitEditorVSCode.id) {
       fileList =
-        "  teamsfx/\n     - app.local.yml\n     - settings.json\n     - run.js\n.vscode/\n     - launch.json\n     - settings.json\n     - tasks.json\n";
+        "  teamsfx/\n    - app.local.yml\n    - settings.json\n    - run.js\n.vscode/\n    - launch.json\n    - settings.json\n    - tasks.json\n";
     } else {
       fileList = "  teamsfx/\n    - app.local.yml\n    - settings.json\n";
     }

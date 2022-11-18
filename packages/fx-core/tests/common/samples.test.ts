@@ -17,13 +17,13 @@ describe("Samples", () => {
         .exist;
     }
     restore();
+    sampleProvider.SampleCollection.samples = [];
   });
 
   it("Get v3 samples", () => {
     const restore = mockedEnv({
       TEAMSFX_V3: "true",
     });
-    sampleProvider.SampleCollection.samples = [];
 
     const samples = sampleProvider.SampleCollection.samples;
     for (const sample of samples) {
@@ -31,5 +31,6 @@ describe("Samples", () => {
         .exist;
     }
     restore();
+    sampleProvider.SampleCollection.samples = [];
   });
 });

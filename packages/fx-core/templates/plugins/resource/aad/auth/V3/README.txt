@@ -4,7 +4,7 @@ Enable single sign-on for Teams applications
 
 Customize your project using Teams Toolkit
 -------------------------
-We will create a folder `TeamsFx-Auth` in your project contains AAD app manifest template and some sample code.
+We created a folder `TeamsFx-Auth` in your project contains AAD app manifest template and some sample code.
 Note: You need to exclude the sample code under `TeamsFx-Auth` to avoid build failure by adding following lines into your `.csproj` file:
   ```
   <ItemGroup>
@@ -59,6 +59,7 @@ Actions for Tab projects
     ```
     Note: You can use use ${{ENV_NAME}} to reference envs in `teamsfx/.env.{TEAMSFX_ENV}`.
 
+    // TODO: Confirm whether we need spa redirect uri
     -------------------------
     Example for TeamsFx Tab template
     -------------------------
@@ -224,6 +225,7 @@ Actions for Tab projects
   ```
   -------------------------
 
+// TODO: confirm whether we need to keep appsettings
 5. Update `appsettings.json` and `appsettings.Development.json`
   AAD related configs needs to be configure to your .Net project settings:
     ```
@@ -265,7 +267,7 @@ Actions for Tab projects
     ```
     using Microsoft.TeamsFx.Configuration;
 
-    namespace bowsong1107vstab
+    namespace {{YOUR_NAMESPACE}}
     {
         public class ConfigOptions
         {
@@ -277,6 +279,7 @@ Actions for Tab projects
         }
     }
     ```
+    Note: You need to replace {{YOUR_NAMESPACE}} with your namespace name
   
   2) Move `TeamsFx-Auth/Tab/GetUserProfile.razor` to `Components/`
   3) Find following line in `Component/Welcome.razor`:
@@ -286,6 +289,17 @@ Actions for Tab projects
     and replace with:
     ```
     <GetUserProfile />
+    ```
+
+  // TODO: Check whether non SSO tab needs the line
+  4) Open `Program.cs`, find following line:
+    ```
+    builder.Services.AddTeamsFx(builder.Configuration.GetSection("TeamsFx"));
+    ```
+    and replace with:
+    ```
+    var config = builder.Configuration.Get<ConfigOptions>();
+    builder.Services.AddTeamsFx(config.TeamsFx.Authentication);
     ```
   -------------------------
 
@@ -331,7 +345,7 @@ Note: This part is for `command and response bot`.
     ```
     "replyUrlsWithType":[
       {
-        "url": "${{TAB_ENDPOINT}}/auth-end.html",
+        "url": "https://${{BOT_DOMAIN}}/bot-auth-end.html",
         "type": "Web"
       }
     ]
@@ -539,6 +553,7 @@ Note: This part is for `command and response bot`.
   Note: If you want add additional configs to your Azure Webapp, please add the configs in the webAppSettings.
   -------------------------
 
+// TODO: confirm whether we need to keep appsettings
 5. Update `appsettings.json` and `appsettings.Development.json`
   AAD related configs needs to be configure to your .Net project settings:
     ```

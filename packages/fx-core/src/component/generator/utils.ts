@@ -10,7 +10,6 @@ import {
   placeholderDelimiters,
   sampleRepoName,
   templateAlphaVersion,
-  templateBetaVersion,
   templateFileExt,
 } from "./constant";
 import { SampleInfo, sampleProvider } from "../../common/samples";
@@ -27,17 +26,13 @@ const templateTagPrefix = templateConfig.tagPrefix;
 const templateTagListURL = templateConfig.tagListURL;
 
 function selectTemplateTag(tags: string[]): string | undefined {
-  return templateAlphaVersion;
-  // if (preRelease === "alpha") {
-  //   return templateAlphaVersion;
-  // }
-  // if (preRelease === "beta") {
-  //   return templateBetaVersion;
-  // }
-  // const versionPattern = preRelease ? `0.0.0-${preRelease}` : templateVersion;
-  // const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));
-  // const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
-  // return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
+  if (preRelease === "alpha") {
+    return templateAlphaVersion;
+  }
+  const versionPattern = preRelease ? `0.0.0-${preRelease}` : templateVersion;
+  const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));
+  const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
+  return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
 }
 
 async function sendRequestWithRetry<T>(

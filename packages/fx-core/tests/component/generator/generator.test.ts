@@ -6,13 +6,12 @@ import "mocha";
 import fs from "fs-extra";
 import path from "path";
 import {
-  fetchTemplateZipUrl,
   getSampleInfoFromName,
   renderTemplateFileData,
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
-import { Generator, sampleDefaultOnActionError } from "../../../src/component/generator/generator";
+import { Generator } from "../../../src/component/generator/generator";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
@@ -22,17 +21,11 @@ import {
   fetchTemplateUrlWithTagAction,
   fetchTemplateZipFromLocalAction,
   fetchZipFromUrlAction,
-  GeneratorContext,
   unzipAction,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
-import {
-  defaultTimeoutInMs,
-  defaultTryLimits,
-  sampleDefaultTimeoutInMs,
-} from "../../../src/component/generator/constant";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -179,6 +172,7 @@ describe("Generator happy path", async () => {
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
     zip.writeZip(path.join(tmpDir, "test.zip"));
+    sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("test.zip");
     sandbox
       .stub(generatorUtils, "fetchZipFromUrl")
       .resolves(new AdmZip(path.join(tmpDir, "test.zip")));

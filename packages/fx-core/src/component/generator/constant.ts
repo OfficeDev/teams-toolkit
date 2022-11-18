@@ -10,7 +10,6 @@ export const defaultTimeoutInMs = 20000;
 export const sampleDefaultTimeoutInMs = 40000;
 export const templateFileExt = ".tpl";
 export const templateAlphaVersion = "templates-0.0.0-alpha";
-export const templateBetaVersion = "templates-0.0.0-beta";
 export const sampleRepoName = "TeamsFx-Samples";
 export const errorSource = "GEN";
 export const componentName = "generator";

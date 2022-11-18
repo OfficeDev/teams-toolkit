@@ -249,8 +249,9 @@ export class Coordinator {
     }
 
     // generate unique projectId in projectSettings.json
-    const ensureRes = await this.ensureTrackingId(inputs, projectPath);
+    const ensureRes = await this.ensureTrackingId(projectPath, inputs.projectId);
     if (ensureRes.isErr()) return err(ensureRes.error);
+    inputs.projectId = ensureRes.value;
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(automaticNpmInstall, true);
     }
@@ -295,9 +296,11 @@ export class Coordinator {
     if (!templateName) {
       return err(InvalidInputError("templateName is undefined"));
     }
+    const settingsRes = await settingsUtil.readSettings(projectPath, false);
+    const originalTrackingId = settingsRes.isOk() ? settingsRes.value.trackingId : undefined;
     const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
     if (res.isErr()) return err(res.error);
-    const ensureRes = await this.ensureTrackingId(inputs, projectPath);
+    const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
     return ok(undefined);
   }
@@ -334,22 +337,27 @@ export class Coordinator {
         context.templateVariables = { dotVscodeFolderName: ".vscode-teamsfx" };
       }
     }
+    const settingsRes = await settingsUtil.readSettings(projectPath, false);
+    const originalTrackingId = settingsRes.isOk() ? settingsRes.value.trackingId : undefined;
     const res = await Generator.generateTemplate(context, projectPath, templateName, undefined);
     if (res.isErr()) return err(res.error);
-    const ensureRes = await this.ensureTrackingId(inputs, projectPath);
+    const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
     return ok(undefined);
   }
 
-  async ensureTrackingId(inputs: Inputs, projectPath: string): Promise<Result<undefined, FxError>> {
+  async ensureTrackingId(
+    projectPath: string,
+    trackingId: string | undefined = undefined
+  ): Promise<Result<string, FxError>> {
     // generate unique trackingId in settings.json
-    const settingsRes = await settingsUtil.readSettings(projectPath);
+    const settingsRes = await settingsUtil.readSettings(projectPath, false);
     if (settingsRes.isErr()) return err(settingsRes.error);
     const settings = settingsRes.value;
-    settings.trackingId = settings.trackingId || inputs.projectId || uuid.v4();
-    inputs.projectId = settings.trackingId;
+    if (settings.trackingId && !trackingId) return ok(settings.trackingId); // do nothing
+    settings.trackingId = trackingId || uuid.v4();
     await settingsUtil.writeSettings(projectPath, settings);
-    return ok(undefined);
+    return ok(settings.trackingId);
   }
 
   /**

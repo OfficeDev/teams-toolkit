@@ -424,4 +424,26 @@ describe("env utils", () => {
     const str = dotenvUtil.serialize(parsed);
     assert.equal(str, "KEY=VALUE\nKEY2=VALUE2");
   });
+
+  it("settingsUtil read not exist", async () => {
+    const res = await settingsUtil.readSettings("abc");
+    assert.isTrue(res.isErr());
+  });
+
+  it("settingsUtil read and ensure trackingId", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readJson").resolves({});
+    sandbox.stub(fs, "writeFile").resolves();
+    const res = await settingsUtil.readSettings("abc");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isDefined(res.value.trackingId);
+    }
+  });
+
+  it("settingsUtil write", async () => {
+    sandbox.stub(fs, "writeFile").resolves();
+    const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
+    assert.isTrue(res.isOk());
+  });
 });

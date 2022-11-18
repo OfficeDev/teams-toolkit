@@ -2,6 +2,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
   assembleError,
+  Colors,
   ContextV3,
   err,
   FxError,
@@ -302,6 +303,11 @@ export class Coordinator {
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
+    context.userInteraction.showMessage(
+      "info",
+      "\nVisit https://aka.ms/teamsfx-infra to learn more about Teams Toolkit infrastructure customization.",
+      false
+    );
     return ok(undefined);
   }
 
@@ -345,6 +351,11 @@ export class Coordinator {
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
+    context.userInteraction.showMessage(
+      "info",
+      "\nVisit https://aka.ms/teamsfx-debug to learn more about Teams Toolkit debug customization.",
+      false
+    );
     return ok(undefined);
   }
 

@@ -17,7 +17,7 @@ describe("Samples", () => {
         .exist;
     }
     restore();
-    sampleProvider.SampleCollection.samples = [];
+    (sampleProvider as any).sampleCollection = undefined;
   });
 
   it("Get v3 samples", () => {
@@ -31,6 +31,6 @@ describe("Samples", () => {
         .exist;
     }
     restore();
-    sampleProvider.SampleCollection.samples = [];
+    (sampleProvider as any).sampleCollection = undefined;
   });
 });

@@ -26,6 +26,7 @@ import {
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
+import { SampleInfo } from "../../../src/common/samples";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -92,6 +93,12 @@ describe("Generator utils", () => {
       assert.equal(e.message, "invalid sample name: 'test'");
     }
   });
+
+  it("get sample relative path", async () => {
+    const sampleName = "test";
+    const relativePath = generatorUtils.getSampleRelativePath(sampleName);
+    assert.isTrue(relativePath.endsWith(sampleName));
+  });
 });
 
 describe("Generator error", async () => {
@@ -150,6 +157,9 @@ describe("Generator happy path", async () => {
 
   it("external sample", async () => {
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
+    sandbox
+      .stub(generatorUtils, "getSampleInfoFromName")
+      .returns({ link: "test", relativePath: "test" } as SampleInfo);
     const sampleName = "bot-proactive-messaging-teamsfx";
     const result = await Generator.generateSample(context, tmpDir, sampleName);
     assert.isTrue(result.isOk());

@@ -754,15 +754,10 @@ export const InitInfraProceedQuestion: SingleSelectQuestion = {
   type: "singleSelect",
   name: "proceed",
   title: (inputs: Inputs) => {
-    let fileList;
-    if (inputs["editor"] === InitEditorVSCode.id) {
-      fileList =
-        inputs["capability"] === InitCapabilityBot.id
-          ? "  teamsfx/\n    - app.yml\n    - settings.json\n  infra/\n    botRegistration/\n      - azurebot.bicep\n      - readme.md\n    - azure.bicep\n    - azure.parameters.json\n"
-          : "  teamsfx/\n    - app.yml\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n";
-    } else {
-      fileList = "  teamsfx/\n    - app.yml\n    - settings.json\n";
-    }
+    const fileList =
+      inputs["capability"] === InitCapabilityBot.id
+        ? "  teamsfx/\n    - app.yml\n    - settings.json\n  infra/\n    botRegistration/\n      - azurebot.bicep\n      - readme.md\n    - azure.bicep\n    - azure.parameters.json\n"
+        : "  teamsfx/\n    - app.yml\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n";
     return getLocalizedString("core.InitGenerateConfirm", fileList);
   },
   staticOptions: [InitOptionNo, InitOptionYes],

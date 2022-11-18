@@ -22,10 +22,13 @@ provision:
 deploy:
   - uses: npm/command # Run npm command
     with:
-      args: install --production
+      args: install
   - uses: npm/command
     with:
       args: run build --if-present
+  - uses: npm/command
+    with:
+      args: prune --production
   - uses: azureAppService/deploy # Deploy bits to Azure App Serivce
     with:
       distributionPath: . # Deploy base folder

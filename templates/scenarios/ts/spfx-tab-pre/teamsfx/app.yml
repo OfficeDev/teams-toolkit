@@ -3,7 +3,7 @@ version: 1.0.0
 deploy:
   - uses: npm/command
     with:
-      args: install --production
+      args: install
       workingDirectory: ./src
   - uses: npx/command
     with:

@@ -3552,7 +3552,7 @@ export async function checkSideloadingCallback(args?: any[]): Promise<Result<nul
         result.value === localize("teamstoolkit.accountTree.sideloadingLearnMore")
       ) {
         await openAccountHelpHandler();
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingReadmore); // TODO
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingLearnMore);
       }
     })
     .catch((_error) => {});

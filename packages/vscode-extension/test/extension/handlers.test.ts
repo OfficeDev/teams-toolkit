@@ -352,6 +352,13 @@ describe("handlers", () => {
     });
   });
 
+  it("openAccountHelpHandler()", async () => {
+    const createOrShow = sinon.stub(WebviewPanel, "createOrShow");
+    await handlers.openAccountHelpHandler();
+    sinon.assert.calledOnceWithExactly(createOrShow, PanelType.AccountHelp);
+    createOrShow.restore();
+  });
+
   describe("runCommand()", function () {
     this.afterEach(() => {
       sinon.restore();

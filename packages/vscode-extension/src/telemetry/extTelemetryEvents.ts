@@ -180,7 +180,7 @@ export enum TelemetryEvent {
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
   OpenSideloadingJoinM365 = "open-sideloading-joinm365",
-  OpenSideloadingReadmore = "open-sideloading-readmore",
+  OpenSideloadingLearnMore = "open-sideloading-learn-more",
   OpenSignInJoinM365 = "open-sign-in-joinm365",
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",

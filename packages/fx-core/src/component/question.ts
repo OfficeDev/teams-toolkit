@@ -762,6 +762,8 @@ export const InitInfraProceedQuestion: SingleSelectQuestion = {
     const fileList =
       inputs["capability"] === InitCapabilityBot.id
         ? "  teamsfx/\n    - app.yml\n    - settings.json\n  infra/\n    botRegistration/\n      - azurebot.bicep\n      - readme.md\n    - azure.bicep\n    - azure.parameters.json\n"
+        : inputs["spfx"] === InitOptionYes.id
+        ? "  teamsfx/\n    - app.yml\n    - settings.json\n"
         : "  teamsfx/\n    - app.yml\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n";
     return getLocalizedString("core.InitGenerateConfirm", fileList);
   },

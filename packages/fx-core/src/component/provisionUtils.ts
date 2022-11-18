@@ -806,9 +806,6 @@ export class ProvisionUtils {
       true,
       provisionText
     );
-    if (!!confirmRes && confirmRes.isErr()) {
-      return err(confirmRes.error);
-    }
     const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
     ctx.telemetryReporter?.sendTelemetryEvent(
       TelemetryEvent.ConfirmProvision,
@@ -825,7 +822,7 @@ export class ProvisionUtils {
           }
         : {}
     );
-    if (!!confirm && confirm !== provisionText) {
+    if (confirm !== provisionText) {
       return err(new UserError("coordinator", "CancelProvision", "CancelProvision"));
     }
 

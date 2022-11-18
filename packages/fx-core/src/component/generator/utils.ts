@@ -8,9 +8,7 @@ import {
   defaultTimeoutInMs,
   defaultTryLimits,
   placeholderDelimiters,
-  sampleRepoName,
   templateAlphaVersion,
-  templateBetaVersion,
   templateFileExt,
 } from "./constant";
 import { SampleInfo, sampleProvider } from "../../common/samples";
@@ -18,7 +16,7 @@ import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
 import { EOL } from "os";
 import templateConfig from "../../common/templates-config.json";
-import sampleConfig from "../../common/samples-config.json";
+import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
 
 const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
@@ -27,17 +25,13 @@ const templateTagPrefix = templateConfig.tagPrefix;
 const templateTagListURL = templateConfig.tagListURL;
 
 function selectTemplateTag(tags: string[]): string | undefined {
-  return templateAlphaVersion;
-  // if (preRelease === "alpha") {
-  //   return templateAlphaVersion;
-  // }
-  // if (preRelease === "beta") {
-  //   return templateBetaVersion;
-  // }
-  // const versionPattern = preRelease ? `0.0.0-${preRelease}` : templateVersion;
-  // const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));
-  // const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
-  // return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
+  if (preRelease === "alpha") {
+    return templateAlphaVersion;
+  }
+  const versionPattern = preRelease ? `0.0.0-${preRelease}` : templateVersion;
+  const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));
+  const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
+  return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
 }
 
 async function sendRequestWithRetry<T>(
@@ -213,8 +207,7 @@ export function getSampleInfoFromName(sampleName: string): SampleInfo {
 }
 
 export function getSampleRelativePath(sampleName: string): string {
-  const sampleTag = sampleConfig.version.replace(/[^\d.]/g, "");
-  return `${sampleRepoName}-${sampleTag}/${sampleName}/`;
+  return `${sampleConfig.baseFolderName}/${sampleName}`;
 }
 
 export function zipFolder(folderPath: string): AdmZip {

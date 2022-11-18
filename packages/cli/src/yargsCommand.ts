@@ -19,6 +19,7 @@ import Progress from "./console/progress";
 import { getColorizedString, getSystemInputs } from "./utils";
 import UI from "./userInteraction";
 import activate from "./activate";
+import { isUserCancelError } from "@microsoft/teamsfx-core";
 
 export abstract class YargsCommand {
   /**
@@ -129,8 +130,12 @@ export abstract class YargsCommand {
       if (result.isErr()) {
         throw result.error;
       }
-    } catch (e) {
+    } catch (e: any) {
       Progress.end(false);
+      if (isUserCancelError(e)) {
+        CLILogProvider.necessaryLog(LogLevel.Info, "User canceled.", true);
+        return;
+      }
       const FxError: UserError | SystemError = "source" in e ? e : UnknownError(e);
       CLILogProvider.necessaryLog(
         LogLevel.Error,
@@ -165,10 +170,10 @@ export abstract class YargsCommand {
         CLILogProvider.necessaryLog(LogLevel.Error, FxError.stack || "undefined");
       }
 
-      await CliTelemetryInstance.flush();
       exit(-1, FxError);
+    } finally {
+      await CliTelemetryInstance.flush();
     }
     Progress.end(true);
-    await CliTelemetryInstance.flush();
   }
 }

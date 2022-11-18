@@ -378,6 +378,12 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async setSubscription(subscriptionId: string): Promise<void> {
+    if (subscriptionId === "") {
+      AzureAccountManager.tenantId = undefined;
+      AzureAccountManager.subscriptionId = undefined;
+      AzureAccountManager.subscriptionName = undefined;
+      return;
+    }
     const list = await this.listSubscriptions();
     for (let i = 0; i < list.length; ++i) {
       const item = list[i];

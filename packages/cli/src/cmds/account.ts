@@ -121,8 +121,9 @@ async function outputAzureInfo(
           );
           CLILogProvider.necessaryLog(
             LogLevel.Info,
-            `[${constants.cliSource}] Below is a list of all subscriptions we found,` +
-              ` use \`teamsfx account set\` to set an active subscription.`
+            `[${constants.cliSource}] Below is a list of all subscriptions we found` + isV3Enabled()
+              ? "."
+              : `, use \`teamsfx account set\` to set an active subscription.`
           );
           CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(subscriptions, null, 2), true);
         }

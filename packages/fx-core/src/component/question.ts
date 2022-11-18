@@ -741,31 +741,26 @@ export const InitDebugProceedQuestion: SingleSelectQuestion = {
     let fileList;
     if (inputs["editor"] === InitEditorVSCode.id) {
       fileList =
-        "teamsfx/\n   - app.local.yml\n   - settings.json\n   - run.js\n.vscode/\n   - launch.json\n   - settings.json\n   - tasks.json";
+        "  teamsfx/\n    - app.local.yml\n    - settings.json\n    - run.js\n.vscode/\n    - launch.json\n    - settings.json\n    - tasks.json\n";
     } else {
-      fileList = "teamsfx/\n   - app.local.yml\n   - settings.json";
+      fileList = "  teamsfx/\n    - app.local.yml\n    - settings.json\n";
     }
     return getLocalizedString("core.InitGenerateConfirm", fileList);
   },
-  staticOptions: [InitOptionNo, InitOptionYes],
+  staticOptions: [InitOptionYes, InitOptionNo],
   default: InitOptionYes.id,
 };
 export const InitInfraProceedQuestion: SingleSelectQuestion = {
   type: "singleSelect",
   name: "proceed",
   title: (inputs: Inputs) => {
-    let fileList;
-    if (inputs["editor"] === InitEditorVSCode.id) {
-      fileList =
-        inputs["capability"] === InitCapabilityBot.id
-          ? "teamsfx/\n  - app.yml\n  - settings.json\ninfra/\n  botRegistration/\n    - azurebot.bicep\n    - readme.md\n  - azure.bicep\n  - azure.parameters.json"
-          : "teamsfx/\n  - app.yml\n  - settings.json\ninfra/\n  - azure.bicep\n  - azure.parameters.json";
-    } else {
-      fileList = "teamsfx/\n   - app.yml\n   - settings.json";
-    }
+    const fileList =
+      inputs["capability"] === InitCapabilityBot.id
+        ? "  teamsfx/\n    - app.yml\n    - settings.json\n  infra/\n    botRegistration/\n      - azurebot.bicep\n      - readme.md\n    - azure.bicep\n    - azure.parameters.json\n"
+        : "  teamsfx/\n    - app.yml\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n";
     return getLocalizedString("core.InitGenerateConfirm", fileList);
   },
-  staticOptions: [InitOptionNo, InitOptionYes],
+  staticOptions: [InitOptionYes, InitOptionNo],
   default: InitOptionYes.id,
 };
 export function getQuestionsForInit(

@@ -8,7 +8,6 @@ import {
   defaultTimeoutInMs,
   defaultTryLimits,
   placeholderDelimiters,
-  sampleRepoName,
   templateAlphaVersion,
   templateFileExt,
 } from "./constant";
@@ -208,11 +207,7 @@ export function getSampleInfoFromName(sampleName: string): SampleInfo {
 }
 
 export function getSampleRelativePath(sampleName: string): string {
-  let suffix = sampleConfig.defaultPackageLink.split("/").pop()!.replace(".zip", "");
-  if (semver.coerce(suffix) && suffix.startsWith("v")) {
-    suffix = suffix.replace("v", "");
-  }
-  return `${sampleRepoName}-${suffix}/${sampleName}`;
+  return `${sampleConfig.baseFolderName}/${sampleName}`;
 }
 
 export function zipFolder(folderPath: string): AdmZip {

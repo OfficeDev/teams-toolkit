@@ -6,7 +6,6 @@
 import { Argv } from "yargs";
 
 import { isDeployManifestEnabled, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
-
 import { YargsCommand } from "../yargsCommand";
 import Account from "./account";
 import New from "./new";
@@ -24,6 +23,7 @@ import Env from "./env";
 import M365 from "./m365/m365";
 import { ManifestValidate } from "./validate";
 import { ApplyCommand } from "./apply";
+import UpdateAadManifest from "./updateAad";
 import Init from "./init";
 
 export const commands: YargsCommand[] = [
@@ -52,6 +52,7 @@ export function registerCommands(yargs: Argv): void {
   if (isV3Enabled()) {
     commands.push(new ApplyCommand());
     commands.push(new Init());
+    commands.push(new UpdateAadManifest());
   }
 
   commands.forEach((command) => {

@@ -17,7 +17,7 @@ import { YargsCommand } from "../yargsCommand";
 export class UpdateAadApp extends YargsCommand {
   public readonly commandHead = "aad-app";
   public readonly command = this.commandHead;
-  public readonly description = "Update the AAD App Manifest in the current application.";
+  public readonly description = "Update the AAD App in the current application.";
 
   public builder(yargs: Argv): Argv<any> {
     this.params = {
@@ -26,7 +26,7 @@ export class UpdateAadApp extends YargsCommand {
         string: true,
       },
       env: {
-        describe: "Select an existing environment for the AAD App manifest",
+        describe: "Select an existing environment to udpate AAD App",
         requiresArg: true,
         string: true,
       },

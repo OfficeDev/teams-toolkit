@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
 import { Argv, Options } from "yargs";
 
 import {
@@ -15,11 +13,11 @@ import {
   Result,
   UserError,
 } from "@microsoft/teamsfx-api";
+import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 
-import { YargsCommand } from "../yargsCommand";
-import M365TokenProvider from "../commonlib/m365Login";
 import AzureTokenProvider, { getAzureProvider } from "../commonlib/azureLogin";
 import AzureTokenCIProvider from "../commonlib/azureLoginCI";
+import { checkIsOnline } from "../commonlib/codeFlowLogin";
 import {
   codeFlowLoginFormat,
   loginComponent,
@@ -28,10 +26,11 @@ import {
   usageError,
 } from "../commonlib/common/constant";
 import CLILogProvider from "../commonlib/log";
+import M365TokenProvider from "../commonlib/m365Login";
 import * as constants from "../constants";
+import { YargsCommand } from "../yargsCommand";
 import { getColorizedString, setSubscriptionId, toLocaleLowerCase, toYargsOptions } from "../utils";
-import { checkIsOnline } from "../commonlib/codeFlowLogin";
-import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import chalk from "chalk";
 
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   const appStudioTokenJsonRes = await M365TokenProvider.getJsonObject({ scopes: AppStudioScopes });
@@ -51,7 +50,7 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
       const message = [
         {
           content: `[${constants.cliSource}] Your Microsoft 365 Account is: `,
-          color: Colors.BRIGHT_WHITE,
+          color: Colors.BRIGHT_GREEN,
         },
         { content: (result as any).upn, color: Colors.BRIGHT_MAGENTA },
       ];
@@ -90,7 +89,7 @@ async function outputAzureInfo(
           color: Colors.BRIGHT_GREEN,
         },
         { content: " Your username is ", color: Colors.BRIGHT_WHITE },
-        { content: (result as any).unique_name, color: Colors.BRIGHT_MAGENTA },
+        { content: (result as any).upn, color: Colors.BRIGHT_MAGENTA },
       ];
       CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
       CLILogProvider.necessaryLog(
@@ -105,18 +104,18 @@ async function outputAzureInfo(
         if (subscriptionInfo) {
           CLILogProvider.necessaryLog(
             LogLevel.Info,
-            `[${constants.cliSource}] Your Azure Account is: ${CLILogProvider.white(
-              (result as any).username
+            `[${constants.cliSource}] Your Azure Account is: ${chalk.magentaBright(
+              (result as any).upn
             )}` +
-              ` and current active subscription id is: ${CLILogProvider.white(
+              ` and current active subscription id is: ${chalk.magentaBright(
                 subscriptionInfo.subscriptionId
               )}.`
           );
         } else {
           CLILogProvider.necessaryLog(
             LogLevel.Info,
-            `[${constants.cliSource}] Your Azure Account is: ${CLILogProvider.white(
-              (result as any).username
+            `[${constants.cliSource}] Your Azure Account is: ${chalk.magentaBright(
+              (result as any).upn
             )}.`
           );
           CLILogProvider.necessaryLog(
@@ -128,11 +127,11 @@ async function outputAzureInfo(
           CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(subscriptions, null, 2), true);
         }
       } catch (e) {
-        if (e.name === "ConfigNotFound") {
+        if ((e as Error).name === "ConfigNotFound") {
           CLILogProvider.necessaryLog(
             LogLevel.Info,
-            `[${constants.cliSource}] Your Azure Account is: ${CLILogProvider.white(
-              (result as any).username
+            `[${constants.cliSource}] Your Azure Account is: ${chalk.magentaBright(
+              (result as any).upn
             )}.`
           );
           CLILogProvider.necessaryLog(

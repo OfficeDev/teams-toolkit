@@ -54,7 +54,7 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
     }
 
     if (isV3Enabled()) {
-      await EnvLoaderMW(ctx, next);
+      await EnvLoaderMW(true);
       return;
     }
 

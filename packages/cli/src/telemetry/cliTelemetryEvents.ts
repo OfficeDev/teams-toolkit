@@ -34,8 +34,8 @@ export enum TelemetryEvent {
   UpdateManifestStart = "update-manifest-start",
   UpdateManifest = "update-manifest",
 
-  UpdateAadManifestStart = "update-aad-manifest-start",
-  UpdateAadManifest = "update-aad-manifest",
+  UpdateAadAppStart = "update-aad-app-start",
+  UpdateAadApp = "update-aad-app",
 
   BuildStart = "build-start",
   Build = "build",

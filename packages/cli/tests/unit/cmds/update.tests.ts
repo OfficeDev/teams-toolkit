@@ -80,8 +80,8 @@ describe("Update Aad Manifest Command Tests", function () {
     };
     await updateAadManifest!.handler(args);
     expect(telemetryEvents).deep.equals([
-      TelemetryEvent.UpdateAadManifestStart,
-      TelemetryEvent.UpdateAadManifest,
+      TelemetryEvent.UpdateAadAppStart,
+      TelemetryEvent.UpdateAadApp,
     ]);
     expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
   });
@@ -100,8 +100,8 @@ describe("Update Aad Manifest Command Tests", function () {
       await updateAadManifest!.handler(args);
     } catch (e) {
       expect(telemetryEvents).deep.equals([
-        TelemetryEvent.UpdateAadManifestStart,
-        TelemetryEvent.UpdateAadManifest,
+        TelemetryEvent.UpdateAadAppStart,
+        TelemetryEvent.UpdateAadApp,
       ]);
       expect(telemetryEventStatus).equals(TelemetrySuccess.No);
       expect(e).instanceOf(UserError);

@@ -848,7 +848,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
 /**
  * Ask user to select environment, local is included
  */
-async function askTargetEnvironment(): Promise<Result<string, FxError>> {
+async function askTargetEnvironment(includeLocal = true): Promise<Result<string, FxError>> {
   const projectPath = globalVariables.workspaceUri?.fsPath;
   if (!isValidProject(projectPath)) {
     return err(new InvalidProjectError());
@@ -857,10 +857,16 @@ async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }
+
+  let envNames = envProfilesResult.value;
+  if (!includeLocal) {
+    envNames = envNames.filter((x) => x !== environmentManager.getLocalEnvName());
+  }
+
   const config: SingleSelectConfig = {
     name: "targetEnvName",
-    title: "Select an environment",
-    options: envProfilesResult.value,
+    title: localize("plugins.cicd.whichEnvironment.title"),
+    options: envNames,
   };
   const selectedEnv = await VS_CODE_UI.selectOption(config);
   if (selectedEnv.isErr()) {
@@ -953,7 +959,20 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, getTriggerFromProperty(args));
-  const result = await runCommand(Stage.provision);
+
+  const inputs = getSystemInputs();
+  if (isV3Enabled()) {
+    const selectedEnv = await askTargetEnvironment(false);
+    if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+      showError(selectedEnv.error);
+      return err(selectedEnv.error);
+    }
+    const env = selectedEnv.value;
+    inputs.env = env;
+  }
+
+  const result = await runCommand(Stage.provision, inputs);
 
   if (result.isErr() && isUserCancelError(result.error)) {
     return result;
@@ -971,7 +990,20 @@ export async function deployHandler(args?: any[]): Promise<Result<null, FxError>
 
 export async function publishHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart, getTriggerFromProperty(args));
-  return await runCommand(Stage.publish);
+
+  const inputs = getSystemInputs();
+  if (isV3Enabled()) {
+    const selectedEnv = await askTargetEnvironment(false);
+    if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+      showError(selectedEnv.error);
+      return err(selectedEnv.error);
+    }
+    const env = selectedEnv.value;
+    inputs.env = env;
+  }
+
+  return await runCommand(Stage.publish, inputs);
 }
 
 export async function publishInDeveloperPortalHandler(

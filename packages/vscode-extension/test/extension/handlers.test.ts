@@ -1402,14 +1402,18 @@ describe("handlers", () => {
 
   describe("callBackFunctions", () => {
     it("checkSideloadingCallback()", async () => {
-      const stubShowMessage = sinon.stub().resolves(ok({}));
+      sinon.stub(localizeUtils, "localize").returns("");
+      let showMessageCalledCount = 0;
       sinon.stub(extension, "VS_CODE_UI").value({
-        showMessage: stubShowMessage,
+        showMessage: async () => {
+          showMessageCalledCount += 1;
+          return ok(undefined);
+        },
       });
 
       await handlers.checkSideloadingCallback();
 
-      chai.assert(stubShowMessage.calledOnce);
+      chai.expect(showMessageCalledCount).to.be.equal(1);
       sinon.restore();
     });
   });

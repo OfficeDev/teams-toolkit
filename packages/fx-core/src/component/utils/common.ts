@@ -2,7 +2,15 @@
 // Licensed under the MIT license.
 
 import { BaseComponentInnerError, PrerequisiteError } from "../error/componentError";
-import { err, FxError, ok, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  LogProvider,
+  ok,
+  Result,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import path from "path";
 
 /**
@@ -48,7 +56,6 @@ type KeyValidators<T> = {
 
 export function asFactory<T>(keyValidators: KeyValidators<T>) {
   return function (data: unknown): T {
-    console.log(data);
     if (typeof data === "object" && data !== null) {
       const maybeT = data as unknown as T;
       for (const key of Object.keys(keyValidators) as Array<keyof T>) {
@@ -62,21 +69,25 @@ export function asFactory<T>(keyValidators: KeyValidators<T>) {
 
 export async function wrapRun(
   exec: () => Promise<Map<string, string>>,
-  errorHandler?: () => Promise<void>
+  errorHandler?: () => Promise<void>,
+  logProvider?: LogProvider
 ): Promise<Result<Map<string, string>, FxError>> {
   try {
     return ok(await exec());
   } catch (error) {
     if (errorHandler) {
-      console.debug("Error handler is called.");
       await errorHandler();
     }
     if (error instanceof BaseComponentInnerError) {
+      if (error.detail) {
+        await logProvider?.debug(`Error occurred: ${error.detail}`);
+      }
       return err(error.toFxError());
     } else if (error instanceof UserError || error instanceof SystemError) {
       return err(error);
     }
-    throw error;
+    // always return error as SystemError
+    return err(BaseComponentInnerError.unknownError("Deploy", error).toFxError());
   }
 }
 

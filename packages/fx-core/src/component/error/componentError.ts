@@ -45,7 +45,7 @@ export class BaseComponentInnerError extends Error {
         ? messageParams
           ? getDefaultString(messageKey, ...messageParams)
           : getDefaultString(messageKey)
-        : undefined
+        : ""
     );
     this.source = source;
     this.errorType = errorType;
@@ -56,7 +56,7 @@ export class BaseComponentInnerError extends Error {
       ? messageParams
         ? getLocalizedString(messageKey, ...messageParams)
         : getLocalizedString(messageKey)
-      : undefined;
+      : "";
     this.detail = detail;
   }
 
@@ -92,10 +92,20 @@ export class BaseComponentInnerError extends Error {
   protected toDisplayMessage(): string {
     const suggestion = this.suggestionKey?.map((key) => getLocalizedString(key)).join(" ");
     return this.displayMessage
-      ? this.displayMessage + suggestion
-        ? getLocalizedString("plugins.bot.ErrorSuggestions", suggestion)
-        : ""
+      ? suggestion
+        ? this.displayMessage + getLocalizedString("plugins.bot.ErrorSuggestions", suggestion)
+        : this.displayMessage
       : this.message;
+  }
+
+  static unknownError(source: string, error: unknown): BaseComponentInnerError {
+    return new BaseComponentInnerError(
+      source,
+      "SystemError",
+      "UnknownError",
+      "driver.deploy.error.unknownError",
+      [JSON.stringify(error)]
+    );
   }
 }
 
@@ -132,7 +142,7 @@ export class ExternalApiCallError extends BaseComponentInnerError {
     );
   }
 
-  static getSasTokenError(source: string): ExternalApiCallError {
+  static getSasTokenError(source: string, detail?: string): ExternalApiCallError {
     return new ExternalApiCallError(
       source,
       "AzureStorageSASToeknEmpty",
@@ -144,7 +154,8 @@ export class ExternalApiCallError extends BaseComponentInnerError {
         // eslint-disable-next-line no-secrets/no-secrets
         "plugins.frontend.checkStoragePermissionsTip",
         "plugins.frontend.checkNetworkTip",
-      ]
+      ],
+      detail
     );
   }
 }

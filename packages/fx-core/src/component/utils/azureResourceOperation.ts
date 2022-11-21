@@ -89,9 +89,16 @@ async function generateSasToken(
     sharedAccessStartTime: new Date(Date.now() - DeployConstant.SAS_TOKEN_LIFE_TIME_PADDING),
     sharedAccessExpiryTime: new Date(Date.now() + DeployConstant.SAS_TOKEN_LIFE_TIME),
   };
-
-  const token = (await client.listAccountSAS(resourceGroupName, storageName, accountSasParameters))
-    .accountSasToken;
+  let token;
+  try {
+    token = (await client.listAccountSAS(resourceGroupName, storageName, accountSasParameters))
+      .accountSasToken;
+  } catch (e) {
+    throw ExternalApiCallError.getSasTokenError(
+      DeployConstant.DEPLOY_ERROR_TYPE,
+      JSON.stringify(e)
+    );
+  }
   if (!token) {
     throw ExternalApiCallError.getSasTokenError(DeployConstant.DEPLOY_ERROR_TYPE);
   }

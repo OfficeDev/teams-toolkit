@@ -23,7 +23,8 @@ export class AzureFunctionDeployDriver implements StepDriver {
     const impl = new AzureFunctionDeployDriverImpl(args, context);
     return wrapRun(
       () => impl.run(),
-      () => impl.cleanup()
+      () => impl.cleanup(),
+      context.logProvider
     );
   }
 }

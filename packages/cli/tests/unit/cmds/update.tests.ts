@@ -12,7 +12,7 @@ import {
   TelemetrySuccess,
 } from "../../../src/telemetry/cliTelemetryEvents";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
-import Update, { UpdateAadManifest } from "../../../src/cmds/update";
+import Update, { UpdateAadApp } from "../../../src/cmds/update";
 import { expect } from "chai";
 
 describe("Update Aad Manifest Command Tests", function () {
@@ -65,7 +65,7 @@ describe("Update Aad Manifest Command Tests", function () {
       });
   });
   it("should pass builder check", () => {
-    const cmd = new UpdateAadManifest();
+    const cmd = new UpdateAadApp();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     expect(registeredCommands).deep.equals(["aad-app"]);
   });

@@ -14,10 +14,10 @@ import {
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 
-export class UpdateAadManifest extends YargsCommand {
+export class UpdateAadApp extends YargsCommand {
   public readonly commandHead = "aad-app";
   public readonly command = this.commandHead;
-  public readonly description = "Update the Teams Aad App Manifest in the current application.";
+  public readonly description = "Update the Aad App Manifest in the current application.";
 
   public builder(yargs: Argv): Argv<any> {
     this.params = {
@@ -71,7 +71,7 @@ export default class Update extends YargsCommand {
   public readonly commandHead = "update";
   public readonly command = `${this.commandHead} <application-manifest>`;
   public readonly description = "Update the specific manifest file in the current application.";
-  public readonly subCommands: YargsCommand[] = [new UpdateAadManifest()];
+  public readonly subCommands: YargsCommand[] = [new UpdateAadApp()];
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));

@@ -70,14 +70,14 @@ export class UpdateAadApp extends YargsCommand {
 export default class Update extends YargsCommand {
   public readonly commandHead = "update";
   public readonly command = `${this.commandHead} <application-manifest>`;
-  public readonly description = "Update the specific manifest file in the current application.";
+  public readonly description = "Update the specific application manifest file.";
   public readonly subCommands: YargsCommand[] = [new UpdateAadApp()];
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
     return yargs
-      .options("manifest", {
+      .options("application-manifest", {
         choices: this.subCommands.map((c) => c.commandHead),
         global: false,
         hidden: true,

@@ -46,6 +46,7 @@ const FuncNodeVersionWhiteList: { [key: string]: { [key: string]: boolean } } = 
   "4": {
     "14": true,
     "16": true,
+    "18": true,
   },
 };
 

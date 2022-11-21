@@ -36,12 +36,10 @@ export class UpdateAadApp extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(
-      TelemetryEvent.UpdateAadManifestStart
-    );
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateAadAppStart);
     const resultFolder = await activate(rootFolder);
     if (resultFolder.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadManifest, resultFolder.error);
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateAadApp, resultFolder.error);
       return err(resultFolder.error);
     }
     const core = resultFolder.value;
@@ -52,14 +50,14 @@ export class UpdateAadApp extends YargsCommand {
     const result = await core.deployAadManifest(inputs);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.UpdateAadManifest,
+        TelemetryEvent.UpdateAadApp,
         result.error,
         makeEnvRelatedProperty(rootFolder, inputs)
       );
 
       return err(result.error);
     }
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateAadManifest, {
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateAadApp, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       ...makeEnvRelatedProperty(rootFolder, inputs),
     });

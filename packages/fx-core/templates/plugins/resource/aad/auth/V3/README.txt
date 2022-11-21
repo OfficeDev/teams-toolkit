@@ -15,9 +15,7 @@ Basically you will need take care these configurations:
 For Teams Tab Application
 -------------------------
 1. Update AAD app manifest
-  A template of Azure AD app is provided in `TeamsFx-Auth/aad.manifest.template.json`.
-  You can copy and paste this file to any folder of your project and take notes of the path to this file. Because the path will be useful later.
-  You need to make some updates on the following two parts in the template to create/update an Azure AD app for SSO:
+`TeamsFx-Auth/aad.manifest.template.json` is an Azure AD manifest template. You can copy and paste this file to any folder of your project and take notes of the path to this file. Because the path will be useful later. And you need to make the following updates in the template to create/update an Azure AD app for SSO:
 
   1.1. "identifierUris": Used to uniquely identify and access the resource.
     [HelpLink] "https://learn.microsoft.com/en-us/azure/active-directory/develop/reference-app-manifest#identifieruris-attribute"
@@ -308,12 +306,10 @@ For Teams Tab Application
 
 7. To check the SSO app works as expected, run `Local Debug` in Visual Studio. Or run the app in cloud by clicking `Provision in the cloud` and then `Deploy to the cloud` to make the updates taking effects.
 
-For Bot projects
+For Teams Bot Applications
 -------------------------
 1. Update AAD app manifest
-  A template of Azure AD app is provided in `TeamsFx-Auth/aad.manifest.template.json`.
-  You can copy and paste this file in your project and note the path of this file. This path will be used later.
-  You still need to make some updates on the following two parts in the template to create/update an AAD app for SSO:
+`TeamsFx-Auth/aad.manifest.template.json` is an Azure AD manifest template. You can copy and paste this file to any folder of your project and take notes of the path to this file. Because the path will be useful later. And you need to make the following updates in the template to create/update an Azure AD app for SSO:
 
   1.1 "identifierUris": Used to uniquely identify and access the resource.
     [HelpLink] "https://learn.microsoft.com/en-us/azure/active-directory/develop/reference-app-manifest#identifieruris-attribute"

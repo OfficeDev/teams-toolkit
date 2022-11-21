@@ -141,16 +141,23 @@ export class ArmDeployImpl {
     deployCtx: DeployContext
   ): Promise<Result<deploymentOutput | undefined, FxError>> {
     try {
-      const result = await this.client?.deployments.beginCreateOrUpdateAndWait(
-        this.args.resourceGroupName,
-        templateArg.deploymentName,
-        deploymentParameters
-      );
-      return ok(result?.properties?.outputs);
+      return await this.innerExecuteDeployment(templateArg, deploymentParameters);
     } catch (error) {
       const errRes = handleArmDeploymentError(error, deployCtx);
       return errRes;
     }
+  }
+
+  async innerExecuteDeployment(
+    templateArg: templateArgs,
+    deploymentParameters: Deployment
+  ): Promise<Result<deploymentOutput | undefined, FxError>> {
+    const result = await this.client?.deployments.beginCreateOrUpdateAndWait(
+      this.args.resourceGroupName,
+      templateArg.deploymentName,
+      deploymentParameters
+    );
+    return ok(result?.properties?.outputs);
   }
 
   private async getDeployParameters(parameters?: string): Promise<any> {

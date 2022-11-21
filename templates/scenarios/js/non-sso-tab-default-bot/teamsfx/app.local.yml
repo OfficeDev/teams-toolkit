@@ -7,6 +7,21 @@ registerApp:
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
+provision:
+  - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
+    with:
+      name: bot
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # BOT_ID: the AAD app client id created for bot
+    # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
+
+  - uses: botFramework/createOrUpdateBot # Create or update the bot registration on dev.botframework.com
+    with:
+      botId: ${{BOT_ID}}
+      name: bot
+      messagingEndpoint: ${{TUNNEL_ENDPOINT}}/api/messages
+      description: ""
+
 configureApp:
   - uses: env/generate # Generate env to .env file
     with:
@@ -14,9 +29,13 @@ configureApp:
         TAB_DOMAIN: localhost:53000
         TAB_ENDPOINT: https://localhost:53000
   - uses: teamsApp/validate
+    env: 
+      BOT_DOMAIN: ${{TUNNEL_DOMAIN}}
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
   - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
+    env: 
+      BOT_DOMAIN: ${{TUNNEL_DOMAIN}}
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
@@ -39,4 +58,3 @@ deploy:
   - uses: npm/command # Run npm command
     with:
       args: install --no-audit
-

@@ -6,6 +6,8 @@ build
 
 # dependencies
 /node_modules
+/tab/node_modules
+/bot/node_modules
 
 # testing
 /coverage

@@ -2,6 +2,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import {
   ActionContext,
   assembleError,
+  Colors,
   ContextV3,
   err,
   FxError,
@@ -60,6 +61,7 @@ import {
   InitOptionNo,
   InitOptionYes,
   getQuestionsForPublishInDeveloperPortal,
+  InitEditorVSCode,
 } from "../question";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -302,6 +304,11 @@ export class Coordinator {
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
+    context.userInteraction.showMessage(
+      "info",
+      "\nVisit https://aka.ms/teamsfx-infra to learn more about Teams Toolkit infrastructure customization.",
+      false
+    );
     return ok(undefined);
   }
 
@@ -331,11 +338,9 @@ export class Coordinator {
     if (!templateName) {
       return err(InvalidInputError("templateName is undefined"));
     }
-    if (editor === "vsc") {
+    if (editor === InitEditorVSCode.id) {
       const exists = await fs.pathExists(path.join(projectPath, ".vscode"));
-      if (exists) {
-        context.templateVariables = { dotVscodeFolderName: ".vscode-teamsfx" };
-      }
+      context.templateVariables = { dotVscodeFolderName: exists ? ".vscode-teamsfx" : ".vscode" };
     }
     const settingsRes = await settingsUtil.readSettings(projectPath, false);
     const originalTrackingId = settingsRes.isOk() ? settingsRes.value.trackingId : undefined;
@@ -343,6 +348,11 @@ export class Coordinator {
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
+    context.userInteraction.showMessage(
+      "info",
+      "\nVisit https://aka.ms/teamsfx-debug to learn more about Teams Toolkit debug customization.",
+      false
+    );
     return ok(undefined);
   }
 

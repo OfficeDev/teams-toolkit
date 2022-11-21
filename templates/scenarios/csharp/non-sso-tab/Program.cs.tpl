@@ -5,7 +5,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-builder.Services.AddTeamsFx(builder.Configuration.GetSection("TeamsFx"));
 builder.Services.AddScoped<MicrosoftTeams>();
 
 builder.Services.AddControllers();

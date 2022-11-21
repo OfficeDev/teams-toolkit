@@ -23,17 +23,13 @@
         "@types/react": "^16.14.6",
         "@types/react-dom": "^16.9.12",
         "@types/react-router-dom": "^5.1.7",
-        "cross-env": "^7.0.3",
         "typescript": "^4.1.2"
     },
     "scripts": {
-        "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run start",
-        "start": "cross-env GENERATE_SOURCEMAP=false react-scripts start",
-        "install:teamsfx": "npm install",
-        "build": "cross-env GENERATE_SOURCEMAP=false react-scripts build",
-        "build:teamsfx": "cross-env-shell \"env-cmd -f .env.teamsfx.${TEAMS_FX_ENV} npm run build\"",
-        "build:teamsfx:dev": "cross-env TEAMS_FX_ENV=dev npm run build:teamsfx",
-        "eject": "react-scripts eject"
+        "start": "react-scripts start",
+        "build": "react-scripts build",
+        "eject": "react-scripts eject",
+        "test": "echo \"Error: no test specified\" && exit 1"
     },
     "eslintConfig": {
         "extends": [

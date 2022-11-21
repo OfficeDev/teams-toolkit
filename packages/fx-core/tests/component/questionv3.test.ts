@@ -9,6 +9,7 @@ import {
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
   FeatureId,
+  InitDebugProceedQuestion,
 } from "../../src/component/question";
 import {
   ApiConnectionOptionItem,
@@ -377,5 +378,18 @@ describe("question for v3", () => {
     const inputs: Inputs = {
       platform: Platform.CLI_HELP,
     };
+  });
+
+  it("InitDebugProceedQuestion.title", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+      editor: "vsc",
+      projectPath: ".",
+    };
+    const res1 = await (InitDebugProceedQuestion as any).title(inputs);
+    inputs.editor = "vs";
+    const res2 = await (InitDebugProceedQuestion as any).title(inputs);
+    assert.isDefined(res1);
+    assert.isDefined(res2);
   });
 });

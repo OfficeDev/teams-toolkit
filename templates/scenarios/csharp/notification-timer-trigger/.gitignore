@@ -1,5 +1,8 @@
-# Azure Functions localsettings file, ignore local.settings.json if it contains your own credentials
-# local.settings.json
+# TeamsFx files
+build
+teamsfx/.env.*
+appsettings.Development.json
+.deployment
 
 # User-specific files
 *.user

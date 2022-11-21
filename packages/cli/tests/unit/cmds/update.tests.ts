@@ -67,13 +67,13 @@ describe("Update Aad Manifest Command Tests", function () {
   it("should pass builder check", () => {
     const cmd = new UpdateAadManifest();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    expect(registeredCommands).deep.equals(["aad-manifest"]);
+    expect(registeredCommands).deep.equals(["aad-app"]);
   });
 
   it("Run command success", async () => {
     sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(""));
     const cmd = new Update();
-    const updateAadManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "aad-manifest");
+    const updateAadManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "aad-app");
     const args = {
       folder: "fake_test",
       env: "dev",
@@ -90,13 +90,14 @@ describe("Update Aad Manifest Command Tests", function () {
     sandbox
       .stub(FxCore.prototype, "deployAadManifest")
       .resolves(err(new UserError("Fake_Err", "Fake_Err_name", "Fake_Err_msg")));
-    const cmd = new UpdateAadManifest();
+    const cmd = new Update();
+    const updateAadManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "aad-app");
     const args = {
       folder: "fake_test",
       env: "dev",
     };
     try {
-      await cmd.handler(args);
+      await updateAadManifest!.handler(args);
     } catch (e) {
       expect(telemetryEvents).deep.equals([
         TelemetryEvent.UpdateAadManifestStart,

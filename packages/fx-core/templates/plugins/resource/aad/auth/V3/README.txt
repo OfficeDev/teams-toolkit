@@ -456,6 +456,7 @@ Note: This part is for `command and response bot`.
       Note: Replace the value of "manifestTemplatePath" with the relative path of AAD app manifest noted in step 1.
             For example, './aad.manifest.template.json'
 
+  In `teamsfx/app.local.yml` only:
     - Update `appsettings/generate` under `provision` to add AAD related configs to local debug service.
       ```
       - uses: appsettings/generate

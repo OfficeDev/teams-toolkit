@@ -55,7 +55,7 @@ export class Generator {
     language?: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const replaceMap = ctx.templateVariables;
+    const replaceMap = ctx.templateVariables ?? {};
     const generatorContext: GeneratorContext = {
       name: language ?? commonTemplateName,
       relativePath: `${scenario}/`,

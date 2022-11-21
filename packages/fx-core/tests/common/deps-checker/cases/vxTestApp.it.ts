@@ -17,7 +17,7 @@ import { CheckerFactory } from "../../../../src/common/deps-checker/checkerFacto
 import { VxTestAppChecker } from "../../../../src/common/deps-checker/internal/vxTestAppChecker";
 import { isWindows } from "../../../../src/common/deps-checker/util";
 
-describe("NodeChecker E2E Test", async () => {
+describe("VxTestAppChecker E2E Test", async () => {
   const fakeProjectPath = "fake project path";
   const vxTestAppExecutableName = isWindows()
     ? "video-extensibility-test-app.exe"

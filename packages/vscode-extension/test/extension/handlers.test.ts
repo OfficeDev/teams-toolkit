@@ -1399,4 +1399,18 @@ describe("handlers", () => {
       chai.assert.equal(result, "1");
     });
   });
+
+  describe("callBackFunctions", () => {
+    it("checkSideloadingCallback()", async () => {
+      const stubShowMessage = sinon.stub().resolves(ok({}));
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: stubShowMessage,
+      });
+
+      await handlers.checkSideloadingCallback();
+
+      chai.assert(stubShowMessage.calledOnce);
+      sinon.restore();
+    });
+  });
 });

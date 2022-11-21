@@ -23,9 +23,9 @@
         "env-cmd": "^10.1.0"
     },
     "scripts": {
-        "start": "cross-env GENERATE_SOURCEMAP=false react-scripts start",
+        "start": "react-scripts start",
         "install:teamsfx": "npm install",
-        "build": "cross-env GENERATE_SOURCEMAP=false react-scripts build",
+        "build": "react-scripts build",
         "build:teamsfx": "cross-env-shell \"env-cmd -f .env.teamsfx.${TEAMS_FX_ENV} npm run build\"",
         "build:teamsfx:dev": "cross-env TEAMS_FX_ENV=dev npm run build:teamsfx",
         "eject": "react-scripts eject",

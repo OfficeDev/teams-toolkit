@@ -1,7 +1,7 @@
 {
     "name": "{%appName%}",
     "version": "1.0.0",
-     "description": "Microsoft Teams Toolkit Notification Bot Sample (Restify)",
+    "description": "Microsoft Teams Toolkit Notification Bot Sample (Restify)",
     "author": "Microsoft",
     "license": "MIT",
     "main": "./lib/index.js",

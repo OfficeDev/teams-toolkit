@@ -74,7 +74,6 @@ describe("Arm driver deploy", () => {
         },
         {
           path: "mock-template2.json",
-          parameters: "mock-parameters2.json",
           deploymentName: "mock-deployment2",
         },
       ],
@@ -216,11 +215,6 @@ describe("util test", () => {
     const projectPath = "";
     const res = getAbsolutePath(relativeOrAbsolutePath, projectPath);
     assert.equal(relativeOrAbsolutePath, res);
-  });
-
-  it("useUserSetEnv", async () => {
-    const res = await useUserSetEnv("./", "local");
-    assert.isTrue(res.isErr());
   });
 
   it("convert output", () => {

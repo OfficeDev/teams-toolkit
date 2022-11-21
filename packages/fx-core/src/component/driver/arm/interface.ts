@@ -10,7 +10,7 @@ export interface deployArgs {
 
 export interface templateArgs {
   path: string;
-  parameters: string;
+  parameters?: string;
   deploymentName: string;
 }
 

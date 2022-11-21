@@ -42,7 +42,11 @@
             "command": "debug-start-local-tunnel",
             "args": {
                 "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
-                "env": "local"
+                "env": "local",
+                "output": {
+                    "endpoint": "BOT_ENDPOINT",
+                    "domain": "BOT_DOMAIN"
+                }
             },
             "isBackground": true,
             "problemMatcher": "$teamsfx-local-tunnel-watch"

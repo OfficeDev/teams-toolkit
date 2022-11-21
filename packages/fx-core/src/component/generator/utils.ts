@@ -207,7 +207,7 @@ export function getSampleInfoFromName(sampleName: string): SampleInfo {
 }
 
 export function getSampleRelativePath(sampleName: string): string {
-  return `${sampleConfig.baseFolderName}/${sampleName}`;
+  return `${sampleConfig.baseFolderName}/${sampleName}/`;
 }
 
 export function zipFolder(folderPath: string): AdmZip {

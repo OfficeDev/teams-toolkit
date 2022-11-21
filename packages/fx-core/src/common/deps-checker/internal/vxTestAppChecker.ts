@@ -22,6 +22,8 @@ interface InstallOptionsSafe {
   projectPath: string;
 }
 
+const VxTestAppName = "Video Extensibility Test App";
+
 const VxTestAppExecutableName = isWindows()
   ? "video-extensibility-test-app.exe"
   : "video-extensibility-test-app";
@@ -127,13 +129,14 @@ export class VxTestAppChecker implements DepsChecker {
     }
 
     return {
-      name: DepsType.VxTestApp,
+      name: VxTestAppName,
       type: DepsType.VxTestApp,
       isInstalled: true,
       command: VxTestAppExecutableName,
       details: {
         isLinuxSupported: false,
         supportedVersions: [installOptions.version],
+        binFolders: [projectInstallDir],
       },
       error: undefined,
     };
@@ -154,14 +157,16 @@ export class VxTestAppChecker implements DepsChecker {
       return VxTestAppChecker.newDependencyStatusForNotInstalled(installOptions.version);
     }
 
+    const projectInstallDir = path.join(installOptions.projectPath, VxTestAppDirRelPath);
     return {
-      name: DepsType.VxTestApp,
+      name: VxTestAppName,
       type: DepsType.VxTestApp,
       isInstalled: true,
       command: VxTestAppExecutableName,
       details: {
         isLinuxSupported: false,
         supportedVersions: [installOptions.version],
+        binFolders: [projectInstallDir],
       },
       error: undefined,
     };
@@ -224,7 +229,7 @@ export class VxTestAppChecker implements DepsChecker {
 
   private static newDependencyStatusForNotInstalled(version?: string): DependencyStatus {
     return {
-      name: DepsType.VxTestApp,
+      name: VxTestAppName,
       type: DepsType.VxTestApp,
       isInstalled: false,
       command: VxTestAppExecutableName,
@@ -241,7 +246,7 @@ export class VxTestAppChecker implements DepsChecker {
     version?: string
   ): DependencyStatus {
     return {
-      name: DepsType.VxTestApp,
+      name: VxTestAppName,
       type: DepsType.VxTestApp,
       isInstalled: false,
       command: VxTestAppExecutableName,

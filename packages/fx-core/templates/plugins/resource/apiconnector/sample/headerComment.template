@@ -22,6 +22,12 @@ Next steps:
 2. Refer to the sample code and comments in this file to implement your custom auth provider.
 {{/if}}
 
+{{#if (equals languageExt "js")}}
+It is also recommended to put all the configurations into config.js file.
+{{else}}
+It is also recommended to put all the configurations into config.ts file.
+{{/if}}
+
 You can import the API client (an Axios instance) in another file and call {{config.APIName}} APIs and authentication is now handled for you automatically.
 
 Here is an example for a GET request to "relative_path_of_target_api":

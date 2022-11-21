@@ -659,6 +659,8 @@ export class AddSsoParameters {
   static readonly filePath = path.join("plugins", "resource", "aad", "auth");
   static readonly Bot = "bot";
   static readonly Tab = "tab";
+  static readonly V3 = "V3";
+  static readonly V3AuthFolder = "TeamsFx-Auth";
   static readonly Readme = "README.md";
   static readonly ReadmeCSharp = "README.txt";
   static readonly LearnMore = getLocalizedString("core.provision.learnMore");

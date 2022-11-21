@@ -109,7 +109,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
 
       const v3M365MatchPattern = /\$\{(.+):teamsAppInternalId\}/;
       const v3M365MatchResult = url.match(v3M365MatchPattern);
-      if (isV3Enabled() && v3M365MatchResult) {
+      if (isV3Enabled() && (v3M365MatchResult || host === Host.outlook || host === Host.office)) {
         sideloadingType = SideloadingType.v3M365Local;
       }
 
@@ -160,6 +160,8 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
               env = v3MatchResult[1];
             } else if (v3M365MatchResult) {
               env = v3M365MatchResult[1];
+            } else if (host === Host.outlook || host === Host.office) {
+              env = environmentManager.getLocalEnvName();
             }
             appId = await commonUtils.getV3TeamsAppId(folder.uri.fsPath, env!);
           }
@@ -181,7 +183,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
               url = url.replace(localAppIdPlaceholder, appId);
               break;
             case SideloadingType.remote:
-              url.replace(appIdPlaceholder, appId);
+              url = url.replace(appIdPlaceholder, appId);
               break;
             case SideloadingType.m365Local:
               {

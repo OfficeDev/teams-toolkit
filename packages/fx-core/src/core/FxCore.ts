@@ -99,6 +99,7 @@ import {
   getQuestionsForAddFeatureV3,
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
+  getQuestionsForInit,
   getQuestionsForProvisionV3,
 } from "../component/question";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
@@ -228,10 +229,17 @@ export class FxCore implements v3.ICore {
    */
   @hooks([ErrorHandlerMW])
   async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    const res = await coordinator.initInfra(inputs);
+    const res = await coordinator.initInfra(createContextV3(), inputs);
     return res;
   }
-
+  /**
+   * "teamsfx init debug" CLI command
+   */
+  @hooks([ErrorHandlerMW])
+  async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    const res = await coordinator.initDebug(createContextV3(), inputs);
+    return res;
+  }
   @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async createProjectOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
@@ -265,10 +273,17 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createDriverContext(inputs);
-    const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
-    ctx!.envVars = output;
-    if (error) return err(error);
-    return ok(Void);
+    try {
+      const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
+      ctx!.envVars = output;
+      if (error) return err(error);
+      return ok(Void);
+    } finally {
+      //reset subscription
+      try {
+        await TOOLS.tokenProvider.azureAccountProvider.setSubscription("");
+      } catch (e) {}
+    }
   }
   @hooks([
     ErrorHandlerMW,
@@ -622,6 +637,10 @@ export class FxCore implements v3.ICore {
       return await getQuestionsForDeployV3(context, inputs);
     } else if (stage === Stage.provision) {
       return await getQuestionsForProvisionV3(context, inputs);
+    } else if (stage === Stage.initDebug) {
+      return await getQuestionsForInit("debug", inputs);
+    } else if (stage === Stage.initInfra) {
+      return await getQuestionsForInit("infra", inputs);
     }
     return ok(undefined);
   }
@@ -869,13 +888,7 @@ export class FxCore implements v3.ICore {
     throw new TaskNotSupportError(Stage.build);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(true),
-    ContextInjectorMW,
-  ])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     if (!ctx || !inputs.projectPath)
       return err(new ObjectIsUndefinedError("createEnv input stuff"));
@@ -1216,6 +1229,17 @@ export class FxCore implements v3.ICore {
   > {
     const context = createDriverContext(inputs);
     return coordinator.preProvisionForVS(context, inputs as InputsWithProjectPath);
+  }
+
+  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
+  async publishInDeveloperPortal(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.publishInDeveloperPortal);
+    inputs.stage = Stage.publishInDeveloperPortal;
+    const context = createContextV3();
+    return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
   }
 }
 

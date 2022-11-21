@@ -42,6 +42,10 @@ import {
 import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { StaticTab } from "../component/resource/appManifest/interfaces/staticTab";
+import {
+  answerToRepaceBotId,
+  answerToReplaceMessageExtensionBotId,
+} from "../component/developerPortalScaffoldUtils";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -67,6 +71,8 @@ export enum CoreQuestionNames {
   SafeProjectName = "safeProjectName",
   ReplaceContentUrl = "replaceContentUrl",
   ReplaceWebsiteUrl = "replaceWebsiteUrl",
+  ManifestPath = "manifestPath",
+  ReplaceBotIds = "replaceBotIds",
 }
 
 export const ProjectNamePattern =
@@ -722,7 +728,7 @@ export const tabsContentUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion =
   return {
     type: "multiSelect",
     name: CoreQuestionNames.ReplaceContentUrl,
-    title: getLocalizedString("core.updateContentUrlQuestion.title", defaultTabLocalHostUrl),
+    title: getLocalizedString("core.updateContentUrlQuestion.title"),
     staticOptions: tabs.map((o) => tabContentUrlOptionItem(o)),
     default: tabs.map((o) => o.name),
     placeholder: getLocalizedString("core.updateUrlQuestion.placeholder"),
@@ -734,7 +740,7 @@ export const tabsWebsitetUrlQuestion = (tabs: StaticTab[]): MultiSelectQuestion 
   return {
     type: "multiSelect",
     name: CoreQuestionNames.ReplaceWebsiteUrl,
-    title: getLocalizedString("core.updateWebsiteUrlQuestion.title", defaultTabLocalHostUrl),
+    title: getLocalizedString("core.updateWebsiteUrlQuestion.title"),
     staticOptions: tabs.map((o) => tabWebsiteUrlOptionItem(o)),
     default: tabs.map((o) => o.name),
     placeholder: getLocalizedString("core.updateUrlQuestion.placeholder"),
@@ -763,5 +769,37 @@ export const tabWebsiteUrlOptionItem = (tab: StaticTab): OptionItem => {
       tab.websiteUrl,
       defaultTabLocalHostUrl
     ),
+  };
+};
+
+export const BotIdsQuestion = (
+  botId: string | undefined,
+  messageExtensionBotId: string | undefined
+): MultiSelectQuestion => {
+  const defaultIds = [];
+  const options: OptionItem[] = [];
+  if (botId) {
+    defaultIds.push(answerToRepaceBotId);
+    options.push(botOptionItem(true));
+  }
+  if (messageExtensionBotId) {
+    defaultIds.push(answerToReplaceMessageExtensionBotId);
+    options.push(botOptionItem(false));
+  }
+  return {
+    type: "multiSelect",
+    name: CoreQuestionNames.ReplaceBotIds,
+    title: getLocalizedString("core.updateBotIdsQuestion.title"),
+    staticOptions: options,
+    default: defaultIds,
+    placeholder: getLocalizedString("core.updateBotIdsQuestion.placeholder"),
+    forgetLastValue: true,
+  };
+};
+
+export const botOptionItem = (isMessageExtension: boolean): OptionItem => {
+  return {
+    id: isMessageExtension ? answerToReplaceMessageExtensionBotId : answerToRepaceBotId,
+    label: isMessageExtension ? "Message extension" : "Bot",
   };
 };

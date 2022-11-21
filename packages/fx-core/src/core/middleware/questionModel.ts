@@ -26,6 +26,7 @@ import {
 import { getQuestionsForGrantPermission } from "../collaborator";
 import { TOOLS } from "../globalVars";
 import {
+  BotIdsQuestion,
   CoreQuestionNames,
   createAppNameQuestion,
   createCapabilityForDotNet,
@@ -181,10 +182,14 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   createNew.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
 
   if (!!inputs.teamsAppFromTdp) {
-    //const updateTabUrls = await getQuestionsForUpdateTabUrls(inputs.teamsAppFromTdp);
     const updateTabUrls = await getQuestionsForUpdateStaticTabUrls(inputs.teamsAppFromTdp);
     if (updateTabUrls) {
       createNew.addChild(updateTabUrls);
+    }
+
+    const updateBotIds = await getQuestionsForUpdateBotIds(inputs.teamsAppFromTdp);
+    if (updateBotIds) {
+      createNew.addChild(updateBotIds);
     }
   }
   // create from sample
@@ -264,6 +269,24 @@ async function getQuestionsForUpdateStaticTabUrls(
   }
 
   return updateTabUrls;
+}
+
+async function getQuestionsForUpdateBotIds(
+  appDefinition: AppDefinition
+): Promise<QTreeNode | undefined> {
+  if (!needBotCode(appDefinition)) {
+    return undefined;
+  }
+  const bots = appDefinition.bots;
+  const messageExtensions = appDefinition.messagingExtensions;
+
+  // can add only one bot. If existing, the length is 1.
+  const botId = !!bots && bots.length > 0 ? bots![0].botId : undefined;
+  // can add only one message extension. If existing, the length is 1.
+  const messageExtensionId =
+    !!messageExtensions && messageExtensions.length > 0 ? messageExtensions![0].botId : undefined;
+
+  return new QTreeNode(BotIdsQuestion(botId, messageExtensionId));
 }
 
 export async function getQuestionsForCreateProjectV2(

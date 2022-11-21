@@ -84,22 +84,23 @@ export class TreeViewCommand extends vscode.TreeItem {
           new vscode.ThemeColor("icon.foreground")
         );
       } else {
-        this.iconPath = {
-          light: path.join(
-            globalVariables.context.extensionPath,
-            "media",
-            "treeview",
-            "command",
-            `${this.image.name}-light.svg`
-          ),
-          dark: path.join(
-            globalVariables.context.extensionPath,
-            "media",
-            "treeview",
-            "command",
-            `${this.image.name}-dark.svg`
-          ),
-        };
+        // Use font instead of SVG images.
+        // this.iconPath = {
+        //   light: path.join(
+        //     globalVariables.context.extensionPath,
+        //     "media",
+        //     "treeview",
+        //     "command",
+        //     `${this.image.name}-light.svg`
+        //   ),
+        //   dark: path.join(
+        //     globalVariables.context.extensionPath,
+        //     "media",
+        //     "treeview",
+        //     "command",
+        //     `${this.image.name}-dark.svg`
+        //   ),
+        // };
       }
     }
   }

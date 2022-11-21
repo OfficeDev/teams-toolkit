@@ -12,6 +12,8 @@ import { wrapRun } from "../../../utils/common";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
+import { DeployConstant } from "../../../constant/deployConstant";
+import { getLocalizedMessage, ProgressMessages } from "../../../messages";
 
 const ACTION_NAME = "azureAppService/deploy";
 
@@ -29,7 +31,7 @@ export class AzureAppServiceDeployDriver implements StepDriver {
 
 export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
   progressBarName = `Deploying ${this.workingDirectory ?? ""} to Azure App Service`;
-  progressBarSteps = 5;
+  progressBarSteps = 6;
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/sites\/([^\/]*)/i;
 
@@ -39,7 +41,17 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
     azureCredential: TokenCredential
   ): Promise<void> {
     await this.progressBar?.start();
-    await this.zipDeploy(args, azureResource, azureCredential);
+    const cost = await this.zipDeploy(args, azureResource, azureCredential);
+    await this.progressBar?.next(ProgressMessages.restartAzureService);
+    await this.restartFunctionApp(azureResource);
     await this.progressBar?.end(true);
+    if (cost > DeployConstant.DEPLOY_OVER_TIME) {
+      await this.context.logProvider?.info(
+        getLocalizedMessage(
+          "driver.deploy.notice.deployAcceleration",
+          "https://learn.microsoft.com/en-us/azure/app-service/deploy-run-package"
+        ).localized
+      );
+    }
   }
 }

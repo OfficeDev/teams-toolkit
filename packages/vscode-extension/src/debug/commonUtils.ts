@@ -16,7 +16,7 @@ import {
   getProjectComponents as coreGetProjectComponents,
 } from "@microsoft/teamsfx-core/build/common/local";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { getResourceGroupInPortal } from "@microsoft/teamsfx-core/build/common/tools";
+import { getResourceGroupInPortal, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import { PluginNames, GLOBAL_CONFIG } from "@microsoft/teamsfx-core/build/component/constants";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
@@ -234,12 +234,24 @@ export async function getLocalTeamsAppId(): Promise<string | undefined> {
 
 export async function getLocalBotId(): Promise<string | undefined> {
   try {
-    const result = environmentManager.getEnvStateFilesPath(
-      environmentManager.getLocalEnvName(),
-      globalVariables.workspaceUri!.fsPath
-    );
-    const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
-    return envJson[PluginNames.BOT].botId;
+    if (isV3Enabled()) {
+      const result = await envUtil.readEnv(
+        globalVariables.workspaceUri!.fsPath,
+        environmentManager.getLocalEnvName(),
+        false
+      );
+      if (result.isErr()) {
+        return undefined;
+      }
+      return result.value.BOT_ID;
+    } else {
+      const result = environmentManager.getEnvStateFilesPath(
+        environmentManager.getLocalEnvName(),
+        globalVariables.workspaceUri!.fsPath
+      );
+      const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
+      return envJson[PluginNames.BOT].botId;
+    }
   } catch {
     return undefined;
   }

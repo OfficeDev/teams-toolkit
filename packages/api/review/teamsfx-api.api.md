@@ -248,7 +248,7 @@ export interface BaseQuestion {
     forgetLastValue?: boolean;
     name: string;
     step?: number;
-    title?: string;
+    title?: string | LocalFunc<string | undefined>;
     totalSteps?: number;
     value?: unknown;
 }
@@ -1776,6 +1776,10 @@ export enum Stage {
     // (undocumented)
     init = "init",
     // (undocumented)
+    initDebug = "initDebug",
+    // (undocumented)
+    initInfra = "initInfra",
+    // (undocumented)
     listCollaborator = "listCollaborator",
     // (undocumented)
     listEnv = "listEnv",
@@ -1785,6 +1789,8 @@ export enum Stage {
     provision = "provision",
     // (undocumented)
     publish = "publish",
+    // (undocumented)
+    publishInDeveloperPortal = "publishInDeveloperPortal",
     // (undocumented)
     removeEnv = "removeEnv",
     // (undocumented)
@@ -2086,7 +2092,7 @@ export interface UserInputQuestion extends BaseQuestion {
     default?: string | string[] | LocalFunc<string | string[] | undefined>;
     placeholder?: string | LocalFunc<string | undefined>;
     prompt?: string | LocalFunc<string | undefined>;
-    title: string;
+    title: string | LocalFunc<string | undefined>;
     type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text";
     validation?: ValidationSchema;
     validationHelp?: string;

@@ -11,6 +11,7 @@ import {
   ok,
   QTreeNode,
   SubscriptionInfo,
+  UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
 import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
@@ -64,6 +65,7 @@ describe("Provision Command Tests", function () {
     });
     sandbox.stub(FxCore.prototype, "provisionResources").callsFake(async (inputs: Inputs) => {
       if (inputs.projectPath?.includes("real")) return ok("");
+      else if (inputs.projectPath?.includes("Cancel")) return err(UserCancelError);
       else return err(NotSupportedProjectType());
     });
     sandbox.stub(UI, "updatePresetAnswers").callsFake((a: any, args: { [_: string]: any }) => {
@@ -126,6 +128,20 @@ describe("Provision Command Tests", function () {
       [constants.sqlPasswordQustionName]: "123",
     };
     await expect(cmd.handler(args)).to.be.rejectedWith(EnvNotSpecified);
+  });
+
+  it("Provision Command Running -- V3 error", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    const cmd = new Provision();
+    const args = {
+      interactive: false,
+      [constants.RootFolderNode.data.name as string]: "realAndCancel",
+      [constants.sqlPasswordQustionName]: "123",
+      env: "dev",
+    };
+    await cmd.handler(args);
   });
 
   it("Provision Command Running -- setSubscriptionId error", async () => {

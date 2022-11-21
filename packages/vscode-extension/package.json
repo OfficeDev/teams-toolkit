@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "4.1.2",
+  "version": "4.1.3",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -82,10 +82,17 @@
         }
       },
       "teamsfx-m365": {
-        "description": "Microsoft 365 icon in account tree view",
+        "description": "Microsoft 365 icon in command tree view",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E002"
+        }
+      },
+      "teamsfx-add-environment": {
+        "description": "Microsoft 365 icon in command tree view",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E004"
         }
       }
     },
@@ -1538,8 +1545,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.20.8",
-    "@microsoft/teamsfx-core": "^1.18.0",
+    "@microsoft/teamsfx-api": "^0.21.0",
+    "@microsoft/teamsfx-core": "^1.19.0",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",

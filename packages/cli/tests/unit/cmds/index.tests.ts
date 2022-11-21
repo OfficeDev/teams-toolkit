@@ -12,7 +12,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 describe("Register Commands Tests", function () {
   const sandbox = sinon.createSandbox();
   let registeredCommands: string[] = [];
-  let restoreFn: RestoreFn | undefined = undefined;
+  let restoreFn: RestoreFn = () => {};
 
   before(() => {
     sandbox
@@ -22,20 +22,39 @@ describe("Register Commands Tests", function () {
       });
     sandbox.stub(yargs, "options").returns(yargs);
     sandbox.stub(yargs, "positional").returns(yargs);
-    restoreFn = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
   });
 
   after(() => {
     sandbox.restore();
-    if (restoreFn) {
-      restoreFn();
-    }
   });
 
   beforeEach(() => {
     registeredCommands = [];
+  });
+
+  afterEach(() => {
+    restoreFn();
+  });
+
+  it("Register Commands Check V3", () => {
+    restoreFn = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    registerCommands(yargs);
+    expect(registeredCommands).includes("account");
+    expect(registeredCommands).includes("new");
+    if (!isPreviewFeaturesEnabled()) {
+      expect(registeredCommands).includes("capability");
+      expect(registeredCommands).includes("resource");
+    }
+    expect(registeredCommands).includes("provision");
+    expect(registeredCommands).includes("deploy");
+    expect(registeredCommands).includes("package");
+    expect(registeredCommands).includes("validate");
+    expect(registeredCommands).includes("publish");
+    expect(registeredCommands).includes("config");
+    expect(registeredCommands).includes("preview");
+    expect(registeredCommands).includes("apply");
   });
 
   it("Register Commands Check", () => {
@@ -53,6 +72,5 @@ describe("Register Commands Tests", function () {
     expect(registeredCommands).includes("publish");
     expect(registeredCommands).includes("config");
     expect(registeredCommands).includes("preview");
-    expect(registeredCommands).includes("apply");
   });
 });

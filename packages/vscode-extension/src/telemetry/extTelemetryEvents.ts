@@ -67,6 +67,9 @@ export enum TelemetryEvent {
   PublishStart = "publish-start",
   Publish = "publish",
 
+  PublishInDeveloperPortalStart = "publish-in-developer-portal-start",
+  PublishInDeveloperPortal = "publish-in-developer-portal",
+
   ManageTeamsApp = "manage-teams-app",
 
   ManageTeamsBot = "manage-teams-bot",
@@ -225,6 +228,10 @@ export enum TelemetryEvent {
   OpenExternalLink = "open-external-link",
 
   Deactivate = "deactivate",
+
+  // Create from developer portal
+  HandleUrlFromDeveloperProtalStart = "create-project-from-developer-portal-start",
+  HandleUrlFromDeveloperProtal = "create-project-from-developer-portal-start",
 }
 
 export enum TelemetryProperty {

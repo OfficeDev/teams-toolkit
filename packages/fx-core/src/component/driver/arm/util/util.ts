@@ -59,7 +59,7 @@ function convertOutput(output: deploymentOutput, map: Map<string, string>, prefi
       if (map.get(mapKey)) {
         throw new Error(getLocalizedString("driver.arm.error.outputConversionFailed", mapKey));
       }
-      map.set(mapKey.toUpperCase(), value.toString());
+      map.set(mapKey.toUpperCase(), value ? value.toString() : output[key].toString());
     }
   }
 }

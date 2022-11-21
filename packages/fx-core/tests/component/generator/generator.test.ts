@@ -6,13 +6,12 @@ import "mocha";
 import fs from "fs-extra";
 import path from "path";
 import {
-  fetchTemplateZipUrl,
   getSampleInfoFromName,
   renderTemplateFileData,
   renderTemplateFileName,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
-import { Generator, sampleDefaultOnActionError } from "../../../src/component/generator/generator";
+import { Generator } from "../../../src/component/generator/generator";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
@@ -22,17 +21,12 @@ import {
   fetchTemplateUrlWithTagAction,
   fetchTemplateZipFromLocalAction,
   fetchZipFromUrlAction,
-  GeneratorContext,
   unzipAction,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
-import {
-  defaultTimeoutInMs,
-  defaultTryLimits,
-  sampleDefaultTimeoutInMs,
-} from "../../../src/component/generator/constant";
+import { SampleInfo } from "../../../src/common/samples";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -99,6 +93,12 @@ describe("Generator utils", () => {
       assert.equal(e.message, "invalid sample name: 'test'");
     }
   });
+
+  it("get sample relative path", async () => {
+    const sampleName = "test";
+    const relativePath = generatorUtils.getSampleRelativePath(sampleName);
+    assert.isTrue(relativePath.endsWith(sampleName));
+  });
 });
 
 describe("Generator error", async () => {
@@ -157,6 +157,9 @@ describe("Generator happy path", async () => {
 
   it("external sample", async () => {
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
+    sandbox
+      .stub(generatorUtils, "getSampleInfoFromName")
+      .returns({ link: "test", relativePath: "test" } as SampleInfo);
     const sampleName = "bot-proactive-messaging-teamsfx";
     const result = await Generator.generateSample(context, tmpDir, sampleName);
     assert.isTrue(result.isOk());
@@ -179,6 +182,7 @@ describe("Generator happy path", async () => {
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
     zip.writeZip(path.join(tmpDir, "test.zip"));
+    sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("test.zip");
     sandbox
       .stub(generatorUtils, "fetchZipFromUrl")
       .resolves(new AdmZip(path.join(tmpDir, "test.zip")));

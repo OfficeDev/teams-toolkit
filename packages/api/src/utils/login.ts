@@ -60,7 +60,8 @@ export interface AzureAccountProvider {
 
   /**
    * Set subscription id to memory
-   * @param subscriptionId user used subscription id
+   * @param subscriptionId user used subscription id (subscriptionId==="" will clear sub information in Azure account provider
+   * cache)
    */
   setSubscription(subscriptionId: string): Promise<void>;
 

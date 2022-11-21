@@ -72,7 +72,7 @@ describe("Package Service", () => {
     const packageService = new PackageService("test-endpoint");
     let actualError: Error | undefined;
     try {
-      await packageService.retrieveTitleId("test-token", "test-path");
+      await packageService.retrieveTitleId("test-token", "test-manifest-id");
     } catch (error: any) {
       actualError = error;
     }

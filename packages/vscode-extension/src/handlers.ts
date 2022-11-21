@@ -112,7 +112,7 @@ import { openHubWebClient } from "./debug/launch";
 import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
 import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { selectAndDebug } from "./debug/runIconHandler";
-import { getTeamsAppInternalId, showInstallAppInTeamsMessage } from "./debug/teamsAppInstallation";
+import * as teamsAppInstallation from "./debug/teamsAppInstallation";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import * as exp from "./exp/index";
@@ -162,6 +162,12 @@ import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
+import {
+  isPersonalApp,
+  isGroupApp,
+  isBot,
+  isMessageExtension,
+} from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/utils";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -684,12 +690,15 @@ async function previewRemote(
       await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
       await openHubWebClient(includeFrontend, debugConfig.appId, hub);
     } else {
-      const shouldContinue = await showInstallAppInTeamsMessage(env, debugConfig.appId);
+      const shouldContinue = await teamsAppInstallation.showInstallAppInTeamsMessage(
+        env,
+        debugConfig.appId
+      );
       if (!shouldContinue) {
         return err(UserCancelError);
       }
 
-      const internalId = await getTeamsAppInternalId(debugConfig.appId);
+      const internalId = await teamsAppInstallation.getTeamsAppInternalId(debugConfig.appId);
       if (internalId !== undefined) {
         await progressBar.next(localize("teamstoolkit.preview.launchTeamsApp"));
         await openHubWebClient(includeFrontend, internalId, hub);
@@ -965,6 +974,16 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
   return await runCommand(Stage.publish);
 }
 
+export async function publishInDeveloperPortalHandler(
+  args?: any[]
+): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.PublishInDeveloperPortalStart,
+    getTriggerFromProperty(args)
+  );
+  return await runCommand(Stage.publishInDeveloperPortal);
+}
+
 export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowOutputChannel);
   VsCodeLogInstance.outputChannel.show();
@@ -1058,6 +1077,10 @@ export async function runCommand(
       }
       case Stage.listCollaborator: {
         result = await core.listCollaborator(inputs);
+        break;
+      }
+      case Stage.publishInDeveloperPortal: {
+        result = await core.publishInDeveloperPortal(inputs);
         break;
       }
       default:
@@ -1449,20 +1472,29 @@ export async function validateLocalPrerequisitesHandler(): Promise<string | unde
 export async function installAppInTeams(): Promise<string | undefined> {
   let shouldContinue = false;
   try {
-    const debugConfig = await commonUtils.getDebugConfig(
-      false,
-      environmentManager.getLocalEnvName()
-    );
-    if (debugConfig?.appId === undefined) {
-      throw new UserError(
-        ExtensionErrors.GetTeamsAppInstallationFailed,
-        ExtensionSource,
-        "Debug config not found"
+    let teamsAppId: string;
+    if (isV3Enabled()) {
+      teamsAppId = await commonUtils.getV3TeamsAppId(
+        globalVariables.workspaceUri!.fsPath,
+        environmentManager.getLocalEnvName()
       );
+    } else {
+      const debugConfig = await commonUtils.getDebugConfig(
+        false,
+        environmentManager.getLocalEnvName()
+      );
+      if (debugConfig?.appId === undefined) {
+        throw new UserError(
+          ExtensionErrors.GetTeamsAppInstallationFailed,
+          ExtensionSource,
+          "Debug config not found"
+        );
+      }
+      teamsAppId = debugConfig.appId;
     }
-    shouldContinue = await showInstallAppInTeamsMessage(
+    shouldContinue = await teamsAppInstallation.showInstallAppInTeamsMessage(
       environmentManager.getLocalEnvName(),
-      debugConfig.appId
+      teamsAppId
     );
   } catch (error: any) {
     showError(error);
@@ -3290,7 +3322,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           {
             iconPath: "file-code",
             tooltip: localize("teamstoolkit.guide.tooltip.inProduct"),
-            command: "",
+            command: "fx-extension.openTutorial",
           },
         ],
       },
@@ -3304,7 +3336,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           {
             iconPath: "file-symlink-file",
             tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "",
+            command: "fx-extension.openTutorial",
           },
         ],
       },
@@ -3318,7 +3350,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           {
             iconPath: "file-symlink-file",
             tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "",
+            command: "fx-extension.openTutorial",
           },
         ],
       },
@@ -3332,7 +3364,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           {
             iconPath: "file-symlink-file",
             tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "",
+            command: "fx-extension.openTutorial",
           },
         ],
       },
@@ -3346,7 +3378,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           {
             iconPath: "file-symlink-file",
             tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "",
+            command: "fx-extension.openTutorial",
           },
         ],
       },
@@ -3584,11 +3616,22 @@ export async function selectSubscriptionCallback(args?: any[]): Promise<Result<n
 export async function scaffoldFromDeveloperPortalHandler(
   args?: any[]
 ): Promise<Result<null, FxError>> {
-  if (!args || args.length !== 1) {
+  if (!args || args.length < 1) {
     // should never happen
     return ok(null);
   }
 
+  const personalTab = "personal-tab";
+  const groupTab = "group-tab";
+  const bot = "bot";
+  const messageExtension = "messaging-extension";
+
+  const appId = args[0];
+  let properties: { [p: string]: string } = {
+    teamsAppId: appId,
+  };
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtalStart, properties);
+  const loginHint = args.length < 2 ? undefined : args[1];
   const progressBar = VS_CODE_UI.createProgressBar(
     localize("teamstoolkit.devPortalIntegration.checkM365Account.progressTitle"),
     1
@@ -3598,7 +3641,7 @@ export async function scaffoldFromDeveloperPortalHandler(
   try {
     const appDefinitionRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
       { scopes: AppStudioScopes },
-      args[0]
+      appId
     );
     if (appDefinitionRes.isErr()) {
       if ((appDefinitionRes.error as any).displayMessage) {
@@ -3608,6 +3651,11 @@ export async function scaffoldFromDeveloperPortalHandler(
           localize("teamstoolkit.devPortalIntegration.generalError.message")
         );
       }
+      ExtTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.HandleUrlFromDeveloperProtal,
+        appDefinitionRes.error,
+        properties
+      );
       await progressBar.end(false);
       return err(appDefinitionRes.error);
     }
@@ -3618,13 +3666,45 @@ export async function scaffoldFromDeveloperPortalHandler(
       localize("teamstoolkit.devPortalIntegration.generalError.message")
     );
     await progressBar.end(false);
+    const error = assembleError(e);
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.HandleUrlFromDeveloperProtal,
+      error,
+      properties
+    );
     throw e;
   }
 
   const res = await createNewProjectHandler([{ teamsAppFromTdp: appDefinition }]);
+  const features = [];
+
+  if (isPersonalApp(appDefinition)) {
+    features.push(personalTab);
+  }
+
+  if (isGroupApp(appDefinition)) {
+    features.push(groupTab);
+  }
+
+  if (isBot(appDefinition)) {
+    features.push(bot);
+  }
+
+  if (isMessageExtension(appDefinition)) {
+    features.push(messageExtension);
+  }
+
+  properties = { ...properties, features: features.join(",") };
+
   if (res.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.HandleUrlFromDeveloperProtal,
+      res.error,
+      properties
+    );
     return err(res.error);
   }
 
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtal, properties);
   return ok(null);
 }

@@ -11,7 +11,7 @@ const authProvider = new teamsfxSdk.CertificateAuthProvider(
   teamsfxSdk.createPemCertOption("<your-cert>", "<your-private-key>")
 );
 const {{config.APIName}}Client = teamsfxSdk.createApiClient(
-  teamsFx.getConfig("TEAMSFX_API_{{capitalName}}_ENDPOINT"),
+  process.env.TEAMSFX_API_{{capitalName}}_ENDPOINT,
   authProvider
 );
 module.exports.{{config.APIName}}Client = {{config.APIName}}Client;

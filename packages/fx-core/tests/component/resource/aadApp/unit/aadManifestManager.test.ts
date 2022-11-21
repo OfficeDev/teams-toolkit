@@ -76,6 +76,55 @@ describe("AAD manifest manager test", () => {
     chai.expect(loadedManifest).to.be.deep.equal(fakeAadManifest);
   });
 
+  it("load manifest for reply url with custom schema", async () => {
+    const fakeStateMap: Map<string, any> = new Map();
+    fakeStateMap.set("fx-resource-aad-app-for-teams", {});
+    const mockContext: any = {
+      root: "fake-root",
+      envInfo: {
+        state: fakeStateMap,
+        config: null,
+      },
+    };
+
+    fakeAadManifest.id = "fake-aad-object-id";
+    fakeAadManifest.appId = "fake-aad-client-id";
+    const customRedirectUrl = [
+      {
+        type: "InstalledClient",
+        url: "customSchema://test.com",
+      },
+      {
+        type: "InstalledClient",
+        url: "msal8a7a479f-c0d0-4ee4-8da9-819a71387ca5://auth",
+      },
+      {
+        type: "Web",
+        url: "http://localhost",
+      },
+      {
+        type: "Web",
+        url: "https://{{WILL_BE_IGNORED}}",
+      },
+      {
+        type: "InstalledClient",
+        url: "custom://{{WILL_BE_IGNORED}}",
+      },
+    ];
+    fakeAadManifest.replyUrlsWithType = customRedirectUrl;
+    sandbox.stub(fs, "readFile").resolves(JSON.stringify(fakeAadManifest) as any);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const loadedManifest = await AadAppManifestManager.loadAadManifest(mockContext);
+
+    console.log(loadedManifest);
+    chai.assert.equal(loadedManifest.replyUrlsWithType.length, 3);
+
+    for (let i = 0; i < loadedManifest.replyUrlsWithType.length; i++) {
+      chai.assert.equal(loadedManifest.replyUrlsWithType[i].type, customRedirectUrl[i].type);
+      chai.assert.equal(loadedManifest.replyUrlsWithType[i].url, customRedirectUrl[i].url);
+    }
+  });
+
   it("load manifest failed with unknown resource id error should throw user error", async () => {
     const fakeStateMap: Map<string, any> = new Map();
     fakeStateMap.set("fx-resource-aad-app-for-teams", {});

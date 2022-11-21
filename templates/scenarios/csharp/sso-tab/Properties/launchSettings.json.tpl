@@ -10,8 +10,9 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "hotReloadProfile": "aspnetcore"
-    },
+    }
     //// Uncomment following profile to debug project only (without launching Teams)
+    //,
     //"{%ProjectName%}": {
     //  "commandName": "Project",
     //  "dotnetRunMessages": true,

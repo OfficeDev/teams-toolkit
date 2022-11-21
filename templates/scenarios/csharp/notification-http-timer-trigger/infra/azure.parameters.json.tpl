@@ -11,8 +11,14 @@
       "botAadAppClientSecret": {
         "value": "${{SECRET_BOT_PASSWORD}}"
       },
-      "webAppSKU": {
+      "functionAppSKU": {
         "value": "B1"
+      },
+      "storageSKU": {
+        "value": "Standard_LRS"
+      },
+      "botDisplayName": {
+        "value": "{%appName%}"
       }
     }
   }

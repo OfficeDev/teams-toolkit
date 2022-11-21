@@ -3,9 +3,11 @@
 @description('Used to generate names for all resources in this file')
 param resourceBaseName string
 
+@maxLength(42)
+param botDisplayName string
+
 param botServiceName string = resourceBaseName
 param botServiceSku string = 'F0'
-param botDisplayName string = resourceBaseName
 param botAadAppClientId string
 param botAppDomain string
 

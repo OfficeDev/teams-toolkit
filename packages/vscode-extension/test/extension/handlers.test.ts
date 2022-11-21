@@ -24,6 +24,7 @@ import {
   Void,
   VsCodeEnv,
   PathNotExistError,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
@@ -60,6 +61,7 @@ import { VsCodeLogProvider } from "../../src/commonlib/log";
 import { ProgressHandler } from "../../src/progressHandler";
 import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 import { assert } from "console";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -213,6 +215,24 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const provisionResources = sinon.spy(handlers.core, "provisionResources");
+      sinon.stub(envTreeProviderInstance, "reloadEnvironments");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+
+      await handlers.provisionHandler();
+
+      sinon.assert.calledOnce(provisionResources);
+      sinon.restore();
+    });
+
+    it("provisionHandler() - failed to get env", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(vscode.window, "showErrorMessage");
+      const provisionResources = sinon.spy(handlers.core, "provisionResources");
+
+      sinon.stub(environmentManager, "listAllEnvConfigs").resolves(err(new SystemError({})));
       sinon.stub(envTreeProviderInstance, "reloadEnvironments");
       sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
 

@@ -14,15 +14,11 @@
         "react-scripts": "^5.0.1"
     },
     "devDependencies": {
-        "cross-env": "^7.0.3",
         "@microsoft/teamsfx-run-utils": "alpha"
     },
     "scripts": {
         "start": "react-scripts start",
-        "install:teamsfx": "npm install",
         "build": "react-scripts build",
-        "build:teamsfx": "cross-env-shell \"env-cmd -f .env.teamsfx.${TEAMS_FX_ENV} npm run build\"",
-        "build:teamsfx:dev": "cross-env TEAMS_FX_ENV=dev npm run build:teamsfx",
         "eject": "react-scripts eject",
         "test": "echo \"Error: no test specified\" && exit 1"
     },

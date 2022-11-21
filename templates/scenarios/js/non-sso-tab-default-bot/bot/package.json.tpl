@@ -21,7 +21,6 @@
     "restify": "~8.5.1"
   },
   "devDependencies": {
-    "@microsoft/teamsfx-run-utils": "alpha",
     "nodemon": "^2.0.7"
   }
 }

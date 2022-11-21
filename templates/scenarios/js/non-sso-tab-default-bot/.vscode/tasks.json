@@ -83,7 +83,7 @@
         {
             "label": "Start bot",
             "type": "shell",
-            "command": "node teamsfx/script/run.js . teamsfx/.env.local bot",
+            "command": "node teamsfx/script/run.bot.js . teamsfx/.env.local",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -107,7 +107,7 @@
         {
             "label": "Start frontend",
             "type": "shell",
-            "command": "node teamsfx/script/run.js . teamsfx/.env.local tab",
+            "command": "node teamsfx/script/run.tab.js . teamsfx/.env.local",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}"

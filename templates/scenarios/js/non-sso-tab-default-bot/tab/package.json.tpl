@@ -13,9 +13,6 @@
         "react-router-dom": "^5.1.2",
         "react-scripts": "^5.0.1"
     },
-    "devDependencies": {
-        "@microsoft/teamsfx-run-utils": "alpha"
-    },
     "scripts": {
         "start": "react-scripts start",
         "build": "react-scripts build",

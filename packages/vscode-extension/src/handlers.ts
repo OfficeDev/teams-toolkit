@@ -985,7 +985,20 @@ export async function provisionHandler(args?: any[]): Promise<Result<null, FxErr
 
 export async function deployHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployStart, getTriggerFromProperty(args));
-  return await runCommand(Stage.deploy);
+
+  const inputs = getSystemInputs();
+  if (isV3Enabled()) {
+    const selectedEnv = await askTargetEnvironment(false);
+    if (selectedEnv.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+      showError(selectedEnv.error);
+      return err(selectedEnv.error);
+    }
+    const env = selectedEnv.value;
+    inputs.env = env;
+  }
+
+  return await runCommand(Stage.deploy, inputs);
 }
 
 export async function publishHandler(args?: any[]): Promise<Result<null, FxError>> {

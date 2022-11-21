@@ -12,7 +12,7 @@ import {
   TelemetrySuccess,
 } from "../../../src/telemetry/cliTelemetryEvents";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
-import UpdateAadManifest from "../../../src/cmds/updateAad";
+import Update, { UpdateAadManifest } from "../../../src/cmds/update";
 import { expect } from "chai";
 
 describe("Update Aad Manifest Command Tests", function () {
@@ -67,18 +67,18 @@ describe("Update Aad Manifest Command Tests", function () {
   it("should pass builder check", () => {
     const cmd = new UpdateAadManifest();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
-    // console.log("---------------", registeredCommands);
-    expect(registeredCommands).deep.equals(["update aad-manifest"]);
+    expect(registeredCommands).deep.equals(["aad-manifest"]);
   });
 
   it("Run command success", async () => {
     sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(""));
-    const cmd = new UpdateAadManifest();
+    const cmd = new Update();
+    const updateAadManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "aad-manifest");
     const args = {
       folder: "fake_test",
       env: "dev",
     };
-    await cmd.handler(args);
+    await updateAadManifest!.handler(args);
     expect(telemetryEvents).deep.equals([
       TelemetryEvent.UpdateAadManifestStart,
       TelemetryEvent.UpdateAadManifest,

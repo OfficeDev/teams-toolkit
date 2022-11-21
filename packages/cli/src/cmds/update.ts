@@ -5,6 +5,7 @@ import { Result, FxError, err, ok, Void, Stage } from "@microsoft/teamsfx-api";
 import path from "path";
 import yargs, { Argv } from "yargs";
 import activate from "../activate";
+import { HelpParamGenerator } from "../helpParamGenerator";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -14,9 +15,9 @@ import {
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 
-export default class UpdateAadManifest extends YargsCommand {
-  public readonly commandHead = "update aad-manifest";
-  public readonly command = `${this.commandHead}`;
+export class UpdateAadManifest extends YargsCommand {
+  public readonly commandHead = "aad-manifest";
+  public readonly command = this.commandHead;
   public readonly description = "Update the Teams Aad App Manifest in the current application.";
 
   public builder(yargs: Argv): Argv<any> {
@@ -63,6 +64,29 @@ export default class UpdateAadManifest extends YargsCommand {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       ...makeEnvRelatedProperty(rootFolder, inputs),
     });
+    return ok(null);
+  }
+}
+
+export default class Update extends YargsCommand {
+  public readonly commandHead = "update";
+  public readonly command = `${this.commandHead} <manifest>`;
+  public readonly description = "Update the specific manifest file in the current application.";
+  public readonly subCommands: YargsCommand[] = [new UpdateAadManifest()];
+  public builder(yargs: Argv): Argv<any> {
+    this.subCommands.forEach((cmd) => {
+      yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
+    });
+    return yargs
+      .options("manifest", {
+        choices: this.subCommands.map((c) => c.commandHead),
+        global: false,
+        hidden: true,
+      })
+      .version(false);
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     return ok(null);
   }
 }

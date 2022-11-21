@@ -23,7 +23,7 @@ import Env from "./env";
 import M365 from "./m365/m365";
 import { ManifestValidate } from "./validate";
 import { ApplyCommand } from "./apply";
-import UpdateAadManifest from "./updateAad";
+import UpdateAadManifest from "./update";
 import Init from "./init";
 
 export const commands: YargsCommand[] = [

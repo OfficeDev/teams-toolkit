@@ -206,6 +206,16 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "suggested": false
+        },
+        {
+            "id": "video-filters-app-sample",
+            "title": "Video Filters App Sample",
+            "shortDescription": "A minimal sample app with basic video processing capabilities",
+            "fullDescription": "A minimal sample app with basic video processing capabilities",
+            "tags": ["Video filters", "Video app", "AR", "Video", "Video Stream", "Video Extensibility"],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "suggested": false
         }
     ]
 }

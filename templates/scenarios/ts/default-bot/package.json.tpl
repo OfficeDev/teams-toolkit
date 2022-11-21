@@ -19,7 +19,6 @@
   "dependencies": {
     "@microsoft/adaptivecards-tools": "^1.0.0",
     "botbuilder": "^4.17.0",
-    "isomorphic-fetch": "^3.0.0",
     "restify": "^8.5.1"
   },
   "devDependencies": {

@@ -45,10 +45,6 @@ const ngrokEndpointRegex =
   /obj=tunnels name=(?<tunnelName>.*) addr=(?<src>.*) url=(?<endpoint>https:\/\/([\S])*)/;
 const ngrokWebServiceRegex = /msg="starting web service" obj=web addr=(?<webServiceUrl>([\S])*)/;
 const defaultNgrokWebServiceUrl = "http://127.0.0.1:4040/api/tunnels";
-const outputName = {
-  endpoint: "TUNNEL_ENDPOINT",
-  domain: "TUNNEL_DOMAIN",
-};
 
 type LocalTunnelTaskStatus = {
   endpoint?: EndpointInfo;
@@ -66,6 +62,10 @@ export interface LocalTunnelArgs {
   ngrokPath?: string;
   tunnelInspection?: string;
   env?: string;
+  output?: {
+    endpoint?: string;
+    domain?: string;
+  };
 }
 
 export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
@@ -319,10 +319,17 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       }
 
       const url = new URL(endpoint);
-      const envVars = {
-        [outputName.endpoint]: url.origin,
-        [outputName.domain]: url.hostname,
-      };
+      const envVars: { [key: string]: string } = {};
+      if (this.args?.output?.endpoint) {
+        envVars[this.args.output.endpoint] = url.origin;
+      }
+      if (this.args?.output?.domain) {
+        envVars[this.args.output.domain] = url.hostname;
+      }
+
+      if (Object.entries(envVars).length == 0) {
+        return ok(Void);
+      }
 
       const res = await envUtil.writeEnv(
         globalVariables.workspaceUri.fsPath,

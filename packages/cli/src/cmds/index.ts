@@ -23,7 +23,7 @@ import Env from "./env";
 import M365 from "./m365/m365";
 import { ManifestValidate } from "./validate";
 import { ApplyCommand } from "./apply";
-import UpdateAadManifest from "./update";
+import Update from "./update";
 import Init from "./init";
 
 export const commands: YargsCommand[] = [
@@ -52,7 +52,7 @@ export function registerCommands(yargs: Argv): void {
   if (isV3Enabled()) {
     commands.push(new ApplyCommand());
     commands.push(new Init());
-    commands.push(new UpdateAadManifest());
+    commands.push(new Update());
   }
 
   commands.forEach((command) => {

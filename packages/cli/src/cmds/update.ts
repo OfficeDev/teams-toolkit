@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, err, ok, Void, Stage } from "@microsoft/teamsfx-api";
+import { Result, FxError, err, ok } from "@microsoft/teamsfx-api";
 import path from "path";
-import yargs, { Argv } from "yargs";
+import { Argv } from "yargs";
 import activate from "../activate";
-import { HelpParamGenerator } from "../helpParamGenerator";
 import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,

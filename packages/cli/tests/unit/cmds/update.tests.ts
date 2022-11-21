@@ -3,7 +3,7 @@
 
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
-import { err, Func, FxError, Inputs, ok, UserError } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, UserError } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import {

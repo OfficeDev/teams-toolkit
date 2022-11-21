@@ -52,7 +52,7 @@ const imageMapping: { [p: string]: any } = {
   "bot-proactive-messaging-teamsfx": SendProactiveMsg,
   "stocks-update-notification-bot": StockUpdate,
   "query-org-user-with-message-extension-sso": MsgExtSSO,
-  "video-filter-app-sample": VideoFilterApp,
+  "teams-videoapp-sample": VideoFilterApp,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

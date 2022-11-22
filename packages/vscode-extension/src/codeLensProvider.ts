@@ -623,7 +623,7 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
     const codeLenses: vscode.CodeLens[] = [];
     const updateCmd = {
       title: "🔄Deploy AAD manifest",
-      command: "fx-extension.deployAadAppManifest",
+      command: "fx-extension.updateAadAppManifest",
       arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), updateCmd));

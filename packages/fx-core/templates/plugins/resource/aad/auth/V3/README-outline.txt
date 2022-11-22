@@ -13,4 +13,4 @@ Basically you will need take care these configurations:
 * Add SSO application information in Teams Toolkit configuration files in order to make sure the authentication app can be registered on backend service and started by Teams Toolkit when you debugging or previewing Teams application.
 
 Refer to the step-by-step guide for Teams Tab Application at http://{{sso.steps.tab.app}}.
-Refer to the step-by-step guide for Teams Bot Applications at http://{{sso.steps.bot.app}}. Please be noted that currently only Command and Response Bot is supported to add SSO component.
+Refer to the step-by-step guide for Teams Bot Applications at http://{{sso.steps.bot.app}}. This guide use Command and Response bot as an example to show case how to enable SSO.

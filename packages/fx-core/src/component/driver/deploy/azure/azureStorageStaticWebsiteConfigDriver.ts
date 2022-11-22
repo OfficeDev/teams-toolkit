@@ -17,6 +17,7 @@ import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
 import { DeployConstant } from "../../../constant/deployConstant";
+import { ProgressMessages } from "../../../messages";
 
 const ACTION_NAME = "azureStorage/enableStaticWebsite";
 
@@ -37,7 +38,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.PROVISION_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const progressBar = await context.ui?.createProgressBar(
-      "Confining Azure Storage static website",
+      ProgressMessages.configureAzureStorageEnableStaticWebsite,
       2
     );
     return wrapRun(
@@ -60,7 +61,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
   ): Promise<Map<string, string>> {
     const logger = context.logProvider;
     await progressBar?.start();
-    await progressBar?.next("Checking Azure Storage static website status");
+    await progressBar?.next(ProgressMessages.checkAzureStorageEnableStaticWebsite);
     const input = AzureStorageStaticWebsiteConfigDriver.STORAGE_CONFIG_ARGS(args);
     await logger.debug(
       `Enabling static website feature for Azure Storage account ${input.storageResourceId}`
@@ -76,12 +77,12 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
       await logger.debug(
         `Static website feature is already enabled for Azure Storage account ${input.storageResourceId}.`
       );
-      await progressBar?.next("Azure Storage static website already enabled");
+      await progressBar?.next(ProgressMessages.azureStorageStaticWebsiteAlreadyEnabled);
       await progressBar?.end(true);
       return AzureStorageStaticWebsiteConfigDriver.RETURN_VALUE;
     }
 
-    await progressBar?.next("Enabling Azure Storage static website");
+    await progressBar?.next(ProgressMessages.enableAzureStorageStaticWebsite);
     const properties = {
       staticWebsite: {
         indexDocument: input.indexPage ?? DeployConstant.DEFAULT_INDEX_DOCUMENT,

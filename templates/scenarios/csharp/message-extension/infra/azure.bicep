@@ -12,6 +12,9 @@ param botAadAppClientSecret string
 
 param webAppSKU string
 
+@maxLength(42)
+param botDisplayName string
+
 param serverfarmsName string = resourceBaseName
 param webAppName string = resourceBaseName
 param location string = resourceGroup().location
@@ -61,6 +64,7 @@ module azureBotRegistration './botRegistration/azurebot.bicep' = {
     resourceBaseName: resourceBaseName
     botAadAppClientId: botAadAppClientId
     botAppDomain: webApp.properties.defaultHostName
+    botDisplayName: botDisplayName
   }
 }
 

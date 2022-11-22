@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "bot${{RESOURCE_SUFFIX}}"
+      "value": "notification${{RESOURCE_SUFFIX}}"
     },
     "botAadAppClientId": {
       "value": "${{BOT_ID}}"
@@ -11,8 +11,14 @@
     "botAadAppClientSecret": {
       "value": "${{SECRET_BOT_PASSWORD}}"
     },
-    "webAppSKU": {
+    "functionAppSKU": {
       "value": "B1"
+    },
+    "storageSKU": {
+      "value": "Standard_LRS"
+    },
+    "botDisplayName": {
+      "value": "{%appName%}"
     }
   }
 }

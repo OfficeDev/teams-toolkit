@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "resourceBaseName": {
-        "value": "commandbot${{RESOURCE_SUFFIX}}"
+        "value": "workflow${{RESOURCE_SUFFIX}}"
       },
       "botAadAppClientId": {
         "value": "${{BOT_ID}}"
@@ -13,6 +13,9 @@
       },
       "webAppSKU": {
         "value": "B1"
+      },
+      "botDisplayName": {
+        "value": "{%appName%}"
       }
     }
   }

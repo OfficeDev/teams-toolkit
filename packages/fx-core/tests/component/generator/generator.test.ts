@@ -93,12 +93,6 @@ describe("Generator utils", () => {
       assert.equal(e.message, "invalid sample name: 'test'");
     }
   });
-
-  it("get sample relative path", async () => {
-    const sampleName = "test";
-    const relativePath = generatorUtils.getSampleRelativePath(sampleName);
-    assert.isTrue(relativePath.endsWith(sampleName));
-  });
 });
 
 describe("Generator error", async () => {

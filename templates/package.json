@@ -55,6 +55,7 @@
         "js/m365-tab",
         "js/sso-tab",
         "js/non-sso-tab",
+        "js/non-sso-tab-default-bot",
         "ts/notification-http-timer-trigger",
         "ts/notification-http-trigger",
         "ts/notification-timer-trigger",

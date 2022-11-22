@@ -14,6 +14,8 @@
     },
     "devDependencies": {
         "@microsoft/teamsfx-run-utils": "alpha",
+    },
+    "dependencies": {
         "concurrently": "^7.6.0"
     },
     "license": "MIT"

@@ -5,7 +5,8 @@ import "mocha";
 import axios, { AxiosResponse } from "axios";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import * as sinon from "sinon";
+import Sinon, * as sinon from "sinon";
+import mockFs from "mock-fs";
 
 import {
   getSideloadingStatus,
@@ -15,6 +16,7 @@ import {
   canAddCICDWorkflows,
   getSPFxVersion,
   getAppSPFxVersion,
+  isVideoFilterProject,
 } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
 import {
@@ -28,6 +30,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { TabSsoItem } from "../../src/component/constants";
 import * as featureFlags from "../../src/common/featureFlags";
+import * as path from "path";
 import fs from "fs-extra";
 import { environmentManager } from "../../src/core/environment";
 import { ExistingTemplatesStat } from "../../src/component/feature/cicd/existingTemplatesStat";
@@ -443,6 +446,103 @@ describe("tools", () => {
       const version = await getAppSPFxVersion("");
 
       chai.expect(version).equals("1.14.0");
+    });
+  });
+
+  describe("isVideoFilterProject", async () => {
+    let sandbox: Sinon.SinonSandbox;
+    const mockProjectRoot = "video-filter";
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+    });
+    afterEach(() => {
+      sandbox.restore();
+      mockFs.restore();
+    });
+
+    it("Can recognize normal video filter project", async () => {
+      // Arrange
+      const manifest = {
+        meetingExtensionDefinition: {
+          videoFiltersConfigurationUrl: "https://a.b.c/",
+        },
+      };
+      mockFs({
+        [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
+          JSON.stringify(manifest),
+      });
+
+      // Act
+      const result = await isVideoFilterProject(mockProjectRoot);
+
+      // Assert
+      chai.expect(result.isOk()).to.be.true;
+      chai.expect(result._unsafeUnwrap()).to.be.true;
+    });
+
+    it("Should not recognize tab project as video filter", async () => {
+      // Arrange
+      const manifest = {
+        $schema:
+          "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
+        manifestVersion: "1.14",
+        version: "1.0.0",
+        id: "{{state.fx-resource-appstudio.teamsAppId}}",
+        packageName: "com.microsoft.teams.extension",
+        developer: {
+          name: "Teams App, Inc.",
+          websiteUrl: "https://www.example.com",
+          privacyUrl: "https://www.example.com/termofuse",
+          termsOfUseUrl: "https://www.example.com/privacy",
+        },
+        icons: {
+          color: "{{config.manifest.icons.color}}",
+          outline: "{{config.manifest.icons.outline}}",
+        },
+        name: {
+          short: "{{config.manifest.appName.short}}",
+          full: "{{config.manifest.appName.full}}",
+        },
+        description: {
+          short: "{{config.manifest.description.short}}",
+          full: "{{config.manifest.description.full}}",
+        },
+        accentColor: "#FFFFFF",
+        bots: [],
+        composeExtensions: [],
+        configurableTabs: [
+          {
+            configurationUrl:
+              "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/config",
+            canUpdateConfiguration: true,
+            scopes: ["team", "groupchat"],
+          },
+        ],
+        staticTabs: [
+          {
+            entityId: "index0",
+            name: "Personal Tab",
+            contentUrl:
+              "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
+            websiteUrl:
+              "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
+            scopes: ["personal"],
+          },
+        ],
+        permissions: ["identity", "messageTeamMembers"],
+        validDomains: ["{{state.fx-resource-frontend-hosting.domain}}"],
+      };
+      mockFs({
+        [path.join(mockProjectRoot, "templates", "appPackage", "manifest.template.json")]:
+          JSON.stringify(manifest),
+      });
+
+      // Act
+      const result = await isVideoFilterProject(mockProjectRoot);
+
+      // Assert
+      chai.expect(result.isOk()).to.be.true;
+      chai.expect(result._unsafeUnwrap()).to.be.false;
     });
   });
 });

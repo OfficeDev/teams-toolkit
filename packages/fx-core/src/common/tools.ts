@@ -28,6 +28,7 @@ import {
   ProjectSettingsFileName,
   SettingsFileName,
   SettingsFolderName,
+  assembleError,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { exec, ExecOptions } from "child_process";
@@ -76,6 +77,7 @@ import { getProjectTemplatesFolderPath } from "./utils";
 import * as path from "path";
 import { isMiniApp } from "./projectSettingsHelperV3";
 import { getAppStudioEndpoint } from "../component/resource/appManifest/constants";
+import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -734,6 +736,22 @@ export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
     return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
   }
   return false;
+}
+
+export async function isVideoFilterProject(projectPath: string): Promise<Result<boolean, FxError>> {
+  let manifestResult;
+  try {
+    manifestResult = await manifestUtils.readAppManifest(projectPath);
+  } catch (e) {
+    return err(assembleError(e));
+  }
+  if (manifestResult.isErr()) {
+    return err(manifestResult.error);
+  }
+  const manifest = manifestResult.value;
+  return ok(
+    (manifest.meetingExtensionDefinition as any)?.videoFiltersConfigurationUrl !== undefined
+  );
 }
 
 export function getHashedEnv(envName: string): string {

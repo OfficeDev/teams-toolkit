@@ -14,7 +14,7 @@ import {
   UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
+import { environmentManager, FxCore, getUuid } from "@microsoft/teamsfx-core";
 
 import Provision, { ProvisionManifest } from "../../../src/cmds/provision";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -194,10 +194,12 @@ describe("Provision Command Tests", function () {
   it("Provision Command Running -- with subscriptionId", async () => {
     const cmd = new Provision();
     const subscriptionParam = "subscription";
+    const resourceGroupParam = "resource-group";
     const args = {
       interactive: false,
       [constants.RootFolderNode.data.name as string]: "real",
       [subscriptionParam]: existedSubId,
+      [resourceGroupParam]: getUuid(),
     };
     await cmd.handler(args);
     expect(allArguments.get(subscriptionParam)).equals(existedSubId);

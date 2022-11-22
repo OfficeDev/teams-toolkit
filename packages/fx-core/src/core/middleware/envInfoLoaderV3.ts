@@ -21,7 +21,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { isV3Enabled } from "../../common/tools";
 import { ComponentNames } from "../../component/constants";
-import { EnvLoaderMW, envLoaderMWImpl } from "../../component/middleware/envMW";
+import { envLoaderMWImpl } from "../../component/middleware/envMW";
 import { LocalCrypto } from "../crypto";
 import { environmentManager, newEnvInfoV3 } from "../environment";
 import {

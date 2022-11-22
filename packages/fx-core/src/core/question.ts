@@ -780,11 +780,11 @@ export const BotIdsQuestion = (
   const options: OptionItem[] = [];
   if (botId) {
     defaultIds.push(answerToRepaceBotId);
-    options.push(botOptionItem(true));
+    options.push(botOptionItem(false));
   }
   if (messageExtensionBotId) {
     defaultIds.push(answerToReplaceMessageExtensionBotId);
-    options.push(botOptionItem(false));
+    options.push(botOptionItem(true));
   }
   return {
     type: "multiSelect",

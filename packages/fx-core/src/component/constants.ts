@@ -865,6 +865,11 @@ export const TabNonSsoItem: OptionItem = {
   groupName: getLocalizedString("core.options.separator.basic"),
 };
 
+export const TabNonSsoAndDefaultBotItem: OptionItem = {
+  id: "TabNonSsoAndBot",
+  label: "",
+};
+
 export const M365SsoLaunchPageOptionItem: OptionItem = {
   id: "M365SsoLaunchPage",
   label: `$(browser) ${getLocalizedString("core.M365SsoLaunchPageOptionItem.label")}`,

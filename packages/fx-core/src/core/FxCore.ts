@@ -148,6 +148,7 @@ import "../component/driver/botFramework/createOrUpdateBot";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
 import { containsUnsupportedFeature } from "../component/resource/appManifest/utils/utils";
+import { VideoFilterAppBlockerMW } from "./middleware/videoFilterAppBlocker";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -293,6 +294,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    VideoFilterAppBlockerMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -372,6 +374,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    VideoFilterAppBlockerMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -452,6 +455,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    VideoFilterAppBlockerMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -516,6 +520,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    VideoFilterAppBlockerMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
     ProjectSettingsWriterMW,

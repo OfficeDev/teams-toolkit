@@ -1,6 +1,6 @@
 import sampleConfig from "./samples-config.json";
 import sampleConfigV3 from "./samples-config-v3.json";
-import { isV3Enabled } from "./tools";
+import { isV3Enabled, isVideoFilterEnabled } from "./tools";
 
 export interface SampleInfo {
   id: string;
@@ -57,6 +57,15 @@ class SampleProvider {
             relativePath: sample.relativePath,
           } as SampleInfo;
         });
+      }
+
+      // remove video filter sample app if feature flag is disabled.
+      if (!isVideoFilterEnabled()) {
+        const videoFilterSampleId = "teams-videoapp-sample";
+        const index = samples.findIndex((sample) => sample.id === videoFilterSampleId);
+        if (index !== -1) {
+          samples.splice(index, 1);
+        }
       }
 
       this.sampleCollection = {

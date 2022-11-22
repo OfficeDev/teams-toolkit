@@ -25,6 +25,7 @@ import AdaptiveCardNotification from "../../img/webview/sample/adaptive-card-not
 import SendProactiveMsg from "../../img/webview/sample/send-proactive-messages.gif";
 import StockUpdate from "../../img/webview/sample/stock-update.gif";
 import MsgExtSSO from "../../img/webview/sample/message-extension-sso.gif";
+import VideoFilterApp from "../../img/webview/sample/video-filter-app-sample-in-test-app.gif";
 import DeepLinking from "../../img/webview/sample/deeplink-without-sso.gif";
 import {
   TelemetryEvent,
@@ -52,6 +53,7 @@ const imageMapping: { [p: string]: any } = {
   "bot-proactive-messaging-teamsfx": SendProactiveMsg,
   "stocks-update-notification-bot": StockUpdate,
   "query-org-user-with-message-extension-sso": MsgExtSSO,
+  "teams-videoapp-sample": VideoFilterApp,
   "deep-linking-hello-world-tab-without-sso-M365": DeepLinking,
 };
 

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, err, ok } from "@microsoft/teamsfx-api";
+import { Result, FxError, err, ok, Stage } from "@microsoft/teamsfx-api";
 import { getHashedEnv } from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
@@ -27,6 +27,7 @@ export default class Publish extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const inputs = getSystemInputs(args.folder, args.env);
+    inputs.stage = Stage.publish;
 
     const properties: { [key: string]: string } = {};
     if (inputs.env) {

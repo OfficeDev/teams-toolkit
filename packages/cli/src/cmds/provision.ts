@@ -121,6 +121,7 @@ export default class Provision extends YargsCommand {
       }
     }
     const inputs = getSystemInputs(rootFolder, args.env);
+    inputs.stage = Stage.provision;
 
     if (this.resourceGroupParam in args) {
       inputs.targetResourceGroupName = args[this.resourceGroupParam];

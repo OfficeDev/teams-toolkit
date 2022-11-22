@@ -87,6 +87,20 @@ export const envLoaderMWImpl = async (
       ctx.result = err(UserCancelError);
       return;
     }
+  } else if (!withLocalEnv && inputs.env === environmentManager.getLocalEnvName()) {
+    ctx.result = err(
+      new UserError({
+        source: "EnvLoaderMW",
+        name: "InvalidEnvForAction",
+        displayMessage: getLocalizedString(
+          "core.error.invalidEnvForAction",
+          inputs.env,
+          inputs.stage
+        ),
+        message: getDefaultString("core.error.invalidEnvForAction", inputs.env, inputs.stage),
+      })
+    );
+    return;
   }
   const res = await envUtil.readEnv(projectPath, inputs.env);
   if (res.isErr()) {

@@ -71,6 +71,7 @@ export default class Deploy extends YargsCommand {
     const core = result.value;
 
     const inputs = getSystemInputs(rootFolder, args.env as any);
+    inputs.stage = Stage.deploy;
     {
       {
         const root = HelpParamGenerator.getQuestionRootNodeForHelp(Stage.deploy);

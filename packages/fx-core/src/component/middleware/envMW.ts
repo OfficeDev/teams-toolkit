@@ -18,24 +18,30 @@ import { envUtil } from "../utils/envUtil";
 import _ from "lodash";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 
-export const EnvLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  const envBefore = _.cloneDeep(process.env);
-  try {
-    await envLoaderMWImpl(ctx, next);
-    return;
-  } finally {
-    const keys = Object.keys(process.env);
-    for (const k of keys) {
-      if (!(k in envBefore)) {
-        delete process.env[k];
-      } else {
-        process.env[k] = envBefore[k];
+export function EnvLoaderMW(withLocalEnv: boolean): Middleware {
+  return async (ctx: CoreHookContext, next: NextFunction) => {
+    const envBefore = _.cloneDeep(process.env);
+    try {
+      await envLoaderMWImpl(withLocalEnv, ctx, next);
+      return;
+    } finally {
+      const keys = Object.keys(process.env);
+      for (const k of keys) {
+        if (!(k in envBefore)) {
+          delete process.env[k];
+        } else {
+          process.env[k] = envBefore[k];
+        }
       }
     }
-  }
-};
+  };
+}
 
-export const envLoaderMWImpl: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
+export const envLoaderMWImpl = async (
+  withLocalEnv: boolean,
+  ctx: CoreHookContext,
+  next: NextFunction
+) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
@@ -63,7 +69,14 @@ export const envLoaderMWImpl: Middleware = async (ctx: CoreHookContext, next: Ne
       );
       return;
     }
-    question.staticOptions = envListRes.value;
+    if (withLocalEnv) {
+      question.staticOptions = envListRes.value;
+    } else {
+      question.staticOptions = envListRes.value.filter(
+        (p) => p !== environmentManager.getLocalEnvName()
+      );
+    }
+
     const res = await traverse(new QTreeNode(question), inputs, TOOLS.ui);
     if (res.isErr()) {
       TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);

@@ -1,28 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as fs from "fs-extra";
+import * as path from "path";
+import semver from "semver";
+import {
+  nodeNotFoundHelpLink,
+  nodeNotSupportedForAzureHelpLink,
+  nodeNotSupportedForSPFxHelpLink,
+  v3NodeNotFoundHelpLink,
+  v3NodeNotSupportedHelpLink,
+} from "../constant/helpLink";
+import { Messages } from "../constant/message";
+import { DepsCheckerEvent } from "../constant/telemetry";
+import { DependencyStatus, DepsChecker, DepsType, InstallOptions } from "../depsChecker";
 import {
   DepsCheckerError,
   NodeNotFoundError,
   NodeNotRecommendedError,
   NodeNotSupportedError,
 } from "../depsError";
-import { cpUtils } from "../util/cpUtils";
-import { DepsCheckerEvent } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DependencyStatus, DepsChecker, DepsType, InstallOptions } from "../depsChecker";
-import { Messages } from "../constant/message";
-import {
-  nodeNotFoundHelpLink,
-  nodeNotSupportedForSPFxHelpLink,
-  nodeNotSupportedForAzureHelpLink,
-  v3NodeNotFoundHelpLink,
-  v3NodeNotSupportedHelpLink,
-} from "../constant/helpLink";
-import semver from "semver";
-import * as fs from "fs-extra";
-import * as path from "path";
+import { cpUtils } from "../util/cpUtils";
 
 const NodeName = "Node.js";
 

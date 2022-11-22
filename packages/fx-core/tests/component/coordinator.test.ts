@@ -35,7 +35,7 @@ import {
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { provisionUtils } from "../../src/component/provisionUtils";
-import { coordinator } from "../../src/component/coordinator";
+import { coordinator, TemplateNames } from "../../src/component/coordinator";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import fs from "fs-extra";
 import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
@@ -141,7 +141,7 @@ describe("component coordinator test", () => {
 
   it("create project for app with tab features from Developer Portal", async () => {
     sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     sandbox.stub(developerPortalScaffoldUtils, "updateFilesForTdp").resolves(ok(undefined));
@@ -173,11 +173,12 @@ describe("component coordinator test", () => {
     const res2 = await fxCore.createProject(inputs);
 
     assert.isTrue(res2.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.Tab);
   });
 
   it("create project for app with bot feature from Developer Portal with updating files failed", async () => {
     sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     sandbox
@@ -217,6 +218,7 @@ describe("component coordinator test", () => {
     if (res.isErr()) {
       assert.equal(res.error.name, "error");
     }
+    assert.equal(generator.args[0][2], TemplateNames.DefaultBot);
   });
 
   it("create project for app with no features from Developer Portal", async () => {
@@ -245,6 +247,112 @@ describe("component coordinator test", () => {
       console.log(res.error);
     }
     assert.isTrue(res.isOk());
+  });
+
+  it("create project for app with tab and bot features from Developer Portal", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(developerPortalScaffoldUtils, "updateFilesForTdp").resolves(ok(undefined));
+    const appDefinition: AppDefinition = {
+      teamsAppId: "mock-id",
+      appId: "mock-id",
+      staticTabs: [
+        {
+          name: "tab1",
+          entityId: "tab1",
+          contentUrl: "mock-contentUrl",
+          websiteUrl: "mock-websiteUrl",
+          context: [],
+          scopes: [],
+        },
+      ],
+      bots: [
+        {
+          botId: "mock-bot-id",
+          isNotificationOnly: false,
+          needsChannelSelector: false,
+          supportsCalling: false,
+          supportsFiles: false,
+          supportsVideo: false,
+          scopes: [],
+          teamCommands: [],
+          groupChatCommands: [],
+          personalCommands: [],
+        },
+      ],
+    };
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      teamsAppFromTdp: appDefinition,
+      [CoreQuestionNames.ReplaceWebsiteUrl]: ["tab1"],
+      [CoreQuestionNames.ReplaceContentUrl]: [],
+      [CoreQuestionNames.ReplaceBotIds]: ["bot"],
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+
+    if (res2.isErr()) {
+      console.log(res2.error);
+    }
+    assert.isTrue(res2.isOk());
+    assert.isTrue(generator.calledOnce);
+    assert.equal(generator.args[0][2], TemplateNames.TabAndDefaultBot);
+  });
+
+  it("create project for app with tab and message extension features from Developer Portal", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(developerPortalScaffoldUtils, "updateFilesForTdp").resolves(ok(undefined));
+    const appDefinition: AppDefinition = {
+      teamsAppId: "mock-id",
+      appId: "mock-id",
+      staticTabs: [
+        {
+          name: "tab1",
+          entityId: "tab1",
+          contentUrl: "mock-contentUrl",
+          websiteUrl: "mock-websiteUrl",
+          context: [],
+          scopes: [],
+        },
+      ],
+      messagingExtensions: [
+        {
+          botId: "mock-bot-id",
+          canUpdateConfiguration: false,
+          commands: [],
+          messageHandlers: [],
+        },
+      ],
+    };
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      teamsAppFromTdp: appDefinition,
+      [CoreQuestionNames.ReplaceWebsiteUrl]: ["tab1"],
+      [CoreQuestionNames.ReplaceContentUrl]: [],
+      [CoreQuestionNames.ReplaceBotIds]: ["bot"],
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+
+    if (res2.isErr()) {
+      console.log(res2.error);
+    }
+    assert.isTrue(res2.isOk());
+    assert.isTrue(generator.calledOnce);
+    assert.equal(generator.args[0][2], TemplateNames.TabAndDefaultBot);
   });
 
   it("provision happy path from zero", async () => {

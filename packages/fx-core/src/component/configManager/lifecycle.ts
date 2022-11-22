@@ -1,8 +1,6 @@
 import { ok, err, FxError, Result, LogProvider, UserError } from "@microsoft/teamsfx-api";
-import e from "express";
 import _ from "lodash";
 import { Container } from "typedi";
-import { mapToJson } from "../../common/tools";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { StepDriver } from "../driver/interface/stepDriver";
 import { TeamsFxTelemetryReporter } from "../utils/teamsFxTelemetryReporter";

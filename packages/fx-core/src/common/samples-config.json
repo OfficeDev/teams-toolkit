@@ -209,10 +209,10 @@
         },
         {
             "id": "teams-videoapp-sample",
-            "title": "Video Filter App Sample",
+            "title": "Minimal Teams Video App",
             "shortDescription": "A minimal sample app with basic video processing capabilities",
             "fullDescription": "A minimal sample app with basic video processing capabilities.",
-            "tags": ["Video filter", "Video app", "AR", "Video", "Video Stream", "Video Extensibility"],
+            "tags": ["Video filter", "JS"],
             "time": "5min to run",
             "configuration": "Ready for debug",
             "suggested": false

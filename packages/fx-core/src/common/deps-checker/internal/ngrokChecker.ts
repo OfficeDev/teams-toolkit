@@ -19,7 +19,7 @@ import { Messages } from "../constant/message";
 
 const ngrokName = "ngrok";
 
-const installPackageVersion = "4.2.2";
+const installPackageVersion = "4.3.3";
 const supportedPackageVersions = [">=3.4.0"];
 const supportedBinVersions = ["2.3"];
 const displayNgrokName = `${ngrokName}@${installPackageVersion}`;

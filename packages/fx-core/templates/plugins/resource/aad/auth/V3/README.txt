@@ -5,14 +5,6 @@ Enable single sign-on for Teams applications
 Customize your project using Teams Toolkit
 -------------------------
 We created a folder `TeamsFx-Auth` in your project contains AAD app manifest template and some sample code.
-Note: You need to exclude the sample code under `TeamsFx-Auth` to avoid build failure by adding following lines into your `.csproj` file:
-  ```
-  <ItemGroup>
-    <Compile Remove="TeamsFx-Auth/**/*" />
-    <None Include="TeamsFx-Auth/**/*" />
-    <Content Remove="TeamsFx-Auth/Tab/GetUserProfile.razor"/>
-  </ItemGroup>
-  ```
 
 Actions for Tab projects
 -------------------------
@@ -59,7 +51,6 @@ Actions for Tab projects
     ```
     Note: You can use use ${{ENV_NAME}} to reference envs in `teamsfx/.env.{TEAMSFX_ENV}`.
 
-    // TODO: Confirm whether we need spa redirect uri
     -------------------------
     Example for TeamsFx Tab template
     -------------------------
@@ -91,10 +82,11 @@ Actions for Tab projects
   ```
   "webApplicationInfo": {
     "id": "${{AAD_APP_CLIENT_ID}}",
-    "resource": "api://tab-domian/${{AAD_APP_CLIENT_ID}}"
+    "resource": "SAME_AS_YOUR_IDENTIFIERURIS"
   }
   ```
-  Note: You can use use ${{ENV_NAME}} to reference envs in `teamsfx/.env.{TEAMSFX_ENV}`.
+  Note: You need to update the value of resource to your `identifierUris` configed in step 1.1,
+    and use ${{ENV_NAME}} to reference envs in `teamsfx/.env.{TEAMSFX_ENV}`.
 
   -------------------------
   Example for TeamsFx Tab template
@@ -103,26 +95,25 @@ Actions for Tab projects
   ```
   "webApplicationInfo": {
     "id": "${{AAD_APP_CLIENT_ID}}",
-    "resource": "SAME_AS_YOUR_IDENTIFIERURIS"
+    "resource": "api://${{TAB_DOMAIN}}/${{AAD_APP_CLIENT_ID}}"
   }
   ```
-  Note: You need to update the value of resource to your `identifierUris` configed in step 1.1.
   -------------------------
 
 3. Update `teamsfx/app.yml` and `teamsfx/app.local.yml`
   AAD related changes and configs needs to be added into your `yml` files:
     - add `aadApp/create` under 'registerApp':
       For creating new AAD apps used for SSO.
-      [HelpLink] TODO: add help link
+      [HelpLink] https://aka.ms/teamsfx-actions/aadapp-create
     - add `aadApp/update` under 'configureApp'
       For updating your AAD app with AAD app manifest in step 1.
-      [HelpLink] TODO: add help link
+      [HelpLink] https://aka.ms/teamsfx-actions/aadapp-update
     - update `appsettings/generate`
       For adding following environment variables when local debug:
         a. ClientId: AAD app client id
         b. ClientSecret: AAD app client secret
         c. OAuthAuthority: AAD app oauth authority
-      [HelpLink] TODO: add help link
+      [HelpLink] https://aka.ms/teamsfx-actions/appsettings-generate
 
   -------------------------
   Example for TeamsFx Tab template
@@ -225,7 +216,6 @@ Actions for Tab projects
   ```
   -------------------------
 
-// TODO: confirm whether we need to keep appsettings
 5. Update `appsettings.json` and `appsettings.Development.json`
   AAD related configs needs to be configure to your .Net project settings:
     ```
@@ -291,16 +281,24 @@ Actions for Tab projects
     <GetUserProfile />
     ```
 
-  // TODO: Check whether non SSO tab needs the line
   4) Open `Program.cs`, find following line:
     ```
-    builder.Services.AddTeamsFx(builder.Configuration.GetSection("TeamsFx"));
+    builder.Services.AddScoped<MicrosoftTeams>();
     ```
-    and replace with:
+    and add following code after:
     ```
     var config = builder.Configuration.Get<ConfigOptions>();
     builder.Services.AddTeamsFx(config.TeamsFx.Authentication);
     ```
+
+  Note: You need to exclude the sample code under `TeamsFx-Auth` to avoid build failure by adding following lines into your `.csproj` file:
+  ```
+  <ItemGroup>
+    <Compile Remove="TeamsFx-Auth/**/*" />
+    <None Include="TeamsFx-Auth/**/*" />
+    <Content Remove="TeamsFx-Auth/Tab/GetUserProfile.razor"/>
+  </ItemGroup>
+  ```
   -------------------------
 
 7. Run `Local Debug` or `Provision` and `Deploy` again to make the changes take effect.
@@ -376,10 +374,11 @@ Note: This part is for `command and response bot`.
     ```
     "webApplicationInfo": {
       "id": "${{AAD_APP_CLIENT_ID}}",
-      "resource": "api://botid-${{BOT_ID}}"
+      "resource": "SAME_AS_YOUR_IDENTIFIERURIS"
     }
     ```
-    Note: You can use use ${{ENV_NAME}} to reference envs in `teamsfx/.env.{TEAMSFX_ENV}`.
+    Note: You need to update the value of resource to your `identifierUris` configed in step 1.1,
+      and use ${{ENV_NAME}} to reference envs in `teamsfx/.env.{TEAMSFX_ENV}`.
 
     -------------------------
     Example for TeamsFx Bot template
@@ -388,10 +387,9 @@ Note: This part is for `command and response bot`.
     ```
     "webApplicationInfo": {
       "id": "${{AAD_APP_CLIENT_ID}}",
-      "resource": "SAME_AS_YOUR_IDENTIFIERURIS"
+      "resource": "api://botid-${{BOT_ID}}"
     }
     ```
-    Note: You need to update the value of resource to your `identifierUris` configed in step 1.1.
     -------------------------
 
   2.2 You can also register your command  under `commands` in `commandLists` of your bot:
@@ -415,16 +413,16 @@ Note: This part is for `command and response bot`.
   AAD related changes and configs needs to be added into your `yml` files:
     - add `aadApp/create` under 'registerApp':
       For creating new AAD apps used for SSO.
-      [HelpLink] TODO: add help link
+      [HelpLink] https://aka.ms/teamsfx-actions/aadapp-create
     - add `aadApp/update` under 'configureApp'
       For updating your AAD app with AAD app manifest in step 1.
-      [HelpLink] TODO: add help link
+      [HelpLink] https://aka.ms/teamsfx-actions/aadapp-update
     - update `appsettings/generate`
       For adding following environment variables when local debug:
         a. ClientId: AAD app client id
         b. ClientSecret: AAD app client secret
         c. OAuthAuthority: AAD app oauth authority
-      [HelpLink] TODO: add help link
+      [HelpLink] https://aka.ms/teamsfx-actions/appsettings-generate
 
   -------------------------
   Example for TeamsFx Bot template
@@ -446,7 +444,6 @@ Note: This part is for `command and response bot`.
       ```
       Note: Replace the value of "name" with your expected AAD app name.
     
-  In `teamsfx/app.yml` only:
     - Add following lines under `configureApp` to configure AAD app with AAD app template in the step 1.
       ```
       - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
@@ -460,20 +457,6 @@ Note: This part is for `command and response bot`.
             For example, './aad.manifest.template.json'
 
   In `teamsfx/app.local.yml` only:
-    - Add following lines under `configureApp` to configure AAD app with AAD app template in the step 1.
-      ```
-      - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
-        env: 
-          BOT_DOMAIN: ${{TUNNEL_DOMAIN}}
-        with:
-          manifestTemplatePath: YOUR_PATH_TO_AAD_APP_MANIFEST" # Relative path to this file. Environment variables in manifest will be replaced before apply to AAD app
-          outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json
-      # Output: following environment variable will be persisted in current environment's .env file.
-      # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
-      ```
-      Note: Replace the value of "manifestTemplatePath" with the relative path of AAD app manifest noted in step 1.
-            For example, './aad.manifest.template.json'
-
     - Update `appsettings/generate` under `provision` to add AAD related configs to local debug service.
       ```
       - uses: appsettings/generate
@@ -489,7 +472,7 @@ Note: This part is for `command and response bot`.
                 OAuthAuthority: ${{AAD_APP_OAUTH_AUTHORITY}}/${{AAD_APP_TENANT_ID}}
                 ApplicationIdUri: api://botid-${{BOT_ID}}
                 Bot:
-                  InitiateLoginEndpoint: https://${{TUNNEL_DOMAIN}}/bot-auth-start
+                  InitiateLoginEndpoint: https://${{BOT_DOMAIN}}/bot-auth-start
       ```
   -------------------------
 
@@ -553,7 +536,6 @@ Note: This part is for `command and response bot`.
   Note: If you want add additional configs to your Azure Webapp, please add the configs in the webAppSettings.
   -------------------------
 
-// TODO: confirm whether we need to keep appsettings
 5. Update `appsettings.json` and `appsettings.Development.json`
   AAD related configs needs to be configure to your .Net project settings:
     ```
@@ -621,6 +603,8 @@ Note: This part is for `command and response bot`.
     Note: You need to replace {{YOUR_NAMESPACE}} with your namespace name
   
   2) Move `TeamsFx-Auth/Bot/SSO` and `TeamsFx-Auth/Bot/Pages` to `/`
+      Note: Remember to replace '{YOUR_NAMESPACE}' with your project namespace.
+
   3) Open `Program.cs`, find following line:
     ```
     builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();
@@ -673,6 +657,15 @@ Note: This part is for `command and response bot`.
         endpoints.MapRazorPages();
       });
       '''
+  
+  Note: You need to exclude the sample code under `TeamsFx-Auth` to avoid build failure by adding following lines into your `.csproj` file:
+  ```
+  <ItemGroup>
+    <Compile Remove="TeamsFx-Auth/**/*" />
+    <None Include="TeamsFx-Auth/**/*" />
+    <Content Remove="TeamsFx-Auth/Tab/GetUserProfile.razor"/>
+  </ItemGroup>
+  ```
   -------------------------
 
 7. Run `Local Debug` or `Provision` and `Deploy` again to make the changes take effect.

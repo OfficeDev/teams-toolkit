@@ -43,20 +43,28 @@ export class WrapDriverContext {
     }
   }
 
-  public createProgressBar(title: string, steps: number): IProgressHandler | undefined {
+  public async createProgressBar(
+    title: string,
+    steps: number
+  ): Promise<IProgressHandler | undefined> {
     const progressBar = this.ui?.createProgressBar(title, steps);
     if (progressBar) {
       this.progressBars.push(progressBar);
-      progressBar.start();
-      progressBar.next();
+      await progressBar.start();
+      await progressBar.next();
     }
     return progressBar;
   }
 
-  public endProgressBars(success: boolean): void {
-    this.progressBars.forEach((progressbar) => {
-      progressbar.end(success);
-    });
+  public async endProgressBars(success: boolean): Promise<void> {
+    // this.progressBars.forEach((progressbar) => {
+    //   await progressbar.end(success);
+    // });
+    await Promise.all(
+      this.progressBars.map(async (progressbar) => {
+        await progressbar.end(success);
+      })
+    );
   }
 
   public addTelemetryProperties(properties: { [key: string]: string }): void {
@@ -78,7 +86,7 @@ export async function wrapRun(
       properties: context.telemetryProperties,
     });
     context.logProvider?.info(getLocalizedString(logMessageKeys.successExecuteDriver, eventName));
-    context.endProgressBars(true);
+    await context.endProgressBars(true);
     return ok(res);
   } catch (error: any) {
     const fxError = getError(context, error);
@@ -89,7 +97,7 @@ export async function wrapRun(
       },
       fxError
     );
-    context.endProgressBars(false);
+    await context.endProgressBars(false);
     return err(fxError);
   }
 }

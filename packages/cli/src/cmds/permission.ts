@@ -21,6 +21,7 @@ import CLILogProvider from "../commonlib/log";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { CollaborationConstants } from "@microsoft/teamsfx-core/build/core/collaborator";
 import { EnvNotSpecified } from "../error";
+import CLIUIInstance from "../userInteraction";
 
 const azureMessage =
   "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
@@ -100,7 +101,7 @@ export class PermissionStatus extends YargsCommand {
       }
     } else {
       // Throw error if --env not specified
-      if (!args[env]) {
+      if (!args[env] && !CLIUIInstance.interactive) {
         const error = new EnvNotSpecified();
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
         return err(error);
@@ -195,7 +196,7 @@ export class PermissionGrant extends YargsCommand {
       }
     } else {
       // Throw error if --env not specified
-      if (!args[env]) {
+      if (!args[env] && !CLIUIInstance.interactive) {
         const error = new EnvNotSpecified();
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, error);
         return err(error);

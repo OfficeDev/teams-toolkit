@@ -216,6 +216,16 @@
             "time": "5min to run",
             "configuration": "Ready for debug",
             "suggested": false
+        },
+        {
+            "id": "deep-linking-hello-world-tab-without-sso-M365",
+            "title": "Hello World Deeplinking Navigation Tab App",
+            "shortDescription": "This sample app shows, how to use new Teams SDK V2 capabilities to simplify the process of deeplink navigation across the hubs (on Teams, Outlook and Office).",
+            "fullDescription": "The Microsoft Teams JavaScript client SDK (TeamsJS) simplifies the process of deeplink navigation. For many scenarios, such as navigating to content and information within your tab or launching a chat dialog. It covers scenarios like, deeplinking from outside app/hub and navigating within app/hub.",
+            "tags": ["Tab", "TS", "ReactJS","Teams-JS 2.0"],
+            "time": "7min to run",
+            "configuration": "Ready for debug",
+            "suggested": false
         }
     ]
 }

@@ -39,6 +39,7 @@ type AnyElementOf<T extends unknown[]> = T[number];
 export type LifecycleName = AnyElementOf<LifecycleNames>;
 
 export type UnresolvedPlaceholders = string[];
+export type ResolvedPlaceholders = string[];
 
 export type Output = { env: Map<string, string>; unresolvedPlaceHolders: UnresolvedPlaceholders };
 

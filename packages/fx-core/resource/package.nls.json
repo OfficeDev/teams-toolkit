@@ -1096,6 +1096,7 @@
   "driver.env.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.env.error.unhandledError": "Unhandled error happened in %s action: %s",
   "driver.env.error.folderNotExist": "Folder %s does not exist.",
+  "driver.env.error.noAppsettingsFileUserError": "Appsettings.json or %s is missing in your project.",
   "driver.deploy.notice.deployAcceleration": "Deploying to Azure App Service takes a long time. Consider referring to this document to optimize your deployment:",
   "driver.deploy.error.noFileFindInDistributionFolder": "No file is found in distribution folder. Please check if the distribution folder is empty or you have ignored everything.",
   "driver.m365Bot.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",

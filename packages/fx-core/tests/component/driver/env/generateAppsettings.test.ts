@@ -14,7 +14,6 @@ import { UnhandledSystemError } from "../../../../src/component/driver/env/error
 import { GenerateAppsettingsDriver } from "../../../../src/component/driver/env/appsettingsGenerate";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { MockedLogProvider } from "../../../plugins/solution/util";
-import { NoAppsettingsFileUserError } from "../../../../src/component/driver/env/error/noAppsettingsFileUserError";
 
 describe("AppsettingsGenerateDriver", () => {
   const mockedDriverContext = {
@@ -76,7 +75,7 @@ describe("AppsettingsGenerateDriver", () => {
     });
 
     it("exception", async () => {
-      sinon.stub(fs, "ensureFile").throws(new Error("exception"));
+      sinon.stub(fs, "existsSync").throws(new Error("exception"));
       const args: any = {
         target: "path",
         appsettings: {
@@ -86,9 +85,6 @@ describe("AppsettingsGenerateDriver", () => {
       };
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isErr());
-      if (result.isErr()) {
-        chai.assert(result.error instanceof NoAppsettingsFileUserError);
-      }
     });
 
     it("happy path: with target", async () => {
@@ -205,5 +201,42 @@ describe("AppsettingsGenerateDriver", () => {
         chai.assert.equal('{\n\t"BOT_ID": "BOT_ID",\n\t"BOT_PASSWORD": "BOT_PASSWORD"\n}', content);
       }
     });
+  });
+
+  it("happy path: without appsettings.json", async () => {
+    const target = "path";
+    let content = {};
+    const appsettings = {
+      BOT_ID: "$botId$",
+      BOT_PASSWORD: "$bot-password$",
+    };
+    sinon.stub(fs, "ensureFile").callsFake(async (path) => {
+      return;
+    });
+    sinon.stub(fs, "readFileSync").callsFake((path) => {
+      return Buffer.from(JSON.stringify(appsettings));
+    });
+    sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
+      content = data;
+      return;
+    });
+    sinon.stub(fs, "existsSync").callsFake((path) => {
+      return false;
+    });
+    sinon.stub(fs, "copyFile").callsFake(async (p1, p2) => {
+      return;
+    });
+    const args: any = {
+      target,
+      appsettings: {
+        BOT_ID: "BOT_ID",
+        BOT_PASSWORD: "BOT_PASSWORD",
+      },
+    };
+    const result = await driver.run(args, mockedDriverContext);
+    chai.assert(result.isOk());
+    if (result.isOk()) {
+      chai.assert.equal('{\n\t"BOT_ID": "BOT_ID",\n\t"BOT_PASSWORD": "BOT_PASSWORD"\n}', content);
+    }
   });
 });

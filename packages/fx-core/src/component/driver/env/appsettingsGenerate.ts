@@ -16,7 +16,6 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { GenerateAppsettingsArgs } from "./interface/generateAppsettingsArgs";
-import { NoAppsettingsFileUserError } from "./error/noAppsettingsFileUserError";
 
 const actionName = "appsettings/generate";
 const helpLink = "https://aka.ms/teamsfx-actions/appsettings-generate";
@@ -42,7 +41,7 @@ export class GenerateAppsettingsDriver implements StepDriver {
         // try to copy appsettings.json
         const appsettingsTemplatePath = getAbsolutePath("appsettings.json", context.projectPath);
         if (!fs.existsSync(appsettingsTemplatePath)) {
-          throw new NoAppsettingsFileUserError(actionName, args.target);
+          await fs.writeFile(appsettingsPath, "{}");
         } else {
           await fs.copyFile(appsettingsTemplatePath, appsettingsPath);
         }
@@ -102,7 +101,11 @@ export class GenerateAppsettingsDriver implements StepDriver {
       if (typeof item[1] === "string") {
         (projectAppsettings as any)[item[0]] = item[1];
       } else if (typeof item[1] === "object") {
-        this.replaceProjectAppsettings((projectAppsettings as any)[item[0]], item[1] as any);
+        if ((projectAppsettings as any)[item[0]]) {
+          this.replaceProjectAppsettings((projectAppsettings as any)[item[0]], item[1] as any);
+        } else {
+          (projectAppsettings as any)[item[0]] = item[1];
+        }
       }
     }
   }

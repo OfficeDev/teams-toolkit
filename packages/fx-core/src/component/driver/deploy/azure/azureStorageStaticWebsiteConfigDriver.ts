@@ -36,7 +36,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.PROVISION_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
-    return wrapRun(() => this.config(args, context));
+    return wrapRun(() => this.config(args, context), undefined, context.logProvider);
   }
 
   /**

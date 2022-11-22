@@ -35,7 +35,7 @@ export class AzureStorageDeployDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new AzureStorageDeployDriverImpl(args, context);
-    return wrapRun(() => impl.run());
+    return wrapRun(() => impl.run(), undefined, context.logProvider);
   }
 }
 

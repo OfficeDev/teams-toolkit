@@ -24,7 +24,8 @@ export class AzureAppServiceDeployDriver implements StepDriver {
     const impl = new AzureAppServiceDeployDriverImpl(args, context);
     return wrapRun(
       () => impl.run(),
-      () => impl.cleanup()
+      () => impl.cleanup(),
+      context.logProvider
     );
   }
 }

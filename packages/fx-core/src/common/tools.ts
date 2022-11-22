@@ -418,6 +418,10 @@ export function isV3Enabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.V3, false);
 }
 
+export function isVideoFilterEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
+}
+
 // This method is for deciding whether AAD should be activated.
 // Currently AAD plugin will always be activated when scaffold.
 // This part will be updated when we support adding aad separately.

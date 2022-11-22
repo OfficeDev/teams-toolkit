@@ -86,6 +86,7 @@ export class FeatureFlagName {
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
   static readonly TDPIntegration = "TDP_INTEGRATION";
   static readonly V3 = "TEAMSFX_V3";
+  static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
 }
 
 export class ManifestVariables {

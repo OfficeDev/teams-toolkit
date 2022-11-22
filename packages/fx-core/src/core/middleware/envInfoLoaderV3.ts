@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
+import _ from "lodash";
 import {
   err,
   FxError,
@@ -20,7 +21,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { isV3Enabled } from "../../common/tools";
 import { ComponentNames } from "../../component/constants";
-import { EnvLoaderMW } from "../../component/middleware/envMW";
+import { EnvLoaderMW, envLoaderMWImpl } from "../../component/middleware/envMW";
 import { LocalCrypto } from "../crypto";
 import { environmentManager, newEnvInfoV3 } from "../environment";
 import {
@@ -54,8 +55,20 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
     }
 
     if (isV3Enabled()) {
-      await EnvLoaderMW(true);
-      return;
+      const envBefore = _.cloneDeep(process.env);
+      try {
+        await envLoaderMWImpl(true, ctx, next);
+        return;
+      } finally {
+        const keys = Object.keys(process.env);
+        for (const k of keys) {
+          if (!(k in envBefore)) {
+            delete process.env[k];
+          } else {
+            process.env[k] = envBefore[k];
+          }
+        }
+      }
     }
 
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;

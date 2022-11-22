@@ -775,6 +775,16 @@ export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxEr
   return result;
 }
 
+async function isVideoFilterProject(): Promise<boolean> {
+  const projPath = globalVariables.workspaceUri?.fsPath;
+  if (projPath) {
+    const result = await commonTools.isVideoFilterProject(projPath);
+    return result.isOk() && result.value;
+  } else {
+    return false;
+  }
+}
+
 export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.ValidateManifestStart,
@@ -826,13 +836,16 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
       params: {},
     };
 
-    const selectedEnv = await askTargetEnvironment();
-    if (selectedEnv.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
-      showError(selectedEnv.error);
-      return err(selectedEnv.error);
+    let env: string | undefined;
+    if (!(await isVideoFilterProject())) {
+      const selectedEnv = await askTargetEnvironment();
+      if (selectedEnv.isErr()) {
+        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, selectedEnv.error);
+        showError(selectedEnv.error);
+        return err(selectedEnv.error);
+      }
+      env = selectedEnv.value;
     }
-    const env = selectedEnv.value;
 
     const isLocalDebug = env === environmentManager.getLocalEnvName();
     if (isLocalDebug) {
@@ -932,13 +945,19 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
         return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
       }
     } else {
-      const selectedEnv = await askTargetEnvironment();
-      if (selectedEnv.isErr()) {
-        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
-        showError(selectedEnv.error);
-        return err(selectedEnv.error);
+      let env: string | undefined;
+      // Video filter does not support remote, so do not ask env and runUserTask directly.
+      // VideoFilterAppBlocker middleware will block it.
+      if (!(await isVideoFilterProject())) {
+        const selectedEnv = await askTargetEnvironment();
+        if (selectedEnv.isErr()) {
+          ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, selectedEnv.error);
+          showError(selectedEnv.error);
+          return err(selectedEnv.error);
+        }
+        env = selectedEnv.value;
       }
-      const env = selectedEnv.value;
+
       const isLocalDebug = env === "local";
       if (isLocalDebug) {
         func.params.type = "localDebug";

@@ -13,25 +13,14 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-
+import { EnvOptions, RootFolderOptions } from "../constants";
 export class UpdateAadApp extends YargsCommand {
   public readonly commandHead = "aad-app";
   public readonly command = this.commandHead;
   public readonly description = "Update the AAD App in the current application.";
 
   public builder(yargs: Argv): Argv<any> {
-    this.params = {
-      folder: {
-        describe: "Select root folder of the project",
-        string: true,
-      },
-      env: {
-        describe: "Select an existing environment to udpate AAD App",
-        requiresArg: true,
-        string: true,
-      },
-    };
-    return yargs.options(this.params).version(false);
+    return yargs.hide("interactive").version(false).options(EnvOptions).options(RootFolderOptions);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

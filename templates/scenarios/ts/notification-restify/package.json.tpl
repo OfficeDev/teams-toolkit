@@ -1,15 +1,15 @@
 {
     "name": "{%appName%}",
     "version": "1.0.0",
-    "description": "Microsoft Teams Toolkit Notification Bot Sample",
+    "description": "Microsoft Teams Toolkit Notification Bot Sample (Restify)",
     "author": "Microsoft",
     "license": "MIT",
-    "main": "./src/index.js",
+    "main": "./lib/index.js",
     "scripts": {
-        "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run dev",
-        "dev": "nodemon --inspect=9239 --signal SIGINT ./src/index.js",
-        "start": "node ./src/index.js",
-        "watch": "nodemon ./src/index.js",
+        "dev": "nodemon --watch ./src --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./src/index.ts",
+        "build": "tsc --build && shx cp -r ./src/adaptiveCards ./lib/src",
+        "start": "node ./lib/src/index.js",
+        "watch": "nodemon --watch ./src --exec \"npm run start\"",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "repository": {
@@ -18,11 +18,16 @@
     },
     "dependencies": {
         "@microsoft/adaptivecards-tools": "^1.0.0",
-        "@microsoft/teamsfx": "^1.2.0",
+        "@microsoft/teamsfx": "^2.0.0",
+        "botbuilder": "^4.18.0",
         "restify": "^8.5.1"
     },
     "devDependencies": {
-        "env-cmd": "^10.1.0",
-        "nodemon": "^2.0.7"
+        "@microsoft/teamsfx-run-utils": "alpha",
+        "@types/restify": "8.4.2",
+        "nodemon": "^2.0.7",
+        "ts-node": "^10.4.0",
+        "typescript": "^4.4.4",
+        "shx": "^0.3.4"
     }
 }

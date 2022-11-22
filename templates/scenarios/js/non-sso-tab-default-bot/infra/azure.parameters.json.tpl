@@ -16,6 +16,9 @@
     },
     "webAppSKU": {
       "value": "B1"
+    },
+    "botDisplayName": {
+      "value": "{%appName%}"
     }
   }
 }

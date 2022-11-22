@@ -23,7 +23,7 @@ export default function ButtonLink(props: {
         eventName: TelemetryEvent.OpenExternalLink,
         properties: {
           [TelemetryProperty.TriggerFrom]: props.triggerFrom,
-          [TelemetryProperty.Identifier]: props.link,
+          [TelemetryProperty.Identifier]: props.title,
         },
       },
     });

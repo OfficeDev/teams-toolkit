@@ -24,7 +24,7 @@ export default function ExternalLink(props: {
         eventName: TelemetryEvent.OpenExternalLink,
         properties: {
           [TelemetryProperty.TriggerFrom]: props.triggerFrom,
-          [TelemetryProperty.Identifier]: props.link,
+          [TelemetryProperty.Identifier]: props.title,
         },
       },
     });

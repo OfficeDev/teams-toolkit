@@ -730,7 +730,6 @@ async function ensureM365Account(
       ctx.properties[TelemetryProperty.DebugIsSideloadingAllowed] = `${isSideloadingEnabled}`;
       if (isSideloadingEnabled === false) {
         // sideloading disabled
-        openAccountHelpHandler();
         return err(
           new UserError(
             ExtensionSource,
@@ -774,6 +773,7 @@ function checkM365Account(
         if (accountResult.isErr()) {
           result = ResultStatus.failed;
           error = accountResult.error;
+          openAccountHelpHandler();
         } else {
           loginHint = accountResult.value.loginHint;
           tenantId = accountResult.value.tenantId;

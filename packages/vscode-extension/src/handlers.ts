@@ -3557,6 +3557,9 @@ export async function checkSideloadingCallback(args?: any[]): Promise<Result<nul
     })
     .catch((_error) => {});
   openAccountHelpHandler();
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SideloadingDisabled,
+  });
   return ok(null);
 }
 

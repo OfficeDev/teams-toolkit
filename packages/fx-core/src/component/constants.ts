@@ -867,7 +867,7 @@ export const TabNonSsoItem: OptionItem = {
 
 export const TabNonSsoAndDefaultBotItem: OptionItem = {
   id: "TabNonSsoAndBot",
-  label: "",
+  label: "", // No need to set display name as this option won't be shown in UI
 };
 
 export const M365SsoLaunchPageOptionItem: OptionItem = {

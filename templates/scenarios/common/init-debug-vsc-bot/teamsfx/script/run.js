@@ -18,7 +18,9 @@ async function run() {
   process.env.BOT_PASSWORD = envs.SECRET_BOT_PASSWORD;
 
   // launch service locally by executing npm command
-  cp.spawn(/^win/.test(process.platform) ? "npm.cmd" : "npm", ["run", "dev"], { stdio: "inherit" });
+  cp.spawn(/^win/.test(process.platform) ? "npm.cmd" : "npm", ["run", "start"], {
+    stdio: "inherit",
+  });
 }
 
 run();

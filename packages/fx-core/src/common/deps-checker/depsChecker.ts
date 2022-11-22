@@ -39,7 +39,7 @@ export enum DepsType {
   Dotnet = "dotnet",
   FuncCoreTools = "func-core-tools",
   Ngrok = "ngrok",
-  VxTestApp = "vx-test-app", // TODO(aochengwang): maybe change app name
+  VxTestApp = "vx-test-app",
 }
 
 export interface BaseInstallOptions {

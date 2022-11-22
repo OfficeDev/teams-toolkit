@@ -106,6 +106,7 @@ const DepsDisplayName = {
   [DepsType.SpfxNode]: "Node.js",
   [DepsType.SpfxNodeV1_16]: "Node.js",
   [DepsType.AzureNode]: "Node.js",
+  [DepsType.ProjectNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
   [DepsType.Ngrok]: "ngrok",
   [DepsType.FuncCoreTools]: "Azure Functions Core Tools",
@@ -160,6 +161,7 @@ const ProgressMessage = Object.freeze({
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
   [DepsType.SpfxNodeV1_16]: `Checking ${DepsDisplayName[DepsType.SpfxNodeV1_16]}`,
   [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
+  [DepsType.ProjectNode]: `Checking ${DepsDisplayName[DepsType.ProjectNode]}`,
   [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
   [DepsType.Ngrok]: `Checking and installing ${DepsDisplayName[DepsType.Ngrok]}`,
   [DepsType.FuncCoreTools]: `Checking and installing ${DepsDisplayName[DepsType.FuncCoreTools]}`,
@@ -592,6 +594,7 @@ function getCheckPromise(
     case DepsType.AzureNode:
     case DepsType.SpfxNode:
     case DepsType.SpfxNodeV1_16:
+    case DepsType.ProjectNode:
       return checkNode(
         checkerInfo.checker,
         depsManager,
@@ -852,12 +855,9 @@ async function checkNode(
     async () => {
       try {
         VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
-        const nodeStatus = (
-          await depsManager.ensureDependencies([nodeDep], {
-            fastFail: false,
-            doctor: true,
-          })
-        )[0];
+        const nodeStatus = await depsManager.ensureDependency(nodeDep, true, {
+          projectPath: globalVariables.workspaceUri!.fsPath,
+        });
         return {
           checker: nodeStatus.name,
           result: nodeStatus.isInstalled
@@ -1054,7 +1054,9 @@ function handleNodeNotFoundError(error: NodeNotFoundError) {
 }
 
 function handleNodeNotSupportedError(error: NodeNotSupportedError, dep: DependencyStatus) {
-  const supportedVersions = dep.details.supportedVersions.map((v) => "v" + v).join(", ");
+  const supportedVersions = isV3Enabled()
+    ? dep.details.supportedVersions.join(", ")
+    : dep.details.supportedVersions.map((v) => "v" + v).join(", ");
 
   error.message = `${doctorConstant.NodeNotSupported.split("@CurrentVersion")
     .join(dep.details.installVersion)
@@ -1065,7 +1067,9 @@ function handleNodeNotSupportedError(error: NodeNotSupportedError, dep: Dependen
 }
 
 function handleNodeNotRecommendedError(error: NodeNotSupportedError, dep: DependencyStatus) {
-  const supportedVersions = dep.details.supportedVersions.map((v) => "v" + v).join(", ");
+  const supportedVersions = isV3Enabled()
+    ? dep.details.supportedVersions.join(", ")
+    : dep.details.supportedVersions.map((v) => "v" + v).join(", ");
 
   error.message = `${doctorConstant.NodeNotRecommended.split("@CurrentVersion")
     .join(dep.details.installVersion)
@@ -1390,7 +1394,7 @@ async function getOrderedCheckersForTask(
       VS_CODE_UI
     );
     if (isV3Enabled()) {
-      checkers.push({ info: { checker: DepsType.AzureNode }, fastFail: true });
+      checkers.push({ info: { checker: DepsType.ProjectNode }, fastFail: true });
     } else {
       const projectPath = globalVariables.workspaceUri!.fsPath;
       const projectSettings = await localEnvManager.getProjectSettings(projectPath);

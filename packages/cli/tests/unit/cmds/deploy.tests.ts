@@ -110,6 +110,14 @@ describe("Deploy Command Tests", function () {
     expect(positionals).deep.equals(["components"], JSON.stringify(positionals));
   });
 
+  it("Builder Check V3", () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    const cmd = new Deploy();
+    cmd.builder(yargs);
+  });
+
   it("Deploy Command Running -- no components", async () => {
     const cmd = new Deploy();
     cmd["params"] = params;
@@ -197,95 +205,5 @@ describe("Deploy Command Tests", function () {
     };
     await cmd.handler(args);
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
-  });
-
-  it("Deploy Command Running -- aad manifest component V3", async () => {
-    const cmd = new Deploy();
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    cmd["params"] = {
-      [constants.deployPluginNodeName]: {
-        choices: ["aad-manifest"],
-        default: ["fx-resource-aad-app-for-teams"],
-        description: "deployPluginNodeName",
-      },
-      "open-api-document": {},
-      "api-prefix": {},
-      "api-version": {},
-    };
-    (HelpParamGenerator.getQuestionRootNodeForHelp as any).restore();
-    sandbox.stub(HelpParamGenerator, "getQuestionRootNodeForHelp").callsFake(() => {
-      return new QTreeNode({
-        name: constants.deployPluginNodeName,
-        type: "multiSelect",
-        title: "deployPluginNodeName",
-        staticOptions: ["fx-resource-aad-app-for-teams"],
-      });
-    });
-
-    // (FxCore.prototype.deployAadManifest as any).restore();
-    sandbox.stub(FxCore.prototype, "deployAadManifest").callsFake(async (inputs: Inputs) => {
-      if (inputs["include-aad-manifest"] === "yes") return ok("");
-      else return err(NotSupportedProjectType());
-    });
-
-    (FxCore.prototype.deployArtifacts as any).restore();
-    sandbox.stub(FxCore.prototype, "deployArtifacts").callsFake(async (inputs: Inputs) => {
-      if (inputs["include-aad-manifest"] === "yes") return ok("");
-      else return err(NotSupportedProjectType());
-    });
-
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "real",
-      components: ["aad-manifest"],
-      env: "dev",
-    };
-    await cmd.handler(args);
-    expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
-  });
-
-  it("Deploy Command Running -- aad manifest component V3", async () => {
-    const cmd = new Deploy();
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    cmd["params"] = {
-      [constants.deployPluginNodeName]: {
-        choices: ["aad-manifest"],
-        default: ["fx-resource-aad-app-for-teams"],
-        description: "deployPluginNodeName",
-      },
-      "open-api-document": {},
-      "api-prefix": {},
-      "api-version": {},
-    };
-    (HelpParamGenerator.getQuestionRootNodeForHelp as any).restore();
-    sandbox.stub(HelpParamGenerator, "getQuestionRootNodeForHelp").callsFake(() => {
-      return new QTreeNode({
-        name: constants.deployPluginNodeName,
-        type: "multiSelect",
-        title: "deployPluginNodeName",
-        staticOptions: ["fx-resource-aad-app-for-teams"],
-      });
-    });
-
-    (FxCore.prototype.deployAadManifest as any).restore();
-    sandbox
-      .stub(FxCore.prototype, "deployAadManifest")
-      .resolves(err(new UserError("Fake_Err_msg", "Fake_Err_name", "Fake_test")));
-
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "real",
-      components: ["aad-manifest"],
-      env: "dev",
-    };
-    try {
-      await cmd.handler(args);
-    } catch (e) {
-      expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.DeployAad]);
-      expect(e).instanceOf(UserError);
-      expect(e.name).equals("Fake_Err_name");
-    }
   });
 });

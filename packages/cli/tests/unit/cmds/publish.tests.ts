@@ -18,7 +18,7 @@ import {
 import * as constants from "../../../src/constants";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
-import { EnvNotSpecified, NotSupportedProjectType } from "../../../src/error";
+import { NotSupportedProjectType } from "../../../src/error";
 import CLIUIInstance from "../../../src/userInteraction";
 import mockedEnv, { RestoreFn } from "mocked-env";
 
@@ -33,7 +33,7 @@ describe("Publish Command Tests", function () {
     "manifest-folder": {},
     "teams-app-id": {},
   };
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
 
   before(() => {
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").returns({});
@@ -120,18 +120,6 @@ describe("Publish Command Tests", function () {
     await cmd.handler(args);
     expect(telemetryEvents).deep.equals([TelemetryEvent.PublishStart, TelemetryEvent.Publish]);
     expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
-  });
-
-  it("Publish Command Running Check V3 (CLI)", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    const cmd = new Publish();
-    cmd["params"] = params;
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "real",
-    };
-    await expect(cmd.handler(args)).to.be.rejectedWith(EnvNotSpecified);
   });
 
   it("Publish Command Running Check with Error (CLI)", async () => {

@@ -78,16 +78,6 @@ export default class Deploy extends YargsCommand {
     const core = result.value;
 
     const inputs = getSystemInputs(rootFolder, args.env as any);
-    // TODO: remove when V3 is auto enabled
-    if (!inputs.env) {
-      // include local env in interactive question
-      const selectedEnv = await askTargetEnvironment(rootFolder);
-      if (selectedEnv.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, selectedEnv.error);
-        return err(selectedEnv.error);
-      }
-      inputs.env = selectedEnv.value;
-    }
     {
       if (!isV3Enabled()) {
         const root = HelpParamGenerator.getQuestionRootNodeForHelp(Stage.deploy);

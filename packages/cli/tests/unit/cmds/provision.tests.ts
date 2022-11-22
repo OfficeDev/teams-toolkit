@@ -23,11 +23,7 @@ import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import * as constants from "../../../src/constants";
 import * as Utils from "../../../src/utils";
 import { expect } from "../utils";
-import {
-  EnvNotSpecified,
-  NotFoundSubscriptionId,
-  NotSupportedProjectType,
-} from "../../../src/error";
+import { NotFoundSubscriptionId, NotSupportedProjectType } from "../../../src/error";
 import UI from "../../../src/userInteraction";
 import LogProvider from "../../../src/commonlib/log";
 import { AzureAccountManager } from "../../../src/commonlib/azureLoginCI";
@@ -115,19 +111,6 @@ describe("Provision Command Tests", function () {
     await cmd.handler(args);
     expect(allArguments.get(constants.sqlPasswordConfirmQuestionName)).equals("123");
     expect(telemetryEvents).deep.equals([TelemetryEvent.ProvisionStart, TelemetryEvent.Provision]);
-  });
-
-  it("Provision Command Running -- V3 error", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    const cmd = new Provision();
-    const args = {
-      interactive: false,
-      [constants.RootFolderNode.data.name as string]: "real",
-      [constants.sqlPasswordQustionName]: "123",
-    };
-    await expect(cmd.handler(args)).to.be.rejectedWith(EnvNotSpecified);
   });
 
   it("Provision Command Running -- V3 error", async () => {

@@ -25,6 +25,7 @@ import AdaptiveCardNotification from "../../img/webview/sample/adaptive-card-not
 import SendProactiveMsg from "../../img/webview/sample/send-proactive-messages.gif";
 import StockUpdate from "../../img/webview/sample/stock-update.gif";
 import MsgExtSSO from "../../img/webview/sample/message-extension-sso.gif";
+import DeepLinking from "../../img/webview/sample/deeplink-without-sso.gif";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -51,6 +52,7 @@ const imageMapping: { [p: string]: any } = {
   "bot-proactive-messaging-teamsfx": SendProactiveMsg,
   "stocks-update-notification-bot": StockUpdate,
   "query-org-user-with-message-extension-sso": MsgExtSSO,
+  "deep-linking-hello-world-tab-without-sso-M365": DeepLinking,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

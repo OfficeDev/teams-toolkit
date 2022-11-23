@@ -111,7 +111,7 @@
   "core.progress.uploadZipFileToAzure": "Uploading application package to Azure.",
   "core.progress.checkAzureDeployStatus": "Waiting for Azure deployment to complete.",
   "core.progress.restartAzureFunctionApp": "Restarting Azure Function App.",
-  "core.progress.configureAzureStorage": "Confining Azure Storage, enable static website setting.",
+  "core.progress.configureAzureStorage": "Configuring Azure Storage, enable static website setting.",
   "core.progress.checkAzureStorageStaticWebsite": "Checking the setting of Azure Storage static website status.",
   "core.progress.azureStorageStaticWebsiteEnabled": "Azure Storage static website setting already enabled.",
   "core.progress.enableAzureStorageStaticWebsite": "Enabling Azure Storage static website setting.",

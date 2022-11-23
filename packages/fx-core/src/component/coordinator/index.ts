@@ -52,6 +52,7 @@ import {
   CancelError,
   CoordinatorSource,
   BotOptionItem,
+  TabNonSsoAndDefaultBotItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
@@ -110,6 +111,7 @@ export enum TemplateNames {
   DefaultBot = "default-bot",
   MessageExtension = "message-extension",
   M365MessageExtension = "m365-message-extension",
+  TabAndDefaultBot = "non-sso-tab-default-bot",
 }
 
 export const Feature2TemplateName: any = {
@@ -130,6 +132,7 @@ export const Feature2TemplateName: any = {
   [`${TabOptionItem.id}:undefined`]: TemplateNames.SsoTab,
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
   [`${M365SsoLaunchPageOptionItem.id}:undefined`]: TemplateNames.M365Tab,
+  [`${TabNonSsoAndDefaultBotItem.id}:undefined`]: TemplateNames.TabAndDefaultBot,
 };
 
 export const InitTemplateName: any = {

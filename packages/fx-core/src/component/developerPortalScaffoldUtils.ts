@@ -210,7 +210,7 @@ async function updateEnv(appId: string, projectPath: string): Promise<Result<und
         if (match[1].startsWith("TEAMS_APP_ID=")) {
           writeStream.write(`TEAMS_APP_ID=${appId}${os.EOL}`);
         } else {
-          writeStream.write(`${match[1]}${os.EOL}`);
+          writeStream.write(`${line.trim()}${os.EOL}`);
         }
       } else {
         writeStream.write(`${line.trim()}${os.EOL}`);

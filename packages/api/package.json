@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-api",
-  "version": "0.21.0",
+  "version": "0.21.1-rc.0",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@azure/core-http": "^1.2.2",
-    "@microsoft/teams-manifest": "^0.0.7",
+    "@microsoft/teams-manifest": "^0.0.8-rc.0",
     "axios": "^0.21.2",
     "chai": "^4.3.4",
     "jsonschema": "^1.4.0",

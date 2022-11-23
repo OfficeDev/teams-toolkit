@@ -674,7 +674,7 @@ jobs:
             }
 
   tear-down:
-    if: ${{ always() }}
+    if: ${{ always() && github.event_name == 'schedule' }}
     needs: [execute-case, v3-execute-case]
     runs-on: ubuntu-latest
     env:

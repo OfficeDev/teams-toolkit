@@ -10,7 +10,9 @@
         "install": "concurrently \"npm run install:bot\" \"npm run install:tab\"",
         "dev:bot": "cd bot && npm run dev",
         "start:tab": "cd tab && npm run start",
-        "build:tab": "cd tab && npm run build"
+        "build:tab": "cd tab && npm run build",
+        "build:bot": "cd bot && npm run build",
+        "build": "concurrently \"npm run build:tab\" \"npm run build:bot\""
     },
     "devDependencies": {
         "@microsoft/teamsfx-run-utils": "alpha"

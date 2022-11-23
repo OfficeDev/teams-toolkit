@@ -63,6 +63,7 @@
         "ts/m365-tab",
         "ts/sso-tab",
         "ts/non-sso-tab",
+        "ts/non-sso-tab-default-bot",
         "csharp/notification-http-timer-trigger",
         "csharp/notification-http-trigger",
         "csharp/notification-timer-trigger",

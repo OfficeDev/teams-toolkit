@@ -73,7 +73,7 @@ import {
 import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
 import { Correlator } from "@microsoft/teamsfx-core";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { FolderName } from "@microsoft/teamsfx-core";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { LocalEnvManager, ProjectSettingsHelper } from "@microsoft/teamsfx-core";

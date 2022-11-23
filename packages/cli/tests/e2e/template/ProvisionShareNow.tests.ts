@@ -21,7 +21,7 @@ import {
 import { getUuid } from "../../commonlib/utilities";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();

@@ -19,7 +19,7 @@ import {
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import { getPermissionMap } from "@microsoft/teamsfx-core/build/component/resource/aadApp/permissions";
 import { getAllowedAppMaps, getPropertyByPath } from "@microsoft/teamsfx-core";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { convertManifestTemplateToV3 } from "@microsoft/teamsfx-core";
 import { localize } from "./utils/localizeUtils";
 import { core, getSystemInputs } from "./handlers";

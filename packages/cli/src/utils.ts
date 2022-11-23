@@ -50,7 +50,7 @@ import CLIUIInstance from "./userInteraction";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
 import cliLogger from "./commonlib/log";
 import { WriteFileError } from "@microsoft/teamsfx-core/build/core/error";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
 import { hasSPFxTab } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
 import { O_CREAT, O_EXCL, O_RDWR } from "constants";

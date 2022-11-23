@@ -18,7 +18,7 @@ import {
   StatesFolderName,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { initializePreviewFeatureFlags } from "@microsoft/teamsfx-core/build/common/featureFlags";
 import {
   isExistingTabApp as isExistingTabAppCore,

@@ -19,7 +19,7 @@ import {
   setBotSkuNameToB1Bicep,
   customizeBicepFilesToCustomizedRg,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, ResourceToDeploy } from "../../commonlib/constants";
 import { it } from "@microsoft/extra-shot-mocha";

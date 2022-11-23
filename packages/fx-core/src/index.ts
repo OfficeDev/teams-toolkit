@@ -9,4 +9,6 @@ export { envUtil } from "./component/utils/envUtil";
 export { environmentManager } from "./core/environment";
 export * from "./common/correlator";
 export * from "./common/local";
+export * from "./common/samples";
+export * from "./common/featureFlags";
 export * from "./component/migrate";

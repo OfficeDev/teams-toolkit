@@ -26,7 +26,7 @@ import TelemetryReporter from "./providers/telemetry";
 import UserInteraction from "./providers/userInteraction";
 import { callFunc } from "./customizedFuncAdapter";
 import { standardizeResult } from "./utils";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 export default class ServerConnection implements IServerConnection {
   public static readonly namespace = Namespaces.Server;

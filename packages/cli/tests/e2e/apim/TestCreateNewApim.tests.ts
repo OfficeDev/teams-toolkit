@@ -20,7 +20,7 @@ import {
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import M365Login from "../../../src/commonlib/m365Login";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { describe } from "mocha";

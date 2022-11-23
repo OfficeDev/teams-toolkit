@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { convertManifestTemplateToV3 } from "@microsoft/teamsfx-core";
 import { getPropertyByPath } from "@microsoft/teamsfx-core";
 import { isV3Enabled, envUtil } from "@microsoft/teamsfx-core";

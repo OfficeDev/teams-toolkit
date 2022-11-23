@@ -17,7 +17,7 @@ import {
   getUniqueAppName,
   readContextMultiEnv,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { it } from "@microsoft/extra-shot-mocha";
 import { Runtime, CliCapabilities, CliTriggerType } from "../../commonlib/constants";
 

@@ -31,7 +31,7 @@ import open from "open";
 import { getColorizedString } from "../../utils";
 import { isWindows } from "./depsChecker/cliUtils";
 import { CliConfigAutomaticNpmInstall, CliConfigOptions, UserSettings } from "../../userSetttings";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { AppStudioScopes, getResourceGroupInPortal } from "@microsoft/teamsfx-core";
 import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
 export async function openBrowser(

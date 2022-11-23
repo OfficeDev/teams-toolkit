@@ -22,7 +22,7 @@ import {
 import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
 import { ProjectSettingsHelper } from "@microsoft/teamsfx-core";
 import { PathNotExistError } from "@microsoft/teamsfx-core/build/core/error";
-import { EnvStateFiles } from "@microsoft/teamsfx-core/build/core/environment";
+import { EnvStateFiles } from "@microsoft/teamsfx-core";
 import { ResourceAddApim, ResourceAddFunction, ResourceAddSql } from "../../../src/cmds/resource";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
 import HelpParamGenerator from "../../../src/helpParamGenerator";

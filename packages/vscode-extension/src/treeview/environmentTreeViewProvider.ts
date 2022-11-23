@@ -7,7 +7,7 @@ import * as vscode from "vscode";
 import { FxError, LocalEnvironmentName, ok, Result, Void } from "@microsoft/teamsfx-api";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 import * as globalVariables from "../globalVariables";
 import { DynamicNode } from "./dynamicNode";

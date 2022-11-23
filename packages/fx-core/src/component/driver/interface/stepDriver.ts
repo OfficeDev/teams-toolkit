@@ -16,5 +16,11 @@ export interface StepDriver {
    */
   run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>>;
 
+  /**
+   * Run the driver and return a summary along with the result, no matter the result is success or failure.
+   * The summary is expected to contain human readable information about the result.
+   * @param args Arguments from the `with` section in the yaml file.
+   * @param ctx logger, telemetry, progress bar, etc.
+   */
   execute?(args: unknown, ctx: DriverContext): Promise<ExecutionResult>;
 }

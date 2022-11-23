@@ -20,6 +20,7 @@ import {
   BotOptionItem,
   ExistingTabOptionItem,
   TabNewUIOptionItem,
+  TabNonSsoAndDefaultBotItem,
   TabNonSsoItem,
   TabSPFxItem,
 } from "../../component/constants";
@@ -51,6 +52,7 @@ import { CoreHookContext } from "../types";
 import {
   isPersonalApp,
   needBotCode,
+  needTabAndBotCode,
   needTabCode,
 } from "../../component/resource/appManifest/utils/utils";
 import { convertToAlphanumericOnly } from "../../common/utils";
@@ -118,7 +120,9 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   if (inputs.teamsAppFromTdp) {
     // If toolkit is activated by a request from Developer Portal, we will always create a project from scratch.
     inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC.id;
-    inputs[CoreQuestionNames.Capabilities] = needTabCode(inputs.teamsAppFromTdp)
+    inputs[CoreQuestionNames.Capabilities] = needTabAndBotCode(inputs.teamsAppFromTdp)
+      ? TabNonSsoAndDefaultBotItem.id
+      : needTabCode(inputs.teamsAppFromTdp)
       ? TabNonSsoItem.id
       : needBotCode(inputs.teamsAppFromTdp)
       ? BotOptionItem.id

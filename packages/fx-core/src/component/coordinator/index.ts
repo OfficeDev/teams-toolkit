@@ -52,6 +52,7 @@ import {
   CancelError,
   CoordinatorSource,
   BotOptionItem,
+  TabNonSsoAndDefaultBotItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
@@ -110,6 +111,7 @@ export enum TemplateNames {
   DefaultBot = "default-bot",
   MessageExtension = "message-extension",
   M365MessageExtension = "m365-message-extension",
+  TabAndDefaultBot = "non-sso-tab-default-bot",
 }
 
 export const Feature2TemplateName: any = {
@@ -130,6 +132,7 @@ export const Feature2TemplateName: any = {
   [`${TabOptionItem.id}:undefined`]: TemplateNames.SsoTab,
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
   [`${M365SsoLaunchPageOptionItem.id}:undefined`]: TemplateNames.M365Tab,
+  [`${TabNonSsoAndDefaultBotItem.id}:undefined`]: TemplateNames.TabAndDefaultBot,
 };
 
 export const InitTemplateName: any = {
@@ -680,7 +683,7 @@ export class Coordinator {
         process.env.AZURE_RESOURCE_GROUP_NAME
       );
       const msg = getLocalizedString("core.provision.successNotice", folderName);
-      if (url) {
+      if (url && ctx.platform !== Platform.CLI) {
         const title = getLocalizedString("core.provision.viewResources");
         ctx.ui?.showMessage("info", msg, false, title).then((result: any) => {
           const userSelected = result.isOk() ? result.value : undefined;
@@ -689,7 +692,24 @@ export class Coordinator {
           }
         });
       } else {
-        ctx.ui?.showMessage("info", msg, false);
+        if (url && ctx.platform === Platform.CLI) {
+          ctx.ui?.showMessage(
+            "info",
+            [
+              {
+                content: `${msg} View the provisioned resources from `,
+                color: Colors.BRIGHT_GREEN,
+              },
+              {
+                content: url,
+                color: Colors.BRIGHT_CYAN,
+              },
+            ],
+            false
+          );
+        } else {
+          ctx.ui?.showMessage("info", msg, false);
+        }
       }
       ctx.logProvider.info(msg);
     }

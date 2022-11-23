@@ -131,17 +131,45 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     logger?: LogProvider
   ): Promise<string> {
     let res: AxiosZipDeployResult;
-    try {
-      res = await AzureDeployDriver.AXIOS_INSTANCE.post(zipDeployEndpoint, zipBuffer, config);
-    } catch (e) {
-      if (axios.isAxiosError(e)) {
-        await logger?.error(
-          `Upload zip file failed with response status code: ${
-            e.response?.status ?? "NA"
-          }, message: ${JSON.stringify(e.response?.data)}`
-        );
+    let retryCount = 0;
+    while (true) {
+      try {
+        res = await AzureDeployDriver.AXIOS_INSTANCE.post(zipDeployEndpoint, zipBuffer, config);
+        break;
+      } catch (e) {
+        if (axios.isAxiosError(e)) {
+          // if the error is remote server error, retry
+          if ((e.response?.status ?? 200) >= 500) {
+            retryCount += 1;
+            if (retryCount <= DeployConstant.DEPLOY_UPLOAD_RETRY_TIMES) {
+              await logger?.warning(
+                `Upload zip file failed with response status code: ${
+                  e.response?.status ?? "NA"
+                }. Retrying...`
+              );
+            } else {
+              // if retry times exceed, throw error
+              await logger?.warning(
+                `Retry times exceeded. Upload zip file failed with remote server error. Message: ${JSON.stringify(
+                  e.response?.data
+                )}`
+              );
+              throw DeployExternalApiCallError.zipDeployWithRemoteError(e);
+            }
+          } else {
+            // None server error, throw
+            await logger?.error(
+              `Upload zip file failed with response status code: ${
+                e.response?.status ?? "NA"
+              }, message: ${JSON.stringify(e.response?.data)}`
+            );
+            throw DeployExternalApiCallError.zipDeployError(e, e.response?.status ?? -1);
+          }
+        }
+        // if the error is not axios error, throw
+        await logger?.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
+        throw DeployExternalApiCallError.zipDeployError(e, -1);
       }
-      throw DeployExternalApiCallError.zipDeployError(e);
     }
 
     if (res?.status !== HttpStatusCode.OK && res?.status !== HttpStatusCode.ACCEPTED) {

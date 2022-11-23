@@ -6,6 +6,7 @@ import {
   IProgressHandler,
   LogProvider,
   TelemetryReporter,
+  UserInteraction,
 } from "@microsoft/teamsfx-api";
 
 export type Step = {
@@ -34,6 +35,7 @@ export type DeployContext = {
   progressBar: IProgressHandler | undefined;
   logProvider: LogProvider;
   telemetryReporter: TelemetryReporter;
+  ui?: UserInteraction;
 };
 
 export type AzureUploadConfig = {

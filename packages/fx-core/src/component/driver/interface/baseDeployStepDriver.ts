@@ -8,15 +8,13 @@ import { IProgressHandler } from "@microsoft/teamsfx-api";
 export abstract class BaseDeployStepDriver {
   args: unknown;
   context: DeployContext;
-  progressBarName = "Deploying";
-  progressBarSteps = 1;
   workingDirectory: string;
   distDirectory: string;
   protected progressBar?: IProgressHandler;
 
   constructor(args: unknown, context: DriverContext) {
     this.args = args;
-    this.progressBar = context.ui?.createProgressBar(this.progressBarName, this.progressBarSteps);
+    this.progressBar = this.createProgressBar();
     this.workingDirectory = context.projectPath;
     this.distDirectory = "";
     this.context = {
@@ -24,6 +22,7 @@ export abstract class BaseDeployStepDriver {
       progressBar: this.progressBar,
       logProvider: context.logProvider,
       telemetryReporter: context.telemetryReporter,
+      ui: context.ui,
     };
   }
 
@@ -34,4 +33,6 @@ export abstract class BaseDeployStepDriver {
   async cleanup(): Promise<void> {
     await this.progressBar?.end(false);
   }
+
+  abstract createProgressBar(): IProgressHandler | undefined;
 }

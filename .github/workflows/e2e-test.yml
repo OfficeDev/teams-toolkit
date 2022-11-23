@@ -374,7 +374,7 @@ jobs:
             ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json
 
   report:
-    if: ${{ always() }}
+    if: ${{ always() && github.event_name == 'schedule' }}
     needs: execute-case
     runs-on: ubuntu-latest
     steps:
@@ -581,9 +581,7 @@ jobs:
               continue
             fi
 
-            case="${case/v3-/}"
-
-            file="tests/e2e/$case"
+            file="tests/e2e/${case/v3-/}"
             elegant_path="${file//.\//}"
 
             email=""
@@ -669,7 +667,7 @@ jobs:
           method: POST
           payload: |
             {
-              "to": "haolong@microsoft.com",
+              "to": "haolong@microsoft.com;wenyutang@microsoft.com",
               "body": "${{ steps.list-jobs.outputs.body }}",
               "subject": "${{ steps.list-jobs.outputs.subject }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"

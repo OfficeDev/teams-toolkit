@@ -406,7 +406,7 @@ jobs:
 
             jobs=`jq -cr --slurp 'add' <(echo "$jobs") <(echo "$new_jobs")`
 
-            has_next=`curl -I -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.GITHUB_TOKEN }} $url  | grep -Fi "link:" | grep "rel=\"last\""`
+            has_next=`curl -I -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.GITHUB_TOKEN }} $url | grep -Fi "link:" || true | grep "rel=\"last\"" || true`
             if [ -z "$has_next" ]; then
               break
             fi
@@ -556,7 +556,7 @@ jobs:
 
             jobs=`jq -cr --slurp 'add' <(echo "$jobs") <(echo "$new_jobs")`
 
-            has_next=`curl -I -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.GITHUB_TOKEN }} $url  | grep -Fi "link:" | grep "rel=\"last\""`
+            has_next=`curl -I -H "Accept: application/vnd.github.v3+json" -u:${{ secrets.GITHUB_TOKEN }} $url | grep -Fi "link:" || true | grep "rel=\"last\"" || true`
             if [ -z "$has_next" ]; then
               break
             fi

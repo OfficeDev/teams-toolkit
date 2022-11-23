@@ -487,27 +487,6 @@ describe("getManifest V3", () => {
       "accentColor": "#FFFFFF",
       "bots": [],
       "composeExtensions": [],
-      "configurableTabs": [
-          {
-              "configurationUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/config",
-              "canUpdateConfiguration": true,
-              "scopes": [
-                  "team",
-                  "groupchat"
-              ]
-          }
-      ],
-      "staticTabs": [
-          {
-              "entityId": "index0",
-              "name": "Personal Tab",
-              "contentUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
-              "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
-              "scopes": [
-                  "personal"
-              ]
-          }
-      ],
       "permissions": [
           "identity",
           "messageTeamMembers"

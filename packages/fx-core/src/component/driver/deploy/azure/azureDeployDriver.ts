@@ -141,7 +141,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
           // if the error is remote server error, retry
           if ((e.response?.status ?? 200) >= 500) {
             retryCount += 1;
-            if (retryCount <= DeployConstant.DEPLOY_UPLOAD_RETRY_TIMES) {
+            if (retryCount < DeployConstant.DEPLOY_UPLOAD_RETRY_TIMES) {
               await logger?.warning(
                 `Upload zip file failed with response status code: ${
                   e.response?.status ?? "NA"
@@ -165,10 +165,11 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
             );
             throw DeployExternalApiCallError.zipDeployError(e, e.response?.status ?? -1);
           }
+        } else {
+          // if the error is not axios error, throw
+          await logger?.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
+          throw DeployExternalApiCallError.zipDeployError(e, -1);
         }
-        // if the error is not axios error, throw
-        await logger?.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
-        throw DeployExternalApiCallError.zipDeployError(e, -1);
       }
     }
 

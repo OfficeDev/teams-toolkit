@@ -27,16 +27,6 @@ export default class Publish extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const inputs = getSystemInputs(args.folder, args.env);
-    // TODO: remove when V3 is auto enabled
-    if (!inputs.env) {
-      // include local env in interactive question
-      const selectedEnv = await askTargetEnvironment(inputs.projectPath!);
-      if (selectedEnv.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Publish, selectedEnv.error);
-        return err(selectedEnv.error);
-      }
-      inputs.env = selectedEnv.value;
-    }
 
     const properties: { [key: string]: string } = {};
     if (inputs.env) {

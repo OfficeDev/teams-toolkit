@@ -16,7 +16,13 @@ import { forEachFileAndDir } from "../../../utils/fileOperation";
 import * as fs from "fs-extra";
 import path from "path";
 import * as mime from "mime";
-import { FxError, IProgressHandler, LogProvider, Result } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  IProgressHandler,
+  LogProvider,
+  Result,
+  UserInteraction,
+} from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { StepDriver } from "../../interface/stepDriver";
 import { DriverContext, AzureResourceInfo } from "../../interface/commonArgs";
@@ -146,8 +152,8 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
     return (blob.properties.contentLength ?? -1) > 0;
   }
 
-  createProgressBar(): IProgressHandler | undefined {
-    return this.context.ui?.createProgressBar(
+  createProgressBar(ui?: UserInteraction): IProgressHandler | undefined {
+    return ui?.createProgressBar(
       `Deploying ${this.workingDirectory ?? ""} to Azure Storage Service`,
       3
     );

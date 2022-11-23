@@ -3,7 +3,7 @@
 
 import { DriverContext } from "./commonArgs";
 import { DeployContext } from "./buildAndDeployArgs";
-import { IProgressHandler } from "@microsoft/teamsfx-api";
+import { IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
 
 export abstract class BaseDeployStepDriver {
   args: unknown;
@@ -14,7 +14,7 @@ export abstract class BaseDeployStepDriver {
 
   constructor(args: unknown, context: DriverContext) {
     this.args = args;
-    this.progressBar = this.createProgressBar();
+    this.progressBar = this.createProgressBar(context.ui);
     this.workingDirectory = context.projectPath;
     this.distDirectory = "";
     this.context = {
@@ -22,7 +22,6 @@ export abstract class BaseDeployStepDriver {
       progressBar: this.progressBar,
       logProvider: context.logProvider,
       telemetryReporter: context.telemetryReporter,
-      ui: context.ui,
     };
   }
 
@@ -34,5 +33,5 @@ export abstract class BaseDeployStepDriver {
     await this.progressBar?.end(false);
   }
 
-  abstract createProgressBar(): IProgressHandler | undefined;
+  abstract createProgressBar(ui?: UserInteraction): IProgressHandler | undefined;
 }

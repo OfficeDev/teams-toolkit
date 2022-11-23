@@ -7,7 +7,7 @@ import { StepDriver } from "../../interface/stepDriver";
 import { Service } from "typedi";
 import { DriverContext, AzureResourceInfo } from "../../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
-import { FxError, IProgressHandler, Result } from "@microsoft/teamsfx-api";
+import { FxError, IProgressHandler, Result, UserInteraction } from "@microsoft/teamsfx-api";
 import { wrapRun } from "../../../utils/common";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
@@ -54,8 +54,8 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
     }
   }
 
-  createProgressBar(): IProgressHandler | undefined {
-    return this.context.ui?.createProgressBar(
+  createProgressBar(ui?: UserInteraction): IProgressHandler | undefined {
+    return ui?.createProgressBar(
       `Deploying ${this.workingDirectory ?? ""} to Azure App Service`,
       6
     );

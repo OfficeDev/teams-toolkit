@@ -7,7 +7,7 @@ import { Service } from "typedi";
 import { StepDriver } from "../../interface/stepDriver";
 import { AzureResourceInfo, DriverContext } from "../../interface/commonArgs";
 import { TokenCredential } from "@azure/core-http";
-import { FxError, IProgressHandler, Result } from "@microsoft/teamsfx-api";
+import { FxError, IProgressHandler, Result, UserInteraction } from "@microsoft/teamsfx-api";
 import { wrapRun } from "../../../utils/common";
 import { ProgressMessages } from "../../../messages";
 import { hooks } from "@feathersjs/hooks";
@@ -48,8 +48,8 @@ export class AzureFunctionDeployDriverImpl extends AzureDeployDriver {
     await this.progressBar?.end(true);
   }
 
-  createProgressBar(): IProgressHandler | undefined {
-    return this.context.ui?.createProgressBar(
+  createProgressBar(ui?: UserInteraction): IProgressHandler | undefined {
+    return ui?.createProgressBar(
       `Deploying ${this.workingDirectory ?? ""} to Azure Function App`,
       6
     );

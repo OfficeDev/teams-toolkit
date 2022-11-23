@@ -45,7 +45,7 @@ export const AddinLanguageQuestion: SingleSelectQuestion = {
     return options[0] || "No Options";
   },
   placeholder: "This is placeholder",
-  skipSingleOption: false,
+  skipSingleOption: true,
 };
 
 export const OfficeHostQuestion: SingleSelectQuestion = {
@@ -68,7 +68,7 @@ export const OfficeHostQuestion: SingleSelectQuestion = {
     return options[0] || "No Options";
   },
   placeholder: "This is placeholder",
-  skipSingleOption: false,
+  skipSingleOption: true,
 };
 
 export const AddinProjectFolderQuestion: FolderQuestion = {

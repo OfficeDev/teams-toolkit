@@ -1,6 +1,5 @@
 # TeamsFx files
-teamsfx/.env.dev
-teamsfx/.env.local
+teamsfx/.env.*
 .DS_Store
 build
 

@@ -95,6 +95,20 @@ export class FrontendValidator {
     });
   }
 
+  public static async validateScaffoldV3(
+    projectPath: string,
+    programmingLanguage: string
+  ): Promise<void> {
+    const indexFile: { [key: string]: string } = {
+      typescript: "index.tsx",
+      javascript: "index.jsx",
+    };
+    const indexPath = path.resolve(projectPath, "src", indexFile[programmingLanguage]);
+    fs.access(indexPath, fs.constants.F_OK, (err) => {
+      chai.assert.isNull(err);
+    });
+  }
+
   public static async validateProvision(frontendObject: IFrontendObject): Promise<void> {
     console.log("Start to validate Frontend Provision.");
 

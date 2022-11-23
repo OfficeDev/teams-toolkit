@@ -10,8 +10,8 @@ import { M365TokenProvider } from "@microsoft/teamsfx-api";
 
 import MockM365TokenProvider from "../../src/commonlib/m365LoginUserPassword";
 import { IAADDefinition, IAadObject, IAadObjectLocal } from "./interfaces/IAADDefinition";
-import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
-
+import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { EnvContants } from "../commonlib/constants";
 const aadPluginName = "fx-resource-aad-app-for-teams";
 const baseUrl = "https://dev.teams.microsoft.com/api/aadapp/v2";
 
@@ -28,10 +28,7 @@ export class AadValidator {
 
     AadValidator.provider = provider || MockM365TokenProvider;
 
-    const aadObject: IAadObject | undefined = AadValidator.parseConfig(
-      ctx[aadPluginName],
-      isLocalDebug
-    );
+    const aadObject: IAadObject | undefined = AadValidator.parseConfig(ctx, isLocalDebug);
     chai.assert.exists(aadObject);
 
     console.log("Successfully init validator for Azure AD app.");
@@ -65,7 +62,11 @@ export class AadValidator {
     console.log("Successfully validate Azure AD app.");
   }
 
-  private static parseConfig(aad: any, isLocalDebug: boolean): IAadObject | undefined {
+  private static parseConfig(ctx: any, isLocalDebug: boolean): IAadObject | undefined {
+    if (isV3Enabled()) {
+      return AadValidator.objectTransformV3(ctx);
+    }
+    const aad = ctx[aadPluginName];
     if (!isLocalDebug) {
       return <IAadObject>aad;
     } else {
@@ -95,6 +96,19 @@ export class AadValidator {
     }
 
     return undefined;
+  }
+
+  private static objectTransformV3(ctxObj: Record<string, string>): IAadObject {
+    return {
+      clientId: ctxObj[EnvContants.AAD_APP_CLIENT_ID],
+      clientSecret: ctxObj[EnvContants.AAD_APP_CLIENT_SECRETS],
+      objectId: ctxObj[EnvContants.AAD_APP_OBJECT_ID],
+      oauth2PermissionScopeId: ctxObj[EnvContants.AAD_APP_ACCESS_AS_USER_PERMISSION_ID],
+      applicationIdUris: ctxObj[EnvContants.AAD_APP_OAUTH_AUTHORITY_HOST],
+      oauthAuthority: ctxObj[EnvContants.AAD_APP_OAUTH_AUTHORITY],
+      teamsMobileDesktopAppId: "test",
+      teamsWebAppId: "test",
+    };
   }
 
   private static objectTransform(localObject: IAadObjectLocal): IAadObject {

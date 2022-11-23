@@ -22,6 +22,8 @@ import {
 import M365Login from "../../../src/commonlib/m365Login";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
+import { expect } from "chai";
+import { dotenvUtil } from "@microsoft/teamsfx-core/src/component/utils/envUtil";
 
 describe("Create single tab", function () {
   const testFolder = getTestFolder();
@@ -40,7 +42,7 @@ describe("Create single tab", function () {
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
       {
         // Validate scaffold
-        await FrontendValidator.validateScaffold(projectPath, "javascript");
+        await FrontendValidator.validateScaffoldV3(projectPath, "javascript");
       }
     });
 
@@ -53,10 +55,16 @@ describe("Create single tab", function () {
 
       // Validate provision
       // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+      // const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+      const envFilePath = path.join(projectPath, "teamsfx", `.env.${env}`);
+      expect(fs.pathExistsSync(envFilePath)).to.be.true;
+      const parseResult = dotenvUtil.deserialize(
+        await fs.readFile(envFilePath, { encoding: "utf8" })
+      );
+      expect(parseResult.obj).to.be.not.null;
 
       // Validate Aad App
-      const aad = AadValidator.init(context, false, M365Login);
+      const aad = AadValidator.init(parseResult.obj, false, M365Login);
       await AadValidator.validate(aad);
 
       // Validate Tab Frontend

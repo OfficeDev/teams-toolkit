@@ -517,14 +517,14 @@ jobs:
           method: POST
           payload: |
             {
-              "to": "haolong@microsoft.com",
+              "to": "${{ steps.list-jobs.outputs.to }}",
               "body": "${{ steps.list-jobs.outputs.body }}",
               "subject": "${{ steps.list-jobs.outputs.subject }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"
             }
 
   v3-report:
-    if: ${{ always() }}
+    if: ${{ always() && github.event_name == 'schedule' }}
     needs: v3-execute-case
     runs-on: ubuntu-latest
     steps:

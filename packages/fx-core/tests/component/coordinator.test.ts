@@ -582,7 +582,7 @@ describe("component coordinator test", () => {
     });
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     const inputs: Inputs = {
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       projectPath: ".",
       env: "dev",
       targetSubscriptionId: "mockSubId",

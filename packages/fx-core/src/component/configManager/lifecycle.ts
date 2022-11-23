@@ -156,9 +156,9 @@ export class Lifecycle implements ILifecycle {
 
     if (result.isOk()) {
       ctx.logProvider.info(
-        `[${component}]Finished Executing lifecycle ${this.name}. Result: ${JSON.stringify(
-          Lifecycle.stringifyOutput(result.value)
-        )}`
+        `[${component}]Finished Executing lifecycle ${
+          this.name
+        }. Result: ${Lifecycle.stringifyOutput(result.value)}`
       );
     } else {
       if (result.error.kind === "Failure") {
@@ -258,16 +258,14 @@ export class Lifecycle implements ILifecycle {
           },
         });
       }
-      const output: Record<string, string> = {};
       for (const [envVar, value] of result.value) {
         envOutput.set(envVar, value);
         process.env[envVar] = value;
-        output[envVar] = value;
       }
       ctx.logProvider.info(
         `[${component}]Action ${this.stringifyDriverDef(driver)} in lifecycle ${
           this.name
-        } succeeded with output ${JSON.stringify(output)}`
+        } succeeded with output ${Lifecycle.stringifyOutput(result.value)}`
       );
     }
 

@@ -10,6 +10,7 @@ import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
+import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -30,6 +31,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     args: ConfigureTeamsAppArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
+    TelemetryUtils.init(context);
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
       scopes: AppStudioScopes,
     });

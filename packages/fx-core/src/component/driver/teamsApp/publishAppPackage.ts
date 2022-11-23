@@ -20,6 +20,7 @@ import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { Constants } from "../../resource/appManifest/constants";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
+import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { TelemetryPropertyKey } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioScopes } from "../../../common/tools";
@@ -40,6 +41,7 @@ export class PublishAppPackageDriver implements StepDriver {
     args: PublishAppPackageArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
+    TelemetryUtils.init(context);
     const progressHandler = context.ui?.createProgressBar(
       getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppTitle"),
       2

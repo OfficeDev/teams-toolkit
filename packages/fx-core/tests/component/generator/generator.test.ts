@@ -5,6 +5,7 @@ import _ from "lodash";
 import "mocha";
 import fs from "fs-extra";
 import path from "path";
+import axios from "axios";
 import {
   getSampleInfoFromName,
   renderTemplateFileData,
@@ -16,7 +17,7 @@ import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import AdmZip from "adm-zip";
-import sinon from "sinon";
+import { createSandbox } from "sinon";
 import {
   fetchTemplateUrlWithTagAction,
   fetchTemplateZipFromLocalAction,
@@ -30,7 +31,7 @@ import { SampleInfo } from "../../../src/common/samples";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
-  const sandbox = sinon.createSandbox();
+  const sandbox = createSandbox();
 
   afterEach(async () => {
     sandbox.restore();
@@ -40,9 +41,10 @@ describe("Generator utils", () => {
   });
 
   it("fetch zip from url", async () => {
-    const url =
-      "https://github.com/OfficeDev/TeamsFx/releases/download/templates-0.0.0-alpha/bot.csharp.default.zip";
-    await generatorUtils.fetchZipFromUrl(url);
+    sandbox.stub(axios, "get").resolves({ status: 200, data: new AdmZip().toBuffer() });
+    const url = "ut";
+    const zip = await generatorUtils.fetchZipFromUrl(url);
+    assert.equal(zip.getEntries().length, 0);
   });
 
   it("unzip ", async () => {
@@ -99,7 +101,7 @@ describe("Generator error", async () => {
   const tools = new MockTools();
   setTools(tools);
   const ctx = createContextV3();
-  const sandbox = sinon.createSandbox();
+  const sandbox = createSandbox();
   const tmpDir = path.join(__dirname, "tmp");
 
   afterEach(async () => {
@@ -139,7 +141,7 @@ describe("Generator happy path", async () => {
   const tools = new MockTools();
   setTools(tools);
   const context = createContextV3();
-  const sandbox = sinon.createSandbox();
+  const sandbox = createSandbox();
   const tmpDir = path.join(__dirname, "tmp");
 
   afterEach(async () => {

@@ -18,13 +18,17 @@ import {
 } from "@microsoft/teamsfx-api";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import { getPermissionMap } from "@microsoft/teamsfx-core/build/component/resource/aadApp/permissions";
-import { getAllowedAppMaps, getPropertyByPath } from "@microsoft/teamsfx-core";
-import { environmentManager } from "@microsoft/teamsfx-core";
-import { convertManifestTemplateToV3 } from "@microsoft/teamsfx-core";
+import {
+  getAllowedAppMaps,
+  getPropertyByPath,
+  environmentManager,
+  convertManifestTemplateToV3,
+  isV3Enabled,
+  envUtil,
+} from "@microsoft/teamsfx-core";
 import { localize } from "./utils/localizeUtils";
 import { core, getSystemInputs } from "./handlers";
 import isUUID from "validator/lib/isUUID";
-import { isV3Enabled, envUtil } from "@microsoft/teamsfx-core";
 
 async function resolveStateAndConfigCodeLens(
   lens: vscode.CodeLens,

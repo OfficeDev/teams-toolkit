@@ -59,7 +59,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         }
         {
           name: 'BOT_ID'
-          value: botAadAppClientIdl
+          value: botAadAppClientId
         }
         {
           name: 'BOT_PASSWORD'

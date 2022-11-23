@@ -468,7 +468,7 @@ describe("getManifest V3", () => {
       "packageName": "com.microsoft.teams.extension",
       "developer": {
           "name": "Teams App, Inc.",
-          "websiteUrl": "https://www.example.com",
+          "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}",
           "privacyUrl": "https://www.example.com/termofuse",
           "termsOfUseUrl": "https://www.example.com/privacy"
       },

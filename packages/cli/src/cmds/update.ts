@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, err, ok } from "@microsoft/teamsfx-api";
+import { Result, FxError, err, ok, Func } from "@microsoft/teamsfx-api";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
@@ -54,11 +54,55 @@ export class UpdateAadApp extends YargsCommand {
   }
 }
 
+export class UpdateTeamsApp extends YargsCommand {
+  public readonly commandHead = "teams-app";
+  public readonly command = this.commandHead;
+  public readonly description = "Update the Teams App manifest to Teams Developer Portal.";
+
+  public builder(yargs: Argv): Argv<any> {
+    return yargs.hide("interactive").version(false).options(EnvOptions).options(RootFolderOptions);
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    const rootFolder = path.resolve((args.folder as string) || "./");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateTeamsAppStart);
+    const resultFolder = await activate(rootFolder);
+    if (resultFolder.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateTeamsApp, resultFolder.error);
+      return err(resultFolder.error);
+    }
+    const core = resultFolder.value;
+    const inputs = getSystemInputs(rootFolder, args.env);
+
+    const func: Func = {
+      namespace: "fx-solution-azure/fx-resource-appstudio",
+      method: "updateManifest",
+    };
+
+    const result = await core.executeUserTask(func, inputs);
+    if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(
+        TelemetryEvent.UpdateTeamsApp,
+        result.error,
+        makeEnvRelatedProperty(rootFolder, inputs)
+      );
+      return err(result.error);
+    }
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateTeamsApp, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      ...makeEnvRelatedProperty(rootFolder, inputs),
+    });
+
+    return ok(null);
+  }
+}
+
 export default class Update extends YargsCommand {
   public readonly commandHead = "update";
   public readonly command = `${this.commandHead} <application-manifest>`;
   public readonly description = "Update the specific application manifest file.";
-  public readonly subCommands: YargsCommand[] = [new UpdateAadApp()];
+  public readonly subCommands: YargsCommand[] = [new UpdateAadApp(), new UpdateTeamsApp()];
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));

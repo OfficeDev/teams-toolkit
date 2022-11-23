@@ -806,9 +806,6 @@ export class ProvisionUtils {
       true,
       provisionText
     );
-    if (!!confirmRes && confirmRes.isErr()) {
-      return err(confirmRes.error);
-    }
     const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
     ctx.telemetryReporter?.sendTelemetryEvent(
       TelemetryEvent.ConfirmProvision,
@@ -825,7 +822,7 @@ export class ProvisionUtils {
           }
         : {}
     );
-    if (!!confirm && confirm !== provisionText) {
+    if (confirm !== provisionText) {
       return err(new UserError("coordinator", "CancelProvision", "CancelProvision"));
     }
 
@@ -850,7 +847,10 @@ export class ProvisionUtils {
         keysNeedToUpdate.push("AAD_APP_CLIENT_ID");
       }
     }
-    if (actions.includes("botAadApp/create") || actions.includes("m365Bot/create")) {
+    if (
+      actions.includes("botAadApp/create") ||
+      actions.includes("botFramework/createOrUpdateBot")
+    ) {
       if (process.env.BOT_ID) {
         keysNeedToUpdate.push("BOT_ID");
       }

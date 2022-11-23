@@ -18,6 +18,7 @@ import { isGeneratorCheckerEnabled, isYoCheckerEnabled } from "../../common/tool
 import { cpUtils } from "../../common/deps-checker";
 import { TelemetryEvents } from "../resource/spfx/utils/telemetryEvents";
 import { Generator } from "./generator";
+import { CoreQuestionNames } from "../../core/question";
 
 export class SPFxGenerator {
   @hooks([
@@ -57,7 +58,7 @@ export class SPFxGenerator {
     try {
       const webpartName = inputs[SPFXQuestionNames.webpart_name] as string;
       const framework = inputs[SPFXQuestionNames.framework_type] as string;
-      const solutionName = context.projectSetting.appName;
+      const solutionName = inputs[CoreQuestionNames.AppName] as string;
 
       const componentName = Utils.normalizeComponentName(webpartName);
       const componentNameCamelCase = camelCase(componentName);
@@ -94,11 +95,19 @@ export class SPFxGenerator {
       }
 
       const yoEnv: NodeJS.ProcessEnv = process.env;
-      yoEnv.PATH = isYoCheckerEnabled()
-        ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
-            process.env.PATH ?? ""
-          }`
-        : process.env.PATH;
+      if (yoEnv.PATH) {
+        yoEnv.PATH = isYoCheckerEnabled()
+          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+              process.env.PATH ?? ""
+            }`
+          : process.env.PATH;
+      } else {
+        yoEnv.Path = isYoCheckerEnabled()
+          ? `${await (await yoChecker.getBinFolders()).join(path.delimiter)}${path.delimiter}${
+              process.env.Path ?? ""
+            }`
+          : process.env.Path;
+      }
 
       const args = [
         isGeneratorCheckerEnabled()

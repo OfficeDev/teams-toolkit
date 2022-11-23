@@ -37,6 +37,7 @@ import {
   CONFIGURABLE_TABS_TPL_V3,
   STATIC_TABS_TPL_V3,
   WEB_APPLICATION_INFO_V3,
+  manifestStateDataRegex,
 } from "../constants";
 import {
   BotScenario,
@@ -444,7 +445,9 @@ export class ManifestUtils {
     const hasFrontend =
       capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
     const tabEndpoint = envInfo.state[ComponentNames.TeamsTab]?.endpoint;
-    if (!tabEndpoint && !hasFrontend) {
+    const hasUnresolvedPlaceholders =
+      JSON.stringify(templateJson.developer).match(manifestStateDataRegex) !== null;
+    if (!tabEndpoint && !hasFrontend && hasUnresolvedPlaceholders) {
       templateJson.developer = DEFAULT_DEVELOPER;
     }
 
@@ -554,18 +557,6 @@ export class ManifestUtils {
       manifest.staticTabs = [];
       manifest.webApplicationInfo = undefined;
       manifest.validDomains = [];
-    }
-
-    // Adjust template for samples with unnecessary placeholders
-    const capabilities = manifestUtils._getCapabilities(manifest);
-    if (capabilities.isErr()) {
-      return err(capabilities.error);
-    }
-    const hasFrontend =
-      capabilities.value.includes("staticTab") || capabilities.value.includes("configurableTab");
-    const tabEndpoint = state.TAB_ENDPOINT;
-    if (!tabEndpoint && !hasFrontend) {
-      manifest.developer = DEFAULT_DEVELOPER;
     }
 
     const manifestTemplateString = JSON.stringify(manifest);

@@ -372,6 +372,14 @@ function registerTreeViewCommandsInDeployment(context: vscode.ExtensionContext) 
   // Publish to Teams
   registerInCommandController(context, "fx-extension.publish", handlers.publishHandler, "publish");
 
+  // Publish in Developer Portal
+  registerInCommandController(
+    context,
+    "fx-extension.publishInDeveloperPortal",
+    handlers.publishInDeveloperPortalHandler,
+    "publishInDeveloperPortal"
+  );
+
   // Developer Portal for Teams
   registerInCommandController(
     context,
@@ -396,11 +404,11 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createNewEnvironment);
 
-  const deployAadAppManifest = vscode.commands.registerCommand(
-    "fx-extension.deployAadAppManifest",
-    (...args) => Correlator.run(handlers.deployAadAppManifest, args)
+  const updateAadAppManifest = vscode.commands.registerCommand(
+    "fx-extension.updateAadAppManifest",
+    (...args) => Correlator.run(handlers.updateAadAppManifest, args)
   );
-  context.subscriptions.push(deployAadAppManifest);
+  context.subscriptions.push(updateAadAppManifest);
 
   const migrateTeamsManifestCmd = vscode.commands.registerCommand(
     "fx-extension.migrateTeamsManifest",
@@ -494,11 +502,11 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createAccountCmd);
 
-  const deployAadAppManifestFromCtxMenu = vscode.commands.registerCommand(
-    "fx-extension.deployAadAppManifestFromCtxMenu",
-    (...args) => Correlator.run(handlers.deployAadAppManifest, args)
+  const updateAadAppManifestFromCtxMenu = vscode.commands.registerCommand(
+    "fx-extension.updateAadAppManifestFromCtxMenu",
+    (...args) => Correlator.run(handlers.updateAadAppManifest, args)
   );
-  context.subscriptions.push(deployAadAppManifestFromCtxMenu);
+  context.subscriptions.push(updateAadAppManifestFromCtxMenu);
 
   const deployManifestFromCtxMenuCmd = vscode.commands.registerCommand(
     "fx-extension.deployManifestFromCtxMenu",
@@ -896,11 +904,11 @@ async function runBackgroundAsyncTasks(
     isExistingUser !== "no"
   );
   if (TreatmentVariableValue.welcomeViewStyle === "A") {
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewA", true);
-  } else if (TreatmentVariableValue.welcomeViewStyle === "B") {
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
+  } else if (TreatmentVariableValue.welcomeViewStyle === "B") {
     await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewB", true);
+    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
   }
   TreatmentVariableValue.inProductDoc = (await exp
     .getExpService()

@@ -59,11 +59,12 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
     const telemetryComponentName = action.telemetryComponentName || componentName;
     const methodName = ctx.method!;
     const actionName = `${componentName}.${methodName}`;
-    TOOLS.logProvider.debug(`execute ${actionName} start!`);
+    // TOOLS.logProvider.debug(`execute ${actionName} start!`);
     const eventName = action.telemetryEventName || methodName;
     const telemetryProps = {
       [TelemetryConstants.properties.component]: telemetryComponentName,
     };
+    const telemetryMeasures: Record<string, number> = {};
     let progressBar;
     let returnType: "Result" | "Array" = "Result";
     try {
@@ -107,6 +108,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         const actionContext: ActionContext = {
           progressBar: progressBar,
           telemetryProps: telemetryProps,
+          telemetryMeasures: telemetryMeasures,
         };
         ctx.arguments.push(actionContext);
       }
@@ -125,18 +127,19 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       const timeCost = new Date().getTime() - startTime;
       if (ctx.result?.isErr && ctx.result.isErr()) throw ctx.result.error;
       // send end telemetry
-      merge(telemetryProps, { [TelemetryConstants.properties.timeCost]: timeCost });
+      merge(telemetryMeasures, { [TelemetryConstants.properties.timeCost]: timeCost });
       if (action.enableTelemetry) {
-        sendSuccessEvent(eventName, telemetryProps);
+        sendSuccessEvent(eventName, telemetryProps, telemetryMeasures);
         sendMigratedSuccessEvent(
           eventName,
           ctx.arguments[0] as ContextV3,
           ctx.arguments[1] as InputsWithProjectPath,
-          telemetryProps
+          telemetryProps,
+          telemetryMeasures
         );
       }
       await progressBar?.end(true);
-      TOOLS.logProvider.debug(`execute ${actionName} success!`);
+      // TOOLS.logProvider.debug(`execute ${actionName} success!`);
     } catch (e) {
       await progressBar?.end(false);
       let fxError;
@@ -165,7 +168,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
           telemetryProps
         );
       }
-      TOOLS.logProvider.debug(`execute ${actionName} failed!`);
+      // TOOLS.logProvider.error(`execute ${actionName} failed!`);
       if (returnType === "Result") ctx.result = err(fxError);
     }
   };

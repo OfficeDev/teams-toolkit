@@ -11,6 +11,8 @@ import { StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { InstallToolArgs } from "./interfaces/InstallToolArgs";
+import { DepsManager, DepsType, EmptyLogger, EmptyTelemetry } from "../../../common/deps-checker";
+import { FuncInstallationUserError } from "./error/funcInstallationUserError";
 
 const ACTION_NAME = "tools/install";
 const outputName = Object.freeze({
@@ -46,6 +48,9 @@ export class ToolsInstallDriverImpl {
       const localCertRes = await this.resolveLocalCertificate(args.devCert.trust);
       localCertRes.forEach((v, k) => res.set(k, v));
     }
+    if (args.func) {
+      await this.resolveFuncCoreTools();
+    }
 
     // TODO(xiaofhua): prettier output
     this.context.logProvider.info(`Run '${ACTION_NAME}' driver successfully.`);
@@ -72,9 +77,28 @@ export class ToolsInstallDriverImpl {
     return res;
   }
 
+  async resolveFuncCoreTools(): Promise<void> {
+    const depsManager = new DepsManager(new EmptyLogger(), new EmptyTelemetry());
+    const result = (
+      await depsManager.ensureDependencies([DepsType.FuncCoreTools], {
+        fastFail: false,
+        doctor: true,
+      })
+    )[0];
+    if (!result.isInstalled && result.error) {
+      throw new FuncInstallationUserError(ACTION_NAME, result.error);
+    } else if (result.error) {
+      // TODO(xiaofhua): prettier warning output
+      this.context.logProvider.warning(result.error?.message);
+    }
+  }
+
   private validateArgs(args: InstallToolArgs): void {
     if (!!args.devCert && typeof args.devCert?.trust !== "boolean") {
       throw new InvalidParameterUserError(ACTION_NAME, "devCert.trust", helpLink);
+    }
+    if (!!args.func && typeof args.func !== "boolean") {
+      throw new InvalidParameterUserError(ACTION_NAME, "func", helpLink);
     }
   }
 }

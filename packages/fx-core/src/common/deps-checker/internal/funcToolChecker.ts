@@ -27,7 +27,7 @@ import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DepsChecker, DependencyStatus, DepsType } from "../depsChecker";
 import { Messages } from "../constant/message";
-import { getInstalledNodeVersion } from "./nodeChecker";
+import { NodeChecker } from "./nodeChecker";
 
 export enum FuncVersion {
   v1 = "1",
@@ -46,6 +46,7 @@ const FuncNodeVersionWhiteList: { [key: string]: { [key: string]: boolean } } = 
   "4": {
     "14": true,
     "16": true,
+    "18": true,
   },
 };
 
@@ -177,7 +178,7 @@ export class FuncToolChecker implements DepsChecker {
   }
 
   private async getNodeVersion(): Promise<string> {
-    const nodeVersion = (await getInstalledNodeVersion())?.majorVersion;
+    const nodeVersion = (await NodeChecker.getInstalledNodeVersion())?.majorVersion;
     if (!nodeVersion) {
       throw new NodeNotFoundError(
         Messages.NodeNotFound.split("@NodeVersion").join(

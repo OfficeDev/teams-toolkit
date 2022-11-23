@@ -47,13 +47,16 @@ export class CopyAppPackageForSPFxDriver implements StepDriver {
       );
     }
     const pictures = await this.getIcons(copyAppPackageArgs.appPackagePath);
-    const spfxTeamsPath = `${copyAppPackageArgs.spfxFolder}/teams`;
+    const spfxFolder = path.isAbsolute(copyAppPackageArgs.spfxFolder)
+      ? copyAppPackageArgs.spfxFolder
+      : path.join(context.projectPath, copyAppPackageArgs.spfxFolder);
+    const spfxTeamsPath = `${spfxFolder}/teams`;
     await fs.copyFile(
       copyAppPackageArgs.appPackagePath,
       path.join(spfxTeamsPath, "TeamsSPFxApp.zip")
     );
 
-    for (const file of await fs.readdir(`${copyAppPackageArgs.spfxFolder}/teams`)) {
+    for (const file of await fs.readdir(`${spfxFolder}/teams`)) {
       if (file.endsWith("color.png") && pictures.color) {
         await fs.writeFile(path.join(spfxTeamsPath, file), pictures.color);
       } else if (file.endsWith("outline.png") && pictures.outline) {

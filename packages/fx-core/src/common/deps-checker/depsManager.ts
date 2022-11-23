@@ -3,7 +3,7 @@
 
 import { DepsLogger, EmptyLogger } from "./depsLogger";
 import { DepsTelemetry } from "./depsTelemetry";
-import { DependencyStatus, DepsChecker, DepsType } from "./depsChecker";
+import { DependencyStatus, DepsChecker, DepsType, InstallOptions } from "./depsChecker";
 import { CheckerFactory } from "./checkerFactory";
 
 export type DepsOptions = {
@@ -19,6 +19,7 @@ export class DepsManager {
     DepsType.Dotnet,
     DepsType.FuncCoreTools,
     DepsType.Ngrok,
+    DepsType.VxTestApp,
   ];
 
   private readonly logger: DepsLogger;
@@ -67,32 +68,52 @@ export class DepsManager {
     return result;
   }
 
+  public async ensureDependency(
+    depsType: DepsType,
+    doctor = false,
+    options?: InstallOptions
+  ): Promise<DependencyStatus> {
+    return await this.resolve(depsType, true, doctor, options);
+  }
+
+  /**
+   * @deprecated
+   * Get status without installOptions. Only used in legacy code.
+   */
   public async getStatus(depsTypes: DepsType[]): Promise<DependencyStatus[]> {
     if (!depsTypes || depsTypes.length == 0) {
       return [];
     }
     const result: DependencyStatus[] = [];
-    for (const type of depsTypes) {
-      result.push(await this.resolve(type, false));
+    for (const dep of depsTypes) {
+      result.push(await this.resolve(dep, false));
     }
     return result;
   }
 
+  public async getStatusWithInstallOptions(
+    depsType: DepsType,
+    options: InstallOptions
+  ): Promise<DependencyStatus> {
+    return await this.resolve(depsType, false, undefined, options);
+  }
+
   private async resolve(
-    type: DepsType,
+    depsType: DepsType,
     shouldInstall: boolean,
-    doctor = false
+    doctor = false,
+    installOptions?: InstallOptions
   ): Promise<DependencyStatus> {
     const checker: DepsChecker = CheckerFactory.createChecker(
-      type,
+      depsType,
       doctor ? this.emptyLogger : this.logger,
       this.telemetry
     );
 
     if (shouldInstall) {
-      return await checker.resolve();
+      return await checker.resolve(installOptions);
     } else {
-      return await checker.getInstallationInfo();
+      return await checker.getInstallationInfo(installOptions);
     }
   }
 

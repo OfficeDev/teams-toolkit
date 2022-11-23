@@ -22,6 +22,7 @@ import * as bicepChecker from "../../../../src/component/utils/depsChecker/bicep
 import axios from "axios";
 import { getAbsolutePath } from "../../../../src/component/utils/common";
 import { useUserSetEnv } from "../../../../src/core/middleware/envInfoLoaderV3";
+import { convertOutputs, getFileExtension } from "../../../../src/component/driver/arm/util/util";
 
 describe("Arm driver deploy", () => {
   const sandbox = createSandbox();
@@ -73,8 +74,12 @@ describe("Arm driver deploy", () => {
         },
         {
           path: "mock-template2.json",
-          parameters: "mock-parameters2.json",
           deploymentName: "mock-deployment2",
+        },
+        {
+          path: "mock-template3.json",
+          parameters: "mock-parameters3.json",
+          deploymentName: "mock-deployment3",
         },
       ],
     };
@@ -145,7 +150,7 @@ describe("Arm driver deploy", () => {
     sandbox.stub(fs, "readFile").resolves("{}" as any);
     sandbox.stub(cpUtils, "executeCommand").resolves("{}" as any);
     sandbox
-      .stub(ArmDeployImpl.prototype, "executeDeployment")
+      .stub(ArmDeployImpl.prototype, "innerExecuteDeployment")
       .rejects(new Error("mocked deploy error"));
     sandbox.stub(bicepChecker, "getAvailableBicepVersions").resolves([bicepCliVersion]);
     sandbox.stub(ArmDeployImpl.prototype, "ensureBicepCli").resolves();
@@ -210,6 +215,16 @@ describe("util test", () => {
     assert.equal(res, ".");
   });
 
+  it("getAbsolutePath empty", () => {
+    const relativeOrAbsolutePath = undefined;
+    const projectPath = undefined;
+    const res = getAbsolutePath(
+      relativeOrAbsolutePath as unknown as string,
+      projectPath as unknown as string
+    );
+    assert.equal(res, ".");
+  });
+
   it("getAbsolutePath absolute path", () => {
     const relativeOrAbsolutePath = "C:/a";
     const projectPath = "";
@@ -217,8 +232,32 @@ describe("util test", () => {
     assert.equal(relativeOrAbsolutePath, res);
   });
 
+  it("getFileExtension empty", () => {
+    const res = getFileExtension("");
+    assert.isEmpty(res);
+  });
+
   it("useUserSetEnv", async () => {
     const res = await useUserSetEnv("./", "local");
     assert.isTrue(res.isErr());
+  });
+
+  it("convert output", () => {
+    const mockOutput = [
+      {
+        tabOutput: {
+          type: "Object",
+          value: {
+            keyA: {
+              type: "string",
+              value: "valueA",
+            },
+            KeyB: 1,
+          },
+        },
+      },
+    ];
+    const res = convertOutputs(mockOutput);
+    assert.isNotEmpty(res);
   });
 });

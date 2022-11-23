@@ -26,7 +26,7 @@ import { AppManifest } from "../../../../src/component/resource/appManifest/appM
 import { provisionUtils } from "../../../../src/component/provisionUtils";
 import { TelemetryKeys } from "../../../../src/component/resource/botService/constants";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
-import { AlreadyCreatedBotNotExist } from "../../../../src/component/resource/botService/errors";
+import { FailedToCreateBotRegistrationError } from "../../../../src/component/resource/botService/errors";
 
 describe("Bot service", () => {
   const tools = new MockTools();
@@ -135,7 +135,7 @@ describe("Bot service", () => {
     sandbox.stub(AppStudioClient, "getBotRegistration").returns(Promise.resolve(undefined));
     sandbox
       .stub(AppStudioClient, "createBotRegistration")
-      .throws(AlreadyCreatedBotNotExist("botId", ""));
+      .throwsException(new FailedToCreateBotRegistrationError(""));
     sandbox.stub(GraphClient, "registerAadApp").resolves({
       clientId: "clientId",
       clientSecret: "clientSecret",

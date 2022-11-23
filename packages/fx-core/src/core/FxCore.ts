@@ -99,6 +99,7 @@ import {
   getQuestionsForAddFeatureV3,
   getQuestionsForAddResourceV3,
   getQuestionsForDeployV3,
+  getQuestionsForInit,
   getQuestionsForProvisionV3,
 } from "../component/question";
 import { ProjectVersionCheckerMW } from "./middleware/projectVersionChecker";
@@ -143,10 +144,11 @@ import "../component/driver/script/npxBuildDriver";
 import "../component/driver/tools/installDriver";
 import "../component/driver/env/generate";
 import "../component/driver/env/appsettingsGenerate";
-import "../component/driver/m365Bot/createOrUpdate";
+import "../component/driver/botFramework/createOrUpdateBot";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
 import { containsUnsupportedFeature } from "../component/resource/appManifest/utils/utils";
+import { VideoFilterAppBlockerMW } from "./middleware/videoFilterAppBlocker";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -228,10 +230,17 @@ export class FxCore implements v3.ICore {
    */
   @hooks([ErrorHandlerMW])
   async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    const res = await coordinator.initInfra(inputs);
+    const res = await coordinator.initInfra(createContextV3(), inputs);
     return res;
   }
-
+  /**
+   * "teamsfx init debug" CLI command
+   */
+  @hooks([ErrorHandlerMW])
+  async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
+    const res = await coordinator.initDebug(createContextV3(), inputs);
+    return res;
+  }
   @hooks([ErrorHandlerMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async createProjectOld(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
@@ -257,7 +266,7 @@ export class FxCore implements v3.ICore {
     return isV3Enabled() ? this.provisionResourcesNew(inputs) : this.provisionResourcesOld(inputs);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW(false), ContextInjectorMW, EnvWriterMW])
   async provisionResourcesNew(
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -265,10 +274,17 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
     const context = createDriverContext(inputs);
-    const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
-    ctx!.envVars = output;
-    if (error) return err(error);
-    return ok(Void);
+    try {
+      const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
+      ctx!.envVars = output;
+      if (error) return err(error);
+      return ok(Void);
+    } finally {
+      //reset subscription
+      try {
+        await TOOLS.tokenProvider.azureAccountProvider.setSubscription("");
+      } catch (e) {}
+    }
   }
   @hooks([
     ErrorHandlerMW,
@@ -278,6 +294,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    VideoFilterAppBlockerMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -338,7 +355,7 @@ export class FxCore implements v3.ICore {
     return isV3Enabled() ? this.deployArtifactsNew(inputs) : this.deployArtifactsOld(inputs);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW(false), ContextInjectorMW, EnvWriterMW])
   async deployArtifactsNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
@@ -357,6 +374,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    VideoFilterAppBlockerMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -437,6 +455,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    VideoFilterAppBlockerMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -458,7 +477,7 @@ export class FxCore implements v3.ICore {
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
-  @hooks([ErrorHandlerMW, EnvLoaderMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW(false)])
   async publishApplicationNew(inputs: Inputs): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
@@ -501,6 +520,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    VideoFilterAppBlockerMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -622,6 +642,10 @@ export class FxCore implements v3.ICore {
       return await getQuestionsForDeployV3(context, inputs);
     } else if (stage === Stage.provision) {
       return await getQuestionsForProvisionV3(context, inputs);
+    } else if (stage === Stage.initDebug) {
+      return await getQuestionsForInit("debug", inputs);
+    } else if (stage === Stage.initInfra) {
+      return await getQuestionsForInit("infra", inputs);
     }
     return ok(undefined);
   }
@@ -659,7 +683,7 @@ export class FxCore implements v3.ICore {
     return settingsUtil.readSettings(inputs.projectPath);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW(true), ContextInjectorMW])
   async getDotEnv(
     inputs: InputsWithProjectPath,
     ctx?: CoreHookContext
@@ -869,13 +893,7 @@ export class FxCore implements v3.ICore {
     throw new TaskNotSupportError(Stage.build);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(true),
-    ContextInjectorMW,
-  ])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     if (!ctx || !inputs.projectPath)
       return err(new ObjectIsUndefinedError("createEnv input stuff"));
@@ -1199,7 +1217,7 @@ export class FxCore implements v3.ICore {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW(false), ContextInjectorMW])
   async preProvisionForVS(
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -1216,6 +1234,17 @@ export class FxCore implements v3.ICore {
   > {
     const context = createDriverContext(inputs);
     return coordinator.preProvisionForVS(context, inputs as InputsWithProjectPath);
+  }
+
+  @hooks([ErrorHandlerMW, EnvLoaderMW(false), ContextInjectorMW])
+  async publishInDeveloperPortal(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.publishInDeveloperPortal);
+    inputs.stage = Stage.publishInDeveloperPortal;
+    const context = createContextV3();
+    return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
   }
 }
 

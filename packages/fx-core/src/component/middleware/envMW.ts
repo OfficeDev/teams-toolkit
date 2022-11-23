@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
-import { err, Inputs, QTreeNode, traverse, UserCancelError } from "@microsoft/teamsfx-api";
+import {
+  err,
+  Inputs,
+  QTreeNode,
+  traverse,
+  UserCancelError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { environmentManager } from "../../core/environment";
 import { NoProjectOpenedError } from "../../core/error";
 import { TOOLS } from "../../core/globalVars";
@@ -9,23 +16,32 @@ import { CoreHookContext } from "../../core/types";
 import { SelectEnvQuestion } from "../question";
 import { envUtil } from "../utils/envUtil";
 import _ from "lodash";
+import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 
-export const EnvLoaderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  const envBefore = _.cloneDeep(process.env);
-  try {
-    await envLoaderMWImpl(ctx, next);
-    return;
-  } finally {
-    const keys = Object.keys(process.env);
-    for (const k of keys) {
-      if (!(k in envBefore)) {
-        delete process.env[k];
+export function EnvLoaderMW(withLocalEnv: boolean): Middleware {
+  return async (ctx: CoreHookContext, next: NextFunction) => {
+    const envBefore = _.cloneDeep(process.env);
+    try {
+      await envLoaderMWImpl(withLocalEnv, ctx, next);
+      return;
+    } finally {
+      const keys = Object.keys(process.env);
+      for (const k of keys) {
+        if (!(k in envBefore)) {
+          delete process.env[k];
+        } else {
+          process.env[k] = envBefore[k];
+        }
       }
     }
-  }
-};
+  };
+}
 
-export const envLoaderMWImpl: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
+export const envLoaderMWImpl = async (
+  withLocalEnv: boolean,
+  ctx: CoreHookContext,
+  next: NextFunction
+) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const projectPath = inputs.projectPath;
   if (!projectPath) {
@@ -42,7 +58,25 @@ export const envLoaderMWImpl: Middleware = async (ctx: CoreHookContext, next: Ne
       ctx.result = err(envListRes.error);
       return;
     }
-    question.staticOptions = envListRes.value;
+    if (envListRes.value.length === 0) {
+      ctx.result = err(
+        new UserError({
+          source: "EnvLoaderMW",
+          name: "NoYmlFileError",
+          displayMessage: getLocalizedString("core.error.NoYmlFileError"),
+          message: getDefaultString("core.error.NoYmlFileError"),
+        })
+      );
+      return;
+    }
+    if (withLocalEnv) {
+      question.staticOptions = envListRes.value;
+    } else {
+      question.staticOptions = envListRes.value.filter(
+        (p) => p !== environmentManager.getLocalEnvName()
+      );
+    }
+
     const res = await traverse(new QTreeNode(question), inputs, TOOLS.ui);
     if (res.isErr()) {
       TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);

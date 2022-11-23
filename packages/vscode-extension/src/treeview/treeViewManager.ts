@@ -14,6 +14,7 @@ import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
+import { isTDPIntegrationEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -176,6 +177,9 @@ class TreeViewManager {
   }
 
   private registerEnvironment(disposables: vscode.Disposable[]) {
+    if (isV3Enabled()) {
+      return;
+    }
     disposables.push(
       vscode.window.registerTreeDataProvider("teamsfx-environment", envTreeProviderInstance)
     );
@@ -215,6 +219,13 @@ class TreeViewManager {
       ),
       ...(isV3Enabled()
         ? [
+            new TreeViewCommand(
+              localize("teamstoolkit.commandsTreeViewProvider.addEnvironmentTitle"),
+              localize("teamstoolkit.commandsTreeViewProvider.addEnvironmentDescription"),
+              "fx-extension.addEnvironment",
+              undefined,
+              { name: "teamsfx-add-environment", custom: false }
+            ),
             new TreeViewCommand(
               localize("teamstoolkit.commandsTreeViewProvider.manageCollaboratorTitle"),
               localize("teamstoolkit.commandsTreeViewProvider.manageCollaboratorDescription"),
@@ -268,6 +279,7 @@ class TreeViewManager {
   }
 
   private registerDeployment(disposables: vscode.Disposable[]) {
+    const isTdpIntegration = isTDPIntegrationEnabled();
     const deployCommand = [
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.provisionTitleNew"),
@@ -299,16 +311,29 @@ class TreeViewManager {
       ),
     ];
 
-    deployCommand.push(
-      new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitleNew"),
-        localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription"),
-        "fx-extension.openAppManagement",
-        undefined,
-        { name: "teamsfx-developer-portal", custom: false }
-      )
-    );
+    if (!isTdpIntegration) {
+      deployCommand.push(
+        new TreeViewCommand(
+          localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalTitleNew"),
+          localize("teamstoolkit.commandsTreeViewProvider.teamsDevPortalDescription"),
+          "fx-extension.openAppManagement",
+          undefined,
+          { name: "teamsfx-developer-portal", custom: false }
+        )
+      );
+    }
 
+    if (isTdpIntegration) {
+      deployCommand.push(
+        new TreeViewCommand(
+          localize("teamstoolkit.commandsTreeViewProvider.publishInDevPortalTitle"),
+          localize("teamstoolkit.commandsTreeViewProvider.publishInDevPortalDescription"),
+          "fx-extension.publishInDeveloperPortal",
+          "publish",
+          { name: "export", custom: false }
+        )
+      );
+    }
     const deployProvider = new CommandsTreeViewProvider(deployCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-deployment", deployProvider));
     this.storeCommandsIntoMap(deployCommand);

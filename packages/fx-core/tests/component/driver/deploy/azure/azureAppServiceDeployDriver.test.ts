@@ -3,7 +3,10 @@
 
 import * as sinon from "sinon";
 import "mocha";
-import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
+import {
+  AzureAppServiceDeployDriver,
+  AzureAppServiceDeployDriverImpl,
+} from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
 import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
 import * as appService from "@azure/arm-appservice";
 import * as tools from "../../../../../src/common/tools";
@@ -21,6 +24,7 @@ import { MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
+import { AxiosError } from "axios";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -94,6 +98,7 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
+    sandbox.stub(client.webApps, "restart").resolves();
     const res = await deploy.run(args, context);
     expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
   });
@@ -163,6 +168,7 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
+    sandbox.stub(client.webApps, "restart").resolves();
     // read deploy zip file error
     sandbox
       .stub(fs, "readFile")
@@ -211,6 +217,122 @@ describe("Azure App Service Deploy Driver test", () => {
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "post").throws(new Error("test"));
+    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
+      status: 200,
+    });
+    const res = await deploy.run(args, context);
+    assert.equal(res.isErr(), true);
+  });
+
+  it("zip deploy need acceleration", async () => {
+    const args = {
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+    } as DeployArgs;
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    context.logProvider.info = async (msg: string | Array<any>) => {
+      console.log(msg);
+      return Promise.resolve(true);
+    };
+    const deploy = new AzureAppServiceDeployDriverImpl(args, context);
+    sandbox.stub(deploy, "zipDeploy").resolves(5_000_000);
+    await deploy.run();
+  });
+
+  it("should thrown when deploy remote 500 error", async () => {
+    const deploy = new AzureAppServiceDeployDriver();
+    const args = {
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+    } as DeployArgs;
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+    } as DriverContext;
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
+    // ignore file
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
+    sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
+      publishingUserName: "test-username",
+      publishingPassword: "test-password",
+    } as Models.WebAppsListPublishingCredentialsResponse);
+    sandbox.stub(appService, "WebSiteManagementClient").returns(client);
+    sandbox.stub(fs, "readFileSync").resolves("test");
+    // read deploy zip file error
+    sandbox.stub(fs, "readFile").callsFake((file) => {
+      if (file === "ignore") {
+        return Promise.resolve(Buffer.from("node_modules"));
+      }
+      throw new Error("not found");
+    });
+    // mock klaw
+    sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
+    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "post").throws({
+      response: {
+        status: 503,
+      },
+      isAxiosError: true,
+    });
+    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
+      status: 200,
+    });
+    const res = await deploy.run(args, context);
+    assert.equal(res.isErr(), true);
+  });
+
+  it("should thrown when deploy remote 400 error", async () => {
+    const deploy = new AzureAppServiceDeployDriver();
+    const args = {
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+    } as DeployArgs;
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+    } as DriverContext;
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
+    // ignore file
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
+    sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
+      publishingUserName: "test-username",
+      publishingPassword: "test-password",
+    } as Models.WebAppsListPublishingCredentialsResponse);
+    sandbox.stub(appService, "WebSiteManagementClient").returns(client);
+    sandbox.stub(fs, "readFileSync").resolves("test");
+    // read deploy zip file error
+    sandbox.stub(fs, "readFile").callsFake((file) => {
+      if (file === "ignore") {
+        return Promise.resolve(Buffer.from("node_modules"));
+      }
+      throw new Error("not found");
+    });
+    // mock klaw
+    sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
+    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "post").throws({
+      response: {
+        status: 404,
+      },
+      isAxiosError: true,
+    });
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });

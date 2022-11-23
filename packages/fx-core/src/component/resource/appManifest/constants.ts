@@ -10,6 +10,8 @@ const TAB_STATE_KEY = ComponentNames.TeamsTab;
 const BOT_STATE_KEY = ComponentNames.TeamsBot;
 const APP_MANIFEST_KEY = ComponentNames.AppManifest;
 
+export const manifestStateDataRegex = /{{{?state\.[a-zA-Z-_]+\.\w+}}}?/g;
+
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
   "manifestVersion": "1.14",
@@ -235,7 +237,7 @@ export class Constants {
   public static readonly INCLUDE_APP_MANIFEST = "include-app-manifest";
   public static readonly READ_MORE = getLocalizedString("core.Notification.ReadMore");
   public static readonly VIEW_DEVELOPER_PORTAL = getLocalizedString(
-    "plugins.appstudio.viewDevPortal"
+    "plugins.appstudio.viewDeveloperPortal"
   );
   public static readonly DEVELOPER_PORTAL_APP_PACKAGE_URL =
     "https://dev.teams.microsoft.com/apps/%s/app-package";

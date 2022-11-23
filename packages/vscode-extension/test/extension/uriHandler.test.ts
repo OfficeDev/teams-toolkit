@@ -21,9 +21,19 @@ describe("uri handler", () => {
     sandbox.assert.calledOnce(showMessage);
   });
 
+  it("invalid uri missing referer", async () => {
+    const handler = new UriHandler();
+    const uri = vscode.Uri.parse("vscode://test.test?query=1");
+    sandbox.stub(featureFlags, "isTDPIntegrationEnabled").returns(true);
+    const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
+    await handler.handleUri(uri);
+
+    sandbox.assert.calledOnce(showMessage);
+  });
+
   it("invalid uri missing app id", async () => {
     const handler = new UriHandler();
-    const uri = vscode.Uri.parse("vscode://test.test?test=1");
+    const uri = vscode.Uri.parse("vscode://test.test?test=1&referrer=developerportal");
     sandbox.stub(featureFlags, "isTDPIntegrationEnabled").returns(true);
     const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
     await handler.handleUri(uri);
@@ -43,7 +53,9 @@ describe("uri handler", () => {
 
   it("valid uri", async () => {
     const handler = new UriHandler();
-    const uri = vscode.Uri.parse("vscode://test.test?appId=1");
+    const uri = vscode.Uri.parse(
+      "vscode://test.test?appId=1&referrer=developerportal&login_hint=test"
+    );
     sandbox.stub(featureFlags, "isTDPIntegrationEnabled").returns(true);
 
     const executeCommand = sandbox
@@ -51,6 +63,6 @@ describe("uri handler", () => {
       .returns(Promise.resolve(""));
     await handler.handleUri(uri);
 
-    sandbox.assert.calledOnceWithExactly(executeCommand, "fx-extension.openFromTdp", "1");
+    sandbox.assert.calledOnceWithExactly(executeCommand, "fx-extension.openFromTdp", "1", "test");
   });
 });

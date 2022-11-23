@@ -19,7 +19,7 @@ import { Constants } from "../../resource/appManifest/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { VSCodeExtensionCommand } from "../../../common/constants";
 
-const actionName = "teamsApp/createAppPackage";
+export const actionName = "teamsApp/createAppPackage";
 
 @Service(actionName)
 export class CreateAppPackageDriver implements StepDriver {
@@ -147,7 +147,7 @@ export class CreateAppPackageDriver implements StepDriver {
       context.ui?.showMessage("info", builtSuccess, false);
     }
 
-    return ok(new Map([["TEAMS_APP_PACKAGE_PATH", zipFileName]]));
+    return ok(new Map());
   }
 
   private loadCurrentState() {

@@ -1,4 +1,6 @@
 import sampleConfig from "./samples-config.json";
+import sampleConfigV3 from "./samples-config-v3.json";
+import { isV3Enabled, isVideoFilterEnabled } from "./tools";
 
 export interface SampleInfo {
   id: string;
@@ -23,21 +25,48 @@ class SampleProvider {
 
   public get SampleCollection(): SampleCollection {
     if (!this.sampleCollection) {
-      const samples = sampleConfig.samples.map((sample) => {
-        return {
-          id: sample.id,
-          title: sample.title,
-          shortDescription: sample.shortDescription,
-          fullDescription: sample.fullDescription,
-          tags: sample.tags,
-          time: sample.time,
-          configuration: sample.configuration,
-          link: sample.packageLink ?? sampleConfig.defaultPackageLink,
-          suggested: sample.suggested,
-          url: sample.url ?? sampleConfig.baseUrl,
-          relativePath: sample.relativePath,
-        } as SampleInfo;
-      });
+      let samples;
+      if (isV3Enabled()) {
+        samples = sampleConfigV3.samples.map((sample) => {
+          return {
+            id: sample.id,
+            title: sample.title,
+            shortDescription: sample.shortDescription,
+            fullDescription: sample.fullDescription,
+            tags: sample.tags,
+            time: sample.time,
+            configuration: sample.configuration,
+            link: sampleConfigV3.defaultPackageLink,
+            suggested: sample.suggested,
+            url: sampleConfigV3.baseUrl,
+          } as SampleInfo;
+        });
+      } else {
+        samples = sampleConfig.samples.map((sample) => {
+          return {
+            id: sample.id,
+            title: sample.title,
+            shortDescription: sample.shortDescription,
+            fullDescription: sample.fullDescription,
+            tags: sample.tags,
+            time: sample.time,
+            configuration: sample.configuration,
+            link: sample.packageLink ?? sampleConfig.defaultPackageLink,
+            suggested: sample.suggested,
+            url: sample.relativePath ? sample.url : sample.url ?? sampleConfig.baseUrl,
+            relativePath: sample.relativePath,
+          } as SampleInfo;
+        });
+      }
+
+      // remove video filter sample app if feature flag is disabled.
+      if (!isVideoFilterEnabled()) {
+        const videoFilterSampleId = "teams-videoapp-sample";
+        const index = samples.findIndex((sample) => sample.id === videoFilterSampleId);
+        if (index !== -1) {
+          samples.splice(index, 1);
+        }
+      }
 
       this.sampleCollection = {
         samples,

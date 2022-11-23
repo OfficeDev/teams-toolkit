@@ -19,16 +19,20 @@ import path from "path";
 import fs from "fs-extra";
 import { environmentManager } from "../core/environment";
 import { CoreQuestionNames } from "../core/question";
-import { DEFAULT_DEVELOPER } from "./resource/appManifest/constants";
+import { COMPOSE_EXTENSIONS_TPL_V3, DEFAULT_DEVELOPER } from "./resource/appManifest/constants";
 import { ObjectIsUndefinedError } from "../core/error";
 import { CoordinatorSource } from "./constants";
 import { getLocalizedString } from "../common/localizeUtils";
+import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
 
 const appPackageFolderName = "appPackage";
 const resourcesFolderName = "resources";
 const colorFileName = "color.png";
 const outlineFileName = "outline.png";
 const manifestFileName = "manifest.template.json";
+
+export const answerToRepaceBotId = "bot";
+export const answerToReplaceMessageExtensionBotId = "messageExtension";
 
 export class DeveloperPortalScaffoldUtils {
   async updateFilesForTdp(
@@ -100,6 +104,11 @@ async function updateManifest(
   );
 
   const manifestTemplatePath = path.join(ctx.projectPath!, appPackageFolderName, manifestFileName);
+  const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
+  if (manifestRes.isErr()) {
+    return err(manifestRes.error);
+  }
+  const existingManifestTemplate = manifestRes.value;
 
   // icons
   const icons = appPackage.icons;
@@ -142,6 +151,20 @@ async function updateManifest(
     const validDomains = manifest.validDomains ?? [];
     validDomains.push("${{TAB_DOMAIN}}");
     manifest.validDomains = validDomains;
+  }
+
+  // manifest: bot
+  if (inputs[CoreQuestionNames.ReplaceBotIds]) {
+    if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToRepaceBotId)) {
+      manifest.bots = existingManifestTemplate.bots;
+      manifest.validDomains = existingManifestTemplate.validDomains;
+    }
+
+    if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToReplaceMessageExtensionBotId)) {
+      manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_V3;
+      manifest.composeExtensions[0].botId = "${{BOT_ID}}";
+      manifest.validDomains = existingManifestTemplate.validDomains;
+    }
   }
 
   // manifest: developer
@@ -187,7 +210,7 @@ async function updateEnv(appId: string, projectPath: string): Promise<Result<und
         if (match[1].startsWith("TEAMS_APP_ID=")) {
           writeStream.write(`TEAMS_APP_ID=${appId}${os.EOL}`);
         } else {
-          writeStream.write(`${match[1]}${os.EOL}`);
+          writeStream.write(`${line.trim()}${os.EOL}`);
         }
       } else {
         writeStream.write(`${line.trim()}${os.EOL}`);

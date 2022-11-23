@@ -38,8 +38,10 @@ import { SUPPORTED_SPFX_VERSION } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugCommonUtils from "../../src/debug/commonUtils";
+import * as teamsAppInstallation from "../../src/debug/teamsAppInstallation";
 import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";
 import * as debugProvider from "../../src/debug/teamsfxDebugProvider";
+import * as taskHandler from "../../src/debug/teamsfxTaskHandler";
 import { ExtensionErrors } from "../../src/error";
 import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
@@ -57,6 +59,7 @@ import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { VsCodeLogProvider } from "../../src/commonlib/log";
 import { ProgressHandler } from "../../src/progressHandler";
 import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
+import { assert } from "console";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -126,6 +129,19 @@ describe("handlers", () => {
       .resolves(err(new PathNotExistError("path not exist", "fake path")));
     const res = await handlers.getAzureProjectConfigV3();
     chai.assert.isUndefined(res);
+    sandbox.restore();
+  });
+
+  it("getSettingsVersion in v3", async () => {
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
+    sandbox
+      .stub(MockCore.prototype, "getSettings")
+      .resolves(ok({ version: "3.0.0" } as ProjectSettings));
+    const res = await handlers.getSettingsVersion();
+    chai.assert.equal(res, "3.0.0");
     sandbox.restore();
   });
 
@@ -1016,7 +1032,7 @@ describe("handlers", () => {
     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     const deployArtifacts = sinon.spy(handlers.core, "deployArtifacts");
-    await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
+    await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
     sinon.assert.calledOnce(deployArtifacts);
     chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
     sinon.restore();
@@ -1029,7 +1045,7 @@ describe("handlers", () => {
     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     const deployAadManifest = sinon.spy(handlers.core, "deployAadManifest");
-    await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
+    await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
     sinon.assert.calledOnce(deployAadManifest);
     chai.assert.equal(deployAadManifest.getCall(0).args[0]["include-aad-manifest"], "yes");
     deployAadManifest.restore();
@@ -1166,6 +1182,10 @@ describe("handlers", () => {
   });
 
   describe("scaffoldFromDeveloperPortalHandler", async () => {
+    beforeEach(() => {
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    });
     afterEach(() => {
       sinon.restore();
     });
@@ -1189,7 +1209,7 @@ describe("handlers", () => {
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
 
-      const res = await handlers.scaffoldFromDeveloperPortalHandler(["1", "2"]);
+      const res = await handlers.scaffoldFromDeveloperPortalHandler([]);
 
       chai.assert.equal(res.isOk(), true);
       chai.assert.equal(createProgressBar.notCalled, true);
@@ -1276,8 +1296,6 @@ describe("handlers", () => {
         .returns(progressHandler);
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const createProject = sinon.spy(handlers.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
       sinon.stub(globalState, "globalStateUpdate");
@@ -1290,6 +1308,84 @@ describe("handlers", () => {
       chai.assert.equal(createProgressBar.calledOnce, true);
       chai.assert.equal(startProgress.calledOnce, true);
       chai.assert.equal(endProgress.calledOnceWithExactly(true), true);
+    });
+  });
+
+  describe("publishInDeveloperPortalHandler", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("publish in developer portal", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(vscode.commands, "executeCommand");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+
+      const res = await handlers.publishInDeveloperPortalHandler();
+      if (res.isErr()) {
+        console.log(res.error);
+      }
+      chai.assert.isTrue(publish.calledOnce);
+    });
+  });
+
+  describe("installAppInTeams", () => {
+    beforeEach(() => {
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("v3: happ path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "getV3TeamsAppId").returns(Promise.resolve("appId"));
+      sinon
+        .stub(teamsAppInstallation, "showInstallAppInTeamsMessage")
+        .returns(Promise.resolve(true));
+      const result = await handlers.installAppInTeams();
+      chai.assert.equal(result, undefined);
+    });
+
+    it("v3: user cancel", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "getV3TeamsAppId").returns(Promise.resolve("appId"));
+      sinon
+        .stub(teamsAppInstallation, "showInstallAppInTeamsMessage")
+        .returns(Promise.resolve(false));
+      sinon.stub(taskHandler, "terminateAllRunningTeamsfxTasks").callsFake(() => {});
+      sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
+      const result = await handlers.installAppInTeams();
+      chai.assert.equal(result, "1");
+    });
+
+    it("v2: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "getDebugConfig").returns(
+        Promise.resolve({
+          appId: "appId",
+          env: "local",
+        })
+      );
+      sinon
+        .stub(teamsAppInstallation, "showInstallAppInTeamsMessage")
+        .returns(Promise.resolve(true));
+      const result = await handlers.installAppInTeams();
+      chai.assert.equal(result, undefined);
+    });
+
+    it("v2: no appId", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "getDebugConfig").returns(Promise.resolve(undefined));
+      sinon.stub(handlers, "showError").callsFake(async () => {});
+      sinon.stub(taskHandler, "terminateAllRunningTeamsfxTasks").callsFake(() => {});
+      sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
+      const result = await handlers.installAppInTeams();
+      chai.assert.equal(result, "1");
     });
   });
 });

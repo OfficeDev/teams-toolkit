@@ -6,6 +6,8 @@ Next steps:
    You need to run the command under the "bot" folder (instead of your project root folder).
 2. Set `TEAMSFX_API_FAKE_API_KEY` to your API key in the file `bot/.env.teamsfx.local`.
 
+It is also recommended to put all the configurations into config.js file.
+
 You can import the API client (an Axios instance) in another file and call fake APIs and authentication is now handled for you automatically.
 
 Here is an example for a GET request to "relative_path_of_target_api":
@@ -31,11 +33,11 @@ const teamsFx = new teamsfxSdk.TeamsFx();
 // Initialize a new axios instance to call fake
 const authProvider = new teamsfxSdk.ApiKeyProvider(
   "fake_api_key_name",
-  teamsFx.getConfig("TEAMSFX_API_FAKE_API_KEY"),
+  process.env.TEAMSFX_API_FAKE_API_KEY,
   teamsfxSdk.ApiKeyLocation.Header
 );
 const fakeClient = teamsfxSdk.createApiClient(
-  teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"),
+  process.env.TEAMSFX_API_FAKE_ENDPOINT,
   authProvider
 );
 module.exports.fakeClient = fakeClient;

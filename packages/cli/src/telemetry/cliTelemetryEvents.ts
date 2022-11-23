@@ -13,6 +13,9 @@ export enum TelemetryEvent {
   InitInfraStart = "init-infra-start",
   InitInfra = "init-infra",
 
+  InitDebugStart = "init-debug-start",
+  InitDebug = "init-debug",
+
   InitProjectStart = "init-project-start",
   InitProject = "init-project",
 
@@ -30,6 +33,9 @@ export enum TelemetryEvent {
 
   UpdateManifestStart = "update-manifest-start",
   UpdateManifest = "update-manifest",
+
+  UpdateAadAppStart = "update-aad-app-start",
+  UpdateAadApp = "update-aad-app",
 
   BuildStart = "build-start",
   Build = "build",

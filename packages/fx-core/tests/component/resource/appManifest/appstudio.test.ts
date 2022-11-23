@@ -5,14 +5,29 @@ import "mocha";
 import * as chai from "chai";
 import sinon from "sinon";
 import { MockLogProvider, MockM365TokenProvider } from "../../../core/utils";
-import { err, ok, UserError } from "@microsoft/teamsfx-api";
+import {
+  err,
+  InputsWithProjectPath,
+  ok,
+  Platform,
+  ResourceContextV3,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import {
   checkIfAppInDifferentAcountSameTenant,
   getAppPackage,
+  updateManifestV3ForPublish,
 } from "../../../../src/component/resource/appManifest/appStudio";
 import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
 import AdmZip from "adm-zip";
 import { RetryHandler } from "../../../../src/component/resource/appManifest/utils/utils";
+import { createContextV3 } from "../../../../src/component/utils";
+import mockedEnv, { RestoreFn } from "mocked-env";
+import { CoreQuestionNames } from "../../../../src/core/question";
+import Container from "typedi";
+import { CreateTeamsAppDriver } from "../../../../src/component/driver/teamsApp/create";
+import { ConfigureTeamsAppDriver } from "../../../../src/component/driver/teamsApp/configure";
+import { envUtil } from "../../../../src/component/utils/envUtil";
 
 describe("appStudio", () => {
   const sandbox = sinon.createSandbox();
@@ -172,6 +187,110 @@ describe("appStudio", () => {
 
       const res = await getAppPackage(teamsAppId, m365TokenProvider, logger);
       chai.assert.isTrue(res.isErr());
+    });
+  });
+
+  describe("updateManifestV3ForPublish", () => {
+    let mockedEnvRestore: RestoreFn | undefined;
+    afterEach(() => {
+      sandbox.restore();
+      if (mockedEnvRestore) {
+        mockedEnvRestore();
+      }
+    });
+    it("success", async () => {
+      const ctx = createContextV3();
+      const inputs: InputsWithProjectPath = {
+        [CoreQuestionNames.ManifestPath]: "manifest.json",
+        platform: Platform.VSCode,
+        projectPath: "projectPath",
+      };
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_ENV: "local",
+        TEAMS_APP_ID: "id",
+      });
+      const createAppDriver = new CreateTeamsAppDriver();
+      const updateDriver = new ConfigureTeamsAppDriver();
+      sandbox.stub(Container, "get").callsFake((name) => {
+        if (name === "teamsApp/createAppPackage") {
+          return createAppDriver;
+        } else if (name == "teamsApp/update") {
+          return updateDriver;
+        } else {
+          throw new Error("not implemented");
+        }
+      });
+      sandbox.stub(createAppDriver, "run").resolves(ok(new Map([])));
+      sandbox.stub(updateDriver, "run").resolves(ok(new Map([])));
+      sandbox.stub(envUtil, "readEnv").resolves();
+
+      const res = await updateManifestV3ForPublish(ctx as ResourceContextV3, inputs);
+      chai.assert.isTrue(res.isOk());
+    });
+
+    it("createAppPackage error", async () => {
+      const ctx = createContextV3();
+      const inputs: InputsWithProjectPath = {
+        [CoreQuestionNames.ManifestPath]: "manifest.json",
+        platform: Platform.VSCode,
+        projectPath: "projectPath",
+      };
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_ENV: "local",
+        TEAMS_APP_ID: "id",
+      });
+      const createAppDriver = new CreateTeamsAppDriver();
+      const updateDriver = new ConfigureTeamsAppDriver();
+      sandbox.stub(Container, "get").callsFake((name) => {
+        if (name === "teamsApp/createAppPackage") {
+          return createAppDriver;
+        } else if (name == "teamsApp/update") {
+          return updateDriver;
+        } else {
+          throw new Error("not implemented");
+        }
+      });
+      sandbox.stub(createAppDriver, "run").resolves(err(new UserError("error", "error", "", "")));
+
+      const res = await updateManifestV3ForPublish(ctx as ResourceContextV3, inputs);
+
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, "error");
+      }
+    });
+
+    it("update app error", async () => {
+      const ctx = createContextV3();
+      const inputs: InputsWithProjectPath = {
+        [CoreQuestionNames.ManifestPath]: "manifest.json",
+        platform: Platform.VSCode,
+        projectPath: "projectPath",
+      };
+      mockedEnvRestore = mockedEnv({
+        TEAMSFX_ENV: "local",
+        TEAMS_APP_ID: "id",
+      });
+      const createAppDriver = new CreateTeamsAppDriver();
+      const updateDriver = new ConfigureTeamsAppDriver();
+      sandbox.stub(Container, "get").callsFake((name) => {
+        if (name === "teamsApp/createAppPackage") {
+          return createAppDriver;
+        } else if (name == "teamsApp/update") {
+          return updateDriver;
+        } else {
+          throw new Error("not implemented");
+        }
+      });
+      sandbox.stub(createAppDriver, "run").resolves(ok(new Map([])));
+      sandbox.stub(updateDriver, "run").resolves(err(new UserError("error", "error", "", "")));
+      sandbox.stub(envUtil, "readEnv").resolves();
+
+      const res = await updateManifestV3ForPublish(ctx as ResourceContextV3, inputs);
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, "error");
+      }
     });
   });
 });

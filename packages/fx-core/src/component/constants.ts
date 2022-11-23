@@ -659,6 +659,8 @@ export class AddSsoParameters {
   static readonly filePath = path.join("plugins", "resource", "aad", "auth");
   static readonly Bot = "bot";
   static readonly Tab = "tab";
+  static readonly V3 = "V3";
+  static readonly V3AuthFolder = "TeamsFx-Auth";
   static readonly Readme = "README.md";
   static readonly ReadmeCSharp = "README.txt";
   static readonly LearnMore = getLocalizedString("core.provision.learnMore");
@@ -861,6 +863,11 @@ export const TabNonSsoItem: OptionItem = {
   cliName: "tab-non-sso",
   detail: getLocalizedString("core.TabNonSso.detail"),
   groupName: getLocalizedString("core.options.separator.basic"),
+};
+
+export const TabNonSsoAndDefaultBotItem: OptionItem = {
+  id: "TabNonSsoAndBot",
+  label: "", // No need to set display name as this option won't be shown in UI
 };
 
 export const M365SsoLaunchPageOptionItem: OptionItem = {

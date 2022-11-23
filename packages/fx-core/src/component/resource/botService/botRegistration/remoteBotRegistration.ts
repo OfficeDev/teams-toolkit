@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError, M365TokenProvider, Result, ok, err, LogProvider } from "@microsoft/teamsfx-api";
+import { IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
 import { Messages } from "../messages";
 import { BotRegistration, BotAuthType, BotAadCredentials } from "./botRegistration";
 
@@ -11,7 +12,6 @@ export class RemoteBotRegistration extends BotRegistration {
     aadDisplayName: string,
     botName: string,
     botConfig?: BotAadCredentials,
-    isIdFromState?: boolean,
     botAuthType: BotAuthType = BotAuthType.AADApp,
     logProvider?: LogProvider
   ): Promise<Result<BotAadCredentials, FxError>> {
@@ -22,6 +22,14 @@ export class RemoteBotRegistration extends BotRegistration {
     logProvider?.info(Messages.SuccessfullyCreatedBotAadApp);
     // Didn't provision Azure bot service because it's handled by arm/bicep snippets.
     return ok(botAadRes.value);
+  }
+
+  public async createOrUpdateBotRegistration(
+    m365TokenProvider: M365TokenProvider,
+    botRegistration: IBotRegistration
+  ): Promise<Result<undefined, FxError>> {
+    // Do nothing because it's handled by arm/bicep snippets.
+    return ok(undefined);
   }
 
   public async updateMessageEndpoint(

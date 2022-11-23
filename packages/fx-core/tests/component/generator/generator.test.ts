@@ -5,8 +5,8 @@ import _ from "lodash";
 import "mocha";
 import fs from "fs-extra";
 import path from "path";
+import axios from "axios";
 import {
-  fetchTemplateZipUrl,
   getSampleInfoFromName,
   renderTemplateFileData,
   renderTemplateFileName,
@@ -17,7 +17,7 @@ import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import AdmZip from "adm-zip";
-import sinon from "sinon";
+import { createSandbox } from "sinon";
 import {
   fetchTemplateUrlWithTagAction,
   fetchTemplateZipFromLocalAction,
@@ -27,11 +27,11 @@ import {
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
-import { defaultTimeoutInMs, defaultTryLimits } from "../../../src/component/generator/constant";
+import { SampleInfo } from "../../../src/common/samples";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
-  const sandbox = sinon.createSandbox();
+  const sandbox = createSandbox();
 
   afterEach(async () => {
     sandbox.restore();
@@ -41,16 +41,17 @@ describe("Generator utils", () => {
   });
 
   it("fetch zip from url", async () => {
-    const url =
-      "https://github.com/OfficeDev/TeamsFx/releases/download/templates-0.0.0-alpha/bot.csharp.default.zip";
-    await generatorUtils.fetchZipFromUrl(url, defaultTryLimits, defaultTimeoutInMs);
+    sandbox.stub(axios, "get").resolves({ status: 200, data: new AdmZip().toBuffer() });
+    const url = "ut";
+    const zip = await generatorUtils.fetchZipFromUrl(url);
+    assert.equal(zip.getEntries().length, 0);
   });
 
   it("unzip ", async () => {
     const inputDir = path.join(tmpDir, "input");
     const outputDir = path.join(tmpDir, "output");
     await fs.ensureDir(inputDir);
-    const fileData = "{{appName}}";
+    const fileData = "{%appName%}";
     await fs.writeFile(path.join(inputDir, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
@@ -64,6 +65,26 @@ describe("Generator utils", () => {
     );
     const content = await fs.readFile(path.join(outputDir, "test.txt"), "utf8");
     assert.equal(content, "test");
+  });
+
+  it("unzip with relative path", async () => {
+    const inputDir = path.join(tmpDir, "input");
+    const outputDir = path.join(tmpDir, "output");
+    await fs.ensureDir(inputDir);
+    const fileData = "{%appName%}";
+    await fs.writeFile(path.join(inputDir, "test.txt.tpl"), fileData);
+    const zip = new AdmZip();
+    zip.addLocalFolder(inputDir);
+    zip.writeZip(path.join(tmpDir, "test.zip"));
+    await generatorUtils.unzip(
+      new AdmZip(path.join(tmpDir, "test.zip")),
+      outputDir,
+      (fileName: string, fileData: Buffer) => renderTemplateFileName(fileName, fileData, {}),
+      (fileName: string, fileData: Buffer) =>
+        renderTemplateFileData(fileName, fileData, { appName: "test" }),
+      "test1"
+    );
+    assert.isFalse(await fs.pathExists(path.join(outputDir, "test.txt")));
   });
 
   it("get sample info from name", async () => {
@@ -80,7 +101,7 @@ describe("Generator error", async () => {
   const tools = new MockTools();
   setTools(tools);
   const ctx = createContextV3();
-  const sandbox = sinon.createSandbox();
+  const sandbox = createSandbox();
   const tmpDir = path.join(__dirname, "tmp");
 
   afterEach(async () => {
@@ -120,7 +141,7 @@ describe("Generator happy path", async () => {
   const tools = new MockTools();
   setTools(tools);
   const context = createContextV3();
-  const sandbox = sinon.createSandbox();
+  const sandbox = createSandbox();
   const tmpDir = path.join(__dirname, "tmp");
 
   afterEach(async () => {
@@ -132,6 +153,9 @@ describe("Generator happy path", async () => {
 
   it("external sample", async () => {
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
+    sandbox
+      .stub(generatorUtils, "getSampleInfoFromName")
+      .returns({ link: "test", relativePath: "test" } as SampleInfo);
     const sampleName = "bot-proactive-messaging-teamsfx";
     const result = await Generator.generateSample(context, tmpDir, sampleName);
     assert.isTrue(result.isOk());
@@ -149,11 +173,12 @@ describe("Generator happy path", async () => {
     const language = "ts";
     const inputDir = path.join(tmpDir, "input");
     await fs.ensureDir(path.join(inputDir, templateName));
-    const fileData = "{{appName}}";
+    const fileData = "{%appName%}";
     await fs.writeFile(path.join(inputDir, templateName, "test.txt.tpl"), fileData);
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
     zip.writeZip(path.join(tmpDir, "test.zip"));
+    sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("test.zip");
     sandbox
       .stub(generatorUtils, "fetchZipFromUrl")
       .resolves(new AdmZip(path.join(tmpDir, "test.zip")));

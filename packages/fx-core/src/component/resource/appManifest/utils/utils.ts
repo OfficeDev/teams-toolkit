@@ -46,20 +46,32 @@ export function isPersonalApp(appDefinition: AppDefinition): boolean {
   return !!appDefinition.staticTabs && appDefinition.staticTabs.length > 0;
 }
 
-export function needTabCode(appDefinition: AppDefinition): boolean {
-  const isGroupApp =
+export function isGroupApp(appDefinition: AppDefinition): boolean {
+  return (
     !!appDefinition.configurableTabs &&
     appDefinition.configurableTabs.length > 0 &&
-    groupAppConfigured(appDefinition.configurableTabs[0]);
+    groupAppConfigured(appDefinition.configurableTabs[0])
+  );
+}
 
-  return isPersonalApp(appDefinition) || isGroupApp;
+export function needTabAndBotCode(appDefinition: AppDefinition): boolean {
+  return needTabCode(appDefinition) && needBotCode(appDefinition);
+}
+
+export function needTabCode(appDefinition: AppDefinition): boolean {
+  return isPersonalApp(appDefinition) || isGroupApp(appDefinition);
+}
+
+export function isBot(appDefinition: AppDefinition): boolean {
+  return !!appDefinition.bots && appDefinition.bots.length > 0;
+}
+
+export function isMessageExtension(appDefinition: AppDefinition): boolean {
+  return !!appDefinition.messagingExtensions && appDefinition.messagingExtensions.length > 0;
 }
 
 export function needBotCode(appDefinition: AppDefinition): boolean {
-  const isBot = !!appDefinition.bots && appDefinition.bots.length > 0;
-  const isMessageExtension =
-    !!appDefinition.messagingExtensions && appDefinition.messagingExtensions.length > 0;
-  return isBot || isMessageExtension;
+  return isBot(appDefinition) || isMessageExtension(appDefinition);
 }
 
 export function containsUnsupportedFeature(appDefinition: AppDefinition): boolean {

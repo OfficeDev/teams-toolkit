@@ -3,9 +3,9 @@
 import { DepsCheckerError } from "./depsError";
 
 export interface DepsChecker {
-  getInstallationInfo(): Promise<DependencyStatus>;
+  getInstallationInfo(installOptions?: InstallOptions): Promise<DependencyStatus>;
 
-  resolve(): Promise<DependencyStatus>;
+  resolve(installOptions?: InstallOptions): Promise<DependencyStatus>;
 }
 
 export type DependencyStatus = {
@@ -35,7 +35,16 @@ export enum DepsType {
   AzureNode = "azure-node",
   SpfxNode = "spfx-node",
   SpfxNodeV1_16 = "spfx-node-v-1-16",
+  ProjectNode = "project-node",
   Dotnet = "dotnet",
   FuncCoreTools = "func-core-tools",
   Ngrok = "ngrok",
+  VxTestApp = "vx-test-app",
 }
+
+export interface BaseInstallOptions {
+  projectPath?: string;
+  version?: string;
+}
+
+export type InstallOptions = BaseInstallOptions;

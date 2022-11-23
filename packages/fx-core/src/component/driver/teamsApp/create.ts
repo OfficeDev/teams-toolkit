@@ -12,21 +12,30 @@ import {
   Platform,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
+import * as path from "path";
 import AdmZip from "adm-zip";
+import { v4 } from "uuid";
+import { Service } from "typedi";
 import { hooks } from "@feathersjs/hooks/lib";
 import { StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { CreateAppPackageDriver } from "./createAppPackage";
 import { CreateTeamsAppArgs } from "./interfaces/CreateTeamsAppArgs";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
+import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { AppStudioError } from "../../resource/appManifest/errors";
-import { Constants } from "../../resource/appManifest/constants";
+import {
+  Constants,
+  DEFAULT_COLOR_PNG_FILENAME,
+  DEFAULT_OUTLINE_PNG_FILENAME,
+  COLOR_TEMPLATE,
+  OUTLINE_TEMPLATE,
+} from "../../resource/appManifest/constants";
+import { AppDefinition } from "../../resource/appManifest/interfaces/appDefinition";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { Service } from "typedi";
-import { AppDefinition } from "../../resource/appManifest/interfaces/appDefinition";
+import { getTemplatesFolder } from "../../../folder";
 
 const actionName = "teamsApp/create";
 
@@ -42,9 +51,8 @@ export class CreateTeamsAppDriver implements StepDriver {
     args: CreateTeamsAppArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    const state = this.loadCurrentState();
+    TelemetryUtils.init(context);
     let create = true;
-
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
       scopes: AppStudioScopes,
     });
@@ -53,50 +61,14 @@ export class CreateTeamsAppDriver implements StepDriver {
     }
     const appStudioToken = appStudioTokenRes.value;
 
-    const createAppPackageDriver = new CreateAppPackageDriver();
-    const result = await createAppPackageDriver.run(
-      {
-        manifestTemplatePath: args.manifestTemplatePath,
-        outputZipPath: `${context.projectPath}/build/appPackage/appPackage.${state.ENV_NAME}.zip`,
-        outputJsonPath: `${context.projectPath}/build/appPackage/manifest.${state.ENV_NAME}.json`,
-      },
-      context,
-      true
+    const progressHandler = context.ui?.createProgressBar(
+      getLocalizedString("driver.teamsApp.progressBar.createTeamsAppTitle"),
+      1
     );
-    if (result.isErr()) {
-      return result;
-    }
+    progressHandler?.start();
 
-    const appPackagePath = result.value.get("TEAMS_APP_PACKAGE_PATH");
-    if (!appPackagePath) {
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.InvalidInputError.name,
-          AppStudioError.InvalidInputError.message("TEAMS_APP_PACKAGE_PATH", "undefined")
-        )
-      );
-    }
-    if (!(await fs.pathExists(appPackagePath))) {
-      const error = AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(appPackagePath)
-      );
-      return err(error);
-    }
-    const archivedFile = await fs.readFile(appPackagePath);
-    const zipEntries = new AdmZip(archivedFile).getEntries();
-    const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
-    if (!manifestFile) {
-      const error = AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
-      );
-      return err(error);
-    }
-    const manifestString = manifestFile.getData().toString();
-    const manifest = JSON.parse(manifestString) as TeamsAppManifest;
-    const teamsAppId = manifest.id;
     let createdAppDefinition: AppDefinition;
+    const teamsAppId = process.env.TEAMS_APP_ID;
     if (teamsAppId) {
       try {
         createdAppDefinition = await AppStudioClient.getApp(
@@ -108,7 +80,34 @@ export class CreateTeamsAppDriver implements StepDriver {
       } catch (error) {}
     }
 
+    progressHandler?.next(
+      getLocalizedString("driver.teamsApp.progressBar.createTeamsAppStepMessage")
+    );
+
     if (create) {
+      const manifest = new TeamsAppManifest();
+      manifest.name.short = args.name;
+      if (teamsAppId) {
+        manifest.id = teamsAppId;
+      } else {
+        manifest.id = v4();
+      }
+
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest, null, 4)));
+
+      const sourceTemplatesFolder = getTemplatesFolder();
+      const defaultColorPath = path.join(sourceTemplatesFolder, COLOR_TEMPLATE);
+      const defaultOutlinePath = path.join(sourceTemplatesFolder, OUTLINE_TEMPLATE);
+
+      const colorFile = await fs.readFile(defaultColorPath);
+      zip.addFile(DEFAULT_COLOR_PNG_FILENAME, colorFile);
+
+      const outlineFile = await fs.readFile(defaultOutlinePath);
+      zip.addFile(DEFAULT_OUTLINE_PNG_FILENAME, outlineFile);
+
+      const archivedFile = zip.toBuffer();
+
       try {
         createdAppDefinition = await AppStudioClient.importApp(
           archivedFile,
@@ -123,6 +122,7 @@ export class CreateTeamsAppDriver implements StepDriver {
         if (context.platform === Platform.VSCode) {
           context.ui?.showMessage("info", message, false);
         }
+        progressHandler?.end(true);
         return ok(
           new Map([
             [outputNames.TEAMS_APP_ID, createdAppDefinition.teamsAppId!],
@@ -130,6 +130,7 @@ export class CreateTeamsAppDriver implements StepDriver {
           ])
         );
       } catch (e: any) {
+        progressHandler?.end(false);
         if (e instanceof UserError || e instanceof SystemError) {
           return err(e);
         } else {
@@ -141,18 +142,13 @@ export class CreateTeamsAppDriver implements StepDriver {
         }
       }
     } else {
+      progressHandler?.end(true);
       return ok(
         new Map([
-          [outputNames.TEAMS_APP_ID, teamsAppId],
+          [outputNames.TEAMS_APP_ID, createdAppDefinition!.teamsAppId!],
           [outputNames.TEAMS_APP_TENANT_ID, createdAppDefinition!.tenantId!],
         ])
       );
     }
-  }
-
-  private loadCurrentState() {
-    return {
-      ENV_NAME: process.env.TEAMSFX_ENV,
-    };
   }
 }

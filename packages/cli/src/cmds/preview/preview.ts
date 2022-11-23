@@ -102,15 +102,18 @@ const DepsDisplayName = {
   [DepsType.SpfxNode]: "Node.js",
   [DepsType.SpfxNodeV1_16]: "Node.js",
   [DepsType.AzureNode]: "Node.js",
+  [DepsType.ProjectNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
   [DepsType.Ngrok]: "Ngrok",
   [DepsType.FuncCoreTools]: "Azure Functions Core Tools",
+  [DepsType.VxTestApp]: "Video Extensibility Test App",
 };
 
 const ProgressMessage: { [key: string]: string } = Object.freeze({
   [Checker.M365Account]: `Checking ${Checker.M365Account}`,
   [Checker.LocalCertificate]: `Checking ${Checker.LocalCertificate}`,
   [Checker.Ports]: `Checking ${Checker.Ports}`,
+  [DepsType.ProjectNode]: `Checking ${DepsDisplayName[DepsType.ProjectNode]}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
   [DepsType.SpfxNodeV1_16]: `Checking ${DepsDisplayName[DepsType.SpfxNodeV1_16]}`,
   [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,

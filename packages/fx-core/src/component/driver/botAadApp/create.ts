@@ -60,7 +60,6 @@ export class CreateBotAadAppDriver implements StepDriver {
         args.name,
         args.name,
         botConfig,
-        !botAadAppState.BOT_ID,
         undefined, // Use default value of BotAuthType.AADApp
         context.logProvider
       );

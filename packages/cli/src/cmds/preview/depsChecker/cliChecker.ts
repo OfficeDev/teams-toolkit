@@ -29,6 +29,7 @@ export class CliDepsChecker {
       case DepsType.AzureNode:
       case DepsType.SpfxNode:
       case DepsType.SpfxNodeV1_16:
+      case DepsType.ProjectNode:
         return await isNodeCheckerEnabled();
       case DepsType.Dotnet:
         return await isDotnetCheckerEnabled();

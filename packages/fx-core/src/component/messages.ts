@@ -51,6 +51,18 @@ export class ProgressMessages {
     "core.progress.restartAzureFunctionApp"
   );
   static readonly restartAzureService = getLocalizedString("core.progress.restartAzureFunctionApp");
+  static readonly configureAzureStorageEnableStaticWebsite = getLocalizedString(
+    "core.progress.configureAzureStorage"
+  );
+  static readonly checkAzureStorageEnableStaticWebsite = getLocalizedString(
+    "core.progress.checkAzureStorageStaticWebsite"
+  );
+  static readonly azureStorageStaticWebsiteAlreadyEnabled = getLocalizedString(
+    "core.progress.azureStorageStaticWebsiteEnabled"
+  );
+  static readonly enableAzureStorageStaticWebsite = getLocalizedString(
+    "core.progress.enableAzureStorageStaticWebsite"
+  );
   static readonly getAzureStorageAccountInfo = getLocalizedString(
     "core.progress.getAzureStorageDeployCredential"
   );

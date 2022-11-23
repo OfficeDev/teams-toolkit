@@ -16,7 +16,13 @@ import { forEachFileAndDir } from "../../../utils/fileOperation";
 import * as fs from "fs-extra";
 import path from "path";
 import * as mime from "mime";
-import { FxError, LogProvider, Result } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  IProgressHandler,
+  LogProvider,
+  Result,
+  UserInteraction,
+} from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { StepDriver } from "../../interface/stepDriver";
 import { DriverContext, AzureResourceInfo } from "../../interface/commonArgs";
@@ -45,9 +51,6 @@ export class AzureStorageDeployDriver implements StepDriver {
 export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i;
-
-  progressBarName = `Deploying ${this.workingDirectory ?? ""} to Azure Storage Service`;
-  progressBarSteps = 3;
 
   async azureDeploy(
     args: DeployStepArgs,
@@ -147,5 +150,12 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
 
   private static isBlobFile(blob: BlobItem): boolean {
     return (blob.properties.contentLength ?? -1) > 0;
+  }
+
+  createProgressBar(ui?: UserInteraction): IProgressHandler | undefined {
+    return ui?.createProgressBar(
+      `Deploying ${this.workingDirectory ?? ""} to Azure Storage Service`,
+      3
+    );
   }
 }

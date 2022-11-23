@@ -35,4 +35,6 @@ export class DeployConstant {
   public static readonly DEFAULT_ERROR_DOCUMENT = DeployConstant.DEFAULT_INDEX_DOCUMENT;
   // default deploy over time
   public static readonly DEPLOY_OVER_TIME = 1000 * 120;
+  // default deploy retry times
+  public static readonly DEPLOY_UPLOAD_RETRY_TIMES = 2;
 }

@@ -34,6 +34,15 @@ export class DeployExternalApiCallError extends ExternalApiCallError {
     );
   }
 
+  static zipDeployWithRemoteError(e?: unknown, statusCode?: number): DeployExternalApiCallError {
+    return new DeployExternalApiCallError(
+      DeployConstant.DEPLOY_ERROR_TYPE,
+      "ZipDeployError",
+      "driver.deploy.error.deployToAzureRemoteFailed",
+      statusCode ?? -1
+    );
+  }
+
   static deployStatusError(e?: unknown, statusCode?: number): DeployExternalApiCallError {
     return new DeployExternalApiCallError(
       DeployConstant.DEPLOY_ERROR_TYPE,

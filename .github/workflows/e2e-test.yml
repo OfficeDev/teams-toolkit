@@ -414,7 +414,7 @@ jobs:
             page=$((page+1))
           done
 
-          cases=`echo $jobs| jq -r '.jobs[] | select(.name | contains("tests.ts")) | .name'`
+          cases=`echo $jobs| jq -r '.[] | select(.name | contains("tests.ts")) | .name'`
 
           lists=""
           passed=0
@@ -439,14 +439,14 @@ jobs:
               email=`grep '@author' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
             fi
 
-            status=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .conclusion'`
+            status=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .conclusion'`
 
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
               emails="$emails;$email"
             fi
 
-            started_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
-            completed_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
+            started_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
+            completed_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
             duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
 
             author=""
@@ -465,14 +465,14 @@ jobs:
               label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">FAILED</span>"
             fi
 
-            job_id=`echo $jobs| jq --arg case $case -r '.jobs[] | select(.name == $case ) | .id'`
+            job_id=`echo $jobs| jq --arg case $case -r '.[] | select(.name == $case ) | .id'`
             metrics_file=`find ~/artifacts -wholename "*${job_id}_metrics/output.txt"`
             slow_count=0
             if [ ! -z "$metrics_file" ]; then
               slow_count=`grep -c '"severity":"slow"' $metrics_file || true`
             fi
 
-            url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
+            url=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .html_url'`
             url="<a href=\\\"$url\\\">$elegant_path</a>"
 
             target_type="TS/JS"
@@ -564,7 +564,7 @@ jobs:
             page=$((page+1))
           done
 
-          cases=`echo $jobs| jq -r '.jobs[] | select(.name | contains("tests.ts")) | .name'`
+          cases=`echo $jobs| jq -r '.[] | select(.name | contains("tests.ts")) | .name'`
 
           lists=""
           passed=0
@@ -591,14 +591,14 @@ jobs:
               email=`grep '@author' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
             fi
 
-            status=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .conclusion'`
+            status=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .conclusion'`
 
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
               emails="$emails;$email"
             fi
 
-            started_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
-            completed_at=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
+            started_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .started_at'`
+            completed_at=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .steps[] | select(.name == "run test") | .completed_at'`
             duration=`dateutils.ddiff $started_at $completed_at -f "%Mm %Ss"`
 
             author=""
@@ -617,14 +617,14 @@ jobs:
               label="<span style=\\\"background-color: #dc322f;color:white;font-weight:bold;\\\">FAILED</span>"
             fi
 
-            job_id=`echo $jobs| jq --arg case $case -r '.jobs[] | select(.name == $case ) | .id'`
+            job_id=`echo $jobs| jq --arg case $case -r '.[] | select(.name == $case ) | .id'`
             metrics_file=`find ~/artifacts -wholename "*${job_id}_metrics/output.txt"`
             slow_count=0
             if [ ! -z "$metrics_file" ]; then
               slow_count=`grep -c '"severity":"slow"' $metrics_file || true`
             fi
 
-            url=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .html_url'`
+            url=`echo $jobs | jq --arg case $case -r '.[] | select(.name == $case ) | .html_url'`
             url="<a href=\\\"$url\\\">$elegant_path</a>"
 
             target_type="TS/JS"

@@ -581,6 +581,8 @@ jobs:
               continue
             fi
 
+            case="${case/v3-/}"
+
             file="tests/e2e/$case"
             elegant_path="${file//.\//}"
 

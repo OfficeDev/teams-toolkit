@@ -10,7 +10,7 @@ import * as chai from "chai";
 import fs from "fs-extra";
 import path from "path";
 import MockAzureAccountProvider from "../../../src/commonlib/azureLoginUserPassword";
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes } from "@microsoft/teamsfx-core";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import {
   getSubscriptionId,

@@ -6,7 +6,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 
 import { FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Correlator } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
 import * as globalVariables from "../../globalVariables";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
@@ -19,7 +19,7 @@ import {
 } from "../localTelemetryReporter";
 import { checkAndInstallNpmPackagesForTask } from "../prerequisitesHandler";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
+import { TaskDefaultValue } from "@microsoft/teamsfx-core";
 import { npmInstallDisplayMessages } from "../constants";
 
 export interface NpmInstallArgs {

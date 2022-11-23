@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { LocalEnvManager, TaskOverallLabel } from "@microsoft/teamsfx-core/build/common/local";
+import { LocalEnvManager, TaskOverallLabel } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import * as path from "path";
 import * as sinon from "sinon";

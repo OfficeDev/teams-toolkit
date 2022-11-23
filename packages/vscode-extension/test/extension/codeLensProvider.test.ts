@@ -8,7 +8,7 @@ import {
   ManifestTemplateCodeLensProvider,
   PlaceholderCodeLens,
 } from "../../src/codeLensProvider";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import * as commonTools from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";

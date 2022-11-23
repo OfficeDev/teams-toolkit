@@ -14,9 +14,9 @@ import {
   LocalEnvManager,
   FolderName,
   getProjectComponents as coreGetProjectComponents,
-} from "@microsoft/teamsfx-core/build/common/local";
+} from "@microsoft/teamsfx-core";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { getResourceGroupInPortal, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { getResourceGroupInPortal, isV3Enabled } from "@microsoft/teamsfx-core";
 import { PluginNames, GLOBAL_CONFIG } from "@microsoft/teamsfx-core/build/component/constants";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";

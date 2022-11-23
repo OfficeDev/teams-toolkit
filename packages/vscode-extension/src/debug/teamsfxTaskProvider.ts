@@ -17,7 +17,7 @@ import {
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Correlator } from "@microsoft/teamsfx-core";
 import { DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import {
   FolderName,
@@ -26,7 +26,7 @@ import {
   ProgrammingLanguage,
   TaskCommand,
   TaskDefinition,
-} from "@microsoft/teamsfx-core/build/common/local";
+} from "@microsoft/teamsfx-core";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 import VsCodeLogInstance from "../commonlib/log";

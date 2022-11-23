@@ -30,7 +30,7 @@ import { CONFIGURATION_PREFIX, ConfigurationKey, UserState } from "../constants"
 import * as commonUtils from "../debug/commonUtils";
 import * as globalVariables from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
-import { getSPFxVersion } from "@microsoft/teamsfx-core/build/common/tools";
+import { getSPFxVersion } from "@microsoft/teamsfx-core";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {

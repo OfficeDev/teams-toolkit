@@ -14,7 +14,7 @@ import { NotSupportedProjectType } from "../../../src/error";
 import LogProvider from "../../../src/commonlib/log";
 import Permission, { PermissionGrant, PermissionStatus } from "../../../src/cmds/permission";
 import { expect } from "chai";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import * as commonTools from "@microsoft/teamsfx-core";
 
 describe("Permission Command Tests", function () {
   const sandbox = sinon.createSandbox();

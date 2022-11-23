@@ -6,7 +6,7 @@
 import * as vscode from "vscode";
 
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Correlator } from "@microsoft/teamsfx-core";
 import {
   TabDebugArgs,
   TabDebugHandler,
@@ -21,7 +21,7 @@ import { setUpTabDisplayMessages } from "../constants";
 import { localTelemetryReporter, maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { handleDebugActions } from "./common";
-import { TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
+import { TaskDefaultValue } from "@microsoft/teamsfx-core";
 
 export class SetUpTabTaskTerminal extends BaseTaskTerminal {
   private readonly args: TabDebugArgs;

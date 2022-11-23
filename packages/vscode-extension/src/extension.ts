@@ -17,7 +17,7 @@ import {
   Result,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Correlator } from "@microsoft/teamsfx-core";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import {
   AadAppTemplateCodeLensProvider,

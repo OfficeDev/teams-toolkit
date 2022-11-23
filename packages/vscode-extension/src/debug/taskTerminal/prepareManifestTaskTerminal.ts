@@ -6,7 +6,7 @@
 import * as vscode from "vscode";
 
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Correlator } from "@microsoft/teamsfx-core";
 import {
   AppManifestDebugArgs,
   AppManifestDebugHandler,

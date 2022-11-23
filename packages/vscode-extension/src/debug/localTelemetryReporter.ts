@@ -10,7 +10,7 @@ import {
   TaskCommand,
   TaskLabel,
   TaskOverallLabel,
-} from "@microsoft/teamsfx-core/build/common/local";
+} from "@microsoft/teamsfx-core";
 
 import * as globalVariables from "../globalVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";

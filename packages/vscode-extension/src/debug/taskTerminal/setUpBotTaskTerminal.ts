@@ -6,7 +6,7 @@
 import * as vscode from "vscode";
 
 import { assembleError, err, FxError, Result, Void } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Correlator } from "@microsoft/teamsfx-core";
 import {
   BotDebugArgs,
   BotDebugHandler,
@@ -23,7 +23,7 @@ import { DefaultPlaceholder, localTelemetryReporter, maskValue } from "../localT
 import { BaseTaskTerminal } from "./baseTaskTerminal";
 import { handleDebugActions } from "./common";
 import { LocalTunnelTaskTerminal } from "./localTunnelTaskTerminal";
-import { TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
+import { TaskDefaultValue } from "@microsoft/teamsfx-core";
 
 export class SetUpBotTaskTerminal extends BaseTaskTerminal {
   private readonly args: BotDebugArgs;

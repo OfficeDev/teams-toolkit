@@ -69,14 +69,14 @@ import {
   getHashedEnv,
   isExistingTabAppEnabled,
   isUserCancelError,
-} from "@microsoft/teamsfx-core/build/common/tools";
+} from "@microsoft/teamsfx-core";
 import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Correlator } from "@microsoft/teamsfx-core";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { FolderName } from "@microsoft/teamsfx-core/build/common/local";
+import { FolderName } from "@microsoft/teamsfx-core";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { LocalEnvManager, ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local";
+import { LocalEnvManager, ProjectSettingsHelper } from "@microsoft/teamsfx-core";
 import {
   globalStateUpdate,
   globalStateGet,
@@ -157,8 +157,8 @@ import {
   sendDebugAllStartEvent,
 } from "./debug/localTelemetryReporter";
 import { compare } from "./utils/versionUtil";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import * as commonTools from "@microsoft/teamsfx-core";
+import { AzureScopes } from "@microsoft/teamsfx-core";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";

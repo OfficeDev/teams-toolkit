@@ -45,13 +45,9 @@ import {
   ProgrammingLanguage,
   getProjectComponents,
   TelemetryContext,
-} from "@microsoft/teamsfx-core/build/common/local";
+} from "@microsoft/teamsfx-core";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import {
-  AppStudioScopes,
-  getSideloadingStatus,
-  isM365AppEnabled,
-} from "@microsoft/teamsfx-core/build/common/tools";
+import { AppStudioScopes, getSideloadingStatus, isM365AppEnabled } from "@microsoft/teamsfx-core";
 import { isExistingTabApp as isExistingTabAppCore } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { YargsCommand } from "../../yargsCommand";
 import * as utils from "../../utils";

@@ -3,8 +3,8 @@
 
 import * as vscode from "vscode";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { convertManifestTemplateToV3 } from "@microsoft/teamsfx-core/build/component/migrate";
-import { getPropertyByPath } from "@microsoft/teamsfx-core/build/common/tools";
+import { convertManifestTemplateToV3 } from "@microsoft/teamsfx-core";
+import { getPropertyByPath } from "@microsoft/teamsfx-core";
 import { isV3Enabled, envUtil } from "@microsoft/teamsfx-core";
 import {
   manifestConfigDataRegex,

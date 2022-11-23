@@ -6,7 +6,7 @@ import { MessageConnection } from "vscode-jsonrpc";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
 
 import { NotificationTypes } from "../apis";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Correlator } from "@microsoft/teamsfx-core";
 
 enum TelemetryProperty {
   CorrelationId = "correlation-id",

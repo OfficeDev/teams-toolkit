@@ -13,7 +13,7 @@ import {
   Result,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core";
 
 import AzureTokenProvider, { getAzureProvider } from "../commonlib/azureLogin";
 import AzureTokenCIProvider from "../commonlib/azureLoginCI";

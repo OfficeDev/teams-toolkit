@@ -5,7 +5,7 @@
 import * as vscode from "vscode";
 
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Correlator } from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import * as commonUtils from "../commonUtils";
@@ -17,7 +17,7 @@ import {
 } from "../localTelemetryReporter";
 import { checkAndInstallForTask } from "../prerequisitesHandler";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { Prerequisite, TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
+import { Prerequisite, TaskDefaultValue } from "@microsoft/teamsfx-core";
 
 export interface PrerequisiteArgVxTestApp {
   version: string;

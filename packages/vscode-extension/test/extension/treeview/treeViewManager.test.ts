@@ -2,7 +2,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import * as commonTools from "@microsoft/teamsfx-core";
 
 import { AdaptiveCardCodeLensProvider } from "../../../src/codeLensProvider";
 import { TreatmentVariableValue } from "../../../src/exp/treatmentVariables";

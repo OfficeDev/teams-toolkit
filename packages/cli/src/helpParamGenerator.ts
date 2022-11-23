@@ -20,7 +20,7 @@ import {
   StringValidation,
 } from "@microsoft/teamsfx-api";
 import { isCLIDotNetEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
-import { isM365AppEnabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { isM365AppEnabled } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
 import M365TokenProvider from "./commonlib/m365Login";
 import CLILogProvider from "./commonlib/log";

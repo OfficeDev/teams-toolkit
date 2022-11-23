@@ -7,7 +7,7 @@ import * as vscode from "vscode";
 import { v4 } from "uuid";
 import { ProjectConfigV3, ok } from "@microsoft/teamsfx-api";
 import { envUtil } from "@microsoft/teamsfx-core";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import * as commonTools from "@microsoft/teamsfx-core";
 import { ManifestTemplateHoverProvider } from "../../src/hoverProvider";
 import { environmentVariableRegex } from "../../src/constants";
 import { vscodeHelper } from "../../src/debug/depsChecker/vscodeHelper";

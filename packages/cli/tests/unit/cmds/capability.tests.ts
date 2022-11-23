@@ -5,7 +5,7 @@ import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
 import { err, Func, FxError, Inputs, ok, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local";
+import { ProjectSettingsHelper } from "@microsoft/teamsfx-core";
 import { FxCore } from "@microsoft/teamsfx-core";
 import {
   CapabilityAddTab,

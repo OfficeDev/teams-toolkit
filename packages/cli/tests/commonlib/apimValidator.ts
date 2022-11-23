@@ -15,7 +15,7 @@ import {
   getResourceGroupNameFromResourceId,
 } from "./utilities";
 import { PluginId, StateConfigKey } from "./constants";
-import { GraphScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { GraphScopes } from "@microsoft/teamsfx-core";
 
 export class ApimValidator {
   static apimClient?: ApiManagementClient;

@@ -20,7 +20,7 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
-import { ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local";
+import { ProjectSettingsHelper } from "@microsoft/teamsfx-core";
 import { PathNotExistError } from "@microsoft/teamsfx-core/build/core/error";
 import { EnvStateFiles } from "@microsoft/teamsfx-core/build/core/environment";
 import { ResourceAddApim, ResourceAddFunction, ResourceAddSql } from "../../../src/cmds/resource";

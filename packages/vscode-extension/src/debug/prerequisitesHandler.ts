@@ -23,7 +23,7 @@ import {
   defaultNpmInstallArg,
   ProjectSettingsHelper,
   TelemetryContext,
-} from "@microsoft/teamsfx-core/build/common/local";
+} from "@microsoft/teamsfx-core";
 import { Prerequisite } from "@microsoft/teamsfx-core/build/common/local/constants";
 
 import {
@@ -40,11 +40,7 @@ import {
   InstallOptions,
 } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { LocalEnvProvider } from "@microsoft/teamsfx-core/build/component/debugHandler";
-import {
-  AppStudioScopes,
-  getSideloadingStatus,
-  isV3Enabled,
-} from "@microsoft/teamsfx-core/build/common/tools";
+import { AppStudioScopes, getSideloadingStatus, isV3Enabled } from "@microsoft/teamsfx-core";
 import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 
 import * as fs from "fs-extra";

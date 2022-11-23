@@ -3,7 +3,7 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 
 import { SubscriptionInfo } from "@microsoft/teamsfx-api";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
+import * as commonTools from "@microsoft/teamsfx-core";
 
 import { AzureAccountManager } from "../../../../src/commonlib/azureLogin";
 import { AzureAccountNode } from "../../../../src/treeview/account/azureNode";

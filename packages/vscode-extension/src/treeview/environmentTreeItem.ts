@@ -19,7 +19,7 @@ import {
 } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { DynamicNode } from "./dynamicNode";
-import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 
 enum EnvInfo {
   Local = "local",

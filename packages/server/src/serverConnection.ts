@@ -16,9 +16,9 @@ import {
   AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { getSideloadingStatus, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
-import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core/build/common/local";
+import { Correlator } from "@microsoft/teamsfx-core";
+import { getSideloadingStatus, isV3Enabled } from "@microsoft/teamsfx-core";
+import { getProjectComponents as coreGetProjectComponents } from "@microsoft/teamsfx-core";
 import { IServerConnection, Namespaces } from "./apis";
 import LogProvider from "./providers/logger";
 import TokenProvider from "./providers/tokenProvider";

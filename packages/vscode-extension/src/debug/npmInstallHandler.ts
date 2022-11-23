@@ -5,11 +5,7 @@ import {
   globalStateGet,
   globalStateUpdate,
 } from "@microsoft/teamsfx-core/build/common/globalState";
-import {
-  LocalEnvManager,
-  ProjectSettingsHelper,
-  TaskDefinition,
-} from "@microsoft/teamsfx-core/build/common/local";
+import { LocalEnvManager, ProjectSettingsHelper, TaskDefinition } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import { ConfigurationKey } from "../constants";
 import { VS_CODE_UI } from "../extension";

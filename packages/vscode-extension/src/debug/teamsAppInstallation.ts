@@ -12,7 +12,7 @@ import * as commonUtils from "./commonUtils";
 import axios from "axios";
 import { UserError, SystemError } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-import { GraphScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { GraphScopes, isV3Enabled } from "@microsoft/teamsfx-core";
 import { openUrlWithNewProfile } from "./launch";
 
 export async function showInstallAppInTeamsMessage(env: string, appId: string): Promise<boolean> {

@@ -9,7 +9,7 @@ import ServerConnection from "../src/serverConnection";
 import { Duplex } from "stream";
 import { Inputs, ok, Platform, Stage } from "@microsoft/teamsfx-api";
 import { setFunc } from "../src/customizedFuncAdapter";
-import * as tools from "@microsoft/teamsfx-core/build/common/tools";
+import * as tools from "@microsoft/teamsfx-core";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {

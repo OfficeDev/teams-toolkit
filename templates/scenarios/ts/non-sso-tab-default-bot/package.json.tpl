@@ -1,8 +1,8 @@
 {
     "name": "{%appName%}",
     "version": "0.0.1",
-    "description": "",
-    "author": "",
+    "author": "Microsoft",
+    "license": "MIT",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "install:bot": "cd bot && npm install",

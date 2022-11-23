@@ -14,7 +14,7 @@ import HelpParamGenerator from "../../../src/helpParamGenerator";
 import * as constants from "../../../src/constants";
 import { expect } from "../utils";
 import { assert } from "chai";
-import { EnvNotSpecified, NotSupportedProjectType } from "../../../src/error";
+import { NotSupportedProjectType } from "../../../src/error";
 import UI from "../../../src/userInteraction";
 import LogProvider from "../../../src/commonlib/log";
 import mockedEnv, { RestoreFn } from "mocked-env";
@@ -141,19 +141,6 @@ describe("Deploy Command Tests", function () {
     };
     await cmd.handler(args);
     expect(telemetryEvents).deep.equals([TelemetryEvent.DeployStart, TelemetryEvent.Deploy]);
-  });
-
-  it("Deploy Command Running -- V3", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    const cmd = new Deploy();
-    cmd["params"] = params;
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "real",
-      components: ["a"],
-    };
-    await expect(cmd.handler(args)).to.be.rejectedWith(EnvNotSpecified);
   });
 
   it("Deploy Command Running -- deployArtifacts error", async () => {

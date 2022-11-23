@@ -468,7 +468,7 @@ describe("getManifest V3", () => {
       "packageName": "com.microsoft.teams.extension",
       "developer": {
           "name": "Teams App, Inc.",
-          "websiteUrl": "https://www.example.com",
+          "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}",
           "privacyUrl": "https://www.example.com/termofuse",
           "termsOfUseUrl": "https://www.example.com/privacy"
       },
@@ -487,27 +487,6 @@ describe("getManifest V3", () => {
       "accentColor": "#FFFFFF",
       "bots": [],
       "composeExtensions": [],
-      "configurableTabs": [
-          {
-              "configurationUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/config",
-              "canUpdateConfiguration": true,
-              "scopes": [
-                  "team",
-                  "groupchat"
-              ]
-          }
-      ],
-      "staticTabs": [
-          {
-              "entityId": "index0",
-              "name": "Personal Tab",
-              "contentUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
-              "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
-              "scopes": [
-                  "personal"
-              ]
-          }
-      ],
       "permissions": [
           "identity",
           "messageTeamMembers"

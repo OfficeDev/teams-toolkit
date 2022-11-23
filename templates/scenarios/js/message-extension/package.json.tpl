@@ -5,6 +5,9 @@
     "teamsAppId": null
   },
   "description": "Microsoft Teams Toolkit message extension Bot sample",
+  "engines": {
+    "node": ">=14 <=16"
+  },
   "author": "Microsoft",
   "license": "MIT",
   "main": "index.js",

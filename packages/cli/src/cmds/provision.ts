@@ -121,16 +121,6 @@ export default class Provision extends YargsCommand {
       }
     }
     const inputs = getSystemInputs(rootFolder, args.env);
-    // TODO: remove when V3 is auto enabled
-    if (!inputs.env) {
-      // include local env in interactive question
-      const selectedEnv = await askTargetEnvironment(rootFolder);
-      if (selectedEnv.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, selectedEnv.error);
-        return err(selectedEnv.error);
-      }
-      inputs.env = selectedEnv.value;
-    }
 
     if (this.resourceGroupParam in args) {
       inputs.targetResourceGroupName = args[this.resourceGroupParam];

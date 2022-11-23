@@ -10,6 +10,8 @@ const TAB_STATE_KEY = ComponentNames.TeamsTab;
 const BOT_STATE_KEY = ComponentNames.TeamsBot;
 const APP_MANIFEST_KEY = ComponentNames.AppManifest;
 
+export const manifestStateDataRegex = /{{{?state\.[a-zA-Z-_]+\.\w+}}}?/g;
+
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
   "manifestVersion": "1.14",

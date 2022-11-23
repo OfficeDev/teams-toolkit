@@ -3294,7 +3294,7 @@ export async function openDeploymentTreeview(args?: any[]) {
   }
 }
 
-export async function deployAadAppManifest(args: any[]): Promise<Result<null, FxError>> {
+export async function updateAadAppManifest(args: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployAadManifestStart);
   const inputs = getSystemInputs();
   inputs[AadManifestDeployConstants.INCLUDE_AAD_MANIFEST] = "yes";

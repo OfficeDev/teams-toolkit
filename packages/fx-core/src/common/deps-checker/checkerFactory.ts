@@ -5,7 +5,12 @@ import { DotnetChecker } from "./internal/dotnetChecker";
 import { DepsLogger } from "./depsLogger";
 import { DepsTelemetry } from "./depsTelemetry";
 import { DepsChecker } from "./depsChecker";
-import { AzureNodeChecker, SPFxNodeCheckerV1_16, SPFxNodeChecker } from "./internal/nodeChecker";
+import {
+  AzureNodeChecker,
+  SPFxNodeCheckerV1_16,
+  SPFxNodeChecker,
+  ProjectNodeChecker,
+} from "./internal/nodeChecker";
 import { FuncToolChecker } from "./internal/funcToolChecker";
 import { NgrokChecker } from "./internal/ngrokChecker";
 import { DepsType } from "./depsChecker";
@@ -24,6 +29,8 @@ export class CheckerFactory {
         return new SPFxNodeChecker(logger, telemetry);
       case DepsType.SpfxNodeV1_16:
         return new SPFxNodeCheckerV1_16(logger, telemetry);
+      case DepsType.ProjectNode:
+        return new ProjectNodeChecker(logger, telemetry);
       case DepsType.Dotnet:
         return new DotnetChecker(logger, telemetry);
       case DepsType.Ngrok:

@@ -14,7 +14,7 @@ import {
   UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
+import { environmentManager, FxCore, getUuid } from "@microsoft/teamsfx-core";
 
 import Provision, { ProvisionManifest } from "../../../src/cmds/provision";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -23,11 +23,7 @@ import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 import * as constants from "../../../src/constants";
 import * as Utils from "../../../src/utils";
 import { expect } from "../utils";
-import {
-  EnvNotSpecified,
-  NotFoundSubscriptionId,
-  NotSupportedProjectType,
-} from "../../../src/error";
+import { NotFoundSubscriptionId, NotSupportedProjectType } from "../../../src/error";
 import UI from "../../../src/userInteraction";
 import LogProvider from "../../../src/commonlib/log";
 import { AzureAccountManager } from "../../../src/commonlib/azureLoginCI";
@@ -124,19 +120,6 @@ describe("Provision Command Tests", function () {
     const cmd = new Provision();
     const args = {
       interactive: false,
-      [constants.RootFolderNode.data.name as string]: "real",
-      [constants.sqlPasswordQustionName]: "123",
-    };
-    await expect(cmd.handler(args)).to.be.rejectedWith(EnvNotSpecified);
-  });
-
-  it("Provision Command Running -- V3 error", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    const cmd = new Provision();
-    const args = {
-      interactive: false,
       [constants.RootFolderNode.data.name as string]: "realAndCancel",
       [constants.sqlPasswordQustionName]: "123",
       env: "dev",
@@ -211,10 +194,12 @@ describe("Provision Command Tests", function () {
   it("Provision Command Running -- with subscriptionId", async () => {
     const cmd = new Provision();
     const subscriptionParam = "subscription";
+    const resourceGroupParam = "resource-group";
     const args = {
       interactive: false,
       [constants.RootFolderNode.data.name as string]: "real",
       [subscriptionParam]: existedSubId,
+      [resourceGroupParam]: getUuid(),
     };
     await cmd.handler(args);
     expect(allArguments.get(subscriptionParam)).equals(existedSubId);

@@ -64,19 +64,20 @@ describe("Update Aad Manifest Command Tests", function () {
         telemetryEventStatus = TelemetrySuccess.No;
       });
   });
-  it("should pass builder check", () => {
+  it("should pass builder check -- aad", () => {
     const cmd = new UpdateAadApp();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     expect(registeredCommands).deep.equals(["aad-app"]);
   });
 
-  it("Run command success", async () => {
+  it("Run command success -- aad", async () => {
     sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(""));
     const cmd = new Update();
     const updateAadManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "aad-app");
     const args = {
       folder: "fake_test",
       env: "dev",
+      "manifest-file-path": "./aad.manifest.template.json",
     };
     await updateAadManifest!.handler(args);
     expect(telemetryEvents).deep.equals([
@@ -95,6 +96,7 @@ describe("Update Aad Manifest Command Tests", function () {
     const args = {
       folder: "fake_test",
       env: "dev",
+      "manifest-file-path": "./aad.manifest.template.json",
     };
     try {
       await updateAadManifest!.handler(args);

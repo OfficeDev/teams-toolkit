@@ -10,7 +10,7 @@ import { describe } from "mocha";
 import fs from "fs-extra";
 import path from "path";
 import { AadValidator, FrontendValidator } from "../../commonlib";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
 import {
   execAsyncWithRetry,
   getSubscriptionId,
@@ -42,12 +42,16 @@ describe("Create single tab", function () {
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
       {
         // Validate scaffold
-        await FrontendValidator.validateScaffoldV3(projectPath, "javascript");
+        if (isV3Enabled()) {
+          await FrontendValidator.validateScaffoldV3(projectPath, "javascript");
+        } else {
+          await FrontendValidator.validateScaffold(projectPath, "javascript");
+        }
       }
     });
 
     it(`Provision Resource: React app without function`, { testPlanCaseId: 10298738 }, async () => {
-      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      // await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
 
       await CliHelper.setSubscription(subscription, projectPath);
 
@@ -55,13 +59,18 @@ describe("Create single tab", function () {
 
       // Validate provision
       // Get context
-      const envFilePath = path.join(projectPath, "teamsfx", `.env.${env}`);
-      expect(fs.pathExistsSync(envFilePath)).to.be.true;
-      const parseResult = dotenvUtil.deserialize(
-        await fs.readFile(envFilePath, { encoding: "utf8" })
-      );
-      const context = parseResult.obj;
-      expect(context).to.be.not.null;
+      let context: any = null;
+      if (isV3Enabled()) {
+        const envFilePath = path.join(projectPath, "teamsfx", `.env.${env}`);
+        expect(fs.pathExistsSync(envFilePath)).to.be.true;
+        const parseResult = dotenvUtil.deserialize(
+          await fs.readFile(envFilePath, { encoding: "utf8" })
+        );
+        context = parseResult.obj;
+        expect(context).to.be.not.null;
+      } else {
+        context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+      }
 
       // Validate Aad App
       const aad = AadValidator.init(context, false, M365Login);
@@ -81,13 +90,17 @@ describe("Create single tab", function () {
       });
 
       // Validate deployment
-      // const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
-      const envFilePath = path.join(projectPath, "teamsfx", `.env.${env}`);
-      expect(fs.pathExistsSync(envFilePath)).to.be.true;
-      const parseResult = dotenvUtil.deserialize(
-        await fs.readFile(envFilePath, { encoding: "utf8" })
-      );
-      const context = parseResult.obj;
+      let context: any = null;
+      if (isV3Enabled()) {
+        const envFilePath = path.join(projectPath, "teamsfx", `.env.${env}`);
+        expect(fs.pathExistsSync(envFilePath)).to.be.true;
+        const parseResult = dotenvUtil.deserialize(
+          await fs.readFile(envFilePath, { encoding: "utf8" })
+        );
+        context = parseResult.obj;
+      } else {
+        context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+      }
 
       // Validate Tab Frontend
       const frontend = FrontendValidator.init(context);

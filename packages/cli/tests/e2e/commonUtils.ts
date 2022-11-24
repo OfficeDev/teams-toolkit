@@ -41,6 +41,7 @@ import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/t
 import m365Login from "../../src/commonlib/m365Login";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getWebappServicePlan } from "../commonlib/utilities";
+import { dotenvUtil } from "@microsoft/teamsfx-core/src/component/utils/envUtil";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
 export const execAsync = promisify(exec);
@@ -400,6 +401,12 @@ export async function readContext(projectPath: string): Promise<any> {
   }
 
   return context;
+}
+
+export async function readContextMultiEnvV3(projectPath: string, envName: string): Promise<any> {
+  const envFilePath = path.join(projectPath, "teamsfx", `.env.${envName}`);
+  const parseResult = dotenvUtil.deserialize(await fs.readFile(envFilePath, { encoding: "utf8" }));
+  return parseResult.obj;
 }
 
 export async function readContextMultiEnv(projectPath: string, envName: string): Promise<any> {

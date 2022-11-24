@@ -182,4 +182,10 @@ export class EnvContants {
   static readonly TAB_AZURE_STORAGE_RESOURCE_ID = "TAB_AZURE_STORAGE_RESOURCE_ID";
   static readonly TAB_ENDPOINT = "TAB_ENDPOINT";
   static readonly TAB_DOMAIN = "TAB_DOMAIN";
+
+  // BOT
+  static readonly BOT_ID = "BOT_ID";
+  static readonly BOT_PASSWORD = "SECRET_BOT_PASSWORD";
+  static readonly BOT_AZURE_APP_SERVICE_RESOURCE_ID = "BOT_AZURE_APP_SERVICE_RESOURCE_ID";
+  static readonly BOT_DOMAIN = "BOT_DOMAIN";
 }

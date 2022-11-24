@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import axios from "axios";
 import * as chai from "chai";
 import * as fs from "fs";
 import path from "path";
+import { inc } from "semver";
 
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getActivePluginsFromProjectSetting } from "../e2e/commonUtils";
-import { PluginId, StateConfigKey } from "./constants";
+import { PluginId, StateConfigKey, EnvContants } from "./constants";
 
 import {
   getSubscriptionIdFromResourceId,
@@ -60,10 +61,7 @@ export class BotValidator {
     this.projectPath = projectPath;
     this.env = env;
 
-    const botWebAppResourceId = ctx[PluginId.Bot][StateConfigKey.botWebAppResourceId];
-    const botFunctionAppResourceId = ctx[PluginId.Bot][StateConfigKey.functionAppResourceId];
-    const botResourceId = ctx[PluginId.Bot][StateConfigKey.botResourceId];
-    const resourceId = botResourceId || botWebAppResourceId || botFunctionAppResourceId;
+    const resourceId = isV3Enabled() ? this.getResourceIdV3(ctx) : this.getResourceId(ctx);
     chai.assert.exists(resourceId);
     this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
     chai.assert.exists(this.subscriptionId);
@@ -75,6 +73,21 @@ export class BotValidator {
     console.log("Successfully init validator for Bot.");
   }
 
+  private getResourceIdV3(ctx: any): string {
+    const botWebAppResourceId = ctx[EnvContants.BOT_AZURE_APP_SERVICE_RESOURCE_ID];
+    // const botFunctionAppResourceId = ctx[EnvContants.BOT_AZURE_FUNCTION_RESOURCE_ID];
+    // const botResourceId = ctx[EnvContants.BOT_RESOURCE_ID]
+    const resourceId = botWebAppResourceId;
+    return resourceId;
+  }
+
+  private getResourceId(ctx: any): string {
+    const botWebAppResourceId = ctx[PluginId.Bot][StateConfigKey.botWebAppResourceId];
+    const botFunctionAppResourceId = ctx[PluginId.Bot][StateConfigKey.functionAppResourceId];
+    const botResourceId = ctx[PluginId.Bot][StateConfigKey.botResourceId];
+    const resourceId = botResourceId || botWebAppResourceId || botFunctionAppResourceId;
+    return resourceId;
+  }
   public static async validateScaffold(
     projectPath: string,
     programmingLanguage: string,
@@ -90,6 +103,45 @@ export class BotValidator {
       // err is null means file exists
       chai.assert.isNull(err);
     });
+  }
+
+  public async validateProvisionV3(includeAAD = true): Promise<void> {
+    console.log("Start to validate Bot Provision.");
+
+    const tokenProvider = MockAzureAccountProvider;
+    const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
+    const token = (await tokenCredential?.getToken(AzureScopes))?.token;
+
+    console.log("Validating env variables");
+    const response = await getWebappSettings(
+      this.subscriptionId,
+      this.rg,
+      this.botAppSiteName,
+      token as string
+    );
+    chai.assert.exists(response);
+    chai.assert.equal(response[BaseConfig.BOT_ID], this.ctx[EnvContants.BOT_ID] as string);
+    if (includeAAD) {
+      // TODO
+    }
+    // if (activeResourcePlugins.includes(PluginId.Function)) {
+    //   chai.assert.equal(
+    //     response[FunctionConfig.API_ENDPOINT],
+    //     this.ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
+    //   );
+    // }
+    // if (activeResourcePlugins.includes(PluginId.AzureSQL)) {
+    //   chai.assert.equal(
+    //     response[SQLConfig.SQL_ENDPOINT],
+    //     this.ctx[PluginId.AzureSQL][StateConfigKey.sqlEndpoint] as string
+    //   );
+    //   chai.assert.equal(
+    //     response[SQLConfig.SQL_DATABASE_NAME],
+    //     this.ctx[PluginId.AzureSQL][StateConfigKey.databaseName] as string
+    //   );
+    // }
+
+    console.log("Successfully validate Bot Provision.");
   }
 
   public async validateProvision(includeAAD = true): Promise<void> {

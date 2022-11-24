@@ -23,6 +23,7 @@ import axios from "axios";
 import { getAbsolutePath } from "../../../../src/component/utils/common";
 import { useUserSetEnv } from "../../../../src/core/middleware/envInfoLoaderV3";
 import { convertOutputs, getFileExtension } from "../../../../src/component/driver/arm/util/util";
+import { DeployContext, handleArmDeploymentError } from "../../../../src/component/arm";
 
 describe("Arm driver deploy", () => {
   const sandbox = createSandbox();
@@ -259,5 +260,47 @@ describe("util test", () => {
     ];
     const res = convertOutputs(mockOutput);
     assert.isNotEmpty(res);
+  });
+
+  it("handle error", async () => {
+    let mockError = {
+      code: "InvalidTemplateDeployment",
+      message:
+        "The template deployment 'Create-resources-for-tab' is not valid according to the validation procedure. The tracking id is '7da4fab7-ed36-4abc-9772-e2f90a0587a4'. See inner errors for details.",
+      details: {
+        error: {
+          code: "ValidationForResourceFailed",
+          message:
+            "Validation failed for a resource. Check 'Error.Details[0]' for more information.",
+          details: [
+            {
+              code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+              message: "The maximum number of Free ServerFarms allowed in a Subscription is 10.",
+            },
+          ],
+        },
+      },
+    };
+
+    let res = await handleArmDeploymentError(mockError, null as any);
+    assert.isTrue(res.isErr());
+
+    mockError = {
+      code: "InvalidTemplateDeployment",
+      message:
+        "The template deployment 'Create-resources-for-tab' is not valid according to the validation procedure. The tracking id is '7da4fab7-ed36-4abc-9772-e2f90a0587a4'. See inner errors for details.",
+      details: {
+        code: "ValidationForResourceFailed",
+        message: "Validation failed for a resource. Check 'Error.Details[0]' for more information.",
+        details: [
+          {
+            code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+            message: "The maximum number of Free ServerFarms allowed in a Subscription is 10.",
+          },
+        ],
+      },
+    } as any;
+    res = await handleArmDeploymentError(mockError, null as any);
+    assert.isTrue(res.isErr());
   });
 });

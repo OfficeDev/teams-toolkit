@@ -3327,8 +3327,8 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
     options: [
       {
         id: "cardActionResponse",
-        label: `${localize("teamstoolkit.tutorials.cardActionResponse.label.new")}`,
-        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail.new"),
+        label: `${localize("teamstoolkit.tutorials.cardActionResponse.label")}`,
+        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
         groupName: localize("teamstoolkit.guide.scenario"),
         data: "https://aka.ms/teamsfx-card-action-response",
         buttons: [
@@ -3341,7 +3341,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
       },
       {
         id: "sendNotification",
-        label: `${localize("teamstoolkit.tutorials.sendNotification.label.new")}`,
+        label: `${localize("teamstoolkit.tutorials.sendNotification.label")}`,
         detail: localize("teamstoolkit.tutorials.sendNotification.detail"),
         groupName: localize("teamstoolkit.guide.scenario"),
         data: "https://aka.ms/teamsfx-send-notification",
@@ -3355,7 +3355,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
       },
       {
         id: "commandAndResponse",
-        label: `${localize("teamstoolkit.tutorials.commandAndResponse.label.new")}`,
+        label: `${localize("teamstoolkit.tutorials.commandAndResponse.label")}`,
         detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
         groupName: localize("teamstoolkit.guide.development"),
         data: "https://aka.ms/teamsfx-create-command",
@@ -3369,7 +3369,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
       },
       {
         id: "addSso",
-        label: `${localize("teamstoolkit.tutorials.addSso.label.new")}`,
+        label: `${localize("teamstoolkit.tutorials.addSso.label")}`,
         detail: localize("teamstoolkit.tutorials.addSso.detail"),
         groupName: localize("teamstoolkit.guide.development"),
         data: "https://aka.ms/teamsfx-add-sso",
@@ -3383,7 +3383,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
       },
       {
         id: "connectApi",
-        label: `${localize("teamstoolkit.tutorials.connectApi.label.new")}`,
+        label: `${localize("teamstoolkit.tutorials.connectApi.label")}`,
         detail: localize("teamstoolkit.tutorials.connectApi.detail"),
         groupName: localize("teamstoolkit.guide.development"),
         data: "https://aka.ms/teamsfx-connect-api",
@@ -3401,9 +3401,9 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
   if (TreatmentVariableValue.inProductDoc) {
     config.options.splice(0, 1, {
       id: "cardActionResponse",
-      label: `${localize("teamstoolkit.tutorials.cardActionResponse.label.new")}`,
+      label: `${localize("teamstoolkit.tutorials.cardActionResponse.label")}`,
       description: localize("teamstoolkit.common.recommended"),
-      detail: localize("teamstoolkit.tutorials.cardActionResponse.detail.new"),
+      detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
       groupName: localize("teamstoolkit.guide.scenario"),
       data: "https://aka.ms/teamsfx-card-action-response",
       buttons: [

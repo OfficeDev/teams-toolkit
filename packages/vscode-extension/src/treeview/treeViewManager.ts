@@ -161,7 +161,7 @@ class TreeViewManager {
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.guideTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.tutorialDescription"),
+        localize("teamstoolkit.commandsTreeViewProvider.guideDescription"),
         "fx-extension.selectTutorials",
         undefined,
         { name: "notebook", custom: false },

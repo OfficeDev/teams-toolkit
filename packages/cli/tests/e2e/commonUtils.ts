@@ -37,7 +37,7 @@ import {
   TestFilePath,
   ProjectSettingKey,
 } from "../commonlib/constants";
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import m365Login from "../../src/commonlib/m365Login";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getWebappServicePlan } from "../commonlib/utilities";
@@ -127,6 +127,17 @@ export function getConfigFileName(appName: string, envName = "dev"): string {
   return path.resolve(testFolder, appName, getEnvFilePathSuffix(envName));
 }
 
+export async function setProvisionParameterValueV3(
+  projectPath: string,
+  envName: string,
+  paramerters: { key: string; value: string }
+): Promise<void> {
+  const parametersFilePath = path.resolve(projectPath, "infra", `azure.parameters.json`);
+  const parameters = await fs.readJson(parametersFilePath);
+  parameters["parameters"][paramerters.key] = { value: paramerters.value };
+  return await fs.writeJson(parametersFilePath, parameters, { spaces: 4 });
+}
+
 export async function setProvisionParameterValue(
   projectPath: string,
   envName: string,
@@ -153,7 +164,10 @@ export async function setSimpleAuthSkuNameToB1Bicep(
   projectPath: string,
   envName: string
 ): Promise<void> {
-  return setProvisionParameterValue(projectPath, envName, { key: "simpleAuthSku", value: "B1" });
+  const parameters = { key: "simpleAuthSku", value: "B1" };
+  return isV3Enabled()
+    ? setProvisionParameterValueV3(projectPath, envName, parameters)
+    : setProvisionParameterValue(projectPath, envName, parameters);
 }
 
 export async function getProvisionParameterValueByKey(

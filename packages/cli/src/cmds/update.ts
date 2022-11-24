@@ -18,6 +18,8 @@ import {
   RootFolderOptions,
   AadManifestOptions,
   AadManifestFilePathName,
+  TeamsAppManifestOptions,
+  TeamsAppManifestFilePathName,
 } from "../constants";
 export class UpdateAadApp extends YargsCommand {
   public readonly commandHead = "aad-app";
@@ -83,7 +85,9 @@ export class UpdateTeamsApp extends YargsCommand {
   public readonly description = "Update the Teams App manifest to Teams Developer Portal.";
 
   public builder(yargs: Argv): Argv<any> {
-    return yargs.hide("interactive").version(false).options(EnvOptions).options(RootFolderOptions);
+    return yargs.hide("interactive").version(false).options(EnvOptions).options(RootFolderOptions).options({
+      [TeamsAppManifestFilePathName]: TeamsAppManifestOptions[TeamsAppManifestFilePathName],
+    });;
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -96,6 +100,16 @@ export class UpdateTeamsApp extends YargsCommand {
     }
     const core = resultFolder.value;
     const inputs = getSystemInputs(rootFolder, args.env);
+
+    if (args[TeamsAppManifestFilePathName]) {
+      let manifestTemplatePath = args[TeamsAppManifestFilePathName];
+      if (!path.isAbsolute(manifestTemplatePath)) {
+        manifestTemplatePath = path.join(inputs.projectPath!, manifestTemplatePath);
+      }
+      inputs.manifestTemplatePath = manifestTemplatePath;
+    } else {
+
+    }
 
     const func: Func = {
       namespace: "fx-solution-azure/fx-resource-appstudio",

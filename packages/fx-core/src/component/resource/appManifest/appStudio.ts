@@ -673,13 +673,17 @@ export async function updateManifestV3(
     ENV_NAME: process.env.TEAMSFX_ENV,
   };
   const teamsAppId = process.env.TEAMS_APP_ID;
-  const manifestTemplatePath = await manifestUtils.getTeamsAppManifestPath(inputs.projectPath);
-  const manifestFileName = path.join(
-    inputs.projectPath,
-    BuildFolderName,
-    AppPackageFolderName,
-    `manifest.${state.ENV_NAME}.json`
-  );
+  const manifestTemplatePath = inputs.manifestTemplatePath
+    ? path.dirname(inputs.manifestTemplatePath)
+    : await manifestUtils.getTeamsAppManifestPath(inputs.projectPath);
+  const manifestFileName =
+    inputs.manifestTemplatePath ??
+    path.join(
+      inputs.projectPath,
+      BuildFolderName,
+      AppPackageFolderName,
+      `manifest.${state.ENV_NAME}.json`
+    );
 
   // Prepare for driver
   const buildDriver: CreateAppPackageDriver = Container.get(createAppPackageActionName);

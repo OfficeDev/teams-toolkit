@@ -87,6 +87,16 @@ export const AadManifestOptions: OptionsMap = {
   },
 };
 
+export const TeamsAppManifestFilePathName = "manifest-file-path";
+export const TeamsAppManifestOptions: OptionsMap = {
+  [AadManifestFilePathName]: {
+    type: "string",
+    global: false,
+    description:
+      "Enter the Teams app manifest template file path, default to './appPackage/manifest.template.json'",
+  },
+};
+
 export const templates = sampleProvider.SampleCollection.samples.map((sample) => {
   return {
     tags: sample.tags,

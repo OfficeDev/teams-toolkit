@@ -26,7 +26,7 @@ import {
   SystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { serializeDict, isSPFxProject } from "../../common/tools";
+import { serializeDict, isSPFxProject, isMigrationV3Enabled } from "../../common/tools";
 import { environmentManager } from "../environment";
 import { getResourceFolder } from "../../folder";
 import { globalStateUpdate } from "../../common/globalState";
@@ -98,11 +98,12 @@ import {
   hasSPFxTab,
 } from "../../common/projectSettingsHelperV3";
 import { APIMResource } from "../../component/resource/apim/apim";
+import { ProjectMigratorMWV3 } from "./projectMigratorV3";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
 const learnMoreText = getLocalizedString("core.option.learnMore");
-const upgradeButton = getLocalizedString("core.option.upgrade");
+export const upgradeButton = getLocalizedString("core.option.upgrade");
 const solutionName = "solution";
 const subscriptionId = "subscriptionId";
 const resourceGroupName = "resourceGroupName";
@@ -164,6 +165,13 @@ export class ArmParameters {
   static readonly ApimProductName = "apimProductName";
   static readonly ApimOauthServerName = "apimOauthServerName";
 }
+export function getProjectMigratorMW(): Middleware {
+  if (isMigrationV3Enabled()) {
+    return ProjectMigratorMWV3;
+  } else {
+    return ProjectMigratorMW;
+  }
+}
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await needMigrateToArmAndMultiEnv(ctx)) && checkMethod(ctx)) {
@@ -214,7 +222,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
   }
 };
 
-function outputCancelMessage(ctx: CoreHookContext) {
+export function outputCancelMessage(ctx: CoreHookContext) {
   TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
 
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -235,14 +243,14 @@ function outputCancelMessage(ctx: CoreHookContext) {
   }
 }
 
-function checkMethod(ctx: CoreHookContext): boolean {
+export function checkMethod(ctx: CoreHookContext): boolean {
   const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
   if (ctx.method && methods.has(ctx.method) && fromReloadFlag) return false;
   fromReloadFlag = ctx.method != undefined && methods.has(ctx.method);
   return true;
 }
 
-function checkUserTasks(ctx: CoreHookContext): boolean {
+export function checkUserTasks(ctx: CoreHookContext): boolean {
   const userTaskArgs: Set<string> = new Set(["getProgrammingLanguage", "getLocalDebugEnvs"]);
   const userTaskMethod = ctx.arguments[0]?.["method"];
   if (ctx.method === "executeUserTask" && userTaskArgs.has(userTaskMethod)) {

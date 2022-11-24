@@ -78,7 +78,7 @@ import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment, EnvInfoLoaderMW_V3, loadEnvInfoV3 } from "./middleware/envInfoLoaderV3";
 import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { ProjectMigratorMW } from "./middleware/projectMigrator";
+import { getProjectMigratorMW } from "./middleware/projectMigrator";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
@@ -289,7 +289,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -369,7 +369,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -401,7 +401,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -450,7 +450,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -489,7 +489,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -515,7 +515,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -694,7 +694,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -718,7 +718,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -759,7 +759,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -792,7 +792,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -824,7 +824,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,

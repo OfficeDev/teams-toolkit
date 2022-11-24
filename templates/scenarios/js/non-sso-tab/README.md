@@ -1,6 +1,6 @@
 # How to use this Teams Tab app HelloWorld app
 
-Microsoft Teams supports the ability to run web-based UI inside "custom tabs" that users can install either for just themselves (personal tabs) or within a team or group chat context. Please be advised that mgt-teamsfx-provider library in this app is currently in preview stage, please expect breaking changes in the future release.
+Microsoft Teams supports the ability to run web-based UI inside "custom tabs" that users can install either for just themselves (personal tabs) or within a team or group chat context.
 
 ## Prerequisites
 
@@ -10,13 +10,13 @@ Microsoft Teams supports the ability to run web-based UI inside "custom tabs" th
 
 ## Debug
 
-- From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code. 
+- From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code.
 - Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Run and Debug` green arrow button.
 - From TeamsFx CLI: Start debugging the project by executing the command `teamsfx preview --local` in your project directory.
 
 ## Edit the manifest
 
-You can find the Teams app manifest in `templates/appPackage` folder. The folder contains one manifest file:
+You can find the Teams app manifest in `./appPackage` folder. The folder contains one manifest file:
 * `manifest.template.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
 
 This file contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.

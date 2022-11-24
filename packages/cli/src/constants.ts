@@ -77,6 +77,16 @@ export const BuildPackageOptions: OptionsMap = {
   },
 };
 
+export const AadManifestFilePathName = "manifest-file-path";
+export const AadManifestOptions: OptionsMap = {
+  [AadManifestFilePathName]: {
+    type: "string",
+    global: false,
+    description:
+      "Enter the AAD app manifest template file path, default to './aad.manifest.template.json'",
+  },
+};
+
 export const templates = sampleProvider.SampleCollection.samples.map((sample) => {
   return {
     tags: sample.tags,

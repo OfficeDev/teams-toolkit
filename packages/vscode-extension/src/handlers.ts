@@ -3323,24 +3323,18 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
   const config: SingleSelectConfig = {
     name: "tutorialName",
-    title: localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),
-    options: [],
-    returnObject: true,
-  };
-  if (TreatmentVariableValue.inProductDoc) {
-    config.title = localize("teamstoolkit.commandsTreeViewProvider.guideTitle");
-    config.options = [
+    title: localize("teamstoolkit.commandsTreeViewProvider.guideTitle"),
+    options: [
       {
         id: "cardActionResponse",
         label: `${localize("teamstoolkit.tutorials.cardActionResponse.label.new")}`,
-        description: localize("teamstoolkit.common.recommended"),
         detail: localize("teamstoolkit.tutorials.cardActionResponse.detail.new"),
         groupName: localize("teamstoolkit.guide.scenario"),
         data: "https://aka.ms/teamsfx-card-action-response",
         buttons: [
           {
-            iconPath: "file-code",
-            tooltip: localize("teamstoolkit.guide.tooltip.inProduct"),
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
             command: "fx-extension.openTutorial",
           },
         ],
@@ -3401,40 +3395,25 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           },
         ],
       },
-    ];
-  } else {
-    config.options = [
-      {
-        id: "sendNotification",
-        label: `${localize("teamstoolkit.tutorials.sendNotification.label")}`,
-        detail: localize("teamstoolkit.tutorials.sendNotification.detail"),
-        data: "https://aka.ms/teamsfx-send-notification",
-      },
-      {
-        id: "commandAndResponse",
-        label: `${localize("teamstoolkit.tutorials.commandAndResponse.label")}`,
-        detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
-        data: "https://aka.ms/teamsfx-create-command",
-      },
-      {
-        id: "cardActionResponse",
-        label: localize("teamstoolkit.tutorials.cardActionResponse.label"),
-        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
-        data: "https://aka.ms/teamsfx-card-action-response",
-      },
-      {
-        id: "addSso",
-        label: `${localize("teamstoolkit.tutorials.addSso.label")}`,
-        detail: localize("teamstoolkit.tutorials.addSso.detail"),
-        data: "https://aka.ms/teamsfx-add-sso",
-      },
-      {
-        id: "connectApi",
-        label: `${localize("teamstoolkit.tutorials.connectApi.label")}`,
-        detail: localize("teamstoolkit.tutorials.connectApi.detail"),
-        data: "https://aka.ms/teamsfx-connect-api",
-      },
-    ];
+    ],
+    returnObject: true,
+  };
+  if (TreatmentVariableValue.inProductDoc) {
+    config.options.splice(0, 1, {
+      id: "cardActionResponse",
+      label: `${localize("teamstoolkit.tutorials.cardActionResponse.label.new")}`,
+      description: localize("teamstoolkit.common.recommended"),
+      detail: localize("teamstoolkit.tutorials.cardActionResponse.detail.new"),
+      groupName: localize("teamstoolkit.guide.scenario"),
+      data: "https://aka.ms/teamsfx-card-action-response",
+      buttons: [
+        {
+          iconPath: "file-code",
+          tooltip: localize("teamstoolkit.guide.tooltip.inProduct"),
+          command: "fx-extension.openTutorial",
+        },
+      ],
+    });
   }
 
   if (isExistingTabAppEnabled()) {

@@ -2920,7 +2920,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
       return err(noEnvError);
     } else {
-      const isLocalEnv = env.value === environmentManager.getLocalEnvName();
+      const isLocalEnv = env === environmentManager.getLocalEnvName();
       const message = isLocalEnv
         ? util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env)
         : util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env);

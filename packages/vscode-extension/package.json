@@ -252,7 +252,7 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+          "command": "fx-extension.updateAadAppManifestFromCtxMenu",
           "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
           "group": "deploy@0"
         },
@@ -432,7 +432,7 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+          "command": "fx-extension.updateAadAppManifestFromCtxMenu",
           "when": "false"
         },
         {
@@ -632,8 +632,8 @@
         "category": "Teams"
       },
       {
-        "command": "fx-extension.deployAadAppManifest",
-        "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
+        "command": "fx-extension.updateAadAppManifest",
+        "title": "%teamstoolkit.commands.updateAadAppManifest.title%",
         "enablement": "fx-extension.isTeamsFx && fx-extension.isAadManifestEnabled && isWorkspaceTrusted",
         "category": "Teams"
       },
@@ -703,8 +703,8 @@
         "icon": "$(add)"
       },
       {
-        "command": "fx-extension.deployAadAppManifestFromCtxMenu",
-        "title": "%teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title%"
+        "command": "fx-extension.updateAadAppManifestFromCtxMenu",
+        "title": "%teamstoolkit.commands.updateAadAppManifestFromCtxMenu.title%"
       },
       {
         "command": "fx-extension.deployManifestFromCtxMenu",

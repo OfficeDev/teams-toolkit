@@ -10,7 +10,7 @@ const teamsfxFolder = "teamsfx";
 const backupFolder = "backup";
 export const V2TeamsfxFolder = ".fx";
 export interface MigrationContext extends CoreHookContext {
-  backup(backupFolder: string): Promise<void>;
+  backup(path: string): Promise<boolean>;
   fsEnsureDir(path: string, options?: EnsureOptions | number): Promise<void>;
   fsCopy(src: string, dest: string, options?: CopyOptions): Promise<void>;
   fsCreateFile(file: string): Promise<void>;
@@ -27,38 +27,64 @@ export class MigrationContext {
   private modifiedPaths: string[] = [];
   backupPath = "";
   projectPath = "";
-  constructor(ctx: CoreHookContext) {
+
+  static async create(ctx: CoreHookContext): Promise<MigrationContext> {
+    const context = new MigrationContext(ctx);
+    await fs.ensureDir(context.backupPath);
+    return context;
+  }
+
+  private constructor(ctx: CoreHookContext) {
     Object.assign(this, ctx, {});
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     this.projectPath = inputs.projectPath as string;
     this.backupPath = path.join(this.projectPath, teamsfxFolder, backupFolder);
   }
 
-  // backupFolder is a relative path
-  async backup(backupFolder: string): Promise<void> {}
+  async backup(_path: string): Promise<boolean> {
+    const srcPath = path.join(this.projectPath, _path);
+    if (await fs.pathExists(srcPath)) {
+      await fs.copy(srcPath, path.join(this.backupPath, _path));
+      return true;
+    }
+    return false;
+  }
 
-  async fsEnsureDir(path: string, options?: EnsureOptions | number): Promise<void> {
-    // TODO: add created path into modifiedPaths
-    return await fs.ensureDir(path, options);
+  async fsEnsureDir(_path: string, options?: EnsureOptions | number): Promise<void> {
+    const srcPath = path.join(this.projectPath, _path);
+    const parentPath = path.dirname(srcPath);
+    if (!(await fs.pathExists(parentPath))) {
+      await this.fsEnsureDir(path.relative(this.projectPath, parentPath), options);
+    }
+    if (!(await fs.pathExists(srcPath))) {
+      await fs.ensureDir(srcPath, options);
+      this.addModifiedPath(_path);
+    }
   }
 
   async fsCopy(src: string, dest: string, options?: CopyOptions): Promise<void> {
-    // TODO: add dest into modifiedPaths
-    return await fs.copy(src, dest, options);
+    await fs.copy(path.join(this.projectPath, src), path.join(this.projectPath, dest), options);
+    this.addModifiedPath(dest);
   }
 
   async fsCreateFile(file: string): Promise<void> {
-    // TODO: add file into modifiedPaths
-    return await fs.createFile(file);
+    await fs.createFile(path.join(this.projectPath, file));
+    this.addModifiedPath(file);
   }
 
-  async fsWriteFile(
-    file: PathLike | number,
-    data: any,
-    options?: WriteFileOptions | string
-  ): Promise<void> {
-    // TODO: add file into modifiedPaths
-    return await fs.writeFile(file, data, options);
+  async fsWriteFile(file: string, data: any, options?: WriteFileOptions | string): Promise<void> {
+    await fs.writeFile(path.join(this.projectPath, file), data, options);
+    this.addModifiedPath(file);
+  }
+
+  addModifiedPath(path: string) {
+    if (!this.modifiedPaths.includes(path)) {
+      this.modifiedPaths.push(path);
+    }
+  }
+
+  getModifiedPaths(): string[] {
+    return this.modifiedPaths.slice();
   }
 }
 

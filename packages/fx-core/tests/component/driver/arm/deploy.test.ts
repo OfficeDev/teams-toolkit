@@ -263,7 +263,7 @@ describe("util test", () => {
   });
 
   it("handle error", async () => {
-    const mockError = {
+    let mockError = {
       code: "InvalidTemplateDeployment",
       message:
         "The template deployment 'Create-resources-for-tab' is not valid according to the validation procedure. The tracking id is '7da4fab7-ed36-4abc-9772-e2f90a0587a4'. See inner errors for details.",
@@ -281,7 +281,26 @@ describe("util test", () => {
         },
       },
     };
-    const res = await handleArmDeploymentError(mockError, 1 as any);
+
+    let res = await handleArmDeploymentError(mockError, null as any);
+    assert.isTrue(res.isErr());
+
+    mockError = {
+      code: "InvalidTemplateDeployment",
+      message:
+        "The template deployment 'Create-resources-for-tab' is not valid according to the validation procedure. The tracking id is '7da4fab7-ed36-4abc-9772-e2f90a0587a4'. See inner errors for details.",
+      details: {
+        code: "ValidationForResourceFailed",
+        message: "Validation failed for a resource. Check 'Error.Details[0]' for more information.",
+        details: [
+          {
+            code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+            message: "The maximum number of Free ServerFarms allowed in a Subscription is 10.",
+          },
+        ],
+      },
+    } as any;
+    res = await handleArmDeploymentError(mockError, null as any);
     assert.isTrue(res.isErr());
   });
 });

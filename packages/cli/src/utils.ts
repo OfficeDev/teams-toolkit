@@ -20,6 +20,7 @@ import {
   getSingleOption,
   SingleSelectQuestion,
   MultiSelectQuestion,
+  InputTextConfig,
   QTreeNode,
   Inputs,
   Platform,
@@ -383,6 +384,20 @@ export async function askTargetEnvironment(projectDir: string): Promise<Result<s
     return err(selectedEnv.error);
   } else {
     return ok(selectedEnv.value.result as string);
+  }
+}
+
+export async function askManifestFilePath(): Promise<Result<string, FxError>> {
+  const config: InputTextConfig = {
+    name: "manifest-file-path",
+    title: "Enter the AAD app manifest template path",
+    default: "./aad.manifest.template.json",
+  };
+  const filePathInput = await CLIUIInstance.inputText(config);
+  if (filePathInput.isErr()) {
+    return err(filePathInput.error);
+  } else {
+    return ok(filePathInput.value.result as string);
   }
 }
 

@@ -83,6 +83,7 @@ import {
   DisplayMessages,
   prerequisiteCheckTaskDisplayMessages,
   prerequisiteCheckForGetStartedDisplayMessages,
+  v3PrerequisiteCheckTaskDisplayMessages,
 } from "./constants";
 import M365TokenInstance from "../commonlib/m365Login";
 import { signedOut } from "../commonlib/common/constant";
@@ -404,7 +405,9 @@ export async function checkAndInstallForTask(
       }
 
       const res = await _checkAndInstall(
-        prerequisiteCheckTaskDisplayMessages,
+        isV3Enabled()
+          ? v3PrerequisiteCheckTaskDisplayMessages
+          : prerequisiteCheckTaskDisplayMessages,
         orderedCheckers,
         additionalTelemetryProperties
       );
@@ -1071,7 +1074,11 @@ function handleNodeNotRecommendedError(error: NodeNotSupportedError, dep: Depend
     ? dep.details.supportedVersions.join(", ")
     : dep.details.supportedVersions.map((v) => "v" + v).join(", ");
 
-  error.message = `${doctorConstant.NodeNotRecommended.split("@CurrentVersion")
+  const nodeNotRecommendedMessage = isV3Enabled()
+    ? doctorConstant.V3NodeNotRecommended
+    : doctorConstant.NodeNotRecommended;
+  error.message = `${nodeNotRecommendedMessage
+    .split("@CurrentVersion")
     .join(dep.details.installVersion)
     .split("@SupportedVersions")
     .join(supportedVersions)}`;

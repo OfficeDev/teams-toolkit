@@ -4,7 +4,11 @@
 import { DriverContext } from "./commonArgs";
 import { FxError, Result } from "@microsoft/teamsfx-api";
 
-export type ExecutionResult = { result: Result<Map<string, string>, FxError>; summaries: string[] };
+export type ExecutionResult = {
+  result: Result<Map<string, string>, FxError>;
+  // summaries hold the successful logs even if the result is a FxError.
+  summaries: string[];
+};
 
 export interface StepDriver {
   readonly description?: string;
@@ -17,7 +21,8 @@ export interface StepDriver {
   run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>>;
 
   /**
-   * Run the driver and return summaries along with the result, no matter the result is success or failure.
+   * Run the driver and return success summary entries along with the result, no matter the result is success or failure.
+   * Because a failed action may still emit some succuessful summaires.
    * The summary is expected to contain human readable information that will be presented to users.
    * @param args Arguments from the `with` section in the yaml file.
    * @param ctx logger, telemetry, progress bar, etc.

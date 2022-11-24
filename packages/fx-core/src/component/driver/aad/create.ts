@@ -31,6 +31,9 @@ const AAD_APP_CLIENT_ID = "AAD_APP_CLIENT_ID";
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateAadAppDriver implements StepDriver {
+  /*
+  A simplified example of execute()
+
   description = "creates an AAD app to authenticate users";
 
   public async execute(args: CreateAadAppArgs, ctx: DriverContext): Promise<ExecutionResult> {
@@ -44,12 +47,11 @@ export class CreateAadAppDriver implements StepDriver {
         "Environment variable SECRET_AAD_APP_CLIENT_SECRET already exist, skipped creating new AAD app."
       );
     } else {
-      summaries.push(
-        `Failed to create AAD app due to network error. Please check ${helpLink} for more info`
-      );
+      summaries.push(`Failed to create AAD app. Please check ${helpLink} for more info.`);
     }
     return { result, summaries };
   }
+  */
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(

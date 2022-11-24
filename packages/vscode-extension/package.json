@@ -683,7 +683,7 @@
         "command": "fx-extension.updatePreviewFile",
         "title": "%teamstoolkit.commands.updateManifest.title%",
         "icon": "$(sync)",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.isV3Enabled",
         "category": "Teams"
       },
       {
@@ -778,7 +778,8 @@
       {
         "command": "fx-extension.openPreviewFile",
         "title": "%teamstoolkit.commands.previewManifest.title%",
-        "icon": "$(file-code)"
+        "icon": "$(file-code)",
+        "enablement": "!fx-extension.isV3Enabled"
       },
       {
         "command": "fx-extension.openResourceGroupInPortal",

@@ -169,3 +169,11 @@ export function OnlyLaunchPageSupportedInOffice(): UserError {
     "Only launch page is supported in Office. Message extension is not supported in Office."
   );
 }
+
+export function CannotDetectRunCommand(): UserError {
+  return new UserError(
+    constants.cliSource,
+    "CannotDetectRunCommand",
+    "Cannot detect run command by project type. Parameter '--run-command' is required."
+  );
+}

@@ -63,6 +63,7 @@ import {
   InitOptionYes,
   getQuestionsForPublishInDeveloperPortal,
   InitEditorVSCode,
+  InitEditorVS,
 } from "../question";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -96,6 +97,7 @@ import { getBotTroubleShootMessage } from "../core";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { updateManifestV3ForPublish } from "../resource/appManifest/appStudio";
 import { AppStudioScopes } from "../resource/appManifest/constants";
+import * as xml2js from "xml2js";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -307,11 +309,50 @@ export class Coordinator {
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
+    if (editor === InitEditorVS.id) {
+      const ensure = await this.ensureTeamsFxInCsproj(projectPath);
+      if (ensure.isErr()) return err(ensure.error);
+    }
     context.userInteraction.showMessage(
       "info",
       "\nVisit https://aka.ms/teamsfx-infra to learn more about Teams Toolkit infrastructure customization.",
       false
     );
+    return ok(undefined);
+  }
+
+  async ensureTeamsFxInCsproj(projectPath: string): Promise<Result<undefined, FxError>> {
+    const list = await fs.readdir(projectPath);
+    const csprojFiles = list.filter((fileName) => fileName.endsWith(".csproj"));
+    if (csprojFiles.length === 0) return ok(undefined);
+    const filePath = csprojFiles[0];
+    const xmlStringOld = (await fs.readFile(filePath, { encoding: "utf8" })).toString();
+    const jsonObj = await xml2js.parseStringPromise(xmlStringOld);
+    let ItemGroup = jsonObj.Project.ItemGroup;
+    if (!ItemGroup) {
+      ItemGroup = [];
+      jsonObj.Project.ItemGroup = ItemGroup;
+    }
+    const existItems = ItemGroup.filter((item: any) => {
+      if (item.ProjectCapability && item.ProjectCapability[0])
+        if (item.ProjectCapability[0]["$"]?.Include === "TeamsFx") return true;
+      return false;
+    });
+    if (existItems.length === 0) {
+      const toAdd = {
+        ProjectCapability: [
+          {
+            $: {
+              Include: "TeamsFx",
+            },
+          },
+        ],
+      };
+      ItemGroup.push(toAdd);
+      const builder = new xml2js.Builder();
+      const xmlStringNew = builder.buildObject(jsonObj);
+      await fs.writeFile(filePath, xmlStringNew, { encoding: "utf8" });
+    }
     return ok(undefined);
   }
 
@@ -351,6 +392,10 @@ export class Coordinator {
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
+    if (editor === InitEditorVS.id) {
+      const ensure = await this.ensureTeamsFxInCsproj(projectPath);
+      if (ensure.isErr()) return err(ensure.error);
+    }
     context.userInteraction.showMessage(
       "info",
       "\nVisit https://aka.ms/teamsfx-debug to learn more about Teams Toolkit debug customization.",

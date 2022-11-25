@@ -1147,7 +1147,7 @@ describe("component coordinator test", () => {
     assert.equal(convertRes[1]!.name, "UnresolvedPlaceholders");
   });
 
-  it("init infra happy path", async () => {
+  it("init infra happy path vsc", async () => {
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
@@ -1157,6 +1157,25 @@ describe("component coordinator test", () => {
       editor: "vsc",
       capability: "tab",
       spfx: "true",
+      proceed: "true",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+  it("init infra happy path vs", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(coordinator, "ensureTeamsFxInCsproj").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      editor: "vs",
+      capability: "tab",
       proceed: "true",
     };
     const fxCore = new FxCore(tools);
@@ -1326,7 +1345,7 @@ describe("component coordinator test", () => {
     const res = await fxCore.initInfra(inputs);
     assert.isTrue(res.isErr());
   });
-  it("init debug happy path", async () => {
+  it("init debug happy path vsc", async () => {
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
@@ -1337,6 +1356,23 @@ describe("component coordinator test", () => {
       editor: "vsc",
       capability: "tab",
       spfx: "true",
+      proceed: "true",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initDebug(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("init debug happy path vs", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(coordinator, "ensureTeamsFxInCsproj").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      editor: "vs",
+      capability: "tab",
       proceed: "true",
     };
     const fxCore = new FxCore(tools);
@@ -1589,6 +1625,36 @@ describe("component coordinator test", () => {
       if (res.isErr()) {
         assert.equal(res.error.name, "error");
       }
+    });
+
+    it("ensureTeamsFxInCsproj  no .csproj found", async () => {
+      sandbox.stub(fs, "readdir").resolves([] as any);
+      const res = await coordinator.ensureTeamsFxInCsproj(".");
+      assert.isTrue(res.isOk());
+    });
+
+    it("ensureTeamsFxInCsproj success: do nothing for existing ItemGroup", async () => {
+      const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <Project Sdk="Microsoft.NET.Sdk">
+        <ItemGroup>
+          <ProjectCapability Include="TeamsFx"/>
+        </ItemGroup>
+      </Project>`;
+      sandbox.stub(fs, "readdir").resolves(["test.csproj"] as any);
+      sandbox.stub(fs, "readFile").resolves(xml as any);
+      const res = await coordinator.ensureTeamsFxInCsproj(".");
+      assert.isTrue(res.isOk());
+    });
+
+    it("ensureTeamsFxInCsproj success: insert one", async () => {
+      const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <Project Sdk="Microsoft.NET.Sdk">
+      </Project>`;
+      sandbox.stub(fs, "readdir").resolves(["test.csproj"] as any);
+      sandbox.stub(fs, "readFile").resolves(xml as any);
+      sandbox.stub(fs, "writeFile").resolves();
+      const res = await coordinator.ensureTeamsFxInCsproj(".");
+      assert.isTrue(res.isOk());
     });
   });
 });

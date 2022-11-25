@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { StepDriver } from "../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { Service } from "typedi";
 import { Constants } from "./constant";
@@ -18,6 +18,14 @@ export class ArmDeployDriver implements StepDriver {
   ): Promise<Result<Map<string, string>, FxError>> {
     const wrapContext = new WrapDriverContext(context, Constants.actionName, Constants.actionName);
     const impl = new ArmDeployImpl(args, wrapContext);
-    return wrapRun(wrapContext, () => impl.run());
+    const wrapRes = await wrapRun(wrapContext, () => impl.run());
+    return wrapRes as Result<Map<string, string>, FxError>;
+  }
+
+  async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
+    const wrapContext = new WrapDriverContext(ctx, Constants.actionName, Constants.actionName);
+    const impl = new ArmDeployImpl(args as deployArgs, wrapContext);
+    const wrapRes = await wrapRun(wrapContext, () => impl.run(), true);
+    return wrapRes as ExecutionResult;
   }
 }

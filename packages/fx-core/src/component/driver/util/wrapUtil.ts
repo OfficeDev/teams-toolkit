@@ -18,7 +18,7 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult } from "../interface/stepDriver";
 
-type ActionResult = ExecutionResult | Result<Map<string, string>, FxError>;
+export type ActionResult = ExecutionResult | Result<Map<string, string>, FxError>;
 interface StringMap {
   [key: string]: string;
 }

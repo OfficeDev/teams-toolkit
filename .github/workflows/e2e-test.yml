@@ -186,15 +186,6 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
-      - name: Download Simple Auth bits
-        uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 5
-          shell: pwsh
-          command: |
-            ./.github/scripts/download-simpleauth.sh
-
       - name: Setup project
         uses: nick-fields/retry@v2
         with:
@@ -202,14 +193,13 @@ jobs:
           max_attempts: 5
           command: |
             npm run setup
-
-      - name: Download CLI
-        uses: actions/download-artifact@v3
-        with:
-          name: Teamsfx-cli
-
-      - name: Install CLI
+      
+      - name: Package CLI
+        working-directory: packages/cli
         run: |
+          rm -f *.tgz
+          npm pack
+          mv *.tgz teamsfx-cli.tgz
           npm install -g teamsfx-cli.tgz
 
       - name: print system info

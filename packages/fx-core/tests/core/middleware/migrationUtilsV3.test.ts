@@ -28,7 +28,7 @@ describe("MigrationUtilsV3", () => {
     assert.isTrue(res.isOk() && res.value === "SECRET_FX_RESOURCE_TEST__TEST_PLUGIN__TEST_KEY");
   });
 
-  it("happy path for provision outputs: state.fx-resource-frontend-hosting.domain", () => {
+  it("happy path for provision outputs: state.fx-resource-frontend-hosting.domain with standard pluginId", () => {
     const bicepContent =
       "output azureStorageTabOutput object = {\nteamsFxPluginId: 'fx-resource-frontend-hosting'\n}";
     const res = namingConverterV3(
@@ -39,7 +39,17 @@ describe("MigrationUtilsV3", () => {
     assert.isTrue(res.isOk() && res.value === "PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN");
   });
 
-  it("happy path for provision outputs: state.fx-resource-azure-sql.databaseName with single database", () => {
+  it("happy path for provision outputs: state.fx-resource-frontend-hosting.domain with updated pluginId", () => {
+    const bicepContent = "output azureStorageTabOutput object = {\nteamsFxPluginId: 'teams-tab'\n}";
+    const res = namingConverterV3(
+      "state.fx-resource-frontend-hosting.domain",
+      FileType.STATE,
+      bicepContent
+    );
+    assert.isTrue(res.isOk() && res.value === "PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN");
+  });
+
+  it("happy path for provision outputs: state.fx-resource-azure-sql.databaseName with single database and standard pluginId", () => {
     const bicepContent =
       "output azureSqlOutput object = {\nteamsFxPluginId: 'fx-resource-azure-sql'\n}";
     const res = namingConverterV3(
@@ -50,11 +60,36 @@ describe("MigrationUtilsV3", () => {
     assert.isTrue(res.isOk() && res.value === "PROVISIONOUTPUT__AZURESQLOUTPUT__DATABASENAME");
   });
 
-  it("happy path for provision outputs: state.fx-resource-azure-sql.databaseName with multiple database", () => {
+  it("happy path for provision outputs: state.fx-resource-azure-sql.databaseName with single database and updated pluginId", () => {
+    const bicepContent = "output azureSqlOutput object = {\nteamsFxPluginId: 'azure-sql'\n}";
+    const res = namingConverterV3(
+      "state.fx-resource-azure-sql.databaseName",
+      FileType.STATE,
+      bicepContent
+    );
+    assert.isTrue(res.isOk() && res.value === "PROVISIONOUTPUT__AZURESQLOUTPUT__DATABASENAME");
+  });
+
+  it("happy path for provision outputs: state.fx-resource-azure-sql.databaseName with multiple database and standard pluginId", () => {
     const bicepContent =
       "output azureSqlOutput object = {\nteamsFxPluginId: 'fx-resource-azure-sql'\n}\n" +
       "output azureSqlOutput_test object = {\nteamsFxPluginId: 'fx-resource-azure-sql'\n}" +
       "output azureSqlOutput_test2 object = {\nteamsFxPluginId: 'fx-resource-azure-sql'\n}";
+    const res = namingConverterV3(
+      "state.fx-resource-azure-sql.databaseName_test",
+      FileType.STATE,
+      bicepContent
+    );
+    assert.isTrue(
+      res.isOk() && res.value === "PROVISIONOUTPUT__AZURESQLOUTPUT_TEST__DATABASENAME_TEST"
+    );
+  });
+
+  it("happy path for provision outputs: state.fx-resource-azure-sql.databaseName with multiple database and updated pluginId", () => {
+    const bicepContent =
+      "output azureSqlOutput object = {\nteamsFxPluginId: 'azure-sql'\n}\n" +
+      "output azureSqlOutput_test object = {\nteamsFxPluginId: 'azure-sql'\n}" +
+      "output azureSqlOutput_test2 object = {\nteamsFxPluginId: 'azure-sql'\n}";
     const res = namingConverterV3(
       "state.fx-resource-azure-sql.databaseName_test",
       FileType.STATE,

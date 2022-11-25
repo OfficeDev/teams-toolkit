@@ -164,6 +164,15 @@ export const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-key-vault.m365ClientSecretReference",
   "state.fx-resource-key-vault.botClientSecretReference",
 ];
+export const pluginIdMappingV3: { [key: string]: string } = {
+  "fx-resource-frontend-hosting": "teams-tab",
+  "fx-resource-function": "teams-api",
+  "fx-resource-identity": "identity",
+  "fx-resource-bot": "teams-bot",
+  "fx-resource-key-vault": "key-vault",
+  "fx-resource-azure-sql": "azure-sql",
+  "fx-resource-apim": "apim",
+};
 const secretPrefix = "SECRET_";
 const configPrefix = "CONFIG__";
 const provisionOutputPrefix = "PROVISIONOUTPUT__";
@@ -218,34 +227,41 @@ function commonNamingConverterV3(name: string): string {
 
 function provisionOutputNamingConverterV3(name: string, bicepContent: string): string {
   const names = name.split(".");
-  const pluginName = names[1];
+  const pluginNames = [names[1], pluginIdMappingV3[names[1]]];
   const keyName = names[2];
 
   let outputName = "";
-  const pluginRegex = generateOutputNameRegexForPlugin(pluginName);
-  let outputNames = pluginRegex.exec(bicepContent);
-  if (outputNames !== null) {
-    // if have multiple sql database
-    if (
-      "fx-resource-azure-sql" === pluginName &&
-      keyName.startsWith("databaseName") &&
-      keyName.includes("_")
-    ) {
-      // database name may be: databaseName_xxxxxx
-      const suffix = keyName.split("_")[1];
-      do {
-        if (
-          outputNames &&
-          outputNames[1] &&
-          outputNames[1].includes("_") &&
-          suffix === outputNames[1].split("_")[1]
-        ) {
-          outputName = outputNames[1];
-          break;
-        }
-      } while ((outputNames = pluginRegex.exec(bicepContent)));
-    } else {
-      outputName = outputNames[1];
+
+  for (const pluginName of pluginNames) {
+    const pluginRegex = generateOutputNameRegexForPlugin(pluginName);
+    let outputNames = pluginRegex.exec(bicepContent);
+    if (outputNames !== null) {
+      // if have multiple sql database
+      if (
+        "fx-resource-azure-sql" === pluginNames[0] &&
+        keyName.startsWith("databaseName") &&
+        keyName.includes("_")
+      ) {
+        // database name may be: databaseName_xxxxxx
+        const suffix = keyName.split("_")[1];
+        do {
+          if (
+            outputNames &&
+            outputNames[1] &&
+            outputNames[1].includes("_") &&
+            suffix === outputNames[1].split("_")[1]
+          ) {
+            outputName = outputNames[1];
+            break;
+          }
+        } while ((outputNames = pluginRegex.exec(bicepContent)));
+      } else {
+        outputName = outputNames[1];
+      }
+
+      if (outputName) {
+        break;
+      }
     }
   }
 

@@ -1,3 +1,4 @@
+.funcignore
 .development
 .DS_Store
 .git*

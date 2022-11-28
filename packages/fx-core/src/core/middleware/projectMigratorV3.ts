@@ -4,11 +4,14 @@
 import { ok } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
-import { MigrationContext, V2TeamsfxFolder, wrapRunMigration } from "./utils/migrationContext";
+import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks } from "./projectMigrator";
 
 const MigrationVersion = "2.1.0";
-const subMigrations = [preMigration];
+type Migration = (context: MigrationContext) => Promise<void>;
+const subMigrations: Array<Migration> = [preMigration];
+
+// const subMigrations: Array<(context: MigrationContext) => Promise<void>> = [preMigration];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await checkVersionForMigration(ctx)) && checkMethod(ctx)) {
@@ -18,7 +21,6 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
     }
 
     // TODO: add user confirm for migration
-
     const migrationContext = await MigrationContext.create(ctx);
     await wrapRunMigration(migrationContext, migrate);
     ctx.result = ok(undefined);
@@ -29,6 +31,30 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
     await next();
   }
 };
+
+export async function wrapRunMigration(
+  context: MigrationContext,
+  exec: (context: MigrationContext) => void
+): Promise<void> {
+  try {
+    // sendTelemetryEvent("core", TelemetryEvent.ProjectMigratorNotificationStart);
+    await exec(context);
+    await showSummaryReport(context);
+    // sendTelemetryEvent("core", TelemetryEvent.ProjectMigratorNotificationEnd);
+  } catch (error: any) {
+    // sendTelemetryEvent("core", TelemetryEvent.ProjectMigratorNotificationFailed);
+    await rollbackMigration(context);
+    throw error;
+  }
+}
+
+async function rollbackMigration(context: MigrationContext): Promise<void> {
+  await context.cleanModifiedPaths();
+  await context.restoreBackup();
+  await context.cleanTeamsfx();
+}
+
+async function showSummaryReport(context: MigrationContext): Promise<void> {}
 
 async function migrate(context: MigrationContext): Promise<void> {
   for (const subMigration of subMigrations) {

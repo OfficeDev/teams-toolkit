@@ -6,7 +6,7 @@ import { DriverContext } from "../interface/commonArgs";
 import { Service } from "typedi";
 import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
 import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
-import { err, FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import axios from "axios";
@@ -49,8 +49,8 @@ export class CreateBotAadAppDriver implements StepDriver {
       this.validateArgs(args);
       const botAadAppState = this.loadCurrentState();
       const botConfig: BotAadCredentials = {
-        botId: botAadAppState.BOT_ID ?? "",
-        botPassword: botAadAppState.SECRET_BOT_PASSWORD ?? "",
+        botId: botAadAppState.MICROSOFT_APP_ID ?? "",
+        botPassword: botAadAppState.SECRET_MICROSOFT_APP_PASSWORD ?? "",
       };
       const botRegistration: BotRegistration = new RemoteBotRegistration();
 
@@ -72,8 +72,8 @@ export class CreateBotAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
       return new Map([
-        ["BOT_ID", createRes.value.botId],
-        ["SECRET_BOT_PASSWORD", createRes.value.botPassword],
+        ["MICROSOFT_APP_ID", createRes.value.botId],
+        ["SECRET_MICROSOFT_APP_PASSWORD", createRes.value.botPassword],
       ]);
     } catch (error) {
       await progressHandler?.end(false);
@@ -117,8 +117,8 @@ export class CreateBotAadAppDriver implements StepDriver {
 
   private loadCurrentState(): CreateBotAadAppOutput {
     return {
-      BOT_ID: process.env.BOT_ID,
-      SECRET_BOT_PASSWORD: process.env.SECRET_BOT_PASSWORD,
+      MICROSOFT_APP_ID: process.env.MICROSOFT_APP_ID,
+      SECRET_MICROSOFT_APP_PASSWORD: process.env.SECRET_MICROSOFT_APP_PASSWORD,
     };
   }
 }

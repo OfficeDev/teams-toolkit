@@ -2,6 +2,6 @@
 // Licensed under the MIT license.
 
 export interface CreateBotAadAppOutput {
-  BOT_ID?: string;
-  SECRET_BOT_PASSWORD?: string;
+  MICROSOFT_APP_ID?: string;
+  SECRET_MICROSOFT_APP_PASSWORD?: string;
 }

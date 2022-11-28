@@ -31,7 +31,6 @@ import {
   DepsManager,
   NodeNotSupportedError,
   DepsCheckerError,
-  validationSettingsHelpLink,
   NodeNotRecommendedError,
 } from "@microsoft/teamsfx-core";
 import {

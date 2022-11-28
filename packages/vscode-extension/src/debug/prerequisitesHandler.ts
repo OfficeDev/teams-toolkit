@@ -24,7 +24,7 @@ import {
   ProjectSettingsHelper,
   TelemetryContext,
 } from "@microsoft/teamsfx-core";
-import { Prerequisite } from "@microsoft/teamsfx-core/build/common/local/constants";
+import { Prerequisite } from "@microsoft/teamsfx-core";
 
 import {
   DependencyStatus,
@@ -38,10 +38,10 @@ import {
   NodeNotSupportedError,
   NodeNotRecommendedError,
   InstallOptions,
-} from "@microsoft/teamsfx-core/build/common/deps-checker";
-import { LocalEnvProvider } from "@microsoft/teamsfx-core/build/component/debugHandler";
+  LocalEnvProvider,
+} from "@microsoft/teamsfx-core";
 import { AppStudioScopes, getSideloadingStatus, isV3Enabled } from "@microsoft/teamsfx-core";
-import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
+import { PluginNames } from "@microsoft/teamsfx-core";
 
 import * as fs from "fs-extra";
 import * as os from "os";

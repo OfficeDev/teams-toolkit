@@ -33,7 +33,7 @@ import { isWindows } from "./depsChecker/cliUtils";
 import { CliConfigAutomaticNpmInstall, CliConfigOptions, UserSettings } from "../../userSetttings";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { AppStudioScopes, getResourceGroupInPortal } from "@microsoft/teamsfx-core";
-import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
+import { LocalEnvManager } from "@microsoft/teamsfx-core";
 export async function openBrowser(
   browser: constants.Browser,
   url: string,

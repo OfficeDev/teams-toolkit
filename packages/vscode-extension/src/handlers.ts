@@ -60,8 +60,8 @@ import {
   VsCodeEnv,
   SettingsFolderName,
 } from "@microsoft/teamsfx-api";
-import { AddSsoParameters } from "@microsoft/teamsfx-core/build/component/constants";
 import {
+  FxCore,
   askSubscription,
   AppStudioScopes,
   getAppDirectory,
@@ -69,21 +69,21 @@ import {
   getHashedEnv,
   isExistingTabAppEnabled,
   isUserCancelError,
-} from "@microsoft/teamsfx-core";
-import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
-import { Correlator } from "@microsoft/teamsfx-core";
-import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
-import { environmentManager } from "@microsoft/teamsfx-core";
-import { FolderName } from "@microsoft/teamsfx-core";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { LocalEnvManager, ProjectSettingsHelper } from "@microsoft/teamsfx-core";
-import {
+  UserTaskFunctionName,
+  LocalEnvManager,
+  ProjectSettingsHelper,
+  AddSsoParameters,
+  isValidProject,
+  FolderName,
+  environmentManager,
+  Correlator,
+  CollaborationState,
+  DepsManager,
+  DepsType,
   globalStateUpdate,
   globalStateGet,
-} from "@microsoft/teamsfx-core/build/common/globalState";
-import { UserTaskFunctionName } from "@microsoft/teamsfx-core/build/component/constants";
-import { FxCore } from "@microsoft/teamsfx-core";
-import { InvalidProjectError } from "@microsoft/teamsfx-core/build/core/error";
+  InvalidProjectError,
+} from "@microsoft/teamsfx-core";
 
 import M365TokenInstance from "./commonlib/m365Login";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -162,12 +162,7 @@ import { AzureScopes } from "@microsoft/teamsfx-core";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
-import {
-  isPersonalApp,
-  isGroupApp,
-  isBot,
-  isMessageExtension,
-} from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/utils";
+import { isPersonalApp, isGroupApp, isBot, isMessageExtension } from "@microsoft/teamsfx-core";
 
 export let core: FxCore;
 export let tools: Tools;

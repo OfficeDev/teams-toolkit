@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import * as util from "util";
 
-import { defaultHelpLink } from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { defaultHelpLink } from "@microsoft/teamsfx-core";
 import { ExtensionErrors } from "../error";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 

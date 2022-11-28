@@ -53,7 +53,7 @@ import * as globalVariables from "../globalVariables";
 import accountTreeViewProviderInstance from "../treeview/account/accountTreeViewProvider";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { AccessToken, GetTokenOptions } from "@azure/identity";
-import { Constants } from "@microsoft/teamsfx-core/build/component/resource/azureSql/constants";
+import { Constants } from "@microsoft/teamsfx-core";
 
 class TeamsFxTokenCredential implements TokenCredential {
   private tokenCredentialBase: TokenCredentialsBase;

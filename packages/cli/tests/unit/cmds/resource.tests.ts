@@ -21,7 +21,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
 import { ProjectSettingsHelper } from "@microsoft/teamsfx-core";
-import { PathNotExistError } from "@microsoft/teamsfx-core/build/core/error";
+import { PathNotExistError } from "@microsoft/teamsfx-core";
 import { EnvStateFiles } from "@microsoft/teamsfx-core";
 import { ResourceAddApim, ResourceAddFunction, ResourceAddSql } from "../../../src/cmds/resource";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";

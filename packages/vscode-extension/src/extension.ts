@@ -17,8 +17,7 @@ import {
   Result,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { Correlator, isValidProject } from "@microsoft/teamsfx-core";
 import {
   AadAppTemplateCodeLensProvider,
   AdaptiveCardCodeLensProvider,
@@ -63,9 +62,8 @@ import {
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
-import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
 import { UriHandler } from "./uriHandler";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { isV3Enabled, hasAAD } from "@microsoft/teamsfx-core";
 
 export let VS_CODE_UI: VsCodeUI;
 

@@ -19,7 +19,7 @@ import { argsToInputs, getSystemInputs, isSpfxProject } from "../utils";
 import HelpParamGenerator from "../helpParamGenerator";
 import CLILogProvider from "../commonlib/log";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
-import { CollaborationConstants } from "@microsoft/teamsfx-core/build/core/collaborator";
+import { CollaborationConstants } from "@microsoft/teamsfx-core";
 import { EnvNotSpecified } from "../error";
 import CLIUIInstance from "../userInteraction";
 

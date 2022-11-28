@@ -50,10 +50,10 @@ import { WorkspaceNotSupported } from "./cmds/preview/errors";
 import CLIUIInstance from "./userInteraction";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
 import cliLogger from "./commonlib/log";
-import { WriteFileError } from "@microsoft/teamsfx-core/build/core/error";
+import { WriteFileError } from "@microsoft/teamsfx-core";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
-import { hasSPFxTab } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
+import { LocalEnvManager } from "@microsoft/teamsfx-core";
+import { hasSPFxTab } from "@microsoft/teamsfx-core";
 import { O_CREAT, O_EXCL, O_RDWR } from "constants";
 
 export type Json = { [_: string]: any };

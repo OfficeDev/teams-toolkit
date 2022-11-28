@@ -7,8 +7,8 @@ import path from "path";
 import { Argv } from "yargs";
 
 import { err, FxError, ok, Platform, ProjectSettings, Result } from "@microsoft/teamsfx-api";
-import { AzureSolutionQuestionNames as Names } from "@microsoft/teamsfx-core/build/component/constants";
-import { FeatureId } from "@microsoft/teamsfx-core/build/component/question";
+import { AzureSolutionQuestionNames as Names } from "@microsoft/teamsfx-core";
+import { FeatureId } from "@microsoft/teamsfx-core";
 
 import activate from "../activate";
 import { flattenNodes, getSystemInputs, setSubscriptionId } from "../utils";

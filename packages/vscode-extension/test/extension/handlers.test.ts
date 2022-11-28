@@ -25,9 +25,9 @@ import {
   VsCodeEnv,
   PathNotExistError,
 } from "@microsoft/teamsfx-api";
-import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
-import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
-import { CollaborationState } from "@microsoft/teamsfx-core/build/common/permissionInterface";
+import { DepsManager, DepsType } from "@microsoft/teamsfx-core";
+import * as globalState from "@microsoft/teamsfx-core";
+import { CollaborationState } from "@microsoft/teamsfx-core";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
 

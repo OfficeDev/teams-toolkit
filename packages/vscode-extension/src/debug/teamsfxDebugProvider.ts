@@ -4,7 +4,7 @@
 import * as vscode from "vscode";
 
 import { Correlator } from "@microsoft/teamsfx-core";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { isValidProject } from "@microsoft/teamsfx-core";
 import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core";
 import { environmentManager } from "@microsoft/teamsfx-core";
 

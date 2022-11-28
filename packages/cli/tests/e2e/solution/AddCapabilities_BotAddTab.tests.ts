@@ -7,7 +7,7 @@
 
 import path from "path";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 import {
   getSubscriptionId,
   getTestFolder,

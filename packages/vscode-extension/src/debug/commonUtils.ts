@@ -15,10 +15,14 @@ import {
   FolderName,
   getProjectComponents as coreGetProjectComponents,
 } from "@microsoft/teamsfx-core";
-import { environmentManager } from "@microsoft/teamsfx-core";
-import { getResourceGroupInPortal, isV3Enabled } from "@microsoft/teamsfx-core";
-import { PluginNames, GLOBAL_CONFIG } from "@microsoft/teamsfx-core/build/component/constants";
-import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
+import {
+  environmentManager,
+  getResourceGroupInPortal,
+  isV3Enabled,
+  PluginNames,
+  GLOBAL_CONFIG,
+  envUtil,
+} from "@microsoft/teamsfx-core";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { localize } from "../utils/localizeUtils";

@@ -3,10 +3,7 @@
 
 import { Result, FxError, ok, err, LogLevel } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import {
-  InvalidEnvNameError,
-  ProjectEnvAlreadyExistError,
-} from "@microsoft/teamsfx-core/build/core/error";
+import { InvalidEnvNameError, ProjectEnvAlreadyExistError } from "@microsoft/teamsfx-core";
 import os from "os";
 import { Argv } from "yargs";
 import activate from "../activate";

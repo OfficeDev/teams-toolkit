@@ -14,7 +14,7 @@ import {
   UserErrorOptions,
   Void,
 } from "@microsoft/teamsfx-api";
-import { DebugAction } from "@microsoft/teamsfx-core/build/component/debugHandler";
+import { DebugAction } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionSource } from "../../error";

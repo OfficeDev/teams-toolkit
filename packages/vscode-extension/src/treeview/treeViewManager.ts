@@ -14,7 +14,7 @@ import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import envTreeProviderInstance from "./environmentTreeViewProvider";
 import { CommandStatus, TreeViewCommand } from "./treeViewCommand";
-import { isTDPIntegrationEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
 
 class TreeViewManager {
   private static instance: TreeViewManager;

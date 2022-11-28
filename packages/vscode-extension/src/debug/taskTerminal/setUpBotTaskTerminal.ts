@@ -7,11 +7,7 @@ import * as vscode from "vscode";
 
 import { assembleError, err, FxError, Result, Void } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";
-import {
-  BotDebugArgs,
-  BotDebugHandler,
-  DebugArgumentEmptyError,
-} from "@microsoft/teamsfx-core/build/component/debugHandler";
+import { BotDebugArgs, BotDebugHandler, DebugArgumentEmptyError } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";

@@ -1,4 +1,4 @@
-import { isTDPIntegrationEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import * as queryString from "query-string";
 import { localize } from "./utils/localizeUtils";

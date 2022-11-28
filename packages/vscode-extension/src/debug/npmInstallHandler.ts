@@ -1,10 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  globalStateGet,
-  globalStateUpdate,
-} from "@microsoft/teamsfx-core/build/common/globalState";
+import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import { LocalEnvManager, ProjectSettingsHelper, TaskDefinition } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import { ConfigurationKey } from "../constants";

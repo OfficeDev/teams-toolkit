@@ -6,7 +6,7 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 
 import { AzureSolutionSettings, ok, ProjectSettings } from "@microsoft/teamsfx-api";
-import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import * as globalState from "@microsoft/teamsfx-core";
 import { LocalEnvManager } from "@microsoft/teamsfx-core";
 
 import * as commonUtils from "../../src/utils/commonUtils";

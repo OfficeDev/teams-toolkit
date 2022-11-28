@@ -12,13 +12,9 @@ import * as vscode from "vscode";
 
 import { Inputs } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";
-import {
-  globalStateGet,
-  globalStateUpdate,
-} from "@microsoft/teamsfx-core/build/common/globalState";
-import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
+import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+import { sampleProvider } from "@microsoft/teamsfx-core";
 import { AppStudioScopes } from "@microsoft/teamsfx-core";
-
 import AzureAccountManager from "../commonlib/azureLogin";
 import M365TokenInstance from "../commonlib/m365Login";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";

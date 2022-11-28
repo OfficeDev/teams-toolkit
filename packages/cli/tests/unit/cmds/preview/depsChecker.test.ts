@@ -3,11 +3,7 @@
 
 import * as chai from "chai";
 import * as sinon from "sinon";
-import {
-  DepsLogger,
-  DepsTelemetry,
-  DepsType,
-} from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { DepsLogger, DepsTelemetry, DepsType } from "@microsoft/teamsfx-core";
 
 import * as cliUtils from "../../../../src/cmds/preview/depsChecker/cliUtils";
 import { CliDepsChecker } from "../../../../src/cmds/preview/depsChecker/cliChecker";

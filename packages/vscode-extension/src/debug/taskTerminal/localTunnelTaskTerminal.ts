@@ -10,7 +10,7 @@ import * as vscode from "vscode";
 import { assembleError, err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
 import { envUtil, isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core";
-import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { DepsManager, DepsType } from "@microsoft/teamsfx-core";
 import { LocalEnvManager, LocalTelemetryReporter, TaskDefaultValue } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../commonlib/log";

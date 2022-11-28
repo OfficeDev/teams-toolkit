@@ -15,12 +15,9 @@ import {
 import * as constants from "./constants";
 import { NpmInstallFailed } from "./errors";
 import { getAutomaticNpmInstallSetting } from "./commonUtils";
-import { ProjectSettingsHelper } from "@microsoft/teamsfx-core/build/common/local/projectSettingsHelper";
-import { LocalEnvManager } from "@microsoft/teamsfx-core/build/common/local/localEnvManager";
-import {
-  ITaskDefinition,
-  TaskDefinition,
-} from "@microsoft/teamsfx-core/build/common/local/taskDefinition";
+import { ProjectSettingsHelper } from "@microsoft/teamsfx-core";
+import { LocalEnvManager } from "@microsoft/teamsfx-core";
+import { ITaskDefinition, TaskDefinition } from "@microsoft/teamsfx-core";
 
 export async function automaticNpmInstallHandler(
   workspaceFolder: string,

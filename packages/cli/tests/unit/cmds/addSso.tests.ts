@@ -13,7 +13,7 @@ import { expect } from "../utils";
 import Add from "../../../src/cmds/add";
 import mockedEnv from "mocked-env";
 import { FxCore } from "@microsoft/teamsfx-core";
-import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 import { TelemetryEvent } from "../../../src/telemetry/cliTelemetryEvents";
 
 describe("Add SSO Command Tests", function () {

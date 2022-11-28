@@ -6,11 +6,7 @@ import { performance } from "perf_hooks";
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { TelemetryProperty } from "../../../telemetry/cliTelemetryEvents";
 import cliTelemetryInstance from "../../../telemetry/cliTelemetry";
-import {
-  DepsTelemetry,
-  DepsCheckerEvent,
-  TelemetryMessurement,
-} from "@microsoft/teamsfx-core/build/common/deps-checker";
+import { DepsTelemetry, DepsCheckerEvent, TelemetryMessurement } from "@microsoft/teamsfx-core";
 
 export class CLITelemetry implements DepsTelemetry {
   private readonly _telemetryComponentType = "cli:debug:envchecker";

@@ -17,7 +17,6 @@ import {
   AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
-import { getPermissionMap } from "@microsoft/teamsfx-core/build/component/resource/aadApp/permissions";
 import {
   getAllowedAppMaps,
   getPropertyByPath,
@@ -25,6 +24,7 @@ import {
   convertManifestTemplateToV3,
   isV3Enabled,
   envUtil,
+  getPermissionMap,
 } from "@microsoft/teamsfx-core";
 import { localize } from "./utils/localizeUtils";
 import { core, getSystemInputs } from "./handlers";

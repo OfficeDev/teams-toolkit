@@ -19,12 +19,9 @@ import {
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import { initializePreviewFeatureFlags } from "@microsoft/teamsfx-core/build/common/featureFlags";
-import {
-  isExistingTabApp as isExistingTabAppCore,
-  isValidProject,
-} from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
+import { initializePreviewFeatureFlags } from "@microsoft/teamsfx-core";
+import { isExistingTabApp as isExistingTabAppCore, isValidProject } from "@microsoft/teamsfx-core";
+import { PluginNames } from "@microsoft/teamsfx-core";
 import * as extensionPackage from "../../package.json";
 import { CONFIGURATION_PREFIX, ConfigurationKey, UserState } from "../constants";
 import * as commonUtils from "../debug/commonUtils";

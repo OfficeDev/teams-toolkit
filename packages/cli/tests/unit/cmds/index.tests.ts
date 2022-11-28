@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { isPreviewFeaturesEnabled } from "@microsoft/teamsfx-core";
 import sinon from "sinon";
 import yargs from "yargs";
 

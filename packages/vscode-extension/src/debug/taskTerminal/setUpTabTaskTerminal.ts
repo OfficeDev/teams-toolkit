@@ -7,10 +7,7 @@ import * as vscode from "vscode";
 
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";
-import {
-  TabDebugArgs,
-  TabDebugHandler,
-} from "@microsoft/teamsfx-core/build/component/debugHandler";
+import { TabDebugArgs, TabDebugHandler } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";

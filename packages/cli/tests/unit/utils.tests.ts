@@ -45,7 +45,7 @@ import {
 import { expect } from "./utils";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
 import { environmentManager, FxCore, isV3Enabled } from "@microsoft/teamsfx-core";
-import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
+import { PluginNames } from "@microsoft/teamsfx-core";
 import mockedEnv from "mocked-env";
 import * as ProjectSettingsHelperV3 from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];

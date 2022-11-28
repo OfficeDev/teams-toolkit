@@ -18,9 +18,9 @@ import {
   TelemetryProperty,
 } from "../telemetry/extTelemetryEvents";
 import { getHashedEnv, isV3Enabled } from "@microsoft/teamsfx-core";
-import { TaskCommand } from "@microsoft/teamsfx-core/build/common/local/constants";
+import { TaskCommand } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { isValidProject } from "@microsoft/teamsfx-core";
 import * as path from "path";
 import {
   errorDetail,

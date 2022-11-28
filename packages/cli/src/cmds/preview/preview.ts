@@ -35,7 +35,7 @@ import {
   DepsCheckerError,
   validationSettingsHelpLink,
   NodeNotRecommendedError,
-} from "@microsoft/teamsfx-core/build/common/deps-checker";
+} from "@microsoft/teamsfx-core";
 import {
   ITaskDefinition,
   loadTeamsFxDevScript,
@@ -48,7 +48,7 @@ import {
 } from "@microsoft/teamsfx-core";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { AppStudioScopes, getSideloadingStatus, isM365AppEnabled } from "@microsoft/teamsfx-core";
-import { isExistingTabApp as isExistingTabAppCore } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { isExistingTabApp as isExistingTabAppCore } from "@microsoft/teamsfx-core";
 import { YargsCommand } from "../../yargsCommand";
 import * as utils from "../../utils";
 import * as commonUtils from "./commonUtils";
@@ -80,13 +80,9 @@ import { NotM365Project } from "./errors";
 import * as util from "util";
 import { openHubWebClient } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
-import { FolderName } from "@microsoft/teamsfx-core/build/common/local/constants";
+import { FolderName } from "@microsoft/teamsfx-core";
 import { FxCore } from "@microsoft/teamsfx-core";
-import {
-  hasAzureTab,
-  hasBot,
-  hasSPFxTab,
-} from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
+import { hasAzureTab, hasBot, hasSPFxTab } from "@microsoft/teamsfx-core";
 
 enum Checker {
   M365Account = "Microsoft 365 Account",

@@ -2,9 +2,10 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { FolderName, ProgrammingLanguage, npmInstallCommand } from "./constants";
+import { FolderName, npmInstallCommand } from "./constants";
 import path from "path";
 import { isWindows } from "../deps-checker/util/system";
+import { ProgrammingLanguage } from "../../component/constants";
 
 export interface ITaskDefinition {
   name: string;
@@ -41,7 +42,7 @@ export class TaskDefinition {
     // NOTE: properly handle quoting and escaping to work on windows (both powershell and cmd), linux and osx
     const languageWorkerArg = enableLanguageWorker ? `--language-worker="--inspect=9229"` : "";
     const args =
-      programmingLanguage === ProgrammingLanguage.typescript
+      programmingLanguage === ProgrammingLanguage.TS
         ? `start --typescript ${languageWorkerArg} --port "7071" --cors "*"`
         : `start --javascript ${languageWorkerArg} --port "7071" --cors "*"`;
     return {
@@ -89,7 +90,7 @@ export class TaskDefinition {
     // TODO: tell nodemon which files to watch (depends on bot's decision)
     const inspectArg = enableInspect ? "--inspect=9239" : "";
     const command =
-      programmingLanguage === ProgrammingLanguage.typescript
+      programmingLanguage === ProgrammingLanguage.TS
         ? `npx nodemon --exec node ${inspectArg} --signal SIGINT -r ts-node/register index.ts`
         : `npx nodemon ${inspectArg} --signal SIGINT index.js`;
     return {

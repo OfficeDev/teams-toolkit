@@ -63,28 +63,7 @@ describe("TreeViewManager", () => {
     ) as CommandsTreeViewProvider;
 
     const commands = developmentTreeviewProvider.getCommands();
-    chai.assert.equal(commands.length, 5);
-
-    await treeViewManager.updateTreeViewsByContent();
-
     chai.assert.equal(commands.length, 6);
-  });
-
-  it("updateTreeViewsByContent - inProductDoc enabled", async () => {
-    sandbox
-      .stub(AdaptiveCardCodeLensProvider, "detectedAdaptiveCards")
-      .returns(Promise.resolve(true));
-    sandbox.stub(TreatmentVariableValue, "inProductDoc").value(true);
-
-    treeViewManager.registerTreeViews({
-      subscriptions: [],
-    } as unknown as vscode.ExtensionContext);
-    const developmentTreeviewProvider = treeViewManager.getTreeView(
-      "teamsfx-development"
-    ) as CommandsTreeViewProvider;
-
-    const commands = developmentTreeviewProvider.getCommands();
-    chai.assert.equal(commands.length, 5);
 
     await treeViewManager.updateTreeViewsByContent();
 

@@ -166,6 +166,7 @@
   "core.deployArmTemplates.FailedToGetDeploymentError": "Failed to get deployment error for %s",
   "core.deployArmTemplates.FailedToGetDeploymentErrorNotification": "resource deployments (%s module) for your project failed and get the error message failed. Please refer to the resource group %s in portal for deployment error.",
   "core.deployArmTemplates.DeploymentFailedNotification": "resource deployments (%s) for your project failed. Please refer to output channel for more error details.",
+  "core.deployArmTemplates.ActionSuccess": "Successfully deploy ARM templates. Resource group name: %s. Deployment name: %s",
   "core.handleConfigFile.FailedToUpdateAzureParameters": "Failed to update Azure parameters for %s environment.",
   "core.appSettingsUtil.FailedToResetAppSettingsDevelopment": "Failed to reset values in appsettings.Development.json.",
   "core.backupFiles.FailedToBackupFiles": "Failed to backup %s.",

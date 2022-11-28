@@ -76,8 +76,8 @@
       <Item ItemId=";configManager.error.invalidLifecycle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[The schema of lifecycle %s is invalid. It is expected to be an array of actions. If you want to remove all actions inside it, please remove the whole lifecyle.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Das Schema des Lebenszyklus "%s" ist ungültig.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Das Schema des Lebenszyklus „%s“ ist ungültig. Es wird erwartet, dass es sich um ein Array von Aktionen handelt. Wenn Sie alle darin enthaltenen Aktionen entfernen möchten, entfernen Sie den gesamten Lebenszyklus.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[The schema of lifecycle %s is invalid]]></Val>
@@ -412,72 +412,111 @@
       <Item ItemId=";core.InitCapabilityBot" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your app contains Bot capabilities]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ihre App enthält Botfunktionen]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.InitCapabilityTab" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your app contains Tab capabilities]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ihre App enthält Registerkartenfunktionen]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.InitCapabilityTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit: Select the capability of your app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams-Toolkit: Wählen Sie die Funktion Ihrer App aus]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.InitEditorTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit: Select your development environment]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams-Toolkit: Wählen Sie Ihre Entwicklungsumgebung aus]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.InitEditorVs" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Visual Studio (.NET)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Visual Studio (.NET)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.InitEditorVsDesc" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You are developing with Visual Studio and using .NET]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sie entwickeln mit Visual Studio Code und verwenden .NET.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.InitEditorVsc" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Visual Studio Code (JS/TS)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Visual Studio Code (JS/TS)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.InitEditorVscDesc" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You are developing with Visual Studio Code and using JS/TS]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Sie entwickeln mit Visual Studio Code und verwenden JS/TS.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.InitGenerateConfirm" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams Toolkit: Teams Toolkit will generate the following files, would you like to proceed? ]A;%s]]></Val>
+          <Val><![CDATA[Teams Toolkit: Teams Toolkit will generate the following files (existing files with duplicated names will be overwritten), would you like to proceed? ]A;%s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams-Toolkit: Das Teams-Toolkit generiert die folgenden Dateien (vorhandene Dateien mit doppelten Namen werden überschrieben). Möchten Sie fortfahren? ]A;%s]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams Toolkit: Teams Toolkit will generate the following files, would you like to proceed? ]A;%s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.InitIsSPFxTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit: Are you developing with SPFx?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams-Toolkit: Entwickeln Sie mit SPFx?]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.InitOptionNo" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nein]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.InitOptionYes" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Yes]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ja]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2380,6 +2419,9 @@
       <Item ItemId=";core.developerPortal.scaffold.CannotFindManifest" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Could not find manifest from the downloaded pacakge for teams app %s.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Das Manifest aus dem heruntergeladenen Paket für die Teams-App „%s“ wurde nicht gefunden.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2395,6 +2437,9 @@
       <Item ItemId=";core.error.NoYmlFileError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to find yml files.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fehler beim Suchen von YML-Dateien.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2436,10 +2481,13 @@
       </Item>
       <Item ItemId=";core.error.unresolvedPlaceholders" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[There are unresolved placeholders in '.yml' file: %s]]></Val>
+          <Val><![CDATA[There are unresolved placeholders: '%s' in the selected yml file]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[In der Datei ".yml" sind nicht aufgelöste Platzhalter vorhanden: %s]]></Val>
+            <Val><![CDATA[Es sind nicht aufgelöste Platzhalter „%s“ in der ausgewählten YML-Datei vorhanden]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[There are unresolved placeholders in '.yml' file: %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2725,12 +2773,18 @@
       <Item ItemId=";core.option.github" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open a GitHub guide]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[GitHub-Anleitung öffnen]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.option.inProduct" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Open a in-product guide]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Produktinterne Anleitung öffnen]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2853,10 +2907,13 @@
       </Item>
       <Item ItemId=";core.progress.buildingTab.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Building Tab frontend project]]></Val>
+          <Val><![CDATA[Building tab app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Front-End-Projekt der Registerkarte "Erstellen"]]></Val>
+            <Val><![CDATA[Erstellen einer Registerkarten-App]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Building Tab frontend project]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2880,10 +2937,13 @@
       </Item>
       <Item ItemId=";core.progress.clearStorageExistsBlobs" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Cleaning up Azure Storage exists blob files.]]></Val>
+          <Val><![CDATA[Delete all files in Azure Storage $web container.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[In Azure Storage vorhandenen Blobdateien werden bereinigt.]]></Val>
+            <Val><![CDATA[Löschen Sie alle Dateien im Azure Storage-$Webcontainer.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Cleaning up Azure Storage exists blob files.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3007,6 +3067,9 @@
       <Item ItemId=";core.progress.restartAzureService" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Restarting Azure Service.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Service wird neu gestartet.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3057,10 +3120,13 @@
       </Item>
       <Item ItemId=";core.progress.scaffoldTab.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Scaffolding Tab frontend project.]]></Val>
+          <Val><![CDATA[Scaffolding tab app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Front-End-Projekt der Registerkarte "Gerüstbau".]]></Val>
+            <Val><![CDATA[Gerüstbau einer Registerkarten-App.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Scaffolding Tab frontend project.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3075,10 +3141,13 @@
       </Item>
       <Item ItemId=";core.progress.uploadTabToStorage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Uploading Tab frontend to Azure Storage account.]]></Val>
+          <Val><![CDATA[Uploading Tab front end to Azure Storage account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Front-End der Registerkarte wird in Azure Storage-Konto hochgeladen.]]></Val>
+            <Val><![CDATA[Das Frontend der Registerkarte wird in das Azure Storage-Konto hochgeladen.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Uploading Tab frontend to Azure Storage account.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3412,12 +3481,18 @@
       <Item ItemId=";core.question.manifestForPublishInDeveloperPortal.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select your mainifest file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Manifestdatei auswählen]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.question.manifestForPublishInDeveloperPortal.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Manifest file]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Manifestdatei]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3460,6 +3535,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.updateBotIdsQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unselect to keep with the original one.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Heben Sie die Auswahl auf, um das Original beizubehalten.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.updateBotIdsQuestion.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[We will create a new bot for you to get started with Teams Toolkit]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Wir erstellen einen neuen Bot für Sie, um mit dem Teams-Toolkit zu beginnen]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.updateContentUrlOption.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[update the content url from %s to %s]]></Val>
@@ -3471,19 +3564,25 @@
       </Item>
       <Item ItemId=";core.updateContentUrlQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select all personal apps to update content urls to %s]]></Val>
+          <Val><![CDATA[We will update the following tabs' content url for you to get start with Teams Toolkit]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Wählen Sie alle persönlichen Apps aus, um Inhalts-URLs auf %s zu aktualisieren.]]></Val>
+            <Val><![CDATA[Wir aktualisieren die Inhalts-URL der folgenden Registerkarten, damit Sie mit dem Teams-Toolkit beginnen können]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Select all personal apps to update content urls to %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.updateUrlQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select any number of options you like]]></Val>
+          <Val><![CDATA[Unselect to keep with the original url]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Wählen Sie eine beliebige Anzahl von Optionen aus, die Ihnen gefallen.]]></Val>
+            <Val><![CDATA[Auswahl aufheben, um die ursprüngliche URL beizubehalten]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Select any number of options you like]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3498,10 +3597,13 @@
       </Item>
       <Item ItemId=";core.updateWebsiteUrlQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select all personal apps to update website urls to %s]]></Val>
+          <Val><![CDATA[We will update the following tabs' website url for you to get started with Teams Toolkit]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Wählen Sie alle persönlichen Apps aus, um Website-URLs auf %s zu aktualisieren.]]></Val>
+            <Val><![CDATA[Wir aktualisieren die Website-URL der folgenden Registerkarten, damit Sie mit dem Teams-Toolkit beginnen können]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Select all personal apps to update website urls to %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3616,6 +3718,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";depChecker.failToDownloadFromUrl" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to download file from '@Url', HTTP status '@Status'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fehler beim Herunterladen der Datei aus „@Url“, HTTP-Status „@Status“.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";depChecker.failToInstallBicep" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to install @NameVersion]]></Val>
@@ -3693,6 +3804,24 @@
           <Val><![CDATA[Failed to validate @NameVersion after installation.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Fehler beim Überprüfen @NameVersion nach der Installation.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";depChecker.failToValidateVxTestApp" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to validate video extensibility test app after installation.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fehler beim Validieren der Test-App für die Videoerweiterung nach der Installation.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";depChecker.failToValidateVxTestAppInstallOptions" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid argument for video extensibility test app prerequisites checker. Please check tasks.json file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ungültiges Argument für die Überprüfung der Voraussetzungen der Test-App für die Videoerweiterbarkeit. Überprüfen Sie die Datei „tasks.json“.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3838,6 +3967,9 @@
       <Item ItemId=";driver.aadApp.error.generateManifestFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to generate AAD app manifest.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fehler beim Generieren des AAD-App-Manifests.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3970,30 +4102,45 @@
       <Item ItemId=";driver.aadApp.progressBar.createAadAppStepMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating AAD application]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[AAD-Anwendung wird erstellt]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.progressBar.createAadAppTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating AAD application]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[AAD-Anwendung wird erstellt]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.progressBar.generateClientSecretSetpMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Generating client secret]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Geheimer Clientschlüssel wird generiert]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.progressBar.updateAadAppStepMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating AAD application]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[AAD-Anwendung wird aktualisiert]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.aadApp.progressBar.updateAadAppTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating AAD application]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[AAD-Anwendung wird aktualisiert]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4087,9 +4234,21 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.deploy.error.unknownError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unknown error happened: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Unbekannter Fehler: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.deploy.notice.deployAcceleration" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Deploying to Azure App Service takes a long time. Consider referring to this document to optimize your deployment:]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die Bereitstellung in Azure App Service dauert sehr lange. Ziehen Sie dieses Dokument in Erwägung, um Ihre Bereitstellung zu optimieren:]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4150,54 +4309,81 @@
       <Item ItemId=";driver.teamsApp.progressBar.createTeamsAppStepMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Creating Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams-App wird erstellt]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.teamsApp.progressBar.createTeamsAppTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams-App erstellen]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.teamsApp.progressBar.publishTeamsAppStep1" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Checking if the Teams app has already been submitted to tenant App Catalog]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Es wird überprüft, ob die Teams-App bereits an den Mandanten-App-Katalog übermittelt wurde]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.teamsApp.progressBar.publishTeamsAppStep2.1" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Update published Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Veröffentlichte Teams-App aktualisieren]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.teamsApp.progressBar.publishTeamsAppStep2.2" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Publishing Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams-App wird veröffentlicht]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.teamsApp.progressBar.publishTeamsAppTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Publish Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams-App veröffentlichen]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.teamsApp.progressBar.updateTeamsAppStepMessage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Updating Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams-App wird aktualisiert]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.teamsApp.progressBar.updateTeamsAppTitle" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Update Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams-App aktualisieren]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.tools.error.funcInstallationError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to check and install Azure Functions Core Tools.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Fehler beim Überprüfen und Installieren von Azure Functions Core Tools.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4738,6 +4924,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.VideoFilterAppNotRemoteSupported" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Video filter app in remote is not supported by Teams Toolkit. Please check the README.md file in project root folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die Videofilter-App in remote wird vom Teams-Toolkit nicht unterstützt. Überprüfen Sie die „README.md“-Datei im Stammordner „Projekt“.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.aad.AadManifestLoadError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to load manifest file from %s, due to %s]]></Val>
@@ -4842,10 +5037,13 @@
       </Item>
       <Item ItemId=";error.aad.CannotGenerateIdentifierUris" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Cannot generate identifierUris because no botId or frontend domain found, you need to specified at least one of them in config file]]></Val>
+          <Val><![CDATA[Cannot generate identifierUris because no botId or front end domain found, you need to specified at least one of them in config file]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[IdentifierUris kann nicht generiert werden, da keine botId oder Frontend-Domain gefunden wurde, Sie müssen mindestens eine davon in der Konfigurationsdatei angeben]]></Val>
+            <Val><![CDATA[„IdentifierUris“ kann nicht generiert werden, da keine „botId“ oder Frontend-Domäne gefunden wurde, Sie müssen mindestens eine davon in der Konfigurationsdatei angeben]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Cannot generate identifierUris because no botId or frontend domain found, you need to specified at least one of them in config file]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

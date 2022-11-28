@@ -63,6 +63,7 @@ import {
   InitOptionYes,
   getQuestionsForPublishInDeveloperPortal,
   InitEditorVSCode,
+  InitEditorVS,
 } from "../question";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -90,12 +91,13 @@ import { envUtil } from "../utils/envUtil";
 import { SPFxGenerator } from "../generator/spfxGenerator";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
-import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
+import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHelper";
 import { getResourceGroupInPortal } from "../../common/tools";
 import { getBotTroubleShootMessage } from "../core";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { updateManifestV3ForPublish } from "../resource/appManifest/appStudio";
 import { AppStudioScopes } from "../resource/appManifest/constants";
+import * as xml2js from "xml2js";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -307,11 +309,50 @@ export class Coordinator {
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
+    if (editor === InitEditorVS.id) {
+      const ensure = await this.ensureTeamsFxInCsproj(projectPath);
+      if (ensure.isErr()) return err(ensure.error);
+    }
     context.userInteraction.showMessage(
       "info",
       "\nVisit https://aka.ms/teamsfx-infra to learn more about Teams Toolkit infrastructure customization.",
       false
     );
+    return ok(undefined);
+  }
+
+  async ensureTeamsFxInCsproj(projectPath: string): Promise<Result<undefined, FxError>> {
+    const list = await fs.readdir(projectPath);
+    const csprojFiles = list.filter((fileName) => fileName.endsWith(".csproj"));
+    if (csprojFiles.length === 0) return ok(undefined);
+    const filePath = csprojFiles[0];
+    const xmlStringOld = (await fs.readFile(filePath, { encoding: "utf8" })).toString();
+    const jsonObj = await xml2js.parseStringPromise(xmlStringOld);
+    let ItemGroup = jsonObj.Project.ItemGroup;
+    if (!ItemGroup) {
+      ItemGroup = [];
+      jsonObj.Project.ItemGroup = ItemGroup;
+    }
+    const existItems = ItemGroup.filter((item: any) => {
+      if (item.ProjectCapability && item.ProjectCapability[0])
+        if (item.ProjectCapability[0]["$"]?.Include === "TeamsFx") return true;
+      return false;
+    });
+    if (existItems.length === 0) {
+      const toAdd = {
+        ProjectCapability: [
+          {
+            $: {
+              Include: "TeamsFx",
+            },
+          },
+        ],
+      };
+      ItemGroup.push(toAdd);
+      const builder = new xml2js.Builder();
+      const xmlStringNew = builder.buildObject(jsonObj);
+      await fs.writeFile(filePath, xmlStringNew, { encoding: "utf8" });
+    }
     return ok(undefined);
   }
 
@@ -351,6 +392,10 @@ export class Coordinator {
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
+    if (editor === InitEditorVS.id) {
+      const ensure = await this.ensureTeamsFxInCsproj(projectPath);
+      if (ensure.isErr()) return err(ensure.error);
+    }
     context.userInteraction.showMessage(
       "info",
       "\nVisit https://aka.ms/teamsfx-debug to learn more about Teams Toolkit debug customization.",
@@ -567,6 +612,13 @@ export class Coordinator {
       }
     }
 
+    // We will update targetResourceGroupInfo if creating resource group is needed and create the resource group later after confirming with the user
+    let targetResourceGroupInfo: ResourceGroupInfo = {
+      createNewResourceGroup: false,
+      name: "",
+      location: "",
+    };
+
     // 3. ensure RESOURCE_SUFFIX if containsAzure
     if (containsAzure) {
       if (!process.env.RESOURCE_SUFFIX) {
@@ -599,24 +651,13 @@ export class Coordinator {
       }
       // ensure resource group
       if (unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")) {
-        const cliInputRG = inputs["targetResourceGroupName"];
-        const cliInputLocation = inputs["targetResourceLocationName"];
-        if (cliInputRG && cliInputLocation) {
-          // targetResourceGroupName is from CLI inputs, which means create resource group if not exists
-          const createRgRes = await resourceGroupHelper.createNewResourceGroup(
-            cliInputRG,
-            ctx.azureAccountProvider,
-            process.env.AZURE_SUBSCRIPTION_ID!,
-            cliInputLocation
-          );
-          if (createRgRes.isErr()) {
-            const error = createRgRes.error;
-            if (error.name !== "ResourceGroupExists") {
-              return [undefined, error];
-            }
-          }
-          process.env.AZURE_RESOURCE_GROUP_NAME = cliInputRG;
-          output.AZURE_RESOURCE_GROUP_NAME = cliInputRG;
+        const inputRG = inputs["targetResourceGroupName"];
+        const inputLocation = inputs["targetResourceLocationName"];
+        if (inputRG && inputLocation) {
+          // targetResourceGroupName is from CLI or VS inputs, which means create resource group if not exists
+          targetResourceGroupInfo.name = inputRG;
+          targetResourceGroupInfo.location = inputLocation;
+          targetResourceGroupInfo.createNewResourceGroup = true; // create resource group if not exists
         } else {
           const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${inputs.env}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
@@ -626,10 +667,10 @@ export class Coordinator {
             defaultRg
           );
           if (ensureRes.isErr()) return [undefined, ensureRes.error];
-          const rgInfo = ensureRes.value;
-          if (rgInfo) {
-            process.env.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
-            output.AZURE_RESOURCE_GROUP_NAME = rgInfo.name;
+          targetResourceGroupInfo = ensureRes.value;
+          if (!targetResourceGroupInfo.createNewResourceGroup) {
+            process.env.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
+            output.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
           }
         }
       }
@@ -665,7 +706,25 @@ export class Coordinator {
       );
       if (consentRes.isErr()) return [undefined, consentRes.error];
     }
-    // 6. execute
+
+    // 6. create resource group
+    if (targetResourceGroupInfo.createNewResourceGroup) {
+      const createRgRes = await resourceGroupHelper.createNewResourceGroup(
+        targetResourceGroupInfo.name,
+        ctx.azureAccountProvider,
+        process.env.AZURE_SUBSCRIPTION_ID!,
+        targetResourceGroupInfo.location
+      );
+      if (createRgRes.isErr()) {
+        const error = createRgRes.error;
+        if (error.name !== "ResourceGroupExists") {
+          return [undefined, error];
+        }
+      }
+      process.env.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
+      output.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
+    }
+    // 7. execute
     for (const cycle of cycles) {
       const execRes = await cycle!.execute(ctx);
       const result = this.convertExecuteResult(execRes);
@@ -675,7 +734,7 @@ export class Coordinator {
       }
     }
 
-    // 7. show provisioned resources
+    // 8. show provisioned resources
     if (azureSubInfo) {
       const url = getResourceGroupInPortal(
         azureSubInfo.subscriptionId,

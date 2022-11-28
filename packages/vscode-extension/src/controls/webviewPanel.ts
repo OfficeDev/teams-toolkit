@@ -232,7 +232,7 @@ export class WebviewPanel {
       case PanelType.Survey:
         return localize("teamstoolkit.webview.surveyPageTitle");
       case PanelType.RespondToCardActions:
-        return localize("teamstoolkit.tutorials.cardActionResponse.label.new");
+        return localize("teamstoolkit.tutorials.cardActionResponse.label");
     }
   }
 

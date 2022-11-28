@@ -147,7 +147,10 @@ import "../component/driver/env/appsettingsGenerate";
 import "../component/driver/botFramework/createOrUpdateBot";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
-import { containsUnsupportedFeature } from "../component/resource/appManifest/utils/utils";
+import {
+  containsUnsupportedFeature,
+  getFeaturesFromAppDefinition,
+} from "../component/resource/appManifest/utils/utils";
 import { VideoFilterAppBlockerMW } from "./middleware/videoFilterAppBlocker";
 
 export class FxCore implements v3.ICore {
@@ -214,9 +217,18 @@ export class FxCore implements v3.ICore {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    if (!!inputs.teamsAppFromTdp && containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
+    if (!!inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.
-      return err(InvalidInputError("Teams app contains unsupported features"));
+      if (containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
+        return err(InvalidInputError("Teams app contains unsupported features"));
+      } else {
+        context.telemetryReporter.sendTelemetryEvent(CoreTelemetryEvent.CreateFromTdpStart, {
+          [CoreTelemetryProperty.TdpTeamsAppFeatures]: getFeaturesFromAppDefinition(
+            inputs.teamsAppFromTdp
+          ).join(","),
+          [CoreTelemetryProperty.TdpTeamsAppId]: inputs.teamsAppFromTdp.teamsAppId,
+        });
+      }
     }
     const res = await coordinator.create(context, inputs as InputsWithProjectPath);
     if (res.isErr()) return err(res.error);

@@ -21,7 +21,7 @@ import { ExtensionErrors } from "../error";
 import { CodeFlowLogin, ConvertTokenToJson, UserCancelError } from "./codeFlowLogin";
 import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";
-import { CryptoCachePlugin } from "./cacheAccess";
+import { CryptoCachePlugin, saveAccountId } from "./cacheAccess";
 import {
   loggedIn,
   loggingIn,
@@ -42,8 +42,6 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
-import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
-import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
 
 const SERVER_PORT = 0;
 const cachePlugin = new CryptoCachePlugin(m365CacheName);
@@ -96,48 +94,17 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
    */
   async getAccessToken(
     tokenRequest: TokenRequest,
-    isInitiatedFromTdp?: boolean
+    loginHint?: string
   ): Promise<Result<string, FxError>> {
     await M365Login.codeFlowInstance.reloadCache();
     let tokenRes: Result<string, FxError>;
     if (!M365Login.codeFlowInstance.account) {
-      if (tokenRequest.showDialog === undefined || tokenRequest.showDialog) {
-        let userConfirmation = false;
-        if (!isInitiatedFromTdp) {
-          userConfirmation = await this.doesUserConfirmLogin();
-        } else {
-          userConfirmation = await this.doesUserConfirmLoginWhenIntiatedFromTdp();
-        }
-        if (!userConfirmation) {
-          const cancelError = !isInitiatedFromTdp
-            ? UserCancelError(getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"))
-            : TdpIntegrationLoginUserCancelError(
-                getDefaultString("teamstoolkit.codeFlowLogin.loginComponent")
-              );
-          ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Login, cancelError, {
-            [TelemetryProperty.AccountType]: AccountType.M365,
-            [TelemetryProperty.Success]: TelemetrySuccess.No,
-            [TelemetryProperty.UserId]: "",
-            [TelemetryProperty.Internal]: "",
-            [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
-            [TelemetryProperty.ErrorCode]: `${getDefaultString(
-              "teamstoolkit.codeFlowLogin.loginComponent"
-            )}.${ExtensionErrors.UserCancel}`,
-            [TelemetryProperty.ErrorMessage]: `${getDefaultString(
-              "teamstoolkit.common.userCancel"
-            )}`,
-          });
-          return err(cancelError);
-        }
-        M365Login.codeFlowInstance.status = loggingIn;
-        this.notifyStatus(tokenRequest);
-      }
-      tokenRes = await M365Login.codeFlowInstance.getTokenByScopes(tokenRequest.scopes);
-      await this.notifyStatus(tokenRequest);
+      tokenRes = await this.signInWhenNoAccountInCache(tokenRequest, loginHint);
     } else {
       tokenRes = await M365Login.codeFlowInstance.getTokenByScopes(
         tokenRequest.scopes,
-        !isInitiatedFromTdp
+        true,
+        loginHint
       );
     }
 
@@ -146,6 +113,65 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     } else {
       return tokenRes;
     }
+  }
+
+  private async signInWhenNoAccountInCache(
+    tokenRequest: TokenRequest,
+    loginHint: string | undefined,
+    isInitiatedFromTdp?: boolean
+  ): Promise<Result<string, FxError>> {
+    if (tokenRequest.showDialog === undefined || tokenRequest.showDialog) {
+      let userConfirmation = false;
+      if (!isInitiatedFromTdp) {
+        userConfirmation = await this.doesUserConfirmLogin();
+      } else {
+        userConfirmation = await this.doesUserConfirmLoginWhenIntiatedFromTdp();
+      }
+
+      if (!userConfirmation) {
+        const cancelError = !isInitiatedFromTdp
+          ? UserCancelError(getDefaultString("teamstoolkit.codeFlowLogin.loginComponent"))
+          : TdpIntegrationLoginUserCancelError(
+              getDefaultString("teamstoolkit.codeFlowLogin.loginComponent")
+            );
+        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Login, cancelError, {
+          [TelemetryProperty.AccountType]: AccountType.M365,
+          [TelemetryProperty.Success]: TelemetrySuccess.No,
+          [TelemetryProperty.UserId]: "",
+          [TelemetryProperty.Internal]: "",
+          [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
+          [TelemetryProperty.ErrorCode]: `${getDefaultString(
+            "teamstoolkit.codeFlowLogin.loginComponent"
+          )}.${ExtensionErrors.UserCancel}`,
+          [TelemetryProperty.ErrorMessage]: `${getDefaultString("teamstoolkit.common.userCancel")}`,
+        });
+        return err(cancelError);
+      }
+      M365Login.codeFlowInstance.status = loggingIn;
+      this.notifyStatus(tokenRequest);
+    }
+
+    if (loginHint) {
+      const allAccounts = await M365Login.codeFlowInstance.msalTokenCache.getAllAccounts();
+      const accountMatchedInCache = !allAccounts
+        ? undefined
+        : allAccounts.find((o) => o.username === loginHint);
+      if (!!accountMatchedInCache) {
+        // If there is an account in msal cache with the same login hint, we will use that account to sign in.
+        M365Login.codeFlowInstance.account = accountMatchedInCache;
+        await saveAccountId(
+          M365Login.codeFlowInstance.accountName,
+          accountMatchedInCache.homeAccountId
+        );
+      }
+    }
+    const tokenRes = await M365Login.codeFlowInstance.getTokenByScopes(
+      tokenRequest.scopes,
+      true,
+      loginHint
+    );
+    await this.notifyStatus(tokenRequest);
+    return tokenRes;
   }
 
   async getJsonObject(
@@ -274,47 +300,69 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
 
   async signInWhenInitiatedFromTdp(
     tokenRequest: TokenRequest,
-    teamsAppId: string
-  ): Promise<Result<AppDefinition, FxError>> {
+    loginHint: string
+  ): Promise<Result<string, FxError>> {
     await M365Login.codeFlowInstance.reloadCache();
-    const tokenRes = await this.getAccessToken(tokenRequest, true);
-
-    // TODO: add telemetry
-    if (tokenRes.isOk()) {
-      // signed in silently with cached account successfully or signed in successfully without cache before.
-      const checkAccountRes = await this.checkWhetherSignedInWithCorrectAccount(
-        tokenRequest,
-        teamsAppId,
-        tokenRes.value
-      );
-      if (checkAccountRes.isOk()) {
-        return ok(checkAccountRes.value as any);
-      } else {
-        return err(checkAccountRes.error);
-      }
+    let tokenRes;
+    if (!M365Login.codeFlowInstance.account) {
+      // If no account in cache file, we will ask to sign in directly.
+      tokenRes = await this.signInWhenNoAccountInCache(tokenRequest, loginHint, true);
+      VsCodeLogInstance.info(`Signed in with Microsoft 365 account: ${loginHint}`);
+    } else if (M365Login.codeFlowInstance.account.username === loginHint) {
+      // If the account in cache matched with the loginHint, we will try to get access token for the currently cached account
+      tokenRes = await this.getAccessToken(tokenRequest, loginHint);
+      VsCodeLogInstance.info(`Already signed in with correct Microsoft 365 account: ${loginHint}`);
     } else {
-      if (tokenRes.error.name === ExtensionErrors.UserCancel) {
-        return err(tokenRes.error);
-      }
+      // need to switch account
+      const userConfirmation = await this.doesUserConfirmSwitchAccount();
+      if (!userConfirmation) {
+        const cancelError = new UserError({
+          name: ExtensionErrors.UserCancel,
+          message: getDefaultString(
+            "teamstoolkit.devPortalIntegration.switchAccountCancel.message"
+          ),
+          displayMessage: localize("teamstoolkit.devPortalIntegration.switchAccountCancel.message"),
+          source: "switchAccount",
+        });
 
-      // accountId in cache has been set to undefined if acquiring token silently for the cached account failed.
-      // will pop up signIn dialog for user to select to continue.
-      const newTokenRes = await this.getAccessToken(tokenRequest, true);
-      if (newTokenRes.isOk()) {
-        const checkAccountRes = await this.checkWhetherSignedInWithCorrectAccount(
-          tokenRequest,
-          teamsAppId,
-          newTokenRes.value
-        );
-        if (checkAccountRes.isOk()) {
-          return ok(checkAccountRes.value as any);
-        } else {
-          return err(checkAccountRes.error);
-        }
-      } else {
-        return err(newTokenRes.error);
+        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Login, cancelError, {
+          [TelemetryProperty.AccountType]: AccountType.M365,
+          [TelemetryProperty.Success]: TelemetrySuccess.No,
+          [TelemetryProperty.UserId]: "",
+          [TelemetryProperty.Internal]: "",
+          [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
+          [TelemetryProperty.ErrorCode]: `${getDefaultString(
+            "teamstoolkit.codeFlowLogin.loginComponent"
+          )}.${ExtensionErrors.UserCancel}`,
+          [TelemetryProperty.ErrorMessage]: `${getDefaultString("teamstoolkit.common.userCancel")}`,
+        });
+
+        return err(cancelError);
       }
+      M365Login.codeFlowInstance.status = switching;
+      await this.notifyStatus(tokenRequest);
+      tokenRes = await M365Login.codeFlowInstance.switchAccount(tokenRequest.scopes, loginHint);
+      await this.notifyStatus(tokenRequest);
+      VsCodeLogInstance.info(`Switched to another Microsoft 365 account: ${loginHint}`);
     }
+
+    if (tokenRes.isErr()) {
+      return err(tokenRes.error);
+    }
+
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
+      [TelemetryProperty.AccountType]: AccountType.M365,
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.UserId]: "",
+      [TelemetryProperty.Internal]: "",
+      [TelemetryProperty.ErrorType]: TelemetryErrorType.UserError,
+      [TelemetryProperty.ErrorCode]: `${getDefaultString(
+        "teamstoolkit.codeFlowLogin.loginComponent"
+      )}.${ExtensionErrors.UserCancel}`,
+      [TelemetryProperty.ErrorMessage]: `${getDefaultString("teamstoolkit.common.userCancel")}`,
+    });
+
+    return ok(tokenRes.value);
   }
 
   private async doesUserConfirmSwitchAccount(): Promise<boolean> {
@@ -329,75 +377,6 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
 
     return Promise.resolve(userSelected === switchAccount);
   }
-
-  private async checkWhetherSignedInWithCorrectAccount(
-    tokenRequest: TokenRequest,
-    teamsAppId: string,
-    token: any
-  ): Promise<Result<AppDefinition, FxError>> {
-    const maxSwitchTimes = 3;
-    let switchTimes = 0;
-    let currentToken = token;
-    while (switchTimes < maxSwitchTimes) {
-      try {
-        const appDefinition = await AppStudioClient.getApp(
-          teamsAppId,
-          currentToken,
-          VsCodeLogInstance
-        );
-        VsCodeLogInstance.info(`Signed in with correct Microsoft 365 account.`);
-        return ok(appDefinition as AppDefinition);
-      } catch (error: any) {
-        VsCodeLogInstance.error(
-          `Failed to get app with ${M365Login.codeFlowInstance.account?.username}`
-        );
-        if (error.message) {
-          VsCodeLogInstance.error(error.message);
-        }
-        if (error.message && (error.message.includes("404") || error.message.includes("401"))) {
-          const userConfirmation = await this.doesUserConfirmSwitchAccount();
-
-          if (!userConfirmation) {
-            const error = new UserError({
-              name: ExtensionErrors.UserCancel,
-              message: getDefaultString(
-                "teamstoolkit.devPortalIntegration.switchAccountCancel.message"
-              ),
-              displayMessage: localize(
-                "teamstoolkit.devPortalIntegration.switchAccountCancel.message"
-              ),
-              source: "switchAccount",
-            });
-
-            return err(error);
-          }
-          M365Login.codeFlowInstance.status = switching;
-          await this.notifyStatus(tokenRequest);
-          const newTokenRes = await M365Login.codeFlowInstance.switchAccount(tokenRequest.scopes);
-          await this.notifyStatus(tokenRequest);
-          if (newTokenRes.isOk()) {
-            switchTimes += 1;
-            currentToken = newTokenRes.value;
-          } else {
-            return err(newTokenRes.error);
-          }
-        } else {
-          return err(CheckM365AccountError());
-        }
-      }
-    }
-
-    return err(CheckM365AccountError());
-  }
-}
-
-export function CheckM365AccountError(): UserError {
-  return new UserError({
-    name: ExtensionErrors.UserCancel,
-    message: getDefaultString("teamstoolkit.devPortalIntegration.getTeamsAppError.message"),
-    displayMessage: localize("teamstoolkit.devPortalIntegration.getTeamsAppError.message"),
-    source: "checkM365Account",
-  });
 }
 
 export function TdpIntegrationLoginUserCancelError(source: string): UserError {

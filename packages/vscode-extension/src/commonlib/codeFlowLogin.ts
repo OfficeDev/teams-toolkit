@@ -4,7 +4,13 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { PublicClientApplication, AccountInfo, Configuration, TokenCache } from "@azure/msal-node";
+import {
+  PublicClientApplication,
+  AccountInfo,
+  Configuration,
+  TokenCache,
+  AuthorizationUrlRequest,
+} from "@azure/msal-node";
 import * as express from "express";
 import * as http from "http";
 import * as fs from "fs-extra";
@@ -71,7 +77,7 @@ export class CodeFlowLogin {
     }
   }
 
-  async login(scopes: Array<string>): Promise<string> {
+  async login(scopes: Array<string>, loginHint?: string): Promise<string> {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginStart, {
       [TelemetryProperty.AccountType]: this.accountName,
     });
@@ -88,12 +94,13 @@ export class CodeFlowLogin {
     const server = app.listen(serverPort);
     serverPort = (server.address() as AddressInfo).port;
 
-    const authCodeUrlParameters = {
+    const authCodeUrlParameters: AuthorizationUrlRequest = {
       scopes: scopes,
       codeChallenge: codeChallenge,
       codeChallengeMethod: "S256",
       redirectUri: `http://localhost:${serverPort}`,
-      prompt: "select_account",
+      prompt: !loginHint ? "select_account" : "login",
+      loginHint,
     };
 
     let deferredRedirect: Deferred<string>;
@@ -296,9 +303,13 @@ export class CodeFlowLogin {
     }
   }
 
-  async getTokenByScopes(scopes: Array<string>, refresh = true): Promise<Result<string, FxError>> {
+  async getTokenByScopes(
+    scopes: Array<string>,
+    refresh = true,
+    loginHint?: string
+  ): Promise<Result<string, FxError>> {
     if (!this.account) {
-      const accessToken = await this.login(scopes);
+      const accessToken = await this.login(scopes, loginHint);
       return ok(accessToken);
     } else {
       try {
@@ -326,7 +337,7 @@ export class CodeFlowLogin {
         await this.logout();
         (this.msalTokenCache as any).storage.setCache({});
         if (refresh) {
-          const accessToken = await this.login(scopes);
+          const accessToken = await this.login(scopes, loginHint);
           return ok(accessToken);
         }
         return err(LoginCodeFlowError(error));
@@ -334,12 +345,26 @@ export class CodeFlowLogin {
     }
   }
 
-  async switchAccount(scopes: Array<string>): Promise<Result<string, FxError>> {
+  async switchAccount(scopes: Array<string>, loginHint?: string): Promise<Result<string, FxError>> {
     await this.logout();
-    (this.msalTokenCache as any).storage.setCache({});
     try {
-      const accessToken = await this.login(scopes);
-      return ok(accessToken);
+      if (loginHint) {
+        const allAccounts = await this.msalTokenCache.getAllAccounts();
+        const accountMatchedInCache = !allAccounts
+          ? undefined
+          : allAccounts.find((o) => o.username === loginHint);
+        if (!!accountMatchedInCache) {
+          // If there is an account in msal cache with the same login hint, we will use that account to sign in.
+          this.account = accountMatchedInCache;
+          await saveAccountId(this.accountName, accountMatchedInCache.homeAccountId);
+        }
+      }
+      const accessTokenRes = await this.getTokenByScopes(scopes, true, loginHint);
+      if (accessTokenRes.isErr()) {
+        return err(accessTokenRes.error);
+      }
+
+      return ok(accessTokenRes.value);
     } catch (e) {
       return err(LoginCodeFlowError(e));
     }

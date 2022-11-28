@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ok } from "@microsoft/teamsfx-api";
+import { ok, SettingsFileName, SettingsFolderName } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { MigrationContext, V2TeamsfxFolder, wrapRunMigration } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks } from "./projectMigrator";
+import * as path from "path";
+import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
 
 const MigrationVersion = "2.1.0";
-const subMigrations = [preMigration];
+const subMigrations = [preMigration, generateSettingsJson];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await checkVersionForMigration(ctx)) && checkMethod(ctx)) {
@@ -48,4 +50,22 @@ async function checkVersionForMigration(ctx: CoreHookContext): Promise<boolean> 
 // TODO: read the real version from project setting
 async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
   return "2.1.0";
+}
+
+export async function generateSettingsJson(context: MigrationContext): Promise<void> {
+  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(context.projectPath, true);
+  if (oldProjectSettings.isOk()) {
+    const content = {
+      version: "3.0.0",
+      trackingId: oldProjectSettings.value.projectId,
+    };
+
+    await context.fsEnsureDir(SettingsFolderName);
+    await context.fsWriteFile(
+      path.join(SettingsFolderName, SettingsFileName),
+      JSON.stringify(content, null, 4)
+    );
+  } else {
+    throw oldProjectSettings.error;
+  }
 }

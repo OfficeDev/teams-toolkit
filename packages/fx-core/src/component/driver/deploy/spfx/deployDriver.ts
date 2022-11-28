@@ -52,8 +52,8 @@ export class SPFxDeployDriver implements StepDriver {
   ): Promise<Result<Map<string, string>, FxError>> {
     const wrapContext = new WrapDriverContext(
       context,
-      Constants.DeployDriverName,
-      Constants.DeployDriverName
+      Constants.TelemetryDeployEventName,
+      Constants.TelemetryComponentName
     );
     return wrapRun(() => this.deploy(args, wrapContext));
   }
@@ -61,8 +61,8 @@ export class SPFxDeployDriver implements StepDriver {
   public async execute(args: DeploySPFxArgs, ctx: DriverContext): Promise<ExecutionResult> {
     const wrapContext = new WrapDriverContext(
       ctx,
-      Constants.DeployDriverName,
-      Constants.DeployDriverName
+      Constants.TelemetryDeployEventName,
+      Constants.TelemetryComponentName
     );
     const result = await this.run(args, wrapContext);
     return {

@@ -415,7 +415,7 @@ export function isApiConnectEnabled(): boolean {
 }
 
 export function isV3Enabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.V3, false);
+  return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : false;
 }
 
 export function isMigrationV3Enabled(): boolean {

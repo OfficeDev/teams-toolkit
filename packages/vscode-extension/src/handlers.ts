@@ -3315,7 +3315,7 @@ export async function updateAadAppManifest(args: any[]): Promise<Result<null, Fx
   if (isV3Enabled()) {
     return await runCommand(Stage.deployAad, inputs);
   } else {
-    return await runCommand(Stage.deploy, inputs);
+    return err(new UserError("FUCK_ERR", "FUCK_ERR_NAME", "FUCK_ERR_MSG"));
   }
 }
 

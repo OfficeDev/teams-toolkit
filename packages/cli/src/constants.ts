@@ -93,7 +93,7 @@ export const TeamsAppManifestOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Enter the Teams app manifest template file path, default to './appPackage/manifest.template.json'",
+      "Enter the Teams app manifest template file path, it's a relative path to project root folder, default to './appPackage/manifest.template.json'",
   },
 };
 

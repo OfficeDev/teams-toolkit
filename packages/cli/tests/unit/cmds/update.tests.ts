@@ -4,7 +4,7 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 import { err, FxError, ok, UserError } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, envUtil } from "@microsoft/teamsfx-core";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import {
   TelemetryEvent,
@@ -161,6 +161,8 @@ describe("Update Teams app manifest Command Tests", function () {
         telemetryEvents.push(eventName);
         telemetryEventStatus = TelemetrySuccess.No;
       });
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
   });
   it("should pass builder check", () => {
     const cmd = new UpdateTeamsApp();

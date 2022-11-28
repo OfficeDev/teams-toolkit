@@ -175,6 +175,7 @@ describe("Update Teams app manifest Command Tests", function () {
     const args = {
       folder: "fake_test",
       env: "dev",
+      "manifest-file-path": "./appPackage/manifest.template.json",
     };
     await updateTeamsAppManifest!.handler(args);
     expect(telemetryEvents).deep.equals([
@@ -193,6 +194,7 @@ describe("Update Teams app manifest Command Tests", function () {
     const args = {
       folder: "fake_test",
       env: "dev",
+      "manifest-file-path": "./appPackage/manifest.template.json",
     };
     try {
       await updateTeamsAppManifes!.handler(args);

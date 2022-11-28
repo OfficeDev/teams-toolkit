@@ -37,10 +37,11 @@ import {
   TestFilePath,
   ProjectSettingKey,
 } from "../commonlib/constants";
-import { AzureScopes } from "@microsoft/teamsfx-core";
+import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core";
 import m365Login from "../../src/commonlib/m365Login";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getWebappServicePlan } from "../commonlib/utilities";
+import { dotenvUtil } from "@microsoft/teamsfx-core/src/component/utils/envUtil";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
 export const execAsync = promisify(exec);
@@ -127,6 +128,17 @@ export function getConfigFileName(appName: string, envName = "dev"): string {
   return path.resolve(testFolder, appName, getEnvFilePathSuffix(envName));
 }
 
+export async function setProvisionParameterValueV3(
+  projectPath: string,
+  envName: string,
+  paramerters: { key: string; value: string }
+): Promise<void> {
+  const parametersFilePath = path.resolve(projectPath, "infra", `azure.parameters.json`);
+  const parameters = await fs.readJson(parametersFilePath);
+  parameters["parameters"][paramerters.key] = { value: paramerters.value };
+  return await fs.writeJson(parametersFilePath, parameters, { spaces: 4 });
+}
+
 export async function setProvisionParameterValue(
   projectPath: string,
   envName: string,
@@ -153,7 +165,10 @@ export async function setSimpleAuthSkuNameToB1Bicep(
   projectPath: string,
   envName: string
 ): Promise<void> {
-  return setProvisionParameterValue(projectPath, envName, { key: "simpleAuthSku", value: "B1" });
+  const parameters = { key: "simpleAuthSku", value: "B1" };
+  return isV3Enabled()
+    ? setProvisionParameterValueV3(projectPath, envName, parameters)
+    : setProvisionParameterValue(projectPath, envName, parameters);
 }
 
 export async function getProvisionParameterValueByKey(
@@ -386,6 +401,12 @@ export async function readContext(projectPath: string): Promise<any> {
   }
 
   return context;
+}
+
+export async function readContextMultiEnvV3(projectPath: string, envName: string): Promise<any> {
+  const envFilePath = path.join(projectPath, "teamsfx", `.env.${envName}`);
+  const parseResult = dotenvUtil.deserialize(await fs.readFile(envFilePath, { encoding: "utf8" }));
+  return parseResult.obj;
 }
 
 export async function readContextMultiEnv(projectPath: string, envName: string): Promise<any> {

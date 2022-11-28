@@ -16,11 +16,12 @@ import {
   getTestFolder,
   getUniqueAppName,
   readContextMultiEnv,
+  readContextMultiEnvV3,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import { it } from "@microsoft/extra-shot-mocha";
 import { Runtime, CliCapabilities, CliTriggerType } from "../../commonlib/constants";
-
+import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import { CliHelper } from "../../commonlib/cliHelper";
 export async function happyPathTest(
   runtime: Runtime,
   capabilities: CliCapabilities,
@@ -53,11 +54,7 @@ export async function happyPathTest(
   console.log(`[Successfully] scaffold to ${projectPath}`);
 
   // set subscription
-  await execAsync(`teamsfx account set --subscription ${subscription}`, {
-    cwd: projectPath,
-    env: env,
-    timeout: 0,
-  });
+  await CliHelper.setSubscription(subscription, projectPath, env);
 
   console.log(`[Successfully] set subscription for ${projectPath}`);
 
@@ -73,7 +70,9 @@ export async function happyPathTest(
   {
     // Validate provision
     // Get context
-    const context = await readContextMultiEnv(projectPath, envName);
+    const context = isV3Enabled()
+      ? await readContextMultiEnvV3(projectPath, envName)
+      : await readContextMultiEnv(projectPath, envName);
 
     // Validate Bot Provision
     const bot = new BotValidator(context, projectPath, envName);
@@ -81,7 +80,8 @@ export async function happyPathTest(
   }
 
   // deploy
-  await execAsyncWithRetry(`teamsfx deploy`, {
+  const cmdStr = isV3Enabled() ? "teamsfx deploy" : "teamsfx deploy bot";
+  await execAsyncWithRetry(cmdStr, {
     cwd: projectPath,
     env: env,
     timeout: 0,
@@ -92,7 +92,9 @@ export async function happyPathTest(
     // Validate deployment
 
     // Get context
-    const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+    const context = isV3Enabled()
+      ? await readContextMultiEnvV3(projectPath, envName)
+      : await readContextMultiEnv(projectPath, envName);
 
     // Validate Bot Deploy
     const bot = new BotValidator(context, projectPath, envName);
@@ -100,14 +102,14 @@ export async function happyPathTest(
   }
 
   // test (validate)
-  await execAsyncWithRetry(`teamsfx validate`, {
+  await execAsyncWithRetry(`teamsfx validate --env ${envName}`, {
     cwd: projectPath,
     env: env,
     timeout: 0,
   });
 
   // package
-  await execAsyncWithRetry(`teamsfx package`, {
+  await execAsyncWithRetry(`teamsfx package --env ${envName}`, {
     cwd: projectPath,
     env: env,
     timeout: 0,

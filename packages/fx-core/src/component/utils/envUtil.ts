@@ -27,8 +27,8 @@ export class EnvUtil {
           new UserError({
             source: "core",
             name: "DotEnvFileNotExistError",
-            displayMessage: getLocalizedString("error.DotEnvFileNotExistError"),
-            message: getDefaultString("error.DotEnvFileNotExistError"),
+            displayMessage: getLocalizedString("error.DotEnvFileNotExistError", env, env),
+            message: getDefaultString("error.DotEnvFileNotExistError", env, env),
           })
         );
       }

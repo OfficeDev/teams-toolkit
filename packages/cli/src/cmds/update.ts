@@ -125,12 +125,7 @@ export class UpdateTeamsApp extends YargsCommand {
     }
     inputs.manifestTemplatePath = manifestTemplatePath;
 
-    const func: Func = {
-      namespace: "fx-solution-azure/fx-resource-appstudio",
-      method: "updateManifest",
-    };
-
-    const result = await core.executeUserTask(func, inputs);
+    const result = await core.deployTeamsManifest(inputs);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(
         TelemetryEvent.UpdateTeamsApp,

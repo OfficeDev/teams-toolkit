@@ -664,7 +664,7 @@ export async function updateManifest(
 export async function updateManifestV3(
   ctx: ResourceContextV3,
   inputs: InputsWithProjectPath
-): Promise<Result<any, FxError>> {
+): Promise<Result<Map<string, string>, FxError>> {
   const state = {
     TAB_ENDPOINT: process.env.TAB_ENDPOINT,
     TAB_DOMAIN: process.env.TAB_DOMAIN,
@@ -749,7 +749,33 @@ export async function updateManifestV3(
     }
   }
 
+  const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
+    scopes: AppStudioScopes,
+  });
+  if (appStudioTokenRes.isErr()) {
+    return err(appStudioTokenRes.error);
+  }
+  const appStudioToken = appStudioTokenRes.value;
+
   try {
+    const localUpdateTime = process.env.TEAMS_APP_UPDATE_TIME;
+    if (localUpdateTime) {
+      const app = await AppStudioClient.getApp(teamsAppId!, appStudioToken, ctx.logProvider);
+      const devPortalUpdateTime = new Date(app.updatedAt!)?.getTime() ?? -1;
+      if (new Date(localUpdateTime).getTime() < devPortalUpdateTime) {
+        const option = getLocalizedString("plugins.appstudio.overwriteAndUpdate");
+        const res = await ctx.userInteraction.showMessage(
+          "warn",
+          getLocalizedString("plugins.appstudio.updateOverwriteTip"),
+          true,
+          option
+        );
+        if (!(res?.isOk() && res.value === option)) {
+          return err(UserCancelError);
+        }
+      }
+    }
+
     const configureDriver: ConfigureTeamsAppDriver = Container.get(configureTeamsAppActionName);
     const result = await configureDriver.run(updateTeamsAppArgs, driverContext);
     if (result.isErr()) {
@@ -774,7 +800,7 @@ export async function updateManifestV3(
           );
         }
       });
-    return ok(teamsAppId);
+    return result;
   } catch (error) {
     if (error.message && error.message.includes("404")) {
       return err(

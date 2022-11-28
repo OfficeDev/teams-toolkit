@@ -105,5 +105,11 @@ describe("MigrationContext", () => {
     assert.isTrue(modifiedPaths.includes("b"));
     assert.isTrue(modifiedPaths.includes("b/c"));
     assert.isTrue(modifiedPaths.includes("d"));
+
+    await context.cleanModifiedPaths();
+    assert.isEmpty(context.getModifiedPaths());
+
+    await context.restoreBackup();
+    await context.cleanTeamsfx();
   });
 });

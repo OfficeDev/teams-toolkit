@@ -1,15 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  err,
-  FxError,
-  IProgressHandler,
-  ok,
-  Result,
-  SystemError,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { err, FxError, IProgressHandler, ok, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { ErrorConstants } from "../../constants";
 import { BaseComponentInnerError } from "../../error/componentError";
@@ -18,14 +10,11 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult } from "../interface/stepDriver";
 
-export type ActionResult = ExecutionResult | Result<Map<string, string>, FxError>;
-interface StringMap {
-  [key: string]: string;
-}
+export type ActionResult = ExecutionResult | ExecutionResult["result"];
 
 export interface WrapDriverContext extends DriverContext {
   createProgressBar(title: string, steps: number): Promise<IProgressHandler | undefined>;
-  addTelemetryProperties(properties: { [key: string]: string }): void;
+  addTelemetryProperties(properties: Record<string, string>): void;
   addSummary(...summaries: string[]): void;
 }
 
@@ -33,7 +22,7 @@ export class WrapDriverContext {
   progressBars: IProgressHandler[] = [];
   summaries: string[] = [];
   eventName: string;
-  telemetryProperties: StringMap;
+  telemetryProperties: Record<string, string>;
   wrapTelemetryReporter?: TeamsFxTelemetryReporter;
   constructor(driverContext: DriverContext, eventName: string, componentName: string) {
     Object.assign(this, driverContext, {});
@@ -66,7 +55,7 @@ export class WrapDriverContext {
     );
   }
 
-  addTelemetryProperties(properties: { [key: string]: string }): void {
+  addTelemetryProperties(properties: Record<string, string>): void {
     this.telemetryProperties = { ...properties, ...this.telemetryProperties };
   }
 

@@ -2,14 +2,18 @@
 // Licensed under the MIT license.
 
 import { ok } from "@microsoft/teamsfx-api";
-import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
+import { Middleware, NextFunction, objectHooks } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
-import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
+import { MigrationContext, teamsfxFolder, V2TeamsfxFolder } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks } from "./projectMigrator";
+import { readJson } from "fs-extra";
+import path from "path";
+import { FileType, namingConverterV3 } from "./MigrationUtils";
+import fs from "fs";
 
 const MigrationVersion = "2.1.0";
 type Migration = (context: MigrationContext) => Promise<void>;
-const subMigrations: Array<Migration> = [preMigration];
+const subMigrations: Array<Migration> = [preMigration, stateEnvMigration, stateLocalMigration];
 
 // const subMigrations: Array<(context: MigrationContext) => Promise<void>> = [preMigration];
 
@@ -64,6 +68,46 @@ async function migrate(context: MigrationContext): Promise<void> {
 
 async function preMigration(context: MigrationContext): Promise<void> {
   await context.backup(V2TeamsfxFolder);
+}
+
+export async function stateEnvMigration(context: MigrationContext): Promise<void> {
+  await context.fsEnsureDir(teamsfxFolder);
+  await context.fsCreateFile(teamsfxFolder + "/.env.dev");
+  const obj = await context.readState(path.join(".fx", "states", "state.dev.json"));
+  if (obj) {
+    const bicepContent = context.readBicepContent();
+    for (const keyName of Object.keys(obj)) {
+      for (const name of Object.keys(obj[keyName])) {
+        const nameV3 = await namingConverterV3(
+          "state." + keyName + "." + name,
+          FileType.STATE,
+          bicepContent
+        );
+        const dataLine = nameV3 + "=" + obj[keyName][name] + "\n";
+        await context.fsWriteFile(teamsfxFolder + "/.env.dev", dataLine);
+      }
+    }
+  }
+}
+
+export async function stateLocalMigration(context: MigrationContext): Promise<void> {
+  await context.fsEnsureDir(teamsfxFolder);
+  await context.fsCreateFile(teamsfxFolder + "/.env.local");
+  const obj = await context.readState(path.join(".fx", "states", "state.local.json"));
+  if (obj) {
+    const bicepContent = context.readBicepContent();
+    for (const keyName of Object.keys(obj)) {
+      for (const name of Object.keys(obj[keyName])) {
+        const nameV3 = await namingConverterV3(
+          "state." + keyName + "." + name,
+          FileType.STATE,
+          bicepContent
+        );
+        const dataLine = nameV3 + "=" + obj[keyName][name] + "\n";
+        await context.fsWriteFile(teamsfxFolder + "/.env.local", dataLine);
+      }
+    }
+  }
 }
 
 async function checkVersionForMigration(ctx: CoreHookContext): Promise<boolean> {

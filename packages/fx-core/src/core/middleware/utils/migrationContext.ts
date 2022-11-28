@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { objectHooks } from "@feathersjs/hooks/lib";
 import { Inputs } from "@microsoft/teamsfx-api";
 import fs, { CopyOptions, EnsureOptions, PathLike, WriteFileOptions } from "fs-extra";
 import path from "path";
 import { CoreHookContext } from "../../types";
 
-const teamsfxFolder = "teamsfx";
+export const teamsfxFolder = "teamsfx";
 const backupFolder = "backup";
 export const V2TeamsfxFolder = ".fx";
 export interface MigrationContext extends CoreHookContext {
@@ -105,5 +106,20 @@ export class MigrationContext {
 
   async cleanTeamsfx(): Promise<void> {
     await fs.remove(path.join(this.projectPath, teamsfxFolder));
+  }
+
+  async readState(filePath: string): Promise<any> {
+    const filepath = path.join(this.projectPath, filePath);
+    if (await fs.pathExists(filepath)) {
+      const obj = fs.readJSON(filepath);
+      return obj;
+    }
+  }
+
+  readBicepContent(): any {
+    return fs.readFileSync(
+      path.join(this.projectPath, "templates", "azure", "provision.bicep"),
+      "utf8"
+    );
   }
 }

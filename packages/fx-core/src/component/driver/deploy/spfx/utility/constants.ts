@@ -14,6 +14,10 @@ export class Constants {
 }
 
 export class DeployProgressMessage {
-  static readonly CreateSPAppCatalog = getLocalizedString("plugins.spfx.deploy.createAppcatalog");
-  static readonly UploadAndDeploy = getLocalizedString("plugins.spfx.deploy.uploadAddDeploy");
+  static readonly SkipCreateSPAppCatalog = getLocalizedString(
+    "driver.spfx.deploy.skipCreateAppCatalog"
+  );
+  static readonly CreateSPAppCatalog = getLocalizedString("driver.spfx.deploy.createAppCatalog");
+  static readonly Upload = getLocalizedString("driver.spfx.deploy.uploadPackage");
+  static readonly Deploy = getLocalizedString("driver.spfx.deploy.deployPackage");
 }

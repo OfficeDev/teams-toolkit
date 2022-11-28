@@ -39,7 +39,6 @@ import {
   LocalEnvManager,
   ProjectSettingsHelper,
   TaskDefinition,
-  ProgrammingLanguage,
   getProjectComponents,
   TelemetryContext,
 } from "@microsoft/teamsfx-core";
@@ -77,8 +76,8 @@ import { NotM365Project } from "./errors";
 import * as util from "util";
 import { openHubWebClient } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
-import { FolderName } from "@microsoft/teamsfx-core";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FolderName } from "@microsoft/teamsfx-core/build/common/local/constants";
+import { FxCore, ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { hasAzureTab, hasBot, hasSPFxTab } from "@microsoft/teamsfx-core";
 
 enum Checker {

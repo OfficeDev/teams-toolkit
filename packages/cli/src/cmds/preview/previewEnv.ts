@@ -7,7 +7,15 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as util from "util";
 import { Argv } from "yargs";
-import { assembleError, err, FxError, LogLevel, ok, Result } from "@microsoft/teamsfx-api";
+import {
+  assembleError,
+  err,
+  FxError,
+  LogLevel,
+  ok,
+  Result,
+  UserCancelError,
+} from "@microsoft/teamsfx-api";
 import { loadTeamsFxDevScript } from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
 import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
@@ -15,8 +23,10 @@ import { environmentManager } from "@microsoft/teamsfx-core/build/core/environme
 import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
 import * as errors from "./errors";
+import { openHubWebClient } from "./launch";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import { Task } from "./task";
+import { showInstallAppInTeamsMessage, getTeamsAppInternalId } from "./teamsAppInstallation";
 import { signedOut } from "../../commonlib/common/constant";
 import cliLogger from "../../commonlib/log";
 import M365TokenInstance from "../../commonlib/m365Login";
@@ -92,7 +102,7 @@ export default class PreviewEnv extends YargsCommand {
     const runningPattern = args["running-pattern"] as string;
     const hub = args["m365-host"] as constants.Hub;
     const browser = args.browser as constants.Browser;
-    const browserArguments = args["browser-arg"] as string[];
+    const browserArguments = (args["browser-arg"] as string[]) ?? [];
 
     // TODO: Add telemetry
 
@@ -271,10 +281,93 @@ export default class PreviewEnv extends YargsCommand {
       startCb,
       stopCb,
       undefined,
-      serviceLogWriter,
-      cliLogger
+      serviceLogWriter
     );
     return taskRes.isOk() ? ok(null) : err(taskRes.error);
+  }
+
+  protected async launchBrowser(
+    env: string,
+    envs: { [k: string]: string },
+    hub: constants.Hub,
+    browser: constants.Browser,
+    browserArgs: string[]
+  ): Promise<Result<null, FxError>> {
+    const teamsAppId = envs.TEAMS_APP_ID as string;
+    const teamsAppTenantId = envs.TEAMS_APP_TENANT_ID as string;
+    const botId = envs.BOT_ID as string;
+
+    // launch Teams
+    if (hub === constants.Hub.teams) {
+      await openHubWebClient(
+        botId === undefined,
+        teamsAppTenantId,
+        teamsAppId,
+        hub,
+        browser,
+        browserArgs,
+        this.telemetryProperties
+      );
+      return ok(null);
+    }
+
+    // launch Outlook or Office
+    if (CLIUIInstance.interactive) {
+      // for local m365 bot, ask for outlook channel
+      const botOutlookChannelLink =
+        env.toLowerCase() === environmentManager.getLocalEnvName() && botId !== undefined
+          ? `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`
+          : undefined;
+      const shouldContinue = await showInstallAppInTeamsMessage(
+        false,
+        teamsAppTenantId,
+        teamsAppId,
+        botOutlookChannelLink,
+        browser,
+        browserArgs
+      );
+      if (shouldContinue) {
+        const internalId = await getTeamsAppInternalId(teamsAppId);
+        if (internalId) {
+          await openHubWebClient(
+            botId === undefined,
+            teamsAppTenantId,
+            internalId,
+            hub,
+            browser,
+            browserArgs,
+            this.telemetryProperties
+          );
+        }
+      } else {
+        return err(UserCancelError);
+      }
+    } else {
+      const internalId = await getTeamsAppInternalId(teamsAppId);
+      if (internalId) {
+        await openHubWebClient(
+          botId === undefined,
+          teamsAppTenantId,
+          internalId,
+          hub,
+          browser,
+          browserArgs,
+          this.telemetryProperties
+        );
+        cliLogger.necessaryLog(
+          LogLevel.Warning,
+          util.format(constants.installApp.nonInteractive.manifestChanges, `--env ${env}`)
+        );
+        cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
+      } else {
+        cliLogger.necessaryLog(
+          LogLevel.Warning,
+          util.format(constants.installApp.nonInteractive.notInstalled, `--env ${env}`)
+        );
+      }
+    }
+
+    return ok(null);
   }
 
   private async shutDown() {

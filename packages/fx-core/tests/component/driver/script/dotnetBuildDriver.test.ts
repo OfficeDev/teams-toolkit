@@ -41,6 +41,24 @@ describe("Dotnet Build Driver test", () => {
     chai.expect(res.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
   });
 
+  it("Dotnet build with summary happy path", async () => {
+    const driver = new DotnetBuildDriver();
+    const args = {
+      workingDirectory: "./",
+      args: "build",
+    };
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      ui: new MockUserInteraction(),
+      logProvider: new TestLogProvider(),
+      projectPath: "./",
+    } as DriverContext;
+    sandbox.stub(utils, "execute").resolves();
+    const res = await driver.execute(args, context);
+    chai.expect(res.result.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
+    // console.log(res.summaries);
+  });
+
   it("Dotnet build error", async () => {
     const driver = new DotnetBuildDriver();
     const args = {

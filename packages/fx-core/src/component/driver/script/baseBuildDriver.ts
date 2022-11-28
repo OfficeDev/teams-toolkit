@@ -15,6 +15,7 @@ export abstract class BaseBuildDriver {
   progressBarName: string;
   progressBarSteps = 1;
   workingDirectory?: string;
+  protected context: DriverContext;
   protected logProvider: LogProvider;
   protected progressBar?: IProgressHandler;
   protected telemetryReporter: TelemetryReporter;
@@ -29,9 +30,9 @@ export abstract class BaseBuildDriver {
       ? this.args.workingDirectory
       : path.join(context.projectPath, this.args.workingDirectory);
     this.progressBarName = `Building project ${this.workingDirectory}`;
-    this.progressBar = context.ui?.createProgressBar(this.progressBarName, this.progressBarSteps);
     this.logProvider = context.logProvider;
     this.telemetryReporter = context.telemetryReporter;
+    this.context = context;
   }
 
   protected static asBuildArgs = asFactory<BuildArgs>({
@@ -44,8 +45,11 @@ export abstract class BaseBuildDriver {
   }
 
   async run(): Promise<Map<string, string>> {
-    const commandSuffix = checkMissingArgs("BuildCommand", this.args.args).trim();
-    const command = `${this.buildPrefix} ${commandSuffix}`;
+    this.progressBar = this.context.ui?.createProgressBar(
+      this.progressBarName,
+      this.progressBarSteps
+    );
+    const command = this.getCommand();
     await this.progressBar?.start();
     await this.progressBar?.next(`Run command ${command} at ${this.workingDirectory}`);
     try {
@@ -60,6 +64,11 @@ export abstract class BaseBuildDriver {
       );
     }
     return BaseBuildDriver.emptyMap;
+  }
+
+  getCommand(): string {
+    const commandSuffix = checkMissingArgs("BuildCommand", this.args.args).trim();
+    return `${this.buildPrefix} ${commandSuffix}`;
   }
 
   /**

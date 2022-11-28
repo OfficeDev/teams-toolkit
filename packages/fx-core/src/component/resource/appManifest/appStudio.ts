@@ -673,17 +673,15 @@ export async function updateManifestV3(
     ENV_NAME: process.env.TEAMSFX_ENV,
   };
   const teamsAppId = process.env.TEAMS_APP_ID;
-  const manifestTemplatePath = inputs.manifestTemplatePath
-    ? path.dirname(inputs.manifestTemplatePath)
-    : await manifestUtils.getTeamsAppManifestPath(inputs.projectPath);
-  const manifestFileName =
+  const manifestTemplatePath =
     inputs.manifestTemplatePath ??
-    path.join(
-      inputs.projectPath,
-      BuildFolderName,
-      AppPackageFolderName,
-      `manifest.${state.ENV_NAME}.json`
-    );
+    (await manifestUtils.getTeamsAppManifestPath(inputs.projectPath));
+  const manifestFileName = path.join(
+    inputs.projectPath,
+    BuildFolderName,
+    AppPackageFolderName,
+    `manifest.${state.ENV_NAME}.json`
+  );
 
   // Prepare for driver
   const buildDriver: CreateAppPackageDriver = Container.get(createAppPackageActionName);
@@ -751,31 +749,7 @@ export async function updateManifestV3(
     }
   }
 
-  const appStudioTokenRes = await ctx.tokenProvider.m365TokenProvider.getAccessToken({
-    scopes: AppStudioScopes,
-  });
-  if (appStudioTokenRes.isErr()) {
-    return err(appStudioTokenRes.error);
-  }
-  const appStudioToken = appStudioTokenRes.value;
-
   try {
-    const localUpdateTime = (await fs.stat(manifestFileName)).mtime.getTime();
-    const app = await AppStudioClient.getApp(teamsAppId!, appStudioToken, ctx.logProvider);
-    const devPortalUpdateTime = new Date(app.updatedAt!)?.getTime() ?? -1;
-    if (localUpdateTime < devPortalUpdateTime) {
-      const option = getLocalizedString("plugins.appstudio.overwriteAndUpdate");
-      const res = await ctx.userInteraction.showMessage(
-        "warn",
-        getLocalizedString("plugins.appstudio.updateOverwriteTip"),
-        true,
-        option
-      );
-      if (!(res?.isOk() && res.value === option)) {
-        return err(UserCancelError);
-      }
-    }
-
     const configureDriver: ConfigureTeamsAppDriver = Container.get(configureTeamsAppActionName);
     const result = await configureDriver.run(updateTeamsAppArgs, driverContext);
     if (result.isErr()) {

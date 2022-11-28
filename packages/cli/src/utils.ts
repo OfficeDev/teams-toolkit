@@ -173,6 +173,20 @@ export async function askManifestFilePath(): Promise<Result<string, FxError>> {
   }
 }
 
+export async function askTeamsManifestFilePath(): Promise<Result<string, FxError>> {
+  const config: InputTextConfig = {
+    name: "manifest-file-path",
+    title: "Enter the Teams app manifest template path",
+    default: "./appPackage/manifest.template.json",
+  };
+  const filePathInput = await CLIUIInstance.inputText(config);
+  if (filePathInput.isErr()) {
+    return err(filePathInput.error);
+  } else {
+    return ok(filePathInput.value.result as string);
+  }
+}
+
 export function getSettingsFilePath(projectFolder: string) {
   return isV3Enabled()
     ? path.join(projectFolder, SettingsFolderName, SettingsFileName)

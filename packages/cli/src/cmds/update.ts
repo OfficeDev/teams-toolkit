@@ -11,7 +11,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import { getSystemInputs, askManifestFilePath } from "../utils";
+import { getSystemInputs, askManifestFilePath, askTeamsManifestFilePath } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import {
   EnvOptions,
@@ -85,9 +85,14 @@ export class UpdateTeamsApp extends YargsCommand {
   public readonly description = "Update the Teams App manifest to Teams Developer Portal.";
 
   public builder(yargs: Argv): Argv<any> {
-    return yargs.hide("interactive").version(false).options(EnvOptions).options(RootFolderOptions).options({
-      [TeamsAppManifestFilePathName]: TeamsAppManifestOptions[TeamsAppManifestFilePathName],
-    });;
+    return yargs
+      .hide("interactive")
+      .version(false)
+      .options(EnvOptions)
+      .options(RootFolderOptions)
+      .options({
+        [TeamsAppManifestFilePathName]: TeamsAppManifestOptions[TeamsAppManifestFilePathName],
+      });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -101,15 +106,24 @@ export class UpdateTeamsApp extends YargsCommand {
     const core = resultFolder.value;
     const inputs = getSystemInputs(rootFolder, args.env);
 
+    let manifestTemplatePath;
     if (args[TeamsAppManifestFilePathName]) {
-      let manifestTemplatePath = args[TeamsAppManifestFilePathName];
-      if (!path.isAbsolute(manifestTemplatePath)) {
-        manifestTemplatePath = path.join(inputs.projectPath!, manifestTemplatePath);
-      }
-      inputs.manifestTemplatePath = manifestTemplatePath;
+      manifestTemplatePath = args[TeamsAppManifestFilePathName];
     } else {
-
+      const manifestTemplatePathRes = await askTeamsManifestFilePath();
+      if (manifestTemplatePathRes.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(
+          TelemetryEvent.UpdateTeamsApp,
+          manifestTemplatePathRes.error
+        );
+        return err(manifestTemplatePathRes.error);
+      }
+      manifestTemplatePath = manifestTemplatePathRes.value;
     }
+    if (!path.isAbsolute(manifestTemplatePath)) {
+      manifestTemplatePath = path.join(inputs.projectPath!, manifestTemplatePath);
+    }
+    inputs.manifestTemplatePath = manifestTemplatePath;
 
     const func: Func = {
       namespace: "fx-solution-azure/fx-resource-appstudio",

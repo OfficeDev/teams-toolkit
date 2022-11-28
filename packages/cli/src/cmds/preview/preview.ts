@@ -4,12 +4,10 @@
 "use strict";
 
 import * as path from "path";
-import * as os from "os";
 import * as fs from "fs-extra";
 import { Argv } from "yargs";
 import {
   assembleError,
-  AzureSolutionSettings,
   Colors,
   ConfigFolderName,
   err,
@@ -1014,7 +1012,7 @@ export default class Preview extends YargsCommand {
       const hasTeamsFxDevScript =
         (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Bot))) !== undefined;
       const botWatchTask =
-        includeFuncHostedBot && programmingLanguage === ProgrammingLanguage.typescript
+        includeFuncHostedBot && programmingLanguage === ProgrammingLanguage.TS
           ? hasTeamsFxDevScript
             ? this.prepareTaskNext(
                 TaskDefinition.funcHostedBotWatch(workspaceFolder),
@@ -1173,7 +1171,7 @@ export default class Preview extends YargsCommand {
           )
       : undefined;
     const backendWatchTask =
-      includeBackend && programmingLanguage === ProgrammingLanguage.typescript
+      includeBackend && programmingLanguage === ProgrammingLanguage.TS
         ? (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Function))) !==
           undefined
           ? this.prepareTaskNext(

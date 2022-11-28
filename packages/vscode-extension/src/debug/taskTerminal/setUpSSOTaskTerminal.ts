@@ -7,7 +7,7 @@ import * as vscode from "vscode";
 
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core";
-import { SSODebugArgs, SSODebugHandler } from "@microsoft/teamsfx-core/sso";
+import { SSODebugArgs, SSODebugHandler } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { workspaceUri } from "../../globalVariables";

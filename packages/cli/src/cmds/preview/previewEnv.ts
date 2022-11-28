@@ -5,14 +5,18 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
+import * as util from "util";
 import { Argv } from "yargs";
 import { assembleError, err, FxError, LogLevel, ok, Result } from "@microsoft/teamsfx-api";
 import { loadTeamsFxDevScript } from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
 import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
 import * as errors from "./errors";
+import { ServiceLogWriter } from "./serviceLogWriter";
+import { Task } from "./task";
 import { signedOut } from "../../commonlib/common/constant";
 import cliLogger from "../../commonlib/log";
 import M365TokenInstance from "../../commonlib/m365Login";
@@ -34,6 +38,10 @@ export default class PreviewEnv extends YargsCommand {
   public readonly commandHead = `preview`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Preview the current application.";
+
+  private readonly telemetryProperties: { [key: string]: string } = {};
+  private readonly telemetryMeasurements: { [key: string]: number } = {};
+  private runningTasks: Task[] = [];
 
   public builder(yargs: Argv): Argv<any> {
     yargs
@@ -80,7 +88,7 @@ export default class PreviewEnv extends YargsCommand {
     }
     const workspaceFolder = path.resolve(args.folder as string);
     const env = args.env as string;
-    let runCommand = args["run-command"] as string;
+    let runCommand: string | undefined = args["run-command"] as string;
     const runningPattern = args["running-pattern"] as string;
     const hub = args["m365-host"] as constants.Hub;
     const browser = args.browser as constants.Browser;
@@ -111,10 +119,34 @@ export default class PreviewEnv extends YargsCommand {
       runCommand = runCommandRes.value.runCommand;
       cliLogger.necessaryLog(LogLevel.Info, `Set 'run-command' to ${runCommand}.`);
     }
+    runCommand = runCommand === "" ? undefined : runCommand;
     const runningPatternRegex =
-      runningPattern !== undefined ? new RegExp(runningPattern) : constants.defaultRunningPattern;
+      runningPattern !== undefined
+        ? runningPattern === ""
+          ? new RegExp(".*")
+          : new RegExp(runningPattern)
+        : constants.defaultRunningPattern;
 
-    // TODO: more steps
+    try {
+      // 4. run command as background task
+      this.runningTasks = [];
+      if (runCommand !== undefined && env.toLowerCase() === environmentManager.getLocalEnvName()) {
+        const runTaskRes = await this.runCommandAsTask(
+          workspaceFolder,
+          runCommand,
+          runningPatternRegex
+        );
+        if (runTaskRes.isErr()) {
+          throw runTaskRes.error;
+        }
+      }
+
+      // 5: open web client
+    } catch (error: any) {
+      await this.shutDown();
+      return err(error);
+    }
+
     return ok(null);
   }
 
@@ -215,5 +247,39 @@ export default class PreviewEnv extends YargsCommand {
       return err(errors.CannotDetectRunCommand());
     }
     return ok({ runCommand: runCommand });
+  }
+
+  protected async runCommandAsTask(
+    projectPath: string,
+    runCommand: string,
+    runningPatternRegex: RegExp
+  ): Promise<Result<null, FxError>> {
+    const taskName = "run command";
+    const runningTask = new Task(taskName, true, runCommand, undefined, {
+      shell: true,
+      cwd: projectPath,
+    });
+    this.runningTasks.push(runningTask);
+    const bar = CLIUIInstance.createProgressBar(taskName, 1);
+    const startMessage = util.format(constants.runCommandStartMessage, runCommand, projectPath);
+    const startCb = commonUtils.createTaskStartCb(bar, startMessage, this.telemetryProperties);
+    const stopCb = commonUtils.createTaskStopCb(bar, this.telemetryProperties);
+    const serviceLogWriter = new ServiceLogWriter();
+    await serviceLogWriter.init();
+    const taskRes = await runningTask.waitFor(
+      runningPatternRegex,
+      startCb,
+      stopCb,
+      undefined,
+      serviceLogWriter,
+      cliLogger
+    );
+    return taskRes.isOk() ? ok(null) : err(taskRes.error);
+  }
+
+  private async shutDown() {
+    for (const task of this.runningTasks) {
+      await task.terminate();
+    }
   }
 }

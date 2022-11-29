@@ -6,7 +6,7 @@ import fs, { CopyOptions, EnsureOptions, PathLike, WriteFileOptions } from "fs-e
 import path from "path";
 import { CoreHookContext } from "../../types";
 
-const teamsfxFolder = "teamsfx";
+export const teamsfxFolder = "teamsfx";
 const backupFolder = "backup";
 export const V2TeamsfxFolder = ".fx";
 export interface MigrationContext extends CoreHookContext {
@@ -105,5 +105,29 @@ export class MigrationContext {
 
   async cleanTeamsfx(): Promise<void> {
     await fs.remove(path.join(this.projectPath, teamsfxFolder));
+  }
+
+  async readStateFile(filePath: string): Promise<any> {
+    const filepath = path.join(this.projectPath, filePath);
+    if (await fs.pathExists(filepath)) {
+      const obj = fs.readJSON(filepath);
+      return obj;
+    }
+  }
+
+  readBicepContent(): any {
+    return fs.readFileSync(
+      path.join(this.projectPath, "templates", "azure", "provision.bicep"),
+      "utf8"
+    );
+  }
+
+  async fsReadDirSync(_path: string): Promise<string[]> {
+    const dirPath = path.join(this.projectPath, _path);
+    return fs.readdirSync(dirPath);
+  }
+
+  async fsPathExists(_path: string): Promise<boolean> {
+    return await fs.pathExists(path.join(this.projectPath, _path));
   }
 }

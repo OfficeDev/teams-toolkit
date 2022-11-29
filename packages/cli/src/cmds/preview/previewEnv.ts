@@ -49,9 +49,10 @@ export default class PreviewEnv extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Preview the current application.";
 
+  protected runningTasks: Task[] = [];
+
   private readonly telemetryProperties: { [key: string]: string } = {};
   private readonly telemetryMeasurements: { [key: string]: number } = {};
-  private runningTasks: Task[] = [];
 
   public builder(yargs: Argv): Argv<any> {
     yargs
@@ -152,6 +153,11 @@ export default class PreviewEnv extends YargsCommand {
       }
 
       // 5: open web client
+      const launchRes = await this.launchBrowser(env, envs, hub, browser, browserArguments);
+      if (launchRes.isErr()) {
+        throw launchRes.error;
+      }
+      cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
     } catch (error: any) {
       await this.shutDown();
       return err(error);
@@ -319,52 +325,39 @@ export default class PreviewEnv extends YargsCommand {
           ? `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`
           : undefined;
       const shouldContinue = await showInstallAppInTeamsMessage(
-        false,
+        env.toLowerCase() === environmentManager.getLocalEnvName(),
         teamsAppTenantId,
         teamsAppId,
         botOutlookChannelLink,
         browser,
         browserArgs
       );
-      if (shouldContinue) {
-        const internalId = await getTeamsAppInternalId(teamsAppId);
-        if (internalId) {
-          await openHubWebClient(
-            botId === undefined,
-            teamsAppTenantId,
-            internalId,
-            hub,
-            browser,
-            browserArgs,
-            this.telemetryProperties
-          );
-        }
-      } else {
+      if (!shouldContinue) {
         return err(UserCancelError);
       }
+    }
+
+    const internalId = await getTeamsAppInternalId(teamsAppId);
+    if (internalId) {
+      await openHubWebClient(
+        botId === undefined,
+        teamsAppTenantId,
+        internalId,
+        hub,
+        browser,
+        browserArgs,
+        this.telemetryProperties
+      );
+      cliLogger.necessaryLog(
+        LogLevel.Warning,
+        util.format(constants.installApp.nonInteractive.manifestChanges, `--env ${env}`)
+      );
+      cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
     } else {
-      const internalId = await getTeamsAppInternalId(teamsAppId);
-      if (internalId) {
-        await openHubWebClient(
-          botId === undefined,
-          teamsAppTenantId,
-          internalId,
-          hub,
-          browser,
-          browserArgs,
-          this.telemetryProperties
-        );
-        cliLogger.necessaryLog(
-          LogLevel.Warning,
-          util.format(constants.installApp.nonInteractive.manifestChanges, `--env ${env}`)
-        );
-        cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
-      } else {
-        cliLogger.necessaryLog(
-          LogLevel.Warning,
-          util.format(constants.installApp.nonInteractive.notInstalled, `--env ${env}`)
-        );
-      }
+      cliLogger.necessaryLog(
+        LogLevel.Warning,
+        util.format(constants.installApp.nonInteractive.notInstalled, `--env ${env}`)
+      );
     }
 
     return ok(null);

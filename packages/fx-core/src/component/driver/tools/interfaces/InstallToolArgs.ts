@@ -11,6 +11,11 @@ export interface InstallToolArgs {
    * Install Azure Functions Core Tools
    */
   func?: boolean;
+
+  /**
+   * Install Dotnet
+   */
+  dotnet?: boolean;
 }
 
 interface DevCertArgs {

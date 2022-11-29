@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { objectHooks } from "@feathersjs/hooks/lib";
 import { Inputs } from "@microsoft/teamsfx-api";
 import fs, { CopyOptions, EnsureOptions, PathLike, WriteFileOptions } from "fs-extra";
 import path from "path";

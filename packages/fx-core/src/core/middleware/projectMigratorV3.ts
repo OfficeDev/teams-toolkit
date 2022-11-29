@@ -72,7 +72,7 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
   // general
   if (await context.fsPathExists(path.join(".fx", "states"))) {
     // if ./fx/states/ exists
-    const fileNames = context.fsReadDirSync(path.join(".fx", "states")); // search all files, get file names
+    const fileNames = await context.fsReadDirSync(path.join(".fx", "states")); // search all files, get file names
     const fileRegex = new RegExp("state\\.[a-zA-Z0-9_]*\\.json", "g"); // state.*.json
     for (const fileName in fileNames) {
       const fileNamesArray = fileRegex.exec(fileName);

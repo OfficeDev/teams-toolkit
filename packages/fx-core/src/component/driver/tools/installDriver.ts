@@ -20,6 +20,7 @@ const ACTION_NAME = "tools/install";
 const outputName = Object.freeze({
   SSL_CRT_FILE: "SSL_CRT_FILE",
   SSL_KEY_FILE: "SSL_KEY_FILE",
+  FUNC_PATH: "FUNC_PATH",
   DOTNET_PATH: "DOTNET_PATH",
 });
 const helpLink = "https://aka.ms/teamsfx-actions/tools/install";
@@ -52,7 +53,8 @@ export class ToolsInstallDriverImpl {
       localCertRes.forEach((v, k) => res.set(k, v));
     }
     if (args.func) {
-      await this.resolveFuncCoreTools();
+      const funcRes = await this.resolveFuncCoreTools();
+      funcRes.forEach((v, k) => res.set(k, v));
     }
 
     if (args.dotnet) {
@@ -85,15 +87,21 @@ export class ToolsInstallDriverImpl {
     return res;
   }
 
-  async resolveFuncCoreTools(): Promise<void> {
+  async resolveFuncCoreTools(): Promise<Map<string, string>> {
+    const res = new Map<string, string>();
     const depsManager = new DepsManager(new EmptyLogger(), new EmptyTelemetry());
-    const result = await depsManager.ensureDependency(DepsType.FuncCoreTools, true);
-    if (!result.isInstalled && result.error) {
-      throw new FuncInstallationUserError(ACTION_NAME, result.error);
-    } else if (result.error) {
+    const funcStatus = await depsManager.ensureDependency(DepsType.FuncCoreTools, true);
+    if (!funcStatus.isInstalled && funcStatus.error) {
+      throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error);
+    } else if (funcStatus.error) {
       // TODO(xiaofhua): prettier warning output
-      this.context.logProvider.warning(result.error?.message);
+      this.context.logProvider.warning(funcStatus.error?.message);
     }
+    if (funcStatus?.details?.binFolders !== undefined) {
+      const funcBinFolder = `${funcStatus.details.binFolders.join(path.delimiter)}`;
+      res.set(outputName.FUNC_PATH, funcBinFolder);
+    }
+    return res;
   }
 
   async resolveDotnet(): Promise<Map<string, string>> {

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ok, SettingsFileName, SettingsFolderName } from "@microsoft/teamsfx-api";
+import { ok, ProjectSettings, SettingsFileName, SettingsFolderName } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
@@ -12,6 +12,10 @@ import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 
 const MigrationVersion = "2.1.0";
+const Constants = {
+  provisionBicepPath: "./templates/azure/provision.bicep",
+  appYmlName: "app.yml",
+};
 
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [preMigration, generateSettingsJson, generateAppYml];
@@ -80,26 +84,36 @@ async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
 }
 
 export async function generateSettingsJson(context: MigrationContext): Promise<void> {
-  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(context.projectPath, true);
-  if (oldProjectSettings.isOk()) {
-    const content = {
-      version: "3.0.0",
-      trackingId: oldProjectSettings.value.projectId,
-    };
+  const oldProjectSettings = await loadProjectSettings(context.projectPath);
 
-    await context.fsEnsureDir(SettingsFolderName);
-    await context.fsWriteFile(
-      path.join(SettingsFolderName, SettingsFileName),
-      JSON.stringify(content, null, 4)
-    );
-  } else {
-    throw oldProjectSettings.error;
-  }
+  const content = {
+    version: "3.0.0",
+    trackingId: oldProjectSettings.projectId,
+  };
+
+  await context.fsEnsureDir(SettingsFolderName);
+  await context.fsWriteFile(
+    path.join(SettingsFolderName, SettingsFileName),
+    JSON.stringify(content, null, 4)
+  );
 }
 
 export async function generateAppYml(context: MigrationContext): Promise<void> {
-  const bicepContent: string = await fs.readFile("./templates/azure/provision.bicep", "utf8");
-  const appYmlGenerator = new AppYmlGenerator(context.projectSettings!, bicepContent);
-  const appYmlString = appYmlGenerator.generateAppYml();
-  context.fsWriteFile(path.join(SettingsFolderName, "app.yml"), appYmlString);
+  const bicepContent: string = await fs.readFile(
+    path.join(context.projectPath, Constants.provisionBicepPath),
+    "utf8"
+  );
+  const oldProjectSettings = await loadProjectSettings(context.projectPath);
+  const appYmlGenerator = new AppYmlGenerator(oldProjectSettings, bicepContent);
+  const appYmlString: string = await appYmlGenerator.generateAppYml();
+  await context.fsWriteFile(path.join(SettingsFolderName, Constants.appYmlName), appYmlString);
+}
+
+async function loadProjectSettings(projectPath: string): Promise<ProjectSettings> {
+  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath, true);
+  if (oldProjectSettings.isOk()) {
+    return oldProjectSettings.value;
+  } else {
+    throw oldProjectSettings.error;
+  }
 }

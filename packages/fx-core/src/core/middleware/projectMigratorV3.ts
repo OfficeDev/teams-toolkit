@@ -12,7 +12,7 @@ import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
 const MigrationVersion = "2.1.0";
 
 type Migration = (context: MigrationContext) => Promise<void>;
-const subMigrations: Array<Migration> = [preMigration, generateSettingsJson];
+const subMigrations: Array<Migration> = [preMigration, generateSettingsJson, statesMigration];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await checkVersionForMigration(ctx)) && checkMethod(ctx)) {

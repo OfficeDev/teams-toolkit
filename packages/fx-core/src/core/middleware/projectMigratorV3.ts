@@ -6,8 +6,7 @@ import { Middleware, NextFunction, objectHooks } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { MigrationContext, teamsfxFolder, V2TeamsfxFolder } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks } from "./projectMigrator";
-import path from "path";
-import fs from "fs";
+import * as path from "path";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 
 const MigrationVersion = "2.1.0";

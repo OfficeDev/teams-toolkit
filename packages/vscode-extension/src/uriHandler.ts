@@ -24,16 +24,6 @@ export class UriHandler implements vscode.UriHandler {
       return;
     }
 
-    if (!isV3Enabled()) {
-      vscode.window.showErrorMessage(
-        util.format(
-          localize("teamstoolkit.devPortalIntegration.installPreReleaseWarning"),
-          SwitchToPreReleaseVersionLink
-        )
-      );
-      return;
-    }
-
     if (!uri.query) {
       vscode.window.showErrorMessage(localize("teamstoolkit.devPortalIntegration.invalidLink"));
       return;
@@ -45,6 +35,16 @@ export class UriHandler implements vscode.UriHandler {
     }
 
     if (queryParamas.referrer === Referrer.DeveloperPortal) {
+      if (!isV3Enabled()) {
+        vscode.window.showErrorMessage(
+          util.format(
+            localize("teamstoolkit.devPortalIntegration.installPreReleaseWarning"),
+            SwitchToPreReleaseVersionLink
+          )
+        );
+        return;
+      }
+
       if (!queryParamas.appId) {
         vscode.window.showErrorMessage(localize("teamstoolkit.devPortalIntegration.invalidLink"));
         return;

@@ -14,7 +14,6 @@ describe("uri handler", () => {
   it("invalid uri missing query", async () => {
     const handler = new UriHandler();
     const uri = vscode.Uri.parse("vscode://test.test");
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
     await handler.handleUri(uri);
 
@@ -24,7 +23,6 @@ describe("uri handler", () => {
   it("invalid uri missing referer", async () => {
     const handler = new UriHandler();
     const uri = vscode.Uri.parse("vscode://test.test?query=1");
-    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
     await handler.handleUri(uri);
 
@@ -43,7 +41,9 @@ describe("uri handler", () => {
 
   it("error if not v3 enabled", async () => {
     const handler = new UriHandler();
-    const uri = vscode.Uri.parse("vscode://test.test?id=1");
+    const uri = vscode.Uri.parse(
+      "vscode://test.test?appId=1&referrer=developerportal&login_hint=test"
+    );
     sandbox.stub(commonTools, "isV3Enabled").returns(false);
     const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
     await handler.handleUri(uri);

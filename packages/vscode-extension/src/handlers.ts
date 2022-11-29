@@ -3358,7 +3358,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         id: "commandAndResponse",
         label: `${localize("teamstoolkit.tutorials.commandAndResponse.label")}`,
         detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
-        groupName: localize("teamstoolkit.guide.development"),
+        groupName: localize("teamstoolkit.guide.scenario"),
         data: "https://aka.ms/teamsfx-create-command",
         buttons: [
           {
@@ -3414,15 +3414,6 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           command: "fx-extension.openTutorial",
         },
       ],
-    });
-  }
-
-  if (isExistingTabAppEnabled()) {
-    config.options.splice(0, 0, {
-      id: "embedWebPages",
-      label: `${localize("teamstoolkit.tutorials.embedWebPages.label")}`,
-      detail: localize("teamstoolkit.tutorials.embedWebPages.detail"),
-      data: "https://aka.ms/teamsfx-embed-existing-web",
     });
   }
 

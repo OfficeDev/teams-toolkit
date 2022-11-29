@@ -1,10 +1,10 @@
 # Built-in environment variables
-TEAMSFX_ENV=dev
-AZURE_SUBSCRIPTION_ID=
-AZURE_RESOURCE_GROUP_NAME=
-RESOURCE_SUFFIX=
+TEAMSFX_ENV=local
+TEAMS_APP_NAME={%appName%}-local
 
 # Generated during provision, you can also add your own variables. If you're adding a secret value, add SECRET_ prefix to the name so Teams Toolkit can handle them properly
+BOT_ID=
+SECRET_BOT_PASSWORD=
 TEAMS_APP_ID=
-TAB_AZURE_STORAGE_RESOURCE_ID=
-TAB_ENDPOINT=
+BOT_DOMAIN=
+BOT_ENDPOINT=

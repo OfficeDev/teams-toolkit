@@ -12,7 +12,7 @@ export class DeployConstant {
   public static readonly ZIP_TIME_MS_GRANULARITY: number = 2 * DeployConstant.MILLIS_SECONDS;
   // Some files' mtime in node_modules are too old, which may be invalid,
   // so we arbitrarily add a limitation to update this kind of files.
-  public static readonly LATEST_TRUST_MS_TIME: number = new Date(2000, 1, 1).getTime();
+  public static readonly LATEST_TRUST_MS_TIME: Date = new Date(2000, 1, 1);
   // deploy zip file name
   public static readonly DEPLOYMENT_ZIP_CACHE_FILE = "deployment.zip";
   // call zip deploy api timeout
@@ -35,4 +35,6 @@ export class DeployConstant {
   public static readonly DEFAULT_ERROR_DOCUMENT = DeployConstant.DEFAULT_INDEX_DOCUMENT;
   // default deploy over time
   public static readonly DEPLOY_OVER_TIME = 1000 * 120;
+  // default deploy retry times
+  public static readonly DEPLOY_UPLOAD_RETRY_TIMES = 2;
 }

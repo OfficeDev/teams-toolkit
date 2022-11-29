@@ -40,21 +40,21 @@ export class CopyAppPackageForSPFxDriver implements StepDriver {
     context: DriverContext
   ): Promise<Map<string, string>> {
     const copyAppPackageArgs = this.asCopyAppPackageArgs(args);
-    if (!(await fs.pathExists(copyAppPackageArgs.appPackagePath))) {
+    const appPackagePath = path.isAbsolute(copyAppPackageArgs.appPackagePath)
+      ? copyAppPackageArgs.appPackagePath
+      : path.join(context.projectPath, copyAppPackageArgs.appPackagePath);
+    if (!(await fs.pathExists(appPackagePath))) {
       throw AppStudioResultFactory.UserError(
         AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(copyAppPackageArgs.appPackagePath)
+        AppStudioError.FileNotFoundError.message(appPackagePath)
       );
     }
-    const pictures = await this.getIcons(copyAppPackageArgs.appPackagePath);
+    const pictures = await this.getIcons(appPackagePath);
     const spfxFolder = path.isAbsolute(copyAppPackageArgs.spfxFolder)
       ? copyAppPackageArgs.spfxFolder
       : path.join(context.projectPath, copyAppPackageArgs.spfxFolder);
     const spfxTeamsPath = `${spfxFolder}/teams`;
-    await fs.copyFile(
-      copyAppPackageArgs.appPackagePath,
-      path.join(spfxTeamsPath, "TeamsSPFxApp.zip")
-    );
+    await fs.copyFile(appPackagePath, path.join(spfxTeamsPath, "TeamsSPFxApp.zip"));
 
     for (const file of await fs.readdir(`${spfxFolder}/teams`)) {
       if (file.endsWith("color.png") && pictures.color) {

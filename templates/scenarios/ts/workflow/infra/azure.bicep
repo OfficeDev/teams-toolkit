@@ -42,15 +42,11 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
       appSettings: [
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1' // Run Azure App Service from a package file
+          value: '1' // Run Azure APP Service from a package file
         }
         {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
           value: '~16' // Set NodeJS version to 16.x for your site
-        }
-        {
-          name: 'SCM_SCRIPT_GENERATOR_ARGS'
-          value: '--node' // Register as node server
         }
         {
           name: 'RUNNING_ON_AZURE'

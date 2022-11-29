@@ -16,6 +16,7 @@ import Publish from "./publish";
 import Package from "./package";
 import Config from "./config";
 import Preview from "./preview/preview";
+import PreviewEnv from "./preview/previewEnv";
 import { isRemoteCollaborationEnabled } from "../utils";
 import Manifest from "./manifest";
 import Permission from "./permission";
@@ -37,7 +38,7 @@ export const commands: YargsCommand[] = [
   new ManifestValidate(),
   new Publish(),
   new Config(),
-  new Preview(),
+  isV3Enabled() ? new PreviewEnv() : new Preview(),
   new Env(),
 ];
 

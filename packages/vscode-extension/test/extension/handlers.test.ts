@@ -358,6 +358,10 @@ describe("handlers", () => {
     });
 
     it("openConfigStateFile() - local", async () => {
+      sinon.stub(localizeUtils, "localize").callsFake((key: string) => {
+        return key;
+      });
+
       const env = "local";
       const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
 

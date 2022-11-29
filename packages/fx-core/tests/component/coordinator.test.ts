@@ -7,6 +7,7 @@ import {
   Result,
   SingleSelectConfig,
   Stage,
+  SystemError,
   UserCancelError,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -23,7 +24,11 @@ import {
   randomAppName,
 } from "../core/utils";
 import { assert } from "chai";
-import { M365SsoLaunchPageOptionItem, TabOptionItem } from "../../src/component/constants";
+import {
+  M365SsoLaunchPageOptionItem,
+  SolutionError,
+  TabOptionItem,
+} from "../../src/component/constants";
 import { FxCore } from "../../src/core/FxCore";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { YamlParser } from "../../src/component/configManager/parser";
@@ -35,7 +40,7 @@ import {
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { provisionUtils } from "../../src/component/provisionUtils";
-import { coordinator } from "../../src/component/coordinator";
+import { coordinator, TemplateNames } from "../../src/component/coordinator";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import fs from "fs-extra";
 import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
@@ -141,7 +146,7 @@ describe("component coordinator test", () => {
 
   it("create project for app with tab features from Developer Portal", async () => {
     sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     sandbox.stub(developerPortalScaffoldUtils, "updateFilesForTdp").resolves(ok(undefined));
@@ -173,11 +178,12 @@ describe("component coordinator test", () => {
     const res2 = await fxCore.createProject(inputs);
 
     assert.isTrue(res2.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.Tab);
   });
 
   it("create project for app with bot feature from Developer Portal with updating files failed", async () => {
     sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
     sandbox
@@ -217,6 +223,7 @@ describe("component coordinator test", () => {
     if (res.isErr()) {
       assert.equal(res.error.name, "error");
     }
+    assert.equal(generator.args[0][2], TemplateNames.DefaultBot);
   });
 
   it("create project for app with no features from Developer Portal", async () => {
@@ -245,6 +252,112 @@ describe("component coordinator test", () => {
       console.log(res.error);
     }
     assert.isTrue(res.isOk());
+  });
+
+  it("create project for app with tab and bot features from Developer Portal", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(developerPortalScaffoldUtils, "updateFilesForTdp").resolves(ok(undefined));
+    const appDefinition: AppDefinition = {
+      teamsAppId: "mock-id",
+      appId: "mock-id",
+      staticTabs: [
+        {
+          name: "tab1",
+          entityId: "tab1",
+          contentUrl: "mock-contentUrl",
+          websiteUrl: "mock-websiteUrl",
+          context: [],
+          scopes: [],
+        },
+      ],
+      bots: [
+        {
+          botId: "mock-bot-id",
+          isNotificationOnly: false,
+          needsChannelSelector: false,
+          supportsCalling: false,
+          supportsFiles: false,
+          supportsVideo: false,
+          scopes: [],
+          teamCommands: [],
+          groupChatCommands: [],
+          personalCommands: [],
+        },
+      ],
+    };
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      teamsAppFromTdp: appDefinition,
+      [CoreQuestionNames.ReplaceWebsiteUrl]: ["tab1"],
+      [CoreQuestionNames.ReplaceContentUrl]: [],
+      [CoreQuestionNames.ReplaceBotIds]: ["bot"],
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+
+    if (res2.isErr()) {
+      console.log(res2.error);
+    }
+    assert.isTrue(res2.isOk());
+    assert.isTrue(generator.calledOnce);
+    assert.equal(generator.args[0][2], TemplateNames.TabAndDefaultBot);
+  });
+
+  it("create project for app with tab and message extension features from Developer Portal", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(developerPortalScaffoldUtils, "updateFilesForTdp").resolves(ok(undefined));
+    const appDefinition: AppDefinition = {
+      teamsAppId: "mock-id",
+      appId: "mock-id",
+      staticTabs: [
+        {
+          name: "tab1",
+          entityId: "tab1",
+          contentUrl: "mock-contentUrl",
+          websiteUrl: "mock-websiteUrl",
+          context: [],
+          scopes: [],
+        },
+      ],
+      messagingExtensions: [
+        {
+          botId: "mock-bot-id",
+          canUpdateConfiguration: false,
+          commands: [],
+          messageHandlers: [],
+        },
+      ],
+    };
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+      teamsAppFromTdp: appDefinition,
+      [CoreQuestionNames.ReplaceWebsiteUrl]: ["tab1"],
+      [CoreQuestionNames.ReplaceContentUrl]: [],
+      [CoreQuestionNames.ReplaceBotIds]: ["bot"],
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+
+    if (res2.isErr()) {
+      console.log(res2.error);
+    }
+    assert.isTrue(res2.isOk());
+    assert.isTrue(generator.calledOnce);
+    assert.equal(generator.args[0][2], TemplateNames.TabAndDefaultBot);
   });
 
   it("provision happy path from zero", async () => {
@@ -314,6 +427,8 @@ describe("component coordinator test", () => {
         return ok({ type: "success", result: "" });
       }
     });
+    sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
+
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -389,6 +504,84 @@ describe("component coordinator test", () => {
         return ok({ type: "success", result: "" });
       }
     });
+    sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("provision happy path with existing resource groups in VS Code", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: undefined,
+          },
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
+          });
+        },
+        resolvePlaceholders: () => {
+          return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
+        },
+        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
+          return ok(new Map());
+        },
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureSubscription").resolves(
+      ok({
+        subscriptionId: "mockSubId",
+        tenantId: "mockTenantId",
+        subscriptionName: "mockSubName",
+      })
+    );
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
+    sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
+      ok({
+        createNewResourceGroup: false,
+        name: "test-rg",
+        location: "East US",
+      })
+    );
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
+      ok({
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
+      })
+    );
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -582,7 +775,7 @@ describe("component coordinator test", () => {
     });
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
     const inputs: Inputs = {
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       projectPath: ".",
       env: "dev",
       targetSubscriptionId: "mockSubId",
@@ -682,6 +875,18 @@ describe("component coordinator test", () => {
         },
       },
     };
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
+      ok({
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
+      })
+    );
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "mockSubId",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox
       .stub(resourceGroupHelper, "createNewResourceGroup")
@@ -689,8 +894,9 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
     const inputs: Inputs = {
-      platform: Platform.VSCode,
+      platform: Platform.CLI,
       projectPath: ".",
       env: "dev",
       targetSubscriptionId: "mockSubId",
@@ -700,6 +906,175 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isErr());
+  });
+  it("provision failed when getting azure credentials", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: undefined,
+          },
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
+          });
+        },
+        resolvePlaceholders: () => {
+          return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
+        },
+        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
+          return ok(new Map());
+        },
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureSubscription").resolves(
+      ok({
+        subscriptionId: "mockSubId",
+        tenantId: "mockTenantId",
+        subscriptionName: "mockSubName",
+      })
+    );
+    sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
+      ok({
+        createNewResourceGroup: true,
+        name: "test-rg",
+        location: "East US",
+      })
+    );
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
+      ok({
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
+      })
+    );
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "mockSubId",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    sandbox
+      .stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(undefined);
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.equal(res.error.name, SolutionError.FailedToGetAzureCredential);
+    }
+  });
+  it("provision failed when checking resource group existence", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: undefined,
+          },
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
+          });
+        },
+        resolvePlaceholders: () => {
+          return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
+        },
+        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
+          return ok(new Map());
+        },
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureSubscription").resolves(
+      ok({
+        subscriptionId: "mockSubId",
+        tenantId: "mockTenantId",
+        subscriptionName: "mockSubName",
+      })
+    );
+    sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
+      ok({
+        createNewResourceGroup: true,
+        name: "test-rg",
+        location: "East US",
+      })
+    );
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
+      ok({
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
+      })
+    );
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "mockSubId",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getIdentityCredentialAsync").resolves({
+      getToken: (scopes: string) => {
+        return Promise.resolve({ token: "token", expiresOnTimestamp: 1 });
+      },
+    });
+    sandbox
+      .stub(resourceGroupHelper, "checkResourceGroupExistence")
+      .resolves(err(new SystemError("test", "test", "", "")));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.equal(res.error.name, "test");
+    }
   });
   it("provision happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
@@ -1039,7 +1414,7 @@ describe("component coordinator test", () => {
     assert.equal(convertRes[1]!.name, "UnresolvedPlaceholders");
   });
 
-  it("init infra happy path", async () => {
+  it("init infra happy path vsc", async () => {
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
@@ -1049,6 +1424,25 @@ describe("component coordinator test", () => {
       editor: "vsc",
       capability: "tab",
       spfx: "true",
+      proceed: "true",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initInfra(inputs);
+    if (res.isErr()) {
+      console.log(res.error);
+    }
+    assert.isTrue(res.isOk());
+  });
+  it("init infra happy path vs", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(coordinator, "ensureTeamsFxInCsproj").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      editor: "vs",
+      capability: "tab",
       proceed: "true",
     };
     const fxCore = new FxCore(tools);
@@ -1218,7 +1612,7 @@ describe("component coordinator test", () => {
     const res = await fxCore.initInfra(inputs);
     assert.isTrue(res.isErr());
   });
-  it("init debug happy path", async () => {
+  it("init debug happy path vsc", async () => {
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
@@ -1229,6 +1623,23 @@ describe("component coordinator test", () => {
       editor: "vsc",
       capability: "tab",
       spfx: "true",
+      proceed: "true",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.initDebug(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("init debug happy path vs", async () => {
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(coordinator, "ensureTeamsFxInCsproj").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      editor: "vs",
+      capability: "tab",
       proceed: "true",
     };
     const fxCore = new FxCore(tools);
@@ -1481,6 +1892,36 @@ describe("component coordinator test", () => {
       if (res.isErr()) {
         assert.equal(res.error.name, "error");
       }
+    });
+
+    it("ensureTeamsFxInCsproj  no .csproj found", async () => {
+      sandbox.stub(fs, "readdir").resolves([] as any);
+      const res = await coordinator.ensureTeamsFxInCsproj(".");
+      assert.isTrue(res.isOk());
+    });
+
+    it("ensureTeamsFxInCsproj success: do nothing for existing ItemGroup", async () => {
+      const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <Project Sdk="Microsoft.NET.Sdk">
+        <ItemGroup>
+          <ProjectCapability Include="TeamsFx"/>
+        </ItemGroup>
+      </Project>`;
+      sandbox.stub(fs, "readdir").resolves(["test.csproj"] as any);
+      sandbox.stub(fs, "readFile").resolves(xml as any);
+      const res = await coordinator.ensureTeamsFxInCsproj(".");
+      assert.isTrue(res.isOk());
+    });
+
+    it("ensureTeamsFxInCsproj success: insert one", async () => {
+      const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <Project Sdk="Microsoft.NET.Sdk">
+      </Project>`;
+      sandbox.stub(fs, "readdir").resolves(["test.csproj"] as any);
+      sandbox.stub(fs, "readFile").resolves(xml as any);
+      sandbox.stub(fs, "writeFile").resolves();
+      const res = await coordinator.ensureTeamsFxInCsproj(".");
+      assert.isTrue(res.isOk());
     });
   });
 });

@@ -54,6 +54,10 @@ export function isGroupApp(appDefinition: AppDefinition): boolean {
   );
 }
 
+export function needTabAndBotCode(appDefinition: AppDefinition): boolean {
+  return needTabCode(appDefinition) && needBotCode(appDefinition);
+}
+
 export function needTabCode(appDefinition: AppDefinition): boolean {
   return isPersonalApp(appDefinition) || isGroupApp(appDefinition);
 }

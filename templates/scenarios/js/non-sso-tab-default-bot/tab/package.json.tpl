@@ -1,6 +1,9 @@
 {
     "name": "{%appName%}",
     "version": "0.1.0",
+    "engines": {
+        "node": ">=14 <=16"
+    },
     "private": true,
     "dependencies": {
         "@fluentui/react-northstar": "^0.62.0",

@@ -418,6 +418,10 @@ export function isV3Enabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.V3, false);
 }
 
+export function isMigrationV3Enabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.V3Migration, false);
+}
+
 export function isVideoFilterEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
 }

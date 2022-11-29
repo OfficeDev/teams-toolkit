@@ -10,7 +10,7 @@ import * as sinon from "sinon";
 import Preview from "../../../../src/cmds/preview/preview";
 import { expect } from "../../utils";
 import { Task, TaskResult } from "../../../../src/cmds/preview/task";
-import { ProgrammingLanguage } from "@microsoft/teamsfx-core/build/common/local";
+import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 
 describe("sequentialTasks", () => {
   const sequentialTasks = Preview.sequentialTasks;
@@ -108,10 +108,10 @@ describe("createBotTasksForStartServices", () => {
   // Arrange
   const cases: [string, boolean, boolean, boolean, (unknown | FxError | undefined)[], string][] = [
     // language, includeBot, includeFuncHostedBot, hasTeamsFxDevScript, expected, message
-    [ProgrammingLanguage.javascript, false, false, false, [], "JavaScript, no bot"],
-    [ProgrammingLanguage.typescript, false, false, false, [], "TypeScript, no bot"],
+    [ProgrammingLanguage.JS, false, false, false, [], "JavaScript, no bot"],
+    [ProgrammingLanguage.TS, false, false, false, [], "TypeScript, no bot"],
     [
-      ProgrammingLanguage.javascript,
+      ProgrammingLanguage.JS,
       true,
       false,
       false,
@@ -122,7 +122,7 @@ describe("createBotTasksForStartServices", () => {
       "JavaScript, legacy bot",
     ],
     [
-      ProgrammingLanguage.javascript,
+      ProgrammingLanguage.JS,
       true,
       false,
       false,
@@ -133,7 +133,7 @@ describe("createBotTasksForStartServices", () => {
       "TypeScript, legacy bot",
     ],
     [
-      ProgrammingLanguage.javascript,
+      ProgrammingLanguage.JS,
       true,
       false,
       true,
@@ -141,7 +141,7 @@ describe("createBotTasksForStartServices", () => {
       "JavaScript, legacy bot, new local preview",
     ],
     [
-      ProgrammingLanguage.typescript,
+      ProgrammingLanguage.TS,
       true,
       false,
       true,
@@ -149,7 +149,7 @@ describe("createBotTasksForStartServices", () => {
       "TypeScript, legacy bot, new local preview",
     ],
     [
-      ProgrammingLanguage.javascript,
+      ProgrammingLanguage.JS,
       true,
       true,
       true,
@@ -160,7 +160,7 @@ describe("createBotTasksForStartServices", () => {
       "JavaScript, func hosted bot",
     ],
     [
-      ProgrammingLanguage.typescript,
+      ProgrammingLanguage.TS,
       true,
       true,
       true,

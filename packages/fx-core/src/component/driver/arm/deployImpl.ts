@@ -87,6 +87,13 @@ export class ArmDeployImpl {
       this.args.templates.map(async (template) => {
         const res = await this.deployTemplate(template);
         if (res.isOk() && res.value) {
+          this.context.addSummary(
+            getLocalizedString(
+              "core.deployArmTemplates.ActionSuccess",
+              this.args.resourceGroupName,
+              template.deploymentName
+            )
+          );
           outputs.push(res.value);
         } else if (res.isErr()) {
           throw res.error;

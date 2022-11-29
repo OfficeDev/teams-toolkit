@@ -6,6 +6,7 @@ import {
   IProgressHandler,
   LogProvider,
   TelemetryReporter,
+  UserInteraction,
 } from "@microsoft/teamsfx-api";
 
 export type Step = {

@@ -108,7 +108,7 @@ export class MigrationContext {
     await fs.remove(path.join(this.projectPath, teamsfxFolder));
   }
 
-  async readState(filePath: string): Promise<any> {
+  async readStateFile(filePath: string): Promise<any> {
     const filepath = path.join(this.projectPath, filePath);
     if (await fs.pathExists(filepath)) {
       const obj = fs.readJSON(filepath);
@@ -121,5 +121,14 @@ export class MigrationContext {
       path.join(this.projectPath, "templates", "azure", "provision.bicep"),
       "utf8"
     );
+  }
+
+  async fsReadDirSync(_path: string): Promise<string[]> {
+    const dirPath = path.join(this.projectPath, _path);
+    return fs.readdirSync(dirPath);
+  }
+
+  async fsPathExists(_path: string): Promise<boolean> {
+    return await fs.pathExists(path.join(this.projectPath, _path));
   }
 }

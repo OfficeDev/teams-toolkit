@@ -6,14 +6,13 @@ import { Middleware, NextFunction, objectHooks } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { MigrationContext, teamsfxFolder, V2TeamsfxFolder } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks } from "./projectMigrator";
-import { readJson } from "fs-extra";
 import path from "path";
-import { FileType, namingConverterV3 } from "./MigrationUtils";
 import fs from "fs";
+import { FileType, namingConverterV3 } from "./MigrationUtils";
 
 const MigrationVersion = "2.1.0";
 type Migration = (context: MigrationContext) => Promise<void>;
-const subMigrations: Array<Migration> = [preMigration, stateEnvMigration, stateLocalMigration];
+const subMigrations: Array<Migration> = [preMigration, statesMigration];
 
 // const subMigrations: Array<(context: MigrationContext) => Promise<void>> = [preMigration];
 
@@ -70,41 +69,42 @@ async function preMigration(context: MigrationContext): Promise<void> {
   await context.backup(V2TeamsfxFolder);
 }
 
-export async function stateEnvMigration(context: MigrationContext): Promise<void> {
-  await context.fsEnsureDir(teamsfxFolder);
-  await context.fsCreateFile(teamsfxFolder + "/.env.dev");
-  const obj = await context.readState(path.join(".fx", "states", "state.dev.json"));
-  if (obj) {
-    const bicepContent = context.readBicepContent();
-    for (const keyName of Object.keys(obj)) {
-      for (const name of Object.keys(obj[keyName])) {
-        const nameV3 = await namingConverterV3(
-          "state." + keyName + "." + name,
-          FileType.STATE,
-          bicepContent
+export async function statesMigration(context: MigrationContext): Promise<void> {
+  // general
+  if (await context.fsPathExists(path.join(".fx", "states"))) {
+    // if ./fx/states/ exists
+    const fileNames = context.fsReadDirSync(path.join(".fx", "states")); // search all files, get file names
+    const fileRegex = new RegExp("state\\.[a-zA-Z0-9_]*\\.json", "g"); // state.*.json
+    for (const fileName in fileNames) {
+      const fileNamesArray = fileRegex.exec(fileName);
+      if (fileNamesArray != null && fileNamesArray.length == 1) {
+        // get envName
+        const envName = fileName.substring(
+          fileName.indexOf("state.") + 6,
+          fileName.indexOf(".json")
         );
-        const dataLine = nameV3 + "=" + obj[keyName][name] + "\n";
-        await context.fsWriteFile(teamsfxFolder + "/.env.dev", dataLine);
-      }
-    }
-  }
-}
-
-export async function stateLocalMigration(context: MigrationContext): Promise<void> {
-  await context.fsEnsureDir(teamsfxFolder);
-  await context.fsCreateFile(teamsfxFolder + "/.env.local");
-  const obj = await context.readState(path.join(".fx", "states", "state.local.json"));
-  if (obj) {
-    const bicepContent = context.readBicepContent();
-    for (const keyName of Object.keys(obj)) {
-      for (const name of Object.keys(obj[keyName])) {
-        const nameV3 = await namingConverterV3(
-          "state." + keyName + "." + name,
-          FileType.STATE,
-          bicepContent
+        // create .env.{env} file
+        await context.fsEnsureDir(teamsfxFolder);
+        await context.fsCreateFile(teamsfxFolder + "/.env." + envName);
+        const obj = await context.readStateFile(
+          path.join(".fx", "states", "state." + envName + ".json")
         );
-        const dataLine = nameV3 + "=" + obj[keyName][name] + "\n";
-        await context.fsWriteFile(teamsfxFolder + "/.env.local", dataLine);
+        if (obj) {
+          let envData = "";
+          const bicepContent = context.readBicepContent();
+          // convert every name
+          for (const keyName of Object.keys(obj)) {
+            for (const name of Object.keys(obj[keyName])) {
+              const nameV3 = await namingConverterV3(
+                "state." + keyName + "." + name,
+                FileType.STATE,
+                bicepContent
+              );
+              envData += nameV3 + "=" + obj[keyName][name] + "\n";
+            }
+          }
+          await context.fsWriteFile(teamsfxFolder + "/.env." + envName, envData);
+        }
       }
     }
   }

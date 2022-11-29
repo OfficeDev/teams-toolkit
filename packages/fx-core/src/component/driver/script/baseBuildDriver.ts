@@ -15,6 +15,7 @@ export abstract class BaseBuildDriver {
   progressBarName: string;
   progressBarSteps = 1;
   workingDirectory?: string;
+  execPath?: string;
   protected context: DriverContext;
   protected logProvider: LogProvider;
   protected progressBar?: IProgressHandler;
@@ -33,11 +34,13 @@ export abstract class BaseBuildDriver {
     this.logProvider = context.logProvider;
     this.telemetryReporter = context.telemetryReporter;
     this.context = context;
+    this.execPath = this.args.execPath;
   }
 
   protected static asBuildArgs = asFactory<BuildArgs>({
     workingDirectory: asOptional(asString),
     args: asString,
+    execPath: asOptional(asString),
   });
 
   protected static toBuildArgs(args: unknown): BuildArgs {
@@ -51,9 +54,14 @@ export abstract class BaseBuildDriver {
     );
     const command = this.getCommand();
     await this.progressBar?.start();
+    // add path to env if execPath is set
+    let env: NodeJS.ProcessEnv | undefined = undefined;
+    if (this.execPath) {
+      env = { PATH: `${this.execPath}${path.delimiter}${process.env.PATH}` };
+    }
     await this.progressBar?.next(`Run command ${command} at ${this.workingDirectory}`);
     try {
-      const output = await execute(command, this.workingDirectory, this.logProvider);
+      const output = await execute(command, this.workingDirectory, this.logProvider, env);
       await this.logProvider.debug(`execute ${command} output is ${output}`);
       await this.progressBar?.end(true);
     } catch (e) {

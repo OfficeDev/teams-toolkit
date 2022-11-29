@@ -89,7 +89,7 @@ export const AadManifestOptions: OptionsMap = {
 
 export const TeamsAppManifestFilePathName = "manifest-file-path";
 export const TeamsAppManifestOptions: OptionsMap = {
-  [AadManifestFilePathName]: {
+  [TeamsAppManifestFilePathName]: {
     type: "string",
     global: false,
     description:

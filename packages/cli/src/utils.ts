@@ -44,7 +44,12 @@ import {
   EnvNotSpecified,
 } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
-import { FeatureFlags, SUPPORTED_SPFX_VERSION } from "./constants";
+import {
+  FeatureFlags,
+  SUPPORTED_SPFX_VERSION,
+  TeamsAppManifestFilePathName,
+  AadManifestFilePathName,
+} from "./constants";
 import { FxCore, isV3Enabled } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
 import CLIUIInstance from "./userInteraction";
@@ -161,7 +166,7 @@ export function getEnvFilePath(
 
 export async function askManifestFilePath(): Promise<Result<string, FxError>> {
   const config: InputTextConfig = {
-    name: "manifest-file-path",
+    name: AadManifestFilePathName,
     title: "Enter the AAD app manifest template path",
     default: "./aad.manifest.template.json",
   };
@@ -175,7 +180,7 @@ export async function askManifestFilePath(): Promise<Result<string, FxError>> {
 
 export async function askTeamsManifestFilePath(): Promise<Result<string, FxError>> {
   const config: InputTextConfig = {
-    name: "manifest-file-path",
+    name: TeamsAppManifestFilePathName,
     title: "Enter the Teams app manifest template path",
     default: "./appPackage/manifest.template.json",
   };

@@ -5,7 +5,7 @@ import fs from "fs-extra";
 import { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
-import { FxError, IProgressHandler, LogLevel, ok, Result } from "@microsoft/teamsfx-api";
+import { err, FxError, IProgressHandler, ok, Result } from "@microsoft/teamsfx-api";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 import * as packageJson from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
@@ -86,6 +86,101 @@ describe("Preview --env", () => {
     expect(logs.length).greaterThanOrEqual(2);
     expect(logs[0]).satisfy((l: string) => l.startsWith("Set 'run-command'"));
     expect(logs[1]).satisfy((l: string) => l.startsWith("Set 'run-command'"));
+  });
+
+  it("Preview Command Running - workspace not supported error", async () => {
+    sandbox.stub(Utils, "isWorkspaceSupported").returns(false);
+
+    const cmd = new PreviewEnv();
+    cmd.builder(yargs);
+
+    const result = await cmd.runCommand(defaultOptions);
+
+    expect(result.isErr()).to.be.true;
+    expect((result as any).error.name).equals("WorkspaceNotSupported");
+  });
+
+  it("Preview Command Running - load envs error", async () => {
+    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(envUtil, "readEnv").resolves(err({ foo: "bar" } as any));
+
+    const cmd = new PreviewEnv();
+    cmd.builder(yargs);
+
+    const result = await cmd.runCommand(defaultOptions);
+
+    expect(result.isErr()).to.be.true;
+    expect((result as any).error).to.deep.equal({ foo: "bar" });
+  });
+
+  it("Preview Command Running - check account error", async () => {
+    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox
+      .stub(PreviewEnv.prototype, <any>"checkM365Account")
+      .resolves(err({ foo: "bar" } as any));
+
+    const cmd = new PreviewEnv();
+    cmd.builder(yargs);
+
+    const result = await cmd.runCommand(defaultOptions);
+
+    expect(result.isErr()).to.be.true;
+    expect((result as any).error).to.deep.equal({ foo: "bar" });
+  });
+
+  it("Preview Command Running - detect run command error", async () => {
+    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
+    sandbox
+      .stub(PreviewEnv.prototype, <any>"detectRunCommand")
+      .resolves(err({ foo: "bar" } as any));
+
+    const cmd = new PreviewEnv();
+    cmd.builder(yargs);
+
+    const result = await cmd.runCommand(defaultOptions);
+
+    expect(result.isErr()).to.be.true;
+    expect((result as any).error).to.deep.equal({ foo: "bar" });
+  });
+
+  it("Preview Command Running - run task error", async () => {
+    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
+    sandbox
+      .stub(PreviewEnv.prototype, <any>"detectRunCommand")
+      .resolves(ok({ runCommand: "npm start" }));
+    sandbox
+      .stub(PreviewEnv.prototype, <any>"runCommandAsTask")
+      .resolves(err({ foo: "bar" } as any));
+
+    const cmd = new PreviewEnv();
+    cmd.builder(yargs);
+
+    const result = await cmd.runCommand(defaultOptions);
+
+    expect(result.isErr()).to.be.true;
+    expect((result as any).error).to.deep.equal({ foo: "bar" });
+  });
+
+  it("Preview Command Running - launch browser error", async () => {
+    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
+    sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
+    sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
+    sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(err({ foo: "bar" } as any));
+
+    const cmd = new PreviewEnv();
+    cmd.builder(yargs);
+
+    const result = await cmd.runCommand(defaultOptions);
+
+    expect(result.isErr()).to.be.true;
+    expect((result as any).error).to.deep.equal({ foo: "bar" });
   });
 });
 

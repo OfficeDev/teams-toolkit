@@ -3323,31 +3323,25 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
   const config: SingleSelectConfig = {
     name: "tutorialName",
-    title: localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),
-    options: [],
-    returnObject: true,
-  };
-  if (TreatmentVariableValue.inProductDoc) {
-    config.title = localize("teamstoolkit.commandsTreeViewProvider.guideTitle");
-    config.options = [
+    title: localize("teamstoolkit.commandsTreeViewProvider.guideTitle"),
+    options: [
       {
         id: "cardActionResponse",
-        label: `${localize("teamstoolkit.tutorials.cardActionResponse.label.new")}`,
-        description: localize("teamstoolkit.common.recommended"),
-        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail.new"),
+        label: `${localize("teamstoolkit.tutorials.cardActionResponse.label")}`,
+        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
         groupName: localize("teamstoolkit.guide.scenario"),
         data: "https://aka.ms/teamsfx-card-action-response",
         buttons: [
           {
-            iconPath: "file-code",
-            tooltip: localize("teamstoolkit.guide.tooltip.inProduct"),
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
             command: "fx-extension.openTutorial",
           },
         ],
       },
       {
         id: "sendNotification",
-        label: `${localize("teamstoolkit.tutorials.sendNotification.label.new")}`,
+        label: `${localize("teamstoolkit.tutorials.sendNotification.label")}`,
         detail: localize("teamstoolkit.tutorials.sendNotification.detail"),
         groupName: localize("teamstoolkit.guide.scenario"),
         data: "https://aka.ms/teamsfx-send-notification",
@@ -3358,83 +3352,68 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
             command: "fx-extension.openTutorial",
           },
         ],
-      },
-      {
-        id: "commandAndResponse",
-        label: `${localize("teamstoolkit.tutorials.commandAndResponse.label.new")}`,
-        detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
-        groupName: localize("teamstoolkit.guide.development"),
-        data: "https://aka.ms/teamsfx-create-command",
-        buttons: [
-          {
-            iconPath: "file-symlink-file",
-            tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "fx-extension.openTutorial",
-          },
-        ],
-      },
-      {
-        id: "addSso",
-        label: `${localize("teamstoolkit.tutorials.addSso.label.new")}`,
-        detail: localize("teamstoolkit.tutorials.addSso.detail"),
-        groupName: localize("teamstoolkit.guide.development"),
-        data: "https://aka.ms/teamsfx-add-sso",
-        buttons: [
-          {
-            iconPath: "file-symlink-file",
-            tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "fx-extension.openTutorial",
-          },
-        ],
-      },
-      {
-        id: "connectApi",
-        label: `${localize("teamstoolkit.tutorials.connectApi.label.new")}`,
-        detail: localize("teamstoolkit.tutorials.connectApi.detail"),
-        groupName: localize("teamstoolkit.guide.development"),
-        data: "https://aka.ms/teamsfx-connect-api",
-        buttons: [
-          {
-            iconPath: "file-symlink-file",
-            tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "fx-extension.openTutorial",
-          },
-        ],
-      },
-    ];
-  } else {
-    config.options = [
-      {
-        id: "sendNotification",
-        label: `${localize("teamstoolkit.tutorials.sendNotification.label")}`,
-        detail: localize("teamstoolkit.tutorials.sendNotification.detail"),
-        data: "https://aka.ms/teamsfx-send-notification",
       },
       {
         id: "commandAndResponse",
         label: `${localize("teamstoolkit.tutorials.commandAndResponse.label")}`,
         detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
         data: "https://aka.ms/teamsfx-create-command",
-      },
-      {
-        id: "cardActionResponse",
-        label: localize("teamstoolkit.tutorials.cardActionResponse.label"),
-        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
-        data: "https://aka.ms/teamsfx-card-action-response",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
       },
       {
         id: "addSso",
         label: `${localize("teamstoolkit.tutorials.addSso.label")}`,
         detail: localize("teamstoolkit.tutorials.addSso.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
         data: "https://aka.ms/teamsfx-add-sso",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
       },
       {
         id: "connectApi",
         label: `${localize("teamstoolkit.tutorials.connectApi.label")}`,
         detail: localize("teamstoolkit.tutorials.connectApi.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
         data: "https://aka.ms/teamsfx-connect-api",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
       },
-    ];
+    ],
+    returnObject: true,
+  };
+  if (TreatmentVariableValue.inProductDoc) {
+    config.options.splice(0, 1, {
+      id: "cardActionResponse",
+      label: `${localize("teamstoolkit.tutorials.cardActionResponse.label")}`,
+      description: localize("teamstoolkit.common.recommended"),
+      detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
+      groupName: localize("teamstoolkit.guide.scenario"),
+      data: "https://aka.ms/teamsfx-card-action-response",
+      buttons: [
+        {
+          iconPath: "file-code",
+          tooltip: localize("teamstoolkit.guide.tooltip.inProduct"),
+          command: "fx-extension.openTutorial",
+        },
+      ],
+    });
   }
 
   if (isExistingTabAppEnabled()) {

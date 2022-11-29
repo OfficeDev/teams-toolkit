@@ -2,7 +2,15 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  Inputs,
+  ok,
+  Platform,
+  Result,
+  SettingsFileName,
+  SettingsFolderName,
+} from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -15,6 +23,7 @@ import { MockTools, MockUserInteraction, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
 import { setTools } from "../../../src/core/globalVars";
 import { MigrationContext } from "../../../src/core/middleware/utils/migrationContext";
+import { generateSettingsJson } from "../../../src/core/middleware/projectMigratorV3";
 
 let mockedEnvRestore: () => void;
 
@@ -40,6 +49,7 @@ describe("ProjectMigratorMW", () => {
   it("happy path", async () => {
     const tools = new MockTools();
     setTools(tools);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
     class MyClass {
       tools = tools;
       async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -105,5 +115,88 @@ describe("MigrationContext", () => {
     assert.isTrue(modifiedPaths.includes("b"));
     assert.isTrue(modifiedPaths.includes("b/c"));
     assert.isTrue(modifiedPaths.includes("d"));
+
+    await context.cleanModifiedPaths();
+    assert.isEmpty(context.getModifiedPaths());
+
+    await context.restoreBackup();
+    await context.cleanTeamsfx();
   });
 });
+
+describe("generateSettingsJson", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("happy path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    const oldProjectSettings = await readOldProjectSettings(projectPath);
+
+    await generateSettingsJson(migrationContext);
+
+    assert.isTrue(
+      await fs.pathExists(path.join(projectPath, SettingsFolderName, SettingsFileName))
+    );
+    const newSettings = await readSettingJson(projectPath);
+    assert.equal(newSettings.trackingId, oldProjectSettings.projectId);
+    assert.equal(newSettings.version, "3.0.0");
+  });
+
+  it("no project id", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    delete projectSetting.projectId;
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateSettingsJson(migrationContext);
+
+    const newSettings = await readSettingJson(projectPath);
+    assert.isTrue(newSettings.hasOwnProperty("trackingId")); // will auto generate a new trackingId if old project does not have project id
+  });
+});
+
+async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
+  const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+  inputs.projectPath = projectPath;
+  const ctx = {
+    arguments: [inputs],
+  };
+  return await MigrationContext.create(ctx);
+}
+
+function getTestAssetsPath(projectName: string): string {
+  return path.join("tests/core/middleware/testAssets/v3Migration", projectName.toString());
+}
+
+async function copyTestProject(projectName: string, targetPath: string): Promise<void> {
+  await fs.copy(getTestAssetsPath(projectName), targetPath);
+}
+
+async function readOldProjectSettings(projectPath: string): Promise<any> {
+  return await fs.readJson(path.join(projectPath, Constants.oldProjectSettingsFilePath));
+}
+
+async function readSettingJson(projectPath: string): Promise<any> {
+  return await fs.readJson(path.join(projectPath, Constants.settingsFilePath));
+}
+
+const Constants = {
+  happyPathTestProject: "happyPath",
+  settingsFilePath: "teamsfx/settings.json",
+  oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
+};

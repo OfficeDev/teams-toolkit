@@ -8,6 +8,7 @@ export const CoreTelemetryComponentName = "core";
 export enum CoreTelemetryEvent {
   CreateStart = "create-start",
   Create = "create",
+  CreateFromTdpStart = "create-tdp-start",
 }
 
 export enum CoreTelemetryProperty {
@@ -16,6 +17,8 @@ export enum CoreTelemetryProperty {
   Success = "success",
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
+  TdpTeamsAppId = "tdp-teams-app-id",
+  TdpTeamsAppFeatures = "tdp-teams-app-features",
 }
 
 export enum CoreTelemetrySuccess {

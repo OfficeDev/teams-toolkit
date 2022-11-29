@@ -29,6 +29,7 @@ describe("Dotnet Build Driver test", () => {
     const args = {
       workingDirectory: "./",
       args: "build",
+      execPath: "/usr/local/bin",
     };
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),

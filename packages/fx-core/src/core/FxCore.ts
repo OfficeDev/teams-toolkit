@@ -623,7 +623,7 @@ export class FxCore implements v3.ICore {
     return res;
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW(true), ContextInjectorMW, EnvWriterMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW(true), ContextInjectorMW, EnvWriterMW])
   async deployTeamsManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
     const component = Container.get("app-manifest") as any;

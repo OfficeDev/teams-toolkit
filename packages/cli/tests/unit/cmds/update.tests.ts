@@ -171,7 +171,7 @@ describe("Update Teams app manifest Command Tests", function () {
   });
 
   it("Run command success", async () => {
-    sandbox.stub(FxCore.prototype, "executeUserTask").resolves(ok(""));
+    sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(""));
     const cmd = new Update();
     const updateTeamsAppManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "teams-app");
     const args = {
@@ -189,7 +189,7 @@ describe("Update Teams app manifest Command Tests", function () {
 
   it("Run command with exception", async () => {
     sandbox
-      .stub(FxCore.prototype, "executeUserTask")
+      .stub(FxCore.prototype, "deployTeamsManifest")
       .resolves(err(new UserError("Fake_Err", "Fake_Err_name", "Fake_Err_msg")));
     const cmd = new Update();
     const updateTeamsAppManifes = cmd.subCommands.find((cmd) => cmd.commandHead === "teams-app");

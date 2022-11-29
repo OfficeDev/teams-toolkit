@@ -21,6 +21,8 @@ import {
   UserCancelError,
   SystemError,
   LogProvider,
+  Platform,
+  Colors,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
@@ -736,8 +738,8 @@ export async function updateManifestV3(
       "warn",
       getLocalizedString("plugins.appstudio.updateManifestTip"),
       true,
-      previewOnly,
-      previewUpdate
+      previewUpdate,
+      previewOnly
     );
 
     if (res?.isOk() && res.value === previewOnly) {
@@ -783,23 +785,34 @@ export async function updateManifestV3(
     }
 
     ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", teamsAppId));
-    ctx.userInteraction
-      .showMessage(
-        "info",
-        getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"),
-        false,
-        Constants.VIEW_DEVELOPER_PORTAL
-      )
-      .then((res) => {
-        if (res?.isOk() && res.value === Constants.VIEW_DEVELOPER_PORTAL) {
-          ctx.userInteraction.openUrl(
-            util.format(
-              Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL,
-              result.value.get("TEAMS_APP_ID")
-            )
-          );
-        }
-      });
+
+    const url = util.format(
+      Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL,
+      result.value.get("TEAMS_APP_ID")
+    );
+    if (inputs.platform === Platform.CLI) {
+      const message = [
+        {
+          content: getLocalizedString("plugins.appstudio.teamsAppUpdatedCLINotice"),
+          color: Colors.BRIGHT_GREEN,
+        },
+        { content: url, color: Colors.BRIGHT_CYAN },
+      ];
+      ctx.userInteraction.showMessage("info", message, false);
+    } else {
+      ctx.userInteraction
+        .showMessage(
+          "info",
+          getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"),
+          false,
+          Constants.VIEW_DEVELOPER_PORTAL
+        )
+        .then((res) => {
+          if (res?.isOk() && res.value === Constants.VIEW_DEVELOPER_PORTAL) {
+            ctx.userInteraction.openUrl(url);
+          }
+        });
+    }
     return result;
   } catch (error) {
     if (error.message && error.message.includes("404")) {

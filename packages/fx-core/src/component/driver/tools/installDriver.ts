@@ -98,7 +98,7 @@ export class ToolsInstallDriverImpl {
       this.context.logProvider.warning(funcStatus.error?.message);
     }
     if (funcStatus?.details?.binFolders !== undefined) {
-      const funcBinFolder = `${funcStatus.details.binFolders.join(path.delimiter)}`;
+      const funcBinFolder = funcStatus.details.binFolders.join(path.delimiter);
       res.set(outputName.FUNC_PATH, funcBinFolder);
     }
     return res;

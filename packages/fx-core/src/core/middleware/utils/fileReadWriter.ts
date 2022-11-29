@@ -31,23 +31,28 @@ export function fsReadDirSync(context: MigrationContext, _path: string): string[
 }
 
 // convert any obj names if can be converted
-export function jsonObjectNamesConvertV3(obj: any, prefix: string, bicepContent: any) {
+export function jsonObjectNamesConvertV3(
+  obj: any,
+  prefix: string,
+  filetype: FileType,
+  bicepContent: any
+) {
   let returnData = "";
   for (const keyName of Object.keys(obj)) {
-    returnData += dfs(prefix + keyName, obj[keyName], bicepContent);
+    returnData += dfs(prefix + keyName, obj[keyName], filetype, bicepContent);
   }
   return returnData;
 }
 
-function dfs(parentKeyName: string, obj: any, bicepContent: any): string {
+function dfs(parentKeyName: string, obj: any, filetype: FileType, bicepContent: any): string {
   let returnData = "";
 
   if (isObject(obj)) {
     for (const keyName of Object.keys(obj)) {
-      returnData += dfs(parentKeyName + "." + keyName, obj[keyName], bicepContent);
+      returnData += dfs(parentKeyName + "." + keyName, obj[keyName], filetype, bicepContent);
     }
   } else {
-    return namingConverterV3(parentKeyName, FileType.STATE, bicepContent) + "=" + obj + "\n";
+    return namingConverterV3(parentKeyName, filetype, bicepContent) + "=" + obj + "\n";
   }
 
   return returnData;

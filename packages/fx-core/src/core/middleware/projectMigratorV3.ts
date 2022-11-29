@@ -8,11 +8,13 @@ import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks } from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
+import { AppYmlGenerator } from "./utils/appYmlGenerator";
+import * as fs from "fs-extra";
 
 const MigrationVersion = "2.1.0";
 
 type Migration = (context: MigrationContext) => Promise<void>;
-const subMigrations: Array<Migration> = [preMigration, generateSettingsJson];
+const subMigrations: Array<Migration> = [preMigration, generateSettingsJson, generateAppYml];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await checkVersionForMigration(ctx)) && checkMethod(ctx)) {
@@ -93,4 +95,11 @@ export async function generateSettingsJson(context: MigrationContext): Promise<v
   } else {
     throw oldProjectSettings.error;
   }
+}
+
+export async function generateAppYml(context: MigrationContext): Promise<void> {
+  const bicepContent: string = await fs.readFile("./templates/azure/provision.bicep", "utf8");
+  const appYmlGenerator = new AppYmlGenerator(context.projectSettings!, bicepContent);
+  const appYmlString = appYmlGenerator.generateAppYml();
+  context.fsWriteFile(path.join(SettingsFolderName, "app.yml"), appYmlString);
 }

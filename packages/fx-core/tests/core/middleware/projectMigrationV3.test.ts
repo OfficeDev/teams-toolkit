@@ -15,15 +15,6 @@ import { MockTools, MockUserInteraction, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
 import { setTools } from "../../../src/core/globalVars";
 import { MigrationContext } from "../../../src/core/middleware/utils/migrationContext";
-import {
-  FileType,
-  fixedNamingsV3,
-  namingConverterV3,
-} from "../../../src/core/middleware/MigrationUtils";
-import {
-  stateEnvMigration,
-  stateLocalMigration,
-} from "../../../src/core/middleware/projectMigratorV3";
 
 let mockedEnvRestore: () => void;
 
@@ -120,14 +111,5 @@ describe("MigrationContext", () => {
 
     await context.restoreBackup();
     await context.cleanTeamsfx();
-  });
-});
-
-describe("stateMigrationV3", () => {
-  it("happy path for state dev migration", () => {
-    Object.keys(fixedNamingsV3).forEach((name) => {
-      const res = namingConverterV3(name, FileType.STATE, "");
-      assert.isTrue(res.isOk() && res.value === fixedNamingsV3[name]);
-    });
   });
 });

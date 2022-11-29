@@ -82,6 +82,32 @@ export function containsUnsupportedFeature(appDefinition: AppDefinition): boolea
   return !!hasScene || !!hasConnector || !!hasActivies;
 }
 
+export function getFeaturesFromAppDefinition(appDefinition: AppDefinition): string[] {
+  const features = [];
+  const personalTab = "personal-tab";
+  const groupTab = "group-tab";
+  const bot = "bot";
+  const messageExtension = "messaging-extension";
+
+  if (isPersonalApp(appDefinition)) {
+    features.push(personalTab);
+  }
+
+  if (isGroupApp(appDefinition)) {
+    features.push(groupTab);
+  }
+
+  if (isBot(appDefinition)) {
+    features.push(bot);
+  }
+
+  if (isMessageExtension(appDefinition)) {
+    features.push(messageExtension);
+  }
+
+  return features;
+}
+
 export function hasMeetingExtension(appDefinition: AppDefinition): boolean {
   return (
     !!appDefinition.configurableTabs &&

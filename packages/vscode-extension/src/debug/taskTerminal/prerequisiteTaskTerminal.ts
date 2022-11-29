@@ -3,13 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from "vscode";
-
 import { FxError, Result, Void } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
+import { Prerequisite, TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
+import { isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import VsCodeLogInstance from "../../commonlib/log";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import * as commonUtils from "../commonUtils";
-import { DebugSessionExists, prerequisiteCheckTaskDisplayMessages } from "../constants";
+import {
+  DebugSessionExists,
+  prerequisiteCheckTaskDisplayMessages,
+  v3PrerequisiteCheckTaskDisplayMessages,
+} from "../constants";
 import {
   localTelemetryReporter,
   maskArrayValue,
@@ -17,7 +22,6 @@ import {
 } from "../localTelemetryReporter";
 import { checkAndInstallForTask } from "../prerequisitesHandler";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
-import { Prerequisite, TaskDefaultValue } from "@microsoft/teamsfx-core/build/common/local";
 
 export interface PrerequisiteArgVxTestApp {
   version: string;
@@ -86,8 +90,11 @@ export class PrerequisiteTaskTerminal extends BaseTaskTerminal {
       telemetryProperties
     );
     const duration = this.getDurationInSeconds();
+    const displayMessages = isV3Enabled()
+      ? v3PrerequisiteCheckTaskDisplayMessages
+      : prerequisiteCheckTaskDisplayMessages;
     if (res.isOk() && duration) {
-      VsCodeLogInstance.info(prerequisiteCheckTaskDisplayMessages.durationMessage(duration));
+      VsCodeLogInstance.info(displayMessages.durationMessage(duration));
     }
     return res;
   }

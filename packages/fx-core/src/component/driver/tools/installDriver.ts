@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as path from "path";
 import { Service } from "typedi";
 import { hooks } from "@feathersjs/hooks/lib";
 import { FxError, Result } from "@microsoft/teamsfx-api";
@@ -13,11 +14,13 @@ import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { InstallToolArgs } from "./interfaces/InstallToolArgs";
 import { DepsManager, DepsType, EmptyLogger, EmptyTelemetry } from "../../../common/deps-checker";
 import { FuncInstallationUserError } from "./error/funcInstallationUserError";
+import { DotnetInstallationUserError } from "./error/dotnetInstallationUserError";
 
 const ACTION_NAME = "tools/install";
 const outputName = Object.freeze({
   SSL_CRT_FILE: "SSL_CRT_FILE",
   SSL_KEY_FILE: "SSL_KEY_FILE",
+  DOTNET_PATH: "DOTNET_PATH",
 });
 const helpLink = "https://aka.ms/teamsfx-actions/tools/install";
 
@@ -52,6 +55,11 @@ export class ToolsInstallDriverImpl {
       await this.resolveFuncCoreTools();
     }
 
+    if (args.dotnet) {
+      const dotnetRes = await this.resolveDotnet();
+      dotnetRes.forEach((v, k) => res.set(k, v));
+    }
+
     // TODO(xiaofhua): prettier output
     this.context.logProvider.info(`Run '${ACTION_NAME}' driver successfully.`);
     return res;
@@ -79,12 +87,7 @@ export class ToolsInstallDriverImpl {
 
   async resolveFuncCoreTools(): Promise<void> {
     const depsManager = new DepsManager(new EmptyLogger(), new EmptyTelemetry());
-    const result = (
-      await depsManager.ensureDependencies([DepsType.FuncCoreTools], {
-        fastFail: false,
-        doctor: true,
-      })
-    )[0];
+    const result = await depsManager.ensureDependency(DepsType.FuncCoreTools, true);
     if (!result.isInstalled && result.error) {
       throw new FuncInstallationUserError(ACTION_NAME, result.error);
     } else if (result.error) {
@@ -93,12 +96,34 @@ export class ToolsInstallDriverImpl {
     }
   }
 
+  async resolveDotnet(): Promise<Map<string, string>> {
+    const res = new Map<string, string>();
+    const depsManager = new DepsManager(new EmptyLogger(), new EmptyTelemetry());
+    const dotnetStatus = await depsManager.ensureDependency(DepsType.Dotnet, true);
+    if (!dotnetStatus.isInstalled && dotnetStatus.error) {
+      throw new DotnetInstallationUserError(ACTION_NAME, dotnetStatus.error);
+    } else if (dotnetStatus.error) {
+      // TODO(xiaofhua): prettier warning output
+      this.context.logProvider.warning(dotnetStatus.error?.message);
+    }
+    if (dotnetStatus?.details?.binFolders !== undefined) {
+      const dotnetBinFolder = `${dotnetStatus.details.binFolders
+        .map((f: string) => path.dirname(f))
+        .join(path.delimiter)}`;
+      res.set(outputName.DOTNET_PATH, dotnetBinFolder);
+    }
+    return res;
+  }
+
   private validateArgs(args: InstallToolArgs): void {
     if (!!args.devCert && typeof args.devCert?.trust !== "boolean") {
       throw new InvalidParameterUserError(ACTION_NAME, "devCert.trust", helpLink);
     }
     if (!!args.func && typeof args.func !== "boolean") {
       throw new InvalidParameterUserError(ACTION_NAME, "func", helpLink);
+    }
+    if (!!args.dotnet && typeof args.dotnet !== "boolean") {
+      throw new InvalidParameterUserError(ACTION_NAME, "dotnet", helpLink);
     }
   }
 }

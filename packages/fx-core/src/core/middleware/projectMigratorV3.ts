@@ -13,7 +13,7 @@ import {
   jsonObjectNamesConvertV3,
   readBicepContent,
   readStateFile,
-} from "./utils/fileReader";
+} from "./utils/fileReadWriter";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import { isObject } from "lodash";
 
@@ -138,7 +138,7 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
         if (obj) {
           const bicepContent = readBicepContent(context);
           // convert every name
-          const envData = jsonObjectNamesConvertV3(obj, "state.", bicepContent);
+          const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
           await context.fsWriteFile(SettingsFolderName + "/.env." + envName, envData);
         }
       }

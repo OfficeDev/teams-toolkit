@@ -42,7 +42,6 @@ import {
   LocalEnvManager,
   ProjectSettingsHelper,
   TaskDefinition,
-  ProgrammingLanguage,
   getProjectComponents,
   TelemetryContext,
 } from "@microsoft/teamsfx-core/build/common/local";
@@ -85,7 +84,7 @@ import * as util from "util";
 import { openHubWebClient } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { FolderName } from "@microsoft/teamsfx-core/build/common/local/constants";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import {
   hasAzureTab,
   hasBot,
@@ -102,6 +101,7 @@ const DepsDisplayName = {
   [DepsType.SpfxNode]: "Node.js",
   [DepsType.SpfxNodeV1_16]: "Node.js",
   [DepsType.AzureNode]: "Node.js",
+  [DepsType.ProjectNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
   [DepsType.Ngrok]: "Ngrok",
   [DepsType.FuncCoreTools]: "Azure Functions Core Tools",
@@ -112,6 +112,7 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
   [Checker.M365Account]: `Checking ${Checker.M365Account}`,
   [Checker.LocalCertificate]: `Checking ${Checker.LocalCertificate}`,
   [Checker.Ports]: `Checking ${Checker.Ports}`,
+  [DepsType.ProjectNode]: `Checking ${DepsDisplayName[DepsType.ProjectNode]}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
   [DepsType.SpfxNodeV1_16]: `Checking ${DepsDisplayName[DepsType.SpfxNodeV1_16]}`,
   [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
@@ -1020,7 +1021,7 @@ export default class Preview extends YargsCommand {
       const hasTeamsFxDevScript =
         (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Bot))) !== undefined;
       const botWatchTask =
-        includeFuncHostedBot && programmingLanguage === ProgrammingLanguage.typescript
+        includeFuncHostedBot && programmingLanguage === ProgrammingLanguage.TS
           ? hasTeamsFxDevScript
             ? this.prepareTaskNext(
                 TaskDefinition.funcHostedBotWatch(workspaceFolder),
@@ -1179,7 +1180,7 @@ export default class Preview extends YargsCommand {
           )
       : undefined;
     const backendWatchTask =
-      includeBackend && programmingLanguage === ProgrammingLanguage.typescript
+      includeBackend && programmingLanguage === ProgrammingLanguage.TS
         ? (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Function))) !==
           undefined
           ? this.prepareTaskNext(

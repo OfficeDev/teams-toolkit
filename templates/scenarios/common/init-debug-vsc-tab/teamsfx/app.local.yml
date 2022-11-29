@@ -40,3 +40,6 @@ deploy:
     with:
       args: install --no-audit
 
+  - uses: npm/command
+    with:
+      args: install -D @microsoft/teamsfx-run-utils@alpha

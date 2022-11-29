@@ -5,7 +5,7 @@ import sinon from "sinon";
 import yargs, { Options } from "yargs";
 
 import { err, Func, FxError, Inputs, ok, Platform, UserError } from "@microsoft/teamsfx-api";
-import { environmentManager, FxCore } from "@microsoft/teamsfx-core";
+import { environmentManager, FxCore, getUuid } from "@microsoft/teamsfx-core";
 
 import Publish from "../../../src/cmds/publish";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -18,9 +18,10 @@ import {
 import * as constants from "../../../src/constants";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
-import { EnvNotSpecified, NotSupportedProjectType } from "../../../src/error";
+import { NotSupportedProjectType } from "../../../src/error";
 import CLIUIInstance from "../../../src/userInteraction";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import * as utils from "../../../src/utils";
 
 describe("Publish Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -33,7 +34,7 @@ describe("Publish Command Tests", function () {
     "manifest-folder": {},
     "teams-app-id": {},
   };
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
 
   before(() => {
     sandbox.stub(HelpParamGenerator, "getYargsParamForHelp").returns({});
@@ -112,26 +113,20 @@ describe("Publish Command Tests", function () {
   });
 
   it("Publish Command Running Check (CLI)", async () => {
+    sandbox.stub(utils, "getTeamsAppTelemetryInfoByEnv").returns({
+      appId: getUuid(),
+      tenantId: getUuid(),
+    });
+
     const cmd = new Publish();
     cmd["params"] = params;
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
+      env: "dev",
     };
     await cmd.handler(args);
     expect(telemetryEvents).deep.equals([TelemetryEvent.PublishStart, TelemetryEvent.Publish]);
     expect(telemetryEventStatus).equals(TelemetrySuccess.Yes);
-  });
-
-  it("Publish Command Running Check V3 (CLI)", async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    const cmd = new Publish();
-    cmd["params"] = params;
-    const args = {
-      [constants.RootFolderNode.data.name as string]: "real",
-    };
-    await expect(cmd.handler(args)).to.be.rejectedWith(EnvNotSpecified);
   });
 
   it("Publish Command Running Check with Error (CLI)", async () => {

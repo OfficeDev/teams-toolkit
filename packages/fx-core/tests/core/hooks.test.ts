@@ -30,7 +30,7 @@ import sinon from "sinon";
 import { environmentManager } from "../../src/core/environment";
 import {
   migrateArm,
-  ProjectMigratorMW,
+  getProjectMigratorMW,
   ArmParameters,
 } from "../../src/core/middleware/projectMigrator";
 import { MockTools, MockUserInteraction, randomAppName } from "./utils";
@@ -260,7 +260,7 @@ describe("Middleware - others", () => {
         }
       }
       hooks(MyClass, {
-        other: [ProjectMigratorMW],
+        other: [getProjectMigratorMW()],
       });
 
       const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
@@ -295,7 +295,7 @@ describe("Middleware - others", () => {
         }
       }
       hooks(MyClass, {
-        other: [ProjectMigratorMW],
+        other: [getProjectMigratorMW()],
       });
 
       const inputs: Inputs = { platform: Platform.VSCode };

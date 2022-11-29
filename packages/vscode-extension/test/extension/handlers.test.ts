@@ -358,6 +358,10 @@ describe("handlers", () => {
     });
 
     it("openConfigStateFile() - local", async () => {
+      sinon.stub(localizeUtils, "localize").callsFake((key: string) => {
+        return key;
+      });
+
       const env = "local";
       const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
 
@@ -1032,7 +1036,7 @@ describe("handlers", () => {
     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     const deployArtifacts = sinon.spy(handlers.core, "deployArtifacts");
-    await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
+    await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
     sinon.assert.calledOnce(deployArtifacts);
     chai.assert.equal(deployArtifacts.getCall(0).args[0]["include-aad-manifest"], "yes");
     sinon.restore();
@@ -1045,7 +1049,7 @@ describe("handlers", () => {
     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
     const deployAadManifest = sinon.spy(handlers.core, "deployAadManifest");
-    await handlers.deployAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
+    await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }, "CodeLens"]);
     sinon.assert.calledOnce(deployAadManifest);
     chai.assert.equal(deployAadManifest.getCall(0).args[0]["include-aad-manifest"], "yes");
     deployAadManifest.restore();

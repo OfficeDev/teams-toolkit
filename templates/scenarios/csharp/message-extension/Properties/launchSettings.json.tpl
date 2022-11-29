@@ -2,7 +2,7 @@
   "profiles": {
     "Microsoft Teams (browser)": {
       "commandName": "Project",
-      "dotnetRunMessages": "true",
+      "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "https://teams.microsoft.com/l/app/%TEAMSAPPID%?installAppPackage=true&webjoin=true&appTenantId=%TENANTID%&login_hint=%USERNAME%",
       "applicationUrl": "https://localhost:7130;http://localhost:5130",
@@ -15,7 +15,7 @@
     //,
     //"{%ProjectName%}": {
     //  "commandName": "Project",
-    //  "dotnetRunMessages": "true",
+    //  "dotnetRunMessages": true,
     //  "launchBrowser": true,
     //  "applicationUrl": "https://localhost:7130;http://localhost:5130",
     //  "environmentVariables": {

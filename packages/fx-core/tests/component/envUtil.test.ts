@@ -155,7 +155,7 @@ describe("env utils", () => {
       }
     }
     hooks(MyClass, {
-      myMethod: [EnvLoaderMW],
+      myMethod: [EnvLoaderMW(true)],
     });
     const my = new MyClass();
     const inputs = {
@@ -180,7 +180,7 @@ describe("env utils", () => {
       }
     }
     hooks(MyClass, {
-      myMethod: [EnvLoaderMW],
+      myMethod: [EnvLoaderMW(true)],
     });
     const my = new MyClass();
     const inputs = {
@@ -198,7 +198,7 @@ describe("env utils", () => {
       }
     }
     hooks(MyClass, {
-      myMethod: [EnvLoaderMW],
+      myMethod: [EnvLoaderMW(true)],
     });
     const my = new MyClass();
     const inputs = {
@@ -219,7 +219,7 @@ describe("env utils", () => {
       }
     }
     hooks(MyClass, {
-      myMethod: [EnvLoaderMW],
+      myMethod: [EnvLoaderMW(true)],
     });
     const my = new MyClass();
     const inputs = {
@@ -242,7 +242,7 @@ describe("env utils", () => {
       }
     }
     hooks(MyClass, {
-      myMethod: [EnvLoaderMW],
+      myMethod: [EnvLoaderMW(true)],
     });
     const my = new MyClass();
     const inputs = {
@@ -271,7 +271,7 @@ describe("env utils", () => {
       }
     }
     hooks(MyClass, {
-      myMethod: [EnvLoaderMW],
+      myMethod: [EnvLoaderMW(true)],
     });
     const my = new MyClass();
     const inputs = {
@@ -291,7 +291,7 @@ describe("env utils", () => {
       }
     }
     hooks(MyClass, {
-      myMethod: [EnvLoaderMW],
+      myMethod: [EnvLoaderMW(true)],
     });
     const my = new MyClass();
     const inputs = {

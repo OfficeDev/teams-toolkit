@@ -7,7 +7,7 @@ import { Service } from "typedi";
 import { StepDriver } from "../../interface/stepDriver";
 import { AzureResourceInfo, DriverContext } from "../../interface/commonArgs";
 import { TokenCredential } from "@azure/core-http";
-import { FxError, Result } from "@microsoft/teamsfx-api";
+import { FxError, IProgressHandler, Result, UserInteraction } from "@microsoft/teamsfx-api";
 import { wrapRun } from "../../../utils/common";
 import { ProgressMessages } from "../../../messages";
 import { hooks } from "@feathersjs/hooks";
@@ -23,7 +23,8 @@ export class AzureFunctionDeployDriver implements StepDriver {
     const impl = new AzureFunctionDeployDriverImpl(args, context);
     return wrapRun(
       () => impl.run(),
-      () => impl.cleanup()
+      () => impl.cleanup(),
+      context.logProvider
     );
   }
 }
@@ -32,8 +33,6 @@ export class AzureFunctionDeployDriver implements StepDriver {
  * deploy to Azure Function
  */
 export class AzureFunctionDeployDriverImpl extends AzureDeployDriver {
-  progressBarName = `Deploying ${this.workingDirectory ?? ""} to Azure Function App`;
-  progressBarSteps = 6;
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/sites\/([^\/]*)/i;
 
@@ -47,5 +46,12 @@ export class AzureFunctionDeployDriverImpl extends AzureDeployDriver {
     await this.progressBar?.next(ProgressMessages.restartAzureFunctionApp);
     await this.restartFunctionApp(azureResource);
     await this.progressBar?.end(true);
+  }
+
+  createProgressBar(ui?: UserInteraction): IProgressHandler | undefined {
+    return ui?.createProgressBar(
+      `Deploying ${this.workingDirectory ?? ""} to Azure Function App`,
+      6
+    );
   }
 }

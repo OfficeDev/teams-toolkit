@@ -292,6 +292,7 @@ describe("AadAppClient", async () => {
 
       nock("https://graph.microsoft.com/v1.0")
         .patch(`/applications/${expectedObjectId}`)
+        .times(6)
         .reply(400, expectedError);
 
       await expect(aadAppClient.updateAadApp(mockedManifest))
@@ -305,6 +306,17 @@ describe("AadAppClient", async () => {
       nock("https://graph.microsoft.com/v1.0")
         .patch(`/applications/${expectedObjectId}`)
         .reply(404);
+      nock("https://graph.microsoft.com/v1.0")
+        .patch(`/applications/${expectedObjectId}`)
+        .reply(204);
+
+      await expect(aadAppClient.updateAadApp(mockedManifest)).not.eventually.be.rejected;
+    });
+
+    it("should retry when get 400 response", async () => {
+      nock("https://graph.microsoft.com/v1.0")
+        .patch(`/applications/${expectedObjectId}`)
+        .reply(400);
       nock("https://graph.microsoft.com/v1.0")
         .patch(`/applications/${expectedObjectId}`)
         .reply(204);

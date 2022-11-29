@@ -37,6 +37,15 @@ export class GenerateAppsettingsDriver implements StepDriver {
     try {
       this.validateArgs(args);
       const appsettingsPath = getAbsolutePath(args.target, context.projectPath);
+      if (!fs.existsSync(appsettingsPath)) {
+        // try to copy appsettings.json
+        const appsettingsTemplatePath = getAbsolutePath("appsettings.json", context.projectPath);
+        if (!fs.existsSync(appsettingsTemplatePath)) {
+          await fs.writeFile(appsettingsPath, "{}");
+        } else {
+          await fs.copyFile(appsettingsTemplatePath, appsettingsPath);
+        }
+      }
       const appSettingsJson = JSON.parse(fs.readFileSync(appsettingsPath, "utf-8"));
       this.replaceProjectAppsettings(appSettingsJson, args.appsettings);
       await fs.writeFile(appsettingsPath, JSON.stringify(appSettingsJson, null, "\t"), "utf-8");
@@ -92,7 +101,11 @@ export class GenerateAppsettingsDriver implements StepDriver {
       if (typeof item[1] === "string") {
         (projectAppsettings as any)[item[0]] = item[1];
       } else if (typeof item[1] === "object") {
-        this.replaceProjectAppsettings((projectAppsettings as any)[item[0]], item[1] as any);
+        if ((projectAppsettings as any)[item[0]]) {
+          this.replaceProjectAppsettings((projectAppsettings as any)[item[0]], item[1] as any);
+        } else {
+          (projectAppsettings as any)[item[0]] = item[1];
+        }
       }
     }
   }

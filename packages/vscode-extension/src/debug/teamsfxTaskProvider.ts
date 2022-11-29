@@ -16,14 +16,13 @@ import {
   v2,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { isV3Enabled, ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import {
   FolderName,
   ITaskDefinition,
   LocalEnvManager,
-  ProgrammingLanguage,
   TaskCommand,
   TaskDefinition,
 } from "@microsoft/teamsfx-core/build/common/local";
@@ -189,7 +188,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         tasks.push(
           await this.createBackendStartTask(workspaceFolder, programmingLanguage, localEnv)
         );
-        if (programmingLanguage === ProgrammingLanguage.typescript) {
+        if (programmingLanguage === ProgrammingLanguage.TS) {
           tasks.push(await this.createBackendWatchTask(workspaceFolder));
         }
       }

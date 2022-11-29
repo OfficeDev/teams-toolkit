@@ -29,7 +29,7 @@ deploy:
   - uses: azureAppService/deploy # Deploy bits to Azure App Serivce
     with:
       distributionPath: . # Deploy base folder
-      ignoreFile: ./.appserviceIgnore # Can be changed to any ignore file location, leave blank will ignore nothing
+      ignoreFile: ./.appserviceignore # Can be changed to any ignore file location, leave blank will ignore nothing
       resourceId: ${{BOT_AZURE_APP_SERVICE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to
 
 registerApp:

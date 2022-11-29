@@ -1,0 +1,16 @@
+Enable Single Sign-on for Teams Applications
+-------------------------
+
+On click of Visual Studio menu Project -> Teams Toolkit -> Add Authentication Code, couple of files for Single Sign-on are generated in "TeamsFx-Auth" folder, including a manifest template file for Azure AD application and authentication redirect pages.  
+
+Teams Toolkit helps you generate the authentication files, then you will need to link the files to your Teams application by updating authentication configurations to make sure the Single Sign-on works for your application. Please be noted that for different Teams application type like Tab or Bot, the detailed steps are slightly different.
+
+Basically you will need take care these configurations: 
+
+* In the Azure AD manifest file, you need to specify URIs such as the URI to identify the Azure AD authentication app and the redirect URI for returning token. 
+* In the Teams manifest file, add the SSO application to link it with Teams application. 
+* Add SSO application information in Teams Toolkit configuration files in order to make sure the authentication app can be registered on backend service and started by Teams Toolkit when you debugging or previewing Teams application.
+
+Refer to the step-by-step guide for Teams Tab Application at https://aka.ms/teams-toolkit-vs-add-SSO-tab.
+Refer to the step-by-step guide for Teams Bot Applications at https://aka.ms/teams-toolkit-vs-add-SSO-bot. This guide use Command and Response bot as an example to show case how to enable SSO.
+

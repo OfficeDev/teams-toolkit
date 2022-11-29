@@ -7,7 +7,7 @@
         {
             "label": "Start Teams App Locally",
             "dependsOn": [
-                "Validate & install prerequisites",
+                "Validate prerequisites",
                 "Start local tunnel",
                 "Create resources",
                 "Set up local projects",
@@ -18,7 +18,7 @@
         {
             "label": "Start Teams App Locally & Install App",
             "dependsOn": [
-                "Validate & install prerequisites",
+                "Validate prerequisites",
                 "Start local tunnel",
                 "Create resources",
                 "Set up local projects",
@@ -28,14 +28,15 @@
             "dependsOrder": "sequence"
         },
         {
-            // Check if all required prerequisites are installed and will install them if not.
+            // Check all required prerequisites.
             // See https://aka.ms/teamsfx-check-prerequisites-task to know the details and how to customize the args.
-            "label": "Validate & install prerequisites",
+            "label": "Validate prerequisites",
             "type": "teamsfx",
             "command": "debug-check-prerequisites",
             "args": {
                 "prerequisites": [
                     "nodejs", // Validate if Node.js is installed.
+                    "m365Account", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.
                     "portOccupancy" // Validate available ports to ensure those debug ones are not occupied.
                 ],
                 "portOccupancy": [

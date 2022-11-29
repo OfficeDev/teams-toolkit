@@ -78,7 +78,7 @@ import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment, EnvInfoLoaderMW_V3, loadEnvInfoV3 } from "./middleware/envInfoLoaderV3";
 import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { ProjectMigratorMW } from "./middleware/projectMigrator";
+import { getProjectMigratorMW } from "./middleware/projectMigrator";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import { getQuestionsForCreateProjectV2, QuestionModelMW } from "./middleware/questionModel";
@@ -148,6 +148,7 @@ import "../component/driver/botFramework/createOrUpdateBot";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
 import { containsUnsupportedFeature } from "../component/resource/appManifest/utils/utils";
+import { VideoFilterAppBlockerMW } from "./middleware/videoFilterAppBlocker";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -265,7 +266,7 @@ export class FxCore implements v3.ICore {
     return isV3Enabled() ? this.provisionResourcesNew(inputs) : this.provisionResourcesOld(inputs);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW(false), ContextInjectorMW, EnvWriterMW])
   async provisionResourcesNew(
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -288,11 +289,12 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    VideoFilterAppBlockerMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -353,7 +355,7 @@ export class FxCore implements v3.ICore {
     return isV3Enabled() ? this.deployArtifactsNew(inputs) : this.deployArtifactsOld(inputs);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW, EnvWriterMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW(false), ContextInjectorMW, EnvWriterMW])
   async deployArtifactsNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
@@ -367,11 +369,12 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    VideoFilterAppBlockerMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -398,7 +401,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -447,11 +450,12 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    VideoFilterAppBlockerMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -473,7 +477,7 @@ export class FxCore implements v3.ICore {
     ctx!.projectSettings = context.projectSetting;
     return ok(Void);
   }
-  @hooks([ErrorHandlerMW, EnvLoaderMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW(false)])
   async publishApplicationNew(inputs: Inputs): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
@@ -485,7 +489,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -511,11 +515,12 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
+    VideoFilterAppBlockerMW,
     EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -678,7 +683,7 @@ export class FxCore implements v3.ICore {
     return settingsUtil.readSettings(inputs.projectPath);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW(true), ContextInjectorMW])
   async getDotEnv(
     inputs: InputsWithProjectPath,
     ctx?: CoreHookContext
@@ -689,7 +694,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -713,7 +718,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -754,7 +759,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -787,7 +792,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -819,7 +824,7 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
+    getProjectMigratorMW(),
     ProjectConsolidateMW,
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
@@ -1212,7 +1217,7 @@ export class FxCore implements v3.ICore {
     return result;
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW(false), ContextInjectorMW])
   async preProvisionForVS(
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -1231,7 +1236,7 @@ export class FxCore implements v3.ICore {
     return coordinator.preProvisionForVS(context, inputs as InputsWithProjectPath);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, EnvLoaderMW(false), ContextInjectorMW])
   async publishInDeveloperPortal(
     inputs: Inputs,
     ctx?: CoreHookContext

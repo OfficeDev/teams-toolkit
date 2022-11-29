@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { StepDriver } from "../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { Service } from "typedi";
 import { CreateAadAppArgs } from "./interface/createAadAppArgs";
@@ -31,6 +31,28 @@ const AAD_APP_CLIENT_ID = "AAD_APP_CLIENT_ID";
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateAadAppDriver implements StepDriver {
+  /*
+  A simplified example of execute()
+
+  description = "creates an AAD app to authenticate users";
+
+  public async execute(args: CreateAadAppArgs, ctx: DriverContext): Promise<ExecutionResult> {
+    const result = await this.run(args, ctx);
+    const summaries = [];
+    if (result.isOk()) {
+      summaries.push(
+        "Environment variable AAD_APP_CLIENT_ID already exist, skipped creating new AAD app."
+      );
+      summaries.push(
+        "Environment variable SECRET_AAD_APP_CLIENT_SECRET already exist, skipped creating new AAD app."
+      );
+    } else {
+      summaries.push(`Failed to create AAD app. Please check ${helpLink} for more info.`);
+    }
+    return { result, summaries };
+  }
+  */
+
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: CreateAadAppArgs,

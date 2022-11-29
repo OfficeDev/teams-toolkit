@@ -9,11 +9,6 @@ export class FolderName {
   static readonly SPFx = "SPFx";
 }
 
-export enum ProgrammingLanguage {
-  javascript = "javascript",
-  typescript = "typescript",
-}
-
 export const baseNpmInstallCommand = "npm install";
 export const defaultNpmInstallArg = "--no-audit";
 export const npmInstallCommand = `${baseNpmInstallCommand} ${defaultNpmInstallArg}`;

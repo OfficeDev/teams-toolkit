@@ -333,7 +333,7 @@ describe("SSO can add in VS V3 project", () => {
         return element.entryName;
       });
       assert.isTrue(zipFiles.includes("aad.manifest.template.json"));
-      assert.isTrue(zipFiles.includes("README.txt"));
+      assert.isTrue(zipFiles.includes("Enable SSO.txt"));
     });
     const ssoRes = await component.add(context, inputs);
     assert.isTrue(ssoRes.isOk());

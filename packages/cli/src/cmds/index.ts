@@ -6,7 +6,6 @@
 import { Argv } from "yargs";
 
 import { isDeployManifestEnabled, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
-
 import { YargsCommand } from "../yargsCommand";
 import Account from "./account";
 import New from "./new";
@@ -17,6 +16,7 @@ import Publish from "./publish";
 import Package from "./package";
 import Config from "./config";
 import Preview from "./preview/preview";
+import PreviewEnv from "./preview/previewEnv";
 import { isRemoteCollaborationEnabled } from "../utils";
 import Manifest from "./manifest";
 import Permission from "./permission";
@@ -24,6 +24,7 @@ import Env from "./env";
 import M365 from "./m365/m365";
 import { ManifestValidate } from "./validate";
 import { ApplyCommand } from "./apply";
+import Update from "./update";
 import Init from "./init";
 
 export const commands: YargsCommand[] = [
@@ -37,7 +38,7 @@ export const commands: YargsCommand[] = [
   new ManifestValidate(),
   new Publish(),
   new Config(),
-  new Preview(),
+  isV3Enabled() ? new PreviewEnv() : new Preview(),
   new Env(),
 ];
 
@@ -52,6 +53,7 @@ export function registerCommands(yargs: Argv): void {
   if (isV3Enabled()) {
     commands.push(new ApplyCommand());
     commands.push(new Init());
+    commands.push(new Update());
   }
 
   commands.forEach((command) => {

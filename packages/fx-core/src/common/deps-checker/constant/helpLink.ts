@@ -18,5 +18,8 @@ export const dotnetManualInstallHelpLink = `${defaultHelpLink}#dotnetnotfound`;
 export const dotnetNotSupportTargetVersionHelpLink = `${defaultHelpLink}#dotnetnotsupporttargetversion`;
 
 export const ngrokInstallHelpLink = `${defaultHelpLink}#failtoinstallngrok`;
-
 export const vxTestAppInstallHelpLink = `${defaultHelpLink}#failtoinstallteamsvideoextensibilitytestapp`;
+
+// TODO(xiaofhua): update aka link
+export const v3NodeNotFoundHelpLink = "https://aka.ms/teamsfx-check-prerequisites-task";
+export const v3NodeNotSupportedHelpLink = "https://aka.ms/teamsfx-check-prerequisites-task";

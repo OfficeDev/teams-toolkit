@@ -57,67 +57,23 @@ class TreeViewManager {
     const developmentCommands = developmentTreeviewProvider.getCommands();
     if (hasAdaptiveCard) {
       // after "Preview your Teams app" command, the adaptive card will be shown
-      developmentCommands.splice(
-        4,
-        0,
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard"),
-          localize("teamstoolkit.commandsTreeViewProvider.previewACDescription"),
-          "fx-extension.OpenAdaptiveCardExt",
-          undefined,
-          { name: "eye", custom: false }
-        )
+      const previewCommandIndex = developmentCommands.findIndex(
+        (command) => command.commandId === "fx-extension.debug"
       );
+      if (previewCommandIndex >= 0) {
+        developmentCommands.splice(
+          previewCommandIndex + 1,
+          0,
+          new TreeViewCommand(
+            localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard"),
+            localize("teamstoolkit.commandsTreeViewProvider.previewACDescription"),
+            "fx-extension.OpenAdaptiveCardExt",
+            undefined,
+            { name: "eye", custom: false }
+          )
+        );
+      }
       developmentTreeviewProvider.refresh();
-    }
-    if (TreatmentVariableValue.inProductDoc) {
-      developmentCommands.splice(
-        2,
-        0,
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.guideTitle"),
-          localize("teamstoolkit.commandsTreeViewProvider.tutorialDescription"),
-          "fx-extension.selectTutorials",
-          undefined,
-          { name: "notebook", custom: false },
-          TreeCategory.GettingStarted
-        )
-      );
-      developmentTreeviewProvider.refresh();
-    }
-    if (TreatmentVariableValue.inProductDoc) {
-      const helperTreeviewProvider = this.getTreeView(
-        "teamsfx-help-and-feedback"
-      ) as CommandsTreeViewProvider;
-      const helpCommands = helperTreeviewProvider.getCommands();
-      helpCommands.splice(0, helpCommands.length);
-      helpCommands.push(
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.documentationTitle"),
-          localize("teamstoolkit.commandsTreeViewProvider.documentationDescription"),
-          "fx-extension.openDocument",
-          undefined,
-          { name: "book", custom: false },
-          TreeCategory.GettingStarted
-        ),
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.getStartedTitle"),
-          localize("teamstoolkit.commandsTreeViewProvider.getStarted"),
-          "fx-extension.openWelcome",
-          undefined,
-          { name: "symbol-event", custom: false },
-          TreeCategory.GettingStarted
-        ),
-        new TreeViewCommand(
-          localize("teamstoolkit.commandsTreeViewProvider.reportIssuesTitleNew"),
-          localize("teamstoolkit.commandsTreeViewProvider.reportIssuesDescription"),
-          "fx-extension.openReportIssues",
-          undefined,
-          { name: "github", custom: false },
-          TreeCategory.Feedback
-        )
-      );
-      helperTreeviewProvider.refresh();
     }
   }
 
@@ -204,12 +160,24 @@ class TreeViewManager {
         TreeCategory.GettingStarted
       ),
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.addFeatureTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.addFeatureDescription"),
-        "fx-extension.addFeature",
-        "addFeature",
-        { name: "teamsfx-add-feature", custom: false }
+        localize("teamstoolkit.commandsTreeViewProvider.guideTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.guideDescription"),
+        "fx-extension.selectTutorials",
+        undefined,
+        { name: "notebook", custom: false },
+        TreeCategory.GettingStarted
       ),
+      ...(isV3Enabled()
+        ? []
+        : [
+            new TreeViewCommand(
+              localize("teamstoolkit.commandsTreeViewProvider.addFeatureTitle"),
+              localize("teamstoolkit.commandsTreeViewProvider.addFeatureDescription"),
+              "fx-extension.addFeature",
+              "addFeature",
+              { name: "teamsfx-add-feature", custom: false }
+            ),
+          ]),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.previewTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.previewDescription"),
@@ -365,27 +333,19 @@ class TreeViewManager {
   private registerHelper(disposables: vscode.Disposable[]) {
     const helpCommand = [
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.getStartedTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.getStarted"),
-        "fx-extension.openWelcome",
-        undefined,
-        { name: "symbol-event", custom: false },
-        TreeCategory.GettingStarted
-      ),
-      new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.tutorialDescription"),
-        "fx-extension.selectTutorials",
-        undefined,
-        { name: "tasklist", custom: false },
-        TreeCategory.GettingStarted
-      ),
-      new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.documentationTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.documentationDescription"),
         "fx-extension.openDocument",
         undefined,
         { name: "book", custom: false },
+        TreeCategory.GettingStarted
+      ),
+      new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.getStartedTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.getStarted"),
+        "fx-extension.openWelcome",
+        undefined,
+        { name: "symbol-event", custom: false },
         TreeCategory.GettingStarted
       ),
       new TreeViewCommand(

@@ -399,3 +399,14 @@ export class NoAadManifestExistError extends UserError {
     });
   }
 }
+
+export class VideoFilterAppRemoteNotSupportedError extends UserError {
+  constructor() {
+    super({
+      source: CoreSource,
+      name: VideoFilterAppRemoteNotSupportedError.name,
+      message: getLocalizedString("error.VideoFilterAppNotRemoteSupported"),
+      displayMessage: getLocalizedString("error.VideoFilterAppNotRemoteSupported"),
+    });
+  }
+}

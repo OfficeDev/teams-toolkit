@@ -13,6 +13,9 @@ param botAadAppClientSecret string
 param functionAppSKU string
 param storageSKU string
 
+@maxLength(42)
+param botDisplayName string
+
 param serverfarmsName string = resourceBaseName
 param functionAppName string = resourceBaseName
 param location string = resourceGroup().location
@@ -49,10 +52,6 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
     siteConfig: {
       alwaysOn: true
       appSettings: [
-        {
-          name: 'WEBSITE_RUN_FROM_PACKAGE'
-          value: '1' // Run Azure App Service from a package file
-        }
         {
           name: 'AzureWebJobsDashboard'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}' // Azure Functions internal setting
@@ -110,6 +109,7 @@ module azureBotRegistration './botRegistration/azurebot.bicep' = {
     resourceBaseName: resourceBaseName
     botAadAppClientId: botAadAppClientId
     botAppDomain: functionApp.properties.defaultHostName
+    botDisplayName: botDisplayName
   }
 }
 

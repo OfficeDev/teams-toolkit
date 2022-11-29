@@ -404,11 +404,11 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createNewEnvironment);
 
-  const deployAadAppManifest = vscode.commands.registerCommand(
-    "fx-extension.deployAadAppManifest",
-    (...args) => Correlator.run(handlers.deployAadAppManifest, args)
+  const updateAadAppManifest = vscode.commands.registerCommand(
+    "fx-extension.updateAadAppManifest",
+    (...args) => Correlator.run(handlers.updateAadAppManifest, args)
   );
-  context.subscriptions.push(deployAadAppManifest);
+  context.subscriptions.push(updateAadAppManifest);
 
   const migrateTeamsManifestCmd = vscode.commands.registerCommand(
     "fx-extension.migrateTeamsManifest",
@@ -502,11 +502,11 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(createAccountCmd);
 
-  const deployAadAppManifestFromCtxMenu = vscode.commands.registerCommand(
-    "fx-extension.deployAadAppManifestFromCtxMenu",
-    (...args) => Correlator.run(handlers.deployAadAppManifest, args)
+  const updateAadAppManifestFromCtxMenu = vscode.commands.registerCommand(
+    "fx-extension.updateAadAppManifestFromCtxMenu",
+    (...args) => Correlator.run(handlers.updateAadAppManifest, args)
   );
-  context.subscriptions.push(deployAadAppManifestFromCtxMenu);
+  context.subscriptions.push(updateAadAppManifestFromCtxMenu);
 
   const deployManifestFromCtxMenuCmd = vscode.commands.registerCommand(
     "fx-extension.deployManifestFromCtxMenu",
@@ -917,11 +917,6 @@ async function runBackgroundAsyncTasks(
       TreatmentVariables.InProductDoc,
       true
     )) as boolean | undefined;
-  await vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.guideTreatment",
-    TreatmentVariableValue.inProductDoc
-  );
 
   ExtTelemetry.isFromSample = await handlers.getIsFromSample();
   ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();

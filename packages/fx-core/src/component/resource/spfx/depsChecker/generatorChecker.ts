@@ -104,7 +104,7 @@ export class GeneratorChecker implements DependencyChecker {
   }
 
   public getSpGeneratorPath(): string {
-    return path.join(
+    return `"${path.join(
       this.getDefaultInstallPath(),
       "node_modules",
       "@microsoft",
@@ -113,7 +113,7 @@ export class GeneratorChecker implements DependencyChecker {
       "generators",
       "app",
       "index.js"
-    );
+    )}"`;
   }
 
   private async validate(): Promise<boolean> {

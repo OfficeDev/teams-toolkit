@@ -10,6 +10,7 @@ import {
   OptionItem,
   ok,
 } from "@microsoft/teamsfx-api";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import path from "path";
 import { Argv } from "yargs";
 import activate from "../activate";
@@ -29,16 +30,22 @@ import {
   promptSPFxUpgrade,
 } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
-  public readonly command = `${this.commandHead} [components...]`;
+  public readonly command = `${this.commandHead}${isV3Enabled() ? "" : " [components...]"}`;
   public readonly description = "Deploy the current application.";
 
   public readonly deployPluginNodeName = constants.deployPluginNodeName;
 
   public builder(yargs: Argv): Argv<any> {
+    if (isV3Enabled()) {
+      return yargs
+        .hide("interactive")
+        .version(false)
+        .options(constants.EnvOptions)
+        .options(constants.RootFolderOptions);
+    }
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.deploy);
     const deployPluginOption = this.params[this.deployPluginNodeName];
     yargs.positional("components", {
@@ -71,18 +78,8 @@ export default class Deploy extends YargsCommand {
     const core = result.value;
 
     const inputs = getSystemInputs(rootFolder, args.env as any);
-    // TODO: remove when V3 is auto enabled
-    if (!inputs.env) {
-      // include local env in interactive question
-      const selectedEnv = await askTargetEnvironment(rootFolder);
-      if (selectedEnv.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, selectedEnv.error);
-        return err(selectedEnv.error);
-      }
-      inputs.env = selectedEnv.value;
-    }
     {
-      {
+      if (!isV3Enabled()) {
         const root = HelpParamGenerator.getQuestionRootNodeForHelp(Stage.deploy);
         const questions = flattenNodes(root!);
         const question = questions.find((q) => q.data.name === this.deployPluginNodeName);
@@ -110,25 +107,9 @@ export default class Deploy extends YargsCommand {
             inputs["include-aad-manifest"] = "no";
           }
         }
+        promptSPFxUpgrade(rootFolder);
       }
-      promptSPFxUpgrade(rootFolder);
-      let result;
-      if (
-        isV3Enabled() &&
-        inputs[this.deployPluginNodeName].includes("fx-resource-aad-app-for-teams")
-      ) {
-        result = await core.deployAadManifest(inputs);
-        if (result.isErr()) {
-          CliTelemetry.sendTelemetryErrorEvent(
-            TelemetryEvent.DeployAad,
-            result.error,
-            makeEnvRelatedProperty(rootFolder, inputs)
-          );
-
-          return err(result.error);
-        }
-      }
-      result = await core.deployArtifacts(inputs);
+      const result = await core.deployArtifacts(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(
           TelemetryEvent.Deploy,

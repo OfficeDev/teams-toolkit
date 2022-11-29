@@ -10,6 +10,7 @@ export enum DepsCheckerEvent {
   nodeNotFound = "node-not-found",
   nodeNotSupportedForAzure = "node-not-supported-for-azure",
   nodeNotSupportedForSPFx = "node-not-supported-for-spfx",
+  nodeNotSupportedForProject = "node-not-supported-for-project",
 
   npmNotFound = "npm-not-found",
   npmAlreadyInstalled = "npm-already-installed",

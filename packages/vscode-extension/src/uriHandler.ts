@@ -25,7 +25,6 @@ export class UriHandler implements vscode.UriHandler {
     }
 
     if (!isV3Enabled()) {
-      console.log("not v3");
       vscode.window.showErrorMessage(
         util.format(
           localize("teamstoolkit.devPortalIntegration.installPreReleaseWarning"),
@@ -36,20 +35,17 @@ export class UriHandler implements vscode.UriHandler {
     }
 
     if (!uri.query) {
-      console.log("not query");
       vscode.window.showErrorMessage(localize("teamstoolkit.devPortalIntegration.invalidLink"));
       return;
     }
     const queryParamas = queryString.parse(uri.query) as QueryParams;
     if (!queryParamas.referrer) {
-      console.log("not referrer");
       vscode.window.showErrorMessage(localize("teamstoolkit.devPortalIntegration.invalidLink"));
       return;
     }
 
     if (queryParamas.referrer === Referrer.DeveloperPortal) {
       if (!queryParamas.appId) {
-        console.log("not id");
         vscode.window.showErrorMessage(localize("teamstoolkit.devPortalIntegration.invalidLink"));
         return;
       }

@@ -64,7 +64,6 @@ describe("uri handler", () => {
     await handler.handleUri(uri);
 
     chai.assert.isTrue(executeCommand.calledOnce);
-    console.log(executeCommand.args);
     sandbox.assert.calledOnceWithExactly(executeCommand, "fx-extension.openFromTdp", "1", "test");
   });
 });

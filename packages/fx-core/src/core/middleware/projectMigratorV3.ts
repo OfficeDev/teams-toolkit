@@ -8,11 +8,13 @@ import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks } from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
+import { fsReadDirSync, readBicepContent, readStateFile } from "./utils/fileReader";
+import { FileType, namingConverterV3 } from "./MigrationUtils";
 
 const MigrationVersion = "2.1.0";
 
 type Migration = (context: MigrationContext) => Promise<void>;
-const subMigrations: Array<Migration> = [preMigration, generateSettingsJson];
+const subMigrations: Array<Migration> = [preMigration, generateSettingsJson, statesMigration];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await checkVersionForMigration(ctx)) && checkMethod(ctx)) {
@@ -92,5 +94,44 @@ export async function generateSettingsJson(context: MigrationContext): Promise<v
     );
   } else {
     throw oldProjectSettings.error;
+  }
+}
+
+export async function statesMigration(context: MigrationContext): Promise<void> {
+  // general
+  if (await context.fsPathExists(path.join(".fx", "states"))) {
+    // if ./fx/states/ exists
+    const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
+    const fileRegex = new RegExp("(state\\.)([a-zA-Z0-9_]*)(\\.json)", "g"); // state.*.json
+    for (const fileName in fileNames) {
+      const fileNamesArray = fileRegex.exec(fileName);
+      if (fileNamesArray != null) {
+        // get envName
+        const envName = fileNamesArray[2];
+        // create .env.{env} file
+        await context.fsEnsureDir(SettingsFolderName);
+        await context.fsCreateFile(SettingsFolderName + "/.env." + envName);
+        const obj = await readStateFile(
+          context,
+          path.join(".fx", "states", "state." + envName + ".json")
+        );
+        if (obj) {
+          let envData = "";
+          const bicepContent = readBicepContent(context);
+          // convert every name
+          for (const keyName of Object.keys(obj)) {
+            for (const name of Object.keys(obj[keyName])) {
+              const nameV3 = await namingConverterV3(
+                "state." + keyName + "." + name,
+                FileType.STATE,
+                bicepContent
+              );
+              envData += nameV3 + "=" + obj[keyName][name] + "\n";
+            }
+          }
+          await context.fsWriteFile(SettingsFolderName + "/.env." + envName, envData);
+        }
+      }
+    }
   }
 }

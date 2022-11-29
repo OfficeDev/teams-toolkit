@@ -8,8 +8,14 @@ import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks } from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
-import { fsReadDirSync, readBicepContent, readStateFile } from "./utils/fileReader";
+import {
+  fsReadDirSync,
+  jsonObjectNamesConvertV3,
+  readBicepContent,
+  readStateFile,
+} from "./utils/fileReader";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
+import { isObject } from "lodash";
 
 const MigrationVersion = "2.1.0";
 
@@ -97,6 +103,20 @@ export async function generateSettingsJson(context: MigrationContext): Promise<v
   }
 }
 
+function dfs(parentKeyName: string, obj: any, bicepContent: any): string {
+  let returnData = "";
+
+  if (isObject(obj)) {
+    for (const keyName of Object.keys(obj)) {
+      returnData += dfs(parentKeyName + "." + keyName, obj[keyName], bicepContent);
+    }
+  } else {
+    return namingConverterV3(parentKeyName, FileType.STATE, bicepContent) + "=" + obj + "\n";
+  }
+
+  return returnData;
+}
+
 export async function statesMigration(context: MigrationContext): Promise<void> {
   // general
   if (await context.fsPathExists(path.join(".fx", "states"))) {
@@ -116,19 +136,9 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
           path.join(".fx", "states", "state." + envName + ".json")
         );
         if (obj) {
-          let envData = "";
           const bicepContent = readBicepContent(context);
           // convert every name
-          for (const keyName of Object.keys(obj)) {
-            for (const name of Object.keys(obj[keyName])) {
-              const nameV3 = await namingConverterV3(
-                "state." + keyName + "." + name,
-                FileType.STATE,
-                bicepContent
-              );
-              envData += nameV3 + "=" + obj[keyName][name] + "\n";
-            }
-          }
+          const envData = jsonObjectNamesConvertV3(obj, "state.", bicepContent);
           await context.fsWriteFile(SettingsFolderName + "/.env." + envName, envData);
         }
       }

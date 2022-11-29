@@ -4,6 +4,8 @@
 import path from "path";
 import fs from "fs-extra";
 import { MigrationContext } from "./migrationContext";
+import { isObject } from "lodash";
+import { FileType, namingConverterV3 } from "../MigrationUtils";
 
 // read json files in states/ folder
 export async function readStateFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -26,4 +28,27 @@ export function readBicepContent(context: MigrationContext): any {
 export function fsReadDirSync(context: MigrationContext, _path: string): string[] {
   const dirPath = path.join(context.projectPath, _path);
   return fs.readdirSync(dirPath);
+}
+
+// convert any obj names if can be converted
+export function jsonObjectNamesConvertV3(obj: any, prefix: string, bicepContent: any) {
+  let returnData = "";
+  for (const keyName of Object.keys(obj)) {
+    returnData += dfs(prefix + keyName, obj[keyName], bicepContent);
+  }
+  return returnData;
+}
+
+function dfs(parentKeyName: string, obj: any, bicepContent: any): string {
+  let returnData = "";
+
+  if (isObject(obj)) {
+    for (const keyName of Object.keys(obj)) {
+      returnData += dfs(parentKeyName + "." + keyName, obj[keyName], bicepContent);
+    }
+  } else {
+    return namingConverterV3(parentKeyName, FileType.STATE, bicepContent) + "=" + obj + "\n";
+  }
+
+  return returnData;
 }

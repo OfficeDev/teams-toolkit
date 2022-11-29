@@ -623,6 +623,8 @@
   "core.TabOption.description": "UI-based app",
   "core.TabOption.detail": "Teams-aware webpages embedded in Microsoft Teams",
   "core.TabOption.detailNew": "Teams identity aware webpages embedded in Microsoft Teams",
+  "core.DashboardOption.label": "Dashboard tab",
+  "core.DashboardOption.detail": "Embed a canvas containing multiple cards that provide an overview of data or content in Microsoft Teams",
   "core.BotOption.description": "Conversational Agent",
   "core.BotOption.detail": "Running simple and repetitive automated tasks through conversations",
   "core.BotNewUIOption.label": "Bot",

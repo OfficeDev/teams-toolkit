@@ -722,6 +722,15 @@ export const TabNewUIOptionItem: OptionItem = {
   ],
 };
 
+export const DashboardOptionItem: OptionItem = {
+  id: "dashboard-tab",
+  label: `$(browser) ${getLocalizedString("core.DashboardOption.label")}`,
+  description: getLocalizedString("core.Option.recommend"),
+  cliName: "dashboard-tab",
+  detail: getLocalizedString("core.DashboardOption.detail"),
+  groupName: getLocalizedString("core.options.separator.scenario"),
+};
+
 export const BotOptionItem: OptionItem = {
   id: "Bot",
   label: "Bot",
@@ -1050,7 +1059,12 @@ export const BotFeatureIds = [
   M365SearchAppOptionItem.id,
 ];
 
-export const TabFeatureIds = [TabOptionItem.id, TabNonSsoItem.id, M365SsoLaunchPageOptionItem.id];
+export const TabFeatureIds = [
+  TabOptionItem.id,
+  TabNonSsoItem.id,
+  M365SsoLaunchPageOptionItem.id,
+  DashboardOptionItem.id,
+];
 
 export const AadConstants = {
   DefaultTemplateFileName: "aad.manifest.template.json",

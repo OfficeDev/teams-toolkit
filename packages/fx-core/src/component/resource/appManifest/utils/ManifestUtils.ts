@@ -42,6 +42,7 @@ import {
 import {
   BotScenario,
   CommandAndResponseOptionItem,
+  DashboardOptionItem,
   NotificationOptionItem,
   WorkflowOptionItem,
 } from "../../../constants";
@@ -129,9 +130,15 @@ export class ManifestUtils {
               template.entityId = "index" + staticTabIndex;
               appManifest.staticTabs.push(template);
             } else {
-              const template = cloneDeep(STATIC_TABS_TPL_V3[0]);
-              template.entityId = "index" + staticTabIndex;
-              appManifest.staticTabs.push(template);
+              if (inputs.features && inputs.features === DashboardOptionItem.id) {
+                const template = cloneDeep(STATIC_TABS_TPL_V3[1]);
+                template.entityId = "index" + staticTabIndex;
+                appManifest.staticTabs.push(template);
+              } else {
+                const template = cloneDeep(STATIC_TABS_TPL_V3[0]);
+                template.entityId = "index" + staticTabIndex;
+                appManifest.staticTabs.push(template);
+              }
             }
             staticTabIndex++;
           }

@@ -60,6 +60,8 @@ import { VsCodeLogProvider } from "../../src/commonlib/log";
 import { ProgressHandler } from "../../src/progressHandler";
 import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 import { assert } from "console";
+import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
+import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -1185,135 +1187,160 @@ describe("handlers", () => {
     });
   });
 
-  // describe("scaffoldFromDeveloperPortalHandler", async () => {
-  //   beforeEach(() => {
-  //     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-  //     sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-  //   });
-  //   afterEach(() => {
-  //     sinon.restore();
-  //   });
-  //   it("missing args", async () => {
-  //     const progressHandler = new ProgressHandler("title", 1);
-  //     sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-  //     const createProgressBar = sinon
-  //       .stub(extension.VS_CODE_UI, "createProgressBar")
-  //       .returns(progressHandler);
+  describe("scaffoldFromDeveloperPortalHandler", async () => {
+    beforeEach(() => {
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+    });
+    afterEach(() => {
+      sinon.restore();
+    });
+    it("missing args", async () => {
+      const progressHandler = new ProgressHandler("title", 1);
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
 
-  //     const res = await handlers.scaffoldFromDeveloperPortalHandler();
+      const res = await handlers.scaffoldFromDeveloperPortalHandler();
 
-  //     chai.assert.equal(res.isOk(), true);
-  //     chai.assert.equal(createProgressBar.notCalled, true);
-  //   });
+      chai.assert.equal(res.isOk(), true);
+      chai.assert.equal(createProgressBar.notCalled, true);
+    });
 
-  //   it("incorrect number of args", async () => {
-  //     const progressHandler = new ProgressHandler("title", 1);
-  //     sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-  //     const createProgressBar = sinon
-  //       .stub(extension.VS_CODE_UI, "createProgressBar")
-  //       .returns(progressHandler);
+    it("incorrect number of args", async () => {
+      const progressHandler = new ProgressHandler("title", 1);
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
 
-  //     const res = await handlers.scaffoldFromDeveloperPortalHandler([]);
+      const res = await handlers.scaffoldFromDeveloperPortalHandler([]);
 
-  //     chai.assert.equal(res.isOk(), true);
-  //     chai.assert.equal(createProgressBar.notCalled, true);
-  //   });
+      chai.assert.equal(res.isOk(), true);
+      chai.assert.equal(createProgressBar.notCalled, true);
+    });
 
-  //   it("general error when signing in M365", async () => {
-  //     sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-  //     const progressHandler = new ProgressHandler("title", 1);
-  //     const startProgress = sinon.stub(progressHandler, "start").resolves();
-  //     const endProgress = sinon.stub(progressHandler, "end").resolves();
-  //     sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").throws("error");
-  //     const createProgressBar = sinon
-  //       .stub(extension.VS_CODE_UI, "createProgressBar")
-  //       .returns(progressHandler);
-  //     const showErrorMessage = sinon.stub(vscode.window, "showErrorMessage");
-  //     let hasError = false;
+    it("general error when signing in M365", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const progressHandler = new ProgressHandler("title", 1);
+      const startProgress = sinon.stub(progressHandler, "start").resolves();
+      const endProgress = sinon.stub(progressHandler, "end").resolves();
+      sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").throws("error1");
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
+      const showErrorMessage = sinon.stub(vscode.window, "showErrorMessage");
 
-  //     await handlers.scaffoldFromDeveloperPortalHandler(["appId"]).catch((err) => {
-  //       hasError = true;
-  //       chai.assert.equal(err, "error");
-  //       chai.assert.equal(createProgressBar.calledOnce, true);
-  //       chai.assert.equal(startProgress.calledOnce, true);
-  //       chai.assert.equal(endProgress.calledOnceWithExactly(false), true);
-  //       chai.assert.equal(showErrorMessage.calledOnce, true);
-  //     });
+      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
+      chai.assert.isTrue(res.isErr());
+      chai.assert.isTrue(createProgressBar.calledOnce);
+      chai.assert.isTrue(startProgress.calledOnce);
+      chai.assert.isTrue(endProgress.calledOnceWithExactly(false));
+      chai.assert.isTrue(showErrorMessage.calledOnce);
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, "error1");
+      }
+    });
 
-  //     chai.assert.equal(hasError, true);
-  //   });
+    it("error when signing M365", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const progressHandler = new ProgressHandler("title", 1);
+      const startProgress = sinon.stub(progressHandler, "start").resolves();
+      const endProgress = sinon.stub(progressHandler, "end").resolves();
+      sinon
+        .stub(M365TokenInstance, "signInWhenInitiatedFromTdp")
+        .resolves(err(new UserError("source", "name", "message", "displayMessage")));
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
+      const showErrorMessage = sinon.stub(vscode.window, "showErrorMessage");
 
-  //   it("error when signing M365", async () => {
-  //     sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-  //     const progressHandler = new ProgressHandler("title", 1);
-  //     const startProgress = sinon.stub(progressHandler, "start").resolves();
-  //     const endProgress = sinon.stub(progressHandler, "end").resolves();
-  //     sinon
-  //       .stub(M365TokenInstance, "signInWhenInitiatedFromTdp")
-  //       .resolves(err(new UserError("source", "name", "message", "displayMessage")));
-  //     const createProgressBar = sinon
-  //       .stub(extension.VS_CODE_UI, "createProgressBar")
-  //       .returns(progressHandler);
-  //     const showErrorMessage = sinon.stub(vscode.window, "showErrorMessage");
+      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
 
-  //     const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
+      chai.assert.equal(res.isErr(), true);
+      chai.assert.equal(createProgressBar.calledOnce, true);
+      chai.assert.equal(startProgress.calledOnce, true);
+      chai.assert.equal(endProgress.calledOnceWithExactly(false), true);
+      chai.assert.equal(showErrorMessage.calledOnce, true);
+    });
 
-  //     chai.assert.equal(res.isErr(), true);
-  //     chai.assert.equal(createProgressBar.calledOnce, true);
-  //     chai.assert.equal(startProgress.calledOnce, true);
-  //     chai.assert.equal(endProgress.calledOnceWithExactly(false), true);
-  //     chai.assert.equal(showErrorMessage.calledOnce, true);
-  //   });
+    it("error when signing in M365 but missing display message", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const progressHandler = new ProgressHandler("title", 1);
+      const startProgress = sinon.stub(progressHandler, "start").resolves();
+      const endProgress = sinon.stub(progressHandler, "end").resolves();
+      sinon
+        .stub(M365TokenInstance, "signInWhenInitiatedFromTdp")
+        .resolves(err(new UserError("source", "name", "", "")));
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
+      const showErrorMessage = sinon.stub(vscode.window, "showErrorMessage");
 
-  //   it("error when signing in M365 but missing display message", async () => {
-  //     sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-  //     const progressHandler = new ProgressHandler("title", 1);
-  //     const startProgress = sinon.stub(progressHandler, "start").resolves();
-  //     const endProgress = sinon.stub(progressHandler, "end").resolves();
-  //     sinon
-  //       .stub(M365TokenInstance, "signInWhenInitiatedFromTdp")
-  //       .resolves(err(new UserError("source", "name", "", "")));
-  //     const createProgressBar = sinon
-  //       .stub(extension.VS_CODE_UI, "createProgressBar")
-  //       .returns(progressHandler);
-  //     const showErrorMessage = sinon.stub(vscode.window, "showErrorMessage");
+      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
 
-  //     const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
+      chai.assert.equal(res.isErr(), true);
+      chai.assert.equal(createProgressBar.calledOnce, true);
+      chai.assert.equal(startProgress.calledOnce, true);
+      chai.assert.equal(endProgress.calledOnceWithExactly(false), true);
+      chai.assert.equal(showErrorMessage.calledOnce, true);
+    });
 
-  //     chai.assert.equal(res.isErr(), true);
-  //     chai.assert.equal(createProgressBar.calledOnce, true);
-  //     chai.assert.equal(startProgress.calledOnce, true);
-  //     chai.assert.equal(endProgress.calledOnceWithExactly(false), true);
-  //     chai.assert.equal(showErrorMessage.calledOnce, true);
-  //   });
+    it("failed to get teams app", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const progressHandler = new ProgressHandler("title", 1);
+      const startProgress = sinon.stub(progressHandler, "start").resolves();
+      const endProgress = sinon.stub(progressHandler, "end").resolves();
+      sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
+      sinon.stub(vscode.commands, "executeCommand");
+      sinon.stub(globalState, "globalStateUpdate");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const getApp = sinon.stub(AppStudioClient, "getApp").throws("error");
 
-  //   it("sign in M365 successfully", async () => {
-  //     sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-  //     const progressHandler = new ProgressHandler("title", 1);
-  //     const startProgress = sinon.stub(progressHandler, "start").resolves();
-  //     const endProgress = sinon.stub(progressHandler, "end").resolves();
-  //     sinon
-  //       .stub(M365TokenInstance, "signInWhenInitiatedFromTdp")
-  //       .resolves(ok({ appId: "mock-id" }));
-  //     const createProgressBar = sinon
-  //       .stub(extension.VS_CODE_UI, "createProgressBar")
-  //       .returns(progressHandler);
-  //     sinon.stub(handlers, "core").value(new MockCore());
-  //     sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
-  //     const createProject = sinon.spy(handlers.core, "createProject");
-  //     sinon.stub(vscode.commands, "executeCommand");
-  //     sinon.stub(globalState, "globalStateUpdate");
-  //     sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
 
-  //     const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
+      chai.assert.isTrue(res.isErr());
+      chai.assert.isTrue(getApp.calledOnce);
+      chai.assert.isTrue(createProgressBar.calledOnce);
+      chai.assert.isTrue(startProgress.calledOnce);
+      chai.assert.isTrue(endProgress.calledOnceWithExactly(true));
+    });
 
-  //     chai.assert.equal(createProject.args[0][0].teamsAppFromTdp.appId, "mock-id");
-  //     chai.assert.equal(res.isOk(), true);
-  //     chai.assert.equal(createProgressBar.calledOnce, true);
-  //     chai.assert.equal(startProgress.calledOnce, true);
-  //     chai.assert.equal(endProgress.calledOnceWithExactly(true), true);
-  //   });
-  // });
+    it("happy path", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const progressHandler = new ProgressHandler("title", 1);
+      const startProgress = sinon.stub(progressHandler, "start").resolves();
+      const endProgress = sinon.stub(progressHandler, "end").resolves();
+      sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
+      const createProject = sinon.spy(handlers.core, "createProject");
+      sinon.stub(vscode.commands, "executeCommand");
+      sinon.stub(globalState, "globalStateUpdate");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mock-id",
+      };
+      sinon.stub(AppStudioClient, "getApp").resolves(appDefinition);
+
+      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId", "testuser"]);
+
+      chai.assert.equal(createProject.args[0][0].teamsAppFromTdp.teamsAppId, "mock-id");
+      chai.assert.isTrue(res.isOk());
+      chai.assert.isTrue(createProgressBar.calledOnce);
+      chai.assert.isTrue(startProgress.calledOnce);
+      chai.assert.isTrue(endProgress.calledOnceWithExactly(true));
+    });
+  });
 
   describe("publishInDeveloperPortalHandler", async () => {
     afterEach(() => {

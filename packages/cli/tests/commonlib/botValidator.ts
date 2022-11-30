@@ -29,8 +29,8 @@ const baseUrlListDeploymentLogs = (subscriptionId: string, rg: string, name: str
   `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/deployments/${id}/log?api-version=2019-08-01`;
 
 enum BaseConfig {
-  BOT_ID = "BOT_ID",
-  BOT_PASSWORD = "BOT_PASSWORD",
+  MICROSOFT_APP_ID = "MICROSOFT_APP_ID",
+  MICROSOFT_APP_PASSWORD = "MICROSOFT_APP_PASSWORD",
   INITIATE_LOGIN_ENDPOINT = "INITIATE_LOGIN_ENDPOINT",
   M365_APPLICATION_ID_URI = "M365_APPLICATION_ID_URI",
   M365_AUTHORITY_HOST = "M365_AUTHORITY_HOST",
@@ -120,7 +120,10 @@ export class BotValidator {
       token as string
     );
     chai.assert.exists(response);
-    chai.assert.equal(response[BaseConfig.BOT_ID], this.ctx[EnvContants.BOT_ID] as string);
+    chai.assert.equal(
+      response[BaseConfig.MICROSOFT_APP_ID],
+      this.ctx[EnvContants.MICROSOFT_APP_ID] as string
+    );
     if (includeAAD) {
       // TODO
     }
@@ -163,11 +166,11 @@ export class BotValidator {
     );
     chai.assert.exists(response);
     chai.assert.equal(
-      response[BaseConfig.BOT_ID],
+      response[BaseConfig.MICROSOFT_APP_ID],
       this.ctx[PluginId.Bot][StateConfigKey.botId] as string
     );
     chai.assert.equal(
-      response[BaseConfig.BOT_PASSWORD],
+      response[BaseConfig.MICROSOFT_APP_PASSWORD],
       await getExpectedBotClientSecret(this.ctx, this.projectPath, this.env, activeResourcePlugins)
     );
     if (includeAAD) {

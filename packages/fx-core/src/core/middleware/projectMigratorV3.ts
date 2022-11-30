@@ -36,7 +36,7 @@ import {
   jsonObjectNamesConvertV3,
   readBicepContent,
   readStateFile,
-} from "./utils/fileReadWriter";
+} from "./utils/v3MigrationUtils";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import { isObject } from "lodash";
 
@@ -191,20 +191,6 @@ async function loadProjectSettings(projectPath: string): Promise<ProjectSettings
   } else {
     throw oldProjectSettings.error;
   }
-}
-
-function dfs(parentKeyName: string, obj: any, bicepContent: any): string {
-  let returnData = "";
-
-  if (isObject(obj)) {
-    for (const keyName of Object.keys(obj)) {
-      returnData += dfs(parentKeyName + "." + keyName, obj[keyName], bicepContent);
-    }
-  } else {
-    return namingConverterV3(parentKeyName, FileType.STATE, bicepContent) + "=" + obj + "\n";
-  }
-
-  return returnData;
 }
 
 export async function statesMigration(context: MigrationContext): Promise<void> {

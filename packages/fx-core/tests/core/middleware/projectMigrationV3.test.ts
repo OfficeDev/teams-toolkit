@@ -293,7 +293,7 @@ describe("stateMigration", () => {
       getTestAssetsPath(Constants.happyPathTestProject),
       "dev"
     );
-    const testStateContent_dev = await readEnvFile(projectPath, "local");
+    const testStateContent_dev = await readEnvFile(projectPath, "dev");
     assert.isTrue(testStateContent_dev === trueStateContent_dev);
 
     const trueStateContent_local = await readEnvFile(

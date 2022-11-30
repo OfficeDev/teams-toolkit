@@ -2,7 +2,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import { UriHandler } from "../../src/uriHandler";
-import * as featureFlags from "@microsoft/teamsfx-core/build/common/featureFlags";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 
 describe("uri handler", () => {
   const sandbox = sinon.createSandbox();
@@ -14,7 +14,6 @@ describe("uri handler", () => {
   it("invalid uri missing query", async () => {
     const handler = new UriHandler();
     const uri = vscode.Uri.parse("vscode://test.test");
-    sandbox.stub(featureFlags, "isTDPIntegrationEnabled").returns(true);
     const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
     await handler.handleUri(uri);
 
@@ -24,7 +23,6 @@ describe("uri handler", () => {
   it("invalid uri missing referer", async () => {
     const handler = new UriHandler();
     const uri = vscode.Uri.parse("vscode://test.test?query=1");
-    sandbox.stub(featureFlags, "isTDPIntegrationEnabled").returns(true);
     const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
     await handler.handleUri(uri);
 
@@ -34,21 +32,23 @@ describe("uri handler", () => {
   it("invalid uri missing app id", async () => {
     const handler = new UriHandler();
     const uri = vscode.Uri.parse("vscode://test.test?test=1&referrer=developerportal");
-    sandbox.stub(featureFlags, "isTDPIntegrationEnabled").returns(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
     const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
     await handler.handleUri(uri);
 
     sandbox.assert.calledOnce(showMessage);
   });
 
-  it("do nothing if feature flag is not enabled", async () => {
+  it("error if not v3 enabled", async () => {
     const handler = new UriHandler();
-    const uri = vscode.Uri.parse("vscode://test.test?id=1");
-    sandbox.stub(featureFlags, "isTDPIntegrationEnabled").returns(false);
-    const showMessage = sandbox.stub(vscode.window, "showInformationMessage").resolves();
+    const uri = vscode.Uri.parse(
+      "vscode://test.test?appId=1&referrer=developerportal&login_hint=test"
+    );
+    sandbox.stub(commonTools, "isV3Enabled").returns(false);
+    const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
     await handler.handleUri(uri);
 
-    chai.assert.isTrue(showMessage.notCalled);
+    chai.assert.isTrue(showMessage.calledOnce);
   });
 
   it("valid uri", async () => {
@@ -56,13 +56,14 @@ describe("uri handler", () => {
     const uri = vscode.Uri.parse(
       "vscode://test.test?appId=1&referrer=developerportal&login_hint=test"
     );
-    sandbox.stub(featureFlags, "isTDPIntegrationEnabled").returns(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
 
     const executeCommand = sandbox
       .stub(vscode.commands, "executeCommand")
       .returns(Promise.resolve(""));
     await handler.handleUri(uri);
 
+    chai.assert.isTrue(executeCommand.calledOnce);
     sandbox.assert.calledOnceWithExactly(executeCommand, "fx-extension.openFromTdp", "1", "test");
   });
 });

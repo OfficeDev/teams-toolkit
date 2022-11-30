@@ -388,11 +388,13 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     for (let i = 0; i < list.length; ++i) {
       const item = list[i];
       if (item.subscriptionId === subscriptionId) {
-        // await this.saveSubscription({
-        //   subscriptionId: item.subscriptionId,
-        //   subscriptionName: item.subscriptionName,
-        //   tenantId: item.tenantId,
-        // });
+        if (!isV3Enabled()) {
+          await this.saveSubscription({
+            subscriptionId: item.subscriptionId,
+            subscriptionName: item.subscriptionName,
+            tenantId: item.tenantId,
+          });
+        }
         AzureAccountManager.tenantId = item.tenantId;
         AzureAccountManager.teamsFxTokenCredential.setTenantId(item.tenantId);
         AzureAccountManager.subscriptionId = item.subscriptionId;

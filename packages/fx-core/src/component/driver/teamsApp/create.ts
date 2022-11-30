@@ -17,10 +17,11 @@ import AdmZip from "adm-zip";
 import { v4 } from "uuid";
 import { Service } from "typedi";
 import { hooks } from "@feathersjs/hooks/lib";
-import { StepDriver } from "../interface/stepDriver";
+import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { CreateTeamsAppArgs } from "./interfaces/CreateTeamsAppArgs";
+import { WrapDriverContext, wrapRun } from "../util/wrapUtil";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
@@ -46,12 +47,30 @@ const outputNames = {
 
 @Service(actionName)
 export class CreateTeamsAppDriver implements StepDriver {
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: CreateTeamsAppArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    TelemetryUtils.init(context);
+    const wrapContext = new WrapDriverContext(context, actionName, actionName);
+    const res = await this.create(args, wrapContext);
+    return res;
+  }
+
+  public async execute(args: CreateTeamsAppArgs, context: DriverContext): Promise<ExecutionResult> {
+    const wrapContext = new WrapDriverContext(context, actionName, actionName);
+    const res = await this.create(args, wrapContext);
+    return {
+      result: res,
+      summaries: wrapContext.summaries,
+    };
+  }
+
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  async create(
+    args: CreateTeamsAppArgs,
+    context: WrapDriverContext
+  ): Promise<Result<Map<string, string>, FxError>> {
+    TelemetryUtils.init(context as DriverContext);
     let create = true;
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
       scopes: AppStudioScopes,
@@ -80,11 +99,10 @@ export class CreateTeamsAppDriver implements StepDriver {
       } catch (error) {}
     }
 
-    progressHandler?.next(
-      getLocalizedString("driver.teamsApp.progressBar.createTeamsAppStepMessage")
-    );
-
     if (create) {
+      const message = getLocalizedString("driver.teamsApp.progressBar.createTeamsAppStepMessage");
+      progressHandler?.next(message);
+      context.addSummary(message);
       const manifest = new TeamsAppManifest();
       manifest.name.short = args.name;
       if (teamsAppId) {
@@ -119,6 +137,7 @@ export class CreateTeamsAppDriver implements StepDriver {
           createdAppDefinition.teamsAppId!
         );
         context.logProvider.info(message);
+        context.addSummary(message);
         if (context.platform === Platform.VSCode) {
           context.ui?.showMessage("info", message, false);
         }
@@ -142,6 +161,9 @@ export class CreateTeamsAppDriver implements StepDriver {
         }
       }
     } else {
+      context.addSummary(
+        getLocalizedString("driver.teamsApp.summary.createTeamsAppAlreadyExists", teamsAppId)
+      );
       progressHandler?.end(true);
       return ok(
         new Map([

@@ -176,6 +176,7 @@ describe("serverConnections", () => {
     if (res.isOk()) {
       assert.deepEqual(res.value, {});
     }
+    sandbox.restore();
   });
 
   it("buildArtifactsRequest", () => {

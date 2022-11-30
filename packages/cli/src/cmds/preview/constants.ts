@@ -88,6 +88,7 @@ export const botStartStartMessageNext = `executing 'npm run dev:teamsfx' under $
 export const botWatchStartMessage = `executing 'npm run watch:teamsfx' under ${FolderName.Bot} folder.`;
 export const botAzuriteStartMessage = `executing 'npm run prepare-storage:teamsfx' under ${FolderName.Bot} folder.`;
 export const ngrokStartStartMessage = `executing 'ngrok http' under ${FolderName.Bot} folder.`;
+export const runCommandStartMessage = "executing '%s' command under project folder '%s'";
 
 export const previewTitle = "preview";
 export const previewStartMessage = "opening Teams web client.";

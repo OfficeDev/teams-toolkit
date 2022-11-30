@@ -18,14 +18,16 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
+import * as yaml from "js-yaml";
 import { getProjectMigratorMW } from "../../../src/core/middleware/projectMigrator";
 import { MockTools, MockUserInteraction, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
 import { setTools } from "../../../src/core/globalVars";
 import { MigrationContext } from "../../../src/core/middleware/utils/migrationContext";
 import {
+  generateAppYml,
   generateSettingsJson,
-  statesMigration,
+  statesMigration，
 } from "../../../src/core/middleware/projectMigratorV3";
 
 let mockedEnvRestore: () => void;
@@ -173,6 +175,102 @@ describe("generateSettingsJson", () => {
   });
 });
 
+describe("generateAppYml-js/ts", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+  
+  it("should success in happy path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+
+    await generateAppYml(migrationContext);
+
+    const appYamlPath = path.join(projectPath, Constants.appYmlPath);
+    assert.isTrue(await fs.pathExists(appYamlPath));
+    const appYaml: any = yaml.load(await fs.readFile(appYamlPath, "utf8"));
+    // validate basic part
+    assert.equal(appYaml.version, "1.0.0");
+    assert.exists(getAction(appYaml.provision, "arm/deploy"));
+    assert.exists(getAction(appYaml.registerApp, "teamsApp/create"));
+    assert.exists(getAction(appYaml.configureApp, "teamsApp/validate"));
+    assert.exists(getAction(appYaml.configureApp, "teamsApp/createAppPackage"));
+    assert.exists(getAction(appYaml.configureApp, "teamsApp/update"));
+    assert.exists(getAction(appYaml.publish, "teamsApp/validate"));
+    assert.exists(getAction(appYaml.publish, "teamsApp/createAppPackage"));
+    assert.exists(getAction(appYaml.publish, "teamsApp/publishAppPackage"));
+    // validate AAD part
+    assert.exists(getAction(appYaml.registerApp, "aadApp/create"));
+    assert.exists(getAction(appYaml.configureApp, "aadApp/update"));
+    // validate tab part
+    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "npm/command");
+    assert.exists(
+      npmCommandActions.find(
+        (item) => item.with.workingDirectory === "tabs" && item.with.args === "install"
+      )
+    );
+    assert.exists(
+      npmCommandActions.find(
+        (item) => item.with.workingDirectory === "tabs" && item.with.args === "run build"
+      )
+    );
+    assert.exists(getAction(appYaml.deploy, "azureStorage/deploy"));
+  });
+
+  it("should not generate AAD part if AAD plugin not activated", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.solutionSettings.activeResourcePlugins = (<Array<string>>(
+      projectSetting.solutionSettings.activeResourcePlugins
+    )).filter((item) => item !== "fx-resource-aad-app-for-teams"); // remove AAD plugin
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    const appYaml: any = yaml.load(
+      await fs.readFile(path.join(projectPath, Constants.appYmlPath), "utf8")
+    );
+
+    assert.isEmpty(getAction(appYaml.registerApp, "aadApp/create"));
+    assert.isEmpty(getAction(appYaml.configureApp, "aadApp/update"));
+  });
+
+  it("should not generate tab part if frontend hosting plugin not activated", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.solutionSettings.activeResourcePlugins = (<Array<string>>(
+      projectSetting.solutionSettings.activeResourcePlugins
+    )).filter((item) => item !== "fx-resource-frontend-hosting"); // remove frontend hosting plugin
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    const appYaml: any = yaml.load(
+      await fs.readFile(path.join(projectPath, Constants.appYmlPath), "utf8")
+    );
+
+    assert.isEmpty(getAction(appYaml.provision, "azureStorage/enableStaticWebsite"));
+    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "npm/command");
+    assert.isEmpty(npmCommandActions.filter((item) => item.with.workingDirectory === "tabs"));
+    assert.isEmpty(getAction(appYaml.deploy, "azureStorage/deploy"));
+  });
+});
+
 describe("stateMigration", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
@@ -230,8 +328,16 @@ async function readEnvFile(projectPath: string, env: string): Promise<any> {
   return await fs.readFileSync(path.join(projectPath, ".env." + env));
 }
 
+function getAction(lifecycleDefinition: Array<any>, actionName: string): any[] {
+  if (lifecycleDefinition) {
+    return lifecycleDefinition.filter((item) => item.uses === actionName);
+  }
+  return []；
+}
+
 const Constants = {
   happyPathTestProject: "happyPath",
   settingsFilePath: "teamsfx/settings.json",
   oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
+  appYmlPath: "teamsfx/app.yml",
 };

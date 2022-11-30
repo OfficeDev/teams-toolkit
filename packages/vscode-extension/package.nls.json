@@ -210,6 +210,7 @@
     "teamstoolkit.devPortalIntegration.appStudioLogin.message": "Please log in to your Microsoft 365 account to proceed.",
     "teamstoolkit.devPortalIntegration.appStudioSwitchAccount.message": "Please log in to the correct Microsoft 365 account to proceed.",
     "teamstoolkit.devPortalIntegration.blockingMessage": "Please wait until finish processing previous request.",
+    "teamstoolkit.devPortalIntegration.installPreReleaseWarning": "Please switch to pre-release version of Teams Toolkit following [Pre release extensions](%s) and try again from Developer Portal.",
     "teamstoolkit.devPortalIntegration.checkM365Account.progressTitle": "Checking Microsoft 365 account...",
     "teamstoolkit.devPortalIntegration.generalError.message": "Please try again from Developer Portal and make sure to sign in with the correct Microsoft 365 account.",
     "teamstoolkit.devPortalIntegration.getTeamsAppError.message": "Teams Toolkit failed to get your Teams app. Please try again from Developer Portal and make sure to sign in with the correct Microsoft 365 account.",

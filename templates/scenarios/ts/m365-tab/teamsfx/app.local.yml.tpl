@@ -15,7 +15,7 @@ registerApp:
 
   - uses: teamsApp/create # Creates a Teams app
     with:
-      name: {%appName%} # Teams app name
+      name: ${{TEAMS_APP_NAME}} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 

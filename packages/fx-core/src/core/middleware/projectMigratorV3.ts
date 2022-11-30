@@ -1,13 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ok, SettingsFileName, SettingsFolderName } from "@microsoft/teamsfx-api";
+import { ok, ProjectSettings, SettingsFileName, SettingsFolderName } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks } from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
+import { AppYmlGenerator } from "./utils/appYmlGenerator";
+import * as fs from "fs-extra";
 import {
   fsReadDirSync,
   jsonObjectNamesConvertV3,
@@ -18,9 +20,13 @@ import { FileType, namingConverterV3 } from "./MigrationUtils";
 import { isObject } from "lodash";
 
 const MigrationVersion = "2.1.0";
+const Constants = {
+  provisionBicepPath: "./templates/azure/provision.bicep",
+  appYmlName: "app.yml",
+};
 
 type Migration = (context: MigrationContext) => Promise<void>;
-const subMigrations: Array<Migration> = [preMigration, generateSettingsJson, statesMigration];
+const subMigrations: Array<Migration> = [preMigration, generateSettingsJson, generateAppYml, statesMigration];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await checkVersionForMigration(ctx)) && checkMethod(ctx)) {
@@ -86,18 +92,35 @@ async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
 }
 
 export async function generateSettingsJson(context: MigrationContext): Promise<void> {
-  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(context.projectPath, true);
-  if (oldProjectSettings.isOk()) {
-    const content = {
-      version: "3.0.0",
-      trackingId: oldProjectSettings.value.projectId,
-    };
+  const oldProjectSettings = await loadProjectSettings(context.projectPath);
 
-    await context.fsEnsureDir(SettingsFolderName);
-    await context.fsWriteFile(
-      path.join(SettingsFolderName, SettingsFileName),
-      JSON.stringify(content, null, 4)
-    );
+  const content = {
+    version: "3.0.0",
+    trackingId: oldProjectSettings.projectId,
+  };
+
+  await context.fsEnsureDir(SettingsFolderName);
+  await context.fsWriteFile(
+    path.join(SettingsFolderName, SettingsFileName),
+    JSON.stringify(content, null, 4)
+  );
+}
+
+export async function generateAppYml(context: MigrationContext): Promise<void> {
+  const bicepContent: string = await fs.readFile(
+    path.join(context.projectPath, Constants.provisionBicepPath),
+    "utf8"
+  );
+  const oldProjectSettings = await loadProjectSettings(context.projectPath);
+  const appYmlGenerator = new AppYmlGenerator(oldProjectSettings, bicepContent);
+  const appYmlString: string = await appYmlGenerator.generateAppYml();
+  await context.fsWriteFile(path.join(SettingsFolderName, Constants.appYmlName), appYmlString);
+}
+
+async function loadProjectSettings(projectPath: string): Promise<ProjectSettings> {
+  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath, true);
+  if (oldProjectSettings.isOk()) {
+    return oldProjectSettings.value;
   } else {
     throw oldProjectSettings.error;
   }

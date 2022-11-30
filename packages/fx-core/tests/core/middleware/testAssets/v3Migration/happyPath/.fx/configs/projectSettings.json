@@ -1,6 +1,6 @@
 {
-    "appName": "v3Migration",
-    "projectId": "ba8d07aa-4899-4588-a337-f73a03439728",
+    "appName": "azureMigration",
+    "projectId": "2e00ed6d-3613-4ef3-b727-8cb91e1250a7",
     "version": "2.1.0",
     "components": [
         {
@@ -25,17 +25,99 @@
             "name": "aad-app",
             "provision": true,
             "deploy": true
+        },
+        {
+            "name": "teams-bot",
+            "hosting": "azure-web-app",
+            "provision": false,
+            "deploy": true,
+            "capabilities": [
+                "command-response"
+            ],
+            "build": true,
+            "folder": "bot",
+            "sso": true
+        },
+        {
+            "name": "bot-service",
+            "provision": true
+        },
+        {
+            "name": "azure-web-app",
+            "scenario": "Bot",
+            "connections": [
+                "identity",
+                "azure-sql",
+                "key-vault",
+                "aad-app",
+                "teams-tab",
+                "teams-bot",
+                "teams-api"
+            ]
+        },
+        {
+            "name": "teams-api",
+            "hosting": "azure-function",
+            "functionNames": [
+                "getUserProfile"
+            ],
+            "deploy": true,
+            "build": true,
+            "folder": "api",
+            "artifactFolder": "api"
+        },
+        {
+            "name": "azure-function",
+            "scenario": "Api",
+            "provision": true,
+            "connections": [
+                "identity",
+                "azure-sql",
+                "key-vault",
+                "aad-app",
+                "teams-tab",
+                "teams-bot",
+                "teams-api",
+                "apim"
+            ]
+        },
+        {
+            "name": "azure-sql",
+            "provision": true
+        },
+        {
+            "name": "apim",
+            "provision": true,
+            "deploy": true,
+            "connections": [
+                "teams-tab",
+                "teams-bot"
+            ]
+        },
+        {
+            "name": "key-vault",
+            "connections": [
+                "identity"
+            ],
+            "provision": true
         }
     ],
-    "programmingLanguage": "javascript",
+    "programmingLanguage": "typescript",
     "solutionSettings": {
         "name": "fx-solution-azure",
         "version": "1.0.0",
         "hostType": "Azure",
-        "azureResources": [],
+        "azureResources": [
+            "keyvault",
+            "sql",
+            "apim",
+            "function"
+        ],
         "capabilities": [
             "Tab",
-            "TabSSO"
+            "TabSSO",
+            "Bot",
+            "BotSSO"
         ],
         "activeResourcePlugins": [
             "fx-resource-local-debug",
@@ -44,7 +126,21 @@
             "fx-resource-api-connector",
             "fx-resource-aad-app-for-teams",
             "fx-resource-frontend-hosting",
-            "fx-resource-identity"
+            "fx-resource-bot",
+            "fx-resource-identity",
+            "fx-resource-key-vault",
+            "fx-resource-azure-sql",
+            "fx-resource-apim",
+            "fx-resource-function"
         ]
-    }
+    },
+    "pluginSettings": {
+        "fx-resource-bot": {
+            "host-type": "app-service",
+            "capabilities": [
+                "command-response"
+            ]
+        }
+    },
+    "defaultFunctionName": "getUserProfile"
 }

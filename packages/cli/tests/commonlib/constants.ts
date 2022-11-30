@@ -184,8 +184,10 @@ export class EnvContants {
   static readonly TAB_DOMAIN = "TAB_DOMAIN";
 
   // BOT
-  static readonly MICROSOFT_APP_ID = "MICROSOFT_APP_ID";
+  static readonly BOT_ID = "BOT_ID";
   static readonly BOT_PASSWORD = "SECRET_BOT_PASSWORD";
+  static readonly MICROSOFT_APP_ID = "MICROSOFT_APP_ID";
+  static readonly MICROSOFT_APP_PASSWORD = "SECRET_MICROSOFT_APP_PASSWORD";
   static readonly BOT_AZURE_APP_SERVICE_RESOURCE_ID = "BOT_AZURE_APP_SERVICE_RESOURCE_ID";
   static readonly BOT_DOMAIN = "BOT_DOMAIN";
 }

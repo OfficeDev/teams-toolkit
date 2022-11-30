@@ -289,11 +289,17 @@ describe("stateMigration", () => {
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     await statesMigration(migrationContext);
 
-    const trueStateContent_dev = await readEnvFile(Constants.happyPathTestProject, "dev");
-    const testStateContent_dev = await readEnvFile(projectPath, "dev");
+    const trueStateContent_dev = await readEnvFile(
+      getTestAssetsPath(Constants.happyPathTestProject),
+      "dev"
+    );
+    const testStateContent_dev = await readEnvFile(projectPath, "local");
     assert.isTrue(testStateContent_dev === trueStateContent_dev);
 
-    const trueStateContent_local = await readEnvFile(Constants.happyPathTestProject, "local");
+    const trueStateContent_local = await readEnvFile(
+      getTestAssetsPath(Constants.happyPathTestProject),
+      "local"
+    );
     const testStateContent_local = await readEnvFile(projectPath, "local");
     assert.isTrue(testStateContent_local === trueStateContent_local);
   });

@@ -396,8 +396,8 @@ jobs:
           TTK_VERSION=$PACKAGE_VERSION.$DATE_WITH_TIME
           echo "::set-output name=version::$TTK_VERSION
 
-      - name: pack vsix for pre-release
-        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview == 'no')}}
+      - name: pack vsix for preview
+        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
         env:
           RELEASE: beta
         uses: nick-invision/retry@v2
@@ -413,7 +413,7 @@ jobs:
             npx vsce package --pre-release ${{ steps.preview-version.outputs.version }}
 
       - name: release preview TTK to github release page
-        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview == 'no')}}
+        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
         uses: ncipollo/release-action@v1.10.0
         with:
           token: ${{ secrets.CD_PAT }}

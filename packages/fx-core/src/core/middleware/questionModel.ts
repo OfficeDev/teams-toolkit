@@ -16,14 +16,7 @@ import { isCLIDotNetEnabled, isPreviewFeaturesEnabled } from "../../common/featu
 import { deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
 import { getNotificationTriggerQuestionNode } from "../../component/question";
-import {
-  BotOptionItem,
-  ExistingTabOptionItem,
-  TabNewUIOptionItem,
-  TabNonSsoAndDefaultBotItem,
-  TabNonSsoItem,
-  TabSPFxItem,
-} from "../../component/constants";
+import { ExistingTabOptionItem, TabSPFxItem } from "../../component/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
 import { TOOLS } from "../globalVars";
 import {
@@ -49,14 +42,10 @@ import {
   tabsWebsitetUrlQuestion,
 } from "../question";
 import { CoreHookContext } from "../types";
-import {
-  isPersonalApp,
-  needBotCode,
-  needTabAndBotCode,
-  needTabCode,
-} from "../../component/resource/appManifest/utils/utils";
+import { isPersonalApp, needBotCode } from "../../component/resource/appManifest/utils/utils";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
+import { getTemplateId } from "../../component/developerPortalScaffoldUtils";
 
 /**
  * This middleware will help to collect input from question flow
@@ -120,13 +109,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   if (inputs.teamsAppFromTdp) {
     // If toolkit is activated by a request from Developer Portal, we will always create a project from scratch.
     inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC.id;
-    inputs[CoreQuestionNames.Capabilities] = needTabAndBotCode(inputs.teamsAppFromTdp)
-      ? TabNonSsoAndDefaultBotItem.id
-      : needTabCode(inputs.teamsAppFromTdp)
-      ? TabNonSsoItem.id
-      : needBotCode(inputs.teamsAppFromTdp)
-      ? BotOptionItem.id
-      : inputs[CoreQuestionNames.Capabilities];
+    inputs[CoreQuestionNames.Capabilities] = getTemplateId(inputs.teamsAppFromTdp);
   }
   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
 

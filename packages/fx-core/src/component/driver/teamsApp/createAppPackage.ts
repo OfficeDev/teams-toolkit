@@ -48,8 +48,7 @@ export class CreateAppPackageDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async build(
     args: CreateAppPackageArgs,
-    context: WrapDriverContext,
-    withEmptyCapabilities?: boolean
+    context: WrapDriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     const state = this.loadCurrentState();
 
@@ -58,11 +57,7 @@ export class CreateAppPackageDriver implements StepDriver {
       manifestTemplatePath = path.join(context.projectPath, manifestTemplatePath);
     }
 
-    const manifestRes = await manifestUtils.getManifestV3(
-      manifestTemplatePath,
-      state,
-      withEmptyCapabilities
-    );
+    const manifestRes = await manifestUtils.getManifestV3(manifestTemplatePath, state);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }

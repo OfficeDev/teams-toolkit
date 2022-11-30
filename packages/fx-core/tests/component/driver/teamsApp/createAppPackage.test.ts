@@ -70,7 +70,7 @@ describe("teamsApp/createAppPackage", async () => {
     sinon.stub(fs, "chmod").callsFake(async () => {});
     sinon.stub(fs, "writeFile").callsFake(async () => {});
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext, true);
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isOk());
     if (await fs.pathExists(args.outputZipPath)) {
       await fs.remove(args.outputZipPath);

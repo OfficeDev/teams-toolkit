@@ -339,19 +339,19 @@ describe("stateMigration", () => {
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     await statesMigration(migrationContext);
 
-    const trueStateContent_dev = await readEnvFile(
+    const trueEnvContent_dev = await readEnvFile(
       getTestAssetsPath(Constants.happyPathTestProject),
       "dev"
     );
-    const testStateContent_dev = await readEnvFile(projectPath, "dev");
-    assert.isTrue(testStateContent_dev === trueStateContent_dev);
+    const testEnvContent_dev = await readEnvFile(projectPath, "dev");
+    assert.isTrue(testEnvContent_dev == trueEnvContent_dev);
 
-    const trueStateContent_local = await readEnvFile(
+    const trueEnvContent_local = await readEnvFile(
       getTestAssetsPath(Constants.happyPathTestProject),
       "local"
     );
-    const testStateContent_local = await readEnvFile(projectPath, "local");
-    assert.isTrue(testStateContent_local === trueStateContent_local);
+    const testEnvContent_local = await readEnvFile(projectPath, "local");
+    assert.isTrue(testEnvContent_local == trueEnvContent_local);
   });
 });
 
@@ -381,7 +381,7 @@ async function readSettingJson(projectPath: string): Promise<any> {
 }
 
 async function readEnvFile(projectPath: string, env: string): Promise<any> {
-  return await fs.readFileSync(path.join(projectPath, ".env." + env));
+  return await fs.readFileSync(path.join(projectPath, ".env." + env)).toString();
 }
 
 function getAction(lifecycleDefinition: Array<any>, actionName: string): any[] {

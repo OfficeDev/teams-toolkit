@@ -29,13 +29,13 @@ deploy:
   - uses: azureAppService/deploy # Deploy bits to Azure App Serivce
     with:
       distributionPath: . # Deploy base folder
-      ignoreFile: ./.appserviceIgnore # Can be changed to any ignore file location, leave blank will ignore nothing
+      ignoreFile: ./.appserviceignore # Can be changed to any ignore file location, leave blank will ignore nothing
       resourceId: ${{BOT_AZURE_APP_SERVICE_RESOURCE_ID}} # The resource id of the cloud resource to be deployed to
 
 registerApp:
   - uses: teamsApp/create # Creates a Teams app
     with:
-      name: {%appName%} # Teams app name
+      name: ${{TEAMS_APP_NAME}} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 

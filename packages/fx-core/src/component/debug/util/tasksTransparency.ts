@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ProgrammingLanguage, TaskOverallLabel } from "../../../common/local/constants";
+import { TaskOverallLabel } from "../../../common/local/constants";
 import { CommentJSONValue, CommentObject, CommentArray } from "comment-json";
 import * as commentJson from "comment-json";
 import {
@@ -11,6 +11,7 @@ import {
   TaskDefaultValue,
   TaskLabel,
 } from "../../../common/local/constants";
+import { ProgrammingLanguage } from "../../constants";
 
 export function generateTasksJson(
   includeFrontend: boolean,
@@ -132,7 +133,7 @@ export function generateTasks(
   if (includeBackend) {
     tasks.push(startBackend(programmingLanguage));
     tasks.push(installAzureFunctionsBindingExtensions());
-    if (programmingLanguage === ProgrammingLanguage.typescript) {
+    if (programmingLanguage === ProgrammingLanguage.TS) {
       tasks.push(watchBackend());
     }
   }
@@ -141,7 +142,7 @@ export function generateTasks(
     if (includeFuncHostedBot) {
       tasks.push(startFuncHostedBot(includeFrontend, programmingLanguage));
       tasks.push(startAzuriteEmulator());
-      if (programmingLanguage === ProgrammingLanguage.typescript) {
+      if (programmingLanguage === ProgrammingLanguage.TS) {
         tasks.push(watchFuncHostedBot());
       }
     } else {
@@ -590,7 +591,7 @@ function startBackend(programmingLanguage: string): Record<string, unknown> {
     dependsOn: [TaskLabel.InstallAzureFuncBindingExt],
   } as Record<string, unknown>;
 
-  if (programmingLanguage === ProgrammingLanguage.typescript) {
+  if (programmingLanguage === ProgrammingLanguage.TS) {
     (result.dependsOn as string[]).push(TaskLabel.WatchBackend);
   }
 
@@ -698,7 +699,7 @@ function startFuncHostedBot(
   }
 
   const dependsOn: string[] = [TaskLabel.StartAzuriteEmulator];
-  if (programmingLanguage === ProgrammingLanguage.typescript) {
+  if (programmingLanguage === ProgrammingLanguage.TS) {
     dependsOn.push(TaskLabel.WatchBot);
   }
   result.dependsOn = dependsOn;

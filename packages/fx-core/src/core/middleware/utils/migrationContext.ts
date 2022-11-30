@@ -20,7 +20,7 @@ export interface MigrationContext extends CoreHookContext {
     options?: WriteFileOptions | string
   ): Promise<void>;
   addReport(report: string): void;
-  addTelemetryProperties(properties: { [key: string]: string }): void;
+  addTelemetryProperties(properties: Record<string, string>): void;
 }
 
 export class MigrationContext {
@@ -77,7 +77,7 @@ export class MigrationContext {
     this.addModifiedPath(file);
   }
 
-  addModifiedPath(path: string) {
+  addModifiedPath(path: string): void {
     if (!this.modifiedPaths.includes(path)) {
       this.modifiedPaths.push(path);
     }
@@ -86,24 +86,24 @@ export class MigrationContext {
   getModifiedPaths(): string[] {
     return this.modifiedPaths.slice();
   }
-}
 
-export async function wrapRunMigration(
-  context: MigrationContext,
-  exec: (context: MigrationContext) => void
-): Promise<void> {
-  try {
-    // sendTelemetryEvent("core", TelemetryEvent.ProjectMigratorNotificationStart);
-    await exec(context);
-    await showSummaryReport(context);
-    // sendTelemetryEvent("core", TelemetryEvent.ProjectMigratorNotificationEnd);
-  } catch (error: any) {
-    // sendTelemetryEvent("core", TelemetryEvent.ProjectMigratorNotificationFailed);
-    await rollbackMigration(context);
-    throw error;
+  async cleanModifiedPaths(): Promise<void> {
+    for (const modifiedPath of this.modifiedPaths.reverse()) {
+      await fs.remove(path.join(this.projectPath, modifiedPath));
+    }
+    this.modifiedPaths.length = 0;
+  }
+
+  async restoreBackup(): Promise<void> {
+    const paths = await fs.readdir(this.backupPath);
+    await Promise.all(
+      paths.map(async (_path) => {
+        await fs.copy(path.join(this.backupPath, _path), path.join(this.projectPath, _path));
+      })
+    );
+  }
+
+  async cleanTeamsfx(): Promise<void> {
+    await fs.remove(path.join(this.projectPath, teamsfxFolder));
   }
 }
-
-async function rollbackMigration(context: MigrationContext): Promise<void> {}
-
-async function showSummaryReport(context: MigrationContext): Promise<void> {}

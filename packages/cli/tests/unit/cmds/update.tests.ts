@@ -4,7 +4,7 @@
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
 import { err, FxError, ok, UserError } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, envUtil } from "@microsoft/teamsfx-core";
 import HelpParamGenerator from "../../../src/helpParamGenerator";
 import {
   TelemetryEvent,
@@ -161,6 +161,8 @@ describe("Update Teams app manifest Command Tests", function () {
         telemetryEvents.push(eventName);
         telemetryEventStatus = TelemetrySuccess.No;
       });
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
   });
   it("should pass builder check", () => {
     const cmd = new UpdateTeamsApp();
@@ -169,12 +171,13 @@ describe("Update Teams app manifest Command Tests", function () {
   });
 
   it("Run command success", async () => {
-    sandbox.stub(FxCore.prototype, "executeUserTask").resolves(ok(""));
+    sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(""));
     const cmd = new Update();
     const updateTeamsAppManifest = cmd.subCommands.find((cmd) => cmd.commandHead === "teams-app");
     const args = {
       folder: "fake_test",
       env: "dev",
+      "manifest-file-path": "./appPackage/manifest.template.json",
     };
     await updateTeamsAppManifest!.handler(args);
     expect(telemetryEvents).deep.equals([
@@ -186,13 +189,14 @@ describe("Update Teams app manifest Command Tests", function () {
 
   it("Run command with exception", async () => {
     sandbox
-      .stub(FxCore.prototype, "executeUserTask")
+      .stub(FxCore.prototype, "deployTeamsManifest")
       .resolves(err(new UserError("Fake_Err", "Fake_Err_name", "Fake_Err_msg")));
     const cmd = new Update();
     const updateTeamsAppManifes = cmd.subCommands.find((cmd) => cmd.commandHead === "teams-app");
     const args = {
       folder: "fake_test",
       env: "dev",
+      "manifest-file-path": "./appPackage/manifest.template.json",
     };
     try {
       await updateTeamsAppManifes!.handler(args);

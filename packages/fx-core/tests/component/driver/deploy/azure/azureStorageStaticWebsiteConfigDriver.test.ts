@@ -82,6 +82,17 @@ describe("Azure Storage enable static website Driver test", () => {
 
     sinon.assert.calledOnce(caller);
     chai.assert.equal(res.isOk(), true);
+
+    const rex = await driver.execute(
+      {
+        storageResourceId:
+          "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
+        indexPage: "index.html",
+        errorPage: "error.html",
+      },
+      context
+    );
+    chai.assert.equal(rex.result.isOk(), true);
   });
 
   it("Azure Storage use default", async () => {

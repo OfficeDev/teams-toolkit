@@ -168,6 +168,7 @@ import {
   isBot,
   isMessageExtension,
 } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/utils";
+import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -1075,6 +1076,10 @@ export async function runCommand(
       }
       case Stage.deployAad: {
         result = await core.deployAadManifest(inputs);
+        break;
+      }
+      case Stage.deployTeams: {
+        result = await core.deployTeamsManifest(inputs);
         break;
       }
       case Stage.publish: {
@@ -2993,15 +2998,21 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
     inputs.env = env;
     await core.activateEnv(inputs);
   }
-  const func: Func = {
-    namespace: "fx-solution-azure/fx-resource-appstudio",
-    method: "updateManifest",
-    params: {
-      envName: env,
-    },
-  };
 
-  const result = await runUserTask(func, TelemetryEvent.UpdatePreviewManifest, false, env);
+  let result;
+  if (isV3Enabled()) {
+    const inputs = getSystemInputs();
+    result = await runCommand(Stage.deployTeams, inputs);
+  } else {
+    const func: Func = {
+      namespace: "fx-solution-azure/fx-resource-appstudio",
+      method: "updateManifest",
+      params: {
+        envName: env,
+      },
+    };
+    result = await runUserTask(func, TelemetryEvent.UpdatePreviewManifest, false, env);
+  }
 
   if (!args || args.length === 0) {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
@@ -3357,7 +3368,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         id: "commandAndResponse",
         label: `${localize("teamstoolkit.tutorials.commandAndResponse.label")}`,
         detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
-        groupName: localize("teamstoolkit.guide.development"),
+        groupName: localize("teamstoolkit.guide.scenario"),
         data: "https://aka.ms/teamsfx-create-command",
         buttons: [
           {
@@ -3413,15 +3424,6 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           command: "fx-extension.openTutorial",
         },
       ],
-    });
-  }
-
-  if (isExistingTabAppEnabled()) {
-    config.options.splice(0, 0, {
-      id: "embedWebPages",
-      label: `${localize("teamstoolkit.tutorials.embedWebPages.label")}`,
-      detail: localize("teamstoolkit.tutorials.embedWebPages.detail"),
-      data: "https://aka.ms/teamsfx-embed-existing-web",
     });
   }
 
@@ -3619,13 +3621,8 @@ export async function scaffoldFromDeveloperPortalHandler(
     return ok(null);
   }
 
-  const personalTab = "personal-tab";
-  const groupTab = "group-tab";
-  const bot = "bot";
-  const messageExtension = "messaging-extension";
-
   const appId = args[0];
-  let properties: { [p: string]: string } = {
+  const properties: { [p: string]: string } = {
     teamsAppId: appId,
   };
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtalStart, properties);
@@ -3635,15 +3632,15 @@ export async function scaffoldFromDeveloperPortalHandler(
     1
   );
   await progressBar.start();
-  let appDefinition = undefined;
+  let token = undefined;
   try {
-    const appDefinitionRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
+    const tokenRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
       { scopes: AppStudioScopes },
-      appId
+      loginHint
     );
-    if (appDefinitionRes.isErr()) {
-      if ((appDefinitionRes.error as any).displayMessage) {
-        window.showErrorMessage((appDefinitionRes.error as any).displayMessage);
+    if (tokenRes.isErr()) {
+      if ((tokenRes.error as any).displayMessage) {
+        window.showErrorMessage((tokenRes.error as any).displayMessage);
       } else {
         vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.generalError.message")
@@ -3651,13 +3648,13 @@ export async function scaffoldFromDeveloperPortalHandler(
       }
       ExtTelemetry.sendTelemetryErrorEvent(
         TelemetryEvent.HandleUrlFromDeveloperProtal,
-        appDefinitionRes.error,
+        tokenRes.error,
         properties
       );
       await progressBar.end(false);
-      return err(appDefinitionRes.error);
+      return err(tokenRes.error);
     }
-    appDefinition = appDefinitionRes.value;
+    token = tokenRes.value;
     await progressBar.end(true);
   } catch (e) {
     vscode.window.showErrorMessage(
@@ -3670,29 +3667,25 @@ export async function scaffoldFromDeveloperPortalHandler(
       error,
       properties
     );
-    throw e;
+    return err(error);
+  }
+
+  let appDefinition;
+  try {
+    appDefinition = await AppStudioClient.getApp(appId, token, VsCodeLogInstance);
+  } catch (error: any) {
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.HandleUrlFromDeveloperProtal,
+      error,
+      properties
+    );
+    vscode.window.showErrorMessage(
+      localize("teamstoolkit.devPortalIntegration.getTeamsAppError.message")
+    );
+    return err(error);
   }
 
   const res = await createNewProjectHandler([{ teamsAppFromTdp: appDefinition }]);
-  const features = [];
-
-  if (isPersonalApp(appDefinition)) {
-    features.push(personalTab);
-  }
-
-  if (isGroupApp(appDefinition)) {
-    features.push(groupTab);
-  }
-
-  if (isBot(appDefinition)) {
-    features.push(bot);
-  }
-
-  if (isMessageExtension(appDefinition)) {
-    features.push(messageExtension);
-  }
-
-  properties = { ...properties, features: features.join(",") };
 
   if (res.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(

@@ -26,7 +26,12 @@ const Constants = {
 };
 
 type Migration = (context: MigrationContext) => Promise<void>;
-const subMigrations: Array<Migration> = [preMigration, generateSettingsJson, generateAppYml, statesMigration];
+const subMigrations: Array<Migration> = [
+  preMigration,
+  generateSettingsJson,
+  generateAppYml,
+  statesMigration,
+];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await checkVersionForMigration(ctx)) && checkMethod(ctx)) {

@@ -27,7 +27,7 @@ import { MigrationContext } from "../../../src/core/middleware/utils/migrationCo
 import {
   generateAppYml,
   generateSettingsJson,
-  statesMigration，
+  statesMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
 
 let mockedEnvRestore: () => void;
@@ -186,7 +186,7 @@ describe("generateAppYml-js/ts", () => {
   afterEach(async () => {
     await fs.remove(projectPath);
   });
-  
+
   it("should success in happy path", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
@@ -332,7 +332,7 @@ function getAction(lifecycleDefinition: Array<any>, actionName: string): any[] {
   if (lifecycleDefinition) {
     return lifecycleDefinition.filter((item) => item.uses === actionName);
   }
-  return []；
+  return [];
 }
 
 const Constants = {

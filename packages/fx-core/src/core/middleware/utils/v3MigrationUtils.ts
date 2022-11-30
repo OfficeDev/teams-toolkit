@@ -52,7 +52,8 @@ function dfs(parentKeyName: string, obj: any, filetype: FileType, bicepContent: 
       returnData += dfs(parentKeyName + "." + keyName, obj[keyName], filetype, bicepContent);
     }
   } else {
-    return namingConverterV3(parentKeyName, filetype, bicepContent) + "=" + obj + "\n";
+    const res = namingConverterV3(parentKeyName, filetype, bicepContent);
+    if (res.isOk()) return res.value + "=" + obj + "\r\n";
   }
 
   return returnData;

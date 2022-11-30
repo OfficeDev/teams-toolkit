@@ -37,8 +37,7 @@ import {
   readBicepContent,
   readStateFile,
 } from "./utils/v3MigrationUtils";
-import { FileType, namingConverterV3 } from "./MigrationUtils";
-import { isObject } from "lodash";
+import { FileType } from "./MigrationUtils";
 
 const MigrationVersion = "2.1.0";
 const Constants = {
@@ -199,7 +198,7 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
     // if ./fx/states/ exists
     const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
     const fileRegex = new RegExp("(state\\.)([a-zA-Z0-9_]*)(\\.json)", "g"); // state.*.json
-    for (const fileName in fileNames) {
+    for (const fileName of fileNames) {
       const fileNamesArray = fileRegex.exec(fileName);
       if (fileNamesArray != null) {
         // get envName

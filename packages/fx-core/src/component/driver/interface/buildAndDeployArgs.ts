@@ -25,8 +25,8 @@ export type DeployStepArgs = {
 };
 
 export type BuildArgs = {
-  workingDirectory?: string;
   args: string;
+  workingDirectory?: string;
   execPath?: string;
 };
 

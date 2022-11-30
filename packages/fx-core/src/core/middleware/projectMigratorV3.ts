@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ok, ProjectSettings, SettingsFileName, SettingsFolderName } from "@microsoft/teamsfx-api";
+import {
+  AppPackageFolderName,
+  ok,
+  ProjectSettings,
+  SettingsFileName,
+  SettingsFolderName,
+  TemplateFolderName,
+} from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
@@ -10,6 +17,9 @@ import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
+import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
+import { replacePlaceholdersForV3 } from "./MigrationUtils";
+import { ReadFileError } from "../error";
 
 const MigrationVersion = "2.1.0";
 const Constants = {
@@ -18,7 +28,12 @@ const Constants = {
 };
 
 type Migration = (context: MigrationContext) => Promise<void>;
-const subMigrations: Array<Migration> = [preMigration, generateSettingsJson, generateAppYml];
+const subMigrations: Array<Migration> = [
+  preMigration,
+  generateSettingsJson,
+  generateAppYml,
+  replacePlaceholderForManifests,
+];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await checkVersionForMigration(ctx)) && checkMethod(ctx)) {
@@ -115,5 +130,68 @@ async function loadProjectSettings(projectPath: string): Promise<ProjectSettings
     return oldProjectSettings.value;
   } else {
     throw oldProjectSettings.error;
+  }
+}
+
+export async function replacePlaceholderForManifests(context: MigrationContext): Promise<void> {
+  // Backup templates/appPackage
+  const oldAppPackageFolderPath = path.join(TemplateFolderName, AppPackageFolderName);
+  const oldAppPackageFolderBackupRes = await context.backup(oldAppPackageFolderPath);
+
+  if (!oldAppPackageFolderBackupRes) {
+    // templates/appPackage does not exists
+    // invalid teamsfx project
+    throw ReadFileError(new Error("templates/appPackage does not exist"));
+  }
+
+  // Ensure appPackage
+  await context.fsEnsureDir(AppPackageFolderName);
+
+  // Copy templates/appPackage/resources
+  const oldResourceFolderPath = path.join(oldAppPackageFolderPath, "resources");
+  const oldResourceFolderExists = await fs.pathExists(
+    path.join(context.projectPath, oldResourceFolderPath)
+  );
+  if (oldResourceFolderExists) {
+    const resourceFolderPath = path.join(AppPackageFolderName, "resources");
+    await context.fsCopy(oldResourceFolderPath, resourceFolderPath);
+  }
+
+  // Read Bicep
+  const oldBicepFilePath = path.join(TemplateFolderName, "azure", "provision.bicep");
+  const oldBicepFileExists = await fs.pathExists(path.join(context.projectPath, oldBicepFilePath));
+  if (!oldBicepFileExists) {
+    // templates/azure/provision.bicep does not exist
+    throw ReadFileError(new Error("templates/azure/provision.bicep does not exist"));
+  }
+  const bicepContent = await fs.readFile(path.join(context.projectPath, oldBicepFilePath), "utf-8");
+
+  // Read Teams app manifest and save to templates/appPackage/manifest.template.json
+  const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
+  const oldManifestExists = await fs.pathExists(path.join(context.projectPath, oldManifestPath));
+  if (oldManifestExists) {
+    const manifestPath = path.join(AppPackageFolderName, MANIFEST_TEMPLATE_CONSOLIDATE);
+    const oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
+    const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);
+    // TODO: update app id uri
+    await context.fsWriteFile(manifestPath, manifest);
+  } else {
+    // templates/appPackage/manifest.template.json does not exist
+    throw ReadFileError(new Error("templates/appPackage/manifest.template.json does not exist"));
+  }
+
+  // Read AAD app manifest and save to ./aad.manifest.template.json
+  const oldAadManifestPath = path.join(oldAppPackageFolderPath, "aad.template.json");
+  const oldAadManifestExists = await fs.pathExists(
+    path.join(context.projectPath, oldAadManifestPath)
+  );
+  if (oldAadManifestExists) {
+    const oldAadManifest = await fs.readFile(
+      path.join(context.projectPath, oldAadManifestPath),
+      "utf-8"
+    );
+    const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
+    // TODO: update app id uri
+    await context.fsWriteFile("aad.manifest.template.json", aadManifest);
   }
 }

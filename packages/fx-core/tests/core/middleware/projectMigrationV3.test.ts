@@ -333,7 +333,7 @@ describe("updateLaunchJson", () => {
   afterEach(async () => {
     await fs.remove(projectPath);
   });
-  
+
   it("should success in happy path", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
@@ -369,7 +369,7 @@ describe("updateLaunchJson", () => {
       "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}" // for M365 app
     );
   });
-});    
+});
 
 describe("stateMigration", () => {
   const appName = randomAppName();

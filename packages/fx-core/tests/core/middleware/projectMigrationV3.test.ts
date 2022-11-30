@@ -400,7 +400,7 @@ describe("stateMigration", () => {
       getTestAssetsPath(Constants.happyPathTestProject),
       "local"
     );
-    const testEnvContent_local = await readEnvFile(projectPath, "local");
+    const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
     assert.isTrue(testEnvContent_local === trueEnvContent_local);
   });
 });

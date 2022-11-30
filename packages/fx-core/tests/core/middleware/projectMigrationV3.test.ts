@@ -23,7 +23,10 @@ import { MockTools, MockUserInteraction, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
 import { setTools } from "../../../src/core/globalVars";
 import { MigrationContext } from "../../../src/core/middleware/utils/migrationContext";
-import { generateSettingsJson } from "../../../src/core/middleware/projectMigratorV3";
+import {
+  generateSettingsJson,
+  statesMigration,
+} from "../../../src/core/middleware/projectMigratorV3";
 
 let mockedEnvRestore: () => void;
 
@@ -170,6 +173,34 @@ describe("generateSettingsJson", () => {
   });
 });
 
+describe("stateMigration", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("happy path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    await statesMigration(migrationContext);
+
+    const trueStateContent_dev = await readEnvFile(Constants.happyPathTestProject, "dev");
+    const testStateContent_dev = await readEnvFile(projectPath, "dev");
+    assert.isTrue(testStateContent_dev === trueStateContent_dev);
+
+    const trueStateContent_local = await readEnvFile(Constants.happyPathTestProject, "local");
+    const testStateContent_local = await readEnvFile(projectPath, "local");
+    assert.isTrue(testStateContent_local === trueStateContent_local);
+  });
+});
+
 async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
   const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
   inputs.projectPath = projectPath;
@@ -193,6 +224,10 @@ async function readOldProjectSettings(projectPath: string): Promise<any> {
 
 async function readSettingJson(projectPath: string): Promise<any> {
   return await fs.readJson(path.join(projectPath, Constants.settingsFilePath));
+}
+
+async function readEnvFile(projectPath: string, env: string): Promise<any> {
+  return await fs.readFileSync(path.join(projectPath, ".env." + env));
 }
 
 const Constants = {

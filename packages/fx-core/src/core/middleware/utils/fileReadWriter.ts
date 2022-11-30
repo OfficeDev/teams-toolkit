@@ -11,7 +11,7 @@ import { FileType, namingConverterV3 } from "../MigrationUtils";
 export async function readStateFile(context: MigrationContext, filePath: string): Promise<any> {
   const filepath = path.join(context.projectPath, filePath);
   if (await fs.pathExists(filepath)) {
-    const obj = fs.readJSON(filepath);
+    const obj = fs.readJson(filepath);
     return obj;
   }
 }

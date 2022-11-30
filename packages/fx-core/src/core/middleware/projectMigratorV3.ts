@@ -111,7 +111,7 @@ async function rollbackMigration(context: MigrationContext): Promise<void> {
 //TODO: implement summaryReport
 async function showSummaryReport(context: MigrationContext): Promise<void> {}
 
-async function migrate(context: MigrationContext): Promise<void> {
+export async function migrate(context: MigrationContext): Promise<void> {
   for (const subMigration of subMigrations) {
     await subMigration(context);
   }

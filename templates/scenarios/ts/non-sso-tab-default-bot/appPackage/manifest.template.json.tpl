@@ -25,7 +25,7 @@
     "accentColor": "#FFFFFF",
     "bots": [
         {
-            "botId": "${{BOT_ID}}",
+            "botId": "${{MICROSOFT_APP_ID}}",
             "scopes": [
                 "personal",
                 "team",

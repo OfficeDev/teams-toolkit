@@ -1,6 +1,6 @@
 const config = {
-  botId: process.env.BOT_ID,
-  botPassword: process.env.BOT_PASSWORD,
+  microsoftAppId: process.env.MICROSOFT_APP_ID,
+  microsoftAppPassword: process.env.MICROSOFT_APP_PASSWORD,
 };
 
 module.exports = config;

@@ -8,23 +8,23 @@ registerApp:
     # TEAMS_APP_ID: the id of Teams app
 
 provision:
-  - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
+  - uses: botAadApp/create # Creates a new AAD app for bot if MICROSOFT_APP_ID environment variable is empty
     with:
       name: {%appName%}
     # Output: following environment variable will be persisted in current environment's .env file.
-    # BOT_ID: the AAD app client id created for bot
-    # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
+    # MICROSOFT_APP_ID: the AAD app client id created for bot
+    # SECRET_MICROSOFT_APP_PASSWORD: the AAD app client secret created for bot
 
   - uses: appsettings/generate
     with:
       target: ./appsettings.Development.json
       appsettings:
-        BOT_ID: ${{BOT_ID}}
-        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+        MICROSOFT_APP_ID: ${{MICROSOFT_APP_ID}}
+        MICROSOFT_APP_PASSWORD: ${{SECRET_MICROSOFT_APP_PASSWORD}}
 
   - uses: botFramework/createOrUpdateBot # Create or update the bot registration on dev.botframework.com
     with:
-      botId: ${{BOT_ID}}
+      botId: ${{MICROSOFT_APP_ID}}
       name: {%appName%}
       messagingEndpoint: ${{BOT_ENDPOINT}}/api/messages
       description: ""

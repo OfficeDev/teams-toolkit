@@ -9,8 +9,8 @@ const commandApp = new ConversationBot({
   // The bot id and password to create BotFrameworkAdapter.
   // See https://aka.ms/about-bot-adapter to learn more about adapters.
   adapterConfig: {
-    appId: config.botId,
-    appPassword: config.botPassword,
+    appId: config.microsoftAppId,
+    appPassword: config.microsoftAppPassword,
   },
   command: {
     enabled: true,

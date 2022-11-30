@@ -26,7 +26,7 @@
     "bots": [],
     "composeExtensions": [
         {
-            "botId": "${{BOT_ID}}",
+            "botId": "${{MICROSOFT_APP_ID}}",
             "commands": [
                 {
                     "id": "createCard",

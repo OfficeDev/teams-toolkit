@@ -154,7 +154,6 @@ export class CreateAppPackageDriver implements StepDriver {
     return {
       TAB_ENDPOINT: process.env.TAB_ENDPOINT,
       TAB_DOMAIN: process.env.TAB_DOMAIN,
-      BOT_ID: process.env.BOT_ID,
       BOT_DOMAIN: process.env.BOT_DOMAIN,
       ENV_NAME: process.env.TEAMSFX_ENV,
     };

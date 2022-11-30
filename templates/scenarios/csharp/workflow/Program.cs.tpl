@@ -15,8 +15,8 @@ builder.Services.AddHttpContextAccessor();
 // Prepare Configuration for ConfigurationBotFrameworkAuthentication
 var config = builder.Configuration.Get<ConfigOptions>();
 builder.Configuration["MicrosoftAppType"] = "MultiTenant";
-builder.Configuration["MicrosoftAppId"] = config.BOT_ID;
-builder.Configuration["MicrosoftAppPassword"] = config.BOT_PASSWORD;
+builder.Configuration["MicrosoftAppId"] = config.MICROSOFT_APP_ID;
+builder.Configuration["MicrosoftAppPassword"] = config.MICROSOFT_APP_PASSWORD;
 
 // Create the Bot Framework Authentication to be used with the Bot Adapter.
 builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();

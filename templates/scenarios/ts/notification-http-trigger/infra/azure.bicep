@@ -81,11 +81,11 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           value: '~16' // Set NodeJS version to 16.x
         }
         {
-          name: 'BOT_ID'
+          name: 'MICROSOFT_APP_ID'
           value: botAadAppClientId
         }
         {
-          name: 'BOT_PASSWORD'
+          name: 'MICROSOFT_APP_PASSWORD'
           value: botAadAppClientSecret
         }
         {

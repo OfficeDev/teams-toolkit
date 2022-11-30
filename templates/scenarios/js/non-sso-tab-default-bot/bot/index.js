@@ -12,8 +12,8 @@ const config = require("./config");
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about adapters.
 const adapter = new BotFrameworkAdapter({
-  appId: config.botId,
-  appPassword: config.botPassword,
+  appId: config.microsoftAppId,
+  appPassword: config.microsoftAppPassword,
 });
 
 adapter.onTurnError = async (context, error) => {

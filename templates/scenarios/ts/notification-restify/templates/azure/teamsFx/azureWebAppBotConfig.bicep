@@ -13,8 +13,8 @@ var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
 resource webAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${webAppName}/appsettings'
   properties: union({
-    BOT_ID: botAadAppClientId // ID of your bot
-    BOT_PASSWORD: botAadAppClientSecret // Secret of your bot
+    MICROSOFT_APP_ID: botAadAppClientId // ID of your bot
+    MICROSOFT_APP_PASSWORD: botAadAppClientSecret // Secret of your bot
     IDENTITY_ID: provisionOutputs.identityOutput.value.identityClientId // User assigned identity id, the identity is used to access other Azure resources
   }, currentAppSettings)
 }

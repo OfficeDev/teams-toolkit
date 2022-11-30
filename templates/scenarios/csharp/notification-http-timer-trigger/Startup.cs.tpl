@@ -25,8 +25,8 @@ namespace {%SafeProjectName%}
             builder.ConfigurationBuilder.AddInMemoryCollection(new Dictionary<string, string>()
             {
                 { "MicrosoftAppType", "MultiTenant" },
-                { "MicrosoftAppId", config.BOT_ID },
-                { "MicrosoftAppPassword", config.BOT_PASSWORD },
+                { "MicrosoftAppId", config.MICROSOFT_APP_ID },
+                { "MicrosoftAppPassword", config.MICROSOFT_APP_PASSWORD },
             });
         }
 

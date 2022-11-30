@@ -6,10 +6,10 @@
         "value": "mebot${{RESOURCE_SUFFIX}}"
       },
       "botAadAppClientId": {
-        "value": "${{BOT_ID}}"
+        "value": "${{MICROSOFT_APP_ID}}"
       },
       "botAadAppClientSecret": {
-        "value": "${{SECRET_BOT_PASSWORD}}"
+        "value": "${{SECRET_MICROSOFT_APP_PASSWORD}}"
       },
       "webAppSKU": {
         "value": "B1"

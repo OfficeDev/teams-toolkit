@@ -5,8 +5,8 @@ provision:
     with:
       name: bot
     # Output: following environment variable will be persisted in current environment's .env file.
-    # BOT_ID: the AAD app client id created for Bot Registration.
-    # SECRET_BOT_PASSWORD: the AAD app client secret created for Bot Registration.
+    # MICROSOFT_APP_ID: the AAD app client id created for Bot Registration.
+    # SECRET_MICROSOFT_APP_PASSWORD: the AAD app client secret created for Bot Registration.
 
   - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:

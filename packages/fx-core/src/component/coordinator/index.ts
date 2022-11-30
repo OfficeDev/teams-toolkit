@@ -727,7 +727,7 @@ export class Coordinator {
     // 7. execute
     for (const cycle of cycles) {
       const execRes = await cycle!.execute(ctx);
-      const result = this.convertExecuteResult(execRes);
+      const result = this.convertExecuteResult(execRes.result);
       merge(output, result[0]);
       if (result[1]) {
         return [output, result[1]];
@@ -833,7 +833,7 @@ export class Coordinator {
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
       const execRes = await projectModel.deploy.execute(ctx);
-      const result = this.convertExecuteResult(execRes);
+      const result = this.convertExecuteResult(execRes.result);
       merge(output, result[0]);
       if (result[1]) return [output, result[1]];
 
@@ -869,7 +869,7 @@ export class Coordinator {
     const projectModel = maybeProjectModel.value;
     if (projectModel.publish) {
       const execRes = await projectModel.publish.execute(ctx);
-      const result = this.convertExecuteResult(execRes);
+      const result = this.convertExecuteResult(execRes.result);
       if (result[1]) return err(result[1]);
     }
     return ok(undefined);

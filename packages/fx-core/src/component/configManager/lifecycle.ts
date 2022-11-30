@@ -4,6 +4,7 @@ import { Container } from "typedi";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { StepDriver } from "../driver/interface/stepDriver";
 import { TeamsFxTelemetryReporter } from "../utils/teamsFxTelemetryReporter";
+import { component, lifecycleExecutionEvent, SummaryConstant, TelemetryProperty } from "./constant";
 import { DriverNotFoundError } from "./error";
 import {
   DriverDefinition,
@@ -12,22 +13,9 @@ import {
   Output,
   DriverInstance,
   UnresolvedPlaceholders,
-  ExecutionError,
-  ExecutionOutput,
   ResolvedPlaceholders,
+  ExecutionResult,
 } from "./interface";
-
-const component = "ConfigManager";
-
-const lifecycleExecutionEvent = "lifecycle-execution";
-
-enum TelemetryProperty {
-  Lifecycle = "lifecycle",
-  Actions = "actions",
-  ResolvedPlaceholders = "resolved",
-  UnresolvedPlaceholders = "unresolved",
-  FailedAction = "failed-action",
-}
 
 function resolveDriverDef(
   def: DriverDefinition,
@@ -135,7 +123,7 @@ export class Lifecycle implements ILifecycle {
     return JSON.stringify(obj);
   }
 
-  async execute(ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> {
+  async execute(ctx: DriverContext): Promise<ExecutionResult> {
     const actions = JSON.stringify(this.driverDefs.map((def) => this.stringifyDriverDef(def)));
     const telemetryReporter = new TeamsFxTelemetryReporter(ctx.telemetryReporter, {
       componentName: component,
@@ -150,7 +138,7 @@ export class Lifecycle implements ILifecycle {
     ctx.logProvider.info(`[${component}]Executing lifecycle ${this.name}`);
     const resolved: ResolvedPlaceholders = [];
     const unresolved: UnresolvedPlaceholders = [];
-    const result = await this.executeImpl(ctx, resolved, unresolved);
+    const { result, summaries } = await this.executeImpl(ctx, resolved, unresolved);
     let e: FxError | undefined;
     let failedAction: string | undefined;
 
@@ -202,20 +190,21 @@ export class Lifecycle implements ILifecycle {
       e
     );
 
-    return result;
+    return { result, summaries };
   }
 
   async executeImpl(
     ctx: DriverContext,
     resolved: ResolvedPlaceholders,
     unresolved: ResolvedPlaceholders
-  ): Promise<Result<ExecutionOutput, ExecutionError>> {
+  ): Promise<ExecutionResult> {
     const maybeDrivers = this.getDrivers(ctx.logProvider);
     if (maybeDrivers.isErr()) {
-      return err({ kind: "Failure", error: maybeDrivers.error });
+      return { result: err({ kind: "Failure", error: maybeDrivers.error }), summaries: [] };
     }
     const drivers = maybeDrivers.value;
     const envOutput = new Map<string, string>();
+    const summaries: string[][] = [];
     for (const driver of drivers) {
       ctx.logProvider.info(
         `[${component}]Executing action ${this.stringifyDriverDef(driver)} in lifecycle ${
@@ -229,15 +218,21 @@ export class Lifecycle implements ILifecycle {
             driver
           )} in lifecycle ${this.name}`
         );
-        return err({
-          kind: "PartialSuccess",
-          env: envOutput,
-          reason: {
-            kind: "UnresolvedPlaceholders",
-            failedDriver: driver,
-            unresolvedPlaceHolders: unresolved,
-          },
-        });
+        summaries.push([
+          `${SummaryConstant.Cross} Unresolved placeholders: ${unresolved.join(",")}`,
+        ]);
+        return {
+          result: err({
+            kind: "PartialSuccess",
+            env: envOutput,
+            reason: {
+              kind: "UnresolvedPlaceholders",
+              failedDriver: driver,
+              unresolvedPlaceHolders: unresolved,
+            },
+          }),
+          summaries,
+        };
       }
 
       if (driver.env) {
@@ -246,18 +241,34 @@ export class Lifecycle implements ILifecycle {
         }
       }
 
-      const result = await driver.instance.run(driver.with, ctx);
-      if (result.isErr()) {
-        return err({
-          kind: "PartialSuccess",
-          env: envOutput,
-          reason: {
-            kind: "DriverError",
-            failedDriver: driver,
-            error: result.error,
-          },
-        });
+      let result: Result<Map<string, string>, FxError>;
+      let summary: string[];
+      if (driver.instance.execute) {
+        const r = await driver.instance.execute(driver.with, ctx);
+        result = r.result;
+        summary = r.summaries.map((s) => `${SummaryConstant.Tick} ${s}`);
+      } else {
+        result = await driver.instance.run(driver.with, ctx);
+        // if execute is not implemented, treat it as if no summaries was returned.
+        summary = [];
       }
+      summaries.push(summary);
+      if (result.isErr()) {
+        summary.push(`${SummaryConstant.Cross} ${result.error.message}`);
+        return {
+          result: err({
+            kind: "PartialSuccess",
+            env: envOutput,
+            reason: {
+              kind: "DriverError",
+              failedDriver: driver,
+              error: result.error,
+            },
+          }),
+          summaries,
+        };
+      }
+
       for (const [envVar, value] of result.value) {
         envOutput.set(envVar, value);
         process.env[envVar] = value;
@@ -269,7 +280,7 @@ export class Lifecycle implements ILifecycle {
       );
     }
 
-    return ok(envOutput);
+    return { result: ok(envOutput), summaries };
   }
 
   async run(ctx: DriverContext): Promise<Result<Output, FxError>> {

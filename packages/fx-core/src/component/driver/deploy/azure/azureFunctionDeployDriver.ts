@@ -4,11 +4,11 @@
 import { DeployStepArgs } from "../../interface/buildAndDeployArgs";
 import { AzureDeployDriver } from "./azureDeployDriver";
 import { Service } from "typedi";
-import { StepDriver } from "../../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { AzureResourceInfo, DriverContext } from "../../interface/commonArgs";
 import { TokenCredential } from "@azure/core-http";
 import { FxError, IProgressHandler, Result, UserInteraction } from "@microsoft/teamsfx-api";
-import { wrapRun } from "../../../utils/common";
+import { wrapRun, wrapSummary } from "../../../utils/common";
 import { ProgressMessages } from "../../../messages";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
@@ -26,6 +26,13 @@ export class AzureFunctionDeployDriver implements StepDriver {
       () => impl.cleanup(),
       context.logProvider
     );
+  }
+
+  execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
+    return wrapSummary(this.run.bind(this, args, ctx), [
+      // eslint-disable-next-line no-secrets/no-secrets
+      "driver.deploy.azureFunctionsDeploySummary",
+    ]);
   }
 }
 

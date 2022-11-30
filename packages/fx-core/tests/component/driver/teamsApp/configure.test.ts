@@ -72,4 +72,26 @@ describe("teamsApp/update", async () => {
     console.log(JSON.stringify(result));
     chai.assert.isTrue(result.isOk());
   });
+
+  it("execute", async () => {
+    const args: ConfigureTeamsAppArgs = {
+      appPackagePath: "fakePath",
+    };
+
+    sinon.stub(AppStudioClient, "importApp").resolves(appDef);
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      zip.addFile("color.png", new Buffer(""));
+      zip.addFile("outlie.png", new Buffer(""));
+
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+
+    const result = await teamsAppDriver.execute(args, mockedDriverContext);
+    console.log(JSON.stringify(result));
+    chai.assert.isTrue(result.result.isOk());
+  });
 });

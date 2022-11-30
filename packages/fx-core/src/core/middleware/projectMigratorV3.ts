@@ -220,7 +220,7 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
         const envName = fileNamesArray[2];
         // create .env.{env} file
         await context.fsEnsureDir(SettingsFolderName);
-        await context.fsCreateFile(SettingsFolderName + "/.env." + envName);
+        await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
         const obj = await readStateFile(
           context,
           path.join(".fx", "states", "state." + envName + ".json")
@@ -229,7 +229,7 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
           const bicepContent = readBicepContent(context);
           // convert every name
           const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
-          await context.fsWriteFile(SettingsFolderName + "/.env." + envName, envData);
+          await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData);
         }
       }
     }

@@ -222,7 +222,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
   }
 };
 
-export function outputCancelMessage(ctx: CoreHookContext) {
+export function outputCancelMessage(ctx: CoreHookContext, isV3 = false) {
   TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
 
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -231,14 +231,18 @@ export function outputCancelMessage(ctx: CoreHookContext) {
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.10.0`
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version ${
+        isV3 ? "< 5.0.0" : "<= 2.10.0"
+      }`
     );
   } else {
     TOOLS?.logProvider.warning(
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= 2.10.0`
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version ${
+        isV3 ? "< 5.0.0" : "<= 2.10.0"
+      }`
     );
   }
 }

@@ -25,6 +25,8 @@ export interface MigrationContext extends CoreHookContext {
 
 export class MigrationContext {
   private modifiedPaths: string[] = [];
+  private reports: string[] = [];
+  telemetryProperties: Record<string, string> = {};
   backupPath = "";
   projectPath = "";
 
@@ -109,5 +111,13 @@ export class MigrationContext {
 
   async fsPathExists(_path: string): Promise<boolean> {
     return await fs.pathExists(path.join(this.projectPath, _path));
+  }
+  
+  addReport(report: string): void {
+    this.reports.push(report);
+  }
+
+  addTelemetryProperties(properties: Record<string, string>): void {
+    this.telemetryProperties = { ...properties, ...this.telemetryProperties };
   }
 }

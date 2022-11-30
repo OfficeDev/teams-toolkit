@@ -122,7 +122,8 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
     const launchJsonContent = await fs.readFile(launchJsonPath, "utf8");
     const result = launchJsonContent
       .replace(/\${teamsAppId}/g, "${dev:teamsAppId}") // TODO: set correct default env if user deletes dev, wait for other PR to get env list utility
-      .replace(/\${localTeamsAppId}/g, "${local:teamsAppId}");
+      .replace(/\${localTeamsAppId}/g, "${local:teamsAppId}")
+      .replace(/\${localTeamsAppInternalId}/g, "${local:teamsAppInternalId}"); // For M365 apps
     await context.fsWriteFile(Constants.launchJsonPath, result);
   }
 }

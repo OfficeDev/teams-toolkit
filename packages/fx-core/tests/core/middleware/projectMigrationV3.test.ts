@@ -309,6 +309,14 @@ describe("updateLaunchJson", () => {
       updatedLaunchJson.configurations[3].url,
       "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
     );
+    assert.equal(
+      updatedLaunchJson.configurations[4].url,
+      "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}" // for M365 app
+    );
+    assert.equal(
+      updatedLaunchJson.configurations[5].url,
+      "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}" // for M365 app
+    );
   });
 });
 

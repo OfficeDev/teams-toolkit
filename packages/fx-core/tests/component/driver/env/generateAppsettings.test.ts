@@ -45,8 +45,8 @@ describe("AppsettingsGenerateDriver", () => {
       const args: any = {
         target: null,
         appsettings: {
-          BOT_ID: "BOT_ID",
-          BOT_PASSWORD: "BOT_PASSWORD",
+          MICROSOFT_APP_ID: "MICROSOFT_APP_ID",
+          MICROSOFT_APP_PASSWORD: "MICROSOFT_APP_PASSWORD",
         },
       };
       const result = await driver.run(args, mockedDriverContext);
@@ -79,8 +79,8 @@ describe("AppsettingsGenerateDriver", () => {
       const args: any = {
         target: "path",
         appsettings: {
-          BOT_ID: "BOT_ID",
-          BOT_PASSWORD: "BOT_PASSWORD",
+          MICROSOFT_APP_ID: "MICROSOFT_APP_ID",
+          MICROSOFT_APP_PASSWORD: "MICROSOFT_APP_PASSWORD",
         },
       };
       const result = await driver.run(args, mockedDriverContext);
@@ -91,8 +91,8 @@ describe("AppsettingsGenerateDriver", () => {
       const target = "path";
       let content = {};
       const appsettings = {
-        BOT_ID: "$botId$",
-        BOT_PASSWORD: "$bot-password$",
+        MICROSOFT_APP_ID: "$botId$",
+        MICROSOFT_APP_PASSWORD: "$bot-password$",
       };
       sinon.stub(fs, "ensureFile").callsFake(async (path) => {
         return;
@@ -110,14 +110,17 @@ describe("AppsettingsGenerateDriver", () => {
       const args: any = {
         target,
         appsettings: {
-          BOT_ID: "BOT_ID",
-          BOT_PASSWORD: "BOT_PASSWORD",
+          MICROSOFT_APP_ID: "MICROSOFT_APP_ID",
+          MICROSOFT_APP_PASSWORD: "MICROSOFT_APP_PASSWORD",
         },
       };
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isOk());
       if (result.isOk()) {
-        chai.assert.equal('{\n\t"BOT_ID": "BOT_ID",\n\t"BOT_PASSWORD": "BOT_PASSWORD"\n}', content);
+        chai.assert.equal(
+          '{\n\t"MICROSOFT_APP_ID": "MICROSOFT_APP_ID",\n\t"MICROSOFT_APP_PASSWORD": "MICROSOFT_APP_PASSWORD"\n}',
+          content
+        );
       }
     });
 
@@ -127,7 +130,7 @@ describe("AppsettingsGenerateDriver", () => {
       const appsettings = {
         Foo: "Bar",
         My: {
-          BOT_ID: "$botId$",
+          MICROSOFT_APP_ID: "$botId$",
           Foo: "Bar",
         },
       };
@@ -148,7 +151,7 @@ describe("AppsettingsGenerateDriver", () => {
         target,
         appsettings: {
           My: {
-            BOT_ID: "BOD_ID",
+            MICROSOFT_APP_ID: "BOD_ID",
           },
         },
       };
@@ -156,7 +159,7 @@ describe("AppsettingsGenerateDriver", () => {
       chai.assert(result.isOk());
       if (result.isOk()) {
         chai.assert.equal(
-          '{\n\t"Foo": "Bar",\n\t"My": {\n\t\t"BOT_ID": "BOD_ID",\n\t\t"Foo": "Bar"\n\t}\n}',
+          '{\n\t"Foo": "Bar",\n\t"My": {\n\t\t"MICROSOFT_APP_ID": "BOD_ID",\n\t\t"Foo": "Bar"\n\t}\n}',
           content
         );
       }
@@ -166,8 +169,8 @@ describe("AppsettingsGenerateDriver", () => {
       const target = "path";
       let content = {};
       const appsettings = {
-        BOT_ID: "$botId$",
-        BOT_PASSWORD: "$bot-password$",
+        MICROSOFT_APP_ID: "$botId$",
+        MICROSOFT_APP_PASSWORD: "$bot-password$",
       };
       sinon.stub(fs, "ensureFile").callsFake(async (path) => {
         return;
@@ -191,14 +194,17 @@ describe("AppsettingsGenerateDriver", () => {
       const args: any = {
         target,
         appsettings: {
-          BOT_ID: "BOT_ID",
-          BOT_PASSWORD: "BOT_PASSWORD",
+          MICROSOFT_APP_ID: "MICROSOFT_APP_ID",
+          MICROSOFT_APP_PASSWORD: "MICROSOFT_APP_PASSWORD",
         },
       };
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isOk());
       if (result.isOk()) {
-        chai.assert.equal('{\n\t"BOT_ID": "BOT_ID",\n\t"BOT_PASSWORD": "BOT_PASSWORD"\n}', content);
+        chai.assert.equal(
+          '{\n\t"MICROSOFT_APP_ID": "MICROSOFT_APP_ID",\n\t"MICROSOFT_APP_PASSWORD": "MICROSOFT_APP_PASSWORD"\n}',
+          content
+        );
       }
     });
   });
@@ -207,8 +213,8 @@ describe("AppsettingsGenerateDriver", () => {
     const target = "path";
     let content = {};
     const appsettings = {
-      BOT_ID: "$botId$",
-      BOT_PASSWORD: "$bot-password$",
+      MICROSOFT_APP_ID: "$botId$",
+      MICROSOFT_APP_PASSWORD: "$bot-password$",
     };
     sinon.stub(fs, "ensureFile").callsFake(async (path) => {
       return;
@@ -229,14 +235,17 @@ describe("AppsettingsGenerateDriver", () => {
     const args: any = {
       target,
       appsettings: {
-        BOT_ID: "BOT_ID",
-        BOT_PASSWORD: "BOT_PASSWORD",
+        MICROSOFT_APP_ID: "MICROSOFT_APP_ID",
+        MICROSOFT_APP_PASSWORD: "MICROSOFT_APP_PASSWORD",
       },
     };
     const result = await driver.run(args, mockedDriverContext);
     chai.assert(result.isOk());
     if (result.isOk()) {
-      chai.assert.equal('{\n\t"BOT_ID": "BOT_ID",\n\t"BOT_PASSWORD": "BOT_PASSWORD"\n}', content);
+      chai.assert.equal(
+        '{\n\t"MICROSOFT_APP_ID": "MICROSOFT_APP_ID",\n\t"MICROSOFT_APP_PASSWORD": "MICROSOFT_APP_PASSWORD"\n}',
+        content
+      );
     }
   });
 });

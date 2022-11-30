@@ -20,8 +20,8 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 const outputKeys = {
-  BOT_ID: "BOT_ID",
-  SECRET_BOT_PASSWORD: "SECRET_BOT_PASSWORD",
+  MICROSOFT_APP_ID: "MICROSOFT_APP_ID",
+  SECRET_MICROSOFT_APP_PASSWORD: "SECRET_MICROSOFT_APP_PASSWORD",
 };
 
 describe("aadAppCreate", async () => {
@@ -75,8 +75,8 @@ describe("aadAppCreate", async () => {
 
     const result = await createBotAadAppDriver.handler(args, mockedDriverContext);
 
-    expect(result.get(outputKeys.BOT_ID)).to.be.equal(expectedClientId);
-    expect(result.get(outputKeys.SECRET_BOT_PASSWORD)).to.be.equal(expectedSecretText);
+    expect(result.get(outputKeys.MICROSOFT_APP_ID)).to.be.equal(expectedClientId);
+    expect(result.get(outputKeys.SECRET_MICROSOFT_APP_PASSWORD)).to.be.equal(expectedSecretText);
   });
 
   it("should throw user error when GraphClient failed with 4xx error", async () => {

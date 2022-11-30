@@ -14,11 +14,17 @@ import * as fs from "fs-extra";
 const MigrationVersion = "2.1.0";
 const Constants = {
   provisionBicepPath: "./templates/azure/provision.bicep",
+  launchJsonPath: ".vscode/launch.json",
   appYmlName: "app.yml",
 };
 
 type Migration = (context: MigrationContext) => Promise<void>;
-const subMigrations: Array<Migration> = [preMigration, generateSettingsJson, generateAppYml];
+const subMigrations: Array<Migration> = [
+  preMigration,
+  generateSettingsJson,
+  generateAppYml,
+  updateLaunchJson,
+];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await checkVersionForMigration(ctx)) && checkMethod(ctx)) {
@@ -107,6 +113,18 @@ export async function generateAppYml(context: MigrationContext): Promise<void> {
   const appYmlGenerator = new AppYmlGenerator(oldProjectSettings, bicepContent);
   const appYmlString: string = await appYmlGenerator.generateAppYml();
   await context.fsWriteFile(path.join(SettingsFolderName, Constants.appYmlName), appYmlString);
+}
+
+export async function updateLaunchJson(context: MigrationContext): Promise<void> {
+  const launchJsonPath = path.join(context.projectPath, Constants.launchJsonPath);
+  if (await fs.pathExists(launchJsonPath)) {
+    await context.backup(Constants.launchJsonPath);
+    const launchJsonContent = await fs.readFile(launchJsonPath, "utf8");
+    const result = launchJsonContent
+      .replace(/\${teamsAppId}/g, "${dev:teamsAppId}") // TODO: set correct default env if user deletes dev, wait for other PR to get env list utility
+      .replace(/\${localTeamsAppId}/g, "${local:teamsAppId}");
+    await context.fsWriteFile(Constants.launchJsonPath, result);
+  }
 }
 
 async function loadProjectSettings(projectPath: string): Promise<ProjectSettings> {

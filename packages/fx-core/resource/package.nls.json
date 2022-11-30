@@ -1125,6 +1125,9 @@
   "driver.teamsApp.progressBar.publishTeamsAppStep2.1": "Update published Teams app",
   "driver.teamsApp.progressBar.publishTeamsAppStep2.2": "Publishing Teams app",
   "driver.teamsApp.summary.createTeamsAppAlreadyExists": "Teams app with id %s already exists, do not need to create.",
+  "driver.teamsApp.summary.publishTeamsAppExists": "Teams app with id %s already exists in the organization's app store.",
+  "driver.teamsApp.summary.publishTeamsAppNotExists": "Teams app with id %s does not exist in the organization's app store.",
+  "driver.teamsApp.summary.publishTeamsAppSuccess": "Teams app %s successfully published to the admin portal.",
   "driver.botFramework.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.botFramework.error.unhandledError": "Unhandled error happened in %s action: %s"
 }

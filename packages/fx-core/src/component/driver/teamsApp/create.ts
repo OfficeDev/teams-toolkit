@@ -21,7 +21,7 @@ import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { CreateTeamsAppArgs } from "./interfaces/CreateTeamsAppArgs";
-import { WrapDriverContext, wrapRun } from "../util/wrapUtil";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
 import { TelemetryUtils } from "../../resource/appManifest/utils/telemetry";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
@@ -70,7 +70,7 @@ export class CreateTeamsAppDriver implements StepDriver {
     args: CreateTeamsAppArgs,
     context: WrapDriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    TelemetryUtils.init(context as DriverContext);
+    TelemetryUtils.init(context);
     let create = true;
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
       scopes: AppStudioScopes,

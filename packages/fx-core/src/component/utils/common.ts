@@ -12,6 +12,8 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import path from "path";
+import { ExecutionResult } from "../driver/interface/stepDriver";
+import { getLocalizedString } from "../../common/localizeUtils";
 
 /**
  * check parameter, throw error if value is null or undefined
@@ -88,6 +90,34 @@ export async function wrapRun(
     }
     // always return error as SystemError
     return err(BaseComponentInnerError.unknownError("Deploy", error).toFxError());
+  }
+}
+
+export async function wrapSummary(
+  exec: () => Promise<Result<Map<string, string>, FxError>>,
+  summary: string[]
+): Promise<ExecutionResult> {
+  const result = await exec();
+  if (result.isOk()) {
+    const summaries = summary.map((s) => getLocalizedString(s));
+    return { result, summaries };
+  } else {
+    const summaries: string[] = [];
+    return { result, summaries };
+  }
+}
+
+export async function wrapSummaryWithArgs(
+  exec: () => Promise<Result<Map<string, string>, FxError>>,
+  summary: string[][]
+): Promise<ExecutionResult> {
+  const result = await exec();
+  if (result.isOk()) {
+    const summaries = summary.map((s) => getLocalizedString(s[0], ...s.splice(1)));
+    return { result, summaries };
+  } else {
+    const summaries: string[] = [];
+    return { result, summaries };
   }
 }
 

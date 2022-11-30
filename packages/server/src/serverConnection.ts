@@ -221,19 +221,30 @@ export default class ServerConnection implements IServerConnection {
     token: CancellationToken
   ): Promise<Result<any, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
-    const func: Func = {
-      namespace: "fx-solution-azure/fx-resource-appstudio",
-      method: "updateManifest",
-      params: {
-        envName: environmentManager.getDefaultEnvName(),
-      },
-    };
-    const res = await Correlator.runWithId(
-      corrId,
-      (func, inputs) => this.core.executeUserTask(func, inputs),
-      func,
-      inputs
-    );
+
+    let res;
+    if (isV3Enabled()) {
+      res = await Correlator.runWithId(
+        corrId,
+        (inputs) => this.core.deployTeamsManifest(inputs),
+        inputs
+      );
+    } else {
+      const func: Func = {
+        namespace: "fx-solution-azure/fx-resource-appstudio",
+        method: "updateManifest",
+        params: {
+          envName: environmentManager.getDefaultEnvName(),
+        },
+      };
+      res = await Correlator.runWithId(
+        corrId,
+        (func, inputs) => this.core.executeUserTask(func, inputs),
+        func,
+        inputs
+      );
+    }
+
     return standardizeResult(
       res.map((_) => {
         return Void;

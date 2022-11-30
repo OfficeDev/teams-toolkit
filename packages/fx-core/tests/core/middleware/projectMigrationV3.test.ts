@@ -3,6 +3,7 @@
 
 import { hooks } from "@feathersjs/hooks/lib";
 import {
+  err,
   FxError,
   Inputs,
   ok,
@@ -27,7 +28,10 @@ import { MigrationContext } from "../../../src/core/middleware/utils/migrationCo
 import {
   generateAppYml,
   generateSettingsJson,
+  migrate,
+  wrapRunMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
+import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 
 let mockedEnvRestore: () => void;
 
@@ -38,10 +42,11 @@ describe("ProjectMigratorMW", () => {
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
+    await fs.ensureDir(path.join(projectPath, ".fx"));
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3_MIGRATION: "true",
+      TEAMSFX_V3: "false",
     });
-    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
   });
 
   afterEach(async () => {
@@ -51,6 +56,7 @@ describe("ProjectMigratorMW", () => {
   });
 
   it("happy path", async () => {
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
     const tools = new MockTools();
     setTools(tools);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
@@ -73,6 +79,48 @@ describe("ProjectMigratorMW", () => {
     } finally {
       await fs.rmdir(inputs.projectPath!, { recursive: true });
     }
+  });
+
+  it("user cancel", async () => {
+    sandbox
+      .stub(MockUserInteraction.prototype, "showMessage")
+      .resolves(err(new Error("user cancel") as FxError));
+    const tools = new MockTools();
+    setTools(tools);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    class MyClass {
+      tools = tools;
+      async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+        return ok("");
+      }
+    }
+    hooks(MyClass, {
+      other: [getProjectMigratorMW()],
+    });
+
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+    inputs.projectPath = projectPath;
+    const my = new MyClass();
+    try {
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr());
+    } finally {
+      await fs.rmdir(inputs.projectPath!, { recursive: true });
+    }
+  });
+
+  it("wrap run error ", async () => {
+    const tools = new MockTools();
+    setTools(tools);
+    sandbox.stub(MigratorV3, "migrate").throws(new Error("mocker error"));
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+    inputs.projectPath = projectPath;
+    const ctx = {
+      arguments: [inputs],
+    };
+    const context = await MigrationContext.create(ctx);
+    const res = wrapRunMigration(context, migrate);
   });
 });
 
@@ -123,6 +171,8 @@ describe("MigrationContext", () => {
     await context.cleanModifiedPaths();
     assert.isEmpty(context.getModifiedPaths());
 
+    context.addReport("test report");
+    context.addTelemetryProperties({ testProperrty: "test property" });
     await context.restoreBackup();
     await context.cleanTeamsfx();
   });

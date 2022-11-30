@@ -28,6 +28,7 @@ import { MigrationContext } from "../../../src/core/middleware/utils/migrationCo
 import {
   generateAppYml,
   generateSettingsJson,
+  updateLaunchJson,
   migrate,
   wrapRunMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
@@ -320,6 +321,55 @@ describe("generateAppYml-js/ts", () => {
   });
 });
 
+describe("updateLaunchJson", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("should success in happy path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+
+    await updateLaunchJson(migrationContext);
+
+    assert.isTrue(
+      await fs.pathExists(path.join(projectPath, "teamsfx/backup/.vscode/launch.json"))
+    );
+    const updatedLaunchJson = await fs.readJson(path.join(projectPath, Constants.launchJsonPath));
+    assert.equal(
+      updatedLaunchJson.configurations[0].url,
+      "https://teams.microsoft.com/l/app/${dev:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+    );
+    assert.equal(
+      updatedLaunchJson.configurations[1].url,
+      "https://teams.microsoft.com/l/app/${dev:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+    );
+    assert.equal(
+      updatedLaunchJson.configurations[2].url,
+      "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+    );
+    assert.equal(
+      updatedLaunchJson.configurations[3].url,
+      "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+    );
+    assert.equal(
+      updatedLaunchJson.configurations[4].url,
+      "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}" // for M365 app
+    );
+    assert.equal(
+      updatedLaunchJson.configurations[5].url,
+      "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}" // for M365 app
+    );
+  });
+});
+
 async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
   const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
   inputs.projectPath = projectPath;
@@ -357,4 +407,5 @@ const Constants = {
   settingsFilePath: "teamsfx/settings.json",
   oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
   appYmlPath: "teamsfx/app.yml",
+  launchJsonPath: ".vscode/launch.json",
 };

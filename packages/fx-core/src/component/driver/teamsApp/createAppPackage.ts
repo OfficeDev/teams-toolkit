@@ -8,8 +8,9 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { pathToFileURL } from "url";
 import { Result, FxError, ok, err, Platform, Colors } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { StepDriver } from "../interface/stepDriver";
+import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
@@ -23,10 +24,31 @@ export const actionName = "teamsApp/createAppPackage";
 
 @Service(actionName)
 export class CreateAppPackageDriver implements StepDriver {
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: CreateAppPackageArgs,
-    context: DriverContext,
+    context: DriverContext
+  ): Promise<Result<Map<string, string>, FxError>> {
+    const wrapContext = new WrapDriverContext(context, actionName, actionName);
+    const res = await this.build(args, wrapContext);
+    return res;
+  }
+
+  public async execute(
+    args: CreateAppPackageArgs,
+    context: DriverContext
+  ): Promise<ExecutionResult> {
+    const wrapContext = new WrapDriverContext(context, actionName, actionName);
+    const res = await this.build(args, wrapContext);
+    return {
+      result: res,
+      summaries: wrapContext.summaries,
+    };
+  }
+
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  public async build(
+    args: CreateAppPackageArgs,
+    context: WrapDriverContext,
     withEmptyCapabilities?: boolean
   ): Promise<Result<Map<string, string>, FxError>> {
     const state = this.loadCurrentState();

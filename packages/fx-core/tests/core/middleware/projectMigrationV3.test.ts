@@ -38,8 +38,10 @@ describe("ProjectMigratorMW", () => {
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
+    await fs.ensureDir(path.join(projectPath, ".fx"));
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3_MIGRATION: "true",
+      TEAMSFX_V3: "false",
     });
     sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
   });
@@ -123,6 +125,8 @@ describe("MigrationContext", () => {
     await context.cleanModifiedPaths();
     assert.isEmpty(context.getModifiedPaths());
 
+    context.addReport("test report");
+    context.addTelemetryProperties({ testProperrty: "test property" });
     await context.restoreBackup();
     await context.cleanTeamsfx();
   });

@@ -25,6 +25,8 @@ export interface MigrationContext extends CoreHookContext {
 
 export class MigrationContext {
   private modifiedPaths: string[] = [];
+  private reports: string[] = [];
+  telemetryProperties: Record<string, string> = {};
   backupPath = "";
   projectPath = "";
 
@@ -105,5 +107,13 @@ export class MigrationContext {
 
   async cleanTeamsfx(): Promise<void> {
     await fs.remove(path.join(this.projectPath, teamsfxFolder));
+  }
+
+  addReport(report: string): void {
+    this.reports.push(report);
+  }
+
+  addTelemetryProperties(properties: Record<string, string>): void {
+    this.telemetryProperties = { ...properties, ...this.telemetryProperties };
   }
 }

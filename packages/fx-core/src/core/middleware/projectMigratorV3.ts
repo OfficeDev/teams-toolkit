@@ -3,18 +3,34 @@
 
 import {
   AppPackageFolderName,
+  err,
+  FxError,
   ok,
   ProjectSettings,
   SettingsFileName,
   SettingsFolderName,
   TemplateFolderName,
+  SystemError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
-import { checkMethod, checkUserTasks } from "./projectMigrator";
+import { checkMethod, checkUserTasks, outputCancelMessage, upgradeButton } from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
+import {
+  Component,
+  ProjectMigratorStatus,
+  sendTelemetryErrorEvent,
+  sendTelemetryEvent,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../../common/telemetry";
+import { ErrorConstants } from "../../component/constants";
+import { TOOLS } from "../globalVars";
+import { getLocalizedString } from "../../common/localizeUtils";
+import { UpgradeCanceledError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
@@ -41,8 +57,9 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       ctx.result = ok(undefined);
       return;
     }
-
-    // TODO: add user confirm for migration
+    if (!(await askUserConfirm(ctx))) {
+      return;
+    }
     const migrationContext = await MigrationContext.create(ctx);
     await wrapRunMigration(migrationContext, migrate);
     ctx.result = ok(undefined);
@@ -59,12 +76,36 @@ export async function wrapRunMigration(
   exec: (context: MigrationContext) => void
 ): Promise<void> {
   try {
-    // sendTelemetryEvent("core", TelemetryEvent.ProjectMigratorNotificationStart);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateStartV3);
     await exec(context);
     await showSummaryReport(context);
-    // sendTelemetryEvent("core", TelemetryEvent.ProjectMigratorNotificationEnd);
+    sendTelemetryEvent(
+      Component.core,
+      TelemetryEvent.ProjectMigratorMigrateV3,
+      context.telemetryProperties
+    );
   } catch (error: any) {
-    // sendTelemetryEvent("core", TelemetryEvent.ProjectMigratorNotificationFailed);
+    let fxError: FxError;
+    if (error instanceof UserError || error instanceof SystemError) {
+      fxError = error;
+    } else {
+      if (!(error instanceof Error)) {
+        error = new Error(error.toString());
+      }
+      fxError = new SystemError({
+        error,
+        source: Component.core,
+        name: ErrorConstants.unhandledError,
+        message: error.message,
+        displayMessage: error.message,
+      });
+    }
+    sendTelemetryErrorEvent(
+      Component.core,
+      TelemetryEvent.ProjectMigratorV3Error,
+      fxError,
+      context.telemetryProperties
+    );
     await rollbackMigration(context);
     throw error;
   }
@@ -76,9 +117,10 @@ async function rollbackMigration(context: MigrationContext): Promise<void> {
   await context.cleanTeamsfx();
 }
 
+//TODO: implement summaryReport
 async function showSummaryReport(context: MigrationContext): Promise<void> {}
 
-async function migrate(context: MigrationContext): Promise<void> {
+export async function migrate(context: MigrationContext): Promise<void> {
   for (const subMigration of subMigrations) {
     await subMigration(context);
   }
@@ -194,4 +236,27 @@ export async function replacePlaceholderForManifests(context: MigrationContext):
     // TODO: update app id uri
     await context.fsWriteFile("aad.manifest.template.json", aadManifest);
   }
+}
+
+export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  const res = await TOOLS?.ui.showMessage(
+    "warn",
+    getLocalizedString("core.migrationV3.Message"),
+    true,
+    upgradeButton
+  );
+  const answer = res?.isOk() ? res.value : undefined;
+  if (!answer || answer != upgradeButton) {
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+      [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
+    });
+    ctx.result = err(UpgradeCanceledError());
+    outputCancelMessage(ctx, true);
+    return false;
+  }
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
+    [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
+  });
+  return true;
 }

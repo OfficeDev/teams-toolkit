@@ -197,8 +197,8 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
   if (await context.fsPathExists(path.join(".fx", "states"))) {
     // if ./fx/states/ exists
     const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
-    const fileRegex = new RegExp("(state\\.)([a-zA-Z0-9_]*)(\\.json)", "g"); // state.*.json
     for (const fileName of fileNames) {
+      const fileRegex = new RegExp("(state\\.)([a-zA-Z0-9_]*)(\\.json)", "g"); // state.*.json
       const fileNamesArray = fileRegex.exec(fileName);
       if (fileNamesArray != null) {
         // get envName

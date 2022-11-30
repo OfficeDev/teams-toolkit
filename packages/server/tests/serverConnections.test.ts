@@ -159,6 +159,25 @@ describe("serverConnections", () => {
     }
   });
 
+  it("deployTeamsAppManifestRequest - v3", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(ok("test"));
+    sandbox.replace(connection["core"], "deployTeamsManifest", fake);
+    sandbox.stub(tools, "isV3Enabled").returns(true);
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = await connection.deployTeamsAppManifestRequest(
+      inputs as Inputs,
+      token as CancellationToken
+    );
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(res.value, {});
+    }
+  });
+
   it("buildArtifactsRequest", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns("test");

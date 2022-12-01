@@ -40,6 +40,9 @@ export function happyPathTest(runtime: Runtime): void {
     if (runtime === Runtime.Dotnet) {
       env["TEAMSFX_CLI_DOTNET"] = "true";
     }
+    // To use local templates.
+    env["TEAMSFX_DEBUG_TEMPLATE"] = "true";
+    env["NODE_ENV"] = "development";
 
     it("Provision Resource: command and response", async function () {
       const cmd =

@@ -47,6 +47,8 @@ import { AppDefinition } from "../../src/component/resource/appManifest/interfac
 import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
 import { createContextV3 } from "../../src/component/utils";
 import * as appStudio from "../../src/component/resource/appManifest/appStudio";
+import * as v3MigrationUtils from "../../src/core/middleware/utils/v3MigrationUtils";
+
 const V3Version = "3.0.0";
 describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
@@ -65,6 +67,7 @@ describe("component coordinator test", () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3: "true",
     });
+    sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves(V3Version);
   });
 
   it("create project from sample", async () => {

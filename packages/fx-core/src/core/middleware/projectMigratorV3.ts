@@ -43,6 +43,7 @@ import { replacePlaceholdersForV3, FileType } from "./MigrationUtils";
 import { ReadFileError } from "../error";
 import {
   fsReadDirSync,
+  getProjectVersion,
   jsonObjectNamesConvertV3,
   readBicepContent,
   readStateFile,
@@ -61,7 +62,7 @@ const MigrationVersion = {
 };
 const V3Version = "3.0.0";
 
-enum VersionState {
+export enum VersionState {
   compatible,
   upgradeable,
   unsupported,
@@ -160,7 +161,7 @@ async function preMigration(context: MigrationContext): Promise<void> {
   await context.backup(V2TeamsfxFolder);
 }
 
-async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionState> {
+export async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionState> {
   const version = await getProjectVersion(ctx);
   if (semver.gte(version, V3Version)) {
     return VersionState.compatible;
@@ -172,24 +173,6 @@ async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionSt
   } else {
     return VersionState.unsupported;
   }
-}
-
-async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const projectPath = inputs.projectPath as string;
-  const v3path = getProjectSettingPathV3(projectPath);
-  if (await fs.pathExists(v3path)) {
-    const settings = await fs.readJson(v3path);
-    return settings.version || V3Version;
-  }
-  const v2path = getProjectSettingPathV2(projectPath);
-  if (await fs.pathExists(v2path)) {
-    const settings = await fs.readJson(v2path);
-    if (settings.version) {
-      return settings.version;
-    }
-  }
-  return "";
 }
 
 export async function generateSettingsJson(context: MigrationContext): Promise<void> {

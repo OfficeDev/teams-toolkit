@@ -389,17 +389,17 @@ describe("stateMigration", () => {
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     await statesMigration(migrationContext);
 
-    assert.isTrue(migrationContext.fsPathExists("teamsfx"));
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
 
     const trueEnvContent_dev = await readEnvFile(
-      getTestAssetsPath(Constants.happyPathTestProject),
+      getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "dev"
     );
     const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
     assert.equal(testEnvContent_dev, trueEnvContent_dev);
 
     const trueEnvContent_local = await readEnvFile(
-      getTestAssetsPath(Constants.happyPathTestProject),
+      getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "local"
     );
     const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");

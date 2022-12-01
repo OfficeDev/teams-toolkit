@@ -6,6 +6,7 @@ import "mocha";
 import * as chai from "chai";
 import fs from "fs-extra";
 import * as os from "os";
+import * as path from "path";
 import * as sinon from "sinon";
 import * as util from "util";
 
@@ -19,6 +20,7 @@ import { MockedLogProvider } from "../../../plugins/solution/util";
 describe("EnvGenerateDriver", () => {
   const mockedDriverContext = {
     logProvider: new MockedLogProvider(),
+    projectPath: "/path/to/project",
   } as DriverContext;
   const driver = new GenerateEnvDriver();
 
@@ -31,10 +33,22 @@ describe("EnvGenerateDriver", () => {
         );
       } else if (key === "driver.env.error.unhandledError") {
         return util.format("Unhandled error happened in %s action: %s", ...params);
+      } else if (key === "driver.env.summary.default") {
+        return util.format(
+          "The environment variables has been generated successfully to the .env file of '%s' environment.",
+          ...params
+        );
+      } else if (key === "driver.env.summary.withTarget") {
+        return util.format(
+          "The environment variables has been generated successfully to %s.",
+          ...params
+        );
       }
       return "";
     });
-    sinon.stub(localizeUtils, "getLocalizedString").returns("");
+    sinon
+      .stub(localizeUtils, "getLocalizedString")
+      .callsFake((key, ...params) => localizeUtils.getDefaultString(key, ...params));
   });
 
   afterEach(() => {
@@ -124,7 +138,7 @@ describe("EnvGenerateDriver", () => {
     });
 
     it("happy path: with target", async () => {
-      const target = "path";
+      const target = path.join(mockedDriverContext.projectPath, ".env.teamsfx.local");
       const existingEnvs = {
         existing1: "value1",
         existing2: "value2",
@@ -149,7 +163,7 @@ describe("EnvGenerateDriver", () => {
         }
       });
       const args: any = {
-        target,
+        target: ".env.teamsfx.local",
         envs: {
           key1: 10,
           key2: true,
@@ -166,6 +180,86 @@ describe("EnvGenerateDriver", () => {
           .join(os.EOL);
         chai.assert.equal(content, expectedContent);
       }
+    });
+  });
+
+  describe("execute", () => {
+    beforeEach(() => {
+      process.env.TEAMSFX_ENV = "local";
+    });
+
+    afterEach(() => {
+      delete process.env.TEAMSFX_ENV;
+    });
+
+    it("happy path: without target", async () => {
+      const args: any = {
+        envs: {
+          key1: 10,
+          key2: true,
+          key3: "value3",
+        },
+      };
+      const executionResult = await driver.execute(args, mockedDriverContext);
+      chai.assert(executionResult.result.isOk());
+      if (executionResult.result.isOk()) {
+        chai.assert(equal(args.envs, executionResult.result.value));
+      }
+      chai.assert.equal(executionResult.summaries.length, 1);
+      chai.assert.equal(
+        executionResult.summaries[0],
+        "The environment variables has been generated successfully to the .env file of 'local' environment."
+      );
+    });
+
+    it("happy path: with target", async () => {
+      const target = path.join(mockedDriverContext.projectPath, ".env.teamsfx.local");
+      const existingEnvs = {
+        existing1: "value1",
+        existing2: "value2",
+      };
+      let content = Object.entries(existingEnvs)
+        .map(([key, value]) => `${key}=${value}`)
+        .join(os.EOL);
+      sinon.stub(fs, "ensureFile").callsFake(async (path) => {
+        if (path !== target) {
+          content = "";
+        }
+      });
+      sinon.stub(fs, "readFile").callsFake(async (path) => {
+        if (path === target) {
+          return Buffer.from(content);
+        }
+        return Buffer.from("");
+      });
+      sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
+        if (path === target) {
+          content = data;
+        }
+      });
+      const args: any = {
+        target: ".env.teamsfx.local",
+        envs: {
+          key1: 10,
+          key2: true,
+          key3: "value3",
+        },
+      };
+      const executionResult = await driver.execute(args, mockedDriverContext);
+      chai.assert(executionResult.result.isOk());
+      if (executionResult.result.isOk()) {
+        chai.assert.equal(executionResult.result.value.size, 0);
+        const expectedEnvs = { ...existingEnvs, ...args.envs };
+        const expectedContent = Object.entries(expectedEnvs)
+          .map(([key, value]) => `${key}=${value}`)
+          .join(os.EOL);
+        chai.assert.equal(content, expectedContent);
+      }
+      chai.assert.equal(executionResult.summaries.length, 1);
+      chai.assert.equal(
+        executionResult.summaries[0],
+        `The environment variables has been generated successfully to ${path.normalize(target)}.`
+      );
     });
   });
 });

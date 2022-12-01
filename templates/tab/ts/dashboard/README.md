@@ -110,7 +110,7 @@ export const getSampleData = (): SampleModel => SampleData;
 
 ### Step 3: Create a widget file
 
-Create a widget file in `tabs/src/views/widgets` folder. Extend the [`Widget`](tabs/src/views/lib/Widget.tsx) class. The following table lists the methods that you can override to customize your widget.
+Create a widget file in `tabs/src/views/widgets` folder. Extend the [`Widget`](src/views/lib/Widget.tsx) class. The following table lists the methods that you can override to customize your widget.
 
 | Methods           | Function                                                                                                                                      |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -174,7 +174,7 @@ protected dashboardLayout(): JSX.Element | undefined {
 }
 ```
 
-> Note: If you want put your widget in a column, you can use the [`oneColumn()`](tabs/src/views/lib/Dashboard.styles.ts#L32) method to define the column layout. Here is an example:
+> Note: If you want put your widget in a column, you can use the [`oneColumn()`](src/views/lib/Dashboard.styles.ts#L32) method to define the column layout. Here is an example:
 
 ```tsx
 protected dashboardLayout(): JSX.Element | undefined {
@@ -201,7 +201,7 @@ You can use the following steps to add a new dashboard layout:
 
 ### Step 1: Create a dashboard class
 
-Create a file with the extension `.tsx` for your dashboard in the `tabs/src/views/dashboards` directory. For example, `YourDashboard.tsx`. Then, create a class that extends the [Dashboard](tabs/src/views/lib/Dashboard.tsx) class.
+Create a file with the extension `.tsx` for your dashboard in the `tabs/src/views/dashboards` directory. For example, `YourDashboard.tsx`. Then, create a class that extends the [Dashboard](src/views/lib/Dashboard.tsx) class.
 
 ```tsx
 export default class YourDashboard extends Dashboard {}
@@ -261,7 +261,7 @@ export default function App() {
 
 ### Step 4: Modify manifest to add a new dashboard tab
 
-Open the [`templates/appPackage/manifest.template.json`](templates/appPackage/manifest.template.json) file, and add a new dashboard tab under the `staticTabs`. Here is an example:
+Open the [`templates/appPackage/manifest.template.json`](../templates/appPackage/manifest.template.json) file, and add a new dashboard tab under the `staticTabs`. Here is an example:
 
 ```json
 {
@@ -304,7 +304,7 @@ If you want to call a Graph API from the front-end tab, you can refer to the fol
 
 #### Step 1: Consent delegated permissions first
 
-You can call [`addNewScope(scopes: string[])`](/tabs/src/internal/addNewScopes.ts) to consent the scopes of permissions you want to add. And the consented status will be preserved in a global context [`FxContext`](/tabs/src/internal/singletonContext.ts).
+You can call [`addNewScope(scopes: string[])`](src/internal/addNewScopes.ts) to consent the scopes of permissions you want to add. And the consented status will be preserved in a global context [`FxContext`](src/internal/singletonContext.ts).
 
 You can refer to [the Graph API V1.0](https://learn.microsoft.com/en-us/graph/api/overview?view=graph-rest-1.0) to get the `scope name of the permission` related to the Graph API you want to call.
 
@@ -414,7 +414,7 @@ try {
 
 #### Step 5: Edit manifest file
 
-In the [templates\appPackage\manifest.template.json](templates\appPackage\manifest.template.json), you should add the following properties, which are align with properties in `postbody` in Step 4.
+In the [templates\appPackage\manifest.template.json](..\templates\appPackage\manifest.template.json), you should add the following properties, which are align with properties in `postbody` in Step 4.
 
 ```json
 "activities": {
@@ -460,4 +460,3 @@ Refer to [this sample](https://github.com/OfficeDev/TeamsFx-Samples/blob/dev/hel
 
 - [Fluent UI](https://react.fluentui.dev/?path=/docs/concepts-introduction--page)
 - [Fluent UI React Charting Example](https://fluentuipr.z22.web.core.windows.net/heads/master/react-charting/demo/index.html#/)
-- [Dashboard sample](https://github.com/huimiu/DashboardDemo)

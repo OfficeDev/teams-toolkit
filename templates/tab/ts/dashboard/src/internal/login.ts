@@ -1,9 +1,9 @@
 import { FxContext } from "./singletonContext";
 
-export function loginAction(scope: string[]) {
+export async function loginAction(scope: string[]) {
   try {
     var teamsfx = FxContext.getInstance().getTeamsFx();
-    teamsfx.login(scope);
+    await teamsfx.login(scope);
     FxContext.getInstance().setTeamsFx(teamsfx);
   } catch (e) {
     console.log(e);

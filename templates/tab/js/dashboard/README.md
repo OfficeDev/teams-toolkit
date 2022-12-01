@@ -96,7 +96,7 @@ export const getSampleData = () => SampleData;
 
 ### Step 2: Create a widget file
 
-Create a widget file in `tabs/src/views/widgets` folder. Extend the [`Widget`](tabs/src/views/lib/Widget.jsx) class. The following table lists the methods that you can override to customize your widget.
+Create a widget file in `tabs/src/views/widgets` folder. Extend the [`Widget`](src/views/lib/Widget.jsx) class. The following table lists the methods that you can override to customize your widget.
 
 | Methods           | Function                                                                                                                                      |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -160,7 +160,7 @@ dashboardLayout() {
 }
 ```
 
-> Note: If you want put your widget in a column, you can use the [`oneColumn()`](tabs/src/views/lib/Dashboard.styles.js#L32) method to define the column layout. Here is an example:
+> Note: If you want put your widget in a column, you can use the [`oneColumn()`](src/views/lib/Dashboard.styles.js#L30) method to define the column layout. Here is an example:
 
 ```javascript
 dashboardLayout() {
@@ -187,7 +187,7 @@ You can use the following steps to add a new dashboard layout:
 
 ### Step 1: Create a dashboard class
 
-Create a file with the extension `.jsx` for your dashboard in the `tabs/src/views/dashboards` directory. For example, `YourDashboard.jsx`. Then, create a class that extends the [Dashboard](tabs/src/views/lib/Dashboard.jsx) class.
+Create a file with the extension `.jsx` for your dashboard in the `tabs/src/views/dashboards` directory. For example, `YourDashboard.jsx`. Then, create a class that extends the [Dashboard](src/views/lib/Dashboard.jsx) class.
 
 ```javascript
 export default class YourDashboard extends Dashboard {}
@@ -247,7 +247,7 @@ export default function App() {
 
 ### Step 4: Modify manifest to add a new dashboard tab
 
-Open the [`templates/appPackage/manifest.template.json`](templates/appPackage/manifest.template.json) file, and add a new dashboard tab under the `staticTabs`. Here is an example:
+Open the [`templates/appPackage/manifest.template.json`](../templates/appPackage/manifest.template.json) file, and add a new dashboard tab under the `staticTabs`. Here is an example:
 
 ```json
 {
@@ -290,7 +290,7 @@ If you want to call a Graph API from the front-end tab, you can refer to the fol
 
 #### Step 1: Consent delegated permissions first
 
-You can call [`addNewScope(scopes: string[])`](/tabs/src/internal/addNewScopes.js) to consent the scopes of permissions you want to add. And the consented status will be preserved in a global context [`FxContext`](/tabs/src/internal/singletonContext.js).
+You can call [`addNewScope(scopes: string[])`](src/internal/addNewScopes.js) to consent the scopes of permissions you want to add. And the consented status will be preserved in a global context [`FxContext`](src/internal/singletonContext.js).
 
 You can refer to [the Graph API V1.0](https://learn.microsoft.com/en-us/graph/api/overview?view=graph-rest-1.0) to get the `scope name of the permission` related to the Graph API you want to call.
 
@@ -298,17 +298,17 @@ You can refer to [the Graph API V1.0](https://learn.microsoft.com/en-us/graph/ap
 
 You can refer to the following code snippet:
 
-```ts
-let teamsfx: TeamsFx;
-teamsfx = FxContext.getInstance().getTeamsFx();
-const graphClient: Client = createMicrosoftGraphClient(teamsfx, scope);
+```js
+let teamsfx;
+teamsfx = FxContextInstance.getTeamsFx();
+const graphClient = createMicrosoftGraphClient(teamsfx, scope);
 ```
 
 #### Step 3: Call the Graph API, and parse the response into a certain model, which will be used by front-end
 
 You can refer to the following code snippet:
 
-```ts
+```js
 try {
   const graphApiResult = await graphClient.api("<GRAPH_API_PATH>").get();
   // Parse the graphApiResult into a Model you defined, used by the front-end.
@@ -350,13 +350,13 @@ In the response, you should find the information of your Dashboard app, and then
 
 #### Step 4: Add your logic in Azure Function
 
-In the `index.ts` under the folder named in step 2, you can add the following code snippet to call `sendActivityNotification`
+In the `index.jsx` under the folder named in step 2, you can add the following code snippet to call `sendActivityNotification`
 
 ```ts
 try {
   // do sth here, to call activity notification api
   //
-  const graphClient_userId: Client = await createMicrosoftGraphClient(teamsfx, [
+  const graphClient_userId = await createMicrosoftGraphClient(teamsfx, [
     "User.Read",
   ]);
   const userIdRes = await graphClient_userId.api("/me").get();
@@ -385,9 +385,9 @@ try {
     ],
   };
 
-  let teamsfx_app: TeamsFx;
+  let teamsfx_app;
   teamsfx_app = new TeamsFx(IdentityType.App);
-  const graphClient: Client = createMicrosoftGraphClient(teamsfx_app, [
+  const graphClient = createMicrosoftGraphClient(teamsfx_app, [
     ".default",
   ]);
   await graphClient
@@ -400,7 +400,7 @@ try {
 
 #### Step 5: Edit manifest file
 
-In the [templates\appPackage\manifest.template.json](templates\appPackage\manifest.template.json), you should add the following properties, which are align with properties in `postbody` in Step 4.
+In the [templates\appPackage\manifest.template.json](..\templates\appPackage\manifest.template.json), you should add the following properties, which are align with properties in `postbody` in Step 4.
 
 ```json
 "activities": {
@@ -420,7 +420,7 @@ Call the Azure Function from the front-end. You can refer to the following code 
 
 ```ts
 const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
-async function callFunction(teamsfx?: TeamsFx) {
+async function callFunction(teamsfx) {
   if (!teamsfx) {
     throw new Error("TeamsFx SDK is not initialized.");
   }
@@ -446,4 +446,3 @@ Refer to [this sample](https://github.com/OfficeDev/TeamsFx-Samples/blob/dev/hel
 
 - [Fluent UI](https://react.fluentui.dev/?path=/docs/concepts-introduction--page)
 - [Fluent UI React Charting Example](https://fluentuipr.z22.web.core.windows.net/heads/master/react-charting/demo/index.html#/)
-- [Dashboard sample](https://github.com/huimiu/DashboardDemo)

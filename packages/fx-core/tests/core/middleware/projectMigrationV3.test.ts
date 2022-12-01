@@ -28,6 +28,7 @@ import { MigrationContext } from "../../../src/core/middleware/utils/migrationCo
 import {
   generateAppYml,
   generateSettingsJson,
+  statesMigration,
   updateLaunchJson,
   migrate,
   wrapRunMigration,
@@ -370,6 +371,42 @@ describe("updateLaunchJson", () => {
   });
 });
 
+describe("stateMigration", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("happy path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    await statesMigration(migrationContext);
+
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+
+    const trueEnvContent_dev = await readEnvFile(
+      getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
+      "dev"
+    );
+    const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
+    assert.equal(testEnvContent_dev, trueEnvContent_dev);
+
+    const trueEnvContent_local = await readEnvFile(
+      getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
+      "local"
+    );
+    const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
+    assert.equal(testEnvContent_local, trueEnvContent_local);
+  });
+});
+
 async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
   const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
   inputs.projectPath = projectPath;
@@ -393,6 +430,10 @@ async function readOldProjectSettings(projectPath: string): Promise<any> {
 
 async function readSettingJson(projectPath: string): Promise<any> {
   return await fs.readJson(path.join(projectPath, Constants.settingsFilePath));
+}
+
+async function readEnvFile(projectPath: string, env: string): Promise<any> {
+  return await fs.readFileSync(path.join(projectPath, ".env." + env)).toString();
 }
 
 function getAction(lifecycleDefinition: Array<any>, actionName: string): any[] {

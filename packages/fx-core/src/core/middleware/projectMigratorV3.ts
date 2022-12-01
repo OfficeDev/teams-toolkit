@@ -31,6 +31,13 @@ import { getLocalizedString } from "../../common/localizeUtils";
 import { UpgradeCanceledError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
+import {
+  fsReadDirSync,
+  jsonObjectNamesConvertV3,
+  readBicepContent,
+  readStateFile,
+} from "./utils/v3MigrationUtils";
+import { FileType } from "./MigrationUtils";
 
 const MigrationVersion = "2.1.0";
 const Constants = {
@@ -44,6 +51,7 @@ const subMigrations: Array<Migration> = [
   preMigration,
   generateSettingsJson,
   generateAppYml,
+  statesMigration,
   updateLaunchJson,
 ];
 
@@ -181,6 +189,35 @@ async function loadProjectSettings(projectPath: string): Promise<ProjectSettings
     return oldProjectSettings.value;
   } else {
     throw oldProjectSettings.error;
+  }
+}
+
+export async function statesMigration(context: MigrationContext): Promise<void> {
+  // general
+  if (await context.fsPathExists(path.join(".fx", "states"))) {
+    // if ./fx/states/ exists
+    const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
+    for (const fileName of fileNames) {
+      const fileRegex = new RegExp("(state\\.)([a-zA-Z0-9_]*)(\\.json)", "g"); // state.*.json
+      const fileNamesArray = fileRegex.exec(fileName);
+      if (fileNamesArray != null) {
+        // get envName
+        const envName = fileNamesArray[2];
+        // create .env.{env} file
+        await context.fsEnsureDir(SettingsFolderName);
+        await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+        const obj = await readStateFile(
+          context,
+          path.join(".fx", "states", "state." + envName + ".json")
+        );
+        if (obj) {
+          const bicepContent = readBicepContent(context);
+          // convert every name
+          const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
+          await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData);
+        }
+      }
+    }
   }
 }
 

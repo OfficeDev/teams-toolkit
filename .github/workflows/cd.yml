@@ -395,7 +395,7 @@ jobs:
           DATE_WITH_TIME=`date "+%Y%m%d%H"`
           PACKAGE_VERSION=$(jq -r .version package.json | cut -d '.' -f 1,2)
           TTK_VERSION=$PACKAGE_VERSION.$DATE_WITH_TIME
-          echo "::set-output name=version::$TTK_VERSION
+          echo "::set-output name=version::$TTK_VERSION"
           echo $TTK_VERSION
 
       - name: pack vsix for preview

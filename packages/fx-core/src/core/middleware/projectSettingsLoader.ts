@@ -181,13 +181,21 @@ export function shouldIgnored(ctx: CoreHookContext): boolean {
 
 export function getProjectSettingsPath(projectPath: string) {
   if (isV3Enabled()) {
-    return path.resolve(projectPath, SettingsFolderName, SettingsFileName);
+    return getProjectSettingPathV3(projectPath);
   } else {
-    return path.resolve(
-      projectPath,
-      `.${ConfigFolderName}`,
-      InputConfigsFolderName,
-      ProjectSettingsFileName
-    );
+    return getProjectSettingPathV2(projectPath);
   }
+}
+
+export function getProjectSettingPathV3(projectPath: string) {
+  return path.resolve(projectPath, SettingsFolderName, SettingsFileName);
+}
+
+export function getProjectSettingPathV2(projectPath: string) {
+  return path.resolve(
+    projectPath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
 }

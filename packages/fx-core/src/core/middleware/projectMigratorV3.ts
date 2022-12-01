@@ -5,6 +5,7 @@ import {
   AppPackageFolderName,
   err,
   FxError,
+  Inputs,
   ok,
   ProjectSettings,
   SettingsFileName,
@@ -18,7 +19,11 @@ import { CoreHookContext } from "../types";
 import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks, outputCancelMessage, upgradeButton } from "./projectMigrator";
 import * as path from "path";
-import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
+import {
+  getProjectSettingPathV2,
+  getProjectSettingPathV3,
+  loadProjectSettingsByProjectPathV2,
+} from "./projectSettingsLoader";
 import {
   Component,
   ProjectMigratorStatus,
@@ -42,13 +47,25 @@ import {
   readBicepContent,
   readStateFile,
 } from "./utils/v3MigrationUtils";
+import * as semver from "semver";
 
-const MigrationVersion = "2.1.0";
 const Constants = {
   provisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   appYmlName: "app.yml",
 };
+
+const MigrationVersion = {
+  minimum: "2.0.0",
+  maximum: "2.1.0",
+};
+const V3Version = "3.0.0";
+
+enum VersionState {
+  compatible,
+  upgradeable,
+  unsupported,
+}
 
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
@@ -61,7 +78,8 @@ const subMigrations: Array<Migration> = [
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  if ((await checkVersionForMigration(ctx)) && checkMethod(ctx)) {
+  const versionState = await checkVersionForMigration(ctx);
+  if (versionState === VersionState.upgradeable && checkMethod(ctx)) {
     if (!checkUserTasks(ctx)) {
       ctx.result = ok(undefined);
       return;
@@ -72,6 +90,9 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
     const migrationContext = await MigrationContext.create(ctx);
     await wrapRunMigration(migrationContext, migrate);
     ctx.result = ok(undefined);
+  } else if (versionState === VersionState.unsupported) {
+    // TODO: add user notification
+    throw new Error("not supported");
   } else {
     // continue next step only when:
     // 1. no need to upgrade the project;
@@ -139,14 +160,36 @@ async function preMigration(context: MigrationContext): Promise<void> {
   await context.backup(V2TeamsfxFolder);
 }
 
-async function checkVersionForMigration(ctx: CoreHookContext): Promise<boolean> {
+async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionState> {
   const version = await getProjectVersion(ctx);
-  return version === MigrationVersion;
+  if (semver.gte(version, V3Version)) {
+    return VersionState.compatible;
+  } else if (
+    semver.gte(version, MigrationVersion.minimum) &&
+    semver.lte(version, MigrationVersion.maximum)
+  ) {
+    return VersionState.upgradeable;
+  } else {
+    return VersionState.unsupported;
+  }
 }
 
-// TODO: read the real version from project setting
 async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
-  return "2.1.0";
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const projectPath = inputs.projectPath as string;
+  const v3path = getProjectSettingPathV3(projectPath);
+  if (await fs.pathExists(v3path)) {
+    const settings = await fs.readJson(v3path);
+    return settings.version || V3Version;
+  }
+  const v2path = getProjectSettingPathV2(projectPath);
+  if (await fs.pathExists(v2path)) {
+    const settings = await fs.readJson(v2path);
+    if (settings.version) {
+      return settings.version;
+    }
+  }
+  return "";
 }
 
 export async function generateSettingsJson(context: MigrationContext): Promise<void> {

@@ -725,7 +725,7 @@ export const TabNewUIOptionItem: OptionItem = {
 export const DashboardOptionItem: OptionItem = {
   id: "dashboard-tab",
   label: `$(browser) ${getLocalizedString("core.DashboardOption.label")}`,
-  description: getLocalizedString("core.Option.recommend"),
+  description: getLocalizedString("core.Option.preview"),
   cliName: "dashboard-tab",
   detail: getLocalizedString("core.DashboardOption.detail"),
   groupName: getLocalizedString("core.options.separator.scenario"),

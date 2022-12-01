@@ -389,6 +389,8 @@ describe("stateMigration", () => {
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     await statesMigration(migrationContext);
 
+    assert.isTrue(migrationContext.fsPathExists("teamsfx"));
+
     const trueEnvContent_dev = await readEnvFile(
       getTestAssetsPath(Constants.happyPathTestProject),
       "dev"

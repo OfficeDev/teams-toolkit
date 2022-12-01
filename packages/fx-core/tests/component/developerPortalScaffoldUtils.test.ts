@@ -36,7 +36,7 @@ import {
   TabNonSsoItem,
 } from "../../src/component/constants";
 
-describe.only("developPortalScaffoldUtils", () => {
+describe("developPortalScaffoldUtils", () => {
   describe("updateFilesForTdp", () => {
     const sandbox = sinon.createSandbox();
     class MockedWriteStream {

@@ -19,8 +19,9 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { assign, merge } from "lodash";
-import { TOOLS } from "../../core/globalVars";
+import { globalVars, TOOLS } from "../../core/globalVars";
 import { TelemetryConstants } from "../constants";
+import { DriverContext } from "../driver/interface/commonArgs";
 import {
   sendErrorEvent,
   sendMigratedErrorEvent,
@@ -29,6 +30,7 @@ import {
   sendStartEvent,
   sendSuccessEvent,
 } from "../telemetry";
+import { settingsUtil } from "../utils/settingsUtil";
 
 export interface ActionOption {
   componentName?: string;
@@ -63,6 +65,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
     const eventName = action.telemetryEventName || methodName;
     const telemetryProps = {
       [TelemetryConstants.properties.component]: telemetryComponentName,
+      env: process.env.TEAMSFX_ENV || "",
     };
     const telemetryMeasures: Record<string, number> = {};
     let progressBar;
@@ -70,7 +73,15 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
     try {
       // send start telemetry
       if (action.enableTelemetry) {
+        if (!globalVars.trackingId) {
+          // try to get trackingId
+          const projectPath = (ctx.arguments[0] as ContextV3 | DriverContext).projectPath;
+          if (projectPath) {
+            await settingsUtil.readSettings(projectPath, false);
+          }
+        }
         if (action.telemetryProps) assign(telemetryProps, action.telemetryProps);
+        if (globalVars.trackingId) telemetryProps["project-id"] = globalVars.trackingId; // add trackingId prop in telemetry
         sendStartEvent(eventName, telemetryProps);
         sendMigratedStartEvent(
           eventName,

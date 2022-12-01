@@ -3,6 +3,7 @@
 
 import { hooks } from "@feathersjs/hooks/lib";
 import {
+  err,
   FxError,
   Inputs,
   ok,
@@ -18,12 +19,21 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
+import * as yaml from "js-yaml";
 import { getProjectMigratorMW } from "../../../src/core/middleware/projectMigrator";
 import { MockTools, MockUserInteraction, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
 import { setTools } from "../../../src/core/globalVars";
 import { MigrationContext } from "../../../src/core/middleware/utils/migrationContext";
-import { generateSettingsJson } from "../../../src/core/middleware/projectMigratorV3";
+import {
+  generateAppYml,
+  generateSettingsJson,
+  statesMigration,
+  updateLaunchJson,
+  migrate,
+  wrapRunMigration,
+} from "../../../src/core/middleware/projectMigratorV3";
+import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 
 let mockedEnvRestore: () => void;
 
@@ -34,10 +44,11 @@ describe("ProjectMigratorMW", () => {
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
+    await fs.ensureDir(path.join(projectPath, ".fx"));
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3_MIGRATION: "true",
+      TEAMSFX_V3: "false",
     });
-    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
   });
 
   afterEach(async () => {
@@ -47,6 +58,7 @@ describe("ProjectMigratorMW", () => {
   });
 
   it("happy path", async () => {
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
     const tools = new MockTools();
     setTools(tools);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
@@ -69,6 +81,48 @@ describe("ProjectMigratorMW", () => {
     } finally {
       await fs.rmdir(inputs.projectPath!, { recursive: true });
     }
+  });
+
+  it("user cancel", async () => {
+    sandbox
+      .stub(MockUserInteraction.prototype, "showMessage")
+      .resolves(err(new Error("user cancel") as FxError));
+    const tools = new MockTools();
+    setTools(tools);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    class MyClass {
+      tools = tools;
+      async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+        return ok("");
+      }
+    }
+    hooks(MyClass, {
+      other: [getProjectMigratorMW()],
+    });
+
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+    inputs.projectPath = projectPath;
+    const my = new MyClass();
+    try {
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr());
+    } finally {
+      await fs.rmdir(inputs.projectPath!, { recursive: true });
+    }
+  });
+
+  it("wrap run error ", async () => {
+    const tools = new MockTools();
+    setTools(tools);
+    sandbox.stub(MigratorV3, "migrate").throws(new Error("mocker error"));
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+    inputs.projectPath = projectPath;
+    const ctx = {
+      arguments: [inputs],
+    };
+    const context = await MigrationContext.create(ctx);
+    const res = wrapRunMigration(context, migrate);
   });
 });
 
@@ -119,6 +173,8 @@ describe("MigrationContext", () => {
     await context.cleanModifiedPaths();
     assert.isEmpty(context.getModifiedPaths());
 
+    context.addReport("test report");
+    context.addTelemetryProperties({ testProperrty: "test property" });
     await context.restoreBackup();
     await context.cleanTeamsfx();
   });
@@ -170,6 +226,187 @@ describe("generateSettingsJson", () => {
   });
 });
 
+describe("generateAppYml-js/ts", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("should success in happy path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+
+    await generateAppYml(migrationContext);
+
+    const appYamlPath = path.join(projectPath, Constants.appYmlPath);
+    assert.isTrue(await fs.pathExists(appYamlPath));
+    const appYaml: any = yaml.load(await fs.readFile(appYamlPath, "utf8"));
+    // validate basic part
+    assert.equal(appYaml.version, "1.0.0");
+    assert.exists(getAction(appYaml.provision, "arm/deploy"));
+    assert.exists(getAction(appYaml.registerApp, "teamsApp/create"));
+    assert.exists(getAction(appYaml.configureApp, "teamsApp/validate"));
+    assert.exists(getAction(appYaml.configureApp, "teamsApp/createAppPackage"));
+    assert.exists(getAction(appYaml.configureApp, "teamsApp/update"));
+    assert.exists(getAction(appYaml.publish, "teamsApp/validate"));
+    assert.exists(getAction(appYaml.publish, "teamsApp/createAppPackage"));
+    assert.exists(getAction(appYaml.publish, "teamsApp/publishAppPackage"));
+    // validate AAD part
+    assert.exists(getAction(appYaml.registerApp, "aadApp/create"));
+    assert.exists(getAction(appYaml.configureApp, "aadApp/update"));
+    // validate tab part
+    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "npm/command");
+    assert.exists(
+      npmCommandActions.find(
+        (item) => item.with.workingDirectory === "tabs" && item.with.args === "install"
+      )
+    );
+    assert.exists(
+      npmCommandActions.find(
+        (item) => item.with.workingDirectory === "tabs" && item.with.args === "run build"
+      )
+    );
+    assert.exists(getAction(appYaml.deploy, "azureStorage/deploy"));
+  });
+
+  it("should not generate AAD part if AAD plugin not activated", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.solutionSettings.activeResourcePlugins = (<Array<string>>(
+      projectSetting.solutionSettings.activeResourcePlugins
+    )).filter((item) => item !== "fx-resource-aad-app-for-teams"); // remove AAD plugin
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    const appYaml: any = yaml.load(
+      await fs.readFile(path.join(projectPath, Constants.appYmlPath), "utf8")
+    );
+
+    assert.isEmpty(getAction(appYaml.registerApp, "aadApp/create"));
+    assert.isEmpty(getAction(appYaml.configureApp, "aadApp/update"));
+  });
+
+  it("should not generate tab part if frontend hosting plugin not activated", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.solutionSettings.activeResourcePlugins = (<Array<string>>(
+      projectSetting.solutionSettings.activeResourcePlugins
+    )).filter((item) => item !== "fx-resource-frontend-hosting"); // remove frontend hosting plugin
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    const appYaml: any = yaml.load(
+      await fs.readFile(path.join(projectPath, Constants.appYmlPath), "utf8")
+    );
+
+    assert.isEmpty(getAction(appYaml.provision, "azureStorage/enableStaticWebsite"));
+    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "npm/command");
+    assert.isEmpty(npmCommandActions.filter((item) => item.with.workingDirectory === "tabs"));
+    assert.isEmpty(getAction(appYaml.deploy, "azureStorage/deploy"));
+  });
+});
+
+describe("updateLaunchJson", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("should success in happy path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+
+    await updateLaunchJson(migrationContext);
+
+    assert.isTrue(
+      await fs.pathExists(path.join(projectPath, "teamsfx/backup/.vscode/launch.json"))
+    );
+    const updatedLaunchJson = await fs.readJson(path.join(projectPath, Constants.launchJsonPath));
+    assert.equal(
+      updatedLaunchJson.configurations[0].url,
+      "https://teams.microsoft.com/l/app/${dev:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+    );
+    assert.equal(
+      updatedLaunchJson.configurations[1].url,
+      "https://teams.microsoft.com/l/app/${dev:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+    );
+    assert.equal(
+      updatedLaunchJson.configurations[2].url,
+      "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+    );
+    assert.equal(
+      updatedLaunchJson.configurations[3].url,
+      "https://teams.microsoft.com/l/app/${local:teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}"
+    );
+    assert.equal(
+      updatedLaunchJson.configurations[4].url,
+      "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}" // for M365 app
+    );
+    assert.equal(
+      updatedLaunchJson.configurations[5].url,
+      "https://outlook.office.com/host/${local:teamsAppInternalId}?${account-hint}" // for M365 app
+    );
+  });
+});
+
+describe("stateMigration", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("happy path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    await statesMigration(migrationContext);
+
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+
+    const trueEnvContent_dev = await readEnvFile(
+      getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
+      "dev"
+    );
+    const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
+    assert.equal(testEnvContent_dev, trueEnvContent_dev);
+
+    const trueEnvContent_local = await readEnvFile(
+      getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
+      "local"
+    );
+    const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
+    assert.equal(testEnvContent_local, trueEnvContent_local);
+  });
+});
+
 async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
   const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
   inputs.projectPath = projectPath;
@@ -195,8 +432,21 @@ async function readSettingJson(projectPath: string): Promise<any> {
   return await fs.readJson(path.join(projectPath, Constants.settingsFilePath));
 }
 
+async function readEnvFile(projectPath: string, env: string): Promise<any> {
+  return await fs.readFileSync(path.join(projectPath, ".env." + env)).toString();
+}
+
+function getAction(lifecycleDefinition: Array<any>, actionName: string): any[] {
+  if (lifecycleDefinition) {
+    return lifecycleDefinition.filter((item) => item.uses === actionName);
+  }
+  return [];
+}
+
 const Constants = {
   happyPathTestProject: "happyPath",
   settingsFilePath: "teamsfx/settings.json",
   oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
+  appYmlPath: "teamsfx/app.yml",
+  launchJsonPath: ".vscode/launch.json",
 };

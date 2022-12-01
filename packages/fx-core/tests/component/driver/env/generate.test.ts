@@ -15,12 +15,13 @@ import { InvalidParameterUserError } from "../../../../src/component/driver/env/
 import { UnhandledSystemError } from "../../../../src/component/driver/env/error/unhandledError";
 import { GenerateEnvDriver } from "../../../../src/component/driver/env/generate";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
-import { MockedLogProvider } from "../../../plugins/solution/util";
+import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 
 describe("EnvGenerateDriver", () => {
   const mockedDriverContext = {
     logProvider: new MockedLogProvider(),
     projectPath: "/path/to/project",
+    ui: new MockedUserInteraction(),
   } as DriverContext;
   const driver = new GenerateEnvDriver();
 

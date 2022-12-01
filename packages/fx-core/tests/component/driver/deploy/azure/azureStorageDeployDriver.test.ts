@@ -94,6 +94,8 @@ describe("Azure Storage Deploy Driver test", () => {
     Object.setPrototypeOf(StorageManagementClient, calls);*/
     const res = await deploy.run(args, context);
     assert.equal(res.isOk(), true);
+    const rex = await deploy.execute(args, context);
+    assert.equal(rex.result.isOk(), true);
   });
 
   it("get azure account credential error", async () => {

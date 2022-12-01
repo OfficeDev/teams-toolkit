@@ -15,6 +15,7 @@ import { InstallToolArgs } from "../../../../src/component/driver/tools/interfac
 import { FuncToolChecker } from "../../../../src/common/deps-checker/internal/funcToolChecker";
 import { DepsType } from "../../../../src/common/deps-checker/depsChecker";
 import { DepsCheckerError } from "../../../../src/common/deps-checker/depsError";
+import { DotnetChecker } from "../../../../src/common/deps-checker/internal/dotnetChecker";
 
 describe("Tools Install Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -167,6 +168,61 @@ describe("Tools Install Driver test", () => {
     it("Invalid parameter", async () => {
       const res = await toolsInstallDriver.run(
         { func: { version: "hello" } } as unknown as InstallToolArgs,
+        mockedDriverContext
+      );
+      chai.assert.isTrue(res.isErr());
+    });
+  });
+
+  describe("Dotnet installation test", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("Install dotnet", async () => {
+      sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
+        name: ".NET Core SDK",
+        type: DepsType.Dotnet,
+        isInstalled: true,
+        command: "~/.fx/dotnet/dotnet.exe",
+        details: {
+          isLinuxSupported: false,
+          installVersion: "3.1",
+          supportedVersions: ["3.1", "5.0", "6.0"],
+          binFolders: ["~/.fx/dotnet/dotnet.exe"],
+        },
+      });
+      const res = await toolsInstallDriver.run({ dotnet: true }, mockedDriverContext);
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.includeDeepMembers(
+          [["DOTNET_PATH", "~/.fx/dotnet"]],
+          Array.from(res.value.entries())
+        );
+      }
+    });
+
+    it("Failed to install dotnet", async () => {
+      sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
+        name: ".NET Core SDK",
+        type: DepsType.Dotnet,
+        isInstalled: false,
+        command: "~/.fx/dotnet/dotnet.exe",
+        details: {
+          isLinuxSupported: false,
+          installVersion: "3.1",
+          supportedVersions: ["3.1", "5.0", "6.0"],
+          binFolders: ["~/.fx/dotnet/dotnet.exe"],
+        },
+        error: new DepsCheckerError("test message", "test link"),
+      });
+      const res = await toolsInstallDriver.run({ dotnet: true }, mockedDriverContext);
+      chai.assert.isTrue(res.isErr());
+    });
+
+    it("Invalid parameter", async () => {
+      const res = await toolsInstallDriver.run(
+        { dotnet: { version: "hello" } } as unknown as InstallToolArgs,
         mockedDriverContext
       );
       chai.assert.isTrue(res.isErr());

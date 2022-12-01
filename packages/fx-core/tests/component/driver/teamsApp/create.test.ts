@@ -67,6 +67,10 @@ describe("teamsApp/create", async () => {
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     console.log(JSON.stringify(result));
     chai.assert.isTrue(result.isOk());
+
+    const executeResult = await teamsAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isTrue(executeResult.result.isOk());
+    chai.assert.isTrue(executeResult.summaries.length > 0);
   });
 
   it("app exists", async () => {

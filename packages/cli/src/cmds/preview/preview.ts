@@ -42,7 +42,6 @@ import {
   LocalEnvManager,
   ProjectSettingsHelper,
   TaskDefinition,
-  ProgrammingLanguage,
   getProjectComponents,
   TelemetryContext,
 } from "@microsoft/teamsfx-core/build/common/local";
@@ -85,7 +84,7 @@ import * as util from "util";
 import { openHubWebClient } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { FolderName } from "@microsoft/teamsfx-core/build/common/local/constants";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import {
   hasAzureTab,
   hasBot,
@@ -1022,7 +1021,7 @@ export default class Preview extends YargsCommand {
       const hasTeamsFxDevScript =
         (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Bot))) !== undefined;
       const botWatchTask =
-        includeFuncHostedBot && programmingLanguage === ProgrammingLanguage.typescript
+        includeFuncHostedBot && programmingLanguage === ProgrammingLanguage.TS
           ? hasTeamsFxDevScript
             ? this.prepareTaskNext(
                 TaskDefinition.funcHostedBotWatch(workspaceFolder),
@@ -1181,7 +1180,7 @@ export default class Preview extends YargsCommand {
           )
       : undefined;
     const backendWatchTask =
-      includeBackend && programmingLanguage === ProgrammingLanguage.typescript
+      includeBackend && programmingLanguage === ProgrammingLanguage.TS
         ? (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Function))) !==
           undefined
           ? this.prepareTaskNext(

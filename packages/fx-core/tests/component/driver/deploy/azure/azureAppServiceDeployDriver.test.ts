@@ -24,7 +24,6 @@ import { MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
-import { AxiosError } from "axios";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -101,6 +100,8 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(client.webApps, "restart").resolves();
     const res = await deploy.run(args, context);
     expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
+    const rex = await deploy.execute(args, context);
+    expect(rex.result.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
   });
 
   it("resource id error", async () => {

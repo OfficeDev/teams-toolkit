@@ -390,11 +390,13 @@ jobs:
       - name: Calculate Version Num
         if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
         id: preview-version
+        working-directory: packages/vscode-extension
         run: |
           DATE_WITH_TIME=`date "+%Y%m%d%H"`
           PACKAGE_VERSION=$(jq -r .version package.json | cut -d '.' -f 1,2)
           TTK_VERSION=$PACKAGE_VERSION.$DATE_WITH_TIME
           echo "::set-output name=version::$TTK_VERSION
+          echo $TTK_VERSION
 
       - name: pack vsix for preview
         if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
@@ -408,7 +410,8 @@ jobs:
           command: |
             sleep 20
             cd ./packages/vscode-extension
-            rm -f *.vsix
+            touch test.vsix
+            rm *.vsix
             npm install --only=production
             npx vsce package --pre-release ${{ steps.preview-version.outputs.version }}
 

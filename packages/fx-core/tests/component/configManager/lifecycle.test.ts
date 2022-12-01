@@ -816,7 +816,6 @@ describe("Summary", () => {
         result.error.reason.unresolvedPlaceHolders.some((x) => x === "AAA")
     );
 
-    console.log(`!!!!! ${JSON.stringify(summaries)}`);
     assert(
       summaries.length === 2 &&
         summaries[0].length === 1 &&

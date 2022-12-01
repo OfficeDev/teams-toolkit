@@ -32,6 +32,8 @@ export default function CollapsibleStep(props: {
   identifier: string;
   children: React.ReactNode;
 }) {
+  const [isInTransition, setIsInTransition] = React.useState(false);
+  const transitionClassName = isInTransition ? "Collapsible__trigger__transition" : "";
   const onOpen = () => {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
@@ -44,12 +46,21 @@ export default function CollapsibleStep(props: {
       },
     });
   };
+  const onClosing = () => {
+    setIsInTransition(!isInTransition);
+    setTimeout(() => {}, 400);
+  };
+  const onClose = () => {
+    setIsInTransition(!isInTransition);
+  };
 
   return (
     <Collapsible
-      className="collapsibleStep"
+      className={["collapsibleStep", `${transitionClassName}`].join(" ")}
       trigger={<StepTitle step={props.step} title={props.title} />}
       onTriggerOpening={onOpen}
+      onClosing={onClosing}
+      onClose={onClose}
     >
       {props.children}
     </Collapsible>

@@ -77,13 +77,8 @@
   font-weight: 600;
   padding-bottom: .3em;
   font-size: 2em;
-  border-bottom: 1px solid var(--vscode-editorIndentGuide-background);
+  border-bottom: 0px solid var(--vscode-editorIndentGuide-background);
 }
-
-// .markdown-body mark {
-//   background-color: rgba(187,128,9,0.15);
-//   color: #c9d1d9;
-// }
 
 .markdown-body small {
   font-size: 90%;
@@ -128,7 +123,7 @@
   box-sizing: content-box;
   overflow: hidden;
   background: transparent;
-  border-bottom: 1px solid var(--vscode-editorIndentGuide-background);
+  border-bottom: 0px solid var(--vscode-editorIndentGuide-background);
   height: .25em;
   padding: 0;
   margin: 24px 0;
@@ -262,7 +257,7 @@
   font-weight: 600;
   padding-bottom: .3em;
   font-size: 1.5em;
-  border-bottom: 1px solid var(--vscode-editorIndentGuide-background);
+  border-bottom: 0px solid var(--vscode-editorIndentGuide-background);
 }
 
 .markdown-body h3 {

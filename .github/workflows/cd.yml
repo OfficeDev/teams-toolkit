@@ -7,6 +7,10 @@ on:
         description: "preid name(alpha, beta, rc, stable)"
         required: true
         default: "rc"
+      isPreview:
+        description: "ensure release ttk for preview(yes or no)"
+        required: false
+        default: 'no'
       skip-version-rc:
         description: "release RC version just with lerna publish, skip run lerna version(yes or no)"
         required: false
@@ -16,7 +20,7 @@ on:
         required: false
         description: "Please enter the package names you want to publish, such as cli, vscode, sdk, server and template. Please separate multiple entries with spaces"
   schedule:
-    - cron: "0 8 * * *"
+    - cron: "0 0 * * *"
 
 jobs:
   cd:
@@ -45,6 +49,12 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/ga' && github.event.inputs.preid != 'beta' }}
         run: |
           echo It's only allowed to release beta on ga branch.
+          exit 1
+        
+      - name: Validate preview on dev branch
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/dev' && github.event.inputs.isPreview != 'no' }}
+        run: |
+          echo It's only allowed to release preview on dev branch
           exit 1
 
       - name: Validate schedule
@@ -368,6 +378,52 @@ jobs:
           artifacts: ./packages/**/*.vsix
           artifactErrorsFailBuild: true
           bodyFile: ./CHANGELOG.md
+
+      - name: Update Preview TTK ai Key
+        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/vscode-extension/package.json
+          field: aiKey
+          value: ${{ secrets.EXT_PUBLIC_AIKEY }}
+
+      - name: Calculate Version Num
+        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
+        id: preview-version
+        working-directory: packages/vscode-extension
+        run: |
+          DATE_WITH_TIME=`date "+%Y%m%d%H"`
+          PACKAGE_VERSION=$(jq -r .version package.json | cut -d '.' -f 1,2)
+          TTK_VERSION=$PACKAGE_VERSION.$DATE_WITH_TIME
+          echo "::set-output name=version::$TTK_VERSION
+          echo $TTK_VERSION
+
+      - name: pack vsix for preview
+        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
+        env:
+          RELEASE: preview
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          command: |
+            sleep 20
+            cd ./packages/vscode-extension
+            touch test.vsix
+            rm *.vsix
+            npm install --only=production
+            npx vsce package --pre-release ${{ steps.preview-version.outputs.version }}
+
+      - name: release preview TTK to github release page
+        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
+        uses: ncipollo/release-action@v1.10.0
+        with:
+          token: ${{ secrets.CD_PAT }}
+          tag: "vscode-extension-V3-${{ steps.version-change.outputs.EXTENSION_VERSION_NUM }}"
+          artifacts: ./packages/vscode-extension/*.vsix
+          artifactErrorsFailBuild: true
+          prerelease: true
 
       - name: save release info
         run: |

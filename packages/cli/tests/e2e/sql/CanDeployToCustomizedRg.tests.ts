@@ -24,6 +24,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { getUuid } from "../../commonlib/utilities";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Deploy to customized resource group", function () {
   const testFolder = getTestFolder();
@@ -44,6 +45,9 @@ describe("Deploy to customized resource group", function () {
     `tab project can deploy sql resource to customized resource group and successfully provision`,
     { testPlanCaseId: 15687470 },
     async function () {
+      if (isV3Enabled()) {
+        this.skip();
+      }
       // Create new tab project
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
       await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);

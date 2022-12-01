@@ -53,6 +53,7 @@ import {
   CoordinatorSource,
   BotOptionItem,
   TabNonSsoAndDefaultBotItem,
+  DefaultBotAndMessageExtensionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
@@ -114,6 +115,7 @@ export enum TemplateNames {
   MessageExtension = "message-extension",
   M365MessageExtension = "m365-message-extension",
   TabAndDefaultBot = "non-sso-tab-default-bot",
+  BotAndMessageExtension = "default-bot-message-extension",
 }
 
 export const Feature2TemplateName: any = {
@@ -135,6 +137,7 @@ export const Feature2TemplateName: any = {
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
   [`${M365SsoLaunchPageOptionItem.id}:undefined`]: TemplateNames.M365Tab,
   [`${TabNonSsoAndDefaultBotItem.id}:undefined`]: TemplateNames.TabAndDefaultBot,
+  [`${DefaultBotAndMessageExtensionItem.id}:undefined`]: TemplateNames.BotAndMessageExtension,
 };
 
 export const InitTemplateName: any = {

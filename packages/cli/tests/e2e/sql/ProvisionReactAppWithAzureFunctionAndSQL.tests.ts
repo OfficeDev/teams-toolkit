@@ -15,7 +15,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { getUuid } from "../../commonlib/utilities";
 import { it } from "@microsoft/extra-shot-mocha";
-
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import {
   getSubscriptionId,
   getTestFolder,
@@ -34,6 +34,9 @@ describe("Provision to Azure with SQL", function () {
     `Provision react app with Azure Function and SQL`,
     { testPlanCaseId: 12700953 },
     async function () {
+      if (isV3Enabled()) {
+        this.skip();
+      }
       // new a project ( tab + function + sql )
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
       await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);

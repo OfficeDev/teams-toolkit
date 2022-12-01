@@ -115,22 +115,30 @@ export async function loadProjectSettingsByProjectPath(
       }
       return ok(projectSettings);
     } else {
-      const settingsFile = isMultiEnvEnabled
-        ? getProjectSettingsPath(projectPath)
-        : path.resolve(projectPath, `.${ConfigFolderName}`, "settings.json");
-      const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
-      if (!projectSettings.projectId) {
-        projectSettings.projectId = uuid.v4();
-        sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
-          [TelemetryProperty.ProjectId]: projectSettings.projectId,
-        });
-      }
-      globalVars.isVS = isVSProject(projectSettings);
-      return ok(convertProjectSettingsV2ToV3(projectSettings, projectPath));
+      return await loadProjectSettingsByProjectPathV2(projectPath, isMultiEnvEnabled);
     }
   } catch (e) {
     return err(ReadFileError(e));
   }
+}
+
+// export this for V2 -> V3 migration purpose
+export async function loadProjectSettingsByProjectPathV2(
+  projectPath: string,
+  isMultiEnvEnabled = false
+): Promise<Result<ProjectSettings, FxError>> {
+  const settingsFile = isMultiEnvEnabled
+    ? getProjectSettingsPath(projectPath)
+    : path.resolve(projectPath, `.${ConfigFolderName}`, "settings.json");
+  const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
+  if (!projectSettings.projectId) {
+    projectSettings.projectId = uuid.v4();
+    sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
+      [TelemetryProperty.ProjectId]: projectSettings.projectId,
+    });
+  }
+  globalVars.isVS = isVSProject(projectSettings);
+  return ok(convertProjectSettingsV2ToV3(projectSettings, projectPath));
 }
 
 export async function newSolutionContext(tools: Tools, inputs: Inputs): Promise<SolutionContext> {

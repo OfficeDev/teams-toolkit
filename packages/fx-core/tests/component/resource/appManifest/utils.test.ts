@@ -8,6 +8,7 @@ import { StaticTab } from "../../../../src/component/resource/appManifest/interf
 import {
   CommandScope,
   containsUnsupportedFeature,
+  getFeaturesFromAppDefinition,
   hasMeetingExtension,
   MeetingsContext,
   needBotCode,
@@ -356,6 +357,25 @@ describe("utils", () => {
 
       const res = containsUnsupportedFeature(appDefinition);
       chai.assert.isTrue(res);
+    });
+  });
+
+  describe("getFeaturesFromAppDefinition", () => {
+    it("get features", () => {
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mockAppId",
+        tenantId: "mockTenantId",
+        configurableTabs: [validConfigurableTabForTabCode],
+        staticTabs: [validStaticTab],
+        bots: [validBot],
+        messagingExtensions: [validMessagingExtension],
+      };
+      const res = getFeaturesFromAppDefinition(appDefinition);
+      chai.assert.equal(res.length, 4);
+      chai.assert.isTrue(res.includes("personal-tab"));
+      chai.assert.isTrue(res.includes("group-tab"));
+      chai.assert.isTrue(res.includes("bot"));
+      chai.assert.isTrue(res.includes("messaging-extension"));
     });
   });
 });

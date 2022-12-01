@@ -62,7 +62,7 @@
         {
             "label": "Start frontend",
             "type": "shell",
-            "command": "node teamsfx/script/run.js . teamsfx/.env.local",
+            "command": "npm run dev:teamsfx",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}"

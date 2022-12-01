@@ -14,6 +14,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
 import { PathNotExistError } from "../../core/error";
+import { globalVars } from "../../core/globalVars";
 
 export class SettingsUtils {
   async readSettings(
@@ -29,6 +30,7 @@ export class SettingsUtils {
       settings.trackingId = uuid.v4();
       await fs.writeFile(filePath, JSON.stringify(settings, null, 4));
     }
+    globalVars.trackingId = settings.trackingId; // set trackingId to globalVars
     return ok(settings);
   }
   async writeSettings(projectPath: string, settings: Settings): Promise<Result<string, FxError>> {

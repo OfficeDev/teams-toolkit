@@ -179,7 +179,7 @@ export function shouldIgnored(ctx: CoreHookContext): boolean {
   return StaticPlatforms.includes(inputs.platform) || isCreate;
 }
 
-export function getProjectSettingsPath(projectPath: string) {
+export function getProjectSettingsPath(projectPath: string): string {
   if (isV3Enabled()) {
     return getProjectSettingPathV3(projectPath);
   } else {
@@ -187,11 +187,11 @@ export function getProjectSettingsPath(projectPath: string) {
   }
 }
 
-export function getProjectSettingPathV3(projectPath: string) {
+export function getProjectSettingPathV3(projectPath: string): string {
   return path.resolve(projectPath, SettingsFolderName, SettingsFileName);
 }
 
-export function getProjectSettingPathV2(projectPath: string) {
+export function getProjectSettingPathV2(projectPath: string): string {
   return path.resolve(
     projectPath,
     `.${ConfigFolderName}`,

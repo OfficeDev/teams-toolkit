@@ -35,6 +35,7 @@ import {
   wrapRunMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
+import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
 
 let mockedEnvRestore: () => void;
 
@@ -550,6 +551,45 @@ describe("stateMigration", () => {
     );
     const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
     assert.equal(testEnvContent_local, trueEnvContent_local);
+  });
+});
+
+describe("Migration utils", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  const sandbox = sinon.createSandbox();
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+  });
+
+  it("getProjectVersion V2", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    const version = await getProjectVersion(migrationContext);
+    assert.equal(version, "2.1.0");
+  });
+
+  it("getProjectVersion V3", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readJson").resolves("3.0.0");
+    const version = await getProjectVersion(migrationContext);
+    assert.equal(version, "3.0.0");
+  });
+
+  it("getProjectVersion empty", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const version = await getProjectVersion(migrationContext);
+    assert.equal(version, "");
   });
 });
 

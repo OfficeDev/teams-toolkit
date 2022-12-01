@@ -5,7 +5,6 @@ import {
   AppPackageFolderName,
   err,
   FxError,
-  Inputs,
   ok,
   ProjectSettings,
   SettingsFileName,
@@ -19,11 +18,7 @@ import { CoreHookContext } from "../types";
 import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks, outputCancelMessage, upgradeButton } from "./projectMigrator";
 import * as path from "path";
-import {
-  getProjectSettingPathV2,
-  getProjectSettingPathV3,
-  loadProjectSettingsByProjectPathV2,
-} from "./projectSettingsLoader";
+import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
 import {
   Component,
   ProjectMigratorStatus,

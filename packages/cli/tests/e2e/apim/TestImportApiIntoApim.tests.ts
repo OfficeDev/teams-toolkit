@@ -24,6 +24,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { describe } from "mocha";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Import API into API Management", function () {
   const testProcessEnv = Object.assign({}, process.env);
@@ -62,6 +63,9 @@ describe("Import API into API Management", function () {
     `Create a new API version in Azure API Management`,
     { testPlanCaseId: 10107968 },
     async function () {
+      if (isV3Enabled()) {
+        this.skip();
+      }
       await ApimValidator.init(subscriptionId, AzureLogin, M365Login);
       await CliHelper.deployProject(
         ResourceToDeploy.Apim,
@@ -79,6 +83,9 @@ describe("Import API into API Management", function () {
     `Update an existing API version in Azure API Management`,
     { testPlanCaseId: 10116782 },
     async function () {
+      if (isV3Enabled()) {
+        this.skip();
+      }
       await ApimValidator.init(subscriptionId, AzureLogin, M365Login);
       await CliHelper.deployProject(
         ResourceToDeploy.Apim,

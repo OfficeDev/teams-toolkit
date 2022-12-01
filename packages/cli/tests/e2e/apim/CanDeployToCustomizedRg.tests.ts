@@ -28,6 +28,7 @@ import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constant
 import { it } from "@microsoft/extra-shot-mocha";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import M365Login from "../../../src/commonlib/m365Login";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Deploy to customized resource group", function () {
   const testFolder = getTestFolder();
@@ -45,6 +46,9 @@ describe("Deploy to customized resource group", function () {
     `tab project can deploy apim resource to customized resource group and successfully provision / deploy`,
     { testPlanCaseId: 15685059 },
     async function () {
+      if (isV3Enabled()) {
+        this.skip();
+      }
       // Create new tab project
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
       await CliHelper.addResourceToProject(projectPath, Resource.AzureApim);

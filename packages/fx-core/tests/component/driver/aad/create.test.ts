@@ -12,13 +12,14 @@ import {
 } from "../../../plugins/solution/util";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import { UserError } from "@microsoft/teamsfx-api";
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
 import { AADApplication } from "../../../../src/component/resource/aadApp/interfaces/AADApplication";
 import {
   UnhandledSystemError,
   UnhandledUserError,
 } from "../../../../src/component/driver/aad/error/unhandledError";
+import { InvalidParameterUserError } from "../../../../src/component/driver/aad/error/invalidParameterUserError";
+import { MissingEnvUserError } from "../../../../src/component/driver/aad/error/missingEnvError";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -57,27 +58,36 @@ describe("aadAppCreate", async () => {
     let args: any = {
       name: "test",
     };
-    await expect(createAadAppDriver.handler(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
+    let result = await createAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(InvalidParameterUserError)
+      .and.has.property(
+        "message",
         "Following parameter is missing or invalid for aadApp/create action: generateClientSecret."
-      )
-      .and.is.instanceOf(UserError);
+      );
 
     args = {
       generateClientSecret: true,
     };
-    await expect(createAadAppDriver.handler(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
+    result = await createAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(InvalidParameterUserError)
+      .and.has.property(
+        "message",
         "Following parameter is missing or invalid for aadApp/create action: name."
-      )
-      .and.is.instanceOf(UserError);
+      );
 
     args = {};
-    await expect(createAadAppDriver.handler(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
+    result = await createAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(InvalidParameterUserError)
+      .and.has.property(
+        "message",
         "Following parameter is missing or invalid for aadApp/create action: name, generateClientSecret."
-      )
-      .and.is.instanceOf(UserError);
+      );
   });
 
   it("should throw error if argument property is invalid", async () => {
@@ -85,31 +95,40 @@ describe("aadAppCreate", async () => {
       name: "test",
       generateClientSecret: "no",
     };
-    await expect(createAadAppDriver.handler(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
+    let result = await createAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(InvalidParameterUserError)
+      .and.has.property(
+        "message",
         "Following parameter is missing or invalid for aadApp/create action: generateClientSecret."
-      )
-      .and.is.instanceOf(UserError);
+      );
 
     args = {
       name: "",
       generateClientSecret: true,
     };
-    await expect(createAadAppDriver.handler(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
+    result = await createAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(InvalidParameterUserError)
+      .and.has.property(
+        "message",
         "Following parameter is missing or invalid for aadApp/create action: name."
-      )
-      .and.is.instanceOf(UserError);
+      );
 
     args = {
       name: "",
       generateClientSecret: "no",
     };
-    await expect(createAadAppDriver.handler(args, mockedDriverContext))
-      .to.be.eventually.rejectedWith(
+    result = await createAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(InvalidParameterUserError)
+      .and.has.property(
+        "message",
         "Following parameter is missing or invalid for aadApp/create action: name, generateClientSecret."
-      )
-      .and.is.instanceOf(UserError);
+      );
   });
 
   it("should create new AAD app and client secret with empty .env", async () => {
@@ -126,19 +145,26 @@ describe("aadAppCreate", async () => {
       generateClientSecret: true,
     };
 
-    const result = await createAadAppDriver.handler(args, mockedDriverContext);
+    const result = await createAadAppDriver.execute(args, mockedDriverContext);
 
-    expect(result.get(outputKeys.AAD_APP_CLIENT_ID)).to.equal(expectedClientId);
-    expect(result.get(outputKeys.AAD_APP_OBJECT_ID)).to.equal(expectedObjectId);
-    expect(result.get(outputKeys.AAD_APP_TENANT_ID)).to.equal("tenantId");
-    expect(result.get(outputKeys.AAD_APP_OAUTH_AUTHORITY)).to.equal(
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_CLIENT_ID)).to.equal(
+      expectedClientId
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OBJECT_ID)).to.equal(
+      expectedObjectId
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_TENANT_ID)).to.equal("tenantId");
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OAUTH_AUTHORITY)).to.equal(
       "https://login.microsoftonline.com/tenantId"
     );
-    expect(result.get(outputKeys.AAD_APP_OAUTH_AUTHORITY_HOST)).to.equal(
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OAUTH_AUTHORITY_HOST)).to.equal(
       "https://login.microsoftonline.com"
     );
-    expect(result.get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.equal(expectedSecretText);
-    expect(result.size).to.equal(6);
+    expect(result.result._unsafeUnwrap().get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.equal(
+      expectedSecretText
+    );
+    expect(result.result._unsafeUnwrap().size).to.equal(6);
   });
 
   it("should use existing AAD app and generate new secret when AAD_APP_CLIENT_ID exists", async () => {
@@ -155,14 +181,18 @@ describe("aadAppCreate", async () => {
       generateClientSecret: true,
     };
 
-    await expect(
-      createAadAppDriver.handler(args, mockedDriverContext)
-    ).not.eventually.be.rejected.then((result) => {
-      expect(result.get(outputKeys.AAD_APP_CLIENT_ID)).to.equal("existing value");
-      expect(result.get(outputKeys.AAD_APP_OBJECT_ID)).to.equal("existing value");
-      expect(result.get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.equal(expectedSecretText);
-      expect(result.size).to.equal(3); // 1 new env and 2 existing env
-    });
+    const result = await createAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_CLIENT_ID)).to.equal(
+      "existing value"
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OBJECT_ID)).to.equal(
+      "existing value"
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.equal(
+      expectedSecretText
+    );
+    expect(result.result._unsafeUnwrap().size).to.equal(3); // 1 new env and 2 existing env
   });
 
   it("should do nothing when AAD_APP_CLIENT_ID and SECRET_AAD_APP_CLIENT_SECRET exists", async () => {
@@ -182,14 +212,18 @@ describe("aadAppCreate", async () => {
       generateClientSecret: true,
     };
 
-    await expect(
-      createAadAppDriver.handler(args, mockedDriverContext)
-    ).not.eventually.be.rejected.then((result) => {
-      expect(result.get(outputKeys.AAD_APP_CLIENT_ID)).to.equal("existing value");
-      expect(result.get(outputKeys.AAD_APP_OBJECT_ID)).to.equal("existing value");
-      expect(result.get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.equal("existing value");
-      expect(result.size).to.equal(3);
-    });
+    const result = await createAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_CLIENT_ID)).to.equal(
+      "existing value"
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OBJECT_ID)).to.equal(
+      "existing value"
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.equal(
+      "existing value"
+    );
+    expect(result.result._unsafeUnwrap().size).to.equal(3);
   });
 
   it("should not generate client secret when generateClientSecret is false", async () => {
@@ -208,21 +242,24 @@ describe("aadAppCreate", async () => {
       generateClientSecret: false,
     };
 
-    await expect(
-      createAadAppDriver.handler(args, mockedDriverContext)
-    ).not.eventually.be.rejected.then((result) => {
-      expect(result.get(outputKeys.AAD_APP_CLIENT_ID)).to.equal(expectedClientId);
-      expect(result.get(outputKeys.AAD_APP_OBJECT_ID)).to.equal(expectedObjectId);
-      expect(result.get(outputKeys.AAD_APP_TENANT_ID)).to.equal("tenantId");
-      expect(result.get(outputKeys.AAD_APP_OAUTH_AUTHORITY)).to.equal(
-        "https://login.microsoftonline.com/tenantId"
-      );
-      expect(result.get(outputKeys.AAD_APP_OAUTH_AUTHORITY_HOST)).to.equal(
-        "https://login.microsoftonline.com"
-      );
-      expect(result.get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.be.undefined;
-      expect(result.size).to.equal(5);
-    });
+    const result = await createAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_CLIENT_ID)).to.equal(
+      expectedClientId
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OBJECT_ID)).to.equal(
+      expectedObjectId
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_TENANT_ID)).to.equal("tenantId");
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OAUTH_AUTHORITY)).to.equal(
+      "https://login.microsoftonline.com/tenantId"
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_OAUTH_AUTHORITY_HOST)).to.equal(
+      "https://login.microsoftonline.com"
+    );
+    expect(result.result._unsafeUnwrap().get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.be
+      .undefined;
+    expect(result.result._unsafeUnwrap().size).to.equal(5);
   });
 
   it("should throw error when generate client secret if AAD_APP_OBJECT_ID is missing", async () => {
@@ -235,11 +272,14 @@ describe("aadAppCreate", async () => {
       generateClientSecret: true,
     };
 
-    await expect(
-      createAadAppDriver.handler(args, mockedDriverContext)
-    ).to.be.eventually.rejectedWith(
-      "Cannot generate client secret. Environment variable AAD_APP_OBJECT_ID is not set."
-    );
+    const result = await createAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(MissingEnvUserError)
+      .and.has.property(
+        "message",
+        "Cannot generate client secret. Environment variable AAD_APP_OBJECT_ID is not set."
+      );
   });
 
   it("should throw user error when AadAppClient failed with 4xx error", async () => {
@@ -262,12 +302,12 @@ describe("aadAppCreate", async () => {
       generateClientSecret: false,
     };
 
-    await expect(createAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
-      (error) => {
-        expect(error instanceof UnhandledUserError).to.be.true;
-        expect(error.message).contains("Unhandled error happened in aadApp/create action");
-      }
-    );
+    const result = await createAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(UnhandledUserError)
+      .and.has.property("message")
+      .and.contains("Unhandled error happened in aadApp/create action");
   });
 
   it("should throw system error when AadAppClient failed with non 4xx error", async () => {
@@ -289,12 +329,12 @@ describe("aadAppCreate", async () => {
       generateClientSecret: false,
     };
 
-    await expect(createAadAppDriver.handler(args, mockedDriverContext)).to.be.rejected.then(
-      (error) => {
-        expect(error instanceof UnhandledSystemError).to.be.true;
-        expect(error.message).contains("Unhandled error happened in aadApp/create action");
-      }
-    );
+    const result = await createAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(UnhandledSystemError)
+      .and.has.property("message")
+      .and.contains("Unhandled error happened in aadApp/create action");
   });
 
   it("should send telemetries when success", async () => {
@@ -337,9 +377,9 @@ describe("aadAppCreate", async () => {
       telemetryReporter: mockedTelemetryReporter,
     };
 
-    const result = await createAadAppDriver.run(args, driverContext);
+    const result = await createAadAppDriver.execute(args, driverContext);
 
-    expect(result.isOk()).to.be.true;
+    expect(result.result.isOk()).to.be.true;
     expect(startTelemetry.eventName).to.equal("aadApp/create-start");
     expect(startTelemetry.properties.component).to.equal("aadApp/create");
     expect(endTelemetry.eventName).to.equal("aadApp/create");
@@ -396,9 +436,9 @@ describe("aadAppCreate", async () => {
       telemetryReporter: mockedTelemetryReporter,
     };
 
-    const result = await createAadAppDriver.run(args, driverContext);
+    const result = await createAadAppDriver.execute(args, driverContext);
 
-    expect(result.isOk()).to.be.false;
+    expect(result.result.isOk()).to.be.false;
     expect(startTelemetry.eventName).to.equal("aadApp/create-start");
     expect(startTelemetry.properties.component).to.equal("aadApp/create");
     expect(endTelemetry.eventName).to.equal("aadApp/create");

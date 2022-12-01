@@ -420,7 +420,8 @@ jobs:
         uses: ncipollo/release-action@v1.10.0
         with:
           token: ${{ secrets.CD_PAT }}
-          tag: "vscode-extension-V3-${{ steps.version-change.outputs.EXTENSION_VERSION_NUM }}"
+          name: "vscode-extension-V3-${{ steps.preview-version.outputs.version }}"
+          tag: "vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION_NUM }}"
           artifacts: ./packages/vscode-extension/*.vsix
           artifactErrorsFailBuild: true
           prerelease: true

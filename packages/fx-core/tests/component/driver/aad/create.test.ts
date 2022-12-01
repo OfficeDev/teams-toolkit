@@ -165,6 +165,11 @@ describe("aadAppCreate", async () => {
       expectedSecretText
     );
     expect(result.result._unsafeUnwrap().size).to.equal(6);
+    expect(result.summaries.length).to.equal(2);
+    expect(result.summaries).includes(`Created AAD app with object id ${expectedObjectId}`);
+    expect(result.summaries).includes(
+      `Generated client secret for AAD app with object id ${expectedObjectId}`
+    );
   });
 
   it("should use existing AAD app and generate new secret when AAD_APP_CLIENT_ID exists", async () => {
@@ -193,6 +198,10 @@ describe("aadAppCreate", async () => {
       expectedSecretText
     );
     expect(result.result._unsafeUnwrap().size).to.equal(3); // 1 new env and 2 existing env
+    expect(result.summaries.length).to.equal(1);
+    expect(result.summaries).includes(
+      `Generated client secret for AAD app with object id existing value`
+    );
   });
 
   it("should do nothing when AAD_APP_CLIENT_ID and SECRET_AAD_APP_CLIENT_SECRET exists", async () => {
@@ -224,6 +233,7 @@ describe("aadAppCreate", async () => {
       "existing value"
     );
     expect(result.result._unsafeUnwrap().size).to.equal(3);
+    expect(result.summaries.length).to.equal(0); // no summary when action does nothing
   });
 
   it("should not generate client secret when generateClientSecret is false", async () => {
@@ -260,6 +270,8 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrap().get(outputKeys.SECRET_AAD_APP_CLIENT_SECRET)).to.be
       .undefined;
     expect(result.result._unsafeUnwrap().size).to.equal(5);
+    expect(result.summaries.length).to.equal(1);
+    expect(result.summaries).includes(`Created AAD app with object id ${expectedObjectId}`);
   });
 
   it("should throw error when generate client secret if AAD_APP_OBJECT_ID is missing", async () => {

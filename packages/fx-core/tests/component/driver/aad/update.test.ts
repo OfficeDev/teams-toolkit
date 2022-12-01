@@ -173,6 +173,11 @@ describe("aadAppUpdate", async () => {
     expect(actualManifest.oauth2Permissions[0].id).to.not.equal(
       "${{AAD_APP_ACCESS_AS_USER_PERMISSION_ID}}"
     ); // Should be replaced with an actual value
+    expect(result.summaries.length).to.equal(1);
+    console.log(result.summaries[0]);
+    expect(result.summaries).includes(
+      `Applied AAD app manifest ${args.manifestTemplatePath} to AAD app with object id ${expectedObjectId}`
+    );
   });
 
   it("should use absolute path in args directly", async () => {

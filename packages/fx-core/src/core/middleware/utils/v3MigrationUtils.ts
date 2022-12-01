@@ -78,5 +78,5 @@ export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
       return settings.version;
     }
   }
-  return "";
+  return "0.0.0";
 }

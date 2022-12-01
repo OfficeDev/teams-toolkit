@@ -967,7 +967,7 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
-  // an phantom migration method
+  // a phantom migration method for V3
   @hooks([ErrorHandlerMW, ProjectMigratorMWV3])
   async phantomMigrationV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     return ok(Void);

@@ -33,6 +33,8 @@ import {
   updateLaunchJson,
   migrate,
   wrapRunMigration,
+  checkVersionForMigration,
+  VersionState,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
@@ -568,28 +570,28 @@ describe("Migration utils", () => {
     sandbox.restore();
   });
 
-  it("getProjectVersion V2", async () => {
+  it("checkVersionForMigration V2", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
-    const version = await getProjectVersion(migrationContext);
-    assert.equal(version, "2.1.0");
+    const state = await checkVersionForMigration(migrationContext);
+    assert.equal(state, VersionState.upgradeable);
   });
 
-  it("getProjectVersion V3", async () => {
+  it("checkVersionForMigration V3", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readJson").resolves("3.0.0");
-    const version = await getProjectVersion(migrationContext);
-    assert.equal(version, "3.0.0");
+    const state = await checkVersionForMigration(migrationContext);
+    assert.equal(state, VersionState.compatible);
   });
 
-  it("getProjectVersion empty", async () => {
+  it("checkVersionForMigration empty", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     sandbox.stub(fs, "pathExists").resolves(false);
-    const version = await getProjectVersion(migrationContext);
-    assert.equal(version, "");
+    const state = await checkVersionForMigration(migrationContext);
+    assert.equal(state, VersionState.unsupported);
   });
 });
 

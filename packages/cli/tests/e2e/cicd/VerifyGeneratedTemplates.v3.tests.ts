@@ -17,6 +17,7 @@ import Mustache from "mustache";
 import * as fs from "fs-extra";
 import { CICDProviderFactory } from "../../../../fx-core/src/component/feature/cicd/provider/factory";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
+
 describe("Verify generated templates & readme V3", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -26,6 +27,9 @@ describe("Verify generated templates & readme V3", function () {
   });
 
   it(`Verify generated templates & readme`, { testPlanCaseId: 15685915 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 
     // Add CICD Workflows.

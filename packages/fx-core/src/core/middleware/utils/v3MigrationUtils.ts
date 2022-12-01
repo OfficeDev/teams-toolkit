@@ -6,6 +6,7 @@ import fs from "fs-extra";
 import { MigrationContext } from "./migrationContext";
 import { isObject } from "lodash";
 import { FileType, namingConverterV3 } from "../MigrationUtils";
+import { EOL } from "os";
 
 // read json files in states/ folder
 export async function readStateFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -53,7 +54,7 @@ function dfs(parentKeyName: string, obj: any, filetype: FileType, bicepContent: 
     }
   } else {
     const res = namingConverterV3(parentKeyName, filetype, bicepContent);
-    if (res.isOk()) return res.value + "=" + obj + "\r\n";
+    if (res.isOk()) return res.value + "=" + obj + EOL;
   }
 
   return returnData;

@@ -394,14 +394,14 @@ describe("stateMigration", () => {
       "dev"
     );
     const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
-    assert.isTrue(testEnvContent_dev === trueEnvContent_dev);
+    assert.equal(testEnvContent_dev, trueEnvContent_dev);
 
     const trueEnvContent_local = await readEnvFile(
       getTestAssetsPath(Constants.happyPathTestProject),
       "local"
     );
     const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
-    assert.isTrue(testEnvContent_local === trueEnvContent_local);
+    assert.equal(testEnvContent_local, trueEnvContent_local);
   });
 });
 

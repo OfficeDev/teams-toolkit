@@ -3,11 +3,13 @@ import {
   ActionContext,
   assembleError,
   Colors,
+  combine,
   ContextV3,
   err,
   FxError,
   Inputs,
   InputsWithProjectPath,
+  LogProvider,
   ok,
   Platform,
   ResourceContextV3,
@@ -98,6 +100,9 @@ import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { updateManifestV3ForPublish } from "../resource/appManifest/appStudio";
 import { AppStudioScopes } from "../resource/appManifest/constants";
 import * as xml2js from "xml2js";
+import { Lifecycle } from "../configManager/lifecycle";
+import { getLifecycleDescription, SummaryReporter } from "./summary";
+import { EOL } from "os";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -573,7 +578,7 @@ export class Coordinator {
       projectModel.registerApp,
       projectModel.provision,
       projectModel.configureApp,
-    ].filter((c) => c !== undefined);
+    ].filter((c) => c !== undefined) as Lifecycle[];
 
     // 2. M365 sign in and tenant check if needed.
     let containsM365 = false;
@@ -630,7 +635,7 @@ export class Coordinator {
 
     // 4. pre-requisites check
     for (const cycle of cycles) {
-      const unresolvedPlaceHolders = cycle!.resolvePlaceholders();
+      const unresolvedPlaceHolders = cycle.resolvePlaceholders();
       // ensure subscription id
       if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) {
         if (inputs["targetSubscriptionId"]) {
@@ -725,13 +730,26 @@ export class Coordinator {
       output.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
     }
     // 7. execute
-    for (const cycle of cycles) {
-      const execRes = await cycle!.execute(ctx);
-      const result = this.convertExecuteResult(execRes.result);
-      merge(output, result[0]);
-      if (result[1]) {
-        return [output, result[1]];
+    const summaryReporter = new SummaryReporter(cycles, ctx.logProvider);
+    try {
+      const maybeDescription = summaryReporter.getLifecycleDescriptions();
+      if (maybeDescription.isErr()) {
+        return [undefined, maybeDescription.error];
       }
+      ctx.logProvider.info(`${EOL}${maybeDescription.value}`);
+
+      for (const [index, cycle] of cycles.entries()) {
+        const execRes = await cycle.execute(ctx);
+        summaryReporter.updateLifecycleState(index, execRes);
+        const result = this.convertExecuteResult(execRes.result);
+        merge(output, result[0]);
+        if (result[1]) {
+          return [output, result[1]];
+        }
+      }
+    } finally {
+      const summary = summaryReporter.getLifecycleSummary();
+      ctx.logProvider.info(`${EOL}${summary}`);
     }
 
     // 8. show provisioned resources

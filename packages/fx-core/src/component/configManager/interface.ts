@@ -1,4 +1,4 @@
-import { FxError, Result } from "@microsoft/teamsfx-api";
+import { FxError, LogProvider, Result } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { StepDriver } from "../driver/interface/stepDriver";
 
@@ -91,6 +91,12 @@ export interface ILifecycle {
    * @param ctx driver context
    */
   execute(ctx: DriverContext): Promise<ExecutionResult>;
+
+  /**
+   * Try to search for driver instances defined by this.driverDefs.
+   * @param log LogProvider
+   */
+  resolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError>;
 }
 
 export interface IYamlParser {

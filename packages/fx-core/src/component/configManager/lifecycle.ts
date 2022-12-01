@@ -198,7 +198,7 @@ export class Lifecycle implements ILifecycle {
     resolved: ResolvedPlaceholders,
     unresolved: ResolvedPlaceholders
   ): Promise<ExecutionResult> {
-    const maybeDrivers = this.getDrivers(ctx.logProvider);
+    const maybeDrivers = this.resolveDriverInstances(ctx.logProvider);
     if (maybeDrivers.isErr()) {
       return { result: err({ kind: "Failure", error: maybeDrivers.error }), summaries: [] };
     }
@@ -284,7 +284,7 @@ export class Lifecycle implements ILifecycle {
   }
 
   async run(ctx: DriverContext): Promise<Result<Output, FxError>> {
-    const maybeDrivers = this.getDrivers(ctx.logProvider);
+    const maybeDrivers = this.resolveDriverInstances(ctx.logProvider);
     if (maybeDrivers.isErr()) {
       return err(maybeDrivers.error);
     }
@@ -324,16 +324,11 @@ export class Lifecycle implements ILifecycle {
     return def.uses;
   }
 
-  private getDrivers(log: LogProvider): Result<DriverInstance[], FxError> {
+  public resolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
     log.debug(`[${component}]Trying to resolve actions for lifecycle ${this.name}`);
     const drivers: DriverInstance[] = [];
     for (const def of this.driverDefs) {
       if (!Container.has(def.uses)) {
-        log.error(
-          `[${component}]Action ${this.stringifyDriverDef(def)} in lifecycle ${
-            this.name
-          } is not found`
-        );
         return err(new DriverNotFoundError(def.name ?? "", def.uses));
       }
       const driver = Container.get<StepDriver>(def.uses);

@@ -7,6 +7,10 @@ on:
         description: 'input the URL of the VSIX.'
         required: true
         default: ''
+      isPreview:
+        description: 'publish VSIX as a preview version(yes or no)'
+        required: true
+        default: 'no'
 
 jobs:
   publish-to-vscode-marketplace:
@@ -26,8 +30,15 @@ jobs:
       - name: Download VISX fils
         run: |
           wget --tries=5 --waitretry=5 ${{ github.event.inputs.URL }} 
+      
+      - name: release preview 
+        if: ${{ github.event.inputs.isPreview != 'no' }}
+        env:
+          PAT: ${{ secrets.VSCE_PAT }}
+        run: vsce publish --pre-release --pat $PAT --packagePath *.vsix
 
       - name: release to VSCode marketplace
+        if: ${{ github.event.inputs.isPreview == 'no' }}
         run: vsce publish --pat $PAT --packagePath *.vsix
         env:
           PAT: ${{ secrets.VSCE_PAT }}

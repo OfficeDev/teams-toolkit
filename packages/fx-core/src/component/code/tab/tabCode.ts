@@ -35,6 +35,7 @@ import {
   M365SsoLaunchPageOptionItem,
   TabNonSsoItem,
   TabOptionItem,
+  DashboardOptionItem,
 } from "../../constants";
 import { getComponent } from "../../workflow";
 import { convertToLangKey, execute } from "../utils";
@@ -286,10 +287,12 @@ enum Scenario {
   default = "default",
   nonSso = "non-sso",
   m365 = "m365",
+  dashboard = "dashboard",
 }
 
 const featureToScenario = new Map<string, Scenario>([
   [TabOptionItem.id, Scenario.default],
   [TabNonSsoItem.id, Scenario.nonSso],
   [M365SsoLaunchPageOptionItem.id, Scenario.m365],
+  [DashboardOptionItem.id, Scenario.dashboard],
 ]);

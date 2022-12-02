@@ -563,7 +563,7 @@ describe("stateMigration", () => {
 
     await copyTestProject("happyPathEmpty", projectPath);
     try {
-      await configsMigration(migrationContext);
+      await statesMigration(migrationContext);
     } catch (error) {
       assert.equal(error.name, "ReadFileError");
       assert.equal(error.innerError.message, ".fx/states does not exist");

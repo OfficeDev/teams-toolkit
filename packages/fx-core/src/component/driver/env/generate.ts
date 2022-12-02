@@ -25,6 +25,8 @@ const helpLink = "https://aka.ms/teamsfx-actions/env-generate";
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class GenerateEnvDriver implements StepDriver {
+  description = getLocalizedString("driver.env.description");
+
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: GenerateEnvArgs,

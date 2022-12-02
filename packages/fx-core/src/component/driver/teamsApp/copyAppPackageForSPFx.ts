@@ -82,25 +82,19 @@ export class CopyAppPackageForSPFxDriver implements StepDriver {
       )
     );
 
+    let replacedIcons = 0;
     for (const file of await fs.readdir(spfxTeamsPath)) {
       if (file.endsWith("color.png") && pictures.color) {
         await fs.writeFile(path.join(spfxTeamsPath, file), pictures.color);
-        context.addSummary(
-          getLocalizedString(
-            "driver.teamsApp.summary.copyIconSuccess",
-            path.join(spfxTeamsPath, file)
-          )
-        );
+        replacedIcons++;
       } else if (file.endsWith("outline.png") && pictures.outline) {
         await fs.writeFile(path.join(spfxTeamsPath, file), pictures.outline);
-        context.addSummary(
-          getLocalizedString(
-            "driver.teamsApp.summary.copyIconSuccess",
-            path.join(spfxTeamsPath, file)
-          )
-        );
+        replacedIcons++;
       }
     }
+    context.addSummary(
+      getLocalizedString("driver.teamsApp.summary.copyIconSuccess", replacedIcons, spfxTeamsPath)
+    );
     return this.EmptyMap;
   }
 

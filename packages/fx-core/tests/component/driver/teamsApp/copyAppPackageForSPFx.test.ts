@@ -38,7 +38,7 @@ describe("teamsApp/copyAppPackageForSPFx", async () => {
 
     const result = await driver.execute(args, mockedDriverContext);
     expect(result.result.isOk()).to.be.true;
-    expect(result.summaries.length).to.eq(3);
+    expect(result.summaries.length).to.eq(2);
   });
 
   it("fail to copy app package for SPFx - FileNotFoundError", async () => {

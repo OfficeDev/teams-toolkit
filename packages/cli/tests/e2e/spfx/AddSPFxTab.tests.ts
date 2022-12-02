@@ -20,7 +20,7 @@ import {
 import { AppStudioValidator, SharepointValidator } from "../../commonlib";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { it } from "@microsoft/extra-shot-mocha";
-
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 describe("Start a new project", function () {
   let appId: string;
   let appName: string;
@@ -36,6 +36,9 @@ describe("Start a new project", function () {
     "Add SPFx tab to existing project, provision and run SPFx project with React framework",
     { testPlanCaseId: 15675245 },
     async function () {
+      if (isV3Enabled()) {
+        this.skip();
+      }
       let command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type react --spfx-webpart-name helloworld --programming-language typescript`;
       let result = await execAsync(command, {
         cwd: testFolder,

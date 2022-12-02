@@ -9,6 +9,7 @@ import * as util from "util";
 import { Argv } from "yargs";
 import {
   assembleError,
+  Colors,
   err,
   FxError,
   LogLevel,
@@ -36,7 +37,7 @@ import { cliSource, RootFolderOptions } from "../../constants";
 import cliTelemetry from "../../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../../userInteraction";
-import { isWorkspaceSupported } from "../../utils";
+import { getColorizedString, isWorkspaceSupported } from "../../utils";
 import { YargsCommand } from "../../yargsCommand";
 
 enum Progress {
@@ -152,6 +153,9 @@ export default class PreviewEnv extends YargsCommand {
       return err(envRes.error);
     }
     const envs = envRes.value;
+    if (envs.TEAMS_APP_ID === undefined) {
+      return err(errors.TeamsAppIdNotExists());
+    }
     this.telemetryProperties[TelemetryProperty.PreviewAppId] = envs.TEAMS_APP_ID as string;
 
     // 2. check m365 account
@@ -165,20 +169,25 @@ export default class PreviewEnv extends YargsCommand {
 
     // 3. detect project type and set run-command, running-pattern
     if (runCommand === undefined && env.toLowerCase() === environmentManager.getLocalEnvName()) {
-      cliLogger.necessaryLog(LogLevel.Info, "Set 'run-command' by project type.");
       const runCommandRes = await this.detectRunCommand(workspaceFolder);
       if (runCommandRes.isErr()) {
         return err(runCommandRes.error);
       }
       runCommand = runCommandRes.value.runCommand;
-      cliLogger.necessaryLog(LogLevel.Info, `Set 'run-command' to ${runCommand}.`);
+      cliLogger.necessaryLog(
+        LogLevel.Info,
+        getColorizedString([
+          { content: constants.runCommand.detectRunCommand, color: Colors.WHITE },
+          { content: runCommand, color: Colors.BRIGHT_MAGENTA },
+        ])
+      );
     }
     runCommand = runCommand === "" ? undefined : runCommand;
     const runningPatternRegex =
       runningPattern !== undefined
         ? runningPattern === ""
-          ? new RegExp(".*")
-          : new RegExp(runningPattern)
+          ? new RegExp(".*", "i")
+          : new RegExp(runningPattern, "i")
         : constants.defaultRunningPattern;
 
     try {
@@ -261,8 +270,8 @@ export default class PreviewEnv extends YargsCommand {
     if (result && loginHint) {
       summaryMsg = constants.doctorResult.SignInSuccess.split("@account").join(`${loginHint}`);
     }
-    await accountBar.next(summaryMsg);
     await accountBar.end(result);
+    cliLogger.necessaryLog(LogLevel.Info, summaryMsg, true);
     if (!result) {
       return error ? err(error) : err(errors.PrerequisitesValidationM365AccountError(summaryMsg));
     }
@@ -312,18 +321,38 @@ export default class PreviewEnv extends YargsCommand {
     runCommand: string,
     runningPatternRegex: RegExp
   ): Promise<Result<null, FxError>> {
-    const taskName = "run command";
+    const taskName = "Run Command";
     const runningTask = new Task(taskName, true, runCommand, undefined, {
       shell: true,
       cwd: projectPath,
     });
     this.runningTasks.push(runningTask);
     const bar = CLIUIInstance.createProgressBar(taskName, 1);
-    const startMessage = util.format(constants.runCommandStartMessage, runCommand, projectPath);
-    const startCb = commonUtils.createTaskStartCb(bar, startMessage, this.telemetryProperties);
+    const startCb = commonUtils.createTaskStartCb(bar, runCommand, this.telemetryProperties);
     const stopCb = commonUtils.createTaskStopCb(bar, this.telemetryProperties);
     const serviceLogWriter = new ServiceLogWriter();
     await serviceLogWriter.init();
+    cliLogger.necessaryLog(
+      LogLevel.Info,
+      getColorizedString([
+        { content: `${taskName}: ${constants.runCommand.showWorkingFolder}`, color: Colors.WHITE },
+        { content: projectPath, color: Colors.BRIGHT_GREEN },
+      ])
+    );
+    cliLogger.necessaryLog(
+      LogLevel.Info,
+      getColorizedString([
+        { content: `${taskName}: ${constants.runCommand.showCommand}`, color: Colors.WHITE },
+        { content: runCommand, color: Colors.BRIGHT_MAGENTA },
+      ])
+    );
+    cliLogger.necessaryLog(
+      LogLevel.Info,
+      getColorizedString([
+        { content: `${taskName}: ${constants.runCommand.showRunningPattern}`, color: Colors.WHITE },
+        { content: runningPatternRegex.toString(), color: Colors.BRIGHT_MAGENTA },
+      ])
+    );
     const taskRes = await runningTask.waitFor(
       runningPatternRegex,
       startCb,

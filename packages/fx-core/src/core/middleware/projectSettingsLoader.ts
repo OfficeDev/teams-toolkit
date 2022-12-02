@@ -179,15 +179,23 @@ export function shouldIgnored(ctx: CoreHookContext): boolean {
   return StaticPlatforms.includes(inputs.platform) || isCreate;
 }
 
-export function getProjectSettingsPath(projectPath: string) {
+export function getProjectSettingsPath(projectPath: string): string {
   if (isV3Enabled()) {
-    return path.resolve(projectPath, SettingsFolderName, SettingsFileName);
+    return getProjectSettingPathV3(projectPath);
   } else {
-    return path.resolve(
-      projectPath,
-      `.${ConfigFolderName}`,
-      InputConfigsFolderName,
-      ProjectSettingsFileName
-    );
+    return getProjectSettingPathV2(projectPath);
   }
+}
+
+export function getProjectSettingPathV3(projectPath: string): string {
+  return path.resolve(projectPath, SettingsFolderName, SettingsFileName);
+}
+
+export function getProjectSettingPathV2(projectPath: string): string {
+  return path.resolve(
+    projectPath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
 }

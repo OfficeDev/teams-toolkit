@@ -64,7 +64,7 @@ export const funcHostedBotStartPattern =
   /Worker process started and initialized|Host lock lease acquired by instance ID/g;
 export const funcHostedBotAzuritePattern = /successfully listening/g;
 export const gulpServePattern = /^.*Finished subtask 'reload'.*/g;
-export const defaultRunningPattern = /started|successfully|finished|crashed|failed/gi;
+export const defaultRunningPattern = /started|successfully|finished|crashed|failed/i;
 
 export const spfxInstallStartMessage = `executing 'npm install' under ${FolderName.SPFx} folder.`;
 export const gulpCertTitle = "gulp trust-dev-cert";
@@ -88,7 +88,6 @@ export const botStartStartMessageNext = `executing 'npm run dev:teamsfx' under $
 export const botWatchStartMessage = `executing 'npm run watch:teamsfx' under ${FolderName.Bot} folder.`;
 export const botAzuriteStartMessage = `executing 'npm run prepare-storage:teamsfx' under ${FolderName.Bot} folder.`;
 export const ngrokStartStartMessage = `executing 'ngrok http' under ${FolderName.Bot} folder.`;
-export const runCommandStartMessage = "executing '%s' command under project folder '%s'";
 
 export const previewTitle = "preview";
 export const previewStartMessage = "opening Teams web client.";
@@ -151,6 +150,13 @@ export const installApp = {
     remoteConfigureOutlookDescription:
       "Pop up Azure Portal for you to connect your bot to Outlook channel.",
   },
+};
+
+export const runCommand = {
+  detectRunCommand: "Option 'run-command' is not provided, set to: ",
+  showCommand: "Executing command - ",
+  showRunningPattern: "Running pattern - ",
+  showWorkingFolder: "Working folder - ",
 };
 
 export const m365TenantHintMessage =

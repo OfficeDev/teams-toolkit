@@ -14,7 +14,6 @@ import {
   canAddSso,
   getFixedCommonProjectSettings,
   canAddCICDWorkflows,
-  getSPFxVersion,
   getAppSPFxVersion,
   isVideoFilterProject,
 } from "../../src/common/tools";
@@ -380,35 +379,6 @@ describe("tools", () => {
       } as unknown as v2.Context);
 
       chai.assert.isTrue(result);
-    });
-  });
-
-  describe("getSPFxVersion", () => {
-    it("Set 1.15.0", () => {
-      const mockedEnvRestore = mockedEnv({ [FeatureFlagName.SPFxVersion]: "1.15.0" });
-
-      const version = getSPFxVersion();
-
-      chai.expect(version).equal("1.15.0");
-      mockedEnvRestore();
-    });
-
-    it("Set 1.16.0 - beta.1", () => {
-      const mockedEnvRestore = mockedEnv({ [FeatureFlagName.SPFxVersion]: "1.16.0-beta.1" });
-
-      const version = getSPFxVersion();
-
-      chai.expect(version).equal("1.16.0-beta.1");
-      mockedEnvRestore();
-    });
-
-    it("Default is 1.15.0 when not set", () => {
-      const mockedEnvRestore = mockedEnv({ [FeatureFlagName.SPFxVersion]: undefined });
-
-      const version = getSPFxVersion();
-
-      chai.expect(version).equal("1.15.0");
-      mockedEnvRestore();
     });
   });
 

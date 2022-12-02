@@ -127,6 +127,12 @@ describe("Tools Install Driver test", () => {
       });
       const res = await toolsInstallDriver.run({ func: true }, mockedDriverContext);
       chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.includeDeepMembers(
+          [["FUNC_PATH", "~/.fx/bin/func/node_modules/.bin"]],
+          Array.from(res.value.entries())
+        );
+      }
     });
 
     it("Failed to install func", async () => {
@@ -163,6 +169,12 @@ describe("Tools Install Driver test", () => {
       });
       const res = await toolsInstallDriver.run({ func: true }, mockedDriverContext);
       chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.includeDeepMembers(
+          [["FUNC_PATH", "~/.fx/bin/func/node_modules/.bin"]],
+          Array.from(res.value.entries())
+        );
+      }
     });
 
     it("Invalid parameter", async () => {

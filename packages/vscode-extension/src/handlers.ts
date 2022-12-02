@@ -1078,6 +1078,10 @@ export async function runCommand(
         result = await core.deployAadManifest(inputs);
         break;
       }
+      case Stage.deployTeams: {
+        result = await core.deployTeamsManifest(inputs);
+        break;
+      }
       case Stage.publish: {
         result = await core.publishApplication(inputs);
         break;
@@ -2994,15 +2998,21 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
     inputs.env = env;
     await core.activateEnv(inputs);
   }
-  const func: Func = {
-    namespace: "fx-solution-azure/fx-resource-appstudio",
-    method: "updateManifest",
-    params: {
-      envName: env,
-    },
-  };
 
-  const result = await runUserTask(func, TelemetryEvent.UpdatePreviewManifest, false, env);
+  let result;
+  if (isV3Enabled()) {
+    const inputs = getSystemInputs();
+    result = await runCommand(Stage.deployTeams, inputs);
+  } else {
+    const func: Func = {
+      namespace: "fx-solution-azure/fx-resource-appstudio",
+      method: "updateManifest",
+      params: {
+        envName: env,
+      },
+    };
+    result = await runUserTask(func, TelemetryEvent.UpdatePreviewManifest, false, env);
+  }
 
   if (!args || args.length === 0) {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
@@ -3358,7 +3368,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         id: "commandAndResponse",
         label: `${localize("teamstoolkit.tutorials.commandAndResponse.label")}`,
         detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
-        groupName: localize("teamstoolkit.guide.development"),
+        groupName: localize("teamstoolkit.guide.scenario"),
         data: "https://aka.ms/teamsfx-create-command",
         buttons: [
           {
@@ -3414,15 +3424,6 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           command: "fx-extension.openTutorial",
         },
       ],
-    });
-  }
-
-  if (isExistingTabAppEnabled()) {
-    config.options.splice(0, 0, {
-      id: "embedWebPages",
-      label: `${localize("teamstoolkit.tutorials.embedWebPages.label")}`,
-      detail: localize("teamstoolkit.tutorials.embedWebPages.detail"),
-      data: "https://aka.ms/teamsfx-embed-existing-web",
     });
   }
 

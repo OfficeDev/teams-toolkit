@@ -24,6 +24,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { KeyVaultValidator } from "../../commonlib/keyVaultValidator";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Deploy to customized resource group", function () {
   const testFolder = getTestFolder();
@@ -40,6 +41,9 @@ describe("Deploy to customized resource group", function () {
     `tab + key vault project can deploy keyvault resource to customized resource group and successfully provision`,
     { testPlanCaseId: 15686991 },
     async function () {
+      if (isV3Enabled()) {
+        this.skip();
+      }
       // Create new tab + keyvault project
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
       await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);

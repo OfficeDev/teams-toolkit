@@ -635,6 +635,17 @@ export class FxCore implements v3.ICore {
     return res;
   }
 
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW(true), ContextInjectorMW, EnvWriterMW])
+  async deployTeamsManifest(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    const context = createContextV3(ctx?.projectSettings as ProjectSettingsV3);
+    const component = Container.get("app-manifest") as any;
+    const res = await component.deployV3(context, inputs as InputsWithProjectPath);
+    if (res.isOk()) {
+      ctx!.envVars = envUtil.map2object(res.value);
+    }
+    return res;
+  }
+
   /**
    * Warning: this API only works for CLI_HELP, it has no business with interactive run for CLI!
    */

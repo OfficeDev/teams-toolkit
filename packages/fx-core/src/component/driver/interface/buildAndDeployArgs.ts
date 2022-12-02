@@ -6,7 +6,6 @@ import {
   IProgressHandler,
   LogProvider,
   TelemetryReporter,
-  UserInteraction,
 } from "@microsoft/teamsfx-api";
 
 export type Step = {
@@ -26,8 +25,9 @@ export type DeployStepArgs = {
 };
 
 export type BuildArgs = {
-  workingDirectory?: string;
   args: string;
+  workingDirectory?: string;
+  execPath?: string;
 };
 
 export type DeployContext = {

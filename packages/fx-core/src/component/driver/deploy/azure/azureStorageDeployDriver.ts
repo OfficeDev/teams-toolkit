@@ -24,11 +24,11 @@ import {
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { StepDriver } from "../../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { DriverContext, AzureResourceInfo } from "../../interface/commonArgs";
 import { createBlobServiceClient } from "../../../utils/azureResourceOperation";
 import { TokenCredential } from "@azure/identity";
-import { wrapRun } from "../../../utils/common";
+import { wrapRun, wrapSummary } from "../../../utils/common";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
@@ -42,6 +42,10 @@ export class AzureStorageDeployDriver implements StepDriver {
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new AzureStorageDeployDriverImpl(args, context);
     return wrapRun(() => impl.run(), undefined, context.logProvider);
+  }
+
+  execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
+    return wrapSummary(this.run.bind(this, args, ctx), ["driver.deploy.azureStorageDeploySummary"]);
   }
 }
 

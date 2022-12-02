@@ -13,8 +13,9 @@ import {
 import fs from "fs-extra";
 import AdmZip from "adm-zip";
 import { hooks } from "@feathersjs/hooks/lib";
-import { StepDriver } from "../interface/stepDriver";
+import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
 import { AppStudioClient } from "../../resource/appManifest/appStudioClient";
@@ -36,10 +37,35 @@ const outputKeys = {
 
 @Service(actionName)
 export class PublishAppPackageDriver implements StepDriver {
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: PublishAppPackageArgs,
     context: DriverContext
+  ): Promise<Result<Map<string, string>, FxError>> {
+    const wrapContext = new WrapDriverContext(context, actionName, actionName);
+    const res = await this.publish(args, wrapContext);
+
+    console.log("Summaries");
+    wrapContext.summaries.forEach((value) => console.log(value));
+
+    return res;
+  }
+
+  public async execute(
+    args: PublishAppPackageArgs,
+    context: DriverContext
+  ): Promise<ExecutionResult> {
+    const wrapContext = new WrapDriverContext(context, actionName, actionName);
+    const res = await this.publish(args, wrapContext);
+    return {
+      result: res,
+      summaries: wrapContext.summaries,
+    };
+  }
+
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  public async publish(
+    args: PublishAppPackageArgs,
+    context: WrapDriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     TelemetryUtils.init(context);
     const progressHandler = context.ui?.createProgressBar(
@@ -84,10 +110,15 @@ export class PublishAppPackageDriver implements StepDriver {
     let result;
     const telemetryProps: { [key: string]: string } = {};
 
-    progressHandler?.next(getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep1"));
+    const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep1");
+    progressHandler?.next(message);
+    context.addSummary(message);
 
     const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioTokenRes.value);
     if (existApp) {
+      context.addSummary(
+        getLocalizedString("driver.teamsApp.summary.publishTeamsAppExists", manifest.id)
+      );
       let executePublishUpdate = false;
       let description = getLocalizedString(
         "plugins.appstudio.pubWarn",
@@ -108,9 +139,9 @@ export class PublishAppPackageDriver implements StepDriver {
       if (res?.isOk() && res.value === confirm) executePublishUpdate = true;
 
       if (executePublishUpdate) {
-        progressHandler?.next(
-          getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.1")
-        );
+        const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.1");
+        progressHandler?.next(message);
+        context.addSummary(message);
         const appId = await AppStudioClient.publishTeamsAppUpdate(
           manifest.id,
           archivedFile,
@@ -124,9 +155,12 @@ export class PublishAppPackageDriver implements StepDriver {
         return err(UserCancelError);
       }
     } else {
-      progressHandler?.next(
-        getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2")
+      context.addSummary(
+        getLocalizedString("driver.teamsApp.summary.publishTeamsAppNotExists", manifest.id)
       );
+      const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2");
+      progressHandler?.next(message);
+      context.addSummary(message);
       const appId = await AppStudioClient.publishTeamsApp(
         manifest.id,
         archivedFile,
@@ -139,6 +173,9 @@ export class PublishAppPackageDriver implements StepDriver {
     progressHandler?.end(true);
 
     context.logProvider.info(`Publish success!`);
+    context.addSummary(
+      getLocalizedString("driver.teamsApp.summary.publishTeamsAppSuccess", manifest.id)
+    );
     if (context.platform === Platform.CLI) {
       const msg = getLocalizedString(
         "plugins.appstudio.publishSucceedNotice.cli",

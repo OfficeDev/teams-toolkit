@@ -3371,6 +3371,20 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         ],
       },
       {
+        id: "dashboardApp",
+        label: `${localize("teamstoolkit.tutorials.dashboardApp.label")}`,
+        detail: localize("teamstoolkit.tutorials.dashboardApp.detail"),
+        groupName: localize("teamstoolkit.guide.scenario"),
+        data: "https://aka.ms/teamsfx-dashboard-app",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
         id: "addSso",
         label: `${localize("teamstoolkit.tutorials.addSso.label")}`,
         detail: localize("teamstoolkit.tutorials.addSso.detail"),

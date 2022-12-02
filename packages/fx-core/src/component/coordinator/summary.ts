@@ -11,11 +11,12 @@ function getActionName(driverDef: DriverDefinition): string {
 }
 
 function getDriverDescription(log: LogProvider, lifecycle: ILifecycle): Result<string[], FxError> {
+  const n = lifecycle.driverDefs.length;
   return lifecycle.resolveDriverInstances(log).map((instances) => {
     return instances.map((instance, i) => {
       const actionName = getActionName(instance);
       const desc = instance.instance.description ? `: ${instance.instance.description}` : "";
-      return `${i + 1}. Action ${actionName}${desc}`;
+      return `(${i + 1}/${n}) Action ${actionName}${desc}`;
     });
   });
 }
@@ -24,10 +25,11 @@ export function getLifecycleDescription(
   log: LogProvider,
   lifecycle: ILifecycle
 ): Result<string, FxError> {
+  const n = lifecycle.driverDefs.length;
   return getDriverDescription(log, lifecycle).map((descriptions) => {
     const s = `Running lifecycle stage: ${
       lifecycle.name
-    }. The following actions will be executed${EOL}${descriptions.join(EOL)}`;
+    }(${n} step(s) in total) The following actions will be executed${EOL}${descriptions.join(EOL)}`;
     return s;
   });
 }
@@ -123,7 +125,7 @@ function stringifyLifecycleState(lifecycleState: LifecycleState): string[] {
     } else if (actionState.status === "succeeded") {
       result.push(`${indent}${SummaryConstant.Tick} ${actionState.name} executed successfully.`);
     }
-    for (const summary of actionState.summaries) {
+    for (const [i, summary] of actionState.summaries.entries()) {
       result.push(`${indent}${indent}${summary}`);
     }
   }

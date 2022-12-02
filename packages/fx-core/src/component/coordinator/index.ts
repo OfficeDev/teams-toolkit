@@ -863,18 +863,30 @@ export class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
-      const execRes = await projectModel.deploy.execute(ctx);
-      const result = this.convertExecuteResult(execRes.result);
-      merge(output, result[0]);
-      if (result[1]) return [output, result[1]];
+      const summaryReporter = new SummaryReporter([projectModel.deploy], ctx.logProvider);
+      try {
+        const maybeDescription = summaryReporter.getLifecycleDescriptions();
+        if (maybeDescription.isErr()) {
+          return [undefined, maybeDescription.error];
+        }
+        ctx.logProvider.info(`${EOL}${maybeDescription.value}`);
+        const execRes = await projectModel.deploy.execute(ctx);
+        summaryReporter.updateLifecycleState(0, execRes);
+        const result = this.convertExecuteResult(execRes.result);
+        merge(output, result[0]);
+        if (result[1]) return [output, result[1]];
 
-      // show message box after deploy
-      const botTroubleShootMsg = getBotTroubleShootMessage(false);
-      const msg =
-        getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
-        botTroubleShootMsg.textForLogging;
-      ctx.logProvider.info(msg);
-      ctx.ui?.showMessage("info", msg, false);
+        // show message box after deploy
+        const botTroubleShootMsg = getBotTroubleShootMessage(false);
+        const msg =
+          getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
+          botTroubleShootMsg.textForLogging;
+        ctx.logProvider.info(msg);
+        ctx.ui?.showMessage("info", msg, false);
+      } finally {
+        const summary = summaryReporter.getLifecycleSummary();
+        ctx.logProvider.info(`${EOL}${summary}`);
+      }
     }
     return [output, undefined];
   }
@@ -899,9 +911,22 @@ export class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.publish) {
-      const execRes = await projectModel.publish.execute(ctx);
-      const result = this.convertExecuteResult(execRes.result);
-      if (result[1]) return err(result[1]);
+      const summaryReporter = new SummaryReporter([projectModel.publish], ctx.logProvider);
+      try {
+        const maybeDescription = summaryReporter.getLifecycleDescriptions();
+        if (maybeDescription.isErr()) {
+          return err(maybeDescription.error);
+        }
+        ctx.logProvider.info(`${EOL}${maybeDescription.value}`);
+
+        const execRes = await projectModel.publish.execute(ctx);
+        const result = this.convertExecuteResult(execRes.result);
+        summaryReporter.updateLifecycleState(0, execRes);
+        if (result[1]) return err(result[1]);
+      } finally {
+        const summary = summaryReporter.getLifecycleSummary();
+        ctx.logProvider.info(`${EOL}${summary}`);
+      }
     }
     return ok(undefined);
   }

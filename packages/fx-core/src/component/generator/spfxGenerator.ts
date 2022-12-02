@@ -9,7 +9,7 @@ import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
 import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
 import { DependencyInstallError, ScaffoldError } from "../resource/spfx/error";
-import { isOfficialSPFx, Utils } from "../resource/spfx/utils/utils";
+import { Utils } from "../resource/spfx/utils/utils";
 import { camelCase } from "lodash";
 import { Constants, ScaffoldProgressMessage } from "../resource/spfx/utils/constants";
 import { YoChecker } from "../resource/spfx/depsChecker/yoChecker";
@@ -40,7 +40,7 @@ export class SPFxGenerator {
     const templateRes = await Generator.generateTemplate(
       context,
       destinationPath,
-      isOfficialSPFx() ? Constants.TEMPLATE_NAME : Constants.TEMPLATE_NAME_PRERELEASE,
+      Constants.TEMPLATE_NAME,
       "ts"
     );
     if (templateRes.isErr()) return err(templateRes.error);

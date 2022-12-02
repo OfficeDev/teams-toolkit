@@ -9,11 +9,14 @@ import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../constant/commonConstant";
 import { BaseBuildStepDriver } from "./baseBuildStepDriver";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 const ACTION_NAME = "npm/command";
 
 @Service(ACTION_NAME)
 export class NpmBuildDriver extends BaseBuildStepDriver {
+  readonly description: string = getLocalizedString("driver.script.npmDescription");
+
   getImpl(args: unknown, context: DriverContext): BaseBuildDriver {
     return new NpmBuildDriverImpl(args, context);
   }

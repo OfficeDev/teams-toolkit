@@ -9,11 +9,14 @@ import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../constant/commonConstant";
 import { BaseBuildStepDriver } from "./baseBuildStepDriver";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 const ACTION_NAME = "dotnet/command";
 
 @Service(ACTION_NAME)
 export class DotnetBuildDriver extends BaseBuildStepDriver {
+  readonly description: string = getLocalizedString("driver.script.dotnetDescription");
+
   getImpl(args: unknown, context: DriverContext): BaseBuildDriver {
     return new DotnetBuildDriverImpl(args, context);
   }

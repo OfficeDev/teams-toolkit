@@ -9,11 +9,14 @@ import { BaseBuildStepDriver } from "./baseBuildStepDriver";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../constant/commonConstant";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 const ACTION_NAME = "npx/command";
 
 @Service(ACTION_NAME)
 export class NpxBuildDriver extends BaseBuildStepDriver {
+  readonly description: string = getLocalizedString("driver.script.npxDescription");
+
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     return super.run(args, context);

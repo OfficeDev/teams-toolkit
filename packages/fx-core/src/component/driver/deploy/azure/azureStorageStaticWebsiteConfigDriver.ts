@@ -18,6 +18,7 @@ import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetr
 import { TelemetryConstant } from "../../../constant/commonConstant";
 import { DeployConstant } from "../../../constant/deployConstant";
 import { ProgressMessages } from "../../../messages";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 const ACTION_NAME = "azureStorage/enableStaticWebsite";
 
@@ -26,6 +27,10 @@ const ACTION_NAME = "azureStorage/enableStaticWebsite";
  */
 @Service(ACTION_NAME)
 export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
+  readonly description: string = getLocalizedString(
+    // eslint-disable-next-line no-secrets/no-secrets
+    "driver.deploy.enableStaticWebsiteInAzureStorageDescription"
+  );
   protected static readonly STORAGE_CONFIG_ARGS = asFactory<AzureStorageStaticWebsiteConfigArgs>({
     storageResourceId: asString,
     indexPage: asOptional(asString),

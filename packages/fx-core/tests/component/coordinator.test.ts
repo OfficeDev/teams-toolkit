@@ -1,7 +1,9 @@
 import {
   err,
+  FxError,
   Inputs,
   InputsWithProjectPath,
+  LogProvider,
   ok,
   Platform,
   Result,
@@ -33,8 +35,10 @@ import { FxCore } from "../../src/core/FxCore";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { YamlParser } from "../../src/component/configManager/parser";
 import {
+  DriverInstance,
   ExecutionError,
   ExecutionOutput,
+  ExecutionResult,
   ProjectModel,
 } from "../../src/component/configManager/interface";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
@@ -47,6 +51,23 @@ import { AppDefinition } from "../../src/component/resource/appManifest/interfac
 import { developerPortalScaffoldUtils } from "../../src/component/developerPortalScaffoldUtils";
 import { createContextV3 } from "../../src/component/utils";
 import * as appStudio from "../../src/component/resource/appManifest/appStudio";
+
+function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
+  return ok([
+    {
+      uses: "arm/deploy",
+      with: undefined,
+      instance: {
+        run: async (
+          args: unknown,
+          context: DriverContext
+        ): Promise<Result<Map<string, string>, FxError>> => {
+          return ok(new Map());
+        },
+      },
+    },
+  ]);
+}
 
 describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
@@ -355,9 +376,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -432,9 +454,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -509,9 +532,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -585,9 +609,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -650,9 +675,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -722,9 +748,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -781,9 +808,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -842,9 +870,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(provisionUtils, "getM365TenantId").resolves(
@@ -902,9 +931,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -984,9 +1014,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -1062,9 +1093,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return [];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
@@ -1108,9 +1140,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -1188,9 +1221,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return [];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -1236,9 +1270,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return [];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -1275,9 +1310,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return [];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(settingsUtil, "readSettings").resolves(ok({ trackingId: "mockId", version: "1" }));
@@ -1312,9 +1348,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return [];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -1715,9 +1752,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return [];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
@@ -1763,9 +1801,10 @@ describe("component coordinator test", () => {
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
-        execute: async (ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> => {
-          return ok(new Map());
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
         },
+        resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));

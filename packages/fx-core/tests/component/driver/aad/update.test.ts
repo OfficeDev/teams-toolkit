@@ -176,7 +176,7 @@ describe("aadAppUpdate", async () => {
     expect(result.summaries.length).to.equal(1);
     console.log(result.summaries[0]);
     expect(result.summaries).includes(
-      `Applied AAD app manifest ${args.manifestTemplatePath} to AAD app with object id ${expectedObjectId}`
+      `Applied manifest ${args.manifestTemplatePath} to Azure Active Directory application with object id ${expectedObjectId}`
     );
   });
 

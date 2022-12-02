@@ -1101,6 +1101,7 @@
   "debug.warningMessage": "To debug applications in Teams, your localhost server must be on HTTPS.\nFor Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store.\n You may skip this step, but you'll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.\nFor more information \"https://aka.ms/teamsfx-ca-certificate\".",
   "debug.warningMessage2": " You may be asked for your account credentials when installing the certificate.",
   "debug.install": "Install",
+  "driver.spfx.deploy.description": "deploys the SPFx package to SharePoint app catalog.",
   "driver.spfx.deploy.createAppCatalog": "Create SharePoint app catalog.",
   "driver.spfx.deploy.deployPackage": "Deploy SPFx package to your tenant app catalog.",
   "driver.spfx.deploy.skipCreateAppCatalog": "Skip to create SharePoint app catalog.",
@@ -1141,6 +1142,7 @@
   "driver.script.buildSummary": "Running command `%s` at `%s` successfully.",
   "driver.m365Bot.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.m365Bot.error.unhandledError": "Unhandled error happened in %s action: %s",
+  "driver.teamsApp.description.copyAppPackageForSPFxDriver": "copies the generated Teams app package to SPFx solution.",
   "driver.teamsApp.progressBar.createTeamsAppTitle": "Create Teams app",
   "driver.teamsApp.progressBar.createTeamsAppStepMessage": "Creating Teams app",
   "driver.teamsApp.progressBar.updateTeamsAppTitle": "Update Teams app",
@@ -1153,6 +1155,8 @@
   "driver.teamsApp.summary.publishTeamsAppExists": "Teams app with id %s already exists in the organization's app store.",
   "driver.teamsApp.summary.publishTeamsAppNotExists": "Teams app with id %s does not exist in the organization's app store.",
   "driver.teamsApp.summary.publishTeamsAppSuccess": "Teams app %s successfully published to the admin portal.",
+  "driver.teamsApp.summary.copyAppPackageSuccess": "Teams app %s was successfully copyed to %s.",
+  "driver.teamsApp.summary.copyIconSuccess": "%s icon(s) were successfully updated under %s.",
   "driver.botFramework.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.botFramework.error.unhandledError": "Unhandled error happened in %s action: %s",
   "driver.botFramework.description": "creates or updates the bot registration on dev.botframework.com",
@@ -1160,5 +1164,4 @@
   "driver.botFramework.summary.update": "The bot registration has been updated successfully (%s).",
   "driver.botFramework.progressBar.title": "botFramework/createOrUpdateBot",
   "driver.botFramework.progressBar.createOrUpdateBot": "Creating or updating bot registration."
-  
 }

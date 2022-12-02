@@ -36,6 +36,8 @@ import { SPOClient } from "./utility/spoClient";
 
 @Service(Constants.DeployDriverName)
 export class SPFxDeployDriver implements StepDriver {
+  public readonly description = getLocalizedString("driver.spfx.deploy.description");
+
   private readonly EmptyMap = new Map<string, string>();
 
   private asDeployArgs = asFactory<DeploySPFxArgs>({

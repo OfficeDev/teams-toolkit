@@ -42,6 +42,7 @@ import {
 import {
   BotScenario,
   CommandAndResponseOptionItem,
+  DashboardOptionItem,
   NotificationOptionItem,
   WorkflowOptionItem,
 } from "../../../constants";
@@ -129,7 +130,11 @@ export class ManifestUtils {
               template.entityId = "index" + staticTabIndex;
               appManifest.staticTabs.push(template);
             } else {
-              const template = cloneDeep(STATIC_TABS_TPL_V3[0]);
+              const tabManifest =
+                inputs.features === DashboardOptionItem.id
+                  ? STATIC_TABS_TPL_V3[1]
+                  : STATIC_TABS_TPL_V3[0];
+              const template = cloneDeep(tabManifest);
               template.entityId = "index" + staticTabIndex;
               appManifest.staticTabs.push(template);
             }

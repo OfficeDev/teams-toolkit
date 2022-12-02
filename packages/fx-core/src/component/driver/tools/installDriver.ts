@@ -63,8 +63,6 @@ export class ToolsInstallDriver implements StepDriver {
 }
 
 export class ToolsInstallDriverImpl {
-  private progressBar: IProgressHandler | undefined;
-
   constructor(private context: WrapDriverContext) {}
 
   async run(args: InstallToolArgs): Promise<Map<string, string>> {
@@ -72,22 +70,22 @@ export class ToolsInstallDriverImpl {
     this.validateArgs(args);
 
     this.setArgTelemetry(args);
-    this.createProgressBar(this.getSteps(args));
+    const progressBar = await this.createProgressBar(this.getSteps(args));
 
     if (args.devCert) {
-      await this.progressBar?.next(ProgressMessages.devCert());
+      await progressBar?.next(ProgressMessages.devCert());
       const localCertRes = await this.resolveLocalCertificate(args.devCert.trust);
       localCertRes.forEach((v, k) => res.set(k, v));
     }
 
     if (args.func) {
-      await this.progressBar?.next(ProgressMessages.func());
+      await progressBar?.next(ProgressMessages.func());
       const funcRes = await this.resolveFuncCoreTools();
       funcRes.forEach((v, k) => res.set(k, v));
     }
 
     if (args.dotnet) {
-      await this.progressBar?.next(ProgressMessages.dotnet());
+      await progressBar?.next(ProgressMessages.dotnet());
       const dotnetRes = await this.resolveDotnet();
       dotnetRes.forEach((v, k) => res.set(k, v));
     }
@@ -217,11 +215,12 @@ export class ToolsInstallDriverImpl {
     });
   }
 
-  private async createProgressBar(steps: number): Promise<void> {
-    this.progressBar = this.context.ui?.createProgressBar(ProgressMessages.title(), steps);
-    if (this.progressBar) {
-      this.context.progressBars.push(this.progressBar);
+  private async createProgressBar(steps: number): Promise<IProgressHandler | undefined> {
+    const progressBar = this.context.ui?.createProgressBar(ProgressMessages.title(), steps);
+    if (progressBar) {
+      this.context.progressBars.push(progressBar);
     }
-    await this.progressBar?.start();
+    await progressBar?.start();
+    return progressBar;
   }
 }

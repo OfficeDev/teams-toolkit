@@ -92,9 +92,11 @@ export class CopyAppPackageForSPFxDriver implements StepDriver {
         replacedIcons++;
       }
     }
-    context.addSummary(
-      getLocalizedString("driver.teamsApp.summary.copyIconSuccess", replacedIcons, spfxTeamsPath)
-    );
+    if (replacedIcons > 0) {
+      context.addSummary(
+        getLocalizedString("driver.teamsApp.summary.copyIconSuccess", replacedIcons, spfxTeamsPath)
+      );
+    }
     return this.EmptyMap;
   }
 

@@ -37,6 +37,7 @@ const outputKeys = {
 
 @Service(actionName)
 export class PublishAppPackageDriver implements StepDriver {
+  description = getLocalizedString("driver.teamsApp.description.publishDriver");
   public async run(
     args: PublishAppPackageArgs,
     context: DriverContext

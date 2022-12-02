@@ -337,6 +337,7 @@ describe("Other test case", () => {
       projectId: "123",
     };
     sandbox.stub(fs, "readJsonSync").returns(projectSettings);
+    sandbox.stub(fs, "existsSync").returns(true);
     const isValid = isValidProject("aaa");
     assert.isTrue(isValid);
   });
@@ -350,6 +351,7 @@ describe("Other test case", () => {
         trackingId: "123",
       };
       sandbox.stub(fs, "readJsonSync").returns(settings);
+      sandbox.stub(fs, "existsSync").returns(true);
       const isValid = isValidProject("aaa");
       assert.isTrue(isValid);
     } finally {

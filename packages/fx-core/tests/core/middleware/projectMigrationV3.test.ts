@@ -33,8 +33,11 @@ import {
   updateLaunchJson,
   migrate,
   wrapRunMigration,
+  checkVersionForMigration,
+  VersionState,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
+import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
 
 let mockedEnvRestore: () => void;
 
@@ -550,6 +553,45 @@ describe("stateMigration", () => {
     );
     const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
     assert.equal(testEnvContent_local, trueEnvContent_local);
+  });
+});
+
+describe("Migration utils", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  const sandbox = sinon.createSandbox();
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+  });
+
+  it("checkVersionForMigration V2", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    const state = await checkVersionForMigration(migrationContext);
+    assert.equal(state, VersionState.upgradeable);
+  });
+
+  it("checkVersionForMigration V3", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readJson").resolves("3.0.0");
+    const state = await checkVersionForMigration(migrationContext);
+    assert.equal(state, VersionState.compatible);
+  });
+
+  it("checkVersionForMigration empty", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const state = await checkVersionForMigration(migrationContext);
+    assert.equal(state, VersionState.unsupported);
   });
 });
 

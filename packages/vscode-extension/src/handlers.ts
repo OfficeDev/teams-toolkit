@@ -3406,6 +3406,20 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           },
         ],
       },
+      {
+        id: "addAzureSql",
+        label: localize("teamstoolkit.tutorials.addAzureSql.label"),
+        detail: localize("teamstoolkit.tutorials.addAzureSql.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-add-azure-sql",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
     ],
     returnObject: true,
   };

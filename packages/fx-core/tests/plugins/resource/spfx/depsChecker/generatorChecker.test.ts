@@ -64,36 +64,12 @@ describe("generator checker", () => {
 
   describe("getDependencyInfo", async () => {
     it("Set SPFx version to 1.15", () => {
-      const mockedEnvRestore = mockedEnv({ TEAMSFX_SPFX_VERSIOIN: "1.15.0" });
       const info = GeneratorChecker.getDependencyInfo();
 
       chai.expect(info).to.be.deep.equal({
-        supportedVersion: "1.15.0",
-        displayName: "@microsoft/generator-sharepoint@1.15.0",
+        supportedVersion: "1.16.0",
+        displayName: "@microsoft/generator-sharepoint@1.16.0",
       });
-      mockedEnvRestore();
-    });
-
-    it("Set SPFx version to 1.16-beta", () => {
-      const mockedEnvRestore = mockedEnv({ TEAMSFX_SPFX_VERSIOIN: "1.16.0-beta.1" });
-      const info = GeneratorChecker.getDependencyInfo();
-
-      chai.expect(info).to.be.deep.equal({
-        supportedVersion: "1.16.0-beta.1",
-        displayName: "@microsoft/generator-sharepoint@1.16.0-beta.1",
-      });
-      mockedEnvRestore();
-    });
-
-    it("By default is 1.15 if undefined", () => {
-      const mockedEnvRestore = mockedEnv({ TEAMSFX_SPFX_VERSIOIN: undefined });
-      const info = GeneratorChecker.getDependencyInfo();
-
-      chai.expect(info).to.be.deep.equal({
-        supportedVersion: "1.15.0",
-        displayName: "@microsoft/generator-sharepoint@1.15.0",
-      });
-      mockedEnvRestore();
     });
 
     it("ensure deps - already installed", async () => {

@@ -36,16 +36,17 @@ describe("teamsApp/copyAppPackageForSPFx", async () => {
       .stub(CopyAppPackageForSPFxDriver.prototype, "getIcons")
       .resolves({ color: Buffer.from("color.png"), outline: Buffer.from("outline.png") });
 
-    const result = await driver.run(args, mockedDriverContext);
-    expect(result.isOk()).to.be.true;
+    const result = await driver.execute(args, mockedDriverContext);
+    expect(result.result.isOk()).to.be.true;
+    expect(result.summaries.length).to.eq(3);
   });
 
   it("fail to copy app package for SPFx - FileNotFoundError", async () => {
     sinon.stub(fs, "pathExists").resolves(false);
 
-    const result = await driver.run(args, mockedDriverContext);
-    expect(result.isErr()).to.be.true;
-    expect((result as any).error.name).to.be.equal(AppStudioError.FileNotFoundError.name);
+    const result = await driver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect((result.result as any).error.name).to.be.equal(AppStudioError.FileNotFoundError.name);
   });
 
   it("should successfully get icons", async () => {

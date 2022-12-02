@@ -21,6 +21,7 @@ import { FrontendValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
@@ -30,6 +31,9 @@ describe("teamsfx new template", function () {
   const env = environmentManager.getDefaultEnvName();
 
   it(`${TemplateProject.MyFirstMetting}`, { testPlanCaseId: 15277468 }, async function () {
+    if(isV3Enabled()) {
+      this.skip();
+    }
     await CliHelper.createTemplateProject(
       appName,
       testFolder,

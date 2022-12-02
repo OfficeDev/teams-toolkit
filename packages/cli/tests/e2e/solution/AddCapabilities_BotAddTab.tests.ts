@@ -21,6 +21,7 @@ import "mocha";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 describe("Add capabilities", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
@@ -32,7 +33,10 @@ describe("Add capabilities", function () {
       await cleanUp(appName, projectPath, true, true, false);
     }
   });
-  it(`bot project can add tab capability and provision`, { testPlanCaseId: 15687142 }, async () => {
+  it(`bot project can add tab capability and provision`, { testPlanCaseId: 15687142 }, async function() {
+    if(isV3Enabled()) {
+      this.skip();
+    }
     appName = getUniqueAppName();
     projectPath = path.resolve(testFolder, appName);
 
@@ -58,7 +62,10 @@ describe("Add capabilities", function () {
   it(
     `message extension project can add tab capability and provision`,
     { testPlanCaseId: 15687143 },
-    async () => {
+    async function() {
+      if(isV3Enabled()) {
+        this.skip();
+      }
       appName = getUniqueAppName();
       projectPath = path.resolve(testFolder, appName);
 

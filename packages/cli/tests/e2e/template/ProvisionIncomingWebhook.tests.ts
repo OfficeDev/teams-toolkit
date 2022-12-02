@@ -12,6 +12,7 @@ import { it } from "@microsoft/extra-shot-mocha";
 import { getTestFolder, cleanUp, getUniqueAppName } from "../commonUtils";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
@@ -19,6 +20,9 @@ describe("teamsfx new template", function () {
   const projectPath = path.resolve(testFolder, appName);
 
   it(`${TemplateProject.IncomingWebhook}`, { testPlanCaseId: 15277475 }, async function () {
+    if(isV3Enabled()) {
+      this.skip();
+    }
     await CliHelper.createTemplateProject(
       appName,
       testFolder,

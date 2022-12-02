@@ -22,7 +22,7 @@ import { getUuid } from "../../commonlib/utilities";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
@@ -35,6 +35,9 @@ describe("teamsfx new template", function () {
   });
 
   it(`${TemplateProject.ShareNow}`, { testPlanCaseId: 15277467 }, async function () {
+    if(isV3Enabled()){
+      this.skip();
+    }
     await CliHelper.createTemplateProject(
       appName,
       testFolder,

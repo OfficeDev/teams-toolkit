@@ -20,7 +20,7 @@ import {
 import { FrontendValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
 describe("teamsfx new template", function () {
@@ -31,6 +31,9 @@ describe("teamsfx new template", function () {
   const env = environmentManager.getDefaultEnvName();
 
   it(`${TemplateProject.HelloWorldTab}`, { testPlanCaseId: 15277472 }, async function () {
+    if(isV3Enabled()) {
+      this.skip();
+    }
     await CliHelper.createTemplateProject(
       appName,
       testFolder,

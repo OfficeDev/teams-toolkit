@@ -22,7 +22,7 @@ import fs from "fs-extra";
 import { expect } from "chai";
 import { it } from "@microsoft/extra-shot-mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
-
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 describe("Add SSO", () => {
   const testFolder = getTestFolder();
   let appName: string | undefined;
@@ -38,7 +38,10 @@ describe("Add SSO", () => {
     }
   });
 
-  it(`Add SSO to non SSO Tab project`, { testPlanCaseId: 15687171 }, async () => {
+  it(`Add SSO to non SSO Tab project`, { testPlanCaseId: 15687171 }, async function() {
+    if(isV3Enabled()) {
+      this.skip();
+    }
     mockedEnvRestore = mockedEnv({
       TEAMSFX_AAD_MANIFEST: "true",
       TEAMSFX_CONFIG_UNIFY: "true",

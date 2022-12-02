@@ -24,7 +24,7 @@ import { expect } from "chai";
 import { AadValidator } from "../../commonlib";
 import { it } from "@microsoft/extra-shot-mocha";
 import M365Login from "../../../src/commonlib/m365Login";
-
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 describe("Add SSO", () => {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
@@ -40,7 +40,10 @@ describe("Add SSO", () => {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it("Add SSO to existing app", { testPlanCaseId: 15687165 }, async () => {
+  it("Add SSO to existing app", { testPlanCaseId: 15687165 }, async function() {
+    if(isV3Enabled()) {
+      this.skip();
+    }
     // Arrange
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.ExistingTab, env);
     await setFrontendDomainToConfig(projectPath, "dev");

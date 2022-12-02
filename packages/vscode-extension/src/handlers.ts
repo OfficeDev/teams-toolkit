@@ -3410,7 +3410,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         id: "addAzureSql",
         label: localize("teamstoolkit.tutorials.addAzureSql.label"),
         detail: localize("teamstoolkit.tutorials.addAzureSql.detail"),
-        groupName: localize("teamstoolkit.guide.development"),
+        groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
         data: "https://aka.ms/teamsfx-add-azure-sql",
         buttons: [
           {

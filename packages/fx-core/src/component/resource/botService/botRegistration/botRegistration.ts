@@ -93,10 +93,11 @@ export class BotRegistration {
     );
   }
 
+  // return true if botRegistration is already existing
   public async createOrUpdateBotRegistration(
     m365TokenProvider: M365TokenProvider,
     botRegistration: IBotRegistration
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<boolean, FxError>> {
     return err(
       new NotImplementedError(
         Constants.BOT_REGISTRATION,

@@ -16,6 +16,7 @@ import { Capability } from "../../commonlib/constants";
 import { it } from "@microsoft/extra-shot-mocha";
 import * as fs from "fs-extra";
 import mockedEnv from "mocked-env";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Add Api Connection Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -37,15 +38,20 @@ describe("Add Api Connection Tests", function () {
     await cleanUp(appName, projectPath, false, false, false);
   });
 
-  it("scaffold with basic auth", { testPlanCaseId: 15685014 }, async () => {
+  it("scaffold with basic auth", { testPlanCaseId: 15685014 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     const basicInputs = "--user-name test123";
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "basic", basicInputs);
     // assert
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))).to
-      .be.true;
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
-      .true;
+    chai.expect(
+      await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))
+    ).to.be.true;
+    chai.expect(
+      await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))
+    ).to.be.true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
 
     const envs = dotenv.parse(
@@ -60,16 +66,21 @@ describe("Add Api Connection Tests", function () {
     chai.assert.exists(deps["@microsoft/teamsfx"]);
   });
 
-  it("scaffold with aad auth", { testPlanCaseId: 15685003 }, async () => {
+  it("scaffold with aad auth", { testPlanCaseId: 15685003 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     const aadInputs =
       "--tenant-id 00000000-0000-0000-0000-000000000000 --app-id 11111111-1111-1111-1111-111111111111 --app-type custom";
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "aad", aadInputs);
     // assert
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))).to
-      .be.true;
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
-      .true;
+    chai.expect(
+      await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))
+    ).to.be.true;
+    chai.expect(
+      await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))
+    ).to.be.true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
 
     const envs = dotenv.parse(
@@ -91,15 +102,20 @@ describe("Add Api Connection Tests", function () {
     chai.assert.exists(deps["@microsoft/teamsfx"]);
   });
 
-  it("scaffold with apikey auth", { testPlanCaseId: 15685004 }, async () => {
+  it("scaffold with apikey auth", { testPlanCaseId: 15685004 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     const apiKeyInputs = "--key-location querystring --key-name fakename";
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "apikey", apiKeyInputs);
     // assert
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))).to
-      .be.true;
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
-      .true;
+    chai.expect(
+      await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))
+    ).to.be.true;
+    chai.expect(
+      await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))
+    ).to.be.true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
 
     const envs = dotenv.parse(
@@ -112,14 +128,19 @@ describe("Add Api Connection Tests", function () {
     chai.assert.exists(deps["@microsoft/teamsfx"]);
   });
 
-  it("scaffold with cert auth", { testPlanCaseId: 15685005 }, async () => {
+  it("scaffold with cert auth", { testPlanCaseId: 15685005 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "cert");
     // assert
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))).to
-      .be.true;
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
-      .true;
+    chai.expect(
+      await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))
+    ).to.be.true;
+    chai.expect(
+      await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))
+    ).to.be.true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
 
     const envs = dotenv.parse(
@@ -132,14 +153,19 @@ describe("Add Api Connection Tests", function () {
     chai.assert.exists(deps["@microsoft/teamsfx"]);
   });
 
-  it("scaffold with custom auth", { testPlanCaseId: 15685006 }, async () => {
+  it("scaffold with custom auth", { testPlanCaseId: 15685006 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     // action
     await CliHelper.addApiConnection(projectPath, commonInputs, "custom");
     // assert
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))).to
-      .be.true;
-    chai.expect(await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))).to.be
-      .true;
+    chai.expect(
+      await fs.pathExists(path.join(projectPath, "bot", "apiConnections", "test.js"))
+    ).to.be.true;
+    chai.expect(
+      await fs.pathExists(path.join(projectPath, "bot", ".env.teamsfx.local"))
+    ).to.be.true;
     chai.expect(await fs.pathExists(path.join(projectPath, "bot", "package.json"))).to.be.true;
 
     const envs = dotenv.parse(

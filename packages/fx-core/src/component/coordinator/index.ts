@@ -53,6 +53,7 @@ import {
   CoordinatorSource,
   BotOptionItem,
   TabNonSsoAndDefaultBotItem,
+  DefaultBotAndMessageExtensionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
@@ -114,6 +115,7 @@ export enum TemplateNames {
   MessageExtension = "message-extension",
   M365MessageExtension = "m365-message-extension",
   TabAndDefaultBot = "non-sso-tab-default-bot",
+  BotAndMessageExtension = "default-bot-message-extension",
 }
 
 export const Feature2TemplateName: any = {
@@ -135,6 +137,7 @@ export const Feature2TemplateName: any = {
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
   [`${M365SsoLaunchPageOptionItem.id}:undefined`]: TemplateNames.M365Tab,
   [`${TabNonSsoAndDefaultBotItem.id}:undefined`]: TemplateNames.TabAndDefaultBot,
+  [`${DefaultBotAndMessageExtensionItem.id}:undefined`]: TemplateNames.BotAndMessageExtension,
 };
 
 export const InitTemplateName: any = {
@@ -288,7 +291,11 @@ export class Coordinator {
       errorSource: CoordinatorSource,
     }),
   ])
-  async initInfra(context: ContextV3, inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async initInfra(
+    context: ContextV3,
+    inputs: Inputs,
+    actionContext?: ActionContext
+  ): Promise<Result<undefined, FxError>> {
     if (inputs.proceed === InitOptionNo.id) return err(UserCancelError);
     const projectPath = inputs.projectPath;
     if (!projectPath) {
@@ -309,6 +316,7 @@ export class Coordinator {
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
+    if (actionContext?.telemetryProps) actionContext.telemetryProps["project-id"] = ensureRes.value;
     if (editor === InitEditorVS.id) {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);
@@ -367,7 +375,11 @@ export class Coordinator {
       errorSource: CoordinatorSource,
     }),
   ])
-  async initDebug(context: ContextV3, inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async initDebug(
+    context: ContextV3,
+    inputs: Inputs,
+    actionContext?: ActionContext
+  ): Promise<Result<undefined, FxError>> {
     if (inputs.proceed === InitOptionNo.id) return err(UserCancelError);
     const projectPath = inputs.projectPath;
     if (!projectPath) {
@@ -392,6 +404,7 @@ export class Coordinator {
     if (res.isErr()) return err(res.error);
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
+    if (actionContext?.telemetryProps) actionContext.telemetryProps["project-id"] = ensureRes.value;
     if (editor === InitEditorVS.id) {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);

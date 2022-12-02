@@ -20,6 +20,7 @@ import { Task } from "../../../../src/cmds/preview/task";
 import cliLogger from "../../../../src/commonlib/log";
 import { signedIn, signedOut } from "../../../../src/commonlib/common/constant";
 import M365TokenInstance from "../../../../src/commonlib/m365Login";
+import cliTelemetry from "../../../../src/telemetry/cliTelemetry";
 import CLIUIInstance from "../../../../src/userInteraction";
 import * as Utils from "../../../../src/utils";
 
@@ -29,12 +30,14 @@ describe("Preview --env", () => {
   let options: string[] = [];
   let defaultOptions: { [k: string]: any } = {};
   let logs: string[] = [];
+  let telemetries: any[] = [];
 
   beforeEach(() => {
     mockedEnvRestore = () => {};
     options = [];
     defaultOptions = {};
     logs = [];
+    telemetries = [];
     sandbox.stub(yargs, "options").callsFake((ops: { [key: string]: Options }, more?: any) => {
       if (typeof ops === "string") {
         options.push(ops);
@@ -50,6 +53,14 @@ describe("Preview --env", () => {
     sandbox.stub(cliLogger, "necessaryLog").callsFake((lv, msg, white) => {
       logs.push(msg);
     });
+    sandbox.stub(cliTelemetry, "sendTelemetryEvent").callsFake((eventName, properties) => {
+      telemetries.push([eventName, properties]);
+    });
+    sandbox
+      .stub(cliTelemetry, "sendTelemetryErrorEvent")
+      .callsFake((eventName, error, properties) => {
+        telemetries.push([eventName, error, properties]);
+      });
   });
 
   afterEach(() => {
@@ -188,6 +199,7 @@ describe("PreviewEnv Steps", () => {
   const sandbox = sinon.createSandbox();
   let mockedEnvRestore: RestoreFn = () => {};
   let logs: string[] = [];
+  let telemetries: any[] = [];
 
   // wrapper class to expose protected functions
   class PreviewEnvTest extends PreviewEnv {
@@ -240,9 +252,18 @@ describe("PreviewEnv Steps", () => {
   beforeEach(() => {
     mockedEnvRestore = () => {};
     logs = [];
+    telemetries = [];
     sandbox.stub(cliLogger, "necessaryLog").callsFake((lv, msg, white) => {
       logs.push(msg);
     });
+    sandbox.stub(cliTelemetry, "sendTelemetryEvent").callsFake((eventName, properties) => {
+      telemetries.push([eventName, properties]);
+    });
+    sandbox
+      .stub(cliTelemetry, "sendTelemetryErrorEvent")
+      .callsFake((eventName, error, properties) => {
+        telemetries.push([eventName, error, properties]);
+      });
     sandbox.stub(CLIUIInstance, "createProgressBar").returns(new MockProgressHandler());
   });
 

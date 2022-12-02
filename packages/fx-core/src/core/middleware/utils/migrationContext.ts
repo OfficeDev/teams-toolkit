@@ -109,6 +109,10 @@ export class MigrationContext {
     await fs.remove(path.join(this.projectPath, teamsfxFolder));
   }
 
+  async fsPathExists(_path: string): Promise<boolean> {
+    return await fs.pathExists(path.join(this.projectPath, _path));
+  }
+
   addReport(report: string): void {
     this.reports.push(report);
   }

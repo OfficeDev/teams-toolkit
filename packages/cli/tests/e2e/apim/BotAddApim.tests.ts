@@ -22,6 +22,7 @@ import { ApimValidator } from "../../commonlib";
 import { it } from "@microsoft/extra-shot-mocha";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import M365Login from "../../../src/commonlib/m365Login";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();
@@ -35,6 +36,9 @@ describe("Configuration successfully changed when with different plugins", funct
   });
 
   it(`bot + apim`, { testPlanCaseId: 15685003 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     await ApimValidator.init(subscription, AzureLogin, M365Login);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureApim);

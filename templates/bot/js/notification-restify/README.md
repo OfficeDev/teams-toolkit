@@ -46,7 +46,6 @@ The following files can be customized and demonstrate an example implementation 
 | - | - |
 | `src/index.js` | Application entry point and `restify` handlers for notifications |
 | `src/adaptiveCards/notification-default.json` | A generated Adaptive Card that is sent to Teams |
-| `src/cardModels.js` | The default Adaptive Card data model |
 
 ## Extend the notification bot template
 

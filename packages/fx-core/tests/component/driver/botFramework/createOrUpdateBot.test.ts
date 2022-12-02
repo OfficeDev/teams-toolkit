@@ -31,10 +31,16 @@ describe("CreateOrUpdateM365BotDriver", () => {
         );
       } else if (key === "driver.botFramework.error.unhandledError") {
         return util.format("Unhandled error happened in %s action: %s", ...params);
+      } else if (key === "driver.botFramework.summary.create") {
+        return util.format("The bot registration has been created successfully (%s).", ...params);
+      } else if (key === "driver.botFramework.summary.update") {
+        return util.format("The bot registration has been updated successfully (%s).", ...params);
       }
       return "";
     });
-    sinon.stub(localizeUtils, "getLocalizedString").returns("");
+    sinon
+      .stub(localizeUtils, "getLocalizedString")
+      .callsFake((key, ...params) => localizeUtils.getDefaultString(key, ...params));
   });
 
   afterEach(() => {
@@ -196,6 +202,78 @@ describe("CreateOrUpdateM365BotDriver", () => {
       if (result.isOk()) {
         chai.assert.equal(result.value.size, 0);
       }
+    });
+  });
+
+  describe("execute", () => {
+    it("happy path: create", async () => {
+      sinon.stub(AppStudioClient, "getBotRegistration").returns(Promise.resolve(undefined));
+      let createBotRegistrationCalled = false;
+      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {
+        createBotRegistrationCalled = true;
+      });
+      let updateBotRegistrationCalled = false;
+      sinon.stub(AppStudioClient, "updateBotRegistration").callsFake(async () => {
+        updateBotRegistrationCalled = true;
+      });
+      const args: any = {
+        botId: "11111111-1111-1111-1111-111111111111",
+        name: "test-bot",
+        messagingEndpoint: "https://test.ngrok.io/api/messages",
+      };
+      const executionResult = await driver.execute(args, mockedDriverContext);
+      chai.assert(executionResult.result.isOk());
+      chai.assert(createBotRegistrationCalled);
+      chai.assert(!updateBotRegistrationCalled);
+      if (executionResult.result.isOk()) {
+        chai.assert.equal(executionResult.result.value.size, 0);
+      }
+      chai.assert.equal(executionResult.summaries.length, 1);
+      chai.assert.equal(
+        executionResult.summaries[0],
+        "The bot registration has been created successfully (https://dev.botframework.com/bots?id=11111111-1111-1111-1111-111111111111)."
+      );
+    });
+
+    it("happy path: update", async () => {
+      const botRegistration: IBotRegistration = {
+        botId: "11111111-1111-1111-1111-111111111111",
+        name: "test-bot",
+        messagingEndpoint: "https://test.ngrok.io/api/messages",
+        description: "",
+        iconUrl: "",
+        callingEndpoint: "",
+      };
+      sinon.stub(AppStudioClient, "getBotRegistration").callsFake(async (token, botId) => {
+        return botId === botRegistration.botId ? botRegistration : undefined;
+      });
+      let createBotRegistrationCalled = false;
+      sinon.stub(AppStudioClient, "createBotRegistration").callsFake(async () => {
+        createBotRegistrationCalled = true;
+      });
+      let updateBotRegistrationCalled = false;
+      sinon.stub(AppStudioClient, "updateBotRegistration").callsFake(async () => {
+        updateBotRegistrationCalled = true;
+      });
+      const args: any = {
+        botId: "11111111-1111-1111-1111-111111111111",
+        name: "test-bot",
+        messagingEndpoint: "https://test.ngrok.io/api/messages",
+        description: "test-description",
+        iconUrl: "test-iconUrl",
+      };
+      const executionResult = await driver.execute(args, mockedDriverContext);
+      chai.assert(executionResult.result.isOk());
+      chai.assert(!createBotRegistrationCalled);
+      chai.assert(updateBotRegistrationCalled);
+      if (executionResult.result.isOk()) {
+        chai.assert.equal(executionResult.result.value.size, 0);
+      }
+      chai.assert.equal(executionResult.summaries.length, 1);
+      chai.assert.equal(
+        executionResult.summaries[0],
+        "The bot registration has been updated successfully (https://dev.botframework.com/bots?id=11111111-1111-1111-1111-111111111111)."
+      );
     });
   });
 });

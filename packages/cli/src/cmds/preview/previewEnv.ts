@@ -16,6 +16,7 @@ import {
   Result,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
+import { TelemetryContext } from "@microsoft/teamsfx-core/build/common/local/localTelemetryReporter";
 import { loadTeamsFxDevScript } from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
 import { AppStudioScopes, getSideloadingStatus } from "@microsoft/teamsfx-core/build/common/tools";
 import { envUtil } from "@microsoft/teamsfx-core/build/component/utils/envUtil";
@@ -24,6 +25,7 @@ import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
 import * as errors from "./errors";
 import { openHubWebClient } from "./launch";
+import { localTelemetryReporter } from "./localTelemetryReporter";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import { Task } from "./task";
 import { showInstallAppInTeamsMessage, getTeamsAppInternalId } from "./teamsAppInstallation";
@@ -31,6 +33,8 @@ import { signedOut } from "../../commonlib/common/constant";
 import cliLogger from "../../commonlib/log";
 import M365TokenInstance from "../../commonlib/m365Login";
 import { cliSource, RootFolderOptions } from "../../constants";
+import cliTelemetry from "../../telemetry/cliTelemetry";
+import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../../userInteraction";
 import { isWorkspaceSupported } from "../../utils";
 import { YargsCommand } from "../../yargsCommand";
@@ -98,24 +102,63 @@ export default class PreviewEnv extends YargsCommand {
       return err(errors.WorkspaceNotSupported(args.folder as string));
     }
     const workspaceFolder = path.resolve(args.folder as string);
-    const env = args.env as string;
-    let runCommand: string | undefined = args["run-command"] as string;
+    const env = (args.env as string) ?? "";
+    const runCommand: string | undefined = args["run-command"] as string;
     const runningPattern = args["running-pattern"] as string;
     const hub = args["m365-host"] as constants.Hub;
     const browser = args.browser as constants.Browser;
     const browserArguments = (args["browser-arg"] as string[]) ?? [];
 
-    // TODO: Add telemetry
+    cliTelemetry.withRootFolder(workspaceFolder);
+    this.telemetryProperties[TelemetryProperty.PreviewType] =
+      env.toLowerCase() === environmentManager.getLocalEnvName() ? "local" : `remote-${env}`;
+    this.telemetryProperties[TelemetryProperty.PreviewHub] = hub;
+    this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
 
+    return await localTelemetryReporter.runWithTelemetryGeneric(
+      TelemetryEvent.Preview,
+      async () =>
+        this.doPreview(
+          workspaceFolder,
+          env,
+          runCommand,
+          runningPattern,
+          hub,
+          browser,
+          browserArguments
+        ),
+      (result: Result<null, FxError>, ctx: TelemetryContext) => {
+        // whether on success or failure, send this.telemetryProperties and this.telemetryMeasurements
+        Object.assign(ctx.properties, this.telemetryProperties);
+        Object.assign(ctx.measurements, this.telemetryMeasurements);
+        return result.isErr() ? result.error : undefined;
+      },
+      this.telemetryProperties
+    );
+  }
+
+  protected async doPreview(
+    workspaceFolder: string,
+    env: string,
+    runCommand: string | undefined,
+    runningPattern: string,
+    hub: constants.Hub,
+    browser: constants.Browser,
+    browserArguments: string[]
+  ): Promise<Result<null, FxError>> {
     // 1. load envs
     const envRes = await envUtil.readEnv(workspaceFolder, env, false, false);
     if (envRes.isErr()) {
       return err(envRes.error);
     }
     const envs = envRes.value;
+    this.telemetryProperties[TelemetryProperty.PreviewAppId] = envs.TEAMS_APP_ID as string;
 
     // 2. check m365 account
-    const accountInfoRes = await this.checkM365Account(envs.TEAMS_APP_TENANT_ID);
+    const accountInfoRes = await localTelemetryReporter.runWithTelemetry(
+      TelemetryEvent.PreviewPrereqsCheckM365Account,
+      () => this.checkM365Account(envs.TEAMS_APP_TENANT_ID)
+    );
     if (accountInfoRes.isErr()) {
       return err(accountInfoRes.error);
     }
@@ -142,10 +185,9 @@ export default class PreviewEnv extends YargsCommand {
       // 4. run command as background task
       this.runningTasks = [];
       if (runCommand !== undefined && env.toLowerCase() === environmentManager.getLocalEnvName()) {
-        const runTaskRes = await this.runCommandAsTask(
-          workspaceFolder,
-          runCommand,
-          runningPatternRegex
+        const runTaskRes = await localTelemetryReporter.runWithTelemetry(
+          TelemetryEvent.PreviewStartServices,
+          () => this.runCommandAsTask(workspaceFolder, runCommand!, runningPatternRegex)
         );
         if (runTaskRes.isErr()) {
           throw runTaskRes.error;

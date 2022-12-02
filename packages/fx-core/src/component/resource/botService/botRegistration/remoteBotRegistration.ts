@@ -27,9 +27,9 @@ export class RemoteBotRegistration extends BotRegistration {
   public async createOrUpdateBotRegistration(
     m365TokenProvider: M365TokenProvider,
     botRegistration: IBotRegistration
-  ): Promise<Result<undefined, FxError>> {
+  ): Promise<Result<boolean, FxError>> {
     // Do nothing because it's handled by arm/bicep snippets.
-    return ok(undefined);
+    return ok(false);
   }
 
   public async updateMessageEndpoint(

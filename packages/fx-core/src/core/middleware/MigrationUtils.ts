@@ -134,6 +134,8 @@ export const fixedNamingsV3: { [key: string]: string } = {
   "state.fx-resource-aad-app-for-teams.oauthAuthority": "AAD_APP_OAUTH_AUTHORITY",
   "state.fx-resource-bot.botId": "BOT_ID",
   "state.fx-resource-bot.botPassword": "SECRET_BOT_PASSWORD",
+  "state.fx-resource-frontend-hosting.sslCertFile": "SSL_CRT_FILE",
+  "state.fx-resource-frontend-hosting.sslKeyFile": "SSL_KEY_FILE",
 };
 export const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-frontend-hosting.indexPath",

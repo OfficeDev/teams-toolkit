@@ -219,7 +219,7 @@ export class Lifecycle implements ILifecycle {
           )} in lifecycle ${this.name}`
         );
         summaries.push([
-          `${SummaryConstant.Cross} Unresolved placeholders: ${unresolved.join(",")}`,
+          `${SummaryConstant.Failed} Unresolved placeholders: ${unresolved.join(",")}`,
         ]);
         return {
           result: err({
@@ -246,7 +246,7 @@ export class Lifecycle implements ILifecycle {
       if (driver.instance.execute) {
         const r = await driver.instance.execute(driver.with, ctx);
         result = r.result;
-        summary = r.summaries.map((s) => `${SummaryConstant.Tick} ${s}`);
+        summary = r.summaries.map((s) => `${SummaryConstant.Succeeded} ${s}`);
       } else {
         result = await driver.instance.run(driver.with, ctx);
         // if execute is not implemented, treat it as if no summaries was returned.
@@ -254,7 +254,7 @@ export class Lifecycle implements ILifecycle {
       }
       summaries.push(summary);
       if (result.isErr()) {
-        summary.push(`${SummaryConstant.Cross} ${result.error.message}`);
+        summary.push(`${SummaryConstant.Failed} ${result.error.message}`);
         return {
           result: err({
             kind: "PartialSuccess",

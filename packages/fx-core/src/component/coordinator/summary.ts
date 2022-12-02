@@ -108,25 +108,33 @@ function stringifyLifecycleState(lifecycleState: LifecycleState): string[] {
   const result: string[] = [];
 
   if (lifecycleState.status === "notExecuted") {
-    result.push(`Lifecycle stage ${lifecycleState.name} not executed.`);
+    result.push(
+      `${SummaryConstant.NotExecuted} Lifecycle stage ${lifecycleState.name} not executed.`
+    );
   } else if (lifecycleState.status === "succeeded") {
     result.push(
-      `${SummaryConstant.Tick} Lifecycle stage ${lifecycleState.name} executed successfully`
+      `${SummaryConstant.Succeeded} Lifecycle stage ${lifecycleState.name} executed successfully`
     );
   } else if (lifecycleState.status === "failed") {
-    result.push(`${SummaryConstant.Cross} Lifecycle stage ${lifecycleState.name} failed.`);
+    result.push(`${SummaryConstant.Failed} Lifecycle stage ${lifecycleState.name} failed.`);
   }
 
   for (const actionState of lifecycleState.actionStates) {
     if (actionState.status === "notExecuted") {
-      result.push(`${indent}${actionState.name} not executed.`);
+      result.push(`${indent}${SummaryConstant.NotExecuted} ${actionState.name} not executed.`);
     } else if (actionState.status === "failed") {
-      result.push(`${indent}${SummaryConstant.Cross} ${actionState.name} failed.`);
+      result.push(`${indent}${SummaryConstant.Failed} ${actionState.name} failed.`);
     } else if (actionState.status === "succeeded") {
-      result.push(`${indent}${SummaryConstant.Tick} ${actionState.name} executed successfully.`);
+      result.push(
+        `${indent}${SummaryConstant.Succeeded} ${actionState.name} executed successfully.`
+      );
     }
     for (const summary of actionState.summaries) {
-      result.push(`${indent}${indent}${summary}`);
+      if (actionState.status === "notExecuted") {
+        result.push(`${indent}${indent}${SummaryConstant.NotExecuted} ${summary}`);
+      } else {
+        result.push(`${indent}${indent}${summary}`);
+      }
     }
   }
 

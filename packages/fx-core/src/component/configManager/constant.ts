@@ -1,6 +1,7 @@
 export enum SummaryConstant {
-  Tick = "√",
-  Cross = "×",
+  Succeeded = "√",
+  Failed = "×",
+  NotExecuted = "!",
 }
 
 export const component = "ConfigManager";

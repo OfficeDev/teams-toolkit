@@ -22,6 +22,10 @@ const actionName = "teamsApp/copyAppPackageForSPFx";
 
 @Service(actionName)
 export class CopyAppPackageForSPFxDriver implements StepDriver {
+  public readonly description = getLocalizedString(
+    "driver.teamsApp.description.copyAppPackageForSPFxDriver"
+  );
+
   private readonly EmptyMap = new Map<string, string>();
 
   private asCopyAppPackageArgs = asFactory<CopyAppPackageForSPFxArgs>({

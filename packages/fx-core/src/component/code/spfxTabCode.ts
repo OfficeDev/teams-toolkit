@@ -40,7 +40,7 @@ import {
 } from "../resource/spfx/utils/constants";
 import { ProgressHelper } from "../resource/spfx/utils/progress-helper";
 import { SPFXQuestionNames } from "../resource/spfx/utils/questions";
-import { isOfficialSPFx, Utils } from "../resource/spfx/utils/utils";
+import { Utils } from "../resource/spfx/utils/utils";
 import { cpUtils } from "../utils/depsChecker/cpUtils";
 import { ComponentNames } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -220,10 +220,7 @@ export async function scaffoldSPFx(
     // update readme
     if (!isAddSpfx) {
       await fs.copyFile(
-        path.resolve(
-          templateFolder,
-          isOfficialSPFx() ? "./solution/README.md" : "./solution/prereleaseREADME.md"
-        ),
+        path.resolve(templateFolder, "./solution/README.md"),
         `${outputFolderPath}/README.md`
       );
     }

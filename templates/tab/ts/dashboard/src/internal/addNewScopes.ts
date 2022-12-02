@@ -2,7 +2,7 @@ import { loginAction } from "./login";
 import { FxContext } from "./singletonContext";
 import { ErrorWithCode } from "@microsoft/teamsfx";
 
-export async function addNewScope(addscopes: string[]) {
+export async function addNewPermissionScope(addscopes: string[]) {
     let teamsfx = FxContext.getInstance().getTeamsFx();
     try {
         await teamsfx.getCredential().getToken(addscopes);  

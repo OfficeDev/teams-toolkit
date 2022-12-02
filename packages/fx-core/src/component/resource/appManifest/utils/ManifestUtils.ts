@@ -130,15 +130,13 @@ export class ManifestUtils {
               template.entityId = "index" + staticTabIndex;
               appManifest.staticTabs.push(template);
             } else {
-              if (inputs.features && inputs.features === DashboardOptionItem.id) {
-                const template = cloneDeep(STATIC_TABS_TPL_V3[1]);
-                template.entityId = "index" + staticTabIndex;
-                appManifest.staticTabs.push(template);
-              } else {
-                const template = cloneDeep(STATIC_TABS_TPL_V3[0]);
-                template.entityId = "index" + staticTabIndex;
-                appManifest.staticTabs.push(template);
-              }
+              const tabManifest =
+                inputs.features === DashboardOptionItem.id
+                  ? STATIC_TABS_TPL_V3[1]
+                  : STATIC_TABS_TPL_V3[0];
+              const template = cloneDeep(tabManifest);
+              template.entityId = "index" + staticTabIndex;
+              appManifest.staticTabs.push(template);
             }
             staticTabIndex++;
           }

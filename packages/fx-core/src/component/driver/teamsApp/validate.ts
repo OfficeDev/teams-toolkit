@@ -20,6 +20,8 @@ const actionName = "teamsApp/validate";
 
 @Service(actionName)
 export class ValidateTeamsAppDriver implements StepDriver {
+  description = getLocalizedString("driver.teamsApp.description.validateDriver");
+
   public async run(
     args: ValidateTeamsAppArgs,
     context: DriverContext

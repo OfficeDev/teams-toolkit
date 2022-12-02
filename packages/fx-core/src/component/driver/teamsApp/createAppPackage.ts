@@ -24,6 +24,8 @@ export const actionName = "teamsApp/createAppPackage";
 
 @Service(actionName)
 export class CreateAppPackageDriver implements StepDriver {
+  description = getLocalizedString("driver.teamsApp.description.createAppPackageDriver");
+
   public async run(
     args: CreateAppPackageArgs,
     context: DriverContext

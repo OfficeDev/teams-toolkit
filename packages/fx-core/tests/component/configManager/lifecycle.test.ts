@@ -737,10 +737,10 @@ describe("Summary", () => {
       summaries.length === 2 &&
         summaries[0].length === 1 &&
         summaries[0][0] ===
-          `${SummaryConstant.Tick} Environment variable OUTPUT_A set in teamsfx/.env file` &&
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in teamsfx/.env file` &&
         summaries[1].length === 1 &&
         summaries[1][0] ===
-          `${SummaryConstant.Tick} Environment variable OUTPUT_B set in teamsfx/.env file`
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_B set in teamsfx/.env file`
     );
   });
 
@@ -777,12 +777,12 @@ describe("Summary", () => {
       summaries.length === 3 &&
         summaries[0].length === 1 &&
         summaries[0][0] ===
-          `${SummaryConstant.Tick} Environment variable OUTPUT_A set in teamsfx/.env file` &&
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in teamsfx/.env file` &&
         summaries[1].length === 1 &&
         summaries[1][0] ===
-          `${SummaryConstant.Tick} Environment variable OUTPUT_B set in teamsfx/.env file` &&
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_B set in teamsfx/.env file` &&
         summaries[2].length === 1 &&
-        summaries[2][0].includes(`${SummaryConstant.Cross} fake message`)
+        summaries[2][0].includes(`${SummaryConstant.Failed} fake message`)
     );
   });
 
@@ -820,9 +820,9 @@ describe("Summary", () => {
       summaries.length === 2 &&
         summaries[0].length === 1 &&
         summaries[0][0] ===
-          `${SummaryConstant.Tick} Environment variable OUTPUT_A set in teamsfx/.env file` &&
+          `${SummaryConstant.Succeeded} Environment variable OUTPUT_A set in teamsfx/.env file` &&
         summaries[1].length === 1 &&
-        summaries[1][0] === `${SummaryConstant.Cross} Unresolved placeholders: AAA,CCC`,
+        summaries[1][0] === `${SummaryConstant.Failed} Unresolved placeholders: AAA,CCC`,
       `Summary should only contain 2 items, because of execution stops at DriverBWithSummary`
     );
   });

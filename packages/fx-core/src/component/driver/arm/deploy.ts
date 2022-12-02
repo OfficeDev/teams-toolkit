@@ -9,9 +9,11 @@ import { deployArgs } from "./interface";
 import { ArmDeployImpl } from "./deployImpl";
 import { FxError, Result } from "@microsoft/teamsfx-api";
 import { WrapDriverContext, wrapRun } from "../util/wrapUtil";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 @Service(Constants.actionName) // DO NOT MODIFY the service name
 export class ArmDeployDriver implements StepDriver {
+  description = getLocalizedString("driver.arm.description.deploy");
   public async run(
     args: deployArgs,
     context: DriverContext

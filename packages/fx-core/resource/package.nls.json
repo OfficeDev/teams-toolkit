@@ -1134,6 +1134,8 @@
   "driver.teamsApp.summary.publishTeamsAppExists": "Teams app with id %s already exists in the organization's app store.",
   "driver.teamsApp.summary.publishTeamsAppNotExists": "Teams app with id %s does not exist in the organization's app store.",
   "driver.teamsApp.summary.publishTeamsAppSuccess": "Teams app %s successfully published to the admin portal.",
+  "driver.teamsApp.summary.copyAppPackageSuccess": "Teams app %s was successfully copyed to %s.",
+  "driver.teamsApp.summary.copyIconSuccess": "Icon %s was successfully replaced.",
   "driver.botFramework.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.botFramework.error.unhandledError": "Unhandled error happened in %s action: %s",
   "driver.botFramework.description": "creates or updates the bot registration on dev.botframework.com",
@@ -1141,5 +1143,4 @@
   "driver.botFramework.summary.update": "The bot registration has been updated successfully (%s).",
   "driver.botFramework.progressBar.title": "botFramework/createOrUpdateBot",
   "driver.botFramework.progressBar.createOrUpdateBot": "Creating or updating bot registration."
-  
 }

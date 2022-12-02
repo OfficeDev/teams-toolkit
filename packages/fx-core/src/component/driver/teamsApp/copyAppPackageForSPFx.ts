@@ -7,13 +7,15 @@ import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import path from "path";
 import { Service } from "typedi";
+import { getLocalizedString } from "../../../common/localizeUtils";
 import { Constants } from "../../resource/appManifest/constants";
 import { AppStudioError } from "../../resource/appManifest/errors";
 import { AppStudioResultFactory } from "../../resource/appManifest/results";
 import { asFactory, asString, wrapRun } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
-import { StepDriver } from "../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { CopyAppPackageForSPFxArgs } from "./interfaces/CopyAppPackageForSPFxArgs";
 
 const actionName = "teamsApp/copyAppPackageForSPFx";
@@ -32,12 +34,25 @@ export class CopyAppPackageForSPFxDriver implements StepDriver {
     args: CopyAppPackageForSPFxArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    return wrapRun(() => this.copy(args, context));
+    const wrapContext = new WrapDriverContext(context, actionName, actionName);
+    return wrapRun(() => this.copy(args, wrapContext));
+  }
+
+  public async execute(
+    args: CopyAppPackageForSPFxArgs,
+    ctx: DriverContext
+  ): Promise<ExecutionResult> {
+    const wrapContext = new WrapDriverContext(ctx, actionName, actionName);
+    const result = await this.run(args, wrapContext);
+    return {
+      result,
+      summaries: wrapContext.summaries,
+    };
   }
 
   public async copy(
     args: CopyAppPackageForSPFxArgs,
-    context: DriverContext
+    context: WrapDriverContext
   ): Promise<Map<string, string>> {
     const copyAppPackageArgs = this.asCopyAppPackageArgs(args);
     const appPackagePath = path.isAbsolute(copyAppPackageArgs.appPackagePath)
@@ -55,12 +70,31 @@ export class CopyAppPackageForSPFxDriver implements StepDriver {
       : path.join(context.projectPath, copyAppPackageArgs.spfxFolder);
     const spfxTeamsPath = `${spfxFolder}/teams`;
     await fs.copyFile(appPackagePath, path.join(spfxTeamsPath, "TeamsSPFxApp.zip"));
+    context.addSummary(
+      getLocalizedString(
+        "driver.teamsApp.summary.copyAppPackageSuccess",
+        appPackagePath,
+        path.join(spfxTeamsPath, "TeamsSPFxApp.zip")
+      )
+    );
 
-    for (const file of await fs.readdir(`${spfxFolder}/teams`)) {
+    for (const file of await fs.readdir(spfxTeamsPath)) {
       if (file.endsWith("color.png") && pictures.color) {
         await fs.writeFile(path.join(spfxTeamsPath, file), pictures.color);
+        context.addSummary(
+          getLocalizedString(
+            "driver.teamsApp.summary.copyIconSuccess",
+            path.join(spfxTeamsPath, file)
+          )
+        );
       } else if (file.endsWith("outline.png") && pictures.outline) {
         await fs.writeFile(path.join(spfxTeamsPath, file), pictures.outline);
+        context.addSummary(
+          getLocalizedString(
+            "driver.teamsApp.summary.copyIconSuccess",
+            path.join(spfxTeamsPath, file)
+          )
+        );
       }
     }
     return this.EmptyMap;

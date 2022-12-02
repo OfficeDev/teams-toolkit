@@ -3,13 +3,11 @@ import {
   ActionContext,
   assembleError,
   Colors,
-  combine,
   ContextV3,
   err,
   FxError,
   Inputs,
   InputsWithProjectPath,
-  LogProvider,
   ok,
   Platform,
   ResourceContextV3,
@@ -51,7 +49,6 @@ import {
   TabOptionItem,
   TabNonSsoItem,
   MessageExtensionItem,
-  CancelError,
   CoordinatorSource,
   BotOptionItem,
   TabNonSsoAndDefaultBotItem,
@@ -63,7 +60,6 @@ import {
   getQuestionsForInit,
   getQuestionsForProvisionV3,
   InitOptionNo,
-  InitOptionYes,
   getQuestionsForPublishInDeveloperPortal,
   InitEditorVSCode,
   InitEditorVS,
@@ -102,7 +98,7 @@ import { updateManifestV3ForPublish } from "../resource/appManifest/appStudio";
 import { AppStudioScopes } from "../resource/appManifest/constants";
 import * as xml2js from "xml2js";
 import { Lifecycle } from "../configManager/lifecycle";
-import { getLifecycleDescription, SummaryReporter } from "./summary";
+import { SummaryReporter } from "./summary";
 import { EOL } from "os";
 
 export enum TemplateNames {

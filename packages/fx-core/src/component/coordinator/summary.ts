@@ -159,6 +159,6 @@ export class SummaryReporter {
     });
 
     const flattened = _.flatten(summaries);
-    return `Summary:${EOL}:${flattened.join(EOL)}`;
+    return `Summary:${EOL}${flattened.join(EOL)}`;
   }
 }

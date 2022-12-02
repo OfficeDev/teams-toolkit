@@ -125,7 +125,7 @@ function stringifyLifecycleState(lifecycleState: LifecycleState): string[] {
     } else if (actionState.status === "succeeded") {
       result.push(`${indent}${SummaryConstant.Tick} ${actionState.name} executed successfully.`);
     }
-    for (const [i, summary] of actionState.summaries.entries()) {
+    for (const summary of actionState.summaries) {
       result.push(`${indent}${indent}${summary}`);
     }
   }

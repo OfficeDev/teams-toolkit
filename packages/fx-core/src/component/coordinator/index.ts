@@ -749,7 +749,9 @@ export class Coordinator {
       if (maybeDescription.isErr()) {
         return [undefined, maybeDescription.error];
       }
-      ctx.logProvider.info(`${EOL}${maybeDescription.value}`);
+      ctx.logProvider.info(
+        `Executing app registration and provision ${EOL}${EOL}${maybeDescription.value}${EOL}`
+      );
 
       for (const [index, cycle] of cycles.entries()) {
         const execRes = await cycle.execute(ctx);
@@ -762,7 +764,7 @@ export class Coordinator {
       }
     } finally {
       const summary = summaryReporter.getLifecycleSummary();
-      ctx.logProvider.info(`${EOL}${summary}`);
+      ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
     }
 
     // 8. show provisioned resources
@@ -869,7 +871,7 @@ export class Coordinator {
         if (maybeDescription.isErr()) {
           return [undefined, maybeDescription.error];
         }
-        ctx.logProvider.info(`${EOL}${maybeDescription.value}`);
+        ctx.logProvider.info(`Executing deploy ${EOL}${EOL}${maybeDescription.value}${EOL}`);
         const execRes = await projectModel.deploy.execute(ctx);
         summaryReporter.updateLifecycleState(0, execRes);
         const result = this.convertExecuteResult(execRes.result);
@@ -885,7 +887,7 @@ export class Coordinator {
         ctx.ui?.showMessage("info", msg, false);
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
-        ctx.logProvider.info(`${EOL}${summary}`);
+        ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
       }
     }
     return [output, undefined];
@@ -917,7 +919,7 @@ export class Coordinator {
         if (maybeDescription.isErr()) {
           return err(maybeDescription.error);
         }
-        ctx.logProvider.info(`${EOL}${maybeDescription.value}`);
+        ctx.logProvider.info(`Executing publish ${EOL}${EOL}${maybeDescription.value}${EOL}`);
 
         const execRes = await projectModel.publish.execute(ctx);
         const result = this.convertExecuteResult(execRes.result);
@@ -925,7 +927,7 @@ export class Coordinator {
         if (result[1]) return err(result[1]);
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
-        ctx.logProvider.info(`${EOL}${summary}`);
+        ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
       }
     }
     return ok(undefined);

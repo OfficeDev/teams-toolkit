@@ -35,10 +35,11 @@ The bot will send an Adaptive Card to Teams:
 
 | Folder | Contents |
 | - | - |
-| `.fx` | Project level settings, configurations, and environment information |
-| `.vscode` | VSCode files for local debug |
+| `teamsfx` | Project level settings, configurations, and environment information |
+| `.vscode` | VSCode files for debugging |
 | `bot` | The source code for the notification Teams application |
-| `templates` | Templates for the Teams application manifest and for provisioning Azure resources |
+| `appPackage` | Templates for the Teams application manifest |
+| `infra` | Templates for provisioning Azure resources |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
@@ -64,7 +65,7 @@ The following files are project-related files. You generally will not need to cu
 | `.funcignore` | Azure Functions ignore file to exclude local files |
 | `.gitignore` | Git ignore file |
 | `host.json` | Azure Functions host file |
-| `local.settings.json` | Azure Functions settings for local debugging |
+| `local.settings.json` | Azure Functions settings for debugging |
 | `package.json` | NPM package file |
 
 ## Extend the notification bot template

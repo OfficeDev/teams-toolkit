@@ -33,10 +33,11 @@ The bot will respond to the `helloWorld` command with an Adaptive Card:
 
 | Folder | Contents |
 | - | - |
-| `.fx` | Project level settings, configurations, and environment information |
-| `.vscode` | VSCode files for local debug |
-| `bot` | The source code for the command and response Teams application |
-| `templates` | Templates for the Teams application manifest and for provisioning Azure resources |
+| `teamsfx` | Project level settings, configurations, and environment information |
+| `.vscode` | VSCode files for debugging |
+| `src` | The source code for the command and response Teams application |
+| `appPackage` | Templates for the Teams application manifest |
+| `infra` | Templates for provisioning Azure resources |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
@@ -57,7 +58,7 @@ Follow the steps below to add more commands and responses to extend the command 
 
 ### Step 1: Add a command definition in manifest
 
-You can edit the manifest template file `templates\appPackage\manifest.template.json` to include definitions of a `doSomething` command with its title and description in the `commands` array:
+You can edit the manifest template file `appPackage\manifest.template.json` to include definitions of a `doSomething` command with its title and description in the `commands` array:
 
 ```json
 "commandLists": [
@@ -110,7 +111,7 @@ You can use the [Adaptive Card Designer](https://adaptivecards.io/designer/) to 
 
 ### Step 3: Handle the command
 
-The TeamsFx SDK provides a convenient class, `TeamsFxBotCommandHandler`, to handle when an command is triggered from Teams conversation message. Create a new file, `bot/src/doSomethingCommandHandler.js`:
+The TeamsFx SDK provides a convenient class, `TeamsFxBotCommandHandler`, to handle when an command is triggered from Teams conversation message. Create a new file, `src/doSomethingCommandHandler.js`:
 
 ```javascript
 const doSomethingCard = require("./adaptiveCards/doSomethingCommandResponse.json");
@@ -143,7 +144,7 @@ You can customize what the command does here, including calling an API, process 
 
 ### Step 4: Register the new command
 
-Each new command needs to be configured in the `ConversationBot`, which powers the conversational flow of the command bot template. Navigate to the `bot/src/internal/initialize.js` file and update the `commands` array of the `command` property:
+Each new command needs to be configured in the `ConversationBot`, which powers the conversational flow of the command bot template. Navigate to the `src/internal/initialize.js` file and update the `commands` array of the `command` property:
 
 ```javascript
 const { ConversationBot } = require("@microsoft/teamsfx");

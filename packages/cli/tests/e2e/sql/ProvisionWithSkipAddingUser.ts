@@ -23,6 +23,7 @@ import {
   setSkipAddingSqlUserToConfig,
 } from "../commonUtils";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Provision to Azure with SQL", function () {
   const testFolder = getTestFolder();
@@ -32,6 +33,9 @@ describe("Provision to Azure with SQL", function () {
   const env = environmentManager.getDefaultEnvName();
 
   it(`Provision SQL with skip adding user`, { testPlanCaseId: 12730645 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     // new a project ( tab + function + sql )
     await CliHelper.createProjectWithCapability(
       appName,

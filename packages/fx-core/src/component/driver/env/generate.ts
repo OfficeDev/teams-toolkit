@@ -4,6 +4,7 @@
 import * as dotenv from "dotenv";
 import * as fs from "fs-extra";
 import * as os from "os";
+import * as path from "path";
 import { Service } from "typedi";
 
 import { hooks } from "@feathersjs/hooks/lib";
@@ -13,7 +14,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { wrapRun } from "../../utils/common";
 import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
-import { StepDriver } from "../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
@@ -24,34 +25,79 @@ const helpLink = "https://aka.ms/teamsfx-actions/env-generate";
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class GenerateEnvDriver implements StepDriver {
+  description = getLocalizedString("driver.env.description");
+
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: GenerateEnvArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    return wrapRun(() => this.handler(args, context));
+    return wrapRun(async () => {
+      const result = await this.handler(args, context);
+      return result.output;
+    });
+  }
+
+  public async execute(args: GenerateEnvArgs, ctx: DriverContext): Promise<ExecutionResult> {
+    let summaries: string[] = [];
+    const outputResult = await wrapRun(async () => {
+      const result = await this.handler(args, ctx);
+      summaries = result.summaries;
+      return result.output;
+    });
+    return {
+      result: outputResult,
+      summaries,
+    };
   }
 
   private async handler(
     args: GenerateEnvArgs,
     context: DriverContext
-  ): Promise<Map<string, string>> {
+  ): Promise<{
+    output: Map<string, string>;
+    summaries: string[];
+  }> {
+    const progressHandler = context.ui?.createProgressBar(
+      getLocalizedString("driver.env.progressBar.title"),
+      1
+    );
+
     try {
+      await progressHandler?.start();
+
       this.validateArgs(args);
 
+      await progressHandler?.next(getLocalizedString("driver.env.progressBar.generate"));
+
       if (args.target) {
-        await fs.ensureFile(args.target);
-        const envs = dotenv.parse(await fs.readFile(args.target));
+        const target = this.getAbsolutePath(args.target, context.projectPath);
+        await fs.ensureFile(target);
+        const envs = dotenv.parse(await fs.readFile(target));
         const content = Object.entries({ ...envs, ...args.envs })
           .map(([key, value]) => `${key}=${value}`)
           .join(os.EOL);
-        await fs.writeFile(args.target, content);
+        await fs.writeFile(target, content);
 
-        return new Map();
+        await progressHandler?.end(true);
+
+        return {
+          output: new Map<string, string>(),
+          summaries: [getLocalizedString("driver.env.summary.withTarget", path.normalize(target))],
+        };
       } else {
-        return new Map(Object.entries(args.envs));
+        const state = this.loadCurrentState();
+
+        await progressHandler?.end(true);
+
+        return {
+          output: new Map(Object.entries(args.envs)),
+          summaries: [getLocalizedString("driver.env.summary.default", state.TEAMSFX_ENV)],
+        };
       }
     } catch (error) {
+      await progressHandler?.end(false);
+
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
@@ -89,5 +135,17 @@ export class GenerateEnvDriver implements StepDriver {
     if (invalidParameters.length > 0) {
       throw new InvalidParameterUserError(actionName, invalidParameters, helpLink);
     }
+  }
+
+  private getAbsolutePath(relativeOrAbsolutePath: string, projectPath: string) {
+    return path.isAbsolute(relativeOrAbsolutePath)
+      ? relativeOrAbsolutePath
+      : path.join(projectPath, relativeOrAbsolutePath);
+  }
+
+  private loadCurrentState() {
+    return {
+      TEAMSFX_ENV: process.env.TEAMSFX_ENV,
+    };
   }
 }

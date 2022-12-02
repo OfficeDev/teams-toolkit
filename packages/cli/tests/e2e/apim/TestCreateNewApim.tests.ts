@@ -25,6 +25,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { describe } from "mocha";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Create a new API Management Service", function () {
   const testProcessEnv = Object.assign({}, process.env);
@@ -40,6 +41,9 @@ describe("Create a new API Management Service", function () {
     `Import API into a new API Management Service`,
     { testPlanCaseId: 10107958 },
     async function () {
+      if (isV3Enabled()) {
+        this.skip();
+      }
       // new a project
       await CliHelper.createProjectWithCapability(
         appName,

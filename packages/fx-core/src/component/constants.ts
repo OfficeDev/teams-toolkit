@@ -887,6 +887,11 @@ export const TabNonSsoAndDefaultBotItem: OptionItem = {
   label: "", // No need to set display name as this option won't be shown in UI
 };
 
+export const DefaultBotAndMessageExtensionItem: OptionItem = {
+  id: "BotAndMessageExtension",
+  label: "", // No need to set display name as this option won't be shown in UI
+};
+
 export const M365SsoLaunchPageOptionItem: OptionItem = {
   id: "M365SsoLaunchPage",
   label: `$(browser) ${getLocalizedString("core.M365SsoLaunchPageOptionItem.label")}`,

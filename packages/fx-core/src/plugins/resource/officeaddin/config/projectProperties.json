@@ -1,7 +1,8 @@
 {
     "projectTypes": {
-        "teams-manifest": {
-            "displayname": "Outlook Add-in with Teams Manifest (preview)",
+        "taskpane": {
+            "displayname": "Outlook Taskpane Add-in (preview)",
+            "detail": "A ribbon button and taskpane for use with Outlook",
             "manifestPath": "manifest.json",
             "templates": {
                 "typescript": {

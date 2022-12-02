@@ -51,8 +51,10 @@ export function generateConfigurations(
     // add an entry to the launchConfigurations
     const addinName = inputs["addin-name"];
     const hostName = inputs["addin-host"];
-    launchConfigurations.push(debugOfficeHostEdge(addinName, hostName, false, 3));
-    launchConfigurations.push(debugOfficeHostEdge(addinName, hostName, true, 4));
+    if (addinName && hostName) {
+      launchConfigurations.push(debugOfficeHostEdge(addinName, hostName, false, 3));
+      launchConfigurations.push(debugOfficeHostEdge(addinName, hostName, true, 4));
+    }
   }
 
   return launchConfigurations;

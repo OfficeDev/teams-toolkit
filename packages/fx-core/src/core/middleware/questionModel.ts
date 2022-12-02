@@ -417,33 +417,26 @@ async function setSolutionScaffoldingQuestionNodeAsChild(
 
 async function addOfficeAddinQuestions(
   inputs: Inputs,
-  root: QTreeNode
+  node: QTreeNode
 ): Promise<Result<Void, FxError>> {
-  const officeAddinRoot = new QTreeNode({ type: "group" });
-  officeAddinRoot.condition = { equals: CreateNewOfficeAddinOption.id };
-  root.addChild(officeAddinRoot);
+  const createNewAddin = new QTreeNode({ type: "group" });
+  createNewAddin.condition = { equals: CreateNewOfficeAddinOption.id };
+  node.addChild(createNewAddin);
 
   const capNode = new QTreeNode(createCapabilityForOfficeAddin());
-  officeAddinRoot.addChild(capNode);
+  createNewAddin.addChild(capNode);
 
   const solutionNodeResult = await setSolutionScaffoldingQuestionNodeAsChild(inputs, capNode);
   if (solutionNodeResult.isErr()) {
     return err(solutionNodeResult.error);
   }
-  officeAddinRoot.addChild(new QTreeNode(QuestionRootFolder));
-  officeAddinRoot.addChild(new QTreeNode(createAppNameQuestion()));
+  createNewAddin.addChild(new QTreeNode(QuestionRootFolder));
+  createNewAddin.addChild(new QTreeNode(createAppNameQuestion()));
 
   return ok(Void);
 }
 
-async function getQuestionsForCreateProjectWithoutDotNet(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
-  if (isOfficeAddinEnabled()) {
-    await addOfficeAddinQuestions(inputs, node);
-  }
-
+async function addTeamsQuestions(inputs: Inputs, node: QTreeNode): Promise<Result<Void, FxError>> {
   // create new
   const createNew = new QTreeNode({ type: "group" });
   node.addChild(createNew);
@@ -496,6 +489,18 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   node.addChild(sampleNode);
   sampleNode.condition = { equals: ScratchOptionNo.id };
   sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+
+  return ok(Void);
+}
+
+async function getQuestionsForCreateProjectWithoutDotNet(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
+  await addTeamsQuestions(inputs, node);
+  if (isOfficeAddinEnabled()) {
+    await addOfficeAddinQuestions(inputs, node);
+  }
 
   return ok(node.trim());
 }

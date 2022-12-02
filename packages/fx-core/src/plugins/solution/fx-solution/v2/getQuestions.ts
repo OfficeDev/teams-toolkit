@@ -41,12 +41,13 @@ import {
   createAddCloudResourceOptions,
   DeployPluginSelectQuestion,
   getUserEmailQuestion,
+  ImportAddinProjectItem,
   M365SearchAppOptionItem,
   M365SsoLaunchPageOptionItem,
   MessageExtensionItem,
   MessageExtensionNewUIItem,
   NotificationOptionItem,
-  OfficeAddinItem,
+  OfficeAddinItems,
   SingleSignOnOptionItem,
   TabNewUIOptionItem,
   TabNonSsoItem,
@@ -228,7 +229,14 @@ export async function getQuestionsForScaffoldingPreview(
         ...(isAadManifestEnabled() ? [TabNonSsoItem.id] : []),
         M365SsoLaunchPageOptionItem.id,
         M365SearchAppOptionItem.id,
-        ...(isOfficeAddinEnabled() ? [OfficeAddinItem.id] : []),
+        ...(isOfficeAddinEnabled()
+          ? [
+              ...OfficeAddinItems.map((item) => {
+                return item.id;
+              }),
+            ]
+          : []),
+        ImportAddinProjectItem.id,
       ],
     };
 
@@ -261,12 +269,40 @@ export async function getQuestionsForScaffoldingPreview(
   }
 
   if (isOfficeAddinEnabled()) {
-    const officeAddinQuestions = await getOfficeAddinQuestions(ctx, inputs);
-    if (officeAddinQuestions.isErr()) {
-      return officeAddinQuestions;
-    }
-    if (officeAddinQuestions.value) {
-      node.addChild(officeAddinQuestions.value);
+    // const officeAddinQuestions = await getOfficeAddinQuestions(ctx, inputs);
+    // if (officeAddinQuestions.isErr()) {
+    //   return officeAddinQuestions;
+    // }
+    // if (officeAddinQuestions.value) {
+    //   node.addChild(officeAddinQuestions.value);
+    // }
+    const officeAddinPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+      ResourcePluginsV2.OfficeAddinPlugin
+    );
+    if (officeAddinPlugin.getQuestionsForScaffolding) {
+      const res = await officeAddinPlugin.getQuestionsForScaffolding(ctx, inputs);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const addinNode = res.value as QTreeNode;
+        addinNode.condition = {
+          validFunc: (input: any, inputs?: Inputs) => {
+            if (!inputs) {
+              return "Invalid inputs";
+            }
+            const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
+            const addinOptionIds: string[] = [
+              ...OfficeAddinItems.map((item) => {
+                return item.id;
+              }),
+            ];
+            if (addinOptionIds.includes(cap) || cap === ImportAddinProjectItem.id) {
+              return undefined;
+            }
+            return "Office Addin is not selected";
+          },
+        };
+        if (addinNode.data) node.addChild(addinNode);
+      }
     }
   }
 
@@ -349,7 +385,12 @@ export async function getOfficeAddinQuestions(
             return "Invalid inputs";
           }
           const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
-          if (cap === OfficeAddinItem.id) {
+          const addinOptionIds: string[] = [
+            ...OfficeAddinItems.map((item) => {
+              return item.id;
+            }),
+          ];
+          if (addinOptionIds.includes(cap) || cap === ImportAddinProjectItem.id) {
             return undefined;
           }
           return "Office Addin is not selected";

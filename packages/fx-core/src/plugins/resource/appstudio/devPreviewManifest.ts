@@ -12,9 +12,13 @@ export function createDevPreviewManifest(inputs?: Inputs): DevPreviewManifest | 
   // const addinName = inputs[QuestionName.AddinNameQuestion];
   // change the office add-in fields in manifest accordingly
   const manifest = new DevPreviewManifest();
-  Object.assign(manifest.extensions as [], OFFICE_ADDIN_EXTENSIONS_LOCAL_DEBUG);
-  manifest.extensions?.[0].requirements?.scopes?.push(getScope(host));
-  manifest.extensions?.[0].ribbons?.[0].contexts?.push(getContext());
+
+  // Add office extention
+  if (host) {
+    Object.assign(manifest.extensions as [], OFFICE_ADDIN_EXTENSIONS_LOCAL_DEBUG);
+    manifest.extensions?.[0].requirements?.scopes?.push(getScope(host));
+    manifest.extensions?.[0].ribbons?.[0].contexts?.push(getContext());
+  }
 
   return manifest;
 }

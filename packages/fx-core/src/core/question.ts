@@ -40,7 +40,8 @@ import {
   TabSPFxNewUIItem,
   MessageExtensionNewUIItem,
   BotNewUIOptionItem,
-  OfficeAddinItem,
+  OfficeAddinItems,
+  ImportAddinProjectItem,
 } from "../plugins/solution/fx-solution/question";
 
 export enum CoreQuestionNames {
@@ -295,7 +296,7 @@ export function createCapabilityForOfficeAddin(): SingleSelectQuestion {
     name: CoreQuestionNames.Capabilities,
     title: getLocalizedString("core.createCapabilityQuestion.title"),
     type: "singleSelect",
-    staticOptions: [OfficeAddinItem],
+    staticOptions: [...OfficeAddinItems, ImportAddinProjectItem],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     skipSingleOption: true,
   };
@@ -334,6 +335,12 @@ export function createCapabilityQuestionPreview(): SingleSelectQuestion {
   if (isExistingTabAppEnabled()) {
     staticOptions.splice(2, 0, ExistingTabOptionItem);
   }
+
+  // Add office add-in options to list of capabilities
+  // if (isOfficeAddinEnabled()) {
+  //   staticOptions.splice(staticOptions.length, 0, ...OfficeAddinItems);
+  //   staticOptions.splice(staticOptions.length, 0, ImportAddinProjectItem);
+  // }
 
   return {
     name: CoreQuestionNames.Capabilities,
@@ -550,11 +557,10 @@ export const ScratchOptionNoVSC: OptionItem = {
   detail: getLocalizedString("core.ScratchOptionNoVSC.detail"),
 };
 
-// TODO: localize the strings
 export const CreateNewOfficeAddinOption: OptionItem = {
-  id: "create-office-addin",
-  label: "Create an Office Addin",
-  detail: `Create an Office Addin`,
+  id: "newAddin",
+  label: `$(new-folder) ${getLocalizedString("core.NewOfficeAddinOptionVSC.label")}`,
+  detail: getLocalizedString("core.NewOfficeAddinOptionVSC.detail"),
 };
 
 export const RuntimeOptionNodeJs: OptionItem = {
@@ -597,13 +603,11 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
     staticOptions.push(ScratchOptionYesVSC);
+    staticOptions.push(CreateNewOfficeAddinOption);
     staticOptions.push(ScratchOptionNoVSC);
   } else {
     staticOptions.push(ScratchOptionYes);
     staticOptions.push(ScratchOptionNo);
-  }
-  if (isOfficeAddinEnabled()) {
-    staticOptions.push(CreateNewOfficeAddinOption);
   }
   return {
     type: "singleSelect",

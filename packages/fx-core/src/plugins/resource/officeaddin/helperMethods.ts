@@ -1,7 +1,10 @@
 import axios from "axios";
 import * as fs from "fs";
+import * as fse from "fs-extra";
 import * as path from "path";
 import * as unzip from "unzipper";
+import { ManifestUtil, DevPreviewManifest } from "@microsoft/teamsfx-api";
+import { getManifestTemplatePath } from "../appstudio/manifestTemplate";
 
 const zipFile = "project.zip";
 
@@ -26,9 +29,9 @@ export namespace helperMethods {
     }
   }
 
-  export function doesProjectFolderExist(projectFolder: string): boolean {
-    if (fs.existsSync(projectFolder)) {
-      return fs.readdirSync(projectFolder).length > 0;
+  export function doesFolderExist(folderPath: string): boolean {
+    if (fs.existsSync(folderPath)) {
+      return fs.readdirSync(folderPath).length > 0;
     }
     return false;
   }
@@ -74,13 +77,13 @@ export namespace helperMethods {
           reject(`Unable to unzip project zip file for "${projectFolder}".\n${err}`);
         })
         .on("close", async () => {
-          moveProjectFiles(projectFolder);
+          moveUnzippedFiles(projectFolder);
           resolve();
         });
     });
   }
 
-  function moveProjectFiles(projectFolder: string): void {
+  function moveUnzippedFiles(projectFolder: string): void {
     // delete original zip file
     const zipFilePath = path.resolve(`${projectFolder}/${zipFile}`);
     if (fs.existsSync(zipFilePath)) {
@@ -93,19 +96,39 @@ export namespace helperMethods {
     });
 
     // construct paths to move files out of unzipped folder into project root folder
-    const moveFromFolder = path.resolve(`${projectFolder}/${unzippedFolder[0]}`);
-
-    // loop through all the files and folders in the unzipped folder and move them to project root
-    fs.readdirSync(moveFromFolder).forEach(function (file) {
-      const fromPath = path.join(moveFromFolder, file);
-      const toPath = path.join(projectFolder, file);
-
-      if (fs.existsSync(fromPath) && !fromPath.includes(".gitignore")) {
-        fs.renameSync(fromPath, toPath);
-      }
-    });
+    const fromFolder = path.resolve(`${projectFolder}/${unzippedFolder[0]}`);
+    copyAddinFiles(fromFolder, projectFolder);
 
     // delete project zipped folder
-    deleteFolderRecursively(moveFromFolder);
+    deleteFolderRecursively(fromFolder);
+  }
+
+  export function copyAddinFiles(fromFolder: string, toFolder: string): void {
+    fse.copySync(fromFolder, toFolder, {
+      filter: (path) => {
+        const module: boolean = path.includes("node_modules");
+        const ignore: boolean = path.includes(".gitignore");
+        return !module && !ignore;
+      },
+    });
+  }
+
+  export async function updateManifest(
+    projectRoot: string,
+    addinManifestPath: string
+  ): Promise<void> {
+    // Read add-in manifest file
+    const addinManifest: DevPreviewManifest = await ManifestUtil.loadFromPath(addinManifestPath);
+
+    // Open project manifest file
+    const manifestTemplatePath = await getManifestTemplatePath(projectRoot);
+    const manifest: DevPreviewManifest = await ManifestUtil.loadFromPath(manifestTemplatePath);
+
+    // Update project manifest
+    manifest.extensions = addinManifest.extensions;
+    manifest.authorization = addinManifest.authorization;
+
+    // Safe project manifest
+    await ManifestUtil.writeToPath(manifestTemplatePath, manifest);
   }
 }

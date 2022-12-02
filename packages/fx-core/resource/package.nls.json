@@ -1131,6 +1131,7 @@
   "driver.tools.summary.dotnet.installed": ".NET Core SDK is installed.",
   "driver.env.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.env.error.unhandledError": "Unhandled error happened in %s action: %s",
+  "driver.env.description": "generates environment variables to .env file",
   "driver.env.summary.default": "The environment variables has been generated successfully to the .env file of '%s' environment.",
   "driver.env.summary.withTarget": "The environment variables has been generated successfully to %s.",
   "driver.env.progressBar.title": "env/generate",

@@ -1109,6 +1109,7 @@
   "driver.tools.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.tools.error.funcInstallationError": "Failed to check and install Azure Functions Core Tools.",
   "driver.tools.error.dotnetInstallationError": "Failed to check and install .NET Core SDK.",
+  "driver.tools.description": "installing dependencies",
   "driver.tools.progressBar.title": "Driver tools/install",
   "driver.tools.progressBar.devCert": "Checking and generating the development certificate for localhost.",
   "driver.tools.progressBar.dotnet": "Checking and installing .NET Core SDK.",

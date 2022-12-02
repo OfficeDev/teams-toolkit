@@ -29,6 +29,8 @@ export const ProgressMessages = Object.freeze({
   func: () => getLocalizedString("driver.tools.progressBar.func"),
 });
 
+export const toolsInstallDescription = (): string => getLocalizedString("driver.tools.description");
+
 export const Summaries = Object.freeze({
   devCertSuccess: (trustDevCert: boolean): string =>
     trustDevCert

@@ -24,6 +24,7 @@ import {
   TelemetryDepsCheckStatus,
   TelemetryDevCertStatus,
   TelemetryProperties,
+  toolsInstallDescription,
 } from "./constant";
 import { DotnetInstallationUserError } from "./error/dotnetInstallationUserError";
 import { FuncInstallationUserError } from "./error/funcInstallationUserError";
@@ -41,6 +42,7 @@ const helpLink = "https://aka.ms/teamsfx-actions/tools/install";
 
 @Service(ACTION_NAME)
 export class ToolsInstallDriver implements StepDriver {
+  description = toolsInstallDescription();
   async run(
     args: InstallToolArgs,
     context: DriverContext

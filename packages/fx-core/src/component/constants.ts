@@ -729,6 +729,14 @@ export const DashboardOptionItem: OptionItem = {
   cliName: "dashboard-tab",
   detail: getLocalizedString("core.DashboardOption.detail"),
   groupName: getLocalizedString("core.options.separator.scenario"),
+  data: "https://aka.ms/teamsfx-dashboard-app",
+  buttons: [
+    {
+      iconPath: "file-symlink-file",
+      tooltip: getLocalizedString("core.option.github"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
 };
 
 export const BotOptionItem: OptionItem = {

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { StepDriver } from "../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { Service } from "typedi";
 import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
@@ -32,13 +32,33 @@ export class CreateBotAadAppDriver implements StepDriver {
     args: CreateBotAadAppArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    return wrapRun(() => this.handler(args, context));
+    return wrapRun(async () => {
+      const result = await this.handler(args, context);
+      return result.output;
+    });
+  }
+
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  public async execute(args: CreateBotAadAppArgs, ctx: DriverContext): Promise<ExecutionResult> {
+    let summaries: string[] = [];
+    const outputResult = await wrapRun(async () => {
+      const result = await this.handler(args, ctx);
+      summaries = result.summaries;
+      return result.output;
+    });
+    return {
+      result: outputResult,
+      summaries,
+    };
   }
 
   public async handler(
     args: CreateBotAadAppArgs,
     context: DriverContext
-  ): Promise<Map<string, string>> {
+  ): Promise<{
+    output: Map<string, string>;
+    summaries: string[];
+  }> {
     const progressHandler = context.ui?.createProgressBar(
       getLocalizedString(progressBarKeys.creatingBotAadApp),
       1
@@ -71,10 +91,13 @@ export class CreateBotAadAppDriver implements StepDriver {
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
-      return new Map([
-        ["BOT_ID", createRes.value.botId],
-        ["SECRET_BOT_PASSWORD", createRes.value.botPassword],
-      ]);
+      return {
+        output: new Map([
+          ["BOT_ID", createRes.value.botId],
+          ["SECRET_BOT_PASSWORD", createRes.value.botPassword],
+        ]),
+        summaries: [],
+      };
     } catch (error) {
       await progressHandler?.end(false);
       if (error instanceof UserError || error instanceof SystemError) {

@@ -5,7 +5,7 @@
  * @author Zhiyu You <zhiyou@microsoft.com>
  */
 
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
 import { expect } from "chai";
 import path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -27,6 +27,10 @@ describe("teamsfx deploy frontend-hosting", function () {
   const subscription = getSubscriptionId();
 
   it(`in bot project`, { testPlanCaseId: 15685958 }, async function () {
+    /// TODO: will be deleted when not support V2
+    if (isV3Enabled()) {
+      this.skip();
+    }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 
     // Provision

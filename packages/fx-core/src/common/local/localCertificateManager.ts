@@ -270,9 +270,7 @@ export class LocalCertificateManager {
   private async verifyCertificateInStore(thumbprint: string): Promise<boolean | undefined> {
     try {
       if (os.type() === "Windows_NT") {
-        const getCertCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match '${thumbprint}' }).Thumbprint`;
-        const existingThumbprint = (await ps.execPowerShell(getCertCommand)).trim();
-        return existingThumbprint.toUpperCase() === thumbprint.toUpperCase();
+        return await this.checkCertificateWindows(thumbprint);
       } else if (os.type() === "Darwin") {
         const listCertCommand = `security find-certificate -c localhost -a -Z -p "${os.homedir()}/Library/Keychains/login.keychain-db"`;
         const existingCertificates = await ps.execShell(listCertCommand);
@@ -312,11 +310,7 @@ export class LocalCertificateManager {
           return;
         }
 
-        const installCertCommand = `(Import-Certificate -FilePath '${localCert.certPath}' -CertStoreLocation Cert:\\CurrentUser\\Root)[0].Thumbprint`;
-        const thumbprint = (await ps.execPowerShell(installCertCommand)).trim();
-
-        const friendlyNameCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root\\${thumbprint}).FriendlyName='${friendlyName}'`;
-        await ps.execPowerShell(friendlyNameCommand);
+        await this.trustCertificateWindows(localCert, thumbprint, friendlyName);
 
         localCert.isTrusted = true;
         return;
@@ -375,5 +369,57 @@ export class LocalCertificateManager {
 
     // No dialog, always return true;
     return true;
+  }
+
+  private async checkCertificateWindows(thumbprint: string): Promise<boolean> {
+    try {
+      // try powershell first
+      const getCertCommand = `Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match '${thumbprint}' }`;
+      const getCertRes = await ps.execPowerShell(getCertCommand);
+      return getCertRes.toUpperCase().includes(thumbprint.toUpperCase());
+    } catch (error: any) {
+      // if any error, try certutil
+      const getCertCommand = `certutil -user -verifystore root ${thumbprint}`;
+      const getCertRes = (await ps.execShell(getCertCommand)).trim();
+      return getCertRes.toUpperCase().includes(thumbprint.toUpperCase());
+    }
+  }
+
+  private async trustCertificateWindows(
+    localCert: LocalCertificate,
+    thumbprint: string,
+    friendlyName: string
+  ): Promise<void> {
+    try {
+      // try powershell first
+      const installCertCommand = `Import-Certificate -FilePath '${localCert.certPath}' -CertStoreLocation Cert:\\CurrentUser\\Root`;
+      await ps.execPowerShell(installCertCommand);
+      try {
+        const friendlyNameCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root\\${thumbprint}).FriendlyName='${friendlyName}'`;
+        await ps.execPowerShell(friendlyNameCommand);
+      } catch (e) {
+        // ignore friendly name failure
+      }
+    } catch (error: any) {
+      // if any error, try certutil
+      const installCertCommand = `certutil -user -addstore root "${localCert.certPath}"`;
+      await ps.execShell(installCertCommand);
+      try {
+        const certInfPath = path.join(path.dirname(localCert.certPath), "localhost.inf");
+        await fs.writeFile(
+          certInfPath,
+          [
+            "[Version]",
+            `Signature = "$Windows NT$"`,
+            "[Properties]",
+            `11 = {text}${friendlyName}`,
+          ].join(os.EOL)
+        );
+        const friendlyNameCommand = `certutil -user -repairstore root ${thumbprint} "${certInfPath}"`;
+        await ps.execShell(friendlyNameCommand);
+      } catch (e) {
+        // ignore friendly name failure
+      }
+    }
   }
 }

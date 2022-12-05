@@ -130,6 +130,29 @@ export class FrontendValidator {
     console.log("Successfully validate Frontend Provision.");
   }
 
+  public static async validateProvisionV3(
+    frontendObject: IFrontendObject,
+    subscriptionId: string,
+    resourceGroupName: string
+  ): Promise<void> {
+    console.log("Start to validate Frontend Provision.");
+
+    const tokenProvider = MockAzureAccountProvider;
+    const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
+    const token = (await tokenCredential?.getToken(AzureScopes))?.token;
+    chai.assert.exists(token);
+
+    const response = await this.getContainer(
+      subscriptionId,
+      resourceGroupName,
+      frontendObject,
+      token as string
+    );
+    chai.assert.exists(response);
+
+    console.log("Successfully validate Frontend Provision.");
+  }
+
   public static async validateDeploy(frontendObject: IFrontendObject): Promise<void> {
     console.log("Start to validate Frontend Deploy.");
 
@@ -157,7 +180,7 @@ export class FrontendValidator {
     console.log("Successfully validate Frontend Deploy.");
   }
 
-  private static getStorageAccountName(storageResourceId: string): string {
+  public static getStorageAccountName(storageResourceId: string): string {
     const result = parseFromResourceId(
       /providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i,
       storageResourceId

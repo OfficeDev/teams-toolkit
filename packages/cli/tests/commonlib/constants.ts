@@ -5,6 +5,7 @@ export class TestFilePath {
 
   static readonly projectSettingsFileName = "projectSettings.json";
   static readonly aadManifestTemplateFileName = "aad.template.json";
+  static readonly aadManifestTemplateFileNameV3 = "aad.manifest.template.json";
   static readonly permissionJsonFileName = "permissions.json";
 
   static readonly mainFileName = "main.bicep";

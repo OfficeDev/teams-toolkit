@@ -9,15 +9,48 @@ import { FxError } from "../error";
 export type AzureCredential =
   | {
       type: "AuthorizationCode";
+      /**
+       * The user account's e-mail address (user name).
+       */
       username: string;
-      tenantId?: string; // for multi-tenant account
-      popUpSignIn?: boolean; //whether pop up sign in flow if the account is not signed in
+      /**
+       * The Azure Active Directory tenant (directory) ID.
+       * This parameter is used for multi-tenant account scenario
+       */
+      tenantId?: string;
+      /**
+       * whether pop up sign in flow if the account is not signed in, default is true
+       */
+      popUpSignIn?: boolean;
     }
-  | { type: "ClientSecretCredential"; tenantId: string; clientId: string; clientSecret: string }
+  | {
+      type: "ClientSecretCredential";
+      /**
+       * The Azure Active Directory tenant (directory) ID.
+       */
+      tenantId: string;
+      /**
+       * The client (application) ID of an App Registration in the tenant.
+       */
+      clientId: string;
+      /**
+       * A client secret that was generated for the App Registration.
+       */
+      clientSecret: string;
+    }
   | {
       type: "ClientCertificateCredential";
+      /**
+       * The Azure Active Directory tenant (directory) ID.
+       */
       tenantId: string;
+      /**
+       * The client (application) ID of an App Registration in the tenant.
+       */
       clientId: string;
+      /**
+       * The path to a PEM-encoded public/private key certificate on the filesystem.
+       */
       certificatePath: string;
     };
 
@@ -32,7 +65,12 @@ export interface AzureAccountProvider {
    */
   getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined>;
 
-  getIdentityCredential(credential: AzureCredential): Promise<TokenCredential | undefined>;
+  /**
+   * To support credential per action feature, caller can specify credential info for on demand
+   * This method will be optional until V3 first release, after that it will be changed to required
+   * @param credential
+   */
+  getIdentityCredential?(credential: AzureCredential): Promise<TokenCredential | undefined>;
 
   /**
    * Azure sign out

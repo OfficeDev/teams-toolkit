@@ -96,7 +96,11 @@ export class CreateBotAadAppDriver implements StepDriver {
           ["BOT_ID", createRes.value.botId],
           ["SECRET_BOT_PASSWORD", createRes.value.botPassword],
         ]),
-        summaries: [],
+        summaries: [
+          botConfig.botId && botConfig.botPassword
+            ? getLocalizedString(logMessageKeys.useExistedBotAad, botConfig.botId)
+            : getLocalizedString(logMessageKeys.successCreateBotAad, createRes.value.botId),
+        ],
       };
     } catch (error) {
       await progressHandler?.end(false);

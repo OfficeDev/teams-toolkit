@@ -530,8 +530,8 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<any, FxError>> {
     return isV3Enabled()
-      ? this.executeUserTaskOld(func, inputs)
-      : this.executeUserTaskNew(func, inputs);
+      ? this.executeUserTaskNew(func, inputs)
+      : this.executeUserTaskOld(func, inputs);
   }
 
   @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false)])

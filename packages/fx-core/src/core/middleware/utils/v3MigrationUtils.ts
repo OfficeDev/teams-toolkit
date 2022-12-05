@@ -12,7 +12,7 @@ import { CoreHookContext } from "../../types";
 import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
 
 // read json files in states/ folder
-export async function readStateFile(context: MigrationContext, filePath: string): Promise<any> {
+export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
   const filepath = path.join(context.projectPath, filePath);
   if (await fs.pathExists(filepath)) {
     const obj = fs.readJson(filepath);

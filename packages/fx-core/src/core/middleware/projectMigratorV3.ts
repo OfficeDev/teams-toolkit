@@ -12,6 +12,8 @@ import {
   TemplateFolderName,
   SystemError,
   UserError,
+  Platform,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -46,7 +48,8 @@ import {
 import * as semver from "semver";
 
 const Constants = {
-  provisionBicepPath: "./templates/azure/provision.bicep",
+  vsProvisionBicepPath: "./Templates/azure/provision.bicep",
+  vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   appYmlName: "app.yml",
 };
@@ -187,12 +190,21 @@ export async function generateSettingsJson(context: MigrationContext): Promise<v
 }
 
 export async function generateAppYml(context: MigrationContext): Promise<void> {
+  const inputs: Inputs = context.arguments[context.arguments.length - 1];
+  const bicepFilePath =
+    inputs.platform === Platform.VS
+      ? Constants.vsProvisionBicepPath
+      : Constants.vscodeProvisionBicepPath;
   const bicepContent: string = await fs.readFile(
-    path.join(context.projectPath, Constants.provisionBicepPath),
+    path.join(context.projectPath, bicepFilePath),
     "utf8"
   );
   const oldProjectSettings = await loadProjectSettings(context.projectPath);
-  const appYmlGenerator = new AppYmlGenerator(oldProjectSettings, bicepContent);
+  const appYmlGenerator = new AppYmlGenerator(
+    oldProjectSettings,
+    bicepContent,
+    context.projectPath
+  );
   const appYmlString: string = await appYmlGenerator.generateAppYml();
   await context.fsWriteFile(path.join(SettingsFolderName, Constants.appYmlName), appYmlString);
 }

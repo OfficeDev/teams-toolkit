@@ -75,8 +75,8 @@ describe("aadAppCreate", async () => {
 
     const result = await createBotAadAppDriver.handler(args, mockedDriverContext);
 
-    expect(result.get(outputKeys.BOT_ID)).to.be.equal(expectedClientId);
-    expect(result.get(outputKeys.SECRET_BOT_PASSWORD)).to.be.equal(expectedSecretText);
+    expect(result.output.get(outputKeys.BOT_ID)).to.be.equal(expectedClientId);
+    expect(result.output.get(outputKeys.SECRET_BOT_PASSWORD)).to.be.equal(expectedSecretText);
   });
 
   it("should throw user error when GraphClient failed with 4xx error", async () => {

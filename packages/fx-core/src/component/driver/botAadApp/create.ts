@@ -95,9 +95,9 @@ export class CreateBotAadAppDriver implements StepDriver {
         logMessageKeys.useExistedBotAad,
         botConfig.botId
       );
-      context.logProvider?.info(
-        botConfig.botId && botConfig.botPassword ? useExistedBotAadLog : successCreateBotAadLog
-      );
+      const summary =
+        botConfig.botId && botConfig.botPassword ? useExistedBotAadLog : successCreateBotAadLog;
+      context.logProvider?.info(summary);
       await progressHandler?.end(true);
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
@@ -107,9 +107,7 @@ export class CreateBotAadAppDriver implements StepDriver {
           ["BOT_ID", createRes.value.botId],
           ["SECRET_BOT_PASSWORD", createRes.value.botPassword],
         ]),
-        summaries: [
-          botConfig.botId && botConfig.botPassword ? useExistedBotAadLog : successCreateBotAadLog,
-        ],
+        summaries: [summary],
       };
     } catch (error) {
       await progressHandler?.end(false);

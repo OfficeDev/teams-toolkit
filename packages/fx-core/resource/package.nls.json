@@ -1176,8 +1176,6 @@
   "driver.botFramework.summary.update": "The bot registration has been updated successfully (%s).",
   "driver.botFramework.progressBar.title": "botFramework/createOrUpdateBot",
   "driver.botFramework.progressBar.createOrUpdateBot": "Creating or updating bot registration.",
-  "driver.generateAppsettings.description": "Add or update Teamsfx related parameters appsettings.Development.json.",
-  "driver.generateAppsettings.progressBar.title": "appsettings/generate",
-  "driver.generateAppsettings.progressBar.generate": "Generating the environment variables to %S.",
+  "driver.generateAppsettings.description": "Add or update environment variables to appsettings file.",
   "driver.generateAppsettings.summary.withTarget": "The environment variables has been generated successfully to %s."
 }

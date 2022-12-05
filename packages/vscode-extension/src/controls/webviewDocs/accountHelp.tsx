@@ -2,12 +2,10 @@ import "./components/github.scss";
 import "./components/document.scss";
 
 import * as React from "react";
-
+import { useEffect } from "react";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import CollapsibleStep from "./components/collapsibleStep";
 import ExternalLink from "./components/externalLink";
-import { useEffect } from "react";
-import M365Sandbox from "../../../img/webview/accountHelp/m365-dev-program-instant-sandbox.png";
 import M365Account from "../../../img/webview/accountHelp/ttk-m365-account.png";
 import ButtonLink from "./components/buttonLink";
 
@@ -85,9 +83,13 @@ export default function PrepareM365Account() {
               triggerFrom={TelemetryTriggerFrom.AccountHelp}
             />
           </p>
-          <p>Once successfully registered, you will see this page:</p>
           <p>
-            <img src={M365Sandbox} alt="Microsoft 365 developer subscriptions" />
+            <video
+              width={800}
+              height={450}
+              controls
+              src="https://teamsfxmedia.blob.core.windows.net/teamsfx-video/create-m365-developer-account.mp4"
+            />
           </p>
           <blockquote>
             <p>

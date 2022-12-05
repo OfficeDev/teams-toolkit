@@ -1376,11 +1376,10 @@ export class FxCore implements v3.ICore {
   }
 
   async dispatchInterfaceV3<Inputs, ExecuteRes>(
-    exec: (inputs: Inputs, ctx?: CoreHookContext) => Promise<ExecuteRes>,
-    inputs: Inputs,
-    ctx?: CoreHookContext
+    exec: (inputs: Inputs) => Promise<ExecuteRes>,
+    inputs: Inputs
   ): Promise<ExecuteRes> {
-    return exec(inputs, ctx);
+    return exec(inputs);
   }
 }
 

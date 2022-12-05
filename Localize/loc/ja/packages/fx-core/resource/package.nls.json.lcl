@@ -2209,6 +2209,9 @@
       <Item ItemId=";core.deployArmTemplates.ActionSuccess" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully deploy ARM templates. Resource group name: %s. Deployment name: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ARM テンプレートが正常に展開されました。リソース グループ名: %s。展開名: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2869,6 +2872,9 @@
       <Item ItemId=";core.progress.azureStorageStaticWebsiteEnabled" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure Storage static website setting already enabled.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Storage の静的 Web 状態の設定がすでに有効化されています。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2941,6 +2947,9 @@
       <Item ItemId=";core.progress.checkAzureStorageStaticWebsite" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Checking the setting of Azure Storage static website status.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Storage の静的 Web サイト状態の設定をチェックしています。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2968,6 +2977,9 @@
       <Item ItemId=";core.progress.configureAzureStorage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Configuring Azure Storage, enable static website setting.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Storage を構成すると静的な Web サイトの設定が有効になります。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2983,6 +2995,9 @@
       <Item ItemId=";core.progress.enableAzureStorageStaticWebsite" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enabling Azure Storage static website setting.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Azure Storage の静的な Web サイトの設定を有効にしています。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4330,24 +4345,36 @@
       <Item ItemId=";driver.spfx.deploy.createAppCatalog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create SharePoint app catalog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SharePoint アプリ カタログを作成します。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.spfx.deploy.deployPackage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Deploy SPFx package to your tenant app catalog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SPFx パッケージをテナント アプリ カタログに展開します。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.spfx.deploy.skipCreateAppCatalog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Skip to create SharePoint app catalog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[スキップして SharePoint アプリ カタログを作成します。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.spfx.deploy.uploadPackage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upload SPFx package to your tenant app catalog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SPFx パッケージをテナント アプリ カタログにアップロードします。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4372,12 +4399,18 @@
       <Item ItemId=";driver.spfx.info.tenantAppCatalogCreated" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[SharePoint tenant app catalog %s created, wait for a few minutes to be active.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SharePoint テナント アプリ カタログ %s が作成されました。アクティブになるまで数分お待ちください。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.spfx.warn.noTenantAppCatalogFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No tenant app catalog found, retry: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[テナント アプリ カタログが見つかりません。もう一度お試しください: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4456,6 +4489,9 @@
       <Item ItemId=";driver.tools.error.dotnetInstallationError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to check and install .NET Core SDK.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[.NET Core SDK をチェックしてインストールできませんでした。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -8110,6 +8146,9 @@
       <Item ItemId=";plugins.appstudio.teamsAppUpdatedCLINotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your Teams application manifest has been successfully deployed to ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams アプリケーション マニフェストが正常に展開されました ]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -10024,8 +10063,8 @@
       <Item ItemId=";plugins.spfx.deploy.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upload and deploy SharePoint package]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[SharePoint パッケージのアップロードとデプロイ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[SharePoint パッケージのアップロードと展開]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Upload and deploy SharePoint Package]]></Val>

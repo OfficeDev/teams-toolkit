@@ -99,7 +99,6 @@ enum Checker {
 
 const DepsDisplayName = {
   [DepsType.SpfxNode]: "Node.js",
-  [DepsType.SpfxNodeV1_16]: "Node.js",
   [DepsType.AzureNode]: "Node.js",
   [DepsType.ProjectNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
@@ -114,7 +113,6 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
   [Checker.Ports]: `Checking ${Checker.Ports}`,
   [DepsType.ProjectNode]: `Checking ${DepsDisplayName[DepsType.ProjectNode]}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
-  [DepsType.SpfxNodeV1_16]: `Checking ${DepsDisplayName[DepsType.SpfxNodeV1_16]}`,
   [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
   [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
   [DepsType.Ngrok]: `Checking and installing ${DepsDisplayName[DepsType.Ngrok]}`,
@@ -1274,10 +1272,7 @@ export default class Preview extends YargsCommand {
       TelemetryEvent.PreviewPrereqsCheckDependencies,
       async (ctx: TelemetryContext): Promise<Result<null, FxError>> => {
         let shouldContinue = true;
-        const availableDeps = await localEnvManager.getActiveDependencies(
-          projectSettings,
-          workspaceFolder
-        );
+        const availableDeps = await localEnvManager.getActiveDependencies(projectSettings);
         const enabledDeps = await CliDepsChecker.getEnabledDeps(
           availableDeps.filter((dep) => !CliDepsChecker.getNodeDeps().includes(dep))
         );

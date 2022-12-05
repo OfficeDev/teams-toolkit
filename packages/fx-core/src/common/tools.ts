@@ -415,7 +415,7 @@ export function isApiConnectEnabled(): boolean {
 }
 
 export function isV3Enabled(): boolean {
-  return process.env[FeatureFlagName.V3] ? process.env[FeatureFlagName.V3] === "true" : false;
+  return true;
 }
 
 export function isMigrationV3Enabled(): boolean {

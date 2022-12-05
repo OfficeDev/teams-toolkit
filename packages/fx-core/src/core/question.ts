@@ -19,7 +19,12 @@ import * as os from "os";
 import { environmentManager } from "./environment";
 import { ConstantString } from "../common/constants";
 import { sampleProvider } from "../common/samples";
-import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
+import {
+  isAadManifestEnabled,
+  isExistingTabAppEnabled,
+  isM365AppEnabled,
+  isV3Enabled,
+} from "../common/tools";
 import { isBotNotificationEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
@@ -371,6 +376,10 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
 
   if (isExistingTabAppEnabled()) {
     staticOptions.splice(newBots.length, 0, ExistingTabOptionItem);
+  }
+
+  if (isV3Enabled()) {
+    staticOptions.splice(newBots.length, 1);
   }
 
   return {

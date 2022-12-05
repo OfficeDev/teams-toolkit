@@ -56,6 +56,13 @@ export const STATIC_TABS_TPL_V3: IStaticTab[] = [
     websiteUrl: `{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/tab`,
     scopes: ["personal"],
   },
+  {
+    entityId: "index",
+    name: "Dashboard",
+    contentUrl: `{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/tab`,
+    websiteUrl: `{{{state.${TAB_STATE_KEY}.endpoint}}}{{{state.${TAB_STATE_KEY}.indexPath}}}/tab`,
+    scopes: ["personal"],
+  },
 ];
 
 export const CONFIGURABLE_TABS_TPL_V3: IConfigurableTab[] = [

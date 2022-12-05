@@ -35,6 +35,7 @@ import {
   wrapRunMigration,
   checkVersionForMigration,
   VersionState,
+  configsMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
@@ -544,6 +545,7 @@ describe("stateMigration", () => {
       getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "dev"
     );
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
     const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
     assert.equal(testEnvContent_dev, trueEnvContent_dev);
 
@@ -551,8 +553,71 @@ describe("stateMigration", () => {
       getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "local"
     );
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.local")));
     const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
     assert.equal(testEnvContent_local, trueEnvContent_local);
+  });
+
+  it("ReadFileError: .fx/states does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    await copyTestProject("happyPathEmpty", projectPath);
+    try {
+      await statesMigration(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.innerError.message, ".fx/states does not exist");
+    }
+  });
+});
+
+describe("configMigration", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("happy path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    await configsMigration(migrationContext);
+
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+
+    const trueEnvContent_dev = await readEnvFile(
+      getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
+      "config.dev"
+    );
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
+    const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
+    assert.equal(testEnvContent_dev, trueEnvContent_dev);
+
+    const trueEnvContent_local = await readEnvFile(
+      getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
+      "config.local"
+    );
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.local")));
+    const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
+    assert.equal(testEnvContent_local, trueEnvContent_local);
+  });
+
+  it("ReadFileError: .fx/configs does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    await copyTestProject("happyPathEmpty", projectPath);
+    try {
+      await configsMigration(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.innerError.message, ".fx/configs does not exist");
+    }
   });
 });
 

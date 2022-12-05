@@ -1097,7 +1097,8 @@ export class FxCore implements v3.ICore {
     driverContext: DriverContext,
     env: string
   ): Promise<Result<Void, FxError>> {
-    const runResult = await lifecycle.execute(driverContext);
+    const r = await lifecycle.execute(driverContext);
+    const runResult = r.result;
     if (runResult.isOk()) {
       await driverContext.logProvider.info(`Lifecycle ${lifecycle.name} succeeded`);
       const writeResult = await envUtil.writeEnv(

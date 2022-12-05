@@ -20,6 +20,8 @@ import "mocha";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
+
 describe("Add capabilities", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
@@ -31,28 +33,38 @@ describe("Add capabilities", function () {
       await cleanUp(appName, projectPath, true, true, false);
     }
   });
-  it(`tab project can add bot capability and provision`, { testPlanCaseId: 15687148 }, async () => {
-    appName = getUniqueAppName();
-    projectPath = path.resolve(testFolder, appName);
+  it(
+    `tab project can add bot capability and provision`,
+    { testPlanCaseId: 15687148 },
+    async function () {
+      if (isV3Enabled()) {
+        this.skip();
+      }
+      appName = getUniqueAppName();
+      projectPath = path.resolve(testFolder, appName);
 
-    // Arrange
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
-    // Act
-    await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
+      // Arrange
+      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+      // Act
+      await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
 
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await setBotSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await setBotSkuNameToB1Bicep(projectPath, env);
+      await CliHelper.setSubscription(subscription, projectPath);
+      await CliHelper.provisionProject(projectPath);
 
-    // Asserts
-    await validateTabAndBotProjectProvision(projectPath, env);
-  });
+      // Asserts
+      await validateTabAndBotProjectProvision(projectPath, env);
+    }
+  );
 
   it(
     `tab project can add message extension capability and provision`,
     { testPlanCaseId: 15687149 },
-    async () => {
+    async function () {
+      if (isV3Enabled()) {
+        this.skip();
+      }
       appName = getUniqueAppName();
       projectPath = path.resolve(testFolder, appName);
       // Arrange

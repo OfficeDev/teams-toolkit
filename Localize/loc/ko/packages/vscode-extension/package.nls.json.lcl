@@ -637,8 +637,8 @@
       <Item ItemId=";teamstoolkit.commands.deployManifest.ctxMenu.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Update Teams app]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams 앱 매니페스트 배포]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 앱 업데이트]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Deploy Teams app manifest]]></Val>
@@ -952,8 +952,8 @@
       <Item ItemId=";teamstoolkit.commands.updateManifest.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Update Teams app]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams 앱 매니페스트 배포]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 앱 업데이트]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Deploy Teams app manifest]]></Val>
@@ -1480,6 +1480,9 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.guideDescription" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[View guided tutorials]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[단계별 자습서 보기]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2080,6 +2083,9 @@
       <Item ItemId=";teamstoolkit.devPortalIntegration.installPreReleaseWarning" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Please switch to pre-release version of Teams Toolkit following [Pre release extensions]5D;(%s) and try again from Developer Portal.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[[시험판 확장 프로그램]5D;(%s)에 따라 시험판 버전의 Teams 도구 키트로 전환하고 개발자 포털에서 다시 시도하세요.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

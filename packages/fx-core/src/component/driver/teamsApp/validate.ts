@@ -20,6 +20,8 @@ const actionName = "teamsApp/validate";
 
 @Service(actionName)
 export class ValidateTeamsAppDriver implements StepDriver {
+  description = getLocalizedString("driver.teamsApp.description.validateDriver");
+
   public async run(
     args: ValidateTeamsAppArgs,
     context: DriverContext
@@ -94,7 +96,8 @@ export class ValidateTeamsAppDriver implements StepDriver {
       context.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
       const validationFailed = AppStudioResultFactory.UserError(
         AppStudioError.ValidationFailedError.name,
-        errMessage
+        errMessage,
+        "https://aka.ms/teamsfx-actions/teamsapp-validate"
       );
       return err(validationFailed);
     }

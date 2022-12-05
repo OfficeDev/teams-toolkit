@@ -14,6 +14,7 @@ import {
   ok,
   Result,
   Void,
+  LogProvider,
 } from "@microsoft/teamsfx-api";
 import { assert, expect } from "chai";
 import fs from "fs-extra";
@@ -49,8 +50,10 @@ import { envUtil } from "../../src/component/utils/envUtil";
 import { YamlParser } from "../../src/component/configManager/parser";
 import {
   DriverDefinition,
+  DriverInstance,
   ExecutionError,
   ExecutionOutput,
+  ExecutionResult,
   ILifecycle,
   LifecycleName,
   Output,
@@ -494,11 +497,18 @@ describe("apply yaml template", async () => {
         return [];
       }
 
-      public async execute(ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>> {
-        return err({
-          kind: "Failure",
-          error: mockedError,
-        });
+      public async execute(ctx: DriverContext): Promise<ExecutionResult> {
+        return {
+          result: err({
+            kind: "Failure",
+            error: mockedError,
+          }),
+          summaries: [],
+        };
+      }
+
+      public resolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
+        return ok([]);
       }
     }
 

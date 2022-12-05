@@ -41,7 +41,7 @@ import {
   getProjectVersion,
   jsonObjectNamesConvertV3,
   readBicepContent,
-  readStateFile,
+  readJsonFile,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
 
@@ -71,6 +71,7 @@ const subMigrations: Array<Migration> = [
   replacePlaceholderForManifests,
   statesMigration,
   updateLaunchJson,
+  configsMigration,
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -287,15 +288,16 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
     // if ./fx/states/ exists
     const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
     for (const fileName of fileNames) {
-      const fileRegex = new RegExp("(state\\.)([a-zA-Z0-9_]*)(\\.json)", "g"); // state.*.json
+      const fileRegex = new RegExp("(state\\.)([a-zA-Z0-9_-]*)(\\.json)", "g"); // state.*.json
       const fileNamesArray = fileRegex.exec(fileName);
       if (fileNamesArray != null) {
         // get envName
         const envName = fileNamesArray[2];
-        // create .env.{env} file
+        // create .env.{env} file if not exist
         await context.fsEnsureDir(SettingsFolderName);
-        await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
-        const obj = await readStateFile(
+        if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
+          await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+        const obj = await readJsonFile(
           context,
           path.join(".fx", "states", "state." + envName + ".json")
         );
@@ -307,6 +309,8 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
         }
       }
     }
+  } else {
+    throw ReadFileError(new Error(".fx/states does not exist"));
   }
 }
 
@@ -331,4 +335,42 @@ export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
     [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
   });
   return true;
+}
+
+export async function configsMigration(context: MigrationContext): Promise<void> {
+  // general
+  if (await context.fsPathExists(path.join(".fx", "configs"))) {
+    // if ./fx/states/ exists
+    const fileNames = fsReadDirSync(context, path.join(".fx", "configs")); // search all files, get file names
+    for (const fileName of fileNames)
+      if (fileName.startsWith("config.")) {
+        const fileRegex = new RegExp("(config\\.)([a-zA-Z0-9_-]*)(\\.json)", "g"); // state.*.json
+        const fileNamesArray = fileRegex.exec(fileName);
+        if (fileNamesArray != null) {
+          // get envName
+          const envName = fileNamesArray[2];
+          // create .env.{env} file if not exist
+          await context.fsEnsureDir(SettingsFolderName);
+          if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
+            await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+          const obj = await readJsonFile(
+            context,
+            path.join(".fx", "configs", "config." + envName + ".json")
+          );
+          if (obj["manifest"]) {
+            const bicepContent = readBicepContent(context);
+            // convert every name
+            const envData = jsonObjectNamesConvertV3(
+              obj["manifest"],
+              "manifest.",
+              FileType.CONFIG,
+              bicepContent
+            );
+            await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData);
+          }
+        }
+      }
+  } else {
+    throw ReadFileError(new Error(".fx/configs does not exist"));
+  }
 }

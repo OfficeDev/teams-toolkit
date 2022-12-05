@@ -625,12 +625,6 @@ export function isGeneratorCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
 }
 
-export function getSPFxVersion(): string {
-  const flag = process.env[FeatureFlagName.SPFxVersion];
-
-  return flag ?? "1.15.0";
-}
-
 export async function getAppSPFxVersion(root: string): Promise<string | undefined> {
   let projectSPFxVersion = undefined;
   const yoInfoPath = path.join(root, "SPFx", ".yo-rc.json");

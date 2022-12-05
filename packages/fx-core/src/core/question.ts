@@ -38,6 +38,7 @@ import {
   MessageExtensionNewUIItem,
   BotNewUIOptionItem,
   WorkflowOptionItem,
+  DashboardOptionItem,
 } from "../component/constants";
 import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { ResourceManagementClient } from "@azure/arm-resources";
@@ -358,6 +359,7 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
 
   const staticOptions: StaticOptions = [
     ...newBots,
+    DashboardOptionItem,
     TabNewUIOptionItem,
     TabSPFxNewUIItem,
     TabNonSsoItem,

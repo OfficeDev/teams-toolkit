@@ -22,7 +22,7 @@ import { BotValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
-
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 describe("teamsfx new template", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
@@ -31,6 +31,9 @@ describe("teamsfx new template", function () {
   const env = environmentManager.getDefaultEnvName();
 
   it(`${TemplateProject.HelloWorldBot}`, { testPlanCaseId: 15277461 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     await CliHelper.createTemplateProject(
       appName,
       testFolder,

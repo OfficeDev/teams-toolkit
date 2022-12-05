@@ -1481,7 +1481,7 @@
         <Str Cat="Text">
           <Val><![CDATA[View guided tutorials]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Просмотр интерактивных руководств]]></Val>
+            <Val><![CDATA[Просмотр интерактивных учебников]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

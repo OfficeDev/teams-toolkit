@@ -94,7 +94,7 @@ module azureBotRegistration './botRegistration/azurebot.bicep' = {
 
 var siteDomain = replace(replace(storage.properties.primaryEndpoints.web, 'https://', ''), '/', '')
 
-// The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-provision-arm#output for more details.
+// The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-actions/arm-deploy for more details.
 output TAB_AZURE_STORAGE_RESOURCE_ID string = storage.id // used in deploy stage
 output TAB_DOMAIN string = siteDomain
 output TAB_ENDPOINT string = 'https://${siteDomain}'

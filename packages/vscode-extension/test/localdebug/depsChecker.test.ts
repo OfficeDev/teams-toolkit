@@ -114,7 +114,6 @@ describe("[Checker UT - Extension]", () => {
       const checker = new VSCodeDepsChecker(logger, telemetry);
       const deps = [
         DepsType.SpfxNode,
-        DepsType.SpfxNodeV1_16,
         DepsType.AzureNode,
         DepsType.Dotnet,
         DepsType.FuncCoreTools,
@@ -142,7 +141,6 @@ describe("[Checker UT - Extension]", () => {
       const checker = new VSCodeDepsChecker(logger, telemetry);
       const deps = [
         DepsType.SpfxNode,
-        DepsType.SpfxNodeV1_16,
         DepsType.AzureNode,
         DepsType.Dotnet,
         DepsType.FuncCoreTools,

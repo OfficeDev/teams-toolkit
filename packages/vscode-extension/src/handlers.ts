@@ -96,7 +96,6 @@ import {
   CLI_FOR_M365,
   GlobalKey,
   SpfxManageSiteAdminUrl,
-  SUPPORTED_SPFX_PRERELEASE_VERSION,
   SUPPORTED_SPFX_VERSION,
 } from "./constants";
 import { PanelType } from "./controls/PanelType";
@@ -1855,17 +1854,10 @@ export async function promptSPFxUpgrade() {
 
     if (projectSPFxVersion) {
       const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
-      const cmpPrerelease = compare(projectSPFxVersion, SUPPORTED_SPFX_PRERELEASE_VERSION);
 
-      if (cmp === 0 || cmpPrerelease === 0) {
-        return;
-      }
-      if (cmp === cmpPrerelease) {
-        const spfxVersion =
-          commonTools.getSPFxVersion() === "1.15.0"
-            ? SUPPORTED_SPFX_VERSION
-            : SUPPORTED_SPFX_PRERELEASE_VERSION;
-        const args: string[] = cmp === 1 ? [spfxVersion] : [spfxVersion, spfxVersion];
+      if (cmp === 1 || cmp === -1) {
+        const args: string[] =
+          cmp === 1 ? [SUPPORTED_SPFX_VERSION] : [SUPPORTED_SPFX_VERSION, SUPPORTED_SPFX_VERSION];
         VS_CODE_UI.showMessage(
           "warn",
           util.format(
@@ -3370,6 +3362,20 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
         groupName: localize("teamstoolkit.guide.scenario"),
         data: "https://aka.ms/teamsfx-create-command",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "dashboardApp",
+        label: `${localize("teamstoolkit.tutorials.dashboardApp.label")}`,
+        detail: localize("teamstoolkit.tutorials.dashboardApp.detail"),
+        groupName: localize("teamstoolkit.guide.scenario"),
+        data: "https://aka.ms/teamsfx-dashboard-app",
         buttons: [
           {
             iconPath: "file-symlink-file",

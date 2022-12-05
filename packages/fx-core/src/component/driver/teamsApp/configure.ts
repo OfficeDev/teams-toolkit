@@ -28,6 +28,8 @@ const outputNames = {
 
 @Service(actionName)
 export class ConfigureTeamsAppDriver implements StepDriver {
+  description = getLocalizedString("driver.teamsApp.description.updateDriver");
+
   public async run(
     args: ConfigureTeamsAppArgs,
     context: DriverContext
@@ -67,7 +69,8 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(args.appPackagePath)
+          AppStudioError.FileNotFoundError.message(args.appPackagePath),
+          "https://aka.ms/teamsfx-actions/teamsapp-update"
         )
       );
     }
@@ -112,7 +115,8 @@ export class ConfigureTeamsAppDriver implements StepDriver {
       return err(
         AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppUpdateFailedError.name,
-          AppStudioError.TeamsAppUpdateFailedError.message(e)
+          AppStudioError.TeamsAppUpdateFailedError.message(e),
+          "https://aka.ms/teamsfx-actions/teamsapp-update"
         )
       );
     }

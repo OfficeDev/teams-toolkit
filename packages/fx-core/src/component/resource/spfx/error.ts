@@ -5,7 +5,6 @@
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { Constants } from "./utils/constants";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { isOfficialSPFx } from "./utils/utils";
 
 export function ScaffoldError(error: Error): UserError | SystemError {
   if (error instanceof UserError || error instanceof SystemError) {
@@ -118,12 +117,12 @@ export function NpmVersionNotSupportedError(version: string): UserError {
     message: getDefaultString(
       "plugins.spfx.error.npmVersionNotSupported",
       version,
-      isOfficialSPFx() ? Constants.SPFX_VERSION : Constants.SPFX_VERSION_PRERELEASE
+      Constants.SPFX_VERSION
     ),
     displayMessage: getLocalizedString(
       "plugins.spfx.error.npmVersionNotSupported",
       version,
-      isOfficialSPFx() ? Constants.SPFX_VERSION : Constants.SPFX_VERSION_PRERELEASE
+      Constants.SPFX_VERSION
     ),
     helpLink: Constants.SPFX_HELP_LINK,
   });
@@ -136,12 +135,12 @@ export function NodeVersionNotSupportedError(version: string): UserError {
     message: getDefaultString(
       "plugins.spfx.error.nodeVersionNotSupported",
       version,
-      isOfficialSPFx() ? Constants.SPFX_VERSION : Constants.SPFX_VERSION_PRERELEASE
+      Constants.SPFX_VERSION
     ),
     displayMessage: getLocalizedString(
       "plugins.spfx.error.nodeVersionNotSupported",
       version,
-      isOfficialSPFx() ? Constants.SPFX_VERSION : Constants.SPFX_VERSION_PRERELEASE
+      Constants.SPFX_VERSION
     ),
     helpLink: Constants.SPFX_HELP_LINK,
   });

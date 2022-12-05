@@ -37,6 +37,7 @@ const outputKeys = {
 
 @Service(actionName)
 export class PublishAppPackageDriver implements StepDriver {
+  description = getLocalizedString("driver.teamsApp.description.publishDriver");
   public async run(
     args: PublishAppPackageArgs,
     context: DriverContext
@@ -79,7 +80,8 @@ export class PublishAppPackageDriver implements StepDriver {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(args.appPackagePath)
+          AppStudioError.FileNotFoundError.message(args.appPackagePath),
+          "https://aka.ms/teamsfx-actions/teamsapp-publish"
         )
       );
     }
@@ -92,7 +94,8 @@ export class PublishAppPackageDriver implements StepDriver {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE)
+          AppStudioError.FileNotFoundError.message(Constants.MANIFEST_FILE),
+          "https://aka.ms/teamsfx-actions/teamsapp-publish"
         )
       );
     }

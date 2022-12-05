@@ -40,8 +40,8 @@ export class BotRegistration {
     m365TokenProvider: M365TokenProvider,
     aadDisplayName: string,
     botConfig?: BotAadCredentials,
-    botAuthType: BotAuthType = BotAuthType.AADApp,
-    logProvider?: LogProvider
+    logProvider?: LogProvider,
+    botAuthType: BotAuthType = BotAuthType.AADApp
   ): Promise<Result<BotAadCredentials, FxError>> {
     logProvider?.info(getLocalizedString(logMessageKeys.startCreateBotAadApp));
     if (botAuthType === BotAuthType.AADApp) {
@@ -85,8 +85,8 @@ export class BotRegistration {
     aadDisplayName: string,
     botName: string,
     botConfig?: BotAadCredentials,
-    botAuthType: BotAuthType = BotAuthType.AADApp,
-    logProvider?: LogProvider
+    logProvider?: LogProvider,
+    botAuthType: BotAuthType = BotAuthType.AADApp
   ): Promise<Result<BotAadCredentials, FxError>> {
     return err(
       new NotImplementedError(Constants.BOT_REGISTRATION, Constants.CREATE_BOT_REGISTRATION)

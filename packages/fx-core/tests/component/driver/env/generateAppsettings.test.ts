@@ -121,6 +121,40 @@ describe("AppsettingsGenerateDriver", () => {
       }
     });
 
+    it("happy path: execute with target", async () => {
+      const target = "path";
+      let content = {};
+      const appsettings = {
+        BOT_ID: "$botId$",
+        BOT_PASSWORD: "$bot-password$",
+      };
+      sinon.stub(fs, "ensureFile").callsFake(async (path) => {
+        return;
+      });
+      sinon.stub(fs, "readFileSync").callsFake((path) => {
+        return Buffer.from(JSON.stringify(appsettings));
+      });
+      sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
+        content = data;
+        return;
+      });
+      sinon.stub(fs, "existsSync").callsFake((path) => {
+        return true;
+      });
+      const args: any = {
+        target,
+        appsettings: {
+          BOT_ID: "BOT_ID",
+          BOT_PASSWORD: "BOT_PASSWORD",
+        },
+      };
+      const result = await driver.execute(args, mockedDriverContext);
+      chai.assert(result.result.isOk());
+      if (result.result.isOk()) {
+        chai.assert.equal('{\n\t"BOT_ID": "BOT_ID",\n\t"BOT_PASSWORD": "BOT_PASSWORD"\n}', content);
+      }
+    });
+
     it("happy path: with target and customized data", async () => {
       const target = "path";
       let content = {};

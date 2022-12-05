@@ -45,14 +45,11 @@ describe("[Checker UT - Cli]", () => {
     it("Node", async () => {
       sandbox.stub(cliUtils, "isNodeCheckerEnabled").resolves(false);
       expect(await CliDepsChecker.isEnabled(DepsType.SpfxNode)).to.be.false;
-      expect(await CliDepsChecker.isEnabled(DepsType.SpfxNodeV1_16)).to.be.false;
       expect(await CliDepsChecker.isEnabled(DepsType.AzureNode)).to.be.false;
 
       sandbox.restore();
       sandbox.stub(cliUtils, "isNodeCheckerEnabled").resolves(true);
       expect(await CliDepsChecker.isEnabled(DepsType.AzureNode)).to.be.true;
-      expect(await CliDepsChecker.isEnabled(DepsType.SpfxNode)).to.be.true;
-      expect(await CliDepsChecker.isEnabled(DepsType.SpfxNodeV1_16)).to.be.true;
     });
 
     it("Dotnet", async () => {

@@ -11,7 +11,7 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 import { getAbsolutePath, wrapRun } from "../../utils/common";
 import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
-import { StepDriver } from "../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
@@ -22,18 +22,42 @@ const helpLink = "https://aka.ms/teamsfx-actions/appsettings-generate";
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class GenerateAppsettingsDriver implements StepDriver {
+  description = getLocalizedString("driver.generateAppsettings.description");
+
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: GenerateAppsettingsArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    return wrapRun(() => this.handler(args, context));
+    return wrapRun(async () => {
+      const result = await this.handler(args, context);
+      return result.output;
+    });
+  }
+
+  public async execute(
+    args: GenerateAppsettingsArgs,
+    ctx: DriverContext
+  ): Promise<ExecutionResult> {
+    let summaries: string[] = [];
+    const outputResult = await wrapRun(async () => {
+      const result = await this.handler(args, ctx);
+      summaries = result.summaries;
+      return result.output;
+    });
+    return {
+      result: outputResult,
+      summaries,
+    };
   }
 
   private async handler(
     args: GenerateAppsettingsArgs,
     context: DriverContext
-  ): Promise<Map<string, string>> {
+  ): Promise<{
+    output: Map<string, string>;
+    summaries: string[];
+  }> {
     try {
       this.validateArgs(args);
       const appsettingsPath = getAbsolutePath(args.target, context.projectPath);
@@ -49,8 +73,12 @@ export class GenerateAppsettingsDriver implements StepDriver {
       const appSettingsJson = JSON.parse(fs.readFileSync(appsettingsPath, "utf-8"));
       this.replaceProjectAppsettings(appSettingsJson, args.appsettings);
       await fs.writeFile(appsettingsPath, JSON.stringify(appSettingsJson, null, "\t"), "utf-8");
-
-      return new Map();
+      return {
+        output: new Map<string, string>(),
+        summaries: [
+          getLocalizedString("driver.generateAppsettings.summary.withTarget", args.target),
+        ],
+      };
     } catch (error) {
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(

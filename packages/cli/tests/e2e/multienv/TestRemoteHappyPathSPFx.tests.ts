@@ -22,7 +22,13 @@ import {
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import { AppStudioValidator } from "../../commonlib";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 describe("Multi Env Happy Path for SPFx", function () {
+  if (isV3Enabled()) {
+    // Skipped since V3 does not use V2 path for multi-env
+    return;
+  }
+
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);

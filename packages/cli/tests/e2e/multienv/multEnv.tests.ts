@@ -28,8 +28,13 @@ import { getUuid } from "../../commonlib/utilities";
 import { Capability } from "../../commonlib/constants";
 
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Multi Env Happy Path for Azure", function () {
+  if (isV3Enabled()) {
+    // Skipped since V3 does not use V2 path for multi-env
+    return;
+  }
   const env = "e2e";
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();

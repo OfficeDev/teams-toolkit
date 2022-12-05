@@ -28,7 +28,7 @@ export class LocalBotRegistration extends BotRegistration {
     if (botAadRes.isErr()) {
       return err(botAadRes.error);
     }
-    logProvider?.info(Messages.SuccessfullyCreatedBotAadApp);
+    // logProvider?.info(Messages.SuccessfullyCreatedBotAadApp);
 
     const botAadCredentials: BotAadCredentials = botAadRes.value;
 

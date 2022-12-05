@@ -19,7 +19,7 @@ export class RemoteBotRegistration extends BotRegistration {
     if (botAadRes.isErr()) {
       return err(botAadRes.error);
     }
-    logProvider?.info(Messages.SuccessfullyCreatedBotAadApp);
+    // logProvider?.info(Messages.SuccessfullyCreatedBotAadApp);
     // Didn't provision Azure bot service because it's handled by arm/bicep snippets.
     return ok(botAadRes.value);
   }

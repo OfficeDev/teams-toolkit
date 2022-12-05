@@ -1175,5 +1175,7 @@
   "driver.botFramework.summary.create": "The bot registration has been created successfully (%s).",
   "driver.botFramework.summary.update": "The bot registration has been updated successfully (%s).",
   "driver.botFramework.progressBar.title": "botFramework/createOrUpdateBot",
-  "driver.botFramework.progressBar.createOrUpdateBot": "Creating or updating bot registration."
+  "driver.botFramework.progressBar.createOrUpdateBot": "Creating or updating bot registration.",
+  "driver.generateAppsettings.description": "Add or update environment variables to appsettings file.",
+  "driver.generateAppsettings.summary.withTarget": "The environment variables has been generated successfully to %s."
 }

@@ -61,11 +61,7 @@ export class LocalEnvManager {
 
     // NodeJS
     if (isSPFx) {
-      if ((await getAppSPFxVersion(projectPath))?.startsWith("1.16.0")) {
-        depsTypes.push(DepsType.SpfxNodeV1_16);
-      } else {
-        depsTypes.push(DepsType.SpfxNode);
-      }
+      depsTypes.push(DepsType.SpfxNode);
     } else {
       depsTypes.push(DepsType.AzureNode);
     }

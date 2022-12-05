@@ -112,9 +112,9 @@ describe("aadAppCreate", async () => {
     expect(result.result.isOk() && result.result.value.get(outputKeys.BOT_ID)).to.be.equal(
       expectedClientId
     );
-    expect(result.result.isOk() && result.result.get(outputKeys.SECRET_BOT_PASSWORD)).to.be.equal(
-      expectedSecretText
-    );
+    expect(
+      result.result.isOk() && result.result.value.get(outputKeys.SECRET_BOT_PASSWORD)
+    ).to.be.equal(expectedSecretText);
   });
 
   it("should throw user error when GraphClient failed with 4xx error", async () => {

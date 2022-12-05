@@ -38,10 +38,13 @@ import { replacePlaceholdersForV3, FileType } from "./MigrationUtils";
 import { ReadFileError } from "../error";
 import {
   fsReadDirSync,
+  generateAppIdUri,
   getProjectVersion,
   jsonObjectNamesConvertV3,
+  parseCapabilities,
   readBicepContent,
   readJsonFile,
+  replaceAppIdUri,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
 
@@ -252,14 +255,19 @@ export async function replacePlaceholderForManifests(context: MigrationContext):
   }
   const bicepContent = await fs.readFile(path.join(context.projectPath, oldBicepFilePath), "utf-8");
 
+  // Read capability project settings
+  const projectSettings = await loadProjectSettings(context.projectPath);
+  const capabilities = parseCapabilities(projectSettings);
+  const appIdUri = generateAppIdUri(capabilities);
+
   // Read Teams app manifest and save to templates/appPackage/manifest.template.json
   const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
   const oldManifestExists = await fs.pathExists(path.join(context.projectPath, oldManifestPath));
   if (oldManifestExists) {
     const manifestPath = path.join(AppPackageFolderName, MANIFEST_TEMPLATE_CONSOLIDATE);
-    const oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
+    let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
+    oldManifest = replaceAppIdUri(oldManifest, appIdUri);
     const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);
-    // TODO: update app id uri
     await context.fsWriteFile(manifestPath, manifest);
   } else {
     // templates/appPackage/manifest.template.json does not exist
@@ -272,12 +280,12 @@ export async function replacePlaceholderForManifests(context: MigrationContext):
     path.join(context.projectPath, oldAadManifestPath)
   );
   if (oldAadManifestExists) {
-    const oldAadManifest = await fs.readFile(
+    let oldAadManifest = await fs.readFile(
       path.join(context.projectPath, oldAadManifestPath),
       "utf-8"
     );
+    oldAadManifest = replaceAppIdUri(oldAadManifest, appIdUri);
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
-    // TODO: update app id uri
     await context.fsWriteFile("aad.manifest.template.json", aadManifest);
   }
 }

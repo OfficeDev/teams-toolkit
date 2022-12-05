@@ -91,6 +91,6 @@
   ],
   "webApplicationInfo": {
       "id": "${{AAD_APP_CLIENT_ID}}",
-      "resource": "${{STATE__FX_RESOURCE_AAD_APP_FOR_TEAMS__APPLICATIONIDURIS}}"
+      "resource": "api://${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN}}/botid-${{BOT_ID}}"
   }
 }

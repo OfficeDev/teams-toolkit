@@ -349,7 +349,7 @@ describe("handlers", () => {
 
       const result = await handlers.selectTutorialsHandler();
 
-      chai.assert.equal(tutorialOptions.length, 6);
+      chai.assert.equal(tutorialOptions.length, 6, JSON.stringify(tutorialOptions));
       chai.assert.isTrue(result.isOk());
     });
   });

@@ -1028,9 +1028,7 @@ export class FxCore implements v3.ICore {
       return ok(Void);
     }
 
-    const core = ctx!.self as FxCore;
     const createEnvCopyInput = await askNewEnvironment(ctx!, inputs);
-
     if (
       !createEnvCopyInput ||
       !createEnvCopyInput.targetEnvName ||

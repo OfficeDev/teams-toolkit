@@ -36,6 +36,11 @@ export class AadValidator {
     return aadObject!;
   }
 
+  public static initV3(provider?: M365TokenProvider): void {
+    console.log("Start to init validator for Azure AD app.");
+    AadValidator.provider = provider || MockM365TokenProvider;
+  }
+
   public static async validate(
     aadObject: IAadObject,
     expectedPermission?: string,

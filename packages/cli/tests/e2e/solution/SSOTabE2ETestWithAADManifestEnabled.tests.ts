@@ -65,6 +65,8 @@ describe("SSO Tab with aad manifest enabled", () => {
         applicationIdUris: aadObject.identifierUris[0],
       };
 
+      AadValidator.initV3(M365Login);
+
       await AadValidator.validate(aad);
 
       // Validate Tab Frontend

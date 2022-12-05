@@ -83,7 +83,7 @@ describe("Preview --env", () => {
 
   it("Preview Command Running - Default", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
-    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({ TEAMS_APP_ID: "test-app-id" }));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
@@ -94,9 +94,8 @@ describe("Preview --env", () => {
 
     await cmd.handler(defaultOptions);
 
-    expect(logs.length).greaterThanOrEqual(2);
-    expect(logs[0]).satisfy((l: string) => l.startsWith("Set 'run-command'"));
-    expect(logs[1]).satisfy((l: string) => l.startsWith("Set 'run-command'"));
+    expect(logs.length).greaterThanOrEqual(1);
+    expect(logs[0]).satisfy((l: string) => l.includes("run-command"));
   });
 
   it("Preview Command Running - workspace not supported error", async () => {
@@ -124,9 +123,22 @@ describe("Preview --env", () => {
     expect((result as any).error).to.deep.equal({ foo: "bar" });
   });
 
-  it("Preview Command Running - check account error", async () => {
+  it("Preview Command Running - TeamsAppIdNotExists", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+
+    const cmd = new PreviewEnv();
+    cmd.builder(yargs);
+
+    const result = await cmd.runCommand(defaultOptions);
+
+    expect(result.isErr()).to.be.true;
+    expect((result as any).error.name).equals("TeamsAppIdNotExists");
+  });
+
+  it("Preview Command Running - check account error", async () => {
+    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(envUtil, "readEnv").resolves(ok({ TEAMS_APP_ID: "test-app-id" }));
     sandbox
       .stub(PreviewEnv.prototype, <any>"checkM365Account")
       .resolves(err({ foo: "bar" } as any));
@@ -142,7 +154,7 @@ describe("Preview --env", () => {
 
   it("Preview Command Running - detect run command error", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
-    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({ TEAMS_APP_ID: "test-app-id" }));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
     sandbox
       .stub(PreviewEnv.prototype, <any>"detectRunCommand")
@@ -159,7 +171,7 @@ describe("Preview --env", () => {
 
   it("Preview Command Running - run task error", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
-    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({ TEAMS_APP_ID: "test-app-id" }));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
     sandbox
       .stub(PreviewEnv.prototype, <any>"detectRunCommand")
@@ -179,7 +191,7 @@ describe("Preview --env", () => {
 
   it("Preview Command Running - launch browser error", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
-    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({ TEAMS_APP_ID: "test-app-id" }));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
@@ -438,7 +450,7 @@ describe("PreviewEnv Steps", () => {
     expect(taskRes.isOk()).to.be.true;
     const tasks = previewEnv.getRunningTasks();
     expect(tasks.length).equals(1);
-    expect((tasks[0] as any).taskTitle).equals("run command");
+    expect((tasks[0] as any).taskTitle).equals("Run Command");
     expect((tasks[0] as any).command).equals("npm start");
   });
 

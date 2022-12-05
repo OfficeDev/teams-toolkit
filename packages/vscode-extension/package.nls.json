@@ -391,6 +391,8 @@
     "teamstoolkit.tutorials.addSso.label": "Develop single sign-on experience in Teams",
     "teamstoolkit.tutorials.cardActionResponse.label": "Initiate sequential workflows in Teams",
     "teamstoolkit.tutorials.cardActionResponse.detail": "Automate repetitive workflows for common business processes in conversation",
+    "teamstoolkit.tutorials.dashboardApp.label": "Embed a dashboard canvas in Teams",
+    "teamstoolkit.tutorials.dashboardApp.detail": "Embed a canvas containing multiple cards that provide an overview of data or content in Microsoft Teams",
     "teamstoolkit.tutorials.commandAndResponse.detail": "Automate repetitive tasks with a simple command and response in conversation.",
     "teamstoolkit.tutorials.commandAndResponse.label": "Respond to chat commands in Teams",
     "teamstoolkit.tutorials.connectApi.detail": "Connect to an API with authentication support using TeamsFx SDK.",

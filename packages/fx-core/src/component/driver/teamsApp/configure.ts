@@ -28,6 +28,8 @@ const outputNames = {
 
 @Service(actionName)
 export class ConfigureTeamsAppDriver implements StepDriver {
+  description = getLocalizedString("driver.teamsApp.description.updateDriver");
+
   public async run(
     args: ConfigureTeamsAppArgs,
     context: DriverContext

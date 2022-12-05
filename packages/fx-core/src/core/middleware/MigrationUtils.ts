@@ -273,3 +273,22 @@ function provisionOutputNamingConverterV3(name: string, bicepContent: string): s
 
   return `${provisionOutputPrefix}${outputName}__${keyName}`.toUpperCase();
 }
+
+export function replacePlaceholdersForV3(content: string, bicepContent: string): string {
+  const placeholderRegex = /{{+ *[a-zA-Z_.-][a-zA-Z0-9_.-]* *}}+/g;
+  const placeholders = content.match(placeholderRegex);
+
+  if (placeholders) {
+    for (const placeholder of placeholders) {
+      const envNameV2 = placeholder.replace(/\{/g, "").replace(/\}/g, "");
+      const envNameV3 = namingConverterV3(envNameV2, FileType.STATE, bicepContent);
+      if (envNameV3.isOk()) {
+        content = content.replace(placeholder, `$\{\{${envNameV3.value}\}\}`);
+      } else {
+        throw envNameV3.error;
+      }
+    }
+  }
+
+  return content;
+}

@@ -72,8 +72,8 @@ const subMigrations: Array<Migration> = [
   replacePlaceholderForManifests,
   configsMigration,
   statesMigration,
+  userdataMigration,
   updateLaunchJson,
-  // userdataMigration,
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {

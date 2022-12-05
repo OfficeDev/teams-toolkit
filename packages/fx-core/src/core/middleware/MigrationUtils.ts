@@ -175,7 +175,7 @@ export const pluginIdMappingV3: { [key: string]: string } = {
   "fx-resource-azure-sql": "azure-sql",
   "fx-resource-apim": "apim",
 };
-const secretPrefix = "SECRET_";
+const secretPrefix = "SECRET__";
 const configPrefix = "CONFIG__";
 const provisionOutputPrefix = "PROVISIONOUTPUT__";
 
@@ -210,7 +210,9 @@ export function namingConverterV3(
         case FileType.CONFIG:
           return ok(`${configPrefix}${res}`);
         case FileType.USERDATA:
-          return ok(`${secretPrefix}${res}`);
+          if (res.includes("STATE__"))
+            return ok(`${secretPrefix}${res.substring(res.indexOf("STATE__") + 7)}`);
+          else return ok(`${secretPrefix}${res}`);
         case FileType.STATE:
         default:
           return ok(res);

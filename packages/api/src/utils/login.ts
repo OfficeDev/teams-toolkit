@@ -10,7 +10,7 @@ export type AzureCredential =
   | {
       type: "AuthorizationCode";
       username: string;
-      tenantId?: string; // for multi-tenant account?
+      tenantId?: string; // for multi-tenant account
       popUpSignIn?: boolean; //whether pop up sign in flow if the account is not signed in
     }
   | { type: "ClientSecretCredential"; tenantId: string; clientId: string; clientSecret: string }

@@ -33,7 +33,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
 
       - name: Install parser cli
         run: |
@@ -98,7 +98,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
 
       - name: Setup project
         uses: nick-fields/retry@v2
@@ -183,7 +183,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
 
       - name: Setup .net
         uses: actions/setup-dotnet@v2
@@ -250,7 +250,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
 
       - name: Setup .net
         uses: actions/setup-dotnet@v2
@@ -377,7 +377,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
 
       - name: Setup project
         uses: nick-fields/retry@v2

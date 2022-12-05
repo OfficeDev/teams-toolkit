@@ -305,7 +305,11 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
           const bicepContent = readBicepContent(context);
           // convert every name
           const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
-          await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData);
+          await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
+            encoding: "utf8",
+            flag: "a+",
+            mode: 0o666,
+          });
         }
       }
     }
@@ -366,7 +370,11 @@ export async function configsMigration(context: MigrationContext): Promise<void>
               FileType.CONFIG,
               bicepContent
             );
-            await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData);
+            await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
+              encoding: "utf8",
+              flag: "a+",
+              mode: 0o666,
+            });
           }
         }
       }

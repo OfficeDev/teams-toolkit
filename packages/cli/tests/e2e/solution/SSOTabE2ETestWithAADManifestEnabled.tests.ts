@@ -55,7 +55,7 @@ describe("SSO Tab with aad manifest enabled", () => {
       }
 
       await CliHelper.provisionProject(projectPath, "", env);
-      const aadManifestPath = path.join(projectPath, "build", "aad.manifest" + env + ".json");
+      const aadManifestPath = path.join(projectPath, "build", "aad.manifest.dev.json");
       const aadObject = JSON.parse(fs.readFileSync(aadManifestPath, "utf8"));
 
       const aad: any = {

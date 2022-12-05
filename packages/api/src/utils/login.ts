@@ -6,6 +6,16 @@ import { TokenCredential } from "@azure/core-http";
 import { ok, Result } from "neverthrow";
 import { FxError } from "../error";
 
+export type AzureCredential =
+  | { type: "AuthorizationCode"; username: string; tenantId?: string }
+  | { type: "ClientSecretCredential"; tenantId: string; clientId: string; clientSecret: string }
+  | {
+      type: "ClientCertificateCredential";
+      tenantId: string;
+      clientId: string;
+      certificatePath: string;
+    };
+
 /**
  * Difference between getAccountCredential and getIdentityCredential [Node Azure Authenticate](https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate)
  * You can search at [Azure JS SDK](https://docs.microsoft.com/en-us/javascript/api/overview/azure/?view=azure-node-latest) to see which credential you need.
@@ -16,6 +26,8 @@ export interface AzureAccountProvider {
    * @param showDialog Control whether the UI layer displays pop-up windows.
    */
   getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined>;
+
+  getIdentityCredential(credential: AzureCredential): Promise<TokenCredential | undefined>;
 
   /**
    * Azure sign out

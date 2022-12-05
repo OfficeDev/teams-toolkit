@@ -7,7 +7,12 @@ import { ok, Result } from "neverthrow";
 import { FxError } from "../error";
 
 export type AzureCredential =
-  | { type: "AuthorizationCode"; username: string; tenantId?: string }
+  | {
+      type: "AuthorizationCode";
+      username: string;
+      tenantId?: string; // for multi-tenant account?
+      popUpSignIn?: boolean; //whether pop up sign in flow if the account is not signed in
+    }
   | { type: "ClientSecretCredential"; tenantId: string; clientId: string; clientSecret: string }
   | {
       type: "ClientCertificateCredential";

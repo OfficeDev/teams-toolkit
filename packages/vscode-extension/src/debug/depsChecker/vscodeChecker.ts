@@ -72,7 +72,7 @@ export class VSCodeDepsChecker {
   }
 
   public static getNodeDeps(): DepsType[] {
-    return [DepsType.SpfxNode, DepsType.SpfxNodeV1_16, DepsType.AzureNode];
+    return [DepsType.SpfxNode, DepsType.AzureNode];
   }
 
   public async getDepsStatus(dep: DepsType): Promise<DependencyStatus> {
@@ -135,7 +135,6 @@ export class VSCodeDepsChecker {
     switch (dep) {
       case DepsType.AzureNode:
       case DepsType.SpfxNode:
-      case DepsType.SpfxNodeV1_16:
         return vscodeHelper.isNodeCheckerEnabled();
       case DepsType.Dotnet:
         return vscodeHelper.isDotnetCheckerEnabled();

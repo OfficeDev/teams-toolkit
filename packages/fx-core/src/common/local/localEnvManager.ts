@@ -47,10 +47,7 @@ export class LocalEnvManager {
     this.ui = ui;
   }
 
-  public async getActiveDependencies(
-    projectSettings: ProjectSettings,
-    projectPath: string
-  ): Promise<DepsType[]> {
+  public async getActiveDependencies(projectSettings: ProjectSettings): Promise<DepsType[]> {
     const depsTypes: DepsType[] = [];
     const isSPFx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);

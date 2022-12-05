@@ -31,6 +31,8 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
     // eslint-disable-next-line no-secrets/no-secrets
     "driver.deploy.enableStaticWebsiteInAzureStorageDescription"
   );
+  protected static readonly HELP_LINK =
+    "https://aka.ms/teamsfx-actions/azure-storage-enable-static-website";
   protected static readonly STORAGE_CONFIG_ARGS = asFactory<AzureStorageStaticWebsiteConfigArgs>({
     storageResourceId: asString,
     indexPage: asOptional(asString),
@@ -73,7 +75,10 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
     const logger = context.logProvider;
     await progressBar?.start();
     await progressBar?.next(ProgressMessages.checkAzureStorageEnableStaticWebsite);
-    const input = AzureStorageStaticWebsiteConfigDriver.STORAGE_CONFIG_ARGS(args);
+    const input = AzureStorageStaticWebsiteConfigDriver.STORAGE_CONFIG_ARGS(
+      args,
+      AzureStorageStaticWebsiteConfigDriver.HELP_LINK
+    );
     await logger.debug(
       `Enabling static website feature for Azure Storage account ${input.storageResourceId}`
     );

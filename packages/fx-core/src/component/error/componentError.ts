@@ -233,10 +233,15 @@ export class PrerequisiteError extends BaseComponentInnerError {
     );
   }
 
-  static folderNotExists(source: string, name: string): PrerequisiteError {
-    return new PrerequisiteError(source, "FolderNotExists", "driver.env.error.folderNotExist", [
-      name,
-    ]);
+  static folderNotExists(source: string, name: string, helpLink?: string): PrerequisiteError {
+    return new PrerequisiteError(
+      source,
+      "FolderNotExists",
+      "driver.env.error.folderNotExist",
+      [name],
+      undefined,
+      helpLink
+    );
   }
 
   static toCamel(name: string): string {

@@ -47,6 +47,7 @@ export class AzureFunctionDeployDriver implements StepDriver {
 export class AzureFunctionDeployDriverImpl extends AzureDeployDriver {
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/sites\/([^\/]*)/i;
+  protected helpLink = "https://aka.ms/teamsfx-actions/azure-functions-deploy";
 
   async azureDeploy(
     args: DeployStepArgs,

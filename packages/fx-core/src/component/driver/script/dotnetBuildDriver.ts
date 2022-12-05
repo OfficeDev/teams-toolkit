@@ -18,7 +18,11 @@ export class DotnetBuildDriver extends BaseBuildStepDriver {
   readonly description: string = getLocalizedString("driver.script.dotnetDescription");
 
   getImpl(args: unknown, context: DriverContext): BaseBuildDriver {
-    return new DotnetBuildDriverImpl(args, context);
+    return new DotnetBuildDriverImpl(
+      args,
+      context,
+      "https://aka.ms/teamsfx-actions/dotnet-command"
+    );
   }
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])

@@ -43,6 +43,7 @@ export class AzureAppServiceDeployDriver implements StepDriver {
 export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/sites\/([^\/]*)/i;
+  protected helpLink = "https://aka.ms/teamsfx-actions/azure-app-service-deploy";
 
   async azureDeploy(
     args: DeployStepArgs,

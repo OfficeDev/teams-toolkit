@@ -57,7 +57,7 @@ type KeyValidators<T> = {
 };
 
 export function asFactory<T>(keyValidators: KeyValidators<T>) {
-  return function (data: unknown): T {
+  return function (data: unknown, helpLink?: string): T {
     if (typeof data === "object" && data !== null) {
       const maybeT = data as unknown as T;
       for (const key of Object.keys(keyValidators) as Array<keyof T>) {
@@ -65,7 +65,13 @@ export function asFactory<T>(keyValidators: KeyValidators<T>) {
       }
       return maybeT;
     }
-    throw PrerequisiteError.somethingIllegal("Deploy", "data", "plugins.bot.InvalidData");
+    throw PrerequisiteError.somethingIllegal(
+      "Deploy",
+      "data",
+      "plugins.bot.InvalidData",
+      undefined,
+      helpLink
+    );
   };
 }
 

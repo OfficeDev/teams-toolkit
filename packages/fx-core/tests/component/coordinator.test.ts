@@ -1897,6 +1897,9 @@ describe("component coordinator test", () => {
   });
 
   it("executeUserTaskNew", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves("");
     const driver1: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
     const driver2: CreateAppPackageDriver = Container.get("teamsApp/createAppPackage");
@@ -1904,19 +1907,30 @@ describe("component coordinator test", () => {
     sandbox.stub(driver2, "run").resolves(ok(new Map()));
     const inputs: Inputs = {
       platform: Platform.VSCode,
+      projectPath: ".",
     };
     const fxCore = new FxCore(tools);
     const res1 = await fxCore.executeUserTask(
-      { namespace: "", method: "getManifestTemplatePath" },
+      { namespace: "", method: "getManifestTemplatePath", params: { manifestTemplatePath: "." } },
       inputs
     );
+    if (res1.isErr()) console.log(res1.error);
     assert.isTrue(res1.isOk());
     const res2 = await fxCore.executeUserTask(
-      { namespace: "", method: "validateManifest" },
+      { namespace: "", method: "validateManifest", params: { manifestTemplatePath: "." } },
       inputs
     );
+    if (res2.isErr()) console.log(res2.error);
     assert.isTrue(res2.isOk());
-    const res3 = await fxCore.executeUserTask({ namespace: "", method: "buildPackage" }, inputs);
+    const res3 = await fxCore.executeUserTask(
+      {
+        namespace: "",
+        method: "buildPackage",
+        params: { manifestTemplatePath: ".", outputZipPath: ".", outputJsonPath: "." },
+      },
+      inputs
+    );
+    if (res3.isErr()) console.log(res3.error);
     assert.isTrue(res3.isOk());
   });
 

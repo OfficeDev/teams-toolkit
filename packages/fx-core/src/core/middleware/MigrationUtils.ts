@@ -175,7 +175,7 @@ export const pluginIdMappingV3: { [key: string]: string } = {
   "fx-resource-azure-sql": "azure-sql",
   "fx-resource-apim": "apim",
 };
-const secretPrefix = "SECRET__";
+const secretPrefix = "SECRET_";
 const configPrefix = "CONFIG__";
 const provisionOutputPrefix = "PROVISIONOUTPUT__";
 

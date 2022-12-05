@@ -28,12 +28,17 @@ import { MigrationContext } from "../../../src/core/middleware/utils/migrationCo
 import {
   generateAppYml,
   generateSettingsJson,
+  replacePlaceholderForManifests,
   statesMigration,
   updateLaunchJson,
   migrate,
   wrapRunMigration,
+  checkVersionForMigration,
+  VersionState,
+  configsMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
+import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
 
 let mockedEnvRestore: () => void;
 
@@ -322,6 +327,151 @@ describe("generateAppYml-js/ts", () => {
   });
 });
 
+describe("replacePlaceholderForManifests", () => {
+  const sandbox = sinon.createSandbox();
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+  });
+
+  it("happy path: aad manifest exists", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+
+    // Action
+    await replacePlaceholderForManifests(migrationContext);
+
+    // Assert
+    const appPackageFolderPath = path.join(projectPath, "appPackage");
+    assert.isTrue(await fs.pathExists(appPackageFolderPath));
+
+    const resourcesPath = path.join(appPackageFolderPath, "resources", "test.png");
+    assert.isTrue(await fs.pathExists(resourcesPath));
+
+    const manifestPath = path.join(appPackageFolderPath, "manifest.template.json");
+    assert.isTrue(await fs.pathExists(manifestPath));
+    const manifest = (await fs.readFile(manifestPath, "utf-8"))
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    const manifestExpeceted = (
+      await fs.readFile(path.join(projectPath, "expected", "manifest.template.json"), "utf-8")
+    )
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    assert.equal(manifest, manifestExpeceted);
+
+    const aadManifestPath = path.join(projectPath, "aad.manifest.template.json");
+    assert.isTrue(await fs.pathExists(aadManifestPath));
+    const aadManifest = (await fs.readFile(aadManifestPath, "utf-8"))
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    const aadManifestExpected = (
+      await fs.readFile(path.join(projectPath, "expected", "aad.manifest.template.json"), "utf-8")
+    )
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    assert.equal(aadManifest, aadManifestExpected);
+  });
+
+  it("happy path: aad manifest does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+    await fs.remove(path.join(projectPath, "templates/appPackage/aad.template.json"));
+
+    // Action
+    await replacePlaceholderForManifests(migrationContext);
+
+    // Assert
+    const appPackageFolderPath = path.join(projectPath, "appPackage");
+    assert.isTrue(await fs.pathExists(appPackageFolderPath));
+
+    const resourcesPath = path.join(appPackageFolderPath, "resources", "test.png");
+    assert.isTrue(await fs.pathExists(resourcesPath));
+
+    const manifestPath = path.join(appPackageFolderPath, "manifest.template.json");
+    assert.isTrue(await fs.pathExists(manifestPath));
+    const manifest = (await fs.readFile(manifestPath, "utf-8"))
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    const manifestExpeceted = (
+      await fs.readFile(path.join(projectPath, "expected", "manifest.template.json"), "utf-8")
+    )
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    assert.equal(manifest, manifestExpeceted);
+
+    const aadManifestPath = path.join(projectPath, "aad.manifest.template.json");
+    assert.isFalse(await fs.pathExists(aadManifestPath));
+  });
+
+  it("migrate manifests failed: appPackage does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(false);
+
+    try {
+      await replacePlaceholderForManifests(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.innerError.message, "templates/appPackage does not exist");
+    }
+  });
+
+  it("migrate manifests failed: provision.bicep does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await fs.ensureDir(path.join(projectPath, "appPackage"));
+
+    try {
+      await replacePlaceholderForManifests(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.innerError.message, "templates/azure/provision.bicep does not exist");
+    }
+  });
+
+  it("migrate manifests failed: teams app manifest does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+    await fs.remove(path.join(projectPath, "templates/appPackage/manifest.template.json"));
+
+    try {
+      await replacePlaceholderForManifests(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, "ReadFileError");
+      assert.equal(
+        error.innerError.message,
+        "templates/appPackage/manifest.template.json does not exist"
+      );
+    }
+  });
+});
+
 describe("updateLaunchJson", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
@@ -395,6 +545,7 @@ describe("stateMigration", () => {
       getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "dev"
     );
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
     const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
     assert.equal(testEnvContent_dev, trueEnvContent_dev);
 
@@ -402,8 +553,110 @@ describe("stateMigration", () => {
       getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
       "local"
     );
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.local")));
     const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
     assert.equal(testEnvContent_local, trueEnvContent_local);
+  });
+
+  it("ReadFileError: .fx/states does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    await copyTestProject("happyPathEmpty", projectPath);
+    try {
+      await statesMigration(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.innerError.message, ".fx/states does not exist");
+    }
+  });
+});
+
+describe("configMigration", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("happy path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    await configsMigration(migrationContext);
+
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+
+    const trueEnvContent_dev = await readEnvFile(
+      getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
+      "config.dev"
+    );
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
+    const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
+    assert.equal(testEnvContent_dev, trueEnvContent_dev);
+
+    const trueEnvContent_local = await readEnvFile(
+      getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
+      "config.local"
+    );
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.local")));
+    const testEnvContent_local = await readEnvFile(path.join(projectPath, "teamsfx"), "local");
+    assert.equal(testEnvContent_local, trueEnvContent_local);
+  });
+
+  it("ReadFileError: .fx/configs does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    await copyTestProject("happyPathEmpty", projectPath);
+    try {
+      await configsMigration(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.innerError.message, ".fx/configs does not exist");
+    }
+  });
+});
+
+describe("Migration utils", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  const sandbox = sinon.createSandbox();
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+  });
+
+  it("checkVersionForMigration V2", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    const state = await checkVersionForMigration(migrationContext);
+    assert.equal(state, VersionState.upgradeable);
+  });
+
+  it("checkVersionForMigration V3", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readJson").resolves("3.0.0");
+    const state = await checkVersionForMigration(migrationContext);
+    assert.equal(state, VersionState.compatible);
+  });
+
+  it("checkVersionForMigration empty", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const state = await checkVersionForMigration(migrationContext);
+    assert.equal(state, VersionState.unsupported);
   });
 });
 
@@ -448,5 +701,6 @@ const Constants = {
   settingsFilePath: "teamsfx/settings.json",
   oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
   appYmlPath: "teamsfx/app.yml",
+  manifestsMigrationHappyPath: "manifestsHappyPath",
   launchJsonPath: ".vscode/launch.json",
 };

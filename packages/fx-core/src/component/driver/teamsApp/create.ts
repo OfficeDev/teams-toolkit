@@ -47,6 +47,7 @@ const outputNames = {
 
 @Service(actionName)
 export class CreateTeamsAppDriver implements StepDriver {
+  description = getLocalizedString("driver.teamsApp.description.createDriver");
   public async run(
     args: CreateTeamsAppArgs,
     context: DriverContext

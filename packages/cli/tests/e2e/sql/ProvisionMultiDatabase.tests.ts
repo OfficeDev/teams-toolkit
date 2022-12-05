@@ -15,6 +15,7 @@ import { Capability, Resource } from "../../commonlib/constants";
 import { getUuid } from "../../commonlib/utilities";
 import { it } from "@microsoft/extra-shot-mocha";
 import { getSubscriptionId, getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Provision to Azure with SQL", function () {
   const testFolder = getTestFolder();
@@ -23,6 +24,9 @@ describe("Provision to Azure with SQL", function () {
   const projectPath = path.resolve(testFolder, appName);
 
   it(`Provision multi databases`, { testPlanCaseId: 15687476 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     // new a project ( tab + function + sql )
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);

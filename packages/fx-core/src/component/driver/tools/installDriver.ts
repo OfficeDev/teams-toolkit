@@ -3,69 +3,98 @@
 
 import * as path from "path";
 import { Service } from "typedi";
-import { hooks } from "@feathersjs/hooks/lib";
-import { FxError, Result } from "@microsoft/teamsfx-api";
-import { LocalCertificateManager } from "../../../common/local/localCertificateManager";
-import { wrapRun } from "../../utils/common";
+import { FxError, IProgressHandler, Result } from "@microsoft/teamsfx-api";
+import {
+  DependencyStatus,
+  DepsManager,
+  DepsType,
+  EmptyLogger,
+  EmptyTelemetry,
+} from "../../../common/deps-checker";
+import {
+  LocalCertificate,
+  LocalCertificateManager,
+} from "../../../common/local/localCertificateManager";
 import { DriverContext } from "../interface/commonArgs";
-import { StepDriver } from "../interface/stepDriver";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { WrapDriverContext, wrapRun } from "../util/wrapUtil";
+import {
+  ProgressMessages,
+  Summaries,
+  TelemetryDepsCheckStatus,
+  TelemetryDevCertStatus,
+  TelemetryProperties,
+  toolsInstallDescription,
+} from "./constant";
+import { DotnetInstallationUserError } from "./error/dotnetInstallationUserError";
+import { FuncInstallationUserError } from "./error/funcInstallationUserError";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { InstallToolArgs } from "./interfaces/InstallToolArgs";
-import { DepsManager, DepsType, EmptyLogger, EmptyTelemetry } from "../../../common/deps-checker";
-import { FuncInstallationUserError } from "./error/funcInstallationUserError";
-import { DotnetInstallationUserError } from "./error/dotnetInstallationUserError";
 
 const ACTION_NAME = "tools/install";
 const outputName = Object.freeze({
   SSL_CRT_FILE: "SSL_CRT_FILE",
   SSL_KEY_FILE: "SSL_KEY_FILE",
+  FUNC_PATH: "FUNC_PATH",
   DOTNET_PATH: "DOTNET_PATH",
 });
 const helpLink = "https://aka.ms/teamsfx-actions/tools/install";
 
 @Service(ACTION_NAME)
 export class ToolsInstallDriver implements StepDriver {
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, ACTION_NAME)])
+  description = toolsInstallDescription();
   async run(
     args: InstallToolArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    const impl = new ToolsInstallDriverImpl(context);
-    return wrapRun(() => impl.run(args));
+    const wrapContext = new WrapDriverContext(context, ACTION_NAME, ACTION_NAME);
+
+    const impl = new ToolsInstallDriverImpl(wrapContext);
+    return (await wrapRun(wrapContext, () => impl.run(args))) as Result<
+      Map<string, string>,
+      FxError
+    >;
+  }
+
+  async execute(args: InstallToolArgs, context: DriverContext): Promise<ExecutionResult> {
+    const wrapContext = new WrapDriverContext(context, ACTION_NAME, ACTION_NAME);
+
+    const impl = new ToolsInstallDriverImpl(wrapContext);
+    return (await wrapRun(wrapContext, () => impl.run(args), true)) as ExecutionResult;
   }
 }
 
 export class ToolsInstallDriverImpl {
-  progressBarName = `Installing tools`;
-  progressBarSteps = 2;
-
-  constructor(private context: DriverContext) {}
+  constructor(private context: WrapDriverContext) {}
 
   async run(args: InstallToolArgs): Promise<Map<string, string>> {
-    // TODO(xiaofhua): prettier output
-    this.context.logProvider.info(`Running '${ACTION_NAME}' driver.`);
     const res = new Map<string, string>();
     this.validateArgs(args);
+
+    this.setArgTelemetry(args);
+    const progressBar = await this.createProgressBar(this.getSteps(args));
+
     if (args.devCert) {
+      await progressBar?.next(ProgressMessages.devCert());
       const localCertRes = await this.resolveLocalCertificate(args.devCert.trust);
       localCertRes.forEach((v, k) => res.set(k, v));
     }
+
     if (args.func) {
-      await this.resolveFuncCoreTools();
+      await progressBar?.next(ProgressMessages.func());
+      const funcRes = await this.resolveFuncCoreTools();
+      funcRes.forEach((v, k) => res.set(k, v));
     }
 
     if (args.dotnet) {
+      await progressBar?.next(ProgressMessages.dotnet());
       const dotnetRes = await this.resolveDotnet();
       dotnetRes.forEach((v, k) => res.set(k, v));
     }
 
-    // TODO(xiaofhua): prettier output
-    this.context.logProvider.info(`Run '${ACTION_NAME}' driver successfully.`);
     return res;
   }
 
-  // TODO(xiaofhua): add dev cert status telemetry
   async resolveLocalCertificate(trustDevCert: boolean): Promise<Map<string, string>> {
     const res = new Map<string, string>();
     // Do not print any log in LocalCertificateManager, use the error message returned instead.
@@ -76,35 +105,57 @@ export class ToolsInstallDriverImpl {
       res.set(outputName.SSL_KEY_FILE, localCertResult.keyPath);
     }
 
+    this.setDevCertTelemetry(trustDevCert, localCertResult);
+
     if (typeof localCertResult.isTrusted === "undefined") {
-      // TODO(xiaofhua): prettier warning output
-      this.context.logProvider.warning("Skip trusting development certificate for localhost.");
+      this.context.logProvider.warning(Summaries.devCertSkipped());
+      this.context.addSummary(Summaries.devCertSkipped());
     } else if (localCertResult.isTrusted === false) {
       throw localCertResult.error;
+    } else {
+      this.context.addSummary(Summaries.devCertSuccess(trustDevCert));
     }
+
     return res;
   }
 
-  async resolveFuncCoreTools(): Promise<void> {
+  async resolveFuncCoreTools(): Promise<Map<string, string>> {
+    const res = new Map<string, string>();
     const depsManager = new DepsManager(new EmptyLogger(), new EmptyTelemetry());
-    const result = await depsManager.ensureDependency(DepsType.FuncCoreTools, true);
-    if (!result.isInstalled && result.error) {
-      throw new FuncInstallationUserError(ACTION_NAME, result.error);
-    } else if (result.error) {
-      // TODO(xiaofhua): prettier warning output
-      this.context.logProvider.warning(result.error?.message);
+    const funcStatus = await depsManager.ensureDependency(DepsType.FuncCoreTools, true);
+
+    this.setDepsCheckTelemetry(TelemetryProperties.funcStatus, funcStatus);
+
+    if (!funcStatus.isInstalled && funcStatus.error) {
+      throw new FuncInstallationUserError(ACTION_NAME, funcStatus.error);
+    } else if (funcStatus.error) {
+      this.context.logProvider.warning(funcStatus.error?.message);
+      this.context.addSummary(funcStatus.error?.message);
+    } else {
+      this.context.addSummary(Summaries.funcSuccess(funcStatus?.details?.binFolders));
     }
+
+    if (funcStatus?.details?.binFolders !== undefined) {
+      const funcBinFolder = funcStatus.details.binFolders.join(path.delimiter);
+      res.set(outputName.FUNC_PATH, funcBinFolder);
+    }
+    return res;
   }
 
   async resolveDotnet(): Promise<Map<string, string>> {
     const res = new Map<string, string>();
     const depsManager = new DepsManager(new EmptyLogger(), new EmptyTelemetry());
     const dotnetStatus = await depsManager.ensureDependency(DepsType.Dotnet, true);
+
+    this.setDepsCheckTelemetry(TelemetryProperties.dotnetStatus, dotnetStatus);
+
     if (!dotnetStatus.isInstalled && dotnetStatus.error) {
       throw new DotnetInstallationUserError(ACTION_NAME, dotnetStatus.error);
     } else if (dotnetStatus.error) {
-      // TODO(xiaofhua): prettier warning output
       this.context.logProvider.warning(dotnetStatus.error?.message);
+      this.context.addSummary(dotnetStatus.error?.message);
+    } else {
+      this.context.addSummary(Summaries.dotnetSuccess(dotnetStatus?.details?.binFolders));
     }
     if (dotnetStatus?.details?.binFolders !== undefined) {
       const dotnetBinFolder = `${dotnetStatus.details.binFolders
@@ -125,5 +176,53 @@ export class ToolsInstallDriverImpl {
     if (!!args.dotnet && typeof args.dotnet !== "boolean") {
       throw new InvalidParameterUserError(ACTION_NAME, "dotnet", helpLink);
     }
+  }
+
+  private getSteps(args: InstallToolArgs): number {
+    return (args.devCert ? 1 : 0) + (args.dotnet ? 1 : 0) + (args.func ? 1 : 0);
+  }
+
+  private setArgTelemetry(args: InstallToolArgs): void {
+    this.context.addTelemetryProperties({
+      [TelemetryProperties.driverArgs]: JSON.stringify({
+        devCert: args.devCert,
+        func: args.func,
+        dotnet: args.dotnet,
+      }),
+    });
+  }
+
+  private setDevCertTelemetry(trustDevCert: boolean, localCertResult: LocalCertificate) {
+    this.context.addTelemetryProperties({
+      [TelemetryProperties.devCertStatus]: !trustDevCert
+        ? TelemetryDevCertStatus.Disabled
+        : localCertResult.alreadyTrusted
+        ? TelemetryDevCertStatus.AlreadyTrusted
+        : localCertResult.isTrusted
+        ? TelemetryDevCertStatus.Trusted
+        : TelemetryDevCertStatus.NotTrusted,
+    });
+  }
+
+  private setDepsCheckTelemetry(
+    propertyName: typeof TelemetryProperties[keyof typeof TelemetryProperties],
+    depStatus: DependencyStatus
+  ): void {
+    this.context.addTelemetryProperties({
+      [propertyName]: depStatus.isInstalled
+        ? depStatus.error
+          ? TelemetryDepsCheckStatus.warn
+          : TelemetryDepsCheckStatus.success
+        : TelemetryDepsCheckStatus.failed,
+    });
+  }
+
+  private async createProgressBar(steps: number): Promise<IProgressHandler | undefined> {
+    const progressBar = this.context.ui?.createProgressBar(ProgressMessages.title(), steps);
+    if (progressBar) {
+      this.context.progressBars.push(progressBar);
+    }
+    await progressBar?.start();
+    return progressBar;
   }
 }

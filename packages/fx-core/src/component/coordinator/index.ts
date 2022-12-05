@@ -49,10 +49,10 @@ import {
   TabOptionItem,
   TabNonSsoItem,
   MessageExtensionItem,
-  CancelError,
   CoordinatorSource,
   BotOptionItem,
   TabNonSsoAndDefaultBotItem,
+  DefaultBotAndMessageExtensionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
@@ -60,7 +60,6 @@ import {
   getQuestionsForInit,
   getQuestionsForProvisionV3,
   InitOptionNo,
-  InitOptionYes,
   getQuestionsForPublishInDeveloperPortal,
   InitEditorVSCode,
   InitEditorVS,
@@ -98,6 +97,9 @@ import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
 import { updateManifestV3ForPublish } from "../resource/appManifest/appStudio";
 import { AppStudioScopes } from "../resource/appManifest/constants";
 import * as xml2js from "xml2js";
+import { Lifecycle } from "../configManager/lifecycle";
+import { SummaryReporter } from "./summary";
+import { EOL } from "os";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -114,6 +116,7 @@ export enum TemplateNames {
   MessageExtension = "message-extension",
   M365MessageExtension = "m365-message-extension",
   TabAndDefaultBot = "non-sso-tab-default-bot",
+  BotAndMessageExtension = "default-bot-message-extension",
 }
 
 export const Feature2TemplateName: any = {
@@ -135,6 +138,7 @@ export const Feature2TemplateName: any = {
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
   [`${M365SsoLaunchPageOptionItem.id}:undefined`]: TemplateNames.M365Tab,
   [`${TabNonSsoAndDefaultBotItem.id}:undefined`]: TemplateNames.TabAndDefaultBot,
+  [`${DefaultBotAndMessageExtensionItem.id}:undefined`]: TemplateNames.BotAndMessageExtension,
 };
 
 export const InitTemplateName: any = {
@@ -583,7 +587,7 @@ export class Coordinator {
       projectModel.registerApp,
       projectModel.provision,
       projectModel.configureApp,
-    ].filter((c) => c !== undefined);
+    ].filter((c) => c !== undefined) as Lifecycle[];
 
     // 2. M365 sign in and tenant check if needed.
     let containsM365 = false;
@@ -640,7 +644,7 @@ export class Coordinator {
 
     // 4. pre-requisites check
     for (const cycle of cycles) {
-      const unresolvedPlaceHolders = cycle!.resolvePlaceholders();
+      const unresolvedPlaceHolders = cycle.resolvePlaceholders();
       // ensure subscription id
       if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) {
         if (inputs["targetSubscriptionId"]) {
@@ -735,13 +739,28 @@ export class Coordinator {
       output.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
     }
     // 7. execute
-    for (const cycle of cycles) {
-      const execRes = await cycle!.execute(ctx);
-      const result = this.convertExecuteResult(execRes);
-      merge(output, result[0]);
-      if (result[1]) {
-        return [output, result[1]];
+    const summaryReporter = new SummaryReporter(cycles, ctx.logProvider);
+    try {
+      const maybeDescription = summaryReporter.getLifecycleDescriptions();
+      if (maybeDescription.isErr()) {
+        return [undefined, maybeDescription.error];
       }
+      ctx.logProvider.info(
+        `Executing app registration and provision ${EOL}${EOL}${maybeDescription.value}${EOL}`
+      );
+
+      for (const [index, cycle] of cycles.entries()) {
+        const execRes = await cycle.execute(ctx);
+        summaryReporter.updateLifecycleState(index, execRes);
+        const result = this.convertExecuteResult(execRes.result);
+        merge(output, result[0]);
+        if (result[1]) {
+          return [output, result[1]];
+        }
+      }
+    } finally {
+      const summary = summaryReporter.getLifecycleSummary();
+      ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
     }
 
     // 8. show provisioned resources
@@ -842,18 +861,30 @@ export class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
-      const execRes = await projectModel.deploy.execute(ctx);
-      const result = this.convertExecuteResult(execRes);
-      merge(output, result[0]);
-      if (result[1]) return [output, result[1]];
+      const summaryReporter = new SummaryReporter([projectModel.deploy], ctx.logProvider);
+      try {
+        const maybeDescription = summaryReporter.getLifecycleDescriptions();
+        if (maybeDescription.isErr()) {
+          return [undefined, maybeDescription.error];
+        }
+        ctx.logProvider.info(`Executing deploy ${EOL}${EOL}${maybeDescription.value}${EOL}`);
+        const execRes = await projectModel.deploy.execute(ctx);
+        summaryReporter.updateLifecycleState(0, execRes);
+        const result = this.convertExecuteResult(execRes.result);
+        merge(output, result[0]);
+        if (result[1]) return [output, result[1]];
 
-      // show message box after deploy
-      const botTroubleShootMsg = getBotTroubleShootMessage(false);
-      const msg =
-        getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
-        botTroubleShootMsg.textForLogging;
-      ctx.logProvider.info(msg);
-      ctx.ui?.showMessage("info", msg, false);
+        // show message box after deploy
+        const botTroubleShootMsg = getBotTroubleShootMessage(false);
+        const msg =
+          getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
+          botTroubleShootMsg.textForLogging;
+        ctx.logProvider.info(msg);
+        ctx.ui?.showMessage("info", msg, false);
+      } finally {
+        const summary = summaryReporter.getLifecycleSummary();
+        ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+      }
     }
     return [output, undefined];
   }
@@ -878,9 +909,22 @@ export class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.publish) {
-      const execRes = await projectModel.publish.execute(ctx);
-      const result = this.convertExecuteResult(execRes);
-      if (result[1]) return err(result[1]);
+      const summaryReporter = new SummaryReporter([projectModel.publish], ctx.logProvider);
+      try {
+        const maybeDescription = summaryReporter.getLifecycleDescriptions();
+        if (maybeDescription.isErr()) {
+          return err(maybeDescription.error);
+        }
+        ctx.logProvider.info(`Executing publish ${EOL}${EOL}${maybeDescription.value}${EOL}`);
+
+        const execRes = await projectModel.publish.execute(ctx);
+        const result = this.convertExecuteResult(execRes.result);
+        summaryReporter.updateLifecycleState(0, execRes);
+        if (result[1]) return err(result[1]);
+      } finally {
+        const summary = summaryReporter.getLifecycleSummary();
+        ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
+      }
     }
     return ok(undefined);
   }

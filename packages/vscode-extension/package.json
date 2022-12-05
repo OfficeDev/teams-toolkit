@@ -61,7 +61,6 @@
       "supported": "limited",
       "description": "%teamstoolkit.capabilities.untrustedWorkspaces.description%",
       "restrictedConfigurations": [
-        "fx-extension.SPFxVersion"
       ]
     }
   },
@@ -1287,15 +1286,6 @@
               "yo": true,
               "sharepointYeomanGenerator": true
             }
-          },
-          "fx-extension.SPFxVersion": {
-            "type": "string",
-            "description": "Select what version of SPFx to use. (Requires reload of VS Code)",
-            "enum": [
-              "1.15.0",
-              "1.16.0-beta.1"
-            ],
-            "default": "1.15.0"
           }
         }
       }
@@ -1495,8 +1485,8 @@
     "@azure/identity": "^1.5.2",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.21.0",
-    "@microsoft/teamsfx-core": "^1.19.0",
+    "@microsoft/teamsfx-api": "^0.21.1-rc",
+    "@microsoft/teamsfx-core": "^1.20.0-rc",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",

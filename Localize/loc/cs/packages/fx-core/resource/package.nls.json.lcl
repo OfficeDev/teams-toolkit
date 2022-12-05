@@ -2209,6 +2209,9 @@
       <Item ItemId=";core.deployArmTemplates.ActionSuccess" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Successfully deploy ARM templates. Resource group name: %s. Deployment name: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nasazení šablony ARM proběhlo úspěšně. Název skupiny prostředků: %s. Název nasazení: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2869,6 +2872,9 @@
       <Item ItemId=";core.progress.azureStorageStaticWebsiteEnabled" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Azure Storage static website setting already enabled.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nastavení statického webu Azure Storage je už povolené.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2941,6 +2947,9 @@
       <Item ItemId=";core.progress.checkAzureStorageStaticWebsite" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Checking the setting of Azure Storage static website status.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Kontroluje se nastavení stavu statického webu Azure Storage.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2968,6 +2977,9 @@
       <Item ItemId=";core.progress.configureAzureStorage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Configuring Azure Storage, enable static website setting.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Konfiguruje se Azure Storage. Povolte nastavení statického webu.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2983,6 +2995,9 @@
       <Item ItemId=";core.progress.enableAzureStorageStaticWebsite" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Enabling Azure Storage static website setting.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Povoluje se nastavení statického webu Azure Storage.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4330,24 +4345,36 @@
       <Item ItemId=";driver.spfx.deploy.createAppCatalog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create SharePoint app catalog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vytvořte katalog aplikací SharePointu.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.spfx.deploy.deployPackage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Deploy SPFx package to your tenant app catalog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nasaďte balíček SPFx do katalogu aplikací tenanta.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.spfx.deploy.skipCreateAppCatalog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Skip to create SharePoint app catalog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Přeskočte to, ať můžete vytvořit katalog aplikací SharePointu.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.spfx.deploy.uploadPackage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upload SPFx package to your tenant app catalog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nahrajte balíček SPFx do katalogu aplikací tenanta.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4372,12 +4399,18 @@
       <Item ItemId=";driver.spfx.info.tenantAppCatalogCreated" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[SharePoint tenant app catalog %s created, wait for a few minutes to be active.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Katalog aplikací tenanta SharePointu %s se vytvořil. Počkejte několik minut, než bude aktivní.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";driver.spfx.warn.noTenantAppCatalogFound" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[No tenant app catalog found, retry: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nenašel se žádný katalog aplikací tenanta. Zkuste to znovu: %s]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4456,6 +4489,9 @@
       <Item ItemId=";driver.tools.error.dotnetInstallationError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to check and install .NET Core SDK.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Nepovedlo se zkontrolovat a nainstalovat .NET Core SDK.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -8110,6 +8146,9 @@
       <Item ItemId=";plugins.appstudio.teamsAppUpdatedCLINotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Your Teams application manifest has been successfully deployed to ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Manifest aplikace Teams se úspěšně nasadil do ]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -10024,7 +10063,7 @@
       <Item ItemId=";plugins.spfx.deploy.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Upload and deploy SharePoint package]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Nahrání a nasazení balíčku SharePointu]]></Val>
           </Tgt>
           <Prev Cat="Text">

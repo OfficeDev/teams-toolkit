@@ -1,6 +1,6 @@
 {
     "name": "templates",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "private": "true",
     "license": "MIT",
     "scripts": {
@@ -43,7 +43,9 @@
         "tab/js/non-sso",
         "tab/ts/non-sso",
         "tab/js/m365",
-        "tab/ts/m365"
+        "tab/ts/m365",
+        "tab/js/dashboard",
+        "tab/ts/dashboard"        
     ],
     "templatesV3": [
         "common/init-infra",

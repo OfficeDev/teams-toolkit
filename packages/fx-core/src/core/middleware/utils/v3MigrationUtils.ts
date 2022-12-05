@@ -7,9 +7,12 @@ import { MigrationContext } from "./migrationContext";
 import { isObject } from "lodash";
 import { FileType, namingConverterV3 } from "../MigrationUtils";
 import { EOL } from "os";
+import { Inputs } from "@microsoft/teamsfx-api";
+import { CoreHookContext } from "../../types";
+import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
 
 // read json files in states/ folder
-export async function readStateFile(context: MigrationContext, filePath: string): Promise<any> {
+export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
   const filepath = path.join(context.projectPath, filePath);
   if (await fs.pathExists(filepath)) {
     const obj = fs.readJson(filepath);
@@ -58,4 +61,22 @@ function dfs(parentKeyName: string, obj: any, filetype: FileType, bicepContent: 
   }
 
   return returnData;
+}
+
+export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const projectPath = inputs.projectPath as string;
+  const v3path = getProjectSettingPathV3(projectPath);
+  if (await fs.pathExists(v3path)) {
+    const settings = await fs.readJson(v3path);
+    return settings.version || "3.0.0";
+  }
+  const v2path = getProjectSettingPathV2(projectPath);
+  if (await fs.pathExists(v2path)) {
+    const settings = await fs.readJson(v2path);
+    if (settings.version) {
+      return settings.version;
+    }
+  }
+  return "0.0.0";
 }

@@ -415,7 +415,7 @@ export function isApiConnectEnabled(): boolean {
 }
 
 export function isV3Enabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.V3, false);
+  return process.env[FeatureFlagName.V3] ? process.env[FeatureFlagName.V3] === "true" : false;
 }
 
 export function isMigrationV3Enabled(): boolean {
@@ -623,12 +623,6 @@ export function isYoCheckerEnabled(): boolean {
 
 export function isGeneratorCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
-}
-
-export function getSPFxVersion(): string {
-  const flag = process.env[FeatureFlagName.SPFxVersion];
-
-  return flag ?? "1.15.0";
 }
 
 export async function getAppSPFxVersion(root: string): Promise<string | undefined> {

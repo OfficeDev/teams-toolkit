@@ -70,6 +70,10 @@ export function isMessageExtension(appDefinition: AppDefinition): boolean {
   return !!appDefinition.messagingExtensions && appDefinition.messagingExtensions.length > 0;
 }
 
+export function isBotAndMessageExtension(appDefinition: AppDefinition): boolean {
+  return isBot(appDefinition) && isMessageExtension(appDefinition);
+}
+
 export function needBotCode(appDefinition: AppDefinition): boolean {
   return isBot(appDefinition) || isMessageExtension(appDefinition);
 }

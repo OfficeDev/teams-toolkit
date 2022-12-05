@@ -29,6 +29,7 @@ import M365Login from "../../../src/commonlib/m365Login";
 import { it } from "@microsoft/extra-shot-mocha";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import * as dotenv from "dotenv";
+import { getSubscriptionIdFromResourceId } from "../../commonlib/utilities";
 
 describe("SSO Tab with aad manifest enabled", () => {
   const testFolder = getTestFolder();
@@ -80,7 +81,7 @@ describe("SSO Tab with aad manifest enabled", () => {
       };
       await FrontendValidator.validateProvisionV3(
         frontendObject,
-        envs[EnvContants.AZURE_SUBSCRIPTION_ID],
+        getSubscriptionIdFromResourceId(envs[EnvContants.TAB_AZURE_STORAGE_RESOURCE_ID]),
         envs[EnvContants.AZURE_RESOURCE_GROUP_NAME]
       );
 

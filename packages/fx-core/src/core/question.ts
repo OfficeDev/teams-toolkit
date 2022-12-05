@@ -362,9 +362,11 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
   // new capabilities question order
   const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
 
+  const newTabs = isV3Enabled() ? [] : [DashboardOptionItem];
+
   const staticOptions: StaticOptions = [
     ...newBots,
-    DashboardOptionItem,
+    ...newTabs,
     TabNewUIOptionItem,
     TabSPFxNewUIItem,
     TabNonSsoItem,
@@ -376,10 +378,6 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
 
   if (isExistingTabAppEnabled()) {
     staticOptions.splice(newBots.length, 0, ExistingTabOptionItem);
-  }
-
-  if (isV3Enabled()) {
-    staticOptions.splice(newBots.length, 1);
   }
 
   return {

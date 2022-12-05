@@ -91,12 +91,12 @@ export class CreateBotAadAppDriver implements StepDriver {
         logMessageKeys.successCreateBotAad,
         createRes.value.botId
       );
-      const useExistedBotAadLog = getLocalizedString(
-        logMessageKeys.useExistedBotAad,
+      const useExistingBotAadLog = getLocalizedString(
+        logMessageKeys.useExistingBotAad,
         botConfig.botId
       );
       const summary =
-        botConfig.botId && botConfig.botPassword ? useExistedBotAadLog : successCreateBotAadLog;
+        botConfig.botId && botConfig.botPassword ? useExistingBotAadLog : successCreateBotAadLog;
       context.logProvider?.info(summary);
       await progressHandler?.end(true);
       context.logProvider?.info(

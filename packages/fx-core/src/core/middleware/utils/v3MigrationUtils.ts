@@ -5,7 +5,7 @@ import path from "path";
 import fs from "fs-extra";
 import { MigrationContext } from "./migrationContext";
 import { isObject } from "lodash";
-import { FileType, namingConverterV3 } from "../MigrationUtils";
+import { FileType, namingConverterV3 } from "./MigrationUtils";
 import { EOL } from "os";
 import {
   AzureSolutionSettings,

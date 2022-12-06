@@ -44,9 +44,9 @@ describe("SSO Tab with aad manifest enabled", () => {
   });
 
   it("SSO Tab E2E test with aad manifest enabled", { testPlanCaseId: 15687261 }, async () => {
+    // Arrange
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
     if (!isV3Enabled()) {
-      // Arrange
-      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
       // Assert
       const projectSettings = await fs.readJSON(
         path.join(projectPath, TestFilePath.configFolder, TestFilePath.projectSettingsFileName)
@@ -72,8 +72,6 @@ describe("SSO Tab with aad manifest enabled", () => {
       const permissionJsonFilePath = path.join(projectPath, TestFilePath.permissionJsonFileName);
       expect(await fs.pathExists(permissionJsonFilePath)).to.be.false;
     } else {
-      // Arrage
-      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.SSOTab, env);
       // Assert
       expect(fs.pathExistsSync(path.join(projectPath, "teamsfx"))).to.be.true;
       expect(fs.pathExistsSync(path.join(projectPath, "infra"))).to.be.true;

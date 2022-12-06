@@ -99,6 +99,8 @@ export function parseCapabilities(projectSettings: ProjectSettings): {
       return component.name === "teams-bot" && component.sso == true;
     });
   } else {
+    // For projects that does not componentize.
+    // Should not be called.
     const capabilities = (projectSettings.solutionSettings as AzureSolutionSettings).capabilities;
     tabSso = capabilities.includes("TabSso");
     botSso = capabilities.includes("BotSso");

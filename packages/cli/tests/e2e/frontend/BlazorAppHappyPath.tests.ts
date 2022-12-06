@@ -75,13 +75,16 @@ describe("Blazor App", function () {
     chai.assert.exists(token);
 
     let context: any;
+    let resourceId: string;
     if (isV3Enabled()) {
       context = await readContextMultiEnvV3(projectPath, envName);
+      resourceId = context[EnvConstants.TAB_AZURE_APP_SERVICE_RESOURCE_ID];
     } else {
       context = await readContextMultiEnv(projectPath, envName);
+      resourceId = context[PluginId.FrontendHosting][StateConfigKey.frontendResourceId];
     }
     chai.assert.exists(context);
-    const resourceId = context[EnvConstants.TAB_AZURE_APP_SERVICE_RESOURCE_ID];
+    chai.assert.exists(resourceId);
     const response = await getWebappSettings(
       subscription,
       getResourceGroupNameFromResourceId(resourceId),

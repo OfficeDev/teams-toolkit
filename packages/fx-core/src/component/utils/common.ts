@@ -27,33 +27,33 @@ export function checkMissingArgs<T>(name: string, value: T | null | undefined): 
   return value;
 }
 
-export function asOptional<T>(as: (s: unknown, key: string) => T) {
-  return function (s: unknown, key: string): T | undefined {
+export function asOptional<T>(as: (s: unknown, key: string, helpLink?: string) => T) {
+  return function (s: unknown, key: string, helpLink?: string): T | undefined {
     if (s === undefined || s === null) {
       return undefined;
     }
-    return as(s, key);
+    return as(s, key, helpLink);
   };
 }
 
-export function asBoolean(s: unknown, key: string): boolean {
+export function asBoolean(s: unknown, key: string, helpLink?: string): boolean {
   if (typeof s === "boolean") {
     return s;
   } else if (typeof s === "string") {
     return s === "true";
   }
-  throw PrerequisiteError.somethingMissing("Deploy", key);
+  throw PrerequisiteError.somethingMissing("Deploy", key, helpLink);
 }
 
-export function asString(s: unknown, key: string): string {
+export function asString(s: unknown, key: string, helpLink?: string): string {
   if (typeof s === "string") {
     return s as string;
   }
-  throw PrerequisiteError.somethingMissing("Deploy", key);
+  throw PrerequisiteError.somethingMissing("Deploy", key, helpLink);
 }
 
 type KeyValidators<T> = {
-  [P in keyof T]-?: (s: unknown, key: string) => T[P];
+  [P in keyof T]-?: (s: unknown, key: string, helpLink?: string) => T[P];
 };
 
 export function asFactory<T>(keyValidators: KeyValidators<T>) {
@@ -61,7 +61,7 @@ export function asFactory<T>(keyValidators: KeyValidators<T>) {
     if (typeof data === "object" && data !== null) {
       const maybeT = data as unknown as T;
       for (const key of Object.keys(keyValidators) as Array<keyof T>) {
-        keyValidators[key](maybeT[key], `${key}`);
+        keyValidators[key](maybeT[key], `${key}`, helpLink);
       }
       return maybeT;
     }

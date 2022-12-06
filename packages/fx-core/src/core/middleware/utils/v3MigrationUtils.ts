@@ -86,7 +86,7 @@ export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
   return "0.0.0";
 }
 
-export function parseCapabilities(projectSettings: ProjectSettings): {
+export function getCapabilitySsoStatus(projectSettings: ProjectSettings): {
   TabSso: boolean;
   BotSso: boolean;
 } {
@@ -100,7 +100,6 @@ export function parseCapabilities(projectSettings: ProjectSettings): {
     });
   } else {
     // For projects that does not componentize.
-    // Should not be called.
     const capabilities = (projectSettings.solutionSettings as AzureSolutionSettings).capabilities;
     tabSso = capabilities.includes("TabSso");
     botSso = capabilities.includes("BotSso");

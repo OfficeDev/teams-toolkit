@@ -41,7 +41,7 @@ import {
   generateAppIdUri,
   getProjectVersion,
   jsonObjectNamesConvertV3,
-  parseCapabilities,
+  getCapabilitySsoStatus,
   readBicepContent,
   readJsonFile,
   replaceAppIdUri,
@@ -257,7 +257,7 @@ export async function replacePlaceholderForManifests(context: MigrationContext):
 
   // Read capability project settings
   const projectSettings = await loadProjectSettings(context.projectPath);
-  const capabilities = parseCapabilities(projectSettings);
+  const capabilities = getCapabilitySsoStatus(projectSettings);
   const appIdUri = generateAppIdUri(capabilities);
 
   // Read Teams app manifest and save to templates/appPackage/manifest.template.json

@@ -142,6 +142,7 @@ export const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-frontend-hosting.domain",
   "state.fx-resource-frontend-hosting.endpoint",
   "state.fx-resource-frontend-hosting.storageResourceId",
+  "state.fx-resource-frontend-hosting.resourceId",
   "state.fx-resource-azure-sql.sqlResourceId",
   "state.fx-resource-azure-sql.sqlEndpoint",
   "state.fx-resource-azure-sql.databaseName",

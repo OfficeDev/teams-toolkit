@@ -29,11 +29,11 @@ export class AppYmlGenerator {
       teamsAppName: undefined,
       appName: undefined,
     };
-
-    this.generateHandlerbarsContext();
   }
 
   public async generateAppYml(): Promise<string> {
+    await this.generateHandlerbarsContext();
+
     const solutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
     if (solutionSettings.hostType === "Azure") {
       switch (this.oldProjectSettings.programmingLanguage?.toLowerCase()) {
@@ -66,14 +66,21 @@ export class AppYmlGenerator {
     }
 
     // app names
-    const aadManifest = await fs.readJson(
-      path.join(this.projectPath, "aad.manifest.template.json")
-    );
-    const teamsAppManifest = await fs.readJson(
-      path.join(this.projectPath, "appPackage/manifest.template.json")
-    );
-    this.handlebarsContext.aadAppName = aadManifest.name;
-    this.handlebarsContext.teamsAppName = teamsAppManifest.name.short;
+    const aadManifestPath = path.join(this.projectPath, "aad.manifest.template.json");
+    if (await fs.pathExists(aadManifestPath)) {
+      const aadManifest = await fs.readJson(
+        path.join(this.projectPath, "aad.manifest.template.json")
+      );
+      this.handlebarsContext.aadAppName = aadManifest.name;
+    }
+
+    const teamsAppManifestPath = path.join(this.projectPath, "appPackage/manifest.template.json");
+    if (await fs.pathExists(teamsAppManifestPath)) {
+      const teamsAppManifest = await fs.readJson(
+        path.join(this.projectPath, "appPackage/manifest.template.json")
+      );
+      this.handlebarsContext.teamsAppName = teamsAppManifest.name.short;
+    }
 
     // placeholders
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.storageResourceId");

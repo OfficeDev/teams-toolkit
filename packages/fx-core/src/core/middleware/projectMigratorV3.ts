@@ -70,8 +70,8 @@ type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
   preMigration,
   generateSettingsJson,
-  generateAppYml,
   replacePlaceholderForManifests,
+  generateAppYml,
   statesMigration,
   updateLaunchJson,
   configsMigration,

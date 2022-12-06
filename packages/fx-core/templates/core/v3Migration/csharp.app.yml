@@ -9,7 +9,6 @@ provision:
     # BOT_ID: the AAD app client id created for Bot Registration.
     # SECRET_BOT_PASSWORD: the AAD app client secret created for Bot Registration.
 {{/if}}
-
   - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:
       subscriptionId: $\{{AZURE_SUBSCRIPTION_ID}} # The AZURE_SUBSCRIPTION_ID is a built-in environment variable. TeamsFx will ask you select one subscription if its value is empty. You're free to reference other environment varialbe here, but TeamsFx will not ask you to select subscription if it's empty in this case.
@@ -64,7 +63,6 @@ registerApp:
     # AAD_APP_OAUTH_AUTHORITY_HOST: the host of OAUTH authority of AAD app
     # AAD_APP_OAUTH_AUTHORITY: the OAUTH authority of AAD app
 {{/if}}
-
   - uses: teamsApp/create # Creates a Teams app
     with:
       name: {{teamsAppName}} # Teams app name
@@ -80,7 +78,6 @@ configureApp:
   # Output: following environment variable will be persisted in current environment's .env file.
   # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 {{/if}}
-
   - uses: teamsApp/validate
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template

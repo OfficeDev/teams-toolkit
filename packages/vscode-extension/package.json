@@ -553,7 +553,7 @@
       {
         "command": "fx-extension.addFeature",
         "title": "%teamstoolkit.commands.addFeature.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.isV3Enabled",
         "category": "Teams"
       },
       {

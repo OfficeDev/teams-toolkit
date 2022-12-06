@@ -431,7 +431,19 @@ export class FxCore implements v3.ICore {
     return this.dispatchInterfaceV3(this.deployAadManifestImplement, inputs);
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ContextInjectorMW, EnvWriterMW])
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectMigratorMWV3,
+    ProjectVersionCheckerMW,
+    ProjectSettingsLoaderMW,
+    EnvLoaderMW(false),
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
   async deployAadManifestImplement(
     inputs: Inputs,
     ctx?: CoreHookContext

@@ -863,7 +863,11 @@ export class Coordinator {
     const parser = new YamlParser();
     const templatePath =
       inputs["workflowFilePath"] ??
-      path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+      path.join(
+        ctx.projectPath,
+        SettingsFolderName,
+        process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
+      );
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return [undefined, maybeProjectModel.error];
@@ -911,7 +915,11 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+    const templatePath = path.join(
+      ctx.projectPath,
+      SettingsFolderName,
+      process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
+    );
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);

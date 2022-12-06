@@ -34,7 +34,7 @@ export function fsReadDirSync(context: MigrationContext, _path: string): string[
   return fs.readdirSync(dirPath);
 }
 
-// convert any obj names if can be converted
+// convert any obj names if can be converted (used in states and configs migration)
 export function jsonObjectNamesConvertV3(
   obj: any,
   prefix: string,
@@ -48,6 +48,14 @@ export function jsonObjectNamesConvertV3(
   return returnData;
 }
 
+// env variables in this list will be only convert into .env.{env} when migrating {env}.userdata
+const skipList = [
+  "state.fx-resource-aad-app-for-teams.clientSecret",
+  "state.fx-resource-bot.botPassword",
+  "state.fx-resource-apim.apimClientAADClientSecret",
+  "state.fx-resource-azure-sql.adminPassword",
+];
+
 function dfs(parentKeyName: string, obj: any, filetype: FileType, bicepContent: any): string {
   let returnData = "";
 
@@ -55,10 +63,10 @@ function dfs(parentKeyName: string, obj: any, filetype: FileType, bicepContent: 
     for (const keyName of Object.keys(obj)) {
       returnData += dfs(parentKeyName + "." + keyName, obj[keyName], filetype, bicepContent);
     }
-  } else {
+  } else if (!skipList.includes(parentKeyName)) {
     const res = namingConverterV3(parentKeyName, filetype, bicepContent);
     if (res.isOk()) return res.value + "=" + obj + EOL;
-  }
+  } else return "";
 
   return returnData;
 }
@@ -79,4 +87,25 @@ export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
     }
   }
   return "0.0.0";
+}
+
+export async function readAndConvertUserdata(
+  context: MigrationContext,
+  filePath: string,
+  bicepContent: any
+): Promise<string> {
+  let returnAnswer = "";
+
+  const userdataContent = await fs.readFileSync(path.join(context.projectPath, filePath), "utf8");
+  const lines = userdataContent.split(EOL);
+  for (const line of lines) {
+    if (line && line != "") {
+      // in case that there are "="s in secrets
+      const key_value = line.split("=");
+      const res = await namingConverterV3("state." + key_value[0], FileType.USERDATA, bicepContent);
+      if (res.isOk()) returnAnswer += res.value + "=" + key_value.slice(1).join("=") + EOL;
+    }
+  }
+
+  return returnAnswer;
 }

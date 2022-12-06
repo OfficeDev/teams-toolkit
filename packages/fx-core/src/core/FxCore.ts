@@ -524,6 +524,46 @@ export class FxCore implements v3.ICore {
     ctx!.projectSettings = context.projectSetting;
     return ok(res.value);
   }
+  async executeUserTask(
+    func: Func,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<any, FxError>> {
+    return isV3Enabled()
+      ? this.executeUserTaskNew(func, inputs)
+      : this.executeUserTaskOld(func, inputs);
+  }
+
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false)])
+  async executeUserTaskNew(
+    func: Func,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<any, FxError>> {
+    let res: Result<any, FxError> = ok(undefined);
+    const context = createDriverContext(inputs);
+    if (func.method === "getManifestTemplatePath") {
+      const path = await manifestUtils.getTeamsAppManifestPath(
+        (inputs as InputsWithProjectPath).projectPath
+      );
+      res = ok(path);
+    } else if (func.method === "validateManifest") {
+      const driver: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
+      const args: ValidateTeamsAppArgs = {
+        manifestTemplatePath: func.params.manifestTemplatePath,
+      };
+      res = await driver.run(args, context);
+    } else if (func.method === "buildPackage") {
+      const driver: CreateAppPackageDriver = Container.get("teamsApp/createAppPackage");
+      const args: CreateAppPackageArgs = {
+        manifestTemplatePath: func.params.manifestTemplatePath,
+        outputZipPath: func.params.outputZipPath,
+        outputJsonPath: func.params.outputJsonPath,
+      };
+      res = await driver.run(args, context);
+    }
+    return res;
+  }
 
   @hooks([
     ErrorHandlerMW,
@@ -539,7 +579,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW_V3(),
   ])
-  async executeUserTask(
+  async executeUserTaskOld(
     func: Func,
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -576,49 +616,11 @@ export class FxCore implements v3.ICore {
       );
       res = ok(path);
     } else if (func.method === "validateManifest") {
-      if (isV3Enabled()) {
-        const driver: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
-        const args: ValidateTeamsAppArgs = {
-          manifestTemplatePath: func.params.manifestTemplatePath,
-        };
-        const driverContext: DriverContext = {
-          azureAccountProvider: context.tokenProvider!.azureAccountProvider,
-          m365TokenProvider: context.tokenProvider!.m365TokenProvider,
-          ui: context.userInteraction,
-          logProvider: context.logProvider,
-          telemetryReporter: context.telemetryReporter,
-          projectPath: inputs.projectPath!,
-          platform: inputs.platform,
-        };
-        // await envUtil.readEnv(context.projectPath!, func.params.env);
-        res = await driver.run(args, driverContext);
-      } else {
-        const component = Container.get("app-manifest") as any;
-        res = await component.validate(context, inputs as InputsWithProjectPath);
-      }
+      const component = Container.get("app-manifest") as any;
+      res = await component.validate(context, inputs as InputsWithProjectPath);
     } else if (func.method === "buildPackage") {
-      if (isV3Enabled()) {
-        const driver: CreateAppPackageDriver = Container.get("teamsApp/createAppPackage");
-        const args: CreateAppPackageArgs = {
-          manifestTemplatePath: func.params.manifestTemplatePath,
-          outputZipPath: func.params.outputZipPath,
-          outputJsonPath: func.params.outputJsonPath,
-        };
-        const driverContext: DriverContext = {
-          azureAccountProvider: context.tokenProvider!.azureAccountProvider,
-          m365TokenProvider: context.tokenProvider!.m365TokenProvider,
-          ui: context.userInteraction,
-          logProvider: context.logProvider,
-          telemetryReporter: context.telemetryReporter,
-          projectPath: inputs.projectPath!,
-          platform: inputs.platform,
-        };
-        // await envUtil.readEnv(context.projectPath!, func.params.env);
-        res = await driver.run(args, driverContext);
-      } else {
-        const component = Container.get("app-manifest") as any;
-        res = await component.build(context, inputs as InputsWithProjectPath);
-      }
+      const component = Container.get("app-manifest") as any;
+      res = await component.build(context, inputs as InputsWithProjectPath);
     } else if (func.method === "updateManifest") {
       const component = Container.get("app-manifest") as any;
       res = await component.deploy(context, inputs as InputsWithProjectPath);

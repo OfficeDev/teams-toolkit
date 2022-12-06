@@ -47,10 +47,7 @@ export class LocalEnvManager {
     this.ui = ui;
   }
 
-  public async getActiveDependencies(
-    projectSettings: ProjectSettings,
-    projectPath: string
-  ): Promise<DepsType[]> {
+  public async getActiveDependencies(projectSettings: ProjectSettings): Promise<DepsType[]> {
     const depsTypes: DepsType[] = [];
     const isSPFx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
@@ -61,11 +58,7 @@ export class LocalEnvManager {
 
     // NodeJS
     if (isSPFx) {
-      if ((await getAppSPFxVersion(projectPath))?.startsWith("1.16.0")) {
-        depsTypes.push(DepsType.SpfxNodeV1_16);
-      } else {
-        depsTypes.push(DepsType.SpfxNode);
-      }
+      depsTypes.push(DepsType.SpfxNode);
     } else {
       depsTypes.push(DepsType.AzureNode);
     }

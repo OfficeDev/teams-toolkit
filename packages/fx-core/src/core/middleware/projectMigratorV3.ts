@@ -37,6 +37,7 @@ import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManif
 import { replacePlaceholdersForV3, FileType } from "./MigrationUtils";
 import { ReadFileError } from "../error";
 import {
+  readAndConvertUserdata,
   fsReadDirSync,
   generateAppIdUri,
   getProjectVersion,
@@ -72,9 +73,10 @@ const subMigrations: Array<Migration> = [
   generateSettingsJson,
   generateAppYml,
   replacePlaceholderForManifests,
-  statesMigration,
-  updateLaunchJson,
   configsMigration,
+  statesMigration,
+  userdataMigration,
+  updateLaunchJson,
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -290,38 +292,6 @@ export async function replacePlaceholderForManifests(context: MigrationContext):
   }
 }
 
-export async function statesMigration(context: MigrationContext): Promise<void> {
-  // general
-  if (await context.fsPathExists(path.join(".fx", "states"))) {
-    // if ./fx/states/ exists
-    const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
-    for (const fileName of fileNames) {
-      const fileRegex = new RegExp("(state\\.)([a-zA-Z0-9_-]*)(\\.json)", "g"); // state.*.json
-      const fileNamesArray = fileRegex.exec(fileName);
-      if (fileNamesArray != null) {
-        // get envName
-        const envName = fileNamesArray[2];
-        // create .env.{env} file if not exist
-        await context.fsEnsureDir(SettingsFolderName);
-        if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
-          await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
-        const obj = await readJsonFile(
-          context,
-          path.join(".fx", "states", "state." + envName + ".json")
-        );
-        if (obj) {
-          const bicepContent = readBicepContent(context);
-          // convert every name
-          const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
-          await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData);
-        }
-      }
-    }
-  } else {
-    throw ReadFileError(new Error(".fx/states does not exist"));
-  }
-}
-
 export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   const res = await TOOLS?.ui.showMessage(
@@ -374,11 +344,80 @@ export async function configsMigration(context: MigrationContext): Promise<void>
               FileType.CONFIG,
               bicepContent
             );
-            await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData);
+            await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
+              // .env.{env} file might be already exist, use append mode (flag: a+)
+              encoding: "utf8",
+              flag: "a+",
+            });
           }
         }
       }
-  } else {
-    throw ReadFileError(new Error(".fx/configs does not exist"));
+  }
+}
+
+export async function statesMigration(context: MigrationContext): Promise<void> {
+  // general
+  if (await context.fsPathExists(path.join(".fx", "states"))) {
+    // if ./fx/states/ exists
+    const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
+    for (const fileName of fileNames)
+      if (fileName.startsWith("state.")) {
+        const fileRegex = new RegExp("(state\\.)([a-zA-Z0-9_-]*)(\\.json)", "g"); // state.*.json
+        const fileNamesArray = fileRegex.exec(fileName);
+        if (fileNamesArray != null) {
+          // get envName
+          const envName = fileNamesArray[2];
+          // create .env.{env} file if not exist
+          await context.fsEnsureDir(SettingsFolderName);
+          if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
+            await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+          const obj = await readJsonFile(
+            context,
+            path.join(".fx", "states", "state." + envName + ".json")
+          );
+          if (obj) {
+            const bicepContent = readBicepContent(context);
+            // convert every name
+            const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
+            await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
+              // .env.{env} file might be already exist, use append mode (flag: a+)
+              encoding: "utf8",
+              flag: "a+",
+            });
+          }
+        }
+      }
+  }
+}
+
+export async function userdataMigration(context: MigrationContext): Promise<void> {
+  // general
+  if (await context.fsPathExists(path.join(".fx", "states"))) {
+    // if ./fx/states/ exists
+    const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
+    for (const fileName of fileNames)
+      if (fileName.endsWith(".userdata")) {
+        const fileRegex = new RegExp("([a-zA-Z0-9_-]*)(\\.userdata)", "g"); // state.*.json
+        const fileNamesArray = fileRegex.exec(fileName);
+        if (fileNamesArray != null) {
+          // get envName
+          const envName = fileNamesArray[1];
+          // create .env.{env} file if not exist
+          await context.fsEnsureDir(SettingsFolderName);
+          if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
+            await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+          const bicepContent = readBicepContent(context);
+          const envData = await readAndConvertUserdata(
+            context,
+            path.join(".fx", "states", fileName),
+            bicepContent
+          );
+          await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
+            // .env.{env} file might be already exist, use append mode (flag: a+)
+            encoding: "utf8",
+            flag: "a+",
+          });
+        }
+      }
   }
 }

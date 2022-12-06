@@ -340,7 +340,6 @@ export async function configsMigration(context: MigrationContext): Promise<void>
               // .env.{env} file might be already exist, use append mode (a+)
               encoding: "utf8",
               flag: "a+",
-              mode: 0o666,
             });
           }
         }
@@ -376,7 +375,6 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
               // .env.{env} file might be already exist, use append mode (a+)
               encoding: "utf8",
               flag: "a+",
-              mode: 0o666,
             });
           }
         }
@@ -410,7 +408,6 @@ export async function userdataMigration(context: MigrationContext): Promise<void
             // .env.{env} file might be already exist, use append mode (a+)
             encoding: "utf8",
             flag: "a+",
-            mode: 0o666,
           });
         }
       }

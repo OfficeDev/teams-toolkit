@@ -3399,6 +3399,20 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         ],
       },
       {
+        id: "addTab",
+        label: `${localize("teamstoolkit.tutorials.addTab.label")}`,
+        detail: localize("teamstoolkit.tutorials.addTab.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-add-tab",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
         id: "connectApi",
         label: `${localize("teamstoolkit.tutorials.connectApi.label")}`,
         detail: localize("teamstoolkit.tutorials.connectApi.detail"),

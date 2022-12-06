@@ -36,6 +36,7 @@ import {
   checkVersionForMigration,
   VersionState,
   configsMigration,
+  generateApimPluginEnvContent,
   userdataMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
@@ -636,6 +637,36 @@ describe("userdataMigration", () => {
   });
 });
 
+describe("generateApimPluginEnvContent", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("happy path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    await generateApimPluginEnvContent(migrationContext);
+
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+
+    const trueEnvContent_dev = await readEnvFile(
+      getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
+      "apimPlugin.dev"
+    );
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
+    const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
+    assert.equal(testEnvContent_dev, trueEnvContent_dev);
+  });
+});
+
 describe("allEnvMigration", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
@@ -652,9 +683,10 @@ describe("allEnvMigration", () => {
     const migrationContext = await mockMigrationContext(projectPath);
 
     await copyTestProject(Constants.happyPathTestProject, projectPath);
-    await statesMigration(migrationContext);
     await configsMigration(migrationContext);
+    await statesMigration(migrationContext);
     await userdataMigration(migrationContext);
+    await generateApimPluginEnvContent(migrationContext);
 
     assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
 

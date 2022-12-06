@@ -30,12 +30,11 @@ import {
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { UpgradeCanceledError } from "../error";
+import { UpgradeCanceledError, ReadFileError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
 import { replacePlaceholdersForV3, FileType } from "./utils/MigrationUtils";
-import { ReadFileError } from "../error";
 import {
   readAndConvertUserdata,
   fsReadDirSync,
@@ -77,6 +76,7 @@ const subMigrations: Array<Migration> = [
   configsMigration,
   statesMigration,
   userdataMigration,
+  generateApimPluginEnvContent,
   updateLaunchJson,
 ];
 
@@ -438,5 +438,53 @@ export async function userdataMigration(context: MigrationContext): Promise<void
           });
         }
       }
+  }
+}
+
+export async function generateApimPluginEnvContent(context: MigrationContext): Promise<void> {
+  // general
+  if (await context.fsPathExists(path.join(".fx", "configs", "projectSettings.json"))) {
+    const projectSettingsContent = fs.readJsonSync(
+      path.join(context.projectPath, ".fx", "configs", "projectSettings.json")
+    );
+    // judge if apim plugin exists
+    let flag_apimPlugin = false;
+    for (const obj of projectSettingsContent["components"])
+      if (obj["name"] === "apim") {
+        flag_apimPlugin = true;
+        break;
+      }
+    // must do this step after configs migration
+    if (flag_apimPlugin) {
+      await context.fsEnsureDir("configs");
+      const fileNames = fsReadDirSync(context, path.join(".fx", "configs"));
+      for (const fileName of fileNames)
+        if (fileName.startsWith("config.")) {
+          const fileRegex = new RegExp("(config.)([a-zA-Z0-9_-]*)(.json)", "g"); // state.*.json
+          const fileNamesArray = fileRegex.exec(fileName);
+          if (fileNamesArray != null) {
+            // get envName
+            const envName = fileNamesArray[2];
+            if (envName != "local") {
+              await context.fsEnsureDir(SettingsFolderName);
+              if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
+                await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+              const apimPluginAppendContent =
+                "APIM__PUBLISHEREMAIL= # Teams Toolkit does not record your mail to protect your privacy, please fill your mail address here before provision to avoid failures" +
+                EOL +
+                "APIM__PUBLISHERNAME= # Teams Toolkit does not record your name to protect your privacy, please fill your name here before provision to avoid failures" +
+                EOL;
+              await context.fsWriteFile(
+                path.join(SettingsFolderName, ".env." + envName),
+                apimPluginAppendContent,
+                {
+                  encoding: "utf8",
+                  flag: "a+",
+                }
+              );
+            }
+          }
+        }
+    }
   }
 }

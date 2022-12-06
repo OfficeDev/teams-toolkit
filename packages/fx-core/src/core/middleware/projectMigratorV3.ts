@@ -337,7 +337,7 @@ export async function configsMigration(context: MigrationContext): Promise<void>
               bicepContent
             );
             await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
-              // .env.{env} file might be already exist, use append mode (a+)
+              // .env.{env} file might be already exist, use append mode (flag: a+)
               encoding: "utf8",
               flag: "a+",
             });
@@ -372,7 +372,7 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
             // convert every name
             const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
             await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
-              // .env.{env} file might be already exist, use append mode (a+)
+              // .env.{env} file might be already exist, use append mode (flag: a+)
               encoding: "utf8",
               flag: "a+",
             });
@@ -405,7 +405,7 @@ export async function userdataMigration(context: MigrationContext): Promise<void
             bicepContent
           );
           await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
-            // .env.{env} file might be already exist, use append mode (a+)
+            // .env.{env} file might be already exist, use append mode (flag: a+)
             encoding: "utf8",
             flag: "a+",
           });

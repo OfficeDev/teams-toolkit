@@ -233,6 +233,13 @@ export async function setFrontendDomainToConfig(projectPath: string, envName: st
   return fs.writeJSON(configFilePath, config, { spaces: 4 });
 }
 
+export async function setAadManifestIdentifierUrisV3(projectPath: string, identifierUri: string) {
+  const aadManifestPath = path.join(projectPath, "aad.manifest.templates.json");
+  const aadTemplate = await fs.readJson(aadManifestPath);
+  aadTemplate.identifierUris = [identifierUri];
+  await fs.writeJson(aadManifestPath, aadTemplate, { spaces: 4 });
+}
+
 export async function setAadManifestIdentifierUris(projectPath: string, identifierUri: string) {
   const aadManifestPath = path.join(
     projectPath,

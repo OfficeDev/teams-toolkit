@@ -124,6 +124,7 @@ import { envUtil } from "../component/utils/envUtil";
 import { YamlParser } from "../component/configManager/parser";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import "../component/driver/teamsApp/create";
+import "../component/driver/teamsApp/validate";
 import "../component/driver/teamsApp/configure";
 import "../component/driver/teamsApp/copyAppPackageForSPFx";
 import "../component/driver/teamsApp/publishAppPackage";

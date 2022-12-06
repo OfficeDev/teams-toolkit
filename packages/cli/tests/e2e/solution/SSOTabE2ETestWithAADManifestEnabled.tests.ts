@@ -90,9 +90,9 @@ describe("SSO Tab with aad manifest enabled", () => {
       await AadValidator.validate(aad);
 
       const firstIdentifierUri = "api://first.com/291fc1b5-1146-4d33-b7b8-ec4c441b6b33";
-      const aadTemplate = await fs.readJSON(aadManifestPath);
+      const aadTemplate = await fs.readJSON(aadTemplatePath);
       aadTemplate.identifierUris = [firstIdentifierUri];
-      await fs.writeJSON(aadManifestPath, aadTemplate, { spaces: 4 });
+      await fs.writeJSON(aadTemplatePath, aadTemplate, { spaces: 4 });
 
       // Deploy all resources without aad manifest
       await CliHelper.deployAll(projectPath, "", env);
@@ -104,11 +104,7 @@ describe("SSO Tab with aad manifest enabled", () => {
 
       const secondIdentifierUri = "api://second.com/291fc1b5-1146-4d33-b7b8-ec4c441b6b33";
       aadTemplate.identifierUris = [secondIdentifierUri];
-      await fs.writeJSON(aadManifestPath, aadTemplate, { spaces: 4 });
-
-      // Only deploy aad manifest
-      await CliHelper.deployProject(ResourceToDeploy.AadManifest, projectPath, "", env);
-      await AadValidator.validate(aad, secondIdentifierUri);
+      await fs.writeJSON(aadTemplatePath, aadTemplate, { spaces: 4 });
 
       // Only deploy aad manifest
       await CliHelper.deployProject(ResourceToDeploy.AadManifest, projectPath, "", env);

@@ -89,7 +89,7 @@ export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
   return "0.0.0";
 }
 
-export async function fsReadAndConvertUserdata(
+export async function readAndConvertUserdata(
   context: MigrationContext,
   filePath: string,
   bicepContent: any

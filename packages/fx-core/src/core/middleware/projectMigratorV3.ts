@@ -37,7 +37,7 @@ import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManif
 import { replacePlaceholdersForV3, FileType } from "./MigrationUtils";
 import { ReadFileError } from "../error";
 import {
-  fsReadAndConvertUserdata,
+  readAndConvertUserdata,
   fsReadDirSync,
   getProjectVersion,
   jsonObjectNamesConvertV3,
@@ -337,6 +337,7 @@ export async function configsMigration(context: MigrationContext): Promise<void>
               bicepContent
             );
             await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
+              // .env.{env} file might be already exist, use append mode (a+)
               encoding: "utf8",
               flag: "a+",
               mode: 0o666,
@@ -372,6 +373,7 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
             // convert every name
             const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
             await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
+              // .env.{env} file might be already exist, use append mode (a+)
               encoding: "utf8",
               flag: "a+",
               mode: 0o666,
@@ -399,12 +401,13 @@ export async function userdataMigration(context: MigrationContext): Promise<void
           if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
             await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
           const bicepContent = readBicepContent(context);
-          const envData = await fsReadAndConvertUserdata(
+          const envData = await readAndConvertUserdata(
             context,
             path.join(".fx", "states", fileName),
             bicepContent
           );
           await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
+            // .env.{env} file might be already exist, use append mode (a+)
             encoding: "utf8",
             flag: "a+",
             mode: 0o666,

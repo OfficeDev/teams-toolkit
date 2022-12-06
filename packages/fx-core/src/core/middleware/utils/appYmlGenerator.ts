@@ -16,6 +16,7 @@ export class AppYmlGenerator {
     aadAppName: string | undefined;
     teamsAppName: string | undefined;
     appName: string | undefined;
+    isFunctionBot: boolean;
   };
   constructor(
     private oldProjectSettings: ProjectSettings,
@@ -28,6 +29,7 @@ export class AppYmlGenerator {
       aadAppName: undefined,
       teamsAppName: undefined,
       appName: undefined,
+      isFunctionBot: false,
     };
   }
 
@@ -65,6 +67,16 @@ export class AppYmlGenerator {
       this.handlebarsContext.activePlugins[activePlugin] = true; // convert array items to object properties to simplify handlebars template
     }
 
+    // isFunctionBot
+    const pluginSettings = this.oldProjectSettings.pluginSettings;
+    if (
+      pluginSettings &&
+      pluginSettings["fx-resource-bot"] &&
+      pluginSettings["fx-resource-bot"]["host-type"] === "azure-function"
+    ) {
+      this.handlebarsContext.isFunctionBot = true;
+    }
+
     // app names
     const aadManifestPath = path.join(this.projectPath, "aad.manifest.template.json");
     if (await fs.pathExists(aadManifestPath)) {
@@ -87,6 +99,7 @@ export class AppYmlGenerator {
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.endpoint");
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.resourceId");
+    this.setPlaceholderMapping("state.fx-resource-bot.functionAppResourceId");
   }
 
   private setPlaceholderMapping(placeholder: string): void {

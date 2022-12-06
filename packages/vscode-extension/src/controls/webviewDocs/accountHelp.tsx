@@ -84,12 +84,7 @@ export default function PrepareM365Account() {
             />
           </p>
           <p>
-            <video
-              width={800}
-              height={450}
-              controls
-              src="https://teamsfxmedia.blob.core.windows.net/teamsfx-video/create-m365-developer-account.mp4"
-            />
+            <video width={800} height={450} controls src="https://aka.ms/teamsfx-ITP-video" />
           </p>
           <blockquote>
             <p>

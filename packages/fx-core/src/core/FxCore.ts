@@ -432,11 +432,15 @@ export class FxCore implements v3.ICore {
 
   @hooks([
     ErrorHandlerMW,
-    ProjectMigratorMWV3,
     ConcurrentLockerMW,
-    EnvLoaderMW(true),
+    ProjectMigratorMW,
+    ProjectConsolidateMW,
+    AadManifestMigrationMW,
+    ProjectVersionCheckerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW_V3(false),
     ContextInjectorMW,
-    EnvWriterMW,
+    EnvInfoWriterMW_V3(),
   ])
   async deployAadManifestImplement(
     inputs: Inputs,

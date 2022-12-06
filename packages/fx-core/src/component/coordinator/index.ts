@@ -836,6 +836,7 @@ export class Coordinator {
             name: "UnresolvedPlaceholders",
             message: getDefaultString("core.error.unresolvedPlaceholders", placeholders),
             displayMessage: getLocalizedString("core.error.unresolvedPlaceholders", placeholders),
+            helpLink: "https://aka.ms/teamsfx-actions",
           });
         }
       }

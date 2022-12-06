@@ -15,7 +15,7 @@ provision:
     # BOT_ID: the AAD app client id created for bot
     # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
 
-  - uses: botFramework/createOrUpdateBot # Create or update the bot registration on dev.botframework.com
+  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
     with:
       botId: ${{BOT_ID}}
       name: bot

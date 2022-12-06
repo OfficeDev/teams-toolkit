@@ -22,7 +22,7 @@ provision:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
 
-  - uses: botFramework/createOrUpdateBot # Create or update the bot registration on dev.botframework.com
+  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
     with:
       botId: ${{BOT_ID}}
       name: {%appName%}

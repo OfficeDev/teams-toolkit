@@ -74,7 +74,6 @@ describe("SSO Tab with aad manifest enabled", () => {
     } else {
       // Assert
       expect(fs.pathExistsSync(path.join(projectPath, "teamsfx"))).to.be.true;
-      expect(fs.pathExistsSync(path.join(projectPath, "infra"))).to.be.true;
       expect(fs.pathExistsSync(path.join(projectPath, "infra", "azure.bicep"))).to.be.true;
       expect(fs.pathExistsSync(path.join(projectPath, "infra", "azure.parameters.json"))).to.be
         .true;

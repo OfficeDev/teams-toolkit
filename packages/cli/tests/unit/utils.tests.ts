@@ -816,13 +816,12 @@ describe("Utils Tests", function () {
 
   it("isSpfxProject", async () => {
     sandbox.stub(ProjectSettingsHelperV3, "hasSPFxTab").resolves(ok(undefined));
-
-    const result = await isSpfxProject(
-      "real",
-      sandbox.createStubInstance(FxCore, {
-        getProjectConfig: Promise.resolve(ok(undefined)) as any,
-      })
-    );
+    const mockFxCore = {
+      getProjectConfig: async () => {
+        return ok(undefined);
+      },
+    } as any;
+    const result = await isSpfxProject("real", mockFxCore);
     expect(result.isOk()).to.be.true;
   });
 });

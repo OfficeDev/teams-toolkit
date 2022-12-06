@@ -55,7 +55,7 @@ describe("Azure App Scaffold", function () {
 
     {
       if (isV3Enabled()) {
-        await FrontendValidator.validateScaffoldV3(projectPath, "javascript");
+        await FrontendValidator.validateScaffoldV3(projectPath, lang);
       } else {
         await FrontendValidator.validateScaffold(projectPath, lang);
         await BotValidator.validateScaffold(projectPath, lang, "src");

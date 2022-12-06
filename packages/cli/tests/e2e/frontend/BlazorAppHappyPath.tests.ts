@@ -119,8 +119,15 @@ describe("Blazor App", function () {
   it("Deploy Blazor app to Azure Web APP", { testPlanCaseId: 15686031 }, async () => {
     await CliHelper.deployAll(projectPath, "", env);
 
-    const context = await readContextMultiEnv(projectPath, envName);
-    const endpoint = context[PluginId.FrontendHosting][StateConfigKey.endpoint];
+    let endpoint: string;
+    if (isV3Enabled()) {
+      const context = await readContextMultiEnvV3(projectPath, envName);
+      endpoint = context[EnvContants.TAB_ENDPOINT];
+    } else {
+      const context = await readContextMultiEnv(projectPath, envName);
+      endpoint = context[PluginId.FrontendHosting][StateConfigKey.endpoint];
+    }
+    chai.assert.exists(endpoint);
     const axiosInstance = axios.create();
     try {
       const response = await axiosInstance.get(endpoint);

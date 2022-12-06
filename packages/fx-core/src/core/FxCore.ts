@@ -151,6 +151,7 @@ import {
 } from "../component/resource/appManifest/utils/utils";
 import { VideoFilterAppBlockerMW } from "./middleware/videoFilterAppBlocker";
 import { ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
+import { UpdateAadAppDriver } from "../component/driver/aad/update";
 
 export class FxCore implements v3.ICore {
   tools: Tools;
@@ -430,23 +431,14 @@ export class FxCore implements v3.ICore {
     return this.dispatchInterfaceV3(this.deployAadManifestImplement, inputs);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    ProjectMigratorMWV3,
-    ProjectVersionCheckerMW,
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
-    ContextInjectorMW,
-    EnvInfoWriterMW_V3(),
-  ])
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ContextInjectorMW, EnvWriterMW])
   async deployAadManifestImplement(
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deployAad);
     inputs.stage = Stage.deployAad;
-    const updateAadClient = Container.get("aadApp/update") as any;
+    const updateAadClient = Container.get<UpdateAadAppDriver>("aadApp/update");
     // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
     const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
       ? inputs.AAD_MANIFEST_FILE

@@ -34,7 +34,7 @@ import { UpgradeCanceledError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
-import { replacePlaceholdersForV3, FileType } from "./MigrationUtils";
+import { replacePlaceholdersForV3, FileType } from "./utils/MigrationUtils";
 import { ReadFileError } from "../error";
 import {
   readAndConvertUserdata,

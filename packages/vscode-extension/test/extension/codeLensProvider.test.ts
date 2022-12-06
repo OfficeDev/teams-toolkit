@@ -209,12 +209,12 @@ describe("Crypto CodeLensProvider", () => {
     const document = {
       fileName: ".env.local",
       getText: () => {
-        return "SECRET_AAD_APP_CLIENT_SECRET=crypto_abc";
+        return "SECRET_VAR=crypto_abc";
       },
       lineAt: () => {
         return {
           lineNumber: 0,
-          text: "SECRET_AAD_APP_CLIENT_SECRET=crypto_abc",
+          text: "SECRET_VAR=crypto_abc",
         };
       },
       positionAt: () => {

@@ -153,7 +153,7 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
       /fx-resource-[a-zA-Z\-]+\.[a-zA-Z\-_]+(?:Secret|Password|VariableParams)=(.*)/g;
     this.localDebugRegex =
       /(?: *|\t*)"(?:clientSecret|SimpleAuthEnvironmentVariableParams|botPassword)": "(crypto_.*)"/g;
-    this.envSecretRegex = /#?[a-zA-Z\-_]+(?:SECRET|PASSWORD)=(crypto_.*)/g;
+    this.envSecretRegex = /#?(?:SECRET_)[a-zA-Z\-_]+=(crypto_.*)/g;
   }
 
   public provideCodeLenses(

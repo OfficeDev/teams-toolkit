@@ -10,7 +10,7 @@ import * as chai from "chai";
 import fs from "fs-extra";
 import path from "path";
 import MockAzureAccountProvider from "../../../src/commonlib/azureLoginUserPassword";
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import {
   getSubscriptionId,
@@ -20,10 +20,12 @@ import {
   readContextMultiEnv,
   getActivePluginsFromProjectSetting,
   setProvisionParameterValue,
+  setProvisionParameterValueV3,
+  readContextMultiEnvV3,
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { it } from "@microsoft/extra-shot-mocha";
-import { Capability, PluginId, StateConfigKey } from "../../commonlib/constants";
+import { Capability, EnvContants, PluginId, StateConfigKey } from "../../commonlib/constants";
 import {
   getExpectedM365ClientSecret,
   getResourceGroupNameFromResourceId,
@@ -54,10 +56,17 @@ describe("Blazor App", function () {
 
   it(`Provision Resource`, { testPlanCaseId: 15686030 }, async () => {
     await CliHelper.setSubscription(subscription, projectPath);
-    await setProvisionParameterValue(projectPath, "dev", {
-      key: "webAppSKU",
-      value: "B1",
-    });
+    if (isV3Enabled()) {
+      await setProvisionParameterValueV3(projectPath, "dev", {
+        key: "webAppSKU",
+        value: "B1",
+      });
+    } else {
+      await setProvisionParameterValue(projectPath, "dev", {
+        key: "webAppSKU",
+        value: "B1",
+      });
+    }
     await CliHelper.provisionProject(projectPath, "", env);
 
     const tokenProvider = MockAzureAccountProvider;
@@ -65,11 +74,14 @@ describe("Blazor App", function () {
     const token = (await tokenCredential?.getToken(AzureScopes))?.token;
     chai.assert.exists(token);
 
-    const context = await readContextMultiEnv(projectPath, envName);
-    const resourceId = context[PluginId.FrontendHosting][StateConfigKey.frontendResourceId];
-    const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
-
-    chai.assert.isArray(activeResourcePlugins);
+    let context: any;
+    if (isV3Enabled()) {
+      context = await readContextMultiEnvV3(projectPath, envName);
+    } else {
+      context = await readContextMultiEnv(projectPath, envName);
+    }
+    chai.assert.exists(context);
+    const resourceId = context[EnvContants.TAB_AZURE_APP_SERVICE_RESOURCE_ID];
     const response = await getWebappSettings(
       subscription,
       getResourceGroupNameFromResourceId(resourceId),
@@ -77,18 +89,31 @@ describe("Blazor App", function () {
       token as string
     );
     chai.assert.exists(response);
-    chai.assert.equal(
-      response[FrontendWebAppConfig.clientId],
-      context[PluginId.Aad][StateConfigKey.clientId] as string
-    );
-    chai.assert.equal(
-      response[FrontendWebAppConfig.clientSecret],
-      await getExpectedM365ClientSecret(context, projectPath, envName, activeResourcePlugins)
-    );
-    chai.assert.equal(
-      response[FrontendWebAppConfig.authority],
-      context[PluginId.Aad][StateConfigKey.oauthAuthority] as string
-    );
+    if (isV3Enabled()) {
+      chai.assert.equal(
+        response[FrontendWebAppConfig.clientId],
+        context[EnvContants.AAD_APP_CLIENT_ID]
+      );
+      chai.assert.equal(
+        response[FrontendWebAppConfig.authority],
+        context[EnvContants.AAD_APP_OAUTH_AUTHORITY]
+      );
+    } else {
+      const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
+      chai.assert.isArray(activeResourcePlugins);
+      chai.assert.equal(
+        response[FrontendWebAppConfig.clientId],
+        context[PluginId.Aad][StateConfigKey.clientId] as string
+      );
+      chai.assert.equal(
+        response[FrontendWebAppConfig.clientSecret],
+        await getExpectedM365ClientSecret(context, projectPath, envName, activeResourcePlugins)
+      );
+      chai.assert.equal(
+        response[FrontendWebAppConfig.authority],
+        context[PluginId.Aad][StateConfigKey.oauthAuthority] as string
+      );
+    }
   });
 
   it("Deploy Blazor app to Azure Web APP", { testPlanCaseId: 15686031 }, async () => {

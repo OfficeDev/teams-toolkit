@@ -90,7 +90,7 @@
       }
   ],
   "identifierUris": [
-      "${{STATE__FX_RESOURCE_AAD_APP_FOR_TEAMS__APPLICATIONIDURIS}}"
+      "api://${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN}}/botid-${{BOT_ID}}"
   ],
   "replyUrlsWithType": [
       {

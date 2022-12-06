@@ -146,23 +146,33 @@ export class PlaceholderCodeLens extends vscode.CodeLens {
 export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
   private userDataRegex: RegExp;
   private localDebugRegex: RegExp;
+  private envSecretRegex: RegExp;
 
   constructor() {
     this.userDataRegex =
       /fx-resource-[a-zA-Z\-]+\.[a-zA-Z\-_]+(?:Secret|Password|VariableParams)=(.*)/g;
     this.localDebugRegex =
       /(?: *|\t*)"(?:clientSecret|SimpleAuthEnvironmentVariableParams|botPassword)": "(crypto_.*)"/g;
+    this.envSecretRegex = /#?[a-zA-Z\-_]+(?:SECRET|PASSWORD)=(crypto_.*)/g;
   }
 
   public provideCodeLenses(
     document: vscode.TextDocument
   ): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
-    if (document.fileName.endsWith("userdata")) {
-      return this.computeCodeLenses(document, this.userDataRegex);
-    } else if (document.fileName.endsWith(localSettingsJsonName)) {
-      return this.computeCodeLenses(document, this.localDebugRegex);
+    if (isV3Enabled()) {
+      if (document.fileName.includes(".env.")) {
+        return this.computeCodeLenses(document, this.envSecretRegex);
+      } else {
+        return [];
+      }
     } else {
-      return [];
+      if (document.fileName.endsWith("userdata")) {
+        return this.computeCodeLenses(document, this.userDataRegex);
+      } else if (document.fileName.endsWith(localSettingsJsonName)) {
+        return this.computeCodeLenses(document, this.localDebugRegex);
+      } else {
+        return [];
+      }
     }
   }
 

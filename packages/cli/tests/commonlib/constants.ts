@@ -162,7 +162,7 @@ export class provisionParametersKey {
   static readonly simpleAuthSku = "simpleAuthSku";
 }
 
-export class EnvContants {
+export class EnvConstants {
   // Azure Resource
   static readonly AZURE_SUBSCRIPTION_ID = "AZURE_SUBSCRIPTION_ID";
   static readonly AZURE_RESOURCE_GROUP_NAME = "AZURE_RESOURCE_GROUP_NAME";

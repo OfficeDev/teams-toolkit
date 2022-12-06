@@ -25,7 +25,7 @@ import {
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { it } from "@microsoft/extra-shot-mocha";
-import { Capability, EnvContants, PluginId, StateConfigKey } from "../../commonlib/constants";
+import { Capability, EnvConstants, PluginId, StateConfigKey } from "../../commonlib/constants";
 import {
   getExpectedM365ClientSecret,
   getResourceGroupNameFromResourceId,
@@ -81,7 +81,7 @@ describe("Blazor App", function () {
       context = await readContextMultiEnv(projectPath, envName);
     }
     chai.assert.exists(context);
-    const resourceId = context[EnvContants.TAB_AZURE_APP_SERVICE_RESOURCE_ID];
+    const resourceId = context[EnvConstants.TAB_AZURE_APP_SERVICE_RESOURCE_ID];
     const response = await getWebappSettings(
       subscription,
       getResourceGroupNameFromResourceId(resourceId),
@@ -92,11 +92,11 @@ describe("Blazor App", function () {
     if (isV3Enabled()) {
       chai.assert.equal(
         response[FrontendWebAppConfig.clientId],
-        context[EnvContants.AAD_APP_CLIENT_ID]
+        context[EnvConstants.AAD_APP_CLIENT_ID]
       );
       chai.assert.equal(
         response[FrontendWebAppConfig.authority],
-        context[EnvContants.AAD_APP_OAUTH_AUTHORITY]
+        context[EnvConstants.AAD_APP_OAUTH_AUTHORITY]
       );
     } else {
       const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
@@ -122,7 +122,7 @@ describe("Blazor App", function () {
     let endpoint: string;
     if (isV3Enabled()) {
       const context = await readContextMultiEnvV3(projectPath, envName);
-      endpoint = context[EnvContants.TAB_ENDPOINT];
+      endpoint = context[EnvConstants.TAB_ENDPOINT];
     } else {
       const context = await readContextMultiEnv(projectPath, envName);
       endpoint = context[PluginId.FrontendHosting][StateConfigKey.endpoint];

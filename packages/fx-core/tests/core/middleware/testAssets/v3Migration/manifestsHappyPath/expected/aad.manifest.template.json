@@ -90,23 +90,23 @@
       }
   ],
   "identifierUris": [
-      "${{STATE__FX_RESOURCE_AAD_APP_FOR_TEAMS__APPLICATIONIDURIS}}"
+      "api://${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN}}/botid-${{BOT_ID}}"
   ],
   "replyUrlsWithType": [
       {
-          "url": "${{STATE__FX_RESOURCE_AAD_APP_FOR_TEAMS__FRONTENDENDPOINT}}/auth-end.html",
+          "url": "${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT}}/auth-end.html",
           "type": "Web"
       },
       {
-          "url": "${{STATE__FX_RESOURCE_AAD_APP_FOR_TEAMS__FRONTENDENDPOINT}}/auth-end.html?clientId=${{AAD_APP_CLIENT_ID}}",
+          "url": "${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT}}/auth-end.html?clientId=${{AAD_APP_CLIENT_ID}}",
           "type": "Spa"
       },
       {
-          "url": "${{STATE__FX_RESOURCE_AAD_APP_FOR_TEAMS__FRONTENDENDPOINT}}/blank-auth-end.html",
+          "url": "${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT}}/blank-auth-end.html",
           "type": "Spa"
       },
       {
-          "url": "${{STATE__FX_RESOURCE_AAD_APP_FOR_TEAMS__BOTENDPOINT}}/auth-end.html",
+          "url": "${{PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT}}/auth-end.html",
           "type": "Web"
       }
   ]

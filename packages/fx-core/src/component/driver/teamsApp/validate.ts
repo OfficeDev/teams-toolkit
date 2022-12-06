@@ -96,7 +96,8 @@ export class ValidateTeamsAppDriver implements StepDriver {
       context.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
       const validationFailed = AppStudioResultFactory.UserError(
         AppStudioError.ValidationFailedError.name,
-        errMessage
+        errMessage,
+        "https://aka.ms/teamsfx-actions/teamsapp-validate"
       );
       return err(validationFailed);
     }

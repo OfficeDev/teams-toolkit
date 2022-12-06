@@ -152,11 +152,15 @@ export class CreateTeamsAppDriver implements StepDriver {
       } catch (e: any) {
         progressHandler?.end(false);
         if (e instanceof UserError || e instanceof SystemError) {
+          if (e instanceof UserError && !e.helpLink) {
+            e.helpLink = "https://aka.ms/teamsfx-actions/teamsapp-create";
+          }
           return err(e);
         } else {
           const error = AppStudioResultFactory.SystemError(
             AppStudioError.TeamsAppCreateFailedError.name,
-            AppStudioError.TeamsAppCreateFailedError.message(e)
+            AppStudioError.TeamsAppCreateFailedError.message(e),
+            "https://aka.ms/teamsfx-actions/teamsapp-create"
           );
           return err(error);
         }

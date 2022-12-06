@@ -18,7 +18,7 @@ This is a simple hello world application with both Bot and Message extension cap
 
 - From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code.
 - Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Run and Debug` green arrow button.
-- From TeamsFx CLI: Start debugging the project by executing the command `teamsfx preview --local` in your project directory.
+- From TeamsFx CLI: Start debugging the project by executing the command `teamsfx preview --env local` in your project directory.
 
 ## Edit the manifest
 
@@ -47,7 +47,7 @@ Once the provisioning and deployment steps are finished, you can preview your ap
   1. Select `Launch Remote (Edge)` or `Launch Remote (Chrome)` from the launch configuration drop-down.
   1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
 
-- From TeamsFx CLI: execute `teamsfx preview --remote` in your project directory to launch your application.
+- From TeamsFx CLI: execute `teamsfx preview --env dev` in your project directory to launch your application.
 
 ## Validate manifest file
 

@@ -39,11 +39,15 @@ import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManif
 import { replacePlaceholdersForV3, FileType } from "./MigrationUtils";
 import { ReadFileError } from "../error";
 import {
+  readAndConvertUserdata,
   fsReadDirSync,
+  generateAppIdUri,
   getProjectVersion,
   jsonObjectNamesConvertV3,
+  getCapabilitySsoStatus,
   readBicepContent,
   readJsonFile,
+  replaceAppIdUri,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
 
@@ -72,9 +76,10 @@ const subMigrations: Array<Migration> = [
   generateSettingsJson,
   replacePlaceholderForManifests,
   generateAppYml,
-  statesMigration,
-  updateLaunchJson,
   configsMigration,
+  statesMigration,
+  userdataMigration,
+  updateLaunchJson,
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -264,14 +269,19 @@ export async function replacePlaceholderForManifests(context: MigrationContext):
   }
   const bicepContent = await fs.readFile(path.join(context.projectPath, oldBicepFilePath), "utf-8");
 
+  // Read capability project settings
+  const projectSettings = await loadProjectSettings(context.projectPath);
+  const capabilities = getCapabilitySsoStatus(projectSettings);
+  const appIdUri = generateAppIdUri(capabilities);
+
   // Read Teams app manifest and save to templates/appPackage/manifest.template.json
   const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
   const oldManifestExists = await fs.pathExists(path.join(context.projectPath, oldManifestPath));
   if (oldManifestExists) {
     const manifestPath = path.join(AppPackageFolderName, MANIFEST_TEMPLATE_CONSOLIDATE);
-    const oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
+    let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
+    oldManifest = replaceAppIdUri(oldManifest, appIdUri);
     const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);
-    // TODO: update app id uri
     await context.fsWriteFile(manifestPath, manifest);
   } else {
     // templates/appPackage/manifest.template.json does not exist
@@ -284,45 +294,13 @@ export async function replacePlaceholderForManifests(context: MigrationContext):
     path.join(context.projectPath, oldAadManifestPath)
   );
   if (oldAadManifestExists) {
-    const oldAadManifest = await fs.readFile(
+    let oldAadManifest = await fs.readFile(
       path.join(context.projectPath, oldAadManifestPath),
       "utf-8"
     );
+    oldAadManifest = replaceAppIdUri(oldAadManifest, appIdUri);
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
-    // TODO: update app id uri
     await context.fsWriteFile("aad.manifest.template.json", aadManifest);
-  }
-}
-
-export async function statesMigration(context: MigrationContext): Promise<void> {
-  // general
-  if (await context.fsPathExists(path.join(".fx", "states"))) {
-    // if ./fx/states/ exists
-    const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
-    for (const fileName of fileNames) {
-      const fileRegex = new RegExp("(state\\.)([a-zA-Z0-9_-]*)(\\.json)", "g"); // state.*.json
-      const fileNamesArray = fileRegex.exec(fileName);
-      if (fileNamesArray != null) {
-        // get envName
-        const envName = fileNamesArray[2];
-        // create .env.{env} file if not exist
-        await context.fsEnsureDir(SettingsFolderName);
-        if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
-          await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
-        const obj = await readJsonFile(
-          context,
-          path.join(".fx", "states", "state." + envName + ".json")
-        );
-        if (obj) {
-          const bicepContent = readBicepContent(context);
-          // convert every name
-          const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
-          await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData);
-        }
-      }
-    }
-  } else {
-    throw ReadFileError(new Error(".fx/states does not exist"));
   }
 }
 
@@ -378,11 +356,80 @@ export async function configsMigration(context: MigrationContext): Promise<void>
               FileType.CONFIG,
               bicepContent
             );
-            await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData);
+            await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
+              // .env.{env} file might be already exist, use append mode (flag: a+)
+              encoding: "utf8",
+              flag: "a+",
+            });
           }
         }
       }
-  } else {
-    throw ReadFileError(new Error(".fx/configs does not exist"));
+  }
+}
+
+export async function statesMigration(context: MigrationContext): Promise<void> {
+  // general
+  if (await context.fsPathExists(path.join(".fx", "states"))) {
+    // if ./fx/states/ exists
+    const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
+    for (const fileName of fileNames)
+      if (fileName.startsWith("state.")) {
+        const fileRegex = new RegExp("(state\\.)([a-zA-Z0-9_-]*)(\\.json)", "g"); // state.*.json
+        const fileNamesArray = fileRegex.exec(fileName);
+        if (fileNamesArray != null) {
+          // get envName
+          const envName = fileNamesArray[2];
+          // create .env.{env} file if not exist
+          await context.fsEnsureDir(SettingsFolderName);
+          if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
+            await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+          const obj = await readJsonFile(
+            context,
+            path.join(".fx", "states", "state." + envName + ".json")
+          );
+          if (obj) {
+            const bicepContent = readBicepContent(context);
+            // convert every name
+            const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
+            await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
+              // .env.{env} file might be already exist, use append mode (flag: a+)
+              encoding: "utf8",
+              flag: "a+",
+            });
+          }
+        }
+      }
+  }
+}
+
+export async function userdataMigration(context: MigrationContext): Promise<void> {
+  // general
+  if (await context.fsPathExists(path.join(".fx", "states"))) {
+    // if ./fx/states/ exists
+    const fileNames = fsReadDirSync(context, path.join(".fx", "states")); // search all files, get file names
+    for (const fileName of fileNames)
+      if (fileName.endsWith(".userdata")) {
+        const fileRegex = new RegExp("([a-zA-Z0-9_-]*)(\\.userdata)", "g"); // state.*.json
+        const fileNamesArray = fileRegex.exec(fileName);
+        if (fileNamesArray != null) {
+          // get envName
+          const envName = fileNamesArray[1];
+          // create .env.{env} file if not exist
+          await context.fsEnsureDir(SettingsFolderName);
+          if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
+            await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+          const bicepContent = readBicepContent(context);
+          const envData = await readAndConvertUserdata(
+            context,
+            path.join(".fx", "states", fileName),
+            bicepContent
+          );
+          await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
+            // .env.{env} file might be already exist, use append mode (flag: a+)
+            encoding: "utf8",
+            flag: "a+",
+          });
+        }
+      }
   }
 }

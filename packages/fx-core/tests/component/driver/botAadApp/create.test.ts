@@ -63,7 +63,7 @@ describe("aadAppCreate", async () => {
       .and.is.instanceOf(UserError);
   });
 
-  it("happy path", async () => {
+  it("happy path with handler", async () => {
     const args: any = {
       name: expectedDisplayName,
     };
@@ -75,8 +75,46 @@ describe("aadAppCreate", async () => {
 
     const result = await createBotAadAppDriver.handler(args, mockedDriverContext);
 
-    expect(result.get(outputKeys.BOT_ID)).to.be.equal(expectedClientId);
-    expect(result.get(outputKeys.SECRET_BOT_PASSWORD)).to.be.equal(expectedSecretText);
+    expect(result.output.get(outputKeys.BOT_ID)).to.be.equal(expectedClientId);
+    expect(result.output.get(outputKeys.SECRET_BOT_PASSWORD)).to.be.equal(expectedSecretText);
+  });
+
+  it("happy path with run", async () => {
+    const args: any = {
+      name: expectedDisplayName,
+    };
+
+    sinon.stub(GraphClient, "registerAadApp").resolves({
+      clientId: expectedClientId,
+      clientSecret: expectedSecretText,
+    });
+
+    const result = await createBotAadAppDriver.run(args, mockedDriverContext);
+    expect(result.isOk()).to.be.true;
+    expect(result.isOk() && result.value.get(outputKeys.BOT_ID)).to.be.equal(expectedClientId);
+    expect(result.isOk() && result.value.get(outputKeys.SECRET_BOT_PASSWORD)).to.be.equal(
+      expectedSecretText
+    );
+  });
+
+  it("happy path with execute", async () => {
+    const args: any = {
+      name: expectedDisplayName,
+    };
+
+    sinon.stub(GraphClient, "registerAadApp").resolves({
+      clientId: expectedClientId,
+      clientSecret: expectedSecretText,
+    });
+
+    const result = await createBotAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result.isOk() && result.result.value.get(outputKeys.BOT_ID)).to.be.equal(
+      expectedClientId
+    );
+    expect(
+      result.result.isOk() && result.result.value.get(outputKeys.SECRET_BOT_PASSWORD)
+    ).to.be.equal(expectedSecretText);
   });
 
   it("should throw user error when GraphClient failed with 4xx error", async () => {

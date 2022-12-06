@@ -7,7 +7,12 @@ import { MigrationContext } from "./migrationContext";
 import { isObject } from "lodash";
 import { FileType, namingConverterV3 } from "../MigrationUtils";
 import { EOL } from "os";
-import { Inputs } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionSettings,
+  Inputs,
+  ProjectSettings,
+  ProjectSettingsV3,
+} from "@microsoft/teamsfx-api";
 import { CoreHookContext } from "../../types";
 import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
 
@@ -34,7 +39,7 @@ export function fsReadDirSync(context: MigrationContext, _path: string): string[
   return fs.readdirSync(dirPath);
 }
 
-// convert any obj names if can be converted
+// convert any obj names if can be converted (used in states and configs migration)
 export function jsonObjectNamesConvertV3(
   obj: any,
   prefix: string,
@@ -48,6 +53,14 @@ export function jsonObjectNamesConvertV3(
   return returnData;
 }
 
+// env variables in this list will be only convert into .env.{env} when migrating {env}.userdata
+const skipList = [
+  "state.fx-resource-aad-app-for-teams.clientSecret",
+  "state.fx-resource-bot.botPassword",
+  "state.fx-resource-apim.apimClientAADClientSecret",
+  "state.fx-resource-azure-sql.adminPassword",
+];
+
 function dfs(parentKeyName: string, obj: any, filetype: FileType, bicepContent: any): string {
   let returnData = "";
 
@@ -55,10 +68,10 @@ function dfs(parentKeyName: string, obj: any, filetype: FileType, bicepContent: 
     for (const keyName of Object.keys(obj)) {
       returnData += dfs(parentKeyName + "." + keyName, obj[keyName], filetype, bicepContent);
     }
-  } else {
+  } else if (!skipList.includes(parentKeyName)) {
     const res = namingConverterV3(parentKeyName, filetype, bicepContent);
     if (res.isOk()) return res.value + "=" + obj + EOL;
-  }
+  } else return "";
 
   return returnData;
 }
@@ -79,4 +92,71 @@ export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
     }
   }
   return "0.0.0";
+}
+
+export function getCapabilitySsoStatus(projectSettings: ProjectSettings): {
+  TabSso: boolean;
+  BotSso: boolean;
+} {
+  let tabSso, botSso;
+  if ((projectSettings as ProjectSettingsV3).components) {
+    tabSso = (projectSettings as ProjectSettingsV3).components.some((component, index, obj) => {
+      return component.name === "teams-tab" && component.sso == true;
+    });
+    botSso = (projectSettings as ProjectSettingsV3).components.some((component, index, obj) => {
+      return component.name === "teams-bot" && component.sso == true;
+    });
+  } else {
+    // For projects that does not componentize.
+    const capabilities = (projectSettings.solutionSettings as AzureSolutionSettings).capabilities;
+    tabSso = capabilities.includes("TabSso");
+    botSso = capabilities.includes("BotSso");
+  }
+
+  return {
+    TabSso: tabSso,
+    BotSso: botSso,
+  };
+}
+
+export function generateAppIdUri(capabilities: { TabSso: boolean; BotSso: boolean }): string {
+  if (capabilities.TabSso && !capabilities.BotSso) {
+    return "api://{{state.fx-resource-frontend-hosting.domain}}/{{state.fx-resource-aad-app-for-teams.clientId}}";
+  } else if (capabilities.TabSso && capabilities.BotSso) {
+    return "api://{{state.fx-resource-frontend-hosting.domain}}/botid-{{state.fx-resource-bot.botId}}";
+  } else if (!capabilities.TabSso && capabilities.BotSso) {
+    return "api://botid-{{state.fx-resource-bot.botId}}";
+  } else {
+    return "api://{{state.fx-resource-aad-app-for-teams.clientId}}";
+  }
+}
+
+export function replaceAppIdUri(manifest: string, appIdUri: string): string {
+  const appIdUriRegex = /{{+ *state\.fx\-resource\-aad\-app\-for\-teams\.applicationIdUris *}}+/g;
+  if (manifest.match(appIdUriRegex)) {
+    manifest = manifest.replace(appIdUriRegex, appIdUri);
+  }
+
+  return manifest;
+}
+
+export async function readAndConvertUserdata(
+  context: MigrationContext,
+  filePath: string,
+  bicepContent: any
+): Promise<string> {
+  let returnAnswer = "";
+
+  const userdataContent = await fs.readFileSync(path.join(context.projectPath, filePath), "utf8");
+  const lines = userdataContent.split(EOL);
+  for (const line of lines) {
+    if (line && line != "") {
+      // in case that there are "="s in secrets
+      const key_value = line.split("=");
+      const res = await namingConverterV3("state." + key_value[0], FileType.USERDATA, bicepContent);
+      if (res.isOk()) returnAnswer += res.value + "=" + key_value.slice(1).join("=") + EOL;
+    }
+  }
+
+  return returnAnswer;
 }

@@ -579,7 +579,7 @@ export class FxCore implements v3.ICore {
       };
       res = await driver.run(args, context);
     } else if (func.method === "buildPackage") {
-      const driver: CreateAppPackageDriver = Container.get("teamsApp/createAppPackage");
+      const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
       const args: CreateAppPackageArgs = {
         manifestTemplatePath: func.params.manifestTemplatePath,
         outputZipPath: func.params.outputZipPath,

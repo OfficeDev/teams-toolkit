@@ -7,7 +7,6 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
-import { MigrationContext } from "./migrationContext";
 
 export class AppYmlGenerator {
   private handlebarsContext: {

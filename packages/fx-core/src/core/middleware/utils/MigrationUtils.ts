@@ -3,15 +3,15 @@
 
 import { err, FxError, Inputs, ok, Result, SystemError } from "@microsoft/teamsfx-api";
 import path from "path";
-import { isAadManifestEnabled } from "../../common/tools";
-import { CoreHookContext } from "../types";
+import { isAadManifestEnabled } from "../../../common/tools";
+import { CoreHookContext } from "../../types";
 import fs from "fs-extra";
-import { getLocalizedString } from "../../common/localizeUtils";
-import { TOOLS } from "../globalVars";
-import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
-import { PluginNames } from "../../component/constants";
-import { RequiredResourceAccess } from "../../component/resource/aadApp/interfaces/AADManifest";
-import { CoreSource } from "../error";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { TOOLS } from "../../globalVars";
+import { generateAadManifestTemplate } from "../../generateAadManifestTemplate";
+import { PluginNames } from "../../../component/constants";
+import { RequiredResourceAccess } from "../../../component/resource/aadApp/interfaces/AADManifest";
+import { CoreSource } from "../../error";
 
 export interface Permission {
   resource: string;

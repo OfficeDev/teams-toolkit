@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
-import { FileType, namingConverterV3 } from "../MigrationUtils";
+import { FileType, namingConverterV3 } from "./MigrationUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as handlebars from "handlebars";

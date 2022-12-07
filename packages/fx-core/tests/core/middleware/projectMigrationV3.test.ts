@@ -259,10 +259,10 @@ describe("generateAppYml-js/ts", () => {
     assert.exists(getAction(appYaml.provision, "arm/deploy"));
     assert.exists(getAction(appYaml.registerApp, "teamsApp/create"));
     assert.exists(getAction(appYaml.configureApp, "teamsApp/validate"));
-    assert.exists(getAction(appYaml.configureApp, "teamsApp/createAppPackage"));
+    assert.exists(getAction(appYaml.configureApp, "teamsApp/zipAppPackage"));
     assert.exists(getAction(appYaml.configureApp, "teamsApp/update"));
     assert.exists(getAction(appYaml.publish, "teamsApp/validate"));
-    assert.exists(getAction(appYaml.publish, "teamsApp/createAppPackage"));
+    assert.exists(getAction(appYaml.publish, "teamsApp/zipAppPackage"));
     assert.exists(getAction(appYaml.publish, "teamsApp/publishAppPackage"));
     // validate AAD part
     assert.exists(getAction(appYaml.registerApp, "aadApp/create"));

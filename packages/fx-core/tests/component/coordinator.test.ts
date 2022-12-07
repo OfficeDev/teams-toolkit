@@ -1902,7 +1902,7 @@ describe("component coordinator test", () => {
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
     sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves("");
     const driver1: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
-    const driver2: CreateAppPackageDriver = Container.get("teamsApp/createAppPackage");
+    const driver2: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
     sandbox.stub(driver1, "run").resolves(ok(new Map()));
     sandbox.stub(driver2, "run").resolves(ok(new Map()));
     const inputs: Inputs = {

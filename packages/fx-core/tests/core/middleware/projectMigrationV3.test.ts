@@ -492,7 +492,6 @@ describe("replacePlaceholderForAzureParameter", () => {
     const migrationContext = await mockMigrationContext(projectPath);
 
     // Stub
-    sandbox.stub(migrationContext, "backup").resolves(true);
     await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
 
     // Action
@@ -521,6 +520,36 @@ describe("replacePlaceholderForAzureParameter", () => {
     const azureParameterTest = await fs.readFile(azureParameterTestFilePath, "utf-8");
     assert.equal(azureParameterDev, azureParameterExpected);
     assert.equal(azureParameterTest, azureParameterExpected);
+  });
+
+  it("migrate azure.parameter failed: .fx/config does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Action
+    await replacePlaceholderForAzureParameter(migrationContext);
+
+    // Assert
+    const azureParameterDevFilePath = path.join(
+      projectPath,
+      "templates",
+      "azure",
+      "azure.parameter.dev.json"
+    );
+    assert.isFalse(await fs.pathExists(azureParameterDevFilePath));
+  });
+
+  it("migrate azure.parameter failed: provision.bicep does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    await fs.ensureDir(path.join(projectPath, ".fx", "config"));
+
+    try {
+      await replacePlaceholderForAzureParameter(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.innerError.message, "templates/azure/provision.bicep does not exist");
+    }
   });
 });
 

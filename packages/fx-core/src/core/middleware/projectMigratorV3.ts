@@ -305,15 +305,8 @@ export async function replacePlaceholderForAzureParameter(
     return;
   }
 
-  // Ensure `templates/azure` exists
-  const azureFolderPath = path.join(TemplateFolderName, "azure");
-  const azureFolderPathExists = await context.fsPathExists(azureFolderPath);
-  if (!azureFolderPathExists) {
-    // Keep same practice now. Needs dicussion whether to throw error.
-    return;
-  }
-
   // Read Bicep
+  const azureFolderPath = path.join(TemplateFolderName, "azure");
   const oldBicepFilePath = path.join(azureFolderPath, "provision.bicep");
   const oldBicepFileExists = await context.fsPathExists(oldBicepFilePath);
   if (!oldBicepFileExists) {

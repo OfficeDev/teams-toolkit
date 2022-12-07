@@ -12,6 +12,7 @@ import {
   TemplateFolderName,
   SystemError,
   UserError,
+  InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -85,6 +86,7 @@ const subMigrations: Array<Migration> = [
   statesMigration,
   userdataMigration,
   updateLaunchJson,
+  replacePlaceholderForAzureParameter,
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -316,6 +318,43 @@ export async function replacePlaceholderForManifests(context: MigrationContext):
     oldAadManifest = replaceAppIdUri(oldAadManifest, appIdUri);
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
     await context.fsWriteFile("aad.manifest.template.json", aadManifest);
+  }
+}
+
+export async function replacePlaceholderForAzureParameter(
+  context: MigrationContext
+): Promise<void> {
+  // Ensure `.fx/configs` exists
+  const configFolderPath = path.join(".fx", InputConfigsFolderName);
+  const configFolderPathExists = await context.fsPathExists(configFolderPath);
+  if (!configFolderPathExists) {
+    // Keep same practice now. Needs dicussion whether to throw error.
+    return;
+  }
+
+  // Read Bicep
+  const azureFolderPath = path.join(TemplateFolderName, "azure");
+  const oldBicepFilePath = path.join(azureFolderPath, "provision.bicep");
+  const oldBicepFileExists = await context.fsPathExists(oldBicepFilePath);
+  if (!oldBicepFileExists) {
+    // templates/azure/provision.bicep does not exist
+    throw ReadFileError(new Error("templates/azure/provision.bicep does not exist"));
+  }
+  const bicepContent = await fs.readFile(path.join(context.projectPath, oldBicepFilePath), "utf-8");
+
+  const fileNames = fsReadDirSync(context, configFolderPath);
+  for (const fileName of fileNames) {
+    if (!fileName.startsWith("azure.parameter.")) {
+      continue;
+    }
+
+    const content = await fs.readFile(
+      path.join(context.projectPath, configFolderPath, fileName),
+      "utf-8"
+    );
+
+    const newContent = replacePlaceholdersForV3(content, bicepContent);
+    await context.fsWriteFile(path.join(azureFolderPath, fileName), newContent);
   }
 }
 

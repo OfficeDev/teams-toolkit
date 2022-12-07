@@ -3525,9 +3525,9 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         ],
       },
       {
-        id: "addAzureKeyvault",
-        label: localize("teamstoolkit.guides.addAzureKeyvault.label"),
-        detail: localize("teamstoolkit.guides.addAzureKeyvault.detail"),
+        id: "addAzureKeyVault",
+        label: localize("teamstoolkit.guides.addAzureKeyVault.label"),
+        detail: localize("teamstoolkit.guides.addAzureKeyVault.detail"),
         groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
         data: "https://aka.ms/teamsfx-add-azure-keyvault",
         buttons: [

@@ -889,7 +889,6 @@ export class Coordinator {
           getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
           botTroubleShootMsg.textForLogging;
         ctx.logProvider.info(msg);
-        // ctx.ui?.showMessage("info", msg, false);
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);

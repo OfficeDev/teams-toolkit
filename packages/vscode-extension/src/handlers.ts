@@ -3426,6 +3426,20 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           },
         ],
       },
+      {
+        id: "addAzureKeyVault",
+        label: localize("teamstoolkit.tutorials.addAzureKeyVault.label"),
+        detail: localize("teamstoolkit.tutorials.addAzureKeyVault.detail"),
+        groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
+        data: "https://aka.ms/teamsfx-add-azure-keyvault",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
     ],
     returnObject: true,
   };

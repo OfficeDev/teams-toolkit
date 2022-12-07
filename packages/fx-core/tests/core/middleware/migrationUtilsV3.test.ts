@@ -1,5 +1,6 @@
 import { assert } from "chai";
 import {
+  convertPluginId,
   FileType,
   fixedNamingsV3,
   namingConverterV3,
@@ -157,5 +158,17 @@ describe("MigrationUtilsV3: generateAppIdUri", () => {
       BotSso: false,
     });
     assert.equal(res, "api://{{state.fx-resource-aad-app-for-teams.clientId}}");
+  });
+});
+
+describe("MigrationUtilsV3: convertPluginId", () => {
+  it("happy path", () => {
+    const res = convertPluginId("state.aad-app.clientId");
+    assert.equal(res, "state.fx-resource-aad-app-for-teams.clientId");
+  });
+
+  it("happy path without change", () => {
+    const res = convertPluginId("state.fx-resource-aad-app-for-teams.clientId");
+    assert.equal(res, "state.fx-resource-aad-app-for-teams.clientId");
   });
 });

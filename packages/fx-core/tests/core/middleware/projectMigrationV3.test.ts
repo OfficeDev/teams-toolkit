@@ -37,6 +37,7 @@ import {
   VersionState,
   configsMigration,
   userdataMigration,
+  replacePlaceholderForAzureParameter,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
@@ -470,6 +471,56 @@ describe("replacePlaceholderForManifests", () => {
         "templates/appPackage/manifest.template.json does not exist"
       );
     }
+  });
+});
+
+describe("replacePlaceholderForAzureParameter", () => {
+  const sandbox = sinon.createSandbox();
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+  });
+
+  it("Happy Path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+
+    // Action
+    await replacePlaceholderForAzureParameter(migrationContext);
+
+    // Assert
+    const azureParameterDevFilePath = path.join(
+      projectPath,
+      "templates",
+      "azure",
+      "azure.parameter.dev.json"
+    );
+    const azureParameterTestFilePath = path.join(
+      projectPath,
+      "templates",
+      "azure",
+      "azure.parameter.test.json"
+    );
+    assert.isTrue(await fs.pathExists(azureParameterDevFilePath));
+    assert.isTrue(await fs.pathExists(azureParameterTestFilePath));
+    const azureParameterExpected = await fs.readFile(
+      path.join(projectPath, "expected", "azure.parameter.json"),
+      "utf-8"
+    );
+    const azureParameterDev = await fs.readFile(azureParameterDevFilePath, "utf-8");
+    const azureParameterTest = await fs.readFile(azureParameterTestFilePath, "utf-8");
+    assert.equal(azureParameterDev, azureParameterExpected);
+    assert.equal(azureParameterTest, azureParameterExpected);
   });
 });
 

@@ -118,10 +118,7 @@ export class MigrationContext {
   }
 
   async fsRemove(_path: string): Promise<void> {
-    if (await this.fsPathExists(_path)) {
-      await fs.remove(path.join(this.projectPath, _path));
-    }
-    return;
+    return await fs.remove(path.join(this.projectPath, _path));
   }
 
   addReport(report: string): void {

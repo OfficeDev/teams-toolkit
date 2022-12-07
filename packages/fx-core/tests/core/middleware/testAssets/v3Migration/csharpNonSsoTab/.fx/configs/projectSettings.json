@@ -1,0 +1,48 @@
+{
+    "appName": "vsTabNonSso",
+    "projectId": "2c4cc796-8b01-4adb-987b-f2071fc65228",
+    "version": "2.1.0",
+    "components": [
+        {
+            "name": "teams-tab",
+            "hosting": "azure-web-app",
+            "deploy": true,
+            "provision": true,
+            "build": true,
+            "folder": ".",
+            "artifactFolder": "publish"
+        },
+        {
+            "name": "azure-web-app",
+            "scenario": "Tab",
+            "provision": true,
+            "connections": [
+                "identity",
+                "teams-tab"
+            ]
+        },
+        {
+            "name": "identity",
+            "provision": true
+        }
+    ],
+    "programmingLanguage": "csharp",
+    "solutionSettings": {
+        "name": "fx-solution-azure",
+        "version": "1.0.0",
+        "hostType": "Azure",
+        "azureResources": [],
+        "capabilities": [
+            "Tab"
+        ],
+        "activeResourcePlugins": [
+            "fx-resource-local-debug",
+            "fx-resource-appstudio",
+            "fx-resource-cicd",
+            "fx-resource-api-connector",
+            "fx-resource-frontend-hosting",
+            "fx-resource-identity"
+        ]
+    },
+    "isFirstTimeOpenProject": false
+}

@@ -329,6 +329,56 @@ describe("generateAppYml-js/ts", () => {
   });
 });
 
+describe("generateAppYml-csharp", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  let migrationContext: MigrationContext;
+
+  beforeEach(async () => {
+    migrationContext = await mockMigrationContext(projectPath);
+    migrationContext.arguments.push({
+      platform: "vs",
+    });
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("should success for sso tab project", async () => {
+    await copyTestProject("csharpSsoTab", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+  });
+
+  it("should success for non-sso tab project", async () => {
+    await copyTestProject("csharpNonSsoTab", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+  });
+
+  it("should success for web app bot project", async () => {
+    await copyTestProject("csharpWebappBot", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+  });
+
+  it("should success for function bot project", async () => {
+    await copyTestProject("csharpFunctionBot", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+  });
+});
+
 describe("manifestsMigration", () => {
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();
@@ -809,6 +859,24 @@ async function mockMigrationContext(projectPath: string): Promise<MigrationConte
 
 function getTestAssetsPath(projectName: string): string {
   return path.join("tests/core/middleware/testAssets/v3Migration", projectName.toString());
+}
+
+// Change CRLF to LF to avoid test failures in different OS
+function normalizeLineBreaks(content: string): string {
+  return content.replace(/\r\n/g, "\n");
+}
+
+async function assertFileContent(
+  projectPath: string,
+  actualFilePath: string,
+  expectedFileName: string
+): Promise<void> {
+  const actualFileFullPath = path.join(projectPath, actualFilePath);
+  const expectedFileFulePath = path.join(projectPath, "expectedResult", expectedFileName);
+  assert.isTrue(await fs.pathExists(actualFileFullPath));
+  const actualFileContent = normalizeLineBreaks(await fs.readFile(actualFileFullPath, "utf8"));
+  const expectedFileContent = normalizeLineBreaks(await fs.readFile(expectedFileFulePath, "utf8"));
+  assert.equal(actualFileContent, expectedFileContent);
 }
 
 async function copyTestProject(projectName: string, targetPath: string): Promise<void> {

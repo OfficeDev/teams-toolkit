@@ -176,9 +176,7 @@ async function showSummaryReport(context: MigrationContext): Promise<void> {
 1. migrate .fx/states/userdata.{env} to .env.{env}
     `;
   await fs.writeFile(summaryPath, content);
-  if (TOOLS?.ui?.openFile) {
-    await TOOLS.ui.openFile(summaryPath);
-  }
+  await TOOLS?.ui?.openFile?.(summaryPath);
 }
 
 export async function migrate(context: MigrationContext): Promise<void> {

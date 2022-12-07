@@ -28,7 +28,7 @@ import { MigrationContext } from "../../../src/core/middleware/utils/migrationCo
 import {
   generateAppYml,
   generateSettingsJson,
-  replacePlaceholderForManifests,
+  manifestsMigration,
   statesMigration,
   updateLaunchJson,
   migrate,
@@ -37,7 +37,7 @@ import {
   VersionState,
   configsMigration,
   userdataMigration,
-  replacePlaceholderForAzureParameter,
+  azureParameterMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
@@ -329,7 +329,7 @@ describe("generateAppYml-js/ts", () => {
   });
 });
 
-describe("replacePlaceholderForManifests", () => {
+describe("manifestsMigration", () => {
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
@@ -351,9 +351,12 @@ describe("replacePlaceholderForManifests", () => {
     await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
 
     // Action
-    await replacePlaceholderForManifests(migrationContext);
+    await manifestsMigration(migrationContext);
 
     // Assert
+    const oldAppPackageFolderPath = path.join(projectPath, "templates", "appPackage");
+    assert.isFalse(await fs.pathExists(oldAppPackageFolderPath));
+
     const appPackageFolderPath = path.join(projectPath, "appPackage");
     assert.isTrue(await fs.pathExists(appPackageFolderPath));
 
@@ -398,7 +401,7 @@ describe("replacePlaceholderForManifests", () => {
     await fs.remove(path.join(projectPath, "templates/appPackage/aad.template.json"));
 
     // Action
-    await replacePlaceholderForManifests(migrationContext);
+    await manifestsMigration(migrationContext);
 
     // Assert
     const appPackageFolderPath = path.join(projectPath, "appPackage");
@@ -432,7 +435,7 @@ describe("replacePlaceholderForManifests", () => {
     sandbox.stub(migrationContext, "backup").resolves(false);
 
     try {
-      await replacePlaceholderForManifests(migrationContext);
+      await manifestsMigration(migrationContext);
     } catch (error) {
       assert.equal(error.name, "ReadFileError");
       assert.equal(error.innerError.message, "templates/appPackage does not exist");
@@ -447,7 +450,7 @@ describe("replacePlaceholderForManifests", () => {
     await fs.ensureDir(path.join(projectPath, "appPackage"));
 
     try {
-      await replacePlaceholderForManifests(migrationContext);
+      await manifestsMigration(migrationContext);
     } catch (error) {
       assert.equal(error.name, "ReadFileError");
       assert.equal(error.innerError.message, "templates/azure/provision.bicep does not exist");
@@ -463,7 +466,7 @@ describe("replacePlaceholderForManifests", () => {
     await fs.remove(path.join(projectPath, "templates/appPackage/manifest.template.json"));
 
     try {
-      await replacePlaceholderForManifests(migrationContext);
+      await manifestsMigration(migrationContext);
     } catch (error) {
       assert.equal(error.name, "ReadFileError");
       assert.equal(
@@ -474,7 +477,7 @@ describe("replacePlaceholderForManifests", () => {
   });
 });
 
-describe("replacePlaceholderForAzureParameter", () => {
+describe("azureParameterMigration", () => {
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
@@ -495,7 +498,7 @@ describe("replacePlaceholderForAzureParameter", () => {
     await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
 
     // Action
-    await replacePlaceholderForAzureParameter(migrationContext);
+    await azureParameterMigration(migrationContext);
 
     // Assert
     const azureParameterDevFilePath = path.join(
@@ -526,7 +529,7 @@ describe("replacePlaceholderForAzureParameter", () => {
     const migrationContext = await mockMigrationContext(projectPath);
 
     // Action
-    await replacePlaceholderForAzureParameter(migrationContext);
+    await azureParameterMigration(migrationContext);
 
     // Assert
     const azureParameterDevFilePath = path.join(
@@ -545,7 +548,7 @@ describe("replacePlaceholderForAzureParameter", () => {
     await fs.ensureDir(path.join(projectPath, ".fx", "config"));
 
     try {
-      await replacePlaceholderForAzureParameter(migrationContext);
+      await azureParameterMigration(migrationContext);
     } catch (error) {
       assert.equal(error.name, "ReadFileError");
       assert.equal(error.innerError.message, "templates/azure/provision.bicep does not exist");

@@ -81,12 +81,12 @@ const subMigrations: Array<Migration> = [
   preMigration,
   generateSettingsJson,
   generateAppYml,
-  replacePlaceholderForManifests,
+  manifestsMigration,
   configsMigration,
   statesMigration,
   userdataMigration,
   updateLaunchJson,
-  replacePlaceholderForAzureParameter,
+  azureParameterMigration,
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -253,7 +253,7 @@ async function loadProjectSettings(projectPath: string): Promise<ProjectSettings
   }
 }
 
-export async function replacePlaceholderForManifests(context: MigrationContext): Promise<void> {
+export async function manifestsMigration(context: MigrationContext): Promise<void> {
   // Backup templates/appPackage
   const oldAppPackageFolderPath = path.join(TemplateFolderName, AppPackageFolderName);
   const oldAppPackageFolderBackupRes = await context.backup(oldAppPackageFolderPath);
@@ -319,11 +319,11 @@ export async function replacePlaceholderForManifests(context: MigrationContext):
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
     await context.fsWriteFile("aad.manifest.template.json", aadManifest);
   }
+
+  await context.fsRemove(oldAppPackageFolderPath);
 }
 
-export async function replacePlaceholderForAzureParameter(
-  context: MigrationContext
-): Promise<void> {
+export async function azureParameterMigration(context: MigrationContext): Promise<void> {
   // Ensure `.fx/configs` exists
   const configFolderPath = path.join(".fx", InputConfigsFolderName);
   const configFolderPathExists = await context.fsPathExists(configFolderPath);

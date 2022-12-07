@@ -17,7 +17,13 @@ import {
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
-import { checkMethod, checkUserTasks, outputCancelMessage, upgradeButton } from "./projectMigrator";
+import {
+  checkMethod,
+  checkUserTasks,
+  learnMoreText,
+  outputCancelMessage,
+  upgradeButton,
+} from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
 import {
@@ -67,6 +73,8 @@ export enum VersionState {
   upgradeable,
   unsupported,
 }
+
+const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
 
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
@@ -143,6 +151,7 @@ export async function wrapRunMigration(
     await rollbackMigration(context);
     throw error;
   }
+  await context.removeFxV2();
 }
 
 async function rollbackMigration(context: MigrationContext): Promise<void> {
@@ -151,8 +160,26 @@ async function rollbackMigration(context: MigrationContext): Promise<void> {
   await context.cleanTeamsfx();
 }
 
-//TODO: implement summaryReport
-async function showSummaryReport(context: MigrationContext): Promise<void> {}
+async function showSummaryReport(context: MigrationContext): Promise<void> {
+  const summaryPath = path.join(context.backupPath, "migrationReport.md");
+  const content = `
+# Teams toolkit 5.0 Migration summary
+1. Move teamplates/appPackage/resource & templates/appPackage/manifest.template.json to appPackage/
+1. Move templates/appPakcage/aad.template.json to ./aad.manifest.template.json
+1. Update placeholders in the two manifests
+1. Update app id uri in the two manifests
+1. Move .fx/configs/azure.parameter.{env}.json to templates/azure/...
+1. Update placeholders in azure parameter files 
+1. create .env.{env} if not exitsts in teamsfx/ folder (v3) (should throw error if .fx/configs/ not exists?)
+1. migrate .fx/configs/config.{env}.json to .env.{env}
+1. create .env.{env} if not exitsts in teamsfx/ folder (v3)
+1. migrate .fx/states/state.{env}.json to .env.{env}. Skip 4 types of secrets names(should refer to userdata)
+1. create .env.{env} if not exitsts in teamsfx/ folder (v3)
+1. migrate .fx/states/userdata.{env} to .env.{env}
+    `;
+  await fs.writeFile(summaryPath, content);
+  await TOOLS?.ui?.openFile?.(summaryPath);
+}
 
 export async function migrate(context: MigrationContext): Promise<void> {
   for (const subMigration of subMigrations) {
@@ -218,7 +245,7 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
 }
 
 async function loadProjectSettings(projectPath: string): Promise<ProjectSettings> {
-  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath, true);
+  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath, true, true);
   if (oldProjectSettings.isOk()) {
     return oldProjectSettings.value;
   } else {
@@ -333,19 +360,25 @@ export async function replacePlaceholderForAzureParameter(
 
 export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  const buttons = [upgradeButton, learnMoreText];
   const res = await TOOLS?.ui.showMessage(
     "warn",
     getLocalizedString("core.migrationV3.Message"),
     true,
-    upgradeButton
+    ...buttons
   );
   const answer = res?.isOk() ? res.value : undefined;
-  if (!answer || answer != upgradeButton) {
+  if (!answer || !buttons.includes(answer)) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
     });
     ctx.result = err(UpgradeCanceledError());
     outputCancelMessage(ctx, true);
+    return false;
+  }
+  if (answer === learnMoreText) {
+    TOOLS?.ui!.openUrl(learnMoreLink);
+    ctx.result = ok(undefined);
     return false;
   }
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {

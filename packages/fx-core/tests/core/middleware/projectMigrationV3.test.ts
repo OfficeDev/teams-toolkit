@@ -176,7 +176,7 @@ describe("MigrationContext", () => {
     assert.isTrue(modifiedPaths.includes("b"));
     assert.isTrue(modifiedPaths.includes("b/c"));
     assert.isTrue(modifiedPaths.includes("d"));
-
+    await context.fsRemove("d");
     await context.cleanModifiedPaths();
     assert.isEmpty(context.getModifiedPaths());
 

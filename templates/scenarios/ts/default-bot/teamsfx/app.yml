@@ -20,10 +20,10 @@ provision:
     # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-actions/arm-deploy for more details on the naming conversion rule.
 
 deploy:
-  - uses: npm/command # Run npm command
+  - uses: cli/runNpmCommand # Run npm command
     with:
       args: install
-  - uses: npm/command
+  - uses: cli/runNpmCommand
     with:
       args: run build --if-present
   - uses: azureAppService/deploy # Deploy bits to Azure App Serivce

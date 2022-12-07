@@ -40,6 +40,6 @@ configureApp:
     # TEAMS_APP_ID: the id of Teams app
 
 deploy:
-  - uses: npm/command # Run npm command
+  - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit

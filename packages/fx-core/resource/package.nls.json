@@ -1095,7 +1095,7 @@
   "botRegistration.log.successCreateBotAadApp": "Bot aad app created successfully.",
   "botRegistration.log.skipCreateBotAadApp": "Bot aad app creation skipped.",
   "botRegistration.log.failCreateBotAadApp": "Failed to create bot aad app. Error message: %s.",
-  "driver.botAadApp.create.description": "Create a new or reuse an existing bot aad app.",
+  "driver.botAadApp.create.description": "create a new or reuse an existing bot aad app.",
   "driver.botAadApp.log.startExecuteDriver": "Executing action %s",
   "driver.botAadApp.log.successExecuteDriver": "Action %s executed successfully",
   "driver.botAadApp.log.failExecuteDriver": "Failed to execute action %s. Error message: %s",

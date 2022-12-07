@@ -585,7 +585,7 @@ describe("createEnvCopyV3", async () => {
 
   it("should create new .env file with desired content", async () => {
     const core = new FxCore(tools);
-    const res = await core.createEnvCopyV3("newEnv", "dev", "./");
+    const res = await core.v3Implement.createEnvCopyV3("newEnv", "dev", "./");
     assert(res.isOk());
     assert(
       writeStreamContent[0] === `${sourceEnvContent[0]}${os.EOL}`,

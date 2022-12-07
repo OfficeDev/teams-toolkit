@@ -20,7 +20,7 @@ registerApp:
     # TEAMS_APP_ID: the id of Teams app
 
 configureApp:
-  - uses: env/generate # Generate env to .env file
+  - uses: file/updateEnv # Generate env to .env file
     with:
       envs:
         TAB_DOMAIN: localhost:53000

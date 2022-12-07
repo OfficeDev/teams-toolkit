@@ -299,7 +299,7 @@ export async function replacePlaceholderForAzureParameter(
 ): Promise<void> {
   // Ensure `.fx/configs` exists
   const configFolderPath = path.join(".fx", InputConfigsFolderName);
-  const configFolderPathExists = context.fsPathExists(configFolderPath);
+  const configFolderPathExists = await context.fsPathExists(configFolderPath);
   if (!configFolderPathExists) {
     // Keep same practice now. Needs dicussion whether to throw error.
     return;

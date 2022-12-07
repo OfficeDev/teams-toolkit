@@ -3431,7 +3431,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         label: localize("teamstoolkit.tutorials.addAzureKeyVault.label"),
         detail: localize("teamstoolkit.tutorials.addAzureKeyVault.detail"),
         groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
-        data: "https://aka.ms/teamsfx-add-azure-key-vault",
+        data: "https://aka.ms/teamsfx-add-azure-keyvault",
         buttons: [
           {
             iconPath: "file-symlink-file",

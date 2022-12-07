@@ -7,6 +7,7 @@ import "./teamsApp/configure";
 import "./teamsApp/copyAppPackageForSPFx";
 import "./teamsApp/publishAppPackage";
 import "./aad/create";
+import "./aad/update";
 import "./arm/deploy";
 import "./botAadApp/create";
 import "./deploy/azure/azureAppServiceDeployDriver";

@@ -136,6 +136,8 @@ export const fixedNamingsV3: { [key: string]: string } = {
   "state.fx-resource-bot.botPassword": "SECRET_BOT_PASSWORD",
   "state.fx-resource-frontend-hosting.sslCertFile": "SSL_CRT_FILE",
   "state.fx-resource-frontend-hosting.sslKeyFile": "SSL_KEY_FILE",
+  "state.fx-resource-apim.publisherEmail": "APIM__PUBLISHEREMAIL",
+  "state.fx-resource-apim.publisherName": "APIM__PUBLISHERNAME",
 };
 export const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-frontend-hosting.indexPath",
@@ -181,7 +183,16 @@ export const pluginIdMappingV3: { [key: string]: string } = {
   "fx-resource-key-vault": "key-vault",
   "fx-resource-azure-sql": "azure-sql",
   "fx-resource-apim": "apim",
+  "fx-resource-aad-app-for-teams": "aad-app",
+  "fx-resource-appstudio": "app-manifest",
+  "fx-resource-simple-auth": "simple-auth",
 };
+export const secretKeys = [
+  "state.fx-resource-aad-app-for-teams.clientSecret",
+  "state.fx-resource-bot.botPassword",
+  "state.fx-resource-apim.apimClientAADClientSecret",
+  "state.fx-resource-azure-sql.adminPassword",
+];
 const secretPrefix = "SECRET_";
 const configPrefix = "CONFIG__";
 const provisionOutputPrefix = "PROVISIONOUTPUT__";
@@ -202,6 +213,9 @@ export function namingConverterV3(
   needsRename = false
 ): Result<string, FxError> {
   try {
+    // Convert state.aad-app.clientId to state.fx-resource-aad-app-for-teams.clientId
+    name = convertPluginId(name);
+
     // Needs to map certain values only when migrating manifest
     if (needsRename && Object.keys(nameMappingV3).includes(name)) {
       name = nameMappingV3[name];
@@ -288,6 +302,23 @@ function provisionOutputNamingConverterV3(name: string, bicepContent: string): s
   return `${provisionOutputPrefix}${outputName}__${keyName}`.toUpperCase();
 }
 
+export function convertPluginId(name: string): string {
+  const nameArray = name.split(".");
+  if (!nameArray || nameArray.length <= 1) {
+    return name;
+  }
+  const pluginId = nameArray[1];
+
+  if (Object.values(pluginIdMappingV3).includes(pluginId)) {
+    const convertedPluginId = Object.keys(pluginIdMappingV3).find(
+      (key) => pluginIdMappingV3[key] === pluginId
+    );
+    name = name.replace(pluginId, convertedPluginId!);
+  }
+
+  return name;
+}
+
 export function replacePlaceholdersForV3(content: string, bicepContent: string): string {
   const placeholderRegex = /{{+ *[a-zA-Z_.-][a-zA-Z0-9_.-]* *}}+/g;
   const placeholders = content.match(placeholderRegex);
@@ -295,7 +326,12 @@ export function replacePlaceholdersForV3(content: string, bicepContent: string):
   if (placeholders) {
     for (const placeholder of placeholders) {
       const envNameV2 = placeholder.replace(/\{/g, "").replace(/\}/g, "");
-      const envNameV3 = namingConverterV3(envNameV2, FileType.STATE, bicepContent, true);
+      const envNameV3 = namingConverterV3(
+        envNameV2,
+        secretKeys.includes(convertPluginId(envNameV2)) ? FileType.USERDATA : FileType.STATE,
+        bicepContent,
+        true
+      );
       if (envNameV3.isOk()) {
         content = content.replace(placeholder, `$\{\{${envNameV3.value}\}\}`);
       } else {

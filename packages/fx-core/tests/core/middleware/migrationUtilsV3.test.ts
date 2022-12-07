@@ -171,4 +171,9 @@ describe("MigrationUtilsV3: convertPluginId", () => {
     const res = convertPluginId("state.fx-resource-aad-app-for-teams.clientId");
     assert.equal(res, "state.fx-resource-aad-app-for-teams.clientId");
   });
+
+  it("happy path with short id", () => {
+    const res = convertPluginId("test");
+    assert.equal(res, "test");
+  });
 });

@@ -52,6 +52,10 @@ import {
   answerToRepaceBotId,
   answerToReplaceMessageExtensionBotId,
 } from "../component/developerPortalScaffoldUtils";
+import {
+  ImportAddinProjectItem,
+  OfficeAddinItems,
+} from "../component/generator/officeAddin/question";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -801,3 +805,20 @@ export const botOptionItem = (isMessageExtension: boolean): OptionItem => {
     label: isMessageExtension ? "Message extension" : "Bot",
   };
 };
+
+export const CreateNewOfficeAddinOption: OptionItem = {
+  id: "newAddin",
+  label: `$(new-folder) ${getLocalizedString("core.NewOfficeAddinOptionVSC.label")}`,
+  detail: getLocalizedString("core.NewOfficeAddinOptionVSC.detail"),
+};
+
+export function createCapabilityForOfficeAddin(): SingleSelectQuestion {
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createCapabilityQuestion.title"),
+    type: "singleSelect",
+    staticOptions: [...OfficeAddinItems, ImportAddinProjectItem],
+    placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+    skipSingleOption: true,
+  };
+}

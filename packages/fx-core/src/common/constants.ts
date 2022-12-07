@@ -87,6 +87,7 @@ export class FeatureFlagName {
   static readonly V3 = "TEAMSFX_V3";
   static readonly V3Migration = "TEAMSFX_V3_MIGRATION";
   static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
+  static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
 }
 
 export class ManifestVariables {

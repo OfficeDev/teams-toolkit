@@ -129,7 +129,7 @@ export class DoSomethingActionHandler {
     triggerVerb = "doSomething";
 
     async handleActionInvoked(context, message) { 
-        const responseCardJson = AdaptiveCards.declare(responseCard).render(actionData);
+        const responseCardJson = AdaptiveCards.declare(responseCard).render(message);
         return InvokeResponseFactory.adaptiveCard(responseCardJson);
     } 
 } 

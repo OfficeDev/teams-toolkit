@@ -18,6 +18,7 @@ import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetr
 import { TelemetryConstant } from "../../../constant/commonConstant";
 import { DeployConstant } from "../../../constant/deployConstant";
 import { ProgressMessages } from "../../../messages";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 const ACTION_NAME = "azureStorage/enableStaticWebsite";
 
@@ -26,6 +27,12 @@ const ACTION_NAME = "azureStorage/enableStaticWebsite";
  */
 @Service(ACTION_NAME)
 export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
+  readonly description: string = getLocalizedString(
+    // eslint-disable-next-line no-secrets/no-secrets
+    "driver.deploy.enableStaticWebsiteInAzureStorageDescription"
+  );
+  protected static readonly HELP_LINK =
+    "https://aka.ms/teamsfx-actions/azure-storage-enable-static-website";
   protected static readonly STORAGE_CONFIG_ARGS = asFactory<AzureStorageStaticWebsiteConfigArgs>({
     storageResourceId: asString,
     indexPage: asOptional(asString),
@@ -68,7 +75,10 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
     const logger = context.logProvider;
     await progressBar?.start();
     await progressBar?.next(ProgressMessages.checkAzureStorageEnableStaticWebsite);
-    const input = AzureStorageStaticWebsiteConfigDriver.STORAGE_CONFIG_ARGS(args);
+    const input = AzureStorageStaticWebsiteConfigDriver.STORAGE_CONFIG_ARGS(
+      args,
+      AzureStorageStaticWebsiteConfigDriver.HELP_LINK
+    );
     await logger.debug(
       `Enabling static website feature for Azure Storage account ${input.storageResourceId}`
     );

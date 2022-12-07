@@ -9,9 +9,9 @@ import * as sinon from "sinon";
 import * as util from "util";
 
 import * as localizeUtils from "../../../../src/common/localizeUtils";
-import { InvalidParameterUserError } from "../../../../src/component/driver/env/error/invalidParameterUserError";
-import { UnhandledSystemError } from "../../../../src/component/driver/env/error/unhandledError";
-import { GenerateAppsettingsDriver } from "../../../../src/component/driver/env/appsettingsGenerate";
+import { InvalidParameterUserError } from "../../../../src/component/driver/file/error/invalidParameterUserError";
+import { UnhandledSystemError } from "../../../../src/component/driver/file/error/unhandledError";
+import { GenerateAppsettingsDriver } from "../../../../src/component/driver/file/appsettingsGenerate";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { MockedLogProvider } from "../../../plugins/solution/util";
 
@@ -23,12 +23,12 @@ describe("AppsettingsGenerateDriver", () => {
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
-      if (key === "driver.env.error.invalidParameter") {
+      if (key === "driver.file.error.invalidParameter") {
         return util.format(
           "Following parameter is missing or invalid for %s action: %s.",
           ...params
         );
-      } else if (key === "driver.env.error.unhandledError") {
+      } else if (key === "driver.file.error.unhandledError") {
         return util.format("Unhandled error happened in %s action: %s", ...params);
       }
       return "";
@@ -54,7 +54,7 @@ describe("AppsettingsGenerateDriver", () => {
       if (result.isErr()) {
         chai.assert(result.error instanceof InvalidParameterUserError);
         const message =
-          "Following parameter is missing or invalid for appsettings/generate action: target.";
+          "Following parameter is missing or invalid for file/updateAppSettings action: target.";
         chai.assert.equal(result.error.message, message);
       }
     });
@@ -69,7 +69,7 @@ describe("AppsettingsGenerateDriver", () => {
       if (result.isErr()) {
         chai.assert(result.error instanceof InvalidParameterUserError);
         const message =
-          "Following parameter is missing or invalid for appsettings/generate action: appsettings.";
+          "Following parameter is missing or invalid for file/updateAppSettings action: appsettings.";
         chai.assert.equal(result.error.message, message);
       }
     });

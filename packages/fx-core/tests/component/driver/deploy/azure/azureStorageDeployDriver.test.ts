@@ -14,7 +14,12 @@ import {
   StorageAccounts,
   StorageManagementClient,
 } from "@azure/arm-storage";
-import { BlobDeleteResponse, ContainerClient } from "@azure/storage-blob";
+import {
+  BlobDeleteResponse,
+  BlockBlobClient,
+  BlockBlobParallelUploadOptions,
+  ContainerClient,
+} from "@azure/storage-blob";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
@@ -58,6 +63,7 @@ describe("Azure Storage Deploy Driver test", () => {
 
   it("deploy to storage happy path", async () => {
     const deploy = new AzureStorageDeployDriver();
+    await fs.open(path.join(testFolder, "test.txt"), "a");
     const args = {
       workingDirectory: sysTmp,
       distributionPath: `./${folder}`,
@@ -92,6 +98,11 @@ describe("Azure Storage Deploy Driver test", () => {
       .resolves({ errorCode: undefined } as BlobDeleteResponse);
     /*const calls = sandbox.stub().callsFake(() => clientStub);
     Object.setPrototypeOf(StorageManagementClient, calls);*/
+    sandbox.stub(ContainerClient.prototype, "getBlockBlobClient").returns({
+      uploadFile: async (filePath: string, options?: BlockBlobParallelUploadOptions) => {
+        return {};
+      },
+    } as BlockBlobClient);
     const res = await deploy.run(args, context);
     assert.equal(res.isOk(), true);
     const rex = await deploy.execute(args, context);
@@ -155,5 +166,53 @@ describe("Azure Storage Deploy Driver test", () => {
       .resolves({ errorCode: "403" } as BlobDeleteResponse);
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
+  });
+
+  it("upload with error", async () => {
+    const deploy = new AzureStorageDeployDriver();
+    await fs.open(path.join(testFolder, "test.txt"), "a");
+    const args = {
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
+    } as DeployArgs;
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      ui: new MockUserInteraction(),
+      logProvider: new TestLogProvider(),
+    } as DriverContext;
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
+    const clientStub = sandbox.createStubInstance(StorageManagementClient);
+    clientStub.storageAccounts = {} as StorageAccounts;
+    const mockStorageManagementClient = new StorageManagementClient(new MyTokenCredential(), "id");
+    mockStorageManagementClient.storageAccounts = getMockStorageAccount1() as any;
+    sandbox.stub(armStorage, "StorageManagementClient").returns(mockStorageManagementClient);
+    sandbox.stub(ContainerClient.prototype, "exists").resolves(false);
+    sandbox.stub(ContainerClient.prototype, "create").resolves();
+    sandbox.stub(ContainerClient.prototype, "listBlobsFlat").returns([
+      {
+        properties: {
+          contentLength: 1,
+        },
+      },
+    ] as any);
+    //sandbox.stub(ContainerClient.prototype, "listBlobsFlat").resolves();
+    sandbox
+      .stub(ContainerClient.prototype, "deleteBlob")
+      .resolves({ errorCode: undefined } as BlobDeleteResponse);
+    /*const calls = sandbox.stub().callsFake(() => clientStub);
+    Object.setPrototypeOf(StorageManagementClient, calls);*/
+    sandbox.stub(ContainerClient.prototype, "getBlockBlobClient").returns({
+      uploadFile: async (filePath: string, options?: BlockBlobParallelUploadOptions) => {
+        return { errorCode: "error" };
+      },
+    } as BlockBlobClient);
+    const res = await deploy.run(args, context);
+    assert.equal(res.isErr(), true);
+    const rex = await deploy.execute(args, context);
+    assert.equal(rex.result.isErr(), true);
   });
 });

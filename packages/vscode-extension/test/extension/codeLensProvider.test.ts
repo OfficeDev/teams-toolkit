@@ -141,6 +141,7 @@ describe("Manifest codelens", () => {
 
 describe("Crypto CodeLensProvider", () => {
   it("userData codelens", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(false);
     const document = {
       fileName: "test.userdata",
       getText: () => {
@@ -172,6 +173,7 @@ describe("Crypto CodeLensProvider", () => {
   });
 
   it("localDebug codelens", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(false);
     const document = {
       fileName: "localSettings.json",
       getText: () => {
@@ -181,6 +183,38 @@ describe("Crypto CodeLensProvider", () => {
         return {
           lineNumber: 0,
           text: '"clientSecret": "crypto_abc"',
+        };
+      },
+      positionAt: () => {
+        return {
+          character: 0,
+          line: 0,
+        };
+      },
+    } as unknown as vscode.TextDocument;
+
+    const cryptoProvider = new CryptoCodeLensProvider();
+    const codelens: vscode.CodeLens[] = cryptoProvider.provideCodeLenses(
+      document
+    ) as vscode.CodeLens[];
+
+    chai.assert.equal(codelens.length, 1);
+    chai.expect(codelens[0].command?.title).equal("🔑Decrypt secret");
+    chai.expect(codelens[0].command?.command).equal("fx-extension.decryptSecret");
+    sinon.restore();
+  });
+
+  it("envData codelens - v3", async () => {
+    sinon.stub(commonTools, "isV3Enabled").returns(true);
+    const document = {
+      fileName: ".env.local",
+      getText: () => {
+        return "SECRET_VAR=crypto_abc";
+      },
+      lineAt: () => {
+        return {
+          lineNumber: 0,
+          text: "SECRET_VAR=crypto_abc",
         };
       },
       positionAt: () => {

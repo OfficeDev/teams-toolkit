@@ -12,7 +12,7 @@ import {
   getSubscriptionIdFromResourceId,
   parseFromResourceId,
 } from "./utilities";
-import { EnvContants } from "../commonlib/constants";
+import { EnvConstants } from "../commonlib/constants";
 
 const baseUrlContainer = (
   subscriptionId: string,
@@ -211,7 +211,7 @@ export class FrontendValidator {
 
   private static getResourceIdFromCtx(ctx: any): string {
     if (isV3Enabled()) {
-      return ctx[EnvContants.TAB_AZURE_STORAGE_RESOURCE_ID];
+      return ctx[EnvConstants.TAB_AZURE_STORAGE_RESOURCE_ID];
     } else {
       return ctx[DependentPluginInfo.frontendPluginName][this.storageResourceIdKeyName];
     }

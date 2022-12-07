@@ -43,12 +43,17 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     if (!(await fs.pathExists(this.workingDirectory))) {
       throw PrerequisiteError.folderNotExists(
         DeployConstant.DEPLOY_ERROR_TYPE,
-        this.workingDirectory
+        this.workingDirectory,
+        this.helpLink
       );
     }
     // check distribution folder exists
     if (!(await fs.pathExists(this.distDirectory))) {
-      throw PrerequisiteError.folderNotExists(DeployConstant.DEPLOY_ERROR_TYPE, this.distDirectory);
+      throw PrerequisiteError.folderNotExists(
+        DeployConstant.DEPLOY_ERROR_TYPE,
+        this.distDirectory,
+        this.helpLink
+      );
     }
     const resourceId = checkMissingArgs("resourceId", args.resourceId);
     const azureResource = this.parseResourceId(resourceId);
@@ -102,7 +107,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     await this.context.logProvider.debug(`Start to upload code to ${endpoint}`);
     await this.progressBar?.next(ProgressMessages.uploadZipFileToAzure);
     const startTime = Date.now();
-    const location = await AzureDeployDriver.zipDeployPackage(
+    const location = await this.zipDeployPackage(
       endpoint,
       zipBuffer,
       config,
@@ -111,7 +116,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     await this.context.logProvider.debug("Upload code to Azure complete");
     await this.progressBar?.next(ProgressMessages.checkAzureDeployStatus);
     await this.context.logProvider.debug("Start to check Azure deploy status");
-    await AzureDeployDriver.checkDeployStatus(location, config, this.context.logProvider);
+    await this.checkDeployStatus(location, config, this.context.logProvider);
     await this.context.logProvider.debug("Check Azure deploy status complete");
     return Date.now() - startTime;
   }
@@ -124,7 +129,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
    * @param logger log provider
    * @protected
    */
-  protected static async zipDeployPackage(
+  protected async zipDeployPackage(
     zipDeployEndpoint: string,
     zipBuffer: Buffer,
     config: AzureUploadConfig,
@@ -154,7 +159,11 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
                   e.response?.data
                 )}`
               );
-              throw DeployExternalApiCallError.zipDeployWithRemoteError(e);
+              throw DeployExternalApiCallError.zipDeployWithRemoteError(
+                e,
+                undefined,
+                this.helpLink
+              );
             }
           } else {
             // None server error, throw
@@ -163,12 +172,16 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
                 e.response?.status ?? "NA"
               }, message: ${JSON.stringify(e.response?.data)}`
             );
-            throw DeployExternalApiCallError.zipDeployError(e, e.response?.status ?? -1);
+            throw DeployExternalApiCallError.zipDeployError(
+              e,
+              e.response?.status ?? -1,
+              this.helpLink
+            );
           }
         } else {
           // if the error is not axios error, throw
           await logger?.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
-          throw DeployExternalApiCallError.zipDeployError(e, -1);
+          throw DeployExternalApiCallError.zipDeployError(e, -1, this.helpLink);
         }
       }
     }
@@ -177,7 +190,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
       if (res?.status) {
         await logger?.error(`Deployment is failed with error code: ${res.status}.`);
       }
-      throw DeployExternalApiCallError.zipDeployError(res, res.status);
+      throw DeployExternalApiCallError.zipDeployError(res, res.status, this.helpLink);
     }
 
     return res.headers.location;
@@ -191,7 +204,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
    * @param logger log provider
    * @protected
    */
-  protected static async checkDeployStatus(
+  protected async checkDeployStatus(
     location: string,
     config: AzureUploadConfig,
     logger?: LogProvider
@@ -208,7 +221,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
             }, message: ${JSON.stringify(e.response?.data)}`
           );
         }
-        throw DeployExternalApiCallError.deployStatusError(e);
+        throw DeployExternalApiCallError.deployStatusError(e, undefined, this.helpLink);
       }
 
       if (res) {
@@ -220,12 +233,12 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
           if (res.status) {
             await logger?.error(`Deployment is failed with error code: ${res.status}.`);
           }
-          throw DeployExternalApiCallError.deployStatusError(res, res.status);
+          throw DeployExternalApiCallError.deployStatusError(res, res.status, this.helpLink);
         }
       }
     }
 
-    throw DeployTimeoutError.checkDeployStatusTimeout();
+    throw DeployTimeoutError.checkDeployStatusTimeout(this.helpLink);
   }
 
   /**
@@ -258,7 +271,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
         azureResource.instanceId
       );
     } catch (e) {
-      throw DeployExternalApiCallError.listPublishingCredentialsError(e);
+      throw DeployExternalApiCallError.listPublishingCredentialsError(e, this.helpLink);
     }
 
     const publishingUserName = listResponse.publishingUserName ?? "";
@@ -287,7 +300,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
         azureResource.instanceId
       );
     } catch (e) {
-      throw DeployExternalApiCallError.restartWebAppError(e);
+      throw DeployExternalApiCallError.restartWebAppError(e, this.helpLink);
     }
   }
 }

@@ -41,7 +41,6 @@ import {
   replacePlaceholderForAzureParameter,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
-import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
 
 let mockedEnvRestore: () => void;
 

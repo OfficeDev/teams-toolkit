@@ -25,5 +25,5 @@ export function isCommentObject(data: CommentJSONValue | undefined): data is Com
 export function isCommentArray(
   data: CommentJSONValue | undefined
 ): data is CommentArray<CommentJSONValue> {
-  return typeof data === "object" && !Array.isArray(data) && !!data;
+  return Array.isArray(data);
 }

@@ -11,13 +11,16 @@ import { InstallToolArgs } from "../../../../component/driver/tools/interfaces/I
 
 export class AppLocalYmlConfig {
   public deploy: {
-    tools?: InstallToolArgs;
-    npmCommands?: BuildArgs[];
+    tools: InstallToolArgs;
+    npmCommands: BuildArgs[];
     dotnetCommand?: BuildArgs;
   };
 
   constructor() {
-    this.deploy = {};
+    this.deploy = {
+      tools: {},
+      npmCommands: [],
+    };
   }
 }
 

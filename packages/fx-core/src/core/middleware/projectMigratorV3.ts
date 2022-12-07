@@ -58,10 +58,7 @@ import * as semver from "semver";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
 import { isCommentObject, readJsonCommentFile } from "./utils/debug/debugV3MigrationUtils";
-import {
-  migrateTransparentNpmInstall,
-  migrateTransparentPrerequisite,
-} from "./utils/debug/taskMigrator";
+import { migrateTransparentPrerequisite } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 
 const Constants = {
@@ -515,7 +512,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
   }
 
   // Migrate .vscode/tasks.json
-  const migrateTaskFuncs = [migrateTransparentPrerequisite, migrateTransparentNpmInstall];
+  const migrateTaskFuncs = [migrateTransparentPrerequisite];
   const debugContext = new DebugMigrationContext(tasksJsonContent["tasks"]);
   for (const task of tasksJsonContent["tasks"]) {
     for (const func of migrateTaskFuncs) {

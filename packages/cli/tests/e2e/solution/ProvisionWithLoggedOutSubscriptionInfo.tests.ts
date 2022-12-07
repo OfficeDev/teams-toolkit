@@ -19,6 +19,7 @@ import { expect } from "chai";
 import { SubscriptionInfo } from "@microsoft/teamsfx-api";
 import { FrontendValidator } from "../../commonlib";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Provision with subscriptionInfo.json that has logged out", () => {
   const testFolder = getTestFolder();
@@ -31,7 +32,10 @@ describe("Provision with subscriptionInfo.json that has logged out", () => {
     await cleanUp(appName, projectPath, true, false, false);
   });
 
-  it("Provision Tab project", { testPlanCaseId: 15687219 }, async () => {
+  it("Provision Tab project", { testPlanCaseId: 15687219 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     // Arrange
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
 

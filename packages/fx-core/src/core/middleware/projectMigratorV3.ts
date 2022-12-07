@@ -39,11 +39,11 @@ import {
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { UpgradeCanceledError, ReadFileError } from "../error";
+import { UpgradeV3CanceledError, ReadFileError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
-import { replacePlaceholdersForV3, FileType } from "./utils/MigrationUtils";
+import { replacePlaceholdersForV3, FileType } from "./MigrationUtils";
 import {
   readAndConvertUserdata,
   fsReadDirSync,
@@ -367,7 +367,7 @@ export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
     });
-    ctx.result = err(UpgradeCanceledError());
+    ctx.result = err(UpgradeV3CanceledError());
     outputCancelMessage(ctx, true);
     return false;
   }

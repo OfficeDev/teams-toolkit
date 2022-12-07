@@ -339,6 +339,7 @@ export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
   }
   if (answer === learnMoreText) {
     TOOLS?.ui!.openUrl(learnMoreLink);
+    ctx.result = ok(undefined);
     return false;
   }
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {

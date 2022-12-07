@@ -10,6 +10,7 @@ import { EOL } from "os";
 import {
   AzureSolutionSettings,
   Inputs,
+  Platform,
   ProjectSettings,
   ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
@@ -27,10 +28,12 @@ export async function readJsonFile(context: MigrationContext, filePath: string):
 
 // read bicep file content
 export function readBicepContent(context: MigrationContext): any {
-  return fs.readFileSync(
-    path.join(context.projectPath, "templates", "azure", "provision.bicep"),
-    "utf8"
-  );
+  const inputs: Inputs = context.arguments[context.arguments.length - 1];
+  const bicepFilePath =
+    inputs.platform === Platform.VS
+      ? "Templates/azure/provision.bicep"
+      : "templates/azure/provision.bicep";
+  return fs.readFileSync(path.join(context.projectPath, bicepFilePath), "utf8");
 }
 
 // read file names list under the given path

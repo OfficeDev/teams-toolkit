@@ -2,7 +2,7 @@ version: 1.0.0
 
 
 registerApp:
-  - uses: env/generate # Generate env to .env file
+  - uses: file/updateEnv # Generate env to .env file
     with:
       envs:
         TAB_DOMAIN: localhost:44302

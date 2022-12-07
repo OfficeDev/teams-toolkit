@@ -54,7 +54,7 @@ describe("AppsettingsGenerateDriver", () => {
       if (result.isErr()) {
         chai.assert(result.error instanceof InvalidParameterUserError);
         const message =
-          "Following parameter is missing or invalid for appsettings/generate action: target.";
+          "Following parameter is missing or invalid for file/updateAppSettings action: target.";
         chai.assert.equal(result.error.message, message);
       }
     });
@@ -69,7 +69,7 @@ describe("AppsettingsGenerateDriver", () => {
       if (result.isErr()) {
         chai.assert(result.error instanceof InvalidParameterUserError);
         const message =
-          "Following parameter is missing or invalid for appsettings/generate action: appsettings.";
+          "Following parameter is missing or invalid for file/updateAppSettings action: appsettings.";
         chai.assert.equal(result.error.message, message);
       }
     });

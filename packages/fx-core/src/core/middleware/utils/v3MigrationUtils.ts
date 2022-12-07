@@ -147,13 +147,13 @@ export async function readAndConvertUserdata(
 ): Promise<string> {
   let returnAnswer = "";
 
-  const userdataContent = await fs.readFileSync(path.join(context.projectPath, filePath), "utf8");
+  const userdataContent = await fs.readFile(path.join(context.projectPath, filePath), "utf8");
   const lines = userdataContent.split(EOL);
   for (const line of lines) {
     if (line && line != "") {
       // in case that there are "="s in secrets
       const key_value = line.split("=");
-      const res = await namingConverterV3("state." + key_value[0], FileType.USERDATA, bicepContent);
+      const res = namingConverterV3("state." + key_value[0], FileType.USERDATA, bicepContent);
       if (res.isOk()) returnAnswer += res.value + "=" + key_value.slice(1).join("=") + EOL;
     }
   }

@@ -15,7 +15,7 @@ registerApp:
     # TEAMS_APP_ID: the id of Teams app
 
 configureApp:
-  - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip

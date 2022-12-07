@@ -43,7 +43,7 @@ configureApp:
   # Output: following environment variable will be persisted in current environment's .env file.
   # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 
-  - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip

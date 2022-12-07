@@ -6,7 +6,6 @@ import {
   Platform,
   Stage,
   Ok,
-  Err,
   FxError,
   UserError,
   SystemError,
@@ -17,10 +16,10 @@ import {
   LogProvider,
   Func,
 } from "@microsoft/teamsfx-api";
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
@@ -52,8 +51,6 @@ import { YamlParser } from "../../src/component/configManager/parser";
 import {
   DriverDefinition,
   DriverInstance,
-  ExecutionError,
-  ExecutionOutput,
   ExecutionResult,
   ILifecycle,
   LifecycleName,
@@ -61,9 +58,8 @@ import {
   UnresolvedPlaceholders,
 } from "../../src/component/configManager/interface";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
-import { Readable, Writable } from "stream";
 import { coordinator } from "../../src/component/coordinator";
-import { FxCoreV3Implement } from "../../src/core/FxcoreV3Implement";
+import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();

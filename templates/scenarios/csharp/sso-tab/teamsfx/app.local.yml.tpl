@@ -26,7 +26,7 @@ configureApp:
         TAB_DOMAIN: localhost:44302
         TAB_ENDPOINT: https://localhost:44302
 
-  - uses: appsettings/generate
+  - uses: file/updateAppSettings
     with:
       target: ./appsettings.Development.json
       appsettings:

@@ -23,12 +23,12 @@ describe("AppsettingsGenerateDriver", () => {
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
-      if (key === "file/updateEnv.error.invalidParameter") {
+      if (key === "driver.file.error.invalidParameter") {
         return util.format(
           "Following parameter is missing or invalid for %s action: %s.",
           ...params
         );
-      } else if (key === "file/updateEnv.error.unhandledError") {
+      } else if (key === "driver.file.error.unhandledError") {
         return util.format("Unhandled error happened in %s action: %s", ...params);
       }
       return "";

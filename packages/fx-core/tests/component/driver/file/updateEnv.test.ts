@@ -32,19 +32,19 @@ describe("UpdateEnvDriver", () => {
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
-      if (key === "file/updateEnv.error.invalidParameter") {
+      if (key === "driver.file.error.invalidParameter") {
         return util.format(
           "Following parameter is missing or invalid for %s action: %s.",
           ...params
         );
-      } else if (key === "file/updateEnv.error.unhandledError") {
+      } else if (key === "driver.file.error.unhandledError") {
         return util.format("Unhandled error happened in %s action: %s", ...params);
-      } else if (key === "file/updateEnv.summary.default") {
+      } else if (key === "driver.file.summary.default") {
         return util.format(
           "The environment variables has been generated successfully to the .env file of '%s' environment.",
           ...params
         );
-      } else if (key === "file/updateEnv.summary.withTarget") {
+      } else if (key === "driver.file.summary.withTarget") {
         return util.format(
           "The environment variables has been generated successfully to %s.",
           ...params

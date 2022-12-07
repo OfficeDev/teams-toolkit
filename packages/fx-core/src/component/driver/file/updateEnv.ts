@@ -25,7 +25,7 @@ const helpLink = "https://aka.ms/teamsfx-actions/file-updateEnv";
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class UpdateEnvDriver implements StepDriver {
-  description = getLocalizedString("file/updateEnv.description");
+  description = getLocalizedString("driver.file.description");
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
@@ -59,7 +59,7 @@ export class UpdateEnvDriver implements StepDriver {
     summaries: string[];
   }> {
     const progressHandler = context.ui?.createProgressBar(
-      getLocalizedString("file/updateEnv.progressBar.title"),
+      getLocalizedString("driver.file.progressBar.title"),
       1
     );
 
@@ -68,7 +68,7 @@ export class UpdateEnvDriver implements StepDriver {
 
       this.validateArgs(args);
 
-      await progressHandler?.next(getLocalizedString("file/updateEnv.progressBar.generate"));
+      await progressHandler?.next(getLocalizedString("driver.file.progressBar.generate"));
 
       if (args.target) {
         const target = this.getAbsolutePath(args.target, context.projectPath);
@@ -83,9 +83,7 @@ export class UpdateEnvDriver implements StepDriver {
 
         return {
           output: new Map<string, string>(),
-          summaries: [
-            getLocalizedString("file/updateEnv.summary.withTarget", path.normalize(target)),
-          ],
+          summaries: [getLocalizedString("driver.file.summary.withTarget", path.normalize(target))],
         };
       } else {
         const state = this.loadCurrentState();
@@ -94,7 +92,7 @@ export class UpdateEnvDriver implements StepDriver {
 
         return {
           output: new Map(Object.entries(args.envs)),
-          summaries: [getLocalizedString("file/updateEnv.summary.default", state.TEAMSFX_ENV)],
+          summaries: [getLocalizedString("driver.file.summary.default", state.TEAMSFX_ENV)],
         };
       }
     } catch (error) {

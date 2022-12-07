@@ -3403,7 +3403,35 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         label: `${localize("teamstoolkit.tutorials.connectApi.label")}`,
         detail: localize("teamstoolkit.tutorials.connectApi.detail"),
         groupName: localize("teamstoolkit.guide.development"),
-        data: "https://aka.ms/teamsfx-connect-api",
+        data: "https://aka.ms/teamsfx-add-api-connection",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "addAzureSql",
+        label: localize("teamstoolkit.tutorials.addAzureSql.label"),
+        detail: localize("teamstoolkit.tutorials.addAzureSql.detail"),
+        groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
+        data: "https://aka.ms/teamsfx-add-azure-sql",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "addAzureKeyVault",
+        label: localize("teamstoolkit.tutorials.addAzureKeyVault.label"),
+        detail: localize("teamstoolkit.tutorials.addAzureKeyVault.detail"),
+        groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
+        data: "https://aka.ms/teamsfx-add-azure-keyvault",
         buttons: [
           {
             iconPath: "file-symlink-file",

@@ -13,6 +13,7 @@ import { BaseDeployStepDriver } from "../../interface/baseDeployStepDriver";
 
 export abstract class BaseDeployDriver extends BaseDeployStepDriver {
   protected static readonly emptyMap = new Map<string, string>();
+  protected helpLink: string | undefined = undefined;
 
   protected static asDeployArgs = asFactory<DeployArgs>({
     workingDirectory: asOptional(asString),
@@ -24,7 +25,7 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
   async run(): Promise<Map<string, string>> {
     await this.context.logProvider.debug("start deploy process");
 
-    const deployArgs = BaseDeployDriver.asDeployArgs(this.args);
+    const deployArgs = BaseDeployDriver.asDeployArgs(this.args, this.helpLink);
     // if working directory not set, use current working directory
     deployArgs.workingDirectory = deployArgs.workingDirectory ?? "./";
     // if working dir is not absolute path, then join the path with project path

@@ -337,15 +337,14 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
   // User can click to debug directly, same as pressing "F5".
   registerInCommandController(context, "fx-extension.debug", handlers.debugHandler);
 
-  // Add features
-  registerInCommandController(
-    context,
-    "fx-extension.addFeature",
-    handlers.addFeatureHandler,
-    "addFeature"
-  );
-
   if (!isV3Enabled()) {
+    // Add features
+    registerInCommandController(
+      context,
+      "fx-extension.addFeature",
+      handlers.addFeatureHandler,
+      "addFeature"
+    );
     // Edit manifest file
     registerInCommandController(
       context,
@@ -748,6 +747,10 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     scheme: "file",
     pattern: `**/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsJsonName}`,
   };
+  const envDataSelector = {
+    scheme: "file",
+    pattern: "**/.env.*",
+  };
 
   const adaptiveCardCodeLensProvider = new AdaptiveCardCodeLensProvider();
   const adaptiveCardFilePattern = `**/${AdaptiveCardsFolderName}/*.json`;
@@ -798,12 +801,18 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     pattern: `**/permissions.json`,
   };
 
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
-  );
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(localDebugDataSelector, codelensProvider)
-  );
+  if (isV3Enabled()) {
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(envDataSelector, codelensProvider)
+    );
+  } else {
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
+    );
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(localDebugDataSelector, codelensProvider)
+    );
+  }
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       adaptiveCardFileSelector,

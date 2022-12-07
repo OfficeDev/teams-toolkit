@@ -212,7 +212,7 @@ describe("appStudio", () => {
       const createAppDriver = new CreateTeamsAppDriver();
       const updateDriver = new ConfigureTeamsAppDriver();
       sandbox.stub(Container, "get").callsFake((name) => {
-        if (name === "teamsApp/createAppPackage") {
+        if (name === "teamsApp/zipAppPackage") {
           return createAppDriver;
         } else if (name == "teamsApp/update") {
           return updateDriver;
@@ -242,7 +242,7 @@ describe("appStudio", () => {
       const createAppDriver = new CreateTeamsAppDriver();
       const updateDriver = new ConfigureTeamsAppDriver();
       sandbox.stub(Container, "get").callsFake((name) => {
-        if (name === "teamsApp/createAppPackage") {
+        if (name === "teamsApp/zipAppPackage") {
           return createAppDriver;
         } else if (name == "teamsApp/update") {
           return updateDriver;
@@ -274,7 +274,7 @@ describe("appStudio", () => {
       const createAppDriver = new CreateTeamsAppDriver();
       const updateDriver = new ConfigureTeamsAppDriver();
       sandbox.stub(Container, "get").callsFake((name) => {
-        if (name === "teamsApp/createAppPackage") {
+        if (name === "teamsApp/zipAppPackage") {
           return createAppDriver;
         } else if (name == "teamsApp/update") {
           return updateDriver;

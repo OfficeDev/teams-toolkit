@@ -832,10 +832,7 @@ export class ProvisionUtils {
         keysNeedToUpdate.push("AAD_APP_CLIENT_ID");
       }
     }
-    if (
-      actions.includes("botAadApp/create") ||
-      actions.includes("botFramework/createOrUpdateBot")
-    ) {
+    if (actions.includes("botAadApp/create") || actions.includes("botFramework/create")) {
       if (process.env.BOT_ID) {
         keysNeedToUpdate.push("BOT_ID");
       }

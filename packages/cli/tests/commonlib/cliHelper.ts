@@ -126,6 +126,31 @@ export class CliHelper {
     }
   }
 
+  static async updateAadManifest(
+    projectPath: string,
+    option = "",
+    processEnv?: NodeJS.ProcessEnv,
+    retries?: number,
+    newCommand?: string
+  ) {
+    const result = await execAsyncWithRetry(
+      `teamsfx update aad-app ${option} --interactive false`,
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: 0,
+      },
+      retries,
+      newCommand
+    );
+    const message = `update aad-app manifest template for ${projectPath}`;
+    if (result.stderr) {
+      console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+    } else {
+      console.log(`[Successfully] ${message}`);
+    }
+  }
+
   static async deployAll(
     projectPath: string,
     option = "",

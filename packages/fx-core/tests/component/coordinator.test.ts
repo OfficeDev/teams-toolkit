@@ -52,6 +52,10 @@ import { developerPortalScaffoldUtils } from "../../src/component/developerPorta
 import { createContextV3 } from "../../src/component/utils";
 import * as appStudio from "../../src/component/resource/appManifest/appStudio";
 import * as v3MigrationUtils from "../../src/core/middleware/utils/v3MigrationUtils";
+import { manifestUtils } from "../../src/component/resource/appManifest/utils/ManifestUtils";
+import { ValidateTeamsAppDriver } from "../../src/component/driver/teamsApp/validate";
+import Container from "typedi";
+import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -1891,6 +1895,45 @@ describe("component coordinator test", () => {
     const res2 = await fxCore.getQuestions(Stage.initInfra, inputs);
     assert.isTrue(res2.isOk());
   });
+
+  it("executeUserTaskNew", async () => {
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves("");
+    const driver1: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
+    const driver2: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
+    sandbox.stub(driver1, "run").resolves(ok(new Map()));
+    sandbox.stub(driver2, "run").resolves(ok(new Map()));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    const fxCore = new FxCore(tools);
+    const res1 = await fxCore.executeUserTask(
+      { namespace: "", method: "getManifestTemplatePath", params: { manifestTemplatePath: "." } },
+      inputs
+    );
+    if (res1.isErr()) console.log(res1.error);
+    assert.isTrue(res1.isOk());
+    const res2 = await fxCore.executeUserTask(
+      { namespace: "", method: "validateManifest", params: { manifestTemplatePath: "." } },
+      inputs
+    );
+    if (res2.isErr()) console.log(res2.error);
+    assert.isTrue(res2.isOk());
+    const res3 = await fxCore.executeUserTask(
+      {
+        namespace: "",
+        method: "buildPackage",
+        params: { manifestTemplatePath: ".", outputZipPath: ".", outputJsonPath: "." },
+      },
+      inputs
+    );
+    if (res3.isErr()) console.log(res3.error);
+    assert.isTrue(res3.isOk());
+  });
+
   describe("publishInDeveloperPortal", () => {
     afterEach(() => {
       sandbox.restore();

@@ -34,7 +34,6 @@ export interface DepsInfo {
 export enum DepsType {
   AzureNode = "azure-node",
   SpfxNode = "spfx-node",
-  SpfxNodeV1_16 = "spfx-node-v-1-16",
   ProjectNode = "project-node",
   Dotnet = "dotnet",
   FuncCoreTools = "func-core-tools",

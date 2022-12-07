@@ -6,7 +6,7 @@ import { DriverContext } from "../interface/commonArgs";
 import { Service } from "typedi";
 import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
 import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
-import { err, FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import axios from "axios";
@@ -80,7 +80,6 @@ export class CreateBotAadAppDriver implements StepDriver {
         args.name,
         args.name,
         botConfig,
-        undefined, // Use default value of BotAuthType.AADApp
         context.logProvider
       );
       if (createRes.isErr()) {

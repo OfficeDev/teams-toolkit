@@ -55,10 +55,10 @@ describe("certificate", () => {
       sinon.stub(os, "homedir").callsFake(() => fakeHomeDir);
       sinon.stub(ps, "execPowerShell").callsFake(async (command: string) => {
         if (command.startsWith("Get-ChildItem")) {
-          // Command: `(Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match '${thumbprint}' }).Thumbprint`
+          // Command: `Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match '${thumbprint}' }`
           return command.split("'")[1];
         } else if (command.startsWith("Import-Certificate")) {
-          // Command: `(Import-Certificate -FilePath '${certPath}' -CertStoreLocation Cert:\\CurrentUser\\Root)[0].Thumbprint`
+          // Command: `Import-Certificate -FilePath '${localCert.certPath}' -CertStoreLocation Cert:\\CurrentUser\\Root)`
           return "thumbprint";
         } else {
           return "";
@@ -144,6 +144,77 @@ describe("certificate", () => {
         chai.assert.equal(thumbprint1, thumbprint2);
         chai.assert.equal(res.isTrusted, data.isTrusted);
       });
+    });
+  });
+
+  describe("setupCertificate certutil", () => {
+    const fakeHomeDir = path.resolve(workspaceFolder, ".home/");
+    let files: Record<string, any> = {};
+    let certManager: LocalCertificateManager;
+
+    beforeEach(() => {
+      files = {};
+      sinon.restore();
+      sinon.stub(os, "type").returns("Windows_NT");
+      sinon.stub(fs, "ensureDir").resolves();
+      sinon.stub(fs, "pathExists").callsFake(async (file: string) => {
+        return Promise.resolve(files[path.resolve(file)] !== undefined);
+      });
+      sinon.stub(fs, "readFile").callsFake(async (file: fs.PathLike | number, options?: any) => {
+        return Promise.resolve(files[path.resolve(file as string)]);
+      });
+      sinon
+        .stub(fs, "writeFile")
+        .callsFake(async (file: fs.PathLike | number, data: any, options?: any) => {
+          files[path.resolve(file as string)] = data;
+          return Promise.resolve();
+        });
+      sinon.stub(os, "homedir").callsFake(() => fakeHomeDir);
+      sinon.stub(ps, "execPowerShell").rejects();
+      sinon.stub(ps, "execShell").callsFake(async (command: string) => {
+        if (command.startsWith("certutil -user -verifystore")) {
+          // Command: `certutil -user -verifystore root ${thumbprint}`
+          return "Not Found";
+        } else if (command.startsWith("certutil -user -addstore")) {
+          // Command: `certutil -user -addstore root "${localCert.certPath}"`
+          return "addstore";
+        } else if (command.startsWith("certutil -user -repairstore")) {
+          // Command: `certutil -user -repairstore root ${thumbprint} "${certInfPath}"`
+          return "repairstore";
+        } else {
+          return "";
+        }
+      });
+      certManager = new LocalCertificateManager();
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it(`happy path windows`, async () => {
+      const res = await certManager.setupCertificate(true);
+
+      chai.assert.equal(
+        res.certPath,
+        path.normalize(expectedCertFile).split(path.sep).join(path.posix.sep)
+      );
+      chai.assert.equal(
+        res.keyPath,
+        path.normalize(expectedKeyFile).split(path.sep).join(path.posix.sep)
+      );
+
+      const certContent = files[path.resolve(expectedCertFile)];
+      chai.assert.isDefined(certContent);
+      chai.assert.isTrue(
+        /-----BEGIN CERTIFICATE-----.*-----END CERTIFICATE-----/gs.test(certContent)
+      );
+      const keyContent = files[path.resolve(expectedKeyFile)];
+      chai.assert.isDefined(keyContent);
+      chai.assert.isTrue(
+        /-----BEGIN RSA PRIVATE KEY-----.*-----END RSA PRIVATE KEY-----/gs.test(keyContent)
+      );
+      chai.assert.equal(res.isTrusted, true);
     });
   });
 });

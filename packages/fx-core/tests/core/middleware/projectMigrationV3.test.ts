@@ -42,6 +42,7 @@ import {
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
+import { UpgradeCanceledError } from "../../../src/core/error";
 
 let mockedEnvRestore: () => void;
 
@@ -877,6 +878,11 @@ describe("Migration utils", () => {
     sandbox.stub(fs, "pathExists").resolves(false);
     const state = await checkVersionForMigration(migrationContext);
     assert.equal(state, VersionState.unsupported);
+  });
+
+  it("UpgradeCanceledError", () => {
+    const err = UpgradeCanceledError();
+    assert.isNotNull(err);
   });
 });
 

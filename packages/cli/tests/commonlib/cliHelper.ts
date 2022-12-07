@@ -150,6 +150,29 @@ export class CliHelper {
       console.log(`[Successfully] ${message}`);
     }
   }
+  static async updateAadApp(
+    projectPath: string,
+    processEnv?: NodeJS.ProcessEnv,
+    retries?: number,
+    newCommand?: string
+  ) {
+    const result = await execAsyncWithRetry(
+      `teamsfx update aad-app`,
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: 0,
+      },
+      retries,
+      newCommand
+    );
+    const message = `update aad app for ${projectPath}`;
+    if (result.stderr) {
+      console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+    } else {
+      console.log(`[Successfully] ${message}`);
+    }
+  }
 
   static async deployProject(
     resourceToDeploy: ResourceToDeploy,

@@ -15,7 +15,7 @@ provision:
     # BOT_ID: the AAD app client id created for bot
     # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
 
-  - uses: appsettings/generate
+  - uses: file/updateAppSettings
     with:
       target: ./appsettings.Development.json
       appsettings:

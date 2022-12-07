@@ -17,7 +17,7 @@ import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
 import { GenerateAppsettingsArgs } from "./interface/generateAppsettingsArgs";
 
-const actionName = "appsettings/generate";
+const actionName = "file/updateAppSettings";
 const helpLink = "https://aka.ms/teamsfx-actions/appsettings-generate";
 
 @Service(actionName) // DO NOT MODIFY the service name

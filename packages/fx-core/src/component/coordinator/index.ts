@@ -162,14 +162,10 @@ const M365Actions = [
   "teamsApp/update",
   "aadApp/create",
   "aadApp/update",
-  "botFramework/createOrUpdateBot",
+  "botFramework/create",
 ];
 const AzureActions = ["arm/deploy"];
-const needTenantCheckActions = [
-  "botAadApp/create",
-  "aadApp/create",
-  "botFramework/createOrUpdateBot",
-];
+const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramework/create"];
 
 export class Coordinator {
   @hooks([

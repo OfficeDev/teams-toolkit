@@ -381,15 +381,8 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
           );
           if (obj) {
             const bicepContent = readBicepContent(context);
-            const teamsfx_env = fs
-              .readFileSync(path.join(context.projectPath, SettingsFolderName, ".env." + envName))
-              .toString()
-              .includes("TEAMSFX_ENV=")
-              ? ""
-              : "TEAMSFX_ENV=" + envName + EOL;
             // convert every name
-            const envData =
-              teamsfx_env + jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
+            const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
             await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
               // .env.{env} file might be already exist, use append mode (flag: a+)
               encoding: "utf8",
@@ -417,20 +410,12 @@ export async function userdataMigration(context: MigrationContext): Promise<void
           await context.fsEnsureDir(SettingsFolderName);
           if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
             await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
-          const teamsfx_env = fs
-            .readFileSync(path.join(context.projectPath, SettingsFolderName, ".env." + envName))
-            .toString()
-            .includes("TEAMSFX_ENV=")
-            ? ""
-            : "TEAMSFX_ENV=" + envName + EOL;
           const bicepContent = readBicepContent(context);
-          const envData =
-            teamsfx_env +
-            (await readAndConvertUserdata(
-              context,
-              path.join(".fx", "states", fileName),
-              bicepContent
-            ));
+          const envData = await readAndConvertUserdata(
+            context,
+            path.join(".fx", "states", fileName),
+            bicepContent
+          );
           await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
             // .env.{env} file might be already exist, use append mode (flag: a+)
             encoding: "utf8",
@@ -454,9 +439,8 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
         flag_apimPlugin = true;
         break;
       }
-    // must do this step after configs migration
+
     if (flag_apimPlugin) {
-      await context.fsEnsureDir("configs");
       const fileNames = fsReadDirSync(context, path.join(".fx", "configs"));
       for (const fileName of fileNames)
         if (fileName.startsWith("config.")) {

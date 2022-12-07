@@ -3,7 +3,7 @@ import {
   FileType,
   fixedNamingsV3,
   namingConverterV3,
-} from "../../../src/core/middleware/MigrationUtils";
+} from "../../../src/core/middleware/utils/MigrationUtils";
 import { generateAppIdUri } from "../../../src/core/middleware/utils/v3MigrationUtils";
 
 describe("MigrationUtilsV3", () => {

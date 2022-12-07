@@ -20,7 +20,7 @@ import { Constants } from "../../resource/appManifest/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { VSCodeExtensionCommand } from "../../../common/constants";
 
-export const actionName = "teamsApp/createAppPackage";
+export const actionName = "teamsApp/zipAppPackage";
 
 @Service(actionName)
 export class CreateAppPackageDriver implements StepDriver {

@@ -10,7 +10,7 @@ import { inc } from "semver";
 
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { getActivePluginsFromProjectSetting } from "../e2e/commonUtils";
-import { PluginId, StateConfigKey, EnvContants } from "./constants";
+import { PluginId, StateConfigKey, EnvConstants } from "./constants";
 
 import {
   getSubscriptionIdFromResourceId,
@@ -74,9 +74,9 @@ export class BotValidator {
   }
 
   private getResourceIdV3(ctx: any): string {
-    const botWebAppResourceId = ctx[EnvContants.BOT_AZURE_APP_SERVICE_RESOURCE_ID];
-    // const botFunctionAppResourceId = ctx[EnvContants.BOT_AZURE_FUNCTION_RESOURCE_ID];
-    // const botResourceId = ctx[EnvContants.BOT_RESOURCE_ID]
+    const botWebAppResourceId = ctx[EnvConstants.BOT_AZURE_APP_SERVICE_RESOURCE_ID];
+    // const botFunctionAppResourceId = ctx[EnvConstants.BOT_AZURE_FUNCTION_RESOURCE_ID];
+    // const botResourceId = ctx[EnvConstants.BOT_RESOURCE_ID]
     const resourceId = botWebAppResourceId;
     return resourceId;
   }
@@ -120,7 +120,7 @@ export class BotValidator {
       token as string
     );
     chai.assert.exists(response);
-    chai.assert.equal(response[BaseConfig.BOT_ID], this.ctx[EnvContants.BOT_ID] as string);
+    chai.assert.equal(response[BaseConfig.BOT_ID], this.ctx[EnvConstants.BOT_ID] as string);
     if (includeAAD) {
       // TODO
     }

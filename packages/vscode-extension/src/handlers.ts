@@ -3403,7 +3403,7 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
         label: `${localize("teamstoolkit.tutorials.connectApi.label")}`,
         detail: localize("teamstoolkit.tutorials.connectApi.detail"),
         groupName: localize("teamstoolkit.guide.development"),
-        data: "https://aka.ms/teamsfx-connect-api-new",
+        data: "https://aka.ms/teamsfx-add-api-connection",
         buttons: [
           {
             iconPath: "file-symlink-file",

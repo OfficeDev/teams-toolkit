@@ -155,21 +155,17 @@ export const InitTemplateName: any = {
 };
 
 const workflowFileName = "app.yml";
-
+const localWorkflowFileName = "app.local.yml";
 const M365Actions = [
   "botAadApp/create",
   "teamsApp/create",
   "teamsApp/update",
   "aadApp/create",
   "aadApp/update",
-  "botFramework/createOrUpdateBot",
+  "botFramework/create",
 ];
 const AzureActions = ["arm/deploy"];
-const needTenantCheckActions = [
-  "botAadApp/create",
-  "aadApp/create",
-  "botFramework/createOrUpdateBot",
-];
+const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramework/create"];
 
 export class Coordinator {
   @hooks([
@@ -512,7 +508,11 @@ export class Coordinator {
     const parser = new YamlParser();
     const templatePath =
       inputs["workflowFilePath"] ??
-      path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+      path.join(
+        ctx.projectPath,
+        SettingsFolderName,
+        process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
+      );
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -576,7 +576,11 @@ export class Coordinator {
     const parser = new YamlParser();
     const templatePath =
       inputs["workflowFilePath"] ??
-      path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+      path.join(
+        ctx.projectPath,
+        SettingsFolderName,
+        process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
+      );
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return [undefined, maybeProjectModel.error];
@@ -828,6 +832,7 @@ export class Coordinator {
             name: "UnresolvedPlaceholders",
             message: getDefaultString("core.error.unresolvedPlaceholders", placeholders),
             displayMessage: getLocalizedString("core.error.unresolvedPlaceholders", placeholders),
+            helpLink: "https://aka.ms/teamsfx-actions",
           });
         }
       }
@@ -854,7 +859,11 @@ export class Coordinator {
     const parser = new YamlParser();
     const templatePath =
       inputs["workflowFilePath"] ??
-      path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+      path.join(
+        ctx.projectPath,
+        SettingsFolderName,
+        process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
+      );
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return [undefined, maybeProjectModel.error];
@@ -902,7 +911,11 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+    const templatePath = path.join(
+      ctx.projectPath,
+      SettingsFolderName,
+      process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
+    );
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);

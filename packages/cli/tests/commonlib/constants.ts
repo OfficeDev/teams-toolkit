@@ -163,7 +163,7 @@ export class provisionParametersKey {
   static readonly simpleAuthSku = "simpleAuthSku";
 }
 
-export class EnvContants {
+export class EnvConstants {
   // Azure Resource
   static readonly AZURE_SUBSCRIPTION_ID = "AZURE_SUBSCRIPTION_ID";
   static readonly AZURE_RESOURCE_GROUP_NAME = "AZURE_RESOURCE_GROUP_NAME";
@@ -183,6 +183,7 @@ export class EnvContants {
   static readonly TAB_AZURE_STORAGE_RESOURCE_ID = "TAB_AZURE_STORAGE_RESOURCE_ID";
   static readonly TAB_ENDPOINT = "TAB_ENDPOINT";
   static readonly TAB_DOMAIN = "TAB_DOMAIN";
+  static readonly TAB_AZURE_APP_SERVICE_RESOURCE_ID = "TAB_AZURE_APP_SERVICE_RESOURCE_ID";
 
   // BOT
   static readonly BOT_ID = "BOT_ID";

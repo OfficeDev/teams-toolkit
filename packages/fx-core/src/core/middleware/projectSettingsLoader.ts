@@ -125,11 +125,18 @@ export async function loadProjectSettingsByProjectPath(
 // export this for V2 -> V3 migration purpose
 export async function loadProjectSettingsByProjectPathV2(
   projectPath: string,
-  isMultiEnvEnabled = false
+  isMultiEnvEnabled = false,
+  onlyV2 = false
 ): Promise<Result<ProjectSettings, FxError>> {
-  const settingsFile = isMultiEnvEnabled
-    ? getProjectSettingsPath(projectPath)
-    : path.resolve(projectPath, `.${ConfigFolderName}`, "settings.json");
+  let settingsFile;
+  if (onlyV2) {
+    settingsFile = getProjectSettingPathV2(projectPath);
+  } else {
+    settingsFile = isMultiEnvEnabled
+      ? getProjectSettingsPath(projectPath)
+      : path.resolve(projectPath, `.${ConfigFolderName}`, "settings.json");
+  }
+
   const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
   if (!projectSettings.projectId) {
     projectSettings.projectId = uuid.v4();

@@ -7,9 +7,9 @@ on:
         description: 'specific cases to be excuted. Sample: ["./aad/a.tests.ts", "./bot/b.tests.ts"]. Set empty to run all cases'
         required: false
       v3:
-        description: 'set v3 feature flag turn on for testing(true or false)'
+        description: "set v3 feature flag turn on for testing(true or false)"
         required: false
-        default: 'false'
+        default: "false"
   schedule:
     - cron: "0 0 * * *"
   pull_request:
@@ -33,7 +33,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
 
       - name: Install parser cli
         run: |
@@ -98,7 +98,21 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
+
+      - name: Setup legacy-peer-deps
+        run: |
+          npm config set legacy-peer-deps true
+
+      - name: Setup metrics-ts
+        working-directory: packages/metrics-ts
+        run: |
+          npm install
+
+      - name: Setup eslint-metrics
+        working-directory: packages/eslint-metrics
+        run: |
+          npm install
 
       - name: Setup project
         uses: nick-fields/retry@v2
@@ -157,7 +171,7 @@ jobs:
   execute-base-case-v3:
     if: ${{  github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
-    env: 
+    env:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
       AZURE_ACCOUNT_OBJECT_ID: ${{ secrets.TEST_USER_OBJECT_ID }}
       AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
@@ -174,7 +188,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cases: [ "./frontend/TestCreateTab.tests.ts", "./bot/ProvisionCommandAndResponseBot.tests.ts", "./bot/ProvisionCommandAndResponseBot.dotnet.tests.ts" ]
+        cases:
+          [
+            "./frontend/TestCreateTab.tests.ts",
+            "./bot/ProvisionCommandAndResponseBot.tests.ts",
+            "./bot/ProvisionCommandAndResponseBot.dotnet.tests.ts",
+          ]
     name: ${{ matrix.cases }}
     steps:
       - name: Checkout
@@ -183,7 +202,11 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
+
+      - name: Setup legacy-peer-deps
+        run: |
+          npm config set legacy-peer-deps true
 
       - name: Setup .net
         uses: actions/setup-dotnet@v2
@@ -197,7 +220,7 @@ jobs:
           max_attempts: 5
           command: |
             npm run setup
-      
+
       - name: Package CLI
         working-directory: packages/cli
         run: |
@@ -250,7 +273,11 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
+
+      - name: Setup legacy-peer-deps
+        run: |
+          npm config set legacy-peer-deps true
 
       - name: Setup .net
         uses: actions/setup-dotnet@v2
@@ -377,7 +404,11 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
+
+      - name: Setup legacy-peer-deps
+        run: |
+          npm config set legacy-peer-deps true
 
       - name: Setup project
         uses: nick-fields/retry@v2

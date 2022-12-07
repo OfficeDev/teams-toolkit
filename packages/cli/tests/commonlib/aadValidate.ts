@@ -11,7 +11,7 @@ import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import MockM365TokenProvider from "../../src/commonlib/m365LoginUserPassword";
 import { IAADDefinition, IAadObject, IAadObjectLocal } from "./interfaces/IAADDefinition";
 import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
-import { EnvContants } from "../commonlib/constants";
+import { EnvConstants } from "../commonlib/constants";
 
 const aadPluginName = "fx-resource-aad-app-for-teams";
 const baseUrl = "https://dev.teams.microsoft.com/api/aadapp/v2";
@@ -119,12 +119,12 @@ export class AadValidator {
 
   private static objectTransformV3(ctxObj: Record<string, string>): IAadObject {
     return {
-      clientId: ctxObj[EnvContants.AAD_APP_CLIENT_ID],
-      clientSecret: ctxObj[EnvContants.AAD_APP_CLIENT_SECRETS],
-      objectId: ctxObj[EnvContants.AAD_APP_OBJECT_ID],
-      oauth2PermissionScopeId: ctxObj[EnvContants.AAD_APP_ACCESS_AS_USER_PERMISSION_ID],
-      applicationIdUris: ctxObj[EnvContants.AAD_APP_OAUTH_AUTHORITY_HOST],
-      oauthAuthority: ctxObj[EnvContants.AAD_APP_OAUTH_AUTHORITY],
+      clientId: ctxObj[EnvConstants.AAD_APP_CLIENT_ID],
+      clientSecret: ctxObj[EnvConstants.AAD_APP_CLIENT_SECRETS],
+      objectId: ctxObj[EnvConstants.AAD_APP_OBJECT_ID],
+      oauth2PermissionScopeId: ctxObj[EnvConstants.AAD_APP_ACCESS_AS_USER_PERMISSION_ID],
+      applicationIdUris: ctxObj[EnvConstants.AAD_APP_OAUTH_AUTHORITY_HOST],
+      oauthAuthority: ctxObj[EnvConstants.AAD_APP_OAUTH_AUTHORITY],
       teamsMobileDesktopAppId: "test",
       teamsWebAppId: "test",
     };

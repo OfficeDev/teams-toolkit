@@ -115,7 +115,6 @@ export class BotService extends AzureResource {
         aadDisplayName,
         botName,
         botConfig,
-        undefined, // Use default value of BotAuthType.AADApp
         context.logProvider
       );
       if (regRes.isErr()) return err(regRes.error);

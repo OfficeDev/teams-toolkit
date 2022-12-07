@@ -11,13 +11,13 @@ import * as sinon from "sinon";
 import * as util from "util";
 
 import * as localizeUtils from "../../../../src/common/localizeUtils";
-import { InvalidParameterUserError } from "../../../../src/component/driver/env/error/invalidParameterUserError";
-import { UnhandledSystemError } from "../../../../src/component/driver/env/error/unhandledError";
-import { GenerateEnvDriver } from "../../../../src/component/driver/env/generate";
+import { InvalidParameterUserError } from "../../../../src/component/driver/file/error/invalidParameterUserError";
+import { UnhandledSystemError } from "../../../../src/component/driver/file/error/unhandledError";
+import { UpdateEnvDriver } from "../../../../src/component/driver/file/updateEnv";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { MockedLogProvider, MockedUserInteraction } from "../../../plugins/solution/util";
 
-describe("EnvGenerateDriver", () => {
+describe("UpdateEnvDriver", () => {
   const mockedDriverContexts = [
     {
       logProvider: new MockedLogProvider(),
@@ -28,23 +28,23 @@ describe("EnvGenerateDriver", () => {
       projectPath: "/path/to/project",
     } as DriverContext,
   ];
-  const driver = new GenerateEnvDriver();
+  const driver = new UpdateEnvDriver();
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
-      if (key === "driver.env.error.invalidParameter") {
+      if (key === "driver.file.error.invalidParameter") {
         return util.format(
           "Following parameter is missing or invalid for %s action: %s.",
           ...params
         );
-      } else if (key === "driver.env.error.unhandledError") {
+      } else if (key === "driver.file.error.unhandledError") {
         return util.format("Unhandled error happened in %s action: %s", ...params);
-      } else if (key === "driver.env.summary.default") {
+      } else if (key === "driver.file.summary.default") {
         return util.format(
           "The environment variables has been generated successfully to the .env file of '%s' environment.",
           ...params
         );
-      } else if (key === "driver.env.summary.withTarget") {
+      } else if (key === "driver.file.summary.withTarget") {
         return util.format(
           "The environment variables has been generated successfully to %s.",
           ...params
@@ -75,7 +75,7 @@ describe("EnvGenerateDriver", () => {
         if (result.isErr()) {
           chai.assert(result.error instanceof InvalidParameterUserError);
           const message =
-            "Following parameter is missing or invalid for env/generate action: target.";
+            "Following parameter is missing or invalid for file/updateEnv action: target.";
           chai.assert.equal(result.error.message, message);
         }
       });
@@ -89,7 +89,7 @@ describe("EnvGenerateDriver", () => {
         if (result.isErr()) {
           chai.assert(result.error instanceof InvalidParameterUserError);
           const message =
-            "Following parameter is missing or invalid for env/generate action: envs.";
+            "Following parameter is missing or invalid for file/updateEnv action: envs.";
           chai.assert.equal(result.error.message, message);
         }
       });
@@ -108,7 +108,7 @@ describe("EnvGenerateDriver", () => {
         if (result.isErr()) {
           chai.assert(result.error instanceof InvalidParameterUserError);
           const message =
-            "Following parameter is missing or invalid for env/generate action: envs.";
+            "Following parameter is missing or invalid for file/updateEnv action: envs.";
           chai.assert.equal(result.error.message, message);
         }
       });
@@ -126,7 +126,7 @@ describe("EnvGenerateDriver", () => {
         chai.assert(result.isErr());
         if (result.isErr()) {
           chai.assert(result.error instanceof UnhandledSystemError);
-          const message = "Unhandled error happened in env/generate action: exception.";
+          const message = "Unhandled error happened in file/updateEnv action: exception.";
           chai.assert(result.error.message, message);
         }
       });

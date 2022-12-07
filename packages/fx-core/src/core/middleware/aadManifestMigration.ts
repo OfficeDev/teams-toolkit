@@ -20,7 +20,7 @@ import { loadProjectSettings } from "./projectSettingsLoader";
 import { needMigrateToArmAndMultiEnv } from "./projectMigrator";
 import { needConsolidateLocalRemote } from "./consolidateLocalRemote";
 import * as os from "os";
-import { generateAadManifest, needMigrateToAadManifest } from "./MigrationUtils";
+import { generateAadManifest, needMigrateToAadManifest } from "./utils/MigrationUtils";
 
 const LearnMore = getLocalizedString("core.option.learnMore");
 const LearnMoreLink = "https://aka.ms/teamsfx-aad-manifest";

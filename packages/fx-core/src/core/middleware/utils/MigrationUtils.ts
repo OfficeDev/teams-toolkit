@@ -3,15 +3,15 @@
 
 import { err, FxError, Inputs, ok, Result, SystemError } from "@microsoft/teamsfx-api";
 import path from "path";
-import { isAadManifestEnabled } from "../../common/tools";
-import { CoreHookContext } from "../types";
+import { isAadManifestEnabled } from "../../../common/tools";
+import { CoreHookContext } from "../../types";
 import fs from "fs-extra";
-import { getLocalizedString } from "../../common/localizeUtils";
-import { TOOLS } from "../globalVars";
-import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
-import { PluginNames } from "../../component/constants";
-import { RequiredResourceAccess } from "../../component/resource/aadApp/interfaces/AADManifest";
-import { CoreSource } from "../error";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { TOOLS } from "../../globalVars";
+import { generateAadManifestTemplate } from "../../generateAadManifestTemplate";
+import { PluginNames } from "../../../component/constants";
+import { RequiredResourceAccess } from "../../../component/resource/aadApp/interfaces/AADManifest";
+import { CoreSource } from "../../error";
 
 export interface Permission {
   resource: string;
@@ -136,12 +136,15 @@ export const fixedNamingsV3: { [key: string]: string } = {
   "state.fx-resource-bot.botPassword": "SECRET_BOT_PASSWORD",
   "state.fx-resource-frontend-hosting.sslCertFile": "SSL_CRT_FILE",
   "state.fx-resource-frontend-hosting.sslKeyFile": "SSL_KEY_FILE",
+  "state.fx-resource-apim.publisherEmail": "APIM__PUBLISHEREMAIL",
+  "state.fx-resource-apim.publisherName": "APIM__PUBLISHERNAME",
 };
 export const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-frontend-hosting.indexPath",
   "state.fx-resource-frontend-hosting.domain",
   "state.fx-resource-frontend-hosting.endpoint",
   "state.fx-resource-frontend-hosting.storageResourceId",
+  "state.fx-resource-frontend-hosting.resourceId",
   "state.fx-resource-azure-sql.sqlResourceId",
   "state.fx-resource-azure-sql.sqlEndpoint",
   "state.fx-resource-azure-sql.databaseName",
@@ -153,6 +156,7 @@ export const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-bot.domain",
   "state.fx-resource-bot.appServicePlanName",
   "state.fx-resource-bot.resourceId",
+  "state.fx-resource-bot.functionAppResourceId",
   "state.fx-resource-bot.siteEndpoint",
   "state.fx-resource-identity.identityName",
   "state.fx-resource-identity.identityResourceId",
@@ -166,6 +170,11 @@ export const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-key-vault.m365ClientSecretReference",
   "state.fx-resource-key-vault.botClientSecretReference",
 ];
+export const nameMappingV3: { [key: string]: string } = {
+  "state.fx-resource-aad-app-for-teams.botEndpoint": "state.fx-resource-bot.siteEndpoint",
+  "state.fx-resource-aad-app-for-teams.frontendEndpoint":
+    "state.fx-resource-frontend-hosting.endpoint",
+};
 export const pluginIdMappingV3: { [key: string]: string } = {
   "fx-resource-frontend-hosting": "teams-tab",
   "fx-resource-function": "teams-api",
@@ -174,7 +183,16 @@ export const pluginIdMappingV3: { [key: string]: string } = {
   "fx-resource-key-vault": "key-vault",
   "fx-resource-azure-sql": "azure-sql",
   "fx-resource-apim": "apim",
+  "fx-resource-aad-app-for-teams": "aad-app",
+  "fx-resource-appstudio": "app-manifest",
+  "fx-resource-simple-auth": "simple-auth",
 };
+export const secretKeys = [
+  "state.fx-resource-aad-app-for-teams.clientSecret",
+  "state.fx-resource-bot.botPassword",
+  "state.fx-resource-apim.apimClientAADClientSecret",
+  "state.fx-resource-azure-sql.adminPassword",
+];
 const secretPrefix = "SECRET_";
 const configPrefix = "CONFIG__";
 const provisionOutputPrefix = "PROVISIONOUTPUT__";
@@ -191,9 +209,17 @@ function generateOutputNameRegexForPlugin(pluginId: string) {
 export function namingConverterV3(
   name: string,
   type: FileType,
-  bicepContent: string
+  bicepContent: string,
+  needsRename = false
 ): Result<string, FxError> {
   try {
+    // Convert state.aad-app.clientId to state.fx-resource-aad-app-for-teams.clientId
+    name = convertPluginId(name);
+
+    // Needs to map certain values only when migrating manifest
+    if (needsRename && Object.keys(nameMappingV3).includes(name)) {
+      name = nameMappingV3[name];
+    }
     if (Object.keys(fixedNamingsV3).includes(name)) {
       return ok(fixedNamingsV3[name]);
     } else if (
@@ -210,7 +236,9 @@ export function namingConverterV3(
         case FileType.CONFIG:
           return ok(`${configPrefix}${res}`);
         case FileType.USERDATA:
-          return ok(`${secretPrefix}${res}`);
+          if (res.startsWith("STATE__"))
+            return ok(`${secretPrefix}${res.substring(res.indexOf("STATE__") + 7)}`);
+          else return ok(`${secretPrefix}${res}`);
         case FileType.STATE:
         default:
           return ok(res);
@@ -274,6 +302,23 @@ function provisionOutputNamingConverterV3(name: string, bicepContent: string): s
   return `${provisionOutputPrefix}${outputName}__${keyName}`.toUpperCase();
 }
 
+export function convertPluginId(name: string): string {
+  const nameArray = name.split(".");
+  if (!nameArray || nameArray.length <= 1) {
+    return name;
+  }
+  const pluginId = nameArray[1];
+
+  if (Object.values(pluginIdMappingV3).includes(pluginId)) {
+    const convertedPluginId = Object.keys(pluginIdMappingV3).find(
+      (key) => pluginIdMappingV3[key] === pluginId
+    );
+    name = name.replace(pluginId, convertedPluginId!);
+  }
+
+  return name;
+}
+
 export function replacePlaceholdersForV3(content: string, bicepContent: string): string {
   const placeholderRegex = /{{+ *[a-zA-Z_.-][a-zA-Z0-9_.-]* *}}+/g;
   const placeholders = content.match(placeholderRegex);
@@ -281,7 +326,12 @@ export function replacePlaceholdersForV3(content: string, bicepContent: string):
   if (placeholders) {
     for (const placeholder of placeholders) {
       const envNameV2 = placeholder.replace(/\{/g, "").replace(/\}/g, "");
-      const envNameV3 = namingConverterV3(envNameV2, FileType.STATE, bicepContent);
+      const envNameV3 = namingConverterV3(
+        envNameV2,
+        secretKeys.includes(convertPluginId(envNameV2)) ? FileType.USERDATA : FileType.STATE,
+        bicepContent,
+        true
+      );
       if (envNameV3.isOk()) {
         content = content.replace(placeholder, `$\{\{${envNameV3.value}\}\}`);
       } else {

@@ -9,9 +9,9 @@ import * as sinon from "sinon";
 import * as util from "util";
 
 import * as localizeUtils from "../../../../src/common/localizeUtils";
-import { InvalidParameterUserError } from "../../../../src/component/driver/env/error/invalidParameterUserError";
-import { UnhandledSystemError } from "../../../../src/component/driver/env/error/unhandledError";
-import { GenerateAppsettingsDriver } from "../../../../src/component/driver/env/appsettingsGenerate";
+import { InvalidParameterUserError } from "../../../../src/component/driver/file/error/invalidParameterUserError";
+import { UnhandledSystemError } from "../../../../src/component/driver/file/error/unhandledError";
+import { GenerateAppsettingsDriver } from "../../../../src/component/driver/file/appsettingsGenerate";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import { MockedLogProvider } from "../../../plugins/solution/util";
 
@@ -23,12 +23,12 @@ describe("AppsettingsGenerateDriver", () => {
 
   beforeEach(() => {
     sinon.stub(localizeUtils, "getDefaultString").callsFake((key, ...params) => {
-      if (key === "driver.env.error.invalidParameter") {
+      if (key === "driver.file.error.invalidParameter") {
         return util.format(
           "Following parameter is missing or invalid for %s action: %s.",
           ...params
         );
-      } else if (key === "driver.env.error.unhandledError") {
+      } else if (key === "driver.file.error.unhandledError") {
         return util.format("Unhandled error happened in %s action: %s", ...params);
       }
       return "";
@@ -54,7 +54,7 @@ describe("AppsettingsGenerateDriver", () => {
       if (result.isErr()) {
         chai.assert(result.error instanceof InvalidParameterUserError);
         const message =
-          "Following parameter is missing or invalid for appsettings/generate action: target.";
+          "Following parameter is missing or invalid for file/updateAppSettings action: target.";
         chai.assert.equal(result.error.message, message);
       }
     });
@@ -69,7 +69,7 @@ describe("AppsettingsGenerateDriver", () => {
       if (result.isErr()) {
         chai.assert(result.error instanceof InvalidParameterUserError);
         const message =
-          "Following parameter is missing or invalid for appsettings/generate action: appsettings.";
+          "Following parameter is missing or invalid for file/updateAppSettings action: appsettings.";
         chai.assert.equal(result.error.message, message);
       }
     });
@@ -117,6 +117,40 @@ describe("AppsettingsGenerateDriver", () => {
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isOk());
       if (result.isOk()) {
+        chai.assert.equal('{\n\t"BOT_ID": "BOT_ID",\n\t"BOT_PASSWORD": "BOT_PASSWORD"\n}', content);
+      }
+    });
+
+    it("happy path: execute with target", async () => {
+      const target = "path";
+      let content = {};
+      const appsettings = {
+        BOT_ID: "$botId$",
+        BOT_PASSWORD: "$bot-password$",
+      };
+      sinon.stub(fs, "ensureFile").callsFake(async (path) => {
+        return;
+      });
+      sinon.stub(fs, "readFileSync").callsFake((path) => {
+        return Buffer.from(JSON.stringify(appsettings));
+      });
+      sinon.stub(fs, "writeFile").callsFake(async (path, data) => {
+        content = data;
+        return;
+      });
+      sinon.stub(fs, "existsSync").callsFake((path) => {
+        return true;
+      });
+      const args: any = {
+        target,
+        appsettings: {
+          BOT_ID: "BOT_ID",
+          BOT_PASSWORD: "BOT_PASSWORD",
+        },
+      };
+      const result = await driver.execute(args, mockedDriverContext);
+      chai.assert(result.result.isOk());
+      if (result.result.isOk()) {
         chai.assert.equal('{\n\t"BOT_ID": "BOT_ID",\n\t"BOT_PASSWORD": "BOT_PASSWORD"\n}', content);
       }
     });

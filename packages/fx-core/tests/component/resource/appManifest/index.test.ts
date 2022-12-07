@@ -637,7 +637,7 @@ describe("App-manifest Component - v3", () => {
     sandbox.stub(commonTools, "isV3Enabled").returns(true);
     sandbox
       .stub(Container, "get")
-      .withArgs(sandbox.match("teamsApp/createAppPackage"))
+      .withArgs(sandbox.match("teamsApp/zipAppPackage"))
       .returns(new CreateAppPackageDriver());
     sandbox.stub(envUtil, "readEnv").resolves();
   });

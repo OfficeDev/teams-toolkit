@@ -335,6 +335,9 @@ describe("generateAppYml-csharp", () => {
 
   beforeEach(async () => {
     migrationContext = await mockMigrationContext(projectPath);
+    migrationContext.arguments.push({
+      platform: "vs",
+    });
     await fs.ensureDir(projectPath);
   });
 

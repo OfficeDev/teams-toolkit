@@ -195,15 +195,7 @@ export async function generateSettingsJson(context: MigrationContext): Promise<v
 }
 
 export async function generateAppYml(context: MigrationContext): Promise<void> {
-  const inputs: Inputs = context.arguments[context.arguments.length - 1];
-  const bicepFilePath =
-    inputs.platform === Platform.VS
-      ? Constants.vsProvisionBicepPath
-      : Constants.vscodeProvisionBicepPath;
-  const bicepContent: string = await fs.readFile(
-    path.join(context.projectPath, bicepFilePath),
-    "utf8"
-  );
+  const bicepContent: string = readBicepContent(context);
   const oldProjectSettings = await loadProjectSettings(context.projectPath);
   const appYmlGenerator = new AppYmlGenerator(
     oldProjectSettings,

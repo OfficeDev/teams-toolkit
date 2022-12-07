@@ -120,7 +120,7 @@ import {
   getFeaturesFromAppDefinition,
 } from "../component/resource/appManifest/utils/utils";
 import { VideoFilterAppBlockerMW } from "./middleware/videoFilterAppBlocker";
-import { FxCoreV3Implement } from "./FxcoreV3Implement";
+import { FxCoreV3Implement } from "./FxCoreV3Implement";
 
 export class FxCore implements v3.ICore {
   tools: Tools;

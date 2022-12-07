@@ -17,7 +17,6 @@ import {
   getTestFolder,
   getUniqueAppName,
   cleanUp,
-  setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 import M365Login from "../../../src/commonlib/m365Login";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -51,8 +50,6 @@ describe("Create single tab", function () {
     });
 
     it(`Provision Resource: React app without function`, { testPlanCaseId: 10298738 }, async () => {
-      // await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-
       await CliHelper.setSubscription(subscription, projectPath);
 
       await CliHelper.provisionProject(projectPath);

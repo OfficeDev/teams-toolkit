@@ -38,6 +38,7 @@ import {
   configsMigration,
   userdataMigration,
   debugMigration,
+  replacePlaceholderForAzureParameter,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
@@ -176,7 +177,7 @@ describe("MigrationContext", () => {
     assert.isTrue(modifiedPaths.includes("b"));
     assert.isTrue(modifiedPaths.includes("b/c"));
     assert.isTrue(modifiedPaths.includes("d"));
-
+    await context.fsRemove("d");
     await context.cleanModifiedPaths();
     assert.isEmpty(context.getModifiedPaths());
 
@@ -470,6 +471,85 @@ describe("replacePlaceholderForManifests", () => {
         error.innerError.message,
         "templates/appPackage/manifest.template.json does not exist"
       );
+    }
+  });
+});
+
+describe("replacePlaceholderForAzureParameter", () => {
+  const sandbox = sinon.createSandbox();
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+  });
+
+  it("Happy Path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+
+    // Action
+    await replacePlaceholderForAzureParameter(migrationContext);
+
+    // Assert
+    const azureParameterDevFilePath = path.join(
+      projectPath,
+      "templates",
+      "azure",
+      "azure.parameter.dev.json"
+    );
+    const azureParameterTestFilePath = path.join(
+      projectPath,
+      "templates",
+      "azure",
+      "azure.parameter.test.json"
+    );
+    assert.isTrue(await fs.pathExists(azureParameterDevFilePath));
+    assert.isTrue(await fs.pathExists(azureParameterTestFilePath));
+    const azureParameterExpected = await fs.readFile(
+      path.join(projectPath, "expected", "azure.parameter.json"),
+      "utf-8"
+    );
+    const azureParameterDev = await fs.readFile(azureParameterDevFilePath, "utf-8");
+    const azureParameterTest = await fs.readFile(azureParameterTestFilePath, "utf-8");
+    assert.equal(azureParameterDev, azureParameterExpected);
+    assert.equal(azureParameterTest, azureParameterExpected);
+  });
+
+  it("migrate azure.parameter failed: .fx/config does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Action
+    await replacePlaceholderForAzureParameter(migrationContext);
+
+    // Assert
+    const azureParameterDevFilePath = path.join(
+      projectPath,
+      "templates",
+      "azure",
+      "azure.parameter.dev.json"
+    );
+    assert.isFalse(await fs.pathExists(azureParameterDevFilePath));
+  });
+
+  it("migrate azure.parameter failed: provision.bicep does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    await fs.ensureDir(path.join(projectPath, ".fx", "config"));
+
+    try {
+      await replacePlaceholderForAzureParameter(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.innerError.message, "templates/azure/provision.bicep does not exist");
     }
   });
 });

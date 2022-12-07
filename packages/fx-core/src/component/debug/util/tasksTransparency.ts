@@ -437,7 +437,11 @@ function installAzureFunctionsBindingExtensions(): CommentJSONValue {
 function startLocalTunnel(): CommentJSONValue {
   const comment = `{
     // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
-    // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+    // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
+    // as well as samples to:
+    //   - use your own ngrok command / configuration / binary
+    //   - use your own tunnel solution
+    //   - provide alternatives if ngrok does not work on your dev machine
   }`;
   const task = {
     label: TaskLabel.StartLocalTunnel,

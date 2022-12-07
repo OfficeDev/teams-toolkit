@@ -12,11 +12,18 @@ import {
   TemplateFolderName,
   SystemError,
   UserError,
+  InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
-import { checkMethod, checkUserTasks, outputCancelMessage, upgradeButton } from "./projectMigrator";
+import {
+  checkMethod,
+  checkUserTasks,
+  learnMoreText,
+  outputCancelMessage,
+  upgradeButton,
+} from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
 import {
@@ -39,10 +46,13 @@ import { ReadFileError } from "../error";
 import {
   readAndConvertUserdata,
   fsReadDirSync,
+  generateAppIdUri,
   getProjectVersion,
   jsonObjectNamesConvertV3,
+  getCapabilitySsoStatus,
   readBicepContent,
   readJsonFile,
+  replaceAppIdUri,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
 import * as commentJson from "comment-json";
@@ -73,6 +83,8 @@ export enum VersionState {
   unsupported,
 }
 
+const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
+
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
   preMigration,
@@ -83,6 +95,7 @@ const subMigrations: Array<Migration> = [
   statesMigration,
   userdataMigration,
   updateLaunchJson,
+  replacePlaceholderForAzureParameter,
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -147,6 +160,7 @@ export async function wrapRunMigration(
     await rollbackMigration(context);
     throw error;
   }
+  await context.removeFxV2();
 }
 
 async function rollbackMigration(context: MigrationContext): Promise<void> {
@@ -155,8 +169,26 @@ async function rollbackMigration(context: MigrationContext): Promise<void> {
   await context.cleanTeamsfx();
 }
 
-//TODO: implement summaryReport
-async function showSummaryReport(context: MigrationContext): Promise<void> {}
+async function showSummaryReport(context: MigrationContext): Promise<void> {
+  const summaryPath = path.join(context.backupPath, "migrationReport.md");
+  const content = `
+# Teams toolkit 5.0 Migration summary
+1. Move teamplates/appPackage/resource & templates/appPackage/manifest.template.json to appPackage/
+1. Move templates/appPakcage/aad.template.json to ./aad.manifest.template.json
+1. Update placeholders in the two manifests
+1. Update app id uri in the two manifests
+1. Move .fx/configs/azure.parameter.{env}.json to templates/azure/...
+1. Update placeholders in azure parameter files 
+1. create .env.{env} if not exitsts in teamsfx/ folder (v3) (should throw error if .fx/configs/ not exists?)
+1. migrate .fx/configs/config.{env}.json to .env.{env}
+1. create .env.{env} if not exitsts in teamsfx/ folder (v3)
+1. migrate .fx/states/state.{env}.json to .env.{env}. Skip 4 types of secrets names(should refer to userdata)
+1. create .env.{env} if not exitsts in teamsfx/ folder (v3)
+1. migrate .fx/states/userdata.{env} to .env.{env}
+    `;
+  await fs.writeFile(summaryPath, content);
+  await TOOLS?.ui?.openFile?.(summaryPath);
+}
 
 export async function migrate(context: MigrationContext): Promise<void> {
   for (const subMigration of subMigrations) {
@@ -222,7 +254,7 @@ export async function updateLaunchJson(context: MigrationContext): Promise<void>
 }
 
 async function loadProjectSettings(projectPath: string): Promise<ProjectSettings> {
-  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath, true);
+  const oldProjectSettings = await loadProjectSettingsByProjectPathV2(projectPath, true, true);
   if (oldProjectSettings.isOk()) {
     return oldProjectSettings.value;
   } else {
@@ -263,14 +295,19 @@ export async function replacePlaceholderForManifests(context: MigrationContext):
   }
   const bicepContent = await fs.readFile(path.join(context.projectPath, oldBicepFilePath), "utf-8");
 
+  // Read capability project settings
+  const projectSettings = await loadProjectSettings(context.projectPath);
+  const capabilities = getCapabilitySsoStatus(projectSettings);
+  const appIdUri = generateAppIdUri(capabilities);
+
   // Read Teams app manifest and save to templates/appPackage/manifest.template.json
   const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
   const oldManifestExists = await fs.pathExists(path.join(context.projectPath, oldManifestPath));
   if (oldManifestExists) {
     const manifestPath = path.join(AppPackageFolderName, MANIFEST_TEMPLATE_CONSOLIDATE);
-    const oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
+    let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
+    oldManifest = replaceAppIdUri(oldManifest, appIdUri);
     const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);
-    // TODO: update app id uri
     await context.fsWriteFile(manifestPath, manifest);
   } else {
     // templates/appPackage/manifest.template.json does not exist
@@ -283,31 +320,74 @@ export async function replacePlaceholderForManifests(context: MigrationContext):
     path.join(context.projectPath, oldAadManifestPath)
   );
   if (oldAadManifestExists) {
-    const oldAadManifest = await fs.readFile(
+    let oldAadManifest = await fs.readFile(
       path.join(context.projectPath, oldAadManifestPath),
       "utf-8"
     );
+    oldAadManifest = replaceAppIdUri(oldAadManifest, appIdUri);
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
-    // TODO: update app id uri
     await context.fsWriteFile("aad.manifest.template.json", aadManifest);
+  }
+}
+
+export async function replacePlaceholderForAzureParameter(
+  context: MigrationContext
+): Promise<void> {
+  // Ensure `.fx/configs` exists
+  const configFolderPath = path.join(".fx", InputConfigsFolderName);
+  const configFolderPathExists = await context.fsPathExists(configFolderPath);
+  if (!configFolderPathExists) {
+    // Keep same practice now. Needs dicussion whether to throw error.
+    return;
+  }
+
+  // Read Bicep
+  const azureFolderPath = path.join(TemplateFolderName, "azure");
+  const oldBicepFilePath = path.join(azureFolderPath, "provision.bicep");
+  const oldBicepFileExists = await context.fsPathExists(oldBicepFilePath);
+  if (!oldBicepFileExists) {
+    // templates/azure/provision.bicep does not exist
+    throw ReadFileError(new Error("templates/azure/provision.bicep does not exist"));
+  }
+  const bicepContent = await fs.readFile(path.join(context.projectPath, oldBicepFilePath), "utf-8");
+
+  const fileNames = fsReadDirSync(context, configFolderPath);
+  for (const fileName of fileNames) {
+    if (!fileName.startsWith("azure.parameter.")) {
+      continue;
+    }
+
+    const content = await fs.readFile(
+      path.join(context.projectPath, configFolderPath, fileName),
+      "utf-8"
+    );
+
+    const newContent = replacePlaceholdersForV3(content, bicepContent);
+    await context.fsWriteFile(path.join(azureFolderPath, fileName), newContent);
   }
 }
 
 export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
+  const buttons = [upgradeButton, learnMoreText];
   const res = await TOOLS?.ui.showMessage(
     "warn",
     getLocalizedString("core.migrationV3.Message"),
     true,
-    upgradeButton
+    ...buttons
   );
   const answer = res?.isOk() ? res.value : undefined;
-  if (!answer || answer != upgradeButton) {
+  if (!answer || !buttons.includes(answer)) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
     });
     ctx.result = err(UpgradeCanceledError());
     outputCancelMessage(ctx, true);
+    return false;
+  }
+  if (answer === learnMoreText) {
+    TOOLS?.ui!.openUrl(learnMoreLink);
+    ctx.result = ok(undefined);
     return false;
   }
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {

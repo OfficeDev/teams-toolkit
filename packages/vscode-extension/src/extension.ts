@@ -106,7 +106,14 @@ export async function activate(context: vscode.ExtensionContext) {
     M365TokenInstance.setStatusChangeMap(
       "set-region",
       { scopes: AuthSvcScopes },
-      (status, token, accountInfo) => setRegion(status, token)
+      async (status, token, accountInfo) => {
+        if (status === "SignedIn") {
+          const tokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
+          if (tokenRes.isOk()) {
+            setRegion(tokenRes.value);
+          }
+        }
+      }
     );
 
     if (vscode.workspace.isTrusted) {

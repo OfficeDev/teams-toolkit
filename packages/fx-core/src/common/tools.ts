@@ -999,23 +999,12 @@ export async function getSPFxToken(
 }
 
 /**
- * Set regin for App Studio client
+ * Get and set regin for App Studio client
  * @param m365TokenProvider
  */
-// export async function setRegion(m365TokenProvider: M365TokenProvider) {
-//   const authSvcTokenRes = await m365TokenProvider.getAccessToken({
-//     scopes: AuthSvcScopes,
-//   });
-//   if (authSvcTokenRes.isOk()) {
-//     const region = await AuthSvcClient.getRegion(authSvcTokenRes.value);
-//     AppStudioClient.SetRegion(region);
-//   }
-// }
-export async function setRegion(status: string, authSvcToken: string | undefined) {
-  if (status === "SignedIn" && authSvcToken) {
-    const region = await AuthSvcClient.getRegion(authSvcToken);
-    AppStudioClient.SetRegion(region);
-  }
+export async function setRegion(authSvcToken: string) {
+  const region = await AuthSvcClient.getRegion(authSvcToken);
+  AppStudioClient.SetRegion(region);
 }
 
 export function ConvertTokenToJson(token: string): Record<string, unknown> {

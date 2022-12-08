@@ -24,9 +24,11 @@ import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
 import { getQuestionsForCreateProjectV2 } from "../../core/middleware/questionModel";
 import {
   CoreQuestionNames,
+  CreateNewOfficeAddinOption,
   ProjectNamePattern,
   QuestionRootFolder,
   ScratchOptionNo,
+  ScratchOptionYes,
 } from "../../core/question";
 import {
   ApiConnectionOptionItem,
@@ -100,6 +102,7 @@ import * as xml2js from "xml2js";
 import { Lifecycle } from "../configManager/lifecycle";
 import { SummaryReporter } from "./summary";
 import { EOL } from "os";
+import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -214,7 +217,7 @@ export class Coordinator {
       if (res.isErr()) return err(res.error);
 
       await downloadSampleHook(sampleId, projectPath);
-    } else {
+    } else if (scratch === ScratchOptionYes.id) {
       // create from new
       const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
@@ -257,6 +260,24 @@ export class Coordinator {
         [TelemetryProperty.Feature]: feature,
         [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
       });
+    } else if (scratch === CreateNewOfficeAddinOption.id) {
+      const appName = inputs[CoreQuestionNames.AppName] as string;
+      if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
+      const validateResult = jsonschema.validate(appName, {
+        pattern: ProjectNamePattern,
+      });
+      if (validateResult.errors && validateResult.errors.length > 0) {
+        return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
+      }
+      projectPath = path.join(folder, appName);
+      inputs.projectPath = projectPath;
+
+      await fs.ensureDir(projectPath);
+
+      const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
+      if (res.isErr()) {
+        return err(res.error);
+      }
     }
 
     // generate unique projectId in projectSettings.json

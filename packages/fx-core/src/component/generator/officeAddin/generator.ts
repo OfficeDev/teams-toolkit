@@ -29,26 +29,57 @@ import * as childProcess from "child_process";
 import { promisify } from "util";
 import { CopyFileError } from "../../../core/error";
 import _ from "lodash";
+import { hooks } from "@feathersjs/hooks/lib";
+import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { Generator } from "../generator";
 
 const childProcessExec = promisify(childProcess.exec);
+
+const componentName = "office-addin";
+const telemetryEvent = "generate";
+const templateName = "office-addin";
 
 export class OfficeAddinGenerator {
   name = "fx-resource-office-addin";
   displayName = "Office Addin";
 
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: componentName,
+      telemetryEventName: telemetryEvent,
+      errorSource: componentName,
+    }),
+  ])
   static async generate(
     context: ContextV3,
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
-    const projectRoot = inputs.projectPath;
-    if (!projectRoot) {
-      return err(UndefinedProjectPathError());
+    const result = await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
+    if (result.isErr()) {
+      return err(result.error);
     }
 
+    const templateRes = await Generator.generateTemplate(
+      context,
+      destinationPath,
+      templateName,
+      "ts"
+    );
+    if (templateRes.isErr()) return err(templateRes.error);
+
+    return ok(undefined);
+  }
+
+  private static async doScaffolding(
+    context: ContextV3,
+    inputs: Inputs,
+    destinationPath: string
+  ): Promise<Result<undefined, FxError>> {
     const template = getTemplate(inputs);
     const name = inputs[AddinNameQuestion.name];
-    const addinRoot = resolve(projectRoot, name);
+    const addinRoot = resolve(destinationPath, name);
     const fromFolder = inputs[AddinProjectFolderQuestion.name];
     const language = inputs[AddinLanguageQuestion.name];
     const host = inputs[OfficeHostQuestion.name];
@@ -84,7 +115,7 @@ export class OfficeAddinGenerator {
         helperMethods.copyAddinFiles(fromFolder, addinRoot);
         const manifestFile: string = inputs[AddinProjectManifestQuestion.name];
         inputs[OfficeHostQuestion.name] = await getHost(manifestFile);
-        helperMethods.updateManifest(projectRoot, manifestFile);
+        helperMethods.updateManifest(destinationPath, manifestFile);
         // TODO: After able to sideload using shared manifest we can then delete manifest file in subfolder
         // => join(addinRoot, "manifest.json"); but figure out the actual path in the new location
       }

@@ -1,11 +1,26 @@
 import { assert } from "chai";
+import path from "path";
+import fs from "fs-extra";
+import * as os from "os";
 import {
   convertPluginId,
   FileType,
   fixedNamingsV3,
   namingConverterV3,
 } from "../../../src/core/middleware/utils/MigrationUtils";
-import { generateAppIdUri } from "../../../src/core/middleware/utils/v3MigrationUtils";
+import {
+  generateAppIdUri,
+  jsonObjectNamesConvertV3,
+  readBicepContent,
+  readJsonFile,
+} from "../../../src/core/middleware/utils/v3MigrationUtils";
+import { randomAppName } from "../utils";
+import {
+  copyTestProject,
+  getTestAssetsPath,
+  mockMigrationContext,
+  readEnvFile,
+} from "./projectMigrationV3.test";
 
 describe("MigrationUtilsV3", () => {
   it("happy path for fixed namings", () => {
@@ -175,5 +190,33 @@ describe("MigrationUtilsV3: convertPluginId", () => {
   it("happy path with short id", () => {
     const res = convertPluginId("test");
     assert.equal(res, "test");
+  });
+});
+
+describe("v3MigrationUtils.ts: jsonObjectNamesConvertV3", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("happy path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject("happyPath", projectPath);
+    const obj = await readJsonFile(migrationContext, path.join(".fx", "states", "state.dev.json"));
+    if (obj) {
+      const bicepContent = readBicepContent(migrationContext);
+      const testData = jsonObjectNamesConvertV3(obj, "state.", "", FileType.STATE, bicepContent);
+      const trueData = await readEnvFile(
+        getTestAssetsPath(path.join("happyPath", "testCaseFiles")),
+        "state.dev"
+      );
+      assert.equal(testData, trueData);
+    }
   });
 });

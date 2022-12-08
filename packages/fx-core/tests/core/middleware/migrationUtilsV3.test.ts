@@ -7,7 +7,7 @@ import {
 } from "../../../src/core/middleware/utils/MigrationUtils";
 import { generateAppIdUri } from "../../../src/core/middleware/utils/v3MigrationUtils";
 
-describe("MigrationUtilsV3", () => {
+describe("MigrationUtilsV3: namingConverterV3", () => {
   it("happy path for fixed namings", () => {
     Object.keys(fixedNamingsV3).forEach((name) => {
       const res = namingConverterV3(name, FileType.STATE, "");
@@ -28,6 +28,11 @@ describe("MigrationUtilsV3", () => {
   it("happy path for common properties in userdata", () => {
     const res = namingConverterV3("fx-resource-test.test-plugin.test-key", FileType.USERDATA, "");
     assert.isTrue(res.isOk() && res.value === "SECRET_FX_RESOURCE_TEST__TEST_PLUGIN__TEST_KEY");
+  });
+
+  it("happy path for provision outputs with empty bicep content", () => {
+    const res = namingConverterV3("state.fx-resource-frontend-hosting.domain", FileType.STATE, "");
+    assert.isTrue(res.isOk() && res.value === "STATE__FX_RESOURCE_FRONTEND_HOSTING__DOMAIN");
   });
 
   it("happy path for provision outputs: state.fx-resource-frontend-hosting.domain with standard pluginId", () => {

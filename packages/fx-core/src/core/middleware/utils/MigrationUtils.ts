@@ -209,7 +209,7 @@ function generateOutputNameRegexForPlugin(pluginId: string) {
 export function namingConverterV3(
   name: string,
   type: FileType,
-  bicepContent: string,
+  bicepContent: string | undefined,
   needsRename = false
 ): Result<string, FxError> {
   try {
@@ -226,7 +226,8 @@ export function namingConverterV3(
       provisionOutputNamingsV3.some((element, index, array) => {
         // for sql, may have key like: state.fx-resource-azure-sql.databaseName_xxx
         return name.startsWith(element);
-      })
+      }) &&
+      bicepContent
     ) {
       const res = provisionOutputNamingConverterV3(name, bicepContent);
       return ok(res);

@@ -42,20 +42,6 @@ export function fsReadDirSync(context: MigrationContext, _path: string): string[
   return fs.readdirSync(dirPath);
 }
 
-// convert any obj names if can be converted (used in states and configs migration)
-export function jsonObjectNamesConvertV3(
-  obj: any,
-  prefix: string,
-  filetype: FileType,
-  bicepContent: any
-) {
-  let returnData = "";
-  for (const keyName of Object.keys(obj)) {
-    returnData += dfs(prefix + keyName, obj[keyName], filetype, bicepContent);
-  }
-  return returnData;
-}
-
 // env variables in this list will be only convert into .env.{env} when migrating {env}.userdata
 const skipList = [
   "state.fx-resource-aad-app-for-teams.clientSecret",
@@ -63,21 +49,49 @@ const skipList = [
   "state.fx-resource-apim.apimClientAADClientSecret",
   "state.fx-resource-azure-sql.adminPassword",
 ];
-
-function dfs(parentKeyName: string, obj: any, filetype: FileType, bicepContent: any): string {
+// convert any obj names if can be converted (used in states and configs migration)
+export function jsonObjectNamesConvertV3(
+  obj: any,
+  prefix: string,
+  parentKeyName: string,
+  filetype: FileType,
+  bicepContent: any
+): string {
   let returnData = "";
-
   if (isObject(obj)) {
     for (const keyName of Object.keys(obj)) {
-      returnData += dfs(parentKeyName + "." + keyName, obj[keyName], filetype, bicepContent);
+      returnData +=
+        parentKeyName === ""
+          ? jsonObjectNamesConvertV3(obj[keyName], prefix, prefix + keyName, filetype, bicepContent)
+          : jsonObjectNamesConvertV3(
+              obj[keyName],
+              prefix,
+              parentKeyName + "." + keyName,
+              filetype,
+              bicepContent
+            );
     }
   } else if (!skipList.includes(parentKeyName)) {
     const res = namingConverterV3(parentKeyName, filetype, bicepContent);
     if (res.isOk()) return res.value + "=" + obj + EOL;
   } else return "";
-
   return returnData;
 }
+
+// function dfs(parentKeyName: string, obj: any, filetype: FileType, bicepContent: any): string {
+//   let returnData = "";
+
+//   if (isObject(obj)) {
+//     for (const keyName of Object.keys(obj)) {
+//       returnData += dfs(parentKeyName + "." + keyName, obj[keyName], filetype, bicepContent);
+//     }
+//   } else if (!skipList.includes(parentKeyName)) {
+//     const res = namingConverterV3(parentKeyName, filetype, bicepContent);
+//     if (res.isOk()) return res.value + "=" + obj + EOL;
+//   } else return "";
+
+//   return returnData;
+// }
 
 export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;

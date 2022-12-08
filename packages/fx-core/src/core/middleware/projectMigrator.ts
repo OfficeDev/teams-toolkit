@@ -19,14 +19,18 @@ import {
   ok,
   Platform,
   ProjectSettings,
-  ProjectSettingsFileName,
   ProjectSettingsV3,
   Result,
   StatesFolderName,
   SystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import { serializeDict, isSPFxProject, isMigrationV3Enabled } from "../../common/tools";
+import {
+  serializeDict,
+  isSPFxProject,
+  isMigrationV3Enabled,
+  isV3Enabled,
+} from "../../common/tools";
 import { environmentManager } from "../environment";
 import { getResourceFolder } from "../../folder";
 import { globalStateUpdate } from "../../common/globalState";
@@ -36,24 +40,27 @@ import {
   SPFxConfigError,
   NotJsonError,
   CoreSource,
+  NotSupportHigherProjectVersionError,
 } from "../error";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
 import path from "path";
 import os from "os";
-import { PluginNames } from "../../component/constants";
+import {
+  PluginNames,
+  BotOptionItem,
+  HostTypeOptionAzure,
+  HostTypeOptionSPFx,
+  MessageExtensionItem,
+  ComponentNames,
+  Scenarios,
+} from "../../component/constants";
 import {
   getProjectSettingsPath,
   loadProjectSettings,
   loadProjectSettingsByProjectPath,
 } from "./projectSettingsLoader";
-import {
-  BotOptionItem,
-  HostTypeOptionAzure,
-  HostTypeOptionSPFx,
-  MessageExtensionItem,
-} from "../../component/constants";
 import { ResourcePlugins } from "../../common/constants";
 import {
   MANIFEST_LOCAL,
@@ -80,7 +87,6 @@ import { getLocalizedString } from "../../common/localizeUtils";
 import { convertToAlphanumericOnly, getProjectTemplatesFolderPath } from "../../common/utils";
 import { Container } from "typedi";
 import { BicepComponent } from "../../component/bicep";
-import { ComponentNames, Scenarios } from "../../component/constants";
 import { getComponent } from "../../component/workflow";
 import { bicepUtils, createContextV3, generateConfigBiceps } from "../../component/utils";
 import { assign, cloneDeep } from "lodash";
@@ -99,6 +105,12 @@ import {
 } from "../../common/projectSettingsHelperV3";
 import { APIMResource } from "../../component/resource/apim/apim";
 import { ProjectMigratorMWV3 } from "./projectMigratorV3";
+import {
+  getProjectVersionV3,
+  isValidProjectV2,
+  isValidProjectV3,
+} from "../../common/projectSettingsHelper";
+import { MetadataV3 } from "../../common/versionMetadata";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -174,6 +186,16 @@ export function getProjectMigratorMW(): Middleware {
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
+  if (!isV3Enabled()) {
+    const projectVersionV3 = await checkProjectAndGetVersionV3(ctx);
+    if (projectVersionV3) {
+      ctx.result = err(
+        NotSupportHigherProjectVersionError(projectVersionV3, MetadataV3.starterToolkitVersion)
+      );
+      return;
+    }
+  }
+
   if ((await needMigrateToArmAndMultiEnv(ctx)) && checkMethod(ctx)) {
     if (!checkUserTasks(ctx)) {
       ctx.result = ok(undefined);
@@ -224,26 +246,30 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
 
 export function outputCancelMessage(ctx: CoreHookContext, isV3 = false) {
   TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
-
+  const versionDescription = getVersionDescription(isV3);
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (inputs.platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version ${
-        isV3 ? "< 5.0.0" : "<= 2.10.0"
-      }`
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version ${versionDescription}`
     );
   } else {
     TOOLS?.logProvider.warning(
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version ${
-        isV3 ? "< 5.0.0" : "<= 2.10.0"
-      }`
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version ${versionDescription}`
     );
+  }
+}
+
+function getVersionDescription(isV3: boolean): string {
+  if (isV3) {
+    return `"< ${MetadataV3.starterToolkitVersion}"`;
+  } else {
+    return `"<= 2.10.0"`;
   }
 }
 
@@ -917,6 +943,18 @@ async function cleanup(projectPath: string, backupFolder: string | undefined): P
   if (backupFolder) {
     await fs.remove(backupFolder);
   }
+}
+
+export async function checkProjectAndGetVersionV3(ctx: CoreHookContext): Promise<string> {
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const workspacePath = inputs.projectPath as string;
+  if (isValidProjectV2(workspacePath)) {
+    return "";
+  }
+  if (isValidProjectV3(workspacePath)) {
+    return getProjectVersionV3(workspacePath);
+  }
+  return "";
 }
 
 export async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {

@@ -12,8 +12,6 @@ import {
   TemplateFolderName,
   SystemError,
   UserError,
-  Platform,
-  Inputs,
   InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
@@ -66,6 +64,7 @@ import {
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
+import { MetadataV3 } from "../../common/versionMetadata";
 
 const Constants = {
   vsProvisionBicepPath: "./Templates/azure/provision.bicep",
@@ -368,7 +367,7 @@ export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
   const buttons = [upgradeButton, learnMoreText];
   const res = await TOOLS?.ui.showMessage(
     "warn",
-    getLocalizedString("core.migrationV3.Message"),
+    getLocalizedString("core.migrationV3.Message", MetadataV3.starterToolkitVersion),
     true,
     ...buttons
   );

@@ -24,7 +24,7 @@ import {
 
 import { AadConstants } from "../component/constants";
 import { environmentManager } from "./environment";
-import { ObjectIsUndefinedError, NoAadManifestExistError } from "./error";
+import { ObjectIsUndefinedError, NoAadManifestExistError, InvalidInputError } from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
@@ -49,6 +49,11 @@ import { envUtil } from "../component/utils/envUtil";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
 import { ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
+import {
+  containsUnsupportedFeature,
+  getFeaturesFromAppDefinition,
+} from "../component/resource/appManifest/utils/utils";
+import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 
 export class FxCoreV3Implement {
   async dispatch<Inputs, ExecuteRes>(
@@ -74,6 +79,34 @@ export class FxCoreV3Implement {
     }
     const method = this[methodName] as any as typeof exec;
     return await method.call(this, func, inputs);
+  }
+
+  @hooks([ErrorHandlerMW, ContextInjectorMW])
+  async createProjectNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+    if (!ctx) {
+      return err(new ObjectIsUndefinedError("ctx for createProject"));
+    }
+    setCurrentStage(Stage.create);
+    inputs.stage = Stage.create;
+    const context = createContextV3();
+    if (!!inputs.teamsAppFromTdp) {
+      // should never happen as we do same check on Developer Portal.
+      if (containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
+        return err(InvalidInputError("Teams app contains unsupported features"));
+      } else {
+        context.telemetryReporter.sendTelemetryEvent(CoreTelemetryEvent.CreateFromTdpStart, {
+          [CoreTelemetryProperty.TdpTeamsAppFeatures]: getFeaturesFromAppDefinition(
+            inputs.teamsAppFromTdp
+          ).join(","),
+          [CoreTelemetryProperty.TdpTeamsAppId]: inputs.teamsAppFromTdp.teamsAppId,
+        });
+      }
+    }
+    const res = await coordinator.create(context, inputs as InputsWithProjectPath);
+    if (res.isErr()) return err(res.error);
+    ctx.projectSettings = context.projectSetting;
+    inputs.projectPath = context.projectPath;
+    return ok(inputs.projectPath!);
   }
 
   @hooks([ErrorHandlerMW])

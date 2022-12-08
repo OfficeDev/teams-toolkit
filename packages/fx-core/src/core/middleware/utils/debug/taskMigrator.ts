@@ -70,19 +70,21 @@ export function migrateTransparentNpmInstall(context: DebugMigrationContext): vo
 
     if (isCommentObject(task["args"]) && isCommentArray(task["args"]["projects"])) {
       for (const npmArgs of task["args"]["projects"]) {
-        const npmInstallArg: BuildArgs = { args: "install" };
-        if (isCommentObject(npmArgs) && typeof npmArgs["cwd"] === "string") {
-          npmInstallArg.workingDirectory = npmArgs["cwd"].replace("${workspaceFolder}", ".");
-
-          if (typeof npmArgs["npmInstallArgs"] === "string") {
-            npmInstallArg.args = `install ${npmArgs["npmInstallArgs"]}`;
-          } else if (
-            isCommentArray(npmArgs["npmInstallArgs"]) &&
-            npmArgs["npmInstallArgs"].length > 0
-          ) {
-            npmInstallArg.args = `install ${npmArgs["npmInstallArgs"].join(" ")}`;
-          }
+        if (!isCommentObject(npmArgs) || !(typeof npmArgs["cwd"] === "string")) {
+          continue;
         }
+        const npmInstallArg: BuildArgs = { args: "install" };
+        npmInstallArg.workingDirectory = npmArgs["cwd"].replace("${workspaceFolder}", ".");
+
+        if (typeof npmArgs["npmInstallArgs"] === "string") {
+          npmInstallArg.args = `install ${npmArgs["npmInstallArgs"]}`;
+        } else if (
+          isCommentArray(npmArgs["npmInstallArgs"]) &&
+          npmArgs["npmInstallArgs"].length > 0
+        ) {
+          npmInstallArg.args = `install ${npmArgs["npmInstallArgs"].join(" ")}`;
+        }
+
         if (!context.appYmlConfig.deploy) {
           context.appYmlConfig.deploy = {};
         }

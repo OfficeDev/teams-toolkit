@@ -61,16 +61,26 @@ export function jsonObjectNamesConvertV3(
   let returnData = "";
   if (isObject(obj)) {
     for (const keyName of Object.keys(obj)) {
-      returnData +=
-        parentKeyName === ""
-          ? jsonObjectNamesConvertV3(obj[keyName], prefix, prefix + keyName, filetype, bicepContent)
-          : jsonObjectNamesConvertV3(
-              obj[keyName],
-              prefix,
-              parentKeyName + "." + keyName,
-              filetype,
-              bicepContent
-            );
+      let addData = "";
+      if (parentKeyName === "") {
+        // first layer of json obj
+        addData = jsonObjectNamesConvertV3(
+          obj[keyName],
+          prefix,
+          prefix + keyName,
+          filetype,
+          bicepContent
+        );
+      } else {
+        addData = jsonObjectNamesConvertV3(
+          obj[keyName],
+          prefix,
+          parentKeyName + "." + keyName,
+          filetype,
+          bicepContent
+        );
+      }
+      returnData += addData;
     }
   } else if (!skipList.includes(parentKeyName)) {
     const res = namingConverterV3(parentKeyName, filetype, bicepContent);

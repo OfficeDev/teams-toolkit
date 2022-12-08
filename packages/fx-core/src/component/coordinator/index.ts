@@ -568,7 +568,7 @@ export class Coordinator {
     ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<[DotenvParseOutput | undefined, FxError | undefined]> {
+  ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
     const folderName = path.parse(ctx.projectPath).name;
 
@@ -583,7 +583,7 @@ export class Coordinator {
       );
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
-      return [undefined, maybeProjectModel.error];
+      return err(maybeProjectModel.error);
     }
     const projectModel = maybeProjectModel.value;
 
@@ -615,7 +615,7 @@ export class Coordinator {
     if (containsM365) {
       const tenantInfoInTokenRes = await provisionUtils.getM365TenantId(ctx.m365TokenProvider);
       if (tenantInfoInTokenRes.isErr()) {
-        return [undefined, tenantInfoInTokenRes.error];
+        return err(tenantInfoInTokenRes.error);
       }
       m365tenantInfo = tenantInfoInTokenRes.value;
 
@@ -626,7 +626,7 @@ export class Coordinator {
         CoordinatorSource
       );
       if (checkM365TenatRes.isErr()) {
-        return [undefined, checkM365TenatRes.error];
+        return err(checkM365TenatRes.error);
       }
     }
 
@@ -659,7 +659,7 @@ export class Coordinator {
             ctx.azureAccountProvider,
             process.env.AZURE_SUBSCRIPTION_ID
           );
-          if (ensureRes.isErr()) return [undefined, ensureRes.error];
+          if (ensureRes.isErr()) return err(ensureRes.error);
           const subInfo = ensureRes.value;
           if (subInfo && subInfo.subscriptionId) {
             process.env.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
@@ -684,7 +684,7 @@ export class Coordinator {
             process.env.AZURE_RESOURCE_GROUP_NAME,
             defaultRg
           );
-          if (ensureRes.isErr()) return [undefined, ensureRes.error];
+          if (ensureRes.isErr()) return err(ensureRes.error);
           targetResourceGroupInfo = ensureRes.value;
           if (!targetResourceGroupInfo.createNewResourceGroup) {
             process.env.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
@@ -701,18 +701,17 @@ export class Coordinator {
       try {
         await ctx.azureAccountProvider.setSubscription(process.env.AZURE_SUBSCRIPTION_ID!); //make sure sub is correctly set if ensureSubscription() is not called.
       } catch (e) {
-        return [undefined, assembleError(e)];
+        return err(assembleError(e));
       }
       azureSubInfo = await ctx.azureAccountProvider.getSelectedSubscription(false);
       if (!azureSubInfo) {
-        return [
-          undefined,
+        return err(
           new UserError(
             "coordinator",
             "SubscriptionNotFound",
             getLocalizedString("core.provision.subscription.failToSelect")
-          ),
-        ];
+          )
+        );
       }
     }
     if (azureSubInfo) {
@@ -722,7 +721,7 @@ export class Coordinator {
         azureSubInfo,
         inputs.env
       );
-      if (consentRes.isErr()) return [undefined, consentRes.error];
+      if (consentRes.isErr()) return err(consentRes.error);
     }
 
     // 6. create resource group
@@ -736,7 +735,7 @@ export class Coordinator {
       if (createRgRes.isErr()) {
         const error = createRgRes.error;
         if (error.name !== "ResourceGroupExists") {
-          return [undefined, error];
+          return err(error);
         }
       }
       process.env.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
@@ -747,7 +746,7 @@ export class Coordinator {
     try {
       const maybeDescription = summaryReporter.getLifecycleDescriptions();
       if (maybeDescription.isErr()) {
-        return [undefined, maybeDescription.error];
+        return err(maybeDescription.error);
       }
       ctx.logProvider.info(
         `Executing app registration and provision ${EOL}${EOL}${maybeDescription.value}${EOL}`
@@ -759,7 +758,8 @@ export class Coordinator {
         const result = this.convertExecuteResult(execRes.result);
         merge(output, result[0]);
         if (result[1]) {
-          return [output, result[1]];
+          inputs.envVars = output;
+          return err(result[1]);
         }
       }
     } finally {
@@ -806,7 +806,7 @@ export class Coordinator {
       ctx.logProvider.info(msg);
     }
 
-    return [output, undefined];
+    return ok(output);
   }
 
   convertExecuteResult(
@@ -854,7 +854,7 @@ export class Coordinator {
     ctx: DriverContext,
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
-  ): Promise<[DotenvParseOutput | undefined, FxError | undefined]> {
+  ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
     const parser = new YamlParser();
     const templatePath =
@@ -866,7 +866,7 @@ export class Coordinator {
       );
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
-      return [undefined, maybeProjectModel.error];
+      return err(maybeProjectModel.error);
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
@@ -874,14 +874,17 @@ export class Coordinator {
       try {
         const maybeDescription = summaryReporter.getLifecycleDescriptions();
         if (maybeDescription.isErr()) {
-          return [undefined, maybeDescription.error];
+          return err(maybeDescription.error);
         }
         ctx.logProvider.info(`Executing deploy ${EOL}${EOL}${maybeDescription.value}${EOL}`);
         const execRes = await projectModel.deploy.execute(ctx);
         summaryReporter.updateLifecycleState(0, execRes);
         const result = this.convertExecuteResult(execRes.result);
         merge(output, result[0]);
-        if (result[1]) return [output, result[1]];
+        if (result[1]) {
+          inputs.envVars = output;
+          return err(result[1]);
+        }
 
         // show message box after deploy
         const botTroubleShootMsg = getBotTroubleShootMessage(false);
@@ -889,12 +892,13 @@ export class Coordinator {
           getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
           botTroubleShootMsg.textForLogging;
         ctx.logProvider.info(msg);
+        ctx.ui?.showMessage("info", msg, false);
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
       }
     }
-    return [output, undefined];
+    return ok(output);
   }
 
   @hooks([

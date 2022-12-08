@@ -49,6 +49,7 @@ import { envUtil } from "../component/utils/envUtil";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
 import { ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
+import { rsort } from "semver";
 
 export class FxCoreV3Implement {
   async dispatch<Inputs, ExecuteRes>(
@@ -94,10 +95,15 @@ export class FxCoreV3Implement {
     inputs.stage = Stage.provision;
     const context = createDriverContext(inputs);
     try {
-      const [output, error] = await coordinator.provision(context, inputs as InputsWithProjectPath);
-      ctx!.envVars = output;
-      if (error) return err(error);
-      return ok(Void);
+      const res = await coordinator.provision(context, inputs as InputsWithProjectPath);
+      if (res.isOk()) {
+        ctx!.envVars = res.value;
+        return ok(Void);
+      } else {
+        // for partial success scenario, output is set in inputs object
+        ctx!.envVars = inputs.envVars;
+        return err(res.error);
+      }
     } finally {
       //reset subscription
       try {
@@ -111,10 +117,15 @@ export class FxCoreV3Implement {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
     const context = createDriverContext(inputs);
-    const [output, error] = await coordinator.deploy(context, inputs as InputsWithProjectPath);
-    ctx!.envVars = output;
-    if (error) return err(error);
-    return ok(Void);
+    const res = await coordinator.deploy(context, inputs as InputsWithProjectPath);
+    if (res.isOk()) {
+      ctx!.envVars = res.value;
+      return ok(Void);
+    } else {
+      // for partial success scenario, output is set in inputs object
+      ctx!.envVars = inputs.envVars;
+      return err(res.error);
+    }
   }
 
   @hooks([

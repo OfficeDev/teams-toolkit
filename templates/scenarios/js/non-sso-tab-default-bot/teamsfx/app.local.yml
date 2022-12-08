@@ -43,7 +43,7 @@ configureApp:
     # TEAMS_APP_ID: the id of Teams app
 
 deploy:
-  - uses: tools/install # Install dependencies
+  - uses: prerequisite/install # Install dependencies
     with:
       devCert:
         trust: true

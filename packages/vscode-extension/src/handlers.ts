@@ -2377,7 +2377,7 @@ export async function manageCollaboratorHandler(): Promise<Result<any, FxError>>
   try {
     const collaboratorCommandSelection: SingleSelectConfig = {
       name: "collaborationCommand",
-      title: "command",
+      title: localize("teamstoolkit.manageCollaborator.command"),
       options: [
         {
           id: "grantPermission",

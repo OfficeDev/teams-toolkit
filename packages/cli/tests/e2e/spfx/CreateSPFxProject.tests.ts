@@ -7,7 +7,7 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
-import { expect } from "chai";
+import { expect, assert } from "chai";
 import {
   cleanUpLocalProject,
   cleanupSharePointPackage,
@@ -15,7 +15,6 @@ import {
   execAsyncWithRetry,
   getTestFolder,
   getUniqueAppName,
-  readContext,
   readContextMultiEnv,
   readContextMultiEnvV3,
 } from "../commonUtils";
@@ -112,7 +111,7 @@ describe("Start a new project", function () {
           : await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
 
         if (isV3Enabled()) {
-          chai.assert.exists(context.TEAMS_APP_ID);
+          assert.exists(context.TEAMS_APP_ID);
         } else {
           // Only check Teams App existence
           const appStudio = AppStudioValidator.init(context);

@@ -251,6 +251,22 @@ export async function getQuestionsForAddFeatureV3(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  // AB test for notification/command/workflow bot template naming
+  if (inputs?.taskOrientedTemplateNaming) {
+    NotificationOptionItem.label = `$(hubot) ${getLocalizedString(
+      "core.NotificationOption.label.abTest"
+    )}`;
+    NotificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
+    CommandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
+      "core.CommandAndResponseOption.label.abTest"
+    )}`;
+    CommandAndResponseOptionItem.detail = getLocalizedString(
+      "core.CommandAndResponseOption.detail.abTest"
+    );
+    WorkflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
+    WorkflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
+  }
+
   const question: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.Features,
     title: getLocalizedString("core.addFeatureQuestion.title"),

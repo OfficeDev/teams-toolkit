@@ -18,6 +18,7 @@ import {
   ThemeIcon,
   Uri,
   window,
+  workspace,
 } from "vscode";
 
 import {
@@ -810,5 +811,22 @@ export class VsCodeUI implements UserInteraction {
       quickPick.hide();
       quickPick.dispose();
     }
+  }
+
+  public async openFile(filePath: string): Promise<Result<boolean, FxError>> {
+    const uri = Uri.file(filePath);
+    return new Promise(async (resolve) => {
+      const doc = await workspace.openTextDocument(uri);
+      if (doc) {
+        if (filePath.endsWith(".md")) {
+          await commands.executeCommand("markdown.showPreview", uri);
+        } else {
+          await window.showTextDocument(doc);
+        }
+        resolve(ok(true));
+      } else {
+        resolve(err(UserCancelError));
+      }
+    });
   }
 }

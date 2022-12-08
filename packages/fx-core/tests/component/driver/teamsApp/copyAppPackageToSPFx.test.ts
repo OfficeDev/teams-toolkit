@@ -6,7 +6,7 @@ import * as sinon from "sinon";
 import chai from "chai";
 import fs from "fs-extra";
 import { copyAppPackageToSPFxDriver } from "../../../../src/component/driver/teamsApp/copyAppPackageToSPFx";
-import { copyAppPackageToSPFxArgs } from "../../../../src/component/driver/teamsApp/interfaces/copyAppPackageToSPFxArgs";
+import { copyAppPackageToSPFxArgs } from "../../../../src/component/driver/teamsApp/interfaces/CopyAppPackageToSPFxArgs";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import chaiAsPromised from "chai-as-promised";
 import AdmZip from "adm-zip";

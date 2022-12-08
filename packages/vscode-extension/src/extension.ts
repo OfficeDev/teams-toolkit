@@ -18,7 +18,6 @@ import {
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import {
   AadAppTemplateCodeLensProvider,
   AdaptiveCardCodeLensProvider,
@@ -45,6 +44,7 @@ import {
   initializeGlobalVariables,
   isExistingUser,
   isSPFxProject,
+  isTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
@@ -86,8 +86,6 @@ export async function activate(context: vscode.ExtensionContext) {
   registerActivateCommands(context);
 
   registerInternalCommands(context);
-
-  const isTeamsFxProject = isValidProject(workspaceUri?.fsPath);
 
   if (isTeamsFxProject) {
     registerTreeViewCommandsInDevelopment(context);

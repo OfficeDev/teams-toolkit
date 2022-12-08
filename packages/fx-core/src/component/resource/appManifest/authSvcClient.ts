@@ -46,11 +46,9 @@ export namespace AuthSvcClient {
 
   function wrapException(e: any, apiName: string): Error {
     const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
-    const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";
-
     const error = AppStudioResultFactory.SystemError(
-      AppStudioError.DeveloperPortalAPIFailedError.name,
-      AppStudioError.DeveloperPortalAPIFailedError.message(e, "", requestPath, apiName, extraData)
+      AppStudioError.AuthServiceAPIFailedError.name,
+      AppStudioError.AuthServiceAPIFailedError.message(e, requestPath, apiName)
     );
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.authSvcApi, error, {

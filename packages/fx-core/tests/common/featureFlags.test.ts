@@ -64,7 +64,7 @@ describe("featureFlags", () => {
     let mockedEnvRestore: RestoreFn;
 
     it("return true if env variable is set", async () => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.TDPIntegration]: "true" });
+      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
 
       const result = isTDPIntegrationEnabled();
 

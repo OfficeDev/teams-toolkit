@@ -5,7 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 import { UserState } from "./constants";
 
@@ -27,6 +27,6 @@ if (vscode.workspace && vscode.workspace.workspaceFolders) {
 export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
   context = ctx;
   isExistingUser = context.globalState.get<string>(UserState.IsExisting) || "no";
-  isTeamsFxProject = fs.existsSync(path.join(workspaceUri?.fsPath ?? "./", `.${ConfigFolderName}`));
+  isTeamsFxProject = isValidProject(workspaceUri?.fsPath);
   isSPFxProject = fs.existsSync(path.join(workspaceUri?.fsPath ?? "./", "SPFx"));
 }

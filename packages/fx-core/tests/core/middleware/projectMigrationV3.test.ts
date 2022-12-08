@@ -42,6 +42,7 @@ import {
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
+import { UpgradeCanceledError } from "../../../src/core/error";
 
 let mockedEnvRestore: () => void;
 
@@ -556,18 +557,18 @@ describe("azureParameterMigration", () => {
       projectPath,
       "templates",
       "azure",
-      "azure.parameter.dev.json"
+      "azure.parameters.dev.json"
     );
     const azureParameterTestFilePath = path.join(
       projectPath,
       "templates",
       "azure",
-      "azure.parameter.test.json"
+      "azure.parameters.test.json"
     );
     assert.isTrue(await fs.pathExists(azureParameterDevFilePath));
     assert.isTrue(await fs.pathExists(azureParameterTestFilePath));
     const azureParameterExpected = await fs.readFile(
-      path.join(projectPath, "expected", "azure.parameter.json"),
+      path.join(projectPath, "expected", "azure.parameters.json"),
       "utf-8"
     );
     const azureParameterDev = await fs.readFile(azureParameterDevFilePath, "utf-8");
@@ -587,7 +588,7 @@ describe("azureParameterMigration", () => {
       projectPath,
       "templates",
       "azure",
-      "azure.parameter.dev.json"
+      "azure.parameters.dev.json"
     );
     assert.isFalse(await fs.pathExists(azureParameterDevFilePath));
   });
@@ -877,6 +878,11 @@ describe("Migration utils", () => {
     sandbox.stub(fs, "pathExists").resolves(false);
     const state = await checkVersionForMigration(migrationContext);
     assert.equal(state, VersionState.unsupported);
+  });
+
+  it("UpgradeCanceledError", () => {
+    const err = UpgradeCanceledError();
+    assert.isNotNull(err);
   });
 });
 

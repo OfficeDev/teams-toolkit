@@ -112,7 +112,6 @@ Here's a sample widget implementation:
 ```javascript
 import { Button, Text } from "@fluentui/react-components";
 import { Widget } from "../lib/Widget";
-import { SampleModel } from "../../models/sampleModel";
 import { getSampleData } from "../../services/sampleService";
 
 export class SampleWidget extends Widget {

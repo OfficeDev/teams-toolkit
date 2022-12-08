@@ -104,18 +104,6 @@ export class M365ProviderUserPassword extends BasicLogin implements M365TokenPro
     }
   }
 
-  setStatusChangeMap(
-    name: string,
-    tokenRequest: TokenRequest,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>,
-    immediateCall?: boolean
-  ): Promise<Result<boolean, FxError>> {
-    throw new Error("Method not implemented.");
-  }
   removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
     throw new Error("Method not implemented.");
   }

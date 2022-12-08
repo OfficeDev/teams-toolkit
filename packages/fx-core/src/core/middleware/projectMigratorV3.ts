@@ -339,7 +339,7 @@ export async function azureParameterMigration(context: MigrationContext): Promis
 
   const fileNames = fsReadDirSync(context, configFolderPath);
   for (const fileName of fileNames) {
-    if (!fileName.startsWith("azure.parameter.")) {
+    if (!fileName.startsWith("azure.parameters.")) {
       continue;
     }
 

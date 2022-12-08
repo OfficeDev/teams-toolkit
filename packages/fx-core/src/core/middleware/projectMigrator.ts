@@ -47,6 +47,8 @@ import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
 import path from "path";
 import os from "os";
+import "../../component/registerService";
+
 import {
   PluginNames,
   BotOptionItem,

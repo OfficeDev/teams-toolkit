@@ -82,7 +82,7 @@ export class FxCoreV3Implement {
   }
 
   @hooks([ErrorHandlerMW, ContextInjectorMW])
-  async createProjectNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+  async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }

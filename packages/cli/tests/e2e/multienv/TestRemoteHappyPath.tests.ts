@@ -34,6 +34,7 @@ import {
 } from "../commonUtils";
 
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Multi Env Happy Path for Azure", function () {
   const env = "e2e";
@@ -48,6 +49,9 @@ describe("Multi Env Happy Path for Azure", function () {
     { testPlanCaseId: 10308408 },
     async function () {
       try {
+        if (isV3Enabled()) {
+          this.skip();
+        }
         let result;
         result = await execAsync(
           `teamsfx new --interactive false --app-name ${appName} --capabilities notification --bot-host-type-trigger http-functions --programming-language javascript`,

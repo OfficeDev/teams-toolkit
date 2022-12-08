@@ -141,6 +141,8 @@ function isSame(set1: Set<string>, set2: Set<string>): boolean {
   return true;
 }
 
+const internalUIError = new SystemError("UI", "InternalError", "VS Code failed to operate.");
+
 export class VsCodeUI implements UserInteraction {
   context: ExtensionContext;
   constructor(context: ExtensionContext) {
@@ -646,7 +648,7 @@ export class VsCodeUI implements UserInteraction {
     return new Promise(async (resolve) => {
       env.openExternal(uri).then((v) => {
         if (v) resolve(ok(v));
-        else resolve(err(UserCancelError));
+        else resolve(err(internalUIError));
       });
     });
   }
@@ -795,7 +797,7 @@ export class VsCodeUI implements UserInteraction {
 
       commands.executeCommand("workbench.action.reloadWindow").then((v) => {
         if (v) resolve(ok(v as boolean));
-        else resolve(err(UserCancelError));
+        else resolve(err(internalUIError));
       });
     });
   }
@@ -825,7 +827,7 @@ export class VsCodeUI implements UserInteraction {
         }
         resolve(ok(true));
       } else {
-        resolve(err(UserCancelError));
+        resolve(err(internalUIError));
       }
     });
   }

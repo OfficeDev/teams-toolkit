@@ -1,14 +1,12 @@
-import * as fs from "fs";
 import _ from "lodash";
-import * as path from "path";
+import { projectProperties } from "./projectProperties";
 
 export default class projectsJsonData {
-  m_projectJsonDataFile = "projectProperties.json";
-  m_projectJsonData;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  m_projectJsonData: any;
 
   constructor() {
-    const jsonData = fs.readFileSync(path.join(__dirname, this.m_projectJsonDataFile));
-    this.m_projectJsonData = JSON.parse(jsonData.toString());
+    this.m_projectJsonData = projectProperties;
   }
 
   isValidInput(input: string, isHostParam: boolean): boolean {

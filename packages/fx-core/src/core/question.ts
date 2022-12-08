@@ -25,7 +25,11 @@ import {
   isM365AppEnabled,
   isV3Enabled,
 } from "../common/tools";
-import { isBotNotificationEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
+import {
+  isBotNotificationEnabled,
+  isOfficeAddinEnabled,
+  isPreviewFeaturesEnabled,
+} from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -666,6 +670,9 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
     staticOptions.push(ScratchOptionYesVSC);
+    if (isOfficeAddinEnabled()) {
+      staticOptions.push(CreateNewOfficeAddinOption);
+    }
     staticOptions.push(ScratchOptionNoVSC);
   } else {
     staticOptions.push(ScratchOptionYes);

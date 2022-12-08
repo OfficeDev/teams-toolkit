@@ -141,9 +141,7 @@ export function getTemplate(inputs: Inputs): string {
   return foundTemplate ?? "";
 }
 
-export async function getQuestionsForScaffolding(): Promise<
-  Result<QTreeNode | undefined, FxError>
-> {
+export function getQuestionsForScaffolding(): QTreeNode {
   const nameNode = new QTreeNode(AddinNameQuestion);
 
   const importNode = new QTreeNode({ type: "group" });
@@ -188,5 +186,5 @@ export async function getQuestionsForScaffolding(): Promise<
   root.addChild(templateNode);
   root.addChild(nameNode);
 
-  return ok(root);
+  return root;
 }

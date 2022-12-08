@@ -43,5 +43,8 @@
         "appServicePlanName": "appServicePlanName",
         "functionAppResourceId": "functionAppResourceId",
         "functionEndpoint": "functionEndpoint"
+    },
+    "fx-resource-bot": {
+        "botPassword": "{{fx-resource-bot.botPassword}}"
     }
 }

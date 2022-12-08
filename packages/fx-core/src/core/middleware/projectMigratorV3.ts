@@ -12,6 +12,8 @@ import {
   TemplateFolderName,
   SystemError,
   UserError,
+  Platform,
+  Inputs,
   InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
@@ -37,12 +39,11 @@ import {
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { UpgradeCanceledError } from "../error";
+import { UpgradeCanceledError, ReadFileError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
-import { replacePlaceholdersForV3, FileType } from "./MigrationUtils";
-import { ReadFileError } from "../error";
+import { replacePlaceholdersForV3, FileType } from "./utils/MigrationUtils";
 import {
   readAndConvertUserdata,
   fsReadDirSync,
@@ -63,9 +64,11 @@ import {
   migrateTransparentPrerequisite,
 } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
+import { EOL } from "os";
 
 const Constants = {
-  provisionBicepPath: "./templates/azure/provision.bicep",
+  vsProvisionBicepPath: "./Templates/azure/provision.bicep",
+  vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   appYmlName: "app.yml",
   appLocalYmlName: "app.local.yml",
@@ -90,13 +93,14 @@ type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
   preMigration,
   generateSettingsJson,
+  manifestsMigration,
   generateAppYml,
-  replacePlaceholderForManifests,
   configsMigration,
   statesMigration,
   userdataMigration,
+  generateApimPluginEnvContent,
   updateLaunchJson,
-  replacePlaceholderForAzureParameter,
+  azureParameterMigration,
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -178,7 +182,7 @@ async function showSummaryReport(context: MigrationContext): Promise<void> {
 1. Move templates/appPakcage/aad.template.json to ./aad.manifest.template.json
 1. Update placeholders in the two manifests
 1. Update app id uri in the two manifests
-1. Move .fx/configs/azure.parameter.{env}.json to templates/azure/...
+1. Move .fx/configs/azure.parameters.{env}.json to templates/azure/...
 1. Update placeholders in azure parameter files 
 1. create .env.{env} if not exitsts in teamsfx/ folder (v3) (should throw error if .fx/configs/ not exists?)
 1. migrate .fx/configs/config.{env}.json to .env.{env}
@@ -231,12 +235,13 @@ export async function generateSettingsJson(context: MigrationContext): Promise<v
 }
 
 export async function generateAppYml(context: MigrationContext): Promise<void> {
-  const bicepContent: string = await fs.readFile(
-    path.join(context.projectPath, Constants.provisionBicepPath),
-    "utf8"
-  );
+  const bicepContent: string = readBicepContent(context);
   const oldProjectSettings = await loadProjectSettings(context.projectPath);
-  const appYmlGenerator = new AppYmlGenerator(oldProjectSettings, bicepContent);
+  const appYmlGenerator = new AppYmlGenerator(
+    oldProjectSettings,
+    bicepContent,
+    context.projectPath
+  );
   const appYmlString: string = await appYmlGenerator.generateAppYml();
   await context.fsWriteFile(path.join(SettingsFolderName, Constants.appYmlName), appYmlString);
 }
@@ -263,7 +268,7 @@ async function loadProjectSettings(projectPath: string): Promise<ProjectSettings
   }
 }
 
-export async function replacePlaceholderForManifests(context: MigrationContext): Promise<void> {
+export async function manifestsMigration(context: MigrationContext): Promise<void> {
   // Backup templates/appPackage
   const oldAppPackageFolderPath = path.join(TemplateFolderName, AppPackageFolderName);
   const oldAppPackageFolderBackupRes = await context.backup(oldAppPackageFolderPath);
@@ -329,11 +334,11 @@ export async function replacePlaceholderForManifests(context: MigrationContext):
     const aadManifest = replacePlaceholdersForV3(oldAadManifest, bicepContent);
     await context.fsWriteFile("aad.manifest.template.json", aadManifest);
   }
+
+  await context.fsRemove(oldAppPackageFolderPath);
 }
 
-export async function replacePlaceholderForAzureParameter(
-  context: MigrationContext
-): Promise<void> {
+export async function azureParameterMigration(context: MigrationContext): Promise<void> {
   // Ensure `.fx/configs` exists
   const configFolderPath = path.join(".fx", InputConfigsFolderName);
   const configFolderPathExists = await context.fsPathExists(configFolderPath);
@@ -354,7 +359,7 @@ export async function replacePlaceholderForAzureParameter(
 
   const fileNames = fsReadDirSync(context, configFolderPath);
   for (const fileName of fileNames) {
-    if (!fileName.startsWith("azure.parameter.")) {
+    if (!fileName.startsWith("azure.parameters.")) {
       continue;
     }
 
@@ -419,13 +424,16 @@ export async function configsMigration(context: MigrationContext): Promise<void>
           );
           if (obj["manifest"]) {
             const bicepContent = readBicepContent(context);
-            // convert every name
-            const envData = jsonObjectNamesConvertV3(
-              obj["manifest"],
-              "manifest.",
-              FileType.CONFIG,
-              bicepContent
-            );
+            const teamsfx_env = fs
+              .readFileSync(path.join(context.projectPath, SettingsFolderName, ".env." + envName))
+              .toString()
+              .includes("TEAMSFX_ENV=")
+              ? ""
+              : "TEAMSFX_ENV=" + envName + EOL;
+            // convert every name and add the env name at the first line
+            const envData =
+              teamsfx_env +
+              jsonObjectNamesConvertV3(obj["manifest"], "manifest.", FileType.CONFIG, bicepContent);
             await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
               // .env.{env} file might be already exist, use append mode (flag: a+)
               encoding: "utf8",
@@ -537,4 +545,51 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
   const appYmlString: string = await appYmlGenerator.generateAppYml();
   await context.fsEnsureDir(SettingsFolderName);
   await context.fsWriteFile(path.join(SettingsFolderName, Constants.appLocalYmlName), appYmlString);
+}
+
+export async function generateApimPluginEnvContent(context: MigrationContext): Promise<void> {
+  // general
+  if (await context.fsPathExists(path.join(".fx", "configs", "projectSettings.json"))) {
+    const projectSettingsContent = fs.readJsonSync(
+      path.join(context.projectPath, ".fx", "configs", "projectSettings.json")
+    );
+    // judge if apim plugin exists
+    let flag_apimPlugin = false;
+    for (const obj of projectSettingsContent["components"])
+      if (obj["name"] === "apim") {
+        flag_apimPlugin = true;
+        break;
+      }
+
+    if (flag_apimPlugin) {
+      const fileNames = fsReadDirSync(context, path.join(".fx", "configs"));
+      for (const fileName of fileNames)
+        if (fileName.startsWith("config.")) {
+          const fileRegex = new RegExp("(config.)([a-zA-Z0-9_-]*)(.json)", "g"); // state.*.json
+          const fileNamesArray = fileRegex.exec(fileName);
+          if (fileNamesArray != null) {
+            // get envName
+            const envName = fileNamesArray[2];
+            if (envName != "local") {
+              await context.fsEnsureDir(SettingsFolderName);
+              if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
+                await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+              const apimPluginAppendContent =
+                "APIM__PUBLISHEREMAIL= # Teams Toolkit does not record your mail to protect your privacy, please fill your mail address here before provision to avoid failures" +
+                EOL +
+                "APIM__PUBLISHERNAME= # Teams Toolkit does not record your name to protect your privacy, please fill your name here before provision to avoid failures" +
+                EOL;
+              await context.fsWriteFile(
+                path.join(SettingsFolderName, ".env." + envName),
+                apimPluginAppendContent,
+                {
+                  encoding: "utf8",
+                  flag: "a+",
+                }
+              );
+            }
+          }
+        }
+    }
+  }
 }

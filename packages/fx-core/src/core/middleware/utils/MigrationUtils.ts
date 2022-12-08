@@ -3,15 +3,15 @@
 
 import { err, FxError, Inputs, ok, Result, SystemError } from "@microsoft/teamsfx-api";
 import path from "path";
-import { isAadManifestEnabled } from "../../common/tools";
-import { CoreHookContext } from "../types";
+import { isAadManifestEnabled } from "../../../common/tools";
+import { CoreHookContext } from "../../types";
 import fs from "fs-extra";
-import { getLocalizedString } from "../../common/localizeUtils";
-import { TOOLS } from "../globalVars";
-import { generateAadManifestTemplate } from "../generateAadManifestTemplate";
-import { PluginNames } from "../../component/constants";
-import { RequiredResourceAccess } from "../../component/resource/aadApp/interfaces/AADManifest";
-import { CoreSource } from "../error";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { TOOLS } from "../../globalVars";
+import { generateAadManifestTemplate } from "../../generateAadManifestTemplate";
+import { PluginNames } from "../../../component/constants";
+import { RequiredResourceAccess } from "../../../component/resource/aadApp/interfaces/AADManifest";
+import { CoreSource } from "../../error";
 
 export interface Permission {
   resource: string;
@@ -144,6 +144,7 @@ export const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-frontend-hosting.domain",
   "state.fx-resource-frontend-hosting.endpoint",
   "state.fx-resource-frontend-hosting.storageResourceId",
+  "state.fx-resource-frontend-hosting.resourceId",
   "state.fx-resource-azure-sql.sqlResourceId",
   "state.fx-resource-azure-sql.sqlEndpoint",
   "state.fx-resource-azure-sql.databaseName",
@@ -155,6 +156,7 @@ export const provisionOutputNamingsV3: string[] = [
   "state.fx-resource-bot.domain",
   "state.fx-resource-bot.appServicePlanName",
   "state.fx-resource-bot.resourceId",
+  "state.fx-resource-bot.functionAppResourceId",
   "state.fx-resource-bot.siteEndpoint",
   "state.fx-resource-identity.identityName",
   "state.fx-resource-identity.identityResourceId",

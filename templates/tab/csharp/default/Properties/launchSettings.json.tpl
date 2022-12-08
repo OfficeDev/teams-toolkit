@@ -1,5 +1,6 @@
 {
   "profiles": {
+    // Debug project within Teams
     "Microsoft Teams (browser)": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
@@ -11,6 +12,7 @@
       },
       "hotReloadProfile": "aspnetcore"
     },
+    // Debug project only (without launching Teams)
     "{{ProjectName}}": {
       "commandName": "Project",
       "dotnetRunMessages": "true",

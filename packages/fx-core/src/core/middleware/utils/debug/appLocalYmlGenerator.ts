@@ -16,18 +16,14 @@ export class AppLocalYmlConfig {
 
 export class AppLocalYmlGenerator extends BaseAppYmlGenerator {
   protected handlebarsContext: {
-    activePlugins: Record<string, boolean>;
     config: AppLocalYmlConfig;
   };
 
   constructor(oldProjectSettings: ProjectSettings, config: AppLocalYmlConfig) {
     super(oldProjectSettings);
     this.handlebarsContext = {
-      activePlugins: {},
       config: config,
     };
-
-    this.generateActivePluginsContext();
   }
 
   public async generateAppYml(): Promise<string> {

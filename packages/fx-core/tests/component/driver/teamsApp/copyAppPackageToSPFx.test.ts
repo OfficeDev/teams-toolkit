@@ -5,8 +5,8 @@ import "mocha";
 import * as sinon from "sinon";
 import chai from "chai";
 import fs from "fs-extra";
-import { CopyAppPackageForSPFxDriver } from "../../../../src/component/driver/teamsApp/copyAppPackageForSPFx";
-import { CopyAppPackageForSPFxArgs } from "../../../../src/component/driver/teamsApp/interfaces/CopyAppPackageForSPFxArgs";
+import { copyAppPackageToSPFxDriver } from "../../../../src/component/driver/teamsApp/copyAppPackageToSPFx";
+import { copyAppPackageToSPFxArgs } from "../../../../src/component/driver/teamsApp/interfaces/CopyAppPackageToSPFxArgs";
 import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import chaiAsPromised from "chai-as-promised";
 import AdmZip from "adm-zip";
@@ -15,9 +15,9 @@ import { Constants } from "../../../../src/component/resource/appManifest/consta
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe("teamsApp/copyAppPackageForSPFx", async () => {
-  const driver = new CopyAppPackageForSPFxDriver();
-  const args: CopyAppPackageForSPFxArgs = {
+describe("teamsApp/copyAppPackageToSPFx", async () => {
+  const driver = new copyAppPackageToSPFxDriver();
+  const args: copyAppPackageToSPFxArgs = {
     appPackagePath: "./teamsApp/a.zip",
     spfxFolder: "./SPFx",
   };
@@ -33,7 +33,7 @@ describe("teamsApp/copyAppPackageForSPFx", async () => {
     sinon.stub(fs, "writeFile");
     sinon.stub(fs, "readdir").resolves(["color.png", "outline.png"] as any);
     sinon
-      .stub(CopyAppPackageForSPFxDriver.prototype, "getIcons")
+      .stub(copyAppPackageToSPFxDriver.prototype, "getIcons")
       .resolves({ color: Buffer.from("color.png"), outline: Buffer.from("outline.png") });
 
     const result = await driver.execute(args, mockedDriverContext);

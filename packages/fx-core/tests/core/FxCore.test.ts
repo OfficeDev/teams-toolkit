@@ -6,7 +6,6 @@ import {
   Platform,
   Stage,
   Ok,
-  Err,
   FxError,
   UserError,
   SystemError,
@@ -15,11 +14,12 @@ import {
   Result,
   Void,
   LogProvider,
+  Func,
 } from "@microsoft/teamsfx-api";
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
@@ -51,8 +51,6 @@ import { YamlParser } from "../../src/component/configManager/parser";
 import {
   DriverDefinition,
   DriverInstance,
-  ExecutionError,
-  ExecutionOutput,
   ExecutionResult,
   ILifecycle,
   LifecycleName,
@@ -60,8 +58,8 @@ import {
   UnresolvedPlaceholders,
 } from "../../src/component/configManager/interface";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
-import { Readable, Writable } from "stream";
 import { coordinator } from "../../src/component/coordinator";
+import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -320,6 +318,56 @@ describe("Core basic APIs", () => {
       await deleteTestProject(appName);
     } finally {
       restore();
+    }
+  });
+
+  it("phantomMigrationV3 happy path", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const core = new FxCore(tools);
+      const appName = mockV3Project();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+      };
+      const res = await core.phantomMigrationV3(inputs);
+      assert.isTrue(res.isOk());
+      await deleteTestProject(appName);
+    } finally {
+      restore();
+    }
+  });
+
+  it("not implement method", async () => {
+    const implement = new FxCoreV3Implement();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+    };
+    try {
+      const noImplemtnMethod = async (inputs: Inputs) => {
+        return "";
+      };
+      await implement.dispatch(noImplemtnMethod, inputs);
+      assert.fail("v3 dispatch matched no implemented method");
+    } catch (error) {
+      assert.isNotNull(error);
+    }
+
+    try {
+      const mockFunc = {
+        namespace: "mock namespace",
+        method: "mock func",
+      };
+      const noImplemtnMethod = async (func: Func, inputs: Inputs) => {
+        return "";
+      };
+      await implement.dispatchUserTask(noImplemtnMethod, mockFunc, inputs);
+      assert.fail("v3 dispatchUserTask matched no implemented method");
+    } catch (error) {
+      assert.isNotNull(error);
     }
   });
 
@@ -585,7 +633,7 @@ describe("createEnvCopyV3", async () => {
 
   it("should create new .env file with desired content", async () => {
     const core = new FxCore(tools);
-    const res = await core.createEnvCopyV3("newEnv", "dev", "./");
+    const res = await core.v3Implement.createEnvCopyV3("newEnv", "dev", "./");
     assert(res.isOk());
     assert(
       writeStreamContent[0] === `${sourceEnvContent[0]}${os.EOL}`,

@@ -46,7 +46,9 @@ describe("Collaboration", function () {
       });
       console.log(`[Successfully] scaffold to ${projectPath}`);
 
-      await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+      if (!isV3Enabled()) {
+        await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+      }
 
       // provision
       await execAsyncWithRetry(`teamsfx provision`, {

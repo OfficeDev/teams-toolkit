@@ -43,7 +43,7 @@ publish:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/manifest.${{TEAMSFX_ENV}}.json
-  - uses: teamsApp/copyAppPackageForSPFx
+  - uses: teamsApp/copyAppPackageToSPFx
     with:
       appPackagePath: ${{TEAMS_APP_PACKAGE_PATH}}
       spfxFolder: ./src

@@ -16,26 +16,26 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { WrapDriverContext } from "../util/wrapUtil";
-import { CopyAppPackageForSPFxArgs } from "./interfaces/CopyAppPackageForSPFxArgs";
+import { copyAppPackageToSPFxArgs } from "./interfaces/copyAppPackageToSPFxArgs";
 
-const actionName = "teamsApp/copyAppPackageForSPFx";
+const actionName = "teamsApp/copyAppPackageToSPFx";
 
 @Service(actionName)
-export class CopyAppPackageForSPFxDriver implements StepDriver {
+export class copyAppPackageToSPFxDriver implements StepDriver {
   public readonly description = getLocalizedString(
-    "driver.teamsApp.description.copyAppPackageForSPFxDriver"
+    "driver.teamsApp.description.copyAppPackageToSPFxDriver"
   );
 
   private readonly EmptyMap = new Map<string, string>();
 
-  private asCopyAppPackageArgs = asFactory<CopyAppPackageForSPFxArgs>({
+  private asCopyAppPackageArgs = asFactory<copyAppPackageToSPFxArgs>({
     appPackagePath: asString,
     spfxFolder: asString,
   });
 
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
-    args: CopyAppPackageForSPFxArgs,
+    args: copyAppPackageToSPFxArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     const wrapContext = new WrapDriverContext(context, actionName, actionName);
@@ -43,7 +43,7 @@ export class CopyAppPackageForSPFxDriver implements StepDriver {
   }
 
   public async execute(
-    args: CopyAppPackageForSPFxArgs,
+    args: copyAppPackageToSPFxArgs,
     ctx: DriverContext
   ): Promise<ExecutionResult> {
     const wrapContext = new WrapDriverContext(ctx, actionName, actionName);
@@ -55,7 +55,7 @@ export class CopyAppPackageForSPFxDriver implements StepDriver {
   }
 
   public async copy(
-    args: CopyAppPackageForSPFxArgs,
+    args: copyAppPackageToSPFxArgs,
     context: WrapDriverContext
   ): Promise<Map<string, string>> {
     const copyAppPackageArgs = this.asCopyAppPackageArgs(args);

@@ -20,7 +20,7 @@ import {
   customizeBicepFilesToCustomizedRg,
 } from "../commonUtils";
 import M365Login from "../../../src/commonlib/m365Login";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, ResourceToDeploy } from "../../commonlib/constants";
 import { describe } from "mocha";
@@ -36,48 +36,49 @@ describe("Deploy to customized resource group", function () {
   after(async () => {
     await cleanUp(appName, projectPath, true, false, false);
   });
+  if (!isV3Enabled()) {
+    it(
+      `tab project can deploy frontend hosting resource to customized resource group and successfully provision / deploy`,
+      { testPlanCaseId: 9863660 },
+      async function () {
+        // Create new tab project
+        await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
-  it(
-    `tab project can deploy frontend hosting resource to customized resource group and successfully provision / deploy`,
-    { testPlanCaseId: 9863660 },
-    async function () {
-      // Create new tab project
-      await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+        // Create empty resource group
+        const customizedRgName = `${appName}-customized-rg`;
+        await createResourceGroup(customizedRgName, "eastus");
 
-      // Create empty resource group
-      const customizedRgName = `${appName}-customized-rg`;
-      await createResourceGroup(customizedRgName, "eastus");
+        // Customize simple auth bicep files
+        await customizeBicepFilesToCustomizedRg(
+          customizedRgName,
+          projectPath,
+          `name: 'azureStorageTabProvision'`
+        );
 
-      // Customize simple auth bicep files
-      await customizeBicepFilesToCustomizedRg(
-        customizedRgName,
-        projectPath,
-        `name: 'azureStorageTabProvision'`
-      );
+        // Provision
+        await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+        await CliHelper.setSubscription(subscription, projectPath);
+        await CliHelper.provisionProject(projectPath);
 
-      // Provision
-      await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-      await CliHelper.setSubscription(subscription, projectPath);
-      await CliHelper.provisionProject(projectPath);
+        // deploy
+        await CliHelper.deployProject(ResourceToDeploy.FrontendHosting, projectPath);
 
-      // deploy
-      await CliHelper.deployProject(ResourceToDeploy.FrontendHosting, projectPath);
+        // Assert
+        {
+          const context = await readContextMultiEnv(projectPath, env);
 
-      // Assert
-      {
-        const context = await readContextMultiEnv(projectPath, env);
+          // Validate Aad App
+          const aad = AadValidator.init(context, false, M365Login);
+          await AadValidator.validate(aad);
 
-        // Validate Aad App
-        const aad = AadValidator.init(context, false, M365Login);
-        await AadValidator.validate(aad);
+          // Validate Tab Frontend
+          const frontend = FrontendValidator.init(context);
+          await FrontendValidator.validateProvision(frontend);
+          await FrontendValidator.validateDeploy(frontend);
+        }
 
-        // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
-        await FrontendValidator.validateProvision(frontend);
-        await FrontendValidator.validateDeploy(frontend);
+        await deleteResourceGroupByName(customizedRgName);
       }
-
-      await deleteResourceGroupByName(customizedRgName);
-    }
-  );
+    );
+  }
 });

@@ -49,7 +49,7 @@ describe("Collaboration", function () {
       await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
 
       // provision
-      await execAsyncWithRetry(`teamsfx provision --subscription ${subscription}`, {
+      await execAsyncWithRetry(`teamsfx provision`, {
         cwd: projectPath,
         env: process.env,
         timeout: 0,

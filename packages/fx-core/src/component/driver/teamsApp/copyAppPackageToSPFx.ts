@@ -16,7 +16,7 @@ import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { WrapDriverContext } from "../util/wrapUtil";
-import { copyAppPackageToSPFxArgs } from "./interfaces/copyAppPackageToSPFxArgs";
+import { copyAppPackageToSPFxArgs } from "./interfaces/CopyAppPackageToSPFxArgs";
 
 const actionName = "teamsApp/copyAppPackageToSPFx";
 

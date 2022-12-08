@@ -111,9 +111,13 @@ describe("Start a new project", function () {
           ? await readContextMultiEnvV3(projectPath, environmentManager.getDefaultEnvName())
           : await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
 
-        // Only check Teams App existence
-        const appStudio = AppStudioValidator.init(context);
-        AppStudioValidator.validateTeamsAppExist(appStudio);
+        if (isV3Enabled()) {
+          chai.assert.exists(context.TEAMS_APP_ID);
+        } else {
+          // Only check Teams App existence
+          const appStudio = AppStudioValidator.init(context);
+          AppStudioValidator.validateTeamsAppExist(appStudio);
+        }
       }
 
       // deploy

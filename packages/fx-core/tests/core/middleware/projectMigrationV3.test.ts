@@ -886,7 +886,7 @@ describe("Migration utils", () => {
   });
 });
 
-async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
+export async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
   const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
   inputs.projectPath = projectPath;
   const ctx = {
@@ -895,7 +895,7 @@ async function mockMigrationContext(projectPath: string): Promise<MigrationConte
   return await MigrationContext.create(ctx);
 }
 
-function getTestAssetsPath(projectName: string): string {
+export function getTestAssetsPath(projectName: string): string {
   return path.join("tests/core/middleware/testAssets/v3Migration", projectName.toString());
 }
 
@@ -917,7 +917,7 @@ async function assertFileContent(
   assert.equal(actualFileContent, expectedFileContent);
 }
 
-async function copyTestProject(projectName: string, targetPath: string): Promise<void> {
+export async function copyTestProject(projectName: string, targetPath: string): Promise<void> {
   await fs.copy(getTestAssetsPath(projectName), targetPath);
 }
 
@@ -929,7 +929,7 @@ async function readSettingJson(projectPath: string): Promise<any> {
   return await fs.readJson(path.join(projectPath, Constants.settingsFilePath));
 }
 
-async function readEnvFile(projectPath: string, env: string): Promise<any> {
+export async function readEnvFile(projectPath: string, env: string): Promise<any> {
   return await fs.readFileSync(path.join(projectPath, ".env." + env)).toString();
 }
 

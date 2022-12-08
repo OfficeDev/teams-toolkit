@@ -58,13 +58,17 @@ import * as semver from "semver";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
 import { isCommentObject, readJsonCommentFile } from "./utils/debug/debugV3MigrationUtils";
-import { migrateTransparentPrerequisite } from "./utils/debug/taskMigrator";
+import {
+  migrateTransparentNpmInstall,
+  migrateTransparentPrerequisite,
+} from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 
 const Constants = {
   provisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   appYmlName: "app.yml",
+  appLocalYmlName: "app.local.yml",
   tasksJsonPath: ".vscode/tasks.json",
 };
 
@@ -505,21 +509,20 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
   await context.backup(Constants.tasksJsonPath);
 
   // Read .vscode/tasks.json
-  const tasksJsonContent = await readJsonCommentFile(context, Constants.tasksJsonPath);
+  const tasksJsonContent = await readJsonCommentFile(
+    path.join(context.projectPath, Constants.tasksJsonPath)
+  );
   if (!isCommentObject(tasksJsonContent) || !Array.isArray(tasksJsonContent["tasks"])) {
     // Invalid tasks.json content
     return;
   }
 
   // Migrate .vscode/tasks.json
-  const migrateTaskFuncs = [migrateTransparentPrerequisite];
+  const migrateTaskFuncs = [migrateTransparentPrerequisite, migrateTransparentNpmInstall];
   const debugContext = new DebugMigrationContext(tasksJsonContent["tasks"]);
-  for (const task of tasksJsonContent["tasks"]) {
-    for (const func of migrateTaskFuncs) {
-      if (isCommentObject(task) && func(task, debugContext)) {
-        break;
-      }
-    }
+
+  for (const func of migrateTaskFuncs) {
+    func(debugContext);
   }
 
   // Write .vscode/tasks.json
@@ -532,5 +535,6 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
   const oldProjectSettings = await loadProjectSettings(context.projectPath);
   const appYmlGenerator = new AppLocalYmlGenerator(oldProjectSettings, debugContext.appYmlConfig);
   const appYmlString: string = await appYmlGenerator.generateAppYml();
-  await context.fsWriteFile(path.join(SettingsFolderName, Constants.appYmlName), appYmlString);
+  await context.fsEnsureDir(SettingsFolderName);
+  await context.fsWriteFile(path.join(SettingsFolderName, Constants.appLocalYmlName), appYmlString);
 }

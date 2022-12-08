@@ -8,12 +8,32 @@ import * as fs from "fs-extra";
 import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
 
-export class AppYmlGenerator {
-  private handlebarsContext: {
+export abstract class BaseAppYmlGenerator {
+  protected abstract handlebarsContext: { activePlugins: Record<string, boolean> };
+  constructor(protected oldProjectSettings: ProjectSettings) {}
+
+  protected async buildHandlebarsTemplate(templateName: string): Promise<string> {
+    const templatePath = path.join(getTemplatesFolder(), "core/v3Migration", templateName);
+    const templateString = await fs.readFile(templatePath, "utf8");
+    const template = handlebars.compile(templateString);
+    return template(this.handlebarsContext);
+  }
+
+  protected generateActivePluginsContext(): void {
+    const azureSolutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
+    for (const activePlugin of azureSolutionSettings.activeResourcePlugins) {
+      this.handlebarsContext.activePlugins[activePlugin] = true; // convert array items to object properties to simplify handlebars template
+    }
+  }
+}
+
+export class AppYmlGenerator extends BaseAppYmlGenerator {
+  protected handlebarsContext: {
     activePlugins: Record<string, boolean>;
     placeholderMappings: Record<string, string>;
   };
-  constructor(private oldProjectSettings: ProjectSettings, private bicepContent: string) {
+  constructor(oldProjectSettings: ProjectSettings, private bicepContent: string) {
+    super(oldProjectSettings);
     this.handlebarsContext = {
       activePlugins: {},
       placeholderMappings: {},
@@ -38,19 +58,8 @@ export class AppYmlGenerator {
     );
   }
 
-  private async buildHandlebarsTemplate(templateName: string): Promise<string> {
-    const templatePath = path.join(getTemplatesFolder(), "core/v3Migration", templateName);
-    const templateString = await fs.readFile(templatePath, "utf8");
-    const template = handlebars.compile(templateString);
-    return template(this.handlebarsContext);
-  }
-
   private generateHandlerbarsContext(): void {
-    const azureSolutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
-    for (const activePlugin of azureSolutionSettings.activeResourcePlugins) {
-      this.handlebarsContext.activePlugins[activePlugin] = true; // convert array items to object properties to simplify handlebars template
-    }
-
+    this.generateActivePluginsContext();
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.storageResourceId");
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.endpoint");
   }

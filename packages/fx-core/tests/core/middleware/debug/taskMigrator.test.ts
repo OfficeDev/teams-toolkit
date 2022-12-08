@@ -3,8 +3,11 @@
 
 import "mocha";
 import * as chai from "chai";
-import { migrateTransparentPrerequisite } from "../../../../src/core/middleware/utils/debug/taskMigrator";
-import { CommentArray, CommentJSONValue, CommentObject, parse, stringify } from "comment-json";
+import {
+  migrateTransparentNpmInstall,
+  migrateTransparentPrerequisite,
+} from "../../../../src/core/middleware/utils/debug/taskMigrator";
+import { CommentArray, CommentJSONValue, parse, stringify } from "comment-json";
 import { DebugMigrationContext } from "../../../../src/core/middleware/utils/debug/debugMigrationContext";
 
 describe("debugMigration", () => {
@@ -60,15 +63,14 @@ describe("debugMigration", () => {
         }]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const debugContext = new DebugMigrationContext(testTasks);
-      const res = migrateTransparentPrerequisite(testTasks[0]! as CommentObject, debugContext);
-      chai.assert.isTrue(res);
+      migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
         stringify(parse(expectedTaskContent), null, 4)
       );
-      chai.assert.isTrue(debugContext.appYmlConfig.deploy.tools.devCert?.trust);
-      chai.assert.isTrue(debugContext.appYmlConfig.deploy.tools.dotnet);
-      chai.assert.isTrue(debugContext.appYmlConfig.deploy.tools.func);
+      chai.assert.isTrue(debugContext.appYmlConfig.deploy?.tools?.devCert?.trust);
+      chai.assert.isTrue(debugContext.appYmlConfig.deploy?.tools?.dotnet);
+      chai.assert.isTrue(debugContext.appYmlConfig.deploy?.tools?.func);
     });
 
     it("customized prerequisite", () => {
@@ -118,15 +120,14 @@ describe("debugMigration", () => {
         }]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const debugContext = new DebugMigrationContext(testTasks);
-      const res = migrateTransparentPrerequisite(testTasks[0]! as CommentObject, debugContext);
-      chai.assert.isTrue(res);
+      migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
         stringify(parse(expectedTaskContent), null, 4)
       );
-      chai.assert.isUndefined(debugContext.appYmlConfig.deploy.tools.devCert?.trust);
-      chai.assert.isTrue(debugContext.appYmlConfig.deploy.tools.dotnet);
-      chai.assert.isUndefined(debugContext.appYmlConfig.deploy.tools.func);
+      chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.tools?.devCert?.trust);
+      chai.assert.isTrue(debugContext.appYmlConfig.deploy?.tools?.dotnet);
+      chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.tools?.func);
     });
 
     it("no prerequisite task", () => {
@@ -157,15 +158,14 @@ describe("debugMigration", () => {
       const expectedTaskContent = testTaskContent;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const debugContext = new DebugMigrationContext(testTasks);
-      const res = migrateTransparentPrerequisite(testTasks[0]! as CommentObject, debugContext);
-      chai.assert.isFalse(res);
+      migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
         stringify(parse(expectedTaskContent), null, 4)
       );
-      chai.assert.isUndefined(debugContext.appYmlConfig.deploy.tools.devCert?.trust);
-      chai.assert.isUndefined(debugContext.appYmlConfig.deploy.tools.dotnet);
-      chai.assert.isUndefined(debugContext.appYmlConfig.deploy.tools.func);
+      chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.tools?.devCert?.trust);
+      chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.tools?.dotnet);
+      chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.tools?.func);
     });
 
     it("empty prerequisite", () => {
@@ -190,15 +190,239 @@ describe("debugMigration", () => {
       const expectedTaskContent = testTaskContent;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const debugContext = new DebugMigrationContext(testTasks);
-      const res = migrateTransparentPrerequisite(testTasks[0]! as CommentObject, debugContext);
-      chai.assert.isTrue(res);
+      migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
         stringify(parse(expectedTaskContent), null, 4)
       );
-      chai.assert.isUndefined(debugContext.appYmlConfig.deploy.tools.devCert?.trust);
-      chai.assert.isUndefined(debugContext.appYmlConfig.deploy.tools.dotnet);
-      chai.assert.isUndefined(debugContext.appYmlConfig.deploy.tools.func);
+      chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.tools?.devCert?.trust);
+      chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.tools?.dotnet);
+      chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.tools?.func);
+    });
+  });
+
+  describe("migrateTransparentNpmInstall", () => {
+    it("happy path", () => {
+      const testTaskContent = `[
+        {
+					"label": "Start Teams App Locally",
+					"dependsOn": [
+							"Validate & install prerequisites",
+							"Install npm packages",
+							"Start local tunnel",
+							"Set up tab",
+							"Set up bot",
+							"Set up SSO",
+							"Build & upload Teams manifest",
+							"Start services"
+					],
+					"dependsOrder": "sequence"
+			  },
+        {
+					"label": "Before npm install",
+					"dependsOn": "Install npm packages"
+			  },
+        {
+					// Check if all the npm packages are installed and will install them if not.
+					// See https://aka.ms/teamsfx-npm-package-task to know the details and how to customize the args.
+					"label": "Install npm packages",
+					"type": "teamsfx",
+					"command": "debug-npm-install",
+					"args": {
+							"projects": [
+									{
+											"cwd": "\${workspaceFolder}/tabs", // comment
+											"npmInstallArgs": [ // comment
+													"--no-audit" // comment
+											]
+									},
+									{
+											"cwd": "\${workspaceFolder}/api", // comment
+											"npmInstallArgs": [] // comment
+									},
+									{
+											"cwd": "\${workspaceFolder}/bot" // comment
+									}
+							]
+					}
+      }]`;
+      const expectedTaskContent = `[
+        {
+					"label": "Start Teams App Locally",
+					"dependsOn": [
+							"Validate & install prerequisites",
+							"Start local tunnel",
+							"Set up tab",
+							"Set up bot",
+							"Set up SSO",
+							"Build & upload Teams manifest",
+							"Start services"
+					],
+					"dependsOrder": "sequence"
+			  },
+        {
+					"label": "Before npm install"
+			  }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const debugContext = new DebugMigrationContext(testTasks);
+      migrateTransparentNpmInstall(debugContext);
+      chai.assert.equal(
+        stringify(testTasks, null, 4),
+        stringify(parse(expectedTaskContent), null, 4)
+      );
+      chai.assert.equal(debugContext.appYmlConfig.deploy?.npmCommands?.length, 3);
+      chai.assert.deepEqual(debugContext.appYmlConfig.deploy?.npmCommands?.[0], {
+        args: "install --no-audit",
+        workingDirectory: "./tabs",
+      });
+      chai.assert.deepEqual(debugContext.appYmlConfig.deploy?.npmCommands?.[1], {
+        args: "install",
+        workingDirectory: "./api",
+      });
+      chai.assert.deepEqual(debugContext.appYmlConfig.deploy?.npmCommands?.[2], {
+        args: "install",
+        workingDirectory: "./bot",
+      });
+    });
+
+    it("one project", () => {
+      const testTaskContent = `[
+        {
+					"label": "Start Teams App Locally",
+					"dependsOn": [
+							"Validate & install prerequisites",
+							"Start local tunnel",
+							"Set up tab",
+							"Set up bot",
+							"Set up SSO",
+							"Build & upload Teams manifest",
+							"Start services"
+					],
+					"dependsOrder": "sequence"
+			  },
+        {
+					// Check if all the npm packages are installed and will install them if not.
+					// See https://aka.ms/teamsfx-npm-package-task to know the details and how to customize the args.
+					"label": "Install npm packages",
+					"type": "teamsfx",
+					"command": "debug-npm-install",
+					"args": {
+							"projects": [
+									{
+											"cwd": "\${workspaceFolder}/tabs",
+											"npmInstallArgs": "--no-audit" // comment
+									}
+							]
+					}
+        },
+        {
+					"label": "Before npm install",
+					"dependsOn": "Install npm packages"
+			  }
+      ]`;
+      const expectedTaskContent = `[
+        {
+					"label": "Start Teams App Locally",
+					"dependsOn": [
+							"Validate & install prerequisites",
+							"Start local tunnel",
+							"Set up tab",
+							"Set up bot",
+							"Set up SSO",
+							"Build & upload Teams manifest",
+							"Start services"
+					],
+					"dependsOrder": "sequence"
+			  },
+        {
+					"label": "Before npm install"
+			  }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const debugContext = new DebugMigrationContext(testTasks);
+      migrateTransparentNpmInstall(debugContext);
+      chai.assert.equal(
+        stringify(testTasks, null, 4),
+        stringify(parse(expectedTaskContent), null, 4)
+      );
+      chai.assert.equal(debugContext.appYmlConfig.deploy?.npmCommands?.length, 1);
+      chai.assert.deepEqual(debugContext.appYmlConfig.deploy?.npmCommands?.[0], {
+        args: "install --no-audit",
+        workingDirectory: "./tabs",
+      });
+    });
+
+    it("empty projects", () => {
+      const testTaskContent = `[
+        {
+					// Check if all the npm packages are installed and will install them if not.
+					// See https://aka.ms/teamsfx-npm-package-task to know the details and how to customize the args.
+					"label": "Install npm packages",
+					"type": "teamsfx",
+					"command": "debug-npm-install",
+					"args": {
+							"projects": []
+					}
+        },
+        {
+					"label": "Start Teams App Locally",
+					"dependsOn": [
+							"Validate & install prerequisites",
+							"Install npm packages",
+							"Start local tunnel",
+							"Set up tab",
+							"Set up bot",
+							"Set up SSO",
+							"Build & upload Teams manifest",
+							"Start services"
+					],
+					"dependsOrder": "sequence"
+			  },
+        {
+					"label": "Before npm install",
+					"dependsOn": "Install npm packages"
+			  }
+      ]`;
+      const expectedTaskContent = `[
+        {
+					"label": "Start Teams App Locally",
+					"dependsOn": [
+							"Validate & install prerequisites",
+							"Start local tunnel",
+							"Set up tab",
+							"Set up bot",
+							"Set up SSO",
+							"Build & upload Teams manifest",
+							"Start services"
+					],
+					"dependsOrder": "sequence"
+			  },
+        {
+					"label": "Before npm install"
+			  }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const debugContext = new DebugMigrationContext(testTasks);
+      migrateTransparentNpmInstall(debugContext);
+      chai.assert.equal(
+        stringify(testTasks, null, 4),
+        stringify(parse(expectedTaskContent), null, 4)
+      );
+      chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.npmCommands);
+    });
+
+    it("no npm tasks", () => {
+      const testTaskContent = `[]`;
+      const expectedTaskContent = `[]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const debugContext = new DebugMigrationContext(testTasks);
+      migrateTransparentNpmInstall(debugContext);
+      chai.assert.equal(
+        stringify(testTasks, null, 4),
+        stringify(parse(expectedTaskContent), null, 4)
+      );
+      chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.npmCommands);
     });
   });
 });

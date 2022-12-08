@@ -1,0 +1,25 @@
+version: 1.0.0
+
+deploy:
+  - uses: tools/install 
+    with:
+      devCert:
+        trust: true
+      func: true
+      dotnet: true
+
+  - uses: npm/command
+    with:
+      args: install --no-audit
+      workingDirectory: ./tabs
+
+  - uses: npm/command
+    with:
+      args: install --no-audit
+      workingDirectory: ./api
+
+  - uses: npm/command
+    with:
+      args: install --no-audit
+      workingDirectory: ./bot
+

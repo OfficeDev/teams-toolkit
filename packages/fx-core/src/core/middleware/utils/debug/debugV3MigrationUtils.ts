@@ -1,16 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import path from "path";
 import fs from "fs-extra";
-import { MigrationContext } from "../migrationContext";
 import { CommentArray, CommentJSONValue, CommentObject, parse } from "comment-json";
 
-export async function readJsonCommentFile(
-  context: MigrationContext,
-  filePath: string
-): Promise<CommentJSONValue | undefined> {
-  const filepath = path.join(context.projectPath, filePath);
+export async function readJsonCommentFile(filepath: string): Promise<CommentJSONValue | undefined> {
   if (await fs.pathExists(filepath)) {
     const content = await fs.readFile(filepath);
     const data = parse(content.toString());

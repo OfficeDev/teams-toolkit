@@ -140,8 +140,8 @@ import "../component/driver/script/dotnetBuildDriver";
 import "../component/driver/script/npmBuildDriver";
 import "../component/driver/script/npxBuildDriver";
 import "../component/driver/tools/installDriver";
-import "../component/driver/env/generate";
-import "../component/driver/env/appsettingsGenerate";
+import "../component/driver/file/updateEnv";
+import "../component/driver/file/appsettingsGenerate";
 import "../component/driver/botFramework/createOrUpdateBot";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
@@ -579,7 +579,7 @@ export class FxCore implements v3.ICore {
       };
       res = await driver.run(args, context);
     } else if (func.method === "buildPackage") {
-      const driver: CreateAppPackageDriver = Container.get("teamsApp/createAppPackage");
+      const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
       const args: CreateAppPackageArgs = {
         manifestTemplatePath: func.params.manifestTemplatePath,
         outputZipPath: func.params.outputZipPath,

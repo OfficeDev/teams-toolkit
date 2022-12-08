@@ -28,7 +28,7 @@ import { MigrationContext } from "../../../src/core/middleware/utils/migrationCo
 import {
   generateAppYml,
   generateSettingsJson,
-  replacePlaceholderForManifests,
+  manifestsMigration,
   statesMigration,
   updateLaunchJson,
   migrate,
@@ -36,7 +36,9 @@ import {
   checkVersionForMigration,
   VersionState,
   configsMigration,
+  generateApimPluginEnvContent,
   userdataMigration,
+  azureParameterMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
@@ -175,7 +177,7 @@ describe("MigrationContext", () => {
     assert.isTrue(modifiedPaths.includes("b"));
     assert.isTrue(modifiedPaths.includes("b/c"));
     assert.isTrue(modifiedPaths.includes("d"));
-
+    await context.fsRemove("d");
     await context.cleanModifiedPaths();
     assert.isEmpty(context.getModifiedPaths());
 
@@ -258,10 +260,10 @@ describe("generateAppYml-js/ts", () => {
     assert.exists(getAction(appYaml.provision, "arm/deploy"));
     assert.exists(getAction(appYaml.registerApp, "teamsApp/create"));
     assert.exists(getAction(appYaml.configureApp, "teamsApp/validate"));
-    assert.exists(getAction(appYaml.configureApp, "teamsApp/createAppPackage"));
+    assert.exists(getAction(appYaml.configureApp, "teamsApp/zipAppPackage"));
     assert.exists(getAction(appYaml.configureApp, "teamsApp/update"));
     assert.exists(getAction(appYaml.publish, "teamsApp/validate"));
-    assert.exists(getAction(appYaml.publish, "teamsApp/createAppPackage"));
+    assert.exists(getAction(appYaml.publish, "teamsApp/zipAppPackage"));
     assert.exists(getAction(appYaml.publish, "teamsApp/publishAppPackage"));
     // validate AAD part
     assert.exists(getAction(appYaml.registerApp, "aadApp/create"));
@@ -328,7 +330,57 @@ describe("generateAppYml-js/ts", () => {
   });
 });
 
-describe("replacePlaceholderForManifests", () => {
+describe("generateAppYml-csharp", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  let migrationContext: MigrationContext;
+
+  beforeEach(async () => {
+    migrationContext = await mockMigrationContext(projectPath);
+    migrationContext.arguments.push({
+      platform: "vs",
+    });
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("should success for sso tab project", async () => {
+    await copyTestProject("csharpSsoTab", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+  });
+
+  it("should success for non-sso tab project", async () => {
+    await copyTestProject("csharpNonSsoTab", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+  });
+
+  it("should success for web app bot project", async () => {
+    await copyTestProject("csharpWebappBot", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+  });
+
+  it("should success for function bot project", async () => {
+    await copyTestProject("csharpFunctionBot", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+  });
+});
+
+describe("manifestsMigration", () => {
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
@@ -350,9 +402,12 @@ describe("replacePlaceholderForManifests", () => {
     await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
 
     // Action
-    await replacePlaceholderForManifests(migrationContext);
+    await manifestsMigration(migrationContext);
 
     // Assert
+    const oldAppPackageFolderPath = path.join(projectPath, "templates", "appPackage");
+    assert.isFalse(await fs.pathExists(oldAppPackageFolderPath));
+
     const appPackageFolderPath = path.join(projectPath, "appPackage");
     assert.isTrue(await fs.pathExists(appPackageFolderPath));
 
@@ -397,7 +452,7 @@ describe("replacePlaceholderForManifests", () => {
     await fs.remove(path.join(projectPath, "templates/appPackage/aad.template.json"));
 
     // Action
-    await replacePlaceholderForManifests(migrationContext);
+    await manifestsMigration(migrationContext);
 
     // Assert
     const appPackageFolderPath = path.join(projectPath, "appPackage");
@@ -431,7 +486,7 @@ describe("replacePlaceholderForManifests", () => {
     sandbox.stub(migrationContext, "backup").resolves(false);
 
     try {
-      await replacePlaceholderForManifests(migrationContext);
+      await manifestsMigration(migrationContext);
     } catch (error) {
       assert.equal(error.name, "ReadFileError");
       assert.equal(error.innerError.message, "templates/appPackage does not exist");
@@ -446,7 +501,7 @@ describe("replacePlaceholderForManifests", () => {
     await fs.ensureDir(path.join(projectPath, "appPackage"));
 
     try {
-      await replacePlaceholderForManifests(migrationContext);
+      await manifestsMigration(migrationContext);
     } catch (error) {
       assert.equal(error.name, "ReadFileError");
       assert.equal(error.innerError.message, "templates/azure/provision.bicep does not exist");
@@ -462,13 +517,92 @@ describe("replacePlaceholderForManifests", () => {
     await fs.remove(path.join(projectPath, "templates/appPackage/manifest.template.json"));
 
     try {
-      await replacePlaceholderForManifests(migrationContext);
+      await manifestsMigration(migrationContext);
     } catch (error) {
       assert.equal(error.name, "ReadFileError");
       assert.equal(
         error.innerError.message,
         "templates/appPackage/manifest.template.json does not exist"
       );
+    }
+  });
+});
+
+describe("azureParameterMigration", () => {
+  const sandbox = sinon.createSandbox();
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+  });
+
+  it("Happy Path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+
+    // Action
+    await azureParameterMigration(migrationContext);
+
+    // Assert
+    const azureParameterDevFilePath = path.join(
+      projectPath,
+      "templates",
+      "azure",
+      "azure.parameters.dev.json"
+    );
+    const azureParameterTestFilePath = path.join(
+      projectPath,
+      "templates",
+      "azure",
+      "azure.parameters.test.json"
+    );
+    assert.isTrue(await fs.pathExists(azureParameterDevFilePath));
+    assert.isTrue(await fs.pathExists(azureParameterTestFilePath));
+    const azureParameterExpected = await fs.readFile(
+      path.join(projectPath, "expected", "azure.parameters.json"),
+      "utf-8"
+    );
+    const azureParameterDev = await fs.readFile(azureParameterDevFilePath, "utf-8");
+    const azureParameterTest = await fs.readFile(azureParameterTestFilePath, "utf-8");
+    assert.equal(azureParameterDev, azureParameterExpected);
+    assert.equal(azureParameterTest, azureParameterExpected);
+  });
+
+  it("migrate azure.parameter failed: .fx/config does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Action
+    await azureParameterMigration(migrationContext);
+
+    // Assert
+    const azureParameterDevFilePath = path.join(
+      projectPath,
+      "templates",
+      "azure",
+      "azure.parameters.dev.json"
+    );
+    assert.isFalse(await fs.pathExists(azureParameterDevFilePath));
+  });
+
+  it("migrate azure.parameter failed: provision.bicep does not exist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    await fs.ensureDir(path.join(projectPath, ".fx", "config"));
+
+    try {
+      await azureParameterMigration(migrationContext);
+    } catch (error) {
+      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.innerError.message, "templates/azure/provision.bicep does not exist");
     }
   });
 });
@@ -636,6 +770,36 @@ describe("userdataMigration", () => {
   });
 });
 
+describe("generateApimPluginEnvContent", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("happy path", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    await generateApimPluginEnvContent(migrationContext);
+
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+
+    const trueEnvContent_dev = await readEnvFile(
+      getTestAssetsPath(path.join(Constants.happyPathTestProject, "testCaseFiles")),
+      "apimPlugin.dev"
+    );
+    assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
+    const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
+    assert.equal(testEnvContent_dev, trueEnvContent_dev);
+  });
+});
+
 describe("allEnvMigration", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
@@ -652,9 +816,10 @@ describe("allEnvMigration", () => {
     const migrationContext = await mockMigrationContext(projectPath);
 
     await copyTestProject(Constants.happyPathTestProject, projectPath);
-    await statesMigration(migrationContext);
     await configsMigration(migrationContext);
+    await statesMigration(migrationContext);
     await userdataMigration(migrationContext);
+    await generateApimPluginEnvContent(migrationContext);
 
     assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
 
@@ -726,6 +891,24 @@ async function mockMigrationContext(projectPath: string): Promise<MigrationConte
 
 function getTestAssetsPath(projectName: string): string {
   return path.join("tests/core/middleware/testAssets/v3Migration", projectName.toString());
+}
+
+// Change CRLF to LF to avoid test failures in different OS
+function normalizeLineBreaks(content: string): string {
+  return content.replace(/\r\n/g, "\n");
+}
+
+async function assertFileContent(
+  projectPath: string,
+  actualFilePath: string,
+  expectedFileName: string
+): Promise<void> {
+  const actualFileFullPath = path.join(projectPath, actualFilePath);
+  const expectedFileFulePath = path.join(projectPath, "expectedResult", expectedFileName);
+  assert.isTrue(await fs.pathExists(actualFileFullPath));
+  const actualFileContent = normalizeLineBreaks(await fs.readFile(actualFileFullPath, "utf8"));
+  const expectedFileContent = normalizeLineBreaks(await fs.readFile(expectedFileFulePath, "utf8"));
+  assert.equal(actualFileContent, expectedFileContent);
 }
 
 async function copyTestProject(projectName: string, targetPath: string): Promise<void> {

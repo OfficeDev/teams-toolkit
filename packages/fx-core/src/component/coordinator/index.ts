@@ -162,14 +162,10 @@ const M365Actions = [
   "teamsApp/update",
   "aadApp/create",
   "aadApp/update",
-  "botFramework/createOrUpdateBot",
+  "botFramework/create",
 ];
 const AzureActions = ["arm/deploy"];
-const needTenantCheckActions = [
-  "botAadApp/create",
-  "aadApp/create",
-  "botFramework/createOrUpdateBot",
-];
+const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramework/create"];
 
 export class Coordinator {
   @hooks([
@@ -863,7 +859,11 @@ export class Coordinator {
     const parser = new YamlParser();
     const templatePath =
       inputs["workflowFilePath"] ??
-      path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+      path.join(
+        ctx.projectPath,
+        SettingsFolderName,
+        process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
+      );
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return [undefined, maybeProjectModel.error];
@@ -889,7 +889,6 @@ export class Coordinator {
           getLocalizedString("core.deploy.successNotice", path.parse(ctx.projectPath).name) +
           botTroubleShootMsg.textForLogging;
         ctx.logProvider.info(msg);
-        ctx.ui?.showMessage("info", msg, false);
       } finally {
         const summary = summaryReporter.getLifecycleSummary();
         ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
@@ -911,7 +910,11 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(ctx.projectPath, SettingsFolderName, workflowFileName);
+    const templatePath = path.join(
+      ctx.projectPath,
+      SettingsFolderName,
+      process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
+    );
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);

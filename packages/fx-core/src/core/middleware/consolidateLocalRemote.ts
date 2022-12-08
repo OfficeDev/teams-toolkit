@@ -36,7 +36,7 @@ import { loadProjectSettings } from "./projectSettingsLoader";
 import { addPathToGitignore, needMigrateToArmAndMultiEnv } from "./projectMigrator";
 import * as util from "util";
 import { ManifestTemplate } from "../../component/resource/spfx/utils/constants";
-import { generateAadManifest, needMigrateToAadManifest } from "./MigrationUtils";
+import { generateAadManifest, needMigrateToAadManifest } from "./utils/MigrationUtils";
 import { getManifestTemplatePath } from "../../component/resource/appManifest/utils/ManifestUtils";
 
 const upgradeButton = getLocalizedString("core.option.upgrade");

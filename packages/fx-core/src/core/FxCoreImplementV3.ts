@@ -49,7 +49,6 @@ import { envUtil } from "../component/utils/envUtil";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import { DotenvParseOutput } from "dotenv";
 import { ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
-import { rsort } from "semver";
 
 export class FxCoreV3Implement {
   async dispatch<Inputs, ExecuteRes>(

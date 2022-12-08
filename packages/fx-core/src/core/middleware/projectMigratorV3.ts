@@ -172,7 +172,7 @@ async function showSummaryReport(context: MigrationContext): Promise<void> {
 1. Move templates/appPakcage/aad.template.json to ./aad.manifest.template.json
 1. Update placeholders in the two manifests
 1. Update app id uri in the two manifests
-1. Move .fx/configs/azure.parameter.{env}.json to templates/azure/...
+1. Move .fx/configs/azure.parameters.{env}.json to templates/azure/...
 1. Update placeholders in azure parameter files 
 1. create .env.{env} if not exitsts in teamsfx/ folder (v3) (should throw error if .fx/configs/ not exists?)
 1. migrate .fx/configs/config.{env}.json to .env.{env}
@@ -349,7 +349,7 @@ export async function azureParameterMigration(context: MigrationContext): Promis
 
   const fileNames = fsReadDirSync(context, configFolderPath);
   for (const fileName of fileNames) {
-    if (!fileName.startsWith("azure.parameter.")) {
+    if (!fileName.startsWith("azure.parameters.")) {
       continue;
     }
 

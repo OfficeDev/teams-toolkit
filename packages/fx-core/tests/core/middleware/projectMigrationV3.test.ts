@@ -556,18 +556,18 @@ describe("azureParameterMigration", () => {
       projectPath,
       "templates",
       "azure",
-      "azure.parameter.dev.json"
+      "azure.parameters.dev.json"
     );
     const azureParameterTestFilePath = path.join(
       projectPath,
       "templates",
       "azure",
-      "azure.parameter.test.json"
+      "azure.parameters.test.json"
     );
     assert.isTrue(await fs.pathExists(azureParameterDevFilePath));
     assert.isTrue(await fs.pathExists(azureParameterTestFilePath));
     const azureParameterExpected = await fs.readFile(
-      path.join(projectPath, "expected", "azure.parameter.json"),
+      path.join(projectPath, "expected", "azure.parameters.json"),
       "utf-8"
     );
     const azureParameterDev = await fs.readFile(azureParameterDevFilePath, "utf-8");
@@ -587,7 +587,7 @@ describe("azureParameterMigration", () => {
       projectPath,
       "templates",
       "azure",
-      "azure.parameter.dev.json"
+      "azure.parameters.dev.json"
     );
     assert.isFalse(await fs.pathExists(azureParameterDevFilePath));
   });

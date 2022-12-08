@@ -6,7 +6,7 @@ import { DepsCheckerError } from "../../../../common/deps-checker/depsError";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 const errorCode = "DotnetInstallationError";
-const messageKey = "driver.tools.error.dotnetInstallationError";
+const messageKey = "driver.prerequisite.error.dotnetInstallationError";
 
 export class DotnetInstallationUserError extends UserError {
   constructor(actionName: string, error: any) {

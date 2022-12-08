@@ -5,7 +5,7 @@ import { UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 const errorCode = "InvalidParameter";
-const messageKey = "driver.tools.error.invalidParameter";
+const messageKey = "driver.prerequisite.error.invalidParameter";
 
 export class InvalidParameterUserError extends UserError {
   constructor(actionName: string, invalidParameters: string | string[], helpLink: string) {

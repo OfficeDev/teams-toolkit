@@ -23,26 +23,27 @@ export enum TelemetryDevCertStatus {
 }
 
 export const ProgressMessages = Object.freeze({
-  title: () => getLocalizedString("driver.tools.progressBar.title"),
-  devCert: () => getLocalizedString("driver.tools.progressBar.devCert"),
-  dotnet: () => getLocalizedString("driver.tools.progressBar.dotnet"),
-  func: () => getLocalizedString("driver.tools.progressBar.func"),
+  title: () => getLocalizedString("driver.prerequisite.progressBar.title"),
+  devCert: () => getLocalizedString("driver.prerequisite.progressBar.devCert"),
+  dotnet: () => getLocalizedString("driver.prerequisite.progressBar.dotnet"),
+  func: () => getLocalizedString("driver.prerequisite.progressBar.func"),
 });
 
-export const toolsInstallDescription = (): string => getLocalizedString("driver.tools.description");
+export const toolsInstallDescription = (): string =>
+  getLocalizedString("driver.prerequisite.description");
 
 export const Summaries = Object.freeze({
   devCertSuccess: (trustDevCert: boolean): string =>
     trustDevCert
-      ? getLocalizedString("driver.tools.summary.devCert.trusted.succuss")
-      : getLocalizedString("driver.tools.summary.devCert.notTrusted.succuss"),
-  devCertSkipped: (): string => getLocalizedString("driver.tools.summary.devCert.skipped"),
+      ? getLocalizedString("driver.prerequisite.summary.devCert.trusted.succuss")
+      : getLocalizedString("driver.prerequisite.summary.devCert.notTrusted.succuss"),
+  devCertSkipped: (): string => getLocalizedString("driver.prerequisite.summary.devCert.skipped"),
   funcSuccess: (binFolders?: string[]): string =>
     binFolders && binFolders?.length > 0
-      ? getLocalizedString("driver.tools.summary.func.installedWithPath", binFolders?.[0])
-      : getLocalizedString("driver.tools.summary.func.installed"),
+      ? getLocalizedString("driver.prerequisite.summary.func.installedWithPath", binFolders?.[0])
+      : getLocalizedString("driver.prerequisite.summary.func.installed"),
   dotnetSuccess: (binFolders?: string[]): string =>
     binFolders && binFolders?.length > 0
-      ? getLocalizedString("driver.tools.summary.dotnet.installedWithPath")
-      : getLocalizedString("driver.tools.summary.dotnet.installed"),
+      ? getLocalizedString("driver.prerequisite.summary.dotnet.installedWithPath")
+      : getLocalizedString("driver.prerequisite.summary.dotnet.installed"),
 });

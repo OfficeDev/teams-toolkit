@@ -18,6 +18,7 @@ import {
   createResourceGroup,
   deleteResourceGroupByName,
   customizeBicepFilesToCustomizedRg,
+  readContextMultiEnvV3,
 } from "../commonUtils";
 import M365Login from "../../../src/commonlib/m365Login";
 import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
@@ -36,11 +37,41 @@ describe("Deploy to customized resource group", function () {
   after(async () => {
     await cleanUp(appName, projectPath, true, false, false);
   });
-  if (!isV3Enabled()) {
-    it(
-      `tab project can deploy frontend hosting resource to customized resource group and successfully provision / deploy`,
-      { testPlanCaseId: 9863660 },
-      async function () {
+
+  it(
+    `tab project can deploy frontend hosting resource to customized resource group and successfully provision / deploy`,
+    { testPlanCaseId: 9863660 },
+    async function () {
+      if (isV3Enabled()) {
+        // Create new tab project
+        await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+
+        // Create empty resource group
+        const customizedRgName = `${appName}-customized-rg`;
+        await createResourceGroup(customizedRgName, "eastus");
+
+        await CliHelper.provisionProject(projectPath, undefined, {
+          ...process.env,
+          AZURE_RESOURCE_GROUP_NAME: customizedRgName,
+        });
+        await CliHelper.deployProject(ResourceToDeploy.FrontendHosting, projectPath);
+
+        // Assert
+        {
+          const context = await readContextMultiEnvV3(projectPath, env);
+
+          // Validate Aad App
+          const aad = AadValidator.init(context, false, M365Login);
+          await AadValidator.validate(aad);
+
+          // Validate Tab Frontend
+          const frontend = FrontendValidator.init(context);
+          await FrontendValidator.validateProvision(frontend);
+          await FrontendValidator.validateDeploy(frontend);
+        }
+
+        await deleteResourceGroupByName(customizedRgName);
+      } else {
         // Create new tab project
         await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
@@ -79,6 +110,6 @@ describe("Deploy to customized resource group", function () {
 
         await deleteResourceGroupByName(customizedRgName);
       }
-    );
-  }
+    }
+  );
 });

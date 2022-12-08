@@ -473,8 +473,9 @@
     "teamstoolkit.taskDefinitions.args.sso.clientSecretTitle": "The AAD app client secret for SSO",
     "teamstoolkit.taskDefinitions.args.sso.accessAsUserScopeIdTitle": "The AAD app access_as_user scope id for SSO",
     "teamstoolkit.taskDefinitions.args.manifest.appPackagePathTitle": "Teams app package path",
-    "teamstoolkit.manageCollaborator.grantPermission.label": "Grant Permission",
-    "teamstoolkit.manageCollaborator.grantPermission.description": "Add Microsoft 365 Teams App (with AAD App) Owners",
-    "teamstoolkit.manageCollaborator.listCollaborator.label": "List Collaborator",
-    "teamstoolkit.manageCollaborator.listCollaborator.description": "List Microsoft 365 Teams App (with AAD App) Owners"
+    "teamstoolkit.manageCollaborator.grantPermission.label": "Add app owners",
+    "teamstoolkit.manageCollaborator.grantPermission.description": "Add owners to your Teams app and Azure Active Director app registrations so they can make changes",
+    "teamstoolkit.manageCollaborator.listCollaborator.label": "List app owners",
+    "teamstoolkit.manageCollaborator.listCollaborator.description": "List all the owners who can make changes to your Teams and Azure Active Director app registrations",
+    "teamstoolkit.manageCollaborator.command": "Manage who can make changes to your app"
 }

@@ -1194,6 +1194,7 @@ export async function runUserTask(
     inputs = getSystemInputs();
     inputs.ignoreEnvInfo = ignoreEnvInfo;
     inputs.env = envName;
+    inputs.taskOrientedTemplateNaming = TreatmentVariableValue.taskOrientedTemplateNaming;
     result = await core.executeUserTask(func, inputs);
   } catch (e) {
     result = wrapError(e);
@@ -2377,17 +2378,17 @@ export async function manageCollaboratorHandler(): Promise<Result<any, FxError>>
   try {
     const collaboratorCommandSelection: SingleSelectConfig = {
       name: "collaborationCommand",
-      title: "command",
+      title: localize("teamstoolkit.manageCollaborator.command"),
       options: [
         {
           id: "grantPermission",
           label: localize("teamstoolkit.manageCollaborator.grantPermission.label"),
-          detail: localize("teamstoolkit.manageCollaborator.grantPermission.detail"),
+          detail: localize("teamstoolkit.manageCollaborator.grantPermission.description"),
         },
         {
           id: "listCollaborator",
           label: localize("teamstoolkit.manageCollaborator.listCollaborator.label"),
-          detail: localize("teamstoolkit.manageCollaborator.listCollaborator.detail"),
+          detail: localize("teamstoolkit.manageCollaborator.listCollaborator.description"),
         },
       ],
       returnObject: false,

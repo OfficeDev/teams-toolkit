@@ -1194,6 +1194,7 @@ export async function runUserTask(
     inputs = getSystemInputs();
     inputs.ignoreEnvInfo = ignoreEnvInfo;
     inputs.env = envName;
+    inputs.taskOrientedTemplateNaming = TreatmentVariableValue.taskOrientedTemplateNaming;
     result = await core.executeUserTask(func, inputs);
   } catch (e) {
     result = wrapError(e);

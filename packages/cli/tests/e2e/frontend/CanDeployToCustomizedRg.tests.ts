@@ -54,7 +54,7 @@ describe("Deploy to customized resource group", function () {
           ...process.env,
           AZURE_RESOURCE_GROUP_NAME: customizedRgName,
         });
-        await CliHelper.deployProject(ResourceToDeploy.FrontendHosting, projectPath);
+        await CliHelper.deployAll(projectPath);
 
         // Assert
         {

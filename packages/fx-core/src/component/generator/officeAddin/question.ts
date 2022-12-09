@@ -76,7 +76,6 @@ export const AddinLanguageQuestion: SingleSelectQuestion = {
     const options = jsonData.getSupportedScriptTypes(template);
     return options[0] || "No Options";
   },
-  placeholder: "This is placeholder",
   skipSingleOption: true,
 };
 
@@ -99,7 +98,6 @@ export const OfficeHostQuestion: SingleSelectQuestion = {
     const options = jsonData.getHostTemplateNames(template);
     return options[0] || "No Options";
   },
-  placeholder: "This is placeholder",
   skipSingleOption: true,
 };
 
@@ -117,17 +115,6 @@ export const AddinProjectManifestQuestion: SingleFileQuestion = {
     const projFolder: string = inputs[AddinProjectFolderQuestion.name];
     return path.join(projFolder, "manifest.json");
   },
-  // validation: {
-  //   validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-  //     if (previousInputs) {
-  //       const projFolder: string = previousInputs[AddinProjectFolderQuestion.name];
-  //       if (input.startsWith(projFolder) && input.endsWith(".json")) {
-  //         return undefined;
-  //       }
-  //     }
-  //     return "Needs to be in the project folder and be a json file";
-  //   },
-  // },
 };
 
 export function getTemplate(inputs: Inputs): string {

@@ -19,8 +19,8 @@ import { BotRegistration } from "../../resource/botService/botRegistration/botRe
 import { LocalBotRegistration } from "../../resource/botService/botRegistration/localBotRegistration";
 import { IBotRegistration } from "../../resource/botService/appStudio/interfaces/IBotRegistration";
 
-const actionName = "botFramework/createOrUpdateBot";
-const helpLink = "https://aka.ms/teamsfx-actions/botFramework-createOrUpdateBot";
+const actionName = "botFramework/create";
+const helpLink = "https://aka.ms/teamsfx-actions/botFramework-create";
 
 const botUrl = "https://dev.botframework.com/bots?id=";
 

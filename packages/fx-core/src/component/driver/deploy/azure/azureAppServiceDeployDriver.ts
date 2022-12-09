@@ -14,11 +14,15 @@ import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetr
 import { TelemetryConstant } from "../../../constant/commonConstant";
 import { DeployConstant } from "../../../constant/deployConstant";
 import { getLocalizedMessage, ProgressMessages } from "../../../messages";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 const ACTION_NAME = "azureAppService/deploy";
 
 @Service(ACTION_NAME)
 export class AzureAppServiceDeployDriver implements StepDriver {
+  readonly description: string = getLocalizedString(
+    "driver.deploy.deployToAzureAppServiceDescription"
+  );
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new AzureAppServiceDeployDriverImpl(args, context);
@@ -39,6 +43,7 @@ export class AzureAppServiceDeployDriver implements StepDriver {
 export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/sites\/([^\/]*)/i;
+  protected helpLink = "https://aka.ms/teamsfx-actions/azure-app-service-deploy";
 
   async azureDeploy(
     args: DeployStepArgs,

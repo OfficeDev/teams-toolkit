@@ -5,7 +5,7 @@
 
 import { Result, FxError, ok, Tools, err } from "@microsoft/teamsfx-api";
 
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core";
 
 import AzureAccountManager from "./commonlib/azureLogin";
 import M365TokenProvider from "./commonlib/m365Login";
@@ -32,6 +32,19 @@ export default async function activate(
       }
     }
   }
+
+  M365TokenProvider.setStatusChangeMap(
+    "set-region",
+    { scopes: AuthSvcScopes },
+    async (status, token, accountInfo) => {
+      if (status === "SignedIn") {
+        const tokenRes = await M365TokenProvider.getAccessToken({ scopes: AuthSvcScopes });
+        if (tokenRes.isOk()) {
+          setRegion(tokenRes.value);
+        }
+      }
+    }
+  );
 
   const tools: Tools = {
     logProvider: CLILogProvider,

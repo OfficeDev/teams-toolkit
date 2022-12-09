@@ -7,6 +7,7 @@ import {
   EnvConfig,
   Err,
   err,
+  Func,
   FxError,
   Inputs,
   Ok,
@@ -281,6 +282,80 @@ describe("Middleware - others", () => {
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
+    });
+
+    it("do not migration with user task getLocalDebugEnvs", async () => {
+      await fs.copy(path.join(__dirname, "../samples/migration/"), path.join(projectPath));
+      const tools = new MockTools();
+      setTools(tools);
+      class MyClass {
+        tools = tools;
+        async executeUserTask(
+          func: Func,
+          inputs: Inputs,
+          ctx?: CoreHookContext
+        ): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        executeUserTask: [getProjectMigratorMW()],
+      });
+
+      const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+      inputs.projectPath = projectPath;
+      const my = new MyClass();
+      const res = await my.executeUserTask({ method: "getLocalDebugEnvs" } as any, inputs);
+      assert.isTrue(res.isOk());
+    });
+
+    it("do not migration with method getProjectConfig", async () => {
+      await fs.copy(path.join(__dirname, "../samples/migration/"), path.join(projectPath));
+      const tools = new MockTools();
+      setTools(tools);
+      class MyClass {
+        tools = tools;
+        async getProjectConfig(
+          inputs: Inputs,
+          ctx?: CoreHookContext
+        ): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        getProjectConfig: [getProjectMigratorMW()],
+      });
+
+      const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+      inputs.projectPath = projectPath;
+      const my = new MyClass();
+      const res = await my.getProjectConfig(inputs);
+      assert.isTrue(res.isOk());
+    });
+
+    it("do not migration with no .fx folder", async () => {
+      await fs.copy(path.join(__dirname, "../samples/migration/"), path.join(projectPath));
+      await fs.remove(path.join(projectPath, ".fx"));
+      const tools = new MockTools();
+      setTools(tools);
+      class MyClass {
+        tools = tools;
+        async getProjectConfig(
+          inputs: Inputs,
+          ctx?: CoreHookContext
+        ): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        getProjectConfig: [getProjectMigratorMW()],
+      });
+
+      const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+      inputs.projectPath = projectPath;
+      const my = new MyClass();
+      const res = await my.getProjectConfig(inputs);
+      assert.isTrue(res.isOk());
     });
 
     it("pre check with error manifest file", async () => {

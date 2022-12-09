@@ -5,13 +5,22 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { stubInterface } from "ts-sinon";
-import { Disposable, ExtensionContext, QuickInputButton, QuickPick, window } from "vscode";
+import {
+  commands,
+  Disposable,
+  ExtensionContext,
+  QuickInputButton,
+  QuickPick,
+  TextDocument,
+  window,
+  workspace,
+} from "vscode";
 
 import { SelectFileConfig, SelectFolderConfig, UserCancelError } from "@microsoft/teamsfx-api";
 
 import { FxQuickPickItem, VsCodeUI } from "../../src/qm/vsc_ui";
-import { sleep } from "../../src/utils/commonUtils";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
+import { sleep } from "../../src/utils/commonUtils";
 
 describe("UI Unit Tests", async () => {
   before(() => {
@@ -207,6 +216,26 @@ describe("UI Unit Tests", async () => {
       if (result.isErr()) {
         expect(result.error).to.equal(UserCancelError);
       }
+      sinon.restore();
+    });
+  });
+
+  describe("Open File", () => {
+    it("open the preview of Markdown file", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      sinon.stub(workspace, "openTextDocument").resolves({} as TextDocument);
+      let executedCommand = "";
+      sinon.stub(commands, "executeCommand").callsFake((command: string, ...args: any[]) => {
+        executedCommand = command;
+        return Promise.resolve();
+      });
+      const showTextStub = sinon.stub(window, "showTextDocument");
+
+      const result = await ui.openFile("test.md");
+
+      expect(result.isOk()).is.true;
+      expect(showTextStub.calledOnce).to.be.false;
+      expect(executedCommand).to.equal("markdown.showPreview");
       sinon.restore();
     });
   });

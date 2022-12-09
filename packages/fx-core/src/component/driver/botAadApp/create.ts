@@ -27,6 +27,9 @@ const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateBotAadAppDriver implements StepDriver {
+  readonly description?: string | undefined = getLocalizedString(
+    "driver.botAadApp.create.description"
+  );
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: CreateBotAadAppArgs,

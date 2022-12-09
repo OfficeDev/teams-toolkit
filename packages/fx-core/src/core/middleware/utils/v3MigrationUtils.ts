@@ -62,7 +62,7 @@ export function jsonObjectNamesConvertV3(
   if (isObject(obj)) {
     for (const keyName of Object.keys(obj)) {
       returnData +=
-        parentKeyName === ""
+        parentKeyName === "" // first layer of json object
           ? jsonObjectNamesConvertV3(obj[keyName], prefix, prefix + keyName, filetype, bicepContent)
           : jsonObjectNamesConvertV3(
               obj[keyName],

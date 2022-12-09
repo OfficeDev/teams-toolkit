@@ -68,7 +68,7 @@ export class OfficeAddinGenerator {
     return ok(undefined);
   }
 
-  private static async doScaffolding(
+  public static async doScaffolding(
     context: ContextV3,
     inputs: Inputs,
     destinationPath: string

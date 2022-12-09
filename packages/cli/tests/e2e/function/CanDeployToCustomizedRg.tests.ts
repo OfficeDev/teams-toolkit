@@ -19,7 +19,7 @@ import {
   customizeBicepFilesToCustomizedRg,
 } from "../commonUtils";
 import M365Login from "../../../src/commonlib/m365Login";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { it } from "@microsoft/extra-shot-mocha";
@@ -39,6 +39,9 @@ describe("Deploy to customized resource group", function () {
     `tab project can deploy function resource to customized resource group and successfully provision / deploy`,
     { testPlanCaseId: 15686840 },
     async function () {
+      if (isV3Enabled()) {
+        return this.skip();
+      }
       // Create new tab + func project
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
       await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);

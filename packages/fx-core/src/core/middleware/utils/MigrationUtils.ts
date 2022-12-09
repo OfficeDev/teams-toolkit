@@ -209,7 +209,7 @@ function generateOutputNameRegexForPlugin(pluginId: string) {
 export function namingConverterV3(
   name: string,
   type: FileType,
-  bicepContent: string | undefined,
+  bicepContent: string,
   needsRename = false
 ): Result<string, FxError> {
   try {

@@ -35,15 +35,6 @@ describe("MigrationUtilsV3: namingConverterV3", () => {
     assert.isTrue(res.isOk() && res.value === "STATE__FX_RESOURCE_FRONTEND_HOSTING__DOMAIN");
   });
 
-  it("happy path for provision outputs with undefined bicep content", () => {
-    const res = namingConverterV3(
-      "state.fx-resource-frontend-hosting.domain",
-      FileType.STATE,
-      undefined
-    );
-    assert.isTrue(res.isOk() && res.value === "STATE__FX_RESOURCE_FRONTEND_HOSTING__DOMAIN");
-  });
-
   it("happy path for provision outputs: state.fx-resource-frontend-hosting.domain with standard pluginId", () => {
     const bicepContent =
       "output azureStorageTabOutput object = {\nteamsFxPluginId: 'fx-resource-frontend-hosting'\n}";

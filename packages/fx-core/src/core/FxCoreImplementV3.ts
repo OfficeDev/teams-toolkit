@@ -88,7 +88,14 @@ export class FxCoreV3Implement {
     return res;
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ContextInjectorMW, EnvWriterMW])
+  @hooks([
+    ConcurrentLockerMW,
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    EnvLoaderMW(false),
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
@@ -111,7 +118,14 @@ export class FxCoreV3Implement {
     }
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ContextInjectorMW, EnvWriterMW])
+  @hooks([
+    ConcurrentLockerMW,
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    EnvLoaderMW(false),
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
@@ -128,6 +142,7 @@ export class FxCoreV3Implement {
   }
 
   @hooks([
+    ConcurrentLockerMW,
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectConsolidateMW,
@@ -171,7 +186,7 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false)])
+  @hooks([ConcurrentLockerMW, ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false)])
   async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
@@ -182,6 +197,7 @@ export class FxCoreV3Implement {
   }
 
   @hooks([
+    ConcurrentLockerMW,
     ErrorHandlerMW,
     ProjectMigratorMWV3,
     ConcurrentLockerMW,
@@ -230,7 +246,7 @@ export class FxCoreV3Implement {
     return res;
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW(false), ContextInjectorMW])
+  @hooks([ConcurrentLockerMW, ErrorHandlerMW, EnvLoaderMW(false), ContextInjectorMW])
   async publishInDeveloperPortal(
     inputs: Inputs,
     ctx?: CoreHookContext

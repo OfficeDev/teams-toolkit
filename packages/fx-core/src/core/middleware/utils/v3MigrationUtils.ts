@@ -80,7 +80,9 @@ export function jsonObjectNamesConvertV3(
           bicepContent
         );
       }
-      returnData += addData;
+      if (addData != "") {
+        returnData += addData;
+      }
     }
   } else if (!skipList.includes(parentKeyName)) {
     const res = namingConverterV3(parentKeyName, filetype, bicepContent);

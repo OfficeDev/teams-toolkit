@@ -5,7 +5,7 @@
  * @author Zhaofeng Xu <zhaofengxu@microsoft.com>
  */
 
-import path from "path";
+import * as path from "path";
 import { AadValidator, FunctionValidator } from "../../commonlib";
 import {
   getSubscriptionId,

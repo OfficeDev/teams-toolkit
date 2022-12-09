@@ -19,8 +19,13 @@ import {
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, ResourceToDeploy } from "../../commonlib/constants";
-import { PluginError, ErrorType } from "../../../../fx-core/src/plugins/resource/bot/errors";
+
 import { it } from "@microsoft/extra-shot-mocha";
+import {
+  ErrorType,
+  PluginError,
+} from "@microsoft/teamsfx-core/build/component/resource/botService/errors";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Error type should be expected", function () {
   const testFolder = getTestFolder();
@@ -37,6 +42,9 @@ describe("Error type should be expected", function () {
     `CommandExecutionError should be in UserError`,
     { testPlanCaseId: 15685624 },
     async function () {
+      if (isV3Enabled()) {
+        return this.skip();
+      }
       // Create new bot project
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 

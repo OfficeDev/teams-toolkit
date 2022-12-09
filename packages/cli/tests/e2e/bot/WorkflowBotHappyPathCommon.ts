@@ -5,8 +5,8 @@
  * @author Dooriya Li <dol@microsoft.com>
  */
 
-import fs from "fs-extra";
-import path from "path";
+import * as fs from "fs-extra";
+import * as path from "path";
 
 import { BotValidator } from "../../commonlib";
 

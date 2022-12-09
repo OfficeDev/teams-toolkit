@@ -5,10 +5,10 @@
  * @author Zhijie Huang <zhijie.huang@microsoft.com>
  */
 
-import path from "path";
+import * as path from "path";
 
 import { AadValidator, FunctionValidator } from "../../commonlib";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
 import {
   execAsyncWithRetry,
   getSubscriptionId,
@@ -49,6 +49,9 @@ describe("Test Add Function", function () {
   });
 
   it(`Create Tab Then Add Function`, { testPlanCaseId: 10306830 }, async function () {
+    if (isV3Enabled()) {
+      return this.skip();
+    }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
 

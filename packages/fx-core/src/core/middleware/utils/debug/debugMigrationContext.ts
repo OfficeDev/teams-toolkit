@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { CommentArray, CommentJSONValue } from "comment-json";
 import { AppLocalYmlConfig } from "./appLocalYmlGenerator";
 

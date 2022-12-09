@@ -308,14 +308,12 @@ export function convertPluginId(name: string): string {
     return name;
   }
   const pluginId = nameArray[1];
-
   if (Object.values(pluginIdMappingV3).includes(pluginId)) {
     const convertedPluginId = Object.keys(pluginIdMappingV3).find(
       (key) => pluginIdMappingV3[key] === pluginId
     );
     name = name.replace(pluginId, convertedPluginId!);
   }
-
   return name;
 }
 

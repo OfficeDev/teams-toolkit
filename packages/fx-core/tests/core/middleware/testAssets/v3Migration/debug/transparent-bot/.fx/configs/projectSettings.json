@@ -1,0 +1,60 @@
+{
+    "appName": "bot120701",
+    "projectId": "b0773ebf-3172-4e13-ad59-c8b1b33bd1ae",
+    "version": "2.1.0",
+    "components": [
+        {
+            "name": "teams-bot",
+            "hosting": "azure-web-app",
+            "provision": false,
+            "deploy": true,
+            "capabilities": [
+                "bot"
+            ],
+            "build": true,
+            "folder": "bot"
+        },
+        {
+            "name": "bot-service",
+            "provision": true
+        },
+        {
+            "name": "azure-web-app",
+            "scenario": "Bot",
+            "connections": [
+                "identity",
+                "teams-bot"
+            ]
+        },
+        {
+            "name": "identity",
+            "provision": true
+        }
+    ],
+    "programmingLanguage": "typescript",
+    "solutionSettings": {
+        "name": "fx-solution-azure",
+        "version": "1.0.0",
+        "hostType": "Azure",
+        "azureResources": [],
+        "capabilities": [
+            "Bot"
+        ],
+        "activeResourcePlugins": [
+            "fx-resource-local-debug",
+            "fx-resource-appstudio",
+            "fx-resource-cicd",
+            "fx-resource-api-connector",
+            "fx-resource-bot",
+            "fx-resource-identity"
+        ]
+    },
+    "pluginSettings": {
+        "fx-resource-bot": {
+            "host-type": "app-service",
+            "capabilities": [
+                "bot"
+            ]
+        }
+    }
+}

@@ -38,6 +38,7 @@ import {
   configsMigration,
   generateApimPluginEnvContent,
   userdataMigration,
+  debugMigration,
   azureParameterMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
@@ -883,6 +884,46 @@ describe("Migration utils", () => {
   it("UpgradeCanceledError", () => {
     const err = UpgradeCanceledError();
     assert.isNotNull(err);
+  });
+});
+
+describe("debugMigration", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  const testCases = [
+    "transparent-tab",
+    "transparent-bot",
+    "transparent-notification",
+    "transparent-tab-bot-func",
+  ];
+
+  testCases.forEach((testCase) => {
+    it(testCase, async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+
+      await copyTestProject(path.join("debug", testCase), projectPath);
+
+      await debugMigration(migrationContext);
+
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+      assert.equal(
+        await fs.readFile(path.join(projectPath, "teamsfx", "app.local.yml"), "utf-8"),
+        await fs.readFile(path.join(projectPath, "expected", "app.local.yml"), "utf-8")
+      );
+      assert.equal(
+        await fs.readFile(path.join(projectPath, ".vscode", "tasks.json"), "utf-8"),
+        await fs.readFile(path.join(projectPath, "expected", "tasks.json"), "utf-8")
+      );
+    });
   });
 });
 

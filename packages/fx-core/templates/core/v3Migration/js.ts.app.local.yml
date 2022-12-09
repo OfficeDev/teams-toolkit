@@ -1,0 +1,29 @@
+version: 1.0.0
+
+{{#config.deploy}}
+deploy:
+  {{#tools}}
+  - uses: tools/install 
+    with:
+      {{#devCert}}
+      devCert:
+        trust: {{trust}}
+      {{/devCert}}
+      {{#func}}
+      func: true
+      {{/func}}
+      {{#dotnet}}
+      dotnet: true
+      {{/dotnet}}
+
+  {{/tools}}
+  {{#npmCommands}}
+  - uses: npm/command
+    with:
+      args: {{args}}
+      {{#if workingDirectory}}
+      workingDirectory: {{workingDirectory}}
+      {{/if}}
+
+  {{/npmCommands}}
+{{/config.deploy}}

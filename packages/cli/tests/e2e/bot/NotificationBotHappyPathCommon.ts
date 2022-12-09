@@ -16,6 +16,7 @@ import { environmentManager } from "@microsoft/teamsfx-core/build/core/environme
 
 import { it } from "@microsoft/extra-shot-mocha";
 import { Runtime } from "../../commonlib/constants";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 export function happyPathTest(runtime: Runtime): void {
   describe(`Provision for ${runtime}`, function () {
@@ -34,6 +35,9 @@ export function happyPathTest(runtime: Runtime): void {
     }
 
     it("Provision Resource: app service hosted notification", async function () {
+      if (isV3Enabled()) {
+        return this.skip();
+      }
       const cmd =
         runtime === Runtime.Node
           ? `teamsfx new --interactive false --app-name ${appName} --capabilities notification --bot-host-type-trigger http-restify --programming-language typescript`

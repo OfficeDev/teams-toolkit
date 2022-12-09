@@ -20,6 +20,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { BotValidator } from "../../commonlib";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();
@@ -33,6 +34,9 @@ describe("Configuration successfully changed when with different plugins", funct
   });
 
   it(`bot + function`, { testPlanCaseId: 15685589 }, async function () {
+    if (isV3Enabled()) {
+      return this.skip();
+    }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
 

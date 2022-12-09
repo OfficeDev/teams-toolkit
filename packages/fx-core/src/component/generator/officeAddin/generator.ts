@@ -11,8 +11,7 @@ import {
   devPreview,
   ContextV3,
 } from "@microsoft/teamsfx-api";
-import { mkdir } from "fs-extra";
-import { join, resolve } from "path";
+import { join } from "path";
 import {
   AddinNameQuestion,
   AddinLanguageQuestion,

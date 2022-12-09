@@ -11,7 +11,6 @@ import {
   devPreview,
   ContextV3,
 } from "@microsoft/teamsfx-api";
-import { UndefinedProjectPathError } from "./error";
 import { mkdir } from "fs-extra";
 import { join, resolve } from "path";
 import {
@@ -40,9 +39,6 @@ const telemetryEvent = "generate";
 const templateName = "office-addin";
 
 export class OfficeAddinGenerator {
-  name = "fx-resource-office-addin";
-  displayName = "Office Addin";
-
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
@@ -79,13 +75,12 @@ export class OfficeAddinGenerator {
   ): Promise<Result<undefined, FxError>> {
     const template = getTemplate(inputs);
     const name = inputs[AddinNameQuestion.name];
-    const addinRoot = resolve(destinationPath, name);
+    const addinRoot = destinationPath;
     const fromFolder = inputs[AddinProjectFolderQuestion.name];
     const language = inputs[AddinLanguageQuestion.name];
     const host = inputs[OfficeHostQuestion.name];
     const workingDir = process.cwd();
 
-    await mkdir(addinRoot);
     process.chdir(addinRoot);
     try {
       if (!fromFolder) {

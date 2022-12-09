@@ -44,6 +44,6 @@ deploy:
     with:
       func: true
 
-  - uses: npm/command # Run npm command
+  - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit

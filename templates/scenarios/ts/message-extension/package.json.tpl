@@ -11,7 +11,7 @@
     "scripts": {
         "dev:teamsfx": "node teamsfx/script/run.js . teamsfx/.env.local",
         "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./index.ts",
-        "build": "tsc --build && shx cp -r ./adaptiveCards ./lib/",
+        "build": "tsc --build",
         "start": "node ./lib/index.js",
         "watch": "nodemon --exec \"npm run start\"",
         "test": "echo \"Error: no test specified\" && exit 1"

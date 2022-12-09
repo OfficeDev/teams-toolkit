@@ -11,7 +11,7 @@ import { TelemetryConstant } from "../../constant/commonConstant";
 import { BaseBuildStepDriver } from "./baseBuildStepDriver";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
-const ACTION_NAME = "dotnet/command";
+const ACTION_NAME = "cli/runDotnetCommand";
 
 @Service(ACTION_NAME)
 export class DotnetBuildDriver extends BaseBuildStepDriver {
@@ -21,7 +21,7 @@ export class DotnetBuildDriver extends BaseBuildStepDriver {
     return new DotnetBuildDriverImpl(
       args,
       context,
-      "https://aka.ms/teamsfx-actions/dotnet-command"
+      "https://aka.ms/teamsfx-actions/cli-run-dotnet-command"
     );
   }
 

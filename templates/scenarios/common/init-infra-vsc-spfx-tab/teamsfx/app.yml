@@ -1,15 +1,15 @@
 version: 1.0.0
 
 deploy:
-  - uses: npm/command
+  - uses: cli/runNpmCommand
     with:
       args: install
       workingDirectory: ./src
-  - uses: npx/command
+  - uses: cli/runNpxCommand
     with:
       workingDirectory: ./src
       args: gulp bundle --ship --no-color
-  - uses: npx/command
+  - uses: cli/runNpxCommand
     with:
       workingDirectory: ./src
       args: gulp package-solution --ship --no-color
@@ -43,7 +43,7 @@ publish:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/manifest.${{TEAMSFX_ENV}}.json
-  - uses: teamsApp/copyAppPackageForSPFx
+  - uses: teamsApp/copyAppPackageToSPFx
     with:
       appPackagePath: ${{TEAMS_APP_PACKAGE_PATH}}
       spfxFolder: ./src

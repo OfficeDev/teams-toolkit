@@ -856,7 +856,7 @@ async function checkNode(
       try {
         VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
         const nodeStatus = await depsManager.ensureDependency(nodeDep, true, {
-          projectPath: globalVariables.workspaceUri!.fsPath,
+          projectPath: globalVariables.workspaceUri?.fsPath,
         });
         return {
           checker: nodeStatus.name,

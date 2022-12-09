@@ -56,6 +56,6 @@ deploy:
     # SSL_CRT_FILE: certificate file
     # SSL_KEY_FILE: certificate key
 
-  - uses: npm/command # Run npm command
+  - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit

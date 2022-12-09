@@ -11,6 +11,7 @@ import {
 } from "../../../src/core/middleware/utils/MigrationUtils";
 import { generateAppIdUri } from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { randomAppName } from "../utils";
+// eslint-disable-next-line import/namespace
 import { Constants, copyTestProject, mockMigrationContext } from "./projectMigrationV3.test";
 
 describe("MigrationUtilsV3", () => {

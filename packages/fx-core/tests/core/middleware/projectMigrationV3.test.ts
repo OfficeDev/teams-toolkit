@@ -927,7 +927,7 @@ describe("debugMigration", () => {
   });
 });
 
-async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
+export async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
   const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
   inputs.projectPath = projectPath;
   const ctx = {

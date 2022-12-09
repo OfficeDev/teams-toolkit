@@ -56,6 +56,7 @@ export enum TelemetryEventName {
   loadManifest = "load-manifest",
   saveManifest = "save-manifest",
   appStudioApi = "app-studio-api",
+  authSvcApi = "auth-svc-api",
 }
 
 export class TelemetryUtils {

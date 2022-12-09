@@ -16,6 +16,7 @@ import {
   canAddCICDWorkflows,
   getAppSPFxVersion,
   isVideoFilterProject,
+  setRegion,
 } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
 import {
@@ -34,7 +35,7 @@ import fs from "fs-extra";
 import { environmentManager } from "../../src/core/environment";
 import { ExistingTemplatesStat } from "../../src/component/feature/cicd/existingTemplatesStat";
 import mockedEnv from "mocked-env";
-import { FeatureFlagName } from "../../src/common/constants";
+import { AuthSvcClient } from "../../src/component/resource/appManifest/authSvcClient";
 
 chai.use(chaiAsPromised);
 
@@ -513,6 +514,17 @@ describe("tools", () => {
       // Assert
       chai.expect(result.isOk()).to.be.true;
       chai.expect(result._unsafeUnwrap()).to.be.false;
+    });
+  });
+
+  describe("setRegion", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("set region", async () => {
+      sinon.stub(AuthSvcClient, "getRegion").resolves("apac");
+      await setRegion("fakeToken");
     });
   });
 });

@@ -102,6 +102,11 @@ describe("MigrationUtilsV3", () => {
     );
   });
 
+  it("happy path for provision outputs with empty bicep content", () => {
+    const res = namingConverterV3("state.fx-resource-frontend-hosting.domain", FileType.STATE, "");
+    assert.isTrue(res.isOk() && res.value === "STATE__FX_RESOURCE_FRONTEND_HOSTING__DOMAIN");
+  });
+
   it("failed to convert provision outputs: state.fx-resource-azure-sql.databaseName with multiple database", () => {
     const bicepContent =
       "output azureSqlOutput object = {\nteamsFxPluginId: 'fx-resource-azure-sql'\n}\n" +

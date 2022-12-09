@@ -11,13 +11,20 @@ import * as uuid from "uuid";
 import { cpUtils } from "../../../src/common/deps-checker";
 import { Generator } from "../../../src/component/generator/generator";
 import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
+import {
+  AddinLanguageQuestion,
+  AddinProjectFolderQuestion,
+  OfficeHostQuestion,
+} from "../../../src/component/generator/officeAddin/question";
 import { GeneratorChecker } from "../../../src/component/resource/spfx/depsChecker/generatorChecker";
 import { YoChecker } from "../../../src/component/resource/spfx/depsChecker/yoChecker";
-import { SPFXQuestionNames } from "../../../src/component/resource/spfx/utils/questions";
+import * as childProcess from "child_process";
 import { Utils } from "../../../src/component/resource/spfx/utils/utils";
 import { createContextV3, newProjectSettingsV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
+import { helperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
+import { OfficeAddinManifest } from "office-addin-manifest";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -51,7 +58,7 @@ describe("OfficeAddinGenerator", function () {
       projectPath: testFolder,
       "app-name": "office-addin-test",
     };
-    const doYeomanScaffoldStub = sinon
+    const doScaffoldStub = sinon
       .stub(OfficeAddinGenerator, "doScaffolding")
       .resolves(ok(undefined));
     const generateTemplateStub = sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -59,8 +66,31 @@ describe("OfficeAddinGenerator", function () {
     const result = await OfficeAddinGenerator.generate(context, inputs, testFolder);
 
     chai.expect(result.isOk()).to.eq(true);
-    chai.expect(doYeomanScaffoldStub.calledOnce).to.be.true;
+    chai.expect(doScaffoldStub.calledOnce).to.be.true;
     chai.expect(generateTemplateStub.calledOnce).to.be.true;
+  });
+
+  it("should scaffold taskpane successfully on happy path", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "office-addin-test",
+    };
+    inputs["capabilities"] = ["taskpane"];
+    inputs[AddinProjectFolderQuestion.name] = undefined;
+    inputs[AddinLanguageQuestion.name] = "TypeScript";
+
+    sinon.stub<any, any>(childProcess, "exec").callsFake(() => {
+      return;
+    });
+    sinon.stub(helperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
+    sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
+
+    const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
+
+    if (result.isErr()) console.log(`!!!! ${result.error.name} ${result.error.message}`);
+
+    chai.expect(result.isOk()).to.eq(true);
   });
 
   afterEach(async () => {

@@ -8,16 +8,15 @@ import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 
 const zipFile = "project.zip";
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace helperMethods {
-  function deleteFolderRecursively(projectFolder: string) {
+export class helperMethods {
+  static deleteFolderRecursively(projectFolder: string): void {
     try {
       if (fs.existsSync(projectFolder)) {
         fs.readdirSync(projectFolder).forEach(function (file) {
           const curPath = `${projectFolder}/${file}`;
 
           if (fs.lstatSync(curPath).isDirectory()) {
-            deleteFolderRecursively(curPath);
+            helperMethods.deleteFolderRecursively(curPath);
           } else {
             fs.unlinkSync(curPath);
           }
@@ -29,14 +28,14 @@ export namespace helperMethods {
     }
   }
 
-  export function doesFolderExist(folderPath: string): boolean {
+  static doesFolderExist(folderPath: string): boolean {
     if (fs.existsSync(folderPath)) {
       return fs.readdirSync(folderPath).length > 0;
     }
     return false;
   }
 
-  export async function downloadProjectTemplateZipFile(
+  static async downloadProjectTemplateZipFile(
     projectFolder: string,
     projectRepo: string,
     projectBranch: string | undefined
@@ -57,7 +56,7 @@ export namespace helperMethods {
               );
             })
             .on("close", async () => {
-              await unzipProjectTemplate(projectFolder);
+              await helperMethods.unzipProjectTemplate(projectFolder);
               resolve();
             });
         });
@@ -67,7 +66,7 @@ export namespace helperMethods {
       });
   }
 
-  async function unzipProjectTemplate(projectFolder: string): Promise<void> {
+  static async unzipProjectTemplate(projectFolder: string): Promise<void> {
     return new Promise(async (resolve, reject) => {
       // TODO: Verify file exists
       const readStream = fs.createReadStream(`${projectFolder}/${zipFile}`);
@@ -77,13 +76,13 @@ export namespace helperMethods {
           reject(`Unable to unzip project zip file for "${projectFolder}".\n${err}`);
         })
         .on("close", async () => {
-          moveUnzippedFiles(projectFolder);
+          helperMethods.moveUnzippedFiles(projectFolder);
           resolve();
         });
     });
   }
 
-  function moveUnzippedFiles(projectFolder: string): void {
+  static moveUnzippedFiles(projectFolder: string): void {
     // delete original zip file
     const zipFilePath = path.resolve(`${projectFolder}/${zipFile}`);
     if (fs.existsSync(zipFilePath)) {
@@ -97,13 +96,13 @@ export namespace helperMethods {
 
     // construct paths to move files out of unzipped folder into project root folder
     const fromFolder = path.resolve(`${projectFolder}/${unzippedFolder[0]}`);
-    copyAddinFiles(fromFolder, projectFolder);
+    helperMethods.copyAddinFiles(fromFolder, projectFolder);
 
     // delete project zipped folder
-    deleteFolderRecursively(fromFolder);
+    helperMethods.deleteFolderRecursively(fromFolder);
   }
 
-  export function copyAddinFiles(fromFolder: string, toFolder: string): void {
+  static copyAddinFiles(fromFolder: string, toFolder: string): void {
     fse.copySync(fromFolder, toFolder, {
       filter: (path) => {
         const module: boolean = path.includes("node_modules");
@@ -113,10 +112,7 @@ export namespace helperMethods {
     });
   }
 
-  export async function updateManifest(
-    projectRoot: string,
-    addinManifestPath: string
-  ): Promise<void> {
+  static async updateManifest(projectRoot: string, addinManifestPath: string): Promise<void> {
     // Read add-in manifest file
     const addinManifest: devPreview.DevPreviewSchema = await ManifestUtil.loadFromPath(
       addinManifestPath

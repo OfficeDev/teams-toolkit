@@ -27,10 +27,10 @@ provision:
     # Output: N/A
 
 deploy:
-  - uses: npm/command # Run npm command
+  - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --production
-  - uses: npm/command # Run npm command
+  - uses: cli/runNpmCommand # Run npm command
     with:
       workingDirectory: .
       args: run build:tab --if-present

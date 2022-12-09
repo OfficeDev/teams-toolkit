@@ -88,7 +88,14 @@ export class FxCoreV3Implement {
     return res;
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ContextInjectorMW, EnvWriterMW])
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMWV3,
+    EnvLoaderMW(false),
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.provision);
     inputs.stage = Stage.provision;
@@ -111,7 +118,14 @@ export class FxCoreV3Implement {
     }
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false), ContextInjectorMW, EnvWriterMW])
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectMigratorMWV3,
+    EnvLoaderMW(false),
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.deploy);
     inputs.stage = Stage.deploy;
@@ -171,7 +185,7 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false)])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectMigratorMWV3, EnvLoaderMW(false)])
   async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
@@ -183,8 +197,8 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ProjectMigratorMWV3,
     ConcurrentLockerMW,
+    ProjectMigratorMWV3,
     EnvLoaderMW(true),
     ContextInjectorMW,
     EnvWriterMW,
@@ -199,7 +213,7 @@ export class FxCoreV3Implement {
     return res;
   }
 
-  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, EnvLoaderMW(false)])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectMigratorMWV3, EnvLoaderMW(false)])
   async executeUserTask(
     func: Func,
     inputs: Inputs,
@@ -230,7 +244,7 @@ export class FxCoreV3Implement {
     return res;
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW(false), ContextInjectorMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW(false), ContextInjectorMW])
   async publishInDeveloperPortal(
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -258,7 +272,7 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  @hooks([ErrorHandlerMW, EnvLoaderMW(false), ContextInjectorMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW(false), ContextInjectorMW])
   async preProvisionForVS(
     inputs: Inputs,
     ctx?: CoreHookContext

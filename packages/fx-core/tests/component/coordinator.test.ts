@@ -450,6 +450,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -528,6 +529,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -605,6 +607,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -616,6 +619,7 @@ describe("component coordinator test", () => {
       platform: Platform.VSCode,
       projectPath: ".",
       env: "dev",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -685,6 +689,7 @@ describe("component coordinator test", () => {
       platform: Platform.VSCode,
       projectPath: ".",
       env: "dev",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -765,6 +770,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -856,6 +862,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -922,6 +929,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -995,6 +1003,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -1055,6 +1064,7 @@ describe("component coordinator test", () => {
       targetSubscriptionId: "mockSubId",
       targetResourceGroupName: "test-rg",
       targetResourceLocationName: "Ease US",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -1117,6 +1127,7 @@ describe("component coordinator test", () => {
       targetSubscriptionId: "mockSubId",
       targetResourceGroupName: "test-rg",
       targetResourceLocationName: "Ease US",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -1178,6 +1189,7 @@ describe("component coordinator test", () => {
       targetSubscriptionId: "mockSubId",
       targetResourceGroupName: "test-rg",
       targetResourceLocationName: "Ease US",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -1258,6 +1270,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -1346,6 +1359,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -1385,6 +1399,7 @@ describe("component coordinator test", () => {
       projectPath: ".",
       workflowFilePath: "./app.local.yml",
       env: "local",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -1467,6 +1482,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -1528,6 +1544,7 @@ describe("component coordinator test", () => {
       platform: Platform.VSCode,
       projectPath: ".",
       env: "dev",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
@@ -1567,6 +1584,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.deployArtifacts(inputs);
@@ -1604,6 +1622,7 @@ describe("component coordinator test", () => {
       projectPath: ".",
       workflowFilePath: "./app.local.yml",
       env: "local",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.deployArtifacts(inputs);
@@ -1657,6 +1676,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.deployArtifacts(inputs);
@@ -1696,6 +1716,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.publishApplication(inputs);
@@ -2120,6 +2141,7 @@ describe("component coordinator test", () => {
       platform: Platform.VSCode,
       projectPath: ".",
       env: "dev",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.preProvisionForVS(inputs);
@@ -2209,6 +2231,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
+      ignoreLockByUT: true,
     };
     const fxCore = new FxCore(tools);
     const res1 = await fxCore.executeUserTask(

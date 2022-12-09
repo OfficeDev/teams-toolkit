@@ -958,7 +958,7 @@ async function assertFileContent(
   assert.equal(actualFileContent, expectedFileContent);
 }
 
-async function copyTestProject(projectName: string, targetPath: string): Promise<void> {
+export async function copyTestProject(projectName: string, targetPath: string): Promise<void> {
   await fs.copy(getTestAssetsPath(projectName), targetPath);
 }
 
@@ -981,11 +981,17 @@ function getAction(lifecycleDefinition: Array<any>, actionName: string): any[] {
   return [];
 }
 
-const Constants = {
+export const Constants = {
   happyPathTestProject: "happyPath",
   settingsFilePath: "teamsfx/settings.json",
   oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
   appYmlPath: "teamsfx/app.yml",
   manifestsMigrationHappyPath: "manifestsHappyPath",
   launchJsonPath: ".vscode/launch.json",
+  happyPathWithoutFx: "happyPath_for_needMigrateToAadManifest/happyPath_no_fx",
+  happyPathAadManifestTemplateExist:
+    "happyPath_for_needMigrateToAadManifest/happyPath_aadManifestTemplateExist",
+  happyPathWithoutPermission: "happyPath_for_needMigrateToAadManifest/happyPath_no_permissionFile",
+  happyPathAadPluginNotActive:
+    "happyPath_for_needMigrateToAadManifest/happyPath_aadPluginNotActive",
 };

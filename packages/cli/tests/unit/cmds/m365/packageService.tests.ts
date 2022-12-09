@@ -26,6 +26,13 @@ describe("Package Service", () => {
       return Promise.reject(new Error("test-delete"));
     },
     get: function <T = any, R = AxiosResponse<T>>(url: string): Promise<R> {
+      if (url.includes("config/v1/environment")) {
+        return Promise.resolve({
+          data: {
+            titlesServiceUrl: "test-url",
+          },
+        } as any);
+      }
       return Promise.reject(new Error("test-get"));
     },
     post: function <T = any, R = AxiosResponse<T>>(

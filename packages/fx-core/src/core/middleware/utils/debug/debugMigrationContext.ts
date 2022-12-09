@@ -7,6 +7,7 @@ import { AppLocalYmlConfig } from "./appLocalYmlGenerator";
 export class DebugMigrationContext {
   public tasks: CommentArray<CommentJSONValue>;
   public appYmlConfig: AppLocalYmlConfig;
+  public generatedLabels: string[] = [];
 
   constructor(tasks: CommentArray<CommentJSONValue>) {
     this.tasks = tasks;

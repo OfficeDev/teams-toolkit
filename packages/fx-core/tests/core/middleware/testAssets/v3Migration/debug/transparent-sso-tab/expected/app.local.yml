@@ -1,6 +1,11 @@
 version: 1.0.0
 
 registerApp:
+  - uses: aadApp/create
+    with:
+      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-aad
+      generateClientSecret: true
+
   - uses: teamsApp/create
     with:
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}
@@ -12,6 +17,11 @@ configureApp:
         PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN: localhost:53000
         PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT: https://localhost:53000
         PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH: /index.html#
+
+  - uses: aadApp/update
+    with:
+      manifestTemplatePath: ./aad.manifest.template.json
+      outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 
   - uses: teamsApp/validate
     with:
@@ -42,6 +52,13 @@ deploy:
         PORT: 53000
         SSL_CRT_FILE: ${{SSL_CRT_FILE}}
         SSL_KEY_FILE: ${{SSL_KEY_FILE}}
+
+  - uses: file/updateEnv
+    with:
+      target: ./tabs/.env.teamsfx.local
+      envs:
+        REACT_APP_START_LOGIN_PAGE_URL: ${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT}}/auth-start.html
+        REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
 
   - uses: npm/command
     with:

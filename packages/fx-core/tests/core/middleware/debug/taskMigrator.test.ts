@@ -4,11 +4,19 @@
 import "mocha";
 import * as chai from "chai";
 import {
+  migratePrepareManifest,
+  migrateSetUpBot,
+  migrateSetUpSSO,
+  migrateSetUpTab,
   migrateTransparentNpmInstall,
   migrateTransparentPrerequisite,
 } from "../../../../src/core/middleware/utils/debug/taskMigrator";
 import { CommentArray, CommentJSONValue, parse, stringify } from "comment-json";
 import { DebugMigrationContext } from "../../../../src/core/middleware/utils/debug/debugMigrationContext";
+import {
+  createResourcesTask,
+  setUpLocalProjectsTask,
+} from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 
 describe("debugMigration", () => {
   describe("migrateTransparentPrerequisite", () => {
@@ -423,6 +431,258 @@ describe("debugMigration", () => {
         stringify(parse(expectedTaskContent), null, 4)
       );
       chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.npmCommands);
+    });
+  });
+
+  describe("migrateSetUpTab", () => {
+    it("happy path", () => {
+      const testTaskContent = `[
+        {
+          "label": "Start Teams App Locally",
+          "dependsOn": [
+              "Validate & install prerequisites",
+              "Install npm packages",
+              "Start local tunnel",
+              "Set up tab",
+              "Set up bot",
+              "Set up SSO",
+              "Build & upload Teams manifest",
+              "Start services"
+          ],
+          "dependsOrder": "sequence"
+        },
+        {
+          // Prepare local launch information for Tab.
+          // See https://aka.ms/teamsfx-debug-set-up-tab-task to know the details and how to customize the args.
+          "label": "Set up tab",
+          "type": "teamsfx",
+          "command": "debug-set-up-tab",
+          "args": {
+              "baseUrl": "https://localhost:53000"
+          }
+        }
+      ]`;
+      const content = `[
+        {
+          "label": "Start Teams App Locally",
+          "dependsOn": [
+              "Validate & install prerequisites",
+              "Install npm packages",
+              "Start local tunnel",
+              "Create resources",
+              "Set up local projects",
+              "Set up bot",
+              "Set up SSO",
+              "Build & upload Teams manifest",
+              "Start services"
+          ],
+          "dependsOrder": "sequence"
+        },
+      ]`;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      expectedTasks.push(
+        createResourcesTask("Create resources"),
+        setUpLocalProjectsTask("Set up local projects")
+      );
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const debugContext = new DebugMigrationContext(testTasks);
+      migrateSetUpTab(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
+      chai.assert.equal(debugContext.appYmlConfig.configureApp?.tab?.domain, "localhost:53000");
+      chai.assert.equal(
+        debugContext.appYmlConfig.configureApp?.tab?.endpoint,
+        "https://localhost:53000"
+      );
+      chai.assert.equal(debugContext.appYmlConfig.deploy?.tab?.port, 53000);
+    });
+  });
+
+  describe("migrateSetUpBot", () => {
+    it("happy path", () => {
+      const testTaskContent = `[
+        {
+          "label": "Start Teams App Locally",
+          "dependsOn": [
+              "Validate & install prerequisites",
+              "Install npm packages",
+              "Start local tunnel",
+              "Set up tab",
+              "Set up bot",
+              "Set up SSO",
+              "Build & upload Teams manifest",
+              "Start services"
+          ],
+          "dependsOrder": "sequence"
+        },
+        {
+          // Register resources and prepare local launch information for Bot.
+          // See https://aka.ms/teamsfx-debug-set-up-bot-task to know the details and how to customize the args.
+          "label": "Set up bot",
+          "type": "teamsfx",
+          "command": "debug-set-up-bot",
+          "args": {
+              //// Enter your own bot information if using the existing bot. ////
+              // "botId": "",
+              // "botPassword": "", // use plain text or environment variable reference like $\{env:BOT_PASSWORD}
+              "botMessagingEndpoint": "/api/messages" // use your own routing "/any/path", or full URL "https://contoso.com/any/path"
+          }
+        }
+      ]`;
+      const content = `[
+        {
+          "label": "Start Teams App Locally",
+          "dependsOn": [
+              "Validate & install prerequisites",
+              "Install npm packages",
+              "Start local tunnel",
+              "Set up tab",
+              "Create resources",
+              "Set up local projects",
+              "Set up SSO",
+              "Build & upload Teams manifest",
+              "Start services"
+          ],
+          "dependsOrder": "sequence"
+        },
+      ]`;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      expectedTasks.push(
+        createResourcesTask("Create resources"),
+        setUpLocalProjectsTask("Set up local projects")
+      );
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const debugContext = new DebugMigrationContext(testTasks);
+      migrateSetUpBot(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
+      chai.assert.equal(debugContext.appYmlConfig.provision?.bot, true);
+      chai.assert.equal(debugContext.appYmlConfig.deploy?.bot, true);
+    });
+  });
+
+  describe("migrateSetUpSSO", () => {
+    it("happy path", () => {
+      const testTaskContent = `[
+        {
+          "label": "Start Teams App Locally",
+          "dependsOn": [
+              "Validate & install prerequisites",
+              "Install npm packages",
+              "Start local tunnel",
+              "Set up tab",
+              "Set up bot",
+              "Set up SSO",
+              "Build & upload Teams manifest",
+              "Start services"
+          ],
+          "dependsOrder": "sequence"
+        },
+        {
+          // Register resources and prepare local launch information for SSO functionality.
+          // See https://aka.ms/teamsfx-debug-set-up-sso-task to know the details and how to customize the args.
+          "label": "Set up SSO",
+          "type": "teamsfx",
+          "command": "debug-set-up-sso",
+          "args": {
+              //// Enter your own AAD app information if using the existing AAD app. ////
+              // "objectId": "",
+              // "clientId": "",
+              // "clientSecret": "", // use plain text or environment variable reference like $\{env:CLIENT_SECRET}
+              // "accessAsUserScopeId": "
+          }
+        }
+      ]`;
+      const content = `[
+        {
+          "label": "Start Teams App Locally",
+          "dependsOn": [
+              "Validate & install prerequisites",
+              "Install npm packages",
+              "Start local tunnel",
+              "Set up tab",
+              "Set up bot",
+              "Create resources",
+              "Set up local projects",
+              "Build & upload Teams manifest",
+              "Start services"
+          ],
+          "dependsOrder": "sequence"
+        },
+      ]`;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      expectedTasks.push(
+        createResourcesTask("Create resources"),
+        setUpLocalProjectsTask("Set up local projects")
+      );
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const debugContext = new DebugMigrationContext(testTasks);
+      migrateSetUpSSO(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
+      chai.assert.equal(debugContext.appYmlConfig.registerApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.configureApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.deploy?.sso, true);
+    });
+  });
+
+  describe("migratePrepareManifest", () => {
+    it("without appPackagePath arg", () => {
+      const testTaskContent = `[
+        {
+          "label": "Start Teams App Locally",
+          "dependsOn": [
+              "Validate & install prerequisites",
+              "Install npm packages",
+              "Start local tunnel",
+              "Set up tab",
+              "Set up bot",
+              "Set up SSO",
+              "Build & upload Teams manifest",
+              "Start services"
+          ],
+          "dependsOrder": "sequence"
+        },
+        {
+          // Build and upload Teams manifest.
+          // See https://aka.ms/teamsfx-debug-prepare-manifest-task to know the details and how to customize the args.
+          "label": "Build & upload Teams manifest",
+          "type": "teamsfx",
+          "command": "debug-prepare-manifest",
+          "args": {
+              //// Enter your own Teams app package path if using the existing Teams manifest. ////
+              // "appPackagePath": ""
+          }
+        }
+      ]`;
+      const content = `[
+        {
+          "label": "Start Teams App Locally",
+          "dependsOn": [
+              "Validate & install prerequisites",
+              "Install npm packages",
+              "Start local tunnel",
+              "Set up tab",
+              "Set up bot",
+              "Set up SSO",
+              "Create resources",
+              "Set up local projects",
+              "Start services"
+          ],
+          "dependsOrder": "sequence"
+        },
+      ]`;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      expectedTasks.push(
+        createResourcesTask("Create resources"),
+        setUpLocalProjectsTask("Set up local projects")
+      );
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const debugContext = new DebugMigrationContext(testTasks);
+      migratePrepareManifest(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
+      chai.assert.equal(debugContext.appYmlConfig.registerApp?.teamsApp, true);
+      chai.assert.equal(
+        debugContext.appYmlConfig.configureApp?.teamsApp?.appPackagePath,
+        undefined
+      );
     });
   });
 });

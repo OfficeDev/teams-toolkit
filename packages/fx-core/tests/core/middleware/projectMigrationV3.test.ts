@@ -901,6 +901,7 @@ describe("debugMigration", () => {
 
   const testCases = [
     "transparent-tab",
+    "transparent-sso-tab",
     "transparent-bot",
     "transparent-notification",
     "transparent-tab-bot-func",

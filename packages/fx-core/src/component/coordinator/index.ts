@@ -755,7 +755,7 @@ export class Coordinator {
       for (const [index, cycle] of cycles.entries()) {
         const execRes = await cycle.execute(ctx);
         summaryReporter.updateLifecycleState(index, execRes);
-        const result = this.convertExecuteResult(execRes.result);
+        const result = this.convertExecuteResult(execRes.result, templatePath);
         merge(output, result[0]);
         if (result[1]) {
           inputs.envVars = output;
@@ -810,7 +810,8 @@ export class Coordinator {
   }
 
   convertExecuteResult(
-    execRes: Result<ExecutionOutput, ExecutionError>
+    execRes: Result<ExecutionOutput, ExecutionError>,
+    templatePath: string
   ): [DotenvParseOutput, FxError | undefined] {
     const output: DotenvParseOutput = {};
     let error = undefined;
@@ -830,8 +831,16 @@ export class Coordinator {
           error = new UserError({
             source: reason.failedDriver.uses,
             name: "UnresolvedPlaceholders",
-            message: getDefaultString("core.error.unresolvedPlaceholders", placeholders),
-            displayMessage: getLocalizedString("core.error.unresolvedPlaceholders", placeholders),
+            message: getDefaultString(
+              "core.error.unresolvedPlaceholders",
+              placeholders,
+              templatePath
+            ),
+            displayMessage: getLocalizedString(
+              "core.error.unresolvedPlaceholders",
+              placeholders,
+              templatePath
+            ),
             helpLink: "https://aka.ms/teamsfx-actions",
           });
         }
@@ -879,7 +888,7 @@ export class Coordinator {
         ctx.logProvider.info(`Executing deploy ${EOL}${EOL}${maybeDescription.value}${EOL}`);
         const execRes = await projectModel.deploy.execute(ctx);
         summaryReporter.updateLifecycleState(0, execRes);
-        const result = this.convertExecuteResult(execRes.result);
+        const result = this.convertExecuteResult(execRes.result, templatePath);
         merge(output, result[0]);
         if (result[1]) {
           inputs.envVars = output;
@@ -934,7 +943,7 @@ export class Coordinator {
         ctx.logProvider.info(`Executing publish ${EOL}${EOL}${maybeDescription.value}${EOL}`);
 
         const execRes = await projectModel.publish.execute(ctx);
-        const result = this.convertExecuteResult(execRes.result);
+        const result = this.convertExecuteResult(execRes.result, templatePath);
         summaryReporter.updateLifecycleState(0, execRes);
         if (result[1]) return err(result[1]);
       } finally {

@@ -1159,7 +1159,7 @@
   "driver.script.npxDescription": "running npx command.",
   "driver.m365Bot.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",
   "driver.m365Bot.error.unhandledError": "Unhandled error happened in %s action: %s",
-  "driver.teamsApp.description.copyAppPackageForSPFxDriver": "copies the generated Teams app package to SPFx solution.",
+  "driver.teamsApp.description.copyAppPackageToSPFxDriver": "copies the generated Teams app package to SPFx solution.",
   "driver.teamsApp.description.createDriver": "create a Teams app.",
   "driver.teamsApp.description.updateDriver": "update a Teams app.",
   "driver.teamsApp.description.publishDriver": "publish a Teams app to tenant app catalog.",

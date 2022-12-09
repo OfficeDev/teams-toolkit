@@ -271,7 +271,7 @@ describe("generateAppYml-js/ts", () => {
     assert.exists(getAction(appYaml.registerApp, "aadApp/create"));
     assert.exists(getAction(appYaml.configureApp, "aadApp/update"));
     // validate tab part
-    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "npm/command");
+    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "cli/runNpmCommand");
     assert.exists(
       npmCommandActions.find(
         (item) => item.with.workingDirectory === "tabs" && item.with.args === "install"
@@ -326,7 +326,7 @@ describe("generateAppYml-js/ts", () => {
     );
 
     assert.isEmpty(getAction(appYaml.provision, "azureStorage/enableStaticWebsite"));
-    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "npm/command");
+    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "cli/runNpmCommand");
     assert.isEmpty(npmCommandActions.filter((item) => item.with.workingDirectory === "tabs"));
     assert.isEmpty(getAction(appYaml.deploy, "azureStorage/deploy"));
   });

@@ -4,7 +4,7 @@
 import "./teamsApp/create";
 import "./teamsApp/validate";
 import "./teamsApp/configure";
-import "./teamsApp/copyAppPackageForSPFx";
+import "./teamsApp/copyAppPackageToSPFx";
 import "./teamsApp/publishAppPackage";
 import "./aad/create";
 import "./aad/update";

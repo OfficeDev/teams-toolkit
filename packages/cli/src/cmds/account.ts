@@ -13,7 +13,12 @@ import {
   Result,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
+import {
+  AppStudioScopes,
+  isV3Enabled,
+  AuthSvcScopes,
+  setRegion,
+} from "@microsoft/teamsfx-core/build/common/tools";
 
 import AzureTokenProvider, { getAzureProvider } from "../commonlib/azureLogin";
 import AzureTokenCIProvider from "../commonlib/azureLoginCI";
@@ -237,6 +242,12 @@ export class M365Login extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     await M365TokenProvider.signout();
     await outputM365Info("login");
+
+    const authSvcTokenRes = await M365TokenProvider.getAccessToken({ scopes: AuthSvcScopes });
+    if (authSvcTokenRes.isOk()) {
+      await setRegion(authSvcTokenRes.value);
+    }
+
     return ok(null);
   }
 }

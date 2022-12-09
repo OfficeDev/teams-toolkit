@@ -49,6 +49,14 @@ export class AppStudioError {
     ],
   };
 
+  public static readonly AuthServiceAPIFailedError = {
+    name: "AuthServiceAPIFailed",
+    message: (e: any, requestPath: string, apiName: string): [string, string] => [
+      getDefaultString("", e, requestPath, apiName),
+      getLocalizedString("", e, requestPath, apiName),
+    ],
+  };
+
   public static readonly RemoteAppIdCreateFailedError = {
     name: "RemoteAppIdCreateFailed",
     message: (error?: any): [string, string] => [

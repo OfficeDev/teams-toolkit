@@ -1,11 +1,17 @@
 import { assert } from "chai";
+import * as os from "os";
+import * as path from "path";
+import fs from "fs-extra";
 import {
   convertPluginId,
   FileType,
   fixedNamingsV3,
   namingConverterV3,
+  needMigrateToAadManifest,
 } from "../../../src/core/middleware/utils/MigrationUtils";
 import { generateAppIdUri } from "../../../src/core/middleware/utils/v3MigrationUtils";
+import { randomAppName } from "../utils";
+import { Constants, copyTestProject, mockMigrationContext } from "./projectMigrationV3.test";
 
 describe("MigrationUtilsV3", () => {
   it("happy path for fixed namings", () => {
@@ -175,5 +181,42 @@ describe("MigrationUtilsV3: convertPluginId", () => {
   it("happy path with short id", () => {
     const res = convertPluginId("test");
     assert.equal(res, "test");
+  });
+});
+
+describe("MigrationUtils: needMigrateToAadManifest", async () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("fxEist false", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathWithoutFx, projectPath);
+    assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
+  });
+
+  it("aadManifestTemplateExist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathAadManifestTemplateExist, projectPath);
+    assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
+  });
+
+  it("permissionFileExist false", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathWithoutPermission, projectPath);
+    assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
+  });
+
+  it("aadPluginIsActive false", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathAadPluginNotActive, projectPath);
+    assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
   });
 });

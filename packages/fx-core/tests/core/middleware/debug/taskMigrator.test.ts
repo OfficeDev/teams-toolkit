@@ -4,6 +4,7 @@
 import "mocha";
 import * as chai from "chai";
 import {
+  migrateTransparentLocalTunnel,
   migrateTransparentNpmInstall,
   migrateTransparentPrerequisite,
 } from "../../../../src/core/middleware/utils/debug/taskMigrator";
@@ -62,7 +63,7 @@ describe("debugMigration", () => {
           }
         }]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -119,7 +120,7 @@ describe("debugMigration", () => {
           }
         }]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -157,7 +158,7 @@ describe("debugMigration", () => {
       ]`;
       const expectedTaskContent = testTaskContent;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -189,7 +190,7 @@ describe("debugMigration", () => {
       }]`;
       const expectedTaskContent = testTaskContent;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -265,7 +266,7 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentNpmInstall(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -340,7 +341,7 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentNpmInstall(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -403,7 +404,7 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentNpmInstall(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -416,13 +417,111 @@ describe("debugMigration", () => {
       const testTaskContent = `[]`;
       const expectedTaskContent = `[]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentNpmInstall(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
         stringify(parse(expectedTaskContent), null, 4)
       );
       chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.npmCommands);
+    });
+  });
+
+  describe("migrateTransparentLocalTunnel", () => {
+    it("happy path", () => {
+      const testTaskContent = `[
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt"
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const expectedTaskContent = `[
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+              "env": "local",
+              "output": {
+                // The naming is a limitation of migration.
+                "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+              }
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const debugContext = new DebugMigrationContext(testTasks, {
+        botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+        botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+      });
+      migrateTransparentLocalTunnel(debugContext);
+      chai.assert.equal(
+        stringify(testTasks, null, 4),
+        stringify(parse(expectedTaskContent), null, 4)
+      );
+    });
+
+    it("customized ngrok", () => {
+      const testTaskContent = `[
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+              "ngrokPath": "ngrok"
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const expectedTaskContent = `[
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+              "ngrokPath": "ngrok",
+              "env": "local",
+              "output": {
+                // The naming is a limitation of migration.
+                "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+              }
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const debugContext = new DebugMigrationContext(testTasks, {
+        botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+        botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+      });
+      migrateTransparentLocalTunnel(debugContext);
+      chai.assert.equal(
+        stringify(testTasks, null, 4),
+        stringify(parse(expectedTaskContent), null, 4)
+      );
     });
   });
 });

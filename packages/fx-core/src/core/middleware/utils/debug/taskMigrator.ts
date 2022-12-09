@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CommentArray, CommentJSONValue, parse } from "comment-json";
+import { assign, CommentArray, CommentJSONValue, parse } from "comment-json";
 import { DebugMigrationContext } from "./debugMigrationContext";
 import { Prerequisite, TaskCommand } from "../../../../common/local";
 import { isCommentArray, isCommentObject } from "./debugV3MigrationUtils";
@@ -51,6 +51,31 @@ export function migrateTransparentPrerequisite(context: DebugMigrationContext): 
         }
         context.appYmlConfig.deploy.tools = toolsArgs;
       }
+    }
+  }
+}
+
+export function migrateTransparentLocalTunnel(context: DebugMigrationContext): void {
+  for (const task of context.tasks) {
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "teamsfx") ||
+      !(task["command"] === TaskCommand.startLocalTunnel)
+    ) {
+      continue;
+    }
+
+    if (isCommentObject(task["args"])) {
+      const comment = `
+        {
+          // The naming is a limitation of migration.
+        }
+      `;
+      task["args"]["env"] = "local";
+      task["args"]["output"] = assign(parse(comment), {
+        endpoint: context.placeholderMapping.botEndpoint,
+        domain: context.placeholderMapping.botDomain,
+      });
     }
   }
 }

@@ -34,13 +34,7 @@ export class PackageService {
       CLILogProvider.debug(JSON.stringify(envInfo.data));
       return envInfo.data.titlesServiceUrl;
     } catch (error: any) {
-      CLILogProvider.necessaryLog(LogLevel.Error, "Get ServiceUrl failed.");
-      if (error.response) {
-        CLILogProvider.necessaryLog(LogLevel.Error, JSON.stringify(error.response.data));
-      } else {
-        CLILogProvider.necessaryLog(LogLevel.Error, error.message);
-      }
-
+      CLILogProvider.necessaryLog(LogLevel.Error, `Get ServiceUrl failed. ${error.message}`);
       throw error;
     }
   }

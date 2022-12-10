@@ -60,8 +60,6 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
     const componentName = action.componentName || ctx.self?.constructor.name;
     const telemetryComponentName = action.telemetryComponentName || componentName;
     const methodName = ctx.method!;
-    const actionName = `${componentName}.${methodName}`;
-    // TOOLS.logProvider.debug(`execute ${actionName} start!`);
     const eventName = action.telemetryEventName || methodName;
     const telemetryProps = {
       [TelemetryConstants.properties.component]: telemetryComponentName,
@@ -69,7 +67,6 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
     };
     const telemetryMeasures: Record<string, number> = {};
     let progressBar;
-    let returnType: "Result" | "Array" = "Result";
     try {
       // send start telemetry
       if (action.enableTelemetry) {
@@ -125,16 +122,6 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       }
       const startTime = new Date().getTime();
       await next();
-      if (ctx.result?.isErr) {
-        returnType = "Result";
-        if (ctx.result.isErr()) throw ctx.result.error;
-      } else if (Array.isArray(ctx.result)) {
-        // second type of return type: [value, FxError]
-        returnType = "Array";
-        if (ctx.result.length === 2 && ctx.result[1]) {
-          throw ctx.result[1];
-        }
-      }
       const timeCost = new Date().getTime() - startTime;
       if (ctx.result?.isErr && ctx.result.isErr()) throw ctx.result.error;
       // send end telemetry
@@ -150,7 +137,6 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         );
       }
       await progressBar?.end(true);
-      // TOOLS.logProvider.debug(`execute ${actionName} success!`);
     } catch (e) {
       await progressBar?.end(false);
       let fxError;
@@ -179,8 +165,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
           telemetryProps
         );
       }
-      // TOOLS.logProvider.error(`execute ${actionName} failed!`);
-      if (returnType === "Result") ctx.result = err(fxError);
+      ctx.result = err(fxError);
     }
   };
 }

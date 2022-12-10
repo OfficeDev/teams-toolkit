@@ -20,10 +20,10 @@ provision:
     # Output: N/A
 
 deploy:
-  - uses: npm/command # Run npm command
+  - uses: cli/runNpmCommand # Run npm command
     with:
       args: install
-  - uses: npm/command # Run npm command
+  - uses: cli/runNpmCommand # Run npm command
     env:
       REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
       REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
@@ -64,7 +64,7 @@ configureApp:
   - uses: teamsApp/validate
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
-  - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
@@ -79,7 +79,7 @@ publish:
   - uses: teamsApp/validate
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
-  - uses: teamsApp/createAppPackage
+  - uses: teamsApp/zipAppPackage
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip

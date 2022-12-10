@@ -102,7 +102,7 @@ import { ProjectMigratorMWV3 } from "./projectMigratorV3";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
-const learnMoreText = getLocalizedString("core.option.learnMore");
+export const learnMoreText = getLocalizedString("core.option.learnMore");
 export const upgradeButton = getLocalizedString("core.option.upgrade");
 const solutionName = "solution";
 const subscriptionId = "subscriptionId";

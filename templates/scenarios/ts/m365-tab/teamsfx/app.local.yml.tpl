@@ -20,7 +20,7 @@ registerApp:
     # TEAMS_APP_ID: the id of Teams app
 
 configureApp:
-  - uses: env/generate # Generate env to .env file
+  - uses: file/updateEnv # Generate env to .env file
     with:
       envs:
         TAB_DOMAIN: localhost:53000
@@ -33,7 +33,7 @@ configureApp:
   # Output: following environment variable will be persisted in current environment's .env file.
   # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 
-  - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
@@ -53,7 +53,7 @@ deploy:
     # SSL_CRT_FILE: certificate file
     # SSL_KEY_FILE: certificate key
 
-  - uses: npm/command # Run npm command
+  - uses: cli/runNpmCommand # Run npm command
     with:
       workingDirectory: .
       args: install --no-audit

@@ -20,7 +20,7 @@ provision:
     # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-actions/arm-deploy for more details on the naming conversion rule.
 
 deploy:
-  - uses: npm/command # Run npm command
+  - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --production
   - uses: azureAppService/deploy # Deploy bits to Azure App Serivce
@@ -40,7 +40,7 @@ configureApp:
   - uses: teamsApp/validate
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
-  - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
@@ -55,7 +55,7 @@ publish:
   - uses: teamsApp/validate
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
-  - uses: teamsApp/createAppPackage
+  - uses: teamsApp/zipAppPackage
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip

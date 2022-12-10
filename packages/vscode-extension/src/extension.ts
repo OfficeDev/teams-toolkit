@@ -18,7 +18,6 @@ import {
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import {
   AadAppTemplateCodeLensProvider,
   AdaptiveCardCodeLensProvider,
@@ -45,6 +44,7 @@ import {
   initializeGlobalVariables,
   isExistingUser,
   isSPFxProject,
+  isTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
@@ -64,6 +64,7 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
+import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/tools";
 import { UriHandler } from "./uriHandler";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 
@@ -86,8 +87,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerInternalCommands(context);
 
-  const isTeamsFxProject = isValidProject(workspaceUri?.fsPath);
-
   if (isTeamsFxProject) {
     registerTreeViewCommandsInDevelopment(context);
     registerTreeViewCommandsInDeployment(context);
@@ -101,6 +100,19 @@ export async function activate(context: vscode.ExtensionContext) {
       azureAccountProvider: AzureAccountManager,
       m365TokenProvider: M365TokenInstance,
     });
+    // Set region for M365 account every
+    M365TokenInstance.setStatusChangeMap(
+      "set-region",
+      { scopes: AuthSvcScopes },
+      async (status, token, accountInfo) => {
+        if (status === "SignedIn") {
+          const tokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
+          if (tokenRes.isOk()) {
+            setRegion(tokenRes.value);
+          }
+        }
+      }
+    );
 
     if (vscode.workspace.isTrusted) {
       registerCodelensAndHoverProviders(context);
@@ -323,15 +335,14 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
   // User can click to debug directly, same as pressing "F5".
   registerInCommandController(context, "fx-extension.debug", handlers.debugHandler);
 
-  // Add features
-  registerInCommandController(
-    context,
-    "fx-extension.addFeature",
-    handlers.addFeatureHandler,
-    "addFeature"
-  );
-
   if (!isV3Enabled()) {
+    // Add features
+    registerInCommandController(
+      context,
+      "fx-extension.addFeature",
+      handlers.addFeatureHandler,
+      "addFeature"
+    );
     // Edit manifest file
     registerInCommandController(
       context,
@@ -734,6 +745,10 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     scheme: "file",
     pattern: `**/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsJsonName}`,
   };
+  const envDataSelector = {
+    scheme: "file",
+    pattern: "**/.env.*",
+  };
 
   const adaptiveCardCodeLensProvider = new AdaptiveCardCodeLensProvider();
   const adaptiveCardFilePattern = `**/${AdaptiveCardsFolderName}/*.json`;
@@ -784,12 +799,18 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     pattern: `**/permissions.json`,
   };
 
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
-  );
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(localDebugDataSelector, codelensProvider)
-  );
+  if (isV3Enabled()) {
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(envDataSelector, codelensProvider)
+    );
+  } else {
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
+    );
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(localDebugDataSelector, codelensProvider)
+    );
+  }
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       adaptiveCardFileSelector,

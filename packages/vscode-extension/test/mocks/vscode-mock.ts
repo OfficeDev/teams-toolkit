@@ -121,6 +121,7 @@ mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
   },
   createQuickPick: () => {},
   showOpenDialog: () => {},
+  showTextDocument: () => {},
 };
 (mockedVSCode as any).workspace = {
   workspaceFolders: undefined,

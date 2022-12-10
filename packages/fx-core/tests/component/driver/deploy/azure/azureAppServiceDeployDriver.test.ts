@@ -340,4 +340,21 @@ describe("Azure App Service Deploy Driver test", () => {
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
   });
+
+  it("working dir not exists", async () => {
+    const deploy = new AzureAppServiceDeployDriver();
+    const args = {
+      workingDirectory: "/aaaa",
+      distributionPath: `./${folder}`,
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+    } as DeployArgs;
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+    } as DriverContext;
+    const res = await deploy.run(args, context);
+    assert.equal(res.isErr(), true);
+  });
 });

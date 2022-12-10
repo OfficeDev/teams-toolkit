@@ -17,22 +17,22 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
-  type Icon = {
-    type: "color" | "outline" | "sharePointPreviewImage";
-    name: "color" | "outline" | "sharePointPreviewImage";
-    base64String: string;
-  };
-
   const baseUrl = getAppStudioEndpoint();
+
+  let region: string | undefined;
+
+  export function SetRegion(_region: string) {
+    region = _region;
+  }
 
   /**
    * Creates a new axios instance to call app studio to prevent setting the accessToken on global instance.
    * @param {string}  appStudioToken
    * @returns {AxiosInstance}
    */
-  function createRequesterWithToken(appStudioToken: string): AxiosInstance {
+  function createRequesterWithToken(appStudioToken: string, region?: string): AxiosInstance {
     const instance = axios.create({
-      baseURL: baseUrl,
+      baseURL: region ? `${baseUrl}/${region}` : baseUrl,
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
     instance.defaults.headers.common["Client-Source"] = "teamstoolkit";

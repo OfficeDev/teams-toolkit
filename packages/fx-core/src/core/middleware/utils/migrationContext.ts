@@ -91,7 +91,7 @@ export class MigrationContext {
 
   async cleanModifiedPaths(): Promise<void> {
     for (const modifiedPath of this.modifiedPaths.reverse()) {
-      await fs.remove(path.join(this.projectPath, modifiedPath));
+      await this.fsRemove(modifiedPath);
     }
     this.modifiedPaths.length = 0;
   }
@@ -106,11 +106,19 @@ export class MigrationContext {
   }
 
   async cleanTeamsfx(): Promise<void> {
-    await fs.remove(path.join(this.projectPath, teamsfxFolder));
+    await this.fsRemove(teamsfxFolder);
+  }
+
+  async removeFxV2(): Promise<void> {
+    await this.fsRemove(V2TeamsfxFolder);
   }
 
   async fsPathExists(_path: string): Promise<boolean> {
     return await fs.pathExists(path.join(this.projectPath, _path));
+  }
+
+  async fsRemove(_path: string): Promise<void> {
+    return await fs.remove(path.join(this.projectPath, _path));
   }
 
   addReport(report: string): void {

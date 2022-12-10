@@ -15,7 +15,7 @@ provision:
     # BOT_ID: the AAD app client id created for bot
     # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
 
-  - uses: botFramework/createOrUpdateBot # Create or update the bot registration on dev.botframework.com
+  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
     with:
       botId: ${{BOT_ID}}
       name: {%appName%}
@@ -27,7 +27,7 @@ configureApp:
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
 
-  - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
@@ -44,6 +44,6 @@ deploy:
     with:
       func: true
 
-  - uses: npm/command # Run npm command
+  - uses: cli/runNpmCommand # Run npm command
     with:
       args: install --no-audit

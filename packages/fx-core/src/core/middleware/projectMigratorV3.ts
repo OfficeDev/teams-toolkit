@@ -54,6 +54,7 @@ import {
   readBicepContent,
   readJsonFile,
   replaceAppIdUri,
+  updateAndSaveManifestForSpfx,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
 import * as commentJson from "comment-json";
@@ -66,6 +67,7 @@ import {
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
+import { isSPFxProject } from "../../common/tools";
 
 const Constants = {
   vsProvisionBicepPath: "./Templates/azure/provision.bicep",
@@ -295,6 +297,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   const projectSettings = await loadProjectSettings(context.projectPath);
   const capabilities = getCapabilitySsoStatus(projectSettings);
   const appIdUri = generateAppIdUri(capabilities);
+  const isSpfx = isSPFxProject(projectSettings);
 
   // Read Teams app manifest and save to templates/appPackage/manifest.template.json
   const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
@@ -304,7 +307,11 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
     oldManifest = replaceAppIdUri(oldManifest, appIdUri);
     const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);
-    await context.fsWriteFile(manifestPath, manifest);
+    if (isSpfx) {
+      await updateAndSaveManifestForSpfx(context, manifest);
+    } else {
+      await context.fsWriteFile(manifestPath, manifest);
+    }
   } else {
     // templates/appPackage/manifest.template.json does not exist
     throw ReadFileError(new Error("templates/appPackage/manifest.template.json does not exist"));

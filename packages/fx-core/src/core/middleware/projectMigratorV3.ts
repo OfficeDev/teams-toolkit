@@ -54,6 +54,7 @@ import {
   readBicepContent,
   readJsonFile,
   replaceAppIdUri,
+  getTemplateFolderPath,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
 import * as commentJson from "comment-json";
@@ -260,7 +261,7 @@ async function loadProjectSettings(projectPath: string): Promise<ProjectSettings
 
 export async function manifestsMigration(context: MigrationContext): Promise<void> {
   // Backup templates/appPackage
-  const oldAppPackageFolderPath = path.join(TemplateFolderName, AppPackageFolderName);
+  const oldAppPackageFolderPath = path.join(getTemplateFolderPath(context), AppPackageFolderName);
   const oldAppPackageFolderBackupRes = await context.backup(oldAppPackageFolderPath);
 
   if (!oldAppPackageFolderBackupRes) {
@@ -332,7 +333,7 @@ export async function azureParameterMigration(context: MigrationContext): Promis
   }
 
   // Read Bicep
-  const azureFolderPath = path.join(TemplateFolderName, "azure");
+  const azureFolderPath = path.join(getTemplateFolderPath(context), "azure");
   const bicepContent = await readBicepContent(context);
 
   const fileNames = fsReadDirSync(context, configFolderPath);

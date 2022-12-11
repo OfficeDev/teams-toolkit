@@ -39,6 +39,12 @@ export async function readBicepContent(context: MigrationContext): Promise<any> 
     : "";
 }
 
+// get template folder path
+export function getTemplateFolderPath(context: MigrationContext): string {
+  const inputs: Inputs = context.arguments[context.arguments.length - 1];
+  return inputs.platform === Platform.VS ? "Templates" : "templates";
+}
+
 // read file names list under the given path
 export function fsReadDirSync(context: MigrationContext, _path: string): string[] {
   const dirPath = path.join(context.projectPath, _path);

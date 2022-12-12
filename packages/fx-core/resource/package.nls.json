@@ -649,6 +649,8 @@
   "core.WorkflowOption.detail": "Automate repetitive workflows for common business processes in Microsoft Teams chat",
   "core.WorkflowOption.label.abTest": "Initiate sequential workflows",
   "core.WorkflowOption.detail.abTest": "Automate repetitive workflows for common business processes in Microsoft Teams chat",
+  "core.DashboardOption.label.abTest": "Embed a dashboard canvas in Teams",
+  "core.DashboardOption.detail.abTest": "Embed a canvas containing multiple cards that provide an overview of data or content in Microsoft Teams",
   "core.ExistingTabOption.label": "Embed existing web app",
   "core.ExistingTabOption.detail": "Bring your own static webpages and embed in Microsoft Teams",
   "core.ExistingTabEndpointQuestion.placeholder": "Input your existing tab endpoint",

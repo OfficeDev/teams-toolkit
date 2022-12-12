@@ -517,7 +517,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
   ];
   const debugContext = new DebugMigrationContext(
     tasksJsonContent["tasks"],
-    getPlaceholderMappings(context)
+    await getPlaceholderMappings(context)
   );
 
   for (const func of migrateTaskFuncs) {

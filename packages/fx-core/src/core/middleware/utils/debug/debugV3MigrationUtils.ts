@@ -26,14 +26,14 @@ export function isCommentArray(
 }
 
 // TODO: use static placeholder name instead
-export function getPlaceholderMappings(context: MigrationContext): {
+export async function getPlaceholderMappings(context: MigrationContext): Promise<{
   tabDomain?: string;
   tabEndpoint?: string;
   tabIndexPath?: string;
   botDomain?: string;
   botEndpoint?: string;
-} {
-  const bicepContent = readBicepContent(context);
+}> {
+  const bicepContent = await readBicepContent(context);
   const getName = (name: string) => {
     const res = namingConverterV3(name, FileType.STATE, bicepContent);
     return res.isOk() ? res.value : undefined;

@@ -5,7 +5,7 @@
  * @author Aocheng Wang <aochengwang@microsoft.com>
  */
 
-import path from "path";
+import * as path from "path";
 
 import { BotValidator } from "../../commonlib";
 
@@ -17,6 +17,7 @@ import {
   cleanUp,
 } from "../commonUtils";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Regression test for bug 14739454", function () {
   const testFolder = getTestFolder();
@@ -26,6 +27,9 @@ describe("Regression test for bug 14739454", function () {
   const env = Object.assign({}, process.env);
 
   it("Add capability: command and response", { testPlanCaseId: 15685897 }, async function () {
+    if (isV3Enabled()) {
+      return this.skip();
+    }
     const cmd = `teamsfx new --interactive false --app-name ${appName} --capabilities tab --programming-language typescript`;
     await execAsync(cmd, {
       cwd: testFolder,

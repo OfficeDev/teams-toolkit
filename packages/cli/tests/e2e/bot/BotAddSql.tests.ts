@@ -5,7 +5,7 @@
  * @author Zhaofeng Xu <zhaofengxu@microsoft.com>
  */
 
-import path from "path";
+import * as path from "path";
 import "mocha";
 import {
   getSubscriptionId,
@@ -21,6 +21,7 @@ import { Capability, Resource } from "../../commonlib/constants";
 import { BotValidator } from "../../commonlib";
 import { getUuid } from "../../commonlib/utilities";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();
@@ -34,6 +35,9 @@ describe("Configuration successfully changed when with different plugins", funct
   });
 
   it(`bot + sql`, { testPlanCaseId: 15685605 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);
 

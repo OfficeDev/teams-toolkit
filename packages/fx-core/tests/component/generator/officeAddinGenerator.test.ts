@@ -14,6 +14,7 @@ import { OfficeAddinGenerator } from "../../../src/component/generator/officeAdd
 import {
   AddinLanguageQuestion,
   AddinProjectFolderQuestion,
+  getQuestionsForScaffolding,
   OfficeHostQuestion,
 } from "../../../src/component/generator/officeAddin/question";
 import { GeneratorChecker } from "../../../src/component/resource/spfx/depsChecker/generatorChecker";
@@ -88,12 +89,17 @@ describe("OfficeAddinGenerator", function () {
 
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
-    if (result.isErr()) console.log(`!!!! ${result.error.name} ${result.error.message}`);
-
     chai.expect(result.isOk()).to.eq(true);
   });
 
   afterEach(async () => {
     sinon.restore();
+  });
+});
+
+describe("getQuestionsForScaffolding", () => {
+  it("should contain all questions", () => {
+    const q = getQuestionsForScaffolding();
+    chai.expect(q.children?.length).to.eq(3);
   });
 });

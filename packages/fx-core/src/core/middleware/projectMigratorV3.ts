@@ -39,7 +39,7 @@ import {
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { UpgradeCanceledError, ReadFileError } from "../error";
+import { UpgradeV3CanceledError, ReadFileError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
@@ -56,13 +56,25 @@ import {
   replaceAppIdUri,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
+import * as commentJson from "comment-json";
+import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
+import { isCommentObject, readJsonCommentFile } from "./utils/debug/debugV3MigrationUtils";
+import {
+  migrateTransparentNpmInstall,
+  migrateTransparentPrerequisite,
+} from "./utils/debug/taskMigrator";
+import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
+import { getTemplatesFolder } from "../../folder";
 
 const Constants = {
   vsProvisionBicepPath: "./Templates/azure/provision.bicep",
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   appYmlName: "app.yml",
+  appLocalYmlName: "app.local.yml",
+  tasksJsonPath: ".vscode/tasks.json",
+  reportName: "migrationReport.md",
 };
 
 const MigrationVersion = {
@@ -165,22 +177,10 @@ async function rollbackMigration(context: MigrationContext): Promise<void> {
 }
 
 async function showSummaryReport(context: MigrationContext): Promise<void> {
-  const summaryPath = path.join(context.backupPath, "migrationReport.md");
-  const content = `
-# Teams toolkit 5.0 Migration summary
-1. Move teamplates/appPackage/resource & templates/appPackage/manifest.template.json to appPackage/
-1. Move templates/appPakcage/aad.template.json to ./aad.manifest.template.json
-1. Update placeholders in the two manifests
-1. Update app id uri in the two manifests
-1. Move .fx/configs/azure.parameter.{env}.json to templates/azure/...
-1. Update placeholders in azure parameter files 
-1. create .env.{env} if not exitsts in teamsfx/ folder (v3) (should throw error if .fx/configs/ not exists?)
-1. migrate .fx/configs/config.{env}.json to .env.{env}
-1. create .env.{env} if not exitsts in teamsfx/ folder (v3)
-1. migrate .fx/states/state.{env}.json to .env.{env}. Skip 4 types of secrets names(should refer to userdata)
-1. create .env.{env} if not exitsts in teamsfx/ folder (v3)
-1. migrate .fx/states/userdata.{env} to .env.{env}
-    `;
+  const summaryPath = path.join(context.backupPath, Constants.reportName);
+  const templatePath = path.join(getTemplatesFolder(), "core/v3Migration", Constants.reportName);
+
+  const content = await fs.readFile(templatePath);
   await fs.writeFile(summaryPath, content);
   await TOOLS?.ui?.openFile?.(summaryPath);
 }
@@ -349,7 +349,7 @@ export async function azureParameterMigration(context: MigrationContext): Promis
 
   const fileNames = fsReadDirSync(context, configFolderPath);
   for (const fileName of fileNames) {
-    if (!fileName.startsWith("azure.parameter.")) {
+    if (!fileName.startsWith("azure.parameters.")) {
       continue;
     }
 
@@ -377,7 +377,7 @@ export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
     });
-    ctx.result = err(UpgradeCanceledError());
+    ctx.result = err(UpgradeV3CanceledError());
     outputCancelMessage(ctx, true);
     return false;
   }
@@ -500,6 +500,41 @@ export async function userdataMigration(context: MigrationContext): Promise<void
         }
       }
   }
+}
+
+export async function debugMigration(context: MigrationContext): Promise<void> {
+  // Backup vscode/tasks.json
+  await context.backup(Constants.tasksJsonPath);
+
+  // Read .vscode/tasks.json
+  const tasksJsonContent = await readJsonCommentFile(
+    path.join(context.projectPath, Constants.tasksJsonPath)
+  );
+  if (!isCommentObject(tasksJsonContent) || !Array.isArray(tasksJsonContent["tasks"])) {
+    // Invalid tasks.json content
+    return;
+  }
+
+  // Migrate .vscode/tasks.json
+  const migrateTaskFuncs = [migrateTransparentPrerequisite, migrateTransparentNpmInstall];
+  const debugContext = new DebugMigrationContext(tasksJsonContent["tasks"]);
+
+  for (const func of migrateTaskFuncs) {
+    func(debugContext);
+  }
+
+  // Write .vscode/tasks.json
+  await context.fsWriteFile(
+    Constants.tasksJsonPath,
+    commentJson.stringify(tasksJsonContent, null, 4)
+  );
+
+  // Generate app.local.yml
+  const oldProjectSettings = await loadProjectSettings(context.projectPath);
+  const appYmlGenerator = new AppLocalYmlGenerator(oldProjectSettings, debugContext.appYmlConfig);
+  const appYmlString: string = await appYmlGenerator.generateAppYml();
+  await context.fsEnsureDir(SettingsFolderName);
+  await context.fsWriteFile(path.join(SettingsFolderName, Constants.appLocalYmlName), appYmlString);
 }
 
 export async function generateApimPluginEnvContent(context: MigrationContext): Promise<void> {

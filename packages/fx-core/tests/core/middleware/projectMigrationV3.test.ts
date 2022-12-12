@@ -38,10 +38,12 @@ import {
   configsMigration,
   generateApimPluginEnvContent,
   userdataMigration,
+  debugMigration,
   azureParameterMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
+import { UpgradeCanceledError } from "../../../src/core/error";
 
 let mockedEnvRestore: () => void;
 
@@ -269,7 +271,7 @@ describe("generateAppYml-js/ts", () => {
     assert.exists(getAction(appYaml.registerApp, "aadApp/create"));
     assert.exists(getAction(appYaml.configureApp, "aadApp/update"));
     // validate tab part
-    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "npm/command");
+    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "cli/runNpmCommand");
     assert.exists(
       npmCommandActions.find(
         (item) => item.with.workingDirectory === "tabs" && item.with.args === "install"
@@ -324,7 +326,7 @@ describe("generateAppYml-js/ts", () => {
     );
 
     assert.isEmpty(getAction(appYaml.provision, "azureStorage/enableStaticWebsite"));
-    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "npm/command");
+    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "cli/runNpmCommand");
     assert.isEmpty(npmCommandActions.filter((item) => item.with.workingDirectory === "tabs"));
     assert.isEmpty(getAction(appYaml.deploy, "azureStorage/deploy"));
   });
@@ -556,18 +558,18 @@ describe("azureParameterMigration", () => {
       projectPath,
       "templates",
       "azure",
-      "azure.parameter.dev.json"
+      "azure.parameters.dev.json"
     );
     const azureParameterTestFilePath = path.join(
       projectPath,
       "templates",
       "azure",
-      "azure.parameter.test.json"
+      "azure.parameters.test.json"
     );
     assert.isTrue(await fs.pathExists(azureParameterDevFilePath));
     assert.isTrue(await fs.pathExists(azureParameterTestFilePath));
     const azureParameterExpected = await fs.readFile(
-      path.join(projectPath, "expected", "azure.parameter.json"),
+      path.join(projectPath, "expected", "azure.parameters.json"),
       "utf-8"
     );
     const azureParameterDev = await fs.readFile(azureParameterDevFilePath, "utf-8");
@@ -587,7 +589,7 @@ describe("azureParameterMigration", () => {
       projectPath,
       "templates",
       "azure",
-      "azure.parameter.dev.json"
+      "azure.parameters.dev.json"
     );
     assert.isFalse(await fs.pathExists(azureParameterDevFilePath));
   });
@@ -877,6 +879,51 @@ describe("Migration utils", () => {
     sandbox.stub(fs, "pathExists").resolves(false);
     const state = await checkVersionForMigration(migrationContext);
     assert.equal(state, VersionState.unsupported);
+  });
+
+  it("UpgradeCanceledError", () => {
+    const err = UpgradeCanceledError();
+    assert.isNotNull(err);
+  });
+});
+
+describe("debugMigration", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  const testCases = [
+    "transparent-tab",
+    "transparent-bot",
+    "transparent-notification",
+    "transparent-tab-bot-func",
+  ];
+
+  testCases.forEach((testCase) => {
+    it(testCase, async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+
+      await copyTestProject(path.join("debug", testCase), projectPath);
+
+      await debugMigration(migrationContext);
+
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+      assert.equal(
+        await fs.readFile(path.join(projectPath, "teamsfx", "app.local.yml"), "utf-8"),
+        await fs.readFile(path.join(projectPath, "expected", "app.local.yml"), "utf-8")
+      );
+      assert.equal(
+        await fs.readFile(path.join(projectPath, ".vscode", "tasks.json"), "utf-8"),
+        await fs.readFile(path.join(projectPath, "expected", "tasks.json"), "utf-8")
+      );
+    });
   });
 });
 

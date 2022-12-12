@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-export interface CopyAppPackageForSPFxArgs {
+export interface copyAppPackageToSPFxArgs {
   /**
    * the path of the zipped Teams app package.
    */

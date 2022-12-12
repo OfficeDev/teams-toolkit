@@ -183,7 +183,7 @@ export function shouldIgnored(ctx: CoreHookContext): boolean {
     isCreate = task === Stage.create;
   }
 
-  return StaticPlatforms.includes(inputs.platform) || isCreate;
+  return StaticPlatforms.includes(inputs.platform) || isCreate || inputs.ignoreLockByUT;
 }
 
 export function getProjectSettingsPath(projectPath: string): string {

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FeatureFlagName } from "./constants";
+import { isV3Enabled } from "./tools";
 
 // Determine whether feature flag is enabled based on environment variable setting
 export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
@@ -42,5 +43,5 @@ export function isSPFxMultiTabEnabled(): boolean {
 }
 
 export function isTDPIntegrationEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.TDPIntegration, false);
+  return isV3Enabled();
 }

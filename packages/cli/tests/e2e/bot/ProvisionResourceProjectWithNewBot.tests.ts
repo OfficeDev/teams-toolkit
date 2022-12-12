@@ -5,8 +5,8 @@
  * @author Ivan He <ruhe@microsoft.com>
  */
 
-import fs from "fs-extra";
-import path from "path";
+import * as fs from "fs-extra";
+import * as path from "path";
 
 import { BotValidator } from "../../commonlib";
 
@@ -20,7 +20,7 @@ import {
   setBotSkuNameToB1Bicep,
   readContextMultiEnv,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
 
 import { it } from "@microsoft/extra-shot-mocha";
 
@@ -32,6 +32,9 @@ describe("Provision", function () {
   const env = environmentManager.getDefaultEnvName();
 
   it("Provision Resource: project with new bot", { testPlanCaseId: 10306848 }, async function () {
+    if (isV3Enabled()) {
+      return this.skip();
+    }
     await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities bot`, {
       cwd: testFolder,
       env: process.env,

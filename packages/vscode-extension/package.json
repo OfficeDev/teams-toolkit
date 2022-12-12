@@ -60,8 +60,7 @@
     "untrustedWorkspaces": {
       "supported": "limited",
       "description": "%teamstoolkit.capabilities.untrustedWorkspaces.description%",
-      "restrictedConfigurations": [
-      ]
+      "restrictedConfigurations": []
     }
   },
   "contributes": {
@@ -607,7 +606,7 @@
       {
         "command": "fx-extension.openManifest",
         "title": "%teamstoolkit.commands.editManifest.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.isV3Enabled",
         "category": "Teams"
       },
       {

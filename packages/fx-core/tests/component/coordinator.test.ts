@@ -1733,7 +1733,7 @@ describe("component coordinator test", () => {
   it("convertExecuteResult ok", async () => {
     const value = new Map([["key", "value"]]);
     const res: Result<ExecutionOutput, ExecutionError> = ok(value);
-    const convertRes = coordinator.convertExecuteResult(res);
+    const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], { key: "value" });
     assert.isUndefined(convertRes[1]);
   });
@@ -1741,7 +1741,7 @@ describe("component coordinator test", () => {
   it("convertExecuteResult Failure", async () => {
     const error = new UserError({ source: "test", name: "TestError", message: "test message" });
     const res: Result<ExecutionOutput, ExecutionError> = err({ kind: "Failure", error: error });
-    const convertRes = coordinator.convertExecuteResult(res);
+    const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], {});
     assert.equal(convertRes[1], error);
   });
@@ -1758,7 +1758,7 @@ describe("component coordinator test", () => {
         failedDriver: { name: "TestDriver", uses: "testUse", with: "testWith" },
       },
     });
-    const convertRes = coordinator.convertExecuteResult(res);
+    const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], { key: "value" });
     assert.equal(convertRes[1], error);
   });
@@ -1774,7 +1774,7 @@ describe("component coordinator test", () => {
         failedDriver: { name: "TestDriver", uses: "testUse", with: "testWith" },
       },
     });
-    const convertRes = coordinator.convertExecuteResult(res);
+    const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], { key: "value" });
     assert.equal(convertRes[1]!.name, "UnresolvedPlaceholders");
   });

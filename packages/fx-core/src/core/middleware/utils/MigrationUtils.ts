@@ -226,7 +226,8 @@ export function namingConverterV3(
       provisionOutputNamingsV3.some((element, index, array) => {
         // for sql, may have key like: state.fx-resource-azure-sql.databaseName_xxx
         return name.startsWith(element);
-      })
+      }) &&
+      bicepContent
     ) {
       const res = provisionOutputNamingConverterV3(name, bicepContent);
       return ok(res);
@@ -308,14 +309,12 @@ export function convertPluginId(name: string): string {
     return name;
   }
   const pluginId = nameArray[1];
-
   if (Object.values(pluginIdMappingV3).includes(pluginId)) {
     const convertedPluginId = Object.keys(pluginIdMappingV3).find(
       (key) => pluginIdMappingV3[key] === pluginId
     );
     name = name.replace(pluginId, convertedPluginId!);
   }
-
   return name;
 }
 

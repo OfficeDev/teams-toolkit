@@ -584,7 +584,7 @@ describe("debugMigration", () => {
         setUpLocalProjectsTask("Set up local projects")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateSetUpTab(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
       chai.assert.equal(debugContext.appYmlConfig.configureApp?.tab?.domain, "localhost:53000");
@@ -650,7 +650,7 @@ describe("debugMigration", () => {
         setUpLocalProjectsTask("Set up local projects")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateSetUpBot(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
       chai.assert.equal(debugContext.appYmlConfig.provision?.bot, true);
@@ -713,7 +713,7 @@ describe("debugMigration", () => {
         setUpLocalProjectsTask("Set up local projects")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateSetUpSSO(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
       chai.assert.equal(debugContext.appYmlConfig.registerApp?.aad, true);
@@ -774,7 +774,7 @@ describe("debugMigration", () => {
         setUpLocalProjectsTask("Set up local projects")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migratePrepareManifest(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
       chai.assert.equal(debugContext.appYmlConfig.registerApp?.teamsApp, true);

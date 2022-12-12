@@ -495,19 +495,23 @@ describe("manifestsMigration", () => {
     }
   });
 
-  it("migrate manifests failed: provision.bicep does not exist", async () => {
+  it("migrate manifests success: provision.bicep does not exist", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
 
     // Stub
     sandbox.stub(migrationContext, "backup").resolves(true);
-    await fs.ensureDir(path.join(projectPath, "appPackage"));
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+    await fs.remove(path.join(projectPath, "templates", "azure", "provision.bicep"));
 
-    try {
-      await manifestsMigration(migrationContext);
-    } catch (error) {
-      assert.equal(error.name, "ReadFileError");
-      assert.equal(error.innerError.message, "templates/azure/provision.bicep does not exist");
-    }
+    // Action
+    await manifestsMigration(migrationContext);
+
+    // Assert
+    const appPackageFolderPath = path.join(projectPath, "appPackage");
+    assert.isTrue(await fs.pathExists(appPackageFolderPath));
+
+    const resourcesPath = path.join(appPackageFolderPath, "resources", "test.png");
+    assert.isTrue(await fs.pathExists(resourcesPath));
   });
 
   it("migrate manifests failed: teams app manifest does not exist", async () => {

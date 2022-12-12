@@ -13,6 +13,7 @@ import { PackageService } from "../../../../src/cmds/m365/packageService";
 describe("Package Service", () => {
   const sandbox = sinon.createSandbox();
   let logs: string[] = [];
+  let serviceUrlError: Error | undefined = undefined;
   const testAxiosInstance = {
     defaults: {
       headers: {
@@ -26,6 +27,15 @@ describe("Package Service", () => {
       return Promise.reject(new Error("test-delete"));
     },
     get: function <T = any, R = AxiosResponse<T>>(url: string): Promise<R> {
+      if (url.includes("config/v1/environment")) {
+        return serviceUrlError !== undefined
+          ? Promise.reject(serviceUrlError)
+          : Promise.resolve({
+              data: {
+                titlesServiceUrl: "test-url",
+              },
+            } as any);
+      }
       return Promise.reject(new Error("test-get"));
     },
     post: function <T = any, R = AxiosResponse<T>>(
@@ -43,6 +53,7 @@ describe("Package Service", () => {
 
   beforeEach(() => {
     logs = [];
+    serviceUrlError = undefined;
     sandbox.stub(CLILogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
       logs.push(message);
     });
@@ -105,5 +116,19 @@ describe("Package Service", () => {
 
     expect(actualError).not.undefined;
     expect(actualError?.message).equals("test-get");
+  });
+
+  it("getTitleServiceUrl throws expected error", async () => {
+    serviceUrlError = new Error("test-service-url-error");
+    const packageService = new PackageService("test-endpoint");
+    let actualError: Error | undefined;
+    try {
+      await packageService.getLaunchInfo("test-token", "test-title-id");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    expect(actualError).not.undefined;
+    expect(actualError?.message).equals("test-service-url-error");
   });
 });

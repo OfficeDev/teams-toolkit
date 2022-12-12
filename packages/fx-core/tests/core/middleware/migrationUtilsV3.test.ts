@@ -13,6 +13,7 @@ import { generateAppIdUri } from "../../../src/core/middleware/utils/v3Migration
 import { randomAppName } from "../utils";
 // eslint-disable-next-line import/namespace
 import { Constants, copyTestProject, mockMigrationContext } from "./projectMigrationV3.test";
+import sinon from "sinon";
 
 describe("MigrationUtilsV3", () => {
   it("happy path for fixed namings", () => {
@@ -188,6 +189,7 @@ describe("MigrationUtilsV3: convertPluginId", () => {
 describe("MigrationUtils: needMigrateToAadManifest", async () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
+  const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
@@ -195,11 +197,13 @@ describe("MigrationUtils: needMigrateToAadManifest", async () => {
 
   afterEach(async () => {
     await fs.remove(projectPath);
+    sandbox.restore();
   });
 
   it("fxEist false", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathWithoutFx, projectPath);
+    sandbox.stub(fs, "pathExists").resolves(false);
     assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
   });
 

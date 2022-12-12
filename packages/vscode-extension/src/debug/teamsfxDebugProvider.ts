@@ -230,8 +230,10 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           debugConfiguration.url
         )
       );
-      VsCodeLogInstance.outputChannel.appendLine("");
-      VsCodeLogInstance.outputChannel.appendLine(sideloadingDisplayMessages.hotReloadingMessage);
+      if (isLocal) {
+        VsCodeLogInstance.outputChannel.appendLine("");
+        VsCodeLogInstance.outputChannel.appendLine(sideloadingDisplayMessages.hotReloadingMessage);
+      }
     } catch (error: any) {
       showError(error);
       terminateAllRunningTeamsfxTasks();

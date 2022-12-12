@@ -8,7 +8,7 @@
 import { expect } from "chai";
 import path from "path";
 import * as fs from "fs-extra";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
 import {
   cleanUp,
   execAsync,
@@ -46,10 +46,12 @@ describe("Collaboration", function () {
       });
       console.log(`[Successfully] scaffold to ${projectPath}`);
 
-      await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+      if (!isV3Enabled()) {
+        await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+      }
 
       // provision
-      await execAsyncWithRetry(`teamsfx provision --subscription ${subscription}`, {
+      await execAsyncWithRetry(`teamsfx provision`, {
         cwd: projectPath,
         env: process.env,
         timeout: 0,
@@ -57,11 +59,23 @@ describe("Collaboration", function () {
       console.log("[Successfully] provision");
 
       // Check Permission
-      const checkPermissionResult = await execAsyncWithRetry(`teamsfx permission status`, {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0,
-      });
+      let checkPermissionResult;
+      if (isV3Enabled()) {
+        checkPermissionResult = await execAsyncWithRetry(
+          `teamsfx permission status --env dev --interactive false`,
+          {
+            cwd: projectPath,
+            env: process.env,
+            timeout: 0,
+          }
+        );
+      } else {
+        checkPermissionResult = await execAsyncWithRetry(`teamsfx permission status`, {
+          cwd: projectPath,
+          env: process.env,
+          timeout: 0,
+        });
+      }
 
       expect(checkPermissionResult.stdout).to.contains(
         "Resource Name: Azure AD App, Permission: Owner"
@@ -72,14 +86,26 @@ describe("Collaboration", function () {
       console.log("[Successfully] check permission");
 
       // Grant Permission
-      const grantCollaboratorResult = await execAsyncWithRetry(
-        `teamsfx permission grant --email ${collaborator}`,
-        {
-          cwd: projectPath,
-          env: process.env,
-          timeout: 0,
-        }
-      );
+      let grantCollaboratorResult;
+      if (isV3Enabled()) {
+        grantCollaboratorResult = await execAsyncWithRetry(
+          `teamsfx permission grant --email ${collaborator} --env dev --interactive false`,
+          {
+            cwd: projectPath,
+            env: process.env,
+            timeout: 0,
+          }
+        );
+      } else {
+        grantCollaboratorResult = await execAsyncWithRetry(
+          `teamsfx permission grant --email ${collaborator}`,
+          {
+            cwd: projectPath,
+            env: process.env,
+            timeout: 0,
+          }
+        );
+      }
 
       expect(grantCollaboratorResult.stdout).to.contains(
         "Owner permission has been granted to Azure AD App"
@@ -89,14 +115,26 @@ describe("Collaboration", function () {
       );
       console.log("[Successfully] grant permission");
 
-      const listCollaboratorResult = await execAsync(
-        `teamsfx permission status --list-all-collaborators`,
-        {
-          cwd: projectPath,
-          env: process.env,
-          timeout: 0,
-        }
-      );
+      let listCollaboratorResult;
+      if (isV3Enabled()) {
+        listCollaboratorResult = await execAsync(
+          `teamsfx permission status --list-all-collaborators --env dev --interactive false`,
+          {
+            cwd: projectPath,
+            env: process.env,
+            timeout: 0,
+          }
+        );
+      } else {
+        listCollaboratorResult = await execAsync(
+          `teamsfx permission status --list-all-collaborators`,
+          {
+            cwd: projectPath,
+            env: process.env,
+            timeout: 0,
+          }
+        );
+      }
 
       // Check collaborator.
       // When collaborator account is guest account in the tenant. Account name pattern will change.

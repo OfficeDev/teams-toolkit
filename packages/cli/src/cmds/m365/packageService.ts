@@ -14,11 +14,29 @@ import { sleep } from "../../utils";
 
 export class PackageService {
   private readonly axiosInstance;
+  private readonly initEndpoint;
+
   public constructor(endpoint: string) {
     this.axiosInstance = axios.create({
-      baseURL: endpoint,
       timeout: 30000,
     });
+    this.initEndpoint = endpoint;
+  }
+
+  private async getTitleServiceUrl(token: string): Promise<string> {
+    try {
+      const envInfo = await this.axiosInstance.get("/config/v1/environment", {
+        baseURL: this.initEndpoint,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      CLILogProvider.debug(JSON.stringify(envInfo.data));
+      return envInfo.data.titlesServiceUrl;
+    } catch (error: any) {
+      CLILogProvider.necessaryLog(LogLevel.Error, `Get ServiceUrl failed. ${error.message}`);
+      throw error;
+    }
   }
 
   public async sideLoading(token: string, manifestPath: string): Promise<void> {
@@ -26,6 +44,7 @@ export class PackageService {
       const data = await fs.readFile(manifestPath);
       const content = new FormData();
       content.append("package", data);
+      const serviceUrl = await this.getTitleServiceUrl(token);
       CLILogProvider.necessaryLog(LogLevel.Info, "Uploading package ...");
       const uploadHeaders = content.getHeaders();
       uploadHeaders["Authorization"] = `Bearer ${token}`;
@@ -33,6 +52,7 @@ export class PackageService {
         "/dev/v1/users/packages",
         content.getBuffer(),
         {
+          baseURL: serviceUrl,
           headers: uploadHeaders,
         }
       );
@@ -48,6 +68,7 @@ export class PackageService {
           operationId: operationId,
         },
         {
+          baseURL: serviceUrl,
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -62,6 +83,7 @@ export class PackageService {
         const statusResponse = await this.axiosInstance.get(
           `/dev/v1/users/packages/status/${statusId}`,
           {
+            baseURL: serviceUrl,
             headers: { Authorization: `Bearer ${token}` },
           }
         );
@@ -79,6 +101,7 @@ export class PackageService {
       const launchInfo = await this.axiosInstance.get(
         `/catalog/v1/users/titles/${titleId}/launchInfo`,
         {
+          baseURL: serviceUrl,
           params: {
             SupportedElementTypes:
               // eslint-disable-next-line no-secrets/no-secrets
@@ -104,6 +127,7 @@ export class PackageService {
 
   public async retrieveTitleId(token: string, manifestId: string): Promise<string> {
     try {
+      const serviceUrl = await this.getTitleServiceUrl(token);
       CLILogProvider.necessaryLog(LogLevel.Info, "Retrieve TitleId ...");
       const launchInfo = await this.axiosInstance.post(
         `/catalog/v1/users/titles/launchInfo`,
@@ -130,6 +154,7 @@ export class PackageService {
           },
         },
         {
+          baseURL: serviceUrl,
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -155,8 +180,10 @@ export class PackageService {
 
   public async unacquire(token: string, titleId: string): Promise<void> {
     try {
+      const serviceUrl = await this.getTitleServiceUrl(token);
       CLILogProvider.necessaryLog(LogLevel.Info, `Unacquiring package with TitleId ${titleId} ...`);
       await this.axiosInstance.delete(`/catalog/v1/users/acquisitions/${titleId}`, {
+        baseURL: serviceUrl,
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -176,10 +203,12 @@ export class PackageService {
 
   public async getLaunchInfo(token: string, titleId: string): Promise<unknown> {
     try {
+      const serviceUrl = await this.getTitleServiceUrl(token);
       CLILogProvider.necessaryLog(LogLevel.Info, `Getting LaunchInfo with TitleId ${titleId} ...`);
       const launchInfo = await this.axiosInstance.get(
         `/catalog/v1/users/titles/${titleId}/launchInfo`,
         {
+          baseURL: serviceUrl,
           params: {
             SupportedElementTypes:
               // eslint-disable-next-line no-secrets/no-secrets

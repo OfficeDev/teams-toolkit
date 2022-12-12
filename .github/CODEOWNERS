@@ -152,13 +152,14 @@
 /packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
 /packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
 
-/packages/fx-core/src/component/driver/env @swatDong @XiaofuHuang @kuojianlu @kimizhu
-/packages/fx-core/tests/component/driver/env @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/src/component/driver/file @swatDong @XiaofuHuang @xiaolang124 @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/file @swatDong @XiaofuHuang @xiaolang124 @kuojianlu @kimizhu
 
-/packages/fx-core/src/component/driver/m365Bot @swatDong @XiaofuHuang @kuojianlu @kimizhu
-/packages/fx-core/tests/component/driver/m365Bot @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/src/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
 /packages/fx-core/src/component/driver/tools @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/tests/component/driver/tools @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
 /packages/run-utils @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu

@@ -64,6 +64,7 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
+import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/tools";
 import { UriHandler } from "./uriHandler";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 
@@ -99,6 +100,19 @@ export async function activate(context: vscode.ExtensionContext) {
       azureAccountProvider: AzureAccountManager,
       m365TokenProvider: M365TokenInstance,
     });
+    // Set region for M365 account every
+    M365TokenInstance.setStatusChangeMap(
+      "set-region",
+      { scopes: AuthSvcScopes },
+      async (status, token, accountInfo) => {
+        if (status === "SignedIn") {
+          const tokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
+          if (tokenRes.isOk()) {
+            setRegion(tokenRes.value);
+          }
+        }
+      }
+    );
 
     if (vscode.workspace.isTrusted) {
       registerCodelensAndHoverProviders(context);

@@ -58,8 +58,13 @@ import {
 import * as semver from "semver";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
-import { isCommentObject, readJsonCommentFile } from "./utils/debug/debugV3MigrationUtils";
 import {
+  getPlaceholderMappings,
+  isCommentObject,
+  readJsonCommentFile,
+} from "./utils/debug/debugV3MigrationUtils";
+import {
+  migrateTransparentLocalTunnel,
   migrateTransparentPrerequisite,
   migrateTransparentNpmInstall,
   migrateSetUpTab,
@@ -523,12 +528,17 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
   const migrateTaskFuncs = [
     migrateTransparentPrerequisite,
     migrateTransparentNpmInstall,
+    migrateTransparentLocalTunnel,
     migrateSetUpTab,
     migrateSetUpBot,
     migrateSetUpSSO,
     migratePrepareManifest,
   ];
-  const debugContext = new DebugMigrationContext(tasksJsonContent["tasks"]);
+
+  const debugContext = new DebugMigrationContext(
+    tasksJsonContent["tasks"],
+    await getPlaceholderMappings(context)
+  );
 
   for (const func of migrateTaskFuncs) {
     func(debugContext);

@@ -40,7 +40,13 @@
             "type": "teamsfx",
             "command": "debug-start-local-tunnel",
             "args": {
-                "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt"
+                "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+                "env": "local",
+                "output": {
+                    // Keep consistency with migrated configuration.
+                    "endpoint": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__SITEENDPOINT",
+                    "domain": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__DOMAIN"
+                }
             },
             "isBackground": true,
             "problemMatcher": "$teamsfx-local-tunnel-watch"

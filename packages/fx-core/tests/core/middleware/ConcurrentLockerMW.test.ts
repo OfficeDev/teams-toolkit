@@ -7,10 +7,13 @@ import {
   ConfigFolderName,
   CoreCallbackEvent,
   FxError,
+  InputConfigsFolderName,
   Inputs,
   ok,
   Platform,
+  ProjectSettingsFileName,
   Result,
+  SettingsFolderName,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { assert, expect } from "chai";
@@ -19,7 +22,7 @@ import "mocha";
 import * as sinon from "sinon";
 import * as os from "os";
 import * as path from "path";
-import { getLockFolder } from "../../../src/core/middleware/concurrentLocker";
+import { getLockFolder, ConcurrentLockerMW } from "../../../src/core/middleware/concurrentLocker";
 import { CallbackRegistry } from "../../../src/core/callback";
 import {
   CoreSource,
@@ -27,9 +30,9 @@ import {
   NoProjectOpenedError,
   PathNotExistError,
 } from "../../../src/core/error";
-import { ConcurrentLockerMW } from "../../../src/core/middleware/concurrentLocker";
 import { randomAppName } from "../utils";
 import * as tools from "../../../src/common/tools";
+import * as projectSettingsHelper from "../../../src/common/projectSettingsHelper";
 
 describe("Middleware - ConcurrentLockerMW", () => {
   afterEach(() => {
@@ -92,10 +95,15 @@ describe("Middleware - ConcurrentLockerMW", () => {
 
   it("sequence: ok", async () => {
     const inputs: Inputs = { platform: Platform.VSCode };
+    sinon.stub(projectSettingsHelper, "isValidProjectV2").resolves(true);
     inputs.projectPath = path.join(os.tmpdir(), randomAppName());
     try {
-      await fs.ensureDir(inputs.projectPath);
-      await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+      const settingDir = path.join(
+        inputs.projectPath,
+        `.${ConfigFolderName}`,
+        InputConfigsFolderName
+      );
+      await fs.ensureDir(settingDir);
       const my = new MyClass();
       await my.methodReturnOK(inputs);
       await my.methodReturnOK(inputs);
@@ -158,8 +166,9 @@ describe("Middleware - ConcurrentLockerMW", () => {
     sinon.stub(tools, "waitSeconds").resolves();
     try {
       inputs.projectPath = path.join(os.tmpdir(), randomAppName());
+      sinon.stub(projectSettingsHelper, "isValidProjectV3").resolves(true);
       await fs.ensureDir(inputs.projectPath);
-      await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+      await fs.ensureDir(path.join(inputs.projectPath, `${SettingsFolderName}`));
       await my.methodCallSelf(inputs);
     } finally {
       await fs.rmdir(inputs.projectPath!, { recursive: true });
@@ -193,6 +202,7 @@ describe("Middleware - ConcurrentLockerMW", () => {
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), randomAppName());
     try {
+      sinon.stub(projectSettingsHelper, "isValidProjectV2").resolves(true);
       await fs.ensureDir(inputs.projectPath);
       await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
       await my.myMethod(inputs);

@@ -23,7 +23,7 @@ import { CoreSource, InvalidProjectError, NoProjectOpenedError, PathNotExistErro
 import { shouldIgnored } from "./projectSettingsLoader";
 import crypto from "crypto";
 import * as os from "os";
-import { isV3Enabled, waitSeconds } from "../../common/tools";
+import { waitSeconds } from "../../common/tools";
 import { isValidProjectV2, isValidProjectV3 } from "../../common/projectSettingsHelper";
 
 let doingTask: string | undefined = undefined;

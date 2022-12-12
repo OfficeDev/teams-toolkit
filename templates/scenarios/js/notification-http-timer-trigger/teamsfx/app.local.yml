@@ -40,7 +40,7 @@ configureApp:
     # TEAMS_APP_ID: the id of Teams app
 
 deploy:
-  - uses: tools/install
+  - uses: prerequisite/install
     with:
       func: true
 

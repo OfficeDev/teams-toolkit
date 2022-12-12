@@ -5,10 +5,10 @@ import { UserError } from "@microsoft/teamsfx-api";
 import { DepsCheckerError } from "../../../../common/deps-checker/depsError";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
-const errorCode = "FuncInstallationError";
-const messageKey = "driver.tools.error.funcInstallationError";
+const errorCode = "DotnetInstallationError";
+const messageKey = "driver.prerequisite.error.dotnetInstallationError";
 
-export class FuncInstallationUserError extends UserError {
+export class DotnetInstallationUserError extends UserError {
   constructor(actionName: string, error: any) {
     super({
       source: actionName,

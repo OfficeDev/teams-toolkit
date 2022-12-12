@@ -226,7 +226,8 @@ export function namingConverterV3(
       provisionOutputNamingsV3.some((element, index, array) => {
         // for sql, may have key like: state.fx-resource-azure-sql.databaseName_xxx
         return name.startsWith(element);
-      })
+      }) &&
+      bicepContent
     ) {
       const res = provisionOutputNamingConverterV3(name, bicepContent);
       return ok(res);

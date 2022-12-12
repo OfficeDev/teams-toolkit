@@ -8,6 +8,7 @@ export class DebugMigrationContext {
   public tasks: CommentArray<CommentJSONValue>;
   public appYmlConfig: AppLocalYmlConfig;
   public placeholderMapping: DebugPlaceholderMapping;
+  public generatedLabels: string[] = [];
 
   constructor(tasks: CommentArray<CommentJSONValue>, placeholderMapping: DebugPlaceholderMapping) {
     this.tasks = tasks;

@@ -66,8 +66,12 @@ import {
 } from "./utils/debug/debugV3MigrationUtils";
 import {
   migrateTransparentLocalTunnel,
-  migrateTransparentNpmInstall,
   migrateTransparentPrerequisite,
+  migrateTransparentNpmInstall,
+  migrateSetUpTab,
+  migrateSetUpSSO,
+  migratePrepareManifest,
+  migrateSetUpBot,
 } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
@@ -514,7 +518,12 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateTransparentPrerequisite,
     migrateTransparentNpmInstall,
     migrateTransparentLocalTunnel,
+    migrateSetUpTab,
+    migrateSetUpBot,
+    migrateSetUpSSO,
+    migratePrepareManifest,
   ];
+
   const debugContext = new DebugMigrationContext(
     tasksJsonContent["tasks"],
     await getPlaceholderMappings(context)

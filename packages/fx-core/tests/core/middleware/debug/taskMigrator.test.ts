@@ -454,7 +454,7 @@ describe("debugMigration", () => {
               "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
               "env": "local",
               "output": {
-                // The naming is a limitation of migration.
+                // Keep consistency with migrated configuration.
                 "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                 "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
               }
@@ -503,7 +503,7 @@ describe("debugMigration", () => {
               "ngrokPath": "ngrok",
               "env": "local",
               "output": {
-                // The naming is a limitation of migration.
+                // Keep consistency with migrated configuration.
                 "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
                 "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
               }

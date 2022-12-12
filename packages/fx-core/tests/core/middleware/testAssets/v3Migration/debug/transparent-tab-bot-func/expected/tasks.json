@@ -48,7 +48,7 @@
                 "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
                 "env": "local",
                 "output": {
-                    // The naming is a limitation of migration.
+                    // Keep consistency with migrated configuration.
                     "endpoint": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__SITEENDPOINT",
                     "domain": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__DOMAIN"
                 }

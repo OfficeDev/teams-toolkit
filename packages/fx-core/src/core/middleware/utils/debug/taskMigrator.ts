@@ -68,7 +68,7 @@ export function migrateTransparentLocalTunnel(context: DebugMigrationContext): v
     if (isCommentObject(task["args"])) {
       const comment = `
         {
-          // The naming is a limitation of migration.
+          // Keep consistency with migrated configuration.
         }
       `;
       task["args"]["env"] = "local";

@@ -320,8 +320,8 @@ If you want to call a Graph API from the back-end, you can refer to the followin
 
 1. [Step 1: Consent application permissions first](#step-1-consent-application-permissions-first)
 2. [Step 2: Add an Azure Function](#step-2-add-an-azure-function)
-4. [Step 3: Add your logic in Azure Function](#step-4-add-your-logic-in-azure-function)
-6. [Step 4: Call the Azure Function from the front-end](#step-5-call-the-azure-function-from-the-front-end)
+3. [Step 3: Add your logic in Azure Function](#step-4-add-your-logic-in-azure-function)
+4. [Step 4: Call the Azure Function from the front-end](#step-5-call-the-azure-function-from-the-front-end)
 
 #### Step 1: Consent application permissions first
 

@@ -355,7 +355,7 @@ export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
   const buttons = [upgradeButton, learnMoreText];
   const res = await TOOLS?.ui.showMessage(
     "warn",
-    getLocalizedString("core.migrationV3.Message", MetadataV3.starterToolkitVersion),
+    getLocalizedString("core.migrationV3.Message", MetadataV3.vscodeStarterVersion),
     true,
     ...buttons
   );

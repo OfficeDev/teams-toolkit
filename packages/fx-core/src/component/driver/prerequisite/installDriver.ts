@@ -31,14 +31,14 @@ import { FuncInstallationUserError } from "./error/funcInstallationUserError";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { InstallToolArgs } from "./interfaces/InstallToolArgs";
 
-const ACTION_NAME = "tools/install";
+const ACTION_NAME = "prerequisite/install";
 const outputName = Object.freeze({
   SSL_CRT_FILE: "SSL_CRT_FILE",
   SSL_KEY_FILE: "SSL_KEY_FILE",
   FUNC_PATH: "FUNC_PATH",
   DOTNET_PATH: "DOTNET_PATH",
 });
-const helpLink = "https://aka.ms/teamsfx-actions/tools/install";
+const helpLink = "https://aka.ms/teamsfx-actions/prerequisite-install";
 
 @Service(ACTION_NAME)
 export class ToolsInstallDriver implements StepDriver {

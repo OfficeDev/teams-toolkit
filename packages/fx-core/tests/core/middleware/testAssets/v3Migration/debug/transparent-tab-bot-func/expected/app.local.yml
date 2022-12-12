@@ -50,7 +50,7 @@ configureApp:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
 
 deploy:
-  - uses: tools/install 
+  - uses: prerequisite/install 
     with:
       devCert:
         trust: true

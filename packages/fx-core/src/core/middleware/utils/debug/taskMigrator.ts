@@ -11,7 +11,7 @@ import {
   isCommentObject,
   setUpLocalProjectsTask,
 } from "./debugV3MigrationUtils";
-import { InstallToolArgs } from "../../../../component/driver/tools/interfaces/InstallToolArgs";
+import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
 
 export function migrateTransparentPrerequisite(context: DebugMigrationContext): void {

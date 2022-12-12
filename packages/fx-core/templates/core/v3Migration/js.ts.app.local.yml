@@ -76,7 +76,7 @@ configureApp:
 {{#config.deploy}}
 deploy:
   {{#tools}}
-  - uses: tools/install 
+  - uses: prerequisite/install 
     with:
       {{#devCert}}
       devCert:

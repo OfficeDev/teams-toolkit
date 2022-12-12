@@ -3,7 +3,7 @@ version: 1.0.0
 registerApp:
   - uses: teamsApp/create # Creates a Teams app
     with:
-      name: tab # Teams app name
+      name: ${{TEAMS_APP_NAME}} # Teams app name
     # Output: following environment variable will be persisted in current environment's .env file.
     # TEAMS_APP_ID: the id of Teams app
 
@@ -28,7 +28,7 @@ configureApp:
     # TEAMS_APP_ID: the id of Teams app
 
 deploy:
-  - uses: tools/install # Install dependencies
+  - uses: prerequisite/install # Install dependencies
     with:
       devCert:
         trust: true

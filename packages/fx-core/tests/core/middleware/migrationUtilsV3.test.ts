@@ -11,7 +11,6 @@ import {
 } from "../../../src/core/middleware/utils/MigrationUtils";
 import { generateAppIdUri } from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { randomAppName } from "../utils";
-// eslint-disable-next-line import/namespace
 import { Constants, copyTestProject, mockMigrationContext } from "./projectMigrationV3.test";
 import sinon from "sinon";
 
@@ -202,26 +201,34 @@ describe("MigrationUtils: needMigrateToAadManifest", async () => {
 
   it("fxEist false", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
-    await copyTestProject(Constants.happyPathWithoutFx, projectPath);
-    sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox
+      .stub(fs, "pathExists")
+      .withArgs(path.join(projectPath, ".fx"), () => {})
+      .resolves(false);
     assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
   });
 
   it("aadManifestTemplateExist", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
-    await copyTestProject(Constants.happyPathAadManifestTemplateExist, projectPath);
+    sandbox
+      .stub(fs, "pathExists")
+      .withArgs(path.join(projectPath, ".fx"), () => {})
+      .resolves(true)
+      .withArgs(path.join(projectPath, "templates", "appPackage", "aad.template.json"), () => {})
+      .resolves(true);
     assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
   });
 
   it("permissionFileExist false", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
-    await copyTestProject(Constants.happyPathWithoutPermission, projectPath);
-    assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
-  });
-
-  it("aadPluginIsActive false", async () => {
-    const migrationContext = await mockMigrationContext(projectPath);
-    await copyTestProject(Constants.happyPathAadPluginNotActive, projectPath);
+    sandbox
+      .stub(fs, "pathExists")
+      .withArgs(path.join(projectPath, ".fx"), () => {})
+      .resolves(true)
+      .withArgs(path.join(projectPath, "templates", "appPackage", "aad.template.json"), () => {})
+      .resolves(false)
+      .withArgs(path.join(projectPath, "permissions.json"), () => {})
+      .resolves(false);
     assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
   });
 });

@@ -8,6 +8,7 @@ import { isObject } from "lodash";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import { EOL } from "os";
 import {
+  AppPackageFolderName,
   AzureSolutionSettings,
   Inputs,
   Platform,
@@ -17,6 +18,7 @@ import {
 import { CoreHookContext } from "../../types";
 import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
 import { Metadata, MetadataV3 } from "../../../common/versionMetadata";
+import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appManifest/constants";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -28,33 +30,24 @@ export async function readJsonFile(context: MigrationContext, filePath: string):
 }
 
 // read bicep file content
-export function readBicepContent(context: MigrationContext): any {
+export async function readBicepContent(context: MigrationContext): Promise<any> {
+  const bicepFilePath = path.join(getTemplateFolderPath(context), "azure", "provision.bicep");
+  const bicepFileExists = await context.fsPathExists(bicepFilePath);
+  return bicepFileExists
+    ? fs.readFileSync(path.join(context.projectPath, bicepFilePath), "utf8")
+    : "";
+}
+
+// get template folder path
+export function getTemplateFolderPath(context: MigrationContext): string {
   const inputs: Inputs = context.arguments[context.arguments.length - 1];
-  const bicepFilePath =
-    inputs.platform === Platform.VS
-      ? "Templates/azure/provision.bicep"
-      : "templates/azure/provision.bicep";
-  return fs.readFileSync(path.join(context.projectPath, bicepFilePath), "utf8");
+  return inputs.platform === Platform.VS ? "Templates" : "templates";
 }
 
 // read file names list under the given path
 export function fsReadDirSync(context: MigrationContext, _path: string): string[] {
   const dirPath = path.join(context.projectPath, _path);
   return fs.readdirSync(dirPath);
-}
-
-// convert any obj names if can be converted (used in states and configs migration)
-export function jsonObjectNamesConvertV3(
-  obj: any,
-  prefix: string,
-  filetype: FileType,
-  bicepContent: any
-) {
-  let returnData = "";
-  for (const keyName of Object.keys(obj)) {
-    returnData += dfs(prefix + keyName, obj[keyName], filetype, bicepContent);
-  }
-  return returnData;
 }
 
 // env variables in this list will be only convert into .env.{env} when migrating {env}.userdata
@@ -65,18 +58,32 @@ const skipList = [
   "state.fx-resource-azure-sql.adminPassword",
 ];
 
-function dfs(parentKeyName: string, obj: any, filetype: FileType, bicepContent: any): string {
+// convert any obj names if can be converted (used in states and configs migration)
+export function jsonObjectNamesConvertV3(
+  obj: any,
+  prefix: string,
+  parentKeyName: string,
+  filetype: FileType,
+  bicepContent: any
+): string {
   let returnData = "";
-
   if (isObject(obj)) {
     for (const keyName of Object.keys(obj)) {
-      returnData += dfs(parentKeyName + "." + keyName, obj[keyName], filetype, bicepContent);
+      returnData +=
+        parentKeyName === ""
+          ? jsonObjectNamesConvertV3(obj[keyName], prefix, prefix + keyName, filetype, bicepContent)
+          : jsonObjectNamesConvertV3(
+              obj[keyName],
+              prefix,
+              parentKeyName + "." + keyName,
+              filetype,
+              bicepContent
+            );
     }
   } else if (!skipList.includes(parentKeyName)) {
     const res = namingConverterV3(parentKeyName, filetype, bicepContent);
     if (res.isOk()) return res.value + "=" + obj + EOL;
   } else return "";
-
   return returnData;
 }
 
@@ -167,4 +174,46 @@ export async function readAndConvertUserdata(
   }
 
   return returnAnswer;
+}
+
+export async function updateAndSaveManifestForSpfx(
+  context: MigrationContext,
+  manifest: string
+): Promise<void> {
+  const remoteTemplatePath = path.join(AppPackageFolderName, MANIFEST_TEMPLATE_CONSOLIDATE);
+  const localTemplatePath = path.join(AppPackageFolderName, "manifest.template.local.json");
+
+  const contentRegex = /\"\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\"/g;
+  const remoteRegex = /\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\{/g;
+  const localRegex = /\}\{\{\#config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}/g;
+
+  let remoteTemplate = manifest,
+    localTemplate = manifest;
+
+  // Replace contentUrls
+  const placeholders = manifest.match(contentRegex);
+  if (placeholders) {
+    for (const placeholder of placeholders) {
+      // Replace with local and remote url
+      // Will only replace if one match found
+      const remoteUrl = placeholder.match(remoteRegex);
+      if (remoteUrl && remoteUrl.length == 1) {
+        remoteTemplate = remoteTemplate.replace(
+          placeholder,
+          `"${remoteUrl[0].substring(24, remoteUrl[0].length - 25)}"`
+        );
+      }
+
+      const localUrl = placeholder.match(localRegex);
+      if (localUrl && localUrl.length == 1) {
+        localTemplate = localTemplate.replace(
+          placeholder,
+          `"${localUrl[0].substring(25, localUrl[0].length - 24)}"`
+        );
+      }
+    }
+  }
+
+  await context.fsWriteFile(remoteTemplatePath, remoteTemplate);
+  await context.fsWriteFile(localTemplatePath, localTemplate);
 }

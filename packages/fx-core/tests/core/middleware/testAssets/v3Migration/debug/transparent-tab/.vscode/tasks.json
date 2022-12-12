@@ -10,7 +10,6 @@
                 "Validate & install prerequisites",
                 "Install npm packages",
                 "Set up tab",
-                "Set up SSO",
                 "Build & upload Teams manifest",
                 "Start services"
             ],
@@ -59,20 +58,6 @@
             "command": "debug-set-up-tab",
             "args": {
                 "baseUrl": "https://localhost:53000"
-            }
-        },
-        {
-            // Register resources and prepare local launch information for SSO functionality.
-            // See https://aka.ms/teamsfx-debug-set-up-sso-task to know the details and how to customize the args.
-            "label": "Set up SSO",
-            "type": "teamsfx",
-            "command": "debug-set-up-sso",
-            "args": {
-                //// Enter your own AAD app information if using the existing AAD app. ////
-                // "objectId": "",
-                // "clientId": "",
-                // "clientSecret": "", // use plain text or environment variable reference like ${env:CLIENT_SECRET}
-                // "accessAsUserScopeId": "
             }
         },
         {

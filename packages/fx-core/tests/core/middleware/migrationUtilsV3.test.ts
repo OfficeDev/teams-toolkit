@@ -1,11 +1,23 @@
 import { assert } from "chai";
+import fs from "fs-extra";
 import {
   convertPluginId,
   FileType,
   fixedNamingsV3,
   namingConverterV3,
+  needMigrateToAadManifest,
 } from "../../../src/core/middleware/utils/MigrationUtils";
-import { generateAppIdUri } from "../../../src/core/middleware/utils/v3MigrationUtils";
+import {
+  generateAppIdUri,
+  getTemplateFolderPath,
+} from "../../../src/core/middleware/utils/v3MigrationUtils";
+import { randomAppName } from "../utils";
+import * as os from "os";
+import * as path from "path";
+import { Inputs, Platform } from "@microsoft/teamsfx-api";
+import { MigrationContext } from "../../../src/core/middleware/utils/migrationContext";
+import { mockMigrationContext } from "./projectMigrationV3.test";
+import sinon from "sinon";
 
 describe("MigrationUtilsV3", () => {
   it("happy path for fixed namings", () => {
@@ -180,5 +192,128 @@ describe("MigrationUtilsV3: convertPluginId", () => {
   it("happy path with short id", () => {
     const res = convertPluginId("test");
     assert.equal(res, "test");
+  });
+});
+
+describe("MigrationUtils: needMigrateToAadManifest", async () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  const sandbox = sinon.createSandbox();
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+  });
+
+  it("fxEist false", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    sandbox
+      .stub(fs, "pathExists")
+      .withArgs(path.join(projectPath, ".fx"), () => {})
+      .resolves(false);
+    assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
+  });
+
+  it("aadManifestTemplateExist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    sandbox
+      .stub(fs, "pathExists")
+      .withArgs(path.join(projectPath, ".fx"), () => {})
+      .resolves(true)
+      .withArgs(path.join(projectPath, "templates", "appPackage", "aad.template.json"), () => {})
+      .resolves(true);
+    assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
+  });
+
+  it("permissionFileExist false", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    sandbox
+      .stub(fs, "pathExists")
+      .withArgs(path.join(projectPath, ".fx"), () => {})
+      .resolves(true)
+      .withArgs(path.join(projectPath, "templates", "appPackage", "aad.template.json"), () => {})
+      .resolves(false)
+      .withArgs(path.join(projectPath, "permissions.json"), () => {})
+      .resolves(false);
+    assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
+  });
+});
+
+describe("MigrationUtilsV3: getTemplateFolderPath", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  it("happy path: vsc", async () => {
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+    inputs.projectPath = projectPath;
+    const ctx = {
+      arguments: [inputs],
+    };
+    const context = await MigrationContext.create(ctx);
+    const templatePath = getTemplateFolderPath(context);
+    assert.equal(templatePath, "templates");
+  });
+
+  it("happy path: vs", async () => {
+    const inputs: Inputs = { platform: Platform.VS, ignoreEnvInfo: true };
+    inputs.projectPath = projectPath;
+    const ctx = {
+      arguments: [inputs],
+    };
+    const context = await MigrationContext.create(ctx);
+    const templatePath = getTemplateFolderPath(context);
+    assert.equal(templatePath, "Templates");
+  });
+});
+
+describe("MigrationUtils: needMigrateToAadManifest", async () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  const sandbox = sinon.createSandbox();
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+  });
+
+  it("fxEist false", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    sandbox
+      .stub(fs, "pathExists")
+      .withArgs(path.join(projectPath, ".fx"), () => {})
+      .resolves(false);
+    assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
+  });
+
+  it("aadManifestTemplateExist", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    sandbox
+      .stub(fs, "pathExists")
+      .withArgs(path.join(projectPath, ".fx"), () => {})
+      .resolves(true)
+      .withArgs(path.join(projectPath, "templates", "appPackage", "aad.template.json"), () => {})
+      .resolves(true);
+    assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
+  });
+
+  it("permissionFileExist false", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    sandbox
+      .stub(fs, "pathExists")
+      .withArgs(path.join(projectPath, ".fx"), () => {})
+      .resolves(true)
+      .withArgs(path.join(projectPath, "templates", "appPackage", "aad.template.json"), () => {})
+      .resolves(false)
+      .withArgs(path.join(projectPath, "permissions.json"), () => {})
+      .resolves(false);
+    assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
   });
 });

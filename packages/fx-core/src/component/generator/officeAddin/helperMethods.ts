@@ -9,32 +9,6 @@ import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 const zipFile = "project.zip";
 
 export class helperMethods {
-  static deleteFolderRecursively(projectFolder: string): void {
-    try {
-      if (fs.existsSync(projectFolder)) {
-        fs.readdirSync(projectFolder).forEach(function (file) {
-          const curPath = `${projectFolder}/${file}`;
-
-          if (fs.lstatSync(curPath).isDirectory()) {
-            helperMethods.deleteFolderRecursively(curPath);
-          } else {
-            fs.unlinkSync(curPath);
-          }
-        });
-        fs.rmdirSync(projectFolder);
-      }
-    } catch (err) {
-      throw new Error(`Unable to delete folder "${projectFolder}".\n${err}`);
-    }
-  }
-
-  static doesFolderExist(folderPath: string): boolean {
-    if (fs.existsSync(folderPath)) {
-      return fs.readdirSync(folderPath).length > 0;
-    }
-    return false;
-  }
-
   static async downloadProjectTemplateZipFile(
     projectFolder: string,
     projectRepo: string,
@@ -99,7 +73,7 @@ export class helperMethods {
     helperMethods.copyAddinFiles(fromFolder, projectFolder);
 
     // delete project zipped folder
-    helperMethods.deleteFolderRecursively(fromFolder);
+    fs.rmSync(fromFolder, { recursive: true, force: true });
   }
 
   static copyAddinFiles(fromFolder: string, toFolder: string): void {

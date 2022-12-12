@@ -3,7 +3,7 @@
 
 import { ProjectSettings } from "@microsoft/teamsfx-api";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
-import { InstallToolArgs } from "../../../../component/driver/tools/interfaces/InstallToolArgs";
+import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
 import { BaseAppYmlGenerator } from "../appYmlGenerator";
 
 export class AppLocalYmlConfig {

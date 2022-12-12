@@ -48,10 +48,10 @@ describe("Multi Env Happy Path for Azure", function () {
     `Can create/provision/deploy/build/validate/launch remote a azure tab/function/sql/bot project`,
     { testPlanCaseId: 10308408 },
     async function () {
+      if (isV3Enabled()) {
+        this.skip();
+      }
       try {
-        if (isV3Enabled()) {
-          this.skip();
-        }
         let result;
         result = await execAsync(
           `teamsfx new --interactive false --app-name ${appName} --capabilities notification --bot-host-type-trigger http-functions --programming-language javascript`,

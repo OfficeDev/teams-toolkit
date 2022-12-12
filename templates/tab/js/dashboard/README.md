@@ -279,7 +279,7 @@ Before you add your logic of calling a Graph API, you should enable your dashboa
 
 Now you have already added SSO files to your project, and you can call Graph APIs. There are two types of Graph APIs, one will be called from the front-end(most of APIs, use delegated permissions), the other will be called from the back-end(sendActivityNotification, e.g., use application permissions). You can refer to [this tutorial](https://learn.microsoft.com/en-us/graph/api/overview?view=graph-rest-beta) to check permission types of the Graph APIs you want to call.
 
-### From the front-end(use delegated permissions)
+### Call graph api from the front-end(use delegated permissions)
 
 If you want to call a Graph API from the front-end tab, you can refer to the following steps.
 
@@ -314,7 +314,7 @@ try {
 } catch (e) {}
 ```
 
-### From the back-end(use application permissions)
+### Call graph api from the back-end(use application permissions)
 
 If you want to call a Graph API from the back-end, you can refer to the following steps.
 

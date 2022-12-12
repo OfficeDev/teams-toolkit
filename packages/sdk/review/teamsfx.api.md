@@ -17,6 +17,7 @@ import { CardAction } from 'botbuilder';
 import { CardImage } from 'botbuilder';
 import { ChannelInfo } from 'botbuilder';
 import { Client } from '@microsoft/microsoft-graph-client';
+import { CloudAdapter } from 'botbuilder';
 import { ComponentDialog } from 'botbuilder-dialogs';
 import { ConnectionConfig } from 'tedious';
 import { ConversationReference } from 'botbuilder';
@@ -30,6 +31,8 @@ import { InvokeResponse } from 'botbuilder';
 import { MessagingExtensionResponse } from 'botbuilder';
 import { O365ConnectorCard } from 'botbuilder';
 import { ReceiptCard } from 'botbuilder';
+import { Request as Request_2 } from 'botbuilder';
+import { Response as Response_2 } from 'botbuilder';
 import { SecureContextOptions } from 'tls';
 import { SigninStateVerificationQuery } from 'botbuilder';
 import { StatePropertyAccessor } from 'botbuilder';
@@ -47,6 +50,13 @@ import { WebResponse } from 'botbuilder';
 
 // @public
 export enum AdaptiveCardResponse {
+    NewForAll = 2,
+    ReplaceForAll = 1,
+    ReplaceForInteractor = 0
+}
+
+// @public
+enum AdaptiveCardResponse_2 {
     NewForAll = 2,
     ReplaceForAll = 1,
     ReplaceForInteractor = 0
@@ -104,6 +114,40 @@ export class BearerTokenAuthProvider implements AuthProvider {
     AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig>;
 }
 
+declare namespace BotBuilderCloudAdapter {
+    export {
+        AdaptiveCardResponse_2 as AdaptiveCardResponse,
+        CommandMessage_2 as CommandMessage,
+        CommandOptions_2 as CommandOptions,
+        CardActionOptions_2 as CardActionOptions,
+        ConversationOptions_2 as ConversationOptions,
+        NotificationOptions_3 as NotificationOptions,
+        NotificationTarget_2 as NotificationTarget,
+        NotificationTargetStorage_2 as NotificationTargetStorage,
+        NotificationTargetType_2 as NotificationTargetType,
+        InvokeResponseErrorCode_2 as InvokeResponseErrorCode,
+        TriggerPatterns_2 as TriggerPatterns,
+        TeamsFxAdaptiveCardActionHandler_2 as TeamsFxAdaptiveCardActionHandler,
+        TeamsFxBotCommandHandler_2 as TeamsFxBotCommandHandler,
+        TeamsFxBotSsoCommandHandler_2 as TeamsFxBotSsoCommandHandler,
+        BotSsoExecutionActivityHandler_2 as BotSsoExecutionActivityHandler,
+        BotSsoConfig_2 as BotSsoConfig,
+        BotSsoExecutionDialogHandler_2 as BotSsoExecutionDialogHandler,
+        ConversationBot_2 as ConversationBot,
+        BotSsoExecutionDialog_2 as BotSsoExecutionDialog,
+        Channel_2 as Channel,
+        Member_2 as Member,
+        NotificationBot_2 as NotificationBot,
+        sendAdaptiveCard_2 as sendAdaptiveCard,
+        sendMessage_2 as sendMessage,
+        TeamsBotInstallation_2 as TeamsBotInstallation,
+        SearchScope_2 as SearchScope,
+        CommandBot_2 as CommandBot,
+        CardActionBot_2 as CardActionBot
+    }
+}
+export { BotBuilderCloudAdapter }
+
 // @public
 export interface BotSsoConfig {
     aad: {
@@ -125,8 +169,36 @@ export interface BotSsoConfig {
 }
 
 // @public
+interface BotSsoConfig_2 {
+    aad: {
+        scopes: string[];
+    } & ((OnBehalfOfCredentialAuthConfig & {
+        initiateLoginEndpoint: string;
+    }) | AuthenticationConfiguration);
+    // (undocumented)
+    dialog?: {
+        CustomBotSsoExecutionActivityHandler?: new (ssoConfig: BotSsoConfig_2) => BotSsoExecutionActivityHandler_2;
+        conversationState?: ConversationState;
+        userState?: UserState;
+        dedupStorage?: Storage_2;
+        ssoPromptConfig?: {
+            timeout?: number;
+            endOnInvalidMessage?: boolean;
+        };
+    };
+}
+
+// @public
 export interface BotSsoExecutionActivityHandler {
     addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
+    handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
+    handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
+    run(context: TurnContext): Promise<void>;
+}
+
+// @public
+interface BotSsoExecutionActivityHandler_2 {
+    addCommand(handler: BotSsoExecutionDialogHandler_2, triggerPatterns: TriggerPatterns_2): void;
     handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
     handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery): Promise<void>;
     run(context: TurnContext): Promise<void>;
@@ -141,8 +213,20 @@ export class BotSsoExecutionDialog extends ComponentDialog {
     run(context: TurnContext, accessor: StatePropertyAccessor): Promise<void>;
 }
 
+// @public
+class BotSsoExecutionDialog_2 extends ComponentDialog {
+    constructor(dedupStorage: Storage_2, ssoPromptSettings: TeamsBotSsoPromptSettings, teamsfx: TeamsFx, dialogName?: string);
+    constructor(dedupStorage: Storage_2, ssoPromptSettings: TeamsBotSsoPromptSettings, authConfig: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, dialogName?: string);
+    addCommand(handler: BotSsoExecutionDialogHandler_2, triggerPatterns: TriggerPatterns_2): void;
+    protected onEndDialog(context: TurnContext): Promise<void>;
+    run(context: TurnContext, accessor: StatePropertyAccessor): Promise<void>;
+}
+
 // @public (undocumented)
 export type BotSsoExecutionDialogHandler = (context: TurnContext, tokenResponse: TeamsBotSsoPromptTokenResponse, message: CommandMessage) => Promise<void>;
+
+// @public (undocumented)
+type BotSsoExecutionDialogHandler_2 = (context: TurnContext, tokenResponse: TeamsBotSsoPromptTokenResponse, message: CommandMessage_2) => Promise<void>;
 
 // @public
 export class CardActionBot {
@@ -152,8 +236,20 @@ export class CardActionBot {
 }
 
 // @public
+class CardActionBot_2 {
+    constructor(adapter: CloudAdapter, options?: CardActionOptions_2);
+    registerHandler(actionHandler: TeamsFxAdaptiveCardActionHandler_2): void;
+    registerHandlers(actionHandlers: TeamsFxAdaptiveCardActionHandler_2[]): void;
+}
+
+// @public
 export interface CardActionOptions {
     actions?: TeamsFxAdaptiveCardActionHandler[];
+}
+
+// @public
+interface CardActionOptions_2 {
+    actions?: TeamsFxAdaptiveCardActionHandler_2[];
 }
 
 // @public
@@ -174,6 +270,16 @@ export class Channel implements NotificationTarget {
 }
 
 // @public
+class Channel_2 implements NotificationTarget_2 {
+    constructor(parent: TeamsBotInstallation_2, info: ChannelInfo);
+    readonly info: ChannelInfo;
+    readonly parent: TeamsBotInstallation_2;
+    sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse_2>;
+    sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse_2>;
+    readonly type: NotificationTargetType_2;
+}
+
+// @public
 export class CommandBot {
     constructor(adapter: BotFrameworkAdapter, options?: CommandOptions, ssoCommandActivityHandler?: BotSsoExecutionActivityHandler, ssoConfig?: BotSsoConfig);
     registerCommand(command: TeamsFxBotCommandHandler): void;
@@ -183,7 +289,22 @@ export class CommandBot {
 }
 
 // @public
+class CommandBot_2 {
+    constructor(adapter: CloudAdapter, options?: CommandOptions_2, ssoCommandActivityHandler?: BotSsoExecutionActivityHandler_2, ssoConfig?: BotSsoConfig_2);
+    registerCommand(command: TeamsFxBotCommandHandler_2): void;
+    registerCommands(commands: TeamsFxBotCommandHandler_2[]): void;
+    registerSsoCommand(ssoCommand: TeamsFxBotSsoCommandHandler_2): void;
+    registerSsoCommands(ssoCommands: TeamsFxBotSsoCommandHandler_2[]): void;
+}
+
+// @public
 export interface CommandMessage {
+    matches?: RegExpMatchArray;
+    text: string;
+}
+
+// @public
+interface CommandMessage_2 {
     matches?: RegExpMatchArray;
     text: string;
 }
@@ -195,6 +316,12 @@ export interface CommandOptions {
 }
 
 // @public
+interface CommandOptions_2 {
+    commands?: TeamsFxBotCommandHandler_2[];
+    ssoCommands?: TeamsFxBotSsoCommandHandler_2[];
+}
+
+// @public
 export class ConversationBot {
     constructor(options: ConversationOptions);
     readonly adapter: BotFrameworkAdapter;
@@ -202,6 +329,16 @@ export class ConversationBot {
     readonly command?: CommandBot;
     readonly notification?: NotificationBot;
     requestHandler(req: WebRequest, res: WebResponse, logic?: (context: TurnContext) => Promise<any>): Promise<void>;
+}
+
+// @public
+class ConversationBot_2 {
+    constructor(options: ConversationOptions_2);
+    readonly adapter: CloudAdapter;
+    readonly cardAction?: CardActionBot_2;
+    readonly command?: CommandBot_2;
+    readonly notification?: NotificationBot_2;
+    requestHandler(req: Request_2, res: Response_2, logic?: (context: TurnContext) => Promise<any>): Promise<void>;
 }
 
 // @public
@@ -220,6 +357,24 @@ export interface ConversationOptions {
         enabled?: boolean;
     };
     ssoConfig?: BotSsoConfig;
+}
+
+// @public
+interface ConversationOptions_2 {
+    adapter?: CloudAdapter;
+    adapterConfig?: {
+        [key: string]: unknown;
+    };
+    cardAction?: CardActionOptions_2 & {
+        enabled?: boolean;
+    };
+    command?: CommandOptions_2 & {
+        enabled?: boolean;
+    };
+    notification?: NotificationOptions_3 & {
+        enabled?: boolean;
+    };
+    ssoConfig?: BotSsoConfig_2;
 }
 
 // @public
@@ -305,6 +460,12 @@ export enum InvokeResponseErrorCode {
 }
 
 // @public
+enum InvokeResponseErrorCode_2 {
+    BadRequest = 400,
+    InternalServerError = 500
+}
+
+// @public
 export class InvokeResponseFactory {
     static adaptiveCard(card: unknown): InvokeResponse;
     static createInvokeResponse(statusCode: StatusCodes, body?: unknown): InvokeResponse;
@@ -339,6 +500,16 @@ export class Member implements NotificationTarget {
     sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     readonly type: NotificationTargetType;
+}
+
+// @public
+class Member_2 implements NotificationTarget_2 {
+    constructor(parent: TeamsBotInstallation_2, account: TeamsChannelAccount);
+    readonly account: TeamsChannelAccount;
+    readonly parent: TeamsBotInstallation_2;
+    sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse_2>;
+    sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse_2>;
+    readonly type: NotificationTargetType_2;
 }
 
 // @public
@@ -378,16 +549,40 @@ export class NotificationBot {
 }
 
 // @public
+class NotificationBot_2 {
+    constructor(adapter: CloudAdapter, options?: NotificationOptions_3);
+    findAllChannels(predicate: (channel: Channel_2, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel_2[]>;
+    findAllMembers(predicate: (member: Member_2) => Promise<boolean>, scope?: SearchScope_2): Promise<Member_2[]>;
+    findChannel(predicate: (channel: Channel_2, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel_2 | undefined>;
+    findMember(predicate: (member: Member_2) => Promise<boolean>, scope?: SearchScope_2): Promise<Member_2 | undefined>;
+    installations(): Promise<TeamsBotInstallation_2[]>;
+}
+
+// @public
 interface NotificationOptions_2 {
     storage?: NotificationTargetStorage;
 }
 export { NotificationOptions_2 as NotificationOptions }
 
 // @public
+interface NotificationOptions_3 {
+    botAppId?: string;
+    storage?: NotificationTargetStorage_2;
+}
+
+// @public
 export interface NotificationTarget {
     sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     readonly type?: NotificationTargetType;
+}
+
+// @public
+interface NotificationTarget_2 {
+    sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse_2>;
+    // Warning: (ae-forgotten-export) The symbol "MessageResponse" needs to be exported by the entry point index.d.ts
+    sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse_2>;
+    readonly type?: NotificationTargetType_2;
 }
 
 // @public
@@ -405,7 +600,28 @@ export interface NotificationTargetStorage {
 }
 
 // @public
+interface NotificationTargetStorage_2 {
+    delete(key: string): Promise<void>;
+    list(): Promise<{
+        [key: string]: unknown;
+    }[]>;
+    read(key: string): Promise<{
+        [key: string]: unknown;
+    } | undefined>;
+    write(key: string, object: {
+        [key: string]: unknown;
+    }): Promise<void>;
+}
+
+// @public
 export enum NotificationTargetType {
+    Channel = "Channel",
+    Group = "Group",
+    Person = "Person"
+}
+
+// @public
+enum NotificationTargetType_2 {
     Channel = "Channel",
     Group = "Group",
     Person = "Person"
@@ -441,10 +657,24 @@ export enum SearchScope {
 }
 
 // @public
+enum SearchScope_2 {
+    All = 7,
+    Channel = 4,
+    Group = 2,
+    Person = 1
+}
+
+// @public
 export function sendAdaptiveCard(target: NotificationTarget, card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
 
 // @public
+function sendAdaptiveCard_2(target: NotificationTarget_2, card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse_2>;
+
+// @public
 export function sendMessage(target: NotificationTarget, text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
+
+// @public
+function sendMessage_2(target: NotificationTarget_2, text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse_2>;
 
 // @public
 export function setLogFunction(logFunction?: LogFunction): void;
@@ -466,6 +696,20 @@ export class TeamsBotInstallation implements NotificationTarget {
     sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse>;
     readonly type?: NotificationTargetType;
+}
+
+// @public
+class TeamsBotInstallation_2 implements NotificationTarget_2 {
+    constructor(adapter: CloudAdapter, conversationReference: Partial<ConversationReference>, botAppId: string);
+    readonly adapter: CloudAdapter;
+    readonly botAppId: string;
+    channels(): Promise<Channel_2[]>;
+    readonly conversationReference: Partial<ConversationReference>;
+    getTeamDetails(): Promise<TeamDetails | undefined>;
+    members(): Promise<Member_2[]>;
+    sendAdaptiveCard(card: unknown, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse_2>;
+    sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Promise<void>): Promise<MessageResponse_2>;
+    readonly type?: NotificationTargetType_2;
 }
 
 // @public
@@ -510,15 +754,34 @@ export interface TeamsFxAdaptiveCardActionHandler {
 }
 
 // @public
+interface TeamsFxAdaptiveCardActionHandler_2 {
+    adaptiveCardResponse?: AdaptiveCardResponse_2;
+    handleActionInvoked(context: TurnContext, actionData: any): Promise<InvokeResponse>;
+    triggerVerb: string;
+}
+
+// @public
 export interface TeamsFxBotCommandHandler {
     handleCommandReceived(context: TurnContext, message: CommandMessage): Promise<string | Partial<Activity> | void>;
     triggerPatterns: TriggerPatterns;
 }
 
 // @public
+interface TeamsFxBotCommandHandler_2 {
+    handleCommandReceived(context: TurnContext, message: CommandMessage_2): Promise<string | Partial<Activity> | void>;
+    triggerPatterns: TriggerPatterns_2;
+}
+
+// @public
 export interface TeamsFxBotSsoCommandHandler {
     handleCommandReceived(context: TurnContext, message: CommandMessage, tokenResponse: TeamsBotSsoPromptTokenResponse): Promise<string | Partial<Activity> | void>;
     triggerPatterns: TriggerPatterns;
+}
+
+// @public
+interface TeamsFxBotSsoCommandHandler_2 {
+    handleCommandReceived(context: TurnContext, message: CommandMessage_2, tokenResponse: TeamsBotSsoPromptTokenResponse): Promise<string | Partial<Activity> | void>;
+    triggerPatterns: TriggerPatterns_2;
 }
 
 // @public
@@ -538,6 +801,9 @@ export type TeamsUserCredentialAuthConfig = {
 
 // @public
 export type TriggerPatterns = string | RegExp | (string | RegExp)[];
+
+// @public
+type TriggerPatterns_2 = string | RegExp | (string | RegExp)[];
 
 // @public
 export interface UserInfo {

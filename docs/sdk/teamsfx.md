@@ -87,6 +87,12 @@
 |  [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md) | Interface for a command handler that can process sso command to a TeamsFx bot and return a response. |
 |  [UserInfo](./teamsfx.userinfo.md) | UserInfo with user displayName, objectId and preferredUserName. |
 
+## Namespaces
+
+|  Namespace | Description |
+|  --- | --- |
+|  [BotBuilderCloudAdapter](./teamsfx.botbuildercloudadapter.md) |  |
+
 ## Type Aliases
 
 |  Type Alias | Description |

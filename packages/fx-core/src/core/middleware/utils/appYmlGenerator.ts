@@ -33,10 +33,11 @@ export class AppYmlGenerator {
   }
 
   public async generateAppYml(): Promise<string> {
-    await this.generateHandlerbarsContext();
+    await this.generateCommonHandlerbarsContext();
 
     const solutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
-    if (solutionSettings.hostType === "Azure") {
+    if (solutionSettings.hostType.toLowerCase() === "azure") {
+      await this.generateAzureHandlebarsContext();
       switch (this.oldProjectSettings.programmingLanguage?.toLowerCase()) {
         case "javascript":
         case "typescript":
@@ -44,6 +45,8 @@ export class AppYmlGenerator {
         case "csharp":
           return await this.buildHandlebarsTemplate("csharp.app.yml");
       }
+    } else if (solutionSettings.hostType.toLowerCase() === "spfx") {
+      return await this.buildHandlebarsTemplate("spfx.app.yml");
     }
     throw new Error(
       "The current tooling cannot upgrade your project temporary. Please raise an issue in GitHub for your project."
@@ -57,23 +60,13 @@ export class AppYmlGenerator {
     return template(this.handlebarsContext);
   }
 
-  private async generateHandlerbarsContext(): Promise<void> {
+  private async generateCommonHandlerbarsContext(): Promise<void> {
     // project setting information
     this.handlebarsContext.appName = this.oldProjectSettings.appName;
 
     const azureSolutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
     for (const activePlugin of azureSolutionSettings.activeResourcePlugins) {
       this.handlebarsContext.activePlugins[activePlugin] = true; // convert array items to object properties to simplify handlebars template
-    }
-
-    // isFunctionBot
-    const pluginSettings = this.oldProjectSettings.pluginSettings;
-    if (
-      pluginSettings &&
-      pluginSettings["fx-resource-bot"] &&
-      pluginSettings["fx-resource-bot"]["host-type"] === "azure-function"
-    ) {
-      this.handlebarsContext.isFunctionBot = true;
     }
 
     // app names
@@ -91,6 +84,18 @@ export class AppYmlGenerator {
         path.join(this.projectPath, "appPackage/manifest.template.json")
       );
       this.handlebarsContext.teamsAppName = teamsAppManifest.name.short;
+    }
+  }
+
+  private async generateAzureHandlebarsContext(): Promise<void> {
+    // isFunctionBot
+    const pluginSettings = this.oldProjectSettings.pluginSettings;
+    if (
+      pluginSettings &&
+      pluginSettings["fx-resource-bot"] &&
+      pluginSettings["fx-resource-bot"]["host-type"] === "azure-function"
+    ) {
+      this.handlebarsContext.isFunctionBot = true;
     }
 
     // placeholders

@@ -54,6 +54,7 @@ import {
   readBicepContent,
   readJsonFile,
   replaceAppIdUri,
+  getTemplateFolderPath,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
 import * as commentJson from "comment-json";
@@ -225,7 +226,7 @@ export async function generateSettingsJson(context: MigrationContext): Promise<v
 }
 
 export async function generateAppYml(context: MigrationContext): Promise<void> {
-  const bicepContent: string = readBicepContent(context);
+  const bicepContent: string = await readBicepContent(context);
   const oldProjectSettings = await loadProjectSettings(context.projectPath);
   const appYmlGenerator = new AppYmlGenerator(
     oldProjectSettings,
@@ -260,7 +261,7 @@ async function loadProjectSettings(projectPath: string): Promise<ProjectSettings
 
 export async function manifestsMigration(context: MigrationContext): Promise<void> {
   // Backup templates/appPackage
-  const oldAppPackageFolderPath = path.join(TemplateFolderName, AppPackageFolderName);
+  const oldAppPackageFolderPath = path.join(getTemplateFolderPath(context), AppPackageFolderName);
   const oldAppPackageFolderBackupRes = await context.backup(oldAppPackageFolderPath);
 
   if (!oldAppPackageFolderBackupRes) {
@@ -283,13 +284,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   }
 
   // Read Bicep
-  const oldBicepFilePath = path.join(TemplateFolderName, "azure", "provision.bicep");
-  const oldBicepFileExists = await fs.pathExists(path.join(context.projectPath, oldBicepFilePath));
-  if (!oldBicepFileExists) {
-    // templates/azure/provision.bicep does not exist
-    throw ReadFileError(new Error("templates/azure/provision.bicep does not exist"));
-  }
-  const bicepContent = await fs.readFile(path.join(context.projectPath, oldBicepFilePath), "utf-8");
+  const bicepContent = await readBicepContent(context);
 
   // Read capability project settings
   const projectSettings = await loadProjectSettings(context.projectPath);
@@ -338,14 +333,8 @@ export async function azureParameterMigration(context: MigrationContext): Promis
   }
 
   // Read Bicep
-  const azureFolderPath = path.join(TemplateFolderName, "azure");
-  const oldBicepFilePath = path.join(azureFolderPath, "provision.bicep");
-  const oldBicepFileExists = await context.fsPathExists(oldBicepFilePath);
-  if (!oldBicepFileExists) {
-    // templates/azure/provision.bicep does not exist
-    throw ReadFileError(new Error("templates/azure/provision.bicep does not exist"));
-  }
-  const bicepContent = await fs.readFile(path.join(context.projectPath, oldBicepFilePath), "utf-8");
+  const azureFolderPath = path.join(getTemplateFolderPath(context), "azure");
+  const bicepContent = await readBicepContent(context);
 
   const fileNames = fsReadDirSync(context, configFolderPath);
   for (const fileName of fileNames) {
@@ -413,7 +402,7 @@ export async function configsMigration(context: MigrationContext): Promise<void>
             path.join(".fx", "configs", "config." + envName + ".json")
           );
           if (obj["manifest"]) {
-            const bicepContent = readBicepContent(context);
+            const bicepContent = await readBicepContent(context);
             const teamsfx_env = fs
               .readFileSync(path.join(context.projectPath, SettingsFolderName, ".env." + envName))
               .toString()
@@ -456,7 +445,7 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
             path.join(".fx", "states", "state." + envName + ".json")
           );
           if (obj) {
-            const bicepContent = readBicepContent(context);
+            const bicepContent = await readBicepContent(context);
             // convert every name
             const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
             await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
@@ -486,7 +475,7 @@ export async function userdataMigration(context: MigrationContext): Promise<void
           await context.fsEnsureDir(SettingsFolderName);
           if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
             await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
-          const bicepContent = readBicepContent(context);
+          const bicepContent = await readBicepContent(context);
           const envData = await readAndConvertUserdata(
             context,
             path.join(".fx", "states", fileName),

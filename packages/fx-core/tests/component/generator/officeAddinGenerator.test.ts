@@ -15,6 +15,7 @@ import {
   AddinLanguageQuestion,
   AddinProjectFolderQuestion,
   getQuestionsForScaffolding,
+  getTemplate,
   OfficeHostQuestion,
 } from "../../../src/component/generator/officeAddin/question";
 import { GeneratorChecker } from "../../../src/component/resource/spfx/depsChecker/generatorChecker";
@@ -101,5 +102,17 @@ describe("getQuestionsForScaffolding", () => {
   it("should contain all questions", () => {
     const q = getQuestionsForScaffolding();
     chai.expect(q.children?.length).to.eq(3);
+  });
+});
+
+describe("getTemplate", () => {
+  it("should find taskpane template", () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+    };
+    inputs["capabilities"] = ["taskpane"];
+
+    const template = getTemplate(inputs);
+    chai.expect(template).to.eq("taskpane");
   });
 });

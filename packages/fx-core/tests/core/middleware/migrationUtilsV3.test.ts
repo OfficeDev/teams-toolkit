@@ -16,7 +16,7 @@ import * as os from "os";
 import * as path from "path";
 import { Inputs, Platform } from "@microsoft/teamsfx-api";
 import { MigrationContext } from "../../../src/core/middleware/utils/migrationContext";
-import { Constants, copyTestProject, mockMigrationContext } from "./projectMigrationV3.test";
+import { mockMigrationContext } from "./projectMigrationV3.test";
 import sinon from "sinon";
 
 describe("MigrationUtilsV3", () => {

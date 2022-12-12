@@ -962,7 +962,7 @@ async function assertFileContent(
   assert.equal(actualFileContent, expectedFileContent);
 }
 
-export async function copyTestProject(projectName: string, targetPath: string): Promise<void> {
+async function copyTestProject(projectName: string, targetPath: string): Promise<void> {
   await fs.copy(getTestAssetsPath(projectName), targetPath);
 }
 
@@ -985,7 +985,7 @@ function getAction(lifecycleDefinition: Array<any>, actionName: string): any[] {
   return [];
 }
 
-export const Constants = {
+const Constants = {
   happyPathTestProject: "happyPath",
   settingsFilePath: "teamsfx/settings.json",
   oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",

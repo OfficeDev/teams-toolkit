@@ -80,6 +80,11 @@ const Constants = {
   appLocalYmlName: "app.local.yml",
   tasksJsonPath: ".vscode/tasks.json",
   reportName: "migrationReport.md",
+  envWriteOption: {
+    // .env.{env} file might be already exist, use append mode (flag: a+)
+    encoding: "utf8",
+    flag: "a+",
+  },
 };
 
 const MigrationVersion = {
@@ -416,12 +421,18 @@ export async function configsMigration(context: MigrationContext): Promise<void>
             // convert every name and add the env name at the first line
             const envData =
               teamsfx_env +
-              jsonObjectNamesConvertV3(obj["manifest"], "manifest.", FileType.CONFIG, bicepContent);
-            await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
-              // .env.{env} file might be already exist, use append mode (flag: a+)
-              encoding: "utf8",
-              flag: "a+",
-            });
+              jsonObjectNamesConvertV3(
+                obj["manifest"],
+                "manifest.",
+                "",
+                FileType.CONFIG,
+                bicepContent
+              );
+            await context.fsWriteFile(
+              path.join(SettingsFolderName, ".env." + envName),
+              envData,
+              Constants.envWriteOption
+            );
           }
         }
       }
@@ -451,12 +462,18 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
           if (obj) {
             const bicepContent = await readBicepContent(context);
             // convert every name
-            const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
-            await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
-              // .env.{env} file might be already exist, use append mode (flag: a+)
-              encoding: "utf8",
-              flag: "a+",
-            });
+            const envData = jsonObjectNamesConvertV3(
+              obj,
+              "state.",
+              "",
+              FileType.STATE,
+              bicepContent
+            );
+            await context.fsWriteFile(
+              path.join(SettingsFolderName, ".env." + envName),
+              envData,
+              Constants.envWriteOption
+            );
           }
         }
       }
@@ -485,11 +502,11 @@ export async function userdataMigration(context: MigrationContext): Promise<void
             path.join(".fx", "states", fileName),
             bicepContent
           );
-          await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
-            // .env.{env} file might be already exist, use append mode (flag: a+)
-            encoding: "utf8",
-            flag: "a+",
-          });
+          await context.fsWriteFile(
+            path.join(SettingsFolderName, ".env." + envName),
+            envData,
+            Constants.envWriteOption
+          );
         }
       }
   }
@@ -572,10 +589,7 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
               await context.fsWriteFile(
                 path.join(SettingsFolderName, ".env." + envName),
                 apimPluginAppendContent,
-                {
-                  encoding: "utf8",
-                  flag: "a+",
-                }
+                Constants.envWriteOption
               );
             }
           }

@@ -933,7 +933,7 @@ describe("debugMigration", () => {
   });
 });
 
-async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
+export async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
   const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
   inputs.projectPath = projectPath;
   const ctx = {
@@ -994,4 +994,10 @@ const Constants = {
   appYmlPath: "teamsfx/app.yml",
   manifestsMigrationHappyPath: "manifestsHappyPath",
   launchJsonPath: ".vscode/launch.json",
+  happyPathWithoutFx: "happyPath_for_needMigrateToAadManifest/happyPath_no_fx",
+  happyPathAadManifestTemplateExist:
+    "happyPath_for_needMigrateToAadManifest/happyPath_aadManifestTemplateExist",
+  happyPathWithoutPermission: "happyPath_for_needMigrateToAadManifest/happyPath_no_permissionFile",
+  happyPathAadPluginNotActive:
+    "happyPath_for_needMigrateToAadManifest/happyPath_aadPluginNotActive",
 };

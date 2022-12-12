@@ -194,7 +194,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   sampleNode.addChild(new QTreeNode(QuestionRootFolder));
 
   if (isOfficeAddinEnabled()) {
-    addOfficeAddinQuestions(inputs, node);
+    addOfficeAddinQuestions(node);
   }
 
   return ok(node.trim());
@@ -298,10 +298,7 @@ export async function getQuestionsForCreateProjectV2(
   }
 }
 
-async function addOfficeAddinQuestions(
-  inputs: Inputs,
-  node: QTreeNode
-): Promise<Result<Void, FxError>> {
+export function addOfficeAddinQuestions(node: QTreeNode): void {
   const createNewAddin = new QTreeNode({ type: "group" });
   createNewAddin.condition = { equals: CreateNewOfficeAddinOption.id };
   node.addChild(createNewAddin);
@@ -313,6 +310,4 @@ async function addOfficeAddinQuestions(
 
   createNewAddin.addChild(new QTreeNode(QuestionRootFolder));
   createNewAddin.addChild(new QTreeNode(createAppNameQuestion()));
-
-  return ok(Void);
 }

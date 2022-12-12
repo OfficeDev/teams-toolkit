@@ -1,6 +1,4 @@
 import { assert } from "chai";
-import * as os from "os";
-import * as path from "path";
 import fs from "fs-extra";
 import {
   convertPluginId,
@@ -242,7 +240,9 @@ describe("MigrationUtils: needMigrateToAadManifest", async () => {
       .withArgs(path.join(projectPath, "permissions.json"), () => {})
       .resolves(false);
     assert.isTrue(!(await needMigrateToAadManifest(migrationContext)));
-=======
+  });
+});
+
 describe("MigrationUtilsV3: getTemplateFolderPath", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);

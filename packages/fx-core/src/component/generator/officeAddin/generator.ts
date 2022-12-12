@@ -56,11 +56,13 @@ export class OfficeAddinGenerator {
       return err(result.error);
     }
 
+    const language = inputs[AddinLanguageQuestion.name];
+
     const templateRes = await Generator.generateTemplate(
       context,
       destinationPath,
       templateName,
-      "ts"
+      language === "TypeScript" ? "ts" : "js"
     );
     if (templateRes.isErr()) return err(templateRes.error);
 

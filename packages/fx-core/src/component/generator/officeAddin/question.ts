@@ -114,7 +114,7 @@ export const AddinProjectManifestQuestion: SingleFileQuestion = {
   },
 };
 
-export function getTemplate(inputs: Inputs): string {
+export const getTemplate = (inputs: Inputs): string => {
   const capabilities: string[] = inputs["capabilities"];
   const templates: string[] = jsonData.getProjectTemplateNames();
 
@@ -123,9 +123,9 @@ export function getTemplate(inputs: Inputs): string {
   });
 
   return foundTemplate ?? "";
-}
+};
 
-export function getQuestionsForScaffolding(): QTreeNode {
+export const getQuestionsForScaffolding = (): QTreeNode => {
   const nameNode = new QTreeNode(AddinNameQuestion);
 
   const importNode = new QTreeNode({ type: "group" });
@@ -171,4 +171,4 @@ export function getQuestionsForScaffolding(): QTreeNode {
   root.addChild(nameNode);
 
   return root;
-}
+};

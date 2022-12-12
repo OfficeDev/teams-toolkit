@@ -44,7 +44,7 @@ export function Welcome(props) {
       return userInfo;
     }
   });
-  const userName = loading || error ? "" : data.displayName;
+  const userName = (loading || error) ? "": data.displayName;
   return (
     <div className="welcome page">
       <div className="narrow page-padding">

@@ -20,7 +20,7 @@ export default function App() {
     clientId: config.clientId!,
   });
   return (
-    <TeamsFxContext.Provider value={{ theme, themeString, teamsUserCredential }}>
+    <TeamsFxContext.Provider value={{theme, themeString, teamsUserCredential}}>
       <Provider theme={theme || teamsTheme} styles={{ backgroundColor: "#eeeeee" }}>
         <Router>
           <Route exact path="/">
@@ -38,6 +38,6 @@ export default function App() {
           )}
         </Router>
       </Provider>
-    </TeamsFxContext.Provider>
+      </TeamsFxContext.Provider>
   );
 }

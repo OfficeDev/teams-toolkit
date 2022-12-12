@@ -10,14 +10,19 @@ registerApp:
     with:
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}
 
-configureApp:
-  - uses: file/updateEnv
+provision:
+  - uses: botAadApp/create
     with:
-      envs:
-        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN: localhost:53000
-        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT: https://localhost:53000
-        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH: /index.html#
+      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
 
+  - uses: botFramework/create
+    with:
+      botId: ${{BOT_ID}}
+      name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
+      messagingEndpoint: ${{PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT}}/api/messages
+      description: ""
+
+configureApp:
   - uses: aadApp/update
     with:
       manifestTemplatePath: ./aad.manifest.template.json
@@ -38,30 +43,26 @@ configureApp:
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
 
 deploy:
-  - uses: prerequisite/install 
+  - uses: file/updateEnv
     with:
-      devCert:
-        trust: true
+      target: ./bot/.env.teamsfx.local
+      envs:
+        BOT_ID: ${{BOT_ID}}
+        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
 
   - uses: file/updateEnv
     with:
-      target: ./tabs/.env.teamsfx.local
+      target: ./bot/.env.teamsfx.local
       envs:
-        BROWSER: none
-        HTTPS: true
-        PORT: 53000
-        SSL_CRT_FILE: ${{SSL_CRT_FILE}}
-        SSL_KEY_FILE: ${{SSL_KEY_FILE}}
-
-  - uses: file/updateEnv
-    with:
-      target: ./tabs/.env.teamsfx.local
-      envs:
-        REACT_APP_START_LOGIN_PAGE_URL: ${{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT}}/auth-start.html
-        REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        M365_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
+        M365_CLIENT_SECRET: ${{SECRET_AAD_APP_CLIENT_SECRET}}
+        M365_TENANT_ID: ${{AAD_APP_TENANT_ID}}
+        M365_AUTHORITY_HOST: ${{AAD_APP_OAUTH_AUTHORITY_HOST}}
+        INITIATE_LOGIN_ENDPOINT: ${{PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT}}/auth-start.html
+        M365_APPLICATION_ID_URI: api://botid-${{BOT_ID}}
 
   - uses: npm/command
     with:
       args: install --no-audit
-      workingDirectory: ./tabs
+      workingDirectory: ./bot
 

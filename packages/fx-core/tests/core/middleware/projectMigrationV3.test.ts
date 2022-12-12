@@ -903,6 +903,7 @@ describe("debugMigration", () => {
     "transparent-tab",
     "transparent-sso-tab",
     "transparent-bot",
+    "transparent-sso-bot",
     "transparent-notification",
     "transparent-tab-bot-func",
   ];

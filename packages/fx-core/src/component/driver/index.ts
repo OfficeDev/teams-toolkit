@@ -18,7 +18,7 @@ import "./deploy/spfx/deployDriver";
 import "./script/dotnetBuildDriver";
 import "./script/npmBuildDriver";
 import "./script/npxBuildDriver";
-import "./tools/installDriver";
+import "./prerequisite/installDriver";
 import "./file/updateEnv";
 import "./file/appsettingsGenerate";
 import "./botFramework/createOrUpdateBot";

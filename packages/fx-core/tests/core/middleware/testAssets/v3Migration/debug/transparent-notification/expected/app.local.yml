@@ -1,7 +1,7 @@
 version: 1.0.0
 
 deploy:
-  - uses: tools/install 
+  - uses: prerequisite/install 
     with:
       func: true
 

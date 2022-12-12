@@ -8,6 +8,7 @@ import { isObject } from "lodash";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import { EOL } from "os";
 import {
+  AppPackageFolderName,
   AzureSolutionSettings,
   Inputs,
   Platform,
@@ -16,6 +17,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { CoreHookContext } from "../../types";
 import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
+import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appManifest/constants";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -167,4 +169,46 @@ export async function readAndConvertUserdata(
   }
 
   return returnAnswer;
+}
+
+export async function updateAndSaveManifestForSpfx(
+  context: MigrationContext,
+  manifest: string
+): Promise<void> {
+  const remoteTemplatePath = path.join(AppPackageFolderName, MANIFEST_TEMPLATE_CONSOLIDATE);
+  const localTemplatePath = path.join(AppPackageFolderName, "manifest.template.local.json");
+
+  const contentRegex = /\"\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\"/g;
+  const remoteRegex = /\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\{/g;
+  const localRegex = /\}\{\{\#config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}/g;
+
+  let remoteTemplate = manifest,
+    localTemplate = manifest;
+
+  // Replace contentUrls
+  const placeholders = manifest.match(contentRegex);
+  if (placeholders) {
+    for (const placeholder of placeholders) {
+      // Replace with local and remote url
+      // Will only replace if one match found
+      const remoteUrl = placeholder.match(remoteRegex);
+      if (remoteUrl && remoteUrl.length == 1) {
+        remoteTemplate = remoteTemplate.replace(
+          placeholder,
+          `"${remoteUrl[0].substring(24, remoteUrl[0].length - 25)}"`
+        );
+      }
+
+      const localUrl = placeholder.match(localRegex);
+      if (localUrl && localUrl.length == 1) {
+        localTemplate = localTemplate.replace(
+          placeholder,
+          `"${localUrl[0].substring(25, localUrl[0].length - 24)}"`
+        );
+      }
+    }
+  }
+
+  await context.fsWriteFile(remoteTemplatePath, remoteTemplate);
+  await context.fsWriteFile(localTemplatePath, localTemplate);
 }

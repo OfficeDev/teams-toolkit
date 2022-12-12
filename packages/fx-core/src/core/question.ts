@@ -331,7 +331,7 @@ export function createCapabilityForDotNet(): SingleSelectQuestion {
 }
 
 export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQuestion {
-  // AB test for notification/command/workflow bot template naming
+  // AB test for notification/command/workflow bot, dashboard tab template naming
   if (inputs?.taskOrientedTemplateNaming) {
     NotificationOptionItem.label = `$(hubot) ${getLocalizedString(
       "core.NotificationOption.label.abTest"

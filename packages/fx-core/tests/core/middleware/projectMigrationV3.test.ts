@@ -34,14 +34,15 @@ import {
   migrate,
   wrapRunMigration,
   checkVersionForMigration,
-  VersionState,
   configsMigration,
   generateApimPluginEnvContent,
   userdataMigration,
+  debugMigration,
   azureParameterMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
-import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
+import { UpgradeCanceledError } from "../../../src/core/error";
+import { VersionState } from "../../../src/common/versionMetadata";
 
 let mockedEnvRestore: () => void;
 
@@ -131,6 +132,34 @@ describe("ProjectMigratorMW", () => {
     };
     const context = await MigrationContext.create(ctx);
     const res = wrapRunMigration(context, migrate);
+  });
+
+  it("user cancel", async () => {
+    sandbox
+      .stub(MockUserInteraction.prototype, "showMessage")
+      .resolves(err(new Error("user cancel") as FxError));
+    const tools = new MockTools();
+    setTools(tools);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    class MyClass {
+      tools = tools;
+      async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+        return ok("");
+      }
+    }
+    hooks(MyClass, {
+      other: [getProjectMigratorMW()],
+    });
+
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+    inputs.projectPath = projectPath;
+    const my = new MyClass();
+    try {
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr());
+    } finally {
+      await fs.rmdir(inputs.projectPath!, { recursive: true });
+    }
   });
 });
 
@@ -269,7 +298,7 @@ describe("generateAppYml-js/ts", () => {
     assert.exists(getAction(appYaml.registerApp, "aadApp/create"));
     assert.exists(getAction(appYaml.configureApp, "aadApp/update"));
     // validate tab part
-    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "npm/command");
+    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "cli/runNpmCommand");
     assert.exists(
       npmCommandActions.find(
         (item) => item.with.workingDirectory === "tabs" && item.with.args === "install"
@@ -324,7 +353,7 @@ describe("generateAppYml-js/ts", () => {
     );
 
     assert.isEmpty(getAction(appYaml.provision, "azureStorage/enableStaticWebsite"));
-    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "npm/command");
+    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "cli/runNpmCommand");
     assert.isEmpty(npmCommandActions.filter((item) => item.with.workingDirectory === "tabs"));
     assert.isEmpty(getAction(appYaml.deploy, "azureStorage/deploy"));
   });
@@ -443,6 +472,55 @@ describe("manifestsMigration", () => {
     assert.equal(aadManifest, aadManifestExpected);
   });
 
+  it("happy path: spfx", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPathSpfx, projectPath);
+
+    // Action
+    await manifestsMigration(migrationContext);
+
+    // Assert
+    const oldAppPackageFolderPath = path.join(projectPath, "templates", "appPackage");
+    assert.isFalse(await fs.pathExists(oldAppPackageFolderPath));
+
+    const appPackageFolderPath = path.join(projectPath, "appPackage");
+    assert.isTrue(await fs.pathExists(appPackageFolderPath));
+
+    const resourcesPath = path.join(appPackageFolderPath, "resources", "test.png");
+    assert.isTrue(await fs.pathExists(resourcesPath));
+
+    const remoteManifestPath = path.join(appPackageFolderPath, "manifest.template.json");
+    assert.isTrue(await fs.pathExists(remoteManifestPath));
+    const remoteManifest = (await fs.readFile(remoteManifestPath, "utf-8"))
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    const remoteManifestExpeceted = (
+      await fs.readFile(path.join(projectPath, "expected", "manifest.template.json"), "utf-8")
+    )
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    assert.equal(remoteManifest, remoteManifestExpeceted);
+
+    const localManifestPath = path.join(appPackageFolderPath, "manifest.template.local.json");
+    assert.isTrue(await fs.pathExists(localManifestPath));
+    const localManifest = (await fs.readFile(localManifestPath, "utf-8"))
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    const localManifestExpeceted = (
+      await fs.readFile(path.join(projectPath, "expected", "manifest.template.local.json"), "utf-8")
+    )
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    assert.equal(localManifest, localManifestExpeceted);
+  });
+
   it("happy path: aad manifest does not exist", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
 
@@ -493,19 +571,23 @@ describe("manifestsMigration", () => {
     }
   });
 
-  it("migrate manifests failed: provision.bicep does not exist", async () => {
+  it("migrate manifests success: provision.bicep does not exist", async () => {
     const migrationContext = await mockMigrationContext(projectPath);
 
     // Stub
     sandbox.stub(migrationContext, "backup").resolves(true);
-    await fs.ensureDir(path.join(projectPath, "appPackage"));
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+    await fs.remove(path.join(projectPath, "templates", "azure", "provision.bicep"));
 
-    try {
-      await manifestsMigration(migrationContext);
-    } catch (error) {
-      assert.equal(error.name, "ReadFileError");
-      assert.equal(error.innerError.message, "templates/azure/provision.bicep does not exist");
-    }
+    // Action
+    await manifestsMigration(migrationContext);
+
+    // Assert
+    const appPackageFolderPath = path.join(projectPath, "appPackage");
+    assert.isTrue(await fs.pathExists(appPackageFolderPath));
+
+    const resourcesPath = path.join(appPackageFolderPath, "resources", "test.png");
+    assert.isTrue(await fs.pathExists(resourcesPath));
   });
 
   it("migrate manifests failed: teams app manifest does not exist", async () => {
@@ -878,9 +960,56 @@ describe("Migration utils", () => {
     const state = await checkVersionForMigration(migrationContext);
     assert.equal(state, VersionState.unsupported);
   });
+
+  it("UpgradeCanceledError", () => {
+    const err = UpgradeCanceledError();
+    assert.isNotNull(err);
+  });
 });
 
-async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
+describe("debugMigration", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  const testCases = [
+    "transparent-tab",
+    "transparent-sso-tab",
+    "transparent-bot",
+    "transparent-sso-bot",
+    "transparent-notification",
+    "transparent-tab-bot-func",
+  ];
+
+  testCases.forEach((testCase) => {
+    it(testCase, async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+
+      await copyTestProject(path.join("debug", testCase), projectPath);
+
+      await debugMigration(migrationContext);
+
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx")));
+      assert.equal(
+        await fs.readFile(path.join(projectPath, "teamsfx", "app.local.yml"), "utf-8"),
+        await fs.readFile(path.join(projectPath, "expected", "app.local.yml"), "utf-8")
+      );
+      assert.equal(
+        await fs.readFile(path.join(projectPath, ".vscode", "tasks.json"), "utf-8"),
+        await fs.readFile(path.join(projectPath, "expected", "tasks.json"), "utf-8")
+      );
+    });
+  });
+});
+
+export async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
   const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
   inputs.projectPath = projectPath;
   const ctx = {
@@ -940,5 +1069,12 @@ const Constants = {
   oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
   appYmlPath: "teamsfx/app.yml",
   manifestsMigrationHappyPath: "manifestsHappyPath",
+  manifestsMigrationHappyPathSpfx: "manifestsHappyPathSpfx",
   launchJsonPath: ".vscode/launch.json",
+  happyPathWithoutFx: "happyPath_for_needMigrateToAadManifest/happyPath_no_fx",
+  happyPathAadManifestTemplateExist:
+    "happyPath_for_needMigrateToAadManifest/happyPath_aadManifestTemplateExist",
+  happyPathWithoutPermission: "happyPath_for_needMigrateToAadManifest/happyPath_no_permissionFile",
+  happyPathAadPluginNotActive:
+    "happyPath_for_needMigrateToAadManifest/happyPath_aadPluginNotActive",
 };

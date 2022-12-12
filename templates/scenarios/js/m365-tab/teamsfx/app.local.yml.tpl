@@ -45,7 +45,7 @@ configureApp:
     # TEAMS_APP_ID: the id of Teams app
 
 deploy:
-  - uses: tools/install # Install dependencies
+  - uses: prerequisite/install # Install dependencies
     with:
       devCert:
         trust: true
@@ -53,7 +53,7 @@ deploy:
     # SSL_CRT_FILE: certificate file
     # SSL_KEY_FILE: certificate key
 
-  - uses: npm/command # Run npm command
+  - uses: cli/runNpmCommand # Run npm command
     with:
       workingDirectory: .
       args: install --no-audit

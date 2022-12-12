@@ -1,0 +1,85 @@
+.Collapsible.collapsibleStep {
+  border-radius: 6px;
+}
+
+.collapsibleStep {
+  background-color: var(--vscode-editorHoverWidget-background);
+}
+
+.Collapsible__trigger {
+  display: block;
+  text-decoration: none;
+  position: relative;
+  border-radius: 6px;
+  padding: 14px 20px;
+  background-color: var(--vscode-editorHoverWidget-background);
+  color: var(--vscode-menu-foreground);
+
+  &.is-open {
+    .chevron {
+      transform: rotate(180deg);
+    }
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+  }
+  
+  &.is-disabled {
+    opacity: 0.5;
+    background-color: grey;
+  }
+}
+
+.Collapsible__trigger:hover {
+  background-color: var(--vscode-sideBySideEditor-horizontalBorder);
+}
+
+.Collapsible__trigger.is-open:hover {
+  background-color: var(--vscode-editorHoverWidget-background);
+}
+
+.Collapsible__trigger__transition .Collapsible__trigger:hover {
+  background-color: var(--vscode-editorHoverWidget-background) !important;
+}
+
+.Collapsible__contentInner {
+  display: block;
+  text-decoration: none;
+  position: relative;
+  border: 1px solid var(--vscode-editorHoverWidget-background);
+  padding: 0 20px;
+  padding-bottom: 20px;
+  background-color: var(--vscode-editorHoverWidget-background);
+  color: var(--vscode-breadcrumb-activeSelectionForeground);
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.stepContainer {
+  display: flex;
+  align-items: center;
+
+  .chevron {
+    color: var(--vscode-menu-foreground);
+    width: 16px;
+    height: 16px;
+    transition: transform 300ms;
+  }
+}
+
+.stepTitle {
+  flex: 1;
+  color: var(--vscode-menu-foreground);
+
+  p {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 7px;
+  }
+  
+  h2 {
+    font-weight: 600;
+    font-size: 20px;
+    margin: 0 auto;
+    border-bottom: none;
+  }
+}

@@ -1,5 +1,5 @@
-import "./github.scss";
-import "./document.scss";
+import "./components/github.scss";
+import "./components/document.scss";
 
 import * as React from "react";
 
@@ -10,9 +10,9 @@ import {
   TelemetryTriggerFrom,
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
-import CodeSnippet from "./codeSnippet";
-import CollapsibleStep from "./collapsibleStep";
-import ExternalLink from "./externalLink";
+import CodeSnippet from "./components/codeSnippet";
+import CollapsibleStep from "./components/collapsibleStep";
+import ExternalLink from "./components/externalLink";
 import { useEffect } from "react";
 import ResponseToCommand from "../../../img/webview/guide/responds-to-command.png";
 import ResponseToCardAction from "../../../img/webview/guide/responds-to-card-action.png";
@@ -167,6 +167,7 @@ module.exports = {
             <ExternalLink
               title="Microsoft 365 account for development"
               link="https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts"
+              triggerFrom={TelemetryTriggerFrom.InProductDoc}
             />
           </li>
         </ul>
@@ -178,6 +179,7 @@ module.exports = {
           <ExternalLink
             title="Installation and Uninstallation"
             link="https://aka.ms/teamsfx-command-response#customize-installation"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />
           .
         </p>
@@ -200,6 +202,7 @@ module.exports = {
           <ExternalLink
             title="Microsoft 365 account"
             link="https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />{" "}
           if you haven&#39;t already.
         </li>
@@ -335,6 +338,7 @@ module.exports = {
         <CollapsibleStep
           step={1}
           title="Add an action to your Adaptive Card"
+          triggerFrom={TelemetryTriggerFrom.InProductDoc}
           identifier="workflow-bot-step1"
         >
           <p>
@@ -358,6 +362,7 @@ module.exports = {
             <ExternalLink
               title="Adaptive Card Universal Actions in the documentation"
               link="https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/overview?tabs=mobile#universal-actions"
+              triggerFrom={TelemetryTriggerFrom.InProductDoc}
             />
             .
           </p>
@@ -380,6 +385,7 @@ module.exports = {
         <CollapsibleStep
           step={2}
           title="Respond with a new Adaptive Card"
+          triggerFrom={TelemetryTriggerFrom.InProductDoc}
           identifier="workflow-bot-step2"
         >
           <p>
@@ -399,13 +405,19 @@ module.exports = {
             <ExternalLink
               title="Adaptive Card Designer"
               link="https://adaptivecards.io/designer/"
+              triggerFrom={TelemetryTriggerFrom.InProductDoc}
             />{" "}
             to help visually design your Adaptive Card UI.
           </p>
         </CollapsibleStep>
       </div>
       <div className="collapsibleSteps">
-        <CollapsibleStep step={3} title="Handle the new action" identifier="workflow-bot-step3">
+        <CollapsibleStep
+          step={3}
+          title="Handle the new action"
+          triggerFrom={TelemetryTriggerFrom.InProductDoc}
+          identifier="workflow-bot-step3"
+        >
           <p>
             The TeamsFx SDK provides a convenient class,{" "}
             <code className="code">TeamsFxAdaptiveCardActionHandler</code>, to handle when an action
@@ -449,7 +461,12 @@ module.exports = {
         </CollapsibleStep>
       </div>
       <div className="collapsibleSteps">
-        <CollapsibleStep step={4} title="Register the new handler" identifier="workflow-bot-step4">
+        <CollapsibleStep
+          step={4}
+          title="Register the new handler"
+          triggerFrom={TelemetryTriggerFrom.InProductDoc}
+          identifier="workflow-bot-step4"
+        >
           <p>
             Each new card action needs to be configured in the{" "}
             <code className="code">ConversationBot</code>, which powers the conversational flow of
@@ -481,6 +498,7 @@ module.exports = {
         <ExternalLink
           title="visit the documentation on GitHub"
           link="https://aka.ms/teamsfx-card-action-response"
+          triggerFrom={TelemetryTriggerFrom.InProductDoc}
         />
         . You can find more scenarios like:
       </p>
@@ -489,36 +507,42 @@ module.exports = {
           <ExternalLink
             title="Customize the way to respond to an action"
             link="https://aka.ms/teamsfx-card-action-response#customize-the-action-response"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />
         </li>
         <li>
           <ExternalLink
             title="Customize the Adaptive Card content"
             link="https://aka.ms/teamsfx-card-action-response#customize-the-adaptive-card-content"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />
         </li>
         <li>
           <ExternalLink
             title="Create a user specific view"
             link="https://aka.ms/teamsfx-card-action-response#auto-refresh-to-user-specific-view"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />
         </li>
         <li>
           <ExternalLink
             title="Access Microsoft Graph"
             link="https://aka.ms/teamsfx-card-action-response#access-microsoft-graph"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />
         </li>
         <li>
           <ExternalLink
             title="Connect to existing APIs"
             link="https://aka.ms/teamsfx-card-action-response#connect-to-existing-apis"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />
         </li>
         <li>
           <ExternalLink
             title="Change the way to initialize the bot"
             link="https://aka.ms/teamsfx-card-action-response#customize-the-initialization"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />
         </li>
       </ul>
@@ -535,11 +559,13 @@ module.exports = {
         <ExternalLink
           title="steps here"
           link="https://aka.ms/teamsfx-card-action-response#how-to-extend-workflow-bot-with-notification-feature"
+          triggerFrom={TelemetryTriggerFrom.InProductDoc}
         />{" "}
         to add the notification feature to your workflow bot. Refer{" "}
         <ExternalLink
           title="the notification document"
           link="https://aka.ms/teamsfx-notification"
+          triggerFrom={TelemetryTriggerFrom.InProductDoc}
         />{" "}
         for more information.
       </p>
@@ -553,11 +579,13 @@ module.exports = {
         <ExternalLink
           title="steps here"
           link="https://aka.ms/teamsfx-command-response#How-to-add-more-command-and-response"
+          triggerFrom={TelemetryTriggerFrom.InProductDoc}
         />{" "}
         to add the command response feature to your workflow bot. Refer{" "}
         <ExternalLink
           title="the command bot document"
           link="https://aka.ms/teamsfx-command-response"
+          triggerFrom={TelemetryTriggerFrom.InProductDoc}
         />{" "}
         for more information.
       </p>
@@ -567,36 +595,42 @@ module.exports = {
           <ExternalLink
             title="Manage multiple environments"
             link="https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-multi-env"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />
         </li>
         <li>
           <ExternalLink
             title="Collaborate with others"
             link="https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />
         </li>
         <li>
           <ExternalLink
             title="Teams Toolkit Documentations"
             link="https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />
         </li>
         <li>
           <ExternalLink
             title="Teams Toolkit CLI"
             link="https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />
         </li>
         <li>
           <ExternalLink
             title="TeamsFx SDK"
             link="https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-sdk"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />
         </li>
         <li>
           <ExternalLink
             title="Teams Toolkit Samples"
             link="https://github.com/OfficeDev/TeamsFx-Samples"
+            triggerFrom={TelemetryTriggerFrom.InProductDoc}
           />
         </li>
       </ul>

@@ -11,7 +11,7 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../constant/commonConstant";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
-const ACTION_NAME = "npx/command";
+const ACTION_NAME = "cli/runNpxCommand";
 
 @Service(ACTION_NAME)
 export class NpxBuildDriver extends BaseBuildStepDriver {
@@ -23,7 +23,11 @@ export class NpxBuildDriver extends BaseBuildStepDriver {
   }
 
   getImpl(args: unknown, context: DriverContext): BaseBuildDriver {
-    return new NpxBuildDriverImpl(args, context);
+    return new NpxBuildDriverImpl(
+      args,
+      context,
+      "https://aka.ms/teamsfx-actions/cli-run-npx-command"
+    );
   }
 }
 

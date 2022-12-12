@@ -8,8 +8,20 @@ import * as fs from "fs-extra";
 import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
 
-export class AppYmlGenerator {
-  private handlebarsContext: {
+export abstract class BaseAppYmlGenerator {
+  protected abstract handlebarsContext: any;
+  constructor(protected oldProjectSettings: ProjectSettings) {}
+
+  protected async buildHandlebarsTemplate(templateName: string): Promise<string> {
+    const templatePath = path.join(getTemplatesFolder(), "core/v3Migration", templateName);
+    const templateString = await fs.readFile(templatePath, "utf8");
+    const template = handlebars.compile(templateString);
+    return template(this.handlebarsContext);
+  }
+}
+
+export class AppYmlGenerator extends BaseAppYmlGenerator {
+  protected handlebarsContext: {
     activePlugins: Record<string, boolean>;
     placeholderMappings: Record<string, string>;
     aadAppName: string | undefined;
@@ -18,10 +30,11 @@ export class AppYmlGenerator {
     isFunctionBot: boolean;
   };
   constructor(
-    private oldProjectSettings: ProjectSettings,
+    oldProjectSettings: ProjectSettings,
     private bicepContent: string,
     private projectPath: string
   ) {
+    super(oldProjectSettings);
     this.handlebarsContext = {
       activePlugins: {},
       placeholderMappings: {},

@@ -349,9 +349,16 @@ describe("handlers", () => {
 
       const result = await handlers.selectTutorialsHandler();
 
-      chai.assert.equal(tutorialOptions.length, 8);
+      chai.assert.equal(tutorialOptions.length, 15);
       chai.assert.isTrue(result.isOk());
     });
+  });
+
+  it("openAccountHelpHandler()", async () => {
+    const createOrShow = sinon.stub(WebviewPanel, "createOrShow");
+    await handlers.openAccountHelpHandler();
+    sinon.assert.calledOnceWithExactly(createOrShow, PanelType.AccountHelp);
+    createOrShow.restore();
   });
 
   describe("runCommand()", function () {
@@ -1417,6 +1424,24 @@ describe("handlers", () => {
       sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
       const result = await handlers.installAppInTeams();
       chai.assert.equal(result, "1");
+    });
+  });
+
+  describe("callBackFunctions", () => {
+    it("checkSideloadingCallback()", async () => {
+      sinon.stub(localizeUtils, "localize").returns("");
+      let showMessageCalledCount = 0;
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: async () => {
+          showMessageCalledCount += 1;
+          return ok(undefined);
+        },
+      });
+
+      await handlers.checkSideloadingCallback();
+
+      chai.expect(showMessageCalledCount).to.be.equal(1);
+      sinon.restore();
     });
   });
 });

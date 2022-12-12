@@ -1,5 +1,6 @@
 {
   "profiles": {
+    // Debug project within Teams
     "Microsoft Teams (browser)": {
       "commandName": "Project",
       "dotnetRunMessages": true,
@@ -10,18 +11,17 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "hotReloadProfile": "aspnetcore"
+    },
+    // Debug project only (without launching Teams)
+    "{%ProjectName%}": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:44302;http://localhost:2544",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "hotReloadProfile": "aspnetcore"
     }
-    //// Uncomment following profile to debug project only (without launching Teams)
-    //,
-    //"{%ProjectName%}": {
-    //  "commandName": "Project",
-    //  "dotnetRunMessages": true,
-    //  "launchBrowser": true,
-    //  "applicationUrl": "https://localhost:44302;http://localhost:2544",
-    //  "environmentVariables": {
-    //    "ASPNETCORE_ENVIRONMENT": "Development"
-    //  },
-    //  "hotReloadProfile": "aspnetcore"
-    //}
   }
 }

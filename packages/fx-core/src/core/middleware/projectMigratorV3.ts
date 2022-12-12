@@ -12,8 +12,6 @@ import {
   TemplateFolderName,
   SystemError,
   UserError,
-  Platform,
-  Inputs,
   InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
@@ -39,7 +37,7 @@ import {
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
 import { getLocalizedString } from "../../common/localizeUtils";
-import { UpgradeCanceledError, ReadFileError } from "../error";
+import { UpgradeV3CanceledError, ReadFileError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
@@ -54,28 +52,46 @@ import {
   readBicepContent,
   readJsonFile,
   replaceAppIdUri,
+  updateAndSaveManifestForSpfx,
+  getTemplateFolderPath,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
+import * as commentJson from "comment-json";
+import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
+import {
+  getPlaceholderMappings,
+  isCommentObject,
+  readJsonCommentFile,
+} from "./utils/debug/debugV3MigrationUtils";
+import {
+  migrateTransparentLocalTunnel,
+  migrateTransparentPrerequisite,
+  migrateTransparentNpmInstall,
+  migrateSetUpTab,
+  migrateSetUpSSO,
+  migratePrepareManifest,
+  migrateSetUpBot,
+} from "./utils/debug/taskMigrator";
+import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
+import { getTemplatesFolder } from "../../folder";
+import { MetadataV2, MetadataV3, VersionState } from "../../common/versionMetadata";
+import { isSPFxProject } from "../../common/tools";
 
 const Constants = {
   vsProvisionBicepPath: "./Templates/azure/provision.bicep",
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   appYmlName: "app.yml",
+  appLocalYmlName: "app.local.yml",
+  tasksJsonPath: ".vscode/tasks.json",
+  reportName: "migrationReport.md",
+  envWriteOption: {
+    // .env.{env} file might be already exist, use append mode (flag: a+)
+    encoding: "utf8",
+    flag: "a+",
+  },
 };
-
-const MigrationVersion = {
-  minimum: "2.0.0",
-  maximum: "2.1.0",
-};
-const V3Version = "3.0.0";
-
-export enum VersionState {
-  compatible,
-  upgradeable,
-  unsupported,
-}
 
 const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
 
@@ -165,22 +181,10 @@ async function rollbackMigration(context: MigrationContext): Promise<void> {
 }
 
 async function showSummaryReport(context: MigrationContext): Promise<void> {
-  const summaryPath = path.join(context.backupPath, "migrationReport.md");
-  const content = `
-# Teams toolkit 5.0 Migration summary
-1. Move teamplates/appPackage/resource & templates/appPackage/manifest.template.json to appPackage/
-1. Move templates/appPakcage/aad.template.json to ./aad.manifest.template.json
-1. Update placeholders in the two manifests
-1. Update app id uri in the two manifests
-1. Move .fx/configs/azure.parameters.{env}.json to templates/azure/...
-1. Update placeholders in azure parameter files 
-1. create .env.{env} if not exitsts in teamsfx/ folder (v3) (should throw error if .fx/configs/ not exists?)
-1. migrate .fx/configs/config.{env}.json to .env.{env}
-1. create .env.{env} if not exitsts in teamsfx/ folder (v3)
-1. migrate .fx/states/state.{env}.json to .env.{env}. Skip 4 types of secrets names(should refer to userdata)
-1. create .env.{env} if not exitsts in teamsfx/ folder (v3)
-1. migrate .fx/states/userdata.{env} to .env.{env}
-    `;
+  const summaryPath = path.join(context.backupPath, Constants.reportName);
+  const templatePath = path.join(getTemplatesFolder(), "core/v3Migration", Constants.reportName);
+
+  const content = await fs.readFile(templatePath);
   await fs.writeFile(summaryPath, content);
   await TOOLS?.ui?.openFile?.(summaryPath);
 }
@@ -196,12 +200,12 @@ async function preMigration(context: MigrationContext): Promise<void> {
 }
 
 export async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionState> {
-  const version = await getProjectVersion(ctx);
-  if (semver.gte(version, V3Version)) {
+  const version = (await getProjectVersion(ctx)) || "0.0.0";
+  if (semver.gte(version, MetadataV3.projectVersion)) {
     return VersionState.compatible;
   } else if (
-    semver.gte(version, MigrationVersion.minimum) &&
-    semver.lte(version, MigrationVersion.maximum)
+    semver.gte(version, MetadataV2.projectVersion) &&
+    semver.lte(version, MetadataV2.projectMaxVersion)
   ) {
     return VersionState.upgradeable;
   } else {
@@ -213,7 +217,7 @@ export async function generateSettingsJson(context: MigrationContext): Promise<v
   const oldProjectSettings = await loadProjectSettings(context.projectPath);
 
   const content = {
-    version: "3.0.0",
+    version: MetadataV3.projectVersion,
     trackingId: oldProjectSettings.projectId,
   };
 
@@ -225,7 +229,7 @@ export async function generateSettingsJson(context: MigrationContext): Promise<v
 }
 
 export async function generateAppYml(context: MigrationContext): Promise<void> {
-  const bicepContent: string = readBicepContent(context);
+  const bicepContent: string = await readBicepContent(context);
   const oldProjectSettings = await loadProjectSettings(context.projectPath);
   const appYmlGenerator = new AppYmlGenerator(
     oldProjectSettings,
@@ -260,7 +264,7 @@ async function loadProjectSettings(projectPath: string): Promise<ProjectSettings
 
 export async function manifestsMigration(context: MigrationContext): Promise<void> {
   // Backup templates/appPackage
-  const oldAppPackageFolderPath = path.join(TemplateFolderName, AppPackageFolderName);
+  const oldAppPackageFolderPath = path.join(getTemplateFolderPath(context), AppPackageFolderName);
   const oldAppPackageFolderBackupRes = await context.backup(oldAppPackageFolderPath);
 
   if (!oldAppPackageFolderBackupRes) {
@@ -283,18 +287,13 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   }
 
   // Read Bicep
-  const oldBicepFilePath = path.join(TemplateFolderName, "azure", "provision.bicep");
-  const oldBicepFileExists = await fs.pathExists(path.join(context.projectPath, oldBicepFilePath));
-  if (!oldBicepFileExists) {
-    // templates/azure/provision.bicep does not exist
-    throw ReadFileError(new Error("templates/azure/provision.bicep does not exist"));
-  }
-  const bicepContent = await fs.readFile(path.join(context.projectPath, oldBicepFilePath), "utf-8");
+  const bicepContent = await readBicepContent(context);
 
   // Read capability project settings
   const projectSettings = await loadProjectSettings(context.projectPath);
   const capabilities = getCapabilitySsoStatus(projectSettings);
   const appIdUri = generateAppIdUri(capabilities);
+  const isSpfx = isSPFxProject(projectSettings);
 
   // Read Teams app manifest and save to templates/appPackage/manifest.template.json
   const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
@@ -304,7 +303,11 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
     oldManifest = replaceAppIdUri(oldManifest, appIdUri);
     const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);
-    await context.fsWriteFile(manifestPath, manifest);
+    if (isSpfx) {
+      await updateAndSaveManifestForSpfx(context, manifest);
+    } else {
+      await context.fsWriteFile(manifestPath, manifest);
+    }
   } else {
     // templates/appPackage/manifest.template.json does not exist
     throw ReadFileError(new Error("templates/appPackage/manifest.template.json does not exist"));
@@ -338,14 +341,8 @@ export async function azureParameterMigration(context: MigrationContext): Promis
   }
 
   // Read Bicep
-  const azureFolderPath = path.join(TemplateFolderName, "azure");
-  const oldBicepFilePath = path.join(azureFolderPath, "provision.bicep");
-  const oldBicepFileExists = await context.fsPathExists(oldBicepFilePath);
-  if (!oldBicepFileExists) {
-    // templates/azure/provision.bicep does not exist
-    throw ReadFileError(new Error("templates/azure/provision.bicep does not exist"));
-  }
-  const bicepContent = await fs.readFile(path.join(context.projectPath, oldBicepFilePath), "utf-8");
+  const azureFolderPath = path.join(getTemplateFolderPath(context), "azure");
+  const bicepContent = await readBicepContent(context);
 
   const fileNames = fsReadDirSync(context, configFolderPath);
   for (const fileName of fileNames) {
@@ -368,7 +365,7 @@ export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
   const buttons = [upgradeButton, learnMoreText];
   const res = await TOOLS?.ui.showMessage(
     "warn",
-    getLocalizedString("core.migrationV3.Message"),
+    getLocalizedString("core.migrationV3.Message", MetadataV3.vscodeStarterVersion),
     true,
     ...buttons
   );
@@ -377,7 +374,7 @@ export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
     });
-    ctx.result = err(UpgradeCanceledError());
+    ctx.result = err(UpgradeV3CanceledError());
     outputCancelMessage(ctx, true);
     return false;
   }
@@ -413,7 +410,7 @@ export async function configsMigration(context: MigrationContext): Promise<void>
             path.join(".fx", "configs", "config." + envName + ".json")
           );
           if (obj["manifest"]) {
-            const bicepContent = readBicepContent(context);
+            const bicepContent = await readBicepContent(context);
             const teamsfx_env = fs
               .readFileSync(path.join(context.projectPath, SettingsFolderName, ".env." + envName))
               .toString()
@@ -423,12 +420,18 @@ export async function configsMigration(context: MigrationContext): Promise<void>
             // convert every name and add the env name at the first line
             const envData =
               teamsfx_env +
-              jsonObjectNamesConvertV3(obj["manifest"], "manifest.", FileType.CONFIG, bicepContent);
-            await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
-              // .env.{env} file might be already exist, use append mode (flag: a+)
-              encoding: "utf8",
-              flag: "a+",
-            });
+              jsonObjectNamesConvertV3(
+                obj["manifest"],
+                "manifest.",
+                "",
+                FileType.CONFIG,
+                bicepContent
+              );
+            await context.fsWriteFile(
+              path.join(SettingsFolderName, ".env." + envName),
+              envData,
+              Constants.envWriteOption
+            );
           }
         }
       }
@@ -456,14 +459,20 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
             path.join(".fx", "states", "state." + envName + ".json")
           );
           if (obj) {
-            const bicepContent = readBicepContent(context);
+            const bicepContent = await readBicepContent(context);
             // convert every name
-            const envData = jsonObjectNamesConvertV3(obj, "state.", FileType.STATE, bicepContent);
-            await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
-              // .env.{env} file might be already exist, use append mode (flag: a+)
-              encoding: "utf8",
-              flag: "a+",
-            });
+            const envData = jsonObjectNamesConvertV3(
+              obj,
+              "state.",
+              "",
+              FileType.STATE,
+              bicepContent
+            );
+            await context.fsWriteFile(
+              path.join(SettingsFolderName, ".env." + envName),
+              envData,
+              Constants.envWriteOption
+            );
           }
         }
       }
@@ -486,20 +495,67 @@ export async function userdataMigration(context: MigrationContext): Promise<void
           await context.fsEnsureDir(SettingsFolderName);
           if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
             await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
-          const bicepContent = readBicepContent(context);
+          const bicepContent = await readBicepContent(context);
           const envData = await readAndConvertUserdata(
             context,
             path.join(".fx", "states", fileName),
             bicepContent
           );
-          await context.fsWriteFile(path.join(SettingsFolderName, ".env." + envName), envData, {
-            // .env.{env} file might be already exist, use append mode (flag: a+)
-            encoding: "utf8",
-            flag: "a+",
-          });
+          await context.fsWriteFile(
+            path.join(SettingsFolderName, ".env." + envName),
+            envData,
+            Constants.envWriteOption
+          );
         }
       }
   }
+}
+
+export async function debugMigration(context: MigrationContext): Promise<void> {
+  // Backup vscode/tasks.json
+  await context.backup(Constants.tasksJsonPath);
+
+  // Read .vscode/tasks.json
+  const tasksJsonContent = await readJsonCommentFile(
+    path.join(context.projectPath, Constants.tasksJsonPath)
+  );
+  if (!isCommentObject(tasksJsonContent) || !Array.isArray(tasksJsonContent["tasks"])) {
+    // Invalid tasks.json content
+    return;
+  }
+
+  // Migrate .vscode/tasks.json
+  const migrateTaskFuncs = [
+    migrateTransparentPrerequisite,
+    migrateTransparentNpmInstall,
+    migrateTransparentLocalTunnel,
+    migrateSetUpTab,
+    migrateSetUpBot,
+    migrateSetUpSSO,
+    migratePrepareManifest,
+  ];
+
+  const debugContext = new DebugMigrationContext(
+    tasksJsonContent["tasks"],
+    await getPlaceholderMappings(context)
+  );
+
+  for (const func of migrateTaskFuncs) {
+    func(debugContext);
+  }
+
+  // Write .vscode/tasks.json
+  await context.fsWriteFile(
+    Constants.tasksJsonPath,
+    commentJson.stringify(tasksJsonContent, null, 4)
+  );
+
+  // Generate app.local.yml
+  const oldProjectSettings = await loadProjectSettings(context.projectPath);
+  const appYmlGenerator = new AppLocalYmlGenerator(oldProjectSettings, debugContext.appYmlConfig);
+  const appYmlString: string = await appYmlGenerator.generateAppYml();
+  await context.fsEnsureDir(SettingsFolderName);
+  await context.fsWriteFile(path.join(SettingsFolderName, Constants.appLocalYmlName), appYmlString);
 }
 
 export async function generateApimPluginEnvContent(context: MigrationContext): Promise<void> {
@@ -537,10 +593,7 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
               await context.fsWriteFile(
                 path.join(SettingsFolderName, ".env." + envName),
                 apimPluginAppendContent,
-                {
-                  encoding: "utf8",
-                  flag: "a+",
-                }
+                Constants.envWriteOption
               );
             }
           }

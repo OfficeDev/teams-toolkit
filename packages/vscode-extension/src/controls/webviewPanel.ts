@@ -91,24 +91,30 @@ export class WebviewPanel {
     // This happens when the user closes the panel or when the panel is closed programatically
     this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
 
-    if (TreatmentVariableValue.inProductDoc) {
-      this.panel.onDidChangeViewState(
-        (e) => {
-          const panel = e.webviewPanel;
-          if (panelType === PanelType.RespondToCardActions) {
-            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
-              [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
-              [TelemetryProperty.Interaction]: panel.visible
-                ? InProductGuideInteraction.Show
-                : InProductGuideInteraction.Hide,
-              [TelemetryProperty.Identifier]: panelType,
-            });
-          }
-        },
-        null,
-        globalVariables.context.subscriptions
-      );
-    }
+    this.panel.onDidChangeViewState(
+      (e) => {
+        const panel = e.webviewPanel;
+        if (TreatmentVariableValue.inProductDoc && panelType === PanelType.RespondToCardActions) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
+            [TelemetryProperty.Interaction]: panel.visible
+              ? InProductGuideInteraction.Show
+              : InProductGuideInteraction.Hide,
+            [TelemetryProperty.Identifier]: panelType,
+          });
+        } else if (panelType === PanelType.AccountHelp) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.AccountHelp,
+            [TelemetryProperty.Interaction]: panel.visible
+              ? InProductGuideInteraction.Show
+              : InProductGuideInteraction.Hide,
+            [TelemetryProperty.Identifier]: panelType,
+          });
+        }
+      },
+      null,
+      globalVariables.context.subscriptions
+    );
 
     // Handle messages from the webview
     this.panel.webview.onDidReceiveMessage(
@@ -176,6 +182,7 @@ export class WebviewPanel {
 
     // Set the webview's initial html content
     this.panel.webview.html = this.getHtmlForWebview(panelType);
+    this.panel.iconPath = this.getWebviewPanelIconPath(panelType);
   }
 
   private async downloadSampleApp(msg: any) {
@@ -232,7 +239,9 @@ export class WebviewPanel {
       case PanelType.Survey:
         return localize("teamstoolkit.webview.surveyPageTitle");
       case PanelType.RespondToCardActions:
-        return localize("teamstoolkit.tutorials.cardActionResponse.label");
+        return localize("teamstoolkit.guides.cardActionResponse.label");
+      case PanelType.AccountHelp:
+        return localize("teamstoolkit.webview.accountHelp");
     }
   }
 
@@ -390,6 +399,15 @@ export class WebviewPanel {
     return text;
   }
 
+  private getWebviewPanelIconPath(panelType: PanelType) {
+    if (panelType === PanelType.AccountHelp) {
+      return vscode.Uri.file(
+        path.join(globalVariables.context.extensionPath, "img/font/3-m365.svg")
+      );
+    }
+    return undefined;
+  }
+
   isValidNode = () => {
     try {
       const supportedVersions = ["10", "12", "14"];
@@ -413,9 +431,15 @@ export class WebviewPanel {
 
   public dispose() {
     const panelIndex = WebviewPanel.currentPanels.indexOf(this);
-    if (TreatmentVariableValue.inProductDoc) {
+    if (TreatmentVariableValue.inProductDoc && this.panelType === PanelType.RespondToCardActions) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
         [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
+        [TelemetryProperty.Interaction]: InProductGuideInteraction.Close,
+        [TelemetryProperty.Identifier]: this.panelType,
+      });
+    } else if (this.panelType === PanelType.AccountHelp) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.AccountHelp,
         [TelemetryProperty.Interaction]: InProductGuideInteraction.Close,
         [TelemetryProperty.Identifier]: this.panelType,
       });

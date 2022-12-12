@@ -1,12 +1,12 @@
 import * as d3 from "d3-format";
 
 import { AreaChart, IChartProps } from "@fluentui/react-charting";
+import { Button, Text, ToggleButton } from "@fluentui/react-components";
 import {
   ArrowRight16Filled,
-  DataPieRegular,
+  DataPie24Regular,
   MoreHorizontal32Regular,
 } from "@fluentui/react-icons";
-import { Text, Button, ToggleButton, tokens } from "@fluentui/react-components";
 
 import {
   chart1Points_30D,
@@ -18,7 +18,12 @@ import {
 } from "../../services/chartServices";
 import { Widget } from "../lib/Widget";
 import { headerContentStyle, headerTextStyle } from "../lib/Widget.styles";
-import { timeSpanStyle } from "../styles/ChartWidget.style";
+import {
+  areaChartStyle,
+  footerButtonStyle,
+  pieIconStyle,
+  timeSpanStyle,
+} from "../styles/ChartWidget.style";
 
 enum DayRange {
   Seven,
@@ -55,7 +60,7 @@ export default class ChartWidget extends Widget<IChartWidgetState> {
   headerContent(): JSX.Element | undefined {
     return (
       <div style={headerContentStyle()}>
-        <DataPieRegular style={{ height: "1.5rem", width: "1.5rem" }} />
+        <DataPie24Regular style={pieIconStyle()} />
         <Text style={headerTextStyle()}>Your chart</Text>
         <Button icon={<MoreHorizontal32Regular />} appearance="transparent" />
       </div>
@@ -113,7 +118,7 @@ export default class ChartWidget extends Widget<IChartWidgetState> {
           </ToggleButton>
         </div>
 
-        <div style={{ position: "relative", height: "200px", width: "100%" }}>
+        <div style={areaChartStyle()}>
           {this.state.data && (
             <AreaChart
               data={this.state.data.chartProps}
@@ -137,7 +142,7 @@ export default class ChartWidget extends Widget<IChartWidgetState> {
         icon={<ArrowRight16Filled />}
         iconPosition="after"
         size="small"
-        style={{ width: "fit-content", color: tokens.colorBrandForeground1 }}
+        style={footerButtonStyle()}
         onClick={() => {}} // navigate to detailed page
       >
         View details

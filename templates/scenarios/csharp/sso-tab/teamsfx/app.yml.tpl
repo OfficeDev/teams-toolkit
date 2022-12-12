@@ -13,7 +13,7 @@ provision:
     # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-actions/arm-deploy for more details on the naming conversion rule.
 
 deploy:
-  - uses: dotnet/command
+  - uses: cli/runDotnetCommand
     with:
       args: publish --configuration Release --runtime win-x86 --self-contained
   - uses: azureAppService/deploy

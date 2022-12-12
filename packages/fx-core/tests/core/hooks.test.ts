@@ -31,8 +31,8 @@ import sinon from "sinon";
 import { environmentManager } from "../../src/core/environment";
 import {
   migrateArm,
-  getProjectMigratorMW,
   ArmParameters,
+  ProjectMigratorMW,
 } from "../../src/core/middleware/projectMigrator";
 import { MockTools, MockUserInteraction, randomAppName } from "./utils";
 import { CoreHookContext } from "../../src/core/types";
@@ -261,7 +261,7 @@ describe("Middleware - others", () => {
         }
       }
       hooks(MyClass, {
-        other: [getProjectMigratorMW()],
+        other: [ProjectMigratorMW],
       });
 
       const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
@@ -299,7 +299,7 @@ describe("Middleware - others", () => {
         }
       }
       hooks(MyClass, {
-        executeUserTask: [getProjectMigratorMW()],
+        executeUserTask: [ProjectMigratorMW],
       });
 
       const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
@@ -323,7 +323,7 @@ describe("Middleware - others", () => {
         }
       }
       hooks(MyClass, {
-        getProjectConfig: [getProjectMigratorMW()],
+        getProjectConfig: [ProjectMigratorMW],
       });
 
       const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
@@ -348,7 +348,7 @@ describe("Middleware - others", () => {
         }
       }
       hooks(MyClass, {
-        getProjectConfig: [getProjectMigratorMW()],
+        getProjectConfig: [ProjectMigratorMW],
       });
 
       const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
@@ -370,7 +370,7 @@ describe("Middleware - others", () => {
         }
       }
       hooks(MyClass, {
-        other: [getProjectMigratorMW()],
+        other: [ProjectMigratorMW],
       });
 
       const inputs: Inputs = { platform: Platform.VSCode };

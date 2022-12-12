@@ -82,7 +82,7 @@ function dfs(parentKeyName: string, obj: any, filetype: FileType, bicepContent: 
 
 export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const projectPath = inputs.projectPath as string;
+  const projectPath = (inputs.projectPath as string) || "";
   const v3path = getProjectSettingPathV3(projectPath);
   if (await fs.pathExists(v3path)) {
     const settings = await fs.readJson(v3path);
@@ -95,7 +95,7 @@ export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
       return settings.version;
     }
   }
-  return "0.0.0";
+  return "";
 }
 
 export function getToolkitVersionLink(platform: Platform, projectVersion: string): string {

@@ -183,7 +183,7 @@ async function preMigration(context: MigrationContext): Promise<void> {
 }
 
 export async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionState> {
-  const version = await getProjectVersion(ctx);
+  const version = (await getProjectVersion(ctx)) || "0.0.0";
   if (semver.gte(version, MetadataV3.projectVersion)) {
     return VersionState.compatible;
   } else if (

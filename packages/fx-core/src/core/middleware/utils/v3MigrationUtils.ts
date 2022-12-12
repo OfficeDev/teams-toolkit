@@ -10,15 +10,19 @@ import { EOL } from "os";
 import {
   AppPackageFolderName,
   AzureSolutionSettings,
+  ConfigFolderName,
   Inputs,
   Platform,
   ProjectSettings,
   ProjectSettingsV3,
+  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import { CoreHookContext } from "../../types";
+import semver from "semver";
 import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
-import { Metadata, MetadataV3 } from "../../../common/versionMetadata";
+import { Metadata, MetadataV2, MetadataV3, VersionState } from "../../../common/versionMetadata";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appManifest/constants";
+import { isV3Enabled } from "../../../common/tools";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -88,8 +92,11 @@ export function jsonObjectNamesConvertV3(
 }
 
 export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const projectPath = (inputs.projectPath as string) || "";
+  const projectPath = getParameterFromCxt(ctx, "projectPath", "");
+  return await getProjectVersionFromPath(projectPath);
+}
+
+export async function getProjectVersionFromPath(projectPath: string): Promise<string> {
   const v3path = getProjectSettingPathV3(projectPath);
   if (await fs.pathExists(v3path)) {
     const settings = await fs.readJson(v3path);
@@ -98,11 +105,47 @@ export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
   const v2path = getProjectSettingPathV2(projectPath);
   if (await fs.pathExists(v2path)) {
     const settings = await fs.readJson(v2path);
-    if (settings.version) {
-      return settings.version;
+    return settings.version || "";
+  }
+  return "";
+}
+
+export async function getTrackingIdFromPath(projectPath: string): Promise<string> {
+  const v3path = getProjectSettingPathV3(projectPath);
+  if (await fs.pathExists(v3path)) {
+    const settings = await fs.readJson(v3path);
+    return settings.trackingId || "";
+  }
+  const v2path = getProjectSettingPathV2(projectPath);
+  if (await fs.pathExists(v2path)) {
+    const settings = await fs.readJson(v2path);
+    if (settings.projectId) {
+      return settings.projectId || "";
     }
   }
   return "";
+}
+
+export function checkPrjectVersionV3(version: string): VersionState {
+  if (
+    semver.gte(version, MetadataV2.projectVersion) &&
+    semver.lte(version, MetadataV2.projectMaxVersion)
+  ) {
+    return VersionState.upgradeable;
+  } else if (version === MetadataV3.projectVersion) {
+    return VersionState.compatible;
+  }
+  return VersionState.unsupported;
+}
+
+export function getParameterFromCxt(
+  ctx: CoreHookContext,
+  key: string,
+  defaultValue?: string
+): string {
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const value = (inputs[key] as string) || defaultValue || "";
+  return value;
 }
 
 export function getToolkitVersionLink(platform: Platform, projectVersion: string): string {

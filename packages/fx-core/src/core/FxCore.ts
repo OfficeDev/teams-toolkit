@@ -117,7 +117,6 @@ import { ILifecycle, LifecycleName } from "../component/configManager/interface"
 import { DotenvParseOutput } from "dotenv";
 import { VideoFilterAppBlockerMW } from "./middleware/videoFilterAppBlocker";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
-import { VersionState } from "../common/versionMetadata";
 
 export class FxCore implements v3.ICore {
   tools: Tools;

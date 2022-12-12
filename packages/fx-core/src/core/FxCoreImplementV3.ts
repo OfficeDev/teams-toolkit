@@ -61,7 +61,7 @@ import {
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import {
-  checkPrjectVersionV3,
+  getVersionState,
   getProjectVersionFromPath,
   getTrackingIdFromPath,
 } from "./middleware/utils/v3MigrationUtils";
@@ -325,7 +325,7 @@ export class FxCoreV3Implement {
         return err(new InvalidProjectError());
       }
       const trackingId = await getTrackingIdFromPath(projectPath);
-      const isSupport = checkPrjectVersionV3(currentVersion);
+      const isSupport = getVersionState(currentVersion);
       return ok({
         currentVersion,
         trackingId,

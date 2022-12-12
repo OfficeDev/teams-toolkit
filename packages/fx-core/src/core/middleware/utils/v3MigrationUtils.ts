@@ -10,19 +10,16 @@ import { EOL } from "os";
 import {
   AppPackageFolderName,
   AzureSolutionSettings,
-  ConfigFolderName,
   Inputs,
   Platform,
   ProjectSettings,
   ProjectSettingsV3,
-  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import { CoreHookContext } from "../../types";
 import semver from "semver";
 import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
 import { Metadata, MetadataV2, MetadataV3, VersionState } from "../../../common/versionMetadata";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appManifest/constants";
-import { isV3Enabled } from "../../../common/tools";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -126,7 +123,7 @@ export async function getTrackingIdFromPath(projectPath: string): Promise<string
   return "";
 }
 
-export function checkPrjectVersionV3(version: string): VersionState {
+export function getVersionState(version: string): VersionState {
   if (
     semver.gte(version, MetadataV2.projectVersion) &&
     semver.lte(version, MetadataV2.projectMaxVersion)

@@ -64,7 +64,7 @@ import {
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
-import { MetadataV3 } from "../../common/versionMetadata";
+import { MetadataV2, MetadataV3, VersionState } from "../../common/versionMetadata";
 
 const Constants = {
   vsProvisionBicepPath: "./Templates/azure/provision.bicep",
@@ -75,18 +75,6 @@ const Constants = {
   tasksJsonPath: ".vscode/tasks.json",
   reportName: "migrationReport.md",
 };
-
-const MigrationVersion = {
-  minimum: "2.0.0",
-  maximum: "2.1.0",
-};
-const V3Version = "3.0.0";
-
-export enum VersionState {
-  compatible,
-  upgradeable,
-  unsupported,
-}
 
 const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
 
@@ -196,11 +184,11 @@ async function preMigration(context: MigrationContext): Promise<void> {
 
 export async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionState> {
   const version = await getProjectVersion(ctx);
-  if (semver.gte(version, V3Version)) {
+  if (semver.gte(version, MetadataV3.projectVersion)) {
     return VersionState.compatible;
   } else if (
-    semver.gte(version, MigrationVersion.minimum) &&
-    semver.lte(version, MigrationVersion.maximum)
+    semver.gte(version, MetadataV2.projectVersion) &&
+    semver.lte(version, MetadataV2.projectMaxVersion)
   ) {
     return VersionState.upgradeable;
   } else {
@@ -212,7 +200,7 @@ export async function generateSettingsJson(context: MigrationContext): Promise<v
   const oldProjectSettings = await loadProjectSettings(context.projectPath);
 
   const content = {
-    version: "3.0.0",
+    version: MetadataV3.projectVersion,
     trackingId: oldProjectSettings.projectId,
   };
 

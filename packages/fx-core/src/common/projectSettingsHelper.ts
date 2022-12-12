@@ -85,18 +85,6 @@ export function isValidProject(workspacePath?: string): boolean {
   }
 }
 
-export function getProjectVersionV3(workspacePath: string): string {
-  const filePath = path.resolve(workspacePath, SettingsFolderName, SettingsFileName);
-  if (!fs.existsSync(filePath)) {
-    return "";
-  }
-  const projectSettings: Settings = fs.readJsonSync(filePath) as Settings;
-  if (!projectSettings.trackingId) {
-    return "";
-  }
-  return projectSettings.version;
-}
-
 export function isValidProjectV3(workspacePath: string): boolean {
   const filePath = path.resolve(workspacePath, SettingsFolderName, SettingsFileName);
   if (!fs.existsSync(filePath)) {

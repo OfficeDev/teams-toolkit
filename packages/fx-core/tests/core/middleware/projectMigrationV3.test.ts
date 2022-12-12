@@ -34,7 +34,6 @@ import {
   migrate,
   wrapRunMigration,
   checkVersionForMigration,
-  VersionState,
   configsMigration,
   generateApimPluginEnvContent,
   userdataMigration,
@@ -42,8 +41,8 @@ import {
   azureParameterMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
-import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { UpgradeCanceledError } from "../../../src/core/error";
+import { VersionState } from "../../../src/common/versionMetadata";
 
 let mockedEnvRestore: () => void;
 
@@ -133,6 +132,34 @@ describe("ProjectMigratorMW", () => {
     };
     const context = await MigrationContext.create(ctx);
     const res = wrapRunMigration(context, migrate);
+  });
+
+  it("user cancel", async () => {
+    sandbox
+      .stub(MockUserInteraction.prototype, "showMessage")
+      .resolves(err(new Error("user cancel") as FxError));
+    const tools = new MockTools();
+    setTools(tools);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    class MyClass {
+      tools = tools;
+      async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+        return ok("");
+      }
+    }
+    hooks(MyClass, {
+      other: [getProjectMigratorMW()],
+    });
+
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+    inputs.projectPath = projectPath;
+    const my = new MyClass();
+    try {
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr());
+    } finally {
+      await fs.rmdir(inputs.projectPath!, { recursive: true });
+    }
   });
 });
 

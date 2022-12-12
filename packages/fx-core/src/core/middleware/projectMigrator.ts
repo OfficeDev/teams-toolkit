@@ -25,12 +25,7 @@ import {
   SystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
-import {
-  serializeDict,
-  isSPFxProject,
-  isMigrationV3Enabled,
-  isV3Enabled,
-} from "../../common/tools";
+import { serializeDict, isSPFxProject, isMigrationV3Enabled } from "../../common/tools";
 import { environmentManager } from "../environment";
 import { getResourceFolder } from "../../folder";
 import { globalStateUpdate } from "../../common/globalState";
@@ -40,7 +35,6 @@ import {
   SPFxConfigError,
   NotJsonError,
   CoreSource,
-  NotSupportHigherProjectVersionError,
 } from "../error";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
@@ -107,11 +101,6 @@ import {
 } from "../../common/projectSettingsHelperV3";
 import { APIMResource } from "../../component/resource/apim/apim";
 import { ProjectMigratorMWV3 } from "./projectMigratorV3";
-import {
-  getProjectVersionV3,
-  isValidProjectV2,
-  isValidProjectV3,
-} from "../../common/projectSettingsHelper";
 import { MetadataV3 } from "../../common/versionMetadata";
 
 const programmingLanguage = "programmingLanguage";
@@ -188,16 +177,6 @@ export function getProjectMigratorMW(): Middleware {
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  if (!isV3Enabled()) {
-    const projectVersionV3 = await checkProjectAndGetVersionV3(ctx);
-    if (projectVersionV3) {
-      ctx.result = err(
-        NotSupportHigherProjectVersionError(projectVersionV3, MetadataV3.starterToolkitVersion)
-      );
-      return;
-    }
-  }
-
   if ((await needMigrateToArmAndMultiEnv(ctx)) && checkMethod(ctx)) {
     if (!checkUserTasks(ctx)) {
       ctx.result = ok(undefined);
@@ -269,7 +248,7 @@ export function outputCancelMessage(ctx: CoreHookContext, isV3 = false) {
 
 function getVersionDescription(isV3: boolean): string {
   if (isV3) {
-    return `"< ${MetadataV3.starterToolkitVersion}"`;
+    return `"< ${MetadataV3.vscodeStarterVersion}"`;
   } else {
     return `"<= 2.10.0"`;
   }
@@ -945,18 +924,6 @@ async function cleanup(projectPath: string, backupFolder: string | undefined): P
   if (backupFolder) {
     await fs.remove(backupFolder);
   }
-}
-
-export async function checkProjectAndGetVersionV3(ctx: CoreHookContext): Promise<string> {
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const workspacePath = inputs.projectPath as string;
-  if (isValidProjectV2(workspacePath)) {
-    return "";
-  }
-  if (isValidProjectV3(workspacePath)) {
-    return getProjectVersionV3(workspacePath);
-  }
-  return "";
 }
 
 export async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {

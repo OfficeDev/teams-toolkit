@@ -314,18 +314,6 @@ export function ProjectSettingError(): UserError {
   );
 }
 
-export function NotSupportHigherProjectVersionError(
-  projectVersion: string,
-  toolkitVersion: string
-): UserError {
-  return new UserError(
-    CoreSource,
-    "NotSupportHigherVersion", // @see tools.isUserCancelError()
-    getDefaultString("error.NotSupportHigherProjectVersion", projectVersion, toolkitVersion),
-    getLocalizedString("error.NotSupportHigherProjectVersion", projectVersion, toolkitVersion)
-  );
-}
-
 export function UpgradeCanceledError(): UserError {
   return new UserError(
     CoreSource,

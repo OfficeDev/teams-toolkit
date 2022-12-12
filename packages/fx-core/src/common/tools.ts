@@ -78,6 +78,8 @@ import * as path from "path";
 import { isMiniApp } from "./projectSettingsHelperV3";
 import { getAppStudioEndpoint } from "../component/resource/appManifest/constants";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
+import { AuthSvcClient } from "../component/resource/appManifest/authSvcClient";
+import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -415,7 +417,7 @@ export function isApiConnectEnabled(): boolean {
 }
 
 export function isV3Enabled(): boolean {
-  return process.env[FeatureFlagName.V3] ? process.env[FeatureFlagName.V3] === "true" : false;
+  return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : false;
 }
 
 export function isMigrationV3Enabled(): boolean {
@@ -962,6 +964,7 @@ export function getPropertyByPath(obj: any, path: string, defaultValue?: string)
 }
 
 export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
+export const AuthSvcScopes = ["https://api.spaces.skype.com/Region.ReadWrite"];
 export const GraphScopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
 export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];
 export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`];
@@ -993,6 +996,15 @@ export async function getSPFxToken(
     spoToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
   }
   return spoToken;
+}
+
+/**
+ * Get and set regin for App Studio client
+ * @param m365TokenProvider
+ */
+export async function setRegion(authSvcToken: string) {
+  const region = await AuthSvcClient.getRegion(authSvcToken);
+  AppStudioClient.SetRegion(region);
 }
 
 export function ConvertTokenToJson(token: string): Record<string, unknown> {

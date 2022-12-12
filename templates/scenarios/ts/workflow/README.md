@@ -40,10 +40,11 @@ When you click the `DoStuff` button, the above adaptive card will be updated to 
 
 | Folder | Contents |
 | - | - |
-| `.fx` | Project level settings, configurations, and environment information |
-| `.vscode` | VSCode files for local debug |
-| `bot` | The source code for the workflow bot Teams application |
-| `templates` | Templates for the Teams application manifest and for provisioning Azure resources (optional) used by Teams Toolkit |
+| `teamsfx` | Project level settings, configurations, and environment information |
+| `.vscode` | VSCode files for debugging |
+| `src` | The source code for the workflow bot Teams application |
+| `appPackage` | Templates for the Teams application manifest |
+| `infra` | Templates for provisioning Azure resources |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
@@ -96,7 +97,7 @@ Specifying the `type` as `Action.Execute` allows this Adaptive Card to respond w
 
 ### Step 2: Respond with a new Adaptive Card
 
-For each action, you can display a new Adaptive Card as a response to the user. Create a new file, `bot/src/adaptiveCards/doSomethingResponse.json` to use as a response for the `DoSomething` action created in the previous step:
+For each action, you can display a new Adaptive Card as a response to the user. Create a new file, `src/adaptiveCards/doSomethingResponse.json` to use as a response for the `DoSomething` action created in the previous step:
 
 ```json
 {
@@ -118,7 +119,7 @@ You can use the [Adaptive Card Designer](https://adaptivecards.io/designer/) to 
 
 ### Step 3: Handle the new action
 
-The TeamsFx SDK provides a convenient class, `TeamsFxAdaptiveCardActionHandler`, to handle when an action from an Adaptive Card is invoked. Create a new file, `bot/src/cardActions/doSomethingActionHandler.ts`:
+The TeamsFx SDK provides a convenient class, `TeamsFxAdaptiveCardActionHandler`, to handle when an action from an Adaptive Card is invoked. Create a new file, `src/cardActions/doSomethingActionHandler.ts`:
 
 ```typescript
 const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
@@ -147,9 +148,9 @@ You can customize what the action does here, including calling an API, processin
 
 ### Step 4: Register the new handler
 
-Each new card action needs to be configured in the `ConversationBot`, which powers the conversational flow of the workflow bot template. Navigate to the `bot/src/internal/initialize.ts` file and update the `actions` array of the `cardAction` property.
+Each new card action needs to be configured in the `ConversationBot`, which powers the conversational flow of the workflow bot template. Navigate to the `src/internal/initialize.ts` file and update the `actions` array of the `cardAction` property.
 
-1. Go to `bot/src/internal/initialize.ts`;
+1. Go to `src/internal/initialize.ts`;
 2. Update your `conversationBot` initialization to enable cardAction feature and add the handler to `actions` array:
 
 ```typescript

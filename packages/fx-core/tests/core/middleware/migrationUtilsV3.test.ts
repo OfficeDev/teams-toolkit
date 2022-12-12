@@ -1,9 +1,11 @@
 import { assert } from "chai";
 import {
+  convertPluginId,
   FileType,
   fixedNamingsV3,
   namingConverterV3,
-} from "../../../src/core/middleware/MigrationUtils";
+} from "../../../src/core/middleware/utils/MigrationUtils";
+import { generateAppIdUri } from "../../../src/core/middleware/utils/v3MigrationUtils";
 
 describe("MigrationUtilsV3", () => {
   it("happy path for fixed namings", () => {
@@ -100,6 +102,11 @@ describe("MigrationUtilsV3", () => {
     );
   });
 
+  it("happy path for provision outputs with empty bicep content", () => {
+    const res = namingConverterV3("state.fx-resource-frontend-hosting.domain", FileType.STATE, "");
+    assert.isTrue(res.isOk() && res.value === "STATE__FX_RESOURCE_FRONTEND_HOSTING__DOMAIN");
+  });
+
   it("failed to convert provision outputs: state.fx-resource-azure-sql.databaseName with multiple database", () => {
     const bicepContent =
       "output azureSqlOutput object = {\nteamsFxPluginId: 'fx-resource-azure-sql'\n}\n" +
@@ -116,5 +123,62 @@ describe("MigrationUtilsV3", () => {
           "Failed to find matching output in provision.bicep for key state.fx-resource-azure-sql.databaseName_test3" &&
         res.error.name == "FailedToConvertV2ConfigNameToV3"
     );
+  });
+});
+
+describe("MigrationUtilsV3: generateAppIdUri", () => {
+  it("TabSso", () => {
+    const res = generateAppIdUri({
+      TabSso: true,
+      BotSso: false,
+    });
+    assert.equal(
+      res,
+      "api://{{state.fx-resource-frontend-hosting.domain}}/{{state.fx-resource-aad-app-for-teams.clientId}}"
+    );
+  });
+
+  it("BotSso", () => {
+    const res = generateAppIdUri({
+      TabSso: false,
+      BotSso: true,
+    });
+    assert.equal(res, "api://botid-{{state.fx-resource-bot.botId}}");
+  });
+
+  it("TabSso && BotSso", () => {
+    const res = generateAppIdUri({
+      TabSso: true,
+      BotSso: true,
+    });
+    assert.equal(
+      res,
+      "api://{{state.fx-resource-frontend-hosting.domain}}/botid-{{state.fx-resource-bot.botId}}"
+    );
+  });
+
+  it("Without SSO", () => {
+    const res = generateAppIdUri({
+      TabSso: false,
+      BotSso: false,
+    });
+    assert.equal(res, "api://{{state.fx-resource-aad-app-for-teams.clientId}}");
+  });
+});
+
+describe("MigrationUtilsV3: convertPluginId", () => {
+  it("happy path", () => {
+    const res = convertPluginId("state.aad-app.clientId");
+    assert.equal(res, "state.fx-resource-aad-app-for-teams.clientId");
+  });
+
+  it("happy path without change", () => {
+    const res = convertPluginId("state.fx-resource-aad-app-for-teams.clientId");
+    assert.equal(res, "state.fx-resource-aad-app-for-teams.clientId");
+  });
+
+  it("happy path with short id", () => {
+    const res = convertPluginId("test");
+    assert.equal(res, "test");
   });
 });

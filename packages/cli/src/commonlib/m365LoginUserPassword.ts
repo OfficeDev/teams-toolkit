@@ -16,6 +16,7 @@ import {
   err,
   LoginStatus,
   UserError,
+  BasicLogin,
 } from "@microsoft/teamsfx-api";
 
 import * as cfg from "./common/userPasswordConfig";
@@ -35,7 +36,7 @@ const msalConfig = {
   },
 };
 
-export class M365ProviderUserPassword implements M365TokenProvider {
+export class M365ProviderUserPassword extends BasicLogin implements M365TokenProvider {
   private static instance: M365ProviderUserPassword;
 
   private static accessToken: string | undefined;
@@ -103,18 +104,6 @@ export class M365ProviderUserPassword implements M365TokenProvider {
     }
   }
 
-  setStatusChangeMap(
-    name: string,
-    tokenRequest: TokenRequest,
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>,
-    immediateCall?: boolean
-  ): Promise<Result<boolean, FxError>> {
-    throw new Error("Method not implemented.");
-  }
   removeStatusChangeMap(name: string): Promise<Result<boolean, FxError>> {
     throw new Error("Method not implemented.");
   }

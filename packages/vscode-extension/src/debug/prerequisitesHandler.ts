@@ -105,7 +105,6 @@ enum Checker {
 
 const DepsDisplayName = {
   [DepsType.SpfxNode]: "Node.js",
-  [DepsType.SpfxNodeV1_16]: "Node.js",
   [DepsType.AzureNode]: "Node.js",
   [DepsType.ProjectNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
@@ -160,7 +159,6 @@ const ProgressMessage = Object.freeze({
       : `Checking and installing npm packages in directory ${cwd}`,
   [Checker.Ports]: `Checking ${Checker.Ports}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
-  [DepsType.SpfxNodeV1_16]: `Checking ${DepsDisplayName[DepsType.SpfxNodeV1_16]}`,
   [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
   [DepsType.ProjectNode]: `Checking ${DepsDisplayName[DepsType.ProjectNode]}`,
   [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
@@ -596,7 +594,6 @@ function getCheckPromise(
   switch (checkerInfo.checker) {
     case DepsType.AzureNode:
     case DepsType.SpfxNode:
-    case DepsType.SpfxNodeV1_16:
     case DepsType.ProjectNode:
       return checkNode(
         checkerInfo.checker,
@@ -860,7 +857,7 @@ async function checkNode(
       try {
         VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
         const nodeStatus = await depsManager.ensureDependency(nodeDep, true, {
-          projectPath: globalVariables.workspaceUri!.fsPath,
+          projectPath: globalVariables.workspaceUri?.fsPath,
         });
         return {
           checker: nodeStatus.name,
@@ -1304,7 +1301,7 @@ async function getOrderedCheckers(): Promise<PrerequisiteOrderedChecker[]> {
   const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
   const checkers: PrerequisiteOrderedChecker[] = [];
   const parallelCheckers: PrerequisiteCheckerInfo[] = [];
-  const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, workspacePath);
+  const activeDeps = await localEnvManager.getActiveDependencies(projectSettings);
   const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(activeDeps);
   const nodeDeps = getNodeDep(enabledDeps);
   const nonNodeDeps = getNonNodeDeps(enabledDeps);
@@ -1378,7 +1375,7 @@ async function getOrderedCheckersForGetStarted(): Promise<PrerequisiteOrderedChe
       VS_CODE_UI
     );
     const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
-    const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, workspacePath);
+    const activeDeps = await localEnvManager.getActiveDependencies(projectSettings);
     const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(activeDeps);
 
     const nodeDeps = getNodeDep(enabledDeps) ?? DepsType.AzureNode;
@@ -1406,7 +1403,7 @@ async function getOrderedCheckersForTask(
     } else {
       const projectPath = globalVariables.workspaceUri!.fsPath;
       const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-      const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, projectPath);
+      const activeDeps = await localEnvManager.getActiveDependencies(projectSettings);
       const nodeDep = await getNodeDep(activeDeps);
       if (nodeDep) {
         checkers.push({ info: { checker: nodeDep }, fastFail: true });

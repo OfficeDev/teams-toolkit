@@ -35,10 +35,11 @@ The bot will send an Adaptive Card to Teams:
 
 | Folder | Contents |
 | - | - |
-| `.fx` | Project level settings, configurations, and environment information |
+| `teamsfx` | Project level settings, configurations, and environment information |
 | `.vscode` | VSCode files for local debug |
-| `bot` | The source code for the notification Teams application |
-| `templates` | Templates for the Teams application manifest and for provisioning Azure resources |
+| `src` | The source code for the notification Teams application |
+| `templates` | Templates for the Teams application manifest |
+| `infra` | Templates for provisioning Azure resources |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 

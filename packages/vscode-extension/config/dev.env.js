@@ -1,3 +1,3 @@
 module.exports = {
-  TEAMSFX_V3: '"true"',
+  "process.env.TEAMSFX_V3": '"true"',
 };

@@ -17,6 +17,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { CoreHookContext } from "../../types";
 import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
+import { Metadata, MetadataV3 } from "../../../common/versionMetadata";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appManifest/constants";
 
 // read json files in states/ folder
@@ -88,11 +89,11 @@ export function jsonObjectNamesConvertV3(
 
 export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const projectPath = inputs.projectPath as string;
+  const projectPath = (inputs.projectPath as string) || "";
   const v3path = getProjectSettingPathV3(projectPath);
   if (await fs.pathExists(v3path)) {
     const settings = await fs.readJson(v3path);
-    return settings.version || "3.0.0";
+    return settings.version || MetadataV3.projectVersion;
   }
   const v2path = getProjectSettingPathV2(projectPath);
   if (await fs.pathExists(v2path)) {
@@ -101,7 +102,11 @@ export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
       return settings.version;
     }
   }
-  return "0.0.0";
+  return "";
+}
+
+export function getToolkitVersionLink(platform: Platform, projectVersion: string): string {
+  return Metadata.versionMatchLink;
 }
 
 export function getCapabilitySsoStatus(projectSettings: ProjectSettings): {

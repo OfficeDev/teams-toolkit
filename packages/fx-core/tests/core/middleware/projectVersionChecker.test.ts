@@ -13,6 +13,7 @@ import * as projectSettingsLoader from "../../../src/core/middleware/projectSett
 import { ProjectVersionCheckerMW } from "../../../src/core/middleware/projectVersionChecker";
 import { assert } from "chai";
 import mockedEnv from "mocked-env";
+import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
 
 describe("Middleware - projectVersionChecker.test", () => {
   const sandbox = sinon.createSandbox();
@@ -57,13 +58,13 @@ describe("Middleware - projectVersionChecker.test", () => {
     assert.isTrue(showMessageFunc.callCount === 0);
     assert.isTrue(showLog.callCount === 0);
   });
-
   // To be removed after TEAMSFX_V3 feature flag is cleaned up
   it("Show update dialog or message", async () => {
     const appName = randomAppName();
     const projectSettings: ProjectSettings = MockProjectSettings(appName);
     projectSettings.version = "3.0.0";
     sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSettings));
+    sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves("3.0.0");
 
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
@@ -141,6 +142,7 @@ describe("Middleware - projectVersionChecker.test", () => {
       const projectSettings: ProjectSettings = MockProjectSettings(appName);
       projectSettings.version = "4.0.0";
       sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSettings));
+      sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves("4.0.0");
 
       class MyClass {
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {

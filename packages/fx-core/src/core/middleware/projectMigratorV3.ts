@@ -54,6 +54,7 @@ import {
   replaceAppIdUri,
   updateAndSaveManifestForSpfx,
   getTemplateFolderPath,
+  getParameterFromCxt,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
 import * as commentJson from "comment-json";
@@ -116,7 +117,8 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       ctx.result = ok(undefined);
       return;
     }
-    if (!(await askUserConfirm(ctx))) {
+    const skipUserConfirm = getParameterFromCxt(ctx, "skipUserConfirm");
+    if (!skipUserConfirm && !(await askUserConfirm(ctx))) {
       return;
     }
     const migrationContext = await MigrationContext.create(ctx);

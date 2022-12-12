@@ -40,9 +40,11 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     ctx.result = err(new PathNotExistError(inputs.projectPath));
     return;
   }
-  const configFolder = isV3Enabled()
-    ? path.join(inputs.projectPath, SettingsFolderName)
-    : path.join(inputs.projectPath, `.${ConfigFolderName}`);
+  let configFolder = "";
+  if (isV3Enabled()) {
+    configFolder = path.join(inputs.projectPath, SettingsFolderName);
+  }
+  configFolder = configFolder || path.join(inputs.projectPath, `.${ConfigFolderName}`);
   if (!(await fs.pathExists(configFolder))) {
     ctx.result = err(new InvalidProjectError(configFolder));
     return;

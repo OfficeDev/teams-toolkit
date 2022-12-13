@@ -14,6 +14,7 @@ import {
   QTreeNode,
   BuildFolderName,
   AppPackageFolderName,
+  err,
 } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
@@ -27,6 +28,7 @@ import UserInteraction from "./providers/userInteraction";
 import { callFunc } from "./customizedFuncAdapter";
 import { standardizeResult } from "./utils";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 
 export default class ServerConnection implements IServerConnection {
   public static readonly namespace = Namespaces.Server;
@@ -61,6 +63,8 @@ export default class ServerConnection implements IServerConnection {
       this.customizeOnSelectionChangeFuncRequest.bind(this),
       this.addSsoRequest.bind(this),
       this.getProjectComponents.bind(this),
+      this.getProjectMigrationStatusRequest.bind(this),
+      this.migrateProjectRequest.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
@@ -322,5 +326,32 @@ export default class ServerConnection implements IServerConnection {
       return ok(undefined);
     }
     return ok(await coreGetProjectComponents(inputs.projectPath));
+  }
+
+  public async getProjectMigrationStatusRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<VersionCheckRes, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.projectVersionCheck(inputs),
+      inputs
+    );
+    console.log(res);
+    return standardizeResult(res);
+  }
+
+  public async migrateProjectRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<boolean, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.phantomMigrationV3(inputs),
+      inputs
+    );
+    return res.isErr() ? standardizeResult(err(res.error)) : ok(true);
   }
 }

@@ -270,4 +270,38 @@ describe("helperMethods", () => {
       }
     });
   });
+
+  describe("copyAddinFiles", () => {
+    const projectRoot = "/home/user/teamsapp";
+
+    beforeEach(() => {
+      mockfs({
+        "/home/user/teamsapp/.gitignore": "xxx",
+        "/home/user/teamsapp/project": {
+          file1: "xxx",
+          file2: "yyy",
+        },
+        "/home/user/teamsapp/node_modules": {
+          file3: "xxx",
+        },
+      });
+    });
+
+    afterEach(() => {
+      mockfs.restore();
+    });
+
+    it("should copy project files and ignore .gitignore and node_modules", async () => {
+      try {
+        const destination = "/home/user/destination";
+        HelperMethods.copyAddinFiles(projectRoot, destination);
+        chai.assert.equal(fs.existsSync(path.join(destination, "project", "file1")), true);
+        chai.assert.equal(fs.existsSync(path.join(destination, "project", "file2")), true);
+        chai.assert.equal(fs.existsSync(path.join(destination, ".gitignore")), false);
+        chai.assert.equal(fs.existsSync(path.join(destination, "node_modules")), false);
+      } catch (err) {
+        chai.assert.fail(err);
+      }
+    });
+  });
 });

@@ -9,24 +9,6 @@ export default class projectsJsonData {
     this.m_projectJsonData = projectProperties;
   }
 
-  isValidInput(input: string, isHostParam: boolean): boolean {
-    if (isHostParam) {
-      for (const key in this.m_projectJsonData.hostTypes) {
-        if (_.toLower(input) == key) {
-          return true;
-        }
-      }
-      return false;
-    } else {
-      for (const key in this.m_projectJsonData.projectTypes) {
-        if (_.toLower(input) == key) {
-          return true;
-        }
-      }
-      return false;
-    }
-  }
-
   getProjectDisplayName(projectType: string): string {
     return this.m_projectJsonData.projectTypes[_.toLower(projectType)].displayname;
   }

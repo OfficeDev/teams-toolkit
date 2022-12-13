@@ -45,7 +45,7 @@
         "tab/js/m365",
         "tab/ts/m365",
         "tab/js/dashboard",
-        "tab/ts/dashboard"        
+        "tab/ts/dashboard"
     ],
     "templatesV3": [
         "common/init-infra",

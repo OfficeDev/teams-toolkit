@@ -5,7 +5,6 @@
  * @author Siglud
  **/
 
-import * as fs from "fs-extra";
 import * as path from "path";
 import { BotValidator } from "../../commonlib";
 import {

@@ -4,11 +4,15 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTriggerFrom,
-} from "../../telemetry/extTelemetryEvents";
-import { Commands } from "../Commands";
-import { ExternalLink as ExternalLinkIcon } from "../resources";
+} from "../../../telemetry/extTelemetryEvents";
+import { Commands } from "../../Commands";
+import { ExternalLink as ExternalLinkIcon } from "../../resources";
 
-export default function ExternalLink(props: { title: string; link: string }) {
+export default function ExternalLink(props: {
+  title: string;
+  link: string;
+  triggerFrom: TelemetryTriggerFrom;
+}) {
   const onOpenLink = () => {
     vscode.postMessage({
       command: Commands.OpenExternalLink,
@@ -19,8 +23,8 @@ export default function ExternalLink(props: { title: string; link: string }) {
       data: {
         eventName: TelemetryEvent.OpenExternalLink,
         properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
-          [TelemetryProperty.Identifier]: props.link,
+          [TelemetryProperty.TriggerFrom]: props.triggerFrom,
+          [TelemetryProperty.Identifier]: props.title,
         },
       },
     });

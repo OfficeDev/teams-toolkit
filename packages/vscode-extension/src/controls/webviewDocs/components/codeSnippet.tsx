@@ -11,8 +11,8 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTriggerFrom,
-} from "../../telemetry/extTelemetryEvents";
-import { Commands } from "../Commands";
+} from "../../../telemetry/extTelemetryEvents";
+import { Commands } from "../../Commands";
 
 export default function CodeSnippet(props: {
   data: string;

@@ -7,9 +7,9 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTriggerFrom,
-} from "../../telemetry/extTelemetryEvents";
-import { Commands } from "../Commands";
-import { Chevron } from "../resources";
+} from "../../../telemetry/extTelemetryEvents";
+import { Commands } from "../../Commands";
+import { Chevron } from "../../resources";
 
 function StepTitle(props: { step: number; title: string }) {
   return (
@@ -28,27 +28,39 @@ function StepTitle(props: { step: number; title: string }) {
 export default function CollapsibleStep(props: {
   step: number;
   title: string;
+  triggerFrom: TelemetryTriggerFrom;
   identifier: string;
   children: React.ReactNode;
 }) {
+  const [isInTransition, setIsInTransition] = React.useState(false);
+  const transitionClassName = isInTransition ? "Collapsible__trigger__transition" : "";
   const onOpen = () => {
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
       data: {
         eventName: TelemetryEvent.ExpandGuideStep,
         properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.InProductDoc,
+          [TelemetryProperty.TriggerFrom]: props.triggerFrom,
           [TelemetryProperty.Identifier]: props.identifier,
         },
       },
     });
   };
+  const onClosing = () => {
+    setIsInTransition(!isInTransition);
+    setTimeout(() => {}, 400);
+  };
+  const onClose = () => {
+    setIsInTransition(!isInTransition);
+  };
 
   return (
     <Collapsible
-      className="collapsibleStep"
+      className={["collapsibleStep", `${transitionClassName}`].join(" ")}
       trigger={<StepTitle step={props.step} title={props.title} />}
       onTriggerOpening={onOpen}
+      onClosing={onClosing}
+      onClose={onClose}
     >
       {props.children}
     </Collapsible>

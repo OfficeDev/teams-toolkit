@@ -1,24 +1,28 @@
+.Collapsible.collapsibleStep {
+  border-radius: 6px;
+}
+
 .collapsibleStep {
   background-color: var(--vscode-editorHoverWidget-background);
-  border-radius: 3px;
 }
 
 .Collapsible__trigger {
   display: block;
   text-decoration: none;
   position: relative;
-  border: 1px solid var(--vscode-editorHoverWidget-background);
+  border-radius: 6px;
   padding: 14px 20px;
   background-color: var(--vscode-editorHoverWidget-background);
   color: var(--vscode-menu-foreground);
-  border-radius: 3px;
 
   &.is-open {
     .chevron {
       transform: rotate(180deg);
     }
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
   }
-
+  
   &.is-disabled {
     opacity: 0.5;
     background-color: grey;
@@ -33,6 +37,10 @@
   background-color: var(--vscode-editorHoverWidget-background);
 }
 
+.Collapsible__trigger__transition .Collapsible__trigger:hover {
+  background-color: var(--vscode-editorHoverWidget-background) !important;
+}
+
 .Collapsible__contentInner {
   display: block;
   text-decoration: none;
@@ -42,7 +50,8 @@
   padding-bottom: 20px;
   background-color: var(--vscode-editorHoverWidget-background);
   color: var(--vscode-breadcrumb-activeSelectionForeground);
-  border-radius: 3px;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 .stepContainer {

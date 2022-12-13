@@ -87,7 +87,7 @@ import {
   CoreTelemetrySuccess,
   sendErrorTelemetryThenReturnError,
 } from "./telemetry";
-import { CoreHookContext } from "./types";
+import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3 } from "../component/utils";
 import { preCheck } from "../component/core";
 import {
@@ -115,10 +115,6 @@ import { envUtil } from "../component/utils/envUtil";
 import { YamlParser } from "../component/configManager/parser";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { DotenvParseOutput } from "dotenv";
-import {
-  containsUnsupportedFeature,
-  getFeaturesFromAppDefinition,
-} from "../component/resource/appManifest/utils/utils";
 import { VideoFilterAppBlockerMW } from "./middleware/videoFilterAppBlocker";
 import { FxCoreV3Implement } from "./FxCoreImplementV3";
 
@@ -175,36 +171,8 @@ export class FxCore implements v3.ICore {
   }
 
   async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
-    if (isV3Enabled()) return this.createProjectNew(inputs);
+    if (isV3Enabled()) return this.v3Implement.dispatch(this.createProject, inputs);
     else return this.createProjectOld(inputs);
-  }
-
-  @hooks([ErrorHandlerMW, ContextInjectorMW])
-  async createProjectNew(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    if (!ctx) {
-      return err(new ObjectIsUndefinedError("ctx for createProject"));
-    }
-    setCurrentStage(Stage.create);
-    inputs.stage = Stage.create;
-    const context = createContextV3();
-    if (!!inputs.teamsAppFromTdp) {
-      // should never happen as we do same check on Developer Portal.
-      if (containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
-        return err(InvalidInputError("Teams app contains unsupported features"));
-      } else {
-        context.telemetryReporter.sendTelemetryEvent(CoreTelemetryEvent.CreateFromTdpStart, {
-          [CoreTelemetryProperty.TdpTeamsAppFeatures]: getFeaturesFromAppDefinition(
-            inputs.teamsAppFromTdp
-          ).join(","),
-          [CoreTelemetryProperty.TdpTeamsAppId]: inputs.teamsAppFromTdp.teamsAppId,
-        });
-      }
-    }
-    const res = await coordinator.create(context, inputs as InputsWithProjectPath);
-    if (res.isErr()) return err(res.error);
-    ctx.projectSettings = context.projectSetting;
-    inputs.projectPath = context.projectPath;
-    return ok(inputs.projectPath!);
   }
 
   /**
@@ -836,6 +804,11 @@ export class FxCore implements v3.ICore {
     return this.v3Implement.dispatch(this.phantomMigrationV3, inputs);
   }
 
+  // a project version check
+  async projectVersionCheck(inputs: Inputs): Promise<Result<VersionCheckRes, FxError>> {
+    return this.v3Implement.dispatch(this.projectVersionCheck, inputs);
+  }
+
   async createEnvCopy(
     targetEnvName: string,
     sourceEnvName: string,
@@ -1077,17 +1050,7 @@ export class FxCore implements v3.ICore {
     return result;
   }
 
-  async preProvisionForVS(inputs: Inputs): Promise<
-    Result<
-      {
-        needAzureLogin: boolean;
-        needM365Login: boolean;
-        resolvedAzureSubscriptionId?: string;
-        resolvedAzureResourceGroupName?: string;
-      },
-      FxError
-    >
-  > {
+  async preProvisionForVS(inputs: Inputs): Promise<Result<PreProvisionResForVS, FxError>> {
     return this.v3Implement.dispatch(this.preProvisionForVS, inputs);
   }
 

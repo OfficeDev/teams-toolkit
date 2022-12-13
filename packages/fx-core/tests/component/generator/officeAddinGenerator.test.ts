@@ -6,6 +6,7 @@ import {
   devPreview,
   err,
   Inputs,
+  LocalFunc,
   ManifestUtil,
   ok,
   Platform,
@@ -187,6 +188,24 @@ describe("getQuestionsForScaffolding", () => {
   it("should contain all questions", () => {
     const q = getQuestionsForScaffolding();
     chai.expect(q.children?.length).to.eq(3);
+  });
+
+  describe("AddinLanguageQuestions", () => {
+    it("should have typescript as options", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs["capabilities"] = ["taskpane"];
+      chai.assert.isDefined(AddinLanguageQuestion.dynamicOptions);
+      const options = await AddinLanguageQuestion.dynamicOptions!(inputs);
+      chai.assert.deepEqual(options, [{ label: "TypeScript", id: "TypeScript" }]);
+    });
+
+    it("should default to TypeScript for taskpane projects", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs["capabilities"] = ["taskpane"];
+      chai.assert.isDefined(AddinLanguageQuestion.default);
+      const lang = await (AddinLanguageQuestion.default as LocalFunc<string | undefined>)(inputs);
+      chai.assert.equal(lang, "TypeScript");
+    });
   });
 });
 

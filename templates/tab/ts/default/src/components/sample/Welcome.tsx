@@ -37,10 +37,10 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
     };
   });
 
-  const { teamsfx } = useContext(TeamsFxContext);
+  const { teamsUserCredential } = useContext(TeamsFxContext);
   const { loading, data, error } = useData(async () => {
-    if (teamsfx) {
-      const userInfo = await teamsfx.getUserInfo();
+    if (teamsUserCredential) {
+      const userInfo = await teamsUserCredential.getUserInfo();
       return userInfo;
     }
   });

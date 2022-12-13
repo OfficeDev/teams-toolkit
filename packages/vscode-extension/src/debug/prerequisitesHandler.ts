@@ -986,6 +986,7 @@ async function resolveLocalCertificate(
         const workspacePath = globalVariables.workspaceUri!.fsPath;
         const localEnvProvider = new LocalEnvProvider(workspacePath);
         const localCertResult = await localEnvManager.resolveLocalCertificate(
+          workspacePath,
           trustDevCert,
           localEnvProvider
         );

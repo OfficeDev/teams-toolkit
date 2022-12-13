@@ -60,7 +60,7 @@ configureApp:
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json
 
-  - uses: teamsApp/createAppPackage
+  - uses: teamsApp/zipAppPackage
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json
       outputZipPath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
@@ -157,7 +157,7 @@ deploy:
 
   {{/if}}
   {{#npmCommands}}
-  - uses: npm/command
+  - uses: cli/runNpmCommand
     with:
       args: {{args}}
       {{#if workingDirectory}}

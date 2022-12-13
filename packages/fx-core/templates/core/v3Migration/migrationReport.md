@@ -1,6 +1,11 @@
 # Teams Toolkit 5.0 Upgrade Summary
 ## Migration overview
 
+1. Upgrade V2 project to V3 using migrators. 
+2. For the file structure of a project, migrators will:
+    1. Generate `teamsfx/` folder and backup `.fx/` folder into it. `teamsfx/` includes `teamsfx/.env.{env}` files, `teamsfx/app.yml` and `teamsfx/app.local.yml`.
+    2. Extract `templates/appPackage/` folder and put it under the root path.
+
 ## Detail change
 
 1. Moved `templates/appPackage/resource` and `templates/appPackage/manifest.template.json` into the `appPackage` folder.

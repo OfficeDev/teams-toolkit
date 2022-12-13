@@ -11,8 +11,8 @@ on:
         required: false
         default: "false"
   schedule:
-    - cron: "0 22 * * *"
-    - cron: "0 4 * * *"
+    - cron: '0 22 * * *'
+    - cron: '0 4 * * *'
   pull_request:
     branches:
       - main
@@ -316,7 +316,7 @@ jobs:
           lscpu
 
       - name: run test
-        if: ${{ github.event.schedule != "0 4 * * *" }}
+        if: github.event.schedule != '0 4 * * *'
         working-directory: packages/cli/tests/e2e
         run: |
           file=`find . -wholename "${{ matrix.cases }}"`
@@ -328,7 +328,7 @@ jobs:
           fi
 
       - name: run test for v3
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.v3 != 'false' || github.event.schedule == "0 4 * * *" }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.v3 != 'false' || github.event.schedule == '0 4 * * *' }}
         working-directory: packages/cli/tests/e2e
         env:
           TEAMSFX_V3: "true"
@@ -434,12 +434,12 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Check schedule for v2
-        if: ${{ github.event.schedule != "0 4 * * *" }}
+        if: github.event.schedule != '0 4 * * *'
         run: |
           echo "flag=v2" >> $GITHUB_STATE
 
       - name: Check schedule for v3
-        if: ${{ github.event.schedule == "0 4 * * *" }}
+        if: github.event.schedule == '0 4 * * *'
         run: |
           echo "flag=v3" >> $GITHUB_STATE
 

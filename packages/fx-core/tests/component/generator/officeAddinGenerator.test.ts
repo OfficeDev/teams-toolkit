@@ -1,7 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ContextV3, devPreview, Inputs, ManifestUtil, ok, Platform } from "@microsoft/teamsfx-api";
+import {
+  ContextV3,
+  devPreview,
+  err,
+  Inputs,
+  ManifestUtil,
+  ok,
+  Platform,
+  SystemError,
+} from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import fs from "fs";
 import fse from "fs-extra";
@@ -18,6 +27,7 @@ import { OfficeAddinGenerator } from "../../../src/component/generator/officeAdd
 import {
   AddinLanguageQuestion,
   AddinProjectFolderQuestion,
+  AddinProjectManifestQuestion,
   getQuestionsForScaffolding,
   getTemplate,
   OfficeHostQuestion,
@@ -37,6 +47,7 @@ import projectsJsonData from "../../../src/component/generator/officeAddin/confi
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
   let context: ContextV3;
+  const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
   beforeEach(async () => {
     const gtools = new MockTools();
@@ -78,6 +89,34 @@ describe("OfficeAddinGenerator", function () {
     chai.expect(generateTemplateStub.calledOnce).to.be.true;
   });
 
+  it("should return error if doScaffolding() returns error", async function () {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "office-addin-test",
+    };
+    sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(err(mockedError));
+    sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const result = await OfficeAddinGenerator.generate(context, inputs, testFolder);
+
+    chai.assert.isTrue(result.isErr() && result.error.name === "mockedError");
+  });
+
+  it("should call both doScaffolding and template generator", async function () {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "office-addin-test",
+    };
+    sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
+    sinon.stub(Generator, "generateTemplate").resolves(err(mockedError));
+
+    const result = await OfficeAddinGenerator.generate(context, inputs, testFolder);
+
+    chai.assert.isTrue(result.isErr() && result.error.name === "mockedError");
+  });
+
   it("should scaffold taskpane successfully on happy path", async () => {
     const inputs: Inputs = {
       platform: Platform.CLI,
@@ -97,6 +136,46 @@ describe("OfficeAddinGenerator", function () {
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
     chai.expect(result.isOk()).to.eq(true);
+  });
+
+  it("should copy addin files and updateManifest if addin folder is specified", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "office-addin-test",
+    };
+    inputs["capabilities"] = ["taskpane"];
+    inputs[AddinProjectFolderQuestion.name] = "somepath";
+    inputs[AddinLanguageQuestion.name] = "TypeScript";
+    inputs[AddinProjectManifestQuestion.name] = "manifest.json";
+
+    const copyAddinFilesStub = sinon
+      .stub(HelperMethods, "copyAddinFiles")
+      .callsFake((from: string, to: string) => {
+        return;
+      });
+    const updateManifestStub = sinon
+      .stub(HelperMethods, "updateManifest")
+      .callsFake(async (destination: string, manifestPath: string) => {
+        return;
+      });
+
+    sinon.stub<any, any>(ManifestUtil, "loadFromPath").resolves({
+      extensions: [
+        {
+          requirements: {
+            scopes: ["mail"],
+          },
+        },
+      ],
+    });
+
+    const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
+
+    chai.expect(result.isOk()).to.eq(true);
+    chai.expect(copyAddinFilesStub.calledOnce).to.be.true;
+    chai.expect(updateManifestStub.calledOnce).to.be.true;
+    chai.expect(inputs[OfficeHostQuestion.name]).to.eq("Outlook");
   });
 
   afterEach(async () => {

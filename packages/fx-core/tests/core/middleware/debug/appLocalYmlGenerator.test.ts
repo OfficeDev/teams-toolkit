@@ -55,7 +55,7 @@ describe("AppLocalYmlGenerator", () => {
     );
     const res = await appLocalYmlGenerator.generateAppYml();
     const obj = yaml.load(res) as any;
-    chai.assert.deepEqual(obj.deploy, [{ uses: "npm/command", with: { args: "install" } }]);
+    chai.assert.deepEqual(obj.deploy, [{ uses: "cli/runNpmCommand", with: { args: "install" } }]);
   });
 });
 

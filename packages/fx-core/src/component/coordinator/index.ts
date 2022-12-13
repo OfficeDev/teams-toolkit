@@ -170,9 +170,6 @@ const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramewo
 export class Coordinator {
   @hooks([
     ActionExecutionMW({
-      question: (context, inputs) => {
-        return getQuestionsForCreateProjectV2(inputs);
-      },
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.CreateProject,
       telemetryComponentName: "coordinator",
@@ -279,9 +276,6 @@ export class Coordinator {
 
   @hooks([
     ActionExecutionMW({
-      question: (context, inputs) => {
-        return getQuestionsForInit("infra", inputs);
-      },
       enableTelemetry: true,
       telemetryEventName: "init-infra",
       telemetryComponentName: "coordinator",
@@ -363,9 +357,6 @@ export class Coordinator {
 
   @hooks([
     ActionExecutionMW({
-      question: (context, inputs) => {
-        return getQuestionsForInit("debug", inputs);
-      },
       enableTelemetry: true,
       telemetryEventName: "init-debug",
       telemetryComponentName: "coordinator",
@@ -556,9 +547,6 @@ export class Coordinator {
 
   @hooks([
     ActionExecutionMW({
-      question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return await getQuestionsForProvisionV3(context, inputs);
-      },
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.Provision,
       telemetryComponentName: "coordinator",
@@ -956,9 +944,6 @@ export class Coordinator {
 
   @hooks([
     ActionExecutionMW({
-      question: (context, inputs) => {
-        return getQuestionsForPublishInDeveloperPortal(inputs);
-      },
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.PublishInDeveloperPortal,
       telemetryComponentName: "coordinator",

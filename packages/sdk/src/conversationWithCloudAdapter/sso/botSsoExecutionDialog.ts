@@ -46,11 +46,12 @@ export class BotSsoExecutionDialog extends ComponentDialog {
   >();
 
   /**
-   * Creates a new instance of the BotSsoExecutionDialog.
-   * @param {@link Storage} dedupStorage Helper storage to remove duplicated messages
-   * @param {@link TeamsBotSsoPromptSettings} settings The list of scopes for which the token will have access
-   * @param {@link TeamsFx} teamsfx instance for authentication
-   * @param {string} dialogName custom dialog name
+   * Create a new instance of the BotSsoExecutionDialog.
+   *
+   * @param {Storage} dedupStorage - Helper storage to remove duplicated messages.
+   * @param {TeamsBotSsoPromptSettings} settings - The list of scopes for which the token will have access.
+   * @param {TeamsFx} teamsfx - Instance for authentication.
+   * @param {string} dialogName - Custom dialog name.
    */
   constructor(
     dedupStorage: Storage,
@@ -59,12 +60,13 @@ export class BotSsoExecutionDialog extends ComponentDialog {
     dialogName?: string
   );
   /**
-   * Creates a new instance of the BotSsoExecutionDialog.
-   * @param {@link Storage} dedupStorage Helper storage to remove duplicated messages
-   * @param {@link TeamsBotSsoPromptSettings} settings The list of scopes for which the token will have access
-   * @param {@link OnBehalfOfCredentialAuthConfig} authConfig The authentication configuration.
-   * @param {string} initiateLoginEndpoint Login URL for Teams to redirect to.
-   * @param {string} dialogName custom dialog name
+   * Create a new instance of the BotSsoExecutionDialog.
+   *
+   * @param {Storage} dedupStorage - Helper storage to remove duplicated messages.
+   * @param {TeamsBotSsoPromptSettings} settings - The list of scopes for which the token will have access.
+   * @param {OnBehalfOfCredentialAuthConfig} authConfig - The authentication configuration.
+   * @param {string} initiateLoginEndpoint - Login URL for Teams to redirect to.
+   * @param {string} dialogName - Custom dialog name.
    */
   constructor(
     dedupStorage: Storage,
@@ -117,10 +119,12 @@ export class BotSsoExecutionDialog extends ComponentDialog {
     this.addDialog(commandRouteDialog);
   }
 
+  // eslint-disable-next-line no-secrets/no-secrets
   /**
    * Add TeamsFxBotSsoCommandHandler instance
-   * @param handler {@link BotSsoExecutionDialogHandler} callback function
-   * @param triggerPatterns The trigger pattern
+   *
+   * @param handler - {@link BotSsoExecutionDialogHandler} callback function.
+   * @param triggerPatterns - The trigger pattern.
    */
   public addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void {
     const commandId = this.getCommandHash(triggerPatterns);
@@ -167,8 +171,8 @@ export class BotSsoExecutionDialog extends ComponentDialog {
   /**
    * The run method handles the incoming activity (in the form of a DialogContext) and passes it through the dialog system.
    *
-   * @param context The context object for the current turn.
-   * @param accessor The instance of StatePropertyAccessor for dialog system.
+   * @param context - The context object for the current turn.
+   * @param accessor - The instance of StatePropertyAccessor for dialog system.
    */
   public async run(context: TurnContext, accessor: StatePropertyAccessor) {
     const dialogSet = new DialogSet(accessor);
@@ -265,7 +269,7 @@ export class BotSsoExecutionDialog extends ComponentDialog {
   /**
    * Called when the component is ending.
    *
-   * @param context Context for the current turn of conversation.
+   * @param context - Context for the current turn of conversation.
    */
   protected async onEndDialog(context: TurnContext) {
     const conversationId = context.activity.conversation.id;
@@ -279,8 +283,9 @@ export class BotSsoExecutionDialog extends ComponentDialog {
    * Each token exchange request for a specific user login will have an identical activity.value.Id.
    * Only one of these token exchange requests should be processed by the bot. For a distributed bot in production,
    * this requires a distributed storage to ensure only one token exchange is processed.
-   * @param context Context for the current turn of conversation.
-   * @returns boolean value indicate whether the message should be removed
+   * @param context - Context for the current turn of conversation.
+   *
+   * @returns Boolean value indicate whether the message should be removed
    */
   private async shouldDedup(context: TurnContext): Promise<boolean> {
     const storeItem = {
@@ -360,8 +365,11 @@ export class BotSsoExecutionDialog extends ComponentDialog {
 
   /**
    * Ensure bot is running in MS Teams since TeamsBotSsoPrompt is only supported in MS Teams channel.
-   * @param dc dialog context
+   *
+   * @param dc - Dialog context.
+   *
    * @throws {@link ErrorCode|ChannelNotSupported} if bot channel is not MS Teams
+   *
    * @internal
    */
   private ensureMsTeamsChannel(dc: DialogContext) {

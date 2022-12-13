@@ -34,9 +34,11 @@ export class DefaultBotSsoExecutionActivityHandler
   private conversationState: BotState;
   private dialogState: StatePropertyAccessor;
 
+  // eslint-disable-next-line no-secrets/no-secrets
   /**
-   * Creates a new instance of the DefaultBotSsoExecutionActivityHandler.
-   * @param ssoConfig configuration for SSO command bot
+   * Create a new instance of the `DefaultBotSsoExecutionActivityHandler`.
+   *
+   * @param ssoConfig - Configuration for SSO command bot.
    *
    * @remarks
    * In the constructor, it uses BotSsoConfig parameter which from {@link ConversationBot} options to initialize {@link BotSsoExecutionDialog}.
@@ -70,10 +72,12 @@ export class DefaultBotSsoExecutionActivityHandler
     });
   }
 
+  // eslint-disable-next-line no-secrets/no-secrets
   /**
-   * Add TeamsFxBotSsoCommandHandler instance to SSO execution dialog
-   * @param handler {@link BotSsoExecutionDialogHandler} callback function
-   * @param triggerPatterns The trigger pattern
+   * Add `TeamsFxBotSsoCommandHandler` instance to SSO execution dialog.
+   *
+   * @param handler - {@link BotSsoExecutionDialogHandler} callback function.
+   * @param triggerPatterns - The trigger pattern.
    *
    * @remarks
    * This function is used to add SSO command to {@link BotSsoExecutionDialog} instance.
@@ -84,7 +88,8 @@ export class DefaultBotSsoExecutionActivityHandler
 
   /**
    * Called to initiate the event emission process.
-   * @param context The context object for the current turn.
+   *
+   * @param context - The context object for the current turn.
    */
   async run(context: TurnContext) {
     try {
@@ -96,9 +101,11 @@ export class DefaultBotSsoExecutionActivityHandler
   }
 
   /**
-   * Receives invoke activities with Activity name of 'signin/verifyState'.
-   * @param context A context object for this turn.
-   * @param query Signin state (part of signin action auth flow) verification invoke query.
+   * Receive invoke activities with Activity name of 'signin/verifyState'.
+   *
+   * @param context - A context object for this turn.
+   * @param query - Signin state (part of signin action auth flow) verification invoke query.
+   *
    * @returns A promise that represents the work queued.
    *
    * @remarks
@@ -109,9 +116,11 @@ export class DefaultBotSsoExecutionActivityHandler
   }
 
   /**
-   * Receives invoke activities with Activity name of 'signin/tokenExchange'
-   * @param context A context object for this turn.
-   * @param query Signin state (part of signin action auth flow) verification invoke query
+   * Receive invoke activities with Activity name of 'signin/tokenExchange'
+   *
+   * @param context - A context object for this turn.
+   * @param query - Signin state (part of signin action auth flow) verification invoke query
+   *
    * @returns A promise that represents the work queued.
    *
    * @remark

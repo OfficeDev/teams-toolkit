@@ -63,11 +63,10 @@ export interface NotificationTarget {
   /**
    * Send a plain text message.
    *
-   * @param text - the plain text message.
-   * @param onError - an optional error handler that can catch exceptions during message sending.
-   * If not defined, error will be handled by `BotAdapter.onTurnError`.
+   * @param text - The plain text message.
+   * @param onError - An optional error handler that can catch exceptions during message sending. If not defined, the error will be handled by `BotAdapter.onTurnError`.
    *
-   * @returns the response of sending message.
+   * @returns The response of sending message.
    */
   sendMessage(
     text: string,
@@ -77,11 +76,11 @@ export interface NotificationTarget {
   /**
    * Send an adaptive card message.
    *
-   * @param card - the adaptive card raw JSON.
-   * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
-   * If not defined, error will be handled by `BotAdapter.onTurnError`.
+   * @param card - The adaptive card raw JSON.
+   * @param onError - An optional error handler that can catch exceptions during adaptive card sending.
+   * If not defined, the error will be handled by `BotAdapter.onTurnError`.
    *
-   * @returns the response of sending adaptive card message.
+   * @returns The response of sending adaptive card message.
    */
   sendAdaptiveCard(
     card: unknown,
@@ -96,31 +95,31 @@ export interface NotificationTargetStorage {
   /**
    * Read one notification target by its key.
    *
-   * @param key - the key of a notification target.
+   * @param key - The key of a notification target.
    *
-   * @returns - the notification target. Or undefined if not found.
+   * @returns The notification target, or `undefined` if not found.
    */
   read(key: string): Promise<{ [key: string]: unknown } | undefined>;
 
   /**
    * List all stored notification targets.
    *
-   * @returns - an array of notification target. Or an empty array if nothing is stored.
+   * @returns An array of notification target, or an empty array if nothing is stored.
    */
   list(): Promise<{ [key: string]: unknown }[]>;
 
   /**
    * Write one notification target by its key.
    *
-   * @param key - the key of a notification target.
-   * @param object - the notification target.
+   * @param key - The key of a notification target.
+   * @param object - The notification target.
    */
   write(key: string, object: { [key: string]: unknown }): Promise<void>;
 
   /**
    * Delete one notification target by its key.
    *
-   * @param key - the key of a notification target.
+   * @param key - The key of a notification target.
    */
   delete(key: string): Promise<void>;
 }
@@ -133,7 +132,7 @@ export interface NotificationOptions {
    * An optional input of bot app Id.
    *
    * @remarks
-   * If `botAppId` is not provided, a default bot app Id `process.env.BOT_ID` will be used,
+   * If `botAppId` is not provided, `process.env.BOT_ID` will be used by default.
    */
   botAppId?: string;
   /**
@@ -142,8 +141,8 @@ export interface NotificationOptions {
    * @remarks
    * If `storage` is not provided, a default local file storage will be used,
    * which stores notification connections into:
-   *   - ".notification.localstore.json" if running locally
-   *   - "${process.env.TEMP}/.notification.localstore.json" if `process.env.RUNNING_ON_AZURE` is set to "1"
+   *   - `.notification.localstore.json` if running locally
+   *   - `${process.env.TEMP}/.notification.localstore.json` if `process.env.RUNNING_ON_AZURE` is set to "1"
    *
    * It's recommended to use your own shared storage for production environment.
    */
@@ -182,10 +181,10 @@ export interface TeamsFxBotCommandHandler {
   /**
    * Handles a bot command received activity.
    *
-   * @param context The bot context.
-   * @param message The command message the user types from Teams.
-   * @returns A `Promise` representing an activity or text to send as the command response.
-   * Or no return value if developers want to send the response activity by themselves in this method.
+   * @param context - The bot context.
+   * @param message - The command message the user types from Teams.
+   *
+   * @returns A `Promise` representing an activity or text to send as the command response, or no return value if developers want to send the response activity by themselves in this method.
    */
   handleCommandReceived(
     context: TurnContext,
@@ -205,11 +204,11 @@ export interface TeamsFxBotSsoCommandHandler {
   /**
    * Handles a bot command received activity.
    *
-   * @param context The bot context.
-   * @param message The command message the user types from Teams.
-   * @param tokenResponse The tokenResponse which contains sso token that can be used to exchange access token for the bot.
-   * @returns A `Promise` representing an activity or text to send as the command response.
-   * Or no return value if developers want to send the response activity by themselves in this method.
+   * @param context - The bot context.
+   * @param message - The command message the user types from Teams.
+   * @param tokenResponse - The tokenResponse which contains sso token that can be used to exchange access token for the bot.
+   *
+   * @returns A `Promise` representing an activity or text to send as the command response, or no return value if developers want to send the response activity by themselves in this method.
    */
   handleCommandReceived(
     context: TurnContext,
@@ -237,6 +236,7 @@ export interface CommandOptions {
  * Options to initialize {@link CardActionBot}.
  */
 export interface CardActionOptions {
+  // eslint-disable-next-line no-secrets/no-secrets
   /**
    * The action handlers to registered with the action bot. Each command should implement the interface {@link TeamsFxAdaptiveCardActionHandler} so that it can be correctly handled by this bot.
    */
@@ -297,8 +297,9 @@ export interface TeamsFxAdaptiveCardActionHandler {
 
   /**
    * The handler function that will be invoked when the action is fired.
-   * @param context The turn context.
-   * @param actionData The contextual data that associated with the action.
+   *
+   * @param context - The turn context.
+   * @param actionData - The contextual data that associated with the action.
    * 
    * @returns A `Promise` representing a invoke response for the adaptive card invoke action.
    * You can use the `InvokeResponseFactory` utility class to create an invoke response from
@@ -339,6 +340,7 @@ export interface BotSsoConfig {
   );
 
   dialog?: {
+    // eslint-disable-next-line no-secrets/no-secrets
     /**
      * Custom sso execution activity handler class which should implement the interface {@link BotSsoExecutionActivityHandler}. If not provided, it will use {@link DefaultBotSsoExecutionActivityHandler} by default
      */
@@ -440,6 +442,7 @@ export interface ConversationOptions {
   };
 }
 
+// eslint-disable-next-line no-secrets/no-secrets
 /**
  * Interface for user to customize SSO execution activity handler
  *
@@ -462,10 +465,12 @@ export interface ConversationOptions {
  * For details information about how to implement a BotSsoExecutionActivityHandler, please refer DefaultBotSsoExecutionActivityHandler class source code: https://aka.ms/teamsfx-default-sso-execution-activity-handler
  */
 export interface BotSsoExecutionActivityHandler {
+  // eslint-disable-next-line no-secrets/no-secrets
   /**
    * Add {@link TeamsFxBotSsoCommandHandler} instance to {@link BotSsoExecutionDialog}
-   * @param handler {@link BotSsoExecutionDialogHandler} callback function
-   * @param triggerPatterns The trigger pattern
+   *
+   * @param handler - {@link BotSsoExecutionDialogHandler} callback function
+   * @param triggerPatterns - The trigger pattern
    *
    * @remarks
    * This function is used to add SSO command to {@link BotSsoExecutionDialog} instance.
@@ -474,14 +479,17 @@ export interface BotSsoExecutionActivityHandler {
 
   /**
    * Called to initiate the event emission process.
+   *
    * @param context The context object for the current turn.
    */
   run(context: TurnContext): Promise<void>;
 
   /**
    * Receives invoke activities with Activity name of 'signin/verifyState'.
+   *
    * @param context A context object for this turn.
    * @param query Signin state (part of signin action auth flow) verification invoke query.
+   *
    * @returns A promise that represents the work queued.
    *
    * @remarks
@@ -494,8 +502,10 @@ export interface BotSsoExecutionActivityHandler {
 
   /**
    * Receives invoke activities with Activity name of 'signin/tokenExchange'
-   * @param context A context object for this turn.
-   * @param query Signin state (part of signin action auth flow) verification invoke query
+   *
+   * @param context - A context object for this turn.
+   * @param query - Signin state (part of signin action auth flow) verification invoke query
+   *
    * @returns A promise that represents the work queued.
    *
    * @remark

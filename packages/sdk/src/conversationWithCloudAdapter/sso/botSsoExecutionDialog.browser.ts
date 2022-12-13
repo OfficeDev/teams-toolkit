@@ -43,10 +43,11 @@ export class BotSsoExecutionDialog {
     );
   }
 
+  // eslint-disable-next-line no-secrets/no-secrets
   /**
    * Add TeamsFxBotSsoCommandHandler instance
-   * @param handler {@link BotSsoExecutionDialogHandler} callback function
-   * @param triggerPatterns The trigger pattern
+   * @param handler - {@link BotSsoExecutionDialogHandler} callback function.
+   * @param triggerPatterns - The trigger pattern.
    */
   public addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void {
     throw new ErrorWithCode(
@@ -58,8 +59,8 @@ export class BotSsoExecutionDialog {
   /**
    * The run method handles the incoming activity (in the form of a DialogContext) and passes it through the dialog system.
    *
-   * @param context The context object for the current turn.
-   * @param accessor The instance of StatePropertyAccessor for dialog system.
+   * @param context - The context object for the current turn.
+   * @param accessor - The instance of StatePropertyAccessor for dialog system.
    */
   public async run(context: TurnContext, accessor: StatePropertyAccessor) {
     throw new ErrorWithCode(
@@ -71,7 +72,7 @@ export class BotSsoExecutionDialog {
   /**
    * Called when the component is ending.
    *
-   * @param context Context for the current turn of conversation.
+   * @param context - Context for the current turn of conversation.
    */
   protected async onEndDialog(context: TurnContext) {
     throw new ErrorWithCode(

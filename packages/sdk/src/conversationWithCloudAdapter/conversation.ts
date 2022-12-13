@@ -24,6 +24,9 @@ import { DefaultBotSsoExecutionActivityHandler } from "./sso/defaultBotSsoExecut
  * For command and response, you can register your commands through the constructor, or use the `registerCommand` and `registerCommands` API to add commands later.
  *
  * ```typescript
+ * import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
+ * import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
+ *
  * // register through constructor
  * const conversationBot = new ConversationBot({
  *   command: {
@@ -39,6 +42,9 @@ import { DefaultBotSsoExecutionActivityHandler } from "./sso/defaultBotSsoExecut
  * For notification, you can enable notification at initialization, then send notifications at any time.
  *
  * ```typescript
+ * import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
+ * import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
+ *
  * // enable through constructor
  * const conversationBot = new ConversationBot({
  *   notification: {
@@ -88,12 +94,12 @@ export class ConversationBot {
   public readonly cardAction?: CardActionBot;
 
   /**
-   * Creates new instance of the `ConversationBot`.
+   * Create new instance of the `ConversationBot`.
    *
    * @remarks
    * It's recommended to create your own adapter and storage for production environment instead of the default one.
    *
-   * @param options - initialize options
+   * @param options - The initialize options.
    */
   public constructor(options: ConversationOptions) {
     if (options.adapter) {
@@ -170,9 +176,9 @@ export class ConversationBot {
   /**
    * The request handler to integrate with web request.
    *
-   * @param req - An incoming HTTP [Request](xref:botbuilder.Request)
-   * @param req - The corresponding HTTP [Response](xref:botbuilder.Response)
-   * @param logic - the additional function to handle bot context.
+   * @param req - An incoming HTTP [Request](xref:botbuilder.Request).
+   * @param req - The corresponding HTTP [Response](xref:botbuilder.Response).
+   * @param logic - The additional function to handle bot context.
    *
    * @example
    * For example, to use with Restify:

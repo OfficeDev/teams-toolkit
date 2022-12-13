@@ -24,13 +24,14 @@ export class CommandBot {
   private readonly middleware: CommandResponseMiddleware;
   private readonly ssoConfig: BotSsoConfig | undefined;
 
+  // eslint-disable-next-line no-secrets/no-secrets
   /**
-   * Creates a new instance of the `CommandBot`.
+   * Create a new instance of the `CommandBot`.
    *
-   * @param adapter The bound `CloudAdapter`.
-   * @param options - initialize options
-   * @param ssoCommandActivityHandler - SSO execution activity handler
-   * @param ssoConfig - SSO configuration for Bot SSO
+   * @param adapter - The bound `CloudAdapter`.
+   * @param options - The initialize options
+   * @param ssoCommandActivityHandler - SSO execution activity handler.
+   * @param ssoConfig - SSO configuration for Bot SSO.
    */
   constructor(
     adapter: CloudAdapter,
@@ -49,9 +50,9 @@ export class CommandBot {
   }
 
   /**
-   * Registers a command into the command bot.
+   * Register a command into the command bot.
    *
-   * @param command The command to register.
+   * @param command - The command to be registered.
    */
   public registerCommand(command: TeamsFxBotCommandHandler): void {
     if (command) {
@@ -60,9 +61,9 @@ export class CommandBot {
   }
 
   /**
-   * Registers commands into the command bot.
+   * Register commands into the command bot.
    *
-   * @param commands The commands to register.
+   * @param commands - The commands to be registered.
    */
   public registerCommands(commands: TeamsFxBotCommandHandler[]): void {
     if (commands) {
@@ -71,9 +72,9 @@ export class CommandBot {
   }
 
   /**
-   * Registers a sso command into the command bot.
+   * Register a sso command into the command bot.
    *
-   * @param command The command to register.
+   * @param ssoCommand - The sso command to be registered.
    */
   public registerSsoCommand(ssoCommand: TeamsFxBotSsoCommandHandler): void {
     this.validateSsoActivityHandler();
@@ -81,9 +82,9 @@ export class CommandBot {
   }
 
   /**
-   * Registers commands into the command bot.
+   * Register sso commands into the command bot.
    *
-   * @param commands The commands to register.
+   * @param ssoCommands - The sso commands to be registered.
    */
   public registerSsoCommands(ssoCommands: TeamsFxBotSsoCommandHandler[]): void {
     if (ssoCommands.length > 0) {

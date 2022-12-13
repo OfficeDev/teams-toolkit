@@ -15,10 +15,10 @@ export class CardActionBot {
   private middleware: CardActionMiddleware;
 
   /**
-   * Creates a new instance of the `CardActionBot`.
+   * Create a new instance of the `CardActionBot`.
    *
-   * @param adapter The bound `CloudAdapter`.
-   * @param options - initialize options
+   * @param adapter - The bound `CloudAdapter`.
+   * @param options - The initialize options.
    */
   constructor(adapter: CloudAdapter, options?: CardActionOptions) {
     throw new ErrorWithCode(
@@ -28,8 +28,9 @@ export class CardActionBot {
   }
 
   /**
-   * Registers a card action handler to the bot.
-   * @param actionHandler A card action handler to be registered.
+   * Register a card action handler to the bot.
+   *
+   * @param actionHandler - A card action handler to be registered.
    *
    * @remarks
    * Only work on server side.
@@ -42,8 +43,9 @@ export class CardActionBot {
   }
 
   /**
-   * Registers card action handlers to the bot.
-   * @param actionHandlers A set of card action handlers to be registered.
+   * Register card action handlers to the bot.
+   *
+   * @param actionHandlers - A set of card action handlers to be registered.
    *
    * @remarks
    * Only work on server side.

@@ -42,9 +42,9 @@ export class ConversationBot {
   public readonly notification?: NotificationBot;
 
   /**
-   * Creates new instance of the `ConversationBot`.
+   * Create new instance of the `ConversationBot`.
    *
-   * @param options - initialize options
+   * @param options - The initialize options.
    *
    * @remarks
    * Only work on server side.
@@ -59,9 +59,9 @@ export class ConversationBot {
   /**
    * The request handler to integrate with web request.
    *
-   * @param req - An incoming HTTP [Request](xref:botbuilder.Request)
-   * @param res - The corresponding HTTP [Response](xref:botbuilder.Response)
-   * @param logic - the additional function to handle bot context.
+   * @param req - An incoming HTTP [Request](xref:botbuilder.Request).
+   * @param res - The corresponding HTTP [Response](xref:botbuilder.Response).
+   * @param logic - The additional function to handle bot context.
    *
    * @remarks
    * Only work on server side.

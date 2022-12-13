@@ -20,9 +20,10 @@ import { ConversationReferenceStore } from "./storage";
  * @remarks
  * Only work on server side.
  *
- * @param target - the notification target.
- * @param text - the plain text message.
- * @param onError - an optional error handler that can catch exceptions during message sending.
+ * @param target - The notification target.
+ * @param text - The plain text message.
+ * @param onError - An optional error handler that can catch exceptions during message sending.
+ *
  * @returns A `Promise` representing the asynchronous operation.
  */
 export function sendMessage(
@@ -42,9 +43,10 @@ export function sendMessage(
  * @remarks
  * Only work on server side.
  *
- * @param target - the notification target.
- * @param card - the adaptive card raw JSON.
- * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
+ * @param target - The notification target.
+ * @param card - The adaptive card raw JSON.
+ * @param onError - An optional error handler that can catch exceptions during adaptive card sending.
+ *
  * @returns A `Promise` representing the asynchronous operation.
  */
 export function sendAdaptiveCard(
@@ -115,9 +117,10 @@ export class Channel implements NotificationTarget {
    * @remarks
    * Only work on server side.
    *
-   * @param text - the plain text message.
-   * @param onError - an optional error handler that can catch exceptions during message sending.
-   * @returns the response of sending message.
+   * @param text - The plain text message.
+   * @param onError - An optional error handler that can catch exceptions during message sending.
+   *
+   * @returns The response of sending message.
    */
   public sendMessage(
     text: string,
@@ -135,9 +138,10 @@ export class Channel implements NotificationTarget {
    * @remarks
    * Only work on server side.
    *
-   * @param card - the adaptive card raw JSON.
-   * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
-   * @returns the response of sending adaptive card message.
+   * @param card - The adaptive card raw JSON.
+   * @param onError - An optional error handler that can catch exceptions during adaptive card sending.
+   *
+   * @returns The response of sending adaptive card message.
    */
   public async sendAdaptiveCard(
     card: unknown,
@@ -207,9 +211,10 @@ export class Member implements NotificationTarget {
    * @remarks
    * Only work on server side.
    *
-   * @param text - the plain text message.
-   * @param onError - an optional error handler that can catch exceptions during message sending.
-   * @returns the response of sending message.
+   * @param text - The plain text message.
+   * @param onError - An optional error handler that can catch exceptions during message sending.
+   *
+   * @returns The response of sending message.
    */
   public sendMessage(
     text: string,
@@ -227,9 +232,10 @@ export class Member implements NotificationTarget {
    * @remarks
    * Only work on server side.
    *
-   * @param card - the adaptive card raw JSON.
-   * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
-   * @returns the response of sending adaptive card message.
+   * @param card - The adaptive card raw JSON.
+   * @param onError - An optional error handler that can catch exceptions during adaptive card sending.
+   *
+   * @returns The response of sending adaptive card message.
    */
   public async sendAdaptiveCard(
     card: unknown,
@@ -289,8 +295,8 @@ export class TeamsBotInstallation implements NotificationTarget {
    *
    * It's recommended to get bot installations from {@link ConversationBot.installations()}, instead of using this constructor.
    *
-   * @param adapter - the bound `CloudAdapter`.
-   * @param conversationReference - the bound `ConversationReference`.
+   * @param adapter - The bound `CloudAdapter`.
+   * @param conversationReference - The bound `ConversationReference`.
    */
   constructor(adapter: CloudAdapter, conversationReference: Partial<ConversationReference>) {
     throw new ErrorWithCode(
@@ -305,9 +311,10 @@ export class TeamsBotInstallation implements NotificationTarget {
    * @remarks
    * Only work on server side.
    *
-   * @param text - the plain text message.
-   * @param onError - an optional error handler that can catch exceptions during message sending.
-   * @returns the response of sending message.
+   * @param text - The plain text message.
+   * @param onError - An optional error handler that can catch exceptions during message sending.
+   *
+   * @returns The response of sending message.
    */
   public sendMessage(
     text: string,
@@ -325,9 +332,10 @@ export class TeamsBotInstallation implements NotificationTarget {
    * @remarks
    * Only work on server side.
    *
-   * @param card - the adaptive card raw JSON.
-   * @param onError - an optional error handler that can catch exceptions during adaptive card sending.
-   * @returns the response of sending adaptive card message.
+   * @param card - The adaptive card raw JSON.
+   * @param onError - An optional error handler that can catch exceptions during adaptive card sending.
+   *
+   * @returns The response of sending adaptive card message.
    */
   public sendAdaptiveCard(
     card: unknown,
@@ -345,7 +353,7 @@ export class TeamsBotInstallation implements NotificationTarget {
    * @remarks
    * Only work on server side.
    *
-   * @returns an array of channels if bot is installed into a team, otherwise returns an empty array.
+   * @returns An array of channels if bot is installed into a team, otherwise returns an empty array.
    */
   public async channels(): Promise<Channel[]> {
     throw new ErrorWithCode(
@@ -360,7 +368,7 @@ export class TeamsBotInstallation implements NotificationTarget {
    * @remarks
    * Only work on server side.
    *
-   * @returns an array of members from where the bot is installed.
+   * @returns An array of members from where the bot is installed.
    */
   public async members(): Promise<Member[]> {
     throw new ErrorWithCode(
@@ -372,7 +380,7 @@ export class TeamsBotInstallation implements NotificationTarget {
   /**
    * Get team details from this bot installation
    *
-   * @returns the team details if bot is installed into a team, otherwise returns undefined.
+   * @returns The team details if bot is installed into a team, otherwise returns undefined.
    */
   public async getTeamDetails(): Promise<TeamDetails | undefined> {
     throw new ErrorWithCode(
@@ -412,15 +420,15 @@ export class NotificationBot {
   private readonly adapter: CloudAdapter;
 
   /**
-   * constructor of the notification bot.
+   * Constructor of the notification bot.
    *
    * @remarks
    * Only work on server side.
    *
    * To ensure accuracy, it's recommended to initialize before handling any message.
    *
-   * @param adapter - the bound `CloudAdapter`
-   * @param options - initialize options
+   * @param adapter - The bound `CloudAdapter`
+   * @param options - The initialize options
    */
   public constructor(adapter: CloudAdapter, options?: NotificationOptions) {
     throw new ErrorWithCode(
@@ -437,7 +445,7 @@ export class NotificationBot {
    *
    * The result is retrieving from the persisted storage.
    *
-   * @returns - an array of {@link TeamsBotInstallation}.
+   * @returns An array of {@link TeamsBotInstallation}.
    */
   public static async installations(): Promise<TeamsBotInstallation[]> {
     throw new ErrorWithCode(
@@ -447,17 +455,17 @@ export class NotificationBot {
   }
 
   /**
-   * Returns the first {@link Member} where predicate is true, and undefined otherwise.
+   * Return the first {@link Member} where predicate is true, and undefined otherwise.
    *
    * @remarks
    * Only work on server side.
    *
    * @param predicate find calls predicate once for each member of the installation,
-   * until it finds one where predicate returns true. If such a member is found, find
-   * immediately returns that member. Otherwise, find returns undefined.
-   * @param scope the scope to find members from the installations
-   * (personal chat, group chat, Teams channel).
-   * @returns the first {@link Member} where predicate is true, and undefined otherwise.
+   * until it finds one where predicate returns true. If such a member is found,
+   * find immediately returns that member. Otherwise, find returns undefined.
+   * @param scope the scope to find members from the installations (personal chat, group chat, Teams channel).
+   *
+   * @returns The first {@link Member} where predicate is true, and undefined otherwise.
    */
   public async findMember(
     predicate: (member: Member) => Promise<boolean>,
@@ -470,16 +478,17 @@ export class NotificationBot {
   }
 
   /**
-   * Returns the first {@link Channel} where predicate is true, and undefined otherwise.
+   * Return the first {@link Channel} where predicate is true, and undefined otherwise.
    * (Ensure the bot app is installed into the `General` channel, otherwise undefined will be returned.)
    *
    * @remarks
    * Only work on server side.
    *
-   * @param predicate find calls predicate once for each channel of the installation,
+   * @param predicate - Find calls predicate once for each channel of the installation,
    * until it finds one where predicate returns true. If such a channel is found, find
    * immediately returns that channel. Otherwise, find returns undefined.
-   * @returns the first {@link Channel} where predicate is true, and undefined otherwise.
+   *
+   * @returns The first {@link Channel} where predicate is true, and `undefined` otherwise.
    */
   public async findChannel(
     predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>
@@ -491,15 +500,16 @@ export class NotificationBot {
   }
 
   /**
-   * Returns all {@link Member} where predicate is true, and empty array otherwise.
+   * Return all {@link Member} where predicate is true, and empty array otherwise.
    *
    * @remarks
    * Only work on server side.
    *
-   * @param predicate find calls predicate for each member of the installation.
-   * @param scope the scope to find members from the installations
+   * @param predicate - Find calls predicate for each member of the installation.
+   * @param scope - The scope to find members from the installations.
    * (personal chat, group chat, Teams channel).
-   * @returns an array of {@link Member} where predicate is true, and empty array otherwise.
+   *
+   * @returns An array of {@link Member} where predicate is true, and empty array otherwise.
    */
   public async findAllMembers(
     predicate: (member: Member) => Promise<boolean>,
@@ -512,14 +522,15 @@ export class NotificationBot {
   }
 
   /**
-   * Returns all {@link Channel} where predicate is true, and empty array otherwise.
+   * Return all {@link Channel} where predicate is true, and empty array otherwise.
    * (Ensure the bot app is installed into the `General` channel, otherwise empty array will be returned.)
    *
    * @remarks
    * Only work on server side.
    *
-   * @param predicate find calls predicate for each channel of the installation.
-   * @returns an array of {@link Channel} where predicate is true, and empty array otherwise.
+   * @param predicate - Find calls predicate for each channel of the installation.
+   *
+   * @returns An array of {@link Channel} where predicate is true, and empty array otherwise.
    */
   public async findAllChannels(
     predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>

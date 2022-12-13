@@ -128,8 +128,8 @@ const responseCard = require("../adaptiveCards/doSomethingResponse.json");
 export class DoSomethingActionHandler { 
     triggerVerb = "doSomething";
 
-    async handleActionInvoked(context, message) { 
-        const responseCardJson = AdaptiveCards.declare(responseCard).render(message);
+    async handleActionInvoked(context, actionData) { 
+        const responseCardJson = AdaptiveCards.declare(responseCard).render(actionData);
         return InvokeResponseFactory.adaptiveCard(responseCardJson);
     } 
 } 

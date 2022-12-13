@@ -350,7 +350,7 @@ In the VS Code side bar, click `Add features` in `Teams Toolkit` > Choose `Azure
 
 #### Step 3: Add your logic in Azure Function
 
-In the `index.jsx` under the folder named in step 2, you can add the your logic which contains back-end graph api calling with application permissions. You can refer to the following code snippet.
+In the `index.tsx` under the folder named in step 2, you can add the your logic which contains back-end graph api calling with application permissions. You can refer to the following code snippet.
 
 ```ts
 /**

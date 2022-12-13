@@ -18,6 +18,7 @@ import {
   Result,
   Settings,
   Stage,
+  Tools,
   UserCancelError,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -67,6 +68,14 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 
 export class FxCoreV3Implement {
+  tools: Tools;
+  isFromSample?: boolean;
+  settingsVersion?: string;
+
+  constructor(tools: Tools) {
+    this.tools = tools;
+  }
+
   async dispatch<Inputs, ExecuteRes>(
     exec: (inputs: Inputs) => Promise<ExecuteRes>,
     inputs: Inputs
@@ -134,8 +143,8 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectMigratorMWV3,
+    ConcurrentLockerMW,
     EnvLoaderMW(false),
     ContextInjectorMW,
     EnvWriterMW,
@@ -164,8 +173,8 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectMigratorMWV3,
+    ConcurrentLockerMW,
     EnvLoaderMW(false),
     ContextInjectorMW,
     EnvWriterMW,
@@ -187,9 +196,9 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
+    ProjectMigratorMWV3,
     ConcurrentLockerMW,
     ProjectConsolidateMW,
-    ProjectMigratorMWV3,
     EnvLoaderMW(false),
     ContextInjectorMW,
     EnvWriterMW,
@@ -229,7 +238,7 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectMigratorMWV3, EnvLoaderMW(false)])
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, ConcurrentLockerMW, EnvLoaderMW(false)])
   async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
@@ -241,8 +250,8 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectMigratorMWV3,
+    ConcurrentLockerMW,
     EnvLoaderMW(true),
     ContextInjectorMW,
     EnvWriterMW,
@@ -257,7 +266,7 @@ export class FxCoreV3Implement {
     return res;
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectMigratorMWV3, EnvLoaderMW(false)])
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, ConcurrentLockerMW, EnvLoaderMW(false)])
   async executeUserTask(
     func: Func,
     inputs: Inputs,
@@ -336,7 +345,13 @@ export class FxCoreV3Implement {
     }
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW(false), ContextInjectorMW])
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    ConcurrentLockerMW,
+    EnvLoaderMW(false),
+    ContextInjectorMW,
+  ])
   async preProvisionForVS(
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -345,7 +360,7 @@ export class FxCoreV3Implement {
     return coordinator.preProvisionForVS(context, inputs as InputsWithProjectPath);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     if (!ctx || !inputs.projectPath)
       return err(new ObjectIsUndefinedError("createEnv input stuff"));

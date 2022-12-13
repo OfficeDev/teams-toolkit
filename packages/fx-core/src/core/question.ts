@@ -331,7 +331,7 @@ export function createCapabilityForDotNet(): SingleSelectQuestion {
 }
 
 export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQuestion {
-  // AB test for notification/command/workflow bot template naming
+  // AB test for notification/command/workflow bot, dashboard tab template naming
   if (inputs?.taskOrientedTemplateNaming) {
     NotificationOptionItem.label = `$(hubot) ${getLocalizedString(
       "core.NotificationOption.label.abTest"
@@ -345,6 +345,10 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
     );
     WorkflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
     WorkflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
+    DashboardOptionItem.label = `$(browser) ${getLocalizedString(
+      "core.DashboardOption.label.abTest"
+    )}`;
+    DashboardOptionItem.detail = getLocalizedString("core.DashboardOption.detail.abTest");
   }
 
   // AB test for in product doc

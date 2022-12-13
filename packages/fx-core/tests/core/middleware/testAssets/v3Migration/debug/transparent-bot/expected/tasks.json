@@ -9,8 +9,8 @@
             "dependsOn": [
                 "Validate & install prerequisites",
                 "Start local tunnel",
-                "Set up bot",
-                "Build & upload Teams manifest",
+                "Create resources",
+                "Set up local projects",
                 "Start services"
             ],
             "dependsOrder": "sequence"
@@ -40,33 +40,37 @@
             "type": "teamsfx",
             "command": "debug-start-local-tunnel",
             "args": {
-                "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt"
+                "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+                "env": "local",
+                "output": {
+                    // Keep consistency with migrated configuration.
+                    "endpoint": "PROVISIONOUTPUT__WEBAPPOUTPUT__SITEENDPOINT",
+                    "domain": "PROVISIONOUTPUT__WEBAPPOUTPUT__DOMAIN"
+                }
             },
             "isBackground": true,
             "problemMatcher": "$teamsfx-local-tunnel-watch"
         },
         {
-            // Register resources and prepare local launch information for Bot.
-            // See https://aka.ms/teamsfx-debug-set-up-bot-task to know the details and how to customize the args.
-            "label": "Set up bot",
+            // Create the debug resources.
+            // See https://aka.ms/teamsfx-provision-task to know the details and how to customize the args.
+            "label": "Create resources",
             "type": "teamsfx",
-            "command": "debug-set-up-bot",
+            "command": "provision",
             "args": {
-                //// Enter your own bot information if using the existing bot. ////
-                // "botId": "",
-                // "botPassword": "", // use plain text or environment variable reference like ${env:BOT_PASSWORD}
-                "botMessagingEndpoint": "/api/messages" // use your own routing "/any/path", or full URL "https://contoso.com/any/path"
+                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "env": "local"
             }
         },
         {
-            // Build and upload Teams manifest.
-            // See https://aka.ms/teamsfx-debug-prepare-manifest-task to know the details and how to customize the args.
-            "label": "Build & upload Teams manifest",
+            // Set up local projects.
+            // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
+            "label": "Set up local projects",
             "type": "teamsfx",
-            "command": "debug-prepare-manifest",
+            "command": "deploy",
             "args": {
-                //// Enter your own Teams app package path if using the existing Teams manifest. ////
-                // "appPackagePath": ""
+                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "env": "local"
             }
         },
         {

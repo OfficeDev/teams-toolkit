@@ -5,10 +5,9 @@
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
 
-import fs from "fs-extra";
-import path from "path";
+import * as path from "path";
 
-import { AadValidator, BotValidator } from "../../commonlib";
+import { BotValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import {
   execAsync,

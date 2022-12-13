@@ -9,10 +9,8 @@
             "dependsOn": [
                 "Validate & install prerequisites",
                 "Start local tunnel",
-                "Set up tab",
-                "Set up bot",
-                "Set up SSO",
-                "Build & upload Teams manifest",
+                "Create resources",
+                "Set up local projects",
                 "Start services"
             ],
             "dependsOrder": "sequence"
@@ -45,57 +43,37 @@
             "type": "teamsfx",
             "command": "debug-start-local-tunnel",
             "args": {
-                "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt"
+                "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+                "env": "local",
+                "output": {
+                    // Keep consistency with migrated configuration.
+                    "endpoint": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__SITEENDPOINT",
+                    "domain": "PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__DOMAIN"
+                }
             },
             "isBackground": true,
             "problemMatcher": "$teamsfx-local-tunnel-watch"
         },
         {
-            // Prepare local launch information for Tab.
-            // See https://aka.ms/teamsfx-debug-set-up-tab-task to know the details and how to customize the args.
-            "label": "Set up tab",
+            // Create the debug resources.
+            // See https://aka.ms/teamsfx-provision-task to know the details and how to customize the args.
+            "label": "Create resources",
             "type": "teamsfx",
-            "command": "debug-set-up-tab",
+            "command": "provision",
             "args": {
-                "baseUrl": "https://localhost:53000"
+                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "env": "local"
             }
         },
         {
-            // Register resources and prepare local launch information for Bot.
-            // See https://aka.ms/teamsfx-debug-set-up-bot-task to know the details and how to customize the args.
-            "label": "Set up bot",
+            // Set up local projects.
+            // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
+            "label": "Set up local projects",
             "type": "teamsfx",
-            "command": "debug-set-up-bot",
+            "command": "deploy",
             "args": {
-                //// Enter your own bot information if using the existing bot. ////
-                // "botId": "",
-                // "botPassword": "", // use plain text or environment variable reference like ${env:BOT_PASSWORD}
-                "botMessagingEndpoint": "/api/messages" // use your own routing "/any/path", or full URL "https://contoso.com/any/path"
-            }
-        },
-        {
-            // Register resources and prepare local launch information for SSO functionality.
-            // See https://aka.ms/teamsfx-debug-set-up-sso-task to know the details and how to customize the args.
-            "label": "Set up SSO",
-            "type": "teamsfx",
-            "command": "debug-set-up-sso",
-            "args": {
-                //// Enter your own AAD app information if using the existing AAD app. ////
-                // "objectId": "",
-                // "clientId": "",
-                // "clientSecret": "", // use plain text or environment variable reference like ${env:CLIENT_SECRET}
-                // "accessAsUserScopeId": "
-            }
-        },
-        {
-            // Build and upload Teams manifest.
-            // See https://aka.ms/teamsfx-debug-prepare-manifest-task to know the details and how to customize the args.
-            "label": "Build & upload Teams manifest",
-            "type": "teamsfx",
-            "command": "debug-prepare-manifest",
-            "args": {
-                //// Enter your own Teams app package path if using the existing Teams manifest. ////
-                // "appPackagePath": ""
+                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "env": "local"
             }
         },
         {

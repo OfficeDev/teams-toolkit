@@ -7,6 +7,7 @@ export class FolderName {
   static readonly Bot = "bot";
   static readonly Function = "api";
   static readonly SPFx = "SPFx";
+  static readonly VideoFilter = "app";
 }
 
 export const baseNpmInstallCommand = "npm install";

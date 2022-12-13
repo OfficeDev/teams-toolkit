@@ -3,6 +3,7 @@
 
 /**
  * @author Zhijie Huang <zhijie.huang@microsoft.com>
+ * @author Zhijie Huang <zhijie.huang@microsoft.com>
  */
 
 import { it } from "@microsoft/extra-shot-mocha";

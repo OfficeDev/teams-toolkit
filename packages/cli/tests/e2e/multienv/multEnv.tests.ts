@@ -3,6 +3,7 @@
 
 /**
  * @author Aocheng Wang <aochengwang@microsoft.com>
+ * @owner Aocheng Wang <aochengwang@microsoft.com>
  */
 
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";

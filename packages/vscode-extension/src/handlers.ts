@@ -3371,20 +3371,24 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           },
         ],
       },
-      {
-        id: "dashboardApp",
-        label: `${localize("teamstoolkit.guides.dashboardApp.label")}`,
-        detail: localize("teamstoolkit.guides.dashboardApp.detail"),
-        groupName: localize("teamstoolkit.guide.scenario"),
-        data: "https://aka.ms/teamsfx-dashboard-app",
-        buttons: [
-          {
-            iconPath: "file-symlink-file",
-            tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "fx-extension.openTutorial",
-          },
-        ],
-      },
+      ...(isV3Enabled()
+        ? []
+        : [
+            {
+              id: "dashboardApp",
+              label: `${localize("teamstoolkit.guides.dashboardApp.label")}`,
+              detail: localize("teamstoolkit.guides.dashboardApp.detail"),
+              groupName: localize("teamstoolkit.guide.scenario"),
+              data: "https://aka.ms/teamsfx-dashboard-app",
+              buttons: [
+                {
+                  iconPath: "file-symlink-file",
+                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                  command: "fx-extension.openTutorial",
+                },
+              ],
+            },
+          ]),
       {
         id: "addTab",
         label: `${localize("teamstoolkit.guides.addTab.label")}`,

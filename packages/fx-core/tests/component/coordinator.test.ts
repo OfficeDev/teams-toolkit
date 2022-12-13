@@ -2394,4 +2394,56 @@ describe("Office Addin", async () => {
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isOk());
   });
+
+  it("should return error if app name is invalid", async () => {
+    const coordinator = new Coordinator();
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: "__invalid__",
+      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption.id,
+    };
+
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "InvalidInput");
+  });
+
+  it("should return error if app name is undefined", async () => {
+    const coordinator = new Coordinator();
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: undefined,
+      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption.id,
+    };
+
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "InvalidInput");
+  });
+
+  it("should return error if OfficeAddinGenerator returns error", async () => {
+    const coordinator = new Coordinator();
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
+    sandbox.stub(OfficeAddinGenerator, "generate").resolves(err(mockedError));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption.id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "mockedError");
+  });
 });

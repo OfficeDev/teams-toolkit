@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ContextV3, Inputs, ok, Platform } from "@microsoft/teamsfx-api";
+import {
+  ContextV3,
+  devPreview,
+  Inputs,
+  Manifest,
+  ManifestUtil,
+  ok,
+  Platform,
+} from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -27,6 +35,7 @@ import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import { helperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
 import { OfficeAddinManifest } from "office-addin-manifest";
+import { manifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -114,5 +123,55 @@ describe("getTemplate", () => {
 
     const template = getTemplate(inputs);
     chai.expect(template).to.eq("taskpane");
+  });
+});
+
+describe("helperMethods", () => {
+  describe("updateManifest", () => {
+    const sandbox = sinon.createSandbox();
+    const manifestPath = "manifestPath";
+    const manifestTemplatePath = "manifestTemplatePath";
+    let writePathResult: devPreview.DevPreviewSchema | undefined = undefined;
+
+    beforeEach(() => {
+      sandbox.stub(ManifestUtil, "loadFromPath").callsFake(async (path) => {
+        if (path === manifestPath) {
+          return {
+            extensions: [],
+            authorization: {
+              permissions: {
+                resourceSpecific: [],
+              },
+            },
+          } as unknown as devPreview.DevPreviewSchema;
+        } else if (path === manifestTemplatePath) {
+          return {
+            extensions: undefined,
+            authorization: undefined,
+          } as unknown as devPreview.DevPreviewSchema;
+        }
+
+        throw new Error("Invalid path");
+      });
+
+      sandbox.stub(ManifestUtil, "writeToPath").callsFake(async (path, manifest) => {
+        writePathResult = manifest as devPreview.DevPreviewSchema;
+        return;
+      });
+
+      sandbox.stub(manifestUtils, "getTeamsAppManifestPath").resolves(manifestTemplatePath);
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("should update manifest's extenstions and authorization", async () => {
+      await helperMethods.updateManifest("", manifestPath);
+
+      chai.assert.isDefined(writePathResult);
+      chai.assert.equal(writePathResult?.extensions?.length, 0);
+      chai.assert.equal(writePathResult?.authorization?.permissions?.resourceSpecific?.length, 0);
+    });
   });
 });

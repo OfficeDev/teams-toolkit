@@ -27,7 +27,7 @@ export function PersonCardGraphToolkit(props: {
         </a>{" "}
         with&nbsp;
         <a
-          href="https://github.com/microsoftgraph/microsoft-graph-toolkit/tree/next/teamsfx/packages/providers/mgt-teamsfx-provider"
+          href="https://github.com/microsoftgraph/microsoft-graph-toolkit/tree/main/packages/providers/mgt-teamsfx-provider"
           target="_blank"
           rel="noreferrer"
         >

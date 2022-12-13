@@ -27,7 +27,7 @@ provision:
     with:
       botId: $\{{BOT_ID}}
       name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
-      messagingEndpoint: $\{{PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT}}/api/messages
+      messagingEndpoint: $\{{ {{~../placeholderMappings.botEndpoint~}} }}/api/messages
       description: ""
   {{/if}}
 
@@ -38,9 +38,9 @@ configureApp:
   - uses: file/updateEnv
     with:
       envs:
-        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN: {{domain}}
-        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT: {{endpoint}}
-        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH: /index.html#
+        {{../../placeholderMappings.tabDomain}}: {{domain}}
+        {{../../placeholderMappings.tabEndpoint}}: {{endpoint}}
+        {{../../placeholderMappings.tabIndexPath}}: /index.html#
 
   {{/tab}}
   {{#if aad}}
@@ -116,7 +116,7 @@ deploy:
     with:
       target: ./tabs/.env.teamsfx.local
       envs:
-        REACT_APP_START_LOGIN_PAGE_URL: $\{{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT}}/auth-start.html
+        REACT_APP_START_LOGIN_PAGE_URL: $\{{ {{~../../placeholderMappings.tabEndpoint~}} }}/auth-start.html
         REACT_APP_CLIENT_ID: $\{{AAD_APP_CLIENT_ID}}
         {{#if functionName}}
         REACT_APP_FUNC_ENDPOINT: http://localhost:7071
@@ -133,9 +133,9 @@ deploy:
         M365_CLIENT_SECRET: $\{{SECRET_AAD_APP_CLIENT_SECRET}}
         M365_TENANT_ID: $\{{AAD_APP_TENANT_ID}}
         M365_AUTHORITY_HOST: $\{{AAD_APP_OAUTH_AUTHORITY_HOST}}
-        INITIATE_LOGIN_ENDPOINT: $\{{PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT}}/auth-start.html
+        INITIATE_LOGIN_ENDPOINT: $\{{ {{~../placeholderMappings.botEndpoint~}} }}/auth-start.html
         {{#if ssoTab}}
-        M365_APPLICATION_ID_URI: api://$\{{PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN}}/botid-$\{{BOT_ID}}
+        M365_APPLICATION_ID_URI: api://$\{{ {{~../placeholderMappings.tabEndpoint~}} }}/botid-$\{{BOT_ID}}
         {{else}}
         M365_APPLICATION_ID_URI: api://botid-$\{{BOT_ID}}
         {{/if}}

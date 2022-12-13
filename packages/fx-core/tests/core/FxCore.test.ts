@@ -341,7 +341,7 @@ describe("Core basic APIs", () => {
   });
 
   it("not implement method", async () => {
-    const implement = new FxCoreV3Implement();
+    const implement = new FxCoreV3Implement(tools);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: path.join(os.tmpdir(), appName, "samples-v3"),

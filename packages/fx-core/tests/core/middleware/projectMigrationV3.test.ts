@@ -42,7 +42,13 @@ import {
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { UpgradeCanceledError } from "../../../src/core/error";
-import { VersionState } from "../../../src/common/versionMetadata";
+import { MetadataV2, MetadataV3, VersionState } from "../../../src/common/versionMetadata";
+import {
+  getTrackingIdFromPath,
+  getVersionState,
+} from "../../../src/core/middleware/utils/v3MigrationUtils";
+import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSettingsLoader";
+import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 
 let mockedEnvRestore: () => void;
 
@@ -132,34 +138,6 @@ describe("ProjectMigratorMW", () => {
     };
     const context = await MigrationContext.create(ctx);
     const res = wrapRunMigration(context, migrate);
-  });
-
-  it("user cancel", async () => {
-    sandbox
-      .stub(MockUserInteraction.prototype, "showMessage")
-      .resolves(err(new Error("user cancel") as FxError));
-    const tools = new MockTools();
-    setTools(tools);
-    await copyTestProject(Constants.happyPathTestProject, projectPath);
-    class MyClass {
-      tools = tools;
-      async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-        return ok("");
-      }
-    }
-    hooks(MyClass, {
-      other: [getProjectMigratorMW()],
-    });
-
-    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
-    inputs.projectPath = projectPath;
-    const my = new MyClass();
-    try {
-      const res = await my.other(inputs);
-      assert.isTrue(res.isErr());
-    } finally {
-      await fs.rmdir(inputs.projectPath!, { recursive: true });
-    }
   });
 });
 
@@ -964,6 +942,43 @@ describe("Migration utils", () => {
   it("UpgradeCanceledError", () => {
     const err = UpgradeCanceledError();
     assert.isNotNull(err);
+  });
+
+  it("getTrackingIdFromPath: V2 ", async () => {
+    sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
+      if (path === getProjectSettingPathV3(projectPath)) {
+        return false;
+      }
+      return true;
+    });
+    sandbox.stub(fs, "readJson").resolves({ projectId: MetadataV2.projectMaxVersion });
+    const trackingId = await getTrackingIdFromPath(projectPath);
+    assert.equal(trackingId, MetadataV2.projectMaxVersion);
+  });
+
+  it("getTrackingIdFromPath: V3 ", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readJson").resolves({ trackingId: MetadataV3.projectVersion });
+    const trackingId = await getTrackingIdFromPath(projectPath);
+    assert.equal(trackingId, MetadataV3.projectVersion);
+  });
+
+  it("getTrackingIdFromPath: empty", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const trackingId = await getTrackingIdFromPath(projectPath);
+    assert.equal(trackingId, "");
+  });
+
+  it("getTrackingIdFromPath: empty", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const trackingId = await getTrackingIdFromPath(projectPath);
+    assert.equal(trackingId, "");
+  });
+
+  it("getVersionState", () => {
+    assert.equal(getVersionState("2.0.0"), VersionState.upgradeable);
+    assert.equal(getVersionState("3.0.0"), VersionState.compatible);
+    assert.equal(getVersionState("4.0.0"), VersionState.unsupported);
   });
 });
 

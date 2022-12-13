@@ -1,17 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  ContextV3,
-  devPreview,
-  Inputs,
-  Manifest,
-  ManifestUtil,
-  ok,
-  Platform,
-} from "@microsoft/teamsfx-api";
+import { ContextV3, devPreview, Inputs, ManifestUtil, ok, Platform } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
-import fs from "fs-extra";
+import fs from "fs";
+import fse from "fs-extra";
+import axios from "axios";
 import "mocha";
 import * as path from "path";
 import * as sinon from "sinon";
@@ -33,7 +27,7 @@ import { Utils } from "../../../src/component/resource/spfx/utils/utils";
 import { createContextV3, newProjectSettingsV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
-import { helperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
+import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { manifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
 
@@ -46,7 +40,7 @@ describe("OfficeAddinGenerator", function () {
     setTools(gtools);
     context = createContextV3(newProjectSettingsV3());
 
-    await fs.ensureDir(testFolder);
+    await fse.ensureDir(testFolder);
     sinon.stub(Utils, "configure");
     sinon.stub(fs, "stat").resolves();
     sinon.stub(YoChecker.prototype, "isInstalled").resolves(true);
@@ -57,10 +51,10 @@ describe("OfficeAddinGenerator", function () {
     sinon.stub(fs, "writeFile").resolves();
     sinon.stub(fs, "rename").resolves();
     sinon.stub(fs, "copyFile").resolves();
-    sinon.stub(fs, "remove").resolves();
-    sinon.stub(fs, "readJson").resolves({});
-    sinon.stub(fs, "ensureFile").resolves();
-    sinon.stub(fs, "writeJSON").resolves();
+    sinon.stub(fse, "remove").resolves();
+    sinon.stub(fse, "readJson").resolves({});
+    sinon.stub(fse, "ensureFile").resolves();
+    sinon.stub(fse, "writeJSON").resolves();
   });
 
   it("should call both doScaffolding and template generator", async function () {
@@ -94,7 +88,7 @@ describe("OfficeAddinGenerator", function () {
     sinon.stub<any, any>(childProcess, "exec").callsFake(() => {
       return;
     });
-    sinon.stub(helperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
+    sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
 
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
@@ -167,11 +161,89 @@ describe("helperMethods", () => {
     });
 
     it("should update manifest's extenstions and authorization", async () => {
-      await helperMethods.updateManifest("", manifestPath);
+      await HelperMethods.updateManifest("", manifestPath);
 
       chai.assert.isDefined(writePathResult);
       chai.assert.equal(writePathResult?.extensions?.length, 0);
       chai.assert.equal(writePathResult?.authorization?.permissions?.resourceSpecific?.length, 0);
+    });
+  });
+
+  describe("downloadProjectTemplateZipFile", () => {
+    const sandbox = sinon.createSandbox();
+
+    class ResponseData {
+      pipe(ws: fs.WriteStream) {
+        return this;
+      }
+
+      on(event: string, cb: () => void) {
+        return this;
+      }
+    }
+
+    class MockedWriteStream {
+      on(event: string, cb: () => void) {
+        return this;
+      }
+    }
+
+    beforeEach(() => {
+      const resp = new ResponseData();
+      sandbox.stub(axios, "get").resolves({ data: resp });
+      sandbox.stub<any, any>(fs, "createWriteStream").returns(new MockedWriteStream());
+      sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("should download project template zip file", async () => {
+      try {
+        HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      } catch (err) {
+        chai.assert.fail(err);
+      }
+    });
+  });
+
+  describe("unzipProjectTemplate", () => {
+    const sandbox = sinon.createSandbox();
+
+    class ResponseData {
+      pipe(ws: fs.WriteStream) {
+        return this;
+      }
+
+      on(event: string, cb: () => void) {
+        return this;
+      }
+    }
+
+    class MockedWriteStream {
+      on(event: string, cb: () => void) {
+        return this;
+      }
+    }
+
+    beforeEach(() => {
+      const resp = new ResponseData();
+      sandbox.stub(axios, "get").resolves({ data: resp });
+      sandbox.stub<any, any>(fs, "createWriteStream").returns(new MockedWriteStream());
+      sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("work as expected", async () => {
+      try {
+        HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      } catch (err) {
+        chai.assert.fail(err);
+      }
     });
   });
 });

@@ -20,7 +20,7 @@ import {
   AddinProjectFolderQuestion,
   AddinProjectManifestQuestion,
 } from "./question";
-import { helperMethods } from "./helperMethods";
+import { HelperMethods } from "./helperMethods";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import projectsJsonData from "./config/projectsJsonData";
 import * as childProcess from "child_process";
@@ -90,7 +90,7 @@ export class OfficeAddinGenerator {
 
         // Copy project template files from project repository
         if (projectRepoBranchInfo.repo) {
-          await helperMethods.downloadProjectTemplateZipFile(
+          await HelperMethods.downloadProjectTemplateZipFile(
             addinRoot,
             projectRepoBranchInfo.repo,
             projectRepoBranchInfo.branch
@@ -108,10 +108,10 @@ export class OfficeAddinGenerator {
           );
         }
       } else {
-        helperMethods.copyAddinFiles(fromFolder, addinRoot);
+        HelperMethods.copyAddinFiles(fromFolder, addinRoot);
         const manifestFile: string = inputs[AddinProjectManifestQuestion.name];
         inputs[OfficeHostQuestion.name] = await getHost(manifestFile);
-        helperMethods.updateManifest(destinationPath, manifestFile);
+        HelperMethods.updateManifest(destinationPath, manifestFile);
         // TODO: After able to sideload using shared manifest we can then delete manifest file in subfolder
         // => join(addinRoot, "manifest.json"); but figure out the actual path in the new location
       }

@@ -1,5 +1,5 @@
 import axios from "axios";
-import * as fs from "fs";
+import fs from "fs";
 import * as fse from "fs-extra";
 import * as path from "path";
 import * as unzip from "unzipper";
@@ -8,18 +8,17 @@ import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
 
 const zipFile = "project.zip";
 
-export class helperMethods {
+export class HelperMethods {
   static async downloadProjectTemplateZipFile(
     projectFolder: string,
     projectRepo: string,
-    projectBranch: string | undefined
+    projectBranch?: string
   ): Promise<void> {
     const projectTemplateZipFile = `${projectRepo}/archive/${projectBranch}.zip`;
-    return axios({
-      method: "get",
-      url: projectTemplateZipFile,
-      responseType: "stream",
-    })
+    return axios
+      .get(projectTemplateZipFile, {
+        responseType: "stream",
+      })
       .then((response) => {
         return new Promise<void>((resolve, reject) => {
           response.data
@@ -30,7 +29,7 @@ export class helperMethods {
               );
             })
             .on("close", async () => {
-              await helperMethods.unzipProjectTemplate(projectFolder);
+              HelperMethods.unzipProjectTemplate(projectFolder);
               resolve();
             });
         });
@@ -50,7 +49,7 @@ export class helperMethods {
           reject(`Unable to unzip project zip file for "${projectFolder}".\n${err}`);
         })
         .on("close", async () => {
-          helperMethods.moveUnzippedFiles(projectFolder);
+          HelperMethods.moveUnzippedFiles(projectFolder);
           resolve();
         });
     });
@@ -70,7 +69,7 @@ export class helperMethods {
 
     // construct paths to move files out of unzipped folder into project root folder
     const fromFolder = path.resolve(`${projectFolder}/${unzippedFolder[0]}`);
-    helperMethods.copyAddinFiles(fromFolder, projectFolder);
+    HelperMethods.copyAddinFiles(fromFolder, projectFolder);
 
     // delete project zipped folder
     fs.rmSync(fromFolder, { recursive: true, force: true });

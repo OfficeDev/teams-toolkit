@@ -32,7 +32,7 @@ configureApp:
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json
 
-  - uses: teamsApp/createAppPackage
+  - uses: teamsApp/zipAppPackage
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
@@ -61,7 +61,7 @@ deploy:
         INITIATE_LOGIN_ENDPOINT: ${{PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT}}/auth-start.html
         M365_APPLICATION_ID_URI: api://botid-${{BOT_ID}}
 
-  - uses: npm/command
+  - uses: cli/runNpmCommand
     with:
       args: install --no-audit
       workingDirectory: ./bot

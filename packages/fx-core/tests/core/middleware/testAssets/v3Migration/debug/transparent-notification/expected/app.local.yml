@@ -22,7 +22,7 @@ configureApp:
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json
 
-  - uses: teamsApp/createAppPackage
+  - uses: teamsApp/zipAppPackage
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
@@ -44,7 +44,7 @@ deploy:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
 
-  - uses: npm/command
+  - uses: cli/runNpmCommand
     with:
       args: install --no-audit
       workingDirectory: ./bot

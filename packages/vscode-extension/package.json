@@ -606,7 +606,7 @@
       {
         "command": "fx-extension.publishInDeveloperPortal",
         "title": "%teamstoolkit.commandsTreeViewProvider.publishInDevPortalTitle%",
-        "enablement": "fx-extension.isTeamsFx && fx-extension.isTDPIntegrationEnabled",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && fx-extension.isTDPIntegrationEnabled",
         "category": "Teams"
       },
       {

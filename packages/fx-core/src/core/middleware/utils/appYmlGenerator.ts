@@ -66,13 +66,6 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     );
   }
 
-  private async buildHandlebarsTemplate(templateName: string): Promise<string> {
-    const templatePath = path.join(getTemplatesFolder(), "core/v3Migration", templateName);
-    const templateString = await fs.readFile(templatePath, "utf8");
-    const template = handlebars.compile(templateString);
-    return template(this.handlebarsContext);
-  }
-
   private async generateCommonHandlerbarsContext(): Promise<void> {
     // project setting information
     this.handlebarsContext.appName = this.oldProjectSettings.appName;

@@ -387,6 +387,29 @@ describe("generateAppYml-csharp", () => {
   });
 });
 
+describe("generateAppYml-spfx", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  let migrationContext: MigrationContext;
+
+  beforeEach(async () => {
+    migrationContext = await mockMigrationContext(projectPath);
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("should success for spfx project", async () => {
+    await copyTestProject("spfxTab", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+  });
+});
+
 describe("manifestsMigration", () => {
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();

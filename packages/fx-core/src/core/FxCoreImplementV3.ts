@@ -345,7 +345,7 @@ export class FxCoreV3Implement {
     return coordinator.preProvisionForVS(context, inputs as InputsWithProjectPath);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     if (!ctx || !inputs.projectPath)
       return err(new ObjectIsUndefinedError("createEnv input stuff"));

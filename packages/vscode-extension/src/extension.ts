@@ -912,25 +912,11 @@ async function runBackgroundAsyncTasks(
   isTeamsFxProject: boolean
 ) {
   await exp.initialize(context);
-  TreatmentVariableValue.welcomeViewStyle = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.WelcomeView,
-      true
-    )) as string | undefined;
   await vscode.commands.executeCommand(
     "setContext",
-    "fx-extension.isExistingUser",
-    isExistingUser !== "no"
+    "fx-extension.isNewUser",
+    isExistingUser === "no"
   );
-  if (TreatmentVariableValue.welcomeViewStyle === "A") {
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewA", true);
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
-  } else if (TreatmentVariableValue.welcomeViewStyle === "B") {
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewB", true);
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
-  }
   TreatmentVariableValue.inProductDoc = (await exp
     .getExpService()
     .getTreatmentVariableAsync(

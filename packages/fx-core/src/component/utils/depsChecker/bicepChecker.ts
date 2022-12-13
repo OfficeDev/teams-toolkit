@@ -42,7 +42,6 @@ export const installVersionPattern = "^v0.4";
 export const fallbackInstallVersion = "v0.4.1008";
 export const supportedVersions: Array<string> = [installVersion];
 
-const displayBicepName = `${BicepName} (${installVersion})`;
 const timeout = 5 * 60 * 1000;
 const source = "bicep-envchecker";
 const bicepReleaseApiUrl = "https://api.github.com/repos/Azure/bicep/releases";
@@ -60,12 +59,14 @@ export async function ensureBicep(
     ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
     if (!(await bicepChecker.isGlobalBicepInstalled())) {
       await displayLearnMore(
-        Messages.failToInstallBicepDialog.split("@NameVersion").join(displayBicepName),
+        Messages.failToInstallBicepDialog
+          .split("@NameVersion")
+          .join(bicepChecker.getBicepDisplayBicepName()),
         bicepHelpLink,
         (ctx as SolutionContext).ui || (ctx as v2.Context).userInteraction,
         ctx.telemetryReporter
       );
-      outputErrorMessage(ctx, inputs);
+      outputErrorMessage(ctx, bicepChecker, inputs);
       throw err;
     }
   }
@@ -91,24 +92,34 @@ export async function ensureBicepForDriver(
   } catch (err) {
     ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
     await displayLearnMore(
-      Messages.failToInstallBicepDialog.split("@NameVersion").join(displayBicepName),
+      Messages.failToInstallBicepDialog
+        .split("@NameVersion")
+        .join(bicepChecker.getBicepDisplayBicepName()),
       bicepHelpLink,
       ctx.ui,
       ctx.telemetryReporter
     );
-    outputErrorMessage(ctx as any, platform ? { platform: platform } : undefined);
+    outputErrorMessage(ctx as any, bicepChecker, platform ? { platform: platform } : undefined);
     throw err;
   }
   return bicepChecker.getBicepCommand();
 }
 
-function outputErrorMessage(ctx: SolutionContext | v2.Context, inputs?: Inputs) {
+function outputErrorMessage(
+  ctx: SolutionContext | v2.Context,
+  bicepChecker: BicepChecker,
+  inputs?: Inputs
+) {
   const message =
     inputs?.platform === Platform.VSCode
       ? Messages.failToInstallBicepOutputVSC
       : Messages.failToInstallBicepOutputCLI;
   ctx.logProvider?.warning(
-    message.split("@NameVersion").join(displayBicepName).split("@HelpLink").join(bicepHelpLink)
+    message
+      .split("@NameVersion")
+      .join(bicepChecker.getBicepDisplayBicepName())
+      .split("@HelpLink")
+      .join(bicepHelpLink)
   );
 }
 
@@ -205,9 +216,13 @@ class BicepChecker {
       await this._logger?.error(
         `${Messages.failToInstallBicep
           .split("@NameVersion")
-          .join(displayBicepName)}, error = '${err}'`
+          .join(this.getBicepDisplayBicepName())}, error = '${err}'`
       );
     }
+  }
+
+  getBicepDisplayBicepName() {
+    return `${BicepName} (${this._version || installVersion})`;
   }
 
   private async doInstallBicep(): Promise<void> {
@@ -299,8 +314,9 @@ class BicepChecker {
 
   private async handleInstallCompleted() {
     this._telemetry?.sendTelemetryEvent(DepsCheckerEvent.bicepInstallCompleted);
-    const displayName = this._version ? `${BicepName} (${this._version})` : displayBicepName;
-    await this._logger?.info(Messages.finishInstallBicep.replace("@NameVersion", displayName));
+    await this._logger?.info(
+      Messages.finishInstallBicep.replace("@NameVersion", this.getBicepDisplayBicepName())
+    );
   }
 
   private async handleInstallFailed(): Promise<void> {
@@ -309,7 +325,7 @@ class BicepChecker {
     throw new SystemError(
       source,
       DepsCheckerEvent.bicepInstallError,
-      Messages.failToInstallBicep.split("@NameVersion").join(displayBicepName)
+      Messages.failToInstallBicep.split("@NameVersion").join(this.getBicepDisplayBicepName())
     );
   }
 

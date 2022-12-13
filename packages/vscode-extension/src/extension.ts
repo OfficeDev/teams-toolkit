@@ -914,8 +914,8 @@ async function runBackgroundAsyncTasks(
   await exp.initialize(context);
   await vscode.commands.executeCommand(
     "setContext",
-    "fx-extension.isExistingUser",
-    isExistingUser !== "no"
+    "fx-extension.isNewUser",
+    isExistingUser === "no"
   );
   TreatmentVariableValue.inProductDoc = (await exp
     .getExpService()

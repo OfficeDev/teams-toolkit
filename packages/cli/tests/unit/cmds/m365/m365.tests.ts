@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LogLevel, ok } from "@microsoft/teamsfx-api";
+import { err, LogLevel, ok, UserCancelError } from "@microsoft/teamsfx-api";
 import { PackageService } from "@microsoft/teamsfx-core/build/common/m365/packageService";
 import sinon from "sinon";
 import yargs, { Options } from "yargs";
@@ -11,14 +11,17 @@ import M365 from "../../../../src/cmds/m365/m365";
 import M365TokenProvider from "../../../../src/commonlib/m365Login";
 import CLILogProvider from "../../../../src/commonlib/log";
 import { signedIn } from "../../../../src/commonlib/common/constant";
+import { CLILogLevel } from "../../../../src/constants";
 
 describe("M365", () => {
   const sandbox = sinon.createSandbox();
   let registeredCommands: string[] = [];
   let logs: string[] = [];
+  let logLevel = CLILogProvider.getLogLevel();
 
   afterEach(() => {
     sandbox.restore();
+    CLILogProvider.setLogLevel(logLevel);
   });
 
   beforeEach(() => {
@@ -40,10 +43,8 @@ describe("M365", () => {
       logs.push(message);
       return Promise.resolve(true);
     });
-    sandbox.stub(M365TokenProvider, "getAccessToken").returns(Promise.resolve(ok("test-token")));
-    sandbox
-      .stub(M365TokenProvider, "getStatus")
-      .returns(Promise.resolve(ok({ status: signedIn, accountInfo: { upn: "test" } })));
+    logLevel = CLILogProvider.getLogLevel();
+    CLILogProvider.setLogLevel(CLILogLevel.error);
   });
 
   it("M365 is empty command", async () => {
@@ -57,6 +58,10 @@ describe("M365", () => {
   });
 
   it("M365 Sideloading command", async () => {
+    sandbox.stub(M365TokenProvider, "getAccessToken").returns(Promise.resolve(ok("test-token")));
+    sandbox
+      .stub(M365TokenProvider, "getStatus")
+      .returns(Promise.resolve(ok({ status: signedIn, accountInfo: { upn: "test" } })));
     sandbox.stub(PackageService.prototype, "sideLoading").resolves();
 
     const m365 = new M365();
@@ -68,6 +73,10 @@ describe("M365", () => {
   });
 
   it("M365 Unacquire command (title-id)", async () => {
+    sandbox.stub(M365TokenProvider, "getAccessToken").returns(Promise.resolve(ok("test-token")));
+    sandbox
+      .stub(M365TokenProvider, "getStatus")
+      .returns(Promise.resolve(ok({ status: signedIn, accountInfo: { upn: "test" } })));
     sandbox.stub(PackageService.prototype, "unacquire").resolves();
 
     const m365 = new M365();
@@ -79,6 +88,10 @@ describe("M365", () => {
   });
 
   it("M365 Unacquire command (manifest-id)", async () => {
+    sandbox.stub(M365TokenProvider, "getAccessToken").returns(Promise.resolve(ok("test-token")));
+    sandbox
+      .stub(M365TokenProvider, "getStatus")
+      .returns(Promise.resolve(ok({ status: signedIn, accountInfo: { upn: "test" } })));
     sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("test-title-id");
     sandbox.stub(PackageService.prototype, "unacquire").resolves();
 
@@ -90,7 +103,21 @@ describe("M365", () => {
     expect(logs.length).greaterThan(0);
   });
 
+  it("M365 Unacquire command (undefined)", async () => {
+    const m365 = new M365();
+    const unacquire = m365.subCommands.find((cmd) => cmd.commandHead === "unacquire");
+    expect(unacquire).not.undefined;
+
+    const result = await unacquire!.runCommand({});
+    expect(result).not.undefined;
+    expect(result.isErr()).to.be.true;
+  });
+
   it("M365 LaunchInfo command (title-id)", async () => {
+    sandbox.stub(M365TokenProvider, "getAccessToken").returns(Promise.resolve(ok("test-token")));
+    sandbox
+      .stub(M365TokenProvider, "getStatus")
+      .returns(Promise.resolve(ok({ status: signedIn, accountInfo: { upn: "test" } })));
     sandbox.stub(PackageService.prototype, "getLaunchInfo").resolves({ foo: "bar" });
 
     const m365 = new M365();
@@ -102,6 +129,10 @@ describe("M365", () => {
   });
 
   it("M365 LaunchInfo command (manifest-id)", async () => {
+    sandbox.stub(M365TokenProvider, "getAccessToken").returns(Promise.resolve(ok("test-token")));
+    sandbox
+      .stub(M365TokenProvider, "getStatus")
+      .returns(Promise.resolve(ok({ status: signedIn, accountInfo: { upn: "test" } })));
     sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("test-title-id");
     sandbox.stub(PackageService.prototype, "getLaunchInfo").resolves({ foo: "bar" });
 
@@ -121,5 +152,37 @@ describe("M365", () => {
     const result = await launchInfo!.runCommand({});
     expect(result).not.undefined;
     expect(result.isErr()).to.be.true;
+  });
+
+  it("M365 Token Error", async () => {
+    sandbox
+      .stub(M365TokenProvider, "getAccessToken")
+      .returns(Promise.resolve(err(UserCancelError)));
+
+    const m365 = new M365();
+    const sideloading = m365.subCommands.find((cmd) => cmd.commandHead === "sideloading");
+    expect(sideloading).not.undefined;
+
+    let actualError = undefined;
+    try {
+      await sideloading!.runCommand({});
+    } catch (error) {
+      actualError = error;
+    }
+    expect(actualError).not.undefined;
+  });
+
+  it("M365 UPN undefined", async () => {
+    sandbox.stub(M365TokenProvider, "getAccessToken").returns(Promise.resolve(ok("test-token")));
+    sandbox.stub(M365TokenProvider, "getStatus").returns(Promise.resolve(err(UserCancelError)));
+    sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("test-title-id");
+    sandbox.stub(PackageService.prototype, "getLaunchInfo").resolves({ foo: "bar" });
+
+    const m365 = new M365();
+    const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");
+    expect(launchInfo).not.undefined;
+
+    await launchInfo!.handler({ "manifest-id": "test" });
+    expect(logs.length).greaterThan(0);
   });
 });

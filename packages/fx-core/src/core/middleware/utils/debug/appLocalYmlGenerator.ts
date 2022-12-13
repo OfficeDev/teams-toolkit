@@ -5,6 +5,7 @@ import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
 import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
 import { BaseAppYmlGenerator } from "../appYmlGenerator";
+import { DebugPlaceholderMapping } from "./debugV3MigrationUtils";
 
 export class AppLocalYmlConfig {
   registerApp?: {
@@ -44,12 +45,18 @@ export class AppLocalYmlConfig {
 export class AppLocalYmlGenerator extends BaseAppYmlGenerator {
   protected handlebarsContext: {
     config: AppLocalYmlConfig;
+    placeholderMappings: DebugPlaceholderMapping;
   };
 
-  constructor(oldProjectSettings: ProjectSettings, config: AppLocalYmlConfig) {
+  constructor(
+    oldProjectSettings: ProjectSettings,
+    config: AppLocalYmlConfig,
+    placeholderMappings: DebugPlaceholderMapping
+  ) {
     super(oldProjectSettings);
     this.handlebarsContext = {
       config: config,
+      placeholderMappings: placeholderMappings,
     };
   }
 

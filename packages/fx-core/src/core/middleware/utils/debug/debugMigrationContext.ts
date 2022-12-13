@@ -3,6 +3,7 @@
 
 import { CommentArray, CommentJSONValue } from "comment-json";
 import { AppLocalYmlConfig } from "./appLocalYmlGenerator";
+import { DebugPlaceholderMapping } from "./debugV3MigrationUtils";
 
 export class DebugMigrationContext {
   public tasks: CommentArray<CommentJSONValue>;
@@ -15,12 +16,4 @@ export class DebugMigrationContext {
     this.appYmlConfig = new AppLocalYmlConfig();
     this.placeholderMapping = placeholderMapping;
   }
-}
-
-export interface DebugPlaceholderMapping {
-  tabDomain?: string;
-  tabEndpoint?: string;
-  tabIndexPath?: string;
-  botDomain?: string;
-  botEndpoint?: string;
 }

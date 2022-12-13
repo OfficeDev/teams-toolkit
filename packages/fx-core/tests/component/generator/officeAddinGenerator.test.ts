@@ -202,7 +202,7 @@ describe("helperMethods", () => {
 
     it("should download project template zip file", async () => {
       try {
-        await HelperMethods.downloadProjectTemplateZipFile("", "", "");
+        HelperMethods.downloadProjectTemplateZipFile("", "", "");
       } catch (err) {
         chai.assert.fail(err);
       }
@@ -233,7 +233,7 @@ describe("helperMethods", () => {
 
     it("work as expected", async () => {
       try {
-        await HelperMethods.unzipProjectTemplate("");
+        HelperMethods.unzipProjectTemplate("");
       } catch (err) {
         chai.assert.fail(err);
       }

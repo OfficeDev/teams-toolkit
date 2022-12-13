@@ -17,7 +17,7 @@ configureApp:
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json
 
-  - uses: teamsApp/createAppPackage
+  - uses: teamsApp/zipAppPackage
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
@@ -43,7 +43,7 @@ deploy:
         SSL_CRT_FILE: ${{SSL_CRT_FILE}}
         SSL_KEY_FILE: ${{SSL_KEY_FILE}}
 
-  - uses: npm/command
+  - uses: cli/runNpmCommand
     with:
       args: install --no-audit
       workingDirectory: ./tabs

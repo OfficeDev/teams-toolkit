@@ -63,6 +63,21 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     );
   }
 
+  public async generateAppLocalYml(): Promise<string> {
+    await this.generateHandlerbarsContext();
+
+    const solutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
+    if (solutionSettings.hostType === "Azure") {
+      switch (this.oldProjectSettings.programmingLanguage?.toLowerCase()) {
+        case "csharp":
+          return await this.buildHandlebarsTemplate("csharp.app.local.yml");
+      }
+    }
+    throw new Error(
+      "The current tooling cannot upgrade your project temporary. Please raise an issue in GitHub for your project."
+    );
+  }
+
   private async generateHandlerbarsContext(): Promise<void> {
     // project setting information
     this.handlebarsContext.appName = this.oldProjectSettings.appName;

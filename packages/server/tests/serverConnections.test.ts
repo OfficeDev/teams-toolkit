@@ -305,4 +305,41 @@ describe("serverConnections", () => {
       assert.equal(data, ok("test"));
     });
   });
+
+  it("getProjectMigrationStatusRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns({
+      currentVersion: "3.0.0",
+      isSupport: 0,
+      trackingId: "1234-3213-4325-1231",
+    });
+    sandbox.replace(connection["core"], "projectVersionCheck", fake);
+
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.getProjectMigrationStatusRequest(
+      inputs as Inputs,
+      token as CancellationToken
+    );
+    res.then((data) => {
+      assert.equal(data.isOk(), true);
+    });
+  });
+
+  it("migrateProjectRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns("test");
+    sandbox.replace(connection["core"], "phantomMigrationV3", fake);
+
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.migrateProjectRequest(inputs as Inputs, token as CancellationToken);
+    res.then((data) => {
+      assert.equal(data, ok(true));
+    });
+  });
 });

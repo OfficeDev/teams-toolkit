@@ -18,13 +18,19 @@ import {
   Result,
   Settings,
   Stage,
+  Tools,
   UserCancelError,
   Void,
 } from "@microsoft/teamsfx-api";
 
 import { AadConstants } from "../component/constants";
 import { environmentManager } from "./environment";
-import { ObjectIsUndefinedError, NoAadManifestExistError, InvalidInputError } from "./error";
+import {
+  ObjectIsUndefinedError,
+  NoAadManifestExistError,
+  InvalidInputError,
+  InvalidProjectError,
+} from "./error";
 import { setCurrentStage, TOOLS } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
@@ -32,7 +38,7 @@ import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
-import { CoreHookContext } from "./types";
+import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import "../component/driver/index";
@@ -54,8 +60,22 @@ import {
   getFeaturesFromAppDefinition,
 } from "../component/resource/appManifest/utils/utils";
 import { CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
+import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
+import {
+  getVersionState,
+  getProjectVersionFromPath,
+  getTrackingIdFromPath,
+} from "./middleware/utils/v3MigrationUtils";
 
 export class FxCoreV3Implement {
+  tools: Tools;
+  isFromSample?: boolean;
+  settingsVersion?: string;
+
+  constructor(tools: Tools) {
+    this.tools = tools;
+  }
+
   async dispatch<Inputs, ExecuteRes>(
     exec: (inputs: Inputs) => Promise<ExecuteRes>,
     inputs: Inputs
@@ -123,8 +143,8 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectMigratorMWV3,
+    ConcurrentLockerMW,
     EnvLoaderMW(false),
     ContextInjectorMW,
     EnvWriterMW,
@@ -153,8 +173,8 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectMigratorMWV3,
+    ConcurrentLockerMW,
     EnvLoaderMW(false),
     ContextInjectorMW,
     EnvWriterMW,
@@ -176,9 +196,9 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
+    ProjectMigratorMWV3,
     ConcurrentLockerMW,
     ProjectConsolidateMW,
-    ProjectMigratorMWV3,
     EnvLoaderMW(false),
     ContextInjectorMW,
     EnvWriterMW,
@@ -218,7 +238,7 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectMigratorMWV3, EnvLoaderMW(false)])
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, ConcurrentLockerMW, EnvLoaderMW(false)])
   async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
     setCurrentStage(Stage.publish);
     inputs.stage = Stage.publish;
@@ -230,8 +250,8 @@ export class FxCoreV3Implement {
 
   @hooks([
     ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectMigratorMWV3,
+    ConcurrentLockerMW,
     EnvLoaderMW(true),
     ContextInjectorMW,
     EnvWriterMW,
@@ -246,7 +266,7 @@ export class FxCoreV3Implement {
     return res;
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectMigratorMWV3, EnvLoaderMW(false)])
+  @hooks([ErrorHandlerMW, ProjectMigratorMWV3, ConcurrentLockerMW, EnvLoaderMW(false)])
   async executeUserTask(
     func: Func,
     inputs: Inputs,
@@ -305,26 +325,42 @@ export class FxCoreV3Implement {
     return ok(Void);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW(false), ContextInjectorMW])
+  @hooks([ErrorHandlerMW])
+  async projectVersionCheck(inputs: Inputs): Promise<Result<VersionCheckRes, FxError>> {
+    const projectPath = (inputs.projectPath as string) || "";
+    if (isValidProjectV3(projectPath) || isValidProjectV2(projectPath)) {
+      const currentVersion = await getProjectVersionFromPath(projectPath);
+      if (!currentVersion) {
+        return err(new InvalidProjectError());
+      }
+      const trackingId = await getTrackingIdFromPath(projectPath);
+      const isSupport = getVersionState(currentVersion);
+      return ok({
+        currentVersion,
+        trackingId,
+        isSupport,
+      });
+    } else {
+      return err(new InvalidProjectError());
+    }
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    ConcurrentLockerMW,
+    EnvLoaderMW(false),
+    ContextInjectorMW,
+  ])
   async preProvisionForVS(
     inputs: Inputs,
     ctx?: CoreHookContext
-  ): Promise<
-    Result<
-      {
-        needAzureLogin: boolean;
-        needM365Login: boolean;
-        resolvedAzureSubscriptionId?: string;
-        resolvedAzureResourceGroupName?: string;
-      },
-      FxError
-    >
-  > {
+  ): Promise<Result<PreProvisionResForVS, FxError>> {
     const context = createDriverContext(inputs);
     return coordinator.preProvisionForVS(context, inputs as InputsWithProjectPath);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     if (!ctx || !inputs.projectPath)
       return err(new ObjectIsUndefinedError("createEnv input stuff"));

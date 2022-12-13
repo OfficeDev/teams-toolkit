@@ -1,7 +1,7 @@
 // https://fluentsite.z22.web.core.windows.net/quick-start
 import { Provider, teamsTheme, Loader } from "@fluentui/react-northstar";
 import { HashRouter as Router, Redirect, Route } from "react-router-dom";
-import { useTeamsFx } from "@microsoft/teamsfx-react";
+import { useTeamsUserCredential } from "@microsoft/teamsfx-react";
 import Privacy from "./Privacy";
 import TermsOfUse from "./TermsOfUse";
 import Tab from "./Tab";
@@ -15,12 +15,12 @@ import config from "./sample/lib/config";
  * of the app.
  */
 export default function App() {
-  const { loading, theme, themeString, teamsfx } = useTeamsFx({
+  const { loading, theme, themeString, teamsUserCredential } = useTeamsUserCredential({
     initiateLoginEndpoint: config.initiateLoginEndpoint!,
     clientId: config.clientId!,
   });
   return (
-    <TeamsFxContext.Provider value={{theme, themeString, teamsfx}}>
+    <TeamsFxContext.Provider value={{theme, themeString, teamsUserCredential}}>
       <Provider theme={theme || teamsTheme} styles={{ backgroundColor: "#eeeeee" }}>
         <Router>
           <Route exact path="/">

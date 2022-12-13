@@ -4,6 +4,7 @@
 import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
+import mockFs from "mock-fs";
 
 import { UserError, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
@@ -408,6 +409,16 @@ describe("LocalEnvManager", () => {
   });
 
   describe("resolveLocalCertificate", () => {
+    beforeEach(() => {
+      sinon.restore();
+      mockFs.restore();
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      mockFs.restore();
+    });
+
     it("set env", async () => {
       const localCert: LocalCertificate = {
         certPath: "certPath",
@@ -428,9 +439,14 @@ describe("LocalEnvManager", () => {
         frontendEnvs = envs;
         return "";
       });
-      const localEnvProvider = new LocalEnvProvider("xxx");
+      const projectPath = "xxx";
+      const localEnvProvider = new LocalEnvProvider(projectPath);
       const localEnvManager = new LocalEnvManager();
-      const result = await localEnvManager.resolveLocalCertificate(true, localEnvProvider);
+      const result = await localEnvManager.resolveLocalCertificate(
+        projectPath,
+        true,
+        localEnvProvider
+      );
       chai.assert.equal(result.certPath, localCert.certPath);
       chai.assert.equal(result.keyPath, localCert.keyPath);
       const expectedFrontendEnvs: LocalEnvs = {
@@ -443,6 +459,42 @@ describe("LocalEnvManager", () => {
       };
       chai.assert.deepEqual(frontendEnvs, expectedFrontendEnvs);
       sinon.restore();
+    });
+    it("set env for video filter", async () => {
+      const projectPath = "xxx";
+      mockFs({
+        [path.join(projectPath, "app", ".env.teamsfx.local")]: "",
+      });
+      sinon.stub(tools, "isVideoFilterProject").callsFake(async (projectPath: string) => {
+        return ok(true);
+      });
+      const localCert: LocalCertificate = {
+        certPath: "certPath",
+        keyPath: "keyPath",
+      };
+      sinon
+        .stub(LocalCertificateManager.prototype, "setupCertificate")
+        .returns(Promise.resolve(localCert));
+      const localEnvProvider = new LocalEnvProvider(projectPath);
+      const localEnvManager = new LocalEnvManager();
+      const result = await localEnvManager.resolveLocalCertificate(
+        projectPath,
+        true,
+        localEnvProvider
+      );
+      chai.assert.equal(result.certPath, localCert.certPath);
+      chai.assert.equal(result.keyPath, localCert.keyPath);
+      const expectedVideoFilterEnvs: LocalEnvs = {
+        template: {
+          [LocalEnvKeys.videoFilterApp.template.SslCrtFile]: localCert.certPath,
+          [LocalEnvKeys.videoFilterApp.template.SslKeyFile]: localCert.keyPath,
+        },
+        teamsfx: {},
+        customized: {},
+      };
+
+      const actualVideoFilterEnvs = await localEnvProvider.loadVideoFilterLocalEnvs();
+      chai.assert.deepEqual(actualVideoFilterEnvs, expectedVideoFilterEnvs);
     });
   });
 });

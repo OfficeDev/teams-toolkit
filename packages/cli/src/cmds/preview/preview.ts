@@ -366,7 +366,7 @@ export default class Preview extends YargsCommand {
 
         // check cert
         if (includeFrontend) {
-          const certRes = await this.resolveLocalCertificate(localEnvManager);
+          const certRes = await this.resolveLocalCertificate(workspaceFolder, localEnvManager);
           if (certRes.isErr()) {
             return err(certRes.error);
           }
@@ -1513,6 +1513,7 @@ export default class Preview extends YargsCommand {
   }
 
   private async resolveLocalCertificate(
+    workspaceFolder: string,
     localEnvManager: LocalEnvManager
   ): Promise<Result<null, FxError>> {
     return localTelemetryReporter.runWithTelemetry(
@@ -1526,7 +1527,10 @@ export default class Preview extends YargsCommand {
         await certBar.next(ProgressMessage[Checker.LocalCertificate]);
         try {
           const trustDevCert = await isTrustDevCertEnabled();
-          const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
+          const localCertResult = await localEnvManager.resolveLocalCertificate(
+            workspaceFolder,
+            trustDevCert
+          );
           // trust cert telemetry properties
           ctx.properties[TelemetryProperty.PreviewDevCertStatus] = !trustDevCert
             ? TelemetryPreviewDevCertStatus.Disabled

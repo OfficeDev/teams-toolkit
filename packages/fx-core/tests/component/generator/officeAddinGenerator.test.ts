@@ -32,6 +32,7 @@ import { MockTools } from "../../core/utils";
 import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { manifestUtils } from "../../../src/component/resource/appManifest/utils/ManifestUtils";
+import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -302,6 +303,28 @@ describe("helperMethods", () => {
       } catch (err) {
         chai.assert.fail(err);
       }
+    });
+  });
+});
+
+describe("projectsJsonData", () => {
+  it("should contain desired values", () => {
+    const data = new projectsJsonData();
+    chai.assert.equal(data.getHostDisplayName("outlook"), "Outlook");
+    chai.assert.deepEqual(data.getHostTemplateNames("taskpane"), ["Outlook"]);
+    chai.assert.deepEqual(data.getSupportedScriptTypes("taskpane"), ["TypeScript"]);
+    chai.assert.equal(
+      data.getProjectTemplateRepository("taskpane", "typescript"),
+      "https://github.com/OfficeDev/Office-Addin-TaskPane"
+    );
+    chai.assert.equal(
+      data.getProjectTemplateBranchName("taskpane", "typescript", false),
+      "json-preview-yo-office"
+    );
+
+    chai.assert.deepEqual(data.getProjectRepoAndBranch("taskpane", "TypeScript", false), {
+      repo: "https://github.com/OfficeDev/Office-Addin-TaskPane",
+      branch: "json-preview-yo-office",
     });
   });
 });

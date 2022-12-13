@@ -3,27 +3,27 @@ import { projectProperties } from "./projectProperties";
 
 export default class projectsJsonData {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  m_projectJsonData: any;
+  projectJsonData: any;
 
   constructor() {
-    this.m_projectJsonData = projectProperties;
+    this.projectJsonData = projectProperties;
   }
 
   getProjectDisplayName(projectType: string): string {
-    return this.m_projectJsonData.projectTypes[_.toLower(projectType)].displayname;
+    return this.projectJsonData.projectTypes[_.toLower(projectType)].displayname;
   }
 
   getProjectDetails(projectType: string): string {
-    return this.m_projectJsonData.projectTypes[_.toLower(projectType)].detail;
+    return this.projectJsonData.projectTypes[_.toLower(projectType)].detail;
   }
 
   getParsedProjectJsonData(): unknown {
-    return this.m_projectJsonData;
+    return this.projectJsonData;
   }
 
   getProjectTemplateNames(): string[] {
     const projectTemplates: string[] = [];
-    for (const key in this.m_projectJsonData.projectTypes) {
+    for (const key in this.projectJsonData.projectTypes) {
       projectTemplates.push(key);
     }
     return projectTemplates;
@@ -31,22 +31,21 @@ export default class projectsJsonData {
 
   projectBothScriptTypes(projectType: string): boolean {
     return (
-      this.m_projectJsonData.projectTypes[_.toLower(projectType)].templates.javascript !=
-        undefined &&
-      this.m_projectJsonData.projectTypes[_.toLower(projectType)].templates.typescript != undefined
+      this.projectJsonData.projectTypes[_.toLower(projectType)].templates.javascript != undefined &&
+      this.projectJsonData.projectTypes[_.toLower(projectType)].templates.typescript != undefined
     );
   }
 
   getManifestPath(projectType: string): string | undefined {
-    return this.m_projectJsonData.projectTypes[projectType].manifestPath;
+    return this.projectJsonData.projectTypes[projectType].manifestPath;
   }
 
   getHostTemplateNames(projectType: string): string[] {
     let hosts: string[] = [];
     if (projectType) {
-      for (const key in this.m_projectJsonData.projectTypes) {
+      for (const key in this.projectJsonData.projectTypes) {
         if (key === projectType) {
-          hosts = this.m_projectJsonData.projectTypes[key].supportedHosts;
+          hosts = this.projectJsonData.projectTypes[key].supportedHosts;
         }
       }
     }
@@ -56,7 +55,7 @@ export default class projectsJsonData {
   getSupportedScriptTypes(projectType: string): string[] {
     const scriptTypes: string[] = [];
     if (projectType) {
-      for (const template in this.m_projectJsonData.projectTypes[projectType].templates) {
+      for (const template in this.projectJsonData.projectTypes[projectType].templates) {
         let scriptType = "";
         if (template === "javascript") {
           scriptType = "JavaScript";
@@ -71,21 +70,21 @@ export default class projectsJsonData {
   }
 
   getHostDisplayName(hostKey: string): string | undefined {
-    for (const key in this.m_projectJsonData.hostTypes) {
+    for (const key in this.projectJsonData.hostTypes) {
       if (_.toLower(hostKey) == key) {
-        return this.m_projectJsonData.hostTypes[key].displayname;
+        return this.projectJsonData.hostTypes[key].displayname;
       }
     }
     return undefined;
   }
 
   getProjectTemplateRepository(projectTypeKey: string, scriptType: string): string | undefined {
-    for (const key in this.m_projectJsonData.projectTypes) {
+    for (const key in this.projectJsonData.projectTypes) {
       if (_.toLower(projectTypeKey) == key) {
         if (projectTypeKey == "manifest") {
-          return this.m_projectJsonData.projectTypes[key].templates.manifestonly.repository;
+          return this.projectJsonData.projectTypes[key].templates.manifestonly.repository;
         } else {
-          return this.m_projectJsonData.projectTypes[key].templates[scriptType].repository;
+          return this.projectJsonData.projectTypes[key].templates[scriptType].repository;
         }
       }
     }
@@ -97,15 +96,15 @@ export default class projectsJsonData {
     scriptType: string,
     prerelease: boolean
   ): string | undefined {
-    for (const key in this.m_projectJsonData.projectTypes) {
+    for (const key in this.projectJsonData.projectTypes) {
       if (_.toLower(projectTypeKey) == key) {
         if (projectTypeKey == "manifest") {
-          return this.m_projectJsonData.projectTypes.manifest.templates.branch;
+          return this.projectJsonData.projectTypes.manifest.templates.branch;
         } else {
           if (prerelease) {
-            return this.m_projectJsonData.projectTypes[key].templates[scriptType].prerelease;
+            return this.projectJsonData.projectTypes[key].templates[scriptType].prerelease;
           } else {
-            return this.m_projectJsonData.projectTypes[key].templates[scriptType].branch;
+            return this.projectJsonData.projectTypes[key].templates[scriptType].branch;
           }
         }
       }

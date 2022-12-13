@@ -54,8 +54,9 @@ configureApp:
   - uses: file/updateEnv # Generate env to .env file
     with:
       envs:
-        TAB_DOMAIN: localhost:44302
-        TAB_ENDPOINT: https://localhost:44302
+        PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__DOMAIN: localhost:44302
+        PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__ENDPOINT: https://localhost:44302
+        PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__INDEXPATH: '#'
   {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: file/updateAppSettings
     with:

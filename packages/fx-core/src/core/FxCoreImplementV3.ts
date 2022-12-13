@@ -18,6 +18,7 @@ import {
   Result,
   Settings,
   Stage,
+  Tools,
   UserCancelError,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -67,6 +68,14 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 
 export class FxCoreV3Implement {
+  tools: Tools;
+  isFromSample?: boolean;
+  settingsVersion?: string;
+
+  constructor(tools: Tools) {
+    this.tools = tools;
+  }
+
   async dispatch<Inputs, ExecuteRes>(
     exec: (inputs: Inputs) => Promise<ExecuteRes>,
     inputs: Inputs

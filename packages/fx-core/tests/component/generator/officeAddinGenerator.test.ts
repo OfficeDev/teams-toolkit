@@ -7,6 +7,7 @@ import fs from "fs";
 import fse from "fs-extra";
 import axios from "axios";
 import "mocha";
+import mockfs from "mock-fs";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
@@ -234,6 +235,36 @@ describe("helperMethods", () => {
     it("work as expected", async () => {
       try {
         HelperMethods.unzipProjectTemplate("");
+      } catch (err) {
+        chai.assert.fail(err);
+      }
+    });
+  });
+
+  describe("moveUnzippedFiles", () => {
+    const projectRoot = "/home/user/teamsapp";
+
+    beforeEach(() => {
+      mockfs({
+        "/home/user/teamsapp/project.zip": "xxx",
+        "/home/user/teamsapp/project": {
+          file1: "xxx",
+          file2: "yyy",
+        },
+      });
+    });
+
+    afterEach(() => {
+      mockfs.restore();
+    });
+
+    it("should remove zip file and unzipped folder and copy files", async () => {
+      try {
+        HelperMethods.moveUnzippedFiles(projectRoot);
+        chai.assert.equal(fs.existsSync("/home/user/teamsapp/project.zip"), false);
+        chai.assert.equal(fs.existsSync("/home/user/teamsapp/project"), false);
+        chai.assert.equal(fs.existsSync("/home/user/teamsapp/file1"), true);
+        chai.assert.equal(fs.existsSync("/home/user/teamsapp/file2"), true);
       } catch (err) {
         chai.assert.fail(err);
       }

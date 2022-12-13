@@ -122,12 +122,13 @@ export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
   settingsVersion?: string;
-  v3Implement = new FxCoreV3Implement();
+  v3Implement: FxCoreV3Implement;
 
   constructor(tools: Tools) {
     this.tools = tools;
     setTools(tools);
     TelemetryReporterInstance.telemetryReporter = tools.telemetryReporter;
+    this.v3Implement = new FxCoreV3Implement(tools);
   }
 
   /**

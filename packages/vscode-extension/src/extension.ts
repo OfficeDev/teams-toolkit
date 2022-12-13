@@ -66,7 +66,7 @@ import { ExtensionUpgrade } from "./utils/upgrade";
 import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
 import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/tools";
 import { UriHandler } from "./uriHandler";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { isV3Enabled, isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -705,6 +705,7 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
 
   await setAadManifestEnabledContext();
   await setApiV3EnabledContext();
+  await setTDPIntegrationEnabledContext();
 
   await vscode.commands.executeCommand(
     "setContext",
@@ -730,6 +731,14 @@ async function setAadManifestEnabledContext() {
 
 async function setApiV3EnabledContext() {
   await vscode.commands.executeCommand("setContext", "fx-extension.isV3Enabled", isV3Enabled());
+}
+
+async function setTDPIntegrationEnabledContext() {
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isTDPIntegrationEnabled", // Currently it will return whether v3 is enabled or not.
+    isTDPIntegrationEnabled()
+  );
 }
 
 function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
@@ -912,25 +921,11 @@ async function runBackgroundAsyncTasks(
   isTeamsFxProject: boolean
 ) {
   await exp.initialize(context);
-  TreatmentVariableValue.welcomeViewStyle = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.WelcomeView,
-      true
-    )) as string | undefined;
   await vscode.commands.executeCommand(
     "setContext",
-    "fx-extension.isExistingUser",
-    isExistingUser !== "no"
+    "fx-extension.isNewUser",
+    isExistingUser === "no"
   );
-  if (TreatmentVariableValue.welcomeViewStyle === "A") {
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewA", true);
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
-  } else if (TreatmentVariableValue.welcomeViewStyle === "B") {
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewB", true);
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
-  }
   TreatmentVariableValue.inProductDoc = (await exp
     .getExpService()
     .getTreatmentVariableAsync(

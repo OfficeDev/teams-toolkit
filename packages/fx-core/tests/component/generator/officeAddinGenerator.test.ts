@@ -10,6 +10,7 @@ import "mocha";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
+import * as unzip from "unzipper";
 import { cpUtils } from "../../../src/common/deps-checker";
 import { Generator } from "../../../src/component/generator/generator";
 import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
@@ -201,7 +202,7 @@ describe("helperMethods", () => {
 
     it("should download project template zip file", async () => {
       try {
-        HelperMethods.downloadProjectTemplateZipFile("", "", "");
+        await HelperMethods.downloadProjectTemplateZipFile("", "", "");
       } catch (err) {
         chai.assert.fail(err);
       }
@@ -211,27 +212,19 @@ describe("helperMethods", () => {
   describe("unzipProjectTemplate", () => {
     const sandbox = sinon.createSandbox();
 
-    class ResponseData {
+    class MockedReadStream {
+      on(event: string, cb: () => void) {
+        return this;
+      }
+
       pipe(ws: fs.WriteStream) {
-        return this;
-      }
-
-      on(event: string, cb: () => void) {
-        return this;
-      }
-    }
-
-    class MockedWriteStream {
-      on(event: string, cb: () => void) {
         return this;
       }
     }
 
     beforeEach(() => {
-      const resp = new ResponseData();
-      sandbox.stub(axios, "get").resolves({ data: resp });
-      sandbox.stub<any, any>(fs, "createWriteStream").returns(new MockedWriteStream());
-      sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
+      sandbox.stub<any, any>(fs, "createReadStream").returns(new MockedReadStream());
+      sandbox.stub<any, any>(unzip, "Extract").returns({});
     });
 
     afterEach(() => {
@@ -240,7 +233,7 @@ describe("helperMethods", () => {
 
     it("work as expected", async () => {
       try {
-        HelperMethods.downloadProjectTemplateZipFile("", "", "");
+        await HelperMethods.unzipProjectTemplate("");
       } catch (err) {
         chai.assert.fail(err);
       }

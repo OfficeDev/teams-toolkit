@@ -7,6 +7,7 @@ import {
   teamsLightTheme,
   teamsDarkTheme,
   teamsHighContrastTheme,
+  tokens,
 } from "@fluentui/react-components";
 import { useTeamsFx } from "@microsoft/teamsfx-react";
 
@@ -34,7 +35,7 @@ export default function App() {
         }
         style={{
           height: "100vh",
-          background: "var(--Background)",
+          background: tokens.colorNeutralBackground3,
         }}
       >
         <Router>

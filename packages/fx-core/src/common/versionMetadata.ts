@@ -22,7 +22,7 @@ export const Metadata = {
 export enum VersionState {
   // project version compatible
   compatible = 0,
-  // project version outdated
+  // project version outdated, project should upgrade
   upgradeable = -1,
   // project version ahead, need update toolkit
   unsupported = 1,

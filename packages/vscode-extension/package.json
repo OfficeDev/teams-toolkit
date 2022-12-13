@@ -580,7 +580,13 @@
       {
         "command": "fx-extension.openAppManagement",
         "title": "%teamstoolkit.commands.devPortal.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx && !fx-extension.isTDPIntegrationEnabled",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.publishInDeveloperPortal",
+        "title": "%teamstoolkit.commandsTreeViewProvider.publishInDevPortalTitle%",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && fx-extension.isTDPIntegrationEnabled",
         "category": "Teams"
       },
       {

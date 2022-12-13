@@ -345,7 +345,13 @@ export class FxCoreV3Implement {
     }
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW(false), ContextInjectorMW])
+  @hooks([
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    ConcurrentLockerMW,
+    EnvLoaderMW(false),
+    ContextInjectorMW,
+  ])
   async preProvisionForVS(
     inputs: Inputs,
     ctx?: CoreHookContext

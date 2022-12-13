@@ -311,7 +311,9 @@ describe("projectsJsonData", () => {
   it("should contain desired values", () => {
     const data = new projectsJsonData();
     chai.assert.equal(data.getHostDisplayName("outlook"), "Outlook");
+    chai.assert.isUndefined(data.getHostDisplayName("xxx"));
     chai.assert.deepEqual(data.getHostTemplateNames("taskpane"), ["Outlook"]);
+    chai.assert.isEmpty(data.getHostTemplateNames("xxx"));
     chai.assert.deepEqual(data.getSupportedScriptTypes("taskpane"), ["TypeScript"]);
     chai.assert.equal(
       data.getProjectTemplateRepository("taskpane", "typescript"),
@@ -326,5 +328,8 @@ describe("projectsJsonData", () => {
       repo: "https://github.com/OfficeDev/Office-Addin-TaskPane",
       branch: "json-preview-yo-office",
     });
+
+    chai.assert.isDefined(data.getParsedProjectJsonData());
+    chai.assert.isFalse(data.projectBothScriptTypes("taskpane"));
   });
 });

@@ -537,10 +537,9 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migratePrepareManifest,
   ];
 
-  const debugContext = new DebugMigrationContext(
-    tasksJsonContent["tasks"],
-    await getPlaceholderMappings(context)
-  );
+  const placeholderMappings = await getPlaceholderMappings(context);
+
+  const debugContext = new DebugMigrationContext(tasksJsonContent["tasks"], placeholderMappings);
 
   for (const func of migrateTaskFuncs) {
     func(debugContext);
@@ -554,7 +553,11 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
 
   // Generate app.local.yml
   const oldProjectSettings = await loadProjectSettings(context.projectPath);
-  const appYmlGenerator = new AppLocalYmlGenerator(oldProjectSettings, debugContext.appYmlConfig);
+  const appYmlGenerator = new AppLocalYmlGenerator(
+    oldProjectSettings,
+    debugContext.appYmlConfig,
+    placeholderMappings
+  );
   const appYmlString: string = await appYmlGenerator.generateAppYml();
   await context.fsEnsureDir(SettingsFolderName);
   await context.fsWriteFile(path.join(SettingsFolderName, Constants.appLocalYmlName), appYmlString);

@@ -44,8 +44,8 @@
                 "env": "local",
                 "output": {
                     // Keep consistency with migrated configuration.
-                    "endpoint": "STATE__FX_RESOURCE_BOT__SITEENDPOINT",
-                    "domain": "STATE__FX_RESOURCE_BOT__DOMAIN"
+                    "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                    "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
                 }
             },
             "isBackground": true,

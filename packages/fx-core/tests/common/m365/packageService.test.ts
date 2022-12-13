@@ -114,6 +114,30 @@ describe("Package Service", () => {
     chai.assert.equal(actualError?.message, "test-post");
   });
 
+  it("sideLoading throws expected reponse error", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
+    const expectedError = new Error("test-post") as any;
+    expectedError.response = {
+      data: {},
+    };
+    axiosPostResponses["/dev/v1/users/packages"] = expectedError;
+
+    const packageService = new PackageService("test-endpoint");
+    let actualError: Error | undefined;
+    try {
+      await packageService.sideLoading("test-token", "test-path");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isDefined(actualError);
+    chai.assert.deepEqual(actualError, expectedError);
+  });
+
   it("retrieveTitleId happy path", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {
@@ -152,6 +176,30 @@ describe("Package Service", () => {
 
     chai.assert.isDefined(actualError);
     chai.assert.equal(actualError?.message, "test-post");
+  });
+
+  it("retrieveTitleId throws expected response error", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
+    const expectedError = new Error("test-post") as any;
+    expectedError.response = {
+      data: {},
+    };
+    axiosPostResponses["/catalog/v1/users/titles/launchInfo"] = expectedError;
+
+    const packageService = new PackageService("test-endpoint");
+    let actualError: Error | undefined;
+    try {
+      await packageService.retrieveTitleId("test-token", "test-manifest-id");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isDefined(actualError);
+    chai.assert.deepEqual(actualError, expectedError);
   });
 
   it("unacquire happy path", async () => {
@@ -193,6 +241,30 @@ describe("Package Service", () => {
     chai.assert.equal(actualError?.message, "test-delete");
   });
 
+  it("unacquire throws expected response error", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
+    const expectedError = new Error("test-post") as any;
+    expectedError.response = {
+      data: {},
+    };
+    axiosDeleteResponses["/catalog/v1/users/acquisitions/test-title-id"] = expectedError;
+
+    const packageService = new PackageService("test-endpoint");
+    let actualError: Error | undefined;
+    try {
+      await packageService.unacquire("test-token", "test-title-id");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isDefined(actualError);
+    chai.assert.deepEqual(actualError, expectedError);
+  });
+
   it("getLaunchInfo happy path", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {
@@ -229,6 +301,30 @@ describe("Package Service", () => {
 
     chai.assert.isDefined(actualError);
     chai.assert.equal(actualError?.message, "test-get");
+  });
+
+  it("getLaunchInfo throws expected response error", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
+    const expectedError = new Error("test-post") as any;
+    expectedError.response = {
+      data: {},
+    };
+    axiosGetResponses["/catalog/v1/users/titles/test-title-id/launchInfo"] = expectedError;
+
+    const packageService = new PackageService("test-endpoint");
+    let actualError: Error | undefined;
+    try {
+      await packageService.getLaunchInfo("test-token", "test-title-id");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isDefined(actualError);
+    chai.assert.deepEqual(actualError, expectedError);
   });
 
   it("getTitleServiceUrl throws expected error", async () => {

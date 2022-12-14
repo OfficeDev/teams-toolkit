@@ -45,3 +45,7 @@ export function isSPFxMultiTabEnabled(): boolean {
 export function isTDPIntegrationEnabled(): boolean {
   return isV3Enabled();
 }
+
+export function isOfficeAddinEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
+}

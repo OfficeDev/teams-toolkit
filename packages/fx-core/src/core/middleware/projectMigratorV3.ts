@@ -588,11 +588,7 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
     );
     // judge if apim plugin exists
     let flag_apimPlugin = false;
-    if (
-      Object.keys(projectSettingsContent).includes("components") &&
-      projectSettingsContent["components"] != null &&
-      typeof projectSettingsContent["components"][Symbol.iterator] === "function"
-    ) {
+    if (projectSettingsContent && projectSettingsContent["components"]) {
       for (const obj of projectSettingsContent["components"])
         if (obj["name"] === "apim") {
           flag_apimPlugin = true;

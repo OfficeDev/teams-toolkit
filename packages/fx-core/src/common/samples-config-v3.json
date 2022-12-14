@@ -34,26 +34,6 @@
             "suggested": true
         },
         {
-            "id": "graph-toolkit-contact-exporter",
-            "title": "Contact Exporter using Graph Toolkit",
-            "shortDescription": "Contact Exporter app of Microsoft Teams Tab app.",
-            "fullDescription": "Contact Exporter app can export your teams contact info to Excel files, and it is using Microsoft Graph Toolkit as UI component. This app only has a Tab frontend.",
-            "tags": ["Tab", "JS"],
-            "time": "5min to run",
-            "configuration": "Ready for debug",
-            "suggested": true
-        },
-        {
-            "id": "graph-toolkit-one-productivity-hub",
-            "title": "One Productivity Hub using Graph Toolkit",
-            "shortDescription": "Microsoft Teams tab with SSO to view calendar events, to-do tasks and file folders.",
-            "fullDescription": "One Productivity Hub sample shows you how to build a tab for viewing your calendar events, to-do tasks and files by using Microsoft Graph Toolkit components and TeamsFx provider. You can run this app locally or deploy it to Microsoft Azure.",
-            "tags": ["Tab", "JS", "SSO"],
-            "time": "5min to run",
-            "configuration": "Ready for debug",
-            "suggested": false
-        },
-        {
             "id": "bot-sso",
             "title": "Hello World Bot with SSO",
             "shortDescription": "A Hello World app of Microsoft Teams Bot app with SSO",
@@ -69,72 +49,12 @@
             "suggested": false
         },
         {
-            "id": "todo-list-with-Azure-backend",
-            "title": "Todo List with backend on Azure",
-            "shortDescription": "Todo List app with Azure Function backend and Azure SQL database",
-            "fullDescription": "Todo List provides an easy way to manage to-do items in Teams Client. This app helps enabling task collaboration and management for your team. The frontend is a React app and the backend is hosted on Azure. You will need an Azure subscription to run the app.",
-            "tags": ["React", "Azure function", "Azure SQL", "JS", "CI/CD"],
-            "time": "30min to run",
-            "configuration": "Manual configurations required",
-            "suggested": false
-        },
-        {
-            "id": "todo-list-SPFx",
-            "title": "Todo List with SPFx",
-            "shortDescription": "Todo List app hosting on SharePoint",
-            "fullDescription": "Todo List with SPFx is a Todo List for individuals to manage his/her personal to-do items. This app is hosted on Sharepoint. There is no requirements to deploy Azure resources.",
-            "tags": ["SharePoint", "SPFx", "TS"],
-            "time": "1hr to run",
-            "configuration": "Manual configurations required",
-            "suggested": false
-        },
-        {
-            "id": "share-now",
-            "title": "Share Now",
-            "shortDescription": "Knowledge sharing app contains a Tab and a Message extension",
-            "fullDescription": "Share Now promotes the exchange of information between colleagues by enabling users to share content within the Teams environment. Users engage the app to share items of interest, discover new shared content, set preferences, and bookmark favorites for later reading.",
-            "tags": ["Tab", "Message extension", "TS"],
-            "time": "30min to run",
-            "configuration": "Ready for debug",
-            "suggested": false
-        },
-        {
             "id": "hello-world-in-meeting",
             "title": "My First Meeting App",
             "shortDescription": "A template for apps using only in the context of a Teams meeting",
             "fullDescription": "My first meeting app is a simple template to show how to build a tab app that can be installed and used in a meeting, in all of meeting lifecycles: pre-meeting chat, in-meeting, post-meeting chat. This sample contains tab as side panel, meeting chat tab, or meeting details tab. The template also includes simple codes to fetch meeting info and user profile.",
             "tags": ["Meeting extension", "JS"],
             "time": "30min to run",
-            "configuration": "Ready for debug",
-            "suggested": false
-        },
-        {
-            "id": "todo-list-with-Azure-backend-M365",
-            "title": "Todo List (Works in Teams, Outlook and Office)",
-            "shortDescription": "Todo List app that runs across Microsoft 365 including Teams, Outlook and Office",
-            "fullDescription": "Todo List app helps to manage personal to do items and also runs across Microsoft 365, including Teams, Outlook and Office. The frontend is a React app and the backend is an Azure Function. You can optionally deploy and host the app in Azure.",
-            "tags": ["React", "Azure function", "JS", "Outlook", "Office"],
-            "time": "30min to run",
-            "configuration": "Manual configurations required",
-            "suggested": false
-        },
-        {
-            "id": "NPM-search-connector-M365",
-            "title": "NPM Search Connector",
-            "shortDescription": "Search and Share an NPM Package in Teams and Outlook (Web)",
-            "fullDescription": "NPM Search Connector is a Message Extension that runs across Microsoft 365 including Teams and Outlook (Web). It allows you to perform a quick search for a NPM package and insert package details into conversations for easy sharing. The front end is built with Adaptive Cards and the backend is an Azure Bot Service.",
-            "tags": ["Message extension", "JS", "Outlook"],
-            "time": "45min to run",
-            "configuration": "Manual configurations required",
-            "suggested": false
-        },
-        {
-            "id": "hello-world-tab-without-sso",
-            "title": "Hello World Tab",
-            "shortDescription": "A simple Microsft Teams Tab application displays static content",
-            "fullDescription": "This is a simple static tab application with tutorial to include single sign on features.",
-            "tags": ["Tab", "TS"],
-            "time": "5min to run",
             "configuration": "Ready for debug",
             "suggested": false
         },
@@ -163,31 +83,11 @@
             "suggested": false
         },
         {
-            "id": "graph-connector-app",
-            "title": "Graph Connector App",
-            "shortDescription": "Showcases how to build custom Graph Connector",
-            "fullDescription": "This sample app showcases how to build custom Graph Connector with Azure Functions and query data using Microsoft Graph Client and TeamsFx SDK.",
-            "tags": ["Tab", "Azure function", "TS", "SSO"],
-            "time": "10min to run",
-            "configuration": "Manual configurations required",
-            "suggested": false
-        },
-        {
             "id": "stocks-update-notification-bot",
             "title": "Stocks Update",
             "shortDescription": "Keep up to date with the latest stock price in Microsoft Teams.",
             "fullDescription": "This sample demonstrates how a Notification Bot can be used to call an external API using API Key authentication, on a pre-defined schedule of every 30 seconds, to obtain the latest stock information and render the results as an Adaptive Card.",
             "tags": ["Bot", "TS", "Azure function", "API Key"],
-            "time": "5min to run",
-            "configuration": "Ready for debug",
-            "suggested": false
-        },
-        {
-            "id": "query-org-user-with-message-extension-sso",
-            "title": "Org User Search Connector",
-            "shortDescription": "Query Org User with Message Extension SSO",
-            "fullDescription": "This is a simple search-based message extension app demonstrating how to integrate with Bot Framework SDK, TeamsFx SDK and Microsoft Graph API to implement a feature that queries organization's user with single sign on (SSO) capability.",
-            "tags": ["Message extension", "SSO"],
             "time": "5min to run",
             "configuration": "Ready for debug",
             "suggested": false

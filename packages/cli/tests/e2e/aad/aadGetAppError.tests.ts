@@ -26,6 +26,7 @@ import { environmentManager } from "@microsoft/teamsfx-core/build/core/environme
 import { it } from "@microsoft/extra-shot-mocha";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("aadGetAppError", function () {
   let testFolder: string;
@@ -54,6 +55,9 @@ describe("aadGetAppError", function () {
   });
 
   it(`AAD: AadGetAppError`, { testPlanCaseId: 10988682 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     {
       // set fake object id in context
       const state = {

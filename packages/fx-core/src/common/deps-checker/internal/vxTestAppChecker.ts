@@ -14,7 +14,7 @@ import { DepsCheckerError, VxTestAppCheckError } from "../depsError";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DepsChecker, DependencyStatus, DepsType, InstallOptions } from "../depsChecker";
-import { isWindows } from "../util";
+import { isMacOS, isWindows } from "../util";
 import { Messages, vxTestAppInstallHelpLink } from "../constant";
 
 interface InstallOptionsSafe {
@@ -24,9 +24,13 @@ interface InstallOptionsSafe {
 
 const VxTestAppName = "Video Extensibility Test App";
 
+// https://www.electronjs.org/docs/latest/tutorial/application-distribution#manual-packaging
 const VxTestAppExecutableName = isWindows()
   ? "video-extensibility-test-app.exe"
+  : isMacOS()
+  ? "video-extensibility-test-app.app"
   : "video-extensibility-test-app";
+
 const VxTestAppDirRelPath = path.join(".tools", "video-extensibility-test-app");
 const VxTestAppGlobalBasePath = path.join(
   os.homedir(),

@@ -108,6 +108,7 @@ const subMigrations: Array<Migration> = [
   generateApimPluginEnvContent,
   updateLaunchJson,
   azureParameterMigration,
+  debugMigration,
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {

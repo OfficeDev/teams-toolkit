@@ -28,7 +28,7 @@ configureApp:
       envs:
         PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__DOMAIN: localhost:53000
         PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__ENDPOINT: https://localhost:53000
-        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH: /index.html#
+        PROVISIONOUTPUT__AZURESTORAGETABOUTPUT__INDEXPATH: "\"/index.html#\""
 
   - uses: aadApp/update
     with:

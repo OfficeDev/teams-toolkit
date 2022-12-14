@@ -43,8 +43,14 @@ import {
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { UpgradeCanceledError } from "../../../src/core/error";
-import { MetadataV2, MetadataV3, VersionState } from "../../../src/common/versionMetadata";
 import {
+  Metadata,
+  MetadataV2,
+  MetadataV3,
+  VersionState,
+} from "../../../src/common/versionMetadata";
+import {
+  getDownloadLinkByVersionAndPlatform,
   getTrackingIdFromPath,
   getVersionState,
 } from "../../../src/core/middleware/utils/v3MigrationUtils";
@@ -1027,6 +1033,21 @@ describe("Migration utils", () => {
     assert.equal(getVersionState("2.0.0"), VersionState.upgradeable);
     assert.equal(getVersionState("3.0.0"), VersionState.compatible);
     assert.equal(getVersionState("4.0.0"), VersionState.unsupported);
+  });
+
+  it("getDownloadLinkByVersionAndPlatform", () => {
+    assert.equal(
+      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VS),
+      `${Metadata.versionMatchLink}#visual-studio`
+    );
+    assert.equal(
+      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.CLI),
+      `${Metadata.versionMatchLink}#cli`
+    );
+    assert.equal(
+      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VSCode),
+      `${Metadata.versionMatchLink}#vscode`
+    );
   });
 });
 

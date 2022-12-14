@@ -967,7 +967,7 @@ describe("Migration utils", () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     const state = await checkVersionForMigration(migrationContext);
-    assert.equal(state, VersionState.upgradeable);
+    assert.equal(state.state, VersionState.upgradeable);
   });
 
   it("checkVersionForMigration V3", async () => {
@@ -976,7 +976,7 @@ describe("Migration utils", () => {
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readJson").resolves("3.0.0");
     const state = await checkVersionForMigration(migrationContext);
-    assert.equal(state, VersionState.compatible);
+    assert.equal(state.state, VersionState.compatible);
   });
 
   it("checkVersionForMigration empty", async () => {
@@ -984,7 +984,7 @@ describe("Migration utils", () => {
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     sandbox.stub(fs, "pathExists").resolves(false);
     const state = await checkVersionForMigration(migrationContext);
-    assert.equal(state, VersionState.unsupported);
+    assert.equal(state.state, VersionState.unsupported);
   });
 
   it("UpgradeCanceledError", () => {

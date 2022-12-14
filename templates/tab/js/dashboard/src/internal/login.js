@@ -1,10 +1,10 @@
-import FxContextInstance from "./singletonContext";
+import TeamsUserCredentialContext from "./singletonContext";
 
 export async function loginAction(scope) {
   try {
-    var teamsfx = FxContextInstance.getTeamsFx();
-    await teamsfx.login(scope);
-    FxContextInstance.setTeamsFx(teamsfx);
+    var credential = TeamsUserCredentialContext.getInstance().getCredential();
+    await credential.login(scope);
+    TeamsUserCredentialContext.getInstance().setCredential(credential);
   } catch (e) {
     console.log(e);
     throw "Login Error: can not login!";

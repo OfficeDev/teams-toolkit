@@ -323,12 +323,12 @@ export function UpgradeCanceledError(): UserError {
   );
 }
 
-export function UpgradeV3CanceledError(): UserError {
+export function UpgradeV3CanceledError(link: string, version: string): UserError {
   return new UserError(
     CoreSource,
     "UserCancel", // @see tools.isUserCancelError()
-    getDefaultString("error.UpgradeV3CanceledError"),
-    getLocalizedString("error.UpgradeV3CanceledError")
+    getDefaultString("error.UpgradeV3CanceledError", link, version),
+    getLocalizedString("error.UpgradeV3CanceledError", link, version)
   );
 }
 

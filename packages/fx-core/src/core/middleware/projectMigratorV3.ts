@@ -78,6 +78,7 @@ import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionState } from "../../common/versionMetadata";
 import { isSPFxProject } from "../../common/tools";
+import { environmentManager } from "../environment";
 
 const Constants = {
   vsProvisionBicepPath: "./Templates/azure/provision.bicep",
@@ -102,6 +103,7 @@ const subMigrations: Array<Migration> = [
   generateSettingsJson,
   manifestsMigration,
   generateAppYml,
+  generateLocalConfig,
   configsMigration,
   statesMigration,
   userdataMigration,
@@ -396,6 +398,13 @@ export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
     [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
   });
   return true;
+}
+
+export async function generateLocalConfig(context: MigrationContext): Promise<void> {
+  if (!(await context.fsPathExists(path.join(".fx", "configs", "config.local.json")))) {
+    const oldProjectSettings = await loadProjectSettings(context.projectPath);
+    await environmentManager.createLocalEnv(context.projectPath, oldProjectSettings.appName!);
+  }
 }
 
 export async function configsMigration(context: MigrationContext): Promise<void> {

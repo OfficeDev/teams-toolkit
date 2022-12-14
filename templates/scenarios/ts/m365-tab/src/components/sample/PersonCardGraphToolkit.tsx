@@ -27,7 +27,7 @@ export function PersonCardGraphToolkit(props: {
         </a>{" "}
         with&nbsp;
         <a
-          href="https://github.com/microsoftgraph/microsoft-graph-toolkit/tree/next/teamsfx/packages/providers/mgt-teamsfx-provider"
+          href="https://github.com/microsoftgraph/microsoft-graph-toolkit/tree/main/packages/providers/mgt-teamsfx-provider"
           target="_blank"
           rel="noreferrer"
         >
@@ -35,7 +35,7 @@ export function PersonCardGraphToolkit(props: {
         </a>{" "}
         to show person card.
       </p>
-      <pre>{`const provider = new TeamsFxProvider(teamsfx, scope); \nProviders.globalProvider = provider; \nProviders.globalProvider.setState(ProviderState.SignedIn);`}</pre>
+      <pre>{`const provider = new TeamsFxProvider(credential, scope); \nProviders.globalProvider = provider; \nProviders.globalProvider.setState(ProviderState.SignedIn);`}</pre>
 
       {!props.loading && props.error && (
         <div className="error">

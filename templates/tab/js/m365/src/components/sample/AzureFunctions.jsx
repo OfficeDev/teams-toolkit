@@ -7,17 +7,16 @@ import config from "./lib/config";
 
 const functionName = config.apiName || "myFunc";
 
-async function callFunction(teamsfx) {
-  if (!teamsfx) {
+async function callFunction(teamsUserCredential) {
+  if (!teamsUserCredential) {
     throw new Error("TeamsFx SDK is not initialized.");
   }
   try {
-    const credential = teamsfx.getCredential();
     const apiBaseUrl = config.apiEndpoint + "/api/";
     // createApiClient(...) creates an Axios instance which uses BearerTokenAuthProvider to inject token to request header
     const apiClient = createApiClient(
       apiBaseUrl,
-      new BearerTokenAuthProvider(async () => (await credential.getToken("")).token));
+      new BearerTokenAuthProvider(async () => (await teamsUserCredential.getToken("")).token));
     const response = await apiClient.get(functionName);
     return response.data;
   } catch (err) {
@@ -48,8 +47,8 @@ export function AzureFunctions(props) {
     docsUrl: "https://aka.ms/teamsfx-azure-functions",
     ...props,
   };
-  const teamsfx = useContext(TeamsFxContext).teamsfx;
-  const { loading, data, error, reload } = useData(() => callFunction(teamsfx), {
+  const teamsUserCredential = useContext(TeamsFxContext).teamsUserCredential;
+  const { loading, data, error, reload } = useData(() => callFunction(teamsUserCredential), {
     autoLoad: false,
   });
 

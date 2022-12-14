@@ -29,6 +29,7 @@ import {
   ComponentNames,
   ProgrammingLanguage,
   StorageOutputs,
+  TabSsoItem,
 } from "../../../src/component/constants";
 import * as aadManifest from "../../../src/core/generateAadManifestTemplate";
 import Container from "typedi";
@@ -96,6 +97,33 @@ describe("Tab Feature", () => {
     assert.equal(teamsTab?.hosting, ComponentNames.AzureStorage);
     assert.equal(teamsTab?.folder, "tabs");
     assert.isTrue(teamsTab?.build);
+    const storage = getComponent(context.projectSetting, ComponentNames.AzureStorage);
+    assert.exists(storage);
+  });
+
+  it("add sso tab", async () => {
+    sandbox.stub(templatesAction, "scaffoldFromTemplates").resolves();
+    sandbox.stub(utils.bicepUtils, "persistBiceps").resolves(ok(undefined));
+
+    const inputs: InputsWithProjectPath = {
+      projectPath: projectPath,
+      platform: Platform.VSCode,
+      language: "typescript",
+      "app-name": appName,
+      features: TabSsoItem.id,
+    };
+    const component = Container.get("teams-tab") as any;
+    const addTabRes = await component.add(context, inputs);
+    if (addTabRes.isErr()) {
+      console.log(addTabRes.error);
+    }
+    assert.isTrue(addTabRes.isOk());
+    const teamsTab = getComponent(context.projectSetting, ComponentNames.TeamsTab);
+    assert.exists(teamsTab);
+    assert.equal(teamsTab?.hosting, ComponentNames.AzureStorage);
+    assert.equal(teamsTab?.folder, "tabs");
+    assert.isTrue(teamsTab?.build);
+    assert.equal(teamsTab?.sso, true);
     const storage = getComponent(context.projectSetting, ComponentNames.AzureStorage);
     assert.exists(storage);
   });

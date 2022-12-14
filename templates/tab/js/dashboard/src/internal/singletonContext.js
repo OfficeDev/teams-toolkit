@@ -1,9 +1,9 @@
-import { TeamsFx } from "@microsoft/teamsfx";
+import { TeamsUserCredential } from "@microsoft/teamsfx";
 
 let instance;
 
-class FxContext {
-  teamsfx;
+class TeamsUserCredentialContext {
+  credential;
   constructor() {
     if (instance) {
       throw new Error("FxContext is a singleton class, use getInstance() instead.");
@@ -11,18 +11,21 @@ class FxContext {
     instance = this;
   }
 
-  setTeamsFx(teamsfx) {
-    this.teamsfx = teamsfx;
+  setCredential(credential) {
+    this.credential = credential;
   }
 
-  getTeamsFx() {
-    if (!this.teamsfx) {
-      this.teamsfx = new TeamsFx();
+  getCredential() {
+    if (!this.credential) {
+      this.credential =  new TeamsUserCredential({
+        initiateLoginEndpoint: process.env.initiateLoginEndpoint,
+        clientId: process.env.clientId,
+      });
     }
-    return this.teamsfx;
+    return this.credential;
   }
 }
 
-let FxContextInstance = Object.freeze(new FxContext());
+let FxContextInstance = Object.freeze(new TeamsUserCredentialContext());
 
 export default FxContextInstance;

@@ -55,14 +55,14 @@ The following files provide the business logic for the dashboard tab. These file
 
 The following files are project-related files. You generally will not need to customize these files.
 
-| File                               | Contents                                         |
-| ---------------------------------- | ------------------------------------------------ |
-| `src/index.jsx`                    | Application entry point                          |
-| `src/App.jsx`                      | Application route                                |
-| `src/internal/addNewScopes.js`     | Implementation of new scopes add                 |
-| `src/internal/Context.jsx`         | TeamsFx Context                                  |
-| `src/internal/login.js`            | Implementation of login                          |
-| `src/internal/singletonContext.js` | Implementation of the TeamsFx instance singleton |
+| File                               | Contents                                                     |
+| ---------------------------------- | ------------------------------------------------------------ |
+| `src/index.jsx`                    | Application entry point                                      |
+| `src/App.jsx`                      | Application route                                            |
+| `src/internal/addNewScopes.js`     | Implementation of new scopes add                             |
+| `src/internal/Context.jsx`         | TeamsFx Context                                              |
+| `src/internal/login.js`            | Implementation of login                                      |
+| `src/internal/singletonContext.js` | Implementation of the TeamsUserCredential instance singleton |
 
 ## How to add a new widget
 
@@ -297,9 +297,8 @@ You can refer to [the Graph API V1.0](https://learn.microsoft.com/en-us/graph/ap
 You can refer to the following code snippet:
 
 ```js
-let teamsfx;
-teamsfx = FxContextInstance.getTeamsFx();
-const graphClient = createMicrosoftGraphClient(teamsfx, scope);
+const teamsUserCredential = TeamsUserCredentialContext.getInstance().getCredential();
+const graphClient: Client = createMicrosoftGraphClientWithCredential(teamsUserCredential, scope);
 ```
 
 #### Step 3: Call the Graph API, and parse the response into a certain model, which will be used by front-end
@@ -377,18 +376,17 @@ Call the Azure Function by function name. You can refer to the following code sn
 
 ```ts
 const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
-async function callFunction(teamsfx) {
-  if (!teamsfx) {
+async function callFunction(teamsUserCredential) {
+  if (!teamsUserCredential) {
     throw new Error("TeamsFx SDK is not initialized.");
   }
   try {
-    const credential = teamsfx.getCredential();
-    const apiBaseUrl = teamsfx.getConfig("apiEndpoint") + "/api/";
+    const apiBaseUrl = process.env.apiEndpoint + "/api/";
     // createApiClient(...) creates an Axios instance which uses BearerTokenAuthProvider to inject token to request header
     const apiClient = createApiClient(
       apiBaseUrl,
       new BearerTokenAuthProvider(
-        async () => (await credential.getToken(""))!.token
+        async () => (await teamsUserCredential.getToken(""))!.token
       )
     );
     const response = await apiClient.get(functionName);

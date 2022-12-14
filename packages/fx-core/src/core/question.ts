@@ -25,7 +25,11 @@ import {
   isM365AppEnabled,
   isV3Enabled,
 } from "../common/tools";
-import { isBotNotificationEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
+import {
+  isBotNotificationEnabled,
+  isOfficeAddinEnabled,
+  isPreviewFeaturesEnabled,
+} from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -52,6 +56,10 @@ import {
   answerToRepaceBotId,
   answerToReplaceMessageExtensionBotId,
 } from "../component/developerPortalScaffoldUtils";
+import {
+  ImportAddinProjectItem,
+  OfficeAddinItems,
+} from "../component/generator/officeAddin/question";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -666,6 +674,9 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
     staticOptions.push(ScratchOptionYesVSC);
+    if (isOfficeAddinEnabled()) {
+      staticOptions.push(CreateNewOfficeAddinOption);
+    }
     staticOptions.push(ScratchOptionNoVSC);
   } else {
     staticOptions.push(ScratchOptionYes);
@@ -805,3 +816,20 @@ export const botOptionItem = (isMessageExtension: boolean): OptionItem => {
     label: isMessageExtension ? "Message extension" : "Bot",
   };
 };
+
+export const CreateNewOfficeAddinOption: OptionItem = {
+  id: "newAddin",
+  label: `$(new-folder) ${getLocalizedString("core.NewOfficeAddinOptionVSC.label")}`,
+  detail: getLocalizedString("core.NewOfficeAddinOptionVSC.detail"),
+};
+
+export function createCapabilityForOfficeAddin(): SingleSelectQuestion {
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createCapabilityQuestion.title"),
+    type: "singleSelect",
+    staticOptions: [...OfficeAddinItems, ImportAddinProjectItem],
+    placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+    skipSingleOption: true,
+  };
+}

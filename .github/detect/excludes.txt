@@ -25,6 +25,7 @@ templates/bot/js/default/adaptiveCards/learn.json
 templates/bot/ts/default/adaptiveCards/learn.json
 docs/cicd/README.md
 docs/cicd_insider/README.md
+docs/cicd/azdo/*.yml
 .github/scripts/download-simpleauth.sh
 packages/fx-core/tests/common/local/localCertificateManager.test.ts
 packages/sdk/test/unit/node/appCredential.spec.ts

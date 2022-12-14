@@ -129,12 +129,7 @@ describe("MigrationUtilsV3", () => {
       FileType.STATE,
       bicepContent
     );
-    assert.isTrue(
-      res.isErr() &&
-        res.error.message ===
-          "Failed to find matching output in provision.bicep for key state.fx-resource-azure-sql.databaseName_test3" &&
-        res.error.name == "FailedToConvertV2ConfigNameToV3"
-    );
+    assert.isTrue(res.isOk() && res.value === "STATE__FX_RESOURCE_AZURE_SQL__DATABASENAME_TEST3");
   });
 });
 

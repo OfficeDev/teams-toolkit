@@ -590,7 +590,7 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
     let flag_apimPlugin = false;
     if (
       Object.keys(projectSettingsContent).includes("components") &&
-      projectSettingsContent["components"] &&
+      projectSettingsContent["components"] != null &&
       typeof projectSettingsContent["components"][Symbol.iterator] === "function"
     ) {
       for (const obj of projectSettingsContent["components"])

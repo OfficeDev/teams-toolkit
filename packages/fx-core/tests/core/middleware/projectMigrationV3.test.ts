@@ -881,6 +881,7 @@ describe("userdataMigration", () => {
 describe("generateApimPluginEnvContent", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
+  const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
@@ -888,6 +889,7 @@ describe("generateApimPluginEnvContent", () => {
 
   afterEach(async () => {
     await fs.remove(projectPath);
+    sandbox.restore();
   });
 
   it("happy path", async () => {
@@ -905,6 +907,17 @@ describe("generateApimPluginEnvContent", () => {
     assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
     const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
     assert.equal(testEnvContent_dev, trueEnvContent_dev);
+  });
+
+  it("projectSettings.json exists", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+
+    sandbox
+      .stub(migrationContext, "fsPathExists")
+      .withArgs(path.join(".fx", "configs", "projectSettings.json"))
+      .resolves(false);
+    assert.isTrue(!(await migrationContext.fsPathExists(".env.dev")));
   });
 });
 

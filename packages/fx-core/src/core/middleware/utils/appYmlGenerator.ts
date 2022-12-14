@@ -67,7 +67,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
   }
 
   public async generateAppLocalYml(): Promise<string> {
-    await this.generateHandlerbarsContext();
+    await this.generateAzureHandlebarsContext();
 
     const solutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
     if (solutionSettings.hostType === "Azure") {

@@ -12,8 +12,6 @@ import {
   TemplateFolderName,
   SystemError,
   UserError,
-  Platform,
-  Inputs,
   InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
@@ -54,13 +52,20 @@ import {
   readBicepContent,
   readJsonFile,
   replaceAppIdUri,
+  updateAndSaveManifestForSpfx,
   getTemplateFolderPath,
+  getParameterFromCxt,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
-import { isCommentObject, readJsonCommentFile } from "./utils/debug/debugV3MigrationUtils";
 import {
+  getPlaceholderMappings,
+  isCommentObject,
+  readJsonCommentFile,
+} from "./utils/debug/debugV3MigrationUtils";
+import {
+  migrateTransparentLocalTunnel,
   migrateTransparentPrerequisite,
   migrateTransparentNpmInstall,
   migrateSetUpTab,
@@ -71,6 +76,8 @@ import {
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
+import { MetadataV2, MetadataV3, VersionState } from "../../common/versionMetadata";
+import { isSPFxProject } from "../../common/tools";
 
 const Constants = {
   vsProvisionBicepPath: "./Templates/azure/provision.bicep",
@@ -86,18 +93,6 @@ const Constants = {
     flag: "a+",
   },
 };
-
-const MigrationVersion = {
-  minimum: "2.0.0",
-  maximum: "2.1.0",
-};
-const V3Version = "3.0.0";
-
-export enum VersionState {
-  compatible,
-  upgradeable,
-  unsupported,
-}
 
 const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
 
@@ -122,7 +117,8 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       ctx.result = ok(undefined);
       return;
     }
-    if (!(await askUserConfirm(ctx))) {
+    const skipUserConfirm = getParameterFromCxt(ctx, "skipUserConfirm");
+    if (!skipUserConfirm && !(await askUserConfirm(ctx))) {
       return;
     }
     const migrationContext = await MigrationContext.create(ctx);
@@ -206,12 +202,12 @@ async function preMigration(context: MigrationContext): Promise<void> {
 }
 
 export async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionState> {
-  const version = await getProjectVersion(ctx);
-  if (semver.gte(version, V3Version)) {
+  const version = (await getProjectVersion(ctx)) || "0.0.0";
+  if (semver.gte(version, MetadataV3.projectVersion)) {
     return VersionState.compatible;
   } else if (
-    semver.gte(version, MigrationVersion.minimum) &&
-    semver.lte(version, MigrationVersion.maximum)
+    semver.gte(version, MetadataV2.projectVersion) &&
+    semver.lte(version, MetadataV2.projectMaxVersion)
   ) {
     return VersionState.upgradeable;
   } else {
@@ -223,7 +219,7 @@ export async function generateSettingsJson(context: MigrationContext): Promise<v
   const oldProjectSettings = await loadProjectSettings(context.projectPath);
 
   const content = {
-    version: "3.0.0",
+    version: MetadataV3.projectVersion,
     trackingId: oldProjectSettings.projectId,
   };
 
@@ -299,6 +295,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   const projectSettings = await loadProjectSettings(context.projectPath);
   const capabilities = getCapabilitySsoStatus(projectSettings);
   const appIdUri = generateAppIdUri(capabilities);
+  const isSpfx = isSPFxProject(projectSettings);
 
   // Read Teams app manifest and save to templates/appPackage/manifest.template.json
   const oldManifestPath = path.join(oldAppPackageFolderPath, MANIFEST_TEMPLATE_CONSOLIDATE);
@@ -308,7 +305,11 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     let oldManifest = await fs.readFile(path.join(context.projectPath, oldManifestPath), "utf8");
     oldManifest = replaceAppIdUri(oldManifest, appIdUri);
     const manifest = replacePlaceholdersForV3(oldManifest, bicepContent);
-    await context.fsWriteFile(manifestPath, manifest);
+    if (isSpfx) {
+      await updateAndSaveManifestForSpfx(context, manifest);
+    } else {
+      await context.fsWriteFile(manifestPath, manifest);
+    }
   } else {
     // templates/appPackage/manifest.template.json does not exist
     throw ReadFileError(new Error("templates/appPackage/manifest.template.json does not exist"));
@@ -366,7 +367,7 @@ export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
   const buttons = [upgradeButton, learnMoreText];
   const res = await TOOLS?.ui.showMessage(
     "warn",
-    getLocalizedString("core.migrationV3.Message"),
+    getLocalizedString("core.migrationV3.Message", MetadataV3.vscodeStarterVersion),
     true,
     ...buttons
   );
@@ -529,12 +530,16 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
   const migrateTaskFuncs = [
     migrateTransparentPrerequisite,
     migrateTransparentNpmInstall,
+    migrateTransparentLocalTunnel,
     migrateSetUpTab,
     migrateSetUpBot,
     migrateSetUpSSO,
     migratePrepareManifest,
   ];
-  const debugContext = new DebugMigrationContext(tasksJsonContent["tasks"]);
+
+  const placeholderMappings = await getPlaceholderMappings(context);
+
+  const debugContext = new DebugMigrationContext(tasksJsonContent["tasks"], placeholderMappings);
 
   for (const func of migrateTaskFuncs) {
     func(debugContext);
@@ -548,7 +553,11 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
 
   // Generate app.local.yml
   const oldProjectSettings = await loadProjectSettings(context.projectPath);
-  const appYmlGenerator = new AppLocalYmlGenerator(oldProjectSettings, debugContext.appYmlConfig);
+  const appYmlGenerator = new AppLocalYmlGenerator(
+    oldProjectSettings,
+    debugContext.appYmlConfig,
+    placeholderMappings
+  );
   const appYmlString: string = await appYmlGenerator.generateAppYml();
   await context.fsEnsureDir(SettingsFolderName);
   await context.fsWriteFile(path.join(SettingsFolderName, Constants.appLocalYmlName), appYmlString);

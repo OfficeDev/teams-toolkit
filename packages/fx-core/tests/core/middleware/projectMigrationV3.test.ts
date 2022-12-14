@@ -34,7 +34,6 @@ import {
   migrate,
   wrapRunMigration,
   checkVersionForMigration,
-  VersionState,
   configsMigration,
   generateApimPluginEnvContent,
   userdataMigration,
@@ -42,8 +41,14 @@ import {
   azureParameterMigration,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
-import { getProjectVersion } from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { UpgradeCanceledError } from "../../../src/core/error";
+import { MetadataV2, MetadataV3, VersionState } from "../../../src/common/versionMetadata";
+import {
+  getTrackingIdFromPath,
+  getVersionState,
+} from "../../../src/core/middleware/utils/v3MigrationUtils";
+import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSettingsLoader";
+import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
 
 let mockedEnvRestore: () => void;
 
@@ -382,6 +387,29 @@ describe("generateAppYml-csharp", () => {
   });
 });
 
+describe("generateAppYml-spfx", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  let migrationContext: MigrationContext;
+
+  beforeEach(async () => {
+    migrationContext = await mockMigrationContext(projectPath);
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("should success for spfx project", async () => {
+    await copyTestProject("spfxTab", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+  });
+});
+
 describe("manifestsMigration", () => {
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();
@@ -443,6 +471,55 @@ describe("manifestsMigration", () => {
       .replace(/\t/g, "")
       .replace(/\n/g, "");
     assert.equal(aadManifest, aadManifestExpected);
+  });
+
+  it("happy path: spfx", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    sandbox.stub(migrationContext, "backup").resolves(true);
+    await copyTestProject(Constants.manifestsMigrationHappyPathSpfx, projectPath);
+
+    // Action
+    await manifestsMigration(migrationContext);
+
+    // Assert
+    const oldAppPackageFolderPath = path.join(projectPath, "templates", "appPackage");
+    assert.isFalse(await fs.pathExists(oldAppPackageFolderPath));
+
+    const appPackageFolderPath = path.join(projectPath, "appPackage");
+    assert.isTrue(await fs.pathExists(appPackageFolderPath));
+
+    const resourcesPath = path.join(appPackageFolderPath, "resources", "test.png");
+    assert.isTrue(await fs.pathExists(resourcesPath));
+
+    const remoteManifestPath = path.join(appPackageFolderPath, "manifest.template.json");
+    assert.isTrue(await fs.pathExists(remoteManifestPath));
+    const remoteManifest = (await fs.readFile(remoteManifestPath, "utf-8"))
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    const remoteManifestExpeceted = (
+      await fs.readFile(path.join(projectPath, "expected", "manifest.template.json"), "utf-8")
+    )
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    assert.equal(remoteManifest, remoteManifestExpeceted);
+
+    const localManifestPath = path.join(appPackageFolderPath, "manifest.template.local.json");
+    assert.isTrue(await fs.pathExists(localManifestPath));
+    const localManifest = (await fs.readFile(localManifestPath, "utf-8"))
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    const localManifestExpeceted = (
+      await fs.readFile(path.join(projectPath, "expected", "manifest.template.local.json"), "utf-8")
+    )
+      .replace(/\s/g, "")
+      .replace(/\t/g, "")
+      .replace(/\n/g, "");
+    assert.equal(localManifest, localManifestExpeceted);
   });
 
   it("happy path: aad manifest does not exist", async () => {
@@ -889,6 +966,43 @@ describe("Migration utils", () => {
     const err = UpgradeCanceledError();
     assert.isNotNull(err);
   });
+
+  it("getTrackingIdFromPath: V2 ", async () => {
+    sandbox.stub(fs, "pathExists").callsFake(async (path: string) => {
+      if (path === getProjectSettingPathV3(projectPath)) {
+        return false;
+      }
+      return true;
+    });
+    sandbox.stub(fs, "readJson").resolves({ projectId: MetadataV2.projectMaxVersion });
+    const trackingId = await getTrackingIdFromPath(projectPath);
+    assert.equal(trackingId, MetadataV2.projectMaxVersion);
+  });
+
+  it("getTrackingIdFromPath: V3 ", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readJson").resolves({ trackingId: MetadataV3.projectVersion });
+    const trackingId = await getTrackingIdFromPath(projectPath);
+    assert.equal(trackingId, MetadataV3.projectVersion);
+  });
+
+  it("getTrackingIdFromPath: empty", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const trackingId = await getTrackingIdFromPath(projectPath);
+    assert.equal(trackingId, "");
+  });
+
+  it("getTrackingIdFromPath: empty", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const trackingId = await getTrackingIdFromPath(projectPath);
+    assert.equal(trackingId, "");
+  });
+
+  it("getVersionState", () => {
+    assert.equal(getVersionState("2.0.0"), VersionState.upgradeable);
+    assert.equal(getVersionState("3.0.0"), VersionState.compatible);
+    assert.equal(getVersionState("4.0.0"), VersionState.unsupported);
+  });
 });
 
 describe("debugMigration", () => {
@@ -993,6 +1107,7 @@ const Constants = {
   oldProjectSettingsFilePath: ".fx/configs/projectSettings.json",
   appYmlPath: "teamsfx/app.yml",
   manifestsMigrationHappyPath: "manifestsHappyPath",
+  manifestsMigrationHappyPathSpfx: "manifestsHappyPathSpfx",
   launchJsonPath: ".vscode/launch.json",
   happyPathWithoutFx: "happyPath_for_needMigrateToAadManifest/happyPath_no_fx",
   happyPathAadManifestTemplateExist:

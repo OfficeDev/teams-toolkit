@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 export class ConstantString {
   static readonly UTF8Encoding = "utf-8";
   static readonly DeploymentResourceType = "Microsoft.Resources/deployments";
@@ -87,6 +90,7 @@ export class FeatureFlagName {
   static readonly V3 = "TEAMSFX_V3";
   static readonly V3Migration = "TEAMSFX_V3_MIGRATION";
   static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
+  static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
 }
 
 export class ManifestVariables {

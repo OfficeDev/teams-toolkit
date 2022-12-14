@@ -132,7 +132,6 @@ export class SampleWidget extends Widget {
       <Button
         appearance="primary"
         size="medium"
-        style={{ width: "fit-content" }}
         onClick={() => {}}
       >
         View Details

@@ -80,7 +80,7 @@ This template provides some sample functionality:
 
   ![ShareMessage](./images/ShareMessage.png)
 
-- You can paste a link that "unfurls" (`.botframwork.com` is monitored in this template) and a card will be rendered.
+- You can paste a link that "unfurls" (`.botframework.com` is monitored in this template) and a card will be rendered.
 
   ![ComposeArea](./images/LinkUnfurlingImage.png)
 

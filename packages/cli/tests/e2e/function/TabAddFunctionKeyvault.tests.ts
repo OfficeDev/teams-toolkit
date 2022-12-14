@@ -5,7 +5,7 @@
  * @author Zhaofeng Xu <zhaofengxu@microsoft.com>
  */
 
-import path from "path";
+import * as path from "path";
 import "mocha";
 
 import {
@@ -16,7 +16,7 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
   readContextMultiEnv,
 } from "../commonUtils";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { FunctionValidator } from "../../commonlib";
@@ -34,6 +34,9 @@ describe("Configuration successfully changed when with different plugins", funct
   });
 
   it(`tab + function + key vault`, { testPlanCaseId: 15686867 }, async function () {
+    if (isV3Enabled()) {
+      return this.skip();
+    }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);

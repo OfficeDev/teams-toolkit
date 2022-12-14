@@ -4,6 +4,7 @@
 import "mocha";
 import * as chai from "chai";
 import {
+  migrateTransparentLocalTunnel,
   migratePrepareManifest,
   migrateSetUpBot,
   migrateSetUpSSO,
@@ -70,7 +71,7 @@ describe("debugMigration", () => {
           }
         }]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -127,7 +128,7 @@ describe("debugMigration", () => {
           }
         }]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -165,7 +166,7 @@ describe("debugMigration", () => {
       ]`;
       const expectedTaskContent = testTaskContent;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -197,7 +198,7 @@ describe("debugMigration", () => {
       }]`;
       const expectedTaskContent = testTaskContent;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -273,7 +274,7 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentNpmInstall(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -348,7 +349,7 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentNpmInstall(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -411,7 +412,7 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentNpmInstall(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -424,13 +425,111 @@ describe("debugMigration", () => {
       const testTaskContent = `[]`;
       const expectedTaskContent = `[]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateTransparentNpmInstall(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
         stringify(parse(expectedTaskContent), null, 4)
       );
       chai.assert.isUndefined(debugContext.appYmlConfig.deploy?.npmCommands);
+    });
+  });
+
+  describe("migrateTransparentLocalTunnel", () => {
+    it("happy path", () => {
+      const testTaskContent = `[
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt"
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const expectedTaskContent = `[
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+              "env": "local",
+              "output": {
+                // Keep consistency with migrated configuration.
+                "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+              }
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const debugContext = new DebugMigrationContext(testTasks, {
+        botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+        botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+      });
+      migrateTransparentLocalTunnel(debugContext);
+      chai.assert.equal(
+        stringify(testTasks, null, 4),
+        stringify(parse(expectedTaskContent), null, 4)
+      );
+    });
+
+    it("customized ngrok", () => {
+      const testTaskContent = `[
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+              "ngrokPath": "ngrok"
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const expectedTaskContent = `[
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task to know the details and how to customize the args.
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+              "ngrokPath": "ngrok",
+              "env": "local",
+              "output": {
+                // Keep consistency with migrated configuration.
+                "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+              }
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const debugContext = new DebugMigrationContext(testTasks, {
+        botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+        botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+      });
+      migrateTransparentLocalTunnel(debugContext);
+      chai.assert.equal(
+        stringify(testTasks, null, 4),
+        stringify(parse(expectedTaskContent), null, 4)
+      );
     });
   });
 
@@ -485,7 +584,7 @@ describe("debugMigration", () => {
         setUpLocalProjectsTask("Set up local projects")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateSetUpTab(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
       chai.assert.equal(debugContext.appYmlConfig.configureApp?.tab?.domain, "localhost:53000");
@@ -551,7 +650,7 @@ describe("debugMigration", () => {
         setUpLocalProjectsTask("Set up local projects")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateSetUpBot(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
       chai.assert.equal(debugContext.appYmlConfig.provision?.bot, true);
@@ -614,7 +713,7 @@ describe("debugMigration", () => {
         setUpLocalProjectsTask("Set up local projects")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migrateSetUpSSO(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
       chai.assert.equal(debugContext.appYmlConfig.registerApp?.aad, true);
@@ -675,7 +774,7 @@ describe("debugMigration", () => {
         setUpLocalProjectsTask("Set up local projects")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks);
+      const debugContext = new DebugMigrationContext(testTasks, {});
       migratePrepareManifest(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
       chai.assert.equal(debugContext.appYmlConfig.registerApp?.teamsApp, true);

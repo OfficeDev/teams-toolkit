@@ -588,11 +588,17 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
     );
     // judge if apim plugin exists
     let flag_apimPlugin = false;
-    for (const obj of projectSettingsContent["components"])
-      if (obj["name"] === "apim") {
-        flag_apimPlugin = true;
-        break;
-      }
+    if (
+      Object.keys(projectSettingsContent).includes("components") &&
+      projectSettingsContent["components"] &&
+      typeof projectSettingsContent["components"][Symbol.iterator] === "function"
+    ) {
+      for (const obj of projectSettingsContent["components"])
+        if (obj["name"] === "apim") {
+          flag_apimPlugin = true;
+          break;
+        }
+    }
 
     if (flag_apimPlugin) {
       const fileNames = fsReadDirSync(context, path.join(".fx", "configs"));

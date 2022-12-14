@@ -18,6 +18,7 @@ import {
   createResourcesTask,
   setUpLocalProjectsTask,
 } from "../../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
+import { ProjectSettings } from "@microsoft/teamsfx-api";
 
 describe("debugMigration", () => {
   describe("migrateTransparentPrerequisite", () => {
@@ -71,7 +72,8 @@ describe("debugMigration", () => {
           }
         }]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {});
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {});
       migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -128,7 +130,8 @@ describe("debugMigration", () => {
           }
         }]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {});
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {});
       migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -166,7 +169,8 @@ describe("debugMigration", () => {
       ]`;
       const expectedTaskContent = testTaskContent;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {});
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {});
       migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -198,7 +202,8 @@ describe("debugMigration", () => {
       }]`;
       const expectedTaskContent = testTaskContent;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {});
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {});
       migrateTransparentPrerequisite(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -274,7 +279,8 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {});
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {});
       migrateTransparentNpmInstall(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -349,7 +355,8 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {});
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {});
       migrateTransparentNpmInstall(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -412,7 +419,8 @@ describe("debugMigration", () => {
 			  }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {});
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {});
       migrateTransparentNpmInstall(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -425,7 +433,8 @@ describe("debugMigration", () => {
       const testTaskContent = `[]`;
       const expectedTaskContent = `[]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {});
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {});
       migrateTransparentNpmInstall(debugContext);
       chai.assert.equal(
         stringify(testTasks, null, 4),
@@ -472,7 +481,8 @@ describe("debugMigration", () => {
         }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {
         botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
         botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
       });
@@ -521,7 +531,8 @@ describe("debugMigration", () => {
         }
       ]`;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {
         botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
         botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
       });
@@ -584,7 +595,8 @@ describe("debugMigration", () => {
         setUpLocalProjectsTask("Set up local projects")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {});
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {});
       migrateSetUpTab(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
       chai.assert.equal(debugContext.appYmlConfig.configureApp?.tab?.domain, "localhost:53000");
@@ -650,7 +662,8 @@ describe("debugMigration", () => {
         setUpLocalProjectsTask("Set up local projects")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {});
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {});
       migrateSetUpBot(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
       chai.assert.equal(debugContext.appYmlConfig.provision?.bot, true);
@@ -713,7 +726,8 @@ describe("debugMigration", () => {
         setUpLocalProjectsTask("Set up local projects")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {});
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {});
       migrateSetUpSSO(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
       chai.assert.equal(debugContext.appYmlConfig.registerApp?.aad, true);
@@ -774,7 +788,8 @@ describe("debugMigration", () => {
         setUpLocalProjectsTask("Set up local projects")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
-      const debugContext = new DebugMigrationContext(testTasks, {});
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {});
       migratePrepareManifest(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
       chai.assert.equal(debugContext.appYmlConfig.registerApp?.teamsApp, true);

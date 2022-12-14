@@ -549,7 +549,7 @@ export class NotificationBot {
         conversationReferenceStore: this.conversationReferenceStore,
       })
     );
-    this.botAppId = options?.botAppId ?? "process.env.BOT_ID";
+    this.botAppId = (options?.botAppId ?? process.env.BOT_ID) as string;
   }
 
   /**

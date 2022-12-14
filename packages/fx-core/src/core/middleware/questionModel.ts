@@ -11,8 +11,13 @@ import {
   QTreeNode,
   Result,
   traverse,
+  Void,
 } from "@microsoft/teamsfx-api";
-import { isCLIDotNetEnabled, isPreviewFeaturesEnabled } from "../../common/featureFlags";
+import {
+  isCLIDotNetEnabled,
+  isOfficeAddinEnabled,
+  isPreviewFeaturesEnabled,
+} from "../../common/featureFlags";
 import { deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
 import { getNotificationTriggerQuestionNode } from "../../component/question";
@@ -24,8 +29,10 @@ import {
   CoreQuestionNames,
   createAppNameQuestion,
   createCapabilityForDotNet,
+  createCapabilityForOfficeAddin,
   createCapabilityQuestion,
   createCapabilityQuestionPreview,
+  CreateNewOfficeAddinOption,
   ExistingTabEndpointQuestion,
   getCreateNewOrFromSampleQuestion,
   getRuntimeQuestion,
@@ -46,6 +53,7 @@ import { isPersonalApp, needBotCode } from "../../component/resource/appManifest
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
 import { getTemplateId } from "../../component/developerPortalScaffoldUtils";
+import { getQuestionsForScaffolding } from "../../component/generator/officeAddin/question";
 
 /**
  * This middleware will help to collect input from question flow
@@ -185,6 +193,10 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   sampleNode.condition = { equals: ScratchOptionNo.id };
   sampleNode.addChild(new QTreeNode(QuestionRootFolder));
 
+  if (isOfficeAddinEnabled()) {
+    addOfficeAddinQuestions(node);
+  }
+
   return ok(node.trim());
 }
 
@@ -284,4 +296,18 @@ export async function getQuestionsForCreateProjectV2(
   } else {
     return getQuestionsForCreateProjectWithoutDotNet(inputs);
   }
+}
+
+export function addOfficeAddinQuestions(node: QTreeNode): void {
+  const createNewAddin = new QTreeNode({ type: "group" });
+  createNewAddin.condition = { equals: CreateNewOfficeAddinOption.id };
+  node.addChild(createNewAddin);
+
+  const capNode = new QTreeNode(createCapabilityForOfficeAddin());
+  createNewAddin.addChild(capNode);
+
+  capNode.addChild(getQuestionsForScaffolding());
+
+  createNewAddin.addChild(new QTreeNode(QuestionRootFolder));
+  createNewAddin.addChild(new QTreeNode(createAppNameQuestion()));
 }

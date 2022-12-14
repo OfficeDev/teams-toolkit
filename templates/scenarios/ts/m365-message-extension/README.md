@@ -30,7 +30,7 @@ Follow below instructions to get started with this application template for loca
 
 ### Test your application with TeamsFx CLI
 
-1. Start debugging the project by executing the command `teamsfx preview --local --m365-host <m365-host>` in your project directory, where options for `m365-host` are `teams` or `outlook`.
+1. Start debugging the project by executing the command `teamsfx preview --env local --m365-host <m365-host>` in your project directory, where options for `m365-host` are `teams` or `outlook`.
 1. If you select `m365-host` as `outlook`, follow the instructions in the command dialog.
 
   ![CLI Pop up](https://user-images.githubusercontent.com/11220663/167869249-c1238ab7-d0eb-4bda-87cc-22ac8bad743b.png)
@@ -62,10 +62,6 @@ This template provides a simple functionality to search for `npm` packages and r
 - Click the "More apps" icon under compose email area, find your message extension.
   
     ![InOutlook](https://user-images.githubusercontent.com/11220663/167869656-20225f14-f982-4e47-8dd0-050285d56853.png)
-
-## Known issue
-
-You might see `Something went wrong` from the message extension while local debugging this application. This is a known issue to us and we are actively working on a fix to resolve it. Meanwhile, to proceed with local debug, you can delete those two files: `.fx/states/local.userdata` and `.fx/states/state.local.json` and press `F5` again.
 
 ## References
 

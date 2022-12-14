@@ -12,6 +12,8 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import path from "path";
+import { ExecutionResult } from "../driver/interface/stepDriver";
+import { getLocalizedString } from "../../common/localizeUtils";
 
 /**
  * check parameter, throw error if value is null or undefined
@@ -25,45 +27,51 @@ export function checkMissingArgs<T>(name: string, value: T | null | undefined): 
   return value;
 }
 
-export function asOptional<T>(as: (s: unknown, key: string) => T) {
-  return function (s: unknown, key: string): T | undefined {
+export function asOptional<T>(as: (s: unknown, key: string, helpLink?: string) => T) {
+  return function (s: unknown, key: string, helpLink?: string): T | undefined {
     if (s === undefined || s === null) {
       return undefined;
     }
-    return as(s, key);
+    return as(s, key, helpLink);
   };
 }
 
-export function asBoolean(s: unknown, key: string): boolean {
+export function asBoolean(s: unknown, key: string, helpLink?: string): boolean {
   if (typeof s === "boolean") {
     return s;
   } else if (typeof s === "string") {
     return s === "true";
   }
-  throw PrerequisiteError.somethingMissing("Deploy", key);
+  throw PrerequisiteError.somethingMissing("Deploy", key, helpLink);
 }
 
-export function asString(s: unknown, key: string): string {
+export function asString(s: unknown, key: string, helpLink?: string): string {
   if (typeof s === "string") {
     return s as string;
   }
-  throw PrerequisiteError.somethingMissing("Deploy", key);
+  throw PrerequisiteError.somethingMissing("Deploy", key, helpLink);
 }
 
 type KeyValidators<T> = {
-  [P in keyof T]-?: (s: unknown, key: string) => T[P];
+  [P in keyof T]-?: (s: unknown, key: string, helpLink?: string) => T[P];
 };
 
 export function asFactory<T>(keyValidators: KeyValidators<T>) {
-  return function (data: unknown): T {
+  return function (data: unknown, helpLink?: string): T {
     if (typeof data === "object" && data !== null) {
       const maybeT = data as unknown as T;
       for (const key of Object.keys(keyValidators) as Array<keyof T>) {
-        keyValidators[key](maybeT[key], `${key}`);
+        keyValidators[key](maybeT[key], `${key}`, helpLink);
       }
       return maybeT;
     }
-    throw PrerequisiteError.somethingIllegal("Deploy", "data", "plugins.bot.InvalidData");
+    throw PrerequisiteError.somethingIllegal(
+      "Deploy",
+      "data",
+      "plugins.bot.InvalidData",
+      undefined,
+      helpLink
+    );
   };
 }
 
@@ -88,6 +96,34 @@ export async function wrapRun(
     }
     // always return error as SystemError
     return err(BaseComponentInnerError.unknownError("Deploy", error).toFxError());
+  }
+}
+
+export async function wrapSummary(
+  exec: () => Promise<Result<Map<string, string>, FxError>>,
+  summary: string[]
+): Promise<ExecutionResult> {
+  const result = await exec();
+  if (result.isOk()) {
+    const summaries = summary.map((s) => getLocalizedString(s));
+    return { result, summaries };
+  } else {
+    const summaries: string[] = [];
+    return { result, summaries };
+  }
+}
+
+export async function wrapSummaryWithArgs(
+  exec: () => Promise<Result<Map<string, string>, FxError>>,
+  summary: string[][]
+): Promise<ExecutionResult> {
+  const result = await exec();
+  if (result.isOk()) {
+    const summaries = summary.map((s) => getLocalizedString(s[0], ...s.splice(1)));
+    return { result, summaries };
+  } else {
+    const summaries: string[] = [];
+    return { result, summaries };
   }
 }
 

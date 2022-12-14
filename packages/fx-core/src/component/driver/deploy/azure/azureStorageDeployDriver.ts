@@ -24,24 +24,32 @@ import {
   UserInteraction,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { StepDriver } from "../../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { DriverContext, AzureResourceInfo } from "../../interface/commonArgs";
 import { createBlobServiceClient } from "../../../utils/azureResourceOperation";
 import { TokenCredential } from "@azure/identity";
-import { wrapRun } from "../../../utils/common";
+import { wrapRun, wrapSummary } from "../../../utils/common";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
 import { ProgressMessages } from "../../../messages";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 const ACTION_NAME = "azureStorage/deploy";
 
 @Service(ACTION_NAME)
 export class AzureStorageDeployDriver implements StepDriver {
+  readonly description: string = getLocalizedString(
+    "driver.deploy.deployToAzureStorageDescription"
+  );
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new AzureStorageDeployDriverImpl(args, context);
     return wrapRun(() => impl.run(), undefined, context.logProvider);
+  }
+
+  execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
+    return wrapSummary(this.run.bind(this, args, ctx), ["driver.deploy.azureStorageDeploySummary"]);
   }
 }
 
@@ -51,6 +59,8 @@ export class AzureStorageDeployDriver implements StepDriver {
 export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i;
+
+  protected helpLink = "https://aka.ms/teamsfx-actions/azure-storage-deploy";
 
   async azureDeploy(
     args: DeployStepArgs,
@@ -67,11 +77,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
     );
     // delete all existing blobs
     await this.progressBar?.next(ProgressMessages.clearStorageExistsBlobs);
-    await AzureStorageDeployDriverImpl.deleteAllBlobs(
-      containerClient,
-      azureResource.instanceId,
-      this.context.logProvider
-    );
+    await this.deleteAllBlobs(containerClient, azureResource.instanceId, this.context.logProvider);
     await this.context.logProvider.debug("Uploading files to Azure Storage Service");
     // upload all to storage
     await this.progressBar?.next(ProgressMessages.uploadFilesToStorage);
@@ -100,7 +106,11 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
     const responses = await Promise.all(tasks);
     const errorResponse = responses.find((res) => res.errorCode);
     if (errorResponse) {
-      throw DeployExternalApiCallError.uploadToStorageError(sourceFolder, errorResponse);
+      throw DeployExternalApiCallError.uploadToStorageError(
+        sourceFolder,
+        errorResponse,
+        this.helpLink
+      );
     }
     await this.context.logProvider.debug("Upload files to Azure Storage Service successfully");
     await this.progressBar?.end(true);
@@ -121,7 +131,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
     return container;
   }
 
-  private static async deleteAllBlobs(
+  private async deleteAllBlobs(
     client: ContainerClient,
     storageName: string,
     logProvider: LogProvider
@@ -143,7 +153,8 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
       throw DeployExternalApiCallError.clearStorageError(
         "delete blob",
         errorResponse.errorCode,
-        errorResponse
+        errorResponse,
+        this.helpLink
       );
     }
   }

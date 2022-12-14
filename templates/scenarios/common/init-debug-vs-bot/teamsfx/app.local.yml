@@ -15,14 +15,14 @@ provision:
     # BOT_ID: the AAD app client id created for bot
     # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
 
-  - uses: appsettings/generate
+  - uses: file/updateAppSettings
     with:
       target: ./appsettings.Development.json
       appsettings:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
 
-  - uses: botFramework/createOrUpdateBot # Create or update the bot registration on dev.botframework.com
+  - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
     with:
       botId: ${{BOT_ID}}
       name: {%appName%}
@@ -33,7 +33,7 @@ configureApp:
   - uses: teamsApp/validate
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
-  - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip

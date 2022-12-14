@@ -13,6 +13,7 @@ import "mocha";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 // test case for bug https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/12836125
 describe("Scaffold Tab then Add Function and SQL", function () {
@@ -25,7 +26,10 @@ describe("Scaffold Tab then Add Function and SQL", function () {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("should generate correct local config file", { testPlanCaseId: 15687252 }, async () => {
+  it("should generate correct local config file", { testPlanCaseId: 15687252 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);

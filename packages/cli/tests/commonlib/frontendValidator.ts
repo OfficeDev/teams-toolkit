@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { AzureScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import axios from "axios";
 import * as chai from "chai";
 import * as fs from "fs";
@@ -12,6 +12,7 @@ import {
   getSubscriptionIdFromResourceId,
   parseFromResourceId,
 } from "./utilities";
+import { EnvConstants } from "../commonlib/constants";
 
 const baseUrlContainer = (
   subscriptionId: string,
@@ -64,7 +65,7 @@ export class FrontendValidator {
   public static init(ctx: any): IFrontendObject {
     console.log("Start to init validator for Frontend.");
 
-    const resourceId = ctx[DependentPluginInfo.frontendPluginName][this.storageResourceIdKeyName];
+    const resourceId = this.getResourceIdFromCtx(ctx);
     chai.assert.exists(resourceId);
 
     this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
@@ -91,6 +92,20 @@ export class FrontendValidator {
 
     fs.access(indexPath, fs.constants.F_OK, (err) => {
       // err is null means file exists
+      chai.assert.isNull(err);
+    });
+  }
+
+  public static async validateScaffoldV3(
+    projectPath: string,
+    programmingLanguage: string
+  ): Promise<void> {
+    const indexFile: { [key: string]: string } = {
+      typescript: "index.tsx",
+      javascript: "index.jsx",
+    };
+    const indexPath = path.resolve(projectPath, "src", indexFile[programmingLanguage]);
+    fs.access(indexPath, fs.constants.F_OK, (err) => {
       chai.assert.isNull(err);
     });
   }
@@ -191,6 +206,14 @@ export class FrontendValidator {
     } catch (error) {
       console.log(error);
       return undefined;
+    }
+  }
+
+  private static getResourceIdFromCtx(ctx: any): string {
+    if (isV3Enabled()) {
+      return ctx[EnvConstants.TAB_AZURE_STORAGE_RESOURCE_ID];
+    } else {
+      return ctx[DependentPluginInfo.frontendPluginName][this.storageResourceIdKeyName];
     }
   }
 

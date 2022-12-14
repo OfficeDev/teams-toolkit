@@ -19,7 +19,7 @@ import * as localStateHelper from "./localStateHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
 import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { getPortsInUse, getPortsFromProject } from "./portChecker";
-import { getAppSPFxVersion, waitSeconds } from "../tools";
+import { getAppSPFxVersion, isVideoFilterProject, waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
 import { DepsType } from "../deps-checker/depsChecker";
@@ -47,10 +47,7 @@ export class LocalEnvManager {
     this.ui = ui;
   }
 
-  public async getActiveDependencies(
-    projectSettings: ProjectSettings,
-    projectPath: string
-  ): Promise<DepsType[]> {
+  public async getActiveDependencies(projectSettings: ProjectSettings): Promise<DepsType[]> {
     const depsTypes: DepsType[] = [];
     const isSPFx = ProjectSettingsHelper.isSpfx(projectSettings);
     const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
@@ -61,11 +58,7 @@ export class LocalEnvManager {
 
     // NodeJS
     if (isSPFx) {
-      if ((await getAppSPFxVersion(projectPath))?.startsWith("1.16.0")) {
-        depsTypes.push(DepsType.SpfxNodeV1_16);
-      } else {
-        depsTypes.push(DepsType.SpfxNode);
-      }
+      depsTypes.push(DepsType.SpfxNode);
     } else {
       depsTypes.push(DepsType.AzureNode);
     }
@@ -175,6 +168,7 @@ export class LocalEnvManager {
   }
 
   public async resolveLocalCertificate(
+    workspacePath: string,
     trustDevCert: boolean,
     localEnvProvider?: LocalEnvProvider
   ): Promise<LocalCertificate> {
@@ -182,10 +176,18 @@ export class LocalEnvManager {
     const certManager = new LocalCertificateManager(this.ui);
     const res = await certManager.setupCertificate(trustDevCert);
     if (trustDevCert && localEnvProvider) {
-      const frontendEnvs = await localEnvProvider.loadFrontendLocalEnvs();
-      frontendEnvs.template[LocalEnvKeys.frontend.template.SslCrtFile] = res.certPath;
-      frontendEnvs.template[LocalEnvKeys.frontend.template.SslKeyFile] = res.keyPath;
-      await localEnvProvider.saveFrontendLocalEnvs(frontendEnvs);
+      const isVideoFilter = await isVideoFilterProject(workspacePath);
+      if (isVideoFilter.isOk() && isVideoFilter.value) {
+        const videoFilterEnvs = await localEnvProvider.loadVideoFilterLocalEnvs();
+        videoFilterEnvs.template[LocalEnvKeys.videoFilterApp.template.SslCrtFile] = res.certPath;
+        videoFilterEnvs.template[LocalEnvKeys.videoFilterApp.template.SslKeyFile] = res.keyPath;
+        await localEnvProvider.saveVideoFilterLocalEnvs(videoFilterEnvs);
+      } else {
+        const frontendEnvs = await localEnvProvider.loadFrontendLocalEnvs();
+        frontendEnvs.template[LocalEnvKeys.frontend.template.SslCrtFile] = res.certPath;
+        frontendEnvs.template[LocalEnvKeys.frontend.template.SslKeyFile] = res.keyPath;
+        await localEnvProvider.saveFrontendLocalEnvs(frontendEnvs);
+      }
     }
     return res;
   }

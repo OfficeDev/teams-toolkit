@@ -1,4 +1,4 @@
-import { FxError, Result } from "@microsoft/teamsfx-api";
+import { FxError, LogProvider, Result } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { StepDriver } from "../driver/interface/stepDriver";
 
@@ -57,6 +57,11 @@ export type ExecutionError =
   | { kind: "PartialSuccess"; env: Map<string, string>; reason: PartialSuccessReason }
   | { kind: "Failure"; error: FxError };
 
+export type ExecutionResult = {
+  result: Result<ExecutionOutput, ExecutionError>;
+  summaries: string[][];
+};
+
 export interface ILifecycle {
   name: LifecycleName;
   driverDefs: DriverDefinition[];
@@ -82,9 +87,16 @@ export interface ILifecycle {
    * is: 1. execute() resolves a driver's placeholder before executing it. It's useful when driver2 references
    *      driver1's output.
    *     2. execute() still returns the output of successful driver runs when encountering an error.
+   *     3. execute() returns a list of summaires
    * @param ctx driver context
    */
-  execute(ctx: DriverContext): Promise<Result<ExecutionOutput, ExecutionError>>;
+  execute(ctx: DriverContext): Promise<ExecutionResult>;
+
+  /**
+   * Try to search for driver instances defined by this.driverDefs.
+   * @param log LogProvider
+   */
+  resolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError>;
 }
 
 export interface IYamlParser {

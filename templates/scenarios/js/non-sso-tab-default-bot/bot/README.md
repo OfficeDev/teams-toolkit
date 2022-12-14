@@ -16,16 +16,16 @@ This is a simple hello world application with both Bot and Message extension cap
 
 ## Debug
 
-- From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code. 
+- From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code.
 - Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Run and Debug` green arrow button.
 - From TeamsFx CLI: Start debugging the project by executing the command `teamsfx preview --local` in your project directory.
 
 ## Edit the manifest
 
-You can find the Teams app manifest in `templates/appPackage` folder. The folder contains one manifest file:
+You can find the Teams app manifest in `../appPackage` folder. The folder contains one manifest file:
 * `manifest.template.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
 
-This file contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
+This file contains template arguments with `${{...}}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
 
 ## Deploy to Azure
 
@@ -82,7 +82,7 @@ This template provides some sample functionality:
 
   ![ShareMessage](./images/ShareMessage.png)
 
-- You can paste a link that "unfurls" (`.botframwork.com` is monitored in this template) and a card will be rendered.
+- You can paste a link that "unfurls" (`.botframework.com` is monitored in this template) and a card will be rendered.
 
   ![ComposeArea](./images/LinkUnfurlingImage.png)
 

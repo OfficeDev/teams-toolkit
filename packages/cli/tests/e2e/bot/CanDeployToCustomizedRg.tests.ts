@@ -5,7 +5,7 @@
  * @author Zhaofeng Xu <zhaofengxu@microsoft.com>
  */
 
-import path from "path";
+import * as path from "path";
 
 import { BotValidator } from "../../commonlib";
 import {
@@ -23,6 +23,7 @@ import { environmentManager } from "@microsoft/teamsfx-core/build/core/environme
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, ResourceToDeploy } from "../../commonlib/constants";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Deploy to customized resource group", function () {
   const testFolder = getTestFolder();
@@ -39,6 +40,9 @@ describe("Deploy to customized resource group", function () {
     `bot project can deploy bot resource to customized resource group and successfully provision / deploy`,
     { testPlanCaseId: 15685614 },
     async function () {
+      if (isV3Enabled()) {
+        return this.skip();
+      }
       // Create new bot project
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 

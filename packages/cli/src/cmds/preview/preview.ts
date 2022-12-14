@@ -42,7 +42,6 @@ import {
   LocalEnvManager,
   ProjectSettingsHelper,
   TaskDefinition,
-  ProgrammingLanguage,
   getProjectComponents,
   TelemetryContext,
 } from "@microsoft/teamsfx-core/build/common/local";
@@ -85,7 +84,7 @@ import * as util from "util";
 import { openHubWebClient } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { FolderName } from "@microsoft/teamsfx-core/build/common/local/constants";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import {
   hasAzureTab,
   hasBot,
@@ -100,7 +99,6 @@ enum Checker {
 
 const DepsDisplayName = {
   [DepsType.SpfxNode]: "Node.js",
-  [DepsType.SpfxNodeV1_16]: "Node.js",
   [DepsType.AzureNode]: "Node.js",
   [DepsType.ProjectNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
@@ -115,7 +113,6 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
   [Checker.Ports]: `Checking ${Checker.Ports}`,
   [DepsType.ProjectNode]: `Checking ${DepsDisplayName[DepsType.ProjectNode]}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
-  [DepsType.SpfxNodeV1_16]: `Checking ${DepsDisplayName[DepsType.SpfxNodeV1_16]}`,
   [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
   [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
   [DepsType.Ngrok]: `Checking and installing ${DepsDisplayName[DepsType.Ngrok]}`,
@@ -369,7 +366,7 @@ export default class Preview extends YargsCommand {
 
         // check cert
         if (includeFrontend) {
-          const certRes = await this.resolveLocalCertificate(localEnvManager);
+          const certRes = await this.resolveLocalCertificate(workspaceFolder, localEnvManager);
           if (certRes.isErr()) {
             return err(certRes.error);
           }
@@ -1022,7 +1019,7 @@ export default class Preview extends YargsCommand {
       const hasTeamsFxDevScript =
         (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Bot))) !== undefined;
       const botWatchTask =
-        includeFuncHostedBot && programmingLanguage === ProgrammingLanguage.typescript
+        includeFuncHostedBot && programmingLanguage === ProgrammingLanguage.TS
           ? hasTeamsFxDevScript
             ? this.prepareTaskNext(
                 TaskDefinition.funcHostedBotWatch(workspaceFolder),
@@ -1181,7 +1178,7 @@ export default class Preview extends YargsCommand {
           )
       : undefined;
     const backendWatchTask =
-      includeBackend && programmingLanguage === ProgrammingLanguage.typescript
+      includeBackend && programmingLanguage === ProgrammingLanguage.TS
         ? (await loadTeamsFxDevScript(path.join(workspaceFolder, FolderName.Function))) !==
           undefined
           ? this.prepareTaskNext(
@@ -1275,10 +1272,7 @@ export default class Preview extends YargsCommand {
       TelemetryEvent.PreviewPrereqsCheckDependencies,
       async (ctx: TelemetryContext): Promise<Result<null, FxError>> => {
         let shouldContinue = true;
-        const availableDeps = await localEnvManager.getActiveDependencies(
-          projectSettings,
-          workspaceFolder
-        );
+        const availableDeps = await localEnvManager.getActiveDependencies(projectSettings);
         const enabledDeps = await CliDepsChecker.getEnabledDeps(
           availableDeps.filter((dep) => !CliDepsChecker.getNodeDeps().includes(dep))
         );
@@ -1519,6 +1513,7 @@ export default class Preview extends YargsCommand {
   }
 
   private async resolveLocalCertificate(
+    workspaceFolder: string,
     localEnvManager: LocalEnvManager
   ): Promise<Result<null, FxError>> {
     return localTelemetryReporter.runWithTelemetry(
@@ -1532,7 +1527,10 @@ export default class Preview extends YargsCommand {
         await certBar.next(ProgressMessage[Checker.LocalCertificate]);
         try {
           const trustDevCert = await isTrustDevCertEnabled();
-          const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
+          const localCertResult = await localEnvManager.resolveLocalCertificate(
+            workspaceFolder,
+            trustDevCert
+          );
           // trust cert telemetry properties
           ctx.properties[TelemetryProperty.PreviewDevCertStatus] = !trustDevCert
             ? TelemetryPreviewDevCertStatus.Disabled

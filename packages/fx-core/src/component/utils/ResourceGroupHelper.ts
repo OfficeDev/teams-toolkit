@@ -236,7 +236,8 @@ export class ResourceGroupHelper {
 
     const node = new QTreeNode(selectResourceGroup);
 
-    const inputNewResourceGroupName = newResourceGroupNameQuestion(rmClient);
+    const existingResourceGroupNames = existingResourceGroupNameLocations.map((item) => item[0]);
+    const inputNewResourceGroupName = newResourceGroupNameQuestion(existingResourceGroupNames);
     inputNewResourceGroupName.default = defaultResourceGroupName;
     const newResourceGroupNameNode = new QTreeNode(inputNewResourceGroupName);
     newResourceGroupNameNode.condition = { equals: newResourceGroupOption };

@@ -24,7 +24,6 @@ import { MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
-import { AxiosError } from "axios";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -101,6 +100,8 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(client.webApps, "restart").resolves();
     const res = await deploy.run(args, context);
     expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
+    const rex = await deploy.execute(args, context);
+    expect(rex.result.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
   });
 
   it("resource id error", async () => {
@@ -336,6 +337,23 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
+    const res = await deploy.run(args, context);
+    assert.equal(res.isErr(), true);
+  });
+
+  it("working dir not exists", async () => {
+    const deploy = new AzureAppServiceDeployDriver();
+    const args = {
+      workingDirectory: "/aaaa",
+      distributionPath: `./${folder}`,
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+    } as DeployArgs;
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+    } as DriverContext;
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
   });

@@ -12,6 +12,7 @@
   "license": "MIT",
   "main": "index.js",
   "scripts": {
+    "dev:teamsfx": "node teamsfx/script/run.js . teamsfx/.env.local",
     "dev": "nodemon --inspect=9239 --signal SIGINT ./index.js",
     "start": "node ./index.js",
     "watch": "nodemon ./index.js"

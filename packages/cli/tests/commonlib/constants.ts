@@ -161,3 +161,32 @@ export class provisionParametersKey {
   static readonly botClientSecretName = "botClientSecretName";
   static readonly simpleAuthSku = "simpleAuthSku";
 }
+
+export class EnvConstants {
+  // Azure Resource
+  static readonly AZURE_SUBSCRIPTION_ID = "AZURE_SUBSCRIPTION_ID";
+  static readonly AZURE_RESOURCE_GROUP_NAME = "AZURE_RESOURCE_GROUP_NAME";
+  static readonly RESOURCE_SUFFIX = "RESOURCE_SUFFIX";
+  // Teams App
+  static readonly TEAMS_APP_ID = "TEAMS_APP_ID";
+  static readonly TEAMS_APP_TENANT_ID = "TEAMS_APP_TENANT_ID";
+  // AAD
+  static readonly AAD_APP_OBJECT_ID = "AAD_APP_OBJECT_ID";
+  static readonly AAD_APP_CLIENT_ID = "AAD_APP_CLIENT_ID";
+  static readonly AAD_APP_CLIENT_SECRETS = "SECRET_AAD_APP_CLIENT_SECRET";
+  static readonly AAD_APP_ACCESS_AS_USER_PERMISSION_ID = "AAD_APP_ACCESS_AS_USER_PERMISSION_ID";
+  static readonly AAD_APP_TENANT_ID = "AAD_APP_TENANT_ID";
+  static readonly AAD_APP_OAUTH_AUTHORITY = "AAD_APP_OAUTH_AUTHORITY";
+  static readonly AAD_APP_OAUTH_AUTHORITY_HOST = "AAD_APP_OAUTH_AUTHORITY_HOST";
+  // FrontEnd
+  static readonly TAB_AZURE_STORAGE_RESOURCE_ID = "TAB_AZURE_STORAGE_RESOURCE_ID";
+  static readonly TAB_ENDPOINT = "TAB_ENDPOINT";
+  static readonly TAB_DOMAIN = "TAB_DOMAIN";
+  static readonly TAB_AZURE_APP_SERVICE_RESOURCE_ID = "TAB_AZURE_APP_SERVICE_RESOURCE_ID";
+
+  // BOT
+  static readonly BOT_ID = "BOT_ID";
+  static readonly BOT_PASSWORD = "SECRET_BOT_PASSWORD";
+  static readonly BOT_AZURE_APP_SERVICE_RESOURCE_ID = "BOT_AZURE_APP_SERVICE_RESOURCE_ID";
+  static readonly BOT_DOMAIN = "BOT_DOMAIN";
+}

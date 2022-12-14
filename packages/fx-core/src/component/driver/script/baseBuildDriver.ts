@@ -15,41 +15,53 @@ export abstract class BaseBuildDriver {
   progressBarName: string;
   progressBarSteps = 1;
   workingDirectory?: string;
+  execPath?: string;
+  protected context: DriverContext;
   protected logProvider: LogProvider;
   protected progressBar?: IProgressHandler;
   protected telemetryReporter: TelemetryReporter;
   static readonly emptyMap = new Map<string, string>();
   abstract buildPrefix: string;
 
-  constructor(args: unknown, context: DriverContext) {
-    this.args = BaseBuildDriver.toBuildArgs(args);
+  constructor(args: unknown, context: DriverContext, helpLink?: string) {
+    this.args = BaseBuildDriver.toBuildArgs(args, helpLink);
     this.args.workingDirectory = this.args.workingDirectory ?? "./";
     // if working dir is not absolute path, then join the path with project path
     this.workingDirectory = path.isAbsolute(this.args.workingDirectory)
       ? this.args.workingDirectory
       : path.join(context.projectPath, this.args.workingDirectory);
     this.progressBarName = `Building project ${this.workingDirectory}`;
-    this.progressBar = context.ui?.createProgressBar(this.progressBarName, this.progressBarSteps);
     this.logProvider = context.logProvider;
     this.telemetryReporter = context.telemetryReporter;
+    this.context = context;
+    this.execPath = this.args.execPath;
   }
 
   protected static asBuildArgs = asFactory<BuildArgs>({
     workingDirectory: asOptional(asString),
     args: asString,
+    execPath: asOptional(asString),
   });
 
-  protected static toBuildArgs(args: unknown): BuildArgs {
-    return BaseBuildDriver.asBuildArgs(args);
+  protected static toBuildArgs(args: unknown, helpLink?: string): BuildArgs {
+    return BaseBuildDriver.asBuildArgs(args, helpLink);
   }
 
   async run(): Promise<Map<string, string>> {
-    const commandSuffix = checkMissingArgs("BuildCommand", this.args.args).trim();
-    const command = `${this.buildPrefix} ${commandSuffix}`;
+    this.progressBar = this.context.ui?.createProgressBar(
+      this.progressBarName,
+      this.progressBarSteps
+    );
+    const command = this.getCommand();
     await this.progressBar?.start();
+    // add path to env if execPath is set
+    let env: NodeJS.ProcessEnv | undefined = undefined;
+    if (this.execPath) {
+      env = { PATH: `${this.execPath}${path.delimiter}${process.env.PATH}` };
+    }
     await this.progressBar?.next(`Run command ${command} at ${this.workingDirectory}`);
     try {
-      const output = await execute(command, this.workingDirectory, this.logProvider);
+      const output = await execute(command, this.workingDirectory, this.logProvider, env);
       await this.logProvider.debug(`execute ${command} output is ${output}`);
       await this.progressBar?.end(true);
     } catch (e) {
@@ -60,6 +72,11 @@ export abstract class BaseBuildDriver {
       );
     }
     return BaseBuildDriver.emptyMap;
+  }
+
+  getCommand(): string {
+    const commandSuffix = checkMissingArgs("BuildCommand", this.args.args).trim();
+    return `${this.buildPrefix} ${commandSuffix}`;
   }
 
   /**

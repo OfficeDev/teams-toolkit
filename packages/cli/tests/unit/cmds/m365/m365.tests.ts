@@ -94,6 +94,11 @@ describe("M365", () => {
     const sideloading = m365.subCommands.find((cmd) => cmd.commandHead === "sideloading");
     expect(sideloading).not.undefined;
 
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
     axiosPostResponses["/dev/v1/users/packages"] = {
       data: {
         operationId: "test-operation-id",
@@ -127,6 +132,11 @@ describe("M365", () => {
     const unacquire = m365.subCommands.find((cmd) => cmd.commandHead === "unacquire");
     expect(unacquire).not.undefined;
 
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
     axiosDeleteResponses["/catalog/v1/users/acquisitions/test-title-id"] = {
       status: 200,
     };
@@ -142,6 +152,11 @@ describe("M365", () => {
     const unacquire = m365.subCommands.find((cmd) => cmd.commandHead === "unacquire");
     expect(unacquire).not.undefined;
 
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
     axiosPostResponses["/catalog/v1/users/titles/launchInfo"] = {
       data: {
         acquisition: {
@@ -166,6 +181,11 @@ describe("M365", () => {
     const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");
     expect(launchInfo).not.undefined;
 
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
     axiosGetResponses["/catalog/v1/users/titles/test-title-id/launchInfo"] = {
       data: {
         foo: "bar",
@@ -183,6 +203,11 @@ describe("M365", () => {
     const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");
     expect(launchInfo).not.undefined;
 
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
     axiosPostResponses["/catalog/v1/users/titles/launchInfo"] = {
       data: {
         acquisition: {

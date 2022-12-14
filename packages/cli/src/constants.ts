@@ -77,6 +77,26 @@ export const BuildPackageOptions: OptionsMap = {
   },
 };
 
+export const AadManifestFilePathName = "manifest-file-path";
+export const AadManifestOptions: OptionsMap = {
+  [AadManifestFilePathName]: {
+    type: "string",
+    global: false,
+    description:
+      "Enter the AAD app manifest template file path, it's a relative path to project root folder, default to './aad.manifest.template.json'",
+  },
+};
+
+export const TeamsAppManifestFilePathName = "manifest-file-path";
+export const TeamsAppManifestOptions: OptionsMap = {
+  [TeamsAppManifestFilePathName]: {
+    type: "string",
+    global: false,
+    description:
+      "Enter the Teams app manifest template file path, it's a relative path to project root folder, default to './appPackage/manifest.template.json'",
+  },
+};
+
 export const templates = sampleProvider.SampleCollection.samples.map((sample) => {
   return {
     tags: sample.tags,
@@ -114,4 +134,4 @@ export const AddFeatureFunc = {
 
 export const EmptyQTreeNode = new QTreeNode({ type: "group" });
 
-export const SUPPORTED_SPFX_VERSION = "1.15.0";
+export const SUPPORTED_SPFX_VERSION = "1.16.0";

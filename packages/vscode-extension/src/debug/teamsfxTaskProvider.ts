@@ -16,21 +16,20 @@ import {
   v2,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { isV3Enabled, ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import {
   FolderName,
   ITaskDefinition,
   LocalEnvManager,
-  ProgrammingLanguage,
   TaskCommand,
   TaskDefinition,
 } from "@microsoft/teamsfx-core/build/common/local";
 import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 import VsCodeLogInstance from "../commonlib/log";
-import { detectVsCodeEnv, showError } from "../handlers";
+import { core, detectVsCodeEnv, getSystemInputs, showError } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as commonUtils from "./commonUtils";
@@ -48,6 +47,7 @@ import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTermina
 import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
 import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
 import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
+import { VS_CODE_UI } from "../extension";
 
 const customTasks = Object.freeze({
   [TaskCommand.checkPrerequisites]: {
@@ -189,7 +189,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         tasks.push(
           await this.createBackendStartTask(workspaceFolder, programmingLanguage, localEnv)
         );
-        if (programmingLanguage === ProgrammingLanguage.typescript) {
+        if (programmingLanguage === ProgrammingLanguage.TS) {
           tasks.push(await this.createBackendWatchTask(workspaceFolder));
         }
       }
@@ -236,6 +236,25 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       ([k]) => k === task.definition.command
     )?.[1];
     if (!customTask) {
+      return undefined;
+    }
+
+    // migrate to v3
+    if (
+      isV3Enabled() &&
+      (task.definition.command === TaskCommand.npmInstall ||
+        task.definition.command === TaskCommand.setUpTab ||
+        task.definition.command === TaskCommand.setUpBot ||
+        task.definition.command === TaskCommand.setUpSSO ||
+        task.definition.command === TaskCommand.prepareManifest)
+    ) {
+      const result = await core.phantomMigrationV3(getSystemInputs());
+      if (result.isErr()) {
+        showError(result.error);
+        return undefined;
+      }
+      // reload window to terminate debugging
+      await VS_CODE_UI.reload();
       return undefined;
     }
 

@@ -64,6 +64,7 @@ export const funcHostedBotStartPattern =
   /Worker process started and initialized|Host lock lease acquired by instance ID/g;
 export const funcHostedBotAzuritePattern = /successfully listening/g;
 export const gulpServePattern = /^.*Finished subtask 'reload'.*/g;
+export const defaultRunningPattern = /started|successfully|finished|crashed|failed/i;
 
 export const spfxInstallStartMessage = `executing 'npm install' under ${FolderName.SPFx} folder.`;
 export const gulpCertTitle = "gulp trust-dev-cert";
@@ -149,6 +150,13 @@ export const installApp = {
     remoteConfigureOutlookDescription:
       "Pop up Azure Portal for you to connect your bot to Outlook channel.",
   },
+};
+
+export const runCommand = {
+  detectRunCommand: "Option 'run-command' is not provided, set to: ",
+  showCommand: "Executing command - ",
+  showRunningPattern: "Running pattern - ",
+  showWorkingFolder: "Working folder - ",
 };
 
 export const m365TenantHintMessage =

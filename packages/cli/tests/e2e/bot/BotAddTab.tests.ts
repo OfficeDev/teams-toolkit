@@ -5,7 +5,7 @@
  * @author Zhaofeng Xu <zhaofengxu@microsoft.com>
  */
 
-import path from "path";
+import * as path from "path";
 import "mocha";
 import {
   getSubscriptionId,
@@ -22,6 +22,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 import { BotValidator } from "../../commonlib";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();
@@ -35,6 +36,9 @@ describe("Configuration successfully changed when with different plugins", funct
   });
 
   it(`bot + tab`, { testPlanCaseId: 15685606 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     if (isPreviewFeaturesEnabled()) {
       await CliHelper.addCapabilityToProject(projectPath, Capability.SSOTab);

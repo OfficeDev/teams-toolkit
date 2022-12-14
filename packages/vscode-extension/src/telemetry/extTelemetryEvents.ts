@@ -179,8 +179,7 @@ export enum TelemetryEvent {
 
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
-  OpenSideloadingJoinM365 = "open-sideloading-joinm365",
-  OpenSideloadingReadmore = "open-sideloading-readmore",
+  OpenSideloadingLearnMore = "open-sideloading-learn-more",
   OpenSignInJoinM365 = "open-sign-in-joinm365",
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",
@@ -226,6 +225,9 @@ export enum TelemetryEvent {
   CopyCodeSnippet = "copy-code-snippet",
   ExpandGuideStep = "expand-guide-step",
   OpenExternalLink = "open-external-link",
+
+  // ITP account help in product documentation
+  ClickITPButton = "click-itp-button",
 
   Deactivate = "deactivate",
 
@@ -346,6 +348,8 @@ export enum TelemetryTriggerFrom {
   Notification = "Notification",
   QuickPick = "QuickPick",
   InProductDoc = "InProductDoc",
+  AccountHelp = "AccountHelp",
+  SideloadingDisabled = "SideloadingDisabled",
   Other = "Other",
   Auto = "Auto",
   Unknow = "Unknow",

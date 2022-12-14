@@ -442,11 +442,22 @@ export class AppManifest implements CloudResource {
     inputs: InputsWithProjectPath
   ): Promise<Result<undefined, FxError>> {
     TelemetryUtils.init(context);
-    if (isV3Enabled()) {
-      return await updateManifestV3(context, inputs);
-    } else {
-      return await updateManifest(context, inputs);
-    }
+    return await updateManifest(context, inputs);
+  }
+
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: "AppStudioPlugin",
+      telemetryEventName: TelemetryEventName.deploy,
+    }),
+  ])
+  async deployV3(
+    context: ResourceContextV3,
+    inputs: InputsWithProjectPath
+  ): Promise<Result<Map<string, string>, FxError>> {
+    TelemetryUtils.init(context);
+    return await updateManifestV3(context, inputs);
   }
 
   /**

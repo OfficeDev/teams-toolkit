@@ -60,6 +60,8 @@ import { VsCodeLogProvider } from "../../src/commonlib/log";
 import { ProgressHandler } from "../../src/progressHandler";
 import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 import { assert } from "console";
+import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
+import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -347,9 +349,16 @@ describe("handlers", () => {
 
       const result = await handlers.selectTutorialsHandler();
 
-      chai.assert.equal(tutorialOptions.length, 5);
+      chai.assert.equal(tutorialOptions.length, 15);
       chai.assert.isTrue(result.isOk());
     });
+  });
+
+  it("openAccountHelpHandler()", async () => {
+    const createOrShow = sinon.stub(WebviewPanel, "createOrShow");
+    await handlers.openAccountHelpHandler();
+    sinon.assert.calledOnceWithExactly(createOrShow, PanelType.AccountHelp);
+    createOrShow.restore();
   });
 
   describe("runCommand()", function () {
@@ -358,6 +367,10 @@ describe("handlers", () => {
     });
 
     it("openConfigStateFile() - local", async () => {
+      sinon.stub(localizeUtils, "localize").callsFake((key: string) => {
+        return key;
+      });
+
       const env = "local";
       const tmpDir = fs.mkdtempSync(path.resolve("./tmp"));
 
@@ -1220,23 +1233,21 @@ describe("handlers", () => {
       const progressHandler = new ProgressHandler("title", 1);
       const startProgress = sinon.stub(progressHandler, "start").resolves();
       const endProgress = sinon.stub(progressHandler, "end").resolves();
-      sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").throws("error");
+      sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").throws("error1");
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
       const showErrorMessage = sinon.stub(vscode.window, "showErrorMessage");
-      let hasError = false;
 
-      await handlers.scaffoldFromDeveloperPortalHandler(["appId"]).catch((err) => {
-        hasError = true;
-        chai.assert.equal(err, "error");
-        chai.assert.equal(createProgressBar.calledOnce, true);
-        chai.assert.equal(startProgress.calledOnce, true);
-        chai.assert.equal(endProgress.calledOnceWithExactly(false), true);
-        chai.assert.equal(showErrorMessage.calledOnce, true);
-      });
-
-      chai.assert.equal(hasError, true);
+      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
+      chai.assert.isTrue(res.isErr());
+      chai.assert.isTrue(createProgressBar.calledOnce);
+      chai.assert.isTrue(startProgress.calledOnce);
+      chai.assert.isTrue(endProgress.calledOnceWithExactly(false));
+      chai.assert.isTrue(showErrorMessage.calledOnce);
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, "error1");
+      }
     });
 
     it("error when signing M365", async () => {
@@ -1283,14 +1294,37 @@ describe("handlers", () => {
       chai.assert.equal(showErrorMessage.calledOnce, true);
     });
 
-    it("sign in M365 successfully", async () => {
+    it("failed to get teams app", async () => {
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       const progressHandler = new ProgressHandler("title", 1);
       const startProgress = sinon.stub(progressHandler, "start").resolves();
       const endProgress = sinon.stub(progressHandler, "end").resolves();
-      sinon
-        .stub(M365TokenInstance, "signInWhenInitiatedFromTdp")
-        .resolves(ok({ appId: "mock-id" }));
+      sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
+      const createProgressBar = sinon
+        .stub(extension.VS_CODE_UI, "createProgressBar")
+        .returns(progressHandler);
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(commonUtils, "isExistingTabApp").returns(Promise.resolve(false));
+      sinon.stub(vscode.commands, "executeCommand");
+      sinon.stub(globalState, "globalStateUpdate");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const getApp = sinon.stub(AppStudioClient, "getApp").throws("error");
+
+      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
+
+      chai.assert.isTrue(res.isErr());
+      chai.assert.isTrue(getApp.calledOnce);
+      chai.assert.isTrue(createProgressBar.calledOnce);
+      chai.assert.isTrue(startProgress.calledOnce);
+      chai.assert.isTrue(endProgress.calledOnceWithExactly(true));
+    });
+
+    it("happy path", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      const progressHandler = new ProgressHandler("title", 1);
+      const startProgress = sinon.stub(progressHandler, "start").resolves();
+      const endProgress = sinon.stub(progressHandler, "end").resolves();
+      sinon.stub(M365TokenInstance, "signInWhenInitiatedFromTdp").resolves(ok("token"));
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
@@ -1300,14 +1334,18 @@ describe("handlers", () => {
       sinon.stub(vscode.commands, "executeCommand");
       sinon.stub(globalState, "globalStateUpdate");
       sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mock-id",
+      };
+      sinon.stub(AppStudioClient, "getApp").resolves(appDefinition);
 
-      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId"]);
+      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId", "testuser"]);
 
-      chai.assert.equal(createProject.args[0][0].teamsAppFromTdp.appId, "mock-id");
-      chai.assert.equal(res.isOk(), true);
-      chai.assert.equal(createProgressBar.calledOnce, true);
-      chai.assert.equal(startProgress.calledOnce, true);
-      chai.assert.equal(endProgress.calledOnceWithExactly(true), true);
+      chai.assert.equal(createProject.args[0][0].teamsAppFromTdp.teamsAppId, "mock-id");
+      chai.assert.isTrue(res.isOk());
+      chai.assert.isTrue(createProgressBar.calledOnce);
+      chai.assert.isTrue(startProgress.calledOnce);
+      chai.assert.isTrue(endProgress.calledOnceWithExactly(true));
     });
   });
 
@@ -1386,6 +1424,24 @@ describe("handlers", () => {
       sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
       const result = await handlers.installAppInTeams();
       chai.assert.equal(result, "1");
+    });
+  });
+
+  describe("callBackFunctions", () => {
+    it("checkSideloadingCallback()", async () => {
+      sinon.stub(localizeUtils, "localize").returns("");
+      let showMessageCalledCount = 0;
+      sinon.stub(extension, "VS_CODE_UI").value({
+        showMessage: async () => {
+          showMessageCalledCount += 1;
+          return ok(undefined);
+        },
+      });
+
+      await handlers.checkSideloadingCallback();
+
+      chai.expect(showMessageCalledCount).to.be.equal(1);
+      sinon.restore();
     });
   });
 });

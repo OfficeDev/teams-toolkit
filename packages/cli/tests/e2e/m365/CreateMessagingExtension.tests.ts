@@ -13,7 +13,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { M365Validator } from "../../commonlib/m365Validator";
 import { BotValidator } from "../../commonlib";
 import { Capability } from "../../commonlib/constants";
-
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 describe("Create M365 Message Extension", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -32,7 +32,10 @@ describe("Create M365 Message Extension", function () {
     await cleanUpLocalProject(projectPath);
   });
 
-  it("happy path", { testPlanCaseId: 15687010 }, async () => {
+  it("happy path", { testPlanCaseId: 15687010 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.M365SearchApp);
     await M365Validator.validateProjectSettings(projectPath);
     await M365Validator.validateManifest(projectPath);

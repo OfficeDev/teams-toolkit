@@ -53,6 +53,7 @@ export class EnvUtil {
         parseResult.obj[key] = decryptRes.value;
       }
     }
+    parseResult.obj.TEAMSFX_ENV = env;
     if (loadToProcessEnv) {
       merge(process.env, parseResult.obj);
     }

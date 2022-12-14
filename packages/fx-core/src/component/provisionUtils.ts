@@ -526,17 +526,6 @@ export class ProvisionUtils {
       if (rgRes.isErr()) return err(rgRes.error);
       resourceGroupInfo = rgRes.value;
     }
-    if (resourceGroupInfo && resourceGroupInfo.createNewResourceGroup) {
-      const createRgRes = await resourceGroupHelper.createNewResourceGroup(
-        resourceGroupInfo.name,
-        azureAccountProvider,
-        subscriptionId,
-        resourceGroupInfo.location
-      );
-      if (createRgRes.isErr()) {
-        return err(createRgRes.error);
-      }
-    }
     return ok(resourceGroupInfo);
   }
 
@@ -814,11 +803,7 @@ export class ProvisionUtils {
             [TelemetryProperty.Env]: getHashedEnv(envName),
             [SolutionTelemetryProperty.SubscriptionId]: azureSubInfo.subscriptionId,
             [SolutionTelemetryProperty.M365TenantId]: m365tenant?.tenantIdInToken ?? "",
-            [SolutionTelemetryProperty.ConfirmRes]: !confirm
-              ? "Error"
-              : confirm === provisionText
-              ? "Provision"
-              : "Cancel",
+            [SolutionTelemetryProperty.ConfirmRes]: !confirm ? "Cancel" : "Provision",
           }
         : {}
     );
@@ -847,10 +832,7 @@ export class ProvisionUtils {
         keysNeedToUpdate.push("AAD_APP_CLIENT_ID");
       }
     }
-    if (
-      actions.includes("botAadApp/create") ||
-      actions.includes("botFramework/createOrUpdateBot")
-    ) {
+    if (actions.includes("botAadApp/create") || actions.includes("botFramework/create")) {
       if (process.env.BOT_ID) {
         keysNeedToUpdate.push("BOT_ID");
       }

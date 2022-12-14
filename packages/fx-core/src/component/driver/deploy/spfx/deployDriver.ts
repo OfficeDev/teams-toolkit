@@ -18,8 +18,9 @@ import { getLocalizedString } from "../../../../common/localizeUtils";
 import { getSPFxToken, GraphScopes } from "../../../../common/tools";
 import { asBoolean, asFactory, asString, wrapRun } from "../../../utils/common";
 import { DriverContext } from "../../interface/commonArgs";
-import { StepDriver } from "../../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
+import { WrapDriverContext } from "../../util/wrapUtil";
 import { CreateAppCatalogFailedError } from "./error/createAppCatalogFailedError";
 import { GetGraphTokenFailedError } from "./error/getGraphTokenFailedError";
 import { GetSPOTokenFailedError } from "./error/getSPOTokenFailedError";
@@ -35,6 +36,8 @@ import { SPOClient } from "./utility/spoClient";
 
 @Service(Constants.DeployDriverName)
 export class SPFxDeployDriver implements StepDriver {
+  public readonly description = getLocalizedString("driver.spfx.deploy.description");
+
   private readonly EmptyMap = new Map<string, string>();
 
   private asDeployArgs = asFactory<DeploySPFxArgs>({
@@ -49,15 +52,33 @@ export class SPFxDeployDriver implements StepDriver {
     args: DeploySPFxArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    return wrapRun(() => this.deploy(args, context));
+    const wrapContext = new WrapDriverContext(
+      context,
+      Constants.TelemetryDeployEventName,
+      Constants.TelemetryComponentName
+    );
+    return wrapRun(() => this.deploy(args, wrapContext));
   }
 
-  public async deploy(args: DeploySPFxArgs, context: DriverContext): Promise<Map<string, string>> {
-    const deployArgs = this.asDeployArgs(args);
-    const progressHandler = context.ui?.createProgressBar(
-      Constants.DeployProgressTitle,
-      Object.entries(DeployProgressMessage).length
+  public async execute(args: DeploySPFxArgs, ctx: DriverContext): Promise<ExecutionResult> {
+    const wrapContext = new WrapDriverContext(
+      ctx,
+      Constants.TelemetryDeployEventName,
+      Constants.TelemetryComponentName
     );
+    const result = await this.run(args, wrapContext);
+    return {
+      result,
+      summaries: wrapContext.summaries,
+    };
+  }
+
+  public async deploy(
+    args: DeploySPFxArgs,
+    context: WrapDriverContext
+  ): Promise<Map<string, string>> {
+    const deployArgs = this.asDeployArgs(args);
+    const progressHandler = context.ui?.createProgressBar(Constants.DeployProgressTitle, 3);
     await progressHandler?.start();
     let success = false;
     try {
@@ -71,12 +92,15 @@ export class SPFxDeployDriver implements StepDriver {
 
       let appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
       if (appCatalogSite) {
+        await progressHandler?.next(DeployProgressMessage.SkipCreateSPAppCatalog);
         SPOClient.setBaseUrl(appCatalogSite);
+        context.addSummary(DeployProgressMessage.SkipCreateSPAppCatalog);
       } else {
         await progressHandler?.next(DeployProgressMessage.CreateSPAppCatalog);
         if (deployArgs.createAppCatalogIfNotExist) {
           try {
             await SPOClient.createAppCatalog(spoToken);
+            context.addSummary(DeployProgressMessage.CreateSPAppCatalog);
           } catch (e) {
             throw new CreateAppCatalogFailedError(e as Error);
           }
@@ -86,7 +110,9 @@ export class SPFxDeployDriver implements StepDriver {
         let retry = 0;
         appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
         while (appCatalogSite == null && retry < Constants.APP_CATALOG_MAX_TIMES) {
-          context.logProvider.warning(`No tenant app catalog found, retry: ${retry}`);
+          context.logProvider.warning(
+            getLocalizedString("driver.spfx.warn.noTenantAppCatalogFound", retry)
+          );
           await sleep(Constants.APP_CATALOG_REFRESH_TIME);
           appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
           retry += 1;
@@ -94,15 +120,12 @@ export class SPFxDeployDriver implements StepDriver {
         if (appCatalogSite) {
           SPOClient.setBaseUrl(appCatalogSite);
           context.logProvider.info(
-            `Sharepoint tenant app catalog ${appCatalogSite} created, wait for a few minutes to be active.`
+            getLocalizedString("driver.spfx.info.tenantAppCatalogCreated", appCatalogSite)
           );
           await sleep(Constants.APP_CATALOG_ACTIVE_TIME);
         } else {
-          // TODO: move strings to the localization file
           throw new CreateAppCatalogFailedError(
-            new Error(
-              "Cannot get app catalog site url after creation. You may need wait a few minutes and retry."
-            )
+            new Error(getLocalizedString("driver.spfx.error.failedToGetAppCatalog"))
           );
         }
       }
@@ -118,8 +141,9 @@ export class SPFxDeployDriver implements StepDriver {
       const fileName = path.parse(appPackage).base;
       const bytes = await fs.readFile(appPackage);
       try {
-        await progressHandler?.next(DeployProgressMessage.UploadAndDeploy);
+        await progressHandler?.next(DeployProgressMessage.Upload);
         await SPOClient.uploadAppPackage(spoToken, fileName, bytes);
+        context.addSummary(DeployProgressMessage.Upload);
       } catch (e: any) {
         if (e.response?.status === 403) {
           context.ui?.showMessage(
@@ -134,8 +158,10 @@ export class SPFxDeployDriver implements StepDriver {
         }
       }
 
+      await progressHandler?.next(DeployProgressMessage.Deploy);
       const appID = await this.getAppID(packageSolutionPath);
       await SPOClient.deployAppPackage(spoToken, appID);
+      context.addSummary(DeployProgressMessage.Deploy);
       const guidance = getLocalizedString(
         "plugins.spfx.deployNotice",
         appPackage,

@@ -18,7 +18,6 @@ import {
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import {
   AadAppTemplateCodeLensProvider,
   AdaptiveCardCodeLensProvider,
@@ -45,6 +44,7 @@ import {
   initializeGlobalVariables,
   isExistingUser,
   isSPFxProject,
+  isTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
@@ -64,8 +64,9 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
+import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/tools";
 import { UriHandler } from "./uriHandler";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
+import { isV3Enabled, isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -86,8 +87,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerInternalCommands(context);
 
-  const isTeamsFxProject = isValidProject(workspaceUri?.fsPath);
-
   if (isTeamsFxProject) {
     registerTreeViewCommandsInDevelopment(context);
     registerTreeViewCommandsInDeployment(context);
@@ -101,6 +100,19 @@ export async function activate(context: vscode.ExtensionContext) {
       azureAccountProvider: AzureAccountManager,
       m365TokenProvider: M365TokenInstance,
     });
+    // Set region for M365 account every
+    M365TokenInstance.setStatusChangeMap(
+      "set-region",
+      { scopes: AuthSvcScopes },
+      async (status, token, accountInfo) => {
+        if (status === "SignedIn") {
+          const tokenRes = await M365TokenInstance.getAccessToken({ scopes: AuthSvcScopes });
+          if (tokenRes.isOk()) {
+            setRegion(tokenRes.value);
+          }
+        }
+      }
+    );
 
     if (vscode.workspace.isTrusted) {
       registerCodelensAndHoverProviders(context);
@@ -323,15 +335,14 @@ function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext)
   // User can click to debug directly, same as pressing "F5".
   registerInCommandController(context, "fx-extension.debug", handlers.debugHandler);
 
-  // Add features
-  registerInCommandController(
-    context,
-    "fx-extension.addFeature",
-    handlers.addFeatureHandler,
-    "addFeature"
-  );
-
   if (!isV3Enabled()) {
+    // Add features
+    registerInCommandController(
+      context,
+      "fx-extension.addFeature",
+      handlers.addFeatureHandler,
+      "addFeature"
+    );
     // Edit manifest file
     registerInCommandController(
       context,
@@ -694,6 +705,7 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
 
   await setAadManifestEnabledContext();
   await setApiV3EnabledContext();
+  await setTDPIntegrationEnabledContext();
 
   await vscode.commands.executeCommand(
     "setContext",
@@ -721,6 +733,14 @@ async function setApiV3EnabledContext() {
   await vscode.commands.executeCommand("setContext", "fx-extension.isV3Enabled", isV3Enabled());
 }
 
+async function setTDPIntegrationEnabledContext() {
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isTDPIntegrationEnabled", // Currently it will return whether v3 is enabled or not.
+    isTDPIntegrationEnabled()
+  );
+}
+
 function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   // Setup CodeLens provider for userdata file
   const codelensProvider = new CryptoCodeLensProvider();
@@ -733,6 +753,10 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     language: "json",
     scheme: "file",
     pattern: `**/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsJsonName}`,
+  };
+  const envDataSelector = {
+    scheme: "file",
+    pattern: "**/.env.*",
   };
 
   const adaptiveCardCodeLensProvider = new AdaptiveCardCodeLensProvider();
@@ -784,12 +808,18 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     pattern: `**/permissions.json`,
   };
 
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
-  );
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(localDebugDataSelector, codelensProvider)
-  );
+  if (isV3Enabled()) {
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(envDataSelector, codelensProvider)
+    );
+  } else {
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
+    );
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(localDebugDataSelector, codelensProvider)
+    );
+  }
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       adaptiveCardFileSelector,
@@ -891,25 +921,11 @@ async function runBackgroundAsyncTasks(
   isTeamsFxProject: boolean
 ) {
   await exp.initialize(context);
-  TreatmentVariableValue.welcomeViewStyle = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.WelcomeView,
-      true
-    )) as string | undefined;
   await vscode.commands.executeCommand(
     "setContext",
-    "fx-extension.isExistingUser",
-    isExistingUser !== "no"
+    "fx-extension.isNewUser",
+    isExistingUser === "no"
   );
-  if (TreatmentVariableValue.welcomeViewStyle === "A") {
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewA", true);
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
-  } else if (TreatmentVariableValue.welcomeViewStyle === "B") {
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewB", true);
-    await vscode.commands.executeCommand("setContext", "fx-extension.welcomeViewTreatment", true);
-  }
   TreatmentVariableValue.inProductDoc = (await exp
     .getExpService()
     .getTreatmentVariableAsync(
@@ -917,11 +933,6 @@ async function runBackgroundAsyncTasks(
       TreatmentVariables.InProductDoc,
       true
     )) as boolean | undefined;
-  await vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.guideTreatment",
-    TreatmentVariableValue.inProductDoc
-  );
 
   ExtTelemetry.isFromSample = await handlers.getIsFromSample();
   ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();

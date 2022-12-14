@@ -33,6 +33,7 @@ import {
   ProjectSettingsV3,
   SettingsFolderName,
   SettingsFileName,
+  InputTextConfig,
 } from "@microsoft/teamsfx-api";
 
 import {
@@ -43,7 +44,12 @@ import {
   EnvNotSpecified,
 } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
-import { FeatureFlags, SUPPORTED_SPFX_VERSION } from "./constants";
+import {
+  FeatureFlags,
+  SUPPORTED_SPFX_VERSION,
+  TeamsAppManifestFilePathName,
+  AadManifestFilePathName,
+} from "./constants";
 import { FxCore, isV3Enabled } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
 import CLIUIInstance from "./userInteraction";
@@ -156,6 +162,34 @@ export function getEnvFilePath(
       EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
     )
   );
+}
+
+export async function askManifestFilePath(): Promise<Result<string, FxError>> {
+  const config: InputTextConfig = {
+    name: AadManifestFilePathName,
+    title: "Enter the AAD app manifest template path",
+    default: "./aad.manifest.template.json",
+  };
+  const filePathInput = await CLIUIInstance.inputText(config);
+  if (filePathInput.isErr()) {
+    return err(filePathInput.error);
+  } else {
+    return ok(filePathInput.value.result as string);
+  }
+}
+
+export async function askTeamsManifestFilePath(): Promise<Result<string, FxError>> {
+  const config: InputTextConfig = {
+    name: TeamsAppManifestFilePathName,
+    title: "Enter the Teams app manifest template path",
+    default: "./appPackage/manifest.template.json",
+  };
+  const filePathInput = await CLIUIInstance.inputText(config);
+  if (filePathInput.isErr()) {
+    return err(filePathInput.error);
+  } else {
+    return ok(filePathInput.value.result as string);
+  }
 }
 
 export function getSettingsFilePath(projectFolder: string) {

@@ -9,8 +9,9 @@
     "license": "MIT",
     "main": "./lib/index.js",
     "scripts": {
+        "dev:teamsfx": "node teamsfx/script/run.js . teamsfx/.env.local",
         "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./index.ts",
-        "build": "tsc --build && shx cp -r ./adaptiveCards ./lib/",
+        "build": "tsc --build",
         "start": "node ./lib/index.js",
         "watch": "nodemon --exec \"npm run start\"",
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -28,6 +29,7 @@
     "devDependencies": {
         "@microsoft/teamsfx-run-utils": "alpha",
         "@types/restify": "8.4.2",
+        "@types/node": "^14.0.0",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4",
         "nodemon": "^2.0.7",

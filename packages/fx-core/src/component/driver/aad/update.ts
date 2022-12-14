@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { StepDriver } from "../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
 import { Service } from "typedi";
@@ -22,7 +22,7 @@ import isUUID from "validator/lib/isUUID";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { logMessageKeys } from "./utility/constants";
+import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
 import { MissingEnvUserError } from "./error/missingEnvError";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
@@ -34,16 +34,24 @@ const driverConstants = {
 // logic from src\component\resource\aadApp\aadAppManifestManager.ts
 @Service(actionName) // DO NOT MODIFY the service name
 export class UpdateAadAppDriver implements StepDriver {
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  description = getLocalizedString(descriptionMessageKeys.update);
+
   public async run(
     args: UpdateAadAppArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
+    const result = await this.execute(args, context);
+    return result.result;
+  }
+
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  public async execute(args: UpdateAadAppArgs, context: DriverContext): Promise<ExecutionResult> {
     const progressBarSettings = this.getProgressBarSetting();
     const progressHandler = context.ui?.createProgressBar(
       progressBarSettings.title,
       progressBarSettings.stepMessages.length
     );
+    const summaries: string[] = [];
 
     try {
       await progressHandler?.start();
@@ -89,25 +97,38 @@ export class UpdateAadAppDriver implements StepDriver {
       }
       // 2. Update AAD app again with full manifest to set preAuthorizedApplications
       await aadAppClient.updateAadApp(manifest);
+      const summary = getLocalizedString(
+        logMessageKeys.successUpdateAadAppManifest,
+        args.manifestTemplatePath,
+        manifest.id
+      );
+      context.logProvider?.info(summary);
+      summaries.push(summary);
 
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
       await progressHandler?.end(true);
 
-      return ok(
-        new Map(
-          Object.entries(state) // convert each property to Map item
-            .filter((item) => item[1] && item[1] !== "") // do not return Map item that is empty
-        )
-      );
+      return {
+        result: ok(
+          new Map(
+            Object.entries(state) // convert each property to Map item
+              .filter((item) => item[1] && item[1] !== "") // do not return Map item that is empty
+          )
+        ),
+        summaries: summaries,
+      };
     } catch (error) {
       await progressHandler?.end(false);
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
         );
-        return err(error);
+        return {
+          result: err(error),
+          summaries: summaries,
+        };
       }
 
       if (axios.isAxiosError(error)) {
@@ -116,9 +137,15 @@ export class UpdateAadAppDriver implements StepDriver {
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
-          return err(new UnhandledUserError(actionName, message, helpLink));
+          return {
+            result: err(new UnhandledUserError(actionName, message, helpLink)),
+            summaries: summaries,
+          };
         } else {
-          return err(new UnhandledSystemError(actionName, message));
+          return {
+            result: err(new UnhandledSystemError(actionName, message)),
+            summaries: summaries,
+          };
         }
       }
 
@@ -126,7 +153,10 @@ export class UpdateAadAppDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      return err(new UnhandledSystemError(actionName, JSON.stringify(error)));
+      return {
+        result: err(new UnhandledSystemError(actionName, JSON.stringify(error))),
+        summaries: summaries,
+      };
     }
   }
 

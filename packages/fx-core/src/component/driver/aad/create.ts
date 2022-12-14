@@ -1,25 +1,32 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { StepDriver } from "../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { Service } from "typedi";
 import { CreateAadAppArgs } from "./interface/createAadAppArgs";
 import { AadAppClient } from "./utility/aadAppClient";
 import { CreateAadAppOutput } from "./interface/createAadAppOutput";
 import { ProgressBarSetting } from "./interface/progressBarSetting";
-import { FxError, M365TokenProvider, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  M365TokenProvider,
+  Result,
+  SystemError,
+  UserError,
+  ok,
+  err,
+} from "@microsoft/teamsfx-api";
 import { GraphScopes } from "../../../common/tools";
 import { Constants } from "../../resource/aadApp/constants";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { MissingEnvUserError } from "./error/missingEnvError";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import axios from "axios";
-import { wrapRun } from "../../utils/common";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { logMessageKeys } from "./utility/constants";
+import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
@@ -31,23 +38,24 @@ const AAD_APP_CLIENT_ID = "AAD_APP_CLIENT_ID";
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateAadAppDriver implements StepDriver {
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  description = getLocalizedString(descriptionMessageKeys.create);
+
   public async run(
     args: CreateAadAppArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    return wrapRun(() => this.handler(args, context));
+    const result = await this.execute(args, context);
+    return result.result;
   }
 
-  public async handler(
-    args: CreateAadAppArgs,
-    context: DriverContext
-  ): Promise<Map<string, string>> {
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  public async execute(args: CreateAadAppArgs, context: DriverContext): Promise<ExecutionResult> {
     const progressBarSettings = this.getProgressBarSetting();
     const progressHandler = context.ui?.createProgressBar(
       progressBarSettings.title,
       progressBarSettings.stepMessages.length
     );
+    const summaries: string[] = [];
     try {
       await progressHandler?.start();
 
@@ -67,7 +75,9 @@ export class CreateAadAppDriver implements StepDriver {
         aadAppState.AAD_APP_CLIENT_ID = aadApp.appId!;
         aadAppState.AAD_APP_OBJECT_ID = aadApp.id!;
         await this.setAadEndpointInfo(context.m365TokenProvider, aadAppState);
-        context.logProvider?.info(getLocalizedString(logMessageKeys.successCreateAadApp));
+        const summary = getLocalizedString(logMessageKeys.successCreateAadApp, aadApp.id);
+        context.logProvider?.info(summary);
+        summaries.push(summary);
       } else {
         context.logProvider?.info(
           getLocalizedString(logMessageKeys.skipCreateAadApp, AAD_APP_CLIENT_ID)
@@ -95,7 +105,12 @@ export class CreateAadAppDriver implements StepDriver {
           aadAppState.SECRET_AAD_APP_CLIENT_SECRET = await aadAppClient.generateClientSecret(
             aadAppState.AAD_APP_OBJECT_ID
           );
-          context.logProvider?.info(getLocalizedString(logMessageKeys.successGenerateClientSecret));
+          const summary = getLocalizedString(
+            logMessageKeys.successGenerateClientSecret,
+            aadAppState.AAD_APP_OBJECT_ID
+          );
+          context.logProvider?.info(summary);
+          summaries.push(summary);
         } else {
           context.logProvider?.info(
             getLocalizedString(logMessageKeys.skipCreateAadApp, SECRET_AAD_APP_CLIENT_SECRET)
@@ -108,17 +123,25 @@ export class CreateAadAppDriver implements StepDriver {
       );
       await progressHandler?.end(true);
 
-      return new Map(
-        Object.entries(aadAppState) // convert each property to Map item
-          .filter((item) => item[1] && item[1] !== "") // do not return Map item that is empty
-      );
+      return {
+        result: ok(
+          new Map(
+            Object.entries(aadAppState) // convert each property to Map item
+              .filter((item) => item[1] && item[1] !== "") // do not return Map item that is empty
+          )
+        ),
+        summaries: summaries,
+      };
     } catch (error) {
       await progressHandler?.end(false);
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
         );
-        throw error;
+        return {
+          result: err(error),
+          summaries: summaries,
+        };
       }
 
       if (axios.isAxiosError(error)) {
@@ -127,9 +150,15 @@ export class CreateAadAppDriver implements StepDriver {
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
-          throw new UnhandledUserError(actionName, message, helpLink);
+          return {
+            result: err(new UnhandledUserError(actionName, message, helpLink)),
+            summaries: summaries,
+          };
         } else {
-          throw new UnhandledSystemError(actionName, message);
+          return {
+            result: err(new UnhandledSystemError(actionName, message)),
+            summaries: summaries,
+          };
         }
       }
 
@@ -137,7 +166,10 @@ export class CreateAadAppDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledSystemError(actionName, JSON.stringify(error));
+      return {
+        result: err(new UnhandledSystemError(actionName, JSON.stringify(error))),
+        summaries: summaries,
+      };
     }
   }
 

@@ -483,10 +483,13 @@
       </Item>
       <Item ItemId=";core.InitGenerateConfirm" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams Toolkit: Teams Toolkit will generate the following files, would you like to proceed? ]A;%s]]></Val>
+          <Val><![CDATA[Teams Toolkit: Teams Toolkit will generate the following files (existing files with duplicated names will be overwritten), would you like to proceed? ]A;%s]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Набор средств Teams: Набор средств Teams создаст следующие файлы. Вы хотите продолжить? ]A;%s]]></Val>
+            <Val><![CDATA[Набор средств Teams: набор средств Teams создаст следующие файлы (существующие файлы с повторяющимися именами будут перезаписаны). Вы хотите продолжить? ]A;%s]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Teams Toolkit: Teams Toolkit will generate the following files, would you like to proceed? ]A;%s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2203,6 +2206,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.deployArmTemplates.ActionSuccess" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Successfully deploy ARM templates. Resource group name: %s. Deployment name: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Шаблоны ARM успешно развернуты. Имя группы ресурсов: %s. Имя развертывания: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.deployArmTemplates.CompileBicepFailed" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to compile bicep files to Json arm templates file: %s]]></Val>
@@ -2478,10 +2490,13 @@
       </Item>
       <Item ItemId=";core.error.unresolvedPlaceholders" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[There are unresolved placeholders in '.yml' file: %s]]></Val>
+          <Val><![CDATA[There are unresolved placeholders: '%s' in the selected yml file]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[В файле ".yml" есть неразрешенные заполнители: %s]]></Val>
+            <Val><![CDATA[В выбранном файле YML есть неразрешенные заполнители: "%s"]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[There are unresolved placeholders in '.yml' file: %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2854,6 +2869,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.progress.azureStorageStaticWebsiteEnabled" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Azure Storage static website setting already enabled.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Параметр статического веб-сайта службы хранилища Microsoft Azure уже включен.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.progress.buildingApi" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Building Api]]></Val>
@@ -2901,10 +2925,13 @@
       </Item>
       <Item ItemId=";core.progress.buildingTab.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Building Tab frontend project]]></Val>
+          <Val><![CDATA[Building tab app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Проект вкладки "Сборка" для интерфейсного сервера]]></Val>
+            <Val><![CDATA[Приложение вкладки "Сборка"]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Building Tab frontend project]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2913,6 +2940,15 @@
           <Val><![CDATA[Waiting for Azure deployment to complete.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ожидание завершения развертывания Azure.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.progress.checkAzureStorageStaticWebsite" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Checking the setting of Azure Storage static website status.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Проверка состояния статического веб-сайта службы хранилища Microsoft Azure.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2928,9 +2964,21 @@
       </Item>
       <Item ItemId=";core.progress.clearStorageExistsBlobs" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Cleaning up Azure Storage exists blob files.]]></Val>
+          <Val><![CDATA[Delete all files in Azure Storage $web container.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Очистка файлов BLOB-объектов, находящихся в службе хранилища Azure.]]></Val>
+            <Val><![CDATA[Удалите все файлы в контейнере $web службы хранилища Azure.]]></Val>
+          </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Cleaning up Azure Storage exists blob files.]]></Val>
+          </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.progress.configureAzureStorage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Configuring Azure Storage, enable static website setting.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Включить параметр статического веб-сайта при настройке службы хранилища Microsoft Azure.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -2940,6 +2988,15 @@
           <Val><![CDATA[Configuring Tab]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Идет настройка вкладки]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.progress.enableAzureStorageStaticWebsite" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Enabling Azure Storage static website setting.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Включение параметра статического веб-сайта службы хранилища Microsoft Azure.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3108,10 +3165,13 @@
       </Item>
       <Item ItemId=";core.progress.scaffoldTab.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Scaffolding Tab frontend project.]]></Val>
+          <Val><![CDATA[Scaffolding tab app.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Формирование шаблонов проекта вкладки интерфейсного сервера.]]></Val>
+            <Val><![CDATA[Приложение вкладки "Формирование шаблонов".]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Scaffolding Tab frontend project.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3126,10 +3186,13 @@
       </Item>
       <Item ItemId=";core.progress.uploadTabToStorage" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Uploading Tab frontend to Azure Storage account.]]></Val>
+          <Val><![CDATA[Uploading Tab front end to Azure Storage account.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Отправка вкладки для интерфейсного сервера в учетную запись службы хранилища Azure.]]></Val>
+            <Val><![CDATA[Отправка интерфейса вкладки в учетную запись службы хранилища Azure.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Uploading Tab frontend to Azure Storage account.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3517,6 +3580,24 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";core.updateBotIdsQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unselect to keep with the original one.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Отмените выбор, чтобы сохранить исходный.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.updateBotIdsQuestion.title" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[We will create a new bot for you to get started with Teams Toolkit]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Мы создадим бота, чтобы вы могли приступить к работе с набором средств Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";core.updateContentUrlOption.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[update the content url from %s to %s]]></Val>
@@ -3528,19 +3609,25 @@
       </Item>
       <Item ItemId=";core.updateContentUrlQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select all personal apps to update content urls to %s]]></Val>
+          <Val><![CDATA[We will update the following tabs' content url for you to get start with Teams Toolkit]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Выделить все личные приложения для обновления URL-адресов содержимого до "%s"]]></Val>
+            <Val><![CDATA[Мы обновим URL-адрес содержимого для следующих вкладок, чтобы вы могли начать работу с набором средств Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Select all personal apps to update content urls to %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.updateUrlQuestion.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select any number of options you like]]></Val>
+          <Val><![CDATA[Unselect to keep with the original url]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Выберите любое желаемое количество опций]]></Val>
+            <Val><![CDATA[Отмените выбор, чтобы сохранить исходный URL-адрес]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Select any number of options you like]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3555,10 +3642,13 @@
       </Item>
       <Item ItemId=";core.updateWebsiteUrlQuestion.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Select all personal apps to update website urls to %s]]></Val>
+          <Val><![CDATA[We will update the following tabs' website url for you to get started with Teams Toolkit]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Выделить все личные приложения для обновления URL-адресов сайта до %s]]></Val>
+            <Val><![CDATA[Мы обновим URL-адрес веб-сайта для следующих вкладок, чтобы вы могли начать работу с набором средств Teams]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Select all personal apps to update website urls to %s]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3673,6 +3763,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";depChecker.failToDownloadFromUrl" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to download file from '@Url', HTTP status '@Status'.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Не удалось скачать файл по URL-адресу "@Url", состояние HTTP " @Status".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";depChecker.failToInstallBicep" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to install @NameVersion]]></Val>
@@ -3750,6 +3849,24 @@
           <Val><![CDATA[Failed to validate @NameVersion after installation.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Не удалось проверить @NameVersion после установки.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";depChecker.failToValidateVxTestApp" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to validate video extensibility test app after installation.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Не удалось проверить приложение для тестирования расширяемости видео после установки.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";depChecker.failToValidateVxTestAppInstallOptions" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Invalid argument for video extensibility test app prerequisites checker. Please check tasks.json file.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Недопустимый аргумент для средства проверки предварительных условий приложения для тестирования расширяемости видео. Проверьте файл tasks.json.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4162,6 +4279,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.deploy.error.unknownError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Unknown error happened: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Произошла неизвестная ошибка: %s]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.deploy.notice.deployAcceleration" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Deploying to Azure App Service takes a long time. Consider referring to this document to optimize your deployment:]]></Val>
@@ -4216,11 +4342,74 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.spfx.deploy.createAppCatalog" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Create SharePoint app catalog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Создать каталог приложений Microsoft Office SharePoint Online]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.spfx.deploy.deployPackage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Deploy SPFx package to your tenant app catalog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Развернуть пакет SPFx в каталоге приложений клиента]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.spfx.deploy.skipCreateAppCatalog" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Skip to create SharePoint app catalog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Перейти к созданию каталога приложений Microsoft Office SharePoint Online.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.spfx.deploy.uploadPackage" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Upload SPFx package to your tenant app catalog.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Отправка пакета SPFx в каталог приложений клиента.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.spfx.error.failedToGetAppCatalog" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Cannot get app catalog site url after creation. You may need wait a few minutes and retry.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Не удалось получить URL-адрес сайта каталога приложений после создания. Подождите несколько минут, затем повторите попытку.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.spfx.error.noValidAppCatelog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[There is no valid app catalog in your tenant. You can update the property 'createAppCatalogIfNotExist' in app.yml to true if you want us to create it for you or you can create it by yourself.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[В вашем клиенте нет действительного каталога приложений. Вы можете изменить свойство "createAppCatalogIfNotExist" в app.yml на true, чтобы мы могли его создать для вас или вы могли его создать самостоятельно.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.spfx.info.tenantAppCatalogCreated" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[SharePoint tenant app catalog %s created, wait for a few minutes to be active.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Каталог приложений клиента Microsoft Office SharePoint Online %s создан, подождите несколько минут, прежде чем он станет активен.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.spfx.warn.noTenantAppCatalogFound" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[No tenant app catalog found, retry: %s]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Каталог приложений клиента не найден, повторите попытку: %s]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4293,6 +4482,15 @@
           <Val><![CDATA[Update Teams app]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Обновление приложения Teams]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";driver.tools.error.dotnetInstallationError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Failed to check and install .NET Core SDK.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Не удалось проверить и установить пакет SDK для .NET Core.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -4843,6 +5041,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";error.VideoFilterAppNotRemoteSupported" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Video filter app in remote is not supported by Teams Toolkit. Please check the README.md file in project root folder.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Приложение фильтра видео в удаленном режиме не поддерживается набором средств Teams. Проверьте файл README.md в корневой папке проекта.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";error.aad.AadManifestLoadError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to load manifest file from %s, due to %s]]></Val>
@@ -4947,10 +5154,13 @@
       </Item>
       <Item ItemId=";error.aad.CannotGenerateIdentifierUris" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Cannot generate identifierUris because no botId or frontend domain found, you need to specified at least one of them in config file]]></Val>
+          <Val><![CDATA[Cannot generate identifierUris because no botId or front end domain found, you need to specified at least one of them in config file]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Не удается создать identifierUris, так как не найден botId или внешний домен. Необходимо указать хотя бы один из них в файле конфигурации]]></Val>
+            <Val><![CDATA[Не удается создать identifierUris, так как не найден botId или домен интерфейса. Необходимо указать хотя бы один из них в файле конфигурации]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Cannot generate identifierUris because no botId or frontend domain found, you need to specified at least one of them in config file]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -7933,6 +8143,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";plugins.appstudio.teamsAppUpdatedCLINotice" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Your Teams application manifest has been successfully deployed to ]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Манифест приложения Teams успешно развернут на ]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";plugins.appstudio.teamsAppUpdatedLog" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams app updated %s]]></Val>
@@ -9843,10 +10062,13 @@
       </Item>
       <Item ItemId=";plugins.spfx.deploy.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Upload and deploy SharePoint Package]]></Val>
+          <Val><![CDATA[Upload and deploy SharePoint package]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Отправка и развертывание пакета SharePoint]]></Val>
+            <Val><![CDATA[Отправка и развертывание пакета Microsoft Office SharePoint Online]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Upload and deploy SharePoint Package]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -89,6 +89,8 @@ describe("Azure Function Deploy Driver test", () => {
     });
     const res = await deploy.run(args, context);
     expect(res.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
+    const rex = await deploy.execute(args, context);
+    expect(rex.result.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
   });
 
   it("deploy restart error!", async () => {

@@ -96,7 +96,6 @@ import {
   CLI_FOR_M365,
   GlobalKey,
   SpfxManageSiteAdminUrl,
-  SUPPORTED_SPFX_PRERELEASE_VERSION,
   SUPPORTED_SPFX_VERSION,
 } from "./constants";
 import { PanelType } from "./controls/PanelType";
@@ -168,6 +167,7 @@ import {
   isBot,
   isMessageExtension,
 } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/utils";
+import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -1077,6 +1077,10 @@ export async function runCommand(
         result = await core.deployAadManifest(inputs);
         break;
       }
+      case Stage.deployTeams: {
+        result = await core.deployTeamsManifest(inputs);
+        break;
+      }
       case Stage.publish: {
         result = await core.publishApplication(inputs);
         break;
@@ -1190,6 +1194,7 @@ export async function runUserTask(
     inputs = getSystemInputs();
     inputs.ignoreEnvInfo = ignoreEnvInfo;
     inputs.env = envName;
+    inputs.taskOrientedTemplateNaming = TreatmentVariableValue.taskOrientedTemplateNaming;
     result = await core.executeUserTask(func, inputs);
   } catch (e) {
     result = wrapError(e);
@@ -1850,17 +1855,10 @@ export async function promptSPFxUpgrade() {
 
     if (projectSPFxVersion) {
       const cmp = compare(projectSPFxVersion, SUPPORTED_SPFX_VERSION);
-      const cmpPrerelease = compare(projectSPFxVersion, SUPPORTED_SPFX_PRERELEASE_VERSION);
 
-      if (cmp === 0 || cmpPrerelease === 0) {
-        return;
-      }
-      if (cmp === cmpPrerelease) {
-        const spfxVersion =
-          commonTools.getSPFxVersion() === "1.15.0"
-            ? SUPPORTED_SPFX_VERSION
-            : SUPPORTED_SPFX_PRERELEASE_VERSION;
-        const args: string[] = cmp === 1 ? [spfxVersion] : [spfxVersion, spfxVersion];
+      if (cmp === 1 || cmp === -1) {
+        const args: string[] =
+          cmp === 1 ? [SUPPORTED_SPFX_VERSION] : [SUPPORTED_SPFX_VERSION, SUPPORTED_SPFX_VERSION];
         VS_CODE_UI.showMessage(
           "warn",
           util.format(
@@ -2380,17 +2378,17 @@ export async function manageCollaboratorHandler(): Promise<Result<any, FxError>>
   try {
     const collaboratorCommandSelection: SingleSelectConfig = {
       name: "collaborationCommand",
-      title: "command",
+      title: localize("teamstoolkit.manageCollaborator.command"),
       options: [
         {
           id: "grantPermission",
           label: localize("teamstoolkit.manageCollaborator.grantPermission.label"),
-          detail: localize("teamstoolkit.manageCollaborator.grantPermission.detail"),
+          detail: localize("teamstoolkit.manageCollaborator.grantPermission.description"),
         },
         {
           id: "listCollaborator",
           label: localize("teamstoolkit.manageCollaborator.listCollaborator.label"),
-          detail: localize("teamstoolkit.manageCollaborator.listCollaborator.detail"),
+          detail: localize("teamstoolkit.manageCollaborator.listCollaborator.description"),
         },
       ],
       returnObject: false,
@@ -2920,7 +2918,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
       ExtTelemetry.sendTelemetryErrorEvent(telemetryName, noEnvError);
       return err(noEnvError);
     } else {
-      const isLocalEnv = env.value === environmentManager.getLocalEnvName();
+      const isLocalEnv = env === environmentManager.getLocalEnvName();
       const message = isLocalEnv
         ? util.format(localize("teamstoolkit.handlers.localStateFileNotFound"), env)
         : util.format(localize("teamstoolkit.handlers.stateFileNotFound"), env);
@@ -2993,15 +2991,21 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
     inputs.env = env;
     await core.activateEnv(inputs);
   }
-  const func: Func = {
-    namespace: "fx-solution-azure/fx-resource-appstudio",
-    method: "updateManifest",
-    params: {
-      envName: env,
-    },
-  };
 
-  const result = await runUserTask(func, TelemetryEvent.UpdatePreviewManifest, false, env);
+  let result;
+  if (isV3Enabled()) {
+    const inputs = getSystemInputs();
+    result = await runCommand(Stage.deployTeams, inputs);
+  } else {
+    const func: Func = {
+      namespace: "fx-solution-azure/fx-resource-appstudio",
+      method: "updateManifest",
+      params: {
+        envName: env,
+      },
+    };
+    result = await runUserTask(func, TelemetryEvent.UpdatePreviewManifest, false, env);
+  }
 
   if (!args || args.length === 0) {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
@@ -3323,126 +3327,240 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewGuidedTutorials, getTriggerFromProperty(args));
   const config: SingleSelectConfig = {
     name: "tutorialName",
-    title: localize("teamstoolkit.commandsTreeViewProvider.tutorialTitle"),
-    options: [],
+    title: localize("teamstoolkit.commandsTreeViewProvider.guideTitle"),
+    options: [
+      {
+        id: "cardActionResponse",
+        label: `${localize("teamstoolkit.guides.cardActionResponse.label")}`,
+        detail: localize("teamstoolkit.guides.cardActionResponse.detail"),
+        groupName: localize("teamstoolkit.guide.scenario"),
+        data: "https://aka.ms/teamsfx-card-action-response",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "sendNotification",
+        label: `${localize("teamstoolkit.guides.sendNotification.label")}`,
+        detail: localize("teamstoolkit.guides.sendNotification.detail"),
+        groupName: localize("teamstoolkit.guide.scenario"),
+        data: "https://aka.ms/teamsfx-notification",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "commandAndResponse",
+        label: `${localize("teamstoolkit.guides.commandAndResponse.label")}`,
+        detail: localize("teamstoolkit.guides.commandAndResponse.detail"),
+        groupName: localize("teamstoolkit.guide.scenario"),
+        data: "https://aka.ms/teamsfx-command-response",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      ...(isV3Enabled()
+        ? []
+        : [
+            {
+              id: "dashboardApp",
+              label: `${localize("teamstoolkit.guides.dashboardApp.label")}`,
+              detail: localize("teamstoolkit.guides.dashboardApp.detail"),
+              groupName: localize("teamstoolkit.guide.scenario"),
+              data: "https://aka.ms/teamsfx-dashboard-app",
+              buttons: [
+                {
+                  iconPath: "file-symlink-file",
+                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                  command: "fx-extension.openTutorial",
+                },
+              ],
+            },
+          ]),
+      {
+        id: "addTab",
+        label: `${localize("teamstoolkit.guides.addTab.label")}`,
+        detail: localize("teamstoolkit.guides.addTab.detail"),
+        groupName: localize("teamstoolkit.guide.capability"),
+        data: "https://aka.ms/teamsfx-add-tab",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "addBot",
+        label: `${localize("teamstoolkit.guides.addBot.label")}`,
+        detail: localize("teamstoolkit.guides.addBot.detail"),
+        groupName: localize("teamstoolkit.guide.capability"),
+        data: "https://aka.ms/teamsfx-add-bot",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "addME",
+        label: `${localize("teamstoolkit.guides.addME.label")}`,
+        detail: localize("teamstoolkit.guides.addME.detail"),
+        groupName: localize("teamstoolkit.guide.capability"),
+        data: "https://aka.ms/teamsfx-add-message-extension",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "addSpfxTab",
+        label: `${localize("teamstoolkit.guides.addSpfxTab.label")}`,
+        detail: localize("teamstoolkit.guides.addSpfxTab.detail"),
+        groupName: localize("teamstoolkit.guide.capability"),
+        data: "https://aka.ms/teamsfx-add-spfx-tab",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "addSso",
+        label: `${localize("teamstoolkit.guides.addSso.label")}`,
+        detail: localize("teamstoolkit.guides.addSso.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-add-sso-new",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "connectApi",
+        label: `${localize("teamstoolkit.guides.connectApi.label")}`,
+        detail: localize("teamstoolkit.guides.connectApi.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-add-api-connection",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "cicdPipeline",
+        label: `${localize("teamstoolkit.guides.cicdPipeline.label")}`,
+        detail: localize("teamstoolkit.guides.cicdPipeline.detail"),
+        groupName: localize("teamstoolkit.guide.development"),
+        data: "https://aka.ms/teamsfx-add-cicd-new",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "addAzureFunction",
+        label: localize("teamstoolkit.guides.addAzureFunction.label"),
+        detail: localize("teamstoolkit.guides.addAzureFunction.detail"),
+        groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
+        data: "https://aka.ms/teamsfx-add-azure-function",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "addAzureSql",
+        label: localize("teamstoolkit.guides.addAzureSql.label"),
+        detail: localize("teamstoolkit.guides.addAzureSql.detail"),
+        groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
+        data: "https://aka.ms/teamsfx-add-azure-sql",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "addAzureAPIM",
+        label: localize("teamstoolkit.guides.addAzureAPIM.label"),
+        detail: localize("teamstoolkit.guides.addAzureAPIM.detail"),
+        groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
+        data: "https://aka.ms/teamsfx-add-azure-apim",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+      {
+        id: "addAzureKeyVault",
+        label: localize("teamstoolkit.guides.addAzureKeyVault.label"),
+        detail: localize("teamstoolkit.guides.addAzureKeyVault.detail"),
+        groupName: localize("teamstoolkit.guide.cloudServiceIntegration"),
+        data: "https://aka.ms/teamsfx-add-azure-keyvault",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
+    ],
     returnObject: true,
   };
   if (TreatmentVariableValue.inProductDoc) {
-    config.title = localize("teamstoolkit.commandsTreeViewProvider.guideTitle");
-    config.options = [
-      {
-        id: "cardActionResponse",
-        label: `${localize("teamstoolkit.tutorials.cardActionResponse.label.new")}`,
-        description: localize("teamstoolkit.common.recommended"),
-        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail.new"),
-        groupName: localize("teamstoolkit.guide.scenario"),
-        data: "https://aka.ms/teamsfx-card-action-response",
-        buttons: [
-          {
-            iconPath: "file-code",
-            tooltip: localize("teamstoolkit.guide.tooltip.inProduct"),
-            command: "fx-extension.openTutorial",
-          },
-        ],
-      },
-      {
-        id: "sendNotification",
-        label: `${localize("teamstoolkit.tutorials.sendNotification.label.new")}`,
-        detail: localize("teamstoolkit.tutorials.sendNotification.detail"),
-        groupName: localize("teamstoolkit.guide.scenario"),
-        data: "https://aka.ms/teamsfx-send-notification",
-        buttons: [
-          {
-            iconPath: "file-symlink-file",
-            tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "fx-extension.openTutorial",
-          },
-        ],
-      },
-      {
-        id: "commandAndResponse",
-        label: `${localize("teamstoolkit.tutorials.commandAndResponse.label.new")}`,
-        detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
-        groupName: localize("teamstoolkit.guide.development"),
-        data: "https://aka.ms/teamsfx-create-command",
-        buttons: [
-          {
-            iconPath: "file-symlink-file",
-            tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "fx-extension.openTutorial",
-          },
-        ],
-      },
-      {
-        id: "addSso",
-        label: `${localize("teamstoolkit.tutorials.addSso.label.new")}`,
-        detail: localize("teamstoolkit.tutorials.addSso.detail"),
-        groupName: localize("teamstoolkit.guide.development"),
-        data: "https://aka.ms/teamsfx-add-sso",
-        buttons: [
-          {
-            iconPath: "file-symlink-file",
-            tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "fx-extension.openTutorial",
-          },
-        ],
-      },
-      {
-        id: "connectApi",
-        label: `${localize("teamstoolkit.tutorials.connectApi.label.new")}`,
-        detail: localize("teamstoolkit.tutorials.connectApi.detail"),
-        groupName: localize("teamstoolkit.guide.development"),
-        data: "https://aka.ms/teamsfx-connect-api",
-        buttons: [
-          {
-            iconPath: "file-symlink-file",
-            tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "fx-extension.openTutorial",
-          },
-        ],
-      },
-    ];
-  } else {
-    config.options = [
-      {
-        id: "sendNotification",
-        label: `${localize("teamstoolkit.tutorials.sendNotification.label")}`,
-        detail: localize("teamstoolkit.tutorials.sendNotification.detail"),
-        data: "https://aka.ms/teamsfx-send-notification",
-      },
-      {
-        id: "commandAndResponse",
-        label: `${localize("teamstoolkit.tutorials.commandAndResponse.label")}`,
-        detail: localize("teamstoolkit.tutorials.commandAndResponse.detail"),
-        data: "https://aka.ms/teamsfx-create-command",
-      },
-      {
-        id: "cardActionResponse",
-        label: localize("teamstoolkit.tutorials.cardActionResponse.label"),
-        detail: localize("teamstoolkit.tutorials.cardActionResponse.detail"),
-        data: "https://aka.ms/teamsfx-card-action-response",
-      },
-      {
-        id: "addSso",
-        label: `${localize("teamstoolkit.tutorials.addSso.label")}`,
-        detail: localize("teamstoolkit.tutorials.addSso.detail"),
-        data: "https://aka.ms/teamsfx-add-sso",
-      },
-      {
-        id: "connectApi",
-        label: `${localize("teamstoolkit.tutorials.connectApi.label")}`,
-        detail: localize("teamstoolkit.tutorials.connectApi.detail"),
-        data: "https://aka.ms/teamsfx-connect-api",
-      },
-    ];
-  }
-
-  if (isExistingTabAppEnabled()) {
-    config.options.splice(0, 0, {
-      id: "embedWebPages",
-      label: `${localize("teamstoolkit.tutorials.embedWebPages.label")}`,
-      detail: localize("teamstoolkit.tutorials.embedWebPages.detail"),
-      data: "https://aka.ms/teamsfx-embed-existing-web",
+    config.options.splice(0, 1, {
+      id: "cardActionResponse",
+      label: `${localize("teamstoolkit.guides.cardActionResponse.label")}`,
+      description: localize("teamstoolkit.common.recommended"),
+      detail: localize("teamstoolkit.guides.cardActionResponse.detail"),
+      groupName: localize("teamstoolkit.guide.scenario"),
+      data: "https://aka.ms/teamsfx-card-action-response",
+      buttons: [
+        {
+          iconPath: "file-code",
+          tooltip: localize("teamstoolkit.guide.tooltip.inProduct"),
+          command: "fx-extension.openTutorial",
+        },
+      ],
     });
   }
 
@@ -3519,6 +3637,10 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
   return Promise.resolve(ok(false));
 }
 
+export async function openAccountHelpHandler(args?: any[]) {
+  WebviewPanel.createOrShow(PanelType.AccountHelp);
+}
+
 export async function signinM365Callback(args?: any[]): Promise<Result<null, FxError>> {
   let node: M365AccountNode | undefined;
   if (args && args.length > 1) {
@@ -3561,21 +3683,22 @@ export async function checkSideloadingCallback(args?: any[]): Promise<Result<nul
     "error",
     localize("teamstoolkit.accountTree.sideloadingMessage"),
     false,
-    localize("teamstoolkit.accountTree.sideloadingJoinM365")
+    localize("teamstoolkit.accountTree.sideloadingLearnMore")
   )
     .then(async (result) => {
-      if (result.isOk() && result.value === localize("teamstoolkit.common.readMore")) {
-        await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingReadmore);
-      } else if (
+      if (
         result.isOk() &&
-        result.value === localize("teamstoolkit.accountTree.sideloadingJoinM365")
+        result.value === localize("teamstoolkit.accountTree.sideloadingLearnMore")
       ) {
-        await VS_CODE_UI.openUrl("https://developer.microsoft.com/microsoft-365/dev-program");
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingJoinM365);
+        await openAccountHelpHandler();
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingLearnMore);
       }
     })
     .catch((_error) => {});
+  openAccountHelpHandler();
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SideloadingDisabled,
+  });
   return ok(null);
 }
 
@@ -3640,13 +3763,8 @@ export async function scaffoldFromDeveloperPortalHandler(
     return ok(null);
   }
 
-  const personalTab = "personal-tab";
-  const groupTab = "group-tab";
-  const bot = "bot";
-  const messageExtension = "messaging-extension";
-
   const appId = args[0];
-  let properties: { [p: string]: string } = {
+  const properties: { [p: string]: string } = {
     teamsAppId: appId,
   };
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtalStart, properties);
@@ -3656,15 +3774,15 @@ export async function scaffoldFromDeveloperPortalHandler(
     1
   );
   await progressBar.start();
-  let appDefinition = undefined;
+  let token = undefined;
   try {
-    const appDefinitionRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
+    const tokenRes = await M365TokenInstance.signInWhenInitiatedFromTdp(
       { scopes: AppStudioScopes },
-      appId
+      loginHint
     );
-    if (appDefinitionRes.isErr()) {
-      if ((appDefinitionRes.error as any).displayMessage) {
-        window.showErrorMessage((appDefinitionRes.error as any).displayMessage);
+    if (tokenRes.isErr()) {
+      if ((tokenRes.error as any).displayMessage) {
+        window.showErrorMessage((tokenRes.error as any).displayMessage);
       } else {
         vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.generalError.message")
@@ -3672,13 +3790,13 @@ export async function scaffoldFromDeveloperPortalHandler(
       }
       ExtTelemetry.sendTelemetryErrorEvent(
         TelemetryEvent.HandleUrlFromDeveloperProtal,
-        appDefinitionRes.error,
+        tokenRes.error,
         properties
       );
       await progressBar.end(false);
-      return err(appDefinitionRes.error);
+      return err(tokenRes.error);
     }
-    appDefinition = appDefinitionRes.value;
+    token = tokenRes.value;
     await progressBar.end(true);
   } catch (e) {
     vscode.window.showErrorMessage(
@@ -3691,29 +3809,25 @@ export async function scaffoldFromDeveloperPortalHandler(
       error,
       properties
     );
-    throw e;
+    return err(error);
+  }
+
+  let appDefinition;
+  try {
+    appDefinition = await AppStudioClient.getApp(appId, token, VsCodeLogInstance);
+  } catch (error: any) {
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.HandleUrlFromDeveloperProtal,
+      error,
+      properties
+    );
+    vscode.window.showErrorMessage(
+      localize("teamstoolkit.devPortalIntegration.getTeamsAppError.message")
+    );
+    return err(error);
   }
 
   const res = await createNewProjectHandler([{ teamsAppFromTdp: appDefinition }]);
-  const features = [];
-
-  if (isPersonalApp(appDefinition)) {
-    features.push(personalTab);
-  }
-
-  if (isGroupApp(appDefinition)) {
-    features.push(groupTab);
-  }
-
-  if (isBot(appDefinition)) {
-    features.push(bot);
-  }
-
-  if (isMessageExtension(appDefinition)) {
-    features.push(messageExtension);
-  }
-
-  properties = { ...properties, features: features.join(",") };
 
   if (res.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(

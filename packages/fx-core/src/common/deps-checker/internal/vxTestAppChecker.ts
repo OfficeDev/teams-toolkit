@@ -14,7 +14,7 @@ import { DepsCheckerError, VxTestAppCheckError } from "../depsError";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DepsChecker, DependencyStatus, DepsType, InstallOptions } from "../depsChecker";
-import { isWindows } from "../util";
+import { isMacOS, isWindows } from "../util";
 import { Messages, vxTestAppInstallHelpLink } from "../constant";
 
 interface InstallOptionsSafe {
@@ -24,9 +24,13 @@ interface InstallOptionsSafe {
 
 const VxTestAppName = "Video Extensibility Test App";
 
+// https://www.electronjs.org/docs/latest/tutorial/application-distribution#manual-packaging
 const VxTestAppExecutableName = isWindows()
   ? "video-extensibility-test-app.exe"
+  : isMacOS()
+  ? "video-extensibility-test-app.app"
   : "video-extensibility-test-app";
+
 const VxTestAppDirRelPath = path.join(".tools", "video-extensibility-test-app");
 const VxTestAppGlobalBasePath = path.join(
   os.homedir(),
@@ -37,7 +41,7 @@ const VxTestAppGlobalBasePath = path.join(
 const VxTestAppDownloadTimeoutMillis = 5 * 60 * 1000;
 // TODO: change to GitHub release after new VxTestApp is released.
 const VxTestAppDownloadUrlTemplate =
-  "https://alexwang.blob.core.windows.net/public/testapp-v@version/video-extensibility-test-app-@platform-@arch.zip";
+  "https://github.com/microsoft/teams-videoapp-sample/releases/download/testApp-v@version/video-extensibility-test-app-@platform-@arch-portable.zip";
 
 /**
  * Download a file from URL and save to a temporary file.

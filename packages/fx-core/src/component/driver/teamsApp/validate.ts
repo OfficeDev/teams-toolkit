@@ -4,8 +4,9 @@
 import { Result, FxError, ok, err, ManifestUtil, Platform } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
-import { StepDriver } from "../interface/stepDriver";
+import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
+import { WrapDriverContext } from "../util/wrapUtil";
 import { ValidateTeamsAppArgs } from "./interfaces/ValidateTeamsAppArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { manifestUtils } from "../../resource/appManifest/utils/ManifestUtils";
@@ -19,10 +20,33 @@ const actionName = "teamsApp/validate";
 
 @Service(actionName)
 export class ValidateTeamsAppDriver implements StepDriver {
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  description = getLocalizedString("driver.teamsApp.description.validateDriver");
+
   public async run(
     args: ValidateTeamsAppArgs,
-    context: DriverContext,
+    context: DriverContext
+  ): Promise<Result<Map<string, string>, FxError>> {
+    const wrapContext = new WrapDriverContext(context, actionName, actionName);
+    const res = await this.validate(args, wrapContext);
+    return res;
+  }
+
+  public async execute(
+    args: ValidateTeamsAppArgs,
+    context: DriverContext
+  ): Promise<ExecutionResult> {
+    const wrapContext = new WrapDriverContext(context, actionName, actionName);
+    const res = await this.validate(args, wrapContext);
+    return {
+      result: res,
+      summaries: wrapContext.summaries,
+    };
+  }
+
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  public async validate(
+    args: ValidateTeamsAppArgs,
+    context: WrapDriverContext,
     withEmptyCapabilities?: boolean
   ): Promise<Result<Map<string, string>, FxError>> {
     const state = this.loadCurrentState();
@@ -72,7 +96,8 @@ export class ValidateTeamsAppDriver implements StepDriver {
       context.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
       const validationFailed = AppStudioResultFactory.UserError(
         AppStudioError.ValidationFailedError.name,
-        errMessage
+        errMessage,
+        "https://aka.ms/teamsfx-actions/teamsapp-validate"
       );
       return err(validationFailed);
     }

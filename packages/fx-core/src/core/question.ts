@@ -19,8 +19,17 @@ import * as os from "os";
 import { environmentManager } from "./environment";
 import { ConstantString } from "../common/constants";
 import { sampleProvider } from "../common/samples";
-import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
-import { isBotNotificationEnabled, isPreviewFeaturesEnabled } from "../common/featureFlags";
+import {
+  isAadManifestEnabled,
+  isExistingTabAppEnabled,
+  isM365AppEnabled,
+  isV3Enabled,
+} from "../common/tools";
+import {
+  isBotNotificationEnabled,
+  isOfficeAddinEnabled,
+  isPreviewFeaturesEnabled,
+} from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import {
   BotOptionItem,
@@ -38,6 +47,7 @@ import {
   MessageExtensionNewUIItem,
   BotNewUIOptionItem,
   WorkflowOptionItem,
+  DashboardOptionItem,
 } from "../component/constants";
 import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { ResourceManagementClient } from "@azure/arm-resources";
@@ -46,6 +56,10 @@ import {
   answerToRepaceBotId,
   answerToReplaceMessageExtensionBotId,
 } from "../component/developerPortalScaffoldUtils";
+import {
+  ImportAddinProjectItem,
+  OfficeAddinItems,
+} from "../component/generator/officeAddin/question";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -325,7 +339,7 @@ export function createCapabilityForDotNet(): SingleSelectQuestion {
 }
 
 export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQuestion {
-  // AB test for notification/command/workflow bot template naming
+  // AB test for notification/command/workflow bot, dashboard tab template naming
   if (inputs?.taskOrientedTemplateNaming) {
     NotificationOptionItem.label = `$(hubot) ${getLocalizedString(
       "core.NotificationOption.label.abTest"
@@ -339,24 +353,14 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
     );
     WorkflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
     WorkflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
+    DashboardOptionItem.label = `$(browser) ${getLocalizedString(
+      "core.DashboardOption.label.abTest"
+    )}`;
+    DashboardOptionItem.detail = getLocalizedString("core.DashboardOption.detail.abTest");
   }
 
   // AB test for in product doc
   if (inputs?.inProductDoc) {
-    NotificationOptionItem.buttons = [
-      {
-        iconPath: "file-symlink-file",
-        tooltip: getLocalizedString("core.option.github"),
-        command: "fx-extension.openTutorial",
-      },
-    ];
-    CommandAndResponseOptionItem.buttons = [
-      {
-        iconPath: "file-symlink-file",
-        tooltip: getLocalizedString("core.option.github"),
-        command: "fx-extension.openTutorial",
-      },
-    ];
     WorkflowOptionItem.data = "cardActionResponse";
     WorkflowOptionItem.buttons = [
       {
@@ -365,20 +369,16 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
         command: "fx-extension.openTutorial",
       },
     ];
-    TabNewUIOptionItem.buttons = [
-      {
-        iconPath: "file-symlink-file",
-        tooltip: getLocalizedString("core.option.github"),
-        command: "fx-extension.openTutorial",
-      },
-    ];
   }
 
   // new capabilities question order
   const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
 
+  const newTabs = isV3Enabled() ? [] : [DashboardOptionItem];
+
   const staticOptions: StaticOptions = [
     ...newBots,
+    ...newTabs,
     TabNewUIOptionItem,
     TabSPFxNewUIItem,
     TabNonSsoItem,
@@ -573,24 +573,34 @@ export const QuestionSelectResourceGroup: SingleSelectQuestion = {
   forgetLastValue: true,
 };
 export function newResourceGroupNameQuestion(
-  rmClient: ResourceManagementClient
+  existingResourceGroupNames: string[]
 ): TextInputQuestion {
   const question = QuestionNewResourceGroupName;
   question.validation = {
-    validFunc: async (input: string): Promise<string | undefined> => {
+    validFunc: (input: string): string | undefined => {
       const name = input as string;
       // https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/create-or-update#uri-parameters
       const match = name.match(/^[-\w._()]+$/);
       if (!match) {
         return getLocalizedString("core.QuestionNewResourceGroupName.validation");
       }
-      const maybeExist = await resourceGroupHelper.checkResourceGroupExistence(name, rmClient);
-      if (maybeExist.isErr()) {
-        return maybeExist.error.message;
-      }
-      if (maybeExist.value) {
+
+      // To avoid the issue in CLI that using async func for validation and filter will make users input answers twice,
+      // we check the existence of a resource group from the list rather than call the api directly for now.
+      // Bug: https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/15066282
+      // GitHub issue: https://github.com/SBoudrias/Inquirer.js/issues/1136
+      const maybeExist =
+        existingResourceGroupNames.findIndex((o) => o.toLowerCase() === input.toLowerCase()) >= 0;
+      if (maybeExist) {
         return `resource group already exists: ${name}`;
       }
+      // const maybeExist = await resourceGroupHelper.checkResourceGroupExistence(name, rmClient);
+      // if (maybeExist.isErr()) {
+      //   return maybeExist.error.message;
+      // }
+      // if (maybeExist.value) {
+      //   return `resource group already exists: ${name}`;
+      // }
       return undefined;
     },
   };
@@ -664,6 +674,9 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
     staticOptions.push(ScratchOptionYesVSC);
+    if (isOfficeAddinEnabled()) {
+      staticOptions.push(CreateNewOfficeAddinOption);
+    }
     staticOptions.push(ScratchOptionNoVSC);
   } else {
     staticOptions.push(ScratchOptionYes);
@@ -803,3 +816,20 @@ export const botOptionItem = (isMessageExtension: boolean): OptionItem => {
     label: isMessageExtension ? "Message extension" : "Bot",
   };
 };
+
+export const CreateNewOfficeAddinOption: OptionItem = {
+  id: "newAddin",
+  label: `$(new-folder) ${getLocalizedString("core.NewOfficeAddinOptionVSC.label")}`,
+  detail: getLocalizedString("core.NewOfficeAddinOptionVSC.detail"),
+};
+
+export function createCapabilityForOfficeAddin(): SingleSelectQuestion {
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: getLocalizedString("core.createCapabilityQuestion.title"),
+    type: "singleSelect",
+    staticOptions: [...OfficeAddinItems, ImportAddinProjectItem],
+    placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
+    skipSingleOption: true,
+  };
+}

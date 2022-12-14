@@ -7,9 +7,9 @@
     "private": true,
     "dependencies": {
         "@fluentui/react-northstar": "^0.62.0",
-        "@microsoft/mgt-element": "^2.6.2",
-        "@microsoft/mgt-react": "^2.6.2",
-        "@microsoft/mgt-teamsfx-provider": "^2.6.2",
+        "@microsoft/mgt-element": "^2.8.0",
+        "@microsoft/mgt-react": "^2.8.0",
+        "@microsoft/mgt-teamsfx-provider": "^2.8.0",
         "@microsoft/microsoft-graph-client": "^3.0.1",
         "@microsoft/teams-js": "^2.2.0",
         "@microsoft/teamsfx": "^2.0.0",
@@ -24,6 +24,7 @@
         "@microsoft/teamsfx-run-utils": "alpha"
     },
     "scripts": {
+        "dev:teamsfx": "node teamsfx/script/run.js . teamsfx/.env.local",
         "start": "react-scripts start",
         "build": "react-scripts build",
         "eject": "react-scripts eject",

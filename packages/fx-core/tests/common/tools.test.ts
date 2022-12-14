@@ -14,9 +14,9 @@ import {
   canAddSso,
   getFixedCommonProjectSettings,
   canAddCICDWorkflows,
-  getSPFxVersion,
   getAppSPFxVersion,
   isVideoFilterProject,
+  setRegion,
 } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
 import {
@@ -35,7 +35,7 @@ import fs from "fs-extra";
 import { environmentManager } from "../../src/core/environment";
 import { ExistingTemplatesStat } from "../../src/component/feature/cicd/existingTemplatesStat";
 import mockedEnv from "mocked-env";
-import { FeatureFlagName } from "../../src/common/constants";
+import { AuthSvcClient } from "../../src/component/resource/appManifest/authSvcClient";
 
 chai.use(chaiAsPromised);
 
@@ -383,35 +383,6 @@ describe("tools", () => {
     });
   });
 
-  describe("getSPFxVersion", () => {
-    it("Set 1.15.0", () => {
-      const mockedEnvRestore = mockedEnv({ [FeatureFlagName.SPFxVersion]: "1.15.0" });
-
-      const version = getSPFxVersion();
-
-      chai.expect(version).equal("1.15.0");
-      mockedEnvRestore();
-    });
-
-    it("Set 1.16.0 - beta.1", () => {
-      const mockedEnvRestore = mockedEnv({ [FeatureFlagName.SPFxVersion]: "1.16.0-beta.1" });
-
-      const version = getSPFxVersion();
-
-      chai.expect(version).equal("1.16.0-beta.1");
-      mockedEnvRestore();
-    });
-
-    it("Default is 1.15.0 when not set", () => {
-      const mockedEnvRestore = mockedEnv({ [FeatureFlagName.SPFxVersion]: undefined });
-
-      const version = getSPFxVersion();
-
-      chai.expect(version).equal("1.15.0");
-      mockedEnvRestore();
-    });
-  });
-
   describe("getAppSPFxVersion", async () => {
     afterEach(() => {
       sinon.restore();
@@ -543,6 +514,17 @@ describe("tools", () => {
       // Assert
       chai.expect(result.isOk()).to.be.true;
       chai.expect(result._unsafeUnwrap()).to.be.false;
+    });
+  });
+
+  describe("setRegion", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("set region", async () => {
+      sinon.stub(AuthSvcClient, "getRegion").resolves("apac");
+      await setRegion("fakeToken");
     });
   });
 });

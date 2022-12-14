@@ -38,12 +38,12 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
       alwaysOn: true
       appSettings: [
         {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~16' // Set NodeJS version to 16.x for your site
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '1' // Run Azure APP Service from a package file
         }
         {
-          name: 'SCM_SCRIPT_GENERATOR_ARGS'
-          value: '--node' // Register as node server
+          name: 'WEBSITE_NODE_DEFAULT_VERSION'
+          value: '~16' // Set NodeJS version to 16.x for your site
         }
         {
           name: 'RUNNING_ON_AZURE'
@@ -73,6 +73,6 @@ module azureBotRegistration './botRegistration/azurebot.bicep' = {
   }
 }
 
-// The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-provision-arm#output for more details.
+// The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-actions/arm-deploy for more details.
 output BOT_AZURE_APP_SERVICE_RESOURCE_ID string = webApp.id
 output BOT_DOMAIN string = webApp.properties.defaultHostName

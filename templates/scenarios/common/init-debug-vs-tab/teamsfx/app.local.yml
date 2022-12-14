@@ -2,7 +2,7 @@ version: 1.0.0
 
 
 registerApp:
-  - uses: env/generate # Generate env to .env file
+  - uses: file/updateEnv # Generate env to .env file
     with:
       envs:
         TAB_DOMAIN: localhost:44302
@@ -15,7 +15,7 @@ registerApp:
     # TEAMS_APP_ID: the id of Teams app
 
 configureApp:
-  - uses: teamsApp/createAppPackage # Build Teams app package with latest env value
+  - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip

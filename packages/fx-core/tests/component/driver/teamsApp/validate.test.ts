@@ -51,6 +51,18 @@ describe("teamsApp/validate", async () => {
     chai.assert(result.isOk());
   });
 
+  it("execute", async () => {
+    const args: ValidateTeamsAppArgs = {
+      manifestTemplatePath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+    };
+
+    process.env.CONFIG_TEAMS_APP_NAME = "fakeName";
+
+    const result = await teamsAppDriver.execute(args, mockedDriverContext);
+    chai.assert(result.result.isOk());
+  });
+
   it("happy path - VS", async () => {
     const args: ValidateTeamsAppArgs = {
       manifestTemplatePath:

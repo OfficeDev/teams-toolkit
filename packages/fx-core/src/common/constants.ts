@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 export class ConstantString {
   static readonly UTF8Encoding = "utf-8";
   static readonly DeploymentResourceType = "Microsoft.Resources/deployments";
@@ -78,7 +81,6 @@ export class FeatureFlagName {
   static readonly M365App = "TEAMSFX_M365_APP";
   static readonly YoCheckerEnable = "TEAMSFX_YO_ENV_CHECKER_ENABLE";
   static readonly GeneratorCheckerEnable = "TEAMSFX_GENERATOR_ENV_CHECKER_ENABLE";
-  static readonly SPFxVersion = "TEAMSFX_SPFX_VERSIOIN";
   static readonly SPFxMultiTab = "TEAMSFX_SPFX_MULTI_TAB";
   static readonly ApiConnect = "TEAMSFX_API_CONNECT_ENABLE";
   static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
@@ -86,7 +88,9 @@ export class FeatureFlagName {
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
   static readonly TDPIntegration = "TDP_INTEGRATION";
   static readonly V3 = "TEAMSFX_V3";
+  static readonly V3Migration = "TEAMSFX_V3_MIGRATION";
   static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
+  static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
 }
 
 export class ManifestVariables {

@@ -7,11 +7,7 @@ export class FolderName {
   static readonly Bot = "bot";
   static readonly Function = "api";
   static readonly SPFx = "SPFx";
-}
-
-export enum ProgrammingLanguage {
-  javascript = "javascript",
-  typescript = "typescript",
+  static readonly VideoFilter = "app";
 }
 
 export const baseNpmInstallCommand = "npm install";

@@ -40,7 +40,7 @@ namespace {{SafeProjectName}}.Commands
                 new HelloWorldModel
                 {
                     Title = "Your Hello World Bot is Running",
-                    Body = "Congratulations! Your hello world bot is running. Click the documentation below to learn more about Bots and the Teams Toolkit.",
+                    Body = "Congratulations! Your hello world bot is running. Click the button below to trigger an action.",
                 }
             );
 

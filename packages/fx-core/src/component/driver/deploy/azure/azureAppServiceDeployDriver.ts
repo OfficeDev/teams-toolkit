@@ -3,22 +3,26 @@
 
 import { DeployStepArgs } from "../../interface/buildAndDeployArgs";
 import { AzureDeployDriver } from "./azureDeployDriver";
-import { StepDriver } from "../../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { Service } from "typedi";
 import { DriverContext, AzureResourceInfo } from "../../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
 import { FxError, IProgressHandler, Result, UserInteraction } from "@microsoft/teamsfx-api";
-import { wrapRun } from "../../../utils/common";
+import { wrapRun, wrapSummary } from "../../../utils/common";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
 import { DeployConstant } from "../../../constant/deployConstant";
 import { getLocalizedMessage, ProgressMessages } from "../../../messages";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 const ACTION_NAME = "azureAppService/deploy";
 
 @Service(ACTION_NAME)
 export class AzureAppServiceDeployDriver implements StepDriver {
+  readonly description: string = getLocalizedString(
+    "driver.deploy.deployToAzureAppServiceDescription"
+  );
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new AzureAppServiceDeployDriverImpl(args, context);
@@ -28,11 +32,18 @@ export class AzureAppServiceDeployDriver implements StepDriver {
       context.logProvider
     );
   }
+
+  execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
+    return wrapSummary(this.run.bind(this, args, ctx), [
+      "driver.deploy.azureAppServiceDeploySummary",
+    ]);
+  }
 }
 
 export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/sites\/([^\/]*)/i;
+  protected helpLink = "https://aka.ms/teamsfx-actions/azure-app-service-deploy";
 
   async azureDeploy(
     args: DeployStepArgs,

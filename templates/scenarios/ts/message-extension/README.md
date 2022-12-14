@@ -1,31 +1,29 @@
-# How to use this Bots and Message Extensions HelloWorld app
-
-A bot, chatbot, or conversational bot is an app that responds to simple commands sent in chat and replies in meaningful ways. Examples of bots in everyday use include: bots that notify about build failures, bots that provide information about the weather or bus schedules, or provide travel information. A bot interaction can be a quick question and answer, or it can be a complex conversation. Being a cloud application, a bot can provide valuable and secure access to cloud services and corporate resources.
+# How to use this Message Extension HelloWorld app
 
 A Message Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
 
 Message Extensions are implemented on top of the Bot support architecture within Teams.
 
-This is a simple hello world application with both Bot and Message extension capabilities.
+This is a simple hello world application with Message extension capabilities.
 
 ## Prerequisites
 
 - [NodeJS](https://nodejs.org/en/)
 - An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
-- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version after 1.55 or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
+- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version after 4.0.0 or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 
 ## Debug
 
-- From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code. 
+- From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code.
 - Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Run and Debug` green arrow button.
-- From TeamsFx CLI: Start debugging the project by executing the command `teamsfx preview --local` in your project directory.
+- From TeamsFx CLI: Start debugging the project by executing the command `teamsfx preview --env local` in your project directory.
 
 ## Edit the manifest
 
-You can find the Teams app manifest in `templates/appPackage` folder. The folder contains one manifest file:
+You can find the Teams app manifest in `./appPackage` folder. The folder contains one manifest file:
 * `manifest.template.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
 
-This file contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
+This file contains template arguments with `${{...}}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
 
 ## Deploy to Azure
 
@@ -47,7 +45,7 @@ Once the provisioning and deployment steps are finished, you can preview your ap
   1. Select `Launch Remote (Edge)` or `Launch Remote (Chrome)` from the launch configuration drop-down.
   1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
 
-- From TeamsFx CLI: execute `teamsfx preview --remote` in your project directory to launch your application.
+- From TeamsFx CLI: execute `teamsfx preview --env dev` in your project directory to launch your application.
 
 ## Validate manifest file
 
@@ -68,7 +66,7 @@ Once deployed, you may want to distribute your application to your organization'
 - From Visual Studio Code: open the Teams Toolkit and click `Publish to Teams` or open the command palette and select: `Teams: Publish to Teams`.
 - From TeamsFx CLI: run command `teamsfx publish` in your project directory.
 
-## Play with Messging Extension
+## Play with Message Extension
 
 This template provides some sample functionality:
 
@@ -82,7 +80,7 @@ This template provides some sample functionality:
 
   ![ShareMessage](./images/ShareMessage.png)
 
-- You can paste a link that "unfurls" (`.botframwork.com` is monitored in this template) and a card will be rendered.
+- You can paste a link that "unfurls" (`.botframework.com` is monitored in this template) and a card will be rendered.
 
   ![ComposeArea](./images/LinkUnfurlingImage.png)
 
@@ -105,12 +103,6 @@ To trigger these functions, there are multiple entry points:
   ![ComposeArea](./images/ThreeDotOnMessage.png)
 
 ## Further reading
-
-### Bot
-
-- [Bot Basics](https://docs.microsoft.com/azure/bot-service/bot-builder-basics?view=azure-bot-service-4.0)
-- [Bot Framework Documentation](https://docs.botframework.com/)
-- [Azure Bot Service Introduction](https://docs.microsoft.com/azure/bot-service/bot-service-overview-introduction?view=azure-bot-service-4.0)
 
 ### Message Extension
 

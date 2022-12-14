@@ -72,6 +72,7 @@ import {
   migrateSetUpSSO,
   migratePrepareManifest,
   migrateSetUpBot,
+  migrateValidateDependencies,
 } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
@@ -535,11 +536,17 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateSetUpBot,
     migrateSetUpSSO,
     migratePrepareManifest,
+    migrateValidateDependencies,
   ];
 
+  const oldProjectSettings = await loadProjectSettings(context.projectPath);
   const placeholderMappings = await getPlaceholderMappings(context);
 
-  const debugContext = new DebugMigrationContext(tasksJsonContent["tasks"], placeholderMappings);
+  const debugContext = new DebugMigrationContext(
+    tasksJsonContent["tasks"],
+    oldProjectSettings,
+    placeholderMappings
+  );
 
   for (const func of migrateTaskFuncs) {
     func(debugContext);
@@ -552,7 +559,6 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
   );
 
   // Generate app.local.yml
-  const oldProjectSettings = await loadProjectSettings(context.projectPath);
   const appYmlGenerator = new AppLocalYmlGenerator(
     oldProjectSettings,
     debugContext.appYmlConfig,

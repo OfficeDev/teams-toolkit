@@ -15,5 +15,5 @@ getTeamDetails(): Promise<TeamDetails | undefined>;
 
 Promise&lt;TeamDetails \| undefined&gt;
 
-the team details if bot is installed into a team, otherwise returns undefined.
+The team details if bot is installed into a team, otherwise returns `undefined`<!-- -->.
 

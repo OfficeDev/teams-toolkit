@@ -18,11 +18,11 @@ read(key: string): Promise<{
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  key | string | the key of a notification target. |
+|  key | string | The key of a notification target. |
 
 <b>Returns:</b>
 
 Promise&lt;{ \[key: string\]: unknown; } \| undefined&gt;
 
-- the notification target. Or undefined if not found.
+The notification target, or `undefined` if not found.
 

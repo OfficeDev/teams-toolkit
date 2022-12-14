@@ -16,15 +16,15 @@ export declare class NotificationBot
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(adapter, options)](./teamsfx.botbuildercloudadapter.notificationbot._constructor_.md) |  | constructor of the notification bot. |
+|  [(constructor)(adapter, options)](./teamsfx.botbuildercloudadapter.notificationbot._constructor_.md) |  | Constructor of the notification bot. |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [findAllChannels(predicate)](./teamsfx.botbuildercloudadapter.notificationbot.findallchannels.md) |  | Returns all [Channel](./teamsfx.channel.md) where predicate is true, and empty array otherwise. (Ensure the bot app is installed into the <code>General</code> channel, otherwise empty array will be returned.) |
-|  [findAllMembers(predicate, scope)](./teamsfx.botbuildercloudadapter.notificationbot.findallmembers.md) |  | Returns all [Member](./teamsfx.member.md) where predicate is true, and empty array otherwise. |
-|  [findChannel(predicate)](./teamsfx.botbuildercloudadapter.notificationbot.findchannel.md) |  | Returns the first [Channel](./teamsfx.channel.md) where predicate is true, and undefined otherwise. (Ensure the bot app is installed into the <code>General</code> channel, otherwise undefined will be returned.) |
-|  [findMember(predicate, scope)](./teamsfx.botbuildercloudadapter.notificationbot.findmember.md) |  | Returns the first [Member](./teamsfx.member.md) where predicate is true, and undefined otherwise. |
+|  [findAllChannels(predicate)](./teamsfx.botbuildercloudadapter.notificationbot.findallchannels.md) |  | Return all [Channel](./teamsfx.channel.md) where predicate is true, and empty array otherwise. (Ensure the bot app is installed into the <code>General</code> channel, otherwise empty array will be returned.) |
+|  [findAllMembers(predicate, scope)](./teamsfx.botbuildercloudadapter.notificationbot.findallmembers.md) |  | Return all [Member](./teamsfx.member.md) where predicate is true, and empty array otherwise. |
+|  [findChannel(predicate)](./teamsfx.botbuildercloudadapter.notificationbot.findchannel.md) |  | Return the first [Channel](./teamsfx.channel.md) where predicate is true, and undefined otherwise. (Ensure the bot app is installed into the <code>General</code> channel, otherwise undefined will be returned.) |
+|  [findMember(predicate, scope)](./teamsfx.botbuildercloudadapter.notificationbot.findmember.md) |  | Return the first [Member](./teamsfx.member.md) where predicate is true, and undefined otherwise. |
 |  [installations()](./teamsfx.botbuildercloudadapter.notificationbot.installations.md) |  | Get all targets where the bot is installed. |
 

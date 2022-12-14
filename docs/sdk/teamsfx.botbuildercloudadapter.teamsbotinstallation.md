@@ -28,7 +28,7 @@ It's recommended to get bot installations from .
 |  Property | Modifiers | Type | Description |
 |  --- | --- | --- | --- |
 |  [adapter](./teamsfx.botbuildercloudadapter.teamsbotinstallation.adapter.md) |  | CloudAdapter | The bound <code>CloudAdapter</code>. |
-|  [botAppId](./teamsfx.botbuildercloudadapter.teamsbotinstallation.botappid.md) |  | string | The bot app Id. |
+|  [botAppId](./teamsfx.botbuildercloudadapter.teamsbotinstallation.botappid.md) |  | string | The bot app id. |
 |  [conversationReference](./teamsfx.botbuildercloudadapter.teamsbotinstallation.conversationreference.md) |  | Partial&lt;ConversationReference&gt; | The bound <code>ConversationReference</code>. |
 |  [type?](./teamsfx.botbuildercloudadapter.teamsbotinstallation.type.md) |  | [NotificationTargetType](./teamsfx.notificationtargettype.md) | <i>(Optional)</i> Notification target type. |
 

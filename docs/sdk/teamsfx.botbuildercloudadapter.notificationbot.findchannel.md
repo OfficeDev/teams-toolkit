@@ -4,7 +4,7 @@
 
 ## BotBuilderCloudAdapter.NotificationBot.findChannel() method
 
-Returns the first [Channel](./teamsfx.channel.md) where predicate is true, and undefined otherwise. (Ensure the bot app is installed into the `General` channel, otherwise undefined will be returned.)
+Return the first [Channel](./teamsfx.channel.md) where predicate is true, and undefined otherwise. (Ensure the bot app is installed into the `General` channel, otherwise undefined will be returned.)
 
 <b>Signature:</b>
 
@@ -16,11 +16,11 @@ findChannel(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) 
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  predicate | (channel: [Channel](./teamsfx.channel.md)<!-- -->, teamDetails: TeamDetails \| undefined) =&gt; Promise&lt;boolean&gt; | find calls predicate once for each channel of the installation, until it finds one where predicate returns true. If such a channel is found, find immediately returns that channel. Otherwise, find returns undefined. |
+|  predicate | (channel: [Channel](./teamsfx.channel.md)<!-- -->, teamDetails: TeamDetails \| undefined) =&gt; Promise&lt;boolean&gt; | Find calls predicate once for each channel of the installation, until it finds one where predicate returns true. If such a channel is found, find immediately returns that channel. Otherwise, find returns <code>undefined</code>. |
 
 <b>Returns:</b>
 
 Promise&lt;[Channel](./teamsfx.channel.md) \| undefined&gt;
 
-the first [Channel](./teamsfx.channel.md) where predicate is true, and undefined otherwise.
+The first [Channel](./teamsfx.channel.md) where predicate is true, and `undefined` otherwise.
 

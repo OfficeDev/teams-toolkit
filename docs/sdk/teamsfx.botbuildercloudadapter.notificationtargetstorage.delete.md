@@ -16,7 +16,7 @@ delete(key: string): Promise<void>;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  key | string | the key of a notification target. |
+|  key | string | The key of a notification target. |
 
 <b>Returns:</b>
 

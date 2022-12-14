@@ -4,7 +4,7 @@
 
 ## BotBuilderCloudAdapter.CommandBot.(constructor)
 
-Creates a new instance of the `CommandBot`<!-- -->.
+Create a new instance of the `CommandBot`<!-- -->.
 
 <b>Signature:</b>
 
@@ -17,7 +17,7 @@ constructor(adapter: CloudAdapter, options?: CommandOptions, ssoCommandActivityH
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  adapter | CloudAdapter | The bound <code>CloudAdapter</code>. |
-|  options | [CommandOptions](./teamsfx.commandoptions.md) | initialize options |
-|  ssoCommandActivityHandler | [BotSsoExecutionActivityHandler](./teamsfx.botssoexecutionactivityhandler.md) | SSO execution activity handler |
-|  ssoConfig | [BotSsoConfig](./teamsfx.botssoconfig.md) | SSO configuration for Bot SSO |
+|  options | [CommandOptions](./teamsfx.commandoptions.md) | The initialize options |
+|  ssoCommandActivityHandler | [BotSsoExecutionActivityHandler](./teamsfx.botssoexecutionactivityhandler.md) | SSO execution activity handler. |
+|  ssoConfig | [BotSsoConfig](./teamsfx.botssoconfig.md) | SSO configuration for Bot SSO. |
 

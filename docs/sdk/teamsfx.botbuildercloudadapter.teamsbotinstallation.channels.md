@@ -15,5 +15,5 @@ channels(): Promise<Channel[]>;
 
 Promise&lt;[Channel](./teamsfx.channel.md)<!-- -->\[\]&gt;
 
-an array of channels if bot is installed into a team, otherwise returns an empty array.
+An array of channels if bot is installed into a team, otherwise returns an empty array.
 

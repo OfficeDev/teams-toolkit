@@ -16,12 +16,12 @@ sendMessage(text: string, onError?: (context: TurnContext, error: Error) => Prom
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  text | string | the plain text message. |
-|  onError | (context: TurnContext, error: Error) =&gt; Promise&lt;void&gt; | an optional error handler that can catch exceptions during message sending. If not defined, error will be handled by <code>BotAdapter.onTurnError</code>. |
+|  text | string | The plain text message. |
+|  onError | (context: TurnContext, error: Error) =&gt; Promise&lt;void&gt; | An optional error handler that can catch exceptions during message sending. If not defined, the error will be handled by <code>BotAdapter.onTurnError</code>. |
 
 <b>Returns:</b>
 
 Promise&lt;MessageResponse&gt;
 
-the response of sending message.
+The response of sending message.
 

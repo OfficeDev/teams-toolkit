@@ -4,7 +4,7 @@
 
 ## BotBuilderCloudAdapter.CardActionBot.(constructor)
 
-Creates a new instance of the `CardActionBot`<!-- -->.
+Create a new instance of the `CardActionBot`<!-- -->.
 
 <b>Signature:</b>
 
@@ -17,5 +17,5 @@ constructor(adapter: CloudAdapter, options?: CardActionOptions);
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  adapter | CloudAdapter | The bound <code>CloudAdapter</code>. |
-|  options | [CardActionOptions](./teamsfx.cardactionoptions.md) | initialize options |
+|  options | [CardActionOptions](./teamsfx.cardactionoptions.md) | The initialize options. |
 

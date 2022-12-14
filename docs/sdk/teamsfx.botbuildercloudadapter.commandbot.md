@@ -20,14 +20,14 @@ Ensure each command should ONLY be registered with the command once, otherwise i
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(adapter, options, ssoCommandActivityHandler, ssoConfig)](./teamsfx.botbuildercloudadapter.commandbot._constructor_.md) |  | Creates a new instance of the <code>CommandBot</code>. |
+|  [(constructor)(adapter, options, ssoCommandActivityHandler, ssoConfig)](./teamsfx.botbuildercloudadapter.commandbot._constructor_.md) |  | Create a new instance of the <code>CommandBot</code>. |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [registerCommand(command)](./teamsfx.botbuildercloudadapter.commandbot.registercommand.md) |  | Registers a command into the command bot. |
-|  [registerCommands(commands)](./teamsfx.botbuildercloudadapter.commandbot.registercommands.md) |  | Registers commands into the command bot. |
-|  [registerSsoCommand(ssoCommand)](./teamsfx.botbuildercloudadapter.commandbot.registerssocommand.md) |  | Registers a sso command into the command bot. |
-|  [registerSsoCommands(ssoCommands)](./teamsfx.botbuildercloudadapter.commandbot.registerssocommands.md) |  | Registers commands into the command bot. |
+|  [registerCommand(command)](./teamsfx.botbuildercloudadapter.commandbot.registercommand.md) |  | Register a command into the command bot. |
+|  [registerCommands(commands)](./teamsfx.botbuildercloudadapter.commandbot.registercommands.md) |  | Register commands into the command bot. |
+|  [registerSsoCommand(ssoCommand)](./teamsfx.botbuildercloudadapter.commandbot.registerssocommand.md) |  | Register a sso command into the command bot. |
+|  [registerSsoCommands(ssoCommands)](./teamsfx.botbuildercloudadapter.commandbot.registerssocommands.md) |  | Register sso commands into the command bot. |
 

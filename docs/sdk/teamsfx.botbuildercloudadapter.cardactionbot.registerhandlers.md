@@ -4,7 +4,7 @@
 
 ## BotBuilderCloudAdapter.CardActionBot.registerHandlers() method
 
-Registers card action handlers to the bot.
+Register card action handlers to the bot.
 
 <b>Signature:</b>
 

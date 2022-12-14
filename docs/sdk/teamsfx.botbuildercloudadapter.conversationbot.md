@@ -25,6 +25,9 @@ For notification, set `notification.storage` in [ConversationOptions](./teamsfx.
 For command and response, you can register your commands through the constructor, or use the `registerCommand` and `registerCommands` API to add commands later.
 
 ```typescript
+import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
+import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
+
 // register through constructor
 const conversationBot = new ConversationBot({
   command: {
@@ -39,6 +42,9 @@ conversationBot.command.registerCommand(new HelpCommandHandler());
 For notification, you can enable notification at initialization, then send notifications at any time.
 
 ```typescript
+import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
+import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
+
 // enable through constructor
 const conversationBot = new ConversationBot({
   notification: {
@@ -63,7 +69,7 @@ for (const target of await conversationBot.notification.installations()) {
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(options)](./teamsfx.botbuildercloudadapter.conversationbot._constructor_.md) |  | Creates new instance of the <code>ConversationBot</code>. |
+|  [(constructor)(options)](./teamsfx.botbuildercloudadapter.conversationbot._constructor_.md) |  | Create new instance of the <code>ConversationBot</code>. |
 
 ## Properties
 

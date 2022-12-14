@@ -14,5 +14,5 @@ botAppId?: string;
 
 ## Remarks
 
-If `botAppId` is not provided, a default bot app Id `process.env.BOT_ID` will be used,
+If `botAppId` is not provided, `process.env.BOT_ID` will be used by default.
 

@@ -16,9 +16,9 @@ constructor(adapter: CloudAdapter, conversationReference: Partial<ConversationRe
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  adapter | CloudAdapter | the bound <code>CloudAdapter</code>. |
-|  conversationReference | Partial&lt;ConversationReference&gt; | the bound <code>ConversationReference</code>. |
-|  botAppId | string | the bot app Id |
+|  adapter | CloudAdapter | The bound <code>CloudAdapter</code>. |
+|  conversationReference | Partial&lt;ConversationReference&gt; | The bound <code>ConversationReference</code>. |
+|  botAppId | string | The bot app id. |
 
 ## Remarks
 

@@ -4,7 +4,7 @@
 
 ## BotBuilderCloudAdapter.CommandBot.registerSsoCommands() method
 
-Registers commands into the command bot.
+Register sso commands into the command bot.
 
 <b>Signature:</b>
 
@@ -16,7 +16,7 @@ registerSsoCommands(ssoCommands: TeamsFxBotSsoCommandHandler[]): void;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  ssoCommands | [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md)<!-- -->\[\] |  |
+|  ssoCommands | [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md)<!-- -->\[\] | The sso commands to be registered. |
 
 <b>Returns:</b>
 

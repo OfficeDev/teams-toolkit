@@ -17,5 +17,5 @@ list(): Promise<{
 
 Promise&lt;{ \[key: string\]: unknown; }\[\]&gt;
 
-- an array of notification target. Or an empty array if nothing is stored.
+An array of notification target, or an empty array if nothing is stored.
 

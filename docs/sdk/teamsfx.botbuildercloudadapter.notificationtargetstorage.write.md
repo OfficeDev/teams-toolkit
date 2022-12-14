@@ -18,8 +18,8 @@ write(key: string, object: {
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  key | string | the key of a notification target. |
-|  object | { \[key: string\]: unknown; } | the notification target. |
+|  key | string | The key of a notification target. |
+|  object | { \[key: string\]: unknown; } | The notification target. |
 
 <b>Returns:</b>
 

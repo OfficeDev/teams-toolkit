@@ -4,7 +4,7 @@
 
 ## BotBuilderCloudAdapter.CommandBot.registerCommand() method
 
-Registers a command into the command bot.
+Register a command into the command bot.
 
 <b>Signature:</b>
 
@@ -16,7 +16,7 @@ registerCommand(command: TeamsFxBotCommandHandler): void;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  command | [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) | The command to register. |
+|  command | [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) | The command to be registered. |
 
 <b>Returns:</b>
 

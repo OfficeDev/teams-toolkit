@@ -228,7 +228,7 @@ export type BotSsoExecutionDialogHandler = (context: TurnContext, tokenResponse:
 // @public (undocumented)
 type BotSsoExecutionDialogHandler_2 = (context: TurnContext, tokenResponse: TeamsBotSsoPromptTokenResponse, message: CommandMessage_2) => Promise<void>;
 
-// @public
+// @public @deprecated (undocumented)
 export class CardActionBot {
     constructor(adapter: BotFrameworkAdapter, options?: CardActionOptions);
     registerHandler(actionHandler: TeamsFxAdaptiveCardActionHandler): void;
@@ -279,7 +279,7 @@ class Channel_2 implements NotificationTarget_2 {
     readonly type: NotificationTargetType_2;
 }
 
-// @public
+// @public @deprecated (undocumented)
 export class CommandBot {
     constructor(adapter: BotFrameworkAdapter, options?: CommandOptions, ssoCommandActivityHandler?: BotSsoExecutionActivityHandler, ssoConfig?: BotSsoConfig);
     registerCommand(command: TeamsFxBotCommandHandler): void;
@@ -321,7 +321,7 @@ interface CommandOptions_2 {
     ssoCommands?: TeamsFxBotSsoCommandHandler_2[];
 }
 
-// @public
+// @public @deprecated (undocumented)
 export class ConversationBot {
     constructor(options: ConversationOptions);
     readonly adapter: BotFrameworkAdapter;
@@ -538,7 +538,7 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
     getAccessToken(): Promise<string>;
 }
 
-// @public
+// @public @deprecated (undocumented)
 export class NotificationBot {
     constructor(adapter: BotFrameworkAdapter, options?: NotificationOptions_2);
     findAllChannels(predicate: (channel: Channel, teamDetails: TeamDetails | undefined) => Promise<boolean>): Promise<Channel[]>;
@@ -685,7 +685,7 @@ export function setLogger(logger?: Logger): void;
 // @public
 export function setLogLevel(level: LogLevel): void;
 
-// @public
+// @public @deprecated (undocumented)
 export class TeamsBotInstallation implements NotificationTarget {
     constructor(adapter: BotFrameworkAdapter, conversationReference: Partial<ConversationReference>);
     readonly adapter: BotFrameworkAdapter;

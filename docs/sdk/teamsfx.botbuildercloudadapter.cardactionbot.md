@@ -16,12 +16,12 @@ export declare class CardActionBot
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(adapter, options)](./teamsfx.botbuildercloudadapter.cardactionbot._constructor_.md) |  | Creates a new instance of the <code>CardActionBot</code>. |
+|  [(constructor)(adapter, options)](./teamsfx.botbuildercloudadapter.cardactionbot._constructor_.md) |  | Create a new instance of the <code>CardActionBot</code>. |
 
 ## Methods
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [registerHandler(actionHandler)](./teamsfx.botbuildercloudadapter.cardactionbot.registerhandler.md) |  | Registers a card action handler to the bot. |
-|  [registerHandlers(actionHandlers)](./teamsfx.botbuildercloudadapter.cardactionbot.registerhandlers.md) |  | Registers card action handlers to the bot. |
+|  [registerHandler(actionHandler)](./teamsfx.botbuildercloudadapter.cardactionbot.registerhandler.md) |  | Register a card action handler to the bot. |
+|  [registerHandlers(actionHandlers)](./teamsfx.botbuildercloudadapter.cardactionbot.registerhandlers.md) |  | Register card action handlers to the bot. |
 

@@ -4,7 +4,7 @@
 
 ## BotBuilderCloudAdapter.TeamsBotInstallation.botAppId property
 
-The bot app Id.
+The bot app id.
 
 <b>Signature:</b>
 

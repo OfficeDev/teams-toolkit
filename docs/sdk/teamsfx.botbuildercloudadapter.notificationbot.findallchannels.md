@@ -4,7 +4,7 @@
 
 ## BotBuilderCloudAdapter.NotificationBot.findAllChannels() method
 
-Returns all [Channel](./teamsfx.channel.md) where predicate is true, and empty array otherwise. (Ensure the bot app is installed into the `General` channel, otherwise empty array will be returned.)
+Return all [Channel](./teamsfx.channel.md) where predicate is true, and empty array otherwise. (Ensure the bot app is installed into the `General` channel, otherwise empty array will be returned.)
 
 <b>Signature:</b>
 
@@ -16,11 +16,11 @@ findAllChannels(predicate: (channel: Channel, teamDetails: TeamDetails | undefin
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  predicate | (channel: [Channel](./teamsfx.channel.md)<!-- -->, teamDetails: TeamDetails \| undefined) =&gt; Promise&lt;boolean&gt; | find calls predicate for each channel of the installation. |
+|  predicate | (channel: [Channel](./teamsfx.channel.md)<!-- -->, teamDetails: TeamDetails \| undefined) =&gt; Promise&lt;boolean&gt; | Find calls predicate for each channel of the installation. |
 
 <b>Returns:</b>
 
 Promise&lt;[Channel](./teamsfx.channel.md)<!-- -->\[\]&gt;
 
-an array of [Channel](./teamsfx.channel.md) where predicate is true, and empty array otherwise.
+An array of [Channel](./teamsfx.channel.md) where predicate is true, and empty array otherwise.
 

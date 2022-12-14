@@ -4,7 +4,7 @@
 
 ## BotBuilderCloudAdapter.NotificationBot.(constructor)
 
-constructor of the notification bot.
+Constructor of the notification bot.
 
 <b>Signature:</b>
 
@@ -16,8 +16,8 @@ constructor(adapter: CloudAdapter, options?: NotificationOptions);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  adapter | CloudAdapter | the bound <code>CloudAdapter</code> |
-|  options | NotificationOptions | initialize options |
+|  adapter | CloudAdapter | The bound <code>CloudAdapter</code> |
+|  options | NotificationOptions | The initialize options |
 
 ## Remarks
 

@@ -4,7 +4,7 @@
 
 ## BotBuilderCloudAdapter.ConversationBot.(constructor)
 
-Creates new instance of the `ConversationBot`<!-- -->.
+Create new instance of the `ConversationBot`<!-- -->.
 
 <b>Signature:</b>
 
@@ -16,7 +16,7 @@ constructor(options: ConversationOptions);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  options | [ConversationOptions](./teamsfx.conversationoptions.md) | initialize options |
+|  options | [ConversationOptions](./teamsfx.conversationoptions.md) | The initialize options. |
 
 ## Remarks
 

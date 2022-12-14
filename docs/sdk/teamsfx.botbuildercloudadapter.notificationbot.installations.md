@@ -15,7 +15,7 @@ installations(): Promise<TeamsBotInstallation[]>;
 
 Promise&lt;[TeamsBotInstallation](./teamsfx.teamsbotinstallation.md)<!-- -->\[\]&gt;
 
-- an array of [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md)<!-- -->.
+An array of [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md)<!-- -->.
 
 ## Remarks
 

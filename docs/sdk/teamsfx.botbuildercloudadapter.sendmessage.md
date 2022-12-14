@@ -16,13 +16,13 @@ export declare function sendMessage(target: NotificationTarget, text: string, on
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  target | [NotificationTarget](./teamsfx.notificationtarget.md) | the notification target. |
-|  text | string | the plain text message. |
-|  onError | (context: TurnContext, error: Error) =&gt; Promise&lt;void&gt; | an optional error handler that can catch exceptions during message sending. If not defined, error will be handled by <code>BotAdapter.onTurnError</code>. |
+|  target | [NotificationTarget](./teamsfx.notificationtarget.md) | The notification target. |
+|  text | string | The plain text message. |
+|  onError | (context: TurnContext, error: Error) =&gt; Promise&lt;void&gt; | An optional error handler that can catch exceptions during message sending. If not defined, error will be handled by <code>BotAdapter.onTurnError</code>. |
 
 <b>Returns:</b>
 
 Promise&lt;MessageResponse&gt;
 
-the response of sending message.
+The response of sending message.
 

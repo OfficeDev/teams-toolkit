@@ -16,9 +16,9 @@ requestHandler(req: Request, res: Response, logic?: (context: TurnContext) => Pr
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  req | Request | An incoming HTTP \[Request\](xref:botbuilder.Request) |
+|  req | Request | An incoming HTTP \[Request\](xref:botbuilder.Request). |
 |  res | Response |  |
-|  logic | (context: TurnContext) =&gt; Promise&lt;any&gt; | the additional function to handle bot context. |
+|  logic | (context: TurnContext) =&gt; Promise&lt;any&gt; | The additional function to handle bot context. |
 
 <b>Returns:</b>
 

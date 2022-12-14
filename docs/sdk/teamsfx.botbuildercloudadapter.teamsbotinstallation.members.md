@@ -15,5 +15,5 @@ members(): Promise<Member[]>;
 
 Promise&lt;[Member](./teamsfx.member.md)<!-- -->\[\]&gt;
 
-an array of members from where the bot is installed.
+An array of members from where the bot is installed.
 

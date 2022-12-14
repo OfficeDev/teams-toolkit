@@ -4,7 +4,7 @@
 
 ## BotBuilderCloudAdapter.NotificationBot.findAllMembers() method
 
-Returns all [Member](./teamsfx.member.md) where predicate is true, and empty array otherwise.
+Return all [Member](./teamsfx.member.md) where predicate is true, and empty array otherwise.
 
 <b>Signature:</b>
 
@@ -16,12 +16,12 @@ findAllMembers(predicate: (member: Member) => Promise<boolean>, scope?: SearchSc
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  predicate | (member: [Member](./teamsfx.member.md)<!-- -->) =&gt; Promise&lt;boolean&gt; | find calls predicate for each member of the installation. |
-|  scope | [SearchScope](./teamsfx.searchscope.md) | the scope to find members from the installations (personal chat, group chat, Teams channel). |
+|  predicate | (member: [Member](./teamsfx.member.md)<!-- -->) =&gt; Promise&lt;boolean&gt; | Find calls predicate for each member of the installation. |
+|  scope | [SearchScope](./teamsfx.searchscope.md) | The scope to find members from the installations (personal chat, group chat, Teams channel). |
 
 <b>Returns:</b>
 
 Promise&lt;[Member](./teamsfx.member.md)<!-- -->\[\]&gt;
 
-an array of [Member](./teamsfx.member.md) where predicate is true, and empty array otherwise.
+An array of [Member](./teamsfx.member.md) where predicate is true, and empty array otherwise.
 

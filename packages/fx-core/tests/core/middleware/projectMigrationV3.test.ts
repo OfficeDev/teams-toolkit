@@ -252,8 +252,10 @@ describe("generateSettingsJson", () => {
 describe("generateAppYml-js/ts", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
+  let migrationContext: MigrationContext;
 
   beforeEach(async () => {
+    migrationContext = await mockMigrationContext(projectPath);
     await fs.ensureDir(projectPath);
   });
 
@@ -261,50 +263,18 @@ describe("generateAppYml-js/ts", () => {
     await fs.remove(projectPath);
   });
 
-  it("should success in happy path", async () => {
-    const migrationContext = await mockMigrationContext(projectPath);
-    await copyTestProject(Constants.happyPathTestProject, projectPath);
+  it("should success for js SSO tab", async () => {
+    await copyTestProject("jsSsoTab", projectPath);
 
     await generateAppYml(migrationContext);
 
-    const appYamlPath = path.join(projectPath, Constants.appYmlPath);
-    assert.isTrue(await fs.pathExists(appYamlPath));
-    const appYaml: any = yaml.load(await fs.readFile(appYamlPath, "utf8"));
-    // validate basic part
-    assert.equal(appYaml.version, "1.0.0");
-    assert.exists(getAction(appYaml.provision, "arm/deploy"));
-    assert.exists(getAction(appYaml.registerApp, "teamsApp/create"));
-    assert.exists(getAction(appYaml.configureApp, "teamsApp/validate"));
-    assert.exists(getAction(appYaml.configureApp, "teamsApp/zipAppPackage"));
-    assert.exists(getAction(appYaml.configureApp, "teamsApp/update"));
-    assert.exists(getAction(appYaml.publish, "teamsApp/validate"));
-    assert.exists(getAction(appYaml.publish, "teamsApp/zipAppPackage"));
-    assert.exists(getAction(appYaml.publish, "teamsApp/publishAppPackage"));
-    // validate AAD part
-    assert.exists(getAction(appYaml.registerApp, "aadApp/create"));
-    assert.exists(getAction(appYaml.configureApp, "aadApp/update"));
-    // validate tab part
-    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "cli/runNpmCommand");
-    assert.exists(
-      npmCommandActions.find(
-        (item) => item.with.workingDirectory === "tabs" && item.with.args === "install"
-      )
-    );
-    assert.exists(
-      npmCommandActions.find(
-        (item) => item.with.workingDirectory === "tabs" && item.with.args === "run build"
-      )
-    );
-    assert.exists(getAction(appYaml.deploy, "azureStorage/deploy"));
+    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
   });
 
-  it("should not generate AAD part if AAD plugin not activated", async () => {
-    const migrationContext = await mockMigrationContext(projectPath);
-    await copyTestProject(Constants.happyPathTestProject, projectPath);
+  it("should success for ts SSO tab", async () => {
+    await copyTestProject("jsSsoTab", projectPath);
     const projectSetting = await readOldProjectSettings(projectPath);
-    projectSetting.solutionSettings.activeResourcePlugins = (<Array<string>>(
-      projectSetting.solutionSettings.activeResourcePlugins
-    )).filter((item) => item !== "fx-resource-aad-app-for-teams"); // remove AAD plugin
+    projectSetting.programmingLanguage = "typescript";
     await fs.writeJson(
       path.join(projectPath, Constants.oldProjectSettingsFilePath),
       projectSetting
@@ -312,21 +282,21 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    const appYaml: any = yaml.load(
-      await fs.readFile(path.join(projectPath, Constants.appYmlPath), "utf8")
-    );
-
-    assert.isEmpty(getAction(appYaml.registerApp, "aadApp/create"));
-    assert.isEmpty(getAction(appYaml.configureApp, "aadApp/update"));
+    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
   });
 
-  it("should not generate tab part if frontend hosting plugin not activated", async () => {
-    const migrationContext = await mockMigrationContext(projectPath);
-    await copyTestProject(Constants.happyPathTestProject, projectPath);
+  it("should success for js non SSO tab", async () => {
+    await copyTestProject("jsNonSsoTab", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+  });
+
+  it("should success for ts non SSO tab", async () => {
+    await copyTestProject("jsNonSsoTab", projectPath);
     const projectSetting = await readOldProjectSettings(projectPath);
-    projectSetting.solutionSettings.activeResourcePlugins = (<Array<string>>(
-      projectSetting.solutionSettings.activeResourcePlugins
-    )).filter((item) => item !== "fx-resource-frontend-hosting"); // remove frontend hosting plugin
+    projectSetting.programmingLanguage = "typescript";
     await fs.writeJson(
       path.join(projectPath, Constants.oldProjectSettingsFilePath),
       projectSetting
@@ -334,14 +304,73 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    const appYaml: any = yaml.load(
-      await fs.readFile(path.join(projectPath, Constants.appYmlPath), "utf8")
+    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+  });
+
+  it("should success for js tab with api", async () => {
+    await copyTestProject("jsTabWithApi", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+  });
+
+  it("should success for ts tab with api", async () => {
+    await copyTestProject("jsTabWithApi", projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.programmingLanguage = "typescript";
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
     );
 
-    assert.isEmpty(getAction(appYaml.provision, "azureStorage/enableStaticWebsite"));
-    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "cli/runNpmCommand");
-    assert.isEmpty(npmCommandActions.filter((item) => item.with.workingDirectory === "tabs"));
-    assert.isEmpty(getAction(appYaml.deploy, "azureStorage/deploy"));
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+  });
+
+  it("should success for js function bot", async () => {
+    await copyTestProject("jsFunctionBot", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+  });
+
+  it("should success for ts function bot", async () => {
+    await copyTestProject("jsFunctionBot", projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.programmingLanguage = "typescript";
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+  });
+
+  it("should success for js webapp bot", async () => {
+    await copyTestProject("jsWebappBot", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+  });
+
+  it("should success for ts webapp bot", async () => {
+    await copyTestProject("jsWebappBot", projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.programmingLanguage = "typescript";
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
   });
 });
 

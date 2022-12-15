@@ -28,6 +28,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     teamsAppName: string | undefined;
     appName: string | undefined;
     isFunctionBot: boolean;
+    isTypescript: boolean;
+    defaultFunctionName: string | undefined;
   };
   constructor(
     oldProjectSettings: ProjectSettings,
@@ -42,6 +44,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       teamsAppName: undefined,
       appName: undefined,
       isFunctionBot: false,
+      isTypescript: false,
+      defaultFunctionName: undefined,
     };
   }
 
@@ -106,6 +110,13 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       );
       this.handlebarsContext.teamsAppName = teamsAppManifest.name.short;
     }
+
+    // programming language
+    this.handlebarsContext.isTypescript =
+      this.oldProjectSettings.programmingLanguage?.toLowerCase() === "typescript";
+
+    // default function name
+    this.handlebarsContext.defaultFunctionName = this.oldProjectSettings.defaultFunctionName;
   }
 
   private async generateAzureHandlebarsContext(): Promise<void> {
@@ -125,6 +136,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.functionAppResourceId");
+    this.setPlaceholderMapping("state.fx-resource-function.functionAppResourceId");
+    this.setPlaceholderMapping("state.fx-resource-function.functionEndpoint");
   }
 
   private setPlaceholderMapping(placeholder: string): void {

@@ -59,11 +59,11 @@ deploy:
   - uses: cli/runNpmCommand
     with:
       args: install
-  {{#if isTypescript}}
+    {{#if isTypescript}}
   - uses: cli/runNpmCommand
     with:
       args: run build --if-present
-  {{/if}}
+    {{/if}}
   - uses: azureFunctions/deploy
     with:
       distributionPath: ./ # Deploy base folder
@@ -75,12 +75,12 @@ deploy:
     with:
       workingDirectory: bot
       args: install
-  {{#if isTypescript}}
+    {{#if isTypescript}}
   - uses: cli/runNpmCommand # Run npm command
     with:
       workingDirectory: bot
       args: run build --if-present
-  {{/if}}
+    {{/if}}
   - uses: azureAppService/deploy # Deploy bits to Azure Storage Static Website
     with:
       workingDirectory: bot
@@ -98,12 +98,12 @@ deploy:
     with:
       workingDirectory: api
       args: build extensions.csproj -o bin --ignore-failed-sources
-  {{#if isTypescript}}
+    {{#if isTypescript}}
   - uses: cli/runNpmCommand
     with:
       workingDirectory: api
       args: run build --if-present
-  {{/if}}
+    {{/if}}
   - uses: azureFunctions/deploy
     with:
       workingDirectory: api

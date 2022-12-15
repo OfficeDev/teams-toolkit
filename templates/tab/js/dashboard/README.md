@@ -335,7 +335,7 @@ In the VS Code side bar, click `Add features` in `Teams Toolkit` > Choose `Azure
 
 In the `index.jsx` under the folder named in step 2, you can add the your logic which contains back-end graph api calling with application permissions. You can refer to the following code snippet.
 
-```ts
+```js
 /**
  * This function handles requests from teamsfx client.
  * The HTTP request should contain an SSO token queried from Teams in the header.
@@ -374,7 +374,7 @@ export default async function run(
 
 Call the Azure Function by function name. You can refer to the following code snippet to call the Azure Function.
 
-```ts
+```js
 const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
 async function callFunction(teamsUserCredential) {
   if (!teamsUserCredential) {

@@ -1,9 +1,9 @@
 import { loginAction } from "./login";
 import { ErrorWithCode } from "@microsoft/teamsfx";
-import { TeamsUserCredentialContext } from "./singletonContext";
+import { TeamsUserCredentialContextInstance } from "./singletonContext";
 
 export async function addNewPermissionScope(addscopes) {
-    const credential = TeamsUserCredentialContext.getInstance().getCredential();
+    const credential = TeamsUserCredentialContextInstance.getInstance().getCredential();
     try {
         await credential.getToken(addscopes);  
     } catch(e) {

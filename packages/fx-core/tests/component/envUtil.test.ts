@@ -393,7 +393,7 @@ describe("env utils", () => {
     const original =
       '#COMMENT\n\n\nKEY1=VALUE1 #COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"';
     const expected =
-      '#COMMENT\n\n\nKEY1=VALUE1 #COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"\nKEY4="VALUE4"';
+      '#COMMENT\n\n\nKEY1=VALUE1 #COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"\nKEY4="VALUE4"\nKEY5="VALUE5#"';
     const parsed = dotenvUtil.deserialize(original);
     assert.deepEqual(parsed, {
       lines: [
@@ -408,6 +408,7 @@ describe("env utils", () => {
       obj: { KEY1: "VALUE1", KEY2: "VALUE2", KEY3: "VALUE3#", indexPath: "/index.html#" },
     });
     parsed.lines?.push({ key: "KEY4", value: "VALUE4", quote: '"' });
+    parsed.obj["KEY5"] = "VALUE5#";
     const serialized = dotenvUtil.serialize(parsed);
     assert.equal(serialized, expected);
   });

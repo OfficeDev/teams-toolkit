@@ -381,7 +381,7 @@ async function callFunction(teamsUserCredential) {
     throw new Error("TeamsFx SDK is not initialized.");
   }
   try {
-    const apiBaseUrl = process.env.apiEndpoint + "/api/";
+    const apiBaseUrl = process.env.REACT_APP_FUNC_ENDPOINT + "/api/";
     // createApiClient(...) creates an Axios instance which uses BearerTokenAuthProvider to inject token to request header
     const apiClient = createApiClient(
       apiBaseUrl,

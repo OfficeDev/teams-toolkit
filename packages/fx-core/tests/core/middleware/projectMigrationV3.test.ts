@@ -39,6 +39,7 @@ import {
   userdataMigration,
   debugMigration,
   azureParameterMigration,
+  generateLocalConfig,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { UpgradeCanceledError } from "../../../src/core/error";
@@ -380,6 +381,53 @@ describe("generateAppYml-csharp", () => {
 
   it("should success for function bot project", async () => {
     await copyTestProject("csharpFunctionBot", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+  });
+});
+
+describe("generateAppYml-csharp", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  let migrationContext: MigrationContext;
+
+  beforeEach(async () => {
+    migrationContext = await mockMigrationContext(projectPath);
+    migrationContext.arguments.push({
+      platform: "vs",
+    });
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("should success for local sso tab project", async () => {
+    await copyTestProject("csharpSsoTab", projectPath);
+
+    await generateLocalConfig(migrationContext);
+  });
+});
+
+describe("generateAppYml-spfx", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  let migrationContext: MigrationContext;
+
+  beforeEach(async () => {
+    migrationContext = await mockMigrationContext(projectPath);
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("should success for spfx project", async () => {
+    await copyTestProject("spfxTab", projectPath);
 
     await generateAppYml(migrationContext);
 

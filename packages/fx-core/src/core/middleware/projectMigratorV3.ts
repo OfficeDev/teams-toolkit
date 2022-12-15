@@ -78,6 +78,7 @@ import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionState } from "../../common/versionMetadata";
 import { isSPFxProject } from "../../common/tools";
+import { environmentManager } from "../environment";
 
 const Constants = {
   vsProvisionBicepPath: "./Templates/azure/provision.bicep",
@@ -102,12 +103,14 @@ const subMigrations: Array<Migration> = [
   generateSettingsJson,
   manifestsMigration,
   generateAppYml,
+  generateLocalConfig,
   configsMigration,
   statesMigration,
   userdataMigration,
   generateApimPluginEnvContent,
   updateLaunchJson,
   azureParameterMigration,
+  debugMigration,
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -240,6 +243,13 @@ export async function generateAppYml(context: MigrationContext): Promise<void> {
   );
   const appYmlString: string = await appYmlGenerator.generateAppYml();
   await context.fsWriteFile(path.join(SettingsFolderName, Constants.appYmlName), appYmlString);
+  if (oldProjectSettings.programmingLanguage?.toLowerCase() === "csharp") {
+    const appLocalYmlString: string = await appYmlGenerator.generateAppLocalYml();
+    await context.fsWriteFile(
+      path.join(SettingsFolderName, Constants.appLocalYmlName),
+      appLocalYmlString
+    );
+  }
 }
 
 export async function updateLaunchJson(context: MigrationContext): Promise<void> {
@@ -389,6 +399,13 @@ export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
     [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
   });
   return true;
+}
+
+export async function generateLocalConfig(context: MigrationContext): Promise<void> {
+  if (!(await context.fsPathExists(path.join(".fx", "configs", "config.local.json")))) {
+    const oldProjectSettings = await loadProjectSettings(context.projectPath);
+    await environmentManager.createLocalEnv(context.projectPath, oldProjectSettings.appName!);
+  }
 }
 
 export async function configsMigration(context: MigrationContext): Promise<void> {

@@ -299,14 +299,17 @@ class EnvironmentManager {
     return { envState: envState, userDataFile };
   }
 
-  public async createLocalEnv(projectPath: string): Promise<Result<Void, FxError>> {
+  public async createLocalEnv(
+    projectPath: string,
+    projectAppName?: string
+  ): Promise<Result<Void, FxError>> {
     const inputs: Inputs = {
       projectPath: projectPath,
       platform: Platform.VSCode,
     };
     const projectSettings = await loadProjectSettings(inputs, true);
     if (projectSettings.isOk()) {
-      const appName = getLocalAppName(projectSettings.value.appName!);
+      const appName = getLocalAppName(projectAppName ?? projectSettings.value.appName!);
       const newEnvConfig = environmentManager.newEnvConfigData(appName);
       const res = await environmentManager.writeEnvConfig(
         inputs.projectPath!,

@@ -40,6 +40,7 @@ import {
   debugMigration,
   azureParameterMigration,
   generateLocalConfig,
+  checkapimPluginExists,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { UpgradeCanceledError } from "../../../src/core/error";
@@ -909,15 +910,43 @@ describe("generateApimPluginEnvContent", () => {
     assert.equal(testEnvContent_dev, trueEnvContent_dev);
   });
 
-  it("projectSettings.json exists", async () => {
-    const migrationContext = await mockMigrationContext(projectPath);
-    await copyTestProject(Constants.happyPathTestProject, projectPath);
+  it("checkapimPluginExists: apim exists", () => {
+    const pjSettings_1 = {
+      appName: "testapp",
+      components: [
+        {
+          name: "teams-tab",
+        },
+        {
+          name: "apim",
+        },
+      ],
+    };
+    assert.isTrue(checkapimPluginExists(pjSettings_1));
+  });
 
-    sandbox
-      .stub(migrationContext, "fsPathExists")
-      .withArgs(path.join(".fx", "configs", "projectSettings.json"))
-      .resolves(false);
-    assert.isTrue(!(await migrationContext.fsPathExists(".env.dev")));
+  it("checkapimPluginExists: apim not exists", () => {
+    const pjSettings_2 = {
+      appName: "testapp",
+      components: [
+        {
+          name: "teams-tab",
+        },
+      ],
+    };
+    assert.isFalse(checkapimPluginExists(pjSettings_2));
+  });
+
+  it("checkapimPluginExists: components not exists", () => {
+    const pjSettings_3 = {
+      appName: "testapp",
+    };
+    assert.isFalse(checkapimPluginExists(pjSettings_3));
+  });
+
+  it("checkapimPluginExists: obj null", () => {
+    const pjSettings_4 = null;
+    assert.isFalse(checkapimPluginExists(pjSettings_4));
   });
 });
 

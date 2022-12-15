@@ -580,6 +580,16 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
   await context.fsWriteFile(path.join(SettingsFolderName, Constants.appLocalYmlName), appYmlString);
 }
 
+export function checkapimPluginExists(pjSettings: any): boolean {
+  if (pjSettings && pjSettings["components"]) {
+    for (const obj of pjSettings["components"])
+      if (Object.keys(obj).includes("name") && obj["name"] === "apim") return true;
+    return false;
+  } else {
+    return false;
+  }
+}
+
 export async function generateApimPluginEnvContent(context: MigrationContext): Promise<void> {
   // general
   if (await context.fsPathExists(path.join(".fx", "configs", "projectSettings.json"))) {
@@ -587,16 +597,7 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
       path.join(context.projectPath, ".fx", "configs", "projectSettings.json")
     );
     // judge if apim plugin exists
-    let flag_apimPlugin = false;
-    if (projectSettingsContent && projectSettingsContent["components"]) {
-      for (const obj of projectSettingsContent["components"])
-        if (obj["name"] === "apim") {
-          flag_apimPlugin = true;
-          break;
-        }
-    }
-
-    if (flag_apimPlugin) {
+    if (checkapimPluginExists(projectSettingsContent)) {
       const fileNames = fsReadDirSync(context, path.join(".fx", "configs"));
       for (const fileName of fileNames)
         if (fileName.startsWith("config.")) {

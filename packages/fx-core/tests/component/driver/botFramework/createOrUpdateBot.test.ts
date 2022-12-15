@@ -127,6 +127,66 @@ describe("CreateOrUpdateM365BotDriver", () => {
       }
     });
 
+    it("invalid args: channels not list", async () => {
+      const args: any = {
+        botId: "11111111-1111-1111-1111-111111111111",
+        name: "test-bot",
+        messagingEndpoint: "https://test.ngrok.io/api/messages",
+        channels: "channels",
+      };
+      const result = await driver.run(args, mockedDriverContext);
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof InvalidParameterUserError);
+        const message =
+          "Following parameter is missing or invalid for botFramework/create action: channels.";
+        chai.assert.equal(result.error.message, message);
+      }
+    });
+
+    it("invalid args: channel name invalid", async () => {
+      const args: any = {
+        botId: "11111111-1111-1111-1111-111111111111",
+        name: "test-bot",
+        messagingEndpoint: "https://test.ngrok.io/api/messages",
+        channels: [
+          {
+            name: "name",
+          },
+        ],
+      };
+      const result = await driver.run(args, mockedDriverContext);
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof InvalidParameterUserError);
+        const message =
+          "Following parameter is missing or invalid for botFramework/create action: channels.";
+        chai.assert.equal(result.error.message, message);
+      }
+    });
+
+    it("invalid args: teams channel callingWebhook is not string", async () => {
+      const args: any = {
+        botId: "11111111-1111-1111-1111-111111111111",
+        name: "test-bot",
+        messagingEndpoint: "https://test.ngrok.io/api/messages",
+        channels: [
+          {
+            name: "msteams",
+            callingWebhook: 123,
+          },
+        ],
+      };
+      const result = await driver.run(args, mockedDriverContext);
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert(result.error instanceof InvalidParameterUserError);
+        const message =
+          "Following parameter is missing or invalid for botFramework/create action: channels.";
+        chai.assert.equal(result.error.message, message);
+      }
+    });
+
     it("exception", async () => {
       sinon.stub(AppStudioClient, "getBotRegistration").throws(new Error("exception"));
       const args: any = {
@@ -157,6 +217,15 @@ describe("CreateOrUpdateM365BotDriver", () => {
         botId: "11111111-1111-1111-1111-111111111111",
         name: "test-bot",
         messagingEndpoint: "https://test.ngrok.io/api/messages",
+        channels: [
+          {
+            name: "msteams",
+            callingWebhook: "",
+          },
+          {
+            name: "outlook",
+          },
+        ],
       };
       const result = await driver.run(args, mockedDriverContext);
       chai.assert(result.isOk());

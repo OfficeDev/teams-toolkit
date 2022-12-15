@@ -3,7 +3,6 @@
 
 export interface BotChannelSettings {
   name: string;
-  enable: boolean;
 }
 
 export interface MicrosoftTeamsChannelSettings extends BotChannelSettings {

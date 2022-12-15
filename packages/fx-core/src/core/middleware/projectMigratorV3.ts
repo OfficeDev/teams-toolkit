@@ -9,21 +9,15 @@ import {
   ProjectSettings,
   SettingsFileName,
   SettingsFolderName,
-  TemplateFolderName,
   SystemError,
   UserError,
   InputConfigsFolderName,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
-import {
-  checkMethod,
-  checkUserTasks,
-  learnMoreText,
-  outputCancelMessage,
-  upgradeButton,
-} from "./projectMigrator";
+import { checkMethod, checkUserTasks, learnMoreText, upgradeButton } from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
 import {
@@ -36,7 +30,6 @@ import {
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
-import { getLocalizedString } from "../../common/localizeUtils";
 import { UpgradeV3CanceledError, ReadFileError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
@@ -55,6 +48,9 @@ import {
   updateAndSaveManifestForSpfx,
   getTemplateFolderPath,
   getParameterFromCxt,
+  migrationNotificationMessage,
+  outputCancelMessage,
+  getDownloadLinkByVersionAndPlatform,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
 import * as commentJson from "comment-json";
@@ -78,10 +74,10 @@ import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionState } from "../../common/versionMetadata";
 import { isSPFxProject } from "../../common/tools";
+import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 
 const Constants = {
-  vsProvisionBicepPath: "./Templates/azure/provision.bicep",
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
   appYmlName: "app.yml",
@@ -114,22 +110,19 @@ const subMigrations: Array<Migration> = [
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  const versionState = await checkVersionForMigration(ctx);
-  if (versionState === VersionState.upgradeable && checkMethod(ctx)) {
+  const versionForMigration = await checkVersionForMigration(ctx);
+  if (versionForMigration.state === VersionState.upgradeable && checkMethod(ctx)) {
     if (!checkUserTasks(ctx)) {
       ctx.result = ok(undefined);
       return;
     }
     const skipUserConfirm = getParameterFromCxt(ctx, "skipUserConfirm");
-    if (!skipUserConfirm && !(await askUserConfirm(ctx))) {
+    if (!skipUserConfirm && !(await askUserConfirm(ctx, versionForMigration))) {
       return;
     }
     const migrationContext = await MigrationContext.create(ctx);
     await wrapRunMigration(migrationContext, migrate);
     ctx.result = ok(undefined);
-  } else if (versionState === VersionState.unsupported) {
-    // TODO: add user notification
-    throw new Error("not supported");
   } else {
     // continue next step only when:
     // 1. no need to upgrade the project;
@@ -204,17 +197,30 @@ async function preMigration(context: MigrationContext): Promise<void> {
   await context.backup(V2TeamsfxFolder);
 }
 
-export async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionState> {
+export async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionForMigration> {
   const version = (await getProjectVersion(ctx)) || "0.0.0";
+  const platform = getParameterFromCxt(ctx, "platform", Platform.VSCode) as Platform;
   if (semver.gte(version, MetadataV3.projectVersion)) {
-    return VersionState.compatible;
+    return {
+      currentVersion: version,
+      state: VersionState.compatible,
+      platform: platform,
+    };
   } else if (
     semver.gte(version, MetadataV2.projectVersion) &&
     semver.lte(version, MetadataV2.projectMaxVersion)
   ) {
-    return VersionState.upgradeable;
+    return {
+      currentVersion: version,
+      state: VersionState.upgradeable,
+      platform: platform,
+    };
   } else {
-    return VersionState.unsupported;
+    return {
+      currentVersion: version,
+      state: VersionState.unsupported,
+      platform: platform,
+    };
   }
 }
 
@@ -372,12 +378,15 @@ export async function azureParameterMigration(context: MigrationContext): Promis
   }
 }
 
-export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
+export async function askUserConfirm(
+  ctx: CoreHookContext,
+  versionForMigration: VersionForMigration
+): Promise<boolean> {
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   const buttons = [upgradeButton, learnMoreText];
   const res = await TOOLS?.ui.showMessage(
     "warn",
-    getLocalizedString("core.migrationV3.Message", MetadataV3.vscodeStarterVersion),
+    migrationNotificationMessage(versionForMigration),
     true,
     ...buttons
   );
@@ -386,8 +395,12 @@ export async function askUserConfirm(ctx: CoreHookContext): Promise<boolean> {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
     });
-    ctx.result = err(UpgradeV3CanceledError());
-    outputCancelMessage(ctx, true);
+    const link = getDownloadLinkByVersionAndPlatform(
+      versionForMigration.currentVersion,
+      versionForMigration.platform
+    );
+    ctx.result = err(UpgradeV3CanceledError(link, versionForMigration.currentVersion));
+    outputCancelMessage(versionForMigration.currentVersion, versionForMigration.platform);
     return false;
   }
   if (answer === learnMoreText) {

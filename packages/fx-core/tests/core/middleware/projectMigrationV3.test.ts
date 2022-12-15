@@ -40,6 +40,7 @@ import {
   debugMigration,
   azureParameterMigration,
   generateLocalConfig,
+  checkapimPluginExists,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { UpgradeCanceledError } from "../../../src/core/error";
@@ -887,6 +888,7 @@ describe("userdataMigration", () => {
 describe("generateApimPluginEnvContent", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
+  const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
@@ -894,6 +896,7 @@ describe("generateApimPluginEnvContent", () => {
 
   afterEach(async () => {
     await fs.remove(projectPath);
+    sandbox.restore();
   });
 
   it("happy path", async () => {
@@ -911,6 +914,45 @@ describe("generateApimPluginEnvContent", () => {
     assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
     const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
     assert.equal(testEnvContent_dev, trueEnvContent_dev);
+  });
+
+  it("checkapimPluginExists: apim exists", () => {
+    const pjSettings_1 = {
+      appName: "testapp",
+      components: [
+        {
+          name: "teams-tab",
+        },
+        {
+          name: "apim",
+        },
+      ],
+    };
+    assert.isTrue(checkapimPluginExists(pjSettings_1));
+  });
+
+  it("checkapimPluginExists: apim not exists", () => {
+    const pjSettings_2 = {
+      appName: "testapp",
+      components: [
+        {
+          name: "teams-tab",
+        },
+      ],
+    };
+    assert.isFalse(checkapimPluginExists(pjSettings_2));
+  });
+
+  it("checkapimPluginExists: components not exists", () => {
+    const pjSettings_3 = {
+      appName: "testapp",
+    };
+    assert.isFalse(checkapimPluginExists(pjSettings_3));
+  });
+
+  it("checkapimPluginExists: obj null", () => {
+    const pjSettings_4 = null;
+    assert.isFalse(checkapimPluginExists(pjSettings_4));
   });
 });
 

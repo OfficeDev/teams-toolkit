@@ -27,7 +27,7 @@ deploy:
     with:
       workingDirectory: bot
       args: run build --if-present
-  - uses: azureAppService/deploy # Deploy bits to Azure Storage Static Website
+  - uses: azureAppService/deploy # Deploy bits to Azure App Service
     with:
       workingDirectory: bot
       distributionPath: . # Deploy base folder. 

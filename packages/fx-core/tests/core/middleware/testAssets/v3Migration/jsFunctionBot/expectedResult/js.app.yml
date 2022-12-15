@@ -24,7 +24,7 @@ deploy:
       args: install
   - uses: azureFunctions/deploy
     with:
-      distributionPath: ./ # Deploy base folder
+      distributionPath: . # Deploy base folder
       ignoreFile: .funcignore # Can be changed to any ignore file location, leave blank will ignore nothing
       # the resource id of the cloud resource to be deployed to
       resourceId: ${{PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__FUNCTIONAPPRESOURCEID}}

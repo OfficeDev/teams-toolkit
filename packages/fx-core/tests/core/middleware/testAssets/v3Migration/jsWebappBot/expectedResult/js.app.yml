@@ -23,7 +23,7 @@ deploy:
     with:
       workingDirectory: bot
       args: install
-  - uses: azureAppService/deploy # Deploy bits to Azure Storage Static Website
+  - uses: azureAppService/deploy # Deploy bits to Azure App Service
     with:
       workingDirectory: bot
       distributionPath: . # Deploy base folder. 

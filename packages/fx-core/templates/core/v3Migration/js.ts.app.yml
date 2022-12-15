@@ -66,7 +66,7 @@ deploy:
     {{/if}}
   - uses: azureFunctions/deploy
     with:
-      distributionPath: ./ # Deploy base folder
+      distributionPath: . # Deploy base folder
       ignoreFile: .funcignore # Can be changed to any ignore file location, leave blank will ignore nothing
       # the resource id of the cloud resource to be deployed to
       resourceId: $\{{ {{~placeholderMappings.[state.fx-resource-bot.functionAppResourceId]~}} }}
@@ -81,7 +81,7 @@ deploy:
       workingDirectory: bot
       args: run build --if-present
     {{/if}}
-  - uses: azureAppService/deploy # Deploy bits to Azure Storage Static Website
+  - uses: azureAppService/deploy # Deploy bits to Azure App Service
     with:
       workingDirectory: bot
       distributionPath: . # Deploy base folder. 

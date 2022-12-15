@@ -149,7 +149,7 @@ export class DotenvUtil {
         let inlineComment;
         const dQuoted = value[0] === '"' && value[value.length - 1] === '"';
         const sQuoted = value[0] === "'" && value[value.length - 1] === "'";
-        let quote;
+        let quote: '"' | "'" | undefined = undefined;
         if (sQuoted || dQuoted) {
           quote = dQuoted ? '"' : "'";
           value = value.substring(1, value.length - 1);

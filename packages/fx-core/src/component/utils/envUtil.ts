@@ -192,6 +192,7 @@ export class DotenvUtil {
             delete obj[line.key];
           }
           if (line.value.includes("#")) {
+            // if value contains '#', need add quote
             line.quote = '"';
           }
           array.push(
@@ -205,7 +206,7 @@ export class DotenvUtil {
     //append additional kvs in object
     for (const key of Object.keys(obj)) {
       let value = parsed.obj[key];
-      if (value.includes("#")) value = `"${value}"`;
+      if (value.includes("#")) value = `"${value}"`; // if value contains '#', need add quote
       array.push(`${key}=${value}`);
     }
     return array.join("\n").trim();

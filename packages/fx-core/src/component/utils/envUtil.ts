@@ -188,26 +188,25 @@ export class DotenvUtil {
         } else {
           if (obj[line.key] !== undefined) {
             // use kv in obj
-            array.push(
-              `${line.key}=${line.quote ? line.quote + obj[line.key] + line.quote : obj[line.key]}${
-                line.comment ? " " + line.comment : ""
-              }`
-            );
+            line.value = obj[line.key];
             delete obj[line.key];
-          } else {
-            // keep original kv in lines
-            array.push(
-              `${line.key}=${line.quote ? line.quote + line.value + line.quote : line.value}${
-                line.comment ? " " + line.comment : ""
-              }`
-            );
           }
+          if (line.value.includes("#")) {
+            line.quote = '"';
+          }
+          array.push(
+            `${line.key}=${line.quote ? line.quote + line.value + line.quote : line.value}${
+              line.comment ? " " + line.comment : ""
+            }`
+          );
         }
       });
     }
-    //append additional kvs
+    //append additional kvs in object
     for (const key of Object.keys(obj)) {
-      array.push(`${key}=${parsed.obj[key]}`);
+      let value = parsed.obj[key];
+      if (value.includes("#")) value = `"${value}"`;
+      array.push(`${key}=${value}`);
     }
     return array.join("\n").trim();
   }

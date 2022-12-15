@@ -127,7 +127,7 @@ const KEY_VALUE_PAIR_RE = /^\s*([\w.-]+)\s*=\s*(.*)?\s*$/;
 const NEW_LINE_RE = /\\n/g;
 const NEW_LINE_SPLITTER = /\r?\n/;
 const NEW_LINE = "\n";
-type DotenvParsedLine = string | { key: string; value: string; comment?: string };
+type DotenvParsedLine = string | { key: string; value: string; comment?: string; quote?: string };
 export interface DotenvParseResult {
   lines?: DotenvParsedLine[];
   obj: DotenvOutput;
@@ -147,7 +147,9 @@ export class DotenvUtil {
         let inlineComment;
         const dQuoted = value[0] === '"' && value[value.length - 1] === '"';
         const sQuoted = value[0] === "'" && value[value.length - 1] === "'";
+        let quote;
         if (sQuoted || dQuoted) {
+          quote = dQuoted ? '"' : "'";
           value = value.substring(1, value.length - 1);
           if (dQuoted) {
             value = value.replace(NEW_LINE_RE, NEW_LINE);
@@ -162,11 +164,10 @@ export class DotenvUtil {
           }
         }
         if (value) obj[key] = value;
-        lines.push(
-          inlineComment
-            ? { key: key, value: value, comment: inlineComment }
-            : { key: key, value: value }
-        );
+        const parsedLine: DotenvParsedLine = { key: key, value: value };
+        if (inlineComment) parsedLine.comment = inlineComment;
+        if (quote) parsedLine.quote = quote;
+        lines.push(parsedLine);
       } else {
         lines.push(line);
       }
@@ -185,11 +186,19 @@ export class DotenvUtil {
         } else {
           if (obj[line.key] !== undefined) {
             // use kv in obj
-            array.push(`${line.key}=${obj[line.key]}${line.comment ? " " + line.comment : ""}`);
+            array.push(
+              `${line.key}=${line.quote ? line.quote + obj[line.key] + line.quote : obj[line.key]}${
+                line.comment ? " " + line.comment : ""
+              }`
+            );
             delete obj[line.key];
           } else {
             // keep original kv in lines
-            array.push(`${line.key}=${line.value}${line.comment ? " " + line.comment : ""}`);
+            array.push(
+              `${line.key}=${line.quote ? line.quote + line.value + line.quote : line.value}${
+                line.comment ? " " + line.comment : ""
+              }`
+            );
           }
         }
       });

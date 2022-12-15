@@ -1,6 +1,14 @@
 version: 1.0.0
 
 provision:
+{{#if activePlugins.fx-resource-bot}}
+  - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
+    with:
+      name: {{appName}}bt$\{{RESOURCE_SUFFIX}}
+    # Output: following environment variable will be persisted in current environment's .env file.
+    # BOT_ID: the AAD app client id created for Bot Registration.
+    # SECRET_BOT_PASSWORD: the AAD app client secret created for Bot Registration.
+{{/if}}
   - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:
       subscriptionId: $\{{AZURE_SUBSCRIPTION_ID}} # The AZURE_SUBSCRIPTION_ID is a built-in environment variable. TeamsFx will ask you select one subscription if its value is empty. You're free to reference other environment varialbe here, but TeamsFx will not ask you to select subscription if it's empty in this case.
@@ -11,7 +19,6 @@ provision:
          deploymentName: teams_toolkit_deployment # Required when deploy ARM template
       bicepCliVersion: v0.4.613 # Teams Toolkit will download this bicep CLI version from github for you, will use bicep CLI in PATH if you remove this config.
     # Output: every bicep output will be persisted in current environment's .env file with certain naming conversion. Refer https://aka.ms/teamsfx-provision-arm#output for more details on the naming conversion rule.
-
 {{#if activePlugins.fx-resource-frontend-hosting}}
   - uses: azureStorage/enableStaticWebsite
     with:
@@ -28,18 +35,81 @@ deploy:
       workingDirectory: tabs
       args: install
   - uses: cli/runNpmCommand # Run npm command
+    {{#if activePlugins.fx-resource-aad-app-for-teams}}
     env:
       REACT_APP_CLIENT_ID: $\{{AAD_APP_CLIENT_ID}}
       REACT_APP_START_LOGIN_PAGE_URL: $\{{ {{~placeholderMappings.[state.fx-resource-frontend-hosting.endpoint]~}} }}/auth-start.html
+      {{#if activePlugins.fx-resource-function}}
+      REACT_APP_FUNC_ENDPOINT: $\{{ {{~placeholderMappings.[state.fx-resource-function.functionEndpoint]~}} }}
+      REACT_APP_FUNC_NAME: {{defaultFunctionName}}
+      {{/if}}
+    {{/if}}
     with:
       workingDirectory: tabs
-      args: run build
+      args: run build --if-present
   - uses: azureStorage/deploy # Deploy bits to Azure Storage Static Website
     with:
       workingDirectory: tabs
       distributionPath: build # Deploy base folder. This folder includes manifest files for AAD app and Teams app that should be ignored using the ignoreFile.
       ignoreFile:  # Can be changed to any ignore file location, leave blank will ignore nothing
       resourceId: $\{{ {{~placeholderMappings.[state.fx-resource-frontend-hosting.storageResourceId]~}} }} # The resource id of the cloud resource to be deployed to
+{{/if}}
+{{#if activePlugins.fx-resource-bot}}
+  {{#if isFunctionBot}}
+  - uses: cli/runNpmCommand
+    with:
+      args: install
+  {{#if isTypescript}}
+  - uses: cli/runNpmCommand
+    with:
+      args: run build --if-present
+  {{/if}}
+  - uses: azureFunctions/deploy
+    with:
+      distributionPath: ./ # Deploy base folder
+      ignoreFile: .funcignore # Can be changed to any ignore file location, leave blank will ignore nothing
+      # the resource id of the cloud resource to be deployed to
+      resourceId: $\{{ {{~placeholderMappings.[state.fx-resource-bot.functionAppResourceId]~}} }}
+  {{else}}
+  - uses: cli/runNpmCommand # Run npm command
+    with:
+      workingDirectory: bot
+      args: install
+  {{#if isTypescript}}
+  - uses: cli/runNpmCommand # Run npm command
+    with:
+      workingDirectory: bot
+      args: run build --if-present
+  {{/if}}
+  - uses: azureAppService/deploy # Deploy bits to Azure Storage Static Website
+    with:
+      workingDirectory: bot
+      distributionPath: . # Deploy base folder. 
+      ignoreFile: # Can be changed to any ignore file location, leave blank will ignore nothing
+      resourceId: $\{{ {{~placeholderMappings.[state.fx-resource-bot.resourceId]~}} }} # The resource id of the cloud resource to be deployed to
+  {{/if}}
+{{/if}}
+{{#if activePlugins.fx-resource-function}}
+  - uses: cli/runNpmCommand
+    with:
+      workingDirectory: api
+      args: install
+  - uses: cli/runDotnetCommand
+    with:
+      workingDirectory: api
+      args: build extensions.csproj -o bin --ignore-failed-sources
+  {{#if isTypescript}}
+  - uses: cli/runNpmCommand
+    with:
+      workingDirectory: api
+      args: run build --if-present
+  {{/if}}
+  - uses: azureFunctions/deploy
+    with:
+      workingDirectory: api
+      distributionPath: . # Deploy base folder
+      ignoreFile: .funcignore # Can be changed to any ignore file location, leave blank will ignore nothing
+      resourceId: $\{{ {{~placeholderMappings.[state.fx-resource-function.functionAppResourceId]~}} }} # The resource id of the cloud resource to be deployed to
 {{/if}}
 
 registerApp:
@@ -56,7 +126,6 @@ registerApp:
     # AAD_APP_OAUTH_AUTHORITY_HOST: the host of OAUTH authority of AAD app
     # AAD_APP_OAUTH_AUTHORITY: the OAUTH authority of AAD app
 {{/if}}
-
   - uses: teamsApp/create # Creates a Teams app
     with:
       name: {{teamsAppName}} # Teams app name
@@ -72,7 +141,6 @@ configureApp:
   # Output: following environment variable will be persisted in current environment's .env file.
   # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 {{/if}}
-
   - uses: teamsApp/validate
     with:
       manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template

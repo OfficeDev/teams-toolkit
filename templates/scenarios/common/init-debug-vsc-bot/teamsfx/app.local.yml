@@ -21,6 +21,8 @@ provision:
       name: bot
       messagingEndpoint: ${{BOT_ENDPOINT}}/api/messages
       description: ""
+      channels:
+        - name: msteams
 
 configureApp:
   - uses: teamsApp/validate

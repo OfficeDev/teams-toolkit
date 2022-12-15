@@ -23,8 +23,8 @@ import TermsOfUse from "./views/TermsOfUse";
  */
 export default function App() {
   const { loading, themeString, teamsUserCredential } = useTeamsUserCredential({
-    initiateLoginEndpoint: process.env.initiateLoginEndpoint!,
-    clientId: process.env.clientId!,
+    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL!,
+    clientId: process.env.REACT_APP_CLIENT_ID!,
   });
   return (
     <TeamsFxContext.Provider value={{ themeString, teamsUserCredential }}>

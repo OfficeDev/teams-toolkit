@@ -297,7 +297,7 @@ You can refer to [the Graph API V1.0](https://learn.microsoft.com/en-us/graph/ap
 You can refer to the following code snippet:
 
 ```js
-const teamsUserCredential = TeamsUserCredentialContextInstance.getInstance().getCredential();
+const teamsUserCredential = TeamsUserCredentialContextInstance.getCredential();
 const graphClient: Client = createMicrosoftGraphClientWithCredential(teamsUserCredential, scope);
 ```
 

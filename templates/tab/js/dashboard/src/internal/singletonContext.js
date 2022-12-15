@@ -18,8 +18,8 @@ class TeamsUserCredentialContext {
   getCredential() {
     if (!this.credential) {
       this.credential =  new TeamsUserCredential({
-        initiateLoginEndpoint: process.env.initiateLoginEndpoint,
-        clientId: process.env.clientId,
+        initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+        clientId: process.env.REACT_APP_CLIENT_ID,
       });
     }
     return this.credential;

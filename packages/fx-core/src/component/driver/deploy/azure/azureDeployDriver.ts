@@ -4,9 +4,10 @@
 import {
   DeployStepArgs,
   AzureUploadConfig,
-  AxiosOnlyStatusResult,
   AxiosZipDeployResult,
   DeployArgs,
+  AxiosDeployQueryResult,
+  DeployResult,
 } from "../../interface/buildAndDeployArgs";
 import { checkMissingArgs } from "../../../utils/common";
 import { DeployExternalApiCallError, DeployTimeoutError } from "../../../error/deployError";
@@ -14,7 +15,7 @@ import { LogProvider } from "@microsoft/teamsfx-api";
 import { BaseDeployDriver } from "./baseDeployDriver";
 import { Base64 } from "js-base64";
 import * as appService from "@azure/arm-appservice";
-import { DeployConstant } from "../../../constant/deployConstant";
+import { DeployConstant, DeployStatus } from "../../../constant/deployConstant";
 import { default as axios } from "axios";
 import { waitSeconds } from "../../../../common/tools";
 import { HttpStatusCode } from "../../../constant/commonConstant";
@@ -116,9 +117,20 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     await this.context.logProvider.debug("Upload code to Azure complete");
     await this.progressBar?.next(ProgressMessages.checkAzureDeployStatus);
     await this.context.logProvider.debug("Start to check Azure deploy status");
-    await this.checkDeployStatus(location, config, this.context.logProvider);
+    const deployRes = await this.checkDeployStatus(location, config, this.context.logProvider);
     await this.context.logProvider.debug("Check Azure deploy status complete");
-    return Date.now() - startTime;
+    const cost = Date.now() - startTime;
+    const res: { [key: string]: string } = {};
+    if (deployRes) {
+      Object.keys(deployRes).forEach((acc) => {
+        res[acc] = String(deployRes[acc as keyof typeof deployRes]);
+      });
+    }
+    this.context.telemetryReporter?.sendTelemetryEvent("deployResponse", {
+      time_cost: cost.toString(),
+      ...res,
+    });
+    return cost;
   }
 
   /**
@@ -208,8 +220,8 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     location: string,
     config: AzureUploadConfig,
     logger?: LogProvider
-  ): Promise<void> {
-    let res: AxiosOnlyStatusResult;
+  ): Promise<DeployResult | undefined> {
+    let res: AxiosDeployQueryResult;
     for (let i = 0; i < DeployConstant.DEPLOY_CHECK_RETRY_TIMES; ++i) {
       try {
         res = await AzureDeployDriver.AXIOS_INSTANCE.get(location, config);
@@ -228,7 +240,13 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
         if (res?.status === HttpStatusCode.ACCEPTED) {
           await waitSeconds(DeployConstant.BACKOFF_TIME_S);
         } else if (res?.status === HttpStatusCode.OK || res?.status === HttpStatusCode.CREATED) {
-          return;
+          if (res.data?.status === DeployStatus.Failed) {
+            await logger?.error(
+              `Deployment is failed with error message: ${JSON.stringify(res.data)}`
+            );
+            throw DeployExternalApiCallError.deployRemoteStatusError();
+          }
+          return res.data;
         } else {
           if (res.status) {
             await logger?.error(`Deployment is failed with error code: ${res.status}.`);

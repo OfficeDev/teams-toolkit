@@ -58,4 +58,17 @@ export type AxiosHeaderWithLocation = {
   };
 };
 
+export type DeployResult = {
+  id: string;
+  status: number;
+  start_time: string;
+  end_time: string;
+  complete: boolean;
+  active: boolean;
+  is_readonly: boolean;
+  url: string;
+};
+
 export type AxiosZipDeployResult = AxiosHeaderWithLocation & AxiosOnlyStatusResult;
+
+export type AxiosDeployQueryResult = AxiosOnlyStatusResult & { data?: DeployResult };

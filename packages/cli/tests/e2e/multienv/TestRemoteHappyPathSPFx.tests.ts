@@ -3,7 +3,7 @@
 
 /**
  * @author Aocheng Wang <aochengwang@microsoft.com>
- * @owner Aocheng Wang <aochengwang@microsoft.com>
+ * @owner Yuan Tian <tianyuan@microsoft.com>
  */
 
 import * as fs from "fs-extra";

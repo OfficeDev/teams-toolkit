@@ -172,6 +172,7 @@ export class TeamsTab {
       biceps
     );
     if (bicepRes.isErr()) return bicepRes;
+    // 2.3 add sso
     const nonSsoIds = [TabNonSsoItem.id, DashboardOptionItem.id];
     if (!nonSsoIds.includes(inputs[AzureSolutionQuestionNames.Features])) {
       const ssoComponent = Container.get("sso") as any;

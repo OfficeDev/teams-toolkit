@@ -1,7 +1,7 @@
 {
     "name": "command-response-bot",
     "version": "1.0.0",
-    "description": "Microsoft Teams Toolkit Command and Response Bot Sample",
+    "description": "Microsoft Teams Toolkit Command and Response Bot Template",
     "author": "Microsoft",
     "license": "MIT",
     "main": "./lib/index.js",

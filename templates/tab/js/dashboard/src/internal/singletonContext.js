@@ -26,6 +26,6 @@ class TeamsUserCredentialContext {
   }
 }
 
-let FxContextInstance = Object.freeze(new TeamsUserCredentialContext());
+let TeamsUserCredentialContextInstance = Object.freeze(new TeamsUserCredentialContext());
 
-export default FxContextInstance;
+export default TeamsUserCredentialContextInstance;

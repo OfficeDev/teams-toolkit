@@ -1,10 +1,10 @@
-import TeamsUserCredentialContext from "./singletonContext";
+import TeamsUserCredentialContextInstance from "./singletonContext";
 
 export async function loginAction(scope) {
   try {
-    var credential = TeamsUserCredentialContext.getInstance().getCredential();
+    var credential = TeamsUserCredentialContextInstance.getInstance().getCredential();
     await credential.login(scope);
-    TeamsUserCredentialContext.getInstance().setCredential(credential);
+    TeamsUserCredentialContextInstance.getInstance().setCredential(credential);
   } catch (e) {
     console.log(e);
     throw "Login Error: can not login!";

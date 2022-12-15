@@ -5,7 +5,7 @@ import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
 import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
 import { BaseAppYmlGenerator } from "../appYmlGenerator";
-import { DebugPlaceholderMapping } from "./debugV3MigrationUtils";
+import { DebugPlaceholderMapping, OldProjectSettingsHelper } from "./debugV3MigrationUtils";
 
 export class AppLocalYmlConfig {
   registerApp?: {
@@ -73,21 +73,20 @@ export class AppLocalYmlGenerator extends BaseAppYmlGenerator {
   }
 
   private async generateHandlerbarsContext(): Promise<void> {
-    const azureSolutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
-
     let functionName: string | undefined = undefined;
-    if (azureSolutionSettings.activeResourcePlugins.includes("fx-resource-function")) {
-      functionName = this.oldProjectSettings.defaultFunctionName || "getUserProfile";
+    if (OldProjectSettingsHelper.includeFunction(this.oldProjectSettings)) {
+      functionName =
+        OldProjectSettingsHelper.getFunctionName(this.oldProjectSettings) || "getUserProfile";
     }
 
     if (this.handlebarsContext.config.deploy?.sso) {
-      if (azureSolutionSettings.activeResourcePlugins.includes("fx-resource-frontend-hosting")) {
+      if (OldProjectSettingsHelper.includeTab(this.oldProjectSettings)) {
         this.handlebarsContext.config.deploy.ssoTab = {
           functionName,
         };
       }
 
-      if (azureSolutionSettings.activeResourcePlugins.includes("fx-resource-bot")) {
+      if (OldProjectSettingsHelper.includeBot(this.oldProjectSettings)) {
         this.handlebarsContext.config.deploy.ssoBot = true;
       }
 

@@ -1112,6 +1112,9 @@ describe("debugMigration", () => {
     "transparent-sso-bot",
     "transparent-notification",
     "transparent-tab-bot-func",
+    "beforeV3.4.0-tab",
+    "beforeV3.4.0-bot",
+    "beforeV3.4.0-tab-bot-func",
   ];
 
   testCases.forEach((testCase) => {

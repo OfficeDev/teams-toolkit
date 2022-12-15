@@ -40,7 +40,7 @@ configureApp:
       envs:
         {{../../placeholderMappings.tabDomain}}: {{domain}}
         {{../../placeholderMappings.tabEndpoint}}: {{endpoint}}
-        {{../../placeholderMappings.tabIndexPath}}: /index.html#
+        {{../../placeholderMappings.tabIndexPath}}: "\"/index.html#\""
 
   {{/tab}}
   {{#if aad}}

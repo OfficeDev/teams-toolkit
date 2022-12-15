@@ -1,14 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { assign, CommentArray, CommentJSONValue, parse } from "comment-json";
+import { assign, CommentArray, CommentJSONValue, CommentObject, parse } from "comment-json";
 import { DebugMigrationContext } from "./debugMigrationContext";
-import { Prerequisite, TaskCommand } from "../../../../common/local";
+import { Prerequisite, TaskCommand, TaskDefaultValue } from "../../../../common/local";
 import {
   createResourcesTask,
   generateLabel,
   isCommentArray,
   isCommentObject,
+  OldProjectSettingsHelper,
   setUpLocalProjectsTask,
 } from "./debugV3MigrationUtils";
 import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
@@ -292,6 +293,92 @@ export function migratePrepareManifest(context: DebugMigrationContext): void {
 
     const label = task["label"];
     index = handleProvisionAndDeploy(context, index, label);
+  }
+}
+
+export function migrateValidateDependencies(context: DebugMigrationContext): void {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "shell") ||
+      !(typeof task["command"] === "string") ||
+      !task["command"].includes("${command:fx-extension.validate-dependencies}")
+    ) {
+      ++index;
+      continue;
+    }
+
+    const comment = `{
+      // Check if all required prerequisites are installed and will install them if not.
+      // See https://aka.ms/teamsfx-check-prerequisites-task to know the details and how to customize the args.
+    }`;
+    const newTask: CommentObject = assign(parse(comment), task) as CommentObject;
+
+    newTask["type"] = "teamsfx";
+    newTask["command"] = "debug-check-prerequisites";
+
+    const prerequisites = [
+      `"${Prerequisite.nodejs}", // Validate if Node.js is installed.`,
+      `"${Prerequisite.m365Account}", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.`,
+      `"${Prerequisite.portOccupancy}", // Validate available ports to ensure those debug ones are not occupied.`,
+    ];
+    const prerequisitesComment = `
+    [
+      ${prerequisites.join("\n  ")}
+    ]`;
+
+    const ports: string[] = [];
+    if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
+      ports.push(`${TaskDefaultValue.checkPrerequisites.ports.tabService}, // tab service port`);
+    }
+    if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
+      ports.push(`${TaskDefaultValue.checkPrerequisites.ports.botService}, // bot service port`);
+      ports.push(
+        `${TaskDefaultValue.checkPrerequisites.ports.botDebug}, // bot inspector port for Node.js debugger`
+      );
+    }
+    if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
+      ports.push(
+        `${TaskDefaultValue.checkPrerequisites.ports.backendService}, // backend service port`
+      );
+      ports.push(
+        `${TaskDefaultValue.checkPrerequisites.ports.backendDebug}, // backend inspector port for Node.js debugger`
+      );
+    }
+    const portsComment = `
+    [
+      ${ports.join("\n  ")}
+    ]
+    `;
+
+    const args: { [key: string]: CommentJSONValue } = {
+      prerequisites: parse(prerequisitesComment),
+      portOccupancy: parse(portsComment),
+    };
+
+    newTask["args"] = args as CommentJSONValue;
+
+    context.tasks.splice(index, 1, newTask);
+    ++index;
+
+    const toolsArgs: InstallToolArgs = {};
+    if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
+      toolsArgs.devCert = {
+        trust: true,
+      };
+    }
+    if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
+      toolsArgs.func = true;
+      toolsArgs.dotnet = true;
+    }
+    if (Object.keys(toolsArgs).length > 0) {
+      if (!context.appYmlConfig.deploy) {
+        context.appYmlConfig.deploy = {};
+      }
+      context.appYmlConfig.deploy.tools = toolsArgs;
+    }
   }
 }
 

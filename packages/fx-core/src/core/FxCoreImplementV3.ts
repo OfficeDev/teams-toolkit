@@ -37,7 +37,6 @@ import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
@@ -101,6 +100,7 @@ export class FxCoreV3Implement {
     return await method.call(this, func, inputs);
   }
 
+  // TODO: add version check middleware
   @hooks([ErrorHandlerMW, ContextInjectorMW])
   async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {

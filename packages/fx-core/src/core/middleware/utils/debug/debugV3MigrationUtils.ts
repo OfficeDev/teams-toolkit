@@ -6,6 +6,7 @@ import { CommentArray, CommentJSONValue, CommentObject, assign, parse } from "co
 import { FileType, namingConverterV3 } from "../MigrationUtils";
 import { MigrationContext } from "../migrationContext";
 import { readBicepContent } from "../v3MigrationUtils";
+import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
 
 export async function readJsonCommentFile(filepath: string): Promise<CommentJSONValue | undefined> {
   if (await fs.pathExists(filepath)) {
@@ -48,6 +49,29 @@ export async function getPlaceholderMappings(
     botDomain: getName("state.fx-resource-bot.domain"),
     botEndpoint: getName("state.fx-resource-bot.siteEndpoint"),
   };
+}
+
+export class OldProjectSettingsHelper {
+  public static includeTab(oldProjectSettings: ProjectSettings): boolean {
+    return this.includePlugin(oldProjectSettings, "fx-resource-frontend-hosting");
+  }
+
+  public static includeBot(oldProjectSettings: ProjectSettings): boolean {
+    return this.includePlugin(oldProjectSettings, "fx-resource-bot");
+  }
+
+  public static includeFunction(oldProjectSettings: ProjectSettings): boolean {
+    return this.includePlugin(oldProjectSettings, "fx-resource-function");
+  }
+
+  public static getFunctionName(oldProjectSettings: ProjectSettings): string | undefined {
+    return oldProjectSettings.defaultFunctionName;
+  }
+
+  private static includePlugin(oldProjectSettings: ProjectSettings, pluginName: string): boolean {
+    const azureSolutionSettings = oldProjectSettings.solutionSettings as AzureSolutionSettings;
+    return azureSolutionSettings.activeResourcePlugins.includes(pluginName);
+  }
 }
 
 export function generateLabel(base: string, existingLabels: string[]): string {

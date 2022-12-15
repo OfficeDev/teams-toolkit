@@ -15,6 +15,7 @@ export class Utils {
       iconUrl: local.iconUrl || remote.iconUrl,
       messagingEndpoint: local.messagingEndpoint || remote.messagingEndpoint,
       callingEndpoint: local.callingEndpoint || remote.callingEndpoint,
+      configuredChannels: local.configuredChannels || remote.configuredChannels,
     };
   }
 }

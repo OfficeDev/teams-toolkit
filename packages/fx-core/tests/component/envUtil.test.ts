@@ -390,20 +390,24 @@ describe("env utils", () => {
   });
 
   it("dotenvUtil deserialize & serialize", async () => {
-    const original = "#COMMENT\n\n\nKEY=VALUE #COMMENT2\nKEY2='VALUE2'\nKEY3=\"VALUE3\"";
-    const expected = "#COMMENT\n\n\nKEY=VALUE #COMMENT2\nKEY2=VALUE2\nKEY3=VALUE3";
+    const original =
+      '#COMMENT\n\n\nKEY1=VALUE1 #COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"';
+    const expected =
+      '#COMMENT\n\n\nKEY1=VALUE1 #COMMENT2\nKEY2=\'VALUE2\'\nKEY3="VALUE3#"\nindexPath="/index.html#"\nKEY4="VALUE4"';
     const parsed = dotenvUtil.deserialize(original);
     assert.deepEqual(parsed, {
       lines: [
         "#COMMENT",
         "",
         "",
-        { key: "KEY", value: "VALUE", comment: "#COMMENT2" },
-        { key: "KEY2", value: "VALUE2" },
-        { key: "KEY3", value: "VALUE3" },
+        { key: "KEY1", value: "VALUE1", comment: "#COMMENT2" },
+        { key: "KEY2", value: "VALUE2", quote: "'" },
+        { key: "KEY3", value: "VALUE3#", quote: '"' },
+        { key: "indexPath", value: "/index.html#", quote: '"' },
       ],
-      obj: { KEY: "VALUE", KEY2: "VALUE2", KEY3: "VALUE3" },
+      obj: { KEY1: "VALUE1", KEY2: "VALUE2", KEY3: "VALUE3#", indexPath: "/index.html#" },
     });
+    parsed.lines?.push({ key: "KEY4", value: "VALUE4", quote: '"' });
     const serialized = dotenvUtil.serialize(parsed);
     assert.equal(serialized, expected);
   });

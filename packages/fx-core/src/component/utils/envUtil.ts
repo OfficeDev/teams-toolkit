@@ -127,7 +127,9 @@ const KEY_VALUE_PAIR_RE = /^\s*([\w.-]+)\s*=\s*(.*)?\s*$/;
 const NEW_LINE_RE = /\\n/g;
 const NEW_LINE_SPLITTER = /\r?\n/;
 const NEW_LINE = "\n";
-type DotenvParsedLine = string | { key: string; value: string; comment?: string; quote?: string };
+type DotenvParsedLine =
+  | string
+  | { key: string; value: string; comment?: string; quote?: '"' | "'" };
 export interface DotenvParseResult {
   lines?: DotenvParsedLine[];
   obj: DotenvOutput;

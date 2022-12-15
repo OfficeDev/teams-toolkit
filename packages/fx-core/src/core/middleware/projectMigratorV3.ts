@@ -573,13 +573,14 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
   const placeholderMappings = await getPlaceholderMappings(context);
 
   const debugContext = new DebugMigrationContext(
+    context,
     tasksJsonContent["tasks"],
     oldProjectSettings,
     placeholderMappings
   );
 
   for (const func of migrateTaskFuncs) {
-    func(debugContext);
+    await func(debugContext);
   }
 
   // Write .vscode/tasks.json

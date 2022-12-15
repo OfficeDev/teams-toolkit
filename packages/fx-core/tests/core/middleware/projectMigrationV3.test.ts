@@ -18,7 +18,7 @@ import "mocha";
 import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
-import sinon from "sinon";
+import * as sinon from "sinon";
 import * as yaml from "js-yaml";
 import { getProjectMigratorMW } from "../../../src/core/middleware/projectMigrator";
 import { MockTools, MockUserInteraction, randomAppName } from "../utils";
@@ -56,7 +56,7 @@ import {
   getVersionState,
 } from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSettingsLoader";
-import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
+import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 
 let mockedEnvRestore: () => void;
 
@@ -1099,10 +1099,12 @@ describe("debugMigration", () => {
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
+    sinon.stub(debugV3MigrationUtils, "updateLocalEnv").callsFake(async () => {});
   });
 
   afterEach(async () => {
     await fs.remove(projectPath);
+    sinon.restore();
   });
 
   const testCases = [

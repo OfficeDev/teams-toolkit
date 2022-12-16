@@ -28,6 +28,7 @@ import { TokenCredential } from "@azure/identity";
 import { ProgressMessages } from "../../../messages";
 import * as fs from "fs-extra";
 import { PrerequisiteError } from "../../../error/componentError";
+import { createHash } from "crypto";
 
 export abstract class AzureDeployDriver extends BaseDeployDriver {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -120,15 +121,20 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     const deployRes = await this.checkDeployStatus(location, config, this.context.logProvider);
     await this.context.logProvider.debug("Check Azure deploy status complete");
     const cost = Date.now() - startTime;
-    const res: { [key: string]: string } = {};
-    if (deployRes) {
-      Object.keys(deployRes).forEach((acc) => {
-        res[acc] = String(deployRes[acc as keyof typeof deployRes]);
-      });
-    }
     this.context.telemetryReporter?.sendTelemetryEvent("deployResponse", {
       time_cost: cost.toString(),
-      ...res,
+      status: deployRes?.status.toString() ?? "",
+      message: deployRes?.message ?? "",
+      received_time: deployRes?.received_time ?? "",
+      started_time: deployRes?.start_time.toString() ?? "",
+      end_time: deployRes?.end_time.toString() ?? "",
+      last_success_end_time: deployRes?.last_success_end_time.toString() ?? "",
+      complete: deployRes?.complete.toString() ?? "",
+      active: deployRes?.active.toString() ?? "",
+      is_readonly: deployRes?.is_readonly.toString() ?? "",
+      site_name_hash: deployRes?.site_name
+        ? createHash("sha256").update(deployRes.site_name).digest("hex")
+        : "",
     });
     return cost;
   }

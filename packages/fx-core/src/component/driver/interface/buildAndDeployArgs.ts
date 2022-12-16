@@ -61,12 +61,15 @@ export type AxiosHeaderWithLocation = {
 export type DeployResult = {
   id: string;
   status: number;
+  message: string;
+  received_time: string;
   start_time: string;
   end_time: string;
+  last_success_end_time: string;
   complete: boolean;
   active: boolean;
   is_readonly: boolean;
-  url: string;
+  site_name: string;
 };
 
 export type AxiosZipDeployResult = AxiosHeaderWithLocation & AxiosOnlyStatusResult;

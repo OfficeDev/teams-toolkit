@@ -28,7 +28,8 @@
             "url": "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
             "preLaunchTask": "Start Frontend",
             "cascadeTerminateToConfigurations": [
-                "Start and Attach to Bot"
+                "Start and Attach to Bot",
+                "Start and Attach to Backend"
             ],
             "presentation": {
                 "group": "all",
@@ -42,7 +43,8 @@
             "url": "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
             "preLaunchTask": "Start Frontend",
             "cascadeTerminateToConfigurations": [
-                "Start and Attach to Bot"
+                "Start and Attach to Bot",
+                "Start and Attach to Backend"
             ],
             "presentation": {
                 "group": "all",
@@ -61,6 +63,19 @@
                 "hidden": true
             },
             "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Start and Attach to Backend",
+            "type": "pwa-node",
+            "request": "attach",
+            "port": 9229,
+            "restart": true,
+            "preLaunchTask": "Start Backend",
+            "presentation": {
+                "group": "all",
+                "hidden": true
+            },
+            "internalConsoleOptions": "neverOpen"
         }
     ],
     "compounds": [
@@ -68,7 +83,8 @@
             "name": "Debug (Edge)",
             "configurations": [
                 "Start and Attach to Frontend (Edge)",
-                "Start and Attach to Bot"
+                "Start and Attach to Bot",
+                "Start and Attach to Backend"
             ],
             "preLaunchTask": "Pre Debug Check",
             "presentation": {
@@ -81,7 +97,8 @@
             "name": "Debug (Chrome)",
             "configurations": [
                 "Start and Attach to Frontend (Chrome)",
-                "Start and Attach to Bot"
+                "Start and Attach to Bot",
+                "Start and Attach to Backend"
             ],
             "preLaunchTask": "Pre Debug Check",
             "presentation": {

@@ -130,14 +130,14 @@ jobs:
       - name: version change
         id: version-change
         run: |
-          echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
-          echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
-          echo "::set-output name=EXTENSION_VERSION_NUM::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)"
-          echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)"
-          echo "::set-output name=SERVER_VERSION_NUM::$(git tag --points-at HEAD | grep @microsoft/teamsfx-server@ | cut -d '@' -f3)"
-          echo "::set-output name=SERVER_VERSION::$(git tag --points-at HEAD| grep @microsoft/teamsfx-server@)"
-          echo "::set-output name=SIMPLEAUTH_VERSION::$(git tag --points-at HEAD | grep simpleauth)"
-          echo "::set-output name=SIMPLEAUTH_VERSION_NUM::$(git tag --points-at HEAD| grep simpleauth| cut -d '@' -f2)"
+          echo "CHANGED=$(git tag --points-at HEAD | xargs)" >> $GITHUB_OUTPUT
+          echo "TEMPLATE_VERSION=$(git tag --points-at HEAD | grep templates)" >> $GITHUB_OUTPUT
+          echo "EXTENSION_VERSION_NUM=$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)" >> $GITHUB_OUTPUT
+          echo "EXTENSION_VERSION=$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)" >> $GITHUB_OUTPUT
+          echo "SERVER_VERSION_NUM=$(git tag --points-at HEAD | grep @microsoft/teamsfx-server@ | cut -d '@' -f3)" >> $GITHUB_OUTPUT
+          echo "SERVER_VERSION=$(git tag --points-at HEAD| grep @microsoft/teamsfx-server@)" >> $GITHUB_OUTPUT
+          echo "SIMPLEAUTH_VERSION=$(git tag --points-at HEAD | grep simpleauth)" >> $GITHUB_OUTPUT
+          echo "SIMPLEAUTH_VERSION_NUM=$(git tag --points-at HEAD| grep simpleauth| cut -d '@' -f2)" >> $GITHUB_OUTPUT
           if git tag --points-at HEAD | grep templates | grep rc;
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
@@ -250,7 +250,7 @@ jobs:
 
       - name: commit change on local
         run: |
-          git add packages/cli/src/cmds/m365/serviceConstant.ts
+          git add packages/fx-core/src/common/m365/serviceConstant.ts
           git commit -m "chore: replace sideloading placeholders"
 
       - name: publish alpha release to npm org
@@ -395,7 +395,7 @@ jobs:
           DATE_WITH_TIME=`date "+%Y%m%d%H"`
           PACKAGE_VERSION=$(jq -r .version package.json | cut -d '.' -f 1,2)
           TTK_VERSION=$PACKAGE_VERSION.$DATE_WITH_TIME
-          echo "::set-output name=version::$TTK_VERSION"
+          echo "version=$TTK_VERSION" >> $GITHUB_OUTPUT
           echo $TTK_VERSION
 
       - name: pack vsix for preview

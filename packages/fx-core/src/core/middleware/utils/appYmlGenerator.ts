@@ -28,6 +28,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     teamsAppName: string | undefined;
     appName: string | undefined;
     isFunctionBot: boolean;
+    isTypescript: boolean;
+    defaultFunctionName: string | undefined;
   };
   constructor(
     oldProjectSettings: ProjectSettings,
@@ -42,14 +44,17 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       teamsAppName: undefined,
       appName: undefined,
       isFunctionBot: false,
+      isTypescript: false,
+      defaultFunctionName: undefined,
     };
   }
 
   public async generateAppYml(): Promise<string> {
-    await this.generateHandlerbarsContext();
+    await this.generateCommonHandlerbarsContext();
 
     const solutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
-    if (solutionSettings.hostType === "Azure") {
+    if (solutionSettings.hostType.toLowerCase() === "azure") {
+      await this.generateAzureHandlebarsContext();
       switch (this.oldProjectSettings.programmingLanguage?.toLowerCase()) {
         case "javascript":
         case "typescript":
@@ -57,29 +62,36 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
         case "csharp":
           return await this.buildHandlebarsTemplate("csharp.app.yml");
       }
+    } else if (solutionSettings.hostType.toLowerCase() === "spfx") {
+      return await this.buildHandlebarsTemplate("spfx.app.yml");
     }
     throw new Error(
       "The current tooling cannot upgrade your project temporary. Please raise an issue in GitHub for your project."
     );
   }
 
-  private async generateHandlerbarsContext(): Promise<void> {
+  public async generateAppLocalYml(): Promise<string> {
+    await this.generateAzureHandlebarsContext();
+
+    const solutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
+    if (solutionSettings.hostType === "Azure") {
+      switch (this.oldProjectSettings.programmingLanguage?.toLowerCase()) {
+        case "csharp":
+          return await this.buildHandlebarsTemplate("csharp.app.local.yml");
+      }
+    }
+    throw new Error(
+      "The current tooling cannot upgrade your project temporary. Please raise an issue in GitHub for your project."
+    );
+  }
+
+  private async generateCommonHandlerbarsContext(): Promise<void> {
     // project setting information
     this.handlebarsContext.appName = this.oldProjectSettings.appName;
 
     const azureSolutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
     for (const activePlugin of azureSolutionSettings.activeResourcePlugins) {
       this.handlebarsContext.activePlugins[activePlugin] = true; // convert array items to object properties to simplify handlebars template
-    }
-
-    // isFunctionBot
-    const pluginSettings = this.oldProjectSettings.pluginSettings;
-    if (
-      pluginSettings &&
-      pluginSettings["fx-resource-bot"] &&
-      pluginSettings["fx-resource-bot"]["host-type"] === "azure-function"
-    ) {
-      this.handlebarsContext.isFunctionBot = true;
     }
 
     // app names
@@ -99,12 +111,33 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       this.handlebarsContext.teamsAppName = teamsAppManifest.name.short;
     }
 
+    // programming language
+    this.handlebarsContext.isTypescript =
+      this.oldProjectSettings.programmingLanguage?.toLowerCase() === "typescript";
+
+    // default function name
+    this.handlebarsContext.defaultFunctionName = this.oldProjectSettings.defaultFunctionName;
+  }
+
+  private async generateAzureHandlebarsContext(): Promise<void> {
+    // isFunctionBot
+    const pluginSettings = this.oldProjectSettings.pluginSettings;
+    if (
+      pluginSettings &&
+      pluginSettings["fx-resource-bot"] &&
+      pluginSettings["fx-resource-bot"]["host-type"] === "azure-function"
+    ) {
+      this.handlebarsContext.isFunctionBot = true;
+    }
+
     // placeholders
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.storageResourceId");
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.endpoint");
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.functionAppResourceId");
+    this.setPlaceholderMapping("state.fx-resource-function.functionAppResourceId");
+    this.setPlaceholderMapping("state.fx-resource-function.functionEndpoint");
   }
 
   private setPlaceholderMapping(placeholder: string): void {

@@ -24,9 +24,11 @@ import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
 import { getQuestionsForCreateProjectV2 } from "../../core/middleware/questionModel";
 import {
   CoreQuestionNames,
+  CreateNewOfficeAddinOption,
   ProjectNamePattern,
   QuestionRootFolder,
   ScratchOptionNo,
+  ScratchOptionYes,
 } from "../../core/question";
 import {
   ApiConnectionOptionItem,
@@ -100,6 +102,7 @@ import * as xml2js from "xml2js";
 import { Lifecycle } from "../configManager/lifecycle";
 import { SummaryReporter } from "./summary";
 import { EOL } from "os";
+import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -210,7 +213,7 @@ export class Coordinator {
       if (res.isErr()) return err(res.error);
 
       await downloadSampleHook(sampleId, projectPath);
-    } else {
+    } else if (scratch === ScratchOptionYes.id) {
       // create from new
       const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
@@ -253,6 +256,24 @@ export class Coordinator {
         [TelemetryProperty.Feature]: feature,
         [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
       });
+    } else if (scratch === CreateNewOfficeAddinOption.id) {
+      const appName = inputs[CoreQuestionNames.AppName] as string;
+      if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
+      const validateResult = jsonschema.validate(appName, {
+        pattern: ProjectNamePattern,
+      });
+      if (validateResult.errors && validateResult.errors.length > 0) {
+        return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
+      }
+      projectPath = path.join(folder, appName);
+      inputs.projectPath = projectPath;
+
+      await fs.ensureDir(projectPath);
+
+      const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
+      if (res.isErr()) {
+        return err(res.error);
+      }
     }
 
     // generate unique projectId in projectSettings.json
@@ -755,7 +776,7 @@ export class Coordinator {
       for (const [index, cycle] of cycles.entries()) {
         const execRes = await cycle.execute(ctx);
         summaryReporter.updateLifecycleState(index, execRes);
-        const result = this.convertExecuteResult(execRes.result);
+        const result = this.convertExecuteResult(execRes.result, templatePath);
         merge(output, result[0]);
         if (result[1]) {
           inputs.envVars = output;
@@ -810,7 +831,8 @@ export class Coordinator {
   }
 
   convertExecuteResult(
-    execRes: Result<ExecutionOutput, ExecutionError>
+    execRes: Result<ExecutionOutput, ExecutionError>,
+    templatePath: string
   ): [DotenvParseOutput, FxError | undefined] {
     const output: DotenvParseOutput = {};
     let error = undefined;
@@ -830,8 +852,16 @@ export class Coordinator {
           error = new UserError({
             source: reason.failedDriver.uses,
             name: "UnresolvedPlaceholders",
-            message: getDefaultString("core.error.unresolvedPlaceholders", placeholders),
-            displayMessage: getLocalizedString("core.error.unresolvedPlaceholders", placeholders),
+            message: getDefaultString(
+              "core.error.unresolvedPlaceholders",
+              placeholders,
+              templatePath
+            ),
+            displayMessage: getLocalizedString(
+              "core.error.unresolvedPlaceholders",
+              placeholders,
+              templatePath
+            ),
             helpLink: "https://aka.ms/teamsfx-actions",
           });
         }
@@ -879,7 +909,7 @@ export class Coordinator {
         ctx.logProvider.info(`Executing deploy ${EOL}${EOL}${maybeDescription.value}${EOL}`);
         const execRes = await projectModel.deploy.execute(ctx);
         summaryReporter.updateLifecycleState(0, execRes);
-        const result = this.convertExecuteResult(execRes.result);
+        const result = this.convertExecuteResult(execRes.result, templatePath);
         merge(output, result[0]);
         if (result[1]) {
           inputs.envVars = output;
@@ -934,7 +964,7 @@ export class Coordinator {
         ctx.logProvider.info(`Executing publish ${EOL}${EOL}${maybeDescription.value}${EOL}`);
 
         const execRes = await projectModel.publish.execute(ctx);
-        const result = this.convertExecuteResult(execRes.result);
+        const result = this.convertExecuteResult(execRes.result, templatePath);
         summaryReporter.updateLifecycleState(0, execRes);
         if (result[1]) return err(result[1]);
       } finally {

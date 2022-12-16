@@ -1,0 +1,65 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Pre Debug Check",
+            "dependsOn": [
+                "dependency check",
+                "start ngrok",
+                "prepare dev env"
+            ],
+            "dependsOrder": "sequence"
+        },
+        {
+            // Check if all required prerequisites are installed and will install them if not.
+            // See https://aka.ms/teamsfx-check-prerequisites-task to know the details and how to customize the args.
+            "label": "dependency check",
+            "type": "teamsfx",
+            "command": "debug-check-prerequisites",
+            "args": {
+                "prerequisites": [
+                    "nodejs", // Validate if Node.js is installed.
+                    "m365Account", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.
+                    "portOccupancy" // Validate available ports to ensure those debug ones are not occupied.
+                ],
+                "portOccupancy": [
+                    3978, // bot service port
+                    9239 // bot inspector port for Node.js debugger
+                ]
+            }
+        },
+        {
+            "label": "start ngrok",
+            "type": "teamsfx",
+            "command": "ngrok start",
+            "isBackground": true,
+            "dependsOn": [
+                "bot npm install"
+            ]
+        },
+        {
+            "label": "prepare dev env",
+            "dependsOn": [
+                "prepare local environment"
+            ],
+            "dependsOrder": "parallel"
+        },
+        {
+            "label": "prepare local environment",
+            "type": "shell",
+            "command": "echo ${command:fx-extension.pre-debug-check}"
+        },
+        {
+            "label": "Start Bot",
+            "dependsOn": "teamsfx: bot start"
+        },
+        {
+            "label": "bot npm install",
+            "type": "shell",
+            "command": "npm install",
+            "options": {
+                "cwd": "${workspaceFolder}/bot"
+            }
+        }
+    ]
+}

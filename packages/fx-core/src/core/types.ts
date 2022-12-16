@@ -4,6 +4,7 @@
 import { HookContext } from "@feathersjs/hooks";
 import { Json, ProjectSettings, Solution, SolutionContext, v2, v3 } from "@microsoft/teamsfx-api";
 import * as dotenv from "dotenv";
+import { VersionState } from "../common/versionMetadata";
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
   solutionContext?: SolutionContext;
@@ -19,4 +20,17 @@ export interface CoreHookContext extends HookContext {
   solutionV3?: v3.ISolution;
 
   envVars?: dotenv.DotenvParseOutput;
+}
+
+export interface VersionCheckRes {
+  currentVersion: string;
+  isSupport: VersionState;
+  trackingId: string;
+}
+
+export interface PreProvisionResForVS {
+  needAzureLogin: boolean;
+  needM365Login: boolean;
+  resolvedAzureSubscriptionId?: string;
+  resolvedAzureResourceGroupName?: string;
 }

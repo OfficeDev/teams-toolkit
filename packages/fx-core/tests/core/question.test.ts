@@ -8,7 +8,7 @@ import {
   handleSelectionConflict,
   ProgrammingLanguageQuestion,
 } from "../../src/core/question";
-import { FuncValidation, Inputs, Platform } from "@microsoft/teamsfx-api";
+import { FuncValidation, Inputs, Platform, QTreeNode } from "@microsoft/teamsfx-api";
 import {
   BotNewUIOptionItem,
   BotOptionItem,
@@ -28,6 +28,7 @@ import {
   WorkflowOptionItem,
 } from "../../src/component/constants";
 import { getLocalizedString } from "../../src/common/localizeUtils";
+import { addOfficeAddinQuestions } from "../../src/core/middleware/questionModel";
 
 describe("Programming Language Questions", async () => {
   it("should return csharp on VS platform", async () => {
@@ -288,5 +289,15 @@ describe("App name question", async () => {
     const result = await validFunc(input);
 
     chai.assert.equal(result, getLocalizedString("core.QuestionAppName.validation.pattern"));
+  });
+});
+
+describe("addOfficeAddinQuestions()", () => {
+  it("should add questions", () => {
+    const parent = new QTreeNode({
+      type: "group",
+    });
+    addOfficeAddinQuestions(parent);
+    chai.assert(parent.children?.length != undefined && parent.children.length > 0);
   });
 });

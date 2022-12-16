@@ -18,7 +18,12 @@ import * as sinon from "sinon";
 import { Generator } from "../../src/component/generator/generator";
 import { settingsUtil } from "../../src/component/utils/settingsUtil";
 import { setTools } from "../../src/core/globalVars";
-import { CoreQuestionNames, ScratchOptionNo, ScratchOptionYes } from "../../src/core/question";
+import {
+  CoreQuestionNames,
+  CreateNewOfficeAddinOption,
+  ScratchOptionNo,
+  ScratchOptionYes,
+} from "../../src/core/question";
 import {
   MockAzureAccountProvider,
   MockM365TokenProvider,
@@ -44,7 +49,7 @@ import {
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { provisionUtils } from "../../src/component/provisionUtils";
-import { coordinator, TemplateNames } from "../../src/component/coordinator";
+import { Coordinator, coordinator, TemplateNames } from "../../src/component/coordinator";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
 import fs from "fs-extra";
 import { AppDefinition } from "../../src/component/resource/appManifest/interfaces/appDefinition";
@@ -56,6 +61,8 @@ import { manifestUtils } from "../../src/component/resource/appManifest/utils/Ma
 import { ValidateTeamsAppDriver } from "../../src/component/driver/teamsApp/validate";
 import Container from "typedi";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
+import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/generator";
+import { MockedUserInteraction } from "../plugins/solution/util";
 import { SummaryReporter } from "../../src/component/coordinator/summary";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
@@ -1726,7 +1733,7 @@ describe("component coordinator test", () => {
   it("convertExecuteResult ok", async () => {
     const value = new Map([["key", "value"]]);
     const res: Result<ExecutionOutput, ExecutionError> = ok(value);
-    const convertRes = coordinator.convertExecuteResult(res);
+    const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], { key: "value" });
     assert.isUndefined(convertRes[1]);
   });
@@ -1734,7 +1741,7 @@ describe("component coordinator test", () => {
   it("convertExecuteResult Failure", async () => {
     const error = new UserError({ source: "test", name: "TestError", message: "test message" });
     const res: Result<ExecutionOutput, ExecutionError> = err({ kind: "Failure", error: error });
-    const convertRes = coordinator.convertExecuteResult(res);
+    const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], {});
     assert.equal(convertRes[1], error);
   });
@@ -1751,7 +1758,7 @@ describe("component coordinator test", () => {
         failedDriver: { name: "TestDriver", uses: "testUse", with: "testWith" },
       },
     });
-    const convertRes = coordinator.convertExecuteResult(res);
+    const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], { key: "value" });
     assert.equal(convertRes[1], error);
   });
@@ -1767,7 +1774,7 @@ describe("component coordinator test", () => {
         failedDriver: { name: "TestDriver", uses: "testUse", with: "testWith" },
       },
     });
-    const convertRes = coordinator.convertExecuteResult(res);
+    const convertRes = coordinator.convertExecuteResult(res, ".");
     assert.deepEqual(convertRes[0], { key: "value" });
     assert.equal(convertRes[1]!.name, "UnresolvedPlaceholders");
   });
@@ -2350,5 +2357,93 @@ describe("component coordinator test", () => {
       const res = await coordinator.ensureTeamsFxInCsproj(".");
       assert.isTrue(res.isOk());
     });
+  });
+});
+
+describe("Office Addin", async () => {
+  const sandbox = sinon.createSandbox();
+  const tools = new MockTools();
+  tools.ui = new MockedUserInteraction();
+  setTools(tools);
+  let mockedEnvRestore: RestoreFn | undefined;
+
+  afterEach(() => {
+    sandbox.restore();
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
+  });
+
+  it("should scaffold taskpane successfully", async () => {
+    const coordinator = new Coordinator();
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    sandbox.stub(OfficeAddinGenerator, "generate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption.id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isOk());
+  });
+
+  it("should return error if app name is invalid", async () => {
+    const coordinator = new Coordinator();
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: "__invalid__",
+      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption.id,
+    };
+
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "InvalidInput");
+  });
+
+  it("should return error if app name is undefined", async () => {
+    const coordinator = new Coordinator();
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: undefined,
+      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption.id,
+    };
+
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "InvalidInput");
+  });
+
+  it("should return error if OfficeAddinGenerator returns error", async () => {
+    const coordinator = new Coordinator();
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
+    sandbox.stub(OfficeAddinGenerator, "generate").resolves(err(mockedError));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [CoreQuestionNames.AppName]: randomAppName(),
+      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption.id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "mockedError");
   });
 });

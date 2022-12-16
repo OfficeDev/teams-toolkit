@@ -6,12 +6,15 @@
 import { Argv } from "yargs";
 
 import { FxError, ok, Result, Void, LogLevel, err, UserError } from "@microsoft/teamsfx-api";
+import { PackageService } from "@microsoft/teamsfx-core/build/common/m365/packageService";
+import {
+  serviceEndpoint,
+  serviceScope,
+} from "@microsoft/teamsfx-core/build/common/m365/serviceConstant";
 
-import { PackageService } from "./packageService";
-import { serviceEndpoint, serviceScope } from "./serviceConstant";
 import CLILogProvider from "../../commonlib/log";
 import M365TokenProvider from "../../commonlib/m365Login";
-import { cliSource } from "../../constants";
+import { CLILogLevel, cliSource } from "../../constants";
 import { YargsCommand } from "../../yargsCommand";
 
 /*
@@ -78,8 +81,12 @@ class M365Sideloading extends YargsCommand {
   }
 
   async runCommand(args: { [argName: string]: string }): Promise<Result<any, FxError>> {
+    if (CLILogProvider.getLogLevel() === CLILogLevel.error) {
+      CLILogProvider.setLogLevel(CLILogLevel.verbose);
+    }
     CLILogProvider.necessaryLog(LogLevel.Warning, "This command is in preview.");
-    const packageService = new PackageService(sideloadingServiceEndpoint);
+
+    const packageService = new PackageService(sideloadingServiceEndpoint, CLILogProvider);
     const manifestPath = args["file-path"];
     const tokenAndUpn = await getTokenAndUpn();
     await packageService.sideLoading(tokenAndUpn[0], manifestPath);
@@ -116,9 +123,12 @@ class M365Unacquire extends YargsCommand {
   }
 
   async runCommand(args: { [argName: string]: string }): Promise<Result<any, FxError>> {
+    if (CLILogProvider.getLogLevel() === CLILogLevel.error) {
+      CLILogProvider.setLogLevel(CLILogLevel.verbose);
+    }
     CLILogProvider.necessaryLog(LogLevel.Warning, "This command is in preview.");
 
-    const packageService = new PackageService(sideloadingServiceEndpoint);
+    const packageService = new PackageService(sideloadingServiceEndpoint, CLILogProvider);
     let titleId = args["title-id"];
     const manifestId = args["manifest-id"];
     if (titleId === undefined && manifestId === undefined) {
@@ -169,9 +179,12 @@ class M365LaunchInfo extends YargsCommand {
   }
 
   async runCommand(args: { [argName: string]: string }): Promise<Result<any, FxError>> {
+    if (CLILogProvider.getLogLevel() === CLILogLevel.error) {
+      CLILogProvider.setLogLevel(CLILogLevel.verbose);
+    }
     CLILogProvider.necessaryLog(LogLevel.Warning, "This command is in preview.");
 
-    const packageService = new PackageService(sideloadingServiceEndpoint);
+    const packageService = new PackageService(sideloadingServiceEndpoint, CLILogProvider);
     let titleId = args["title-id"];
     const manifestId = args["manifest-id"];
     if (titleId === undefined && manifestId === undefined) {

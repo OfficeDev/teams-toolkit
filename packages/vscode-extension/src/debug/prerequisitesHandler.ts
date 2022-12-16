@@ -57,7 +57,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { tools } from "../handlers";
+import { tools, openAccountHelpHandler } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryDebugDevCertStatus,
@@ -773,6 +773,7 @@ function checkM365Account(
         if (accountResult.isErr()) {
           result = ResultStatus.failed;
           error = accountResult.error;
+          openAccountHelpHandler();
         } else {
           loginHint = accountResult.value.loginHint;
           tenantId = accountResult.value.tenantId;
@@ -985,6 +986,7 @@ async function resolveLocalCertificate(
         const workspacePath = globalVariables.workspaceUri!.fsPath;
         const localEnvProvider = new LocalEnvProvider(workspacePath);
         const localCertResult = await localEnvManager.resolveLocalCertificate(
+          workspacePath,
           trustDevCert,
           localEnvProvider
         );

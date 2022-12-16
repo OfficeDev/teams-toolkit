@@ -3371,20 +3371,24 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           },
         ],
       },
-      {
-        id: "dashboardApp",
-        label: `${localize("teamstoolkit.guides.dashboardApp.label")}`,
-        detail: localize("teamstoolkit.guides.dashboardApp.detail"),
-        groupName: localize("teamstoolkit.guide.scenario"),
-        data: "https://aka.ms/teamsfx-dashboard-app",
-        buttons: [
-          {
-            iconPath: "file-symlink-file",
-            tooltip: localize("teamstoolkit.guide.tooltip.github"),
-            command: "fx-extension.openTutorial",
-          },
-        ],
-      },
+      ...(isV3Enabled()
+        ? []
+        : [
+            {
+              id: "dashboardApp",
+              label: `${localize("teamstoolkit.guides.dashboardApp.label")}`,
+              detail: localize("teamstoolkit.guides.dashboardApp.detail"),
+              groupName: localize("teamstoolkit.guide.scenario"),
+              data: "https://aka.ms/teamsfx-dashboard-app",
+              buttons: [
+                {
+                  iconPath: "file-symlink-file",
+                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
+                  command: "fx-extension.openTutorial",
+                },
+              ],
+            },
+          ]),
       {
         id: "addTab",
         label: `${localize("teamstoolkit.guides.addTab.label")}`,
@@ -3633,6 +3637,10 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
   return Promise.resolve(ok(false));
 }
 
+export async function openAccountHelpHandler(args?: any[]) {
+  WebviewPanel.createOrShow(PanelType.AccountHelp);
+}
+
 export async function signinM365Callback(args?: any[]): Promise<Result<null, FxError>> {
   let node: M365AccountNode | undefined;
   if (args && args.length > 1) {
@@ -3675,21 +3683,22 @@ export async function checkSideloadingCallback(args?: any[]): Promise<Result<nul
     "error",
     localize("teamstoolkit.accountTree.sideloadingMessage"),
     false,
-    localize("teamstoolkit.accountTree.sideloadingJoinM365")
+    localize("teamstoolkit.accountTree.sideloadingLearnMore")
   )
     .then(async (result) => {
-      if (result.isOk() && result.value === localize("teamstoolkit.common.readMore")) {
-        await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingReadmore);
-      } else if (
+      if (
         result.isOk() &&
-        result.value === localize("teamstoolkit.accountTree.sideloadingJoinM365")
+        result.value === localize("teamstoolkit.accountTree.sideloadingLearnMore")
       ) {
-        await VS_CODE_UI.openUrl("https://developer.microsoft.com/microsoft-365/dev-program");
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingJoinM365);
+        await openAccountHelpHandler();
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingLearnMore);
       }
     })
     .catch((_error) => {});
+  openAccountHelpHandler();
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.InteractWithInProductDoc, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SideloadingDisabled,
+  });
   return ok(null);
 }
 

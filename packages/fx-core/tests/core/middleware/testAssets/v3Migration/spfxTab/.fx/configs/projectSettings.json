@@ -1,0 +1,35 @@
+{
+    "appName": "chyuan121301",
+    "projectId": "a07b4e42-f348-43e4-bb3f-dddb03a8382e",
+    "version": "2.1.0",
+    "components": [
+        {
+            "name": "teams-tab",
+            "hosting": "spfx",
+            "deploy": true,
+            "folder": "SPFx",
+            "build": true,
+            "artifactFolder": "SPFx\\build"
+        },
+        {
+            "name": "spfx",
+            "provision": true
+        }
+    ],
+    "programmingLanguage": "typescript",
+    "solutionSettings": {
+        "name": "fx-solution-azure",
+        "version": "1.0.0",
+        "hostType": "SPFx",
+        "azureResources": [],
+        "capabilities": [
+            "Tab"
+        ],
+        "activeResourcePlugins": [
+            "fx-resource-local-debug",
+            "fx-resource-appstudio",
+            "fx-resource-cicd",
+            "fx-resource-spfx"
+        ]
+    }
+}

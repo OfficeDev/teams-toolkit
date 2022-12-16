@@ -65,6 +65,13 @@ export const LocalEnvKeys = Object.freeze({
       SqlIdentityId: "IDENTITY_ID",
     },
   },
+  videoFilterApp: {
+    template: {
+      SslCrtFile: "SSL_CRT_FILE",
+      SslKeyFile: "SSL_KEY_FILE",
+    },
+    teamsfx: {},
+  },
 });
 
 const frontendTemplateComment =
@@ -75,6 +82,8 @@ const teamsfxComment =
   "# TeamsFx will overwrite the following variable values when running debug. They are used by TeamsFx SDK.";
 const customizedComment =
   "# Following variables can be customized or you can add your owns." + os.EOL + "# FOO=BAR";
+const videoFilterAppTemplateComment =
+  "# TeamsFx will overwrite the following variable values when running debug. They are used by Vite.";
 
 export class LocalEnvProvider {
   public static readonly LocalEnvFileName: string = ".env.teamsfx.local";
@@ -109,6 +118,14 @@ export class LocalEnvProvider {
     );
   }
 
+  public async loadVideoFilterLocalEnvs(): Promise<LocalEnvs> {
+    return await this.loadLocalEnvFile(
+      path.join(this.projectPath, FolderName.VideoFilter, LocalEnvProvider.LocalEnvFileName),
+      Object.values(LocalEnvKeys.videoFilterApp.template),
+      Object.values(LocalEnvKeys.videoFilterApp.teamsfx)
+    );
+  }
+
   public async saveFrontendLocalEnvs(envs: LocalEnvs): Promise<string> {
     return await this.saveLocalEnvFile(
       path.join(this.projectPath, FolderName.Frontend),
@@ -134,6 +151,16 @@ export class LocalEnvProvider {
       path.join(this.projectPath, FolderName.Bot),
       envs,
       botTemplateComment,
+      teamsfxComment,
+      customizedComment
+    );
+  }
+
+  public async saveVideoFilterLocalEnvs(envs: LocalEnvs): Promise<string> {
+    return await this.saveLocalEnvFile(
+      path.join(this.projectPath, FolderName.VideoFilter),
+      envs,
+      videoFilterAppTemplateComment,
       teamsfxComment,
       customizedComment
     );

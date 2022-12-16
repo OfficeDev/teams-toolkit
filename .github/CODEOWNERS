@@ -125,6 +125,8 @@
 
 /packages/fx-core/src/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /packages/fx-core/tests/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
+/packages/fx-core/src/common/m365 @kimizhu @swatDong @kuojianlu
+/packages/fx-core/tests/common/m365 @kimizhu @swatDong @kuojianlu
 
 /packages/simpleauth @adashen @blackchoey @wenytang-ms
 
@@ -158,8 +160,8 @@
 /packages/fx-core/src/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/tests/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
-/packages/fx-core/src/component/driver/tools @swatDong @XiaofuHuang @kuojianlu @kimizhu
-/packages/fx-core/tests/component/driver/tools @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/src/component/driver/prerequisite @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/prerequisite @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
 /packages/run-utils @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu

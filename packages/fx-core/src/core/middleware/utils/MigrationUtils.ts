@@ -229,21 +229,9 @@ export function namingConverterV3(
       }) &&
       bicepContent
     ) {
-      const res = provisionOutputNamingConverterV3(name, bicepContent);
-      return ok(res);
+      return ok(provisionOutputNamingConverterV3(name, bicepContent, type));
     } else {
-      const res = commonNamingConverterV3(name);
-      switch (type) {
-        case FileType.CONFIG:
-          return ok(`${configPrefix}${res}`);
-        case FileType.USERDATA:
-          if (res.startsWith("STATE__"))
-            return ok(`${secretPrefix}${res.substring(res.indexOf("STATE__") + 7)}`);
-          else return ok(`${secretPrefix}${res}`);
-        case FileType.STATE:
-        default:
-          return ok(res);
-      }
+      return ok(commonNamingConverterV3(name, type));
     }
   } catch (error: any) {
     return err(new SystemError(CoreSource, "FailedToConvertV2ConfigNameToV3", error?.message));
@@ -251,12 +239,27 @@ export function namingConverterV3(
 }
 
 // convert x-xx.xxx.xxx to x_xx__xxx__xxx
-function commonNamingConverterV3(name: string): string {
+function commonNamingConverterV3(name: string, type: FileType): string {
   const names = name.split(".");
-  return names.join("__").replace(/\-/g, "_").toUpperCase();
+  const res = names.join("__").replace(/\-/g, "_").toUpperCase();
+  switch (type) {
+    case FileType.CONFIG:
+      return `${configPrefix}${res}`;
+    case FileType.USERDATA:
+      if (res.startsWith("STATE__"))
+        return `${secretPrefix}${res.substring(res.indexOf("STATE__") + 7)}`;
+      else return `${secretPrefix}${res}`;
+    case FileType.STATE:
+    default:
+      return res;
+  }
 }
 
-function provisionOutputNamingConverterV3(name: string, bicepContent: string): string {
+function provisionOutputNamingConverterV3(
+  name: string,
+  bicepContent: string,
+  type: FileType
+): string {
   const names = name.split(".");
   const pluginNames = [names[1], pluginIdMappingV3[names[1]]];
   const keyName = names[2];
@@ -297,7 +300,7 @@ function provisionOutputNamingConverterV3(name: string, bicepContent: string): s
   }
 
   if (!outputName) {
-    throw new Error(`Failed to find matching output in provision.bicep for key ${name}`);
+    return commonNamingConverterV3(name, type);
   }
 
   return `${provisionOutputPrefix}${outputName}__${keyName}`.toUpperCase();
@@ -309,14 +312,12 @@ export function convertPluginId(name: string): string {
     return name;
   }
   const pluginId = nameArray[1];
-
   if (Object.values(pluginIdMappingV3).includes(pluginId)) {
     const convertedPluginId = Object.keys(pluginIdMappingV3).find(
       (key) => pluginIdMappingV3[key] === pluginId
     );
     name = name.replace(pluginId, convertedPluginId!);
   }
-
   return name;
 }
 

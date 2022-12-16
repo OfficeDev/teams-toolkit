@@ -9,7 +9,7 @@ import * as yaml from "js-yaml";
 
 describe("AppLocalYmlGenerator", () => {
   it("empty deploy", async () => {
-    const appLocalYmlGenerator = new AppLocalYmlGenerator(generateProjectSettings(), {});
+    const appLocalYmlGenerator = new AppLocalYmlGenerator(generateProjectSettings(), {}, {});
     const res = await appLocalYmlGenerator.generateAppYml();
     const obj = yaml.load(res) as any;
 
@@ -17,33 +17,45 @@ describe("AppLocalYmlGenerator", () => {
   });
 
   it("dev cert", async () => {
-    const appLocalYmlGenerator = new AppLocalYmlGenerator(generateProjectSettings(), {
-      deploy: { tools: { devCert: { trust: true } } },
-    });
+    const appLocalYmlGenerator = new AppLocalYmlGenerator(
+      generateProjectSettings(),
+      {
+        deploy: { tools: { devCert: { trust: true } } },
+      },
+      {}
+    );
     const res = await appLocalYmlGenerator.generateAppYml();
     const obj = yaml.load(res) as any;
 
     chai.assert.deepEqual(obj.deploy, [
-      { uses: "tools/install", with: { devCert: { trust: true } } },
+      { uses: "prerequisite/install", with: { devCert: { trust: true } } },
     ]);
   });
 
   it("empty npm install", async () => {
-    const appLocalYmlGenerator = new AppLocalYmlGenerator(generateProjectSettings(), {
-      deploy: { npmCommands: [] },
-    });
+    const appLocalYmlGenerator = new AppLocalYmlGenerator(
+      generateProjectSettings(),
+      {
+        deploy: { npmCommands: [] },
+      },
+      {}
+    );
     const res = await appLocalYmlGenerator.generateAppYml();
     const obj = yaml.load(res) as any;
     chai.assert.isNull(obj.deploy);
   });
 
   it("npm install", async () => {
-    const appLocalYmlGenerator = new AppLocalYmlGenerator(generateProjectSettings(), {
-      deploy: { npmCommands: [{ args: "install" }] },
-    });
+    const appLocalYmlGenerator = new AppLocalYmlGenerator(
+      generateProjectSettings(),
+      {
+        deploy: { npmCommands: [{ args: "install" }] },
+      },
+      {}
+    );
     const res = await appLocalYmlGenerator.generateAppYml();
     const obj = yaml.load(res) as any;
-    chai.assert.deepEqual(obj.deploy, [{ uses: "npm/command", with: { args: "install" } }]);
+    chai.assert.deepEqual(obj.deploy, [{ uses: "cli/runNpmCommand", with: { args: "install" } }]);
   });
 });
 

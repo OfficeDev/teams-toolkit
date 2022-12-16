@@ -8,6 +8,7 @@ import { isObject } from "lodash";
 import { FileType, namingConverterV3 } from "./MigrationUtils";
 import { EOL } from "os";
 import {
+  AppPackageFolderName,
   AzureSolutionSettings,
   Inputs,
   Platform,
@@ -15,7 +16,13 @@ import {
   ProjectSettingsV3,
 } from "@microsoft/teamsfx-api";
 import { CoreHookContext } from "../../types";
+import semver from "semver";
 import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
+import { Metadata, MetadataV2, MetadataV3, VersionState } from "../../../common/versionMetadata";
+import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appManifest/constants";
+import { VersionForMigration } from "../types";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { TOOLS } from "../../globalVars";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -27,33 +34,24 @@ export async function readJsonFile(context: MigrationContext, filePath: string):
 }
 
 // read bicep file content
-export function readBicepContent(context: MigrationContext): any {
+export async function readBicepContent(context: MigrationContext): Promise<any> {
+  const bicepFilePath = path.join(getTemplateFolderPath(context), "azure", "provision.bicep");
+  const bicepFileExists = await context.fsPathExists(bicepFilePath);
+  return bicepFileExists
+    ? fs.readFileSync(path.join(context.projectPath, bicepFilePath), "utf8")
+    : "";
+}
+
+// get template folder path
+export function getTemplateFolderPath(context: MigrationContext): string {
   const inputs: Inputs = context.arguments[context.arguments.length - 1];
-  const bicepFilePath =
-    inputs.platform === Platform.VS
-      ? "Templates/azure/provision.bicep"
-      : "templates/azure/provision.bicep";
-  return fs.readFileSync(path.join(context.projectPath, bicepFilePath), "utf8");
+  return inputs.platform === Platform.VS ? "Templates" : "templates";
 }
 
 // read file names list under the given path
 export function fsReadDirSync(context: MigrationContext, _path: string): string[] {
   const dirPath = path.join(context.projectPath, _path);
   return fs.readdirSync(dirPath);
-}
-
-// convert any obj names if can be converted (used in states and configs migration)
-export function jsonObjectNamesConvertV3(
-  obj: any,
-  prefix: string,
-  filetype: FileType,
-  bicepContent: any
-) {
-  let returnData = "";
-  for (const keyName of Object.keys(obj)) {
-    returnData += dfs(prefix + keyName, obj[keyName], filetype, bicepContent);
-  }
-  return returnData;
 }
 
 // env variables in this list will be only convert into .env.{env} when migrating {env}.userdata
@@ -64,37 +62,144 @@ const skipList = [
   "state.fx-resource-azure-sql.adminPassword",
 ];
 
-function dfs(parentKeyName: string, obj: any, filetype: FileType, bicepContent: any): string {
+// convert any obj names if can be converted (used in states and configs migration)
+export function jsonObjectNamesConvertV3(
+  obj: any,
+  prefix: string,
+  parentKeyName: string,
+  filetype: FileType,
+  bicepContent: any
+): string {
   let returnData = "";
-
   if (isObject(obj)) {
     for (const keyName of Object.keys(obj)) {
-      returnData += dfs(parentKeyName + "." + keyName, obj[keyName], filetype, bicepContent);
+      returnData +=
+        parentKeyName === ""
+          ? jsonObjectNamesConvertV3(obj[keyName], prefix, prefix + keyName, filetype, bicepContent)
+          : jsonObjectNamesConvertV3(
+              obj[keyName],
+              prefix,
+              parentKeyName + "." + keyName,
+              filetype,
+              bicepContent
+            );
     }
   } else if (!skipList.includes(parentKeyName)) {
     const res = namingConverterV3(parentKeyName, filetype, bicepContent);
     if (res.isOk()) return res.value + "=" + obj + EOL;
   } else return "";
-
   return returnData;
 }
 
 export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const projectPath = inputs.projectPath as string;
+  const projectPath = getParameterFromCxt(ctx, "projectPath", "");
+  return await getProjectVersionFromPath(projectPath);
+}
+
+export function migrationNotificationMessage(versionForMigration: VersionForMigration): string {
+  const link = getDownloadLinkByVersionAndPlatform(
+    versionForMigration.currentVersion,
+    versionForMigration.platform
+  );
+  const res = getLocalizedString(
+    "core.migrationV3.Message",
+    link,
+    versionForMigration.currentVersion
+  );
+  return res;
+}
+
+export function getDownloadLinkByVersionAndPlatform(version: string, platform: Platform): string {
+  let anchorInLink = "vscode";
+  if (platform === Platform.VS) {
+    anchorInLink = "visual-studio";
+  } else if (platform === Platform.CLI) {
+    anchorInLink = "cli";
+  }
+  return `${Metadata.versionMatchLink}#${anchorInLink}`;
+}
+
+export function outputCancelMessage(version: string, platform: Platform) {
+  TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
+  const link = getDownloadLinkByVersionAndPlatform(version, platform);
+  if (platform === Platform.VSCode) {
+    TOOLS?.logProvider.warning(
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
+    );
+    TOOLS?.logProvider.warning(
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find it in ${link} and install it based on the current version ${version}`
+    );
+  } else if (platform === Platform.VS) {
+    TOOLS?.logProvider.warning(
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please trigger this command again.`
+    );
+    TOOLS?.logProvider.warning(
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find it in ${link} and install it based on the current version ${version}`
+    );
+  } else {
+    TOOLS?.logProvider.warning(
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
+    );
+    TOOLS?.logProvider.warning(
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please find it in ${link} and install it based on the current version ${version}`
+    );
+  }
+}
+
+export async function getProjectVersionFromPath(projectPath: string): Promise<string> {
   const v3path = getProjectSettingPathV3(projectPath);
   if (await fs.pathExists(v3path)) {
     const settings = await fs.readJson(v3path);
-    return settings.version || "3.0.0";
+    return settings.version || MetadataV3.projectVersion;
   }
   const v2path = getProjectSettingPathV2(projectPath);
   if (await fs.pathExists(v2path)) {
     const settings = await fs.readJson(v2path);
-    if (settings.version) {
-      return settings.version;
+    return settings.version || "";
+  }
+  return "";
+}
+
+export async function getTrackingIdFromPath(projectPath: string): Promise<string> {
+  const v3path = getProjectSettingPathV3(projectPath);
+  if (await fs.pathExists(v3path)) {
+    const settings = await fs.readJson(v3path);
+    return settings.trackingId || "";
+  }
+  const v2path = getProjectSettingPathV2(projectPath);
+  if (await fs.pathExists(v2path)) {
+    const settings = await fs.readJson(v2path);
+    if (settings.projectId) {
+      return settings.projectId || "";
     }
   }
-  return "0.0.0";
+  return "";
+}
+
+export function getVersionState(version: string): VersionState {
+  if (
+    semver.gte(version, MetadataV2.projectVersion) &&
+    semver.lte(version, MetadataV2.projectMaxVersion)
+  ) {
+    return VersionState.upgradeable;
+  } else if (version === MetadataV3.projectVersion) {
+    return VersionState.compatible;
+  }
+  return VersionState.unsupported;
+}
+
+export function getParameterFromCxt(
+  ctx: CoreHookContext,
+  key: string,
+  defaultValue?: string
+): string {
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const value = (inputs[key] as string) || defaultValue || "";
+  return value;
+}
+
+export function getToolkitVersionLink(platform: Platform, projectVersion: string): string {
+  return Metadata.versionMatchLink;
 }
 
 export function getCapabilitySsoStatus(projectSettings: ProjectSettings): {
@@ -162,4 +267,46 @@ export async function readAndConvertUserdata(
   }
 
   return returnAnswer;
+}
+
+export async function updateAndSaveManifestForSpfx(
+  context: MigrationContext,
+  manifest: string
+): Promise<void> {
+  const remoteTemplatePath = path.join(AppPackageFolderName, MANIFEST_TEMPLATE_CONSOLIDATE);
+  const localTemplatePath = path.join(AppPackageFolderName, "manifest.template.local.json");
+
+  const contentRegex = /\"\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\"/g;
+  const remoteRegex = /\{\{\^config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}\{/g;
+  const localRegex = /\}\{\{\#config\.isLocalDebug\}\}.*\{\{\/config\.isLocalDebug\}\}/g;
+
+  let remoteTemplate = manifest,
+    localTemplate = manifest;
+
+  // Replace contentUrls
+  const placeholders = manifest.match(contentRegex);
+  if (placeholders) {
+    for (const placeholder of placeholders) {
+      // Replace with local and remote url
+      // Will only replace if one match found
+      const remoteUrl = placeholder.match(remoteRegex);
+      if (remoteUrl && remoteUrl.length == 1) {
+        remoteTemplate = remoteTemplate.replace(
+          placeholder,
+          `"${remoteUrl[0].substring(24, remoteUrl[0].length - 25)}"`
+        );
+      }
+
+      const localUrl = placeholder.match(localRegex);
+      if (localUrl && localUrl.length == 1) {
+        localTemplate = localTemplate.replace(
+          placeholder,
+          `"${localUrl[0].substring(25, localUrl[0].length - 24)}"`
+        );
+      }
+    }
+  }
+
+  await context.fsWriteFile(remoteTemplatePath, remoteTemplate);
+  await context.fsWriteFile(localTemplatePath, localTemplate);
 }

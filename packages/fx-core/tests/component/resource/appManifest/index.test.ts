@@ -74,6 +74,11 @@ describe("App-manifest Component", () => {
       ["teamsAppUpdatedAt"]: undefined,
     };
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
+    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+      ok({
+        unique_name: "fakename",
+      })
+    );
 
     const res: SingleSelectResult = {
       type: "success",
@@ -625,6 +630,11 @@ describe("App-manifest Component - v3", () => {
     context = createContextV3();
     context.envInfo = newEnvInfoV3();
     sandbox.stub(tools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("fakeToken"));
+    sandbox.stub(tools.tokenProvider.m365TokenProvider, "getJsonObject").resolves(
+      ok({
+        unique_name: "fakename",
+      })
+    );
 
     const res: SingleSelectResult = {
       type: "success",

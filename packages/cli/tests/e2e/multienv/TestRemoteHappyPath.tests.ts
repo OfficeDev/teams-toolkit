@@ -49,7 +49,7 @@ describe("Multi Env Happy Path for Azure", function () {
     { testPlanCaseId: 10308408 },
     async function () {
       if (isV3Enabled()) {
-        this.skip();
+        return this.skip();
       }
       try {
         let result;

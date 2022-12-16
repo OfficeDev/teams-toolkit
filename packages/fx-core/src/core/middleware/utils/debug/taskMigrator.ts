@@ -377,7 +377,9 @@ export async function migrateValidateDependencies(context: DebugMigrationContext
   }
 }
 
-export function migrateValidateLocalPrerequisites(context: DebugMigrationContext): void {
+export async function migrateValidateLocalPrerequisites(
+  context: DebugMigrationContext
+): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];

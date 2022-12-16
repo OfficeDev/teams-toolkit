@@ -22,22 +22,20 @@ Follow below instructions to get started with this application template for loca
 1. Select a target Microsoft application where the message extension runs: `Debug in Teams`, `Debug in Outlook` and click the `Run and Debug` green arrow button.
 1. If you select `Debug in Outlook`, follow the instructions in a Visual Studio Code pop-up dialog.
 
-    ![VS Code Pop up](https://user-images.githubusercontent.com/11220663/168991167-12a7078f-ea1a-4915-91f8-38648848bc51.png)
+    ![VS Code Pop up](https://user-images.githubusercontent.com/11220663/167839258-0ee73600-ce32-4c8f-9876-826d90716510.png)
 
 1. Click **Install in Teams** first and install the app in a Teams web client.
-1. Click **Configure Outlook** to connect the bot with Outlook channel in the Bot Framework Portal.
-1. Click **Continue** to continue to debug the app in Outlook.
+1. After installing the app in Teams, come back and click **Continue** to continue to debug the app in Outlook web client.
 
 ### Test your application with TeamsFx CLI
 
 1. Start debugging the project by executing the command `teamsfx preview --env local --m365-host <m365-host>` in your project directory, where options for `m365-host` are `teams` or `outlook`.
 1. If you select `m365-host` as `outlook`, follow the instructions in the command dialog.
 
-  ![CLI Pop up](https://user-images.githubusercontent.com/11220663/167869249-c1238ab7-d0eb-4bda-87cc-22ac8bad743b.png)
+  ![CLI Pop up](https://user-images.githubusercontent.com/11220663/167839636-de3a71db-caa6-4571-91a4-05428779b1fa.png)
 
 1. Select **Install in Teams** first and install the app in a Teams web client.
-1. Click **Configure Outlook** to connect the bot with Outlook channel in the Bot Framework Portal.
-1. Click **Continue** to continue to debug the app in Outlook.
+1. After installed the app in Teams, come back and select **Continue** to continue to debug the app in Outlook web client.
 
 ## Use this message extension app
 

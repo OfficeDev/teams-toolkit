@@ -28,6 +28,7 @@ import { getUuid } from "../../commonlib/utilities";
 import { Capability } from "../../commonlib/constants";
 
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Multi Env Happy Path for Azure", function () {
   const env = "e2e";
@@ -38,6 +39,9 @@ describe("Multi Env Happy Path for Azure", function () {
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
 
   it(`tab with mult env`, { testPlanCaseId: 15244879 }, async function () {
+    if (isV3Enabled()) {
+      return this.skip();
+    }
     try {
       let result;
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);

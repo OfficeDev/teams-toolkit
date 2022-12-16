@@ -64,6 +64,13 @@ export class OldProjectSettingsHelper {
     return this.includePlugin(oldProjectSettings, "fx-resource-function");
   }
 
+  public static includeFuncHostedBot(oldProjectSettings: ProjectSettings): boolean {
+    return (
+      this.includePlugin(oldProjectSettings, "fx-resource-bot") &&
+      oldProjectSettings.pluginSettings?.["fx-resource-bot"]?.["host-type"] === "azure-function"
+    );
+  }
+
   public static getFunctionName(oldProjectSettings: ProjectSettings): string | undefined {
     return oldProjectSettings.defaultFunctionName;
   }

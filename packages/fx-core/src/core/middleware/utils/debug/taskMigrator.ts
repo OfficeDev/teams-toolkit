@@ -452,7 +452,7 @@ export async function migrateValidateLocalPrerequisites(
   }
 }
 
-export function migrateNgrokStart(context: DebugMigrationContext): void {
+export async function migrateNgrokStartTask(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -461,34 +461,7 @@ export function migrateNgrokStart(context: DebugMigrationContext): void {
       ((typeof task["dependsOn"] === "string" && task["dependsOn"] === "teamsfx: ngrok start") ||
         (isCommentArray(task["dependsOn"]) && task["dependsOn"].includes("teamsfx: ngrok start")))
     ) {
-      const comment = `{
-        // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
-        // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
-        // as well as samples to:
-        //   - use your own ngrok command / configuration / binary
-        //   - use your own tunnel solution
-        //   - provide alternatives if ngrok does not work on your dev machine
-      }`;
-      const placeholderComment = `
-      {
-        // Keep consistency with migrated configuration.
-      }
-    `;
-      const newTask = assign(parse(comment), {
-        label: TaskLabel.StartLocalTunnel,
-        type: "teamsfx",
-        command: TaskCommand.startLocalTunnel,
-        args: {
-          ngrokArgs: TaskDefaultValue.startLocalTunnel.ngrokArgs,
-          env: "local",
-          output: assign(parse(placeholderComment), {
-            endpoint: context.placeholderMapping.botEndpoint,
-            domain: context.placeholderMapping.botDomain,
-          }),
-        },
-        isBackground: true,
-        problemMatcher: "$teamsfx-local-tunnel-watch",
-      });
+      const newTask = generateLocalTunnelTask(context);
       context.tasks.splice(index + 1, 0, newTask);
       break;
     } else {
@@ -496,6 +469,25 @@ export function migrateNgrokStart(context: DebugMigrationContext): void {
     }
   }
   replaceInDependsOn("teamsfx: ngrok start", context.tasks, TaskLabel.StartLocalTunnel);
+}
+
+export async function migrateNgrokStartCommand(context: DebugMigrationContext): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "teamsfx") ||
+      !(task["command"] === "ngrok start")
+    ) {
+      ++index;
+      continue;
+    }
+
+    const newTask = generateLocalTunnelTask(context, task);
+    context.tasks.splice(index, 1, newTask);
+    ++index;
+  }
 }
 
 function generatePrerequisiteTask(
@@ -552,6 +544,37 @@ function generatePrerequisiteTask(
 
   newTask["args"] = args as CommentJSONValue;
   return newTask;
+}
+
+function generateLocalTunnelTask(context: DebugMigrationContext, task?: CommentObject) {
+  const comment = `{
+      // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+      // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
+      // as well as samples to:
+      //   - use your own ngrok command / configuration / binary
+      //   - use your own tunnel solution
+      //   - provide alternatives if ngrok does not work on your dev machine
+    }`;
+  const placeholderComment = `
+    {
+      // Keep consistency with migrated configuration.
+    }
+  `;
+  const newTask = assign(task ?? parse(`{"label": "${TaskLabel.StartLocalTunnel}"}`), {
+    type: "teamsfx",
+    command: TaskCommand.startLocalTunnel,
+    args: {
+      ngrokArgs: TaskDefaultValue.startLocalTunnel.ngrokArgs,
+      env: "local",
+      output: assign(parse(placeholderComment), {
+        endpoint: context.placeholderMapping.botEndpoint,
+        domain: context.placeholderMapping.botDomain,
+      }),
+    },
+    isBackground: true,
+    problemMatcher: "$teamsfx-local-tunnel-watch",
+  });
+  return assign(parse(comment), newTask);
 }
 
 function handleProvisionAndDeploy(

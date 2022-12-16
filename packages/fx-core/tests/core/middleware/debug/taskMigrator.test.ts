@@ -12,7 +12,8 @@ import {
   migrateSetUpTab,
   migrateTransparentNpmInstall,
   migrateTransparentPrerequisite,
-  migrateNgrokStart,
+  migrateNgrokStartTask,
+  migrateNgrokStartCommand,
 } from "../../../../src/core/middleware/utils/debug/taskMigrator";
 import { CommentArray, CommentJSONValue, parse, stringify } from "comment-json";
 import { DebugMigrationContext } from "../../../../src/core/middleware/utils/debug/debugMigrationContext";
@@ -1014,8 +1015,8 @@ describe("debugMigration", () => {
     });
   });
 
-  describe("migrateNgrokStart", () => {
-    it("multiple ngrok label", () => {
+  describe("migrateNgrokStartTask", () => {
+    it("multiple ngrok label", async () => {
       const testTaskContent = `[
         {
           "label": "start ngrok",
@@ -1061,15 +1062,21 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;
-      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {
-        botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
-        botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
-      });
-      migrateNgrokStart(debugContext);
+      const migrationContext = await mockMigrationContext(projectPath);
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {
+          botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+          botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+        }
+      );
+      migrateNgrokStartTask(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
     });
 
-    it("one ngrok label", () => {
+    it("one ngrok label", async () => {
       const testTaskContent = `[
         {
           "label": "start ngrok",
@@ -1107,11 +1114,77 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;
-      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {
-        botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
-        botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
-      });
-      migrateNgrokStart(debugContext);
+      const migrationContext = await mockMigrationContext(projectPath);
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {
+          botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+          botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+        }
+      );
+      migrateNgrokStartTask(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
+    });
+  });
+
+  describe("migrateNgrokStartCommand", () => {
+    it("ngrok task with comment", async () => {
+      const testTaskContent = `[
+        {
+          // Before comment
+          "label": "start ngrok",
+          "type": "teamsfx",
+          "command": "ngrok start",
+          "isBackground": false,
+          "dependsOn": [
+              "bot npm install"
+          ]
+        }
+      ]`;
+      const content = `[
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
+          // as well as samples to:
+          //   - use your own ngrok command / configuration / binary
+          //   - use your own tunnel solution
+          //   - provide alternatives if ngrok does not work on your dev machine
+          // Before comment
+          "label": "start ngrok",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "isBackground": true,
+          "dependsOn": [
+            "bot npm install"
+          ],
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+              "env": "local",
+              "output": {
+                  // Keep consistency with migrated configuration.
+                  "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                  "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+              }
+          },
+          "problemMatcher": "$teamsfx-local-tunnel-watch",
+        }
+      ]`;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const migrationContext = await mockMigrationContext(projectPath);
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {
+          botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+          botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+        }
+      );
+      migrateNgrokStartCommand(debugContext);
       chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
     });
   });

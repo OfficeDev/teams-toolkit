@@ -1,0 +1,55 @@
+name: test-template
+
+on:
+  workflow_dispatch:
+    inputs:
+      preid:
+        description: "preid name(alpha, beta, rc, stable)"
+        required: true
+        default: "alpha"
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.CD_PAT }}
+          ref: ${{ github.ref }}
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: generate templates
+        run: |
+          .github/scripts/template-zip-autogen.sh ${{ runner.temp }}/teamsfx_templates
+
+      - name: generate templates v3
+        run: |
+          .github/scripts/template-zip-autogen-v3.sh ${{ runner.temp }}/teamsfx_templates_v3
+
+      - name: update templates alpha tag
+        uses: richardsimko/update-tag@v1
+        with:
+          tag_name: "templates-0.0.0-alpha"
+        env:
+          GITHUB_TOKEN: ${{ secrets.CD_PAT }}
+
+      - name: release templates' alpha version to github
+        uses: ncipollo/release-action@v1.10.0
+        with:
+          token: ${{ secrets.CD_PAT }}
+          prerelease: true
+          tag: "templates-0.0.0-alpha"
+          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip, ${{ runner.temp }}/teamsfx_templates_v3/*.zip
+          allowUpdates: true
+          removeArtifacts: true

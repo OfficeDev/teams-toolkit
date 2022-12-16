@@ -14,10 +14,16 @@ import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError } from "./error/unhandledError";
-import { CreateOrUpdateBotFrameworkBotArgs } from "./interface/createOrUpdateBotFrameworkBotArgs";
+import {
+  CreateOrUpdateBotFrameworkBotArgs,
+  MicrosoftTeamsChannelSettings,
+} from "./interface/createOrUpdateBotFrameworkBotArgs";
 import { BotRegistration } from "../../resource/botService/botRegistration/botRegistration";
 import { LocalBotRegistration } from "../../resource/botService/botRegistration/localBotRegistration";
-import { IBotRegistration } from "../../resource/botService/appStudio/interfaces/IBotRegistration";
+import {
+  BotChannelType,
+  IBotRegistration,
+} from "../../resource/botService/appStudio/interfaces/IBotRegistration";
 
 const actionName = "botFramework/create";
 const helpLink = "https://aka.ms/teamsfx-actions/botFramework-create";
@@ -75,13 +81,27 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
         getLocalizedString("driver.botFramework.progressBar.createOrUpdateBot")
       );
 
+      let callingEndpoint: string | undefined = undefined;
+      let configuredChannels: BotChannelType[] | undefined = undefined;
+      if (args.channels) {
+        configuredChannels = [];
+        for (const channel of args.channels) {
+          if (channel.name === BotChannelType.MicrosoftTeams) {
+            callingEndpoint = (channel as MicrosoftTeamsChannelSettings).callingWebhook;
+            configuredChannels.push(BotChannelType.MicrosoftTeams);
+          } else if (channel.name === BotChannelType.Outlook) {
+            configuredChannels.push(BotChannelType.Outlook);
+          }
+        }
+      }
       const botRegistrationData: IBotRegistration = {
         botId: args.botId,
         name: args.name,
         description: args.description ?? "",
         iconUrl: args.iconUrl ?? "",
         messagingEndpoint: args.messagingEndpoint,
-        callingEndpoint: "",
+        callingEndpoint: callingEndpoint ?? "",
+        configuredChannels,
       };
 
       const botRegistration: BotRegistration = new LocalBotRegistration();
@@ -143,6 +163,31 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
 
     if (args.iconUrl && typeof args.iconUrl !== "string") {
       invalidParameters.push("iconUrl");
+    }
+
+    if (args.channels) {
+      if (!Array.isArray(args.channels)) {
+        invalidParameters.push("channels");
+      } else {
+        for (const channel of args.channels) {
+          if (
+            !channel.name ||
+            typeof channel.name !== "string" ||
+            (channel.name !== BotChannelType.MicrosoftTeams &&
+              channel.name !== BotChannelType.Outlook)
+          ) {
+            invalidParameters.push("channels");
+            break;
+          }
+          if (channel.name === BotChannelType.MicrosoftTeams) {
+            const callingWebhook = (channel as MicrosoftTeamsChannelSettings).callingWebhook;
+            if (callingWebhook && typeof callingWebhook !== "string") {
+              invalidParameters.push("channels");
+              break;
+            }
+          }
+        }
+      }
     }
 
     if (invalidParameters.length > 0) {

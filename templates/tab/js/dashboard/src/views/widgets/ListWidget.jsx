@@ -1,11 +1,16 @@
 import { Button, Text } from "@fluentui/react-components";
 import { List28Filled, MoreHorizontal32Regular } from "@fluentui/react-icons";
-import { tokens } from "@fluentui/react-theme";
 
 import { getListData } from "../../services/listService";
 import { Widget } from "../lib/Widget";
 import { headerContentStyle, headerTextStyle } from "../lib/Widget.styles";
-import { itemSubtitleStyle, itemTitleStyle } from "../styles/ListWidget.styles";
+import {
+  bodyContentStyle,
+  dividerStyle,
+  itemLayoutStyle,
+  itemSubtitleStyle,
+  itemTitleStyle,
+} from "../styles/ListWidget.styles";
 
 /**
  * Extends the Widget class to implement a list widget.
@@ -39,22 +44,18 @@ export class ListWidget extends Widget {
    */
   bodyContent() {
     return (
-      <div style={{ display: "grid", gap: "0.5rem" }}>
+      <div style={bodyContentStyle()}>
         {this.state.data &&
           this.state.data.map((t) => {
             return (
-              <div style={{ display: "grid" }}>
-                <div
-                  style={{
-                    marginBottom: "0.5rem",
-                    marginLeft: "-2.25rem",
-                    marginRight: "-2.3rem",
-                    height: "1px",
-                    background: tokens.colorNeutralStroke2,
-                  }}
-                />
-                <Text style={itemTitleStyle()}>{t.title}</Text>
-                <Text style={itemSubtitleStyle()}>{t.content}</Text>
+              <div key={`${t.id}-div`} style={itemLayoutStyle()}>
+                <div key={`${t.id}-divider`} style={dividerStyle()} />
+                <Text key={`${t.id}-title`} style={itemTitleStyle()}>
+                  {t.title}
+                </Text>
+                <Text key={`${t.id}-content`} style={itemSubtitleStyle()}>
+                  {t.content}
+                </Text>
               </div>
             );
           })}
@@ -71,7 +72,6 @@ export class ListWidget extends Widget {
       <Button
         appearance="primary"
         size="medium"
-        style={{ width: "fit-content" }}
         onClick={() => {}} // navigate to detailed page
       >
         View Details

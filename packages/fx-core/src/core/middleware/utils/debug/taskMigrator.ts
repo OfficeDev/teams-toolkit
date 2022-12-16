@@ -1,20 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { assign, CommentArray, CommentJSONValue, parse } from "comment-json";
+import { assign, CommentArray, CommentJSONValue, CommentObject, parse } from "comment-json";
 import { DebugMigrationContext } from "./debugMigrationContext";
-import { Prerequisite, TaskCommand } from "../../../../common/local";
+import {
+  defaultNpmInstallArg,
+  FolderName,
+  Prerequisite,
+  TaskCommand,
+  TaskDefaultValue,
+} from "../../../../common/local";
 import {
   createResourcesTask,
   generateLabel,
   isCommentArray,
   isCommentObject,
+  OldProjectSettingsHelper,
   setUpLocalProjectsTask,
+  updateLocalEnv,
 } from "./debugV3MigrationUtils";
 import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
+import { LocalCrypto } from "../../../crypto";
 
-export function migrateTransparentPrerequisite(context: DebugMigrationContext): void {
+export async function migrateTransparentPrerequisite(
+  context: DebugMigrationContext
+): Promise<void> {
   for (const task of context.tasks) {
     if (
       !isCommentObject(task) ||
@@ -61,7 +72,7 @@ export function migrateTransparentPrerequisite(context: DebugMigrationContext): 
   }
 }
 
-export function migrateTransparentLocalTunnel(context: DebugMigrationContext): void {
+export async function migrateTransparentLocalTunnel(context: DebugMigrationContext): Promise<void> {
   for (const task of context.tasks) {
     if (
       !isCommentObject(task) ||
@@ -86,7 +97,7 @@ export function migrateTransparentLocalTunnel(context: DebugMigrationContext): v
   }
 }
 
-export function migrateTransparentNpmInstall(context: DebugMigrationContext): void {
+export async function migrateTransparentNpmInstall(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -134,7 +145,7 @@ export function migrateTransparentNpmInstall(context: DebugMigrationContext): vo
   }
 }
 
-export function migrateSetUpTab(context: DebugMigrationContext): void {
+export async function migrateSetUpTab(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -181,7 +192,7 @@ export function migrateSetUpTab(context: DebugMigrationContext): void {
   }
 }
 
-export function migrateSetUpBot(context: DebugMigrationContext): void {
+export async function migrateSetUpBot(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -202,19 +213,52 @@ export function migrateSetUpBot(context: DebugMigrationContext): void {
     if (!context.appYmlConfig.provision) {
       context.appYmlConfig.provision = {};
     }
-    context.appYmlConfig.provision.bot = true;
+    context.appYmlConfig.provision.bot = {
+      messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
+    };
 
     if (!context.appYmlConfig.deploy) {
       context.appYmlConfig.deploy = {};
     }
     context.appYmlConfig.deploy.bot = true;
 
+    const envs: { [key: string]: string } = {};
+    if (isCommentObject(task["args"])) {
+      if (task["args"]["botId"] && typeof task["args"]["botId"] === "string") {
+        envs["BOT_ID"] = task["args"]["botId"];
+      }
+      if (task["args"]["botPassword"] && typeof task["args"]["botPassword"] === "string") {
+        const envReferencePattern = /^\$\{env:(.*)\}$/;
+        const matchResult = task["args"]["botPassword"].match(envReferencePattern);
+        const botPassword = matchResult ? process.env[matchResult[1]] : task["args"]["botPassword"];
+        if (botPassword) {
+          const cryptoProvider = new LocalCrypto(context.oldProjectSettings.projectId);
+          const result = cryptoProvider.encrypt(botPassword);
+          if (result.isOk()) {
+            envs["SECRET_BOT_PASSWORD"] = result.value;
+          }
+        }
+      }
+      if (
+        task["args"]["botMessagingEndpoint"] &&
+        typeof task["args"]["botMessagingEndpoint"] === "string"
+      ) {
+        if (task["args"]["botMessagingEndpoint"].startsWith("http")) {
+          context.appYmlConfig.provision.bot.messagingEndpoint =
+            task["args"]["botMessagingEndpoint"];
+        } else if (task["args"]["botMessagingEndpoint"].startsWith("/")) {
+          context.appYmlConfig.provision.bot.messagingEndpoint = `$\{{${context.placeholderMapping.botEndpoint}}}${task["args"]["botMessagingEndpoint"]}`;
+        }
+      }
+    }
+    await updateLocalEnv(context.migrationContext, envs);
+
     const label = task["label"];
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
 
-export function migrateSetUpSSO(context: DebugMigrationContext): void {
+export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -252,7 +296,7 @@ export function migrateSetUpSSO(context: DebugMigrationContext): void {
   }
 }
 
-export function migratePrepareManifest(context: DebugMigrationContext): void {
+export async function migratePrepareManifest(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -293,6 +337,174 @@ export function migratePrepareManifest(context: DebugMigrationContext): void {
     const label = task["label"];
     index = handleProvisionAndDeploy(context, index, label);
   }
+}
+
+export async function migrateValidateDependencies(context: DebugMigrationContext): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "shell") ||
+      !(typeof task["command"] === "string") ||
+      !task["command"].includes("${command:fx-extension.validate-dependencies}")
+    ) {
+      ++index;
+      continue;
+    }
+
+    const newTask = generatePrerequisiteTask(task, context);
+
+    context.tasks.splice(index, 1, newTask);
+    ++index;
+
+    const toolsArgs: InstallToolArgs = {};
+    if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
+      toolsArgs.devCert = {
+        trust: true,
+      };
+    }
+    if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
+      toolsArgs.func = true;
+      toolsArgs.dotnet = true;
+    }
+    if (Object.keys(toolsArgs).length > 0) {
+      if (!context.appYmlConfig.deploy) {
+        context.appYmlConfig.deploy = {};
+      }
+      context.appYmlConfig.deploy.tools = toolsArgs;
+    }
+  }
+}
+
+export async function migrateValidateLocalPrerequisites(
+  context: DebugMigrationContext
+): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "shell") ||
+      !(
+        typeof task["command"] === "string" &&
+        task["command"].includes("${command:fx-extension.validate-local-prerequisites}")
+      )
+    ) {
+      ++index;
+      continue;
+    }
+
+    const newTask = generatePrerequisiteTask(task, context);
+    context.tasks.splice(index, 1, newTask);
+    ++index;
+
+    const toolsArgs: InstallToolArgs = {};
+    const npmCommands: BuildArgs[] = [];
+    let dotnetCommand: BuildArgs | undefined;
+    if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
+      toolsArgs.devCert = {
+        trust: true,
+      };
+      npmCommands.push({
+        args: `install ${defaultNpmInstallArg}`,
+        workingDirectory: `./${FolderName.Frontend}`,
+      });
+    }
+
+    if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
+      toolsArgs.func = true;
+      toolsArgs.dotnet = true;
+      npmCommands.push({
+        args: `install ${defaultNpmInstallArg}`,
+        workingDirectory: `./${FolderName.Function}`,
+      });
+      dotnetCommand = {
+        args: "build extensions.csproj -o ./bin --ignore-failed-sources",
+        workingDirectory: `./${FolderName.Function}`,
+        execPath: "${{DOTNET_PATH}}",
+      };
+    }
+
+    if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
+      if (OldProjectSettingsHelper.includeFuncHostedBot(context.oldProjectSettings)) {
+        toolsArgs.func = true;
+      }
+      npmCommands.push({
+        args: `install ${defaultNpmInstallArg}`,
+        workingDirectory: `./${FolderName.Bot}`,
+      });
+    }
+
+    if (Object.keys(toolsArgs).length > 0 || npmCommands.length > 0 || dotnetCommand) {
+      if (!context.appYmlConfig.deploy) {
+        context.appYmlConfig.deploy = {};
+      }
+      if (Object.keys(toolsArgs).length > 0) {
+        context.appYmlConfig.deploy.tools = toolsArgs;
+      }
+      if (npmCommands.length > 0) {
+        context.appYmlConfig.deploy.npmCommands = npmCommands;
+      }
+      context.appYmlConfig.deploy.dotnetCommand = dotnetCommand;
+    }
+  }
+}
+
+function generatePrerequisiteTask(
+  task: CommentObject,
+  context: DebugMigrationContext
+): CommentObject {
+  const comment = `{
+    // Check if all required prerequisites are installed and will install them if not.
+    // See https://aka.ms/teamsfx-check-prerequisites-task to know the details and how to customize the args.
+  }`;
+  const newTask: CommentObject = assign(parse(comment), task) as CommentObject;
+
+  newTask["type"] = "teamsfx";
+  newTask["command"] = "debug-check-prerequisites";
+
+  const prerequisites = [
+    `"${Prerequisite.nodejs}", // Validate if Node.js is installed.`,
+    `"${Prerequisite.m365Account}", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.`,
+    `"${Prerequisite.portOccupancy}", // Validate available ports to ensure those debug ones are not occupied.`,
+  ];
+  const prerequisitesComment = `
+  [
+    ${prerequisites.join("\n  ")}
+  ]`;
+
+  const ports: string[] = [];
+  if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
+    ports.push(`${TaskDefaultValue.checkPrerequisites.ports.tabService}, // tab service port`);
+  }
+  if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
+    ports.push(`${TaskDefaultValue.checkPrerequisites.ports.botService}, // bot service port`);
+    ports.push(
+      `${TaskDefaultValue.checkPrerequisites.ports.botDebug}, // bot inspector port for Node.js debugger`
+    );
+  }
+  if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
+    ports.push(
+      `${TaskDefaultValue.checkPrerequisites.ports.backendService}, // backend service port`
+    );
+    ports.push(
+      `${TaskDefaultValue.checkPrerequisites.ports.backendDebug}, // backend inspector port for Node.js debugger`
+    );
+  }
+  const portsComment = `
+  [
+    ${ports.join("\n  ")}
+  ]
+  `;
+
+  const args: { [key: string]: CommentJSONValue } = {
+    prerequisites: parse(prerequisitesComment),
+    portOccupancy: parse(portsComment),
+  };
+
+  newTask["args"] = args as CommentJSONValue;
+  return newTask;
 }
 
 function handleProvisionAndDeploy(

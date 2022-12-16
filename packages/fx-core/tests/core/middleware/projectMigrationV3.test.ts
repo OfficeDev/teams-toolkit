@@ -18,7 +18,7 @@ import "mocha";
 import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
-import sinon from "sinon";
+import * as sinon from "sinon";
 import * as yaml from "js-yaml";
 import { getProjectMigratorMW } from "../../../src/core/middleware/projectMigrator";
 import { MockTools, MockUserInteraction, randomAppName } from "../utils";
@@ -39,16 +39,24 @@ import {
   userdataMigration,
   debugMigration,
   azureParameterMigration,
+  generateLocalConfig,
+  checkapimPluginExists,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { UpgradeCanceledError } from "../../../src/core/error";
-import { MetadataV2, MetadataV3, VersionState } from "../../../src/common/versionMetadata";
 import {
+  Metadata,
+  MetadataV2,
+  MetadataV3,
+  VersionState,
+} from "../../../src/common/versionMetadata";
+import {
+  getDownloadLinkByVersionAndPlatform,
   getTrackingIdFromPath,
   getVersionState,
 } from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSettingsLoader";
-import * as projectSettingsLoader from "../../../src/core/middleware/projectSettingsLoader";
+import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 
 let mockedEnvRestore: () => void;
 
@@ -244,8 +252,10 @@ describe("generateSettingsJson", () => {
 describe("generateAppYml-js/ts", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
+  let migrationContext: MigrationContext;
 
   beforeEach(async () => {
+    migrationContext = await mockMigrationContext(projectPath);
     await fs.ensureDir(projectPath);
   });
 
@@ -253,50 +263,18 @@ describe("generateAppYml-js/ts", () => {
     await fs.remove(projectPath);
   });
 
-  it("should success in happy path", async () => {
-    const migrationContext = await mockMigrationContext(projectPath);
-    await copyTestProject(Constants.happyPathTestProject, projectPath);
+  it("should success for js SSO tab", async () => {
+    await copyTestProject("jsSsoTab", projectPath);
 
     await generateAppYml(migrationContext);
 
-    const appYamlPath = path.join(projectPath, Constants.appYmlPath);
-    assert.isTrue(await fs.pathExists(appYamlPath));
-    const appYaml: any = yaml.load(await fs.readFile(appYamlPath, "utf8"));
-    // validate basic part
-    assert.equal(appYaml.version, "1.0.0");
-    assert.exists(getAction(appYaml.provision, "arm/deploy"));
-    assert.exists(getAction(appYaml.registerApp, "teamsApp/create"));
-    assert.exists(getAction(appYaml.configureApp, "teamsApp/validate"));
-    assert.exists(getAction(appYaml.configureApp, "teamsApp/zipAppPackage"));
-    assert.exists(getAction(appYaml.configureApp, "teamsApp/update"));
-    assert.exists(getAction(appYaml.publish, "teamsApp/validate"));
-    assert.exists(getAction(appYaml.publish, "teamsApp/zipAppPackage"));
-    assert.exists(getAction(appYaml.publish, "teamsApp/publishAppPackage"));
-    // validate AAD part
-    assert.exists(getAction(appYaml.registerApp, "aadApp/create"));
-    assert.exists(getAction(appYaml.configureApp, "aadApp/update"));
-    // validate tab part
-    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "cli/runNpmCommand");
-    assert.exists(
-      npmCommandActions.find(
-        (item) => item.with.workingDirectory === "tabs" && item.with.args === "install"
-      )
-    );
-    assert.exists(
-      npmCommandActions.find(
-        (item) => item.with.workingDirectory === "tabs" && item.with.args === "run build"
-      )
-    );
-    assert.exists(getAction(appYaml.deploy, "azureStorage/deploy"));
+    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
   });
 
-  it("should not generate AAD part if AAD plugin not activated", async () => {
-    const migrationContext = await mockMigrationContext(projectPath);
-    await copyTestProject(Constants.happyPathTestProject, projectPath);
+  it("should success for ts SSO tab", async () => {
+    await copyTestProject("jsSsoTab", projectPath);
     const projectSetting = await readOldProjectSettings(projectPath);
-    projectSetting.solutionSettings.activeResourcePlugins = (<Array<string>>(
-      projectSetting.solutionSettings.activeResourcePlugins
-    )).filter((item) => item !== "fx-resource-aad-app-for-teams"); // remove AAD plugin
+    projectSetting.programmingLanguage = "typescript";
     await fs.writeJson(
       path.join(projectPath, Constants.oldProjectSettingsFilePath),
       projectSetting
@@ -304,21 +282,21 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    const appYaml: any = yaml.load(
-      await fs.readFile(path.join(projectPath, Constants.appYmlPath), "utf8")
-    );
-
-    assert.isEmpty(getAction(appYaml.registerApp, "aadApp/create"));
-    assert.isEmpty(getAction(appYaml.configureApp, "aadApp/update"));
+    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
   });
 
-  it("should not generate tab part if frontend hosting plugin not activated", async () => {
-    const migrationContext = await mockMigrationContext(projectPath);
-    await copyTestProject(Constants.happyPathTestProject, projectPath);
+  it("should success for js non SSO tab", async () => {
+    await copyTestProject("jsNonSsoTab", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+  });
+
+  it("should success for ts non SSO tab", async () => {
+    await copyTestProject("jsNonSsoTab", projectPath);
     const projectSetting = await readOldProjectSettings(projectPath);
-    projectSetting.solutionSettings.activeResourcePlugins = (<Array<string>>(
-      projectSetting.solutionSettings.activeResourcePlugins
-    )).filter((item) => item !== "fx-resource-frontend-hosting"); // remove frontend hosting plugin
+    projectSetting.programmingLanguage = "typescript";
     await fs.writeJson(
       path.join(projectPath, Constants.oldProjectSettingsFilePath),
       projectSetting
@@ -326,14 +304,73 @@ describe("generateAppYml-js/ts", () => {
 
     await generateAppYml(migrationContext);
 
-    const appYaml: any = yaml.load(
-      await fs.readFile(path.join(projectPath, Constants.appYmlPath), "utf8")
+    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+  });
+
+  it("should success for js tab with api", async () => {
+    await copyTestProject("jsTabWithApi", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+  });
+
+  it("should success for ts tab with api", async () => {
+    await copyTestProject("jsTabWithApi", projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.programmingLanguage = "typescript";
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
     );
 
-    assert.isEmpty(getAction(appYaml.provision, "azureStorage/enableStaticWebsite"));
-    const npmCommandActions: Array<any> = getAction(appYaml.deploy, "cli/runNpmCommand");
-    assert.isEmpty(npmCommandActions.filter((item) => item.with.workingDirectory === "tabs"));
-    assert.isEmpty(getAction(appYaml.deploy, "azureStorage/deploy"));
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+  });
+
+  it("should success for js function bot", async () => {
+    await copyTestProject("jsFunctionBot", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+  });
+
+  it("should success for ts function bot", async () => {
+    await copyTestProject("jsFunctionBot", projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.programmingLanguage = "typescript";
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+  });
+
+  it("should success for js webapp bot", async () => {
+    await copyTestProject("jsWebappBot", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+  });
+
+  it("should success for ts webapp bot", async () => {
+    await copyTestProject("jsWebappBot", projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.programmingLanguage = "typescript";
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
   });
 });
 
@@ -380,6 +417,53 @@ describe("generateAppYml-csharp", () => {
 
   it("should success for function bot project", async () => {
     await copyTestProject("csharpFunctionBot", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "app.yml");
+  });
+});
+
+describe("generateAppYml-csharp", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  let migrationContext: MigrationContext;
+
+  beforeEach(async () => {
+    migrationContext = await mockMigrationContext(projectPath);
+    migrationContext.arguments.push({
+      platform: "vs",
+    });
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("should success for local sso tab project", async () => {
+    await copyTestProject("csharpSsoTab", projectPath);
+
+    await generateLocalConfig(migrationContext);
+  });
+});
+
+describe("generateAppYml-spfx", () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  let migrationContext: MigrationContext;
+
+  beforeEach(async () => {
+    migrationContext = await mockMigrationContext(projectPath);
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("should success for spfx project", async () => {
+    await copyTestProject("spfxTab", projectPath);
 
     await generateAppYml(migrationContext);
 
@@ -833,6 +917,7 @@ describe("userdataMigration", () => {
 describe("generateApimPluginEnvContent", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
+  const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
@@ -840,6 +925,7 @@ describe("generateApimPluginEnvContent", () => {
 
   afterEach(async () => {
     await fs.remove(projectPath);
+    sandbox.restore();
   });
 
   it("happy path", async () => {
@@ -857,6 +943,45 @@ describe("generateApimPluginEnvContent", () => {
     assert.isTrue(await fs.pathExists(path.join(projectPath, "teamsfx", ".env.dev")));
     const testEnvContent_dev = await readEnvFile(path.join(projectPath, "teamsfx"), "dev");
     assert.equal(testEnvContent_dev, trueEnvContent_dev);
+  });
+
+  it("checkapimPluginExists: apim exists", () => {
+    const pjSettings_1 = {
+      appName: "testapp",
+      components: [
+        {
+          name: "teams-tab",
+        },
+        {
+          name: "apim",
+        },
+      ],
+    };
+    assert.isTrue(checkapimPluginExists(pjSettings_1));
+  });
+
+  it("checkapimPluginExists: apim not exists", () => {
+    const pjSettings_2 = {
+      appName: "testapp",
+      components: [
+        {
+          name: "teams-tab",
+        },
+      ],
+    };
+    assert.isFalse(checkapimPluginExists(pjSettings_2));
+  });
+
+  it("checkapimPluginExists: components not exists", () => {
+    const pjSettings_3 = {
+      appName: "testapp",
+    };
+    assert.isFalse(checkapimPluginExists(pjSettings_3));
+  });
+
+  it("checkapimPluginExists: obj null", () => {
+    const pjSettings_4 = null;
+    assert.isFalse(checkapimPluginExists(pjSettings_4));
   });
 });
 
@@ -919,7 +1044,7 @@ describe("Migration utils", () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     const state = await checkVersionForMigration(migrationContext);
-    assert.equal(state, VersionState.upgradeable);
+    assert.equal(state.state, VersionState.upgradeable);
   });
 
   it("checkVersionForMigration V3", async () => {
@@ -928,7 +1053,7 @@ describe("Migration utils", () => {
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readJson").resolves("3.0.0");
     const state = await checkVersionForMigration(migrationContext);
-    assert.equal(state, VersionState.compatible);
+    assert.equal(state.state, VersionState.compatible);
   });
 
   it("checkVersionForMigration empty", async () => {
@@ -936,7 +1061,7 @@ describe("Migration utils", () => {
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     sandbox.stub(fs, "pathExists").resolves(false);
     const state = await checkVersionForMigration(migrationContext);
-    assert.equal(state, VersionState.unsupported);
+    assert.equal(state.state, VersionState.unsupported);
   });
 
   it("UpgradeCanceledError", () => {
@@ -980,6 +1105,21 @@ describe("Migration utils", () => {
     assert.equal(getVersionState("3.0.0"), VersionState.compatible);
     assert.equal(getVersionState("4.0.0"), VersionState.unsupported);
   });
+
+  it("getDownloadLinkByVersionAndPlatform", () => {
+    assert.equal(
+      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VS),
+      `${Metadata.versionMatchLink}#visual-studio`
+    );
+    assert.equal(
+      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.CLI),
+      `${Metadata.versionMatchLink}#cli`
+    );
+    assert.equal(
+      getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VSCode),
+      `${Metadata.versionMatchLink}#vscode`
+    );
+  });
 });
 
 describe("debugMigration", () => {
@@ -988,10 +1128,12 @@ describe("debugMigration", () => {
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
+    sinon.stub(debugV3MigrationUtils, "updateLocalEnv").callsFake(async () => {});
   });
 
   afterEach(async () => {
     await fs.remove(projectPath);
+    sinon.restore();
   });
 
   const testCases = [
@@ -1001,6 +1143,13 @@ describe("debugMigration", () => {
     "transparent-sso-bot",
     "transparent-notification",
     "transparent-tab-bot-func",
+    "beforeV3.4.0-tab",
+    "beforeV3.4.0-bot",
+    "beforeV3.4.0-tab-bot-func",
+    "V3.5.0-V4.0.6-tab",
+    "V3.5.0-V4.0.6-tab-bot-func",
+    "V3.5.0-V4.0.6-notification-trigger",
+    "V3.5.0-V4.0.6-command",
   ];
 
   testCases.forEach((testCase) => {

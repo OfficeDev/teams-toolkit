@@ -21,6 +21,8 @@ provision:
       name: {%appName%}
       messagingEndpoint: ${{BOT_ENDPOINT}}/api/messages
       description: ""
+      channels:
+        - name: msteams
 
 configureApp:
   - uses: file/updateEnv # Generate env to .env file

@@ -291,6 +291,37 @@ export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<v
     }
     context.appYmlConfig.deploy.sso = true;
 
+    const envs: { [key: string]: string } = {};
+    if (isCommentObject(task["args"])) {
+      if (task["args"]["objectId"] && typeof task["args"]["objectId"] === "string") {
+        envs["AAD_APP_OBJECT_ID"] = task["args"]["objectId"];
+      }
+      if (task["args"]["clientId"] && typeof task["args"]["clientId"] === "string") {
+        envs["AAD_APP_CLIENT_ID"] = task["args"]["clientId"];
+      }
+      if (task["args"]["clientSecret"] && typeof task["args"]["clientSecret"] === "string") {
+        const envReferencePattern = /^\$\{env:(.*)\}$/;
+        const matchResult = task["args"]["clientSecret"].match(envReferencePattern);
+        const clientSecret = matchResult
+          ? process.env[matchResult[1]]
+          : task["args"]["clientSecret"];
+        if (clientSecret) {
+          const cryptoProvider = new LocalCrypto(context.oldProjectSettings.projectId);
+          const result = cryptoProvider.encrypt(clientSecret);
+          if (result.isOk()) {
+            envs["SECRET_AAD_APP_CLIENT_SECRET"] = result.value;
+          }
+        }
+      }
+      if (
+        task["args"]["accessAsUserScopeId"] &&
+        typeof task["args"]["accessAsUserScopeId"] === "string"
+      ) {
+        envs["AAD_APP_ACCESS_AS_USER_PERMISSION_ID"] = task["args"]["accessAsUserScopeId"];
+      }
+    }
+    await updateLocalEnv(context.migrationContext, envs);
+
     const label = task["label"];
     index = handleProvisionAndDeploy(context, index, label);
   }

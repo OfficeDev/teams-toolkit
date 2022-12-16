@@ -873,6 +873,22 @@ describe("debugMigration", () => {
   });
 
   describe("migrateSetUpSSO", () => {
+    let localEnvs: { [key: string]: string } = {};
+
+    beforeEach(() => {
+      sinon.stub(debugV3MigrationUtils, "updateLocalEnv").callsFake(async (context, envs) => {
+        localEnvs = envs;
+      });
+      sinon.stub(LocalCrypto.prototype, "encrypt").callsFake((plaintext) => {
+        return ok("crypto_" + plaintext);
+      });
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      localEnvs = {};
+    });
+
     it("happy path", async () => {
       const migrationContext = await mockMigrationContext(projectPath);
       const testTaskContent = `[
@@ -940,6 +956,86 @@ describe("debugMigration", () => {
       chai.assert.equal(debugContext.appYmlConfig.registerApp?.aad, true);
       chai.assert.equal(debugContext.appYmlConfig.configureApp?.aad, true);
       chai.assert.equal(debugContext.appYmlConfig.deploy?.sso, true);
+    });
+
+    it("customized aad and literal password", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const objectId = "objectId";
+      const clientId = "clientId";
+      const clientSecret = "clientSecret";
+      const accessAsUserScopeId = "accessAsUserScopeId";
+      const testTaskContent = `[
+        {
+          "label": "Set up SSO",
+          "type": "teamsfx",
+          "command": "debug-set-up-sso",
+          "args": {
+              "objectId": "${objectId}",
+              "clientId": "${clientId}",
+              "clientSecret": "${clientSecret}",
+              "accessAsUserScopeId": "${accessAsUserScopeId}"
+          }
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migrateSetUpSSO(debugContext);
+      chai.assert.deepEqual(localEnvs, {
+        AAD_APP_OBJECT_ID: objectId,
+        AAD_APP_CLIENT_ID: clientId,
+        SECRET_AAD_APP_CLIENT_SECRET: "crypto_" + clientSecret,
+        AAD_APP_ACCESS_AS_USER_PERMISSION_ID: accessAsUserScopeId,
+      });
+      chai.assert.equal(debugContext.appYmlConfig.registerApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.configureApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.deploy?.sso, true);
+    });
+
+    it("customized aad and env-referenced password", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const objectId = "objectId";
+      const clientId = "clientId";
+      const clientSecret = "clientSecret";
+      process.env.CLIENT_SECRET = clientSecret;
+      const accessAsUserScopeId = "accessAsUserScopeId";
+      const testTaskContent = `[
+        {
+          "label": "Set up SSO",
+          "type": "teamsfx",
+          "command": "debug-set-up-sso",
+          "args": {
+              "objectId": "${objectId}",
+              "clientId": "${clientId}",
+              "clientSecret": "$\{env:CLIENT_SECRET}",
+              "accessAsUserScopeId": "${accessAsUserScopeId}"
+          }
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migrateSetUpSSO(debugContext);
+      chai.assert.deepEqual(localEnvs, {
+        AAD_APP_OBJECT_ID: objectId,
+        AAD_APP_CLIENT_ID: clientId,
+        SECRET_AAD_APP_CLIENT_SECRET: "crypto_" + clientSecret,
+        AAD_APP_ACCESS_AS_USER_PERMISSION_ID: accessAsUserScopeId,
+      });
+      chai.assert.equal(debugContext.appYmlConfig.registerApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.configureApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.deploy?.sso, true);
+      delete process.env.CLIENT_SECRET;
     });
   });
 

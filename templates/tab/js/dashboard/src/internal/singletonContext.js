@@ -3,7 +3,6 @@ import { TeamsUserCredential } from "@microsoft/teamsfx";
 let instance;
 
 class TeamsUserCredentialContext {
-  credential;
   constructor() {
     if (instance) {
       throw new Error("TeamsUserCredentialContext is a singleton class, use TeamsUserCredentialContextInstance instead.");
@@ -26,6 +25,6 @@ class TeamsUserCredentialContext {
   }
 }
 
-let TeamsUserCredentialContextInstance = Object.freeze(new TeamsUserCredentialContext());
+let TeamsUserCredentialContextInstance = new TeamsUserCredentialContext();
 
 export default TeamsUserCredentialContextInstance;

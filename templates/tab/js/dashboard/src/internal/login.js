@@ -7,6 +7,6 @@ export async function loginAction(scope) {
     TeamsUserCredentialContextInstance.setCredential(credential);
   } catch (e) {
     console.log(e);
-    throw "Login Error: can not login!";
+    throw new Error("Login Error: can not login!");
   }
 }

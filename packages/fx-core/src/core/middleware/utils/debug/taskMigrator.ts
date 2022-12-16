@@ -9,6 +9,7 @@ import {
   Prerequisite,
   TaskCommand,
   TaskDefaultValue,
+  TaskLabel,
 } from "../../../../common/local";
 import {
   createResourcesTask,
@@ -20,6 +21,7 @@ import {
 } from "./debugV3MigrationUtils";
 import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
+import { includes } from "lodash";
 
 export function migrateTransparentPrerequisite(context: DebugMigrationContext): void {
   for (const task of context.tasks) {
@@ -410,6 +412,52 @@ export function migrateValidateLocalPrerequisites(context: DebugMigrationContext
       context.appYmlConfig.deploy.dotnetCommand = dotnetCommand;
     }
   }
+}
+
+export function migrateNgrokStart(context: DebugMigrationContext): void {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      isCommentObject(task) &&
+      ((typeof task["dependsOn"] === "string" && task["dependsOn"] === "teamsfx: ngrok start") ||
+        (isCommentArray(task["dependsOn"]) && task["dependsOn"].includes("teamsfx: ngrok start")))
+    ) {
+      const comment = `{
+        // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+        // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
+        // as well as samples to:
+        //   - use your own ngrok command / configuration / binary
+        //   - use your own tunnel solution
+        //   - provide alternatives if ngrok does not work on your dev machine
+      }`;
+      const placeholderComment = `
+      {
+        // Keep consistency with migrated configuration.
+      }
+    `;
+      const newTask = assign(parse(comment), {
+        label: TaskLabel.StartLocalTunnel,
+        type: "teamsfx",
+        command: TaskCommand.startLocalTunnel,
+        args: {
+          ngrokArgs: TaskDefaultValue.startLocalTunnel.ngrokArgs,
+          env: "local",
+          output: assign(parse(placeholderComment), {
+            endpoint: context.placeholderMapping.botEndpoint,
+            domain: context.placeholderMapping.botDomain,
+          }),
+        },
+        isBackground: true,
+        problemMatcher: "$teamsfx-local-tunnel-watch",
+      });
+      context.tasks.splice(index + 1, 0, newTask);
+      break;
+    } else {
+      ++index;
+    }
+  }
+  replaceInDependsOn("teamsfx: ngrok start", context.tasks, TaskLabel.StartLocalTunnel);
 }
 
 function generatePrerequisiteTask(

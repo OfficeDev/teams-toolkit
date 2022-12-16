@@ -11,6 +11,7 @@ import {
   migrateSetUpTab,
   migrateTransparentNpmInstall,
   migrateTransparentPrerequisite,
+  migrateNgrokStart,
 } from "../../../../src/core/middleware/utils/debug/taskMigrator";
 import { CommentArray, CommentJSONValue, parse, stringify } from "comment-json";
 import { DebugMigrationContext } from "../../../../src/core/middleware/utils/debug/debugMigrationContext";
@@ -797,6 +798,108 @@ describe("debugMigration", () => {
         debugContext.appYmlConfig.configureApp?.teamsApp?.appPackagePath,
         undefined
       );
+    });
+  });
+
+  describe("migrateNgrokStart", () => {
+    it("multiple ngrok label", () => {
+      const testTaskContent = `[
+        {
+          "label": "start ngrok",
+          "dependsOn": "teamsfx: ngrok start"
+        },
+        {
+          "label": "start ngrok 1",
+          "dependsOn": ["teamsfx: ngrok start", "other label"]
+        }
+      ]`;
+      const content = `[
+        {
+          "label": "start ngrok",
+          "dependsOn": ["Start local tunnel"]
+        },
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
+          // as well as samples to:
+          //   - use your own ngrok command / configuration / binary
+          //   - use your own tunnel solution
+          //   - provide alternatives if ngrok does not work on your dev machine
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+              "env": "local",
+              "output": {
+                  // Keep consistency with migrated configuration.
+                  "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                  "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+              }
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        },
+        {
+          "label": "start ngrok 1",
+          "dependsOn": ["Start local tunnel", "other label"]
+        }
+      ]`;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {
+        botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+        botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+      });
+      migrateNgrokStart(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
+    });
+
+    it("one ngrok label", () => {
+      const testTaskContent = `[
+        {
+          "label": "start ngrok",
+          "dependsOn": "teamsfx: ngrok start"
+        }
+      ]`;
+      const content = `[
+        {
+          "label": "start ngrok",
+          "dependsOn": ["Start local tunnel"]
+        },
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
+          // as well as samples to:
+          //   - use your own ngrok command / configuration / binary
+          //   - use your own tunnel solution
+          //   - provide alternatives if ngrok does not work on your dev machine
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+              "env": "local",
+              "output": {
+                  // Keep consistency with migrated configuration.
+                  "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                  "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+              }
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(testTasks, oldProjectSettings, {
+        botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+        botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+      });
+      migrateNgrokStart(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
     });
   });
 });

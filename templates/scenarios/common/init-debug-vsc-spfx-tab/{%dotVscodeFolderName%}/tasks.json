@@ -42,9 +42,9 @@
             }
         },
         {
-            // Set up local projects.
+            // Install tools and Build project.
             // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
-            "label": "Set up local projects",
+            "label": "Install tools and Build project",
             "type": "teamsfx",
             "command": "deploy",
             "args": {
@@ -63,7 +63,7 @@
             "options": {
                 "cwd": "${workspaceFolder}/src"
             },
-            "dependsOn": "Set up local projects"
+            "dependsOn": "Install tools and Build project"
         },
         {
             "label": "gulp serve",

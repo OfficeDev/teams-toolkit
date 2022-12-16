@@ -7,7 +7,16 @@ import * as path from "path";
 import * as kill from "tree-kill";
 import * as util from "util";
 import * as vscode from "vscode";
-import { assembleError, err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
+import {
+  assembleError,
+  err,
+  FxError,
+  ok,
+  Result,
+  SettingsFolderName,
+  UserError,
+  Void,
+} from "@microsoft/teamsfx-api";
 import { envUtil, isV3Enabled } from "@microsoft/teamsfx-core";
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
@@ -55,6 +64,11 @@ type LocalTunnelTaskStatus = {
 type EndpointInfo = {
   src: string;
   dist: string;
+};
+
+type OutputInfo = {
+  file: string | undefined;
+  keys: string[];
 };
 
 export interface LocalTunnelArgs {
@@ -264,7 +278,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
         }
         this.isOutputSummary = true;
         this.status.endpoint = ngrokTunnelInfo;
-        await this.outputSuccessSummary(ngrokTunnelInfo);
+        await this.outputSuccessSummary(ngrokTunnelInfo, saveEnvRes.value);
         return ok(true);
       }
     } catch {
@@ -299,7 +313,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
         }
         this.isOutputSummary = true;
         this.status.endpoint = endpoint;
-        await this.outputSuccessSummary(endpoint);
+        await this.outputSuccessSummary(endpoint, saveEnvRes.value);
         return ok(true);
       }
     } catch {
@@ -312,10 +326,14 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     return this.args.tunnelInspection ?? this.status.tunnelInspection ?? defaultNgrokWebServiceUrl;
   }
 
-  private async saveNgrokEndpointToEnv(endpoint: string): Promise<Result<Void, FxError>> {
+  private async saveNgrokEndpointToEnv(endpoint: string): Promise<Result<OutputInfo, FxError>> {
     try {
+      const result: OutputInfo = {
+        file: undefined,
+        keys: [],
+      };
       if (!isV3Enabled() || !globalVariables.workspaceUri?.fsPath || !this.args.env) {
-        return ok(Void);
+        return ok(result);
       }
 
       const url = new URL(endpoint);
@@ -328,15 +346,21 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       }
 
       if (Object.entries(envVars).length == 0) {
-        return ok(Void);
+        return ok(result);
       }
 
+      result.file = path.resolve(
+        globalVariables.workspaceUri.fsPath,
+        SettingsFolderName,
+        `.env.${this.args.env}`
+      );
+      result.keys = Object.keys(envVars);
       const res = await envUtil.writeEnv(
         globalVariables.workspaceUri.fsPath,
         this.args.env,
         envVars
       );
-      return res.isOk() ? ok(Void) : err(res.error);
+      return res.isOk() ? ok(result) : err(res.error);
     } catch (error: any) {
       return err(LocalTunnelError.TunnelEnvError(error));
     }
@@ -373,7 +397,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     await this.progressHandler.next(localTunnelDisplayMessages.startMessage);
   }
 
-  private async outputSuccessSummary(ngrokTunnel: EndpointInfo): Promise<void> {
+  private async outputSuccessSummary(ngrokTunnel: EndpointInfo, envs: OutputInfo): Promise<void> {
     const duration = this.getDurationInSeconds();
     VsCodeLogInstance.outputChannel.appendLine(localTunnelDisplayMessages.summary);
     VsCodeLogInstance.outputChannel.appendLine("");
@@ -385,7 +409,9 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     VsCodeLogInstance.outputChannel.appendLine(
       `${doctorConstant.Tick} ${localTunnelDisplayMessages.successSummary(
         ngrokTunnel.src,
-        ngrokTunnel.dist
+        ngrokTunnel.dist,
+        envs.file,
+        envs.keys
       )}`
     );
 
@@ -401,6 +427,11 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     this.writeEmitter.fire(
       `\r\n${localTunnelDisplayMessages.forwardingUrl(ngrokTunnel.src, ngrokTunnel.dist)}\r\n`
     );
+    if (envs.file !== undefined) {
+      this.writeEmitter.fire(
+        `\r\n${localTunnelDisplayMessages.saveEnvs(envs.file, envs.keys)}\r\n`
+      );
+    }
     this.writeEmitter.fire(`\r\n${localTunnelDisplayMessages.successMessage}\r\n\r\n`);
 
     await this.progressHandler.end(true);

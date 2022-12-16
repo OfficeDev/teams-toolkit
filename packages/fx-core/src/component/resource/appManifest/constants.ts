@@ -247,7 +247,7 @@ export class Constants {
     "plugins.appstudio.viewDeveloperPortal"
   );
   public static readonly DEVELOPER_PORTAL_APP_PACKAGE_URL =
-    "https://dev.teams.microsoft.com/apps/%s/app-package";
+    "https://dev.teams.microsoft.com/apps/%s/app-package?login_hint=%s";
   public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";
   public static readonly TEAMS_ADMIN_PORTAL = "https://aka.ms/teamsfx-mtac";
   public static readonly TEAMS_MANAGE_APP_DOC = "https://aka.ms/teamsfx-mtac-doc";

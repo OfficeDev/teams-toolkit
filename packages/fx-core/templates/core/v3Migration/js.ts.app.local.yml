@@ -90,6 +90,16 @@ deploy:
       {{/dotnet}}
 
   {{/tools}}
+  {{#dotnetCommand}}
+  - uses: cli/runDotnetCommand
+    with:
+      args: {{args}}
+      workingDirectory: {{workingDirectory}}
+      {{#if execPath}}
+      execPath: {{execPath}}
+      {{/if}}
+
+  {{/dotnetCommand}}
   {{#tab}}
   - uses: file/updateEnv
     with:

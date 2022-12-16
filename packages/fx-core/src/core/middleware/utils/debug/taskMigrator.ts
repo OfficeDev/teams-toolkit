@@ -3,7 +3,13 @@
 
 import { assign, CommentArray, CommentJSONValue, CommentObject, parse } from "comment-json";
 import { DebugMigrationContext } from "./debugMigrationContext";
-import { Prerequisite, TaskCommand, TaskDefaultValue } from "../../../../common/local";
+import {
+  defaultNpmInstallArg,
+  FolderName,
+  Prerequisite,
+  TaskCommand,
+  TaskDefaultValue,
+} from "../../../../common/local";
 import {
   createResourcesTask,
   generateLabel,
@@ -347,55 +353,7 @@ export async function migrateValidateDependencies(context: DebugMigrationContext
       continue;
     }
 
-    const comment = `{
-      // Check if all required prerequisites are installed and will install them if not.
-      // See https://aka.ms/teamsfx-check-prerequisites-task to know the details and how to customize the args.
-    }`;
-    const newTask: CommentObject = assign(parse(comment), task) as CommentObject;
-
-    newTask["type"] = "teamsfx";
-    newTask["command"] = "debug-check-prerequisites";
-
-    const prerequisites = [
-      `"${Prerequisite.nodejs}", // Validate if Node.js is installed.`,
-      `"${Prerequisite.m365Account}", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.`,
-      `"${Prerequisite.portOccupancy}", // Validate available ports to ensure those debug ones are not occupied.`,
-    ];
-    const prerequisitesComment = `
-    [
-      ${prerequisites.join("\n  ")}
-    ]`;
-
-    const ports: string[] = [];
-    if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
-      ports.push(`${TaskDefaultValue.checkPrerequisites.ports.tabService}, // tab service port`);
-    }
-    if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
-      ports.push(`${TaskDefaultValue.checkPrerequisites.ports.botService}, // bot service port`);
-      ports.push(
-        `${TaskDefaultValue.checkPrerequisites.ports.botDebug}, // bot inspector port for Node.js debugger`
-      );
-    }
-    if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
-      ports.push(
-        `${TaskDefaultValue.checkPrerequisites.ports.backendService}, // backend service port`
-      );
-      ports.push(
-        `${TaskDefaultValue.checkPrerequisites.ports.backendDebug}, // backend inspector port for Node.js debugger`
-      );
-    }
-    const portsComment = `
-    [
-      ${ports.join("\n  ")}
-    ]
-    `;
-
-    const args: { [key: string]: CommentJSONValue } = {
-      prerequisites: parse(prerequisitesComment),
-      portOccupancy: parse(portsComment),
-    };
-
-    newTask["args"] = args as CommentJSONValue;
+    const newTask = generatePrerequisiteTask(task, context);
 
     context.tasks.splice(index, 1, newTask);
     ++index;
@@ -417,6 +375,134 @@ export async function migrateValidateDependencies(context: DebugMigrationContext
       context.appYmlConfig.deploy.tools = toolsArgs;
     }
   }
+}
+
+export function migrateValidateLocalPrerequisites(context: DebugMigrationContext): void {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "shell") ||
+      !(
+        typeof task["command"] === "string" &&
+        task["command"].includes("${command:fx-extension.validate-local-prerequisites}")
+      )
+    ) {
+      ++index;
+      continue;
+    }
+
+    const newTask = generatePrerequisiteTask(task, context);
+    context.tasks.splice(index, 1, newTask);
+    ++index;
+
+    const toolsArgs: InstallToolArgs = {};
+    const npmCommands: BuildArgs[] = [];
+    let dotnetCommand: BuildArgs | undefined;
+    if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
+      toolsArgs.devCert = {
+        trust: true,
+      };
+      npmCommands.push({
+        args: `install ${defaultNpmInstallArg}`,
+        workingDirectory: `./${FolderName.Frontend}`,
+      });
+    }
+
+    if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
+      toolsArgs.func = true;
+      toolsArgs.dotnet = true;
+      npmCommands.push({
+        args: `install ${defaultNpmInstallArg}`,
+        workingDirectory: `./${FolderName.Function}`,
+      });
+      dotnetCommand = {
+        args: "build extensions.csproj -o ./bin --ignore-failed-sources",
+        workingDirectory: `./${FolderName.Function}`,
+        execPath: "${{DOTNET_PATH}}",
+      };
+    }
+
+    if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
+      if (OldProjectSettingsHelper.includeFuncHostedBot(context.oldProjectSettings)) {
+        toolsArgs.func = true;
+      }
+      npmCommands.push({
+        args: `install ${defaultNpmInstallArg}`,
+        workingDirectory: `./${FolderName.Bot}`,
+      });
+    }
+
+    if (Object.keys(toolsArgs).length > 0 || npmCommands.length > 0 || dotnetCommand) {
+      if (!context.appYmlConfig.deploy) {
+        context.appYmlConfig.deploy = {};
+      }
+      if (Object.keys(toolsArgs).length > 0) {
+        context.appYmlConfig.deploy.tools = toolsArgs;
+      }
+      if (npmCommands.length > 0) {
+        context.appYmlConfig.deploy.npmCommands = npmCommands;
+      }
+      context.appYmlConfig.deploy.dotnetCommand = dotnetCommand;
+    }
+  }
+}
+
+function generatePrerequisiteTask(
+  task: CommentObject,
+  context: DebugMigrationContext
+): CommentObject {
+  const comment = `{
+    // Check if all required prerequisites are installed and will install them if not.
+    // See https://aka.ms/teamsfx-check-prerequisites-task to know the details and how to customize the args.
+  }`;
+  const newTask: CommentObject = assign(parse(comment), task) as CommentObject;
+
+  newTask["type"] = "teamsfx";
+  newTask["command"] = "debug-check-prerequisites";
+
+  const prerequisites = [
+    `"${Prerequisite.nodejs}", // Validate if Node.js is installed.`,
+    `"${Prerequisite.m365Account}", // Sign-in prompt for Microsoft 365 account, then validate if the account enables the sideloading permission.`,
+    `"${Prerequisite.portOccupancy}", // Validate available ports to ensure those debug ones are not occupied.`,
+  ];
+  const prerequisitesComment = `
+  [
+    ${prerequisites.join("\n  ")}
+  ]`;
+
+  const ports: string[] = [];
+  if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
+    ports.push(`${TaskDefaultValue.checkPrerequisites.ports.tabService}, // tab service port`);
+  }
+  if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
+    ports.push(`${TaskDefaultValue.checkPrerequisites.ports.botService}, // bot service port`);
+    ports.push(
+      `${TaskDefaultValue.checkPrerequisites.ports.botDebug}, // bot inspector port for Node.js debugger`
+    );
+  }
+  if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
+    ports.push(
+      `${TaskDefaultValue.checkPrerequisites.ports.backendService}, // backend service port`
+    );
+    ports.push(
+      `${TaskDefaultValue.checkPrerequisites.ports.backendDebug}, // backend inspector port for Node.js debugger`
+    );
+  }
+  const portsComment = `
+  [
+    ${ports.join("\n  ")}
+  ]
+  `;
+
+  const args: { [key: string]: CommentJSONValue } = {
+    prerequisites: parse(prerequisitesComment),
+    portOccupancy: parse(portsComment),
+  };
+
+  newTask["args"] = args as CommentJSONValue;
+  return newTask;
 }
 
 function handleProvisionAndDeploy(

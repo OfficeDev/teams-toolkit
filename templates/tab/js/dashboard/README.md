@@ -298,7 +298,7 @@ You can refer to the following code snippet:
 
 ```js
 const teamsUserCredential = TeamsUserCredentialContextInstance.getCredential();
-const graphClient: Client = createMicrosoftGraphClientWithCredential(teamsUserCredential, scope);
+const graphClient = createMicrosoftGraphClientWithCredential(teamsUserCredential, scope);
 ```
 
 #### Step 3: Call the Graph API, and parse the response into a certain model, which will be used by front-end

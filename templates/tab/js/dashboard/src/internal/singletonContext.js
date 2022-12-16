@@ -6,7 +6,7 @@ class TeamsUserCredentialContext {
   credential;
   constructor() {
     if (instance) {
-      throw new Error("FxContext is a singleton class, use getInstance() instead.");
+      throw new Error("TeamsUserCredentialContext is a singleton class, use TeamsUserCredentialContextInstance instead.");
     }
     instance = this;
   }

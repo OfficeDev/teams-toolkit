@@ -1,11 +1,11 @@
 import { loginAction } from "./login";
-import FxContextInstance from "./singletonContext";
 import { ErrorWithCode } from "@microsoft/teamsfx";
+import TeamsUserCredentialContextInstance from "./singletonContext";
 
 export async function addNewPermissionScope(addscopes) {
-    let teamsfx = FxContextInstance.getTeamsFx();
+    const credential = TeamsUserCredentialContextInstance.getCredential();
     try {
-        await teamsfx.getCredential().getToken(addscopes);  
+        await credential.getToken(addscopes);  
     } catch(e) {
         try {
             if (e instanceof ErrorWithCode) await loginAction(addscopes);

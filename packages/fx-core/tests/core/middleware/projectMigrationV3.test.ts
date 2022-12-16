@@ -1144,6 +1144,10 @@ describe("debugMigration", () => {
     "beforeV3.4.0-tab",
     "beforeV3.4.0-bot",
     "beforeV3.4.0-tab-bot-func",
+    "V3.5.0-V4.0.6-tab",
+    "V3.5.0-V4.0.6-tab-bot-func",
+    "V3.5.0-V4.0.6-notification-trigger",
+    "V3.5.0-V4.0.6-command",
   ];
 
   testCases.forEach((testCase) => {

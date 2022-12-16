@@ -21,7 +21,6 @@ import {
 } from "./debugV3MigrationUtils";
 import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
-import { includes } from "lodash";
 
 export function migrateTransparentPrerequisite(context: DebugMigrationContext): void {
   for (const task of context.tasks) {

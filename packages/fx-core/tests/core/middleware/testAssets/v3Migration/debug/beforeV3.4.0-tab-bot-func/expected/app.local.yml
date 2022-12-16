@@ -8,3 +8,8 @@ deploy:
       func: true
       dotnet: true
 
+  - uses: cli/runNpmCommand
+    with:
+      args: install -D @microsoft/teamsfx-run-utils@alpha
+      workingDirectory: .
+

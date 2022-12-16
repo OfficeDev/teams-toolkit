@@ -70,6 +70,7 @@ import {
   migrateSetUpBot,
   migrateValidateDependencies,
   migrateValidateLocalPrerequisites,
+  migrateFrontendStart,
 } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
@@ -568,6 +569,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateSetUpSSO,
     migratePrepareManifest,
     migrateValidateDependencies,
+    migrateFrontendStart,
     migrateValidateLocalPrerequisites,
   ];
 

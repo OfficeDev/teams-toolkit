@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
+import { ProjectSettings } from "@microsoft/teamsfx-api";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
 import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
 import { BaseAppYmlGenerator } from "../appYmlGenerator";
@@ -13,7 +13,9 @@ export class AppLocalYmlConfig {
     teamsApp?: boolean;
   };
   provision?: {
-    bot?: boolean;
+    bot?: {
+      messagingEndpoint: string;
+    };
   };
   configureApp?: {
     tab?: {

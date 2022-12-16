@@ -17,11 +17,15 @@ import {
   isCommentObject,
   OldProjectSettingsHelper,
   setUpLocalProjectsTask,
+  updateLocalEnv,
 } from "./debugV3MigrationUtils";
 import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
+import { LocalCrypto } from "../../../crypto";
 
-export function migrateTransparentPrerequisite(context: DebugMigrationContext): void {
+export async function migrateTransparentPrerequisite(
+  context: DebugMigrationContext
+): Promise<void> {
   for (const task of context.tasks) {
     if (
       !isCommentObject(task) ||
@@ -68,7 +72,7 @@ export function migrateTransparentPrerequisite(context: DebugMigrationContext): 
   }
 }
 
-export function migrateTransparentLocalTunnel(context: DebugMigrationContext): void {
+export async function migrateTransparentLocalTunnel(context: DebugMigrationContext): Promise<void> {
   for (const task of context.tasks) {
     if (
       !isCommentObject(task) ||
@@ -93,7 +97,7 @@ export function migrateTransparentLocalTunnel(context: DebugMigrationContext): v
   }
 }
 
-export function migrateTransparentNpmInstall(context: DebugMigrationContext): void {
+export async function migrateTransparentNpmInstall(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -141,7 +145,7 @@ export function migrateTransparentNpmInstall(context: DebugMigrationContext): vo
   }
 }
 
-export function migrateSetUpTab(context: DebugMigrationContext): void {
+export async function migrateSetUpTab(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -188,7 +192,7 @@ export function migrateSetUpTab(context: DebugMigrationContext): void {
   }
 }
 
-export function migrateSetUpBot(context: DebugMigrationContext): void {
+export async function migrateSetUpBot(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -209,19 +213,52 @@ export function migrateSetUpBot(context: DebugMigrationContext): void {
     if (!context.appYmlConfig.provision) {
       context.appYmlConfig.provision = {};
     }
-    context.appYmlConfig.provision.bot = true;
+    context.appYmlConfig.provision.bot = {
+      messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
+    };
 
     if (!context.appYmlConfig.deploy) {
       context.appYmlConfig.deploy = {};
     }
     context.appYmlConfig.deploy.bot = true;
 
+    const envs: { [key: string]: string } = {};
+    if (isCommentObject(task["args"])) {
+      if (task["args"]["botId"] && typeof task["args"]["botId"] === "string") {
+        envs["BOT_ID"] = task["args"]["botId"];
+      }
+      if (task["args"]["botPassword"] && typeof task["args"]["botPassword"] === "string") {
+        const envReferencePattern = /^\$\{env:(.*)\}$/;
+        const matchResult = task["args"]["botPassword"].match(envReferencePattern);
+        const botPassword = matchResult ? process.env[matchResult[1]] : task["args"]["botPassword"];
+        if (botPassword) {
+          const cryptoProvider = new LocalCrypto(context.oldProjectSettings.projectId);
+          const result = cryptoProvider.encrypt(botPassword);
+          if (result.isOk()) {
+            envs["SECRET_BOT_PASSWORD"] = result.value;
+          }
+        }
+      }
+      if (
+        task["args"]["botMessagingEndpoint"] &&
+        typeof task["args"]["botMessagingEndpoint"] === "string"
+      ) {
+        if (task["args"]["botMessagingEndpoint"].startsWith("http")) {
+          context.appYmlConfig.provision.bot.messagingEndpoint =
+            task["args"]["botMessagingEndpoint"];
+        } else if (task["args"]["botMessagingEndpoint"].startsWith("/")) {
+          context.appYmlConfig.provision.bot.messagingEndpoint = `$\{{${context.placeholderMapping.botEndpoint}}}${task["args"]["botMessagingEndpoint"]}`;
+        }
+      }
+    }
+    await updateLocalEnv(context.migrationContext, envs);
+
     const label = task["label"];
     index = handleProvisionAndDeploy(context, index, label);
   }
 }
 
-export function migrateSetUpSSO(context: DebugMigrationContext): void {
+export async function migrateSetUpSSO(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -259,7 +296,7 @@ export function migrateSetUpSSO(context: DebugMigrationContext): void {
   }
 }
 
-export function migratePrepareManifest(context: DebugMigrationContext): void {
+export async function migratePrepareManifest(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -302,7 +339,7 @@ export function migratePrepareManifest(context: DebugMigrationContext): void {
   }
 }
 
-export function migrateValidateDependencies(context: DebugMigrationContext): void {
+export async function migrateValidateDependencies(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];
@@ -340,7 +377,9 @@ export function migrateValidateDependencies(context: DebugMigrationContext): voi
   }
 }
 
-export function migrateValidateLocalPrerequisites(context: DebugMigrationContext): void {
+export async function migrateValidateLocalPrerequisites(
+  context: DebugMigrationContext
+): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
     const task = context.tasks[index];

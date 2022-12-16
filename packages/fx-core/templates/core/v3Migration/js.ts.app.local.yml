@@ -18,7 +18,7 @@ registerApp:
 {{/config.registerApp}}
 {{#config.provision}}
 provision:
-  {{#if bot}}
+  {{#bot}}
   - uses: botAadApp/create
     with:
       name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
@@ -27,9 +27,9 @@ provision:
     with:
       botId: $\{{BOT_ID}}
       name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
-      messagingEndpoint: $\{{ {{~../placeholderMappings.botEndpoint~}} }}/api/messages
+      messagingEndpoint: {{messagingEndpoint}}
       description: ""
-  {{/if}}
+  {{/bot}}
 
 {{/config.provision}}
 {{#config.configureApp}}

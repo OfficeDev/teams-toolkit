@@ -1187,14 +1187,18 @@ function checkNpmInstall(
         error = err;
       }
 
-      const object = await fs.readJson(path.join(folder, "package-lock.json"));
+      if (!isV3Enabled()) {
+        const packageLockFile = await fs
+          .readJson(path.join(folder, "package-lock.json"))
+          .catch(() => {});
 
-      ctx.properties[TelemetryProperty.BotbuilderVersion] =
-        object?.dependencies["botbuilder"]?.version;
-      ctx.properties[TelemetryProperty.TeamsFxVersion] =
-        object?.dependencies["@microsoft/teamsfx"]?.version;
-      ctx.properties[TelemetryProperty.TeamsJSVersion] =
-        object?.dependencies["@microsoft/teams-js"]?.version;
+        ctx.properties[TelemetryProperty.BotbuilderVersion] =
+          packageLockFile?.dependencies["botbuilder"]?.version;
+        ctx.properties[TelemetryProperty.TeamsFxVersion] =
+          packageLockFile?.dependencies["@microsoft/teamsfx"]?.version;
+        ctx.properties[TelemetryProperty.TeamsJSVersion] =
+          packageLockFile?.dependencies["@microsoft/teams-js"]?.version;
+      }
 
       return {
         checker: Checker.NpmInstall,

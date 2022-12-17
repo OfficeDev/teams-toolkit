@@ -232,7 +232,6 @@ export namespace AppStudioClient {
             }
           }
           const error = new Error(response?.data.error.message);
-          error.name = response?.data.error.code;
           (error as any).response = response;
           (error as any).request = response.request;
           const exception = wrapException(error, APP_STUDIO_API_NAMES.PUBLISH_APP);
@@ -295,7 +294,6 @@ export namespace AppStudioClient {
       if (response && response.data) {
         if (response.data.error || response.data.errorMessage) {
           const error = new Error(response.data.error?.message || response.data.errorMessage);
-          error.name = response.data.error?.code;
           (error as any).response = response;
           (error as any).request = response.request;
           const exception = wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);

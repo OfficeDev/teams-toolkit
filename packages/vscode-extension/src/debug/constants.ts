@@ -252,10 +252,14 @@ export const localTunnelDisplayMessages = Object.freeze({
   summary: "Summary:",
   learnMore: (link: string) => `Visit ${link} to learn more about 'Start local tunnel' task.`,
   learnMoreHelpLink: "https://aka.ms/teamsfx-local-tunnel-task",
-  successSummary: (src: string, dist: string) => `Forwarding ngrok URL ${dist} to ${src}`,
+  successSummary: (src: string, dist: string, envFile: string | undefined, envKeys: string[]) =>
+    envFile === undefined
+      ? `Forwarding ngrok URL ${dist} to ${src}`
+      : `Forwarding ngrok URL ${dist} to ${src}. Saved [${envKeys.join(", ")}] to ${envFile}`,
   checkNgrokMessage: "Checking and installing ngrok",
   startMessage: "Starting local tunnel service",
   forwardingUrl: (src: string, dist: string) => `Forwarding URL ${dist} to ${src}`,
+  saveEnvs: (envFile: string, envKeys: string[]) => `Saved [${envKeys.join(", ")}] to ${envFile}`,
   installSuccessMessage: (ngrokPath: string) => `ngrok is installed at ${ngrokPath}`,
   skipInstallMessage: (ngrokPath: string) =>
     `Skip checking and installing ngrok as user has specified ngrok path (${ngrokPath}).`,

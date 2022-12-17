@@ -110,22 +110,27 @@ export class Channel implements NotificationTarget {
     onError?: (context: TurnContext, error: Error) => Promise<void>
   ): Promise<MessageResponse> {
     const response: MessageResponse = {};
-    await this.parent.adapter.continueConversation(
+    await this.parent.adapter.continueConversationAsync(
+      this.parent.botAppId,
       this.parent.conversationReference,
       async (context) => {
         const conversation = await this.newConversation(context);
-        await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
-          try {
-            const res = await ctx.sendActivity(text);
-            response.id = res?.id;
-          } catch (error) {
-            if (onError) {
-              await onError(ctx, error as Error);
-            } else {
-              throw error;
+        await this.parent.adapter.continueConversationAsync(
+          this.parent.botAppId,
+          conversation,
+          async (ctx: TurnContext) => {
+            try {
+              const res = await ctx.sendActivity(text);
+              response.id = res?.id;
+            } catch (error) {
+              if (onError) {
+                await onError(ctx, error as Error);
+              } else {
+                throw error;
+              }
             }
           }
-        });
+        );
       }
     );
     return response;
@@ -145,24 +150,29 @@ export class Channel implements NotificationTarget {
     onError?: (context: TurnContext, error: Error) => Promise<void>
   ): Promise<MessageResponse> {
     const response: MessageResponse = {};
-    await this.parent.adapter.continueConversation(
+    await this.parent.adapter.continueConversationAsync(
+      this.parent.botAppId,
       this.parent.conversationReference,
       async (context) => {
         const conversation = await this.newConversation(context);
-        await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
-          try {
-            const res = await ctx.sendActivity({
-              attachments: [CardFactory.adaptiveCard(card)],
-            });
-            response.id = res?.id;
-          } catch (error) {
-            if (onError) {
-              await onError(ctx, error as Error);
-            } else {
-              throw error;
+        await this.parent.adapter.continueConversationAsync(
+          this.parent.botAppId,
+          conversation,
+          async (ctx: TurnContext) => {
+            try {
+              const res = await ctx.sendActivity({
+                attachments: [CardFactory.adaptiveCard(card)],
+              });
+              response.id = res?.id;
+            } catch (error) {
+              if (onError) {
+                await onError(ctx, error as Error);
+              } else {
+                throw error;
+              }
             }
           }
-        });
+        );
       }
     );
     return response;
@@ -230,22 +240,27 @@ export class Member implements NotificationTarget {
     onError?: (context: TurnContext, error: Error) => Promise<void>
   ): Promise<MessageResponse> {
     const response: MessageResponse = {};
-    await this.parent.adapter.continueConversation(
+    await this.parent.adapter.continueConversationAsync(
+      this.parent.botAppId,
       this.parent.conversationReference,
       async (context) => {
         const conversation = await this.newConversation(context);
-        await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
-          try {
-            const res = await ctx.sendActivity(text);
-            response.id = res?.id;
-          } catch (error) {
-            if (onError) {
-              await onError(ctx, error as Error);
-            } else {
-              throw error;
+        await this.parent.adapter.continueConversationAsync(
+          this.parent.botAppId,
+          conversation,
+          async (ctx: TurnContext) => {
+            try {
+              const res = await ctx.sendActivity(text);
+              response.id = res?.id;
+            } catch (error) {
+              if (onError) {
+                await onError(ctx, error as Error);
+              } else {
+                throw error;
+              }
             }
           }
-        });
+        );
       }
     );
     return response;
@@ -265,24 +280,29 @@ export class Member implements NotificationTarget {
     onError?: (context: TurnContext, error: Error) => Promise<void>
   ): Promise<MessageResponse> {
     const response: MessageResponse = {};
-    await this.parent.adapter.continueConversation(
+    await this.parent.adapter.continueConversationAsync(
+      this.parent.botAppId,
       this.parent.conversationReference,
       async (context) => {
         const conversation = await this.newConversation(context);
-        await this.parent.adapter.continueConversation(conversation, async (ctx: TurnContext) => {
-          try {
-            const res = await ctx.sendActivity({
-              attachments: [CardFactory.adaptiveCard(card)],
-            });
-            response.id = res?.id;
-          } catch (error) {
-            if (onError) {
-              await onError(ctx, error as Error);
-            } else {
-              throw error;
+        await this.parent.adapter.continueConversationAsync(
+          this.parent.botAppId,
+          conversation,
+          async (ctx: TurnContext) => {
+            try {
+              const res = await ctx.sendActivity({
+                attachments: [CardFactory.adaptiveCard(card)],
+              });
+              response.id = res?.id;
+            } catch (error) {
+              if (onError) {
+                await onError(ctx, error as Error);
+              } else {
+                throw error;
+              }
             }
           }
-        });
+        );
       }
     );
     return response;

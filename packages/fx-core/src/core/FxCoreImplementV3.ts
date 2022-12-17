@@ -72,6 +72,7 @@ import {
   getQuestionsForProvisionV3,
   getQuestionsForPublishInDeveloperPortal,
 } from "../component/question";
+import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -115,7 +116,7 @@ export class FxCoreV3Implement {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    if (!!inputs.teamsAppFromTdp) {
+    if (isFromDevPortalInVSC(inputs)) {
       // should never happen as we do same check on Developer Portal.
       if (containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
         return err(InvalidInputError("Teams app contains unsupported features"));

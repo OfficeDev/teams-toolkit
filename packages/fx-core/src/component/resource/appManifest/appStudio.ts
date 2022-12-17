@@ -634,6 +634,15 @@ export async function updateManifest(
     }
 
     ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", teamsAppId));
+
+    let loginHint = "";
+    const accountRes = await ctx.tokenProvider.m365TokenProvider.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    if (accountRes.isOk()) {
+      loginHint = accountRes.value.unique_name as string;
+    }
+
     ctx.userInteraction
       .showMessage(
         "info",
@@ -644,7 +653,7 @@ export async function updateManifest(
       .then((res) => {
         if (res?.isOk() && res.value === Constants.VIEW_DEVELOPER_PORTAL) {
           ctx.userInteraction.openUrl(
-            util.format(Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL, result.value)
+            util.format(Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL, result.value, loginHint)
           );
         }
       });
@@ -786,9 +795,18 @@ export async function updateManifestV3(
 
     ctx.logProvider?.info(getLocalizedString("plugins.appstudio.teamsAppUpdatedLog", teamsAppId));
 
+    let loginHint = "";
+    const accountRes = await ctx.tokenProvider.m365TokenProvider.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    if (accountRes.isOk()) {
+      loginHint = accountRes.value.unique_name as string;
+    }
+
     const url = util.format(
       Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL,
-      result.value.get("TEAMS_APP_ID")
+      result.value.get("TEAMS_APP_ID"),
+      loginHint
     );
     if (inputs.platform === Platform.CLI) {
       const message = [

@@ -1,26 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
 import axios from "axios";
 import FormData from "form-data";
 import fs from "fs-extra";
 
-import { LogLevel } from "@microsoft/teamsfx-api";
+import { LogProvider } from "@microsoft/teamsfx-api";
 
-import CLILogProvider from "../../commonlib/log";
-import { sleep } from "../../utils";
+import { waitSeconds } from "../tools";
 
+// Call m365 service for package CRUD
 export class PackageService {
   private readonly axiosInstance;
   private readonly initEndpoint;
+  private readonly logger: LogProvider | undefined;
 
-  public constructor(endpoint: string) {
+  public constructor(endpoint: string, logger?: LogProvider) {
     this.axiosInstance = axios.create({
       timeout: 30000,
     });
     this.initEndpoint = endpoint;
+    this.logger = logger;
   }
 
   private async getTitleServiceUrl(token: string): Promise<string> {
@@ -31,10 +31,10 @@ export class PackageService {
           Authorization: `Bearer ${token}`,
         },
       });
-      CLILogProvider.debug(JSON.stringify(envInfo.data));
+      this.logger?.debug(JSON.stringify(envInfo.data));
       return envInfo.data.titlesServiceUrl;
     } catch (error: any) {
-      CLILogProvider.necessaryLog(LogLevel.Error, `Get ServiceUrl failed. ${error.message}`);
+      this.logger?.error(`Get ServiceUrl failed. ${error.message}`);
       throw error;
     }
   }
@@ -45,7 +45,7 @@ export class PackageService {
       const content = new FormData();
       content.append("package", data);
       const serviceUrl = await this.getTitleServiceUrl(token);
-      CLILogProvider.necessaryLog(LogLevel.Info, "Uploading package ...");
+      this.logger?.info("Uploading package ...");
       const uploadHeaders = content.getHeaders();
       uploadHeaders["Authorization"] = `Bearer ${token}`;
       const uploadResponse = await this.axiosInstance.post(
@@ -59,9 +59,9 @@ export class PackageService {
 
       const operationId = uploadResponse.data.operationId;
       const titleId = uploadResponse.data.titlePreview.titleId;
-      CLILogProvider.debug(`Package uploaded. OperationId: ${operationId}, TitleId: ${titleId}`);
+      this.logger?.debug(`Package uploaded. OperationId: ${operationId}, TitleId: ${titleId}`);
 
-      CLILogProvider.necessaryLog(LogLevel.Info, "Acquiring package ...");
+      this.logger?.info("Acquiring package ...");
       const acquireResponse = await this.axiosInstance.post(
         "/dev/v1/users/packages/acquisitions",
         {
@@ -76,7 +76,7 @@ export class PackageService {
       );
 
       const statusId = acquireResponse.data.statusId;
-      CLILogProvider.debug(`Acquiring package with statusId: ${statusId} ...`);
+      this.logger?.debug(`Acquiring package with statusId: ${statusId} ...`);
 
       let complete = false;
       do {
@@ -91,13 +91,13 @@ export class PackageService {
         if (resCode === 200) {
           complete = true;
         } else {
-          await sleep(2000);
+          await waitSeconds(2);
         }
       } while (complete === false);
 
-      CLILogProvider.necessaryLog(LogLevel.Info, `Acquire done. App TitleId: ${titleId}`);
+      this.logger?.info(`Acquire done. App TitleId: ${titleId}`);
 
-      CLILogProvider.necessaryLog(LogLevel.Info, "Checking acquired package ...");
+      this.logger?.info("Checking acquired package ...");
       const launchInfo = await this.axiosInstance.get(
         `/catalog/v1/users/titles/${titleId}/launchInfo`,
         {
@@ -112,14 +112,14 @@ export class PackageService {
           },
         }
       );
-      CLILogProvider.debug(JSON.stringify(launchInfo.data));
-      CLILogProvider.necessaryLog(LogLevel.Info, "Sideloading done.");
+      this.logger?.debug(JSON.stringify(launchInfo.data));
+      this.logger?.info("Sideloading done.");
     } catch (error: any) {
-      CLILogProvider.necessaryLog(LogLevel.Error, "Sideloading failed.");
+      this.logger?.error("Sideloading failed.");
       if (error.response) {
-        CLILogProvider.necessaryLog(LogLevel.Error, JSON.stringify(error.response.data));
+        this.logger?.error(JSON.stringify(error.response.data));
       } else {
-        CLILogProvider.necessaryLog(LogLevel.Error, error.message);
+        this.logger?.error(error.message);
       }
       throw error;
     }
@@ -128,9 +128,9 @@ export class PackageService {
   public async retrieveTitleId(token: string, manifestId: string): Promise<string> {
     try {
       const serviceUrl = await this.getTitleServiceUrl(token);
-      CLILogProvider.necessaryLog(LogLevel.Info, "Retrieve TitleId ...");
+      this.logger?.info("Retrieve TitleId ...");
       const launchInfo = await this.axiosInstance.post(
-        `/catalog/v1/users/titles/launchInfo`,
+        "/catalog/v1/users/titles/launchInfo",
         {
           Id: manifestId,
           IdType: "ManifestId",
@@ -164,14 +164,14 @@ export class PackageService {
       const titleId =
         (launchInfo.data.acquisition?.titleId?.id as string) ??
         (launchInfo.data.acquisition?.titleId as string);
-      CLILogProvider.debug(`TitleId: ${titleId}`);
+      this.logger?.debug(`TitleId: ${titleId}`);
       return titleId;
     } catch (error: any) {
-      CLILogProvider.necessaryLog(LogLevel.Error, "Retrieve TitleId failed.");
+      this.logger?.error("Retrieve TitleId failed.");
       if (error.response) {
-        CLILogProvider.necessaryLog(LogLevel.Error, JSON.stringify(error.response.data));
+        this.logger?.error(JSON.stringify(error.response.data));
       } else {
-        CLILogProvider.necessaryLog(LogLevel.Error, error.message);
+        this.logger?.error(error.message);
       }
 
       throw error;
@@ -181,20 +181,20 @@ export class PackageService {
   public async unacquire(token: string, titleId: string): Promise<void> {
     try {
       const serviceUrl = await this.getTitleServiceUrl(token);
-      CLILogProvider.necessaryLog(LogLevel.Info, `Unacquiring package with TitleId ${titleId} ...`);
+      this.logger?.info(`Unacquiring package with TitleId ${titleId} ...`);
       await this.axiosInstance.delete(`/catalog/v1/users/acquisitions/${titleId}`, {
         baseURL: serviceUrl,
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      CLILogProvider.necessaryLog(LogLevel.Info, "Unacquiring done.");
+      this.logger?.info("Unacquiring done.");
     } catch (error: any) {
-      CLILogProvider.necessaryLog(LogLevel.Error, "Unacquire failed.");
+      this.logger?.error("Unacquire failed.");
       if (error.response) {
-        CLILogProvider.necessaryLog(LogLevel.Error, JSON.stringify(error.response.data));
+        this.logger?.error(JSON.stringify(error.response.data));
       } else {
-        CLILogProvider.necessaryLog(LogLevel.Error, error.message);
+        this.logger?.error(error.message);
       }
 
       throw error;
@@ -204,7 +204,7 @@ export class PackageService {
   public async getLaunchInfo(token: string, titleId: string): Promise<unknown> {
     try {
       const serviceUrl = await this.getTitleServiceUrl(token);
-      CLILogProvider.necessaryLog(LogLevel.Info, `Getting LaunchInfo with TitleId ${titleId} ...`);
+      this.logger?.info(`Getting LaunchInfo with TitleId ${titleId} ...`);
       const launchInfo = await this.axiosInstance.get(
         `/catalog/v1/users/titles/${titleId}/launchInfo`,
         {
@@ -219,14 +219,14 @@ export class PackageService {
           },
         }
       );
-      CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(launchInfo.data), true);
+      this.logger?.info(JSON.stringify(launchInfo.data));
       return launchInfo.data;
     } catch (error: any) {
-      CLILogProvider.necessaryLog(LogLevel.Error, "Get LaunchInfo failed.");
+      this.logger?.error("Get LaunchInfo failed.");
       if (error.response) {
-        CLILogProvider.necessaryLog(LogLevel.Error, JSON.stringify(error.response.data));
+        this.logger?.error(JSON.stringify(error.response.data));
       } else {
-        CLILogProvider.necessaryLog(LogLevel.Error, error.message);
+        this.logger?.error(error.message);
       }
 
       throw error;

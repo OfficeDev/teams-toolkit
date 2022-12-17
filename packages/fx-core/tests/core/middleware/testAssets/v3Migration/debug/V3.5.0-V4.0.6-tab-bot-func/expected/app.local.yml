@@ -1,0 +1,31 @@
+version: 1.0.0
+
+deploy:
+  - uses: prerequisite/install 
+    with:
+      devCert:
+        trust: true
+      func: true
+      dotnet: true
+
+  - uses: cli/runDotnetCommand
+    with:
+      args: build extensions.csproj -o ./bin --ignore-failed-sources
+      workingDirectory: ./api
+      execPath: ${{DOTNET_PATH}}
+
+  - uses: cli/runNpmCommand
+    with:
+      args: install --no-audit
+      workingDirectory: ./tabs
+
+  - uses: cli/runNpmCommand
+    with:
+      args: install --no-audit
+      workingDirectory: ./api
+
+  - uses: cli/runNpmCommand
+    with:
+      args: install --no-audit
+      workingDirectory: ./bot
+

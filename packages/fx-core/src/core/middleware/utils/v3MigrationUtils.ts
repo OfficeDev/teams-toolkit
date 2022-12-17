@@ -20,6 +20,9 @@ import semver from "semver";
 import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
 import { Metadata, MetadataV2, MetadataV3, VersionState } from "../../../common/versionMetadata";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appManifest/constants";
+import { VersionForMigration } from "../types";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { TOOLS } from "../../globalVars";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -91,6 +94,56 @@ export function jsonObjectNamesConvertV3(
 export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
   const projectPath = getParameterFromCxt(ctx, "projectPath", "");
   return await getProjectVersionFromPath(projectPath);
+}
+
+export function migrationNotificationMessage(versionForMigration: VersionForMigration): string {
+  const link = getDownloadLinkByVersionAndPlatform(
+    versionForMigration.currentVersion,
+    versionForMigration.platform
+  );
+  const res = getLocalizedString(
+    "core.migrationV3.Message",
+    link,
+    versionForMigration.currentVersion
+  );
+  return res;
+}
+
+export function getDownloadLinkByVersionAndPlatform(version: string, platform: Platform): string {
+  let anchorInLink = "vscode";
+  if (platform === Platform.VS) {
+    anchorInLink = "visual-studio";
+  } else if (platform === Platform.CLI) {
+    anchorInLink = "cli";
+  }
+  return `${Metadata.versionMatchLink}#${anchorInLink}`;
+}
+
+export function outputCancelMessage(version: string, platform: Platform) {
+  TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
+  const link = getDownloadLinkByVersionAndPlatform(version, platform);
+  if (platform === Platform.VSCode) {
+    TOOLS?.logProvider.warning(
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
+    );
+    TOOLS?.logProvider.warning(
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find it in ${link} and install it based on the current version ${version}`
+    );
+  } else if (platform === Platform.VS) {
+    TOOLS?.logProvider.warning(
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please trigger this command again.`
+    );
+    TOOLS?.logProvider.warning(
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find it in ${link} and install it based on the current version ${version}`
+    );
+  } else {
+    TOOLS?.logProvider.warning(
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
+    );
+    TOOLS?.logProvider.warning(
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please find it in ${link} and install it based on the current version ${version}`
+    );
+  }
 }
 
 export async function getProjectVersionFromPath(projectPath: string): Promise<string> {

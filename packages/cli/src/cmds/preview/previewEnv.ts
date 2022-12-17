@@ -390,16 +390,11 @@ export default class PreviewEnv extends YargsCommand {
 
     // launch Outlook or Office
     if (CLIUIInstance.interactive) {
-      // for local m365 bot, ask for outlook channel
-      const botOutlookChannelLink =
-        env.toLowerCase() === environmentManager.getLocalEnvName() && botId !== undefined
-          ? `https://dev.botframework.com/bots/channels?id=${botId}&channelId=outlook`
-          : undefined;
       const shouldContinue = await showInstallAppInTeamsMessage(
         env.toLowerCase() === environmentManager.getLocalEnvName(),
         teamsAppTenantId,
         teamsAppId,
-        botOutlookChannelLink,
+        undefined,
         browser,
         browserArgs
       );

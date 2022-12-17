@@ -1,0 +1,12 @@
+version: 1.0.0
+
+deploy:
+  - uses: prerequisite/install 
+    with:
+      func: true
+
+  - uses: cli/runNpmCommand
+    with:
+      args: install --no-audit
+      workingDirectory: ./bot
+

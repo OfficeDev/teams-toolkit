@@ -18,7 +18,7 @@ import "reflect-metadata";
 import { Container, Service } from "typedi";
 import { globalVars } from "../../core/globalVars";
 import { CoreQuestionNames } from "../../core/question";
-import { AzureSolutionQuestionNames, TabNonSsoItem } from "../constants";
+import { AzureSolutionQuestionNames, DashboardOptionItem, TabNonSsoItem } from "../constants";
 import {
   ComponentNames,
   PathConstants,
@@ -173,7 +173,8 @@ export class TeamsTab {
     );
     if (bicepRes.isErr()) return bicepRes;
     // 2.3 add sso
-    if (inputs[AzureSolutionQuestionNames.Features] !== TabNonSsoItem.id) {
+    const nonSsoIds = [TabNonSsoItem.id, DashboardOptionItem.id];
+    if (!nonSsoIds.includes(inputs[AzureSolutionQuestionNames.Features])) {
       const ssoComponent = Container.get("sso") as any;
       const res = await ssoComponent.add(context, inputs);
       if (res.isErr()) return err(res.error);

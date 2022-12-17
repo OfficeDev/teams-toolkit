@@ -29,6 +29,7 @@
     "devDependencies": {
         "@microsoft/teamsfx-run-utils": "alpha",
         "@types/restify": "8.4.2",
+        "@types/node": "^14.0.0",
         "nodemon": "^2.0.7",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4",

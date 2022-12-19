@@ -337,6 +337,7 @@ describe("handlers", () => {
       sinon.stub(localizeUtils, "localize").returns("");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
       sinon.stub(TreatmentVariableValue, "inProductDoc").value(true);
       let tutorialOptions: StaticOptions[] = [];
       sinon.stub(extension, "VS_CODE_UI").value({
@@ -349,7 +350,7 @@ describe("handlers", () => {
 
       const result = await handlers.selectTutorialsHandler();
 
-      chai.assert.equal(tutorialOptions.length, 15);
+      chai.assert.equal(tutorialOptions.length, 14);
       chai.assert.isTrue(result.isOk());
     });
   });

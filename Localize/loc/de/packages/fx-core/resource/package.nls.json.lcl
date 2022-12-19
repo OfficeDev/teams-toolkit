@@ -643,12 +643,18 @@
       <Item ItemId=";core.NewOfficeAddinOptionVSC.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use the Teams Toolkit to create a new Office add-in application.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Verwenden Sie das Teams-Toolkit, um eine neue Office-Add-in-Anwendung zu erstellen.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.NewOfficeAddinOptionVSC.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a new Office add-in]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Neues Office-Add-in erstellen]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2257,8 +2263,8 @@
       <Item ItemId=";core.deploy.successNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA['%s' successfully deployed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[„%s“ wurde erfolgreich in der Cloud bereitgestellt.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[„%s“ wurde erfolgreich bereitgestellt.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA['%s' successfully deployed to the cloud.]]></Val>
@@ -2551,8 +2557,8 @@
       <Item ItemId=";core.error.unresolvedPlaceholders" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[There are unresolved placeholders: '%s' in the selected yml file: %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Es sind nicht aufgelöste Platzhalter „%s“ in der ausgewählten YML-Datei vorhanden]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[In der ausgewählten YML-Datei „%s“ sind nicht aufgelöste Platzhalter „%s“ vorhanden.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[There are unresolved placeholders: '%s' in the selected yml file]]></Val>
@@ -2815,8 +2821,8 @@
       <Item ItemId=";core.migrationV3.Message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version < %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Das Teams-Toolkit führt ein Upgrade der Dateien Ihrer Projektkonfiguration durch, um die neuesten Features zu unterstützen. Durch den Upgrade-Vorgang wird ihr benutzerdefinierter Code nicht geändert, und werden Sicherungsdateien erstellt, falls eine Wiederherstellung erforderlich ist.]A;Beachten Sie, dass dieses Upgrade ein Muss ist, um weiterhin die aktuelle Version des Teams-Toolkits verwenden zu können. Wenn Sie nicht bereit für ein Upgrade sind und weiterhin die alte Version verwenden möchten, finden Sie das Teams-Toolkit in der Erweiterung, und installieren Sie die Version < 5.0.0.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Das Teams-Toolkit führt ein Upgrade der Dateien Ihrer Projektkonfiguration durch, um die neuesten Features zu unterstützen. Durch den Upgrade-Vorgang wird ihr benutzerdefinierter Code nicht geändert und die Sicherungsdateien für den Fall erstellt, dass eine Wiederherstellung erforderlich ist.]A;Beachten Sie, dass dieses Upgrade ein Muss ist, um das Teams-Toolkit der aktuellen Version weiterhin verwenden zu können. Wenn Sie nicht zum Upgrade bereit sind und weiterhin die alte Version verwenden möchten, finden Sie das Teams-Toolkit unter „Erweiterung“ und „Version installieren“ < %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version < 5.0.0]]></Val>
@@ -2899,6 +2905,9 @@
       <Item ItemId=";core.options.separator.addin" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Office Add-ins]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Office-Add-ins]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3604,7 +3613,7 @@
       <Item ItemId=";core.question.manifestForPublishInDeveloperPortal.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select your manifest file]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Manifestdatei auswählen]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -4684,6 +4693,9 @@
       <Item ItemId=";driver.prerequisite.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[installing dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Abhängigkeiten werden installiert]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4744,6 +4756,9 @@
       <Item ItemId=";driver.prerequisite.progressBar.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Driver prerequisite/install]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Treibervoraussetzungen/-installation]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5644,6 +5659,9 @@
       <Item ItemId=";error.UpgradeV3CanceledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit (version < 5.0.0).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Wenn Sie für Ihr Projekt kein Upgrade durchführen möchten, installieren Sie eine andere Version des Teams-Toolkits (Version <= 5.0.0).]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

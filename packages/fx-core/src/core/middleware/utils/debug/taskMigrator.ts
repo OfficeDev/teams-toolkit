@@ -9,6 +9,7 @@ import {
   Prerequisite,
   TaskCommand,
   TaskDefaultValue,
+  TaskLabel,
 } from "../../../../common/local";
 import {
   createResourcesTask,
@@ -411,6 +412,41 @@ export async function migrateValidateDependencies(context: DebugMigrationContext
   }
 }
 
+export async function migrateBackendExtensionsInstall(
+  context: DebugMigrationContext
+): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "shell") ||
+      !(
+        typeof task["command"] === "string" &&
+        task["command"].includes("${command:fx-extension.backend-extensions-install}")
+      )
+    ) {
+      ++index;
+      continue;
+    }
+
+    if (!context.appYmlConfig.deploy) {
+      context.appYmlConfig.deploy = {};
+    }
+    context.appYmlConfig.deploy.dotnetCommand = {
+      args: "build extensions.csproj -o ./bin --ignore-failed-sources",
+      workingDirectory: `./${FolderName.Function}`,
+      execPath: "${{DOTNET_PATH}}",
+    };
+
+    const label = task["label"];
+    if (typeof label === "string") {
+      replaceInDependsOn(label, context.tasks);
+    }
+    context.tasks.splice(index, 1);
+  }
+}
+
 export async function migrateFrontendStart(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {
@@ -520,6 +556,44 @@ export async function migrateValidateLocalPrerequisites(
   }
 }
 
+export async function migrateNgrokStartTask(context: DebugMigrationContext): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      isCommentObject(task) &&
+      ((typeof task["dependsOn"] === "string" && task["dependsOn"] === "teamsfx: ngrok start") ||
+        (isCommentArray(task["dependsOn"]) && task["dependsOn"].includes("teamsfx: ngrok start")))
+    ) {
+      const newTask = generateLocalTunnelTask(context);
+      context.tasks.splice(index + 1, 0, newTask);
+      break;
+    } else {
+      ++index;
+    }
+  }
+  replaceInDependsOn("teamsfx: ngrok start", context.tasks, TaskLabel.StartLocalTunnel);
+}
+
+export async function migrateNgrokStartCommand(context: DebugMigrationContext): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "teamsfx") ||
+      !(task["command"] === "ngrok start")
+    ) {
+      ++index;
+      continue;
+    }
+
+    const newTask = generateLocalTunnelTask(context, task);
+    context.tasks.splice(index, 1, newTask);
+    ++index;
+  }
+}
+
 function generatePrerequisiteTask(
   task: CommentObject,
   context: DebugMigrationContext
@@ -574,6 +648,37 @@ function generatePrerequisiteTask(
 
   newTask["args"] = args as CommentJSONValue;
   return newTask;
+}
+
+function generateLocalTunnelTask(context: DebugMigrationContext, task?: CommentObject) {
+  const comment = `{
+      // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+      // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
+      // as well as samples to:
+      //   - use your own ngrok command / configuration / binary
+      //   - use your own tunnel solution
+      //   - provide alternatives if ngrok does not work on your dev machine
+    }`;
+  const placeholderComment = `
+    {
+      // Keep consistency with migrated configuration.
+    }
+  `;
+  const newTask = assign(task ?? parse(`{"label": "${TaskLabel.StartLocalTunnel}"}`), {
+    type: "teamsfx",
+    command: TaskCommand.startLocalTunnel,
+    args: {
+      ngrokArgs: TaskDefaultValue.startLocalTunnel.ngrokArgs,
+      env: "local",
+      output: assign(parse(placeholderComment), {
+        endpoint: context.placeholderMapping.botEndpoint,
+        domain: context.placeholderMapping.botDomain,
+      }),
+    },
+    isBackground: true,
+    problemMatcher: "$teamsfx-local-tunnel-watch",
+  });
+  return assign(parse(comment), newTask);
 }
 
 function handleProvisionAndDeploy(

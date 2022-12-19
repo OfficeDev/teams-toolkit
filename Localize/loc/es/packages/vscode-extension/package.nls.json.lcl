@@ -76,6 +76,9 @@
       <Item ItemId=";teamstoolkit.accountTree.sideloadingLearnMore" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Learn More]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Más información]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -148,8 +151,8 @@
       <Item ItemId=";teamstoolkit.accountTree.sideloadingWarningTooltip" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Microsoft 365 account admin doesn't have enabled sideloading permission.]A;· Contact your Teams administrator to resolve this issue. Visit: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Follow our Account Help guidance to create a free testing tenant. The guidance can be found by clicking "Sideloading disabled" label under your account.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[El administrador de la cuenta de Microsoft 365 no tiene habilitado el permiso de instalación de prueba.]A;· Póngase en contacto con el administrador de Teams para resolver este problema. Visite: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Cree un inquilino de prueba. Visite https://developer.microsoft.com/en-us/microsoft-365/dev-program]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[El administrador de la cuenta de Microsoft 365 no tiene habilitado el permiso de instalación de prueba.]A;· Póngase en contacto con el administrador de Teams para resolver este problema. Visite: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Siga las instrucciones de la Ayuda de la cuenta para crear un espacio empresarial de prueba gratuito. Para encontrar la guía, haga clic en la etiqueta "Instalación de prueba deshabilitada" en su cuenta.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Microsoft 365 account admin doesn't have enabled sideloading permission.]A;· Contact your Teams administrator to resolve this issue. Visit: https://docs.microsoft.com/en-us/microsoftteams/platform/m365-apps/prerequisites]A;· Create a testing tenant. Visit https://developer.microsoft.com/en-us/microsoft-365/dev-program]]></Val>
@@ -607,8 +610,8 @@
       <Item ItemId=";teamstoolkit.commands.createProject.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a new app]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Crear una nueva aplicación de Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Crear una aplicación nueva]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create a new Teams app]]></Val>
@@ -910,8 +913,8 @@
       <Item ItemId=";teamstoolkit.commands.selectTutorials.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[View How-to Guides]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Ver tutoriales guiados]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ver guías de procedimientos]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[View Guided Tutorials]]></Val>
@@ -1363,8 +1366,8 @@
       <Item ItemId=";teamstoolkit.commandsTreeViewProvider.createProjectTitleNew" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a new app]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Crear una nueva aplicación de Teams]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Crear una aplicación nueva]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Create a new Teams app]]></Val>
@@ -3574,14 +3577,17 @@
       <Item ItemId=";teamstoolkit.manageCollaborator.command" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Manage who can make changes to your app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Administrar quién puede realizar cambios en la aplicación]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.manageCollaborator.grantPermission.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Add owners to your Teams app and Azure Active Director app registrations so they can make changes]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Agregar propietarios de la aplicación Microsoft 365 Teams (con la aplicación AAD)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Agregar propietarios a la aplicación de Teams y a los registros de aplicaciones de Azure Active Director para que puedan realizar cambios]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Add Microsoft 365 Teams App (with AAD App) Owners]]></Val>
@@ -3592,8 +3598,8 @@
       <Item ItemId=";teamstoolkit.manageCollaborator.grantPermission.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Add app owners]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Conceder permiso]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Agregar propietarios de aplicaciones]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Grant Permission]]></Val>
@@ -3604,8 +3610,8 @@
       <Item ItemId=";teamstoolkit.manageCollaborator.listCollaborator.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[List all the owners who can make changes to your Teams and Azure Active Director app registrations]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Enumerar propietarios de la aplicación Microsoft 365 Teams (con la aplicación AAD)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Enumerar todos los propietarios que pueden realizar cambios en los registros de aplicaciones de Teams y Azure Active Director]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[List Microsoft 365 Teams App (with AAD App) Owners]]></Val>
@@ -3616,8 +3622,8 @@
       <Item ItemId=";teamstoolkit.manageCollaborator.listCollaborator.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[List app owners]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Lista de colaboradores]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Enumerar propietarios de la aplicación]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[List Collaborator]]></Val>
@@ -4501,96 +4507,144 @@
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-empty-project-and-check-upgrade.content" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals.]A;[Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;You need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.]A;[Upgrade project]5D;(command:fx-extension.checkProjectUpgrade)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vaya directamente al Kit de herramientas de Teams y obtenga información general sobre los aspectos básicos.]A;[Comenzar]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Cree un proyecto o explore nuestras muestras.]A;[Crear una nueva app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[Ver muestras]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Guía paso a paso para crear una aplicación de Teams para el mundo real.]A;[Documentación]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Guías paso a paso]5D; (command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Debe actualizar el proyecto a los nuevos archivos de configuración para usar las características más recientes. El proceso de actualización no cambiará el código personalizado y creará archivos de copia de seguridad en caso de que necesite revertir los cambios.]A;Tenga en cuenta que esta actualización es necesaria para seguir usando la versión actual del kit de herramientas de Teams. Si no está listo para la actualización y quiere seguir usando la versión anterior del Kit de herramientas de Teams, busque el Kit de herramientas de Teams en Extensión e instale la versión <=2.10.0.]A;[Actualizar el proyecto]5D;(command:fx-extension.checkProjectUpgrade)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user.content" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals.]A;[Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vaya directamente al Kit de herramientas de Teams y obtenga información general sobre los aspectos básicos.]A;[Comenzar]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D)]A;Cree un proyecto o explore nuestros ejemplos.]A;[Crear una nueva aplicación]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[Ver muestras]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]A;Guía paso a paso para crear una aplicación de Teams para el mundo real.]A;[Documentación]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Guías paso a paso]5D; (command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.viewsWelcome.teamsfx-empty-project.content" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Walk through the steps to build a real-world Teams app.]A;[Documentation]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Create a project or explore our samples.]A;[Create a new app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Vaya directamente al Kit de herramientas de Teams y obtenga información general sobre los aspectos básicos. Para obtener más información, visite [Comenzar]5D;(command:fx-extension.openWelcome?%5B%22SideBar%22%5D).]A;Guía detallada para crear una aplicación de Teams para el mundo real.]A;[Documentación]5D;(command:fx-extension.openDocument?%5B%22SideBar%22%5D)]A;[Guías paso a paso]5D; (command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)]A;Cree un proyecto o explore nuestras muestras.]A;[Crear una nueva app]5D;(command:fx-extension.create?%5B%22SideBar%22%5D)]A;[Ver muestras]5D;(command:fx-extension.openSamples?%5B%22SideBar%22%5D)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Jumpstart your Teams app development experience]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Iniciar la experiencia de desarrollo de aplicaciones de Teams]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Choose [Teams app capabilities]5D;(https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.]A;You can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.]A;[Create a new Teams app]5D;(command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)]A;[View samples]5D;(command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Elija [Capacidades de la aplicación de Teams]5D;(https://aka.ms/teamsfx-capabilities-overview) y compile su primera aplicación de Teams.]A;Puede crearla desde cero o explorar nuestras muestras para ayudarle a empezar rápidamente con los ejemplos reales y estructuras de código.]A;[Cree una nueva aplicación de Teams]5D;(command:fx-extension.createFromThroughthrough?%5B%22ThroughThrough%22%5D)]A;[Ver muestras]5D;(command:fx-extension.openSamples?%5B%22ThroughThrough%22%5D)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Build your first Teams app]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Crear su primera aplicación de Teams]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a free Microsoft 365 testing tenant to install and preview your Teams apps in Teams.]A; If you already have a Microsoft 365 organizational account, [sign in to Microsoft 365]5D;(command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading]5D;(https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.]A;[Create a Microsoft 365 testing tenant]5D;(https://developer.microsoft.com/en-us/microsoft-365/dev-program)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Cree un espacio empresarial de prueba de Microsoft 365 gratuito para instalar y obtener una vista previa de las aplicaciones de Teams en Teams.]A; Si ya tiene una cuenta de organización de Microsoft 365, [inicie sesión en Microsoft 365]5D;(command:fx-extension.signinM365?%5B%22 PassThrough%22%5D) y valide si [la instalación de prueba]5D;(https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) está habilitada.]A;[Cree un espacio empresarial de pruebas de Microsoft 365]5D;(https://developer.microsoft.com/en-us/microsoft-365/dev-program)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a Microsoft 365 testing tenant for free]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Crear un espacio empresarial de prueba de Microsoft 365 gratis]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.]A;[Open Deployment commands]5D;(command:fx-extension.openDeploymentTreeview?%5B%22WalkThrough%22%5D)]A;__Tip: Learn more about ['Deployment']5D;(https://aka.ms/teamsfx-provision).__]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Puede aprovisionar recursos en la nube e implementar el código de la aplicación en los recursos aprovisionados. Por último, distribuya su primera aplicación a Teams.]A;[Abrir los comandos de implementación]5D;(command:fx-extension.openDeploymentTreeview?%5B%22ThroughThrough%22%5D)]A;__Tip: Más información sobre ['Implementación']5D;(https://aka.ms/teamsfx-provision).__]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Deploy Teams apps]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Implementar aplicaciones de Teams]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit primarily requires NPM and Node.js. Check your environment and get ready for your first Teams app development.]A;[Run prerequisite checker]5D;(command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[El Kit de herramientas de Teams requiere principalmente NPM y Node.js. Compruebe su entorno y prepárese para el primer desarrollo de aplicaciones de Teams.]A;[Ejecute el comprobador de requisitos]5D;(command:fx-extension.validate-getStarted-prerequisites?%5B%22ThroughThrough%22%5D)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Get your environment ready]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Preparar el entorno]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.altText" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[How-to guides, README.md and Documentation]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Guías de procedimientos, README.md y documentación]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Here are some recommendations to continue your journey with Teams Toolkit.]A; • Explore [How-to guides]5D;(command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances]A; • Open [Readme.md]5D;(command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) to understand how to develop this app]A; • Read our [Documentation]5D;(command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Estas son algunas recomendaciones para continuar su recorrido con el kit de herramientas de Teams.]A; • Explore las [Guías paso a paso]5D;(command:fx-extension.selectTutorials?%5B%22 PassThrough%22%5D) y obtenga instrucciones más prácticas]A; • Abra [Readme.md]5D;(command:fx-extension.openReadMe?%5B%22ThroughThrough%22%5D) para comprender cómo desarrollar esta aplicación.]A; • Lea nuestra [Documentación]5D;(command:fx-extension.openDocument?%5B%22ThroughThrough%22%5D)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[What's next?]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[¿Cuál es el siguiente paso?]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.walkthroughs.steps.teamsToolkitPreview.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Press [F5]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug]5D;(command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.]A;[Run local preview (F5)]5D;(command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)]A;__Tip: To run local preview, sign in to Microsoft 365 (organizational account) with sideloading option.__]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Presione [F5]5D;(command:fx-extension.selectAndDebug?%5B%22 PassThrough%22%5D) o encuentre el panel "[Ejecutar y depurar]5D;(command:workbench.view.debug)" en la barra de actividades y haga clic en el icono de reproducción para obtener una vista previa local de la aplicación en el contexto de Teams.]A;[Ejecutar vista previa local (F5)]5D; (command:fx-extension.selectAndDebug?%5B%22ThroughThrough%22%5D)]A;__Sugerencia: para ejecutar la versión preliminar local, inicie sesión en Microsoft 365 (cuenta de la organización) con la opción de instalación de prueba.__]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4606,12 +4660,18 @@
       <Item ItemId=";teamstoolkit.walkthroughs.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Get started with Teams Toolkit]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Introducción al Kit de herramientas de Teams]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";teamstoolkit.webview.accountHelp" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Account Help]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Ayuda de la cuenta]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

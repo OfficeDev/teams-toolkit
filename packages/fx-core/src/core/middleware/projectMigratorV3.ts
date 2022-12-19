@@ -69,8 +69,11 @@ import {
   migratePrepareManifest,
   migrateSetUpBot,
   migrateValidateDependencies,
-  migrateValidateLocalPrerequisites,
+  migrateBackendExtensionsInstall,
   migrateFrontendStart,
+  migrateValidateLocalPrerequisites,
+  migrateNgrokStartTask,
+  migrateNgrokStartCommand,
 } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
@@ -569,8 +572,11 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateSetUpSSO,
     migratePrepareManifest,
     migrateValidateDependencies,
+    migrateBackendExtensionsInstall,
     migrateFrontendStart,
     migrateValidateLocalPrerequisites,
+    migrateNgrokStartTask,
+    migrateNgrokStartCommand,
   ];
 
   const oldProjectSettings = await loadProjectSettings(context.projectPath);

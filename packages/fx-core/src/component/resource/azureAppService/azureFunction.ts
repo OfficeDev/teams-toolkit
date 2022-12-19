@@ -74,9 +74,7 @@ export class AzureFunctionResource extends AzureAppService {
 
     const client = AzureClientFactory.getWebSiteManagementClient(credentials, subscriptionId);
     let site: Site | undefined = undefined;
-    for await (const page of client.webApps
-      .listByResourceGroup(resourceGroupName)
-      .byPage({ maxPageSize: 100 })) {
+    for await (const page of client.webApps.listByResourceGroup(resourceGroupName).byPage()) {
       for (const webApp of page) {
         if (webApp.name === functionAppName) {
           site = webApp;

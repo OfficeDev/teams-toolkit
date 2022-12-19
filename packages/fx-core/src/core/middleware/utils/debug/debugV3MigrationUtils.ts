@@ -182,6 +182,34 @@ export function startFrontendTask(label: string): CommentJSONValue {
   return assign(parse("{}"), task);
 }
 
+export function startBotTask(label: string): CommentJSONValue {
+  const task = {
+    label,
+    type: "shell",
+    command: "node ../teamsfx/script/run.bot.js .. ../teamsfx/.env.local",
+    isBackground: true,
+    options: {
+      cwd: "${workspaceFolder}/bot",
+    },
+    problemMatcher: {
+      pattern: [
+        {
+          regexp: "^.*$",
+          file: 0,
+          location: 1,
+          message: 2,
+        },
+      ],
+      background: {
+        activeOnStart: true,
+        beginsPattern: "[nodemon] starting",
+        endsPattern: "restify listening to|Bot/ME service listening at|[nodemon] app crashed",
+      },
+    },
+  };
+  return assign(parse("{}"), task);
+}
+
 export async function saveRunScript(
   context: MigrationContext,
   filename: string,

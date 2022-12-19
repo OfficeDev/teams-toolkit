@@ -364,10 +364,6 @@ export class FxCoreV3Implement {
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     if (!ctx || !inputs.projectPath)
       return err(new ObjectIsUndefinedError("createEnv input stuff"));
-    const projectSettings = ctx.projectSettings;
-    if (!projectSettings) {
-      return ok(Void);
-    }
 
     const createEnvCopyInput = await askNewEnvironment(ctx!, inputs);
     if (

@@ -643,12 +643,18 @@
       <Item ItemId=";core.NewOfficeAddinOptionVSC.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use the Teams Toolkit to create a new Office add-in application.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams ツールキットを使用して新しい Office アドイン アプリケーションを作成します。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.NewOfficeAddinOptionVSC.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a new Office add-in]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[新しい Office アドインの作成]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2257,8 +2263,8 @@
       <Item ItemId=";core.deploy.successNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA['%s' successfully deployed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA['%s' はクラウドに正常にデプロイされました。]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA['%s' が正常にデプロイされました。]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA['%s' successfully deployed to the cloud.]]></Val>
@@ -2551,8 +2557,8 @@
       <Item ItemId=";core.error.unresolvedPlaceholders" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[There are unresolved placeholders: '%s' in the selected yml file: %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[未解決のプレースホルダーがあります: 選択した yml ファイル内の '%s']]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[未解決のプレースホルダーがあります: 選択した yml ファイル内の '%s': %s]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[There are unresolved placeholders: '%s' in the selected yml file]]></Val>
@@ -2815,8 +2821,8 @@
       <Item ItemId=";core.migrationV3.Message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version < %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams ツールキットは、最新の機能をサポートするためにプロジェクト構成ファイルをアップグレードします。アップグレード プロセスでは、カスタム コードが変更されず、元に戻す必要がある場合に備えて、バックアップ ファイルが作成されます。]A;このアップグレードは、現在のバージョンの Teams ツールキットを引き続き使用する必要があることに留意して下さい。アップグレードする準備が整っておたず、引き続き古いバージョンを使用する場合は、拡張機能で Teams ツールキットを見つけて、バージョン 5.0.0 以前のものをインストールしてください]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams ツールキットは、最新の機能をサポートするためにプロジェクト構成ファイルをアップグレードします。アップグレード プロセスでは、カスタム コードが変更されず、元に戻す必要がある場合に備えて、バックアップ ファイルが作成されます。]A;このアップグレードは、現在のバージョンの Teams ツールキットを引き続き使用する必要があることに注意してください。アップグレードする準備ができていない、引き続き古いバージョンを使用する場合は、拡張機能で Teams ツールキットを検索し、バージョン %s 以前のものをインストールしてください]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version < 5.0.0]]></Val>
@@ -2899,6 +2905,9 @@
       <Item ItemId=";core.options.separator.addin" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Office Add-ins]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Office アドイン]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3604,7 +3613,7 @@
       <Item ItemId=";core.question.manifestForPublishInDeveloperPortal.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select your manifest file]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[マニフェスト ファイルを選択してください]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -4684,6 +4693,9 @@
       <Item ItemId=";driver.prerequisite.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[installing dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[依存関係をインストールしています]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4744,6 +4756,9 @@
       <Item ItemId=";driver.prerequisite.progressBar.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Driver prerequisite/install]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[ドライバーの前提条件/インストール]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5644,6 +5659,9 @@
       <Item ItemId=";error.UpgradeV3CanceledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit (version < 5.0.0).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[プロジェクトをアップグレードしない場合は、別のバージョンの Teams ツールキット (5.0.0 以前のバージョン) をインストールしてください。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

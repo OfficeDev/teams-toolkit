@@ -643,12 +643,18 @@
       <Item ItemId=";core.NewOfficeAddinOptionVSC.detail" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Use the Teams Toolkit to create a new Office add-in application.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 도구 키트를 사용하여 새 Office 추가 기능 애플리케이션을 만듭니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";core.NewOfficeAddinOptionVSC.label" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Create a new Office add-in]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[새 Office 추가 기능 만들기]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2257,8 +2263,8 @@
       <Item ItemId=";core.deploy.successNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA['%s' successfully deployed.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA['%s'이(가) 클라우드에 배포되었습니다.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA['%s'이(가) 배포되었습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA['%s' successfully deployed to the cloud.]]></Val>
@@ -2551,8 +2557,8 @@
       <Item ItemId=";core.error.unresolvedPlaceholders" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[There are unresolved placeholders: '%s' in the selected yml file: %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[선택한 yml 파일에 해결되지 않은 자리 표시자 '%s'이(가) 있습니다.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[선택한 yml 파일 %s에 해결되지 않은 자리 표시자 '%s'이(가) 있습니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[There are unresolved placeholders: '%s' in the selected yml file]]></Val>
@@ -2815,8 +2821,8 @@
       <Item ItemId=";core.migrationV3.Message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version < %s]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Teams Toolkit는 최신 기능을 지원하도록 프로젝트 구성 파일을 업그레이드합니다. 업그레이드 프로세스는 사용자 지정 코드를 변경하지 않으며 되돌려야 할 경우를 대비해서 백업 파일을 만듭니다.]A;현재 버전의 Teams Toolkit을 계속 사용하려면 이 업그레이드가 필요합니다. 업그레이드할 준비가 되지 않았으며 이전 버전을 계속 사용하고자 한다면 확장에서 Teams Toolkit를 찾아 5.0.0 이하 버전을 설치하세요.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams 도구 키트는 프로젝트 구성 파일을 업그레이드하여 최신 기능을 지원합니다. 업그레이드 프로세스는 사용자 지정 코드를 변경하지 않으며 되돌리기가 필요한 경우를 대비해 백업 파일을 만듭니다.]A;현재 버전의 Teams 도구 키트를 계속 사용하려면 이 업그레이드가 필요합니다. 업그레이드할 준비가 되지 않았으며 이전 버전을 계속 사용하려면 확장에서 Teams 도구 키트를 찾아 %s 이전 버전을 설치합니다.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version < 5.0.0]]></Val>
@@ -2899,6 +2905,9 @@
       <Item ItemId=";core.options.separator.addin" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Office Add-ins]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Office 추가 기능]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -3604,7 +3613,7 @@
       <Item ItemId=";core.question.manifestForPublishInDeveloperPortal.placeholder" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Select your manifest file]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[매니페스트 파일 선택]]></Val>
           </Tgt>
           <Prev Cat="Text">
@@ -4684,6 +4693,9 @@
       <Item ItemId=";driver.prerequisite.description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[installing dependencies]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[종속성을 설치하는 중]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4744,6 +4756,9 @@
       <Item ItemId=";driver.prerequisite.progressBar.title" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Driver prerequisite/install]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[드라이버 필수 구성 요소/설치]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -5644,6 +5659,9 @@
       <Item ItemId=";error.UpgradeV3CanceledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit (version < 5.0.0).]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[프로젝트를 업그레이드하지 않으려면 다른 버전(5.0.0 이전 버전)의 Teams 도구 키트를 설치합니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

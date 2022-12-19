@@ -433,15 +433,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Check schedule for v2
-        if: github.event.schedule != '0 4 * * *'
-        run: |
-          echo "flag=v2" >> $GITHUB_STATE
-
       - name: Check schedule for v3
         if: github.event.schedule == '0 4 * * *'
         run: |
-          echo "flag=v3" >> $GITHUB_STATE
+          echo "v3_flag=true" >> $GITHUB_ENV
 
       - name: Install Dateutils
         run: |
@@ -479,7 +474,7 @@ jobs:
             if grep -q "@author" $file; then
               email=`grep '@author' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
             fi
-            if [[ -z $(grep -q "@owner" $file) ]] && [[ "$STATE_flag" == "v3" ]]; then
+            if [[ -z $(grep -q "@owner" $file) ]] && [[ "${{env.v3_flag}}" == "true" ]]; then
               email=`grep '@owner' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
             fi
 
@@ -544,7 +539,7 @@ jobs:
           total=$((passed+failed))
 
           subject="TeamsFx E2E Test Report ($passed/$total Passed)"
-          if [[ "$STATE_flag" == "v3" ]]; then
+          if [[ "${{env.v3_flag}}" == "true" ]]; then
             subject="TeamsFx E2E V3 Test Report ($passed/$total Passed)"
           fi
           if [ $failed -gt 0 ]; then

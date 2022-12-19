@@ -96,6 +96,8 @@ jobs:
       - name: Setup project
         run: |
           npm run setup
+        env: 
+          REQUEST_TOKEN: ${{ secrets.CD_PAT }}
 
       - name: Setup git
         run: |
@@ -257,11 +259,15 @@ jobs:
         if: ${{ github.ref == 'refs/heads/dev' }}
         run: |
           npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
+        env: 
+          REQUEST_TOKEN: ${{ secrets.CD_PAT }}
 
       - name: publish beta release to npm org
         if: ${{ github.ref == 'refs/heads/ga' }}
         run: |
           npx lerna publish from-package --dist-tag=beta --yes --allow-branch ga
+        env: 
+          REQUEST_TOKEN: ${{ secrets.CD_PAT }}
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
@@ -289,11 +295,15 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
         run: |
           npx lerna publish from-package --dist-tag=rc --yes
+        env: 
+          REQUEST_TOKEN: ${{ secrets.CD_PAT }}
 
       - name: publish stable npm packages to npmjs.org
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         run: |
           npx lerna publish from-package --yes
+        env: 
+          REQUEST_TOKEN: ${{ secrets.CD_PAT }}
 
       - name: pack server bits
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx-server') }}

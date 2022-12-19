@@ -168,13 +168,6 @@ export class ArmParameters {
   static readonly ApimProductName = "apimProductName";
   static readonly ApimOauthServerName = "apimOauthServerName";
 }
-export function getProjectMigratorMW(): Middleware {
-  if (isMigrationV3Enabled()) {
-    return ProjectMigratorMWV3;
-  } else {
-    return ProjectMigratorMW;
-  }
-}
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await needMigrateToArmAndMultiEnv(ctx)) && checkMethod(ctx)) {
@@ -225,32 +218,23 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
   }
 };
 
-export function outputCancelMessage(ctx: CoreHookContext, isV3 = false) {
+export function outputCancelMessage(ctx: CoreHookContext) {
   TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
-  const versionDescription = getVersionDescription(isV3);
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (inputs.platform === Platform.VSCode) {
     TOOLS?.logProvider.warning(
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version ${versionDescription}`
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.10.0`
     );
   } else {
     TOOLS?.logProvider.warning(
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
     );
     TOOLS?.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version ${versionDescription}`
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= 2.10.0`
     );
-  }
-}
-
-function getVersionDescription(isV3: boolean): string {
-  if (isV3) {
-    return `"< ${MetadataV3.vscodeStarterVersion}"`;
-  } else {
-    return `"<= 2.10.0"`;
   }
 }
 

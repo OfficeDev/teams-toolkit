@@ -19,8 +19,6 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import * as sinon from "sinon";
-import * as yaml from "js-yaml";
-import { getProjectMigratorMW } from "../../../src/core/middleware/projectMigrator";
 import { MockTools, MockUserInteraction, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
 import { setTools } from "../../../src/core/globalVars";
@@ -41,6 +39,7 @@ import {
   azureParameterMigration,
   generateLocalConfig,
   checkapimPluginExists,
+  ProjectMigratorMWV3,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { UpgradeCanceledError } from "../../../src/core/error";
@@ -70,7 +69,6 @@ describe("ProjectMigratorMW", () => {
     await fs.ensureDir(path.join(projectPath, ".fx"));
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3_MIGRATION: "true",
-      TEAMSFX_V3: "false",
     });
   });
 
@@ -92,7 +90,7 @@ describe("ProjectMigratorMW", () => {
       }
     }
     hooks(MyClass, {
-      other: [getProjectMigratorMW()],
+      other: [ProjectMigratorMWV3],
     });
 
     const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
@@ -120,7 +118,7 @@ describe("ProjectMigratorMW", () => {
       }
     }
     hooks(MyClass, {
-      other: [getProjectMigratorMW()],
+      other: [ProjectMigratorMWV3],
     });
 
     const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };

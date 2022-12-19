@@ -2,17 +2,24 @@
 // Licensed under the MIT license.
 
 export const MetadataV3 = {
-  vscodeStarterVersion: "5.0.0",
-  // TODO: it should be confirmed
-  cliStarterVersion: "2.0.0",
-  // TODO: it should be confirmed
-  vsStarterVersion: "5.0.0",
   projectVersion: "3.0.0",
+  platformVersion: {
+    vs: "17.5.x.x",
+    vsc: "5.x.x",
+    cli: "2.x.x",
+    cli_help: "2.x.x",
+  },
 };
 
 export const MetadataV2 = {
   projectVersion: "2.0.0",
   projectMaxVersion: "2.1.0",
+  platformVersion: {
+    vs: "17.4.x.x",
+    vsc: "4.x.x",
+    cli: "1.x.x",
+    cli_help: "1.x.x",
+  },
 };
 
 export const Metadata = {

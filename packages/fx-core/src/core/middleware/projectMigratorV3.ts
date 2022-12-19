@@ -81,7 +81,7 @@ import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionState } from "../../common/versionMetadata";
-import { isSPFxProject } from "../../common/tools";
+import { isMigrationV3Enabled, isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 
@@ -121,6 +121,15 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
   const versionForMigration = await checkVersionForMigration(ctx);
   if (versionForMigration.state === VersionState.upgradeable && checkMethod(ctx)) {
     if (!checkUserTasks(ctx)) {
+      ctx.result = ok(undefined);
+      return;
+    }
+    if (!isMigrationV3Enabled()) {
+      TOOLS?.logProvider.warning(
+        `The current project is not supported by this Teams Toolkit version. Please install the old version Teams Toolkit ${
+          MetadataV2.platformVersion[versionForMigration.platform]
+        }`
+      );
       ctx.result = ok(undefined);
       return;
     }

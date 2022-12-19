@@ -68,6 +68,10 @@ export enum Stage {
   addCapability = "addCapability",
   addCiCdFlow = "addCiCdFlow",
   deployAad = "deployAad",
+  deployTeams = "deployTeams",
+  initDebug = "initDebug",
+  initInfra = "initInfra",
+  publishInDeveloperPortal = "publishInDeveloperPortal",
 }
 
 export enum TelemetryEvent {

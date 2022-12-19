@@ -5,8 +5,8 @@
  * @author Dooriya Li <dol@microsoft.com>
  */
 
-import fs from "fs-extra";
-import path from "path";
+import * as fs from "fs-extra";
+import * as path from "path";
 
 import { BotValidator } from "../../commonlib";
 
@@ -22,6 +22,7 @@ import {
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 import { it } from "../../commonlib/it";
 import { Runtime } from "../../commonlib/constants";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 export function happyPathTest(runtime: Runtime): void {
   describe("Provision", function () {
@@ -40,6 +41,9 @@ export function happyPathTest(runtime: Runtime): void {
     }
 
     it("Provision Resource: workflow bot", async function () {
+      if (isV3Enabled()) {
+        return this.skip();
+      }
       const cmd =
         runtime === Runtime.Node
           ? `teamsfx new --interactive false --app-name ${appName} --capabilities workflow-bot --programming-language typescript`

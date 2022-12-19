@@ -23,6 +23,7 @@ import {
 } from "../../../../src/component/driver/aad/error/unhandledError";
 import { InvalidParameterUserError } from "../../../../src/component/driver/aad/error/invalidParameterUserError";
 import { cwd } from "process";
+import { MissingEnvUserError } from "../../../../src/component/driver/aad/error/missingEnvError";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -60,9 +61,9 @@ describe("aadAppUpdate", async () => {
   it("should throw error if argument property is missing", async () => {
     let args: any = {};
 
-    let result = await updateAadAppDriver.run(args, mockedDriverContext);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr())
+    let result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
@@ -73,9 +74,9 @@ describe("aadAppUpdate", async () => {
       manifestTemplatePath: "./aad.manifest.json",
     };
 
-    result = await updateAadAppDriver.run(args, mockedDriverContext);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr())
+    result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
@@ -86,9 +87,9 @@ describe("aadAppUpdate", async () => {
       outputFilePath: "./build/aad.manifest.dev.json",
     };
 
-    result = await updateAadAppDriver.run(args, mockedDriverContext);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr())
+    result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
@@ -102,9 +103,9 @@ describe("aadAppUpdate", async () => {
       outputFilePath: "./build/aad.manifest.dev.json",
     };
 
-    let result = await updateAadAppDriver.run(args, mockedDriverContext);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr())
+    let result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
@@ -116,9 +117,9 @@ describe("aadAppUpdate", async () => {
       outputFilePath: "",
     };
 
-    result = await updateAadAppDriver.run(args, mockedDriverContext);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr())
+    result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
@@ -130,9 +131,9 @@ describe("aadAppUpdate", async () => {
       outputFilePath: true,
     };
 
-    result = await updateAadAppDriver.run(args, mockedDriverContext);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr())
+    result = await updateAadAppDriver.execute(args, mockedDriverContext);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
@@ -153,12 +154,12 @@ describe("aadAppUpdate", async () => {
       outputFilePath: outputPath,
     };
 
-    const result = await updateAadAppDriver.run(args, mockedDriverContext);
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
-    expect(result.isOk()).to.be.true;
-    expect(result._unsafeUnwrap().get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.be.not
-      .empty;
-    expect(result._unsafeUnwrap().size).to.equal(1);
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result._unsafeUnwrap().get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.be
+      .not.empty;
+    expect(result.result._unsafeUnwrap().size).to.equal(1);
     expect(await fs.pathExists(path.join(outputPath))).to.be.true;
     const actualManifest = JSON.parse(await fs.readFile(outputPath, "utf8"));
     expect(actualManifest.id).to.equal(expectedObjectId);
@@ -172,6 +173,11 @@ describe("aadAppUpdate", async () => {
     expect(actualManifest.oauth2Permissions[0].id).to.not.equal(
       "${{AAD_APP_ACCESS_AS_USER_PERMISSION_ID}}"
     ); // Should be replaced with an actual value
+    expect(result.summaries.length).to.equal(1);
+    console.log(result.summaries[0]);
+    expect(result.summaries).includes(
+      `Applied manifest ${args.manifestTemplatePath} to Azure Active Directory application with object id ${expectedObjectId}`
+    );
   });
 
   it("should use absolute path in args directly", async () => {
@@ -190,9 +196,9 @@ describe("aadAppUpdate", async () => {
         outputFilePath: outputPath,
       };
 
-      const result = await updateAadAppDriver.run(args, mockedDriverContext);
+      const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
-      expect(result.isOk()).to.be.true;
+      expect(result.result.isOk()).to.be.true;
     } finally {
       process.chdir(".."); // restore cwd
     }
@@ -231,11 +237,12 @@ describe("aadAppUpdate", async () => {
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
-    let result = await updateAadAppDriver.run(args, mockedDriverContext);
+    let result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr()).is.instanceOf(MissingFieldInManifestUserError).and.include({
-      message: "Field id is missing or invalid in AAD app manifest.", // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(MissingEnvUserError).and.include({
+      message:
+        "Failed to generate AAD app manifest. Environment variable AAD_APP_OBJECT_ID is not set.", // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
       source: "aadApp/update",
     });
 
@@ -244,13 +251,15 @@ describe("aadAppUpdate", async () => {
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
-    result = await updateAadAppDriver.run(args, mockedDriverContext);
+    result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr()).is.instanceOf(MissingFieldInManifestUserError).and.include({
-      message: "Field id is missing or invalid in AAD app manifest.", // The manifest does not has an id property
-      source: "aadApp/update",
-    });
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(MissingFieldInManifestUserError)
+      .and.include({
+        message: "Field id is missing or invalid in AAD app manifest.", // The manifest does not has an id property
+        source: "aadApp/update",
+      });
   });
 
   it("should only call MS Graph API once if manifest does not have preAuthorizedApplications", async () => {
@@ -271,9 +280,9 @@ describe("aadAppUpdate", async () => {
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
-    const result = await updateAadAppDriver.run(args, mockedDriverContext);
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
-    expect(result.isOk()).to.be.true;
+    expect(result.result.isOk()).to.be.true;
   });
 
   it("should call MS Graph API twice if manifest has preAuthorizedApplications", async () => {
@@ -301,9 +310,9 @@ describe("aadAppUpdate", async () => {
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
-    const result = await updateAadAppDriver.run(args, mockedDriverContext);
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
-    expect(result.isOk()).to.be.true;
+    expect(result.result.isOk()).to.be.true;
     expect(requestCount).to.equal(2); // should call MS Graph API twice
   });
 
@@ -321,15 +330,15 @@ describe("aadAppUpdate", async () => {
       outputFilePath: outputPath,
     };
 
-    const result = await updateAadAppDriver.run(args, mockedDriverContext);
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
     const actualManifest = JSON.parse(await fs.readFile(outputPath, "utf8"));
 
-    expect(result.isOk()).to.be.true;
-    expect(result._unsafeUnwrap().get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)).to.equal(
-      expectedPermissionId
-    );
-    expect(result._unsafeUnwrap().size).to.equal(1);
+    expect(result.result.isOk()).to.be.true;
+    expect(
+      result.result._unsafeUnwrap().get(outputKeys.AAD_APP_ACCESS_AS_USER_PERMISSION_ID)
+    ).to.equal(expectedPermissionId);
+    expect(result.result._unsafeUnwrap().size).to.equal(1);
     expect(actualManifest.oauth2Permissions[0].id).to.equal(expectedPermissionId);
   });
 
@@ -347,12 +356,12 @@ describe("aadAppUpdate", async () => {
       outputFilePath: outputPath,
     };
 
-    const result = await updateAadAppDriver.run(args, mockedDriverContext);
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
     const actualManifest = JSON.parse(await fs.readFile(outputPath, "utf8"));
 
-    expect(result.isOk()).to.be.true;
-    expect(result._unsafeUnwrap().size).to.equal(0);
+    expect(result.result.isOk()).to.be.true;
+    expect(result.result._unsafeUnwrap().size).to.equal(0);
     expect(actualManifest.oauth2Permissions[0].id).to.equal(expectedPermissionId);
   });
 
@@ -380,10 +389,10 @@ describe("aadAppUpdate", async () => {
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
-    const result = await updateAadAppDriver.run(args, mockedDriverContext);
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr())
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UnhandledUserError)
       .and.property("message")
       .contain("Unhandled error happened in aadApp/update action");
@@ -412,10 +421,10 @@ describe("aadAppUpdate", async () => {
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
-    const result = await updateAadAppDriver.run(args, mockedDriverContext);
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr())
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UnhandledSystemError)
       .and.property("message")
       .contain("Unhandled error happened in aadApp/update action");
@@ -462,9 +471,9 @@ describe("aadAppUpdate", async () => {
       projectPath: cwd(),
     };
 
-    const result = await updateAadAppDriver.run(args, dirverContext);
+    const result = await updateAadAppDriver.execute(args, dirverContext);
 
-    expect(result.isOk()).to.be.true;
+    expect(result.result.isOk()).to.be.true;
     expect(startTelemetry.eventName).to.equal("aadApp/update-start");
     expect(startTelemetry.properties.component).to.equal("aadApp/update");
     expect(endTelemetry.eventName).to.equal("aadApp/update");
@@ -526,9 +535,9 @@ describe("aadAppUpdate", async () => {
       projectPath: cwd(),
     };
 
-    const result = await updateAadAppDriver.run(args, dirverContext);
+    const result = await updateAadAppDriver.execute(args, dirverContext);
 
-    expect(result.isOk()).to.be.false;
+    expect(result.result.isOk()).to.be.false;
     expect(startTelemetry.eventName).to.equal("aadApp/update-start");
     expect(startTelemetry.properties.component).to.equal("aadApp/update");
     expect(endTelemetry.eventName).to.equal("aadApp/update");
@@ -539,5 +548,27 @@ describe("aadAppUpdate", async () => {
     expect(endTelemetry.properties["error-message"])
       .contain("Unhandled error happened in aadApp/update action")
       .and.contain("Internal server error");
+  });
+
+  it("should throw error when missing required environment variable in manifest", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").resolves();
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const args = {
+      manifestTemplatePath: path.join(testAssetsRoot, "manifestWithMissingEnv.json"),
+      outputFilePath: path.join(outputRoot, "manifest.output.json"),
+    };
+
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(MissingEnvUserError).and.include({
+      message:
+        "Failed to generate AAD app manifest. Environment variable AAD_APP_NAME, APPLICATION_NAME is not set.",
+      source: "aadApp/update",
+    });
   });
 });

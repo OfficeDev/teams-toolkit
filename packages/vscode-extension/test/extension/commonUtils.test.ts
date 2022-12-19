@@ -278,17 +278,6 @@ describe("CommonUtils", () => {
     }
   });
 
-  it("getAllFeatureFlags", () => {
-    const featureFlags = commonUtils.getAllFeatureFlags();
-
-    const match = featureFlags?.find((featureFlag) => {
-      if (featureFlag.includes(commonUtils.FeatureFlags.SPFxVersion)) {
-        return true;
-      }
-    });
-    chai.expect(match).to.be.exist;
-  });
-
   describe("get app name", () => {
     const sandbox = sinon.createSandbox();
     afterEach(() => {

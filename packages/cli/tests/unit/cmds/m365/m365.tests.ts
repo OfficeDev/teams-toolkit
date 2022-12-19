@@ -94,6 +94,11 @@ describe("M365", () => {
     const sideloading = m365.subCommands.find((cmd) => cmd.commandHead === "sideloading");
     expect(sideloading).not.undefined;
 
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
     axiosPostResponses["/dev/v1/users/packages"] = {
       data: {
         operationId: "test-operation-id",
@@ -127,6 +132,11 @@ describe("M365", () => {
     const unacquire = m365.subCommands.find((cmd) => cmd.commandHead === "unacquire");
     expect(unacquire).not.undefined;
 
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
     axiosDeleteResponses["/catalog/v1/users/acquisitions/test-title-id"] = {
       status: 200,
     };
@@ -137,15 +147,22 @@ describe("M365", () => {
     expect(finalLog).equals("Unacquiring done.");
   });
 
-  it("M365 Unacquire command (file-path)", async () => {
+  it("M365 Unacquire command (manifest-id)", async () => {
     const m365 = new M365();
     const unacquire = m365.subCommands.find((cmd) => cmd.commandHead === "unacquire");
     expect(unacquire).not.undefined;
 
-    axiosPostResponses["/dev/v1/users/packages"] = {
+    axiosGetResponses["/config/v1/environment"] = {
       data: {
-        titlePreview: {
-          titleId: "test-title-id",
+        titlesServiceUrl: "test-url",
+      },
+    };
+    axiosPostResponses["/catalog/v1/users/titles/launchInfo"] = {
+      data: {
+        acquisition: {
+          titleId: {
+            id: "test-title-id",
+          },
         },
       },
     };
@@ -153,7 +170,7 @@ describe("M365", () => {
       status: 200,
     };
 
-    await unacquire!.handler({ "file-path": "test" });
+    await unacquire!.handler({ "manifest-id": "test" });
     expect(logs.length).greaterThan(0);
     const finalLog = logs[logs.length - 1];
     expect(finalLog).equals("Unacquiring done.");
@@ -164,6 +181,11 @@ describe("M365", () => {
     const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");
     expect(launchInfo).not.undefined;
 
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "test-url",
+      },
+    };
     axiosGetResponses["/catalog/v1/users/titles/test-title-id/launchInfo"] = {
       data: {
         foo: "bar",
@@ -176,15 +198,22 @@ describe("M365", () => {
     expect(finalLog).equals(JSON.stringify({ foo: "bar" }));
   });
 
-  it("M365 LaunchInfo command (file-path)", async () => {
+  it("M365 LaunchInfo command (manifest-id)", async () => {
     const m365 = new M365();
     const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");
     expect(launchInfo).not.undefined;
 
-    axiosPostResponses["/dev/v1/users/packages"] = {
+    axiosGetResponses["/config/v1/environment"] = {
       data: {
-        titlePreview: {
-          titleId: "test-title-id",
+        titlesServiceUrl: "test-url",
+      },
+    };
+    axiosPostResponses["/catalog/v1/users/titles/launchInfo"] = {
+      data: {
+        acquisition: {
+          titleId: {
+            id: "test-title-id",
+          },
         },
       },
     };
@@ -194,9 +223,19 @@ describe("M365", () => {
       },
     };
 
-    await launchInfo!.handler({ "file-path": "test" });
+    await launchInfo!.handler({ "manifest-id": "test" });
     expect(logs.length).greaterThan(0);
     const finalLog = logs[logs.length - 1];
     expect(finalLog).equals(JSON.stringify({ foo: "bar" }));
+  });
+
+  it("M365 LaunchInfo command (undefined)", async () => {
+    const m365 = new M365();
+    const launchInfo = m365.subCommands.find((cmd) => cmd.commandHead === "launchinfo");
+    expect(launchInfo).not.undefined;
+
+    const result = await launchInfo!.runCommand({});
+    expect(result).not.undefined;
+    expect(result.isErr()).to.be.true;
   });
 });

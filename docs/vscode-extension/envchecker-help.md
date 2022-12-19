@@ -6,8 +6,7 @@ Teams Toolkit checks the following prerequisites during the debug process:
   |Project type|Node.js LTS version|
   | --- | --- |
   |Tab | 14, **16 (recommended)** |
-  |SPFx Tab with SPFx v1.15 | 14, **16 (recommended)**|
-  |SPFx Tab with SPFx v1.16-beta.1 | **16 (recommended)**|
+  |SPFx Tab | **16 (recommended)**|
   |Bot |  14, **16 (recommended)** |
   |Message extension | 14, **16 (recommended)** |
   
@@ -58,8 +57,7 @@ Go to [the official site](https://nodejs.org/en/about/releases/) to download and
 |Project type|Node.js LTS version|
 | --- | --- |
 |Tab | 14, **16 (recommended)** |
-|SPFx Tab with SPFx v1.15 | 14, **16 (recommended)**|
-|SPFx Tab with SPFx v1.16-beta.1 | **16 (recommended)**|
+|SPFx Tab | **16 (recommended)**|
 |Bot |  14, **16 (recommended)** |
 |Message extension | 14, **16 (recommended)** |
 
@@ -116,16 +114,11 @@ To resolve this please refer to [How to install Node.js?](#how-to-install-nodejs
 
 ### NodeNotSupported (SPFx hosting)
 
-> Node.js (*node_version*) is not in the supported version list (v14, v16 for SPFx v1.15 and v16 for SPFx v1.16-beta.1).
+> Node.js (*node_version*) is not in the supported version list (v16).
 
-The SharePoint Framework v1.15.0 and v1.16-beta.1 is supported on the following Node.js versions respectively:
+The SharePoint Framework v1.16.0 is supported on the following Node.js versions:
 
-- Node.js v14.15.0+ (_Fermium_)
-- Node.js v16.15.0+ (Gallium)
-
-and
-
-- Node.js v16.15.0+ (Gallium)
+- Node.js v16 LTS (v16.13.x - v16.18.x, aka: Gallium)
 
 And **the latest version of Node.js LTS v16** would be recommended to be installed. For details, please refer to this [document](https://docs.microsoft.com/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs).
 

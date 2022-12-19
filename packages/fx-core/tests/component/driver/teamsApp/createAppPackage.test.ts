@@ -51,12 +51,12 @@ describe("teamsApp/createAppPackage", async () => {
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isOk());
-    if (result.isOk()) {
-      chai.assert(result.value.has("TEAMS_APP_PACKAGE_PATH"));
-    }
     if (await fs.pathExists(args.outputZipPath)) {
       await fs.remove(args.outputZipPath);
     }
+
+    const executeResult = await teamsAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isTrue(executeResult.result.isOk());
   });
 
   it("happy path - withEmptyCapabilities", async () => {
@@ -73,11 +73,8 @@ describe("teamsApp/createAppPackage", async () => {
     sinon.stub(fs, "chmod").callsFake(async () => {});
     sinon.stub(fs, "writeFile").callsFake(async () => {});
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext, true);
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isOk());
-    if (result.isOk()) {
-      chai.assert(result.value.has("TEAMS_APP_PACKAGE_PATH"));
-    }
     if (await fs.pathExists(args.outputZipPath)) {
       await fs.remove(args.outputZipPath);
     }

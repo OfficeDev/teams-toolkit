@@ -1175,35 +1175,8 @@ describe("provisionUtils", () => {
 
       chai.assert.isTrue(res.isErr());
       if (res.isErr()) {
-        chai.assert.equal(res.error.name, "error");
+        chai.assert.equal(res.error.name, "CancelProvision");
       }
-    });
-
-    it("not trigger if missing UI", async () => {
-      const ctx = {
-        azureAccountProvider: new MockedAzureAccountProvider(),
-        telemetryReporter: new MockTelemetryReporter(),
-      };
-      mocker.stub(ctx.azureAccountProvider, "getJsonObject").resolves({ unique_name: "name" });
-      mocker.stub(ctx.telemetryReporter, "sendTelemetryEvent").resolves();
-      const azureSubInfo: SubscriptionInfo = {
-        subscriptionName: "sub",
-        subscriptionId: "sub-id",
-        tenantId: "tenant-id",
-      };
-      const m365tenant: M365TenantRes = {
-        tenantUserName: "m365-name",
-        tenantIdInToken: "tenantId",
-      };
-
-      const res = await provisionUtils.askForProvisionConsentV3(
-        ctx as any,
-        m365tenant,
-        azureSubInfo,
-        "test"
-      );
-
-      chai.assert.isTrue(res.isOk());
     });
   });
 
@@ -1296,7 +1269,7 @@ describe("provisionUtils", () => {
     });
 
     it("provisioned before and switch tenant", async () => {
-      const actions = ["aadApp/create", "m365Bot/create"];
+      const actions = ["aadApp/create", "botFramework/create"];
       const tenantId = "tid";
       mockedEnvRestore = mockedEnv({
         TEAMS_APP_TENANT_ID: "old-tid",

@@ -659,6 +659,8 @@ export class AddSsoParameters {
   static readonly filePath = path.join("plugins", "resource", "aad", "auth");
   static readonly Bot = "bot";
   static readonly Tab = "tab";
+  static readonly V3 = "V3";
+  static readonly V3AuthFolder = "TeamsFx-Auth";
   static readonly Readme = "README.md";
   static readonly ReadmeCSharp = "README.txt";
   static readonly LearnMore = getLocalizedString("core.provision.learnMore");
@@ -713,8 +715,25 @@ export const TabNewUIOptionItem: OptionItem = {
   data: "https://aka.ms/teamsfx-tab-with-sso",
   buttons: [
     {
-      iconPath: "tasklist",
-      tooltip: getLocalizedString("core.option.tutorial"),
+      iconPath: "file-symlink-file",
+      tooltip: getLocalizedString("core.option.github"),
+      command: "fx-extension.openTutorial",
+    },
+  ],
+};
+
+export const DashboardOptionItem: OptionItem = {
+  id: "dashboard-tab",
+  label: `$(browser) ${getLocalizedString("core.DashboardOption.label")}`,
+  description: getLocalizedString("core.Option.preview"),
+  cliName: "dashboard-tab",
+  detail: getLocalizedString("core.DashboardOption.detail"),
+  groupName: getLocalizedString("core.options.separator.scenario"),
+  data: "https://aka.ms/teamsfx-dashboard-app",
+  buttons: [
+    {
+      iconPath: "file-symlink-file",
+      tooltip: getLocalizedString("core.option.github"),
       command: "fx-extension.openTutorial",
     },
   ],
@@ -747,8 +766,8 @@ export const NotificationOptionItem: OptionItem = {
   data: "https://aka.ms/teamsfx-send-notification",
   buttons: [
     {
-      iconPath: "tasklist",
-      tooltip: getLocalizedString("core.option.tutorial"),
+      iconPath: "file-symlink-file",
+      tooltip: getLocalizedString("core.option.github"),
       command: "fx-extension.openTutorial",
     },
   ],
@@ -765,8 +784,8 @@ export const CommandAndResponseOptionItem: OptionItem = {
   data: "https://aka.ms/teamsfx-create-command",
   buttons: [
     {
-      iconPath: "tasklist",
-      tooltip: getLocalizedString("core.option.tutorial"),
+      iconPath: "file-symlink-file",
+      tooltip: getLocalizedString("core.option.github"),
       command: "fx-extension.openTutorial",
     },
   ],
@@ -783,8 +802,8 @@ export const WorkflowOptionItem: OptionItem = {
   data: "https://aka.ms/teamsfx-create-workflow",
   buttons: [
     {
-      iconPath: "tasklist",
-      tooltip: getLocalizedString("core.option.tutorial"),
+      iconPath: "file-symlink-file",
+      tooltip: getLocalizedString("core.option.github"),
       command: "fx-extension.openTutorial",
     },
   ],
@@ -861,6 +880,16 @@ export const TabNonSsoItem: OptionItem = {
   cliName: "tab-non-sso",
   detail: getLocalizedString("core.TabNonSso.detail"),
   groupName: getLocalizedString("core.options.separator.basic"),
+};
+
+export const TabNonSsoAndDefaultBotItem: OptionItem = {
+  id: "TabNonSsoAndBot",
+  label: "", // No need to set display name as this option won't be shown in UI
+};
+
+export const DefaultBotAndMessageExtensionItem: OptionItem = {
+  id: "BotAndMessageExtension",
+  label: "", // No need to set display name as this option won't be shown in UI
 };
 
 export const M365SsoLaunchPageOptionItem: OptionItem = {
@@ -1043,7 +1072,12 @@ export const BotFeatureIds = [
   M365SearchAppOptionItem.id,
 ];
 
-export const TabFeatureIds = [TabOptionItem.id, TabNonSsoItem.id, M365SsoLaunchPageOptionItem.id];
+export const TabFeatureIds = [
+  TabOptionItem.id,
+  TabNonSsoItem.id,
+  M365SsoLaunchPageOptionItem.id,
+  DashboardOptionItem.id,
+];
 
 export const AadConstants = {
   DefaultTemplateFileName: "aad.manifest.template.json",

@@ -37,14 +37,14 @@ export function Welcome(props) {
     };
   });
 
-  const { teamsfx } = useContext(TeamsFxContext);
+  const { teamsUserCredential } = useContext(TeamsFxContext);
   const { loading, data, error } = useData(async () => {
-    if (teamsfx) {
-      const userInfo = await teamsfx.getUserInfo();
+    if (teamsUserCredential) {
+      const userInfo = await teamsUserCredential.getUserInfo();
       return userInfo;
     }
   });
-  const userName = (loading || error) ? "": data.displayName;
+  const userName = loading || error ? "" : data.displayName;
   return (
     <div className="welcome page">
       <div className="narrow page-padding">

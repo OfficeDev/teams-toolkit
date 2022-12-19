@@ -4,7 +4,6 @@ export enum ConfigurationKey {
   AutomaticNpmInstall = "automaticNpmInstall",
   YoEnvCheckerEnable = "SPFxPrerequisiteCheck.yo",
   generatorEnvCheckerEnable = "SPFxPrerequisiteCheck.sharepointYeomanGenerator",
-  SPFxVersion = "SPFxVersion",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";
@@ -37,7 +36,9 @@ export const manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
 export const manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;
 export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;
 
-export const SUPPORTED_SPFX_VERSION = "1.15.0";
-export const SUPPORTED_SPFX_PRERELEASE_VERSION = "1.16.0-beta.1";
+export const SUPPORTED_SPFX_VERSION = "1.16.0";
 export const CLI_FOR_M365 =
   "https://pnp.github.io/cli-microsoft365/cmd/spfx/project/project-upgrade/";
+
+export const SwitchToPreReleaseVersionLink =
+  "https://code.visualstudio.com/updates/v1_63#_pre-release-extensions";

@@ -62,7 +62,12 @@ const maxRetryTimes = 4;
 const resourceBaseName = "resourceBaseName";
 const parameterName = "parameters";
 const solutionName = "solution";
-const InvalidTemplateErrorCode = "InvalidTemplate";
+
+const ErrorCodes: { [key: string]: string } = {
+  InvalidTemplate: SolutionError.FailedToValidateArmTemplates,
+  InvalidTemplateDeployment: SolutionError.FailedToValidateArmTemplates,
+  ResourceGroupNotFound: SolutionError.ResourceGroupNotFound,
+};
 
 export type DeployContext = {
   ctx: SolutionContext;
@@ -314,17 +319,32 @@ export async function doDeployArmTemplatesV3(
   }
 }
 
+function fetchInnerError(error: any): any {
+  if (!error.details) {
+    return error;
+  }
+  if (error.details.error) {
+    return fetchInnerError(error.details.error);
+  } else if (error.details instanceof Array && error.details[0]) {
+    return fetchInnerError(error.details[0]);
+  }
+  return error;
+}
+
 export async function handleArmDeploymentError(
   error: any,
   deployCtx: DeployContext
 ): Promise<Result<undefined, FxError>> {
   // return the error if the template is invalid
-  if (error.code === InvalidTemplateErrorCode) {
+  if (Object.keys(ErrorCodes).includes(error.code)) {
+    if (error.code === "InvalidTemplateDeployment") {
+      error = fetchInnerError(error);
+    }
     return err(
       new UserError({
         error,
         source: SolutionSource,
-        name: SolutionError.FailedToValidateArmTemplates,
+        name: ErrorCodes[error.code] ?? SolutionError.FailedToValidateArmTemplates,
       })
     );
   }
@@ -374,6 +394,9 @@ export async function handleArmDeploymentError(
 
     return err(returnError);
   } else {
+    deployCtx.ctx.logProvider?.info(
+      `origin error message is : \n${JSON.stringify(error, undefined, 2)}`
+    );
     return result;
   }
 }

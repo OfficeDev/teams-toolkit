@@ -1,14 +1,14 @@
-﻿using {{SafeProjectName}}.Models;
+﻿using {%SafeProjectName%}.Models;
 using AdaptiveCards.Templating;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.TeamsFx.Conversation;
 using Newtonsoft.Json;
 
-namespace {{SafeProjectName}}.Commands
+namespace {%SafeProjectName%}.Commands
 {
     /// <summary>
-    /// The <see cref="HelloWorldCommandHandler"/> registers a pattern with the <see cref="ITeamsCommandHandler"/> and 
+    /// The <see cref="HelloWorldCommandHandler"/> registers a pattern with the <see cref="ITeamsCommandHandler"/> and
     /// responds with an Adaptive Card if the user types the <see cref="TriggerPatterns"/>.
     /// </summary>
     public class HelloWorldCommandHandler : ITeamsCommandHandler
@@ -40,7 +40,7 @@ namespace {{SafeProjectName}}.Commands
                 new HelloWorldModel
                 {
                     Title = "Your Hello World Bot is Running",
-                    Body = "Congratulations! Your hello world bot is running. Click the documentation below to learn more about Bots and the Teams Toolkit.",
+                    Body = "Congratulations! Your hello world bot is running. CClick the button below to trigger an action.",
                 }
             );
 

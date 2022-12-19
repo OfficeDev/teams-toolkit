@@ -45,10 +45,6 @@ const ngrokEndpointRegex =
   /obj=tunnels name=(?<tunnelName>.*) addr=(?<src>.*) url=(?<endpoint>https:\/\/([\S])*)/;
 const ngrokWebServiceRegex = /msg="starting web service" obj=web addr=(?<webServiceUrl>([\S])*)/;
 const defaultNgrokWebServiceUrl = "http://127.0.0.1:4040/api/tunnels";
-const outputName = {
-  endpoint: "TUNNEL_ENDPOINT",
-  domain: "TUNNEL_DOMAIN",
-};
 
 type LocalTunnelTaskStatus = {
   endpoint?: EndpointInfo;
@@ -66,6 +62,10 @@ export interface LocalTunnelArgs {
   ngrokPath?: string;
   tunnelInspection?: string;
   env?: string;
+  output?: {
+    endpoint?: string;
+    domain?: string;
+  };
 }
 
 export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
@@ -77,6 +77,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   private childProc: cp.ChildProcess | undefined;
   private isOutputSummary: boolean;
   private log: string;
+  private outputMessageList: string[];
 
   private readonly args: LocalTunnelArgs;
   private readonly status: LocalTunnelTaskStatus;
@@ -87,9 +88,15 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     super(taskDefinition);
     this.args = taskDefinition.args as LocalTunnelArgs;
     this.isOutputSummary = false;
-    this.progressHandler = new ProgressHandler(localTunnelDisplayMessages.taskName, 1, "terminal");
-    this.step = new Step(1);
+    const stepNumber = isV3Enabled() ? 2 : 1;
+    this.progressHandler = new ProgressHandler(
+      localTunnelDisplayMessages.taskName,
+      stepNumber,
+      "terminal"
+    );
+    this.step = new Step(stepNumber);
     this.log = "";
+    this.outputMessageList = [];
 
     for (const task of LocalTunnelTaskTerminal.ngrokTaskTerminals.values()) {
       task.terminal.close();
@@ -127,17 +134,25 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
   }
 
   private async _do(): Promise<Result<Void, FxError>> {
-    this.outputStartMessage();
-    return this.resolveArgs().then((v) =>
-      this.outputStepMessage(v.ngrokArgs, v.ngrokPath).then(() =>
-        this.startNgrokChildProcess(v.ngrokArgs, v.ngrokPath)
-      )
-    );
+    await this.outputStartMessage();
+    const resolvedArgs = await this.resolveArgs();
+    let ngrokPath;
+    if (isV3Enabled()) {
+      await this.outputInstallNgrokStepMessage();
+      const res = await this.installNgrok();
+      if (res.isErr()) {
+        return err(res.error);
+      }
+      ngrokPath = res.value;
+    } else {
+      ngrokPath = await LocalTunnelTaskTerminal.getNgrokPath();
+    }
+    await this.outputStartNgrokStepMessage(resolvedArgs.ngrokArgs, ngrokPath);
+    return await this.startNgrokChildProcess(resolvedArgs.ngrokArgs, ngrokPath);
   }
 
   private async resolveArgs(): Promise<{
     ngrokArgs: string[];
-    ngrokPath: string;
   }> {
     if (!this.args.ngrokArgs) {
       throw BaseTaskTerminal.taskDefinitionError("ngrokArgs");
@@ -147,13 +162,8 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       ? [this.args.ngrokArgs]
       : this.args.ngrokArgs;
 
-    const ngrokPath = !this.args.ngrokPath
-      ? await LocalTunnelTaskTerminal.getNgrokPath()
-      : this.args.ngrokPath;
-
     return {
       ngrokArgs: ngrokArgs,
-      ngrokPath: ngrokPath,
     };
   }
 
@@ -309,10 +319,17 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       }
 
       const url = new URL(endpoint);
-      const envVars = {
-        [outputName.endpoint]: url.origin,
-        [outputName.domain]: url.hostname,
-      };
+      const envVars: { [key: string]: string } = {};
+      if (this.args?.output?.endpoint) {
+        envVars[this.args.output.endpoint] = url.origin;
+      }
+      if (this.args?.output?.domain) {
+        envVars[this.args.output.domain] = url.hostname;
+      }
+
+      if (Object.entries(envVars).length == 0) {
+        return ok(Void);
+      }
 
       const res = await envUtil.writeEnv(
         globalVariables.workspaceUri.fsPath,
@@ -325,7 +342,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     }
   }
 
-  private outputStartMessage(): void {
+  private async outputStartMessage(): Promise<void> {
     VsCodeLogInstance.info(localTunnelDisplayMessages.title);
     VsCodeLogInstance.outputChannel.appendLine("");
     VsCodeLogInstance.outputChannel.appendLine(
@@ -334,9 +351,18 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     VsCodeLogInstance.outputChannel.appendLine("");
 
     this.writeEmitter.fire(`${localTunnelDisplayMessages.startMessage}\r\n\r\n`);
+
+    await this.progressHandler.start();
   }
 
-  private async outputStepMessage(ngrokArgs: string[], ngrokPath: string): Promise<void> {
+  private async outputInstallNgrokStepMessage(): Promise<void> {
+    VsCodeLogInstance.outputChannel.appendLine(
+      `${this.step.getPrefix()} ${localTunnelDisplayMessages.checkNgrokMessage} ... `
+    );
+    await this.progressHandler.next(localTunnelDisplayMessages.checkNgrokMessage);
+  }
+
+  private async outputStartNgrokStepMessage(ngrokArgs: string[], ngrokPath: string): Promise<void> {
     VsCodeLogInstance.outputChannel.appendLine(
       `${this.step.getPrefix()} ${localTunnelDisplayMessages.startMessage} ... `
     );
@@ -344,7 +370,6 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
 
     this.writeEmitter.fire(`${LocalTunnelTaskTerminal.command(ngrokArgs, ngrokPath)}\r\n\r\n`);
 
-    await this.progressHandler.start();
     await this.progressHandler.next(localTunnelDisplayMessages.startMessage);
   }
 
@@ -352,6 +377,11 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     const duration = this.getDurationInSeconds();
     VsCodeLogInstance.outputChannel.appendLine(localTunnelDisplayMessages.summary);
     VsCodeLogInstance.outputChannel.appendLine("");
+
+    for (const outputMessage of this.outputMessageList) {
+      VsCodeLogInstance.outputChannel.appendLine(`${doctorConstant.Tick} ${outputMessage}`);
+    }
+
     VsCodeLogInstance.outputChannel.appendLine(
       `${doctorConstant.Tick} ${localTunnelDisplayMessages.successSummary(
         ngrokTunnel.src,
@@ -393,6 +423,10 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
     VsCodeLogInstance.outputChannel.appendLine(localTunnelDisplayMessages.summary);
 
     VsCodeLogInstance.outputChannel.appendLine("");
+    for (const outputMessage of this.outputMessageList) {
+      VsCodeLogInstance.outputChannel.appendLine(`${doctorConstant.Tick} ${outputMessage}`);
+    }
+
     VsCodeLogInstance.outputChannel.appendLine(`${doctorConstant.Cross} ${fxError.message}`);
 
     VsCodeLogInstance.outputChannel.appendLine("");
@@ -465,6 +499,38 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       throw LocalTunnelError.NgrokNotFoundError();
     }
     return path.resolve(res.details.binFolders[0], res.command);
+  }
+
+  private async installNgrok(): Promise<Result<string, FxError>> {
+    try {
+      if (this.args.ngrokPath) {
+        this.outputMessageList.push(
+          localTunnelDisplayMessages.skipInstallMessage(this.args.ngrokPath)
+        );
+        return ok(this.args.ngrokPath);
+      }
+      const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
+      const res = (
+        await depsManager.ensureDependencies([DepsType.Ngrok], {
+          fastFail: true,
+          doctor: true,
+        })
+      )?.[0];
+      if (
+        !res.isInstalled ||
+        !res.details.binFolders ||
+        res.details.binFolders.length === 0 ||
+        !res.command ||
+        res.error
+      ) {
+        return err(LocalTunnelError.NgrokInstallationError());
+      }
+      const ngrokPath = path.resolve(res.details.binFolders[0], res.command);
+      this.outputMessageList.push(localTunnelDisplayMessages.installSuccessMessage(ngrokPath));
+      return ok(ngrokPath);
+    } catch (error: any) {
+      return err(LocalTunnelError.NgrokInstallationError(error));
+    }
   }
 
   private static command(ngrokArgs: string[], ngrokPath: string): string {
@@ -546,6 +612,16 @@ const LocalTunnelError = Object.freeze({
       ExtensionErrors.NgrokNotFoundError,
       getDefaultString("teamstoolkit.localDebug.ngrokNotFoundError"),
       localize("teamstoolkit.localDebug.ngrokNotFoundError")
+    ),
+  NgrokInstallationError: (error?: any) =>
+    new UserError(
+      ExtensionSource,
+      ExtensionErrors.NgrokInstallationError,
+      util.format(
+        getDefaultString("teamstoolkit.localDebug.ngrokInstallationError"),
+        error?.message ?? ""
+      ),
+      util.format(localize("teamstoolkit.localDebug.ngrokInstallationError"), error?.message ?? "")
     ),
   MultipleTunnelServiceError: () =>
     new UserError(

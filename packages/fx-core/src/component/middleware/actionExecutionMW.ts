@@ -19,8 +19,9 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { assign, merge } from "lodash";
-import { TOOLS } from "../../core/globalVars";
+import { globalVars, TOOLS } from "../../core/globalVars";
 import { TelemetryConstants } from "../constants";
+import { DriverContext } from "../driver/interface/commonArgs";
 import {
   sendErrorEvent,
   sendMigratedErrorEvent,
@@ -29,6 +30,7 @@ import {
   sendStartEvent,
   sendSuccessEvent,
 } from "../telemetry";
+import { settingsUtil } from "../utils/settingsUtil";
 
 export interface ActionOption {
   componentName?: string;
@@ -58,18 +60,25 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
     const componentName = action.componentName || ctx.self?.constructor.name;
     const telemetryComponentName = action.telemetryComponentName || componentName;
     const methodName = ctx.method!;
-    const actionName = `${componentName}.${methodName}`;
-    TOOLS.logProvider.debug(`execute ${actionName} start!`);
     const eventName = action.telemetryEventName || methodName;
     const telemetryProps = {
       [TelemetryConstants.properties.component]: telemetryComponentName,
+      env: process.env.TEAMSFX_ENV || "",
     };
+    const telemetryMeasures: Record<string, number> = {};
     let progressBar;
-    let returnType: "Result" | "Array" = "Result";
     try {
       // send start telemetry
       if (action.enableTelemetry) {
+        if (!globalVars.trackingId) {
+          // try to get trackingId
+          const projectPath = (ctx.arguments[0] as ContextV3 | DriverContext).projectPath;
+          if (projectPath) {
+            await settingsUtil.readSettings(projectPath, false);
+          }
+        }
         if (action.telemetryProps) assign(telemetryProps, action.telemetryProps);
+        if (globalVars.trackingId) telemetryProps["project-id"] = globalVars.trackingId; // add trackingId prop in telemetry
         sendStartEvent(eventName, telemetryProps);
         sendMigratedStartEvent(
           eventName,
@@ -107,36 +116,27 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
         const actionContext: ActionContext = {
           progressBar: progressBar,
           telemetryProps: telemetryProps,
+          telemetryMeasures: telemetryMeasures,
         };
         ctx.arguments.push(actionContext);
       }
       const startTime = new Date().getTime();
       await next();
-      if (ctx.result?.isErr) {
-        returnType = "Result";
-        if (ctx.result.isErr()) throw ctx.result.error;
-      } else if (Array.isArray(ctx.result)) {
-        // second type of return type: [value, FxError]
-        returnType = "Array";
-        if (ctx.result.length === 2 && ctx.result[1]) {
-          throw ctx.result[1];
-        }
-      }
       const timeCost = new Date().getTime() - startTime;
       if (ctx.result?.isErr && ctx.result.isErr()) throw ctx.result.error;
       // send end telemetry
-      merge(telemetryProps, { [TelemetryConstants.properties.timeCost]: timeCost });
+      merge(telemetryMeasures, { [TelemetryConstants.properties.timeCost]: timeCost });
       if (action.enableTelemetry) {
-        sendSuccessEvent(eventName, telemetryProps);
+        sendSuccessEvent(eventName, telemetryProps, telemetryMeasures);
         sendMigratedSuccessEvent(
           eventName,
           ctx.arguments[0] as ContextV3,
           ctx.arguments[1] as InputsWithProjectPath,
-          telemetryProps
+          telemetryProps,
+          telemetryMeasures
         );
       }
       await progressBar?.end(true);
-      TOOLS.logProvider.debug(`execute ${actionName} success!`);
     } catch (e) {
       await progressBar?.end(false);
       let fxError;
@@ -165,8 +165,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
           telemetryProps
         );
       }
-      TOOLS.logProvider.debug(`execute ${actionName} failed!`);
-      if (returnType === "Result") ctx.result = err(fxError);
+      ctx.result = err(fxError);
     }
   };
 }

@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { StepDriver } from "../../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { AzureResourceInfo, DriverContext } from "../../interface/commonArgs";
 import { Service } from "typedi";
-import { asFactory, asOptional, asString, wrapRun } from "../../../utils/common";
+import { asFactory, asOptional, asString, wrapRun, wrapSummary } from "../../../utils/common";
 import { AzureStorageStaticWebsiteConfigArgs } from "../../interface/provisionArgs";
 import {
   createBlobServiceClient,
@@ -12,11 +12,13 @@ import {
   parseAzureResourceId,
 } from "../../../utils/azureResourceOperation";
 import { BlobServiceClient, BlobServiceProperties } from "@azure/storage-blob";
-import { FxError, Result } from "@microsoft/teamsfx-api";
+import { FxError, IProgressHandler, Result } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
 import { DeployConstant } from "../../../constant/deployConstant";
+import { ProgressMessages } from "../../../messages";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 const ACTION_NAME = "azureStorage/enableStaticWebsite";
 
@@ -25,6 +27,12 @@ const ACTION_NAME = "azureStorage/enableStaticWebsite";
  */
 @Service(ACTION_NAME)
 export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
+  readonly description: string = getLocalizedString(
+    // eslint-disable-next-line no-secrets/no-secrets
+    "driver.deploy.enableStaticWebsiteInAzureStorageDescription"
+  );
+  protected static readonly HELP_LINK =
+    "https://aka.ms/teamsfx-actions/azure-storage-enable-static-website";
   protected static readonly STORAGE_CONFIG_ARGS = asFactory<AzureStorageStaticWebsiteConfigArgs>({
     storageResourceId: asString,
     indexPage: asOptional(asString),
@@ -36,17 +44,41 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.PROVISION_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
-    return wrapRun(() => this.config(args, context));
+    const progressBar = await context.ui?.createProgressBar(
+      ProgressMessages.configureAzureStorageEnableStaticWebsite,
+      2
+    );
+    return wrapRun(
+      () => this.config(args, context, progressBar),
+      AzureStorageStaticWebsiteConfigDriver.cleanup.bind(progressBar),
+      context.logProvider
+    );
+  }
+
+  execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
+    return wrapSummary(this.run.bind(this, args, ctx), [
+      "driver.deploy.enableStaticWebsiteSummary",
+    ]);
   }
 
   /**
    * enable static website for azure storage account
    * @param args Azure Storage resourceId, index page and error page
    * @param context log provider, progress handler, telemetry reporter
+   * @param progressBar progress handler
    */
-  async config(args: unknown, context: DriverContext): Promise<Map<string, string>> {
+  async config(
+    args: unknown,
+    context: DriverContext,
+    progressBar?: IProgressHandler
+  ): Promise<Map<string, string>> {
     const logger = context.logProvider;
-    const input = AzureStorageStaticWebsiteConfigDriver.STORAGE_CONFIG_ARGS(args);
+    await progressBar?.start();
+    await progressBar?.next(ProgressMessages.checkAzureStorageEnableStaticWebsite);
+    const input = AzureStorageStaticWebsiteConfigDriver.STORAGE_CONFIG_ARGS(
+      args,
+      AzureStorageStaticWebsiteConfigDriver.HELP_LINK
+    );
     await logger.debug(
       `Enabling static website feature for Azure Storage account ${input.storageResourceId}`
     );
@@ -61,9 +93,12 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
       await logger.debug(
         `Static website feature is already enabled for Azure Storage account ${input.storageResourceId}.`
       );
+      await progressBar?.next(ProgressMessages.azureStorageStaticWebsiteAlreadyEnabled);
+      await progressBar?.end(true);
       return AzureStorageStaticWebsiteConfigDriver.RETURN_VALUE;
     }
 
+    await progressBar?.next(ProgressMessages.enableAzureStorageStaticWebsite);
     const properties = {
       staticWebsite: {
         indexDocument: input.indexPage ?? DeployConstant.DEFAULT_INDEX_DOCUMENT,
@@ -73,6 +108,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
     } as BlobServiceProperties;
 
     await azureBlobClient.setProperties(properties);
+    await progressBar?.end(true);
     return Promise.resolve(AzureStorageStaticWebsiteConfigDriver.RETURN_VALUE);
   }
 
@@ -85,5 +121,13 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
       `Checking if static website feature is enabled in Azure Storage account '${azureInfo.instanceId}'.`
     );
     return (await azureBlobClient.getProperties()).staticWebsite?.enabled === true;
+  }
+
+  /**
+   * call when error happens
+   * do some resource clean up
+   */
+  static async cleanup(progressBar?: IProgressHandler): Promise<void> {
+    await progressBar?.end(false);
   }
 }

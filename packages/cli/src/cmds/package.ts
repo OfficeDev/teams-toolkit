@@ -37,8 +37,9 @@ export default class Package extends YargsCommand {
   public readonly description = "Build your Teams app into a package for publishing.";
 
   public builder(yargs: Argv): Argv<any> {
-    if (isV3Enabled()) yargs.options(BuildPackageOptions);
-    return yargs.version(false).options(RootFolderOptions).options(EnvOptions);
+    if (isV3Enabled()) yargs.options(RootFolderOptions).options(BuildPackageOptions);
+    else yargs.options(RootFolderOptions);
+    return yargs.hide("interactive").version(false).options(EnvOptions);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

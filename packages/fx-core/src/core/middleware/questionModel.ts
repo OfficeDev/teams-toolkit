@@ -11,26 +11,28 @@ import {
   QTreeNode,
   Result,
   traverse,
+  Void,
 } from "@microsoft/teamsfx-api";
-import { isCLIDotNetEnabled, isPreviewFeaturesEnabled } from "../../common/featureFlags";
+import {
+  isCLIDotNetEnabled,
+  isOfficeAddinEnabled,
+  isPreviewFeaturesEnabled,
+} from "../../common/featureFlags";
 import { deepCopy, isExistingTabAppEnabled } from "../../common/tools";
 import { getSPFxScaffoldQuestion } from "../../component/feature/spfx";
 import { getNotificationTriggerQuestionNode } from "../../component/question";
-import {
-  BotOptionItem,
-  ExistingTabOptionItem,
-  TabNewUIOptionItem,
-  TabNonSsoItem,
-  TabSPFxItem,
-} from "../../component/constants";
+import { ExistingTabOptionItem, TabSPFxItem } from "../../component/constants";
 import { getQuestionsForGrantPermission } from "../collaborator";
 import { TOOLS } from "../globalVars";
 import {
+  BotIdsQuestion,
   CoreQuestionNames,
   createAppNameQuestion,
   createCapabilityForDotNet,
+  createCapabilityForOfficeAddin,
   createCapabilityQuestion,
   createCapabilityQuestionPreview,
+  CreateNewOfficeAddinOption,
   ExistingTabEndpointQuestion,
   getCreateNewOrFromSampleQuestion,
   getRuntimeQuestion,
@@ -47,13 +49,11 @@ import {
   tabsWebsitetUrlQuestion,
 } from "../question";
 import { CoreHookContext } from "../types";
-import {
-  isPersonalApp,
-  needBotCode,
-  needTabCode,
-} from "../../component/resource/appManifest/utils/utils";
+import { isPersonalApp, needBotCode } from "../../component/resource/appManifest/utils/utils";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
+import { getTemplateId } from "../../component/developerPortalScaffoldUtils";
+import { getQuestionsForScaffolding } from "../../component/generator/officeAddin/question";
 
 /**
  * This middleware will help to collect input from question flow
@@ -117,11 +117,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   if (inputs.teamsAppFromTdp) {
     // If toolkit is activated by a request from Developer Portal, we will always create a project from scratch.
     inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC.id;
-    inputs[CoreQuestionNames.Capabilities] = needTabCode(inputs.teamsAppFromTdp)
-      ? TabNonSsoItem.id
-      : needBotCode(inputs.teamsAppFromTdp)
-      ? BotOptionItem.id
-      : inputs[CoreQuestionNames.Capabilities];
+    inputs[CoreQuestionNames.Capabilities] = getTemplateId(inputs.teamsAppFromTdp);
   }
   const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
 
@@ -181,10 +177,14 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   createNew.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
 
   if (!!inputs.teamsAppFromTdp) {
-    //const updateTabUrls = await getQuestionsForUpdateTabUrls(inputs.teamsAppFromTdp);
     const updateTabUrls = await getQuestionsForUpdateStaticTabUrls(inputs.teamsAppFromTdp);
     if (updateTabUrls) {
       createNew.addChild(updateTabUrls);
+    }
+
+    const updateBotIds = await getQuestionsForUpdateBotIds(inputs.teamsAppFromTdp);
+    if (updateBotIds) {
+      createNew.addChild(updateBotIds);
     }
   }
   // create from sample
@@ -192,6 +192,10 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   node.addChild(sampleNode);
   sampleNode.condition = { equals: ScratchOptionNo.id };
   sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+
+  if (isOfficeAddinEnabled()) {
+    addOfficeAddinQuestions(node);
+  }
 
   return ok(node.trim());
 }
@@ -266,6 +270,24 @@ async function getQuestionsForUpdateStaticTabUrls(
   return updateTabUrls;
 }
 
+async function getQuestionsForUpdateBotIds(
+  appDefinition: AppDefinition
+): Promise<QTreeNode | undefined> {
+  if (!needBotCode(appDefinition)) {
+    return undefined;
+  }
+  const bots = appDefinition.bots;
+  const messageExtensions = appDefinition.messagingExtensions;
+
+  // can add only one bot. If existing, the length is 1.
+  const botId = !!bots && bots.length > 0 ? bots![0].botId : undefined;
+  // can add only one message extension. If existing, the length is 1.
+  const messageExtensionId =
+    !!messageExtensions && messageExtensions.length > 0 ? messageExtensions![0].botId : undefined;
+
+  return new QTreeNode(BotIdsQuestion(botId, messageExtensionId));
+}
+
 export async function getQuestionsForCreateProjectV2(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -274,4 +296,18 @@ export async function getQuestionsForCreateProjectV2(
   } else {
     return getQuestionsForCreateProjectWithoutDotNet(inputs);
   }
+}
+
+export function addOfficeAddinQuestions(node: QTreeNode): void {
+  const createNewAddin = new QTreeNode({ type: "group" });
+  createNewAddin.condition = { equals: CreateNewOfficeAddinOption.id };
+  node.addChild(createNewAddin);
+
+  const capNode = new QTreeNode(createCapabilityForOfficeAddin());
+  createNewAddin.addChild(capNode);
+
+  capNode.addChild(getQuestionsForScaffolding());
+
+  createNewAddin.addChild(new QTreeNode(QuestionRootFolder));
+  createNewAddin.addChild(new QTreeNode(createAppNameQuestion()));
 }

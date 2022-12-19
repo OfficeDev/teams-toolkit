@@ -1,23 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as fs from "fs-extra";
+import * as path from "path";
+import semver from "semver";
+import {
+  nodeNotFoundHelpLink,
+  nodeNotSupportedForAzureHelpLink,
+  nodeNotSupportedForSPFxHelpLink,
+  v3NodeNotFoundHelpLink,
+  v3NodeNotSupportedHelpLink,
+} from "../constant/helpLink";
+import { Messages } from "../constant/message";
+import { DepsCheckerEvent } from "../constant/telemetry";
+import { DependencyStatus, DepsChecker, DepsType, InstallOptions } from "../depsChecker";
 import {
   DepsCheckerError,
   NodeNotFoundError,
   NodeNotRecommendedError,
   NodeNotSupportedError,
 } from "../depsError";
-import { cpUtils } from "../util/cpUtils";
-import { DepsCheckerEvent } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DependencyStatus, DepsChecker, DepsType } from "../depsChecker";
-import { Messages } from "../constant/message";
-import {
-  nodeNotFoundHelpLink,
-  nodeNotSupportedForSPFxHelpLink,
-  nodeNotSupportedForAzureHelpLink,
-} from "../constant/helpLink";
+import { cpUtils } from "../util/cpUtils";
 
 const NodeName = "Node.js";
 
@@ -35,8 +40,9 @@ export abstract class NodeChecker implements DepsChecker {
   protected abstract readonly _nodeNotFoundHelpLink: string;
   protected abstract readonly _nodeNotSupportedEvent: DepsCheckerEvent;
   protected abstract readonly _type: DepsType;
-  protected abstract getSupportedVersions(): Promise<string[]>;
+  protected abstract getSupportedVersions(projectPath?: string): Promise<string[]>;
   protected abstract getNodeNotSupportedHelpLink(): Promise<string>;
+  protected abstract isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean;
   protected abstract readonly _minErrorVersion: number;
   protected abstract readonly _maxErrorVersion: number;
 
@@ -48,15 +54,16 @@ export abstract class NodeChecker implements DepsChecker {
     this._telemetry = telemetry;
   }
 
-  public async getInstallationInfo(): Promise<DependencyStatus> {
+  public async getInstallationInfo(installOptions?: InstallOptions): Promise<DependencyStatus> {
+    let supportedVersions: string[] = [];
     try {
-      const supportedVersions = await this.getSupportedVersions();
+      supportedVersions = await this.getSupportedVersions(installOptions?.projectPath);
 
       this._logger.debug(
         `NodeChecker checking for supported versions: '${JSON.stringify(supportedVersions)}'`
       );
 
-      const currentVersion = await getInstalledNodeVersion();
+      const currentVersion = await NodeChecker.getInstalledNodeVersion();
       if (currentVersion === null) {
         this._telemetry.sendUserErrorEvent(
           DepsCheckerEvent.nodeNotFound,
@@ -68,15 +75,18 @@ export abstract class NodeChecker implements DepsChecker {
           ),
           this._nodeNotFoundHelpLink
         );
-        return await this.getDepsInfo(false, undefined, error);
+        return await this.getDepsInfo(false, supportedVersions, undefined, error);
       }
       this._telemetry.sendEvent(DepsCheckerEvent.nodeVersion, {
         "global-version": `${currentVersion.version}`,
         "global-major-version": `${currentVersion.majorVersion}`,
       });
 
-      if (!NodeChecker.isVersionSupported(supportedVersions, currentVersion)) {
-        const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(" ,");
+      if (!this.isVersionSupported(supportedVersions, currentVersion)) {
+        const supportedVersionsString =
+          this._type === DepsType.ProjectNode
+            ? supportedVersions.join(" ,")
+            : supportedVersions.map((v) => "v" + v).join(" ,");
         this._telemetry.sendUserErrorEvent(
           this._nodeNotSupportedEvent,
           `Node.js ${currentVersion.version} is not supported.`
@@ -88,6 +98,7 @@ export abstract class NodeChecker implements DepsChecker {
         )
           ? await this.getDepsInfo(
               false,
+              supportedVersions,
               currentVersion.version,
               new NodeNotSupportedError(
                 Messages.NodeNotSupported.split("@CurrentVersion")
@@ -99,6 +110,7 @@ export abstract class NodeChecker implements DepsChecker {
             )
           : await this.getDepsInfo(
               true,
+              supportedVersions,
               currentVersion.version,
               new NodeNotRecommendedError(
                 Messages.NodeNotRecommended.split("@CurrentVersion")
@@ -109,18 +121,19 @@ export abstract class NodeChecker implements DepsChecker {
               )
             );
       }
-      return await this.getDepsInfo(true, currentVersion.version);
+      return await this.getDepsInfo(true, supportedVersions, currentVersion.version);
     } catch (error) {
       return await this.getDepsInfo(
         false,
+        supportedVersions,
         undefined,
         new DepsCheckerError(error.message, nodeNotFoundHelpLink)
       );
     }
   }
 
-  public async resolve(): Promise<DependencyStatus> {
-    const installationInfo = await this.getInstallationInfo();
+  public async resolve(installOptions?: InstallOptions): Promise<DependencyStatus> {
+    const installationInfo = await this.getInstallationInfo(installOptions);
     if (installationInfo.error) {
       await this._logger.printDetailLog();
       await this._logger.error(
@@ -137,6 +150,7 @@ export abstract class NodeChecker implements DepsChecker {
 
   public async getDepsInfo(
     isInstalled: boolean,
+    supportedVersions: string[],
     installVersion?: string,
     error?: DepsCheckerError
   ): Promise<DependencyStatus> {
@@ -147,15 +161,11 @@ export abstract class NodeChecker implements DepsChecker {
       command: await this.command(),
       details: {
         isLinuxSupported: true,
-        supportedVersions: await this.getSupportedVersions(),
+        supportedVersions: supportedVersions,
         installVersion: installVersion,
       },
       error: error,
     };
-  }
-
-  private static isVersionSupported(supportedVersion: string[], version: NodeVersion): boolean {
-    return supportedVersion.includes(version.majorVersion);
   }
 
   private static isVersionError(
@@ -175,20 +185,20 @@ export abstract class NodeChecker implements DepsChecker {
   public async command(): Promise<string> {
     return "node";
   }
-}
 
-export async function getInstalledNodeVersion(): Promise<NodeVersion | null> {
-  try {
-    const output = await cpUtils.executeCommand(
-      undefined,
-      undefined,
-      undefined,
-      "node",
-      "--version"
-    );
-    return getNodeVersion(output);
-  } catch (error) {
-    return null;
+  public static async getInstalledNodeVersion(): Promise<NodeVersion | null> {
+    try {
+      const output = await cpUtils.executeCommand(
+        undefined,
+        undefined,
+        undefined,
+        "node",
+        "--version"
+      );
+      return getNodeVersion(output);
+    } catch (error) {
+      return null;
+    }
   }
 }
 
@@ -211,22 +221,6 @@ export class SPFxNodeChecker extends NodeChecker {
   protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
   protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForSPFx;
   protected readonly _type = DepsType.SpfxNode;
-  protected readonly _minErrorVersion = 13;
-  protected readonly _maxErrorVersion = 17;
-
-  protected async getNodeNotSupportedHelpLink(): Promise<string> {
-    return nodeNotSupportedForSPFxHelpLink;
-  }
-
-  protected async getSupportedVersions(): Promise<string[]> {
-    return ["14", "16"];
-  }
-}
-
-export class SPFxNodeCheckerV1_16 extends NodeChecker {
-  protected readonly _nodeNotFoundHelpLink = nodeNotFoundHelpLink;
-  protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForSPFx;
-  protected readonly _type = DepsType.SpfxNodeV1_16;
   protected readonly _minErrorVersion = 15;
   protected readonly _maxErrorVersion = 17;
 
@@ -237,6 +231,10 @@ export class SPFxNodeCheckerV1_16 extends NodeChecker {
   protected async getSupportedVersions(): Promise<string[]> {
     return ["16"];
   }
+
+  protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {
+    return supportedVersions.includes(version.majorVersion);
+  }
 }
 
 export class AzureNodeChecker extends NodeChecker {
@@ -245,12 +243,56 @@ export class AzureNodeChecker extends NodeChecker {
   protected readonly _type = DepsType.AzureNode;
   protected readonly _minErrorVersion = 11;
   protected readonly _maxErrorVersion = Number.MAX_SAFE_INTEGER;
-
   protected async getNodeNotSupportedHelpLink(): Promise<string> {
     return nodeNotSupportedForAzureHelpLink;
   }
 
   protected async getSupportedVersions(): Promise<string[]> {
     return ["14", "16"];
+  }
+
+  protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {
+    return supportedVersions.includes(version.majorVersion);
+  }
+}
+
+export class ProjectNodeChecker extends NodeChecker {
+  protected readonly _nodeNotFoundHelpLink = v3NodeNotFoundHelpLink;
+  protected readonly _nodeNotSupportedEvent = DepsCheckerEvent.nodeNotSupportedForProject;
+  protected readonly _type = DepsType.ProjectNode;
+  protected readonly _minErrorVersion = Number.MIN_SAFE_INTEGER;
+  protected readonly _maxErrorVersion = Number.MAX_SAFE_INTEGER;
+
+  protected async getNodeNotSupportedHelpLink(): Promise<string> {
+    return v3NodeNotSupportedHelpLink;
+  }
+
+  protected async getSupportedVersions(projectPath?: string): Promise<string[]> {
+    if (!projectPath) {
+      return [];
+    }
+    const supportedVersion = await this.getSupportedVersion(projectPath);
+    return supportedVersion ? [supportedVersion] : [];
+  }
+
+  private async getSupportedVersion(projectPath: string): Promise<string | undefined> {
+    try {
+      const packageJson = await fs.readJSON(path.join(projectPath, "package.json"));
+      const node = packageJson?.engines?.node;
+      if (typeof node !== "string") {
+        return undefined;
+      }
+      return node;
+    } catch {
+      return undefined;
+    }
+  }
+
+  protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {
+    if (supportedVersions.length == 0) {
+      return true;
+    }
+    const supportedVersion = supportedVersions[0];
+    return semver.satisfies(version.version, supportedVersion);
   }
 }

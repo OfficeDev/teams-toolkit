@@ -7,6 +7,7 @@ const HtmlWebPackPlugin = require("html-webpack-plugin");
 const webpack = require("webpack");
 const CopyPlugin = require("copy-webpack-plugin");
 const terserWebpackPlugin = require("terser-webpack-plugin");
+const buildConfig = require("./config");
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -33,6 +34,7 @@ const config = {
   externals: {
     vscode: "commonjs vscode", // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
     keytar: "keytar",
+    ["original-fs"]: "commonjs original-fs", // original-fs package is builtin Electron package which we use to prevent special fs logic for .asar files, 📖 -> https://www.electronjs.org/docs/latest/tutorial/asar-archives#treating-an-asar-archive-as-a-normal-file
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
@@ -81,12 +83,12 @@ const config = {
     new webpack.ContextReplacementPlugin(/ms-rest[\/\\]lib/, false, /$^/),
     new webpack.IgnorePlugin({ resourceRegExp: /@opentelemetry\/tracing/ }),
     new webpack.IgnorePlugin({ resourceRegExp: /applicationinsights-native-metrics/ }),
-    new webpack.IgnorePlugin({ resourceRegExp: /original-fs/ }),
     // ignore node-gyp/bin/node-gyp.js since it's not used in runtime
     new webpack.NormalModuleReplacementPlugin(
       /node-gyp[\/\\]bin[\/\\]node-gyp.js/,
       "@npmcli/node-gyp"
     ),
+    new webpack.DefinePlugin(buildConfig.preview.env),
     new CopyPlugin({
       patterns: [
         {

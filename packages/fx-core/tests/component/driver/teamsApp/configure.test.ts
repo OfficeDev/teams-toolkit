@@ -20,7 +20,7 @@ import { AppStudioClient } from "../../../../src/component/resource/appManifest/
 import { AppDefinition } from "./../../../../src/component/resource/appManifest/interfaces/appDefinition";
 import { Constants } from "./../../../../src/component/resource/appManifest/constants";
 
-describe("teamsApp/configure", async () => {
+describe("teamsApp/update", async () => {
   const teamsAppDriver = new ConfigureTeamsAppDriver();
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),
@@ -71,5 +71,27 @@ describe("teamsApp/configure", async () => {
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     console.log(JSON.stringify(result));
     chai.assert.isTrue(result.isOk());
+  });
+
+  it("execute", async () => {
+    const args: ConfigureTeamsAppArgs = {
+      appPackagePath: "fakePath",
+    };
+
+    sinon.stub(AppStudioClient, "importApp").resolves(appDef);
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      zip.addFile("color.png", new Buffer(""));
+      zip.addFile("outlie.png", new Buffer(""));
+
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+
+    const result = await teamsAppDriver.execute(args, mockedDriverContext);
+    console.log(JSON.stringify(result));
+    chai.assert.isTrue(result.result.isOk());
   });
 });

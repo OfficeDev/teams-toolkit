@@ -1,6 +1,6 @@
 {
     "name": "templates",
-    "version": "1.4.0",
+    "version": "1.5.0-rc.1",
     "private": "true",
     "license": "MIT",
     "scripts": {
@@ -43,7 +43,9 @@
         "tab/js/non-sso",
         "tab/ts/non-sso",
         "tab/js/m365",
-        "tab/ts/m365"
+        "tab/ts/m365",
+        "tab/js/dashboard",
+        "tab/ts/dashboard"
     ],
     "templatesV3": [
         "common/init-infra",
@@ -55,6 +57,8 @@
         "js/m365-tab",
         "js/sso-tab",
         "js/non-sso-tab",
+        "js/non-sso-tab-default-bot",
+        "js/default-bot-message-extension",
         "ts/notification-http-timer-trigger",
         "ts/notification-http-trigger",
         "ts/notification-timer-trigger",
@@ -63,6 +67,8 @@
         "ts/m365-tab",
         "ts/sso-tab",
         "ts/non-sso-tab",
+        "ts/non-sso-tab-default-bot",
+        "ts/default-bot-message-extension",
         "csharp/notification-http-timer-trigger",
         "csharp/notification-http-trigger",
         "csharp/notification-timer-trigger",

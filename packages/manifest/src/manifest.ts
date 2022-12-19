@@ -349,11 +349,11 @@ export type AppManifest = Record<string, any>;
  */
 export class TeamsAppManifest implements AppManifest {
   $schema?: string =
-    "https://developer.microsoft.com/en-us/json-schemas/teams/v1.13/MicrosoftTeams.schema.json";
+    "https://developer.microsoft.com/en-us/json-schemas/teams/v1.15/MicrosoftTeams.schema.json";
   /**
    * The version of the schema this manifest is using.
    */
-  manifestVersion = "1.13";
+  manifestVersion = "1.15";
   /**
    * The version of the app. Changes to your manifest should cause a version change. This version string must follow the semver standard (http://semver.org).
    */

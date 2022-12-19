@@ -6,8 +6,12 @@ on:
       cases:
         description: 'specific cases to be excuted. Sample: ["./aad/a.tests.ts", "./bot/b.tests.ts"]. Set empty to run all cases'
         required: false
+      v3:
+        description: "set v3 feature flag turn on for testing(true or false)"
+        required: false
+        default: "false"
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 22 * * *"
   pull_request:
     branches:
       - main
@@ -29,7 +33,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
 
       - name: Install parser cli
         run: |
@@ -94,7 +98,21 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
+
+      - name: Setup legacy-peer-deps
+        run: |
+          npm config set legacy-peer-deps true
+
+      - name: Setup metrics-ts
+        working-directory: packages/metrics-ts
+        run: |
+          npm install
+
+      - name: Setup eslint-metrics
+        working-directory: packages/eslint-metrics
+        run: |
+          npm install
 
       - name: Setup project
         uses: nick-fields/retry@v2
@@ -150,6 +168,82 @@ jobs:
           version=$(node -p -e "require('./packages/cli/package.json').version")
           npx ts-node .github/scripts/testPlan.ts new cli $version
 
+  execute-base-case-v3:
+    if: ${{  github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    env:
+      AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      AZURE_ACCOUNT_OBJECT_ID: ${{ secrets.TEST_USER_OBJECT_ID }}
+      AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+      M365_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
+      CI_ENABLED: "true"
+      M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
+      AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
+      TEAMSFX_V3: "true"
+      TEAMSFX_TEMPLATE_PRERELEASE: "alpha"
+    strategy:
+      fail-fast: false
+      matrix:
+        cases:
+          [
+            "./frontend/TestCreateTab.tests.ts",
+            "./bot/ProvisionCommandAndResponseBot.tests.ts",
+            "./bot/ProvisionCommandAndResponseBot.dotnet.tests.ts",
+          ]
+    name: ${{ matrix.cases }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 16
+
+      - name: Setup legacy-peer-deps
+        run: |
+          npm config set legacy-peer-deps true
+
+      - name: Setup .net
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Setup project
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          command: |
+            npm run setup
+
+      - name: Package CLI
+        working-directory: packages/cli
+        run: |
+          rm -f *.tgz
+          npm pack
+          mv *.tgz teamsfx-cli.tgz
+          npm install -g teamsfx-cli.tgz
+
+      - name: print system info
+        run: |
+          lscpu
+
+      - name: run test
+        working-directory: packages/cli/tests/e2e
+        run: |
+          file=`find . -wholename "${{ matrix.cases }}"`
+          if [ -z "$file" ]; then
+            echo "can't find target case in $file"
+            exit 1
+          else
+            npx mocha --reporter mochawesome --timeout 1200000 $file
+          fi
+
   execute-case:
     if: ${{ needs.setup.outputs.cases }}
     env:
@@ -179,7 +273,11 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
+
+      - name: Setup legacy-peer-deps
+        run: |
+          npm config set legacy-peer-deps true
 
       - name: Setup .net
         uses: actions/setup-dotnet@v2
@@ -218,6 +316,21 @@ jobs:
 
       - name: run test
         working-directory: packages/cli/tests/e2e
+        run: |
+          file=`find . -wholename "${{ matrix.cases }}"`
+          if [ -z "$file" ]; then
+            echo "can't find target case in $file"
+            exit 1
+          else
+            npx mocha --reporter mochawesome --timeout 1200000 $file
+          fi
+
+      - name: run test for v3
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.v3 != 'false' }}
+        working-directory: packages/cli/tests/e2e
+        env:
+          TEAMSFX_V3: "true"
+          TEAMSFX_TEMPLATE_PRERELEASE: "alpha"
         run: |
           file=`find . -wholename "${{ matrix.cases }}"`
           if [ -z "$file" ]; then
@@ -268,18 +381,6 @@ jobs:
           version=$(node -p -e "require('./packages/cli/package.json').version")
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json cli $version
 
-      - name: Sync to TeamsFx portal
-        if: ${{ always() }}
-        run: |
-          committer=`git log -1 --pretty=format:'%an'`
-          mc=`cat ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json | jq -c | sed -e 's/"/\\"/g'`
-          slow_count=`grep -c '"severity":"slow"' /tmp/.metrics/output.txt || true`
-          raw_url="https://github.com/${{ github.repository }}/runs/${{ steps.get-job-id.outputs.jobId }}?check_suite_focus=true"
-          curl -X POST https://teamsfxteststatus.azurewebsites.net/api/testcase \
-             -H 'Content-Type: application/json' \
-             -H 'Authorization: Bearer ${{ secrets.TEAMSFX_PORTAL_TOKEN }}' \
-             -d "{\"basic\":{\"reportId\":\"01\"},\"git\":{\"organization\":\"${{ github.repository_owner }}\",\"repository\":\"${{ github.repository }}\",\"commit\":\"${{ github.sha }}\",\"author\":\"$committer\",\"branch\":\"${{ github.ref }}\"},\"github\":{\"os\":\"Ubuntu\",\"nodeVersion\":\"14\",\"on\":\"${{ github.event_name }}\",\"jobId\":\"${{ steps.get-job-id.outputs.jobId }}\",\"runId\":\"${{ github.run_id }}\",\"caseURL\":\"$raw_url\", \"slowMethod\":\"$slow_count\"}, \"mochawesome\": $mc}"
-
   tear-down:
     if: ${{ always() && github.event_name == 'schedule' }}
     needs: execute-case
@@ -303,7 +404,11 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 16
+
+      - name: Setup legacy-peer-deps
+        run: |
+          npm config set legacy-peer-deps true
 
       - name: Setup project
         uses: nick-fields/retry@v2

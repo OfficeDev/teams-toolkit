@@ -3,7 +3,7 @@
 
 export interface CreateTeamsAppArgs {
   /**
-   * Teams app manifest template path
+   * Teams app short name
    */
-  manifestTemplatePath: string;
+  name: string;
 }

@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { StepDriver } from "../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { Service } from "typedi";
 import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
 import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
-import { err, FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import axios from "axios";
@@ -27,18 +27,41 @@ const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateBotAadAppDriver implements StepDriver {
+  readonly description?: string | undefined = getLocalizedString(
+    "driver.botAadApp.create.description"
+  );
   @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: CreateBotAadAppArgs,
     context: DriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    return wrapRun(() => this.handler(args, context));
+    return wrapRun(async () => {
+      const result = await this.handler(args, context);
+      return result.output;
+    });
+  }
+
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  public async execute(args: CreateBotAadAppArgs, ctx: DriverContext): Promise<ExecutionResult> {
+    let summaries: string[] = [];
+    const outputResult = await wrapRun(async () => {
+      const result = await this.handler(args, ctx);
+      summaries = result.summaries;
+      return result.output;
+    });
+    return {
+      result: outputResult,
+      summaries,
+    };
   }
 
   public async handler(
     args: CreateBotAadAppArgs,
     context: DriverContext
-  ): Promise<Map<string, string>> {
+  ): Promise<{
+    output: Map<string, string>;
+    summaries: string[];
+  }> {
     const progressHandler = context.ui?.createProgressBar(
       getLocalizedString(progressBarKeys.creatingBotAadApp),
       1
@@ -60,22 +83,34 @@ export class CreateBotAadAppDriver implements StepDriver {
         args.name,
         args.name,
         botConfig,
-        !botAadAppState.BOT_ID,
-        undefined, // Use default value of BotAuthType.AADApp
         context.logProvider
       );
       if (createRes.isErr()) {
         throw createRes.error;
       }
 
+      const successCreateBotAadLog = getLocalizedString(
+        logMessageKeys.successCreateBotAad,
+        createRes.value.botId
+      );
+      const useExistingBotAadLog = getLocalizedString(
+        logMessageKeys.useExistingBotAad,
+        botConfig.botId
+      );
+      const summary =
+        botConfig.botId && botConfig.botPassword ? useExistingBotAadLog : successCreateBotAadLog;
+      context.logProvider?.info(summary);
       await progressHandler?.end(true);
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
-      return new Map([
-        ["BOT_ID", createRes.value.botId],
-        ["SECRET_BOT_PASSWORD", createRes.value.botPassword],
-      ]);
+      return {
+        output: new Map([
+          ["BOT_ID", createRes.value.botId],
+          ["SECRET_BOT_PASSWORD", createRes.value.botPassword],
+        ]),
+        summaries: [summary],
+      };
     } catch (error) {
       await progressHandler?.end(false);
       if (error instanceof UserError || error instanceof SystemError) {

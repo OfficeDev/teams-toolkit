@@ -204,6 +204,24 @@ export const prerequisiteCheckTaskDisplayMessages: DisplayMessages = {
     )} seconds.`,
 };
 
+export const v3PrerequisiteCheckTaskDisplayMessages: DisplayMessages = {
+  taskName: "Validate prerequisites",
+  title: "Running 'Validate prerequisites' Visual Studio Code task.",
+  checkNumber: (n: number) =>
+    `${stepPrefix(n)} Teams Toolkit is checking the required prerequisites.`,
+  summary: "Summary:",
+  learnMore: (link: string) => `Visit ${link} to learn more about 'Validate prerequisites' task.`,
+  learnMoreHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task",
+  errorName: ExtensionErrors.PrerequisitesValidationError,
+  errorMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
+  errorDisplayMessageKey: "teamstoolkit.localDebug.prerequisitesCheckTaskFailure",
+  showDetailMessage: openOutputMessage,
+  showDetailDisplayMessage: openOutputDisplayMessage,
+  errorHelpLink: "https://aka.ms/teamsfx-check-prerequisites-task",
+  durationMessage: (duration: number) =>
+    `Finished 'Validate prerequisites' Visual Studio Code task in ${duration.toFixed(2)} seconds.`,
+};
+
 export const npmInstallDisplayMessages: DisplayMessages = {
   taskName: "Install npm packages",
   title: "Running 'Install npm packages' Visual Studio Code task.",
@@ -235,8 +253,12 @@ export const localTunnelDisplayMessages = Object.freeze({
   learnMore: (link: string) => `Visit ${link} to learn more about 'Start local tunnel' task.`,
   learnMoreHelpLink: "https://aka.ms/teamsfx-local-tunnel-task",
   successSummary: (src: string, dist: string) => `Forwarding ngrok URL ${dist} to ${src}`,
-  startMessage: "Starting local tunnel service.",
+  checkNgrokMessage: "Checking and installing ngrok",
+  startMessage: "Starting local tunnel service",
   forwardingUrl: (src: string, dist: string) => `Forwarding URL ${dist} to ${src}`,
+  installSuccessMessage: (ngrokPath: string) => `ngrok is installed at ${ngrokPath}`,
+  skipInstallMessage: (ngrokPath: string) =>
+    `Skip checking and installing ngrok as user has specified ngrok path (${ngrokPath}).`,
   successMessage: "Local tunnel service is started successfully.",
   errorMessage: "Failed to start local tunnel service.",
   durationMessage: (duration: number) =>

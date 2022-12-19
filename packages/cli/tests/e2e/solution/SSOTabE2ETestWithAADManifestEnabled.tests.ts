@@ -11,7 +11,9 @@ import {
   getUniqueAppName,
   cleanUp,
   readContextMultiEnv,
+  readContextMultiEnvV3,
   setAadManifestIdentifierUris,
+  setAadManifestIdentifierUrisV3,
 } from "../commonUtils";
 import { CliHelper } from "../../commonlib/cliHelper";
 import {
@@ -26,6 +28,7 @@ import { expect } from "chai";
 import { AadValidator, BotValidator, FrontendValidator } from "../../commonlib";
 import M365Login from "../../../src/commonlib/m365Login";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("SSO Tab with aad manifest enabled", () => {
   const testFolder = getTestFolder();
@@ -43,9 +46,8 @@ describe("SSO Tab with aad manifest enabled", () => {
   it("SSO Tab E2E test with aad manifest enabled", { testPlanCaseId: 15687261 }, async () => {
     // Arrange
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, env);
-
-    // Assert
-    {
+    if (!isV3Enabled()) {
+      // Assert
       const projectSettings = await fs.readJSON(
         path.join(projectPath, TestFilePath.configFolder, TestFilePath.projectSettingsFileName)
       );
@@ -69,11 +71,21 @@ describe("SSO Tab with aad manifest enabled", () => {
 
       const permissionJsonFilePath = path.join(projectPath, TestFilePath.permissionJsonFileName);
       expect(await fs.pathExists(permissionJsonFilePath)).to.be.false;
+    } else {
+      // Assert
+      expect(fs.pathExistsSync(path.join(projectPath, "teamsfx"))).to.be.true;
+      expect(fs.pathExistsSync(path.join(projectPath, "infra", "azure.bicep"))).to.be.true;
+      expect(fs.pathExistsSync(path.join(projectPath, "infra", "azure.parameters.json"))).to.be
+        .true;
+      expect(fs.pathExistsSync(path.join(projectPath, "teamsfx", "app.yml"))).to.be.true;
+      expect(fs.pathExistsSync(path.join(projectPath, "aad.manifest.template.json"))).to.be.true;
     }
 
     await CliHelper.provisionProject(projectPath, "", env);
 
-    const context = await readContextMultiEnv(projectPath, "dev");
+    const context = isV3Enabled()
+      ? await readContextMultiEnvV3(projectPath, "dev")
+      : await readContextMultiEnv(projectPath, "dev");
 
     // Validate Aad App
     const aad = AadValidator.init(context, false, M365Login);
@@ -84,21 +96,37 @@ describe("SSO Tab with aad manifest enabled", () => {
     await FrontendValidator.validateProvision(frontend);
 
     const firstIdentifierUri = "api://first.com/291fc1b5-1146-4d33-b7b8-ec4c441b6b33";
-    await setAadManifestIdentifierUris(projectPath, firstIdentifierUri);
+    if (isV3Enabled()) {
+      await setAadManifestIdentifierUrisV3(projectPath, firstIdentifierUri);
+    } else {
+      await setAadManifestIdentifierUris(projectPath, firstIdentifierUri);
+    }
 
     // Deploy all resources without aad manifest
     await CliHelper.deployAll(projectPath, "", env);
     await AadValidator.validate(aad);
 
     // Deploy all resources include aad manifest
-    await CliHelper.deployAll(projectPath, "--include-aad-manifest", env);
+    if (isV3Enabled()) {
+      await CliHelper.updateAadManifest(projectPath, "--env dev", env);
+    } else {
+      await CliHelper.deployAll(projectPath, "--include-aad-manifest", env);
+    }
     await AadValidator.validate(aad, firstIdentifierUri);
 
     const secondIdentifierUri = "api://second.com/291fc1b5-1146-4d33-b7b8-ec4c441b6b33";
-    await setAadManifestIdentifierUris(projectPath, secondIdentifierUri);
+    if (isV3Enabled()) {
+      await setAadManifestIdentifierUrisV3(projectPath, secondIdentifierUri);
+    } else {
+      await setAadManifestIdentifierUris(projectPath, secondIdentifierUri);
+    }
 
     // Only deploy aad manifest
-    await CliHelper.deployProject(ResourceToDeploy.AadManifest, projectPath, "", env);
+    if (isV3Enabled()) {
+      await CliHelper.updateAadManifest(projectPath, "--env dev", env);
+    } else {
+      await CliHelper.deployProject(ResourceToDeploy.AadManifest, projectPath, "", env);
+    }
     await AadValidator.validate(aad, secondIdentifierUri);
   });
 });

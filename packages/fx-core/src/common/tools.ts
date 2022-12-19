@@ -28,6 +28,7 @@ import {
   ProjectSettingsFileName,
   SettingsFileName,
   SettingsFolderName,
+  assembleError,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import { exec, ExecOptions } from "child_process";
@@ -76,6 +77,9 @@ import { getProjectTemplatesFolderPath } from "./utils";
 import * as path from "path";
 import { isMiniApp } from "./projectSettingsHelperV3";
 import { getAppStudioEndpoint } from "../component/resource/appManifest/constants";
+import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
+import { AuthSvcClient } from "../component/resource/appManifest/authSvcClient";
+import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -413,7 +417,15 @@ export function isApiConnectEnabled(): boolean {
 }
 
 export function isV3Enabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.V3, false);
+  return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : false;
+}
+
+export function isMigrationV3Enabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.V3Migration, false);
+}
+
+export function isVideoFilterEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
 }
 
 // This method is for deciding whether AAD should be activated.
@@ -615,12 +627,6 @@ export function isGeneratorCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.GeneratorCheckerEnable, true);
 }
 
-export function getSPFxVersion(): string {
-  const flag = process.env[FeatureFlagName.SPFxVersion];
-
-  return flag ?? "1.15.0";
-}
-
 export async function getAppSPFxVersion(root: string): Promise<string | undefined> {
   let projectSPFxVersion = undefined;
   const yoInfoPath = path.join(root, "SPFx", ".yo-rc.json");
@@ -734,6 +740,22 @@ export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
     return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
   }
   return false;
+}
+
+export async function isVideoFilterProject(projectPath: string): Promise<Result<boolean, FxError>> {
+  let manifestResult;
+  try {
+    manifestResult = await manifestUtils.readAppManifest(projectPath);
+  } catch (e) {
+    return err(assembleError(e));
+  }
+  if (manifestResult.isErr()) {
+    return err(manifestResult.error);
+  }
+  const manifest = manifestResult.value;
+  return ok(
+    (manifest.meetingExtensionDefinition as any)?.videoFiltersConfigurationUrl !== undefined
+  );
 }
 
 export function getHashedEnv(envName: string): string {
@@ -942,6 +964,7 @@ export function getPropertyByPath(obj: any, path: string, defaultValue?: string)
 }
 
 export const AppStudioScopes = [`${getAppStudioEndpoint()}/AppDefinitions.ReadWrite`];
+export const AuthSvcScopes = ["https://api.spaces.skype.com/Region.ReadWrite"];
 export const GraphScopes = ["Application.ReadWrite.All", "TeamsAppInstallation.ReadForUser"];
 export const GraphReadUserScopes = ["https://graph.microsoft.com/User.ReadBasic.All"];
 export const SPFxScopes = (tenant: string) => [`${tenant}/Sites.FullControl.All`];
@@ -973,6 +996,15 @@ export async function getSPFxToken(
     spoToken = spfxTokenRes.isOk() ? spfxTokenRes.value : undefined;
   }
   return spoToken;
+}
+
+/**
+ * Get and set regin for App Studio client
+ * @param m365TokenProvider
+ */
+export async function setRegion(authSvcToken: string) {
+  const region = await AuthSvcClient.getRegion(authSvcToken);
+  AppStudioClient.SetRegion(region);
 }
 
 export function ConvertTokenToJson(token: string): Record<string, unknown> {

@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-"use strict";
-
 import { Inputs, Platform, QTreeNode, Stage } from "@microsoft/teamsfx-api";
 import { sampleProvider } from "@microsoft/teamsfx-core/build/common/samples";
 import { Options } from "yargs";
+
+export type OptionsMap = { [_: string]: Options };
 
 export const cliSource = "TeamsfxCLI";
 export const cliName = "teamsfx";
@@ -18,7 +18,7 @@ export const RootFolderNode = new QTreeNode({
   default: "./",
 });
 
-export const RootFolderOptions: { [_: string]: Options } = {
+export const RootFolderOptions: OptionsMap = {
   folder: {
     type: "string",
     global: false,
@@ -33,7 +33,7 @@ export const EnvNodeNoCreate = new QTreeNode({
   title: "Select an existing environment for the project",
 });
 
-export const EnvOptions: { [_: string]: Options } = {
+export const EnvOptions: OptionsMap = {
   env: {
     type: "string",
     global: false,
@@ -56,24 +56,44 @@ export const CollaboratorEmailNode = new QTreeNode({
 export const ManifestFilePathParamName = "manifest-file-path";
 export const OutputZipPathParamName = "output-zip-path";
 export const OutputManifestParamName = "output-manifest-path";
-export const BuildPackageOptions: { [_: string]: Options } = {
+export const BuildPackageOptions: OptionsMap = {
   [ManifestFilePathParamName]: {
     type: "string",
     global: false,
     description:
-      "Select the Teams app manifest template path, default to '${root}/appPackage/manifest.template.json'",
+      "Select the Teams app manifest template path, default to '${folder}/appPackage/manifest.template.json'",
   },
   [OutputZipPathParamName]: {
     type: "string",
     global: false,
     description:
-      "Select the output path of the zipped app package, default to '${root}/build/appPackage/appPackage.${env}.json'",
+      "Select the output path of the zipped app package, default to '${folder}/build/appPackage/appPackage.${env}.json'",
   },
   [OutputManifestParamName]: {
     type: "string",
     global: false,
     description:
-      "Select the output path of the generated manifest path, default to '${root}/build/appPackage/manifest.${env}.json'",
+      "Select the output path of the generated manifest path, default to '${folder}/build/appPackage/manifest.${env}.json'",
+  },
+};
+
+export const AadManifestFilePathName = "manifest-file-path";
+export const AadManifestOptions: OptionsMap = {
+  [AadManifestFilePathName]: {
+    type: "string",
+    global: false,
+    description:
+      "Enter the AAD app manifest template file path, it's a relative path to project root folder, default to './aad.manifest.template.json'",
+  },
+};
+
+export const TeamsAppManifestFilePathName = "manifest-file-path";
+export const TeamsAppManifestOptions: OptionsMap = {
+  [TeamsAppManifestFilePathName]: {
+    type: "string",
+    global: false,
+    description:
+      "Enter the Teams app manifest template file path, it's a relative path to project root folder, default to './appPackage/manifest.template.json'",
   },
 };
 
@@ -114,4 +134,4 @@ export const AddFeatureFunc = {
 
 export const EmptyQTreeNode = new QTreeNode({ type: "group" });
 
-export const SUPPORTED_SPFX_VERSION = "1.15.0";
+export const SUPPORTED_SPFX_VERSION = "1.16.0";

@@ -57,7 +57,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
   }
 }
 
-// The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-provision-arm#output for more details.
+// The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-actions/arm-deploy for more details.
 output TAB_AZURE_APP_SERVICE_RESOURCE_ID  string = webApp.id
 output TAB_DOMAIN  string = webApp.properties.defaultHostName
 output TAB_ENDPOINT  string = 'https://${webApp.properties.defaultHostName}'

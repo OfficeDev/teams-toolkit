@@ -3,29 +3,41 @@
 
 import { DeployStepArgs } from "../../interface/buildAndDeployArgs";
 import { AzureDeployDriver } from "./azureDeployDriver";
-import { DeployExternalApiCallError } from "../../../error/deployError";
 import { Service } from "typedi";
-import { StepDriver } from "../../interface/stepDriver";
+import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { AzureResourceInfo, DriverContext } from "../../interface/commonArgs";
 import { TokenCredential } from "@azure/core-http";
-import { FxError, Result } from "@microsoft/teamsfx-api";
-import { wrapRun } from "../../../utils/common";
+import { FxError, IProgressHandler, Result, UserInteraction } from "@microsoft/teamsfx-api";
+import { wrapRun, wrapSummary } from "../../../utils/common";
 import { ProgressMessages } from "../../../messages";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 
 const ACTION_NAME = "azureFunctions/deploy";
 
 @Service(ACTION_NAME)
 export class AzureFunctionDeployDriver implements StepDriver {
+  readonly description: string = getLocalizedString(
+    "driver.deploy.deployToAzureFunctionsDescription"
+  );
+
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new AzureFunctionDeployDriverImpl(args, context);
     return wrapRun(
       () => impl.run(),
-      () => impl.cleanup()
+      () => impl.cleanup(),
+      context.logProvider
     );
+  }
+
+  execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
+    return wrapSummary(this.run.bind(this, args, ctx), [
+      // eslint-disable-next-line no-secrets/no-secrets
+      "driver.deploy.azureFunctionsDeploySummary",
+    ]);
   }
 }
 
@@ -33,10 +45,9 @@ export class AzureFunctionDeployDriver implements StepDriver {
  * deploy to Azure Function
  */
 export class AzureFunctionDeployDriverImpl extends AzureDeployDriver {
-  progressBarName = `Deploying ${this.workingDirectory ?? ""} to Azure Function App`;
-  progressBarSteps = 6;
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/sites\/([^\/]*)/i;
+  protected helpLink = "https://aka.ms/teamsfx-actions/azure-functions-deploy";
 
   async azureDeploy(
     args: DeployStepArgs,
@@ -50,15 +61,10 @@ export class AzureFunctionDeployDriverImpl extends AzureDeployDriver {
     await this.progressBar?.end(true);
   }
 
-  async restartFunctionApp(azureResource: AzureResourceInfo): Promise<void> {
-    await this.context.logProvider.debug("Restarting function app...");
-    try {
-      await this.managementClient?.webApps?.restart(
-        azureResource.resourceGroupName,
-        azureResource.instanceId
-      );
-    } catch (e) {
-      throw DeployExternalApiCallError.restartWebAppError(e);
-    }
+  createProgressBar(ui?: UserInteraction): IProgressHandler | undefined {
+    return ui?.createProgressBar(
+      `Deploying ${this.workingDirectory ?? ""} to Azure Function App`,
+      6
+    );
   }
 }

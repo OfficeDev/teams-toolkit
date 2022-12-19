@@ -21,14 +21,11 @@ import { telemetryHelper } from "../utils/telemetry-helper";
 import { TelemetryEvents, TelemetryProperty } from "../utils/telemetryEvents";
 import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
-import { isOfficialSPFx } from "../utils/utils";
 import { Constants } from "../utils/constants";
 
 const name = "@microsoft/generator-sharepoint";
 const supportedVersion = Constants.SPFX_VERSION;
-const supportedPrereleaseVersion = Constants.SPFX_VERSION_PRERELEASE;
 const displayName = `${name}@${supportedVersion}`;
-const displayPrereleaseName = `${name}@${supportedPrereleaseVersion}`;
 const timeout = 6 * 60 * 1000;
 
 export class GeneratorChecker implements DependencyChecker {
@@ -40,8 +37,8 @@ export class GeneratorChecker implements DependencyChecker {
 
   public static getDependencyInfo(): DependencyInfo {
     return {
-      supportedVersion: isOfficialSPFx() ? supportedVersion : supportedPrereleaseVersion,
-      displayName: isOfficialSPFx() ? displayName : displayPrereleaseName,
+      supportedVersion: supportedVersion,
+      displayName: displayName,
     };
   }
 
@@ -49,13 +46,9 @@ export class GeneratorChecker implements DependencyChecker {
     telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureSharepointGeneratorStart);
     try {
       if (!(await this.isInstalled())) {
-        this._logger.info(
-          `${isOfficialSPFx() ? displayName : displayPrereleaseName} not found, installing ...`
-        );
+        this._logger.info(`${displayName} not found, installing ...`);
         await this.install();
-        this._logger.info(
-          `Successfully installed ${isOfficialSPFx() ? displayName : displayPrereleaseName}`
-        );
+        this._logger.info(`Successfully installed ${displayName}`);
       }
       telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureSharepointGenerator);
     } catch (error) {
@@ -80,9 +73,7 @@ export class GeneratorChecker implements DependencyChecker {
       hasSentinel = false;
     try {
       const generatorVersion = await this.queryVersion();
-      isVersionSupported =
-        generatorVersion !== undefined &&
-        (isOfficialSPFx() ? supportedVersion : supportedPrereleaseVersion) === generatorVersion;
+      isVersionSupported = generatorVersion !== undefined && supportedVersion === generatorVersion;
       hasSentinel = await fs.pathExists(this.getSentinelPath());
     } catch (error) {
       return false;
@@ -104,7 +95,7 @@ export class GeneratorChecker implements DependencyChecker {
   }
 
   public getSpGeneratorPath(): string {
-    return path.join(
+    return `"${path.join(
       this.getDefaultInstallPath(),
       "node_modules",
       "@microsoft",
@@ -113,7 +104,7 @@ export class GeneratorChecker implements DependencyChecker {
       "generators",
       "app",
       "index.js"
-    );
+    )}"`;
   }
 
   private async validate(): Promise<boolean> {
@@ -169,7 +160,7 @@ export class GeneratorChecker implements DependencyChecker {
         { timeout: timeout, shell: false },
         this.getExecCommand("npm"),
         "install",
-        `${name}@${isOfficialSPFx() ? supportedVersion : supportedPrereleaseVersion}`,
+        `${name}@${supportedVersion}`,
         "--prefix",
         `${this.getDefaultInstallPath()}`,
         "--no-audit",
@@ -178,9 +169,7 @@ export class GeneratorChecker implements DependencyChecker {
 
       await fs.ensureFile(this.getSentinelPath());
     } catch (error) {
-      this._logger.error(
-        `Failed to execute npm install ${isOfficialSPFx() ? displayName : displayPrereleaseName}`
-      );
+      this._logger.error(`Failed to execute npm install ${displayName}`);
       throw NpmInstallError(error as Error);
     }
   }

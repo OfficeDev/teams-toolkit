@@ -6,6 +6,54 @@ import { TokenCredential } from "@azure/core-http";
 import { ok, Result } from "neverthrow";
 import { FxError } from "../error";
 
+export type AzureCredential =
+  | {
+      type: "AuthorizationCode";
+      /**
+       * The user account's e-mail address (user name).
+       */
+      username: string;
+      /**
+       * The Azure Active Directory tenant (directory) ID.
+       * This parameter is used for multi-tenant account scenario
+       */
+      tenantId?: string;
+      /**
+       * whether pop up sign in flow if the account is not signed in, default is true
+       */
+      popUpSignIn?: boolean;
+    }
+  | {
+      type: "ClientSecretCredential";
+      /**
+       * The Azure Active Directory tenant (directory) ID.
+       */
+      tenantId: string;
+      /**
+       * The client (application) ID of an App Registration in the tenant.
+       */
+      clientId: string;
+      /**
+       * A client secret that was generated for the App Registration.
+       */
+      clientSecret: string;
+    }
+  | {
+      type: "ClientCertificateCredential";
+      /**
+       * The Azure Active Directory tenant (directory) ID.
+       */
+      tenantId: string;
+      /**
+       * The client (application) ID of an App Registration in the tenant.
+       */
+      clientId: string;
+      /**
+       * The path to a PEM-encoded public/private key certificate on the filesystem.
+       */
+      certificatePath: string;
+    };
+
 /**
  * Difference between getAccountCredential and getIdentityCredential [Node Azure Authenticate](https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate)
  * You can search at [Azure JS SDK](https://docs.microsoft.com/en-us/javascript/api/overview/azure/?view=azure-node-latest) to see which credential you need.
@@ -16,6 +64,13 @@ export interface AzureAccountProvider {
    * @param showDialog Control whether the UI layer displays pop-up windows.
    */
   getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined>;
+
+  /**
+   * To support credential per action feature, caller can specify credential info for on demand
+   * This method will be optional until V3 first release, after that it will be changed to required
+   * @param credential
+   */
+  getIdentityCredential?(credential: AzureCredential): Promise<TokenCredential | undefined>;
 
   /**
    * Azure sign out
@@ -60,7 +115,8 @@ export interface AzureAccountProvider {
 
   /**
    * Set subscription id to memory
-   * @param subscriptionId user used subscription id
+   * @param subscriptionId user used subscription id (subscriptionId==="" will clear sub information in Azure account provider
+   * cache)
    */
   setSubscription(subscriptionId: string): Promise<void>;
 

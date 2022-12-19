@@ -17,22 +17,22 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
-  type Icon = {
-    type: "color" | "outline" | "sharePointPreviewImage";
-    name: "color" | "outline" | "sharePointPreviewImage";
-    base64String: string;
-  };
-
   const baseUrl = getAppStudioEndpoint();
+
+  let region: string | undefined;
+
+  export function SetRegion(_region: string) {
+    region = _region;
+  }
 
   /**
    * Creates a new axios instance to call app studio to prevent setting the accessToken on global instance.
    * @param {string}  appStudioToken
    * @returns {AxiosInstance}
    */
-  function createRequesterWithToken(appStudioToken: string): AxiosInstance {
+  function createRequesterWithToken(appStudioToken: string, _region?: string): AxiosInstance {
     const instance = axios.create({
-      baseURL: baseUrl,
+      baseURL: _region ? `${baseUrl}/${_region}` : baseUrl,
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
     instance.defaults.headers.common["Client-Source"] = "teamstoolkit";
@@ -82,7 +82,7 @@ export namespace AppStudioClient {
     overwrite = false
   ): Promise<AppDefinition> {
     try {
-      const requester = createRequesterWithToken(appStudioToken);
+      const requester = createRequesterWithToken(appStudioToken, region);
 
       const response = await RetryHandler.Retry(() =>
         requester.post(`/api/appdefinitions/v2/import`, file, {
@@ -133,10 +133,27 @@ export namespace AppStudioClient {
   ): Promise<AppDefinition> {
     const requester = createRequesterWithToken(appStudioToken);
     try {
-      const response = await RetryHandler.Retry(() =>
-        requester.get(`/api/appdefinitions/${teamsAppId}`)
-      );
-
+      let response;
+      if (region) {
+        try {
+          response = await RetryHandler.Retry(() =>
+            requester.get(`/${region}/api/appdefinitions/${teamsAppId}`)
+          );
+        } catch (e: any) {
+          // Teams apps created by non-regional API cannot be found by regional API
+          if (e.response?.status == 404) {
+            response = await RetryHandler.Retry(() =>
+              requester.get(`/api/appdefinitions/${teamsAppId}`)
+            );
+          } else {
+            throw e;
+          }
+        }
+      } else {
+        response = await RetryHandler.Retry(() =>
+          requester.get(`/api/appdefinitions/${teamsAppId}`)
+        );
+      }
       if (response && response.data) {
         const app = <AppDefinition>response.data;
         if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
@@ -166,7 +183,7 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider?: LogProvider
   ): Promise<boolean> {
-    const requester = createRequesterWithToken(appStudioToken);
+    const requester = createRequesterWithToken(appStudioToken, region);
     try {
       const response = await RetryHandler.Retry(() =>
         requester.get(`/api/appdefinitions/manifest/${teamsAppId}`)
@@ -196,7 +213,7 @@ export namespace AppStudioClient {
     appStudioToken: string
   ): Promise<string> {
     try {
-      const requester = createRequesterWithToken(appStudioToken);
+      const requester = createRequesterWithToken(appStudioToken, region);
 
       const response = await RetryHandler.Retry(() =>
         requester.post("/api/publishing", file, {
@@ -255,7 +272,7 @@ export namespace AppStudioClient {
       // Get App Definition from Teams App Catalog
       const appDefinition = await getAppByTeamsAppId(teamsAppId, appStudioToken);
 
-      const requester = createRequesterWithToken(appStudioToken);
+      const requester = createRequesterWithToken(appStudioToken, region);
       let response = null;
       if (appDefinition) {
         // update the existing app
@@ -306,7 +323,7 @@ export namespace AppStudioClient {
     teamsAppId: string,
     appStudioToken: string
   ): Promise<IPublishingAppDenition | undefined> {
-    const requester = createRequesterWithToken(appStudioToken);
+    const requester = createRequesterWithToken(appStudioToken, region);
     try {
       const response = await requester.get(`/api/publishing/${teamsAppId}`);
       if (response && response.data && response.data.value && response.data.value.length > 0) {
@@ -394,7 +411,21 @@ export namespace AppStudioClient {
     app.userList?.push(newUser);
     const requester = createRequesterWithToken(appStudioToken);
     try {
-      const response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
+      let response;
+      if (region) {
+        try {
+          response = await requester.post(`/${region}/api/appdefinitions/${teamsAppId}/owner`, app);
+        } catch (e: any) {
+          // Teams apps created by non-regional API cannot be found by regional API
+          if (e.response?.status == 404) {
+            response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
+          } else {
+            throw e;
+          }
+        }
+      } else {
+        response = await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app);
+      }
       if (!response || !response.data || !checkUser(response.data as AppDefinition, newUser)) {
         throw new Error(ErrorMessages.GrantPermissionFailed);
       }
@@ -402,6 +433,7 @@ export namespace AppStudioClient {
       if (err?.message?.indexOf("Request failed with status code 400") >= 0) {
         await requester.post(`/api/appdefinitions/${teamsAppId}/owner`, app.userList);
       } else {
+        wrapException(err, APP_STUDIO_API_NAMES.UPDATE_OWNER);
         throw err;
       }
     }
@@ -413,7 +445,7 @@ export namespace AppStudioClient {
     logProvider?: LogProvider
   ): Promise<any> {
     logProvider?.info("Downloading app package for app " + teamsAppId);
-    const requester = createRequesterWithToken(appStudioToken);
+    const requester = createRequesterWithToken(appStudioToken, region);
     try {
       const response = await RetryHandler.Retry(() =>
         requester.get(`/api/appdefinitions/${teamsAppId}/manifest`)

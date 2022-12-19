@@ -11,7 +11,7 @@ import sinon from "sinon";
 import { AadManifestMigrationMW } from "../../../src/core/middleware/aadManifestMigration";
 import { MockTools, randomAppName } from "../utils";
 import * as tool from "../../../src/common/tools";
-import { permissionsToRequiredResourceAccess } from "../../../src/core/middleware/MigrationUtils";
+import { permissionsToRequiredResourceAccess } from "../../../src/core/middleware/utils/MigrationUtils";
 import * as chai from "chai";
 import { setTools } from "../../../src/core/globalVars";
 

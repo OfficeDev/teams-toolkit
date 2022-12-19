@@ -39,6 +39,13 @@ export const Messages = {
   dotnetNotFound: getLocalizedString("depChecker.dotnetNotFound"),
   depsNotFound: getLocalizedString("depChecker.depsNotFound"),
 
+  failToValidateVxTestAppInstallOptions: getLocalizedString(
+    "depChecker.failToValidateVxTestAppInstallOptions"
+  ),
+  failToValidateVxTestApp: getLocalizedString("depChecker.failToValidateVxTestApp"),
+
+  failToDownloadFromUrl: getLocalizedString("depChecker.failToDownloadFromUrl"),
+
   linuxDepsNotFound: getLocalizedString("depChecker.linuxDepsNotFound"),
 
   linuxDepsNotFoundHelpLinkMessage: getLocalizedString(

@@ -1,0 +1,168 @@
+version: 1.0.0
+
+{{#config.registerApp}}
+registerApp:
+  {{#if aad}}
+  - uses: aadApp/create
+    with:
+      name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-aad
+      generateClientSecret: true
+
+  {{/if}}
+  {{#if teamsApp}}
+  - uses: teamsApp/create
+    with:
+      name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}
+  {{/if}}
+
+{{/config.registerApp}}
+{{#config.provision}}
+provision:
+  {{#if bot}}
+  - uses: botAadApp/create
+    with:
+      name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
+
+  - uses: botFramework/create
+    with:
+      botId: $\{{BOT_ID}}
+      name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
+      messagingEndpoint: $\{{ {{~../placeholderMappings.botEndpoint~}} }}/api/messages
+      description: ""
+  {{/if}}
+
+{{/config.provision}}
+{{#config.configureApp}}
+configureApp:
+  {{#tab}}
+  - uses: file/updateEnv
+    with:
+      envs:
+        {{../../placeholderMappings.tabDomain}}: {{domain}}
+        {{../../placeholderMappings.tabEndpoint}}: {{endpoint}}
+        {{../../placeholderMappings.tabIndexPath}}: /index.html#
+
+  {{/tab}}
+  {{#if aad}}
+  - uses: aadApp/update
+    with:
+      manifestTemplatePath: ./aad.manifest.template.json
+      outputFilePath : ./build/aad.manifest.$\{{TEAMSFX_ENV}}.json
+
+  {{/if}}
+  {{#teamsApp}}
+  {{#if appPackagePath}}
+  - uses: teamsApp/update
+    with:
+      appPackagePath: {{appPackagePath}}
+  {{else}}
+  - uses: teamsApp/validate
+    with:
+      manifestTemplatePath: ./appPackage/manifest.template.json
+
+  - uses: teamsApp/zipAppPackage
+    with:
+      manifestTemplatePath: ./appPackage/manifest.template.json
+      outputZipPath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
+      outputJsonPath: ./build/appPackage/manifest.$\{{TEAMSFX_ENV}}.json
+
+  - uses: teamsApp/update
+    with:
+      appPackagePath: ./build/appPackage/appPackage.$\{{TEAMSFX_ENV}}.zip
+  {{/if}}
+  {{/teamsApp}}
+
+{{/config.configureApp}}
+{{#config.deploy}}
+deploy:
+  {{#tools}}
+  - uses: prerequisite/install 
+    with:
+      {{#devCert}}
+      devCert:
+        trust: {{trust}}
+      {{/devCert}}
+      {{#func}}
+      func: true
+      {{/func}}
+      {{#dotnet}}
+      dotnet: true
+      {{/dotnet}}
+
+  {{/tools}}
+  {{#tab}}
+  - uses: file/updateEnv
+    with:
+      target: ./tabs/.env.teamsfx.local
+      envs:
+        BROWSER: none
+        HTTPS: true
+        PORT: {{port}}
+        SSL_CRT_FILE: $\{{SSL_CRT_FILE}}
+        SSL_KEY_FILE: $\{{SSL_KEY_FILE}}
+
+  {{/tab}}
+  {{#if bot}}
+  - uses: file/updateEnv
+    with:
+      target: ./bot/.env.teamsfx.local
+      envs:
+        BOT_ID: $\{{BOT_ID}}
+        BOT_PASSWORD: $\{{SECRET_BOT_PASSWORD}}
+
+  {{/if}}
+  {{#ssoTab}}
+  - uses: file/updateEnv
+    with:
+      target: ./tabs/.env.teamsfx.local
+      envs:
+        REACT_APP_START_LOGIN_PAGE_URL: $\{{ {{~../../placeholderMappings.tabEndpoint~}} }}/auth-start.html
+        REACT_APP_CLIENT_ID: $\{{AAD_APP_CLIENT_ID}}
+        {{#if functionName}}
+        REACT_APP_FUNC_ENDPOINT: http://localhost:7071
+        REACT_APP_FUNC_NAME: {{functionName}}
+        {{/if}}
+
+  {{/ssoTab}}
+  {{#if ssoBot}}
+  - uses: file/updateEnv
+    with:
+      target: ./bot/.env.teamsfx.local
+      envs:
+        M365_CLIENT_ID: $\{{AAD_APP_CLIENT_ID}}
+        M365_CLIENT_SECRET: $\{{SECRET_AAD_APP_CLIENT_SECRET}}
+        M365_TENANT_ID: $\{{AAD_APP_TENANT_ID}}
+        M365_AUTHORITY_HOST: $\{{AAD_APP_OAUTH_AUTHORITY_HOST}}
+        INITIATE_LOGIN_ENDPOINT: $\{{ {{~../placeholderMappings.botEndpoint~}} }}/auth-start.html
+        {{#if ssoTab}}
+        M365_APPLICATION_ID_URI: api://$\{{ {{~../placeholderMappings.tabEndpoint~}} }}/botid-$\{{BOT_ID}}
+        {{else}}
+        M365_APPLICATION_ID_URI: api://botid-$\{{BOT_ID}}
+        {{/if}}
+        {{#if ssoFunction}}
+        API_ENDPOINT: http://localhost:7071
+        {{/if}}
+
+  {{/if}}
+  {{#if ssoFunction}}
+  - uses: file/updateEnv
+    with:
+      target: ./api/.env.teamsfx.local
+      envs:
+        M365_CLIENT_ID: $\{{AAD_APP_CLIENT_ID}}
+        M365_CLIENT_SECRET: $\{{SECRET_AAD_APP_CLIENT_SECRET}}
+        M365_TENANT_ID: $\{{AAD_APP_TENANT_ID}}
+        M365_AUTHORITY_HOST: $\{{AAD_APP_OAUTH_AUTHORITY_HOST}}
+        ALLOWED_APP_IDS: 1fec8e78-bce4-4aaf-ab1b-5451cc387264;5e3ce6c0-2b1f-4285-8d4b-75ee78787346;0ec893e0-5785-4de6-99da-4ed124e5296c;4345a7b9-9a63-4910-a426-35363201d503;4765445b-32c6-49b0-83e6-1d93765276ca;d3590ed6-52b3-4102-aeff-aad2292ab01c;00000002-0000-0ff1-ce00-000000000000;bc59ab01-8403-45c6-8796-ac3ef710b3e3
+
+  {{/if}}
+  {{#npmCommands}}
+  - uses: cli/runNpmCommand
+    with:
+      args: {{args}}
+      {{#if workingDirectory}}
+      workingDirectory: {{workingDirectory}}
+      {{/if}}
+
+  {{/npmCommands}}
+{{/config.deploy}}

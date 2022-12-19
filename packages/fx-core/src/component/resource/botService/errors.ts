@@ -10,6 +10,7 @@ import { CommonHostingError } from "../../../common/azure-hosting/hostingError";
 import { CreateAppError, CreateSecretError } from "../aadApp/errors";
 import { GraphErrorCodes } from "../aadApp/errorCodes";
 import { HelpLinks } from "../../../common/constants";
+import { CommonStrings } from "./strings";
 
 export const ErrorType = {
   USER: "User",
@@ -230,6 +231,18 @@ export function wrapError(e: InnerError): FxResult {
     // Unrecognized Exception.
     const UnhandledErrorCode = "UnhandledError";
     return ResultFactory.SystemError(UnhandledErrorCode, [errorMsg, errorMsg], innerError);
+  }
+}
+
+export class FailedToCreateBotRegistrationError extends PluginError {
+  constructor(innerError?: InnerError) {
+    super(
+      ErrorType.SYSTEM,
+      ErrorNames.CREATE_BOT_REGISTRATION_API_ERROR,
+      Messages.FailToProvisionSomeResource(CommonStrings.APP_STUDIO_BOT_REGISTRATION),
+      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
+      innerError
+    );
   }
 }
 

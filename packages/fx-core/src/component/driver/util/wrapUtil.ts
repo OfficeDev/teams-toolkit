@@ -1,37 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  err,
-  FxError,
-  IProgressHandler,
-  ok,
-  Result,
-  SystemError,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { err, FxError, IProgressHandler, ok, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { ErrorConstants } from "../../constants";
 import { BaseComponentInnerError } from "../../error/componentError";
 import { TeamsFxTelemetryReporter } from "../../utils/teamsFxTelemetryReporter";
 import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult } from "../interface/stepDriver";
 
-interface StringMap {
-  [key: string]: string;
-}
+export type ActionResult = ExecutionResult | ExecutionResult["result"];
 
 export interface WrapDriverContext extends DriverContext {
-  progressBars: IProgressHandler[];
-  eventName: string;
-  telemetryProperties: StringMap;
-  wrapTelemetryReporter?: TeamsFxTelemetryReporter;
+  createProgressBar(title: string, steps: number): Promise<IProgressHandler | undefined>;
+  addTelemetryProperties(properties: Record<string, string>): void;
+  addSummary(...summaries: string[]): void;
 }
 
 export class WrapDriverContext {
+  progressBars: IProgressHandler[] = [];
+  summaries: string[] = [];
+  eventName: string;
+  telemetryProperties: Record<string, string>;
+  wrapTelemetryReporter?: TeamsFxTelemetryReporter;
   constructor(driverContext: DriverContext, eventName: string, componentName: string) {
     Object.assign(this, driverContext, {});
-    this.progressBars = [];
     this.eventName = eventName;
     this.telemetryProperties = {
       component: eventName,
@@ -43,33 +37,41 @@ export class WrapDriverContext {
     }
   }
 
-  public createProgressBar(title: string, steps: number): IProgressHandler | undefined {
+  async createProgressBar(title: string, steps: number): Promise<IProgressHandler | undefined> {
     const progressBar = this.ui?.createProgressBar(title, steps);
     if (progressBar) {
       this.progressBars.push(progressBar);
-      progressBar.start();
-      progressBar.next();
+      await progressBar.start();
+      await progressBar.next();
     }
     return progressBar;
   }
 
-  public endProgressBars(success: boolean): void {
-    this.progressBars.forEach((progressbar) => {
-      progressbar.end(success);
-    });
+  async endProgressBars(success: boolean): Promise<void> {
+    await Promise.all(
+      this.progressBars.map(async (progressbar) => {
+        await progressbar.end(success);
+      })
+    );
   }
 
-  public addTelemetryProperties(properties: { [key: string]: string }): void {
+  addTelemetryProperties(properties: Record<string, string>): void {
     this.telemetryProperties = { ...properties, ...this.telemetryProperties };
+  }
+
+  addSummary(...summaries: string[]): void {
+    this.summaries.push(...summaries);
   }
 }
 
 export async function wrapRun(
   context: WrapDriverContext,
-  exec: () => Promise<Map<string, string>>
-): Promise<Result<Map<string, string>, FxError>> {
+  exec: () => Promise<Map<string, string>>,
+  isExecute?: boolean
+): Promise<ActionResult> {
   const eventName = context.eventName;
   try {
+    let actionRes: ActionResult;
     context.wrapTelemetryReporter?.sendStartEvent({ eventName });
     context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, eventName));
     const res = await exec();
@@ -78,9 +80,15 @@ export async function wrapRun(
       properties: context.telemetryProperties,
     });
     context.logProvider?.info(getLocalizedString(logMessageKeys.successExecuteDriver, eventName));
-    context.endProgressBars(true);
-    return ok(res);
+    await context.endProgressBars(true);
+    if (isExecute) {
+      actionRes = { result: ok(res), summaries: context.summaries };
+    } else {
+      actionRes = ok(res);
+    }
+    return actionRes;
   } catch (error: any) {
+    let actionRes: ActionResult;
     const fxError = getError(context, error);
     context.wrapTelemetryReporter?.sendEndEvent(
       {
@@ -89,8 +97,13 @@ export async function wrapRun(
       },
       fxError
     );
-    context.endProgressBars(false);
-    return err(fxError);
+    await context.endProgressBars(false);
+    if (isExecute) {
+      actionRes = { result: err(fxError), summaries: context.summaries };
+    } else {
+      actionRes = err(fxError);
+    }
+    return actionRes;
   }
 }
 
@@ -108,8 +121,8 @@ function getError(context: WrapDriverContext, error: any): FxError {
       error,
       source: context.eventName,
       name: ErrorConstants.unhandledError,
-      message: ErrorConstants.unhandledErrorMessage,
-      displayMessage: ErrorConstants.unhandledErrorMessage,
+      message: error.message,
+      displayMessage: error.message,
     });
   }
   return fxError;

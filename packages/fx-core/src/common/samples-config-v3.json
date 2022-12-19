@@ -1,0 +1,96 @@
+{
+    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v3/",
+    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/v3.zip",
+    "baseFolderName": "TeamsFx-Samples-3",
+    "samples": [
+        {
+            "id": "hello-world-tab",
+            "title": "Hello World Tab with SSO",
+            "shortDescription": "A Hello World app of Microsoft Teams Tab app",
+            "fullDescription": "This is a Hello World app of Microsoft Teams Tab app which accomplishes very simple function like single-sign on. You can run this app locally or deploy it to Microsoft Azure. This app only has a Tab frontend.",
+            "tags": ["Tab", "TS", "SSO"],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "suggested": true
+        },
+        {
+            "id": "hello-world-tab-with-backend",
+            "title": "Hello World Tab with Backend",
+            "shortDescription": "A Hello World app of Microsoft Teams Tab app which has a backend service",
+            "fullDescription": "This is a Hello World app of Microsoft Teams Tab app which accomplishes very simple function like single-sign on. You can run this app locally or deploy it to Microsoft Azure. This app has a Tab frontend and a backend service using Azure Function.",
+            "tags": ["Tab", "TS", "Azure function"],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "suggested": true
+        },
+        {
+            "id": "hello-world-bot",
+            "title": "Hello World Bot",
+            "shortDescription": "A Hello World app of Microsoft Teams Bot app",
+            "fullDescription": "This is a Hello World app of Microsoft Teams Bot app demonstrating how to create commands and build adaptive cards that best for automation.",
+            "tags": ["Bot", "TS", "Adaptive Cards"],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "suggested": true
+        },
+        {
+            "id": "bot-sso",
+            "title": "Hello World Bot with SSO",
+            "shortDescription": "A Hello World app of Microsoft Teams Bot app with SSO",
+            "fullDescription": "This is an extended Hello World app of Microsoft Teams Bot app demonstrating how to integrate with Bot Framework SDK, TeamsFx SDK, and Graph SDK to implement SSO (Single Sign-On) feature that retrieves profile photos for currently signed-in users.",
+            "tags": [
+                "Bot",
+                "TS",
+                "Adaptive Cards",
+                "SSO"
+            ],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "suggested": false
+        },
+        {
+            "id": "hello-world-in-meeting",
+            "title": "My First Meeting App",
+            "shortDescription": "A template for apps using only in the context of a Teams meeting",
+            "fullDescription": "My first meeting app is a simple template to show how to build a tab app that can be installed and used in a meeting, in all of meeting lifecycles: pre-meeting chat, in-meeting, post-meeting chat. This sample contains tab as side panel, meeting chat tab, or meeting details tab. The template also includes simple codes to fetch meeting info and user profile.",
+            "tags": ["Meeting extension", "JS"],
+            "time": "30min to run",
+            "configuration": "Ready for debug",
+            "suggested": false
+        },
+        {
+            "id": "adaptive-card-notification",
+            "title": "Adaptive Card Notification",
+            "shortDescription": "Demonstrates how to send adaptive card notification to users.",
+            "fullDescription": "This is a sample which shows how to send notification with different adaptive cards using Bots.",
+            "tags": [
+                "Bot" , "TS"
+            ],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "suggested": false
+        },
+        {
+            "id": "incoming-webhook-notification",
+            "title": "Incoming Webhook Notification",
+            "shortDescription": "Demonstrates how to send notification via Incoming Webhook.",
+            "fullDescription": "This is a sample which shows how to send notification via Incoming Webhook in Microsoft Teams channels.",
+            "tags": [
+                "Bot" , "TS"
+            ],
+            "time": "5min to run",
+            "configuration": "Manual configurations required",
+            "suggested": false
+        },
+        {
+            "id": "stocks-update-notification-bot",
+            "title": "Stocks Update",
+            "shortDescription": "Keep up to date with the latest stock price in Microsoft Teams.",
+            "fullDescription": "This sample demonstrates how a Notification Bot can be used to call an external API using API Key authentication, on a pre-defined schedule of every 30 seconds, to obtain the latest stock information and render the results as an Adaptive Card.",
+            "tags": ["Bot", "TS", "Azure function", "API Key"],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "suggested": false
+        }
+    ]
+}

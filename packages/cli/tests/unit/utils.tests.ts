@@ -8,6 +8,7 @@ import {
   Colors,
   ConfigFolderName,
   InputConfigsFolderName,
+  ok,
   Platform,
   ProjectSettingsFileName,
   QTreeNode,
@@ -36,13 +37,17 @@ import {
   toYargsOptions,
   getTeamsAppTelemetryInfoByEnv,
   getIsM365,
+  isSpfxProject,
+  readLocalStateJsonFile,
+  compare,
+  isWorkspaceSupported,
 } from "../../src/utils";
-import * as utils from "../../src/utils";
 import { expect } from "./utils";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
-import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
+import { environmentManager, FxCore, isV3Enabled } from "@microsoft/teamsfx-core";
 import { PluginNames } from "@microsoft/teamsfx-core/build/component/constants";
 import mockedEnv from "mocked-env";
+import * as ProjectSettingsHelperV3 from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
 const staticOptions2: apis.StaticOptions = [
   { id: "a", cliName: "aa", label: "aaa" },
@@ -60,34 +65,34 @@ describe("Utils Tests", function () {
   it("readLocalStateJsonFile - success", () => {
     sandbox.stub(fs, "existsSync").returns(true);
     sandbox.stub(fs, "readJsonSync").returns({});
-    const res = utils.readLocalStateJsonFile("real");
+    const res = readLocalStateJsonFile("real");
     expect((res as any).value).to.deep.equal({});
   });
 
   it("readLocalStateJsonFile - ConfigNotFoundError", () => {
     sandbox.stub(fs, "existsSync").returns(false);
-    const res = utils.readLocalStateJsonFile("fake");
+    const res = readLocalStateJsonFile("fake");
     expect((res as any).error.name).to.equal("ConfigNotFound");
   });
 
   it("readLocalStateJsonFile - throw Error", () => {
     sandbox.stub(fs, "existsSync").returns(true);
     sandbox.stub(fs, "readJsonSync").throws(new Error());
-    const res = utils.readLocalStateJsonFile("fake");
+    const res = readLocalStateJsonFile("fake");
     expect((res as any).error.name).to.equal("ReadFileError");
   });
 
   it("compare", () => {
     {
-      const res = utils.compare("1.1.1", "1.1.1");
+      const res = compare("1.1.1", "1.1.1");
       expect(res === 0).to.be.true;
     }
     {
-      const res = utils.compare("1.1.1", "1.1.2");
+      const res = compare("1.1.1", "1.1.2");
       expect(res === -1).to.be.true;
     }
     {
-      const res = utils.compare("1.2.1", "1.1.2");
+      const res = compare("1.2.1", "1.1.2");
       expect(res === 1).to.be.true;
     }
   });
@@ -495,7 +500,7 @@ describe("Utils Tests", function () {
     });
 
     it("Real Path", async () => {
-      const result = utils.isWorkspaceSupported("real");
+      const result = isWorkspaceSupported("real");
       expect(result).equals(true);
     });
 
@@ -504,7 +509,7 @@ describe("Utils Tests", function () {
         TEAMSFX_V3: "true",
       });
       try {
-        const result = utils.isWorkspaceSupported("real");
+        const result = isWorkspaceSupported("real");
         expect(result).equals(true);
       } finally {
         restore();
@@ -512,7 +517,7 @@ describe("Utils Tests", function () {
     });
 
     it("Fake Path", async () => {
-      const result = utils.isWorkspaceSupported("fake");
+      const result = isWorkspaceSupported("fake");
       expect(result).equals(false);
     });
   });
@@ -544,9 +549,9 @@ describe("Utils Tests", function () {
       sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
         return true;
       });
-      sandbox.stub(utils, "isWorkspaceSupported").callsFake((file: string): boolean => {
-        return true;
-      });
+      // sandbox.stub(utils, "isWorkspaceSupported").callsFake((file: string): boolean => {
+      //   return true;
+      // });
 
       sandbox.stub(fs, "readFileSync").callsFake((path: any): string | Buffer => {
         const file = path as string;
@@ -807,5 +812,16 @@ describe("Utils Tests", function () {
       const result = getIsM365("real.isM365=undefined");
       expect(result).equals(undefined);
     });
+  });
+
+  it("isSpfxProject", async () => {
+    sandbox.stub(ProjectSettingsHelperV3, "hasSPFxTab").resolves(ok(undefined));
+    const mockFxCore = {
+      getProjectConfig: async () => {
+        return ok(undefined);
+      },
+    } as any;
+    const result = await isSpfxProject("real", mockFxCore);
+    expect(result.isOk()).to.be.true;
   });
 });

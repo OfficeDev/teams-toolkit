@@ -21,7 +21,7 @@ import {
   BuiltInFeaturePluginNames,
 } from "../component/constants";
 import * as uuid from "uuid";
-import { isV3Enabled } from "./tools";
+import { isExistingTabAppEnabled, isV3Enabled } from "./tools";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -76,25 +76,39 @@ export function isValidProject(workspacePath?: string): boolean {
   if (!workspacePath) return false;
   try {
     if (isV3Enabled()) {
-      const filePath = path.resolve(workspacePath, SettingsFolderName, SettingsFileName);
-      const projectSettings: Settings = fs.readJsonSync(filePath) as Settings;
-      if (!projectSettings.trackingId) {
-        return false;
-      }
-      if (!projectSettings.version) {
-        return false;
-      }
-      return true;
+      return isValidProjectV3(workspacePath) || isValidProjectV2(workspacePath);
     } else {
-      const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`, "configs");
-      const settingsFile = path.resolve(confFolderPath, ProjectSettingsFileName);
-      const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
-      if (validateProjectSettings(projectSettings)) return false;
-      return true;
+      return isValidProjectV2(workspacePath);
     }
   } catch (e) {
     return false;
   }
+}
+
+export function isValidProjectV3(workspacePath: string): boolean {
+  const filePath = path.resolve(workspacePath, SettingsFolderName, SettingsFileName);
+  if (!fs.existsSync(filePath)) {
+    return false;
+  }
+  const projectSettings: Settings = fs.readJsonSync(filePath) as Settings;
+  if (!projectSettings.trackingId) {
+    return false;
+  }
+  if (!projectSettings.version) {
+    return false;
+  }
+  return true;
+}
+
+export function isValidProjectV2(workspacePath: string): boolean {
+  const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`, "configs");
+  const settingsFile = path.resolve(confFolderPath, ProjectSettingsFileName);
+  if (!fs.existsSync(settingsFile)) {
+    return false;
+  }
+  const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
+  if (validateProjectSettings(projectSettings)) return false;
+  return true;
 }
 
 export function hasAAD(projectSetting: ProjectSettings): boolean {
@@ -137,6 +151,10 @@ export function getAzurePlugins(excludeAad = false): string[] {
 }
 
 export function isExistingTabApp(projectSettings: ProjectSettings): boolean {
+  if (!isExistingTabAppEnabled()) {
+    return false;
+  }
+
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (!solutionSettings) {
     return true;

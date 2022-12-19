@@ -378,15 +378,23 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async setSubscription(subscriptionId: string): Promise<void> {
+    if (subscriptionId === "") {
+      AzureAccountManager.tenantId = undefined;
+      AzureAccountManager.subscriptionId = undefined;
+      AzureAccountManager.subscriptionName = undefined;
+      return;
+    }
     const list = await this.listSubscriptions();
     for (let i = 0; i < list.length; ++i) {
       const item = list[i];
       if (item.subscriptionId === subscriptionId) {
-        // await this.saveSubscription({
-        //   subscriptionId: item.subscriptionId,
-        //   subscriptionName: item.subscriptionName,
-        //   tenantId: item.tenantId,
-        // });
+        if (!isV3Enabled()) {
+          await this.saveSubscription({
+            subscriptionId: item.subscriptionId,
+            subscriptionName: item.subscriptionName,
+            tenantId: item.tenantId,
+          });
+        }
         AzureAccountManager.tenantId = item.tenantId;
         AzureAccountManager.teamsFxTokenCredential.setTenantId(item.tenantId);
         AzureAccountManager.subscriptionId = item.subscriptionId;

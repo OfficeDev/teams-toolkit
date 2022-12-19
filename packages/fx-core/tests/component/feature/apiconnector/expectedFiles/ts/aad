@@ -7,6 +7,8 @@ Next steps:
 2. Replace "<your-api-scope>" in this file with actual scope required by the API.
 3. Refer https://aka.ms/teamsfx-connect-api-with-aad for configuring AAD app and consent scopes.
 
+It is also recommended to put all the configurations into config.ts file.
+
 You can import the API client (an Axios instance) in another file and call fake APIs and authentication is now handled for you automatically.
 
 Here is an example for a GET request to "relative_path_of_target_api":
@@ -33,7 +35,12 @@ import {
 } from "@microsoft/teamsfx";
 
 // Load application configuration. This sample uses the client credential flow to acquire a token for your API.
-const teamsFx = new TeamsFx(IdentityType.App);
+const teamsFx = new TeamsFx(IdentityType.App, {
+  authorityHost: process.env.M365_AUTHORITY_HOST!,
+  tenantId: process.env.M365_TENANT_ID!,
+  clientId: process.env.M365_CLIENT_ID!,
+  clientSecret: process.env.M365_CLIENT_SECRET!,
+});
 // Initialize a new axios instance to call fake
 const appCredential = teamsFx.getCredential();
 const authProvider = new BearerTokenAuthProvider(
@@ -41,7 +48,7 @@ const authProvider = new BearerTokenAuthProvider(
   async () => (await appCredential.getToken("<your-api-scope>"))!.token
 );
 const fakeClient = createApiClient(
-  teamsFx.getConfig("TEAMSFX_API_FAKE_ENDPOINT"),
+  process.env.TEAMSFX_API_FAKE_ENDPOINT,
   authProvider
 );
 export { fakeClient };

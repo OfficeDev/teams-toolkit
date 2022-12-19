@@ -7,6 +7,10 @@ on:
         description: "preid name(alpha, beta, rc, stable)"
         required: true
         default: "rc"
+      isPreview:
+        description: "ensure release ttk for preview(yes or no)"
+        required: false
+        default: 'no'
       skip-version-rc:
         description: "release RC version just with lerna publish, skip run lerna version(yes or no)"
         required: false
@@ -16,7 +20,7 @@ on:
         required: false
         description: "Please enter the package names you want to publish, such as cli, vscode, sdk, server and template. Please separate multiple entries with spaces"
   schedule:
-    - cron: "0 8 * * *"
+    - cron: "0 0 * * *"
 
 jobs:
   cd:
@@ -45,6 +49,12 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/ga' && github.event.inputs.preid != 'beta' }}
         run: |
           echo It's only allowed to release beta on ga branch.
+          exit 1
+        
+      - name: Validate preview on dev branch
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/dev' && github.event.inputs.isPreview != 'no' }}
+        run: |
+          echo It's only allowed to release preview on dev branch
           exit 1
 
       - name: Validate schedule
@@ -120,14 +130,14 @@ jobs:
       - name: version change
         id: version-change
         run: |
-          echo "::set-output name=CHANGED::$(git tag --points-at HEAD | xargs)"
-          echo "::set-output name=TEMPLATE_VERSION::$(git tag --points-at HEAD | grep templates)"
-          echo "::set-output name=EXTENSION_VERSION_NUM::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)"
-          echo "::set-output name=EXTENSION_VERSION::$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)"
-          echo "::set-output name=SERVER_VERSION_NUM::$(git tag --points-at HEAD | grep @microsoft/teamsfx-server@ | cut -d '@' -f3)"
-          echo "::set-output name=SERVER_VERSION::$(git tag --points-at HEAD| grep @microsoft/teamsfx-server@)"
-          echo "::set-output name=SIMPLEAUTH_VERSION::$(git tag --points-at HEAD | grep simpleauth)"
-          echo "::set-output name=SIMPLEAUTH_VERSION_NUM::$(git tag --points-at HEAD| grep simpleauth| cut -d '@' -f2)"
+          echo "CHANGED=$(git tag --points-at HEAD | xargs)" >> $GITHUB_OUTPUT
+          echo "TEMPLATE_VERSION=$(git tag --points-at HEAD | grep templates)" >> $GITHUB_OUTPUT
+          echo "EXTENSION_VERSION_NUM=$(git tag --points-at HEAD | grep ms-teams-vscode-extension@ | cut -d '@' -f2)" >> $GITHUB_OUTPUT
+          echo "EXTENSION_VERSION=$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)" >> $GITHUB_OUTPUT
+          echo "SERVER_VERSION_NUM=$(git tag --points-at HEAD | grep @microsoft/teamsfx-server@ | cut -d '@' -f3)" >> $GITHUB_OUTPUT
+          echo "SERVER_VERSION=$(git tag --points-at HEAD| grep @microsoft/teamsfx-server@)" >> $GITHUB_OUTPUT
+          echo "SIMPLEAUTH_VERSION=$(git tag --points-at HEAD | grep simpleauth)" >> $GITHUB_OUTPUT
+          echo "SIMPLEAUTH_VERSION_NUM=$(git tag --points-at HEAD| grep simpleauth| cut -d '@' -f2)" >> $GITHUB_OUTPUT
           if git tag --points-at HEAD | grep templates | grep rc;
           then
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
@@ -194,7 +204,7 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           prerelease: true
           tag: "templates@0.0.0-rc"
-          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
+          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip, ${{ runner.temp }}/teamsfx_templates_v3/*.zip
           allowUpdates: true
           removeArtifacts: true
 
@@ -202,7 +212,7 @@ jobs:
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
         uses: ncipollo/release-action@v1.10.0
         with:
-          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip
+          artifacts: ${{ runner.temp }}/teamsfx_templates/*.zip, ${{ runner.temp }}/teamsfx_templates_v3/*.zip
           name: "Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}"
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ steps.version-change.outputs.TEMPLATE_VERSION }}
@@ -368,6 +378,52 @@ jobs:
           artifacts: ./packages/**/*.vsix
           artifactErrorsFailBuild: true
           bodyFile: ./CHANGELOG.md
+
+      - name: Update Preview TTK ai Key
+        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/vscode-extension/package.json
+          field: aiKey
+          value: ${{ secrets.EXT_PUBLIC_AIKEY }}
+
+      - name: Calculate Version Num
+        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
+        id: preview-version
+        working-directory: packages/vscode-extension
+        run: |
+          DATE_WITH_TIME=`date "+%Y%m%d%H"`
+          PACKAGE_VERSION=$(jq -r .version package.json | cut -d '.' -f 1,2)
+          TTK_VERSION=$PACKAGE_VERSION.$DATE_WITH_TIME
+          echo "version=$TTK_VERSION" >> $GITHUB_OUTPUT
+          echo $TTK_VERSION
+
+      - name: pack vsix for preview
+        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
+        env:
+          RELEASE: preview
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          command: |
+            sleep 20
+            cd ./packages/vscode-extension
+            touch test.vsix
+            rm *.vsix
+            npm install --only=production
+            npx vsce package --pre-release ${{ steps.preview-version.outputs.version }}
+
+      - name: release preview TTK to github release page
+        if: ${{ github.event_name == 'schedule' || (contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event.inputs.isPreview != 'no')}}
+        uses: ncipollo/release-action@v1.10.0
+        with:
+          token: ${{ secrets.CD_PAT }}
+          tag: "vscode-extension-V3-${{ steps.preview-version.outputs.version }}"
+          artifacts: ./packages/vscode-extension/*.vsix
+          artifactErrorsFailBuild: true
+          prerelease: true
 
       - name: save release info
         run: |

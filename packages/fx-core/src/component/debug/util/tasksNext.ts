@@ -3,7 +3,7 @@
 "use strict";
 
 import { ProductName } from "@microsoft/teamsfx-api";
-import { ProgrammingLanguage } from "../../../common/local/constants";
+import { ProgrammingLanguage } from "../../constants";
 
 // TODO: add spfx tasks with "validate-local-prerequisites"
 export function generateTasks(
@@ -46,7 +46,7 @@ export function generateTasks(
 
   if (includeBackend) {
     tasks.push(startBackend(programmingLanguage));
-    if (programmingLanguage === ProgrammingLanguage.typescript) {
+    if (programmingLanguage === ProgrammingLanguage.TS) {
       tasks.push(watchBackend());
     }
   }
@@ -55,7 +55,7 @@ export function generateTasks(
     if (includeFuncHostedBot) {
       tasks.push(startFuncHostedBot(includeFrontend, programmingLanguage));
       tasks.push(startAzuriteEmulator());
-      if (programmingLanguage === ProgrammingLanguage.typescript) {
+      if (programmingLanguage === ProgrammingLanguage.TS) {
         tasks.push(watchFuncHostedBot());
       }
     } else {
@@ -110,7 +110,7 @@ export function generateM365Tasks(
 
   if (includeBackend) {
     tasks.push(startBackend(programmingLanguage));
-    if (programmingLanguage === ProgrammingLanguage.typescript) {
+    if (programmingLanguage === ProgrammingLanguage.TS) {
       tasks.push(watchBackend());
     }
   }
@@ -256,7 +256,7 @@ function startBackend(programmingLanguage: string): Record<string, unknown> {
     },
   } as Record<string, unknown>;
 
-  if (programmingLanguage === ProgrammingLanguage.typescript) {
+  if (programmingLanguage === ProgrammingLanguage.TS) {
     result.dependsOn = "Watch Backend";
   }
 
@@ -351,7 +351,7 @@ function startFuncHostedBot(
   }
 
   const dependsOn: string[] = ["Start Azurite Emulator"];
-  if (programmingLanguage === ProgrammingLanguage.typescript) {
+  if (programmingLanguage === ProgrammingLanguage.TS) {
     dependsOn.push("Watch Bot");
   }
   result.dependsOn = dependsOn;

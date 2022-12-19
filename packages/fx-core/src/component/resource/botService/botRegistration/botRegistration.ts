@@ -12,7 +12,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import { GraphScopes } from "../../../../common/tools";
-import { CreateAADAppError } from "../errors";
+import { IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
 import { logMessageKeys } from "./constants";
 import { GraphClient } from "./graphClient";
 
@@ -30,6 +30,8 @@ export class Constants {
   public static readonly BOT_REGISTRATION: string = "BotRegistration";
   public static readonly CREATE_BOT_REGISTRATION: string = "createBotRegistration";
   public static readonly UPDATE_MESSAGE_ENDPOINT: string = "updateMessageEndpoint";
+  public static readonly CREATE_OR_UPDATE_BOT_REGISTRATION: string =
+    "createOrUpdateBotRegistration";
   public static readonly MSI_FOR_BOT: string = "MSI Support for Bot";
 }
 
@@ -38,8 +40,8 @@ export class BotRegistration {
     m365TokenProvider: M365TokenProvider,
     aadDisplayName: string,
     botConfig?: BotAadCredentials,
-    botAuthType: BotAuthType = BotAuthType.AADApp,
-    logProvider?: LogProvider
+    logProvider?: LogProvider,
+    botAuthType: BotAuthType = BotAuthType.AADApp
   ): Promise<Result<BotAadCredentials, FxError>> {
     logProvider?.info(getLocalizedString(logMessageKeys.startCreateBotAadApp));
     if (botAuthType === BotAuthType.AADApp) {
@@ -83,15 +85,26 @@ export class BotRegistration {
     aadDisplayName: string,
     botName: string,
     botConfig?: BotAadCredentials,
-    isIdFromState?: boolean,
-    botAuthType: BotAuthType = BotAuthType.AADApp,
-    logProvider?: LogProvider
+    logProvider?: LogProvider,
+    botAuthType: BotAuthType = BotAuthType.AADApp
   ): Promise<Result<BotAadCredentials, FxError>> {
     return err(
       new NotImplementedError(Constants.BOT_REGISTRATION, Constants.CREATE_BOT_REGISTRATION)
     );
   }
 
+  // return true if botRegistration is already existing
+  public async createOrUpdateBotRegistration(
+    m365TokenProvider: M365TokenProvider,
+    botRegistration: IBotRegistration
+  ): Promise<Result<boolean, FxError>> {
+    return err(
+      new NotImplementedError(
+        Constants.BOT_REGISTRATION,
+        Constants.CREATE_OR_UPDATE_BOT_REGISTRATION
+      )
+    );
+  }
   public async updateMessageEndpoint(
     m365TokenProvider: M365TokenProvider,
     botId: string,

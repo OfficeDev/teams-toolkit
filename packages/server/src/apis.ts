@@ -24,6 +24,7 @@ import {
   TokenRequest,
   Void,
 } from "@microsoft/teamsfx-api";
+import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import {
   CancellationToken,
   NotificationType2,
@@ -73,6 +74,20 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<Void, FxError>>;
+  preProvisionResourcesRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<
+    Result<
+      {
+        needAzureLogin: boolean;
+        needM365Login: boolean;
+        resolvedAzureSubscriptionId?: string;
+        resolvedAzureResourceGroupName?: string;
+      },
+      FxError
+    >
+  >;
   deployArtifactsRequest: (
     inputs: Inputs,
     token: CancellationToken
@@ -108,6 +123,15 @@ export interface IServerConnection {
     token: CancellationToken
   ) => Promise<Result<Void, FxError>>;
   addSsoRequest: (inputs: Inputs, token: CancellationToken) => Promise<Result<any, FxError>>;
+
+  getProjectMigrationStatusRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<VersionCheckRes, FxError>>;
+  migrateProjectRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<boolean, FxError>>;
 }
 
 /**

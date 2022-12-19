@@ -8,7 +8,12 @@ import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { LogMessages, ProgressMessages, ProgressTitles } from "../messages";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
-import { errorSource, componentName, commonTemplateName } from "./constant";
+import {
+  errorSource,
+  componentName,
+  commonTemplateName,
+  sampleDefaultTimeoutInMs,
+} from "./constant";
 import { FetchZipFromUrlError, TemplateZipFallbackError, UnzipError } from "./error";
 import {
   SampleActionSeq,
@@ -50,10 +55,10 @@ export class Generator {
     language?: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const replaceMap = ctx.templateVariables;
+    const replaceMap = ctx.templateVariables ?? {};
     const generatorContext: GeneratorContext = {
       name: language ?? commonTemplateName,
-      relativePath: scenario,
+      relativePath: `${scenario}/`,
       destination: destinationPath,
       logProvider: ctx.logProvider,
       fileNameReplaceFn: (fileName, fileData) =>
@@ -100,6 +105,7 @@ export class Generator {
       destination: destinationPath,
       logProvider: ctx.logProvider,
       zipUrl: sample.link,
+      timeoutInMs: sampleDefaultTimeoutInMs,
       relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
@@ -128,7 +134,7 @@ export class Generator {
   }
 }
 
-async function templateDefaultOnActionError(
+export async function templateDefaultOnActionError(
   action: GeneratorAction,
   context: GeneratorContext,
   error: Error
@@ -150,7 +156,7 @@ async function templateDefaultOnActionError(
   }
 }
 
-async function sampleDefaultOnActionError(
+export async function sampleDefaultOnActionError(
   action: GeneratorAction,
   context: GeneratorContext,
   error: Error

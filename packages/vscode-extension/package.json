@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "4.1.3",
+  "version": "4.2.0-rc.1",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -60,9 +60,7 @@
     "untrustedWorkspaces": {
       "supported": "limited",
       "description": "%teamstoolkit.capabilities.untrustedWorkspaces.description%",
-      "restrictedConfigurations": [
-        "fx-extension.SPFxVersion"
-      ]
+      "restrictedConfigurations": []
     }
   },
   "contributes": {
@@ -82,10 +80,17 @@
         }
       },
       "teamsfx-m365": {
-        "description": "Microsoft 365 icon in account tree view",
+        "description": "Microsoft 365 icon in command tree view",
         "default": {
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E002"
+        }
+      },
+      "teamsfx-add-environment": {
+        "description": "Microsoft 365 icon in command tree view",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E004"
         }
       }
     },
@@ -101,52 +106,17 @@
     "viewsWelcome": [
       {
         "view": "teamsfx-empty-project",
-        "contents": "To start Teams app development experience, create a project or explore our samples. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D), [Tutorials](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D) or [Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-guide-exp",
-        "contents": "To start Teams app development experience, create a project or explore our samples. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D), [How-to guides](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D) or [Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-and-check-upgrade",
-        "contents": "To start Teams app development experience, create a project or explore our samples. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D), [Tutorials](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D) or [Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\nYou need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.\n[Upgrade project](command:fx-extension.checkProjectUpgrade)",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-and-check-upgrade-guide-exp",
-        "contents": "To start Teams app development experience, create a project or explore our samples. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D), [How-to guides](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D) or [Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\nYou need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.\n[Upgrade project](command:fx-extension.checkProjectUpgrade)",
+        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project.content%",
         "enablement": "fx-extension.initialized"
       },
       {
         "view": "teamsfx-empty-project-new-user",
-        "contents": "Jump right into Teams Toolkit and get an overview of the fundamentals.\n[Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D)\nCreate a project or explore our samples.\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nWalk through the steps to build a real-world Teams app.\n[Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D)\n[Tutorials](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)",
+        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user.content%",
         "enablement": "fx-extension.initialized"
       },
       {
-        "view": "teamsfx-empty-project-new-user-guide-exp",
-        "contents": "Jump right into Teams Toolkit and get an overview of the fundamentals.\n[Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D)\nCreate a project or explore our samples.\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nWalk through the steps to build a real-world Teams app.\n[Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D)\n[How-to guides](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-existing-user-va",
-        "contents": "Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D).\nCreate a project or explore our samples.\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nWalk through the steps to build a real-world Teams app.\n[Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D)\n[Tutorials](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-existing-user-va-guide-exp",
-        "contents": "Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D).\nCreate a project or explore our samples.\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\nWalk through the steps to build a real-world Teams app.\n[Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D)\n[How-to guides](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-existing-user-vb",
-        "contents": "Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D).\nWalk through the steps to build a real-world Teams app.\n[Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D)\n[Tutorials](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)\nCreate a project or explore our samples.\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)",
-        "enablement": "fx-extension.initialized"
-      },
-      {
-        "view": "teamsfx-empty-project-existing-user-vb-guide-exp",
-        "contents": "Jump right into Teams Toolkit and get an overview of the fundamentals. For more information, visit [Get Started](command:fx-extension.openWelcome?%5B%22SideBar%22%5D).\nWalk through the steps to build a real-world Teams app.\n[Documentation](command:fx-extension.openDocument?%5B%22SideBar%22%5D)\n[How-to guides](command:fx-extension.selectTutorials?%5B%22SideBar%22%5D)\nCreate a project or explore our samples.\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)",
+        "view": "teamsfx-empty-project-and-check-upgrade",
+        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-and-check-upgrade.content%",
         "enablement": "fx-extension.initialized"
       }
     ],
@@ -160,7 +130,7 @@
         {
           "id": "teamsfx-environment",
           "name": "Environment",
-          "when": "fx-extension.isTeamsFx && isWorkspaceTrusted"
+          "when": "fx-extension.isTeamsFx && !fx-extension.isV3Enabled && isWorkspaceTrusted"
         },
         {
           "id": "teamsfx-development",
@@ -193,59 +163,24 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv && !fx-extension.welcomeViewTreatment && !fx-extension.guideTreatment"
-        },
-        {
-          "id": "teamsfx-empty-project-guide-exp",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv && !fx-extension.welcomeViewTreatment && fx-extension.guideTreatment"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv && !fx-extension.isNewUser"
         },
         {
           "id": "teamsfx-empty-project-and-check-upgrade",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.canUpgradeToArmAndMultiEnv && isWorkspaceTrusted && !fx-extension.guideTreatment"
-        },
-        {
-          "id": "teamsfx-empty-project-and-check-upgrade-guide-exp",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.canUpgradeToArmAndMultiEnv && isWorkspaceTrusted && fx-extension.guideTreatment"
+          "when": "!fx-extension.isTeamsFx && fx-extension.canUpgradeToArmAndMultiEnv && isWorkspaceTrusted"
         },
         {
           "id": "teamsfx-empty-project-new-user",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv && !fx-extension.isExistingUser && fx-extension.welcomeViewTreatment && !fx-extension.guideTreatment"
-        },
-        {
-          "id": "teamsfx-empty-project-new-user-guide-exp",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv && !fx-extension.isExistingUser && fx-extension.welcomeViewTreatment && fx-extension.guideTreatment"
-        },
-        {
-          "id": "teamsfx-empty-project-existing-user-va",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv && fx-extension.isExistingUser && fx-extension.welcomeViewTreatment && fx-extension.welcomeViewA && !fx-extension.guideTreatment"
-        },
-        {
-          "id": "teamsfx-empty-project-existing-user-va-guide-exp",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv && fx-extension.isExistingUser && fx-extension.welcomeViewTreatment && fx-extension.welcomeViewA && fx-extension.guideTreatment"
-        },
-        {
-          "id": "teamsfx-empty-project-existing-user-vb",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv && fx-extension.isExistingUser && fx-extension.welcomeViewTreatment && fx-extension.welcomeViewB && !fx-extension.guideTreatment"
-        },
-        {
-          "id": "teamsfx-empty-project-existing-user-vb-guide-exp",
-          "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv && fx-extension.isExistingUser && fx-extension.welcomeViewTreatment && fx-extension.welcomeViewB && fx-extension.guideTreatment"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.canUpgradeToArmAndMultiEnv && fx-extension.isNewUser"
         }
       ]
     },
     "menus": {
       "explorer/context": [
         {
-          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+          "command": "fx-extension.updateAadAppManifestFromCtxMenu",
           "when": "resourceFilename == aad.template.json && fx-extension.isAadManifestEnabled",
           "group": "deploy@0"
         },
@@ -397,12 +332,12 @@
       "editor/title": [
         {
           "command": "fx-extension.openPreviewFile",
-          "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json || resourceFilename == manifest.template.json",
+          "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json || resourceFilename == manifest.template.json && !fx-extension.isV3Enabled",
           "group": "navigation"
         },
         {
           "command": "fx-extension.updatePreviewFile",
-          "when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/",
+          "when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/ && !fx-extension.isV3Enabled",
           "group": "navigation"
         },
         {
@@ -425,7 +360,7 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.deployAadAppManifestFromCtxMenu",
+          "command": "fx-extension.updateAadAppManifestFromCtxMenu",
           "when": "false"
         },
         {
@@ -597,7 +532,7 @@
       {
         "command": "fx-extension.addFeature",
         "title": "%teamstoolkit.commands.addFeature.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.isV3Enabled",
         "category": "Teams"
       },
       {
@@ -625,8 +560,8 @@
         "category": "Teams"
       },
       {
-        "command": "fx-extension.deployAadAppManifest",
-        "title": "%teamstoolkit.commands.deployAadAppManifest.title%",
+        "command": "fx-extension.updateAadAppManifest",
+        "title": "%teamstoolkit.commands.updateAadAppManifest.title%",
         "enablement": "fx-extension.isTeamsFx && fx-extension.isAadManifestEnabled && isWorkspaceTrusted",
         "category": "Teams"
       },
@@ -645,13 +580,19 @@
       {
         "command": "fx-extension.openAppManagement",
         "title": "%teamstoolkit.commands.devPortal.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx && !fx-extension.isTDPIntegrationEnabled",
+        "category": "Teams"
+      },
+      {
+        "command": "fx-extension.publishInDeveloperPortal",
+        "title": "%teamstoolkit.commandsTreeViewProvider.publishInDevPortalTitle%",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && fx-extension.isTDPIntegrationEnabled",
         "category": "Teams"
       },
       {
         "command": "fx-extension.openManifest",
         "title": "%teamstoolkit.commands.editManifest.title%",
-        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
+        "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.isV3Enabled",
         "category": "Teams"
       },
       {
@@ -675,7 +616,6 @@
       {
         "command": "fx-extension.updatePreviewFile",
         "title": "%teamstoolkit.commands.updateManifest.title%",
-        "icon": "$(sync)",
         "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted",
         "category": "Teams"
       },
@@ -696,8 +636,8 @@
         "icon": "$(add)"
       },
       {
-        "command": "fx-extension.deployAadAppManifestFromCtxMenu",
-        "title": "%teamstoolkit.commands.deployAadAppManifestFromCtxMenu.title%"
+        "command": "fx-extension.updateAadAppManifestFromCtxMenu",
+        "title": "%teamstoolkit.commands.updateAadAppManifestFromCtxMenu.title%"
       },
       {
         "command": "fx-extension.deployManifestFromCtxMenu",
@@ -771,7 +711,8 @@
       {
         "command": "fx-extension.openPreviewFile",
         "title": "%teamstoolkit.commands.previewManifest.title%",
-        "icon": "$(file-code)"
+        "icon": "$(file-code)",
+        "enablement": "!fx-extension.isV3Enabled"
       },
       {
         "command": "fx-extension.openResourceGroupInPortal",
@@ -1330,15 +1271,6 @@
               "yo": true,
               "sharepointYeomanGenerator": true
             }
-          },
-          "fx-extension.SPFxVersion": {
-            "type": "string",
-            "description": "Select what version of SPFx to use. (Requires reload of VS Code)",
-            "enum": [
-              "1.15.0",
-              "1.16.0-beta.1"
-            ],
-            "default": "1.15.0"
           }
         }
       }
@@ -1361,60 +1293,60 @@
     "walkthroughs": [
       {
         "id": "teamsToolkitGetStarted",
-        "title": "Get started with Teams Toolkit",
-        "description": "Jumpstart your Teams app development experience",
+        "title": "%teamstoolkit.walkthroughs.title%",
+        "description": "%teamstoolkit.walkthroughs.description%",
         "steps": [
           {
             "id": "teamsToolkitEnvironment",
-            "title": "Get your environment ready",
-            "description": "Teams Toolkit primarily requires NPM and Node.js. Check your environment and get ready for your first Teams app development.\n[Run prerequisite checker](command:fx-extension.validate-getStarted-prerequisites?%5B%22WalkThrough%22%5D)",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.description%",
             "media": {
               "svg": "media/walkthrough/Prerequisites.svg",
-              "altText": "Get your environment ready"
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.title%"
             }
           },
           {
             "id": "teamsToolkitBuildApp",
-            "title": "Build your first Teams app",
-            "description": "Choose [Teams app capabilities](https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.\nYou can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.\n[Create a new Teams app](command:fx-extension.createFromWalkthrough?%5B%22WalkThrough%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22WalkThrough%22%5D)",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.description%",
             "media": {
               "svg": "media/walkthrough/Create.svg",
-              "altText": "Build your first Teams app"
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%"
             }
           },
           {
             "id": "teamsToolkitCreateFreeAccount",
-            "title": "Create a Microsoft 365 testing tenant for free",
-            "description": "Create a free Microsoft 365 testing tenant to install and preview your Teams apps in Teams.\n If you already have a Microsoft 365 organizational account, [sign in to Microsoft 365](command:fx-extension.signinM365?%5B%22WalkThrough%22%5D) and validate [sideloading](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is enabled.\n[Create a Microsoft 365 testing tenant](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.description%",
             "media": {
               "markdown": "media/itp/itp.md"
             }
           },
           {
             "id": "teamsToolkitPreview",
-            "title": "Preview your Teams app locally",
-            "description": "Press [F5](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D) or discover '[Run and Debug](command:workbench.view.debug)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug?%5B%22WalkThrough%22%5D)\n__Tip: To run local preview, sign in to Microsoft 365 (organizational account) with sideloading option.__",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.description%",
             "media": {
               "svg": "media/walkthrough/F5.svg",
-              "altText": "Preview your Teams app locally"
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%"
             }
           },
           {
             "id": "teamsToolkitDeploy",
-            "title": "Deploy Teams apps",
-            "description": "You can provision resources in the cloud and deploy your app's code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Deployment commands](command:fx-extension.openDeploymentTreeview?%5B%22WalkThrough%22%5D)\n__Tip: Learn more about ['Deployment'](https://aka.ms/teamsfx-provision).__",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.description%",
             "media": {
               "svg": "media/walkthrough/Deployment.svg",
-              "altText": "Deploy Teams apps"
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%"
             }
           },
           {
             "id": "teamsToolkitExploreMore",
-            "title": "What's next?",
-            "description": "Here are some recommendations to continue your journey with Teams Toolkit.\n • Explore [Tutorials](command:fx-extension.selectTutorials?%5B%22WalkThrough%22%5D) and get more practical guidances\n • Open [Readme.md](command:fx-extension.openReadMe?%5B%22WalkThrough%22%5D) to understand how to develop this app\n • Read our [Documentation](command:fx-extension.openDocument?%5B%22WalkThrough%22%5D)",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.description%",
             "media": {
               "svg": "media/walkthrough/whatsnext.svg",
-              "altText": "Tutorials, README.md and Documentation"
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.altText%"
             }
           }
         ]
@@ -1458,7 +1390,7 @@
     "@types/chai-as-promised": "^7.1.3",
     "@types/chai-spies": "^1.0.3",
     "@types/detect-port": "^1.3.2",
-    "@types/express": "^4.17.11",
+    "@types/express": "^4.17.14",
     "@types/fs-extra": "^9.0.5",
     "@types/glob": "^7.2.0",
     "@types/jscodeshift": "^0.11.2",
@@ -1527,7 +1459,7 @@
     "typescript": "^4.2.4",
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
-    "verdaccio": "^5.6.2",
+    "verdaccio": "^5.18.0",
     "vsce": "^2.7.0",
     "webfont": "^11.2.26",
     "webpack": "^5.38.1",
@@ -1535,18 +1467,18 @@
     "winston": "^3.3.3"
   },
   "dependencies": {
-    "@azure/identity": "^1.2.1",
+    "@azure/identity": "^1.5.2",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.21.0",
-    "@microsoft/teamsfx-core": "^1.19.0",
+    "@microsoft/teamsfx-api": "^0.22.0-rc.0",
+    "@microsoft/teamsfx-core": "^1.21.0-rc.1",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",
     "ajv": "^8.5.0",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
-    "express": "^4.17.1",
+    "express": "^4.18.2",
     "jscodeshift": "^0.13.0",
     "jsonc-parser": "^3.0.0",
     "jsonschema": "^1.4.0",

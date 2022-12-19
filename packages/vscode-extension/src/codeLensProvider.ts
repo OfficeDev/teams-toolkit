@@ -146,23 +146,33 @@ export class PlaceholderCodeLens extends vscode.CodeLens {
 export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
   private userDataRegex: RegExp;
   private localDebugRegex: RegExp;
+  private envSecretRegex: RegExp;
 
   constructor() {
     this.userDataRegex =
       /fx-resource-[a-zA-Z\-]+\.[a-zA-Z\-_]+(?:Secret|Password|VariableParams)=(.*)/g;
     this.localDebugRegex =
       /(?: *|\t*)"(?:clientSecret|SimpleAuthEnvironmentVariableParams|botPassword)": "(crypto_.*)"/g;
+    this.envSecretRegex = /#?(?:SECRET_)[a-zA-Z\-_]+=(crypto_.*)/g;
   }
 
   public provideCodeLenses(
     document: vscode.TextDocument
   ): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
-    if (document.fileName.endsWith("userdata")) {
-      return this.computeCodeLenses(document, this.userDataRegex);
-    } else if (document.fileName.endsWith(localSettingsJsonName)) {
-      return this.computeCodeLenses(document, this.localDebugRegex);
+    if (isV3Enabled()) {
+      if (document.fileName.includes(".env.")) {
+        return this.computeCodeLenses(document, this.envSecretRegex);
+      } else {
+        return [];
+      }
     } else {
-      return [];
+      if (document.fileName.endsWith("userdata")) {
+        return this.computeCodeLenses(document, this.userDataRegex);
+      } else if (document.fileName.endsWith(localSettingsJsonName)) {
+        return this.computeCodeLenses(document, this.localDebugRegex);
+      } else {
+        return [];
+      }
     }
   }
 
@@ -623,7 +633,7 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
     const codeLenses: vscode.CodeLens[] = [];
     const updateCmd = {
       title: "🔄Deploy AAD manifest",
-      command: "fx-extension.deployAadAppManifest",
+      command: "fx-extension.updateAadAppManifest",
       arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), updateCmd));

@@ -10,6 +10,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { Constants } from "../constants";
 import { PluginNames, REMOTE_TEAMS_APP_TENANT_ID, ComponentNames } from "../../../constants";
+import { DriverContext } from "../../../driver/interface/commonArgs";
 
 export enum TelemetryPropertyKey {
   component = "component",
@@ -55,12 +56,13 @@ export enum TelemetryEventName {
   loadManifest = "load-manifest",
   saveManifest = "save-manifest",
   appStudioApi = "app-studio-api",
+  authSvcApi = "auth-svc-api",
 }
 
 export class TelemetryUtils {
-  static ctx: PluginContext | v2.Context;
+  static ctx: PluginContext | v2.Context | DriverContext;
 
-  public static init(ctx: PluginContext | v2.Context) {
+  public static init(ctx: PluginContext | v2.Context | DriverContext) {
     TelemetryUtils.ctx = ctx;
   }
 

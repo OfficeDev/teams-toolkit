@@ -83,6 +83,36 @@ describe("serverConnections", () => {
     });
   });
 
+  it("preProvisionResourcesRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns({
+      needAzureLogin: true,
+      needM365Login: true,
+      resolvedAzureSubscriptionId: undefined,
+      resolvedAzureResourceGroupName: undefined,
+    });
+    sandbox.replace(connection["core"], "preProvisionForVS", fake);
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.preProvisionResourcesRequest(
+      inputs as Inputs,
+      token as CancellationToken
+    );
+    res.then((data) => {
+      assert.equal(
+        data,
+        ok({
+          needAzureLogin: true,
+          needM365Login: true,
+          resolvedAzureSubscriptionId: undefined,
+          resolvedAzureResourceGroupName: undefined,
+        })
+      );
+    });
+  });
+
   it("provisionResourcesRequest", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns("test");
@@ -127,6 +157,26 @@ describe("serverConnections", () => {
     if (res.isOk()) {
       assert.deepEqual(res.value, {});
     }
+  });
+
+  it("deployTeamsAppManifestRequest - v3", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(ok("test"));
+    sandbox.replace(connection["core"], "deployTeamsManifest", fake);
+    sandbox.stub(tools, "isV3Enabled").returns(true);
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = await connection.deployTeamsAppManifestRequest(
+      inputs as Inputs,
+      token as CancellationToken
+    );
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.deepEqual(res.value, {});
+    }
+    sandbox.restore();
   });
 
   it("buildArtifactsRequest", () => {
@@ -253,6 +303,43 @@ describe("serverConnections", () => {
     const res = connection.addSsoRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
       assert.equal(data, ok("test"));
+    });
+  });
+
+  it("getProjectMigrationStatusRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns({
+      currentVersion: "3.0.0",
+      isSupport: 0,
+      trackingId: "1234-3213-4325-1231",
+    });
+    sandbox.replace(connection["core"], "projectVersionCheck", fake);
+
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.getProjectMigrationStatusRequest(
+      inputs as Inputs,
+      token as CancellationToken
+    );
+    res.then((data) => {
+      assert.equal(data.isOk(), true);
+    });
+  });
+
+  it("migrateProjectRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.returns("test");
+    sandbox.replace(connection["core"], "phantomMigrationV3", fake);
+
+    const inputs = {
+      platform: "vs",
+    };
+    const token = {};
+    const res = connection.migrateProjectRequest(inputs as Inputs, token as CancellationToken);
+    res.then((data) => {
+      assert.equal(data, ok(true));
     });
   });
 });

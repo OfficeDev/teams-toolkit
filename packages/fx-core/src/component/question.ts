@@ -5,6 +5,7 @@ import {
   ContextV3,
   DynamicPlatforms,
   err,
+  FolderQuestion,
   FuncQuestion,
   FxError,
   Inputs,
@@ -18,6 +19,7 @@ import {
   QTreeNode,
   ResourceContextV3,
   Result,
+  SingleFileQuestion,
   SingleSelectQuestion,
   Stage,
   TextInputQuestion,
@@ -80,8 +82,8 @@ import {
   getConditionOfNotificationTriggerQuestion,
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
-import { NoCapabilityFoundError } from "../core/error";
-import { ProgrammingLanguageQuestion } from "../core/question";
+import { NoCapabilityFoundError, ObjectIsUndefinedError } from "../core/error";
+import { CoreQuestionNames, ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
 import {
   isBotNotificationEnabled,
@@ -99,6 +101,8 @@ import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
 import { getAddSPFxQuestionNode } from "./feature/spfx";
 import { Constants } from "./resource/aadApp/constants";
 import { functionNameQuestion } from "./feature/api/question";
+import path from "path";
+import fs from "fs-extra";
 
 export async function getQuestionsForProvisionV3(
   context: v2.Context,
@@ -247,6 +251,22 @@ export async function getQuestionsForAddFeatureV3(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  // AB test for notification/command/workflow bot template naming
+  if (inputs?.taskOrientedTemplateNaming) {
+    NotificationOptionItem.label = `$(hubot) ${getLocalizedString(
+      "core.NotificationOption.label.abTest"
+    )}`;
+    NotificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
+    CommandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
+      "core.CommandAndResponseOption.label.abTest"
+    )}`;
+    CommandAndResponseOptionItem.detail = getLocalizedString(
+      "core.CommandAndResponseOption.detail.abTest"
+    );
+    WorkflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
+    WorkflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
+  }
+
   const question: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.Features,
     title: getLocalizedString("core.addFeatureQuestion.title"),
@@ -678,4 +698,144 @@ export const SelectEnvQuestion: SingleSelectQuestion = {
   staticOptions: [],
   skipSingleOption: true,
   forgetLastValue: true,
+};
+
+export const InitEditorVSCode: OptionItem = {
+  id: "vsc",
+  label: getLocalizedString("core.InitEditorVsc"),
+  description: getLocalizedString("core.InitEditorVscDesc"),
+};
+
+export const InitEditorVS: OptionItem = {
+  id: "vs",
+  label: getLocalizedString("core.InitEditorVs"),
+  description: getLocalizedString("core.InitEditorVsDesc"),
+};
+
+export const InitCapabilityTab: OptionItem = {
+  id: "tab",
+  label: "Tab",
+  description: getLocalizedString("core.InitCapabilityTab"),
+};
+
+export const InitCapabilityBot: OptionItem = {
+  id: "bot",
+  label: "Bot",
+  description: getLocalizedString("core.InitCapabilityBot"),
+};
+
+export const InitOptionYes: OptionItem = {
+  id: "true",
+  label: getLocalizedString("core.InitOptionYes"),
+};
+export const InitOptionNo: OptionItem = {
+  id: "false",
+  label: getLocalizedString("core.InitOptionNo"),
+};
+export const InitEditorQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "editor",
+  title: getLocalizedString("core.InitEditorTitle"),
+  staticOptions: [InitEditorVSCode, InitEditorVS],
+};
+export const InitCapabilityQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "capability",
+  title: getLocalizedString("core.InitCapabilityTitle"),
+  staticOptions: [InitCapabilityTab, InitCapabilityBot],
+};
+export const InitIsSPFxQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "spfx",
+  title: getLocalizedString("core.InitIsSPFxTitle"),
+  staticOptions: [InitOptionNo, InitOptionYes],
+};
+export const InitDebugProceedQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "proceed",
+  title: async (inputs: Inputs) => {
+    let fileList;
+    if (inputs["editor"] === InitEditorVSCode.id) {
+      const exists = inputs.projectPath
+        ? await fs.pathExists(path.join(inputs.projectPath, ".vscode"))
+        : false;
+      const dotVscodeFolderName = exists ? ".vscode-teamsfx" : ".vscode";
+      fileList = `  teamsfx/\n    - app.local.yml\n    - .env.local\n    - settings.json\n    - run.js\n  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n`;
+    } else {
+      fileList = "  teamsfx/\n    - app.local.yml\n    - .env.local\n    - settings.json\n";
+    }
+    return getLocalizedString("core.InitGenerateConfirm", fileList);
+  },
+  staticOptions: [InitOptionYes, InitOptionNo],
+  default: InitOptionYes.id,
+};
+export const InitInfraProceedQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "proceed",
+  title: (inputs: Inputs) => {
+    const fileList =
+      inputs["capability"] === InitCapabilityBot.id
+        ? "  teamsfx/\n    - app.yml\n    - .env.dev\n    - settings.json\n  infra/\n    botRegistration/\n      - azurebot.bicep\n      - readme.md\n    - azure.bicep\n    - azure.parameters.json\n"
+        : inputs["spfx"] === InitOptionYes.id
+        ? "  teamsfx/\n    - app.yml\n    - .env.dev\n    - settings.json\n"
+        : "  teamsfx/\n    - app.yml\n    - .env.dev\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n";
+    return getLocalizedString("core.InitGenerateConfirm", fileList);
+  },
+  staticOptions: [InitOptionYes, InitOptionNo],
+  default: InitOptionYes.id,
+};
+export function getQuestionsForInit(
+  type: "debug" | "infra",
+  inputs: Inputs
+): Result<QTreeNode | undefined, FxError> {
+  const group = new QTreeNode({ type: "group" });
+  group.addChild(new QTreeNode(InitEditorQuestion));
+  const capabilityNode = new QTreeNode(InitCapabilityQuestion);
+  group.addChild(capabilityNode);
+  const SPFxNode = new QTreeNode(InitIsSPFxQuestion);
+  SPFxNode.condition = {
+    validFunc: (input: string, inputs?: Inputs) => {
+      if (inputs?.editor === InitEditorVSCode.id && inputs?.capability === InitCapabilityTab.id)
+        return undefined;
+      return "Not supported";
+    },
+  };
+  capabilityNode.addChild(SPFxNode);
+  if (inputs.platform !== Platform.CLI_HELP) {
+    group.addChild(
+      new QTreeNode(type === "debug" ? InitDebugProceedQuestion : InitInfraProceedQuestion)
+    );
+  }
+  return ok(group);
+}
+export async function getQuestionsForPublishInDeveloperPortal(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (!inputs.projectPath) {
+    return err(new ObjectIsUndefinedError("projectPath"));
+  }
+
+  const node = new QTreeNode({ type: "group" });
+  let manifestDefaultPath: string | undefined = path.join(
+    inputs.projectPath,
+    "appPackage",
+    "manifest.template.json"
+  );
+  if (!(await fs.pathExists(manifestDefaultPath))) {
+    manifestDefaultPath = undefined;
+  }
+  node.addChild(new QTreeNode(manifestFileQuestion(manifestDefaultPath)));
+  return ok(node);
+}
+
+const manifestFileQuestion = (defaultFile: string | undefined): SingleFileQuestion => {
+  return {
+    type: "singleFile",
+    name: CoreQuestionNames.ManifestPath,
+    title: getLocalizedString("core.question.manifestForPublishInDeveloperPortal.title"),
+    placeholder: getLocalizedString(
+      "core.question.manifestForPublishInDeveloperPortal.placeholder"
+    ),
+    default: defaultFile,
+  };
 };

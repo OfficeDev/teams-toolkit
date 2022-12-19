@@ -49,6 +49,7 @@ export async function start() {
       description: "Run the command interactively.",
       boolean: true,
     })
+    .detectLocale(false)
     .demandCommand()
     .scriptName(constants.cliName)
     .help()

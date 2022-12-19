@@ -3,7 +3,7 @@
 
 import * as fs from "fs-extra";
 import klaw from "klaw";
-import AdmZip from "adm-zip";
+import AdmZip, { EntryHeader } from "adm-zip";
 import ignore, { Ignore } from "ignore";
 import path from "path";
 import glob from "glob";
@@ -26,7 +26,8 @@ export async function zipFolderAsync(
   const tasks: Promise<void>[] = [];
   const zipFiles = new Set<string>();
   const ig = notIncluded ?? ignore();
-  const zip = (await readZip(cache)) || new AdmZip();
+  const cacheFile = await readZip(cache);
+  const zip = cacheFile ?? new AdmZip();
 
   const addFileIntoZip = async (
     zp: AdmZip,
@@ -37,7 +38,7 @@ export async function zipFolderAsync(
     const content = await fs.readFile(filePath);
     zp.addFile(zipPath, content);
     if (stats) {
-      (zp.getEntry(zipPath)!.header as any).time = stats.mtime;
+      (zp.getEntry(zipPath)?.header as EntryHeader).time = stats.mtime;
     }
   };
 
@@ -51,8 +52,8 @@ export async function zipFolderAsync(
         const entry = zip.getEntry(relativePath);
         if (entry) {
           // The header is an object, the ts declare of adm-zip is wrong.
-          const header = entry.header as any;
-          const mtime = header && header.time;
+          const header = entry.header;
+          const mtime = header ? header.time : new Date(0);
           // Some files' mtime in node_modules are too old, which may be invalid,
           // so we arbitrarily add a limitation to update this kind of files.
           // If mtime is valid and the two mtime is same in two-seconds, we think the two are same file.
@@ -78,19 +79,20 @@ export async function zipFolderAsync(
     }
   );
 
-  if (!tasks) {
+  if (!tasks && !cacheFile) {
     throw DeployUserInputError.noFilesFindInDistFolder();
   }
 
   await Promise.all(tasks);
   removeLegacyFileInZip(zip, zipFiles);
   // save to cache if exists
+  const buffer = zip.toBuffer();
   if (cache && tasks) {
     await fs.mkdirs(path.dirname(cache));
-    await fs.writeFile(cache, zip.toBuffer());
+    await fs.writeFile(cache, buffer);
   }
 
-  return zip.toBuffer();
+  return buffer;
 }
 
 export async function forEachFileAndDir(

@@ -8,33 +8,36 @@ import {
   ok,
   SettingsFolderName,
   SettingsFileName,
+  err,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-
-export async function readSettings(projectPath: string): Promise<Result<Settings, FxError>> {
-  const filePath = path.resolve(projectPath, SettingsFolderName, SettingsFileName);
-  const settings: Settings = await fs.readJson(filePath);
-  if (!settings.trackingId) {
-    settings.trackingId = uuid.v4();
-    await fs.writeFile(filePath, JSON.stringify(settings, null, 4));
-  }
-  return ok(settings);
-}
-
-export async function writeSettings(
-  projectPath: string,
-  settings: Settings
-): Promise<Result<string, FxError>> {
-  const filePath = path.resolve(projectPath, SettingsFolderName, SettingsFileName);
-  await fs.writeFile(filePath, JSON.stringify(settings, null, 4));
-  return ok(filePath);
-}
+import { PathNotExistError } from "../../core/error";
+import { globalVars } from "../../core/globalVars";
 
 export class SettingsUtils {
-  readSettings = readSettings;
-  writeSettings = writeSettings;
+  async readSettings(
+    projectPath: string,
+    ensureTrackingId = true
+  ): Promise<Result<Settings, FxError>> {
+    const filePath = path.resolve(projectPath, SettingsFolderName, SettingsFileName);
+    if (!(await fs.pathExists(filePath))) {
+      return err(new PathNotExistError(filePath));
+    }
+    const settings: Settings = await fs.readJson(filePath);
+    if (!settings.trackingId && ensureTrackingId) {
+      settings.trackingId = uuid.v4();
+      await fs.writeFile(filePath, JSON.stringify(settings, null, 4));
+    }
+    globalVars.trackingId = settings.trackingId; // set trackingId to globalVars
+    return ok(settings);
+  }
+  async writeSettings(projectPath: string, settings: Settings): Promise<Result<string, FxError>> {
+    const filePath = path.resolve(projectPath, SettingsFolderName, SettingsFileName);
+    await fs.writeFile(filePath, JSON.stringify(settings, null, 4));
+    return ok(filePath);
+  }
 }
 
 export const settingsUtil = new SettingsUtils();

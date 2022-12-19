@@ -67,6 +67,9 @@ export enum TelemetryEvent {
   PublishStart = "publish-start",
   Publish = "publish",
 
+  PublishInDeveloperPortalStart = "publish-in-developer-portal-start",
+  PublishInDeveloperPortal = "publish-in-developer-portal",
+
   ManageTeamsApp = "manage-teams-app",
 
   ManageTeamsBot = "manage-teams-bot",
@@ -176,8 +179,7 @@ export enum TelemetryEvent {
 
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
-  OpenSideloadingJoinM365 = "open-sideloading-joinm365",
-  OpenSideloadingReadmore = "open-sideloading-readmore",
+  OpenSideloadingLearnMore = "open-sideloading-learn-more",
   OpenSignInJoinM365 = "open-sign-in-joinm365",
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",
@@ -224,7 +226,14 @@ export enum TelemetryEvent {
   ExpandGuideStep = "expand-guide-step",
   OpenExternalLink = "open-external-link",
 
+  // ITP account help in product documentation
+  ClickITPButton = "click-itp-button",
+
   Deactivate = "deactivate",
+
+  // Create from developer portal
+  HandleUrlFromDeveloperProtalStart = "create-project-from-developer-portal-start",
+  HandleUrlFromDeveloperProtal = "create-project-from-developer-portal-start",
 }
 
 export enum TelemetryProperty {
@@ -339,6 +348,8 @@ export enum TelemetryTriggerFrom {
   Notification = "Notification",
   QuickPick = "QuickPick",
   InProductDoc = "InProductDoc",
+  AccountHelp = "AccountHelp",
+  SideloadingDisabled = "SideloadingDisabled",
   Other = "Other",
   Auto = "Auto",
   Unknow = "Unknow",

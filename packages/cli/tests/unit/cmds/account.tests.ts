@@ -15,6 +15,7 @@ import M365TokenProvider from "../../../src/commonlib/m365Login";
 import AzureTokenProvider from "../../../src/commonlib/azureLogin";
 import { signedIn, signedOut } from "../../../src/commonlib/common/constant";
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
+import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 
 class MockTokenCredentials implements TokenCredential {
   public async getToken(
@@ -65,7 +66,9 @@ describe("Account Command Tests", function () {
       if (!id) return ok(null);
       else return err(NotFoundSubscriptionId());
     });
+    sandbox.stub(tools, "setRegion").callsFake(async () => {});
 
+    sandbox.stub(M365TokenProvider, "setStatusChangeMap").resolves(ok(true));
     sandbox
       .stub(M365TokenProvider, "getStatus")
       .onFirstCall()
@@ -74,6 +77,7 @@ describe("Account Command Tests", function () {
       .returns(Promise.resolve(ok({ status: signedOut })))
       .onThirdCall()
       .returns(Promise.resolve(ok({ status: signedOut })));
+    sandbox.stub(M365TokenProvider, "getAccessToken").resolves(ok(""));
     sandbox
       .stub(M365TokenProvider, "getJsonObject")
       .onFirstCall()

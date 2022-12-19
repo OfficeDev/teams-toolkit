@@ -7,11 +7,7 @@ export class FolderName {
   static readonly Bot = "bot";
   static readonly Function = "api";
   static readonly SPFx = "SPFx";
-}
-
-export enum ProgrammingLanguage {
-  javascript = "javascript",
-  typescript = "typescript",
+  static readonly VideoFilter = "app";
 }
 
 export const baseNpmInstallCommand = "npm install";
@@ -168,4 +164,5 @@ export const Prerequisite = Object.freeze({
   ngrok: "ngrok",
   dotnet: "dotnet",
   portOccupancy: "portOccupancy",
+  vxTestApp: "vxTestApp", // TODO(aochengwang): maybe change app name
 });

@@ -22,6 +22,9 @@ import * as bicepChecker from "../../../../src/component/utils/depsChecker/bicep
 import axios from "axios";
 import { getAbsolutePath } from "../../../../src/component/utils/common";
 import { useUserSetEnv } from "../../../../src/core/middleware/envInfoLoaderV3";
+import { convertOutputs, getFileExtension } from "../../../../src/component/driver/arm/util/util";
+import { DeployContext, handleArmDeploymentError } from "../../../../src/component/arm";
+import { ActionResult } from "../../../../src/component/driver/util/wrapUtil";
 
 describe("Arm driver deploy", () => {
   const sandbox = createSandbox();
@@ -44,59 +47,71 @@ describe("Arm driver deploy", () => {
     sandbox.restore();
   });
 
-  it("happy path", async () => {
-    sandbox.stub(fs, "readFile").resolves("{}" as any);
-    sandbox.stub(cpUtils, "executeCommand").resolves("{}" as any);
-    const deployRes = ok({
-      mockKey: {
-        type: "string",
-        value: "mockValue",
-      },
-    });
-    sandbox.stub(ArmDeployImpl.prototype, "executeDeployment").resolves(deployRes as any);
-    sandbox.stub(bicepChecker, "getAvailableBicepVersions").resolves([bicepCliVersion]);
-    const fakeAxiosInstance = axios.create();
-    sandbox.stub(axios, "create").returns(fakeAxiosInstance);
-    sandbox.stub(fakeAxiosInstance, "get").resolves({
-      status: 200,
-      data: "",
-    });
-    let deployArgs = {
-      subscriptionId: "00000000-0000-0000-0000-000000000000",
-      resourceGroupName: "mock-group",
-      bicepCliVersion: bicepCliVersion,
-      templates: [
-        {
-          path: "mock-template.bicep",
-          parameters: "mock-parameters.json",
-          deploymentName: "mock-deployment",
+  for (const actionMethod of ["run", "execute"]) {
+    it(`happy path for ${actionMethod}`, async () => {
+      sandbox.stub(fs, "readFile").resolves("{}" as any);
+      sandbox.stub(cpUtils, "executeCommand").resolves("{}" as any);
+      const deployRes = ok({
+        mockKey: {
+          type: "string",
+          value: "mockValue",
         },
-        {
-          path: "mock-template2.json",
-          parameters: "mock-parameters2.json",
-          deploymentName: "mock-deployment2",
-        },
-      ],
-    };
+      });
+      sandbox.stub(ArmDeployImpl.prototype, "executeDeployment").resolves(deployRes as any);
+      sandbox.stub(bicepChecker, "getAvailableBicepVersions").resolves([bicepCliVersion]);
+      const fakeAxiosInstance = axios.create();
+      sandbox.stub(axios, "create").returns(fakeAxiosInstance);
+      sandbox.stub(fakeAxiosInstance, "get").resolves({
+        status: 200,
+        data: "",
+      });
+      let res: ActionResult;
+      let deployArgs = {
+        subscriptionId: "00000000-0000-0000-0000-000000000000",
+        resourceGroupName: "mock-group",
+        bicepCliVersion: bicepCliVersion,
+        templates: [
+          {
+            path: "mock-template.bicep",
+            parameters: "mock-parameters.json",
+            deploymentName: "mock-deployment",
+          },
+          {
+            path: "mock-template2.json",
+            deploymentName: "mock-deployment2",
+          },
+          {
+            path: "mock-template3.json",
+            parameters: "mock-parameters3.json",
+            deploymentName: "mock-deployment3",
+          },
+        ],
+      };
 
-    let res = await driver.run(deployArgs, mockedDriverContext);
-    assert.isTrue(res.isOk());
+      res = await driver.run(deployArgs, mockedDriverContext);
+      assert.isTrue(res.isOk());
 
-    deployArgs = {
-      subscriptionId: "00000000-0000-0000-0000-000000000000",
-      resourceGroupName: "mock-group",
-      bicepCliVersion: "",
-      templates: [
-        {
-          path: "mock-template.json",
-          parameters: "mock-parameters.json",
-          deploymentName: "mock-deployment",
-        },
-      ],
-    };
-    res = await driver.run(deployArgs, mockedDriverContext);
-    assert.isTrue(res.isOk());
-  });
+      deployArgs = {
+        subscriptionId: "00000000-0000-0000-0000-000000000000",
+        resourceGroupName: "mock-group",
+        bicepCliVersion: "",
+        templates: [
+          {
+            path: "mock-template.json",
+            parameters: "mock-parameters.json",
+            deploymentName: "mock-deployment",
+          },
+        ],
+      };
+      if (actionMethod === "run") {
+        res = await driver.run(deployArgs, mockedDriverContext);
+        assert.isTrue(res.isOk());
+      } else {
+        res = await driver.execute(deployArgs, mockedDriverContext);
+        assert.isTrue(res.result.isOk());
+      }
+    });
+  }
 
   it("invalid parameters", async () => {
     sandbox.stub(fs, "readFile").resolves("{}" as any);
@@ -145,7 +160,7 @@ describe("Arm driver deploy", () => {
     sandbox.stub(fs, "readFile").resolves("{}" as any);
     sandbox.stub(cpUtils, "executeCommand").resolves("{}" as any);
     sandbox
-      .stub(ArmDeployImpl.prototype, "executeDeployment")
+      .stub(ArmDeployImpl.prototype, "innerExecuteDeployment")
       .rejects(new Error("mocked deploy error"));
     sandbox.stub(bicepChecker, "getAvailableBicepVersions").resolves([bicepCliVersion]);
     sandbox.stub(ArmDeployImpl.prototype, "ensureBicepCli").resolves();
@@ -210,6 +225,16 @@ describe("util test", () => {
     assert.equal(res, ".");
   });
 
+  it("getAbsolutePath empty", () => {
+    const relativeOrAbsolutePath = undefined;
+    const projectPath = undefined;
+    const res = getAbsolutePath(
+      relativeOrAbsolutePath as unknown as string,
+      projectPath as unknown as string
+    );
+    assert.equal(res, ".");
+  });
+
   it("getAbsolutePath absolute path", () => {
     const relativeOrAbsolutePath = "C:/a";
     const projectPath = "";
@@ -217,8 +242,74 @@ describe("util test", () => {
     assert.equal(relativeOrAbsolutePath, res);
   });
 
+  it("getFileExtension empty", () => {
+    const res = getFileExtension("");
+    assert.isEmpty(res);
+  });
+
   it("useUserSetEnv", async () => {
     const res = await useUserSetEnv("./", "local");
+    assert.isTrue(res.isErr());
+  });
+
+  it("convert output", () => {
+    const mockOutput = [
+      {
+        tabOutput: {
+          type: "Object",
+          value: {
+            keyA: {
+              type: "string",
+              value: "valueA",
+            },
+            KeyB: 1,
+          },
+        },
+      },
+    ];
+    const res = convertOutputs(mockOutput);
+    assert.isNotEmpty(res);
+  });
+
+  it("handle error", async () => {
+    let mockError = {
+      code: "InvalidTemplateDeployment",
+      message:
+        "The template deployment 'Create-resources-for-tab' is not valid according to the validation procedure. The tracking id is '7da4fab7-ed36-4abc-9772-e2f90a0587a4'. See inner errors for details.",
+      details: {
+        error: {
+          code: "ValidationForResourceFailed",
+          message:
+            "Validation failed for a resource. Check 'Error.Details[0]' for more information.",
+          details: [
+            {
+              code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+              message: "The maximum number of Free ServerFarms allowed in a Subscription is 10.",
+            },
+          ],
+        },
+      },
+    };
+
+    let res = await handleArmDeploymentError(mockError, null as any);
+    assert.isTrue(res.isErr());
+
+    mockError = {
+      code: "InvalidTemplateDeployment",
+      message:
+        "The template deployment 'Create-resources-for-tab' is not valid according to the validation procedure. The tracking id is '7da4fab7-ed36-4abc-9772-e2f90a0587a4'. See inner errors for details.",
+      details: {
+        code: "ValidationForResourceFailed",
+        message: "Validation failed for a resource. Check 'Error.Details[0]' for more information.",
+        details: [
+          {
+            code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+            message: "The maximum number of Free ServerFarms allowed in a Subscription is 10.",
+          },
+        ],
+      },
+    } as any;
+    res = await handleArmDeploymentError(mockError, null as any);
     assert.isTrue(res.isErr());
   });
 });

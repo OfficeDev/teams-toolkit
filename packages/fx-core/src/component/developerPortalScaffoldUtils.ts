@@ -19,16 +19,38 @@ import path from "path";
 import fs from "fs-extra";
 import { environmentManager } from "../core/environment";
 import { CoreQuestionNames } from "../core/question";
-import { DEFAULT_DEVELOPER } from "./resource/appManifest/constants";
+import {
+  BOTS_TPL_V3,
+  COMPOSE_EXTENSIONS_TPL_V3,
+  DEFAULT_DEVELOPER,
+} from "./resource/appManifest/constants";
 import { ObjectIsUndefinedError } from "../core/error";
-import { CoordinatorSource } from "./constants";
+import {
+  BotOptionItem,
+  CoordinatorSource,
+  DefaultBotAndMessageExtensionItem,
+  MessageExtensionNewUIItem,
+  TabNonSsoAndDefaultBotItem,
+  TabNonSsoItem,
+} from "./constants";
 import { getLocalizedString } from "../common/localizeUtils";
+import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
+import {
+  isBot,
+  isBotAndMessageExtension,
+  isMessageExtension,
+  needTabAndBotCode,
+  needTabCode,
+} from "./resource/appManifest/utils/utils";
 
 const appPackageFolderName = "appPackage";
 const resourcesFolderName = "resources";
 const colorFileName = "color.png";
 const outlineFileName = "outline.png";
 const manifestFileName = "manifest.template.json";
+
+export const answerToRepaceBotId = "bot";
+export const answerToReplaceMessageExtensionBotId = "messageExtension";
 
 export class DeveloperPortalScaffoldUtils {
   async updateFilesForTdp(
@@ -100,6 +122,11 @@ async function updateManifest(
   );
 
   const manifestTemplatePath = path.join(ctx.projectPath!, appPackageFolderName, manifestFileName);
+  const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
+  if (manifestRes.isErr()) {
+    return err(manifestRes.error);
+  }
+  const existingManifestTemplate = manifestRes.value;
 
   // icons
   const icons = appPackage.icons;
@@ -142,6 +169,34 @@ async function updateManifest(
     const validDomains = manifest.validDomains ?? [];
     validDomains.push("${{TAB_DOMAIN}}");
     manifest.validDomains = validDomains;
+  }
+
+  // manifest: bot
+  if (inputs[CoreQuestionNames.ReplaceBotIds]) {
+    if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToRepaceBotId)) {
+      if (existingManifestTemplate.bots && existingManifestTemplate.bots.length > 0) {
+        manifest.bots = existingManifestTemplate.bots;
+        manifest.validDomains = existingManifestTemplate.validDomains;
+      } else {
+        manifest.bots = BOTS_TPL_V3;
+        manifest.bots[0].botId = "${{BOT_ID}}";
+        manifest.validDomains = existingManifestTemplate.validDomains;
+      }
+    }
+
+    if (inputs[CoreQuestionNames.ReplaceBotIds].includes(answerToReplaceMessageExtensionBotId)) {
+      if (
+        existingManifestTemplate.composeExtensions &&
+        existingManifestTemplate.composeExtensions.length > 0
+      ) {
+        manifest.composeExtensions = existingManifestTemplate.composeExtensions;
+        manifest.validDomains = existingManifestTemplate.validDomains;
+      } else {
+        manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_V3;
+        manifest.composeExtensions[0].botId = "${{BOT_ID}}";
+        manifest.validDomains = existingManifestTemplate.validDomains;
+      }
+    }
   }
 
   // manifest: developer
@@ -187,7 +242,7 @@ async function updateEnv(appId: string, projectPath: string): Promise<Result<und
         if (match[1].startsWith("TEAMS_APP_ID=")) {
           writeStream.write(`TEAMS_APP_ID=${appId}${os.EOL}`);
         } else {
-          writeStream.write(`${match[1]}${os.EOL}`);
+          writeStream.write(`${line.trim()}${os.EOL}`);
         }
       } else {
         writeStream.write(`${line.trim()}${os.EOL}`);
@@ -221,6 +276,35 @@ function updateTabUrl(answers: string[], tabUrlType: TabUrlType, tabs: IStaticTa
 
 function findTabBasedOnName(name: string, tabs: IStaticTab[]): IStaticTab | undefined {
   return tabs.find((o) => o.name === name);
+}
+
+export function getTemplateId(teamsApp: AppDefinition): string | undefined {
+  // tab with bot, tab with message extension, tab with bot and message extension
+  if (needTabAndBotCode(teamsApp)) {
+    return TabNonSsoAndDefaultBotItem.id;
+  }
+
+  // tab only
+  if (needTabCode(teamsApp)) {
+    return TabNonSsoItem.id;
+  }
+
+  // bot and message extension
+  if (isBotAndMessageExtension(teamsApp)) {
+    return DefaultBotAndMessageExtensionItem.id;
+  }
+
+  // message extension
+  if (isMessageExtension(teamsApp)) {
+    return MessageExtensionNewUIItem.id;
+  }
+
+  // bot
+  if (isBot(teamsApp)) {
+    return BotOptionItem.id;
+  }
+
+  return undefined;
 }
 
 export const developerPortalScaffoldUtils = new DeveloperPortalScaffoldUtils();

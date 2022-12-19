@@ -89,7 +89,8 @@ export class AadAppClient {
         retryCondition: (error) =>
           axiosRetry.isNetworkError(error) ||
           axiosRetry.isRetryableError(error) ||
-          this.is404Error(error), // also retry 404 error since AAD need sometime to sync created AAD app data
+          this.is404Error(error) || // also retry 404 error since AAD need sometime to sync created AAD app data
+          this.is400Error(error), // sometimes AAD will complain OAuth permission not found if we pre-authorize a newly created permission
       },
     });
   }
@@ -97,5 +98,9 @@ export class AadAppClient {
   // only use it to retry 404 errors for create client secret / update AAD app requests right after AAD app creation
   private is404Error(error: AxiosError<any>): boolean {
     return error.code !== "ECONNABORTED" && (!error.response || error.response.status === 404);
+  }
+
+  private is400Error(error: AxiosError<any>): boolean {
+    return error.code !== "ECONNABORTED" && (!error.response || error.response.status === 400);
   }
 }

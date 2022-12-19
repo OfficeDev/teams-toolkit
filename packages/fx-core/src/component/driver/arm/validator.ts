@@ -64,7 +64,7 @@ function validateTemplate(template: templateArgs): string[] {
     res.push("deploymentName is invalid");
   }
 
-  if (getFileExtension(template.parameters) !== "json") {
+  if (template.parameters && getFileExtension(template.parameters) !== "json") {
     res.push("parameters is invalid");
   }
   const templateType = getFileExtension(template.path);

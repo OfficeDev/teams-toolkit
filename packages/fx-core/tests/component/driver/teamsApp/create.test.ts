@@ -11,7 +11,6 @@ import AdmZip from "adm-zip";
 import { CreateTeamsAppDriver } from "../../../../src/component/driver/teamsApp/create";
 import { CreateAppPackageDriver } from "../../../../src/component/driver/teamsApp/createAppPackage";
 import { CreateTeamsAppArgs } from "../../../../src/component/driver/teamsApp/interfaces/CreateTeamsAppArgs";
-import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 import {
   MockedLogProvider,
   MockedM365Provider,
@@ -34,27 +33,16 @@ describe("teamsApp/create", async () => {
     appName: "fake",
     teamsAppId: uuid(),
     userList: [],
+    tenantId: uuid(),
   };
 
   afterEach(() => {
     sinon.restore();
   });
 
-  it("should throw error if file not exists", async () => {
-    const args: CreateTeamsAppArgs = {
-      manifestTemplatePath: "fakePath",
-    };
-
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
-    chai.assert(result.isErr());
-    if (result.isErr()) {
-      chai.assert.equal(AppStudioError.FileNotFoundError.name, result.error.name);
-    }
-  });
-
   it("happy path", async () => {
     const args: CreateTeamsAppArgs = {
-      manifestTemplatePath: "fakePath",
+      name: appDef.appName!,
     };
 
     const zipFileName =
@@ -79,5 +67,36 @@ describe("teamsApp/create", async () => {
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     console.log(JSON.stringify(result));
     chai.assert.isTrue(result.isOk());
+
+    const executeResult = await teamsAppDriver.execute(args, mockedDriverContext);
+    chai.assert.isTrue(executeResult.result.isOk());
+    chai.assert.isTrue(executeResult.summaries.length > 0);
+  });
+
+  it("app exists", async () => {
+    const args: CreateTeamsAppArgs = {
+      name: appDef.appName!,
+    };
+
+    process.env.TEAMS_APP_ID = uuid();
+    sinon.stub(AppStudioClient, "getApp").resolves(appDef);
+
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    console.log(JSON.stringify(result));
+    chai.assert.isTrue(result.isOk());
+
+    process.env.TEAMS_APP_ID = undefined;
+  });
+
+  it("API failure", async () => {
+    const args: CreateTeamsAppArgs = {
+      name: appDef.appName!,
+    };
+    sinon.stub(AppStudioClient, "getApp").throws(new Error("404"));
+    sinon.stub(AppStudioClient, "importApp").throws(new Error("409"));
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert.isTrue(result.isErr());
   });
 });

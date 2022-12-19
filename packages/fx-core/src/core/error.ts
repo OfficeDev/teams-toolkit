@@ -323,6 +323,15 @@ export function UpgradeCanceledError(): UserError {
   );
 }
 
+export function UpgradeV3CanceledError(): UserError {
+  return new UserError(
+    CoreSource,
+    "UserCancel", // @see tools.isUserCancelError()
+    getDefaultString("error.UpgradeV3CanceledError"),
+    getLocalizedString("error.UpgradeV3CanceledError")
+  );
+}
+
 export function ConsolidateCanceledError(): UserError {
   return new UserError(
     CoreSource,
@@ -396,6 +405,17 @@ export class NoAadManifestExistError extends UserError {
       source: CoreSource,
       message: getDefaultString("error.aad.AadManifestNotExistError", filePath),
       displayMessage: getLocalizedString("error.aad.AadManifestNotExistError", filePath),
+    });
+  }
+}
+
+export class VideoFilterAppRemoteNotSupportedError extends UserError {
+  constructor() {
+    super({
+      source: CoreSource,
+      name: VideoFilterAppRemoteNotSupportedError.name,
+      message: getLocalizedString("error.VideoFilterAppNotRemoteSupported"),
+      displayMessage: getLocalizedString("error.VideoFilterAppNotRemoteSupported"),
     });
   }
 }

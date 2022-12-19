@@ -22,10 +22,12 @@
   ],
   "dependencies": {
     "cryptr": "^6.0.3",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "fs-extra": "^10.1.0"
   },
   "devDependencies": {
     "@types/cryptr": "^4.0.1",
+    "@types/fs-extra": "^9.0.13",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
     "eslint": "^8.26.0",

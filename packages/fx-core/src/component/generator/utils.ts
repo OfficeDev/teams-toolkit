@@ -7,9 +7,8 @@ import * as fs from "fs-extra";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,
-  sampleRepoName,
+  placeholderDelimiters,
   templateAlphaVersion,
-  templateBetaVersion,
   templateFileExt,
 } from "./constant";
 import { SampleInfo, sampleProvider } from "../../common/samples";
@@ -17,7 +16,7 @@ import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
 import { EOL } from "os";
 import templateConfig from "../../common/templates-config.json";
-import sampleConfig from "../../common/samples-config.json";
+import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
 
 const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE || "";
@@ -26,17 +25,13 @@ const templateTagPrefix = templateConfig.tagPrefix;
 const templateTagListURL = templateConfig.tagListURL;
 
 function selectTemplateTag(tags: string[]): string | undefined {
-  return templateAlphaVersion;
-  // if (preRelease === "alpha") {
-  //   return templateAlphaVersion;
-  // }
-  // if (preRelease === "beta") {
-  //   return templateBetaVersion;
-  // }
-  // const versionPattern = preRelease ? `0.0.0-${preRelease}` : templateVersion;
-  // const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));
-  // const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
-  // return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
+  if (preRelease === "alpha") {
+    return templateAlphaVersion;
+  }
+  const versionPattern = preRelease ? `0.0.0-${preRelease}` : templateVersion;
+  const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));
+  const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
+  return selectedVersion ? templateTagPrefix + selectedVersion : undefined;
 }
 
 async function sendRequestWithRetry<T>(
@@ -121,8 +116,8 @@ export async function fetchTemplateZipUrl(
 
 export async function fetchZipFromUrl(
   url: string,
-  tryLimits: number,
-  timeoutInMs: number
+  tryLimits = defaultTryLimits,
+  timeoutInMs = defaultTimeoutInMs
 ): Promise<AdmZip> {
   const res: AxiosResponse<any> = await sendRequestWithTimeout(
     async (cancelToken) => {
@@ -150,7 +145,7 @@ export async function unzip(
 ): Promise<void> {
   let entries: AdmZip.IZipEntry[] = zip.getEntries().filter((entry) => !entry.isDirectory);
   if (relativePath) {
-    entries = entries.filter((entry) => entry.entryName.split("/")[0] == relativePath);
+    entries = entries.filter((entry) => entry.entryName.startsWith(relativePath));
   }
 
   for (const entry of entries) {
@@ -184,7 +179,7 @@ export function renderTemplateFileData(
 ): string | Buffer {
   //only mustache files with name ending with .tpl
   if (path.extname(fileName) === templateFileExt) {
-    return Mustache.render(fileData.toString(), variables);
+    return Mustache.render(fileData.toString(), variables, {}, placeholderDelimiters);
   }
   // Return Buffer instead of string if the file is not a template. Because `toString()` may break binary resources, like png files.
   return fileData;
@@ -195,7 +190,10 @@ export function renderTemplateFileName(
   fileData: Buffer,
   variables?: { [key: string]: string }
 ): string {
-  return Mustache.render(fileName, variables).replace(templateFileExt, "");
+  return Mustache.render(fileName, variables, {}, placeholderDelimiters).replace(
+    templateFileExt,
+    ""
+  );
 }
 
 export function getSampleInfoFromName(sampleName: string): SampleInfo {
@@ -209,8 +207,7 @@ export function getSampleInfoFromName(sampleName: string): SampleInfo {
 }
 
 export function getSampleRelativePath(sampleName: string): string {
-  const sampleTag = sampleConfig.version.replace(/[^\d.]/g, "");
-  return `${sampleRepoName}-${sampleTag}/${sampleName}/`;
+  return `${sampleConfig.baseFolderName}/${sampleName}/`;
 }
 
 export function zipFolder(folderPath: string): AdmZip {

@@ -71,10 +71,12 @@
 
 /packages/fx-core/src/component/code/spfxTabCode.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/src/component/feature/spfx.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
 /packages/fx-core/src/component/generator/spfxGenerator.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/src/component/driver/deploy/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/component/feature/spfx.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
 /packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/packages/fx-core/tests/component/generator/generator.test.ts @Yukun-dong @hund030 @JerryYangKai @eriolchan
 
 /packages/fx-core/src/component/feature/bot @IvanJobs @eriolchan @Yukun-dong @Siglud
 /packages/fx-core/src/component/code/botCode.ts @IvanJobs @eriolchan @Yukun-dong @Siglud
@@ -150,10 +152,14 @@
 /packages/fx-core/src/component/resource/apim @XiaofuHuang @dooriya @kimizhu
 /packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
 
-/packages/fx-core/src/component/driver/env @swatDong @XiaofuHuang @kuojianlu @kimizhu
-/packages/fx-core/tests/component/driver/env @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/src/component/driver/file @swatDong @XiaofuHuang @xiaolang124 @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/file @swatDong @XiaofuHuang @xiaolang124 @kuojianlu @kimizhu
 
-/packages/fx-core/src/component/driver/m365Bot @swatDong @XiaofuHuang @kuojianlu @kimizhu
-/packages/fx-core/tests/component/driver/m365Bot @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/src/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
+
+/packages/fx-core/src/component/driver/prerequisite @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/tests/component/driver/prerequisite @swatDong @XiaofuHuang @kuojianlu @kimizhu
 
 /packages/run-utils @swatDong @XiaofuHuang @kuojianlu @kimizhu
+/packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu

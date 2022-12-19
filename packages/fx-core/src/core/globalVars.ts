@@ -36,5 +36,6 @@ export class GlobalVars {
   isVS?: boolean = false;
   teamsAppId = "";
   m365TenantId = "";
+  trackingId?: string;
 }
 export const globalVars = new GlobalVars();

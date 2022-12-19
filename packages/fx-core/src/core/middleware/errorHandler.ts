@@ -3,35 +3,35 @@
 "use strict";
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { assembleError, err, Func, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { setLocale, TOOLS } from "../globalVars";
+import { assembleError, err, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { setLocale } from "../globalVars";
 
 /**
  * in case there're some uncatched exceptions, this middleware will act as a guard
  * to catch exceptions and return specific error.
  */
 export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
-  const taskName = `${ctx.method} ${
-    ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
-  }`;
+  // const taskName = `${ctx.method} ${
+  //   ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
+  // }`;
   // if locale is set in inputs, set it globally.
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (inputs.locale) setLocale(inputs.locale);
   try {
-    let log = `[core] start task:${taskName}`;
-    if (inputs.loglevel && inputs.loglevel === "Debug") {
-      TOOLS?.logProvider?.debug(log);
-    } else {
-      TOOLS?.logProvider?.info(log);
-    }
-    const time = new Date().getTime();
+    // let log = `FxCore start call:${taskName}`;
+    // if (inputs.loglevel && inputs.loglevel === "Debug") {
+    //   TOOLS?.logProvider?.debug(log);
+    // } else {
+    //   TOOLS?.logProvider?.info(log);
+    // }
+    // const time = new Date().getTime();
     await next();
-    log = `[core] finish task:${taskName}, time: ${new Date().getTime() - time} ms`;
-    if (inputs.loglevel && inputs.loglevel === "Debug") {
-      TOOLS?.logProvider?.debug(log);
-    } else {
-      TOOLS?.logProvider?.info(log);
-    }
+    // log = `FxCore finish call:${taskName}, time: ${new Date().getTime() - time} ms`;
+    // if (inputs.loglevel && inputs.loglevel === "Debug") {
+    //   TOOLS?.logProvider?.debug(log);
+    // } else {
+    //   TOOLS?.logProvider?.info(log);
+    // }
   } catch (e) {
     let fxError = assembleError(e);
     if (fxError instanceof SystemError) {

@@ -37,6 +37,7 @@ import {
   validationSettingsHelpLink,
   NodeNotSupportedError,
   NodeNotRecommendedError,
+  InstallOptions,
 } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import { LocalEnvProvider } from "@microsoft/teamsfx-core/build/component/debugHandler";
 import {
@@ -56,7 +57,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { tools } from "../handlers";
+import { tools, openAccountHelpHandler } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryDebugDevCertStatus,
@@ -82,6 +83,7 @@ import {
   DisplayMessages,
   prerequisiteCheckTaskDisplayMessages,
   prerequisiteCheckForGetStartedDisplayMessages,
+  v3PrerequisiteCheckTaskDisplayMessages,
 } from "./constants";
 import M365TokenInstance from "../commonlib/m365Login";
 import { signedOut } from "../commonlib/common/constant";
@@ -91,6 +93,7 @@ import { getDefaultString, localize } from "../utils/localizeUtils";
 import * as commonUtils from "./commonUtils";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { Step } from "./commonUtils";
+import { PrerequisiteArgVxTestApp } from "./taskTerminal/prerequisiteTaskTerminal";
 
 enum Checker {
   NpmInstall = "npm package installation",
@@ -102,11 +105,12 @@ enum Checker {
 
 const DepsDisplayName = {
   [DepsType.SpfxNode]: "Node.js",
-  [DepsType.SpfxNodeV1_16]: "Node.js",
   [DepsType.AzureNode]: "Node.js",
+  [DepsType.ProjectNode]: "Node.js",
   [DepsType.Dotnet]: ".NET Core SDK",
   [DepsType.Ngrok]: "ngrok",
   [DepsType.FuncCoreTools]: "Azure Functions Core Tools",
+  [DepsType.VxTestApp]: "Video Extensibility Test App",
 };
 
 interface CheckResult {
@@ -155,11 +159,12 @@ const ProgressMessage = Object.freeze({
       : `Checking and installing npm packages in directory ${cwd}`,
   [Checker.Ports]: `Checking ${Checker.Ports}`,
   [DepsType.SpfxNode]: `Checking ${DepsDisplayName[DepsType.SpfxNode]}`,
-  [DepsType.SpfxNodeV1_16]: `Checking ${DepsDisplayName[DepsType.SpfxNodeV1_16]}`,
   [DepsType.AzureNode]: `Checking ${DepsDisplayName[DepsType.AzureNode]}`,
+  [DepsType.ProjectNode]: `Checking ${DepsDisplayName[DepsType.ProjectNode]}`,
   [DepsType.Dotnet]: `Checking and installing ${DepsDisplayName[DepsType.Dotnet]}`,
   [DepsType.Ngrok]: `Checking and installing ${DepsDisplayName[DepsType.Ngrok]}`,
   [DepsType.FuncCoreTools]: `Checking and installing ${DepsDisplayName[DepsType.FuncCoreTools]}`,
+  [DepsType.VxTestApp]: `Checking and installing ${DepsDisplayName[DepsType.VxTestApp]}`,
 });
 
 type NpmInstallCheckerInfo = {
@@ -171,12 +176,18 @@ type NpmInstallCheckerInfo = {
   displayName?: string;
 };
 type PortCheckerInfo = { checker: Checker.Ports; ports: number[] };
+type VxTestAppCheckerInfo = { checker: DepsType.VxTestApp; vxTestApp: { version: string } };
 type PrerequisiteCheckerInfo = { checker: Checker | DepsType; [key: string]: any };
 
 type PrerequisiteOrderedChecker = {
   info: PrerequisiteCheckerInfo | PrerequisiteCheckerInfo[];
   fastFail: boolean;
 };
+
+interface Dependency {
+  depsType: DepsType;
+  installOptions?: InstallOptions;
+}
 
 async function runWithCheckResultTelemetryProperties(
   eventName: string,
@@ -368,9 +379,10 @@ export async function checkAndInstall(): Promise<Result<void, FxError>> {
 export async function checkAndInstallForTask(
   prerequisites: string[],
   ports: number[] | undefined,
+  vxTestApp: PrerequisiteArgVxTestApp | undefined,
   telemetryProperties: { [key: string]: string }
 ): Promise<Result<Void, FxError>> {
-  const orderedCheckers = await getOrderedCheckersForTask(prerequisites, ports);
+  const orderedCheckers = await getOrderedCheckersForTask(prerequisites, ports, vxTestApp);
   const projectComponents = await commonUtils.getProjectComponents();
 
   const additionalTelemetryProperties = Object.assign(
@@ -391,7 +403,9 @@ export async function checkAndInstallForTask(
       }
 
       const res = await _checkAndInstall(
-        prerequisiteCheckTaskDisplayMessages,
+        isV3Enabled()
+          ? v3PrerequisiteCheckTaskDisplayMessages
+          : prerequisiteCheckTaskDisplayMessages,
         orderedCheckers,
         additionalTelemetryProperties
       );
@@ -580,7 +594,7 @@ function getCheckPromise(
   switch (checkerInfo.checker) {
     case DepsType.AzureNode:
     case DepsType.SpfxNode:
-    case DepsType.SpfxNodeV1_16:
+    case DepsType.ProjectNode:
       return checkNode(
         checkerInfo.checker,
         depsManager,
@@ -600,6 +614,18 @@ function getCheckPromise(
     case DepsType.Ngrok:
       return checkDependency(
         checkerInfo.checker,
+        {}, // These dependencies doesn't need installOptions currently
+        depsManager,
+        step.getPrefix(),
+        additionalTelemetryProperties
+      );
+    case DepsType.VxTestApp:
+      return checkDependency(
+        checkerInfo.checker,
+        {
+          version: (checkerInfo as VxTestAppCheckerInfo)?.vxTestApp?.version,
+          projectPath: vscode.workspace.workspaceFolders?.[0]?.uri?.fsPath,
+        },
         depsManager,
         step.getPrefix(),
         additionalTelemetryProperties
@@ -747,6 +773,7 @@ function checkM365Account(
         if (accountResult.isErr()) {
           result = ResultStatus.failed;
           error = accountResult.error;
+          openAccountHelpHandler();
         } else {
           loginHint = accountResult.value.loginHint;
           tenantId = accountResult.value.tenantId;
@@ -829,12 +856,9 @@ async function checkNode(
     async () => {
       try {
         VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
-        const nodeStatus = (
-          await depsManager.ensureDependencies([nodeDep], {
-            fastFail: false,
-            doctor: true,
-          })
-        )[0];
+        const nodeStatus = await depsManager.ensureDependency(nodeDep, true, {
+          projectPath: globalVariables.workspaceUri?.fsPath,
+        });
         return {
           checker: nodeStatus.name,
           result: nodeStatus.isInstalled
@@ -863,6 +887,7 @@ async function checkNode(
 
 async function checkDependency(
   nonNodeDep: DepsType,
+  installOptions: InstallOptions,
   depsManager: DepsManager,
   prefix: string,
   additionalTelemetryProperties: { [key: string]: string }
@@ -870,19 +895,14 @@ async function checkDependency(
   try {
     VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nonNodeDep]} ...`);
 
-    const depsStatus = await localTelemetryReporter.runWithTelemetryGeneric(
+    const dep = await localTelemetryReporter.runWithTelemetryGeneric(
       TelemetryEvent.DebugPrereqsCheckDependencies,
       async (ctx: TelemetryContext) => {
         ctx.properties[TelemetryProperty.DebugPrereqsDepsType] = nonNodeDep;
-        return await depsManager.ensureDependencies([nonNodeDep], {
-          fastFail: false,
-          doctor: true,
-        });
+        return await depsManager.ensureDependency(nonNodeDep, true, installOptions);
       },
-      (result: DependencyStatus[]) => {
-        // This error object is only for telemetry.
-        // Input is one dependency, so result is at most one.
-        const error = result.length > 0 && result[0].error;
+      (result: DependencyStatus) => {
+        const error = result.error;
         if (error instanceof DepsCheckerError) {
           // TODO: Currently there is no user/system error info from DepsCheckerError.
           // So assuming UserError for now.
@@ -899,10 +919,6 @@ async function checkDependency(
       additionalTelemetryProperties
     );
 
-    if (depsStatus.length == 0) {
-      throw new Error("Deps checker result is not returned.");
-    }
-    const dep = depsStatus[0];
     return {
       checker: dep.name,
       result: dep.isInstalled
@@ -970,6 +986,7 @@ async function resolveLocalCertificate(
         const workspacePath = globalVariables.workspaceUri!.fsPath;
         const localEnvProvider = new LocalEnvProvider(workspacePath);
         const localCertResult = await localEnvManager.resolveLocalCertificate(
+          workspacePath,
           trustDevCert,
           localEnvProvider
         );
@@ -1039,7 +1056,9 @@ function handleNodeNotFoundError(error: NodeNotFoundError) {
 }
 
 function handleNodeNotSupportedError(error: NodeNotSupportedError, dep: DependencyStatus) {
-  const supportedVersions = dep.details.supportedVersions.map((v) => "v" + v).join(", ");
+  const supportedVersions = isV3Enabled()
+    ? dep.details.supportedVersions.join(", ")
+    : dep.details.supportedVersions.map((v) => "v" + v).join(", ");
 
   error.message = `${doctorConstant.NodeNotSupported.split("@CurrentVersion")
     .join(dep.details.installVersion)
@@ -1050,9 +1069,15 @@ function handleNodeNotSupportedError(error: NodeNotSupportedError, dep: Dependen
 }
 
 function handleNodeNotRecommendedError(error: NodeNotSupportedError, dep: DependencyStatus) {
-  const supportedVersions = dep.details.supportedVersions.map((v) => "v" + v).join(", ");
+  const supportedVersions = isV3Enabled()
+    ? dep.details.supportedVersions.join(", ")
+    : dep.details.supportedVersions.map((v) => "v" + v).join(", ");
 
-  error.message = `${doctorConstant.NodeNotRecommended.split("@CurrentVersion")
+  const nodeNotRecommendedMessage = isV3Enabled()
+    ? doctorConstant.V3NodeNotRecommended
+    : doctorConstant.NodeNotRecommended;
+  error.message = `${nodeNotRecommendedMessage
+    .split("@CurrentVersion")
     .join(dep.details.installVersion)
     .split("@SupportedVersions")
     .join(supportedVersions)}`;
@@ -1277,7 +1302,7 @@ async function getOrderedCheckers(): Promise<PrerequisiteOrderedChecker[]> {
   const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
   const checkers: PrerequisiteOrderedChecker[] = [];
   const parallelCheckers: PrerequisiteCheckerInfo[] = [];
-  const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, workspacePath);
+  const activeDeps = await localEnvManager.getActiveDependencies(projectSettings);
   const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(activeDeps);
   const nodeDeps = getNodeDep(enabledDeps);
   const nonNodeDeps = getNonNodeDeps(enabledDeps);
@@ -1351,7 +1376,7 @@ async function getOrderedCheckersForGetStarted(): Promise<PrerequisiteOrderedChe
       VS_CODE_UI
     );
     const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
-    const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, workspacePath);
+    const activeDeps = await localEnvManager.getActiveDependencies(projectSettings);
     const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(activeDeps);
 
     const nodeDeps = getNodeDep(enabledDeps) ?? DepsType.AzureNode;
@@ -1364,7 +1389,8 @@ async function getOrderedCheckersForGetStarted(): Promise<PrerequisiteOrderedChe
 
 async function getOrderedCheckersForTask(
   prerequisites: string[],
-  ports?: number[]
+  ports?: number[],
+  vxTestApp?: PrerequisiteArgVxTestApp
 ): Promise<PrerequisiteOrderedChecker[]> {
   const checkers: PrerequisiteOrderedChecker[] = [];
   if (prerequisites.includes(Prerequisite.nodejs)) {
@@ -1374,11 +1400,11 @@ async function getOrderedCheckersForTask(
       VS_CODE_UI
     );
     if (isV3Enabled()) {
-      checkers.push({ info: { checker: DepsType.AzureNode }, fastFail: true });
+      checkers.push({ info: { checker: DepsType.ProjectNode }, fastFail: true });
     } else {
       const projectPath = globalVariables.workspaceUri!.fsPath;
       const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-      const activeDeps = await localEnvManager.getActiveDependencies(projectSettings, projectPath);
+      const activeDeps = await localEnvManager.getActiveDependencies(projectSettings);
       const nodeDep = await getNodeDep(activeDeps);
       if (nodeDep) {
         checkers.push({ info: { checker: nodeDep }, fastFail: true });
@@ -1405,10 +1431,19 @@ async function getOrderedCheckersForTask(
   const orderedDeps = DepsManager.sortBySequence(deps);
 
   for (let i = 0; i < orderedDeps.length - 1; ++i) {
-    checkers.push({ info: { checker: orderedDeps[i] }, fastFail: false });
+    checkers.push({
+      info: { checker: orderedDeps[i] },
+      fastFail: false,
+    });
   }
   if (orderedDeps.length > 0) {
     checkers.push({ info: { checker: orderedDeps[orderedDeps.length - 1] }, fastFail: true });
+  }
+  if (prerequisites.includes(Prerequisite.vxTestApp)) {
+    checkers.push({
+      info: { checker: DepsType.VxTestApp, vxTestApp: vxTestApp },
+      fastFail: false,
+    });
   }
 
   if (prerequisites.includes(Prerequisite.portOccupancy)) {

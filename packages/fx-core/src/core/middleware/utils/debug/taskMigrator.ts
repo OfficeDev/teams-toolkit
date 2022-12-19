@@ -17,12 +17,15 @@ import {
   isCommentArray,
   isCommentObject,
   OldProjectSettingsHelper,
+  saveRunScript,
   setUpLocalProjectsTask,
+  startFrontendTask,
   updateLocalEnv,
 } from "./debugV3MigrationUtils";
 import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
 import { LocalCrypto } from "../../../crypto";
+import * as util from "util";
 
 export async function migrateTransparentPrerequisite(
   context: DebugMigrationContext
@@ -444,6 +447,41 @@ export async function migrateBackendExtensionsInstall(
   }
 }
 
+export async function migrateFrontendStart(context: DebugMigrationContext): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      isCommentObject(task) &&
+      ((typeof task["dependsOn"] === "string" && task["dependsOn"] === "teamsfx: frontend start") ||
+        (isCommentArray(task["dependsOn"]) &&
+          task["dependsOn"].includes("teamsfx: frontend start")))
+    ) {
+      const newLabel = generateLabel("Start frontend", getLabels(context.tasks));
+      const newTask = startFrontendTask(newLabel);
+      context.tasks.splice(index + 1, 0, newTask);
+      replaceInDependsOn("teamsfx: frontend start", context.tasks, newLabel);
+
+      if (!context.appYmlConfig.deploy) {
+        context.appYmlConfig.deploy = {};
+      }
+      if (!context.appYmlConfig.deploy.npmCommands) {
+        context.appYmlConfig.deploy.npmCommands = [];
+      }
+      context.appYmlConfig.deploy.npmCommands.push({
+        args: "install -D @microsoft/teamsfx-run-utils@alpha",
+        workingDirectory: ".",
+      });
+
+      await saveRunScript(context.migrationContext, "run.tab.js", generateRunTabScript(context));
+
+      break;
+    } else {
+      ++index;
+    }
+  }
+}
+
 export async function migrateValidateLocalPrerequisites(
   context: DebugMigrationContext
 ): Promise<void> {
@@ -717,3 +755,54 @@ function getLabels(tasks: CommentArray<CommentJSONValue>): string[] {
 
   return labels;
 }
+
+export function generateRunTabScript(context: DebugMigrationContext): string {
+  const ssoSnippet = OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)
+    ? util.format(tabSSOSnippet, context.placeholderMapping.tabEndpoint)
+    : "";
+  const functionSnippet = OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)
+    ? util.format(
+        tabFunctionSnippet,
+        OldProjectSettingsHelper.getFunctionName(context.oldProjectSettings)
+      )
+    : "";
+  return util.format(runTabScriptTemplate, ssoSnippet, functionSnippet);
+}
+
+const tabSSOSnippet = `
+  process.env.REACT_APP_CLIENT_ID = envs.AAD_APP_CLIENT_ID;
+  process.env.REACT_APP_START_LOGIN_PAGE_URL = \`\${envs.%s}/auth-start.html\`;
+  process.env.REACT_APP_TEAMSFX_ENDPOINT = "https://localhost:55000";`;
+const tabFunctionSnippet = `
+  process.env.REACT_APP_FUNC_ENDPOINT = "http://localhost:7071";
+  process.env.REACT_APP_FUNC_NAME = "%s";`;
+const runTabScriptTemplate = `const cp = require("child_process");
+const utils = require("@microsoft/teamsfx-run-utils");
+
+// This script is used by Teams Toolkit to launch your service locally
+
+async function run() {
+  const args = process.argv.slice(2);
+
+  if (args.length !== 2) {
+    console.log(\`Usage: node \${__filename} [project path] [env path].\`);
+    process.exit(1);
+  }
+
+  const envs = await utils.loadEnv(args[0], args[1]);
+
+  // set up environment variables required by teamsfx
+  process.env.BROWSER = "none";
+  process.env.HTTPS = true;
+  process.env.PORT = 53000;
+  process.env.SSL_CRT_FILE = envs.SSL_CRT_FILE;
+  process.env.SSL_KEY_FILE = envs.SSL_KEY_FILE;%s%s
+
+  // launch service locally
+  cp.spawn(/^win/.test(process.platform) ? "npx.cmd" : "npx", ["react-scripts", "start"], {
+    stdio: "inherit",
+  });
+}
+
+run();
+`;

@@ -73,10 +73,32 @@
         {
             "label": "Start Frontend",
             "dependsOn": [
-                "teamsfx: frontend start",
+                "Start frontend",
                 "teamsfx: auth start"
             ],
             "dependsOrder": "parallel"
+        },
+        {
+            "label": "Start frontend",
+            "type": "shell",
+            "command": "node ../teamsfx/script/run.tab.js .. ../teamsfx/.env.local",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}/tabs"
+            },
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^.*$",
+                    "file": 0,
+                    "location": 1,
+                    "message": 2
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": "Compiled|Failed|compiled|failed"
+                }
+            }
         },
         {
             "label": "frontend npm install",

@@ -69,8 +69,9 @@ import {
   migratePrepareManifest,
   migrateSetUpBot,
   migrateValidateDependencies,
-  migrateValidateLocalPrerequisites,
   migrateBackendExtensionsInstall,
+  migrateFrontendStart,
+  migrateValidateLocalPrerequisites,
   migrateNgrokStartTask,
   migrateNgrokStartCommand,
 } from "./utils/debug/taskMigrator";
@@ -572,6 +573,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migratePrepareManifest,
     migrateValidateDependencies,
     migrateBackendExtensionsInstall,
+    migrateFrontendStart,
     migrateValidateLocalPrerequisites,
     migrateNgrokStartTask,
     migrateNgrokStartCommand,

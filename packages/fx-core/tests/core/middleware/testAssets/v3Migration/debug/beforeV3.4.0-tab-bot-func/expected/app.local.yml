@@ -14,3 +14,8 @@ deploy:
       workingDirectory: ./api
       execPath: ${{DOTNET_PATH}}
 
+  - uses: cli/runNpmCommand
+    with:
+      args: install -D @microsoft/teamsfx-run-utils@alpha
+      workingDirectory: .
+

@@ -7,6 +7,16 @@ const fs = require("fs-extra");
 const path = require("path");
 const config = require("../src/common/templates-config.json");
 
+const token = process.env.REQUEST_TOKEN;
+const defaultOptions = {
+  headers: token
+    ? {
+        authorization: `Bearer ${token}`,
+      }
+    : {},
+};
+const axiosInstance = axios.create(defaultOptions);
+
 let stepId = 0;
 
 async function step(desc, fn) {
@@ -47,7 +57,7 @@ function delay(fn, ms) {
 async function getTemplateMetadata(tag) {
   const url = `${config.templateReleaseURL}/${tag}`;
   return await step(`Download release metadata from ${url}`, async () => {
-    const res = await axios.get(url);
+    const res = await axiosInstance.get(url);
     return res.data.assets;
   });
 }
@@ -63,7 +73,7 @@ async function downloadTemplates(version) {
   for (let template of templates) {
     const filename = template.name;
     step(`Download ${config.templateDownloadBaseURL}/${tag}/${filename}`, async () => {
-      const res = await axios.get(`${config.templateDownloadBaseURL}/${tag}/${filename}`, {
+      const res = await axiosInstance.get(`${config.templateDownloadBaseURL}/${tag}/${filename}`, {
         responseType: "arraybuffer",
       });
       await fs.writeFile(path.join(folder, `${filename}`), res.data);
@@ -85,7 +95,7 @@ function selectVersionFromShellArgument() {
 
 async function selectVersionFromRemoteTagList() {
   const rawTagList = await step(`Download tag list from ${config.tagListURL}`, async () => {
-    const res = await axios.get(config.tagListURL);
+    const res = await axiosInstance.get(config.tagListURL);
     return res.data;
   });
   const tagList = rawTagList.toString().replace(/\r/g, "").split("\n");

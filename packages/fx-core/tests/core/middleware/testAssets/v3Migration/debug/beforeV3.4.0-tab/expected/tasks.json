@@ -43,9 +43,33 @@
             "label": "Start Frontend",
             "dependsOn": [
                 "Start frontend",
-                "teamsfx: auth start"
+                "Start auth"
             ],
             "dependsOrder": "parallel"
+        },
+        {
+            "label": "Start auth",
+            "type": "shell",
+            "command": "node teamsfx/script/run.auth.js . teamsfx/.env.local",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": {
+                "pattern": [
+                    {
+                        "regexp": "^.*$",
+                        "file": 0,
+                        "location": 1,
+                        "message": 2
+                    }
+                ],
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": ".*"
+                }
+            }
         },
         {
             "label": "Start frontend",

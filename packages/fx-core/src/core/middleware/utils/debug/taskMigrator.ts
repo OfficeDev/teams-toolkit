@@ -409,6 +409,41 @@ export async function migrateValidateDependencies(context: DebugMigrationContext
   }
 }
 
+export async function migrateBackendExtensionsInstall(
+  context: DebugMigrationContext
+): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "shell") ||
+      !(
+        typeof task["command"] === "string" &&
+        task["command"].includes("${command:fx-extension.backend-extensions-install}")
+      )
+    ) {
+      ++index;
+      continue;
+    }
+
+    if (!context.appYmlConfig.deploy) {
+      context.appYmlConfig.deploy = {};
+    }
+    context.appYmlConfig.deploy.dotnetCommand = {
+      args: "build extensions.csproj -o ./bin --ignore-failed-sources",
+      workingDirectory: `./${FolderName.Function}`,
+      execPath: "${{DOTNET_PATH}}",
+    };
+
+    const label = task["label"];
+    if (typeof label === "string") {
+      replaceInDependsOn(label, context.tasks);
+    }
+    context.tasks.splice(index, 1);
+  }
+}
+
 export async function migrateValidateLocalPrerequisites(
   context: DebugMigrationContext
 ): Promise<void> {

@@ -60,7 +60,8 @@
             "label": "prepare dev env",
             "dependsOn": [
                 "prepare local environment",
-                "frontend npm install"
+                "frontend npm install",
+                "backend npm install"
             ],
             "dependsOrder": "parallel"
         },
@@ -83,6 +84,18 @@
             "command": "npm install",
             "options": {
                 "cwd": "${workspaceFolder}/tabs"
+            }
+        },
+        {
+            "label": "Start Backend",
+            "dependsOn": "teamsfx: backend start"
+        },
+        {
+            "label": "backend npm install",
+            "type": "shell",
+            "command": "npm install",
+            "options": {
+                "cwd": "${workspaceFolder}/api"
             }
         },
         {

@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.2.0 - Dec 20, 2022
+
+New features:
+
+- Use the new Dashboard tab template to create a personal and collaborative canvas in Teams. Learn more about this new template in the [documentation](https://aka.ms/teamsfx-dashboard-app).
+
+Enhancements:
+- Step-by-step guidance in Visual Studio Code to assisit you while creating a free Microsoft 365 testing tenant.
+- SPFx based tab app is updated to use the latest [SharePoint Framework v1.16](https://learn.microsoft.com/sharepoint/dev/spfx/release-1.16).
+
 ## 4.1.3 - Nov 17, 2022
 
 Enhancements:

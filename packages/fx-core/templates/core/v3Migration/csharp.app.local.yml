@@ -73,7 +73,11 @@ configureApp:
   - uses: file/updateEnv # Generate env to .env file
     with:
       envs:
+  {{#if isFunctionBot}}
+        PROVISIONOUTPUT__AZUREFUNCTIONBOTOUTPUT__DOMAIN: $\{{BOT_DOMAIN}}
+  {{else}}
         PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN: $\{{BOT_DOMAIN}}
+  {{/if}}
 {{/if}}
 {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.

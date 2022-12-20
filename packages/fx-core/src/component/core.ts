@@ -371,7 +371,7 @@ export class TeamsfxCore {
   @hooks([
     ActionExecutionMW({
       question: async (context: ContextV3, inputs: InputsWithProjectPath) => {
-        return await getQuestionsForProvisionV3(context, inputs);
+        return await getQuestionsForProvisionV3(inputs);
       },
       enableTelemetry: true,
       telemetryEventName: TelemetryEvent.Provision,

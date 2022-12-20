@@ -5,6 +5,7 @@ deploy:
     with:
       devCert:
         trust: true
+      dotnet: true
 
   - uses: cli/runNpmCommand
     with:

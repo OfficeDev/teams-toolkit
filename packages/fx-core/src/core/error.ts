@@ -55,6 +55,14 @@ export function ReadFileError(e: Error): SystemError {
   });
 }
 
+export function MigrationReadFileError(e: Error): UserError {
+  return new UserError({
+    name: "MigrationReadFileError",
+    source: CoreSource,
+    error: e,
+  });
+}
+
 export function CopyFileError(e: Error): SystemError {
   return new SystemError({
     name: "CopyFileError",

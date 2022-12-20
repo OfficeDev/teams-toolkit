@@ -30,7 +30,7 @@ import {
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
-import { UpgradeV3CanceledError, ReadFileError } from "../error";
+import { UpgradeV3CanceledError, MigrationReadFileError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
@@ -75,6 +75,7 @@ import {
   migrateNgrokStartTask,
   migrateNgrokStartCommand,
   migrateBotStart,
+  migrateAuthStart,
 } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
@@ -123,6 +124,7 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       ctx.result = ok(undefined);
       return;
     }
+
     const skipUserConfirm = getParameterFromCxt(ctx, "skipUserConfirm");
     if (!skipUserConfirm && !(await askUserConfirm(ctx, versionForMigration))) {
       return;
@@ -295,7 +297,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   if (!oldAppPackageFolderBackupRes) {
     // templates/appPackage does not exists
     // invalid teamsfx project
-    throw ReadFileError(new Error("templates/appPackage does not exist"));
+    throw MigrationReadFileError(new Error("templates/appPackage does not exist"));
   }
 
   // Ensure appPackage
@@ -335,7 +337,9 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     }
   } else {
     // templates/appPackage/manifest.template.json does not exist
-    throw ReadFileError(new Error("templates/appPackage/manifest.template.json does not exist"));
+    throw MigrationReadFileError(
+      new Error("templates/appPackage/manifest.template.json does not exist")
+    );
   }
 
   // Read AAD app manifest and save to ./aad.manifest.template.json
@@ -575,6 +579,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateValidateDependencies,
     migrateBackendExtensionsInstall,
     migrateFrontendStart,
+    migrateAuthStart,
     migrateBotStart,
     migrateValidateLocalPrerequisites,
     migrateNgrokStartTask,

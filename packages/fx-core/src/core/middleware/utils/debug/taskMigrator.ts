@@ -19,6 +19,7 @@ import {
   OldProjectSettingsHelper,
   saveRunScript,
   setUpLocalProjectsTask,
+  startAuthTask,
   startBotTask,
   startFrontendTask,
   updateLocalEnv,
@@ -399,6 +400,9 @@ export async function migrateValidateDependencies(context: DebugMigrationContext
       toolsArgs.devCert = {
         trust: true,
       };
+      if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
+        toolsArgs.dotnet = true;
+      }
     }
     if (OldProjectSettingsHelper.includeFunction(context.oldProjectSettings)) {
       toolsArgs.func = true;
@@ -480,6 +484,45 @@ export async function migrateFrontendStart(context: DebugMigrationContext): Prom
       }
 
       await saveRunScript(context.migrationContext, "run.tab.js", generateRunTabScript(context));
+
+      break;
+    } else {
+      ++index;
+    }
+  }
+}
+
+export async function migrateAuthStart(context: DebugMigrationContext): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      isCommentObject(task) &&
+      ((typeof task["dependsOn"] === "string" && task["dependsOn"] === "teamsfx: auth start") ||
+        (isCommentArray(task["dependsOn"]) && task["dependsOn"].includes("teamsfx: auth start")))
+    ) {
+      const newLabel = generateLabel("Start auth", getLabels(context.tasks));
+      const newTask = startAuthTask(newLabel);
+      context.tasks.splice(index + 1, 0, newTask);
+      replaceInDependsOn("teamsfx: auth start", context.tasks, newLabel);
+
+      if (!context.appYmlConfig.deploy) {
+        context.appYmlConfig.deploy = {};
+      }
+      if (!context.appYmlConfig.deploy.npmCommands) {
+        context.appYmlConfig.deploy.npmCommands = [];
+      }
+      const existing = context.appYmlConfig.deploy.npmCommands.find(
+        (value) => value.args === "install -D @microsoft/teamsfx-run-utils@alpha"
+      );
+      if (!existing) {
+        context.appYmlConfig.deploy.npmCommands.push({
+          args: "install -D @microsoft/teamsfx-run-utils@alpha",
+          workingDirectory: ".",
+        });
+      }
+
+      await saveRunScript(context.migrationContext, "run.auth.js", generateRunAuthScript(context));
 
       break;
     } else {
@@ -814,6 +857,14 @@ function generateRunTabScript(context: DebugMigrationContext): string {
   return util.format(runTabScriptTemplate, ssoSnippet, functionSnippet);
 }
 
+function generateRunAuthScript(context: DebugMigrationContext): string {
+  return util.format(
+    runAuthScriptTemplate,
+    context.placeholderMapping.tabDomain,
+    context.placeholderMapping.tabEndpoint
+  );
+}
+
 function generateRunBotScript(context: DebugMigrationContext): string {
   let ssoSnippet = "";
   if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
@@ -872,6 +923,44 @@ async function run() {
 
   // launch service locally
   cp.spawn(/^win/.test(process.platform) ? "npx.cmd" : "npx", ["react-scripts", "start"], {
+    stdio: "inherit",
+  });
+}
+
+run();
+`;
+
+const runAuthScriptTemplate = `const cp = require("child_process");
+const os = require("os");
+const path = require("path");
+const utils = require("@microsoft/teamsfx-run-utils");
+
+// This script is used by Teams Toolkit to launch your service locally
+
+async function run() {
+  const args = process.argv.slice(2);
+
+  if (args.length !== 2) {
+    console.log(\`Usage: node \${__filename} [project path] [env path].\`);
+    process.exit(1);
+  }
+
+  const envs = await utils.loadEnv(args[0], args[1]);
+
+  // set up environment variables required by teamsfx
+  process.env.CLIENT_ID = envs.CLIENT_ID;
+  process.env.CLIENT_SECRET = envs.CLIENT_SECRET;
+  process.env.IDENTIFIER_URI = \`api://\${envs.%s}/\${envs.CLIENT_ID}\`;
+  process.env.AAD_METADATA_ADDRESS = \`\${envs.AAD_APP_OAUTH_AUTHORITY}/v2.0/.well-known/openid-configuration\`;
+  process.env.OAUTH_AUTHORITY = envs.AAD_APP_OAUTH_AUTHORITY;
+  process.env.TAB_APP_ENDPOINT = envs.%s;
+  process.env.AUTH_ALLOWED_APP_IDS =
+    "1fec8e78-bce4-4aaf-ab1b-5451cc387264;5e3ce6c0-2b1f-4285-8d4b-75ee78787346;0ec893e0-5785-4de6-99da-4ed124e5296c;4345a7b9-9a63-4910-a426-35363201d503;4765445b-32c6-49b0-83e6-1d93765276ca;d3590ed6-52b3-4102-aeff-aad2292ab01c;00000002-0000-0ff1-ce00-000000000000;bc59ab01-8403-45c6-8796-ac3ef710b3e3";
+  process.env.urls = "http://localhost:55000";
+
+  // launch service locally
+  cp.spawn(envs.DOTNET_PATH, ["Microsoft.TeamsFx.SimpleAuth.dll"], {
+    cwd: path.join(os.homedir(), ".fx", "localauth"),
     stdio: "inherit",
   });
 }

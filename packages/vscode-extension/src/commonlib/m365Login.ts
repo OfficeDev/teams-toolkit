@@ -309,6 +309,7 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
       tokenRes = await this.signInWhenNoAccountInCache(tokenRequest, loginHint, true);
       VsCodeLogInstance.info(`Signed in with Microsoft 365 account: ${loginHint}`);
     } else if (
+      !!loginHint &&
       M365Login.codeFlowInstance.account.username.toLowerCase() === loginHint.toLowerCase()
     ) {
       // If the account in cache matched with the loginHint, we will try to get access token for the currently cached account

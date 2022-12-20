@@ -39,7 +39,7 @@
   "core.deploy.successNotice": "'%s' successfully deployed.",
   "core.deploy.aadManifestSuccessNotice": "Your Azure Active Directory application has been successfully deployed. Click \"Learn more\" to check how to view your Azure Active Directory application.",
   "core.deploy.aadManifestLearnMore": "Learn more",
-  "core.deploy.failNotice": "fail to deploy '%s' to the cloud!",
+  "core.deploy.failNotice": "fail to deploy '%s'!",
   "core.deploy.botTroubleShoot": "To troubleshoot bot application in azure, please click learn more for documentation.",
   "core.deploy.botTroubleShoot.learnMore": "Learn more",
   "core.deploy.startNotice": "[%s] Deployment start.",

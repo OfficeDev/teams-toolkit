@@ -53,9 +53,12 @@ import {
   getDownloadLinkByVersionAndPlatform,
   getTrackingIdFromPath,
   getVersionState,
+  migrationNotificationMessage,
+  outputCancelMessage,
 } from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSettingsLoader";
 import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
+import { VersionForMigration } from "../../../src/core/middleware/types";
 
 let mockedEnvRestore: () => void;
 
@@ -1117,6 +1120,26 @@ describe("Migration utils", () => {
       getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VSCode),
       `${Metadata.versionMatchLink}#vscode`
     );
+  });
+
+  it("outputCancelMessage", () => {
+    outputCancelMessage("2.0.0", Platform.VS);
+    outputCancelMessage("2.0.0", Platform.CLI);
+    outputCancelMessage("2.0.0", Platform.VSCode);
+  });
+
+  it("migrationNotificationMessage", () => {
+    const version: VersionForMigration = {
+      currentVersion: "2.0.0",
+      state: VersionState.upgradeable,
+      platform: Platform.VS,
+    };
+
+    migrationNotificationMessage(version);
+    version.platform = Platform.VSCode;
+    migrationNotificationMessage(version);
+    version.platform = Platform.CLI;
+    migrationNotificationMessage(version);
   });
 });
 

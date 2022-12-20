@@ -115,16 +115,6 @@ export function migrationNotificationMessage(versionForMigration: VersionForMigr
   return res;
 }
 
-export function getMessageByVersionAndPlatform(version: string, platform: Platform): string {
-  let anchorInLink = "vscode";
-  if (platform === Platform.VS) {
-    anchorInLink = "visual-studio";
-  } else if (platform === Platform.CLI) {
-    anchorInLink = "cli";
-  }
-  return `${Metadata.versionMatchLink}#${anchorInLink}`;
-}
-
 export function getDownloadLinkByVersionAndPlatform(version: string, platform: Platform): string {
   let anchorInLink = "vscode";
   if (platform === Platform.VS) {

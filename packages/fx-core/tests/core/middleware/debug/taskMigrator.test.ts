@@ -12,6 +12,8 @@ import {
   migrateSetUpTab,
   migrateTransparentNpmInstall,
   migrateTransparentPrerequisite,
+  migrateNgrokStartTask,
+  migrateNgrokStartCommand,
 } from "../../../../src/core/middleware/utils/debug/taskMigrator";
 import { CommentArray, CommentJSONValue, parse, stringify } from "comment-json";
 import { DebugMigrationContext } from "../../../../src/core/middleware/utils/debug/debugMigrationContext";
@@ -873,6 +875,22 @@ describe("debugMigration", () => {
   });
 
   describe("migrateSetUpSSO", () => {
+    let localEnvs: { [key: string]: string } = {};
+
+    beforeEach(() => {
+      sinon.stub(debugV3MigrationUtils, "updateLocalEnv").callsFake(async (context, envs) => {
+        localEnvs = envs;
+      });
+      sinon.stub(LocalCrypto.prototype, "encrypt").callsFake((plaintext) => {
+        return ok("crypto_" + plaintext);
+      });
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      localEnvs = {};
+    });
+
     it("happy path", async () => {
       const migrationContext = await mockMigrationContext(projectPath);
       const testTaskContent = `[
@@ -940,6 +958,86 @@ describe("debugMigration", () => {
       chai.assert.equal(debugContext.appYmlConfig.registerApp?.aad, true);
       chai.assert.equal(debugContext.appYmlConfig.configureApp?.aad, true);
       chai.assert.equal(debugContext.appYmlConfig.deploy?.sso, true);
+    });
+
+    it("customized aad and literal password", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const objectId = "objectId";
+      const clientId = "clientId";
+      const clientSecret = "clientSecret";
+      const accessAsUserScopeId = "accessAsUserScopeId";
+      const testTaskContent = `[
+        {
+          "label": "Set up SSO",
+          "type": "teamsfx",
+          "command": "debug-set-up-sso",
+          "args": {
+              "objectId": "${objectId}",
+              "clientId": "${clientId}",
+              "clientSecret": "${clientSecret}",
+              "accessAsUserScopeId": "${accessAsUserScopeId}"
+          }
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migrateSetUpSSO(debugContext);
+      chai.assert.deepEqual(localEnvs, {
+        AAD_APP_OBJECT_ID: objectId,
+        AAD_APP_CLIENT_ID: clientId,
+        SECRET_AAD_APP_CLIENT_SECRET: "crypto_" + clientSecret,
+        AAD_APP_ACCESS_AS_USER_PERMISSION_ID: accessAsUserScopeId,
+      });
+      chai.assert.equal(debugContext.appYmlConfig.registerApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.configureApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.deploy?.sso, true);
+    });
+
+    it("customized aad and env-referenced password", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const objectId = "objectId";
+      const clientId = "clientId";
+      const clientSecret = "clientSecret";
+      process.env.CLIENT_SECRET = clientSecret;
+      const accessAsUserScopeId = "accessAsUserScopeId";
+      const testTaskContent = `[
+        {
+          "label": "Set up SSO",
+          "type": "teamsfx",
+          "command": "debug-set-up-sso",
+          "args": {
+              "objectId": "${objectId}",
+              "clientId": "${clientId}",
+              "clientSecret": "$\{env:CLIENT_SECRET}",
+              "accessAsUserScopeId": "${accessAsUserScopeId}"
+          }
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migrateSetUpSSO(debugContext);
+      chai.assert.deepEqual(localEnvs, {
+        AAD_APP_OBJECT_ID: objectId,
+        AAD_APP_CLIENT_ID: clientId,
+        SECRET_AAD_APP_CLIENT_SECRET: "crypto_" + clientSecret,
+        AAD_APP_ACCESS_AS_USER_PERMISSION_ID: accessAsUserScopeId,
+      });
+      chai.assert.equal(debugContext.appYmlConfig.registerApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.configureApp?.aad, true);
+      chai.assert.equal(debugContext.appYmlConfig.deploy?.sso, true);
+      delete process.env.CLIENT_SECRET;
     });
   });
 
@@ -1010,6 +1108,180 @@ describe("debugMigration", () => {
         debugContext.appYmlConfig.configureApp?.teamsApp?.appPackagePath,
         undefined
       );
+    });
+  });
+
+  describe("migrateNgrokStartTask", () => {
+    it("multiple ngrok label", async () => {
+      const testTaskContent = `[
+        {
+          "label": "start ngrok",
+          "dependsOn": "teamsfx: ngrok start"
+        },
+        {
+          "label": "start ngrok 1",
+          "dependsOn": ["teamsfx: ngrok start", "other label"]
+        }
+      ]`;
+      const content = `[
+        {
+          "label": "start ngrok",
+          "dependsOn": ["Start local tunnel"]
+        },
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
+          // as well as samples to:
+          //   - use your own ngrok command / configuration / binary
+          //   - use your own tunnel solution
+          //   - provide alternatives if ngrok does not work on your dev machine
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+              "env": "local",
+              "output": {
+                  // Keep consistency with migrated configuration.
+                  "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                  "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+              }
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        },
+        {
+          "label": "start ngrok 1",
+          "dependsOn": ["Start local tunnel", "other label"]
+        }
+      ]`;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const migrationContext = await mockMigrationContext(projectPath);
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {
+          botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+          botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+        }
+      );
+      migrateNgrokStartTask(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
+    });
+
+    it("one ngrok label", async () => {
+      const testTaskContent = `[
+        {
+          "label": "start ngrok",
+          "dependsOn": "teamsfx: ngrok start"
+        }
+      ]`;
+      const content = `[
+        {
+          "label": "start ngrok",
+          "dependsOn": ["Start local tunnel"]
+        },
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
+          // as well as samples to:
+          //   - use your own ngrok command / configuration / binary
+          //   - use your own tunnel solution
+          //   - provide alternatives if ngrok does not work on your dev machine
+          "label": "Start local tunnel",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+              "env": "local",
+              "output": {
+                  // Keep consistency with migrated configuration.
+                  "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                  "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+              }
+          },
+          "isBackground": true,
+          "problemMatcher": "$teamsfx-local-tunnel-watch"
+        }
+      ]`;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const migrationContext = await mockMigrationContext(projectPath);
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {
+          botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+          botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+        }
+      );
+      migrateNgrokStartTask(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
+    });
+  });
+
+  describe("migrateNgrokStartCommand", () => {
+    it("ngrok task with comment", async () => {
+      const testTaskContent = `[
+        {
+          // Before comment
+          "label": "start ngrok",
+          "type": "teamsfx",
+          "command": "ngrok start",
+          "isBackground": false,
+          "dependsOn": [
+              "bot npm install"
+          ]
+        }
+      ]`;
+      const content = `[
+        {
+          // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+          // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
+          // as well as samples to:
+          //   - use your own ngrok command / configuration / binary
+          //   - use your own tunnel solution
+          //   - provide alternatives if ngrok does not work on your dev machine
+          // Before comment
+          "label": "start ngrok",
+          "type": "teamsfx",
+          "command": "debug-start-local-tunnel",
+          "isBackground": true,
+          "dependsOn": [
+            "bot npm install"
+          ],
+          "args": {
+              "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+              "env": "local",
+              "output": {
+                  // Keep consistency with migrated configuration.
+                  "endpoint": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+                  "domain": "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN"
+              }
+          },
+          "problemMatcher": "$teamsfx-local-tunnel-watch",
+        }
+      ]`;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const migrationContext = await mockMigrationContext(projectPath);
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {
+          botDomain: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN",
+          botEndpoint: "PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__SITEENDPOINT",
+        }
+      );
+      migrateNgrokStartCommand(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
     });
   });
 });

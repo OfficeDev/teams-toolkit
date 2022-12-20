@@ -10,7 +10,7 @@
                 "Validate prerequisites",
                 "Start local tunnel",
                 "Create resources",
-                "Set up local projects",
+                "Install tools and Build project",
                 "Start services"
             ],
             "dependsOrder": "sequence"
@@ -48,8 +48,9 @@
                 "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
                 "env": "local",
                 "output": {
-                    "endpoint": "BOT_ENDPOINT",
-                    "domain": "BOT_DOMAIN"
+                    // output to .env.local
+                    "endpoint": "BOT_ENDPOINT", // output tunnel endpoint as BOT_ENDPOINT
+                    "domain": "BOT_DOMAIN" // output tunnel domain as BOT_DOMAIN
                 }
             },
             "isBackground": true,
@@ -67,9 +68,9 @@
             }
         },
         {
-            // Set up local projects.
+            // Install tools and Build project.
             // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
-            "label": "Set up local projects",
+            "label": "Install tools and Build project",
             "type": "teamsfx",
             "command": "deploy",
             "args": {

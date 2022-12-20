@@ -59,7 +59,7 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
       await this.context.logProvider?.info(
         getLocalizedMessage(
           "driver.deploy.notice.deployAcceleration",
-          "https://learn.microsoft.com/en-us/azure/app-service/deploy-run-package"
+          "https://aka.ms/teamsfx-config-run-from-package"
         ).localized
       );
     }

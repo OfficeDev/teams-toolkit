@@ -78,6 +78,15 @@ export class DeployExternalApiCallError extends ExternalApiCallError {
     );
   }
 
+  static deployRemoteStatusError(): DeployExternalApiCallError {
+    return new DeployExternalApiCallError(
+      DeployConstant.DEPLOY_ERROR_TYPE,
+      "DeployStatusError",
+      "driver.deploy.zipDeploymentRemoteStartError",
+      -1
+    );
+  }
+
   static clearStorageError(
     operateName: string,
     errorCode: string | undefined,

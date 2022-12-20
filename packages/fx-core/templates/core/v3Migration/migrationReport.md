@@ -7,8 +7,8 @@ Congratulations! Your project has been upgraded to work with latest Teams Toolki
 1. Moved everything in `.fx` to `teamsfx` folder with new file format.
     * Created new `app.yml` and `app.local.yml` file under `teamsfx` folder
     * Moved content in `state.{env}.json`, `config.{env}.json` and `{env}.userdata` to `.env.{env}` under `teamsfx` folder
-2. Moved `templates/appPackage` to `./appPackage` per latest tooling's requirement.
-3. Moved `templates/appPackage/aad.template.json` to `./aad.manifest.template.json` per latest tooling's requirement.
+2. Moved `templates/appPackage` to `./appPackage` and update placeholders in it per latest tooling's requirement.
+3. Moved `templates/appPackage/aad.template.json` to `./aad.manifest.template.json` and update placeholders in it per latest tooling's requirement.
 4. Updated `.vscode/tasks.json` and `.vscode/launch.json`.
 5. Updated `.gitignore` to ignore new files under `teamsfx` folder.
 

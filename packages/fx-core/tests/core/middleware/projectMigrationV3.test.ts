@@ -59,6 +59,7 @@ import {
 import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSettingsLoader";
 import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../src/core/middleware/types";
+import { isMigrationV3Enabled } from "../../../src/common/tools";
 
 let mockedEnvRestore: () => void;
 
@@ -1129,6 +1130,9 @@ describe("Migration utils", () => {
   });
 
   it("migrationNotificationMessage", () => {
+    const tools = new MockTools();
+    setTools(tools);
+
     const version: VersionForMigration = {
       currentVersion: "2.0.0",
       state: VersionState.upgradeable,
@@ -1140,6 +1144,11 @@ describe("Migration utils", () => {
     migrationNotificationMessage(version);
     version.platform = Platform.CLI;
     migrationNotificationMessage(version);
+  });
+
+  it("isMigrationV3Enabled", () => {
+    const enabled = isMigrationV3Enabled();
+    assert.isFalse(enabled);
   });
 });
 

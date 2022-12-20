@@ -38,3 +38,11 @@ export class DeployConstant {
   // default deploy retry times
   public static readonly DEPLOY_UPLOAD_RETRY_TIMES = 2;
 }
+
+export enum DeployStatus {
+  Pending = 0,
+  Building = 1,
+  Deploying = 2,
+  Failed = 3,
+  Success = 4,
+}

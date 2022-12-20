@@ -23,7 +23,7 @@
     "dependencies": {
         "@microsoft/teamsfx": "^2.0.0",
         "botbuilder": "^4.18.0",
-        "restify": "^8.5.1"
+        "restify": "^10.0.0"
     },
     "devDependencies": {
         "@microsoft/teamsfx-run-utils": "alpha",

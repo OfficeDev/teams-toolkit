@@ -23,7 +23,7 @@
     "dependencies": {
         "@microsoft/adaptivecards-tools": "^1.0.0",
         "@microsoft/teamsfx": "^1.2.0",
-        "restify": "^8.5.1"
+        "restify": "^10.0.0"
     },
     "devDependencies": {
         "@types/restify": "8.4.2",

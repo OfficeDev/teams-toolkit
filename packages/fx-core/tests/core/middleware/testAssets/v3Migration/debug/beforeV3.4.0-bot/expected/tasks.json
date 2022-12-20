@@ -29,13 +29,29 @@
             }
         },
         {
+            // Start the local tunnel service to forward public ngrok URL to local port and inspect traffic.
+            // See https://aka.ms/teamsfx-local-tunnel-task for the detailed args definitions,
+            // as well as samples to:
+            //   - use your own ngrok command / configuration / binary
+            //   - use your own tunnel solution
+            //   - provide alternatives if ngrok does not work on your dev machine
             "label": "start ngrok",
             "type": "teamsfx",
-            "command": "ngrok start",
+            "command": "debug-start-local-tunnel",
             "isBackground": true,
             "dependsOn": [
                 "bot npm install"
-            ]
+            ],
+            "args": {
+                "ngrokArgs": "http 3978 --log=stdout --log-format=logfmt",
+                "env": "local",
+                "output": {
+                    // Keep consistency with migrated configuration.
+                    "endpoint": "PROVISIONOUTPUT__BOTOUTPUT__SITEENDPOINT",
+                    "domain": "PROVISIONOUTPUT__BOTOUTPUT__DOMAIN"
+                }
+            },
+            "problemMatcher": "$teamsfx-local-tunnel-watch"
         },
         {
             "label": "prepare dev env",
@@ -51,7 +67,33 @@
         },
         {
             "label": "Start Bot",
-            "dependsOn": "teamsfx: bot start"
+            "dependsOn": [
+                "Start bot"
+            ]
+        },
+        {
+            "label": "Start bot",
+            "type": "shell",
+            "command": "node ../teamsfx/script/run.bot.js .. ../teamsfx/.env.local",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}/bot"
+            },
+            "problemMatcher": {
+                "pattern": [
+                    {
+                        "regexp": "^.*$",
+                        "file": 0,
+                        "location": 1,
+                        "message": 2
+                    }
+                ],
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "[nodemon] starting",
+                    "endsPattern": "restify listening to|Bot/ME service listening at|[nodemon] app crashed"
+                }
+            }
         },
         {
             "label": "bot npm install",

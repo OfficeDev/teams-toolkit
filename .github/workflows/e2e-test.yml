@@ -11,7 +11,8 @@ on:
         required: false
         default: "false"
   schedule:
-    - cron: "0 22 * * *"
+    - cron: '0 22 * * *'
+    - cron: '0 4 * * *'
   pull_request:
     branches:
       - main
@@ -315,6 +316,7 @@ jobs:
           lscpu
 
       - name: run test
+        if: github.event.schedule != '0 4 * * *'
         working-directory: packages/cli/tests/e2e
         run: |
           file=`find . -wholename "${{ matrix.cases }}"`
@@ -326,7 +328,7 @@ jobs:
           fi
 
       - name: run test for v3
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.v3 != 'false' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.v3 != 'false' || github.event.schedule == '0 4 * * *' }}
         working-directory: packages/cli/tests/e2e
         env:
           TEAMSFX_V3: "true"
@@ -431,6 +433,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Check schedule for v3
+        if: github.event.schedule == '0 4 * * *'
+        run: |
+          echo "v3_flag=true" >> $GITHUB_ENV
+
       - name: Install Dateutils
         run: |
           sudo apt install dateutils
@@ -466,6 +473,9 @@ jobs:
             email=""
             if grep -q "@author" $file; then
               email=`grep '@author' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
+            fi
+            if [[ -z $(grep -q "@owner" $file) ]] && [[ "${{env.v3_flag}}" == "true" ]]; then
+              email=`grep '@owner' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
             fi
 
             status=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .conclusion'`
@@ -529,6 +539,9 @@ jobs:
           total=$((passed+failed))
 
           subject="TeamsFx E2E Test Report ($passed/$total Passed)"
+          if [[ "${{env.v3_flag}}" == "true" ]]; then
+            subject="TeamsFx E2E V3 Test Report ($passed/$total Passed)"
+          fi
           if [ $failed -gt 0 ]; then
             subject="[FAILED] $subject"
           else

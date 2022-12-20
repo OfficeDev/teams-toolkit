@@ -3,6 +3,7 @@
 
 /**
  * @author Ivan He <ruhe@microsoft.com>
+ * @owner Siglud <fanhu@microsoft.com>
  */
 
 import * as path from "path";

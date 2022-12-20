@@ -1158,6 +1158,7 @@
   "driver.deploy.deployToAzureFunctionsDescription": "deploy the project to the Azure Functions.",
   "driver.deploy.deployToAzureStorageDescription": "deploy the project to the Azure Storages.",
   "driver.deploy.enableStaticWebsiteInAzureStorageDescription": "enable static website setting in Azure Storage.",
+  "driver.deploy.zipDeploymentRemoteStartError": "Zip Deploy success but remote start failed.",
   "driver.script.buildSummary": "Running command `%s` at `%s` successfully.",
   "driver.script.dotnetDescription": "running dotnet command.",
   "driver.script.npmDescription": "running npm command.",

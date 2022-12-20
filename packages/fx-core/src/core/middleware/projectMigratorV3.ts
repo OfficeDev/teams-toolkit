@@ -259,7 +259,10 @@ export async function generateAppYml(context: MigrationContext): Promise<void> {
   const appYmlString: string = await appYmlGenerator.generateAppYml();
   await context.fsWriteFile(path.join(SettingsFolderName, Constants.appYmlName), appYmlString);
   if (oldProjectSettings.programmingLanguage?.toLowerCase() === "csharp") {
-    const appLocalYmlString: string = await appYmlGenerator.generateAppLocalYml();
+    const placeholderMappings = await getPlaceholderMappings(context);
+    const appLocalYmlString: string = await appYmlGenerator.generateAppLocalYml(
+      placeholderMappings
+    );
     await context.fsWriteFile(
       path.join(SettingsFolderName, Constants.appLocalYmlName),
       appLocalYmlString

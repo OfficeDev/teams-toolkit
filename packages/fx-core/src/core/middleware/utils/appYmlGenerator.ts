@@ -7,6 +7,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
+import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
 
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
@@ -70,7 +71,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     );
   }
 
-  public async generateAppLocalYml(): Promise<string> {
+  public async generateAppLocalYml(placeholderMappings: DebugPlaceholderMapping): Promise<string> {
+    this.handlebarsContext.placeholderMappings = placeholderMappings as any;
     await this.generateAzureHandlebarsContext();
 
     const solutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;

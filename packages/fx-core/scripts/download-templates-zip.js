@@ -54,11 +54,18 @@ function delay(fn, ms) {
   return new Promise((resolve) => setTimeout(() => resolve(fn()), ms));
 }
 
-async function getTemplateMetadata(tag) {
+function getTemplateDownloadPathPattern(tag) {
+  const path = `${config.templateDownloadBasePath}/${encodeURIComponent(tag)}/`;
+  const pattern = `${path}(.*)${config.templateExt}`;
+  return new RegExp(pattern, "g");
+}
+
+async function getTemplates(tag) {
+  const pattern = getTemplateDownloadPathPattern(tag);
   const url = `${config.templateReleaseURL}/${tag}`;
   return await step(`Download release metadata from ${url}`, async () => {
     const res = await axiosInstance.get(url);
-    return res.data.assets;
+    return [...res.data.matchAll(pattern)].map((match) => match[1]);
   });
 }
 
@@ -69,9 +76,9 @@ async function downloadTemplates(version) {
   const folder = path.join(__dirname, "..", "templates", "fallback");
   await fs.ensureDir(folder);
 
-  const templates = await getTemplateMetadata(tag);
+  const templates = await getTemplates(tag);
   for (let template of templates) {
-    const filename = template.name;
+    const filename = `${template}${config.templateExt}`;
     step(`Download ${config.templateDownloadBaseURL}/${tag}/${filename}`, async () => {
       const res = await axiosInstance.get(`${config.templateDownloadBaseURL}/${tag}/${filename}`, {
         responseType: "arraybuffer",

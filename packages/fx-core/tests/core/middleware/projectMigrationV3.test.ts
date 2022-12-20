@@ -628,7 +628,7 @@ describe("manifestsMigration", () => {
     try {
       await manifestsMigration(migrationContext);
     } catch (error) {
-      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.name, "MigrationReadFileError");
       assert.equal(error.innerError.message, "templates/appPackage does not exist");
     }
   });
@@ -663,7 +663,7 @@ describe("manifestsMigration", () => {
     try {
       await manifestsMigration(migrationContext);
     } catch (error) {
-      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.name, "MigrationReadFileError");
       assert.equal(
         error.innerError.message,
         "templates/appPackage/manifest.template.json does not exist"
@@ -745,7 +745,7 @@ describe("azureParameterMigration", () => {
     try {
       await azureParameterMigration(migrationContext);
     } catch (error) {
-      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.name, "MigrationReadFileError");
       assert.equal(error.innerError.message, "templates/azure/provision.bicep does not exist");
     }
   });

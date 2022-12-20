@@ -60,6 +60,8 @@ function getTemplateDownloadPathPattern(tag) {
   return new RegExp(pattern, "g");
 }
 
+// Parse all template names from html instead of requesting /repos/{owner}/{repo}/releases/tags/{tag}.
+// Because API request to GitHub are subject to rate limits.
 async function getTemplates(tag) {
   const pattern = getTemplateDownloadPathPattern(tag);
   const url = `${config.templateReleaseURL}/${tag}`;

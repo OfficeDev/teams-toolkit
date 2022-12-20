@@ -474,8 +474,13 @@ jobs:
             if grep -q "@author" $file; then
               email=`grep '@author' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
             fi
-            if [[ -z $(grep -q "@owner" $file) ]] && [[ "${{env.v3_flag}}" == "true" ]]; then
-              email=`grep '@owner' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
+            if [[ "${{env.v3_flag}}" == "true" ]]; then
+              email=""
+              if grep -q "@owner" $file; then
+                email=`grep '@owner' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
+              else
+                continue
+              fi
             fi
 
             status=`echo $jobs | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .conclusion'`

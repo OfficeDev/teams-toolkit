@@ -182,6 +182,34 @@ export function startFrontendTask(label: string): CommentJSONValue {
   return assign(parse("{}"), task);
 }
 
+export function startAuthTask(label: string): CommentJSONValue {
+  const task = {
+    label,
+    type: "shell",
+    command: "node teamsfx/script/run.auth.js . teamsfx/.env.local",
+    isBackground: true,
+    options: {
+      cwd: "${workspaceFolder}",
+    },
+    problemMatcher: {
+      pattern: [
+        {
+          regexp: "^.*$",
+          file: 0,
+          location: 1,
+          message: 2,
+        },
+      ],
+      background: {
+        activeOnStart: true,
+        beginsPattern: ".*",
+        endsPattern: ".*",
+      },
+    },
+  };
+  return assign(parse("{}"), task);
+}
+
 export function startBotTask(label: string): CommentJSONValue {
   const task = {
     label,
@@ -216,5 +244,9 @@ export async function saveRunScript(
   script: string
 ): Promise<void> {
   await context.fsEnsureDir(path.join(SettingsFolderName, "script"));
-  await context.fsWriteFile(path.join("script", filename), script);
+  const runScriptPath = path.join(SettingsFolderName, "script", filename);
+  if (!(await context.fsPathExists(runScriptPath))) {
+    await context.fsCreateFile(runScriptPath);
+  }
+  await context.fsWriteFile(runScriptPath, script);
 }

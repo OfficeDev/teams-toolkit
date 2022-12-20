@@ -89,6 +89,8 @@ describe("debugV3MigrationUtils", () => {
 
     beforeEach(() => {
       sinon.stub(MigrationContext.prototype, "fsEnsureDir").callsFake(async () => {});
+      sinon.stub(MigrationContext.prototype, "fsPathExists").returns(Promise.resolve(false));
+      sinon.stub(MigrationContext.prototype, "fsCreateFile").callsFake(async () => {});
       sinon.stub(MigrationContext.prototype, "fsWriteFile").callsFake(async (file, data) => {
         script = data;
       });

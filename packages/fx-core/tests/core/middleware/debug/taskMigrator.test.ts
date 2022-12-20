@@ -14,6 +14,7 @@ import {
   migrateTransparentPrerequisite,
   migrateNgrokStartTask,
   migrateNgrokStartCommand,
+  migrateAuthStart,
 } from "../../../../src/core/middleware/utils/debug/taskMigrator";
 import { CommentArray, CommentJSONValue, parse, stringify } from "comment-json";
 import { DebugMigrationContext } from "../../../../src/core/middleware/utils/debug/debugMigrationContext";
@@ -1108,6 +1109,47 @@ describe("debugMigration", () => {
         debugContext.appYmlConfig.configureApp?.teamsApp?.appPackagePath,
         undefined
       );
+    });
+  });
+
+  describe("migrateAuthStart", () => {
+    beforeEach(() => {
+      sinon.stub(debugV3MigrationUtils, "saveRunScript").callsFake(async () => {});
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("happy path", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const testTaskContent = `[
+        {
+          "label": "Start Frontend",
+          "dependsOn": [
+            "teamsfx: frontend start",
+            "teamsfx: auth start"
+          ],
+          "dependsOrder": "parallel"
+        },
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migrateAuthStart(debugContext);
+      chai.assert.equal(debugContext.appYmlConfig.deploy?.npmCommands?.length, 1);
+      if (debugContext.appYmlConfig.deploy?.npmCommands) {
+        chai.assert.equal(
+          debugContext.appYmlConfig.deploy.npmCommands[0].args,
+          "install -D @microsoft/teamsfx-run-utils@alpha"
+        );
+        chai.assert.equal(debugContext.appYmlConfig.deploy.npmCommands[0].workingDirectory, ".");
+      }
     });
   });
 

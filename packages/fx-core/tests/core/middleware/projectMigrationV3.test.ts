@@ -1126,6 +1126,7 @@ describe("debugMigration", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
   let runTabScript = "";
+  let runAuthScript = "";
   let runBotScript = "";
   let runFunctionScript = "";
 
@@ -1137,6 +1138,8 @@ describe("debugMigration", () => {
       .callsFake(async (context, filename, script) => {
         if (filename === "run.tab.js") {
           runTabScript = script;
+        } else if (filename === "run.auth.js") {
+          runAuthScript = script;
         } else if (filename === "run.bot.js") {
           runBotScript = script;
         } else if (filename === "run.api.js") {

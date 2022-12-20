@@ -19,8 +19,6 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import * as sinon from "sinon";
-import * as yaml from "js-yaml";
-import { getProjectMigratorMW } from "../../../src/core/middleware/projectMigrator";
 import { MockTools, MockUserInteraction, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
 import { setTools } from "../../../src/core/globalVars";
@@ -41,6 +39,7 @@ import {
   azureParameterMigration,
   generateLocalConfig,
   checkapimPluginExists,
+  ProjectMigratorMWV3,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { UpgradeCanceledError } from "../../../src/core/error";
@@ -54,9 +53,13 @@ import {
   getDownloadLinkByVersionAndPlatform,
   getTrackingIdFromPath,
   getVersionState,
+  migrationNotificationMessage,
+  outputCancelMessage,
 } from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSettingsLoader";
 import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
+import { VersionForMigration } from "../../../src/core/middleware/types";
+import { isMigrationV3Enabled } from "../../../src/common/tools";
 
 let mockedEnvRestore: () => void;
 
@@ -70,7 +73,6 @@ describe("ProjectMigratorMW", () => {
     await fs.ensureDir(path.join(projectPath, ".fx"));
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3_MIGRATION: "true",
-      TEAMSFX_V3: "false",
     });
   });
 
@@ -92,7 +94,7 @@ describe("ProjectMigratorMW", () => {
       }
     }
     hooks(MyClass, {
-      other: [getProjectMigratorMW()],
+      other: [ProjectMigratorMWV3],
     });
 
     const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
@@ -120,7 +122,7 @@ describe("ProjectMigratorMW", () => {
       }
     }
     hooks(MyClass, {
-      other: [getProjectMigratorMW()],
+      other: [ProjectMigratorMWV3],
     });
 
     const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
@@ -1119,6 +1121,34 @@ describe("Migration utils", () => {
       getDownloadLinkByVersionAndPlatform("2.0.0", Platform.VSCode),
       `${Metadata.versionMatchLink}#vscode`
     );
+  });
+
+  it("outputCancelMessage", () => {
+    outputCancelMessage("2.0.0", Platform.VS);
+    outputCancelMessage("2.0.0", Platform.CLI);
+    outputCancelMessage("2.0.0", Platform.VSCode);
+  });
+
+  it("migrationNotificationMessage", () => {
+    const tools = new MockTools();
+    setTools(tools);
+
+    const version: VersionForMigration = {
+      currentVersion: "2.0.0",
+      state: VersionState.upgradeable,
+      platform: Platform.VS,
+    };
+
+    migrationNotificationMessage(version);
+    version.platform = Platform.VSCode;
+    migrationNotificationMessage(version);
+    version.platform = Platform.CLI;
+    migrationNotificationMessage(version);
+  });
+
+  it("isMigrationV3Enabled", () => {
+    const enabled = isMigrationV3Enabled();
+    assert.isFalse(enabled);
   });
 });
 

@@ -124,6 +124,7 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       ctx.result = ok(undefined);
       return;
     }
+
     const skipUserConfirm = getParameterFromCxt(ctx, "skipUserConfirm");
     if (!skipUserConfirm && !(await askUserConfirm(ctx, versionForMigration))) {
       return;

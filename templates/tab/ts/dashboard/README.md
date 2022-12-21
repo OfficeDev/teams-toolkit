@@ -57,14 +57,14 @@ The following files provide the business logic for the dashboard tab. These file
 
 The following files are project-related files. You generally will not need to customize these files.
 
-| File                               | Contents                                         |
-| ---------------------------------- | ------------------------------------------------ |
-| `src/index.tsx`                    | Application entry point                          |
-| `src/App.tsx`                      | Application route                                |
-| `src/internal/addNewScopes.ts`     | Implementation of new scopes add                 |
-| `src/internal/context.ts`          | TeamsFx Context                                  |
-| `src/internal/login.ts`            | Implementation of login                          |
-| `src/internal/singletonContext.ts` | Implementation of the TeamsFx instance singleton |
+| File                               | Contents                                                     |
+| ---------------------------------- | ------------------------------------------------------------ |
+| `src/index.tsx`                    | Application entry point                                      |
+| `src/App.tsx`                      | Application route                                            |
+| `src/internal/addNewScopes.ts`     | Implementation of new scopes add                             |
+| `src/internal/context.ts`          | TeamsFx Context                                              |
+| `src/internal/login.ts`            | Implementation of login                                      |
+| `src/internal/singletonContext.ts` | Implementation of the TeamsUserCredential instance singleton |
 
 ## How to add a new widget
 
@@ -304,7 +304,7 @@ If you want to call a Graph API from the front-end tab, you can refer to the fol
 
 #### Step 1: Consent delegated permissions first
 
-You can call [`addNewPermissionScope(scopes: string[])`](src/internal/addNewScopes.ts) to consent the scopes of permissions you want to add. And the consented status will be preserved in a global context [`FxContext`](src/internal/singletonContext.ts).
+You can call [`addNewPermissionScope(scopes: string[])`](src/internal/addNewScopes.ts) to consent the scopes of permissions you want to add. And the consented status will be preserved in a global context [`TeamsUserCredentialContext`](src/internal/singletonContext.ts).
 
 You can refer to [the Graph API V1.0](https://learn.microsoft.com/en-us/graph/api/overview?view=graph-rest-1.0) to get the `scope name of the permission` related to the Graph API you want to call.
 
@@ -313,9 +313,8 @@ You can refer to [the Graph API V1.0](https://learn.microsoft.com/en-us/graph/ap
 You can refer to the following code snippet:
 
 ```ts
-let teamsfx: TeamsFx;
-teamsfx = FxContext.getInstance().getTeamsFx();
-const graphClient: Client = createMicrosoftGraphClient(teamsfx, scope);
+const teamsUserCredential = TeamsUserCredentialContext.getInstance().getCredential();
+const graphClient: Client = createMicrosoftGraphClientWithCredential(teamsUserCredential, scope);
 ```
 
 #### Step 3: Call the Graph API, and parse the response into a certain model, which will be used by front-end
@@ -393,18 +392,17 @@ Call the Azure Function by function name. You can refer to the following code sn
 
 ```ts
 const functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
-async function callFunction(teamsfx) {
-  if (!teamsfx) {
+async function callFunction(teamsUserCredential?: TeamsUserCredential) {
+  if (!teamsUserCredential) {
     throw new Error("TeamsFx SDK is not initialized.");
   }
   try {
-    const credential = teamsfx.getCredential();
-    const apiBaseUrl = teamsfx.getConfig("apiEndpoint") + "/api/";
+    const apiBaseUrl = process.env.REACT_APP_FUNC_ENDPOINT + "/api/";
     // createApiClient(...) creates an Axios instance which uses BearerTokenAuthProvider to inject token to request header
     const apiClient = createApiClient(
       apiBaseUrl,
       new BearerTokenAuthProvider(
-        async () => (await credential.getToken(""))!.token
+        async () => (await teamsUserCredential.getToken(""))!.token
       )
     );
     const response = await apiClient.get(functionName);

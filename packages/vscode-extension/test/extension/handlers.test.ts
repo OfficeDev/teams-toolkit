@@ -333,10 +333,11 @@ describe("handlers", () => {
       chai.assert.isTrue(result.isOk());
     });
 
-    it("selectTutorialsHandler()", async () => {
+    it("selectTutorialsHandler() - v2", async () => {
       sinon.stub(localizeUtils, "localize").returns("");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(TreatmentVariableValue, "inProductDoc").value(true);
       let tutorialOptions: StaticOptions[] = [];
       sinon.stub(extension, "VS_CODE_UI").value({
@@ -349,7 +350,28 @@ describe("handlers", () => {
 
       const result = await handlers.selectTutorialsHandler();
 
-      chai.assert.equal(tutorialOptions.length, 15);
+      chai.assert.equal(tutorialOptions.length, 6);
+      chai.assert.isTrue(result.isOk());
+    });
+
+    it("selectTutorialsHandler() - v3", async () => {
+      sinon.stub(localizeUtils, "localize").returns("");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(TreatmentVariableValue, "inProductDoc").value(true);
+      let tutorialOptions: StaticOptions[] = [];
+      sinon.stub(extension, "VS_CODE_UI").value({
+        selectOption: (options: any) => {
+          tutorialOptions = options.options;
+          return Promise.resolve(ok({ type: "success", result: { id: "test", data: "data" } }));
+        },
+        openUrl: () => Promise.resolve(ok(true)),
+      });
+
+      const result = await handlers.selectTutorialsHandler();
+
+      chai.assert.equal(tutorialOptions.length, 14);
       chai.assert.isTrue(result.isOk());
     });
   });

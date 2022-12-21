@@ -9,22 +9,25 @@ import {
   teamsHighContrastTheme,
   tokens,
 } from "@fluentui/react-components";
-import { useTeamsFx } from "@microsoft/teamsfx-react";
+import { useTeamsUserCredential } from "@microsoft/teamsfx-react";
 
 import SampleDashboard from "./views/dashboards/SampleDashboard";
 import Privacy from "./views/Privacy";
 import TabConfig from "./views/TabConfig";
 import TermsOfUse from "./views/TermsOfUse";
-import { TeamsFxContext } from "./internal/Context";
+import { TeamsFxContext } from "./internal/context";
 
 /**
  * The main app which handles the initialization and routing
  * of the app.
  */
 export default function App() {
-  const { loading, themeString, teamsfx } = useTeamsFx();
+  const { loading, themeString, teamsUserCredential } = useTeamsUserCredential({
+    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+    clientId: process.env.REACT_APP_CLIENT_ID,
+  });
   return (
-    <TeamsFxContext.Provider value={{ themeString, teamsfx }}>
+    <TeamsFxContext.Provider value={{ themeString, teamsUserCredential }}>
       <FluentProvider
         theme={
           themeString === "dark"

@@ -10,7 +10,7 @@ registerApp:
 provision:
   - uses: botAadApp/create # Creates a new AAD app for bot if BOT_ID environment variable is empty
     with:
-      name: notification-bot
+      name: {%appName%}
     # Output: following environment variable will be persisted in current environment's .env file.
     # BOT_ID: the AAD app client id created for bot
     # SECRET_BOT_PASSWORD: the AAD app client secret created for bot
@@ -18,9 +18,11 @@ provision:
   - uses: botFramework/create # Create or update the bot registration on dev.botframework.com
     with:
       botId: ${{BOT_ID}}
-      name: notification-bot
+      name: {%appName%}
       messagingEndpoint: ${{BOT_ENDPOINT}}/api/messages
       description: ""
+      channels:
+        - name: msteams
 
 configureApp:
   - uses: teamsApp/validate
@@ -40,7 +42,7 @@ configureApp:
     # TEAMS_APP_ID: the id of Teams app
 
 deploy:
-  - uses: tools/install
+  - uses: prerequisite/install
     with:
       func: true
 

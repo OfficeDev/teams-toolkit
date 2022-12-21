@@ -1,0 +1,14 @@
+version: 1.0.0
+
+deploy:
+  - uses: prerequisite/install 
+    with:
+      devCert:
+        trust: true
+      dotnet: true
+
+  - uses: cli/runNpmCommand
+    with:
+      args: install -D @microsoft/teamsfx-run-utils@alpha
+      workingDirectory: .
+

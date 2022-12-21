@@ -37,7 +37,6 @@ import { ProjectConsolidateMW } from "./middleware/consolidateLocalRemote";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { askNewEnvironment } from "./middleware/envInfoLoaderV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
@@ -66,6 +65,13 @@ import {
   getProjectVersionFromPath,
   getTrackingIdFromPath,
 } from "./middleware/utils/v3MigrationUtils";
+import { QuestionMW } from "../component/middleware/questionMW";
+import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
+import {
+  getQuestionsForInit,
+  getQuestionsForProvisionV3,
+  getQuestionsForPublishInDeveloperPortal,
+} from "../component/question";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -101,7 +107,7 @@ export class FxCoreV3Implement {
     return await method.call(this, func, inputs);
   }
 
-  @hooks([ErrorHandlerMW, ContextInjectorMW])
+  @hooks([ErrorHandlerMW, QuestionMW(getQuestionsForCreateProjectV2), ContextInjectorMW])
   async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
@@ -129,13 +135,23 @@ export class FxCoreV3Implement {
     return ok(inputs.projectPath!);
   }
 
-  @hooks([ErrorHandlerMW])
+  @hooks([
+    ErrorHandlerMW,
+    QuestionMW((inputs) => {
+      return getQuestionsForInit("infra", inputs);
+    }),
+  ])
   async initInfra(inputs: Inputs): Promise<Result<undefined, FxError>> {
     const res = await coordinator.initInfra(createContextV3(), inputs);
     return res;
   }
 
-  @hooks([ErrorHandlerMW])
+  @hooks([
+    ErrorHandlerMW,
+    QuestionMW((inputs) => {
+      return getQuestionsForInit("debug", inputs);
+    }),
+  ])
   async initDebug(inputs: Inputs): Promise<Result<undefined, FxError>> {
     const res = await coordinator.initDebug(createContextV3(), inputs);
     return res;
@@ -144,6 +160,7 @@ export class FxCoreV3Implement {
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
+    QuestionMW(getQuestionsForProvisionV3),
     ConcurrentLockerMW,
     EnvLoaderMW(false),
     ContextInjectorMW,
@@ -297,7 +314,13 @@ export class FxCoreV3Implement {
     return res;
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, EnvLoaderMW(false), ContextInjectorMW])
+  @hooks([
+    ErrorHandlerMW,
+    QuestionMW(getQuestionsForPublishInDeveloperPortal),
+    ConcurrentLockerMW,
+    EnvLoaderMW(false),
+    ContextInjectorMW,
+  ])
   async publishInDeveloperPortal(
     inputs: Inputs,
     ctx?: CoreHookContext

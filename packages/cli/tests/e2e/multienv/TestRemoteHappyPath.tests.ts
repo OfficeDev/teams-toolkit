@@ -3,6 +3,7 @@
 
 /**
  * @author Aocheng Wang <aochengwang@microsoft.com>
+ * @owner Yuan Tian <tianyuan@microsoft.com>
  */
 
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
@@ -34,6 +35,7 @@ import {
 } from "../commonUtils";
 
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Multi Env Happy Path for Azure", function () {
   const env = "e2e";
@@ -47,6 +49,9 @@ describe("Multi Env Happy Path for Azure", function () {
     `Can create/provision/deploy/build/validate/launch remote a azure tab/function/sql/bot project`,
     { testPlanCaseId: 10308408 },
     async function () {
+      if (isV3Enabled()) {
+        return this.skip();
+      }
       try {
         let result;
         result = await execAsync(

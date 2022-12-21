@@ -55,6 +55,14 @@ export function ReadFileError(e: Error): SystemError {
   });
 }
 
+export function MigrationReadFileError(e: Error): UserError {
+  return new UserError({
+    name: "MigrationReadFileError",
+    source: CoreSource,
+    error: e,
+  });
+}
+
 export function CopyFileError(e: Error): SystemError {
   return new SystemError({
     name: "CopyFileError",
@@ -323,12 +331,12 @@ export function UpgradeCanceledError(): UserError {
   );
 }
 
-export function UpgradeV3CanceledError(): UserError {
+export function UpgradeV3CanceledError(link: string, version: string): UserError {
   return new UserError(
     CoreSource,
     "UserCancel", // @see tools.isUserCancelError()
-    getDefaultString("error.UpgradeV3CanceledError"),
-    getLocalizedString("error.UpgradeV3CanceledError")
+    getDefaultString("error.UpgradeV3CanceledError", link, version),
+    getLocalizedString("error.UpgradeV3CanceledError", link, version)
   );
 }
 

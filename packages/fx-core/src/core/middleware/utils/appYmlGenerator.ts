@@ -7,6 +7,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
+import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
 
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
@@ -28,6 +29,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     teamsAppName: string | undefined;
     appName: string | undefined;
     isFunctionBot: boolean;
+    isTypescript: boolean;
+    defaultFunctionName: string | undefined;
   };
   constructor(
     oldProjectSettings: ProjectSettings,
@@ -42,6 +45,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       teamsAppName: undefined,
       appName: undefined,
       isFunctionBot: false,
+      isTypescript: false,
+      defaultFunctionName: undefined,
     };
   }
 
@@ -60,6 +65,22 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       }
     } else if (solutionSettings.hostType.toLowerCase() === "spfx") {
       return await this.buildHandlebarsTemplate("spfx.app.yml");
+    }
+    throw new Error(
+      "The current tooling cannot upgrade your project temporary. Please raise an issue in GitHub for your project."
+    );
+  }
+
+  public async generateAppLocalYml(placeholderMappings: DebugPlaceholderMapping): Promise<string> {
+    this.handlebarsContext.placeholderMappings = placeholderMappings as any;
+    await this.generateAzureHandlebarsContext();
+
+    const solutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
+    if (solutionSettings.hostType === "Azure") {
+      switch (this.oldProjectSettings.programmingLanguage?.toLowerCase()) {
+        case "csharp":
+          return await this.buildHandlebarsTemplate("csharp.app.local.yml");
+      }
     }
     throw new Error(
       "The current tooling cannot upgrade your project temporary. Please raise an issue in GitHub for your project."
@@ -91,6 +112,13 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       );
       this.handlebarsContext.teamsAppName = teamsAppManifest.name.short;
     }
+
+    // programming language
+    this.handlebarsContext.isTypescript =
+      this.oldProjectSettings.programmingLanguage?.toLowerCase() === "typescript";
+
+    // default function name
+    this.handlebarsContext.defaultFunctionName = this.oldProjectSettings.defaultFunctionName;
   }
 
   private async generateAzureHandlebarsContext(): Promise<void> {
@@ -110,6 +138,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.functionAppResourceId");
+    this.setPlaceholderMapping("state.fx-resource-function.functionAppResourceId");
+    this.setPlaceholderMapping("state.fx-resource-function.functionEndpoint");
   }
 
   private setPlaceholderMapping(placeholder: string): void {

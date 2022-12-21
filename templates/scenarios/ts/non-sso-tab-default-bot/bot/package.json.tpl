@@ -22,12 +22,11 @@
   "dependencies": {
     "@microsoft/adaptivecards-tools": "^1.0.0",
     "botbuilder": "^4.17.0",
-    "restify": "^8.5.1"
+    "restify": "^10.0.0"
   },
   "devDependencies": {
     "@microsoft/teamsfx-run-utils": "alpha",
-    "@types/restify": "8.4.2",
-    "@types/node": "^14.0.0",
+    "@types/restify": "8.5.5",
     "ts-node": "^10.4.0",
     "typescript": "^4.4.4",
     "nodemon": "^2.0.7",

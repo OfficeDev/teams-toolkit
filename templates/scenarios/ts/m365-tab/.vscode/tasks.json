@@ -6,7 +6,7 @@
             "dependsOn": [
                 "Validate prerequisites",
                 "Create resources",
-                "Set up local projects",
+                "Install tools and Build project",
                 "Start services"
             ],
             "dependsOrder": "sequence"
@@ -16,7 +16,7 @@
             "dependsOn": [
                 "Validate prerequisites",
                 "Create resources",
-                "Set up local projects",
+                "Install tools and Build project",
                 "Start services",
                 "Install app in Teams"
             ],
@@ -47,7 +47,7 @@
             }
         },
         {
-            "label": "Set up local projects",
+            "label": "Install tools and Build project",
             "type": "teamsfx",
             "command": "deploy",
             "args": {

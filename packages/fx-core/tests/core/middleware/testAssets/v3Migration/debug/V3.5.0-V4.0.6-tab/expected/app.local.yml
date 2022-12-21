@@ -1,0 +1,13 @@
+version: 1.0.0
+
+deploy:
+  - uses: prerequisite/install 
+    with:
+      devCert:
+        trust: true
+
+  - uses: cli/runNpmCommand
+    with:
+      args: install --no-audit
+      workingDirectory: ./tabs
+

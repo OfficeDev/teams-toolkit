@@ -3,6 +3,7 @@
 
 /**
  * @author Aocheng Wang <aochengwang@microsoft.com>
+ * @owner Yuan Tian <tianyuan@microsoft.com>
  */
 
 import * as fs from "fs-extra";
@@ -22,6 +23,7 @@ import {
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import { AppStudioValidator } from "../../commonlib";
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 describe("Multi Env Happy Path for SPFx", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -35,6 +37,9 @@ describe("Multi Env Happy Path for SPFx", function () {
     "Can create/provision/deploy/validate/package/publish an SPFx project",
     { testPlanCaseId: 15687128 },
     async function () {
+      if (isV3Enabled()) {
+        return this.skip();
+      }
       const command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type ${type} --spfx-webpart-name helloworld --programming-language typescript`;
       let result = await execAsync(command, {
         cwd: testFolder,

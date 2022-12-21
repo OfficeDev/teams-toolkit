@@ -1,0 +1,8 @@
+version: 1.0.0
+
+deploy:
+  - uses: cli/runNpmCommand
+    with:
+      args: install -D @microsoft/teamsfx-run-utils@alpha
+      workingDirectory: .
+

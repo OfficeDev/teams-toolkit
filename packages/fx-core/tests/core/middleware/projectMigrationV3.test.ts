@@ -1254,7 +1254,7 @@ describe("updateGitignore", async () => {
 
     await generateAppYml(migrationContext);
 
-    await assertFileContent(projectPath, ".gitignore", "whenGitignoreExists");
+    await assertFileContent(projectPath, ".gitignore", "whenGitignoreExist");
   });
 
   it("should create new gitignore file when no gitignore file exists", async () => {

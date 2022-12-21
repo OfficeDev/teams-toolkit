@@ -2265,7 +2265,6 @@ describe("component coordinator test", () => {
     if (res3.isErr()) console.log(res3.error);
     assert.isTrue(res3.isOk());
   });
-
   describe("publishInDeveloperPortal", () => {
     afterEach(() => {
       sandbox.restore();
@@ -2447,6 +2446,7 @@ describe("Office Addin", async () => {
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr() && res.error.name === "mockedError");
   });
+
   it("getYmlFilePath case 1", async () => {
     const inputs: InputsWithProjectPath = {
       platform: Platform.VSCode,
@@ -2457,7 +2457,7 @@ describe("Office Addin", async () => {
     assert.equal(res1, inputs.workflowFilePath);
   });
   it("getYmlFilePath case 2", async () => {
-    sandbox.stub(fs, "pathExistsSync").resolves(true);
+    sandbox.stub(fs, "pathExistsSync").returns(true);
     const inputs: InputsWithProjectPath = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -2467,7 +2467,7 @@ describe("Office Addin", async () => {
     assert.equal(res1, path.join(".", "teamsapp.yml"));
   });
   it("getYmlFilePath case 3", async () => {
-    sandbox.stub(fs, "pathExistsSync").resolves(false);
+    sandbox.stub(fs, "pathExistsSync").returns(false);
     const inputs: InputsWithProjectPath = {
       platform: Platform.VSCode,
       projectPath: ".",

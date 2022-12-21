@@ -64,6 +64,7 @@ import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/crea
 import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/generator";
 import { MockedUserInteraction } from "../plugins/solution/util";
 import { SummaryReporter } from "../../src/component/coordinator/summary";
+import * as path from "path";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -2445,5 +2446,34 @@ describe("Office Addin", async () => {
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr() && res.error.name === "mockedError");
+  });
+  it("getYmlFilePath case 1", async () => {
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      workflowFilePath: ".",
+    };
+    const res1 = coordinator.getYmlFilePath(".", inputs);
+    assert.equal(res1, inputs.workflowFilePath);
+  });
+  it("getYmlFilePath case 2", async () => {
+    sandbox.stub(fs, "pathExistsSync").resolves(true);
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    process.env.TEAMSFX_ENV = "dev";
+    const res1 = coordinator.getYmlFilePath(".", inputs);
+    assert.equal(res1, path.join(".", "teamsapp.yml"));
+  });
+  it("getYmlFilePath case 3", async () => {
+    sandbox.stub(fs, "pathExistsSync").resolves(false);
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    process.env.TEAMSFX_ENV = "dev";
+    const res1 = coordinator.getYmlFilePath(".", inputs);
+    assert.equal(res1, path.join(".", "teamsfx", "app.yml"));
   });
 });

@@ -58,10 +58,7 @@ import {
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
   getQuestionsForAddFeatureV3,
-  getQuestionsForInit,
-  getQuestionsForProvisionV3,
   InitOptionNo,
-  getQuestionsForPublishInDeveloperPortal,
   InitEditorVSCode,
   InitEditorVS,
 } from "../question";
@@ -978,7 +975,7 @@ export class Coordinator {
     if (inputs && inputs["workflowFilePath"]) return inputs["workflowFilePath"];
     let ymlPath = path.join(
       projectPath,
-      process.env.TEAMSFX_ENV === "local" ? "teamsapp.yml" : "teamsapp.local.yml"
+      process.env.TEAMSFX_ENV !== "local" ? "teamsapp.yml" : "teamsapp.local.yml"
     );
     if (fs.pathExistsSync(ymlPath)) {
       return ymlPath;

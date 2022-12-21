@@ -22,6 +22,7 @@ import {
 } from "../component/constants";
 import * as uuid from "uuid";
 import { isExistingTabAppEnabled, isV3Enabled } from "./tools";
+import { coordinator } from "../component/coordinator";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -87,17 +88,21 @@ export function isValidProject(workspacePath?: string): boolean {
 
 export function isValidProjectV3(workspacePath: string): boolean {
   const filePath = path.resolve(workspacePath, SettingsFolderName, SettingsFileName);
-  if (!fs.existsSync(filePath)) {
-    return false;
+  if (fs.existsSync(filePath)) {
+    const projectSettings: Settings = fs.readJsonSync(filePath) as Settings;
+    if (!projectSettings.trackingId) {
+      return false;
+    }
+    if (!projectSettings.version) {
+      return false;
+    }
+    return true;
   }
-  const projectSettings: Settings = fs.readJsonSync(filePath) as Settings;
-  if (!projectSettings.trackingId) {
-    return false;
+  const ymlFilePath = coordinator.getYmlFilePath(workspacePath);
+  if (fs.pathExistsSync(ymlFilePath)) {
+    return true;
   }
-  if (!projectSettings.version) {
-    return false;
-  }
-  return true;
+  return false;
 }
 
 export function isValidProjectV2(workspacePath: string): boolean {

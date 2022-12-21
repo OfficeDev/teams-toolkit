@@ -1,4 +1,3 @@
-# TeamsFx files
 node_modules
 .fx/configs/localSettings.json
 .fx/states/*.userdata

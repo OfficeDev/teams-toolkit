@@ -78,7 +78,7 @@ describe("NPM Build Driver test", () => {
         "@types/chai": "^4.2.14",
       },
       dependencies: {
-        "@microsoft/teamsfx-api": "^0.22.0",
+        "@microsoft/teamsfx-js": "^0.22.0",
       },
     });
     const reporter = new MockTelemetryReporter();
@@ -89,8 +89,7 @@ describe("NPM Build Driver test", () => {
       new TestLogProvider()
     );
     sinon.assert.calledWith(save, "package-version", {
-      "@types/chai": "^4.2.14",
-      "@microsoft/teamsfx-api": "^0.22.0",
+      "@microsoft/teamsfx-js": "^0.22.0",
     });
     fs.rmSync(testFolder, { recursive: true, force: true });
   });

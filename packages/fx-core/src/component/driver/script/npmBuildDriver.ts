@@ -34,6 +34,12 @@ export class NpmBuildDriver extends BaseBuildStepDriver {
 }
 
 export class NpmBuildDriverImpl extends BaseBuildDriver {
+  static readonly TELEMETRY_PACKAGES = new Set([
+    "@microsoft/teamsfx",
+    "@microsoft/teamsfx-api",
+    "@microsoft/teamsfx-js",
+    "@microsoft/teamsfx-react",
+  ]);
   buildPrefix = "npm";
 
   async run(): Promise<Map<string, string>> {
@@ -56,10 +62,15 @@ export class NpmBuildDriverImpl extends BaseBuildDriver {
       const packageJson = path.join(workingDirectory, "package.json");
       if (fs.existsSync(packageJson)) {
         const json = await fs.readJSON(packageJson);
-        const dependencies: { [key: string]: string } = {
+        const dependencies: { [key: string]: string } = {};
+        Object.entries({
           ...json.dependencies,
           ...json.devDependencies,
-        };
+        })
+          .filter((entry) => NpmBuildDriverImpl.TELEMETRY_PACKAGES.has(entry[0]))
+          .forEach((entry) => {
+            dependencies[entry[0]] = entry[1] as string;
+          });
         telemetryReporter?.sendTelemetryEvent("package-version", dependencies);
       }
     } catch (e) {

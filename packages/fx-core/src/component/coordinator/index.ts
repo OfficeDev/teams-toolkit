@@ -517,7 +517,7 @@ export class Coordinator {
 
     // 1. parse yml to cycles
     const parser = new YamlParser();
-    const templatePath = this.getYmlFilePath(ctx.projectPath);
+    const templatePath = this.getYmlFilePath(ctx.projectPath, inputs);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -576,7 +576,7 @@ export class Coordinator {
 
     // 1. parse yml
     const parser = new YamlParser();
-    const templatePath = this.getYmlFilePath(ctx.projectPath);
+    const templatePath = this.getYmlFilePath(ctx.projectPath, inputs);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);

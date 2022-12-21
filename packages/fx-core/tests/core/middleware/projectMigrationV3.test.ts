@@ -1236,6 +1236,37 @@ describe("debugMigration", () => {
   });
 });
 
+describe("updateGitignore", async () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  const migrationContext: MigrationContext = await mockMigrationContext(projectPath);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("should update existing gitignore file", async () => {
+    await copyTestProject("happyPath", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, ".gitignore", "whenGitignoreExists");
+  });
+
+  it("should create new gitignore file when no gitignore file exists", async () => {
+    await copyTestProject("happyPath", projectPath);
+    await fs.remove(path.join(projectPath, ".gitignore"));
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, ".gitignore", "whenGitignoreNotExist");
+  });
+});
+
 export async function mockMigrationContext(projectPath: string): Promise<MigrationContext> {
   const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
   inputs.projectPath = projectPath;

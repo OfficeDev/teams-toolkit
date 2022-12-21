@@ -115,6 +115,7 @@ const subMigrations: Array<Migration> = [
   updateLaunchJson,
   azureParameterMigration,
   debugMigration,
+  updateGitignore,
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -665,4 +666,21 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
         }
     }
   }
+}
+
+export async function updateGitignore(context: MigrationContext): Promise<void> {
+  const gitignoreFile = ".gitignore";
+  const ignoreFileExist: boolean = await context.backup(gitignoreFile);
+  if (!ignoreFileExist) {
+    context.fsCreateFile(gitignoreFile);
+  }
+
+  let ignoreFileContent: string = await fs.readFile(
+    path.join(context.projectPath, gitignoreFile),
+    "utf8"
+  );
+  ignoreFileContent += "\nteamsfx/.env.*";
+  ignoreFileContent += "\nteamsfx/backup/*";
+
+  await context.fsWriteFile(gitignoreFile, ignoreFileContent);
 }

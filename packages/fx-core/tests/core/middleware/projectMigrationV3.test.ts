@@ -19,8 +19,6 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import * as sinon from "sinon";
-import * as yaml from "js-yaml";
-import { getProjectMigratorMW } from "../../../src/core/middleware/projectMigrator";
 import { MockTools, MockUserInteraction, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
 import { setTools } from "../../../src/core/globalVars";
@@ -41,6 +39,7 @@ import {
   azureParameterMigration,
   generateLocalConfig,
   checkapimPluginExists,
+  ProjectMigratorMWV3,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { UpgradeCanceledError } from "../../../src/core/error";
@@ -54,9 +53,13 @@ import {
   getDownloadLinkByVersionAndPlatform,
   getTrackingIdFromPath,
   getVersionState,
+  migrationNotificationMessage,
+  outputCancelMessage,
 } from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSettingsLoader";
 import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
+import { VersionForMigration } from "../../../src/core/middleware/types";
+import { isMigrationV3Enabled } from "../../../src/common/tools";
 
 let mockedEnvRestore: () => void;
 
@@ -70,7 +73,6 @@ describe("ProjectMigratorMW", () => {
     await fs.ensureDir(path.join(projectPath, ".fx"));
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3_MIGRATION: "true",
-      TEAMSFX_V3: "false",
     });
   });
 
@@ -92,7 +94,7 @@ describe("ProjectMigratorMW", () => {
       }
     }
     hooks(MyClass, {
-      other: [getProjectMigratorMW()],
+      other: [ProjectMigratorMWV3],
     });
 
     const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
@@ -120,7 +122,7 @@ describe("ProjectMigratorMW", () => {
       }
     }
     hooks(MyClass, {
-      other: [getProjectMigratorMW()],
+      other: [ProjectMigratorMWV3],
     });
 
     const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
@@ -628,7 +630,7 @@ describe("manifestsMigration", () => {
     try {
       await manifestsMigration(migrationContext);
     } catch (error) {
-      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.name, "MigrationReadFileError");
       assert.equal(error.innerError.message, "templates/appPackage does not exist");
     }
   });
@@ -663,7 +665,7 @@ describe("manifestsMigration", () => {
     try {
       await manifestsMigration(migrationContext);
     } catch (error) {
-      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.name, "MigrationReadFileError");
       assert.equal(
         error.innerError.message,
         "templates/appPackage/manifest.template.json does not exist"
@@ -745,7 +747,7 @@ describe("azureParameterMigration", () => {
     try {
       await azureParameterMigration(migrationContext);
     } catch (error) {
-      assert.equal(error.name, "ReadFileError");
+      assert.equal(error.name, "MigrationReadFileError");
       assert.equal(error.innerError.message, "templates/azure/provision.bicep does not exist");
     }
   });
@@ -1120,20 +1122,68 @@ describe("Migration utils", () => {
       `${Metadata.versionMatchLink}#vscode`
     );
   });
+
+  it("outputCancelMessage", () => {
+    outputCancelMessage("2.0.0", Platform.VS);
+    outputCancelMessage("2.0.0", Platform.CLI);
+    outputCancelMessage("2.0.0", Platform.VSCode);
+  });
+
+  it("migrationNotificationMessage", () => {
+    const tools = new MockTools();
+    setTools(tools);
+
+    const version: VersionForMigration = {
+      currentVersion: "2.0.0",
+      state: VersionState.upgradeable,
+      platform: Platform.VS,
+    };
+
+    migrationNotificationMessage(version);
+    version.platform = Platform.VSCode;
+    migrationNotificationMessage(version);
+    version.platform = Platform.CLI;
+    migrationNotificationMessage(version);
+  });
+
+  it("isMigrationV3Enabled", () => {
+    const enabled = isMigrationV3Enabled();
+    assert.isFalse(enabled);
+  });
 });
 
 describe("debugMigration", () => {
   const appName = randomAppName();
   const projectPath = path.join(os.tmpdir(), appName);
+  let runTabScript = "";
+  let runAuthScript = "";
+  let runBotScript = "";
+  let runFunctionScript = "";
 
   beforeEach(async () => {
     await fs.ensureDir(projectPath);
     sinon.stub(debugV3MigrationUtils, "updateLocalEnv").callsFake(async () => {});
+    sinon
+      .stub(debugV3MigrationUtils, "saveRunScript")
+      .callsFake(async (context, filename, script) => {
+        if (filename === "run.tab.js") {
+          runTabScript = script;
+        } else if (filename === "run.auth.js") {
+          runAuthScript = script;
+        } else if (filename === "run.bot.js") {
+          runBotScript = script;
+        } else if (filename === "run.api.js") {
+          runFunctionScript = script;
+        }
+      });
   });
 
   afterEach(async () => {
     await fs.remove(projectPath);
     sinon.restore();
+    runTabScript = "";
+    runBotScript = "";
+    runFunctionScript = "";
   });
 
   const testCases = [
@@ -1169,6 +1219,19 @@ describe("debugMigration", () => {
         await fs.readFile(path.join(projectPath, ".vscode", "tasks.json"), "utf-8"),
         await fs.readFile(path.join(projectPath, "expected", "tasks.json"), "utf-8")
       );
+
+      const runTabScriptPath = path.join(projectPath, "expected", "run.tab.js");
+      if (await fs.pathExists(runTabScriptPath)) {
+        assert.equal(runTabScript, await fs.readFile(runTabScriptPath, "utf-8"));
+      }
+      const runBotScriptPath = path.join(projectPath, "expected", "run.bot.js");
+      if (await fs.pathExists(runBotScriptPath)) {
+        assert.equal(runBotScript, await fs.readFile(runBotScriptPath, "utf-8"));
+      }
+      const runFunctionScriptPath = path.join(projectPath, "expected", "run.api.js");
+      if (await fs.pathExists(runFunctionScriptPath)) {
+        assert.equal(runFunctionScript, await fs.readFile(runFunctionScriptPath, "utf-8"));
+      }
     });
   });
 });

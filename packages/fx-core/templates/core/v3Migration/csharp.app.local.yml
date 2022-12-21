@@ -54,9 +54,9 @@ configureApp:
   - uses: file/updateEnv # Generate env to .env file
     with:
       envs:
-        PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__DOMAIN: localhost:44302
-        PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__ENDPOINT: https://localhost:44302
-        PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__INDEXPATH: '#'
+        {{placeholderMappings.tabDomain}}: localhost:44302
+        {{placeholderMappings.tabEndpoint}}: https://localhost:44302
+        {{placeholderMappings.tabIndexPath}}: '#'
   {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: file/updateAppSettings
     with:
@@ -73,7 +73,7 @@ configureApp:
   - uses: file/updateEnv # Generate env to .env file
     with:
       envs:
-        PROVISIONOUTPUT__AZUREWEBAPPBOTOUTPUT__DOMAIN: $\{{BOT_DOMAIN}}
+        {{placeholderMappings.botDomain}}: $\{{BOT_DOMAIN}}
 {{/if}}
 {{#if activePlugins.fx-resource-aad-app-for-teams}}
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.

@@ -3,6 +3,7 @@
 
 /**
  * @author Zhiyu You <zhiyou@microsoft.com>
+ * @owner Zhiyu You <zhiyou@microsoft.com>
  */
 
 import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";

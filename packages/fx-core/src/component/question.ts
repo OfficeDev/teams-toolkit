@@ -105,7 +105,6 @@ import path from "path";
 import fs from "fs-extra";
 
 export async function getQuestionsForProvisionV3(
-  context: v2.Context,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (inputs.platform === Platform.CLI_HELP) {

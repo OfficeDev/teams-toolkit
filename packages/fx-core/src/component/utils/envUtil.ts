@@ -48,9 +48,11 @@ export class EnvUtil {
     for (const key of Object.keys(parseResult.obj)) {
       if (key.startsWith("SECRET_")) {
         const raw = parseResult.obj[key];
-        const decryptRes = await cryptoProvider.decrypt(raw);
-        if (decryptRes.isErr()) return err(decryptRes.error);
-        parseResult.obj[key] = decryptRes.value;
+        if (raw.startsWith("crypto_")) {
+          const decryptRes = await cryptoProvider.decrypt(raw);
+          if (decryptRes.isErr()) return err(decryptRes.error);
+          parseResult.obj[key] = decryptRes.value;
+        }
       }
     }
     parseResult.obj.TEAMSFX_ENV = env;

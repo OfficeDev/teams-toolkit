@@ -4,9 +4,10 @@
 import {
   DeployStepArgs,
   AzureUploadConfig,
-  AxiosOnlyStatusResult,
   AxiosZipDeployResult,
   DeployArgs,
+  AxiosDeployQueryResult,
+  DeployResult,
 } from "../../interface/buildAndDeployArgs";
 import { checkMissingArgs } from "../../../utils/common";
 import { DeployExternalApiCallError, DeployTimeoutError } from "../../../error/deployError";
@@ -14,7 +15,7 @@ import { LogProvider } from "@microsoft/teamsfx-api";
 import { BaseDeployDriver } from "./baseDeployDriver";
 import { Base64 } from "js-base64";
 import * as appService from "@azure/arm-appservice";
-import { DeployConstant } from "../../../constant/deployConstant";
+import { DeployConstant, DeployStatus } from "../../../constant/deployConstant";
 import { default as axios } from "axios";
 import { waitSeconds } from "../../../../common/tools";
 import { HttpStatusCode } from "../../../constant/commonConstant";
@@ -27,6 +28,7 @@ import { TokenCredential } from "@azure/identity";
 import { ProgressMessages } from "../../../messages";
 import * as fs from "fs-extra";
 import { PrerequisiteError } from "../../../error/componentError";
+import { createHash } from "crypto";
 
 export abstract class AzureDeployDriver extends BaseDeployDriver {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -116,9 +118,25 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     await this.context.logProvider.debug("Upload code to Azure complete");
     await this.progressBar?.next(ProgressMessages.checkAzureDeployStatus);
     await this.context.logProvider.debug("Start to check Azure deploy status");
-    await this.checkDeployStatus(location, config, this.context.logProvider);
+    const deployRes = await this.checkDeployStatus(location, config, this.context.logProvider);
     await this.context.logProvider.debug("Check Azure deploy status complete");
-    return Date.now() - startTime;
+    const cost = Date.now() - startTime;
+    this.context.telemetryReporter?.sendTelemetryEvent("deployResponse", {
+      time_cost: cost.toString(),
+      status: deployRes?.status.toString() ?? "",
+      message: deployRes?.message ?? "",
+      received_time: deployRes?.received_time ?? "",
+      started_time: deployRes?.start_time.toString() ?? "",
+      end_time: deployRes?.end_time.toString() ?? "",
+      last_success_end_time: deployRes?.last_success_end_time.toString() ?? "",
+      complete: deployRes?.complete.toString() ?? "",
+      active: deployRes?.active.toString() ?? "",
+      is_readonly: deployRes?.is_readonly.toString() ?? "",
+      site_name_hash: deployRes?.site_name
+        ? createHash("sha256").update(deployRes.site_name).digest("hex")
+        : "",
+    });
+    return cost;
   }
 
   /**
@@ -208,8 +226,8 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     location: string,
     config: AzureUploadConfig,
     logger?: LogProvider
-  ): Promise<void> {
-    let res: AxiosOnlyStatusResult;
+  ): Promise<DeployResult | undefined> {
+    let res: AxiosDeployQueryResult;
     for (let i = 0; i < DeployConstant.DEPLOY_CHECK_RETRY_TIMES; ++i) {
       try {
         res = await AzureDeployDriver.AXIOS_INSTANCE.get(location, config);
@@ -228,7 +246,13 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
         if (res?.status === HttpStatusCode.ACCEPTED) {
           await waitSeconds(DeployConstant.BACKOFF_TIME_S);
         } else if (res?.status === HttpStatusCode.OK || res?.status === HttpStatusCode.CREATED) {
-          return;
+          if (res.data?.status === DeployStatus.Failed) {
+            await logger?.error(
+              `Deployment is failed with error message: ${JSON.stringify(res.data)}`
+            );
+            throw DeployExternalApiCallError.deployRemoteStatusError();
+          }
+          return res.data;
         } else {
           if (res.status) {
             await logger?.error(`Deployment is failed with error code: ${res.status}.`);

@@ -3,6 +3,7 @@
 
 /**
  * @author Huihui Wu <huihuiwu@microsoft.com>
+ * @owner Huihui Wu <huihuiwu@microsoft.com>
  */
 
 import * as fs from "fs-extra";

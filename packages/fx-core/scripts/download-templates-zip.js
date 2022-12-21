@@ -7,6 +7,16 @@ const fs = require("fs-extra");
 const path = require("path");
 const config = require("../src/common/templates-config.json");
 
+const token = process.env.REQUEST_TOKEN;
+const defaultOptions = {
+  headers: token
+    ? {
+        authorization: `Bearer ${token}`,
+      }
+    : {},
+};
+const axiosInstance = axios.create(defaultOptions);
+
 let stepId = 0;
 
 async function step(desc, fn) {
@@ -44,11 +54,20 @@ function delay(fn, ms) {
   return new Promise((resolve) => setTimeout(() => resolve(fn()), ms));
 }
 
-async function getTemplateMetadata(tag) {
+function getTemplateDownloadPathPattern(tag) {
+  const path = `${config.templateDownloadBasePath}/${encodeURIComponent(tag)}/`;
+  const pattern = `${path}(.*)${config.templateExt}`;
+  return new RegExp(pattern, "g");
+}
+
+// Parse all template names from html instead of requesting /repos/{owner}/{repo}/releases/tags/{tag}.
+// Because API request to GitHub are subject to rate limits.
+async function getTemplates(tag) {
+  const pattern = getTemplateDownloadPathPattern(tag);
   const url = `${config.templateReleaseURL}/${tag}`;
   return await step(`Download release metadata from ${url}`, async () => {
-    const res = await axios.get(url);
-    return res.data.assets;
+    const res = await axiosInstance.get(url);
+    return [...res.data.matchAll(pattern)].map((match) => match[1]);
   });
 }
 
@@ -59,11 +78,11 @@ async function downloadTemplates(version) {
   const folder = path.join(__dirname, "..", "templates", "fallback");
   await fs.ensureDir(folder);
 
-  const templates = await getTemplateMetadata(tag);
+  const templates = await getTemplates(tag);
   for (let template of templates) {
-    const filename = template.name;
+    const filename = `${template}${config.templateExt}`;
     step(`Download ${config.templateDownloadBaseURL}/${tag}/${filename}`, async () => {
-      const res = await axios.get(`${config.templateDownloadBaseURL}/${tag}/${filename}`, {
+      const res = await axiosInstance.get(`${config.templateDownloadBaseURL}/${tag}/${filename}`, {
         responseType: "arraybuffer",
       });
       await fs.writeFile(path.join(folder, `${filename}`), res.data);
@@ -85,7 +104,7 @@ function selectVersionFromShellArgument() {
 
 async function selectVersionFromRemoteTagList() {
   const rawTagList = await step(`Download tag list from ${config.tagListURL}`, async () => {
-    const res = await axios.get(config.tagListURL);
+    const res = await axiosInstance.get(config.tagListURL);
     return res.data;
   });
   const tagList = rawTagList.toString().replace(/\r/g, "").split("\n");

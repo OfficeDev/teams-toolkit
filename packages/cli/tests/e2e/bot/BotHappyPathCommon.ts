@@ -2,7 +2,8 @@
 // Licensed under the MIT license.
 
 /**
- * @author Siglud
+ * @author Siglud <fanhu@microsoft.com>
+ * @owner Siglud <fanhu@microsoft.com>
  **/
 
 import * as path from "path";

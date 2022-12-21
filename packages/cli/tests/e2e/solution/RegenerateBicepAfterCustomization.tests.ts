@@ -6,7 +6,7 @@
  */
 
 import path from "path";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
 import {
   getSubscriptionId,
   getTestFolder,
@@ -38,7 +38,10 @@ describe("User can customize Bicep files", function () {
   it(
     "Regenerate Bicep will not affect user's customized Bicep code",
     { testPlanCaseId: 15687243 },
-    async () => {
+    async function () {
+      if (isV3Enabled()) {
+        this.skip();
+      }
       // Arrange
       await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 

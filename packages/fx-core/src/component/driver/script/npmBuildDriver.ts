@@ -10,6 +10,8 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../constant/commonConstant";
 import { BaseBuildStepDriver } from "./baseBuildStepDriver";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import * as path from "path";
+import * as fs from "fs-extra";
 
 const ACTION_NAME = "cli/runNpmCommand";
 
@@ -33,4 +35,24 @@ export class NpmBuildDriver extends BaseBuildStepDriver {
 
 export class NpmBuildDriverImpl extends BaseBuildDriver {
   buildPrefix = "npm";
+
+  async run(): Promise<Map<string, string>> {
+    const res = super.run();
+    // telemetry for package version
+    try {
+      const packageJson = path.join(this.workingDirectory, "package.json");
+      if (fs.existsSync(packageJson)) {
+        const content = await fs.readFile(packageJson, "utf-8");
+        const json = JSON.parse(content);
+        const dependencies: { [key: string]: string } = {
+          ...json.dependencies,
+          ...json.devDependencies,
+        };
+        this.context.telemetryReporter?.sendTelemetryEvent("package-version", dependencies);
+      }
+    } catch (e) {
+      this.logProvider?.debug(`Failed to get package version: ${e}`);
+    }
+    return res;
+  }
 }

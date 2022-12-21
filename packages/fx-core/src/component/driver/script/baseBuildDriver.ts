@@ -14,7 +14,7 @@ export abstract class BaseBuildDriver {
   args: BuildArgs;
   progressBarName: string;
   progressBarSteps = 1;
-  workingDirectory?: string;
+  workingDirectory: string;
   execPath?: string;
   protected context: DriverContext;
   protected logProvider: LogProvider;

@@ -22,7 +22,6 @@ import {
 } from "../component/constants";
 import * as uuid from "uuid";
 import { isExistingTabAppEnabled, isV3Enabled } from "./tools";
-import { coordinator } from "../component/coordinator";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -98,8 +97,9 @@ export function isValidProjectV3(workspacePath: string): boolean {
     }
     return true;
   }
-  const ymlFilePath = coordinator.getYmlFilePath(workspacePath);
-  if (fs.pathExistsSync(ymlFilePath)) {
+  const ymlFilePath = path.join(workspacePath, "teamsapp.yml");
+  const localYmlPath = path.join(workspacePath, "teamsapp.local.yml");
+  if (fs.pathExistsSync(ymlFilePath) || fs.pathExistsSync(localYmlPath)) {
     return true;
   }
   return false;

@@ -4,7 +4,7 @@
 import { BaseBuildDriver } from "./baseBuildDriver";
 import { Service } from "typedi";
 import { DriverContext } from "../interface/commonArgs";
-import { FxError, Result } from "@microsoft/teamsfx-api";
+import { FxError, LogProvider, Result, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../constant/commonConstant";
@@ -39,20 +39,31 @@ export class NpmBuildDriverImpl extends BaseBuildDriver {
   async run(): Promise<Map<string, string>> {
     const res = super.run();
     // telemetry for package version
+    await NpmBuildDriverImpl.telemetryForPackageVersion(
+      this.workingDirectory,
+      this.telemetryReporter,
+      this.logProvider
+    );
+    return res;
+  }
+
+  static async telemetryForPackageVersion(
+    workingDirectory: string,
+    telemetryReporter?: TelemetryReporter,
+    logProvider?: LogProvider
+  ): Promise<void> {
     try {
-      const packageJson = path.join(this.workingDirectory, "package.json");
+      const packageJson = path.join(workingDirectory, "package.json");
       if (fs.existsSync(packageJson)) {
-        const content = await fs.readFile(packageJson, "utf-8");
-        const json = JSON.parse(content);
+        const json = await fs.readJSON(packageJson);
         const dependencies: { [key: string]: string } = {
           ...json.dependencies,
           ...json.devDependencies,
         };
-        this.context.telemetryReporter?.sendTelemetryEvent("package-version", dependencies);
+        telemetryReporter?.sendTelemetryEvent("package-version", dependencies);
       }
     } catch (e) {
-      this.logProvider?.debug(`Failed to get package version: ${e}`);
+      logProvider?.debug(`Failed to get package version: ${e}`);
     }
-    return res;
   }
 }

@@ -12,9 +12,16 @@ import * as utils from "../../../../src/component/code/utils";
 import { TestAzureAccountProvider } from "../../util/azureAccountMock";
 import { TestLogProvider } from "../../util/logProviderMock";
 import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
-import { NpmBuildDriver } from "../../../../src/component/driver/script/npmBuildDriver";
+import {
+  NpmBuildDriver,
+  NpmBuildDriverImpl,
+} from "../../../../src/component/driver/script/npmBuildDriver";
 import { assert } from "chai";
-import { MockUserInteraction } from "../../../core/utils";
+import { MockTelemetryReporter, MockUserInteraction } from "../../../core/utils";
+import * as os from "os";
+import * as uuid from "uuid";
+import * as path from "path";
+import * as fs from "fs-extra";
 
 describe("NPM Build Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -59,5 +66,43 @@ describe("NPM Build Driver test", () => {
     sandbox.stub(utils, "execute").throws(new Error("error"));
     const res = await driver.run(args, context);
     assert.equal(res.isErr(), true);
+  });
+
+  it("telemetry for package json", async () => {
+    const sysTmp = os.tmpdir();
+    const folder = uuid.v4();
+    const testFolder = path.join(sysTmp, folder);
+    fs.ensureDirSync(testFolder);
+    await fs.writeJSON(path.join(testFolder, "package.json"), {
+      devDependencies: {
+        "@types/chai": "^4.2.14",
+      },
+      dependencies: {
+        "@microsoft/teamsfx-api": "^0.22.0",
+      },
+    });
+    const reporter = new MockTelemetryReporter();
+    const save = sandbox.stub(reporter, "sendTelemetryEvent");
+    await NpmBuildDriverImpl.telemetryForPackageVersion(
+      testFolder,
+      reporter,
+      new TestLogProvider()
+    );
+    sinon.assert.calledWith(save, "package-version", {
+      "@types/chai": "^4.2.14",
+      "@microsoft/teamsfx-api": "^0.22.0",
+    });
+    fs.rmSync(testFolder, { recursive: true, force: true });
+  });
+
+  it("telemetry error", async () => {
+    const reporter = new MockTelemetryReporter();
+    sandbox.stub(reporter, "sendTelemetryEvent").throws(new Error("error"));
+    sandbox.stub(fs, "existsSync").returns(true);
+    sandbox.stub(fs, "readJSON").throws(new Error("error"));
+    const logger = new TestLogProvider();
+    const save = sandbox.stub(logger, "debug");
+    await NpmBuildDriverImpl.telemetryForPackageVersion("./", reporter, logger);
+    sinon.assert.called(save);
   });
 });

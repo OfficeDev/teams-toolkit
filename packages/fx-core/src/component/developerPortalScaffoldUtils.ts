@@ -14,6 +14,7 @@ import {
   Inputs,
   TeamsAppManifest,
   IStaticTab,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import fs from "fs-extra";
@@ -305,6 +306,10 @@ export function getTemplateId(teamsApp: AppDefinition): string | undefined {
   }
 
   return undefined;
+}
+
+export function isFromDevPortalInVSC(inputs: Inputs): boolean {
+  return !!inputs.teamsAppFromTdp && inputs.platform === Platform.VSCode;
 }
 
 export const developerPortalScaffoldUtils = new DeveloperPortalScaffoldUtils();

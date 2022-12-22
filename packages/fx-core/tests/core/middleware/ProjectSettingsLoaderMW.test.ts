@@ -130,4 +130,72 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
       restore();
     }
   });
+
+  it("success load project settings from teamsapp.yml in V3", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+
+    sandbox.restore();
+    const mockedYamlFile = `
+    version: 1.0.0
+    projectId: 00000000-0000-0000-0000-000000000000
+    `;
+    sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
+      if (file.includes("teamsapp.yml")) return true;
+      if (inputs.projectPath === file) return true;
+      return false;
+    });
+    sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+      if (file.includes("teamsapp.yml")) return mockedYamlFile;
+      return undefined;
+    });
+
+    try {
+      const my = new MyClass();
+      const res = await my.other(inputs);
+      assert.isTrue(res.isOk());
+      const projectSettings = res._unsafeUnwrap();
+      assert.equal(projectSettings.version, "1.0.0");
+      assert.equal(projectSettings.projectId, "00000000-0000-0000-0000-000000000000");
+    } finally {
+      restore();
+    }
+  });
+
+  it("success generate projectId when no projectId in teamsapp.yml in V3", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    sandbox.restore();
+    const mockedYamlFile = `
+    version: 1.0.0 # this is comment
+    `;
+    let resultFile = "";
+    sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
+      if (file.includes("teamsapp.yml")) return true;
+      if (inputs.projectPath === file) return true;
+      return false;
+    });
+    sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+      if (file.includes("teamsapp.yml")) return mockedYamlFile;
+      return undefined;
+    });
+    sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, content: string) => {
+      resultFile = content;
+    });
+
+    try {
+      const my = new MyClass();
+      const res = await my.other(inputs);
+      assert.isTrue(res.isOk());
+      const projectSettings = res._unsafeUnwrap();
+      assert.equal(projectSettings.version, "1.0.0");
+      assert.exists(projectSettings.projectId);
+      assert.isTrue(resultFile.includes("projectId"));
+      assert.isTrue(resultFile.includes("# this is comment"));
+    } finally {
+      restore();
+    }
+  });
 });

@@ -140,4 +140,43 @@ describe("Middleware - ProjectSettingsWriterMW", () => {
       restore();
     }
   });
+
+  it("skip write when no settings.json in V3", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const appName = randomAppName();
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = path.join(os.tmpdir(), appName);
+      const tools = new MockTools();
+      const settings = MockSettings();
+      const fileMap = new Map<string, any>();
+      sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
+        fileMap.set(file, data);
+      });
+      sandbox.stub(fs, "pathExists").resolves(false);
+      const settingsFile = path.resolve(inputs.projectPath, SettingsFolderName, SettingsFileName);
+      class MyClass {
+        async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          if (ctx)
+            ctx.projectSettings = {
+              projectId: settings.trackingId,
+              version: settings.version,
+            };
+          return ok("");
+        }
+      }
+      setTools(tools);
+      hooks(MyClass, {
+        myMethod: [ContextInjectorMW, ProjectSettingsWriterMW],
+      });
+      const my = new MyClass();
+      await my.myMethod(inputs);
+      const content = fileMap.get(settingsFile);
+      assert.notExists(content);
+    } finally {
+      restore();
+    }
+  });
 });

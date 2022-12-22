@@ -45,6 +45,8 @@ import { globalVars } from "../globalVars";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { CoreHookContext } from "../types";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
+import { parseDocument } from "yaml";
+
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
@@ -101,25 +103,53 @@ export async function loadProjectSettingsByProjectPath(
 ): Promise<Result<ProjectSettings, FxError>> {
   try {
     if (isV3Enabled()) {
-      const settingsFile = path.resolve(projectPath, SettingsFolderName, SettingsFileName);
-      const settings: Settings = await fs.readJson(settingsFile);
-      const projectSettings: ProjectSettings = {
-        projectId: settings.trackingId,
-        version: settings.version,
-      };
-      if (!projectSettings.projectId) {
-        projectSettings.projectId = uuid.v4();
-        sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
-          [TelemetryProperty.ProjectId]: projectSettings.projectId,
-        });
+      const yamlFile: string = path.resolve(projectPath, "teamsapp.yml");
+      if (await fs.pathExists(yamlFile)) {
+        return ok(await loadFromV3AppYml(yamlFile));
       }
-      return ok(projectSettings);
+      // TODO: remove below logic when folder structure change finished
+      const settingsFile = path.resolve(projectPath, SettingsFolderName, SettingsFileName);
+      return ok(await loadFromV3SettingsJson(settingsFile));
     } else {
       return await loadProjectSettingsByProjectPathV2(projectPath, isMultiEnvEnabled);
     }
   } catch (e) {
     return err(ReadFileError(e));
   }
+}
+
+async function loadFromV3SettingsJson(filePath: string): Promise<ProjectSettings> {
+  const settings: Settings = await fs.readJson(filePath);
+  const projectSettings: ProjectSettings = {
+    projectId: settings.trackingId,
+    version: settings.version,
+  };
+  if (!projectSettings.projectId) {
+    projectSettings.projectId = uuid.v4();
+    sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
+      [TelemetryProperty.ProjectId]: projectSettings.projectId,
+    });
+  }
+  return projectSettings;
+}
+
+async function loadFromV3AppYml(filePath: string): Promise<ProjectSettings> {
+  const yamlFileContent: string = await fs.readFile(filePath, "utf8");
+  const appYaml = parseDocument(yamlFileContent);
+  if (!appYaml.has("projectId")) {
+    const projectId = uuid.v4();
+    const projectIdField = appYaml.createPair("projectId", uuid.v4());
+    appYaml.add(projectIdField);
+    await fs.writeFile(filePath, appYaml.toString()); // only write yaml file once instead of write yaml file after every command
+    sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
+      [TelemetryProperty.ProjectId]: projectId,
+    });
+  }
+  const projectSettings: ProjectSettings = {
+    projectId: appYaml.get("projectId") as string,
+    version: appYaml.get("version") as string,
+  };
+  return projectSettings;
 }
 
 // export this for V2 -> V3 migration purpose

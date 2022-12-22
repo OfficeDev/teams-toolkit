@@ -318,7 +318,7 @@
         },
         {
           "command": "fx-extension.openDocumentLink",
-          "when": "view == teamsfx-deployment && viewItem =~ /^fx-extension.(provision|build|deploy|publish)$/",
+          "when": "view == teamsfx-deployment && viewItem =~ /^fx-extension.(provision|build|deploy|publish|publishInDeveloperPortal)$/",
           "group": "inline"
         }
       ],

@@ -210,7 +210,7 @@ export class Coordinator {
       if (res.isErr()) return err(res.error);
 
       await downloadSampleHook(sampleId, projectPath);
-    } else if (scratch === ScratchOptionYes.id) {
+    } else if (!scratch || scratch === ScratchOptionYes.id) {
       // create from new
       const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));

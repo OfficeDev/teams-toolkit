@@ -136,7 +136,7 @@ export type DisplayMessages = {
 };
 
 function stepPrefix(stepNumber: number) {
-  return stepNumber > 1 ? `(Totally ${stepNumber} steps)` : `(Totally ${stepNumber} step)`;
+  return stepNumber > 1 ? `(Total: ${stepNumber} Steps)` : `(Total: ${stepNumber} Step)`;
 }
 
 export const prerequisiteCheckDisplayMessages: DisplayMessages = {

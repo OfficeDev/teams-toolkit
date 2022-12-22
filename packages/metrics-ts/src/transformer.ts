@@ -89,7 +89,6 @@ export default function (program: typescript.Program, config?: PluginConfig) {
           return ctx.factory.updateMethodDeclaration(
             node,
             decorators,
-            node.modifiers,
             node.asteriskToken,
             node.name,
             node.questionToken,

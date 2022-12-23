@@ -101,6 +101,7 @@ import {
   AzurePortalUrl,
   CLI_FOR_M365,
   GlobalKey,
+  PublishAppLearnMoreLink,
   SpfxManageSiteAdminUrl,
   SUPPORTED_SPFX_VERSION,
 } from "./constants";
@@ -3646,6 +3647,9 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
     }
     case "fx-extension.publish": {
       return VS_CODE_UI.openUrl("https://aka.ms/teamsfx-publish");
+    }
+    case "fx-extension.publishInDeveloperPortal": {
+      return VS_CODE_UI.openUrl(PublishAppLearnMoreLink);
     }
   }
   return Promise.resolve(ok(false));

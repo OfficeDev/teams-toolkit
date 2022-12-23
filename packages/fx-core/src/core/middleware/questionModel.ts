@@ -52,8 +52,8 @@ import { CoreHookContext } from "../types";
 import { isPersonalApp, needBotCode } from "../../component/resource/appManifest/utils/utils";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { AppDefinition } from "../../component/resource/appManifest/interfaces/appDefinition";
-import { getTemplateId } from "../../component/developerPortalScaffoldUtils";
 import { getQuestionsForScaffolding } from "../../component/generator/officeAddin/question";
+import { getTemplateId, isFromDevPortalInVSC } from "../../component/developerPortalScaffoldUtils";
 
 /**
  * This middleware will help to collect input from question flow
@@ -114,7 +114,7 @@ export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<strin
 async function getQuestionsForCreateProjectWithoutDotNet(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (inputs.teamsAppFromTdp) {
+  if (isFromDevPortalInVSC(inputs)) {
     // If toolkit is activated by a request from Developer Portal, we will always create a project from scratch.
     inputs[CoreQuestionNames.CreateFromScratch] = ScratchOptionYesVSC.id;
     inputs[CoreQuestionNames.Capabilities] = getTemplateId(inputs.teamsAppFromTdp);
@@ -176,7 +176,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
     : convertToAlphanumericOnly(inputs.teamsAppFromTdp?.appName);
   createNew.addChild(new QTreeNode(createAppNameQuestion(defaultName)));
 
-  if (!!inputs.teamsAppFromTdp) {
+  if (isFromDevPortalInVSC(inputs)) {
     const updateTabUrls = await getQuestionsForUpdateStaticTabUrls(inputs.teamsAppFromTdp);
     if (updateTabUrls) {
       createNew.addChild(updateTabUrls);

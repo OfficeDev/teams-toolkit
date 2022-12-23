@@ -25,9 +25,7 @@ import {
   ErrorCode,
   TeamsBotSsoPromptSettings,
   TeamsFx,
-  BotSsoExecutionDialog,
   TeamsBotSsoPromptTokenResponse,
-  CommandMessage,
 } from "../../../../../src";
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
@@ -38,6 +36,8 @@ import { promisify } from "util";
 import { TeamsInfo } from "botbuilder";
 import { TestSsoCommandHandler } from "../testUtils";
 import { ErrorMessage } from "../../../../../src/core/errors";
+import { BotSsoExecutionDialog } from "../../../../../src/conversationWithCloudAdapter/sso/botSsoExecutionDialog";
+import { CommandMessage } from "../../../../../src/conversationWithCloudAdapter/interface";
 
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;

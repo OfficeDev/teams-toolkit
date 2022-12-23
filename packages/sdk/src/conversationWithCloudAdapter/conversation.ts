@@ -4,7 +4,7 @@
 import {
   CloudAdapter,
   ConfigurationServiceClientCredentialFactory,
-  createBotFrameworkAuthenticationFromConfiguration,
+  ConfigurationBotFrameworkAuthentication,
   TurnContext,
   Request,
   Response,
@@ -146,8 +146,8 @@ export class ConversationBot {
             MicrosoftAppType: "MultiTenant",
           })
         : new ConfigurationServiceClientCredentialFactory(adapterConfig);
-    const botFrameworkAuthentication = createBotFrameworkAuthenticationFromConfiguration(
-      null,
+    const botFrameworkAuthentication = new ConfigurationBotFrameworkAuthentication(
+      {},
       credentialsFactory
     );
     const adapter = new CloudAdapter(botFrameworkAuthentication);

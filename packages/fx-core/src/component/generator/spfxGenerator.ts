@@ -161,7 +161,7 @@ export class SPFxGenerator {
       const manifestJson = JSON.parse(manifestString.replace(matchHashComment, "").trim());
       const componentId = manifestJson.id;
       if (!context.templateVariables) {
-        context.templateVariables = {};
+        context.templateVariables = Generator.getDefaultVariables(solutionName);
       }
       context.templateVariables["componentId"] = componentId;
       context.templateVariables["webpartName"] = webpartName;

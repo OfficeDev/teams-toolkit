@@ -2,12 +2,12 @@ import { assert } from "chai";
 import { CloudAdapter, ConversationReference, StatusCodes, TurnContext } from "botbuilder";
 import * as sinon from "sinon";
 import { CardActionBot } from "../../../../src/conversationWithCloudAdapter/cardAction";
-import { CardActionMiddleware } from "../../../../src/conversationWithCloudAdapter/middlewares/cardActionMiddleware";
+import { CardActionMiddleware } from "../../../../src/conversation/middlewares/cardActionMiddleware";
 import {
   MockActionInvokeContext,
   MockCardActionHandler,
   MockCardActionHandlerWithErrorResponse,
-} from "./testUtils";
+} from "../conversation/testUtils";
 import { InvokeResponseErrorCode } from "../../../../src/conversationWithCloudAdapter/interface";
 
 describe("Card Action Handler - Node", () => {

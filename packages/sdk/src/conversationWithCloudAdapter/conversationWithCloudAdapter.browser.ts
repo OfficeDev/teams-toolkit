@@ -18,7 +18,7 @@ export {
   BotSsoExecutionDialogHandler,
 } from "./interface";
 export { ConversationBot } from "./conversation.browser";
-export { BotSsoExecutionDialog } from "./sso/botSsoExecutionDialog.browser";
+export { BotSsoExecutionDialog } from "../conversation/sso/botSsoExecutionDialog.browser";
 export {
   Channel,
   Member,

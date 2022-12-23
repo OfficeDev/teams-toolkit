@@ -134,7 +134,7 @@ declare namespace BotBuilderCloudAdapter {
         BotSsoConfig_2 as BotSsoConfig,
         BotSsoExecutionDialogHandler_2 as BotSsoExecutionDialogHandler,
         ConversationBot_2 as ConversationBot,
-        BotSsoExecutionDialog_2 as BotSsoExecutionDialog,
+        BotSsoExecutionDialog,
         Channel_2 as Channel,
         Member_2 as Member,
         NotificationBot_2 as NotificationBot,
@@ -209,15 +209,6 @@ export class BotSsoExecutionDialog extends ComponentDialog {
     constructor(dedupStorage: Storage_2, ssoPromptSettings: TeamsBotSsoPromptSettings, teamsfx: TeamsFx, dialogName?: string);
     constructor(dedupStorage: Storage_2, ssoPromptSettings: TeamsBotSsoPromptSettings, authConfig: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, dialogName?: string);
     addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatterns): void;
-    protected onEndDialog(context: TurnContext): Promise<void>;
-    run(context: TurnContext, accessor: StatePropertyAccessor): Promise<void>;
-}
-
-// @public
-class BotSsoExecutionDialog_2 extends ComponentDialog {
-    constructor(dedupStorage: Storage_2, ssoPromptSettings: TeamsBotSsoPromptSettings, teamsfx: TeamsFx, dialogName?: string);
-    constructor(dedupStorage: Storage_2, ssoPromptSettings: TeamsBotSsoPromptSettings, authConfig: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, dialogName?: string);
-    addCommand(handler: BotSsoExecutionDialogHandler_2, triggerPatterns: TriggerPatterns_2): void;
     protected onEndDialog(context: TurnContext): Promise<void>;
     run(context: TurnContext, accessor: StatePropertyAccessor): Promise<void>;
 }

@@ -5,10 +5,10 @@ import { assert, expect } from "chai";
 import { CloudAdapter, ConversationReference, TurnContext } from "botbuilder";
 import * as sinon from "sinon";
 import { CommandBot } from "../../../../src/conversationWithCloudAdapter/command";
-import { CommandResponseMiddleware } from "../../../../src/conversationWithCloudAdapter/middlewares/commandMiddleware";
-import { TestCommandHandler, TestSsoCommandHandler } from "./testUtils";
+import { CommandResponseMiddleware } from "../../../../src/conversation/middlewares/commandMiddleware";
+import { TestCommandHandler, TestSsoCommandHandler } from "../conversation/testUtils";
 import mockedEnv from "mocked-env";
-import { DefaultBotSsoExecutionActivityHandler } from "../../../../src/conversationWithCloudAdapter/sso/defaultBotSsoExecutionActivityHandler";
+import { DefaultBotSsoExecutionActivityHandler } from "../../../../src/conversation/sso/defaultBotSsoExecutionActivityHandler";
 import { BotSsoConfig } from "../../../../src";
 
 describe("CommandBot Tests - Node", () => {

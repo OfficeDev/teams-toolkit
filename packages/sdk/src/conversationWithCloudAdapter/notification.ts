@@ -20,9 +20,9 @@ import {
   NotificationOptions,
   MessageResponse,
 } from "./interface";
-import { NotificationMiddleware } from "./middlewares/notificationMiddleware";
-import { ConversationReferenceStore, LocalFileStorage } from "./storage";
-import * as utils from "./utils";
+import { NotificationMiddleware } from "../conversation/middlewares/notificationMiddleware";
+import { ConversationReferenceStore, LocalFileStorage } from "../conversation/storage";
+import * as utils from "../conversation/utils";
 
 /**
  * Send a plain text message to a notification target.

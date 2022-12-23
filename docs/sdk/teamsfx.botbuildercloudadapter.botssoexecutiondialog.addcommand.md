@@ -16,8 +16,8 @@ addCommand(handler: BotSsoExecutionDialogHandler, triggerPatterns: TriggerPatter
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  handler | [BotSsoExecutionDialogHandler](./teamsfx.botssoexecutiondialoghandler.md) | [BotSsoExecutionDialogHandler](./teamsfx.botssoexecutiondialoghandler.md) callback function. |
-|  triggerPatterns | [TriggerPatterns](./teamsfx.triggerpatterns.md) | The trigger pattern. |
+|  handler | [BotSsoExecutionDialogHandler](./teamsfx.botssoexecutiondialoghandler.md) | [BotSsoExecutionDialogHandler](./teamsfx.botssoexecutiondialoghandler.md) callback function |
+|  triggerPatterns | [TriggerPatterns](./teamsfx.triggerpatterns.md) | The trigger pattern |
 
 <b>Returns:</b>
 

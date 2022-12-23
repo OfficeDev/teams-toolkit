@@ -5,7 +5,7 @@ import { CloudAdapter } from "botbuilder";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { formatString } from "../util/utils";
 import { TeamsFxBotCommandHandler, TeamsFxBotSsoCommandHandler } from "./interface";
-import { CommandResponseMiddleware } from "./middlewares/commandMiddleware";
+import { CommandResponseMiddleware } from "../conversation/middlewares/commandMiddleware";
 
 /**
  * A command bot for receiving commands and sending responses in Teams.

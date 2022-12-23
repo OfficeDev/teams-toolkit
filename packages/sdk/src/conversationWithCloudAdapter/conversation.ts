@@ -13,7 +13,7 @@ import { CardActionBot } from "./cardAction";
 import { CommandBot } from "./command";
 import { ConversationOptions, BotSsoExecutionActivityHandler } from "./interface";
 import { NotificationBot } from "./notification";
-import { DefaultBotSsoExecutionActivityHandler } from "./sso/defaultBotSsoExecutionActivityHandler";
+import { DefaultBotSsoExecutionActivityHandler } from "../conversation/sso/defaultBotSsoExecutionActivityHandler";
 
 /**
  * Provide utilities for bot conversation, including:
@@ -177,7 +177,7 @@ export class ConversationBot {
    * The request handler to integrate with web request.
    *
    * @param req - An incoming HTTP [Request](xref:botbuilder.Request).
-   * @param req - The corresponding HTTP [Response](xref:botbuilder.Response).
+   * @param res - The corresponding HTTP [Response](xref:botbuilder.Response).
    * @param logic - The additional function to handle bot context.
    *
    * @example

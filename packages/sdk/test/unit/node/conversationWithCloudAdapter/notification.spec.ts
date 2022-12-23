@@ -18,7 +18,7 @@ import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
 import { NotificationTargetType } from "../../../../src/conversationWithCloudAdapter/interface";
-import { NotificationMiddleware } from "../../../../src/conversationWithCloudAdapter/middlewares/notificationMiddleware";
+import { NotificationMiddleware } from "../../../../src/conversation/middlewares/notificationMiddleware";
 import {
   Channel,
   Member,
@@ -27,8 +27,8 @@ import {
   sendMessage,
   TeamsBotInstallation,
 } from "../../../../src/conversationWithCloudAdapter/notification";
-import * as utils from "../../../../src/conversationWithCloudAdapter/utils";
-import { TestStorage, TestTarget } from "./testUtils";
+import * as utils from "../../../../src/conversation/utils";
+import { TestStorage, TestTarget } from "../conversation/testUtils";
 
 chaiUse(chaiPromises);
 

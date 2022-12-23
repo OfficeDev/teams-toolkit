@@ -4,7 +4,7 @@
 
 ## BotBuilderCloudAdapter.BotSsoExecutionDialog.(constructor)
 
-Create a new instance of the BotSsoExecutionDialog.
+Creates a new instance of the BotSsoExecutionDialog.
 
 <b>Signature:</b>
 
@@ -16,8 +16,8 @@ constructor(dedupStorage: Storage, ssoPromptSettings: TeamsBotSsoPromptSettings,
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  dedupStorage | Storage | Helper storage to remove duplicated messages. |
+|  dedupStorage | Storage |  |
 |  ssoPromptSettings | [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) |  |
-|  teamsfx | [TeamsFx](./teamsfx.teamsfx.md) | Instance for authentication. |
-|  dialogName | string | Custom dialog name. |
+|  teamsfx | [TeamsFx](./teamsfx.teamsfx.md) |  |
+|  dialogName | string | custom dialog name |
 

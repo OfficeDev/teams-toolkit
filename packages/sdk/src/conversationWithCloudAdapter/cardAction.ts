@@ -1,5 +1,5 @@
 import { CloudAdapter } from "botbuilder";
-import { CardActionMiddleware } from "./middlewares/cardActionMiddleware";
+import { CardActionMiddleware } from "../conversation/middlewares/cardActionMiddleware";
 import { CardActionOptions, TeamsFxAdaptiveCardActionHandler } from "./interface";
 
 /**

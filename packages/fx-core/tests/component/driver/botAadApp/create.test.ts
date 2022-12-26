@@ -5,7 +5,7 @@ import "mocha";
 import * as sinon from "sinon";
 import { RestoreFn } from "mocked-env";
 import { CreateBotAadAppDriver } from "../../../../src/component/driver/botAadApp/create";
-import { MockedM365Provider } from "../../../plugins/solution/util";
+import { MockedM365Provider, MockedTelemetryReporter } from "../../../plugins/solution/util";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { UserError } from "@microsoft/teamsfx-api";
@@ -24,13 +24,14 @@ const outputKeys = {
   SECRET_BOT_PASSWORD: "SECRET_BOT_PASSWORD",
 };
 
-describe("aadAppCreate", async () => {
+describe("botAadAppCreate", async () => {
   const expectedClientId = "00000000-0000-0000-0000-111111111111";
   const expectedDisplayName = "AAD app name";
   const expectedSecretText = "fake secret";
   const createBotAadAppDriver = new CreateBotAadAppDriver();
   const mockedDriverContext: any = {
     m365TokenProvider: new MockedM365Provider(),
+    telemetryReporter: new MockedTelemetryReporter(),
   };
 
   let envRestore: RestoreFn | undefined;

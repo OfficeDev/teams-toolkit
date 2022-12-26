@@ -23,6 +23,7 @@ import {
   startBotTask,
   startFrontendTask,
   updateLocalEnv,
+  watchBackendTask,
 } from "./debugV3MigrationUtils";
 import { InstallToolArgs } from "../../../../component/driver/prerequisite/interfaces/InstallToolArgs";
 import { BuildArgs } from "../../../../component/driver/interface/buildAndDeployArgs";
@@ -562,6 +563,27 @@ export async function migrateBotStart(context: DebugMigrationContext): Promise<v
       }
 
       await saveRunScript(context.migrationContext, "run.bot.js", generateRunBotScript(context));
+
+      break;
+    } else {
+      ++index;
+    }
+  }
+}
+
+export async function migrateBackendWatch(context: DebugMigrationContext): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      isCommentObject(task) &&
+      ((typeof task["dependsOn"] === "string" && task["dependsOn"] === "teamsfx: backend watch") ||
+        (isCommentArray(task["dependsOn"]) && task["dependsOn"].includes("teamsfx: backend watch")))
+    ) {
+      const newLabel = generateLabel("Watch backend", getLabels(context.tasks));
+      const newTask = watchBackendTask(newLabel);
+      context.tasks.splice(index + 1, 0, newTask);
+      replaceInDependsOn("teamsfx: backend watch", context.tasks, newLabel);
 
       break;
     } else {

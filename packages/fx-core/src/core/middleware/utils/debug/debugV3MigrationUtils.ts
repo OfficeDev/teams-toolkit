@@ -210,6 +210,23 @@ export function startAuthTask(label: string): CommentJSONValue {
   return assign(parse("{}"), task);
 }
 
+export function watchBackendTask(label: string): CommentJSONValue {
+  const task = {
+    label,
+    type: "shell",
+    command: "tsc --watch",
+    isBackground: true,
+    options: {
+      cwd: "${workspaceFolder}/api",
+    },
+    problemMatcher: "$tsc-watch",
+    presentation: {
+      reveal: "silent",
+    },
+  };
+  return assign(parse("{}"), task);
+}
+
 export function startBotTask(label: string): CommentJSONValue {
   const task = {
     label,

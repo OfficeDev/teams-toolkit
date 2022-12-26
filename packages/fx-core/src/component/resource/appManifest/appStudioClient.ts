@@ -22,7 +22,8 @@ export namespace AppStudioClient {
   let region: string | undefined;
 
   export function SetRegion(_region: string) {
-    region = _region;
+    // TODO: use regionGtms.teamsDevPortal as the correct baseURL
+    // region = _region;
   }
 
   /**

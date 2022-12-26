@@ -67,7 +67,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
         `[core] success to acquire lock for task ${taskName} on: ${configFolder}`
       );
       for (const f of CallbackRegistry.get(CoreCallbackEvent.lock)) {
-        f();
+        f(taskName);
       }
       try {
         doingTask = taskName;
@@ -84,7 +84,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
       } finally {
         await unlock(configFolder, { lockfilePath: lockfilePath });
         for (const f of CallbackRegistry.get(CoreCallbackEvent.unlock)) {
-          f();
+          f(taskName);
         }
         TOOLS?.logProvider.debug(`[core] lock released on ${configFolder}`);
         doingTask = undefined;

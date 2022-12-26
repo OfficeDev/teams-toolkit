@@ -586,7 +586,7 @@ export enum CoreCallbackEvent {
 }
 
 // @public (undocumented)
-export type CoreCallbackFunc = (err?: FxError, data?: any) => void;
+export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void;
 
 // @public
 export interface CryptoProvider {

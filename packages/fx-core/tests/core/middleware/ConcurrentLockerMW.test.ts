@@ -191,7 +191,6 @@ describe("Middleware - ConcurrentLockerMW", () => {
     };
 
     CallbackRegistry.set(CoreCallbackEvent.lock, lockCb);
-    CallbackRegistry.set(CoreCallbackEvent.lock, lockCb);
     CallbackRegistry.set(CoreCallbackEvent.unlock, unlockCb);
 
     hooks(MyClass, {

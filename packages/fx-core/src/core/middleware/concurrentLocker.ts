@@ -54,8 +54,10 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
   const lockFileDir = getLockFolder(inputs.projectPath);
   const lockfilePath = path.join(lockFileDir, `${ConfigFolderName}.lock`);
   await fs.ensureDir(lockFileDir);
-  const taskName = `${ctx.method} ${
-    ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
+  const taskName = `${ctx.method}${
+    ctx.method === "executeUserTask" || ctx.method === "executeUserTaskOld"
+      ? ` ${(ctx.arguments[0] as Func).method}`
+      : ""
   }`;
   let acquired = false;
   let retryNum = 0;

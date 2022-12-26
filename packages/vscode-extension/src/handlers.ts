@@ -173,6 +173,7 @@ import {
   isMessageExtension,
 } from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/utils";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
+import commandController from "./commandController";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -243,6 +244,12 @@ export function activate(): Result<Void, FxError> {
       expServiceProvider: exp.getExpService(),
     };
     core = new FxCore(tools);
+    core.on(CoreCallbackEvent.lock, async (command: string) => {
+      await commandController.lockedByOperation(command);
+    });
+    core.on(CoreCallbackEvent.unlock, async (command: string) => {
+      await commandController.unlockedByOperation(command);
+    });
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
       addFileSystemWatcher(workspacePath);

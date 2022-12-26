@@ -352,10 +352,6 @@ export default class ServerConnection implements IServerConnection {
       (inputs) => this.core.phantomMigrationV3(inputs),
       inputs
     );
-    return res.isErr()
-      ? standardizeResult(err(res.error))
-      : res.value === Void // Void means need no migration
-      ? ok(true)
-      : ok(false); // upgrade or learn more
+    return res.isErr() ? standardizeResult(err(res.error)) : ok(res.value === Void);
   }
 }

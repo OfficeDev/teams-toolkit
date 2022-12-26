@@ -23,7 +23,7 @@ provision:
   - uses: file/updateEnv # Add additional item to .env file
     with:
       envs:
-        {{placeholderMappings.[state.fx-resource-frontend-hosting.indexPath]}}: '/' # This environment variable is required in your existing Teams app manifest
+        {{placeholderMappings.[state.fx-resource-frontend-hosting.indexPath]}}: '/' # Used in appPackage/manifest.template.json file.
 {{/if}}
 
 deploy:

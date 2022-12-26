@@ -14,7 +14,7 @@ provision:
   - uses: file/updateEnv # Add additional item to .env file
     with:
       envs:
-        PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__INDEXPATH: '/' # This environment variable is required in your existing Teams app manifest
+        PROVISIONOUTPUT__AZUREWEBAPPTABOUTPUT__INDEXPATH: '/' # Used in appPackage/manifest.template.json file.
 
 deploy:
   - uses: cli/runDotnetCommand

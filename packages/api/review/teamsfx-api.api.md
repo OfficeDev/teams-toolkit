@@ -1637,6 +1637,10 @@ interface SimpleAuth extends AzureResource {
 export interface SingleFileQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
     // (undocumented)
+    filters?: {
+        [name: string]: string[];
+    };
+    // (undocumented)
     type: "singleFile";
     validation?: FuncValidation<string>;
     value?: string;

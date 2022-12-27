@@ -52,7 +52,7 @@ export default class Publish extends YargsCommand {
     }
     const core = result.value;
     {
-      const result = await core.publishApplication(inputs);
+      const result = await core.publishInDeveloperPortal(inputs);
 
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Publish, result.error, properties);

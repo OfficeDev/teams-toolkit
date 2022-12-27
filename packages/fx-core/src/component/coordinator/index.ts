@@ -97,7 +97,7 @@ import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHe
 import { getResourceGroupInPortal } from "../../common/tools";
 import { getBotTroubleShootMessage } from "../core";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
-import { updateManifestV3ForPublish } from "../resource/appManifest/appStudio";
+import { updateTeamsAppV3ForPublish } from "../resource/appManifest/appStudio";
 import { AppStudioScopes } from "../resource/appManifest/constants";
 import * as xml2js from "xml2js";
 import { Lifecycle } from "../configManager/lifecycle";
@@ -983,7 +983,7 @@ export class Coordinator {
     if (!ctx.tokenProvider) {
       return err(new ObjectIsUndefinedError("tokenProvider"));
     }
-    const updateRes = await updateManifestV3ForPublish(ctx as ResourceContextV3, inputs);
+    const updateRes = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
     if (updateRes.isErr()) {
       return err(updateRes.error);
     }

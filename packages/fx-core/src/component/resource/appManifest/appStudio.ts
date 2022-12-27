@@ -43,7 +43,7 @@ import { manifestUtils } from "./utils/ManifestUtils";
 import { environmentManager } from "../../../core/environment";
 import { Constants, supportedLanguageCodes } from "./constants";
 import { CreateAppPackageDriver } from "../../driver/teamsApp/createAppPackage";
-import { ConfigureTeamsAppDriver } from "../../driver/teamsApp/configure";
+import { ConfigureTeamsAppDriver, outputNames } from "../../driver/teamsApp/configure";
 import { CreateAppPackageArgs } from "../../driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { ConfigureTeamsAppArgs } from "../../driver/teamsApp/interfaces/ConfigureTeamsAppArgs";
 import { DriverContext } from "../../driver/interface/commonArgs";
@@ -846,31 +846,15 @@ export async function updateManifestV3(
   }
 }
 
-export async function updateManifestV3ForPublish(
+export async function updateTeamsAppV3ForPublish(
   ctx: ResourceContextV3,
   inputs: InputsWithProjectPath
 ): Promise<Result<any, FxError>> {
-  const envName = process.env.TEAMSFX_ENV;
-  const teamsAppId = process.env.TEAMS_APP_ID;
-  const manifestTemplatePath = inputs[CoreQuestionNames.ManifestPath];
-
   const driverContext: DriverContext = generateDriverContext(ctx, inputs);
-  const buildDriver: CreateAppPackageDriver = Container.get(createAppPackageActionName);
-  const createAppPackageArgs = generateCreateAppPackageArgs(
-    inputs.projectPath,
-    manifestTemplatePath,
-    envName!
-  );
+
   const updateTeamsAppArgs: ConfigureTeamsAppArgs = {
-    appPackagePath: createAppPackageArgs.outputZipPath,
+    appPackagePath: inputs[CoreQuestionNames.AppPackagePath],
   };
-
-  await envUtil.readEnv(inputs.projectPath!, envName!);
-
-  const res = await buildDriver.run(createAppPackageArgs, driverContext);
-  if (res.isErr()) {
-    return err(res.error);
-  }
 
   const configureDriver: ConfigureTeamsAppDriver = Container.get(configureTeamsAppActionName);
   const result = await configureDriver.run(updateTeamsAppArgs, driverContext);
@@ -878,7 +862,7 @@ export async function updateManifestV3ForPublish(
     return err(result.error);
   }
 
-  return ok(teamsAppId);
+  return ok(result.value.get(outputNames.TEAMS_APP_ID));
 }
 
 export async function getAppPackage(

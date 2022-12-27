@@ -319,7 +319,6 @@ export class FxCoreV3Implement {
     ErrorHandlerMW,
     QuestionMW(getQuestionsForPublishInDeveloperPortal),
     ConcurrentLockerMW,
-    EnvLoaderMW(false),
     ContextInjectorMW,
   ])
   async publishInDeveloperPortal(

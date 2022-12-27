@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  AppPackageFolderName,
+  BuildFolderName,
   CLIPlatforms,
   ContextV3,
   DynamicPlatforms,
@@ -815,26 +817,36 @@ export async function getQuestionsForPublishInDeveloperPortal(
   }
 
   const node = new QTreeNode({ type: "group" });
-  let manifestDefaultPath: string | undefined = path.join(
+  const zipDefaultFolder: string | undefined = path.join(
     inputs.projectPath,
-    "appPackage",
-    "manifest.template.json"
+    BuildFolderName,
+    AppPackageFolderName
   );
-  if (!(await fs.pathExists(manifestDefaultPath))) {
-    manifestDefaultPath = undefined;
+
+  let defaultFile: string | undefined = undefined;
+
+  if (await fs.pathExists(zipDefaultFolder)) {
+    let files = await fs.readdir(zipDefaultFolder);
+    files = files.filter((file) => path.extname(file).toLowerCase() === ".zip");
+    if (files.length > 0) {
+      defaultFile = path.join(zipDefaultFolder, files[0]);
+    }
   }
-  node.addChild(new QTreeNode(manifestFileQuestion(manifestDefaultPath)));
+  node.addChild(new QTreeNode(appPacakgeQuestion(defaultFile)));
   return ok(node);
 }
 
-const manifestFileQuestion = (defaultFile: string | undefined): SingleFileQuestion => {
+const appPacakgeQuestion = (defaultFile: string | undefined): SingleFileQuestion => {
   return {
     type: "singleFile",
-    name: CoreQuestionNames.ManifestPath,
-    title: getLocalizedString("core.question.manifestForPublishInDeveloperPortal.title"),
+    name: CoreQuestionNames.AppPackagePath,
+    title: getLocalizedString("core.question.appPackageForPublishInDeveloperPortal.title"),
     placeholder: getLocalizedString(
-      "core.question.manifestForPublishInDeveloperPortal.placeholder"
+      "core.question.appPackageForPublishInDeveloperPortal.placeholder"
     ),
     default: defaultFile,
+    filters: {
+      "Zip files": ["zip"],
+    },
   };
 };

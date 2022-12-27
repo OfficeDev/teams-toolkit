@@ -56,8 +56,6 @@ export const MSTimer = (fn: string) => {
       };
     } else {
       descriptor.value = function (...args: any[]) {
-        data.args = args;
-
         const start = performance.now();
         const result = originalMethod.apply(this, args);
         const end = performance.now();

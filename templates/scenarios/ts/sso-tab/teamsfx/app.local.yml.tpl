@@ -28,17 +28,17 @@ configureApp:
 
   - uses: aadApp/update # Apply the AAD manifest to an existing AAD app. Will use the object id in manifest file to determine which AAD app to update.
     with:
-      manifestTemplatePath: ./aad.manifest.template.json # Relative path to teamsfx folder. Environment variables in manifest will be replaced before apply to AAD app
+      manifestPath: ./aad.manifest.template.json # Relative path to teamsfx folder. Environment variables in manifest will be replaced before apply to AAD app
       outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
   # Output: following environment variable will be persisted in current environment's .env file.
   # AAD_APP_ACCESS_AS_USER_PERMISSION_ID: the id of access_as_user permission which is used to enable SSO
 
   - uses: teamsApp/validate
     with:
-      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
+      manifestPath: ./appPackage/manifest.template.json # Path to manifest template
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
-      manifestTemplatePath: ./appPackage/manifest.template.json # Path to manifest template
+      manifestPath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.

@@ -51,7 +51,7 @@ export class ValidateTeamsAppDriver implements StepDriver {
   ): Promise<Result<Map<string, string>, FxError>> {
     const state = this.loadCurrentState();
     const manifestRes = await manifestUtils.getManifestV3(
-      getAbsolutePath(args.manifestTemplatePath, context.projectPath),
+      getAbsolutePath(args.manifestPath, context.projectPath),
       state,
       withEmptyCapabilities
     );

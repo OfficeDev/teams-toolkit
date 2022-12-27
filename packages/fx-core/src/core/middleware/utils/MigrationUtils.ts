@@ -263,7 +263,7 @@ function provisionOutputNamingConverterV3(
 ): string {
   const names = name.split(".");
   const pluginNames = [names[1], pluginIdMappingV3[names[1]]];
-  const keyName = names[2];
+  let keyName = names[2];
 
   let outputName = "";
 
@@ -290,6 +290,10 @@ function provisionOutputNamingConverterV3(
             break;
           }
         } while ((outputNames = pluginRegex.exec(bicepContent)));
+      } else if ("fx-resource-bot" === pluginNames[0] && keyName.endsWith("AppResourceId")) {
+        // keep AppResourceId aligned in fx-resource-bot plugin
+        outputName = outputNames[1];
+        keyName = "functionAppResourceId";
       } else {
         outputName = outputNames[1];
       }

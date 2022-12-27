@@ -32,8 +32,6 @@ export const MSTimer = (fn: string) => {
 
     if (originalMethod.constructor.name === "AsyncFunction") {
       descriptor.value = async function (...args: any[]) {
-        data.args = args.keys();
-
         const start = performance.now();
         const result = await originalMethod.apply(this, args);
         const end = performance.now();
@@ -58,8 +56,6 @@ export const MSTimer = (fn: string) => {
       };
     } else {
       descriptor.value = function (...args: any[]) {
-        data.args = args;
-
         const start = performance.now();
         const result = originalMethod.apply(this, args);
         const end = performance.now();

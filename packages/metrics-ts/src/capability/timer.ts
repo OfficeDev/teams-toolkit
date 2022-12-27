@@ -32,7 +32,7 @@ export const MSTimer = (fn: string) => {
 
     if (originalMethod.constructor.name === "AsyncFunction") {
       descriptor.value = async function (...args: any[]) {
-        data.args = args;
+        data.args = args.keys();
 
         const start = performance.now();
         const result = await originalMethod.apply(this, args);

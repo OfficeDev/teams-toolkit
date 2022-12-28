@@ -7,7 +7,7 @@ import { headerStyles, widgetStyles } from "./Widget.styles";
  * For more information about react component, please refer to https://reactjs.org/docs/react-component.html
  * T is the model type of the widget.
  */
-export abstract class Widget<T> extends Component<{}, { data?: T | void }> {
+export abstract class Widget<T> extends Component<any, { data?: T | void }> {
   constructor(props: any) {
     super(props);
     this.state = {
@@ -30,9 +30,7 @@ export abstract class Widget<T> extends Component<{}, { data?: T | void }> {
   render() {
     return (
       <div style={widgetStyles()}>
-        {this.headerContent() && (
-          <div style={headerStyles()}>{this.headerContent()}</div>
-        )}
+        {this.headerContent() && <div style={headerStyles()}>{this.headerContent()}</div>}
         {this.bodyContent() && <div>{this.bodyContent()}</div>}
         {this.footerContent() && <div>{this.footerContent()}</div>}
       </div>

@@ -10,7 +10,7 @@ interface IDashboardState {
 /**
  * The dashboard class which is the base class for all dashboard components.
  */
-export class Dashboard extends Component<{}, IDashboardState> {
+export class Dashboard extends Component<any, IDashboardState> {
   private ref: React.RefObject<HTMLDivElement>;
 
   /**
@@ -35,7 +35,7 @@ export class Dashboard extends Component<{}, IDashboardState> {
   componentDidMount(): void {
     // Observe the dashboard div for resize events
     const observer = new ResizeObserver((entries) => {
-      for (let entry of entries) {
+      for (const entry of entries) {
         if (entry.target === this.ref.current) {
           const { width } = entry.contentRect;
           this.setState({ isMobile: width < 600 });
@@ -65,11 +65,7 @@ export class Dashboard extends Component<{}, IDashboardState> {
       <>
         <div
           ref={this.ref}
-          style={dashboardStyles(
-            this.state.isMobile,
-            this.rowHeights(),
-            this.columnWidths()
-          )}
+          style={dashboardStyles(this.state.isMobile, this.rowHeights(), this.columnWidths())}
         >
           {this.dashboardLayout()}
         </div>

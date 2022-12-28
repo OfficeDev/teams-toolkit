@@ -1159,6 +1159,11 @@ describe("debugMigration", () => {
       const migrationContext = await mockMigrationContext(projectPath);
       const testTaskContent = `[
         {
+          "label": "prepare local environment",
+          "type": "shell",
+          "command": "echo \${command:fx-extension.pre-debug-check}"
+        },
+        {
           "label": "Start Backend",
           "dependsOn": [
               "teamsfx: backend watch"
@@ -1167,6 +1172,11 @@ describe("debugMigration", () => {
         }
       ]`;
       const content = `[
+        {
+          "label": "prepare local environment",
+          "type": "shell",
+          "command": "echo \${command:fx-extension.pre-debug-check}"
+        },
         {
           "label": "Start Backend",
           "dependsOn": [

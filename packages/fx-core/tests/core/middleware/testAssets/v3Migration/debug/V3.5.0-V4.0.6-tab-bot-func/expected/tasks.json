@@ -65,10 +65,32 @@
         },
         {
             "label": "prepare local environment",
-            "type": "shell",
-            "command": "exit ${command:fx-extension.pre-debug-check}",
-            "presentation": {
-                "reveal": "never"
+            "dependsOn": [
+                "Create resources",
+                "Set up local projects"
+            ],
+            "dependsOrder": "sequence"
+        },
+        {
+            // Create the debug resources.
+            // See https://aka.ms/teamsfx-provision-task to know the details and how to customize the args.
+            "label": "Create resources",
+            "type": "teamsfx",
+            "command": "provision",
+            "args": {
+                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "env": "local"
+            }
+        },
+        {
+            // Set up local projects.
+            // See https://aka.ms/teamsfx-deploy-task to know the details and how to customize the args.
+            "label": "Set up local projects",
+            "type": "teamsfx",
+            "command": "deploy",
+            "args": {
+                "template": "${workspaceFolder}/teamsfx/app.local.yml",
+                "env": "local"
             }
         },
         {

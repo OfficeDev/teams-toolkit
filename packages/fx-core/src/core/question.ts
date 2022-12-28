@@ -19,11 +19,7 @@ import * as os from "os";
 import { environmentManager } from "./environment";
 import { ConstantString } from "../common/constants";
 import { sampleProvider } from "../common/samples";
-import {
-  isAadManifestEnabled,
-  isExistingTabAppEnabled,
-  isM365AppEnabled,
-} from "../common/tools";
+import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
 import {
   isBotNotificationEnabled,
   isOfficeAddinEnabled,

@@ -374,7 +374,7 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
   // new capabilities question order
   const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
 
-  const newTabs = isV3Enabled() ? [] : [DashboardOptionItem];
+  const newTabs = [DashboardOptionItem];
 
   const staticOptions: StaticOptions = [
     ...newBots,

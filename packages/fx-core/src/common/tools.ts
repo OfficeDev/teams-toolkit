@@ -49,13 +49,6 @@ import { FailedToParseResourceIdError } from "../core/error";
 import { PluginNames, SolutionError, SolutionSource } from "../component/constants";
 import Mustache from "mustache";
 import {
-  Component,
-  sendTelemetryErrorEvent,
-  sendTelemetryEvent,
-  TelemetryEvent,
-  TelemetryProperty,
-} from "./telemetry";
-import {
   HostTypeOptionAzure,
   TabSsoItem,
   BotSsoItem,
@@ -80,6 +73,7 @@ import { getAppStudioEndpoint } from "../component/resource/appManifest/constant
 import { manifestUtils } from "../component/resource/appManifest/utils/ManifestUtils";
 import { AuthSvcClient } from "../component/resource/appManifest/authSvcClient";
 import { AppStudioClient } from "../component/resource/appManifest/appStudioClient";
+import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -879,63 +873,7 @@ export function getAllowedAppMaps(): Record<string, string> {
 }
 
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
-  const instance = axios.create({
-    baseURL: getAppStudioEndpoint(),
-    timeout: 30000,
-  });
-  instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-  let retry = 0;
-  const retryIntervalSeconds = 2;
-  do {
-    let response = undefined;
-    try {
-      response = await instance.get("/api/usersettings/mtUserAppPolicy");
-      let result: boolean | undefined;
-      if (response.status >= 400) {
-        result = undefined;
-      } else {
-        result = response.data?.value?.isSideloadingAllowed as boolean;
-      }
-
-      if (result !== undefined) {
-        sendTelemetryEvent(Component.core, TelemetryEvent.CheckSideloading, {
-          [TelemetryProperty.IsSideloadingAllowed]: result + "",
-        });
-      } else {
-        sendTelemetryErrorEvent(
-          Component.core,
-          TelemetryEvent.CheckSideloading,
-          new SystemError(
-            "M365Account",
-            "UnknownValue",
-            `AppStudio response code: ${response.status}, body: ${response.data}`
-          ),
-          {
-            [TelemetryProperty.CheckSideloadingStatusCode]: `${response.status}`,
-            [TelemetryProperty.CheckSideloadingMethod]: "get",
-            [TelemetryProperty.CheckSideloadingUrl]: "<check-sideloading-status>",
-          }
-        );
-      }
-
-      return result;
-    } catch (error) {
-      sendTelemetryErrorEvent(
-        Component.core,
-        TelemetryEvent.CheckSideloading,
-        new SystemError({ error, source: "M365Account" }),
-        {
-          [TelemetryProperty.CheckSideloadingStatusCode]: `${response?.status}`,
-          [TelemetryProperty.CheckSideloadingMethod]: "get",
-          [TelemetryProperty.CheckSideloadingUrl]: "<check-sideloading-status>",
-        }
-      );
-      await waitSeconds((retry + 1) * retryIntervalSeconds);
-    }
-  } while (++retry < 3);
-
-  return undefined;
+  return AppStudioClient.getSideloadingStatus(token);
 }
 
 export function createV2Context(projectSettings: ProjectSettings): v2.Context {
@@ -1004,7 +942,10 @@ export async function getSPFxToken(
  */
 export async function setRegion(authSvcToken: string) {
   const region = await AuthSvcClient.getRegion(authSvcToken);
-  AppStudioClient.SetRegion(region);
+  if (region) {
+    AppStudioClient.setRegion(region);
+    BotAppStudioClient.setRegion(region);
+  }
 }
 
 export function ConvertTokenToJson(token: string): Record<string, unknown> {

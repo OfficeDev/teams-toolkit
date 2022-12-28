@@ -2,7 +2,7 @@ import { TeamsUserCredentialContext } from "./singletonContext";
 
 export async function loginAction(scope: string[]) {
   try {
-    var credential = TeamsUserCredentialContext.getInstance().getCredential();
+    const credential = TeamsUserCredentialContext.getInstance().getCredential();
     await credential.login(scope);
     TeamsUserCredentialContext.getInstance().setCredential(credential);
   } catch (e) {

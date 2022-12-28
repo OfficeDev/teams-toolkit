@@ -227,6 +227,39 @@ export function watchBackendTask(label: string): CommentJSONValue {
   return assign(parse("{}"), task);
 }
 
+export function startBackendTask(label: string): CommentJSONValue {
+  const task = {
+    label,
+    type: "shell",
+    command: "node ../teamsfx/script/run.api.js .. ../teamsfx/.env.local",
+    isBackground: true,
+    options: {
+      cwd: "${workspaceFolder}/api",
+      env: {
+        PATH: "${command:fx-extension.get-func-path}${env:PATH}",
+      },
+    },
+    problemMatcher: {
+      pattern: {
+        regexp: "^.*$",
+        file: 0,
+        location: 1,
+        message: 2,
+      },
+      background: {
+        activeOnStart: true,
+        beginsPattern: "^.*(Job host stopped|signaling restart).*$",
+        endsPattern:
+          "^.*(Worker process started and initialized|Host lock lease acquired by instance ID).*$",
+      },
+    },
+    presentation: {
+      reveal: "silent",
+    },
+  };
+  return assign(parse("{}"), task);
+}
+
 export function startBotTask(label: string): CommentJSONValue {
   const task = {
     label,

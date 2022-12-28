@@ -23,7 +23,6 @@ import {
   isAadManifestEnabled,
   isExistingTabAppEnabled,
   isM365AppEnabled,
-  isV3Enabled,
 } from "../common/tools";
 import {
   isBotNotificationEnabled,

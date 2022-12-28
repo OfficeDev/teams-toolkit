@@ -710,6 +710,96 @@ export async function migrateValidateLocalPrerequisites(
   }
 }
 
+export async function migratePreDebugCheck(context: DebugMigrationContext): Promise<void> {
+  let index = 0;
+  while (index < context.tasks.length) {
+    const task = context.tasks[index];
+    if (
+      !isCommentObject(task) ||
+      !(task["type"] === "shell") ||
+      !(
+        typeof task["command"] === "string" &&
+        task["command"].includes("${command:fx-extension.pre-debug-check}")
+      )
+    ) {
+      ++index;
+      continue;
+    }
+
+    if (!context.appYmlConfig.registerApp) {
+      context.appYmlConfig.registerApp = {};
+    }
+    if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
+      context.appYmlConfig.registerApp.aad = true;
+    }
+    context.appYmlConfig.registerApp.teamsApp = true;
+
+    if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
+      if (!context.appYmlConfig.provision) {
+        context.appYmlConfig.provision = {};
+      }
+      context.appYmlConfig.provision.bot = {
+        messagingEndpoint: `$\{{${context.placeholderMapping.botEndpoint}}}/api/messages`,
+      };
+    }
+
+    if (!context.appYmlConfig.configureApp) {
+      context.appYmlConfig.configureApp = {};
+    }
+    if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
+      context.appYmlConfig.configureApp.tab = {
+        domain: "localhost:53000",
+        endpoint: "https://localhost:53000",
+      };
+    }
+    if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
+      context.appYmlConfig.configureApp.aad = true;
+    }
+    if (!context.appYmlConfig.configureApp.teamsApp) {
+      context.appYmlConfig.configureApp.teamsApp = {};
+    }
+
+    const validateLocalPrerequisitesTask = context.tasks.find(
+      (_task) =>
+        isCommentObject(_task) &&
+        _task["type"] === "shell" &&
+        typeof _task["command"] === "string" &&
+        _task["command"].includes("${command:fx-extension.validate-local-prerequisites}")
+    );
+    if (validateLocalPrerequisitesTask) {
+      if (!context.appYmlConfig.deploy) {
+        context.appYmlConfig.deploy = {};
+      }
+      if (OldProjectSettingsHelper.includeTab(context.oldProjectSettings)) {
+        context.appYmlConfig.deploy.tab = {
+          port: 53000,
+        };
+      }
+      if (OldProjectSettingsHelper.includeBot(context.oldProjectSettings)) {
+        context.appYmlConfig.deploy.bot = true;
+      }
+      if (OldProjectSettingsHelper.includeSSO(context.oldProjectSettings)) {
+        context.appYmlConfig.deploy.sso = true;
+      }
+    }
+
+    const existingLabels = getLabels(context.tasks);
+    const createResourcesLabel = generateLabel("Create resources", existingLabels);
+    const setUpLocalProjectsLabel = generateLabel("Set up local projects", existingLabels);
+    task["dependsOn"] = new CommentArray(createResourcesLabel, setUpLocalProjectsLabel);
+    task["dependsOrder"] = "sequence";
+    const createResources = createResourcesTask(createResourcesLabel);
+    context.tasks.splice(index + 1, 0, createResources);
+    const setUpLocalProjects = setUpLocalProjectsTask(setUpLocalProjectsLabel);
+    context.tasks.splice(index + 2, 0, setUpLocalProjects);
+    delete task["type"];
+    delete task["command"];
+    delete task["presentation"];
+
+    break;
+  }
+}
+
 export async function migrateNgrokStartTask(context: DebugMigrationContext): Promise<void> {
   let index = 0;
   while (index < context.tasks.length) {

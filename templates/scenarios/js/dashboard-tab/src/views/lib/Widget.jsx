@@ -30,9 +30,7 @@ export class Widget extends Component {
   render() {
     return (
       <div style={widgetStyles()}>
-        {this.headerContent() && (
-          <div style={headerStyles()}>{this.headerContent()}</div>
-        )}
+        {this.headerContent() && <div style={headerStyles()}>{this.headerContent()}</div>}
         {this.bodyContent() && <div>{this.bodyContent()}</div>}
         {this.footerContent() && <div>{this.footerContent()}</div>}
       </div>
@@ -44,7 +42,7 @@ export class Widget extends Component {
    * @returns data for the widget
    */
   async getData() {
-    return new Promise() (() => {});
+    return new Promise()(() => {});
   }
 
   /**

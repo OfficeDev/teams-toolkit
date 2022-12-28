@@ -6,11 +6,7 @@
  * @param columnWidths The value is a string that can be split by a space character to define the width of each column. For example, "1fr 2fr 2fr" defines three columns with the first column occupying 20% of the available space, the second and third columns each occupying 40% of the available space.
  * @returns The styles for the Dashboard component.
  */
-export const dashboardStyles = (
-  isMobile,
-  rowHeighs,
-  columnWidths
-) => {
+export const dashboardStyles = (isMobile, rowHeighs, columnWidths) => {
   return {
     display: "grid",
     gap: "20px",
@@ -22,7 +18,7 @@ export const dashboardStyles = (
 
 /**
  * A method can be used to achieve a column layout.
- * 
+ *
  * @param heights The value is a string that can be split by a space character to define the height of each row. For example, "100px 200px 300px" defines three rows with the first row being 100px, the second row being 200px, and the third row being 300px.
  * @param width The width of the column.
  * @returns The styles for the column.

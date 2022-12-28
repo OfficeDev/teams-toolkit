@@ -58,11 +58,7 @@ export class Dashboard extends Component {
       <>
         <div
           ref={this.ref}
-          style={dashboardStyles(
-            this.state.isMobile,
-            this.rowHeights(),
-            this.columnWidths()
-          )}
+          style={dashboardStyles(this.state.isMobile, this.rowHeights(), this.columnWidths())}
         >
           {this.dashboardLayout()}
         </div>

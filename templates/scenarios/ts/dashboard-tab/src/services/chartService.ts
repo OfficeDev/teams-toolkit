@@ -1,11 +1,11 @@
 export const chart1Points_7D = [
-  { x: new Date("2022/01/01"), y: 18000, },
-  { x: new Date("2022/01/06"), y: 14000, },
-  { x: new Date("2022/01/11"), y: 19000, },
-  { x: new Date("2022/01/16"), y: 13000, },
-  { x: new Date("2022/01/21"), y: 21000, },
-  { x: new Date("2022/01/26"), y: 18000, },
-  { x: new Date("2022/01/31"), y: 23000, },
+  { x: new Date("2022/01/01"), y: 18000 },
+  { x: new Date("2022/01/06"), y: 14000 },
+  { x: new Date("2022/01/11"), y: 19000 },
+  { x: new Date("2022/01/16"), y: 13000 },
+  { x: new Date("2022/01/21"), y: 21000 },
+  { x: new Date("2022/01/26"), y: 18000 },
+  { x: new Date("2022/01/31"), y: 23000 },
 ];
 
 export const chart2Points_7D = [

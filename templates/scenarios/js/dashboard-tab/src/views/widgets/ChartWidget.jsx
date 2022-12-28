@@ -143,22 +143,12 @@ export default class ChartWidget extends Widget {
     const chartPoints = [
       {
         legend: "Line 1",
-        data:
-          r === "7D"
-            ? chart1Points_7D
-            : r === "30D"
-            ? chart1Points_30D
-            : chart1Points_60D,
+        data: r === "7D" ? chart1Points_7D : r === "30D" ? chart1Points_30D : chart1Points_60D,
         color: "#6264A7",
       },
       {
         legend: "Line 2",
-        data:
-          r === "7D"
-            ? chart2Points_7D
-            : r === "30D"
-            ? chart2Points_30D
-            : chart2Points_60D,
+        data: r === "7D" ? chart2Points_7D : r === "30D" ? chart2Points_30D : chart2Points_60D,
         color: "#D9DBDB",
       },
     ];

@@ -48,6 +48,8 @@ import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
 import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
 import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
 import { VS_CODE_UI } from "../extension";
+import { getProjectVersionFromPath } from "@microsoft/teamsfx-core/build/core/middleware/utils/v3MigrationUtils";
+import * as globalVariables from "../globalVariables";
 
 const customTasks = Object.freeze({
   [TaskCommand.checkPrerequisites]: {
@@ -240,22 +242,35 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     }
 
     // migrate to v3
-    if (
-      isV3Enabled() &&
-      (task.definition.command === TaskCommand.npmInstall ||
+    if (isV3Enabled()) {
+      let needsMigration = false;
+      if (task.definition.command === TaskCommand.checkPrerequisites) {
+        const projectVersion = await getProjectVersionFromPath(
+          globalVariables.workspaceUri!.fsPath
+        );
+        if (projectVersion === "2.1.0") {
+          needsMigration = true;
+        }
+      } else if (
+        task.definition.command === TaskCommand.npmInstall ||
         task.definition.command === TaskCommand.setUpTab ||
         task.definition.command === TaskCommand.setUpBot ||
         task.definition.command === TaskCommand.setUpSSO ||
-        task.definition.command === TaskCommand.prepareManifest)
-    ) {
-      const result = await core.phantomMigrationV3(getSystemInputs());
-      if (result.isErr()) {
-        showError(result.error);
+        task.definition.command === TaskCommand.prepareManifest
+      ) {
+        needsMigration = true;
+      }
+
+      if (needsMigration) {
+        const result = await core.phantomMigrationV3(getSystemInputs());
+        if (result.isErr()) {
+          showError(result.error);
+          return undefined;
+        }
+        // reload window to terminate debugging
+        await VS_CODE_UI.reload();
         return undefined;
       }
-      // reload window to terminate debugging
-      await VS_CODE_UI.reload();
-      return undefined;
     }
 
     const newTask = new vscode.Task(

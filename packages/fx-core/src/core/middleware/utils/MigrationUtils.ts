@@ -291,7 +291,8 @@ function provisionOutputNamingConverterV3(
           }
         } while ((outputNames = pluginRegex.exec(bicepContent)));
       } else if ("fx-resource-bot" === pluginNames[0] && keyName.endsWith("AppResourceId")) {
-        // keep AppResourceId aligned in fx-resource-bot plugin
+        // Since the same placeholder for azure funtion resource id will be generated,
+        // the key name will be changed to keep AppResourceId aligned in fx-resource-bot plugin.
         outputName = outputNames[1];
         keyName = "functionAppResourceId";
       } else {

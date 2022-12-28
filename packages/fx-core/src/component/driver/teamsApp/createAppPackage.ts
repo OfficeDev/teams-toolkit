@@ -54,12 +54,12 @@ export class CreateAppPackageDriver implements StepDriver {
   ): Promise<Result<Map<string, string>, FxError>> {
     const state = this.loadCurrentState();
 
-    let manifestTemplatePath = args.manifestTemplatePath;
-    if (!path.isAbsolute(manifestTemplatePath)) {
-      manifestTemplatePath = path.join(context.projectPath, manifestTemplatePath);
+    let manifestPath = args.manifestPath;
+    if (!path.isAbsolute(manifestPath)) {
+      manifestPath = path.join(context.projectPath, manifestPath);
     }
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestTemplatePath, state);
+    const manifestRes = await manifestUtils.getManifestV3(manifestPath, state);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
@@ -81,7 +81,7 @@ export class CreateAppPackageDriver implements StepDriver {
     const jsonFileDir = path.dirname(jsonFileName);
     await fs.mkdir(jsonFileDir, { recursive: true });
 
-    const appDirectory = path.dirname(manifestTemplatePath);
+    const appDirectory = path.dirname(manifestPath);
 
     const colorFile = path.join(appDirectory, manifest.icons.color);
     if (!(await fs.pathExists(colorFile))) {

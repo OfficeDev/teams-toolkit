@@ -11,8 +11,8 @@ on:
         required: false
         default: "false"
   schedule:
-    - cron: '0 22 * * *'
-    - cron: '0 4 * * *'
+    - cron: "0 22 * * *"
+    - cron: "0 4 * * *"
   pull_request:
     branches:
       - main
@@ -162,12 +162,6 @@ jobs:
         working-directory: packages/cli
         run: |
           npm run test:e2e:clean
-
-      - name: Create new test plan
-        if: ${{ github.ref_name == 'main' && github.event_name != 'pull_request' }}
-        run: |
-          version=$(node -p -e "require('./packages/cli/package.json').version")
-          npx ts-node .github/scripts/testPlan.ts new cli $version
 
   execute-base-case-v3:
     if: ${{  github.event_name == 'pull_request' }}
@@ -376,12 +370,6 @@ jobs:
           name: ${{ steps.get-report-name.outputs.name }}_metrics
           path: |
             /tmp/.metrics/output.txt
-
-      - name: Sync to Azure DevOps Test Plan
-        if: ${{ always() }}
-        run: |
-          version=$(node -p -e "require('./packages/cli/package.json').version")
-          npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/mochawesome-report/mochawesome.json cli $version
 
   tear-down:
     if: ${{ always() && github.event_name == 'schedule' }}

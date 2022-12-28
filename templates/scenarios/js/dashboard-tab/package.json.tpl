@@ -6,7 +6,7 @@
     },
     "private": true,
     "dependencies": {
-       "@fluentui/react": "^8.99.2",
+        "@fluentui/react": "^8.99.2",
         "@fluentui/react-charting": "^5.14.10",
         "@fluentui/react-components": "^9.7.1",
         "@fluentui/react-icons": "^2.0.186",
@@ -25,13 +25,7 @@
         "react-scripts": "^5.0.1"
     },
     "devDependencies": {
-        "@microsoft/teamsfx-run-utils": "alpha",
-        "@types/node": "^12.0.0",
-        "@types/react": "^16.14.6",
-        "@types/react-dom": "^16.9.12",
-        "@types/react-router-dom": "^5.1.7",
-        "cross-env": "^7.0.3",
-        "env-cmd": "^10.1.0"
+        "@microsoft/teamsfx-run-utils": "alpha"
     },
     "scripts": {
         "dev:teamsfx": "node teamsfx/script/run.js . teamsfx/.env.local",

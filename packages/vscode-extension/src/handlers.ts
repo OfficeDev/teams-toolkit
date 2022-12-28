@@ -1372,20 +1372,9 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
   return ok(null);
 }
 
-async function triggerV3Migration(): Promise<string | undefined> {
-  const result = await core.phantomMigrationV3(getSystemInputs());
-  if (result.isErr()) {
-    showError(result.error);
-    return "1";
-  }
-  // reload window to terminate debugging
-  await VS_CODE_UI.reload();
-  return undefined;
-}
-
 export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
   if (isV3Enabled()) {
-    return await triggerV3Migration();
+    return await commonUtils.triggerV3Migration();
   }
 
   if (commonUtils.checkAndSkipDebugging()) {
@@ -1476,7 +1465,7 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
   if (isV3Enabled()) {
-    return await triggerV3Migration();
+    return await commonUtils.triggerV3Migration();
   }
 
   const additionalProperties: { [key: string]: string } = {
@@ -1579,7 +1568,7 @@ export async function validateGetStartedPrerequisitesHandler(
  */
 export async function backendExtensionsInstallHandler(): Promise<string | undefined> {
   if (isV3Enabled()) {
-    return await triggerV3Migration();
+    return await commonUtils.triggerV3Migration();
   }
 
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
@@ -1650,7 +1639,7 @@ export async function getDotnetPathHandler(): Promise<string> {
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
   if (isV3Enabled()) {
-    return await triggerV3Migration();
+    return await commonUtils.triggerV3Migration();
   }
 
   const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;

@@ -108,6 +108,16 @@ const customTasks = Object.freeze({
   },
 });
 
+async function triggerV3Migration(): Promise<void> {
+  const result = await core.phantomMigrationV3(getSystemInputs());
+  if (result.isErr()) {
+    showError(result.error);
+    return;
+  }
+  // reload window to terminate debugging
+  await VS_CODE_UI.reload();
+}
+
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
 
@@ -144,14 +154,9 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
       const workspacePath: string = workspaceFolder.uri.fsPath;
 
+      // migrate to v3
       if (isV3Enabled()) {
-        const result = await core.phantomMigrationV3(getSystemInputs());
-        if (result.isErr()) {
-          showError(result.error);
-          return ok(undefined);
-        }
-        // reload window to terminate debugging
-        await VS_CODE_UI.reload();
+        await triggerV3Migration();
         return ok(undefined);
       }
 
@@ -269,13 +274,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       }
 
       if (needsMigration) {
-        const result = await core.phantomMigrationV3(getSystemInputs());
-        if (result.isErr()) {
-          showError(result.error);
-          return undefined;
-        }
-        // reload window to terminate debugging
-        await VS_CODE_UI.reload();
+        await triggerV3Migration();
         return undefined;
       }
     }

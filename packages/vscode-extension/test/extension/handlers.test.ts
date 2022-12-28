@@ -1466,4 +1466,44 @@ describe("handlers", () => {
       sinon.restore();
     });
   });
+
+  describe("validateAzureDependenciesHandler", () => {
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, undefined);
+      sinon.restore();
+    });
+  });
+
+  describe("validateLocalPrerequisitesHandler", () => {
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.validateLocalPrerequisitesHandler();
+      chai.assert.equal(result, undefined);
+      sinon.restore();
+    });
+  });
+
+  describe("backendExtensionsInstallHandler", () => {
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.backendExtensionsInstallHandler();
+      chai.assert.equal(result, undefined);
+      sinon.restore();
+    });
+  });
+
+  describe("preDebugCheckHandler", () => {
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.preDebugCheckHandler();
+      chai.assert.equal(result, undefined);
+      sinon.restore();
+    });
+  });
 });

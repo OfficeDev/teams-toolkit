@@ -143,6 +143,13 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const workspacePath: string = workspaceFolder.uri.fsPath;
 
       if (isV3Enabled()) {
+        const result = await core.phantomMigrationV3(getSystemInputs());
+        if (result.isErr()) {
+          showError(result.error);
+          return ok(undefined);
+        }
+        // reload window to terminate debugging
+        await VS_CODE_UI.reload();
         return ok(undefined);
       }
 

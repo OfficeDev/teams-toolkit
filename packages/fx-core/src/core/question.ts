@@ -19,12 +19,7 @@ import * as os from "os";
 import { environmentManager } from "./environment";
 import { ConstantString } from "../common/constants";
 import { sampleProvider } from "../common/samples";
-import {
-  isAadManifestEnabled,
-  isExistingTabAppEnabled,
-  isM365AppEnabled,
-  isV3Enabled,
-} from "../common/tools";
+import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
 import {
   isBotNotificationEnabled,
   isOfficeAddinEnabled,
@@ -374,7 +369,7 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
   // new capabilities question order
   const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
 
-  const newTabs = isV3Enabled() ? [] : [DashboardOptionItem];
+  const newTabs = [DashboardOptionItem];
 
   const staticOptions: StaticOptions = [
     ...newBots,

@@ -8,7 +8,7 @@ import { Service } from "typedi";
 import { DriverContext, AzureResourceInfo } from "../../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
 import { FxError, IProgressHandler, Result, UserInteraction } from "@microsoft/teamsfx-api";
-import { wrapRun, wrapSummary } from "../../../utils/common";
+import { checkMissingArgs, wrapRun, wrapSummary } from "../../../utils/common";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
@@ -47,13 +47,13 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
 
   async azureDeploy(
     args: DeployStepArgs,
-    azureResource: AzureResourceInfo,
-    azureCredential: TokenCredential
+    azureResource?: AzureResourceInfo,
+    azureCredential?: TokenCredential
   ): Promise<void> {
     await this.progressBar?.start();
     const cost = await this.zipDeploy(args, azureResource, azureCredential);
     await this.progressBar?.next(ProgressMessages.restartAzureService);
-    await this.restartFunctionApp(azureResource);
+    await this.restartFunctionApp(checkMissingArgs("azureResource", azureResource));
     await this.progressBar?.end(true);
     if (cost > DeployConstant.DEPLOY_OVER_TIME) {
       await this.context.logProvider?.info(

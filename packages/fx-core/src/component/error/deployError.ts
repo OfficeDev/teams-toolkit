@@ -177,4 +177,11 @@ export class DeployUserInputError extends BaseComponentInnerError {
       "driver.deploy.error.noFileFindInDistributionFolder"
     );
   }
+
+  static deployPrepareComplete(): DeployUserInputError {
+    return new DeployUserInputError(
+      "DeployPrepareComplete",
+      "driver.deploy.error.deployPrepareComplete"
+    );
+  }
 }

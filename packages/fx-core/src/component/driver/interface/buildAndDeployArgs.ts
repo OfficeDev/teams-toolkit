@@ -17,7 +17,7 @@ export type DeployArgs = {
   workingDirectory?: string;
   distributionPath: string;
   ignoreFile?: string;
-  resourceId: string;
+  resourceId?: string;
 };
 
 export type DeployStepArgs = {

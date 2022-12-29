@@ -19,7 +19,7 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
     workingDirectory: asOptional(asString),
     distributionPath: asString,
     ignoreFile: asOptional(asString),
-    resourceId: asString,
+    resourceId: asOptional(asString),
   });
 
   async run(): Promise<Map<string, string>> {

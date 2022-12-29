@@ -556,7 +556,14 @@ export class VsCodeUI implements UserInteraction {
     defaultValue?: string
   ): Promise<Result<SelectFilesResult, FxError>>;
   async selectFileInQuickPick(
-    config: UIConfig<any> & { filters?: { [name: string]: string[] } },
+    config: UIConfig<any> & {
+      filters?: { [name: string]: string[] };
+      possibleFiles?: {
+        id: string;
+        label: string;
+        description?: string;
+      }[];
+    },
     type: "file" | "files",
     defaultValue?: string
   ): Promise<Result<InputResult<string[] | string>, FxError>> {
@@ -577,7 +584,9 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise(async (resolve) => {
         // set options
         quickPick.items = [
-          ...(defaultValue
+          ...(config.possibleFiles
+            ? config.possibleFiles
+            : defaultValue
             ? [
                 {
                   id: "default",
@@ -598,7 +607,7 @@ export class VsCodeUI implements UserInteraction {
             const item = selectedItems[0];
             if (item.id === "default") {
               resolve(ok({ type: "success", result: config.default }));
-            } else {
+            } else if (item.id === "browse") {
               fileSelectorIsOpen = true;
               const uriList: Uri[] | undefined = await window.showOpenDialog({
                 defaultUri: config.default ? Uri.file(config.default) : undefined,
@@ -619,6 +628,13 @@ export class VsCodeUI implements UserInteraction {
               } else {
                 resolve(err(UserCancelError));
               }
+            } else {
+              resolve(
+                ok({
+                  type: "success",
+                  result: config.possibleFiles?.find((f) => f.id === item.id)?.id,
+                })
+              );
             }
           }
         };

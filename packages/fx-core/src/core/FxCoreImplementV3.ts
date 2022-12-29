@@ -67,11 +67,7 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
-import {
-  getQuestionsForInit,
-  getQuestionsForProvisionV3,
-  getQuestionsForPublishInDeveloperPortal,
-} from "../component/question";
+import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/question";
 import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils";
 
 export class FxCoreV3Implement {
@@ -315,12 +311,7 @@ export class FxCoreV3Implement {
     return res;
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    QuestionMW(getQuestionsForPublishInDeveloperPortal),
-    ConcurrentLockerMW,
-    ContextInjectorMW,
-  ])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
   async publishInDeveloperPortal(
     inputs: Inputs,
     ctx?: CoreHookContext

@@ -1,13 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  AppPackageFolderName,
-  BuildFolderName,
   CLIPlatforms,
   ContextV3,
   DynamicPlatforms,
   err,
-  FolderQuestion,
   FuncQuestion,
   FxError,
   Inputs,
@@ -21,7 +18,6 @@ import {
   QTreeNode,
   ResourceContextV3,
   Result,
-  SingleFileQuestion,
   SingleSelectQuestion,
   Stage,
   TextInputQuestion,
@@ -84,8 +80,8 @@ import {
   getConditionOfNotificationTriggerQuestion,
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
-import { NoCapabilityFoundError, ObjectIsUndefinedError } from "../core/error";
-import { CoreQuestionNames, ProgrammingLanguageQuestion } from "../core/question";
+import { NoCapabilityFoundError } from "../core/error";
+import { ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
 import {
   isBotNotificationEnabled,
@@ -809,44 +805,3 @@ export function getQuestionsForInit(
   }
   return ok(group);
 }
-export async function getQuestionsForPublishInDeveloperPortal(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (!inputs.projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-
-  const node = new QTreeNode({ type: "group" });
-  const zipDefaultFolder: string | undefined = path.join(
-    inputs.projectPath,
-    BuildFolderName,
-    AppPackageFolderName
-  );
-
-  let defaultFile: string | undefined = undefined;
-
-  if (await fs.pathExists(zipDefaultFolder)) {
-    let files = await fs.readdir(zipDefaultFolder);
-    files = files.filter((file) => path.extname(file).toLowerCase() === ".zip");
-    if (files.length > 0) {
-      defaultFile = path.join(zipDefaultFolder, files[0]);
-    }
-  }
-  node.addChild(new QTreeNode(appPacakgeQuestion(defaultFile)));
-  return ok(node);
-}
-
-const appPacakgeQuestion = (defaultFile: string | undefined): SingleFileQuestion => {
-  return {
-    type: "singleFile",
-    name: CoreQuestionNames.AppPackagePath,
-    title: getLocalizedString("core.question.appPackageForPublishInDeveloperPortal.title"),
-    placeholder: getLocalizedString(
-      "core.question.appPackageForPublishInDeveloperPortal.placeholder"
-    ),
-    default: defaultFile,
-    filters: {
-      "Zip files": ["zip"],
-    },
-  };
-};

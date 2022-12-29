@@ -123,6 +123,15 @@ export type SelectFileConfig = UIConfig<string> & {
    * ```
    */
   filters?: { [name: string]: string[] };
+
+  /**
+   * Possible files that will be listed for users to select.
+   */
+  possibleFiles?: {
+    id: string;
+    label: string;
+    description?: string;
+  }[];
 };
 
 /**

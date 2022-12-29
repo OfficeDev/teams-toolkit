@@ -1572,6 +1572,11 @@ export type SelectFileConfig = UIConfig<string> & {
     filters?: {
         [name: string]: string[];
     };
+    possibleFiles?: {
+        id: string;
+        label: string;
+        description?: string;
+    }[];
 };
 
 // @public (undocumented)
@@ -1636,10 +1641,6 @@ interface SimpleAuth extends AzureResource {
 // @public
 export interface SingleFileQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;
-    // (undocumented)
-    filters?: {
-        [name: string]: string[];
-    };
     // (undocumented)
     type: "singleFile";
     validation?: FuncValidation<string>;

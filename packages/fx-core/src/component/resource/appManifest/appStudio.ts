@@ -856,6 +856,64 @@ export async function updateTeamsAppV3ForPublish(
     appPackagePath: inputs[CoreQuestionNames.AppPackagePath],
   };
 
+  const zipEntries = new AdmZip(updateTeamsAppArgs.appPackagePath).getEntries();
+  const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
+  let validationError: UserError | undefined;
+  if (manifestFile) {
+    try {
+      const manifestString = manifestFile.getData().toString();
+      const manifest = JSON.parse(manifestString) as TeamsAppManifest;
+      if (!isUUID(manifest.id)) {
+        validationError = AppStudioResultFactory.UserError(
+          AppStudioError.ValidationFailedError.name,
+          AppStudioError.ValidationFailedError.message([
+            getLocalizedString("error.appstudio.noManifestId"),
+          ])
+        );
+      } else {
+        const validationResult = await validateManifest(manifest);
+        if (validationResult.isErr()) {
+          validationError = validationResult.error;
+        } else {
+          if (validationResult.value.length > 0) {
+            const errMessage = AppStudioError.ValidationFailedError.message(validationResult.value);
+            validationError = AppStudioResultFactory.UserError(
+              AppStudioError.ValidationFailedError.name,
+              errMessage
+            );
+          }
+        }
+      }
+    } catch (e) {
+      validationError = AppStudioResultFactory.UserError(
+        AppStudioError.ValidationFailedError.name,
+        AppStudioError.ValidationFailedError.message([(e as any).message])
+      );
+      validationError.stack = (e as any).stack;
+    }
+  } else {
+    // missing manifest file
+    validationError = AppStudioResultFactory.UserError(
+      AppStudioError.ValidationFailedError.name,
+      AppStudioError.ValidationFailedError.message([
+        getLocalizedString("error.appstudio.noManifestError"),
+      ])
+    );
+  }
+
+  if (validationError) {
+    const suggestionDefaultMessage = getDefaultString(
+      "error.appstudio.publishInDevPortalSuggestionForValidationError"
+    );
+    const suggestionMessage = getLocalizedString(
+      "error.appstudio.publishInDevPortalSuggestionForValidationError"
+    );
+    validationError.message += ` ${suggestionDefaultMessage}`;
+    validationError.displayMessage += ` ${suggestionMessage}`;
+    ctx.logProvider?.error(getLocalizedString("plugins.appstudio.validationFailedNotice"));
+    return err(validationError);
+  }
+
   const configureDriver: ConfigureTeamsAppDriver = Container.get(configureTeamsAppActionName);
   const result = await configureDriver.run(updateTeamsAppArgs, driverContext);
   if (result.isErr()) {

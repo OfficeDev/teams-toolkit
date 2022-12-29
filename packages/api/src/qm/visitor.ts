@@ -207,7 +207,6 @@ const questionVisitor = async function (
         step: step,
         totalSteps: totalSteps,
         validation: validationFunc,
-        filters: question.filters,
       });
     } else if (question.type === "folder") {
       const validationFunc = question.validation

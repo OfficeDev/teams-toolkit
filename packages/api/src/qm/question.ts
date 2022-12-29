@@ -260,11 +260,6 @@ export interface SingleFileQuestion extends UserInputQuestion {
    * validation function
    */
   validation?: FuncValidation<string>;
-
-  /**
-   * The file filters to use.
-   */
-  filters?: { [name: string]: string[] };
 }
 
 export interface MultiFileQuestion extends UserInputQuestion {

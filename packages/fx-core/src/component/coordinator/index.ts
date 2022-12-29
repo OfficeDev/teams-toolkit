@@ -63,7 +63,6 @@ import {
   getQuestionsForInit,
   getQuestionsForProvisionV3,
   InitOptionNo,
-  getQuestionsForPublishInDeveloperPortal,
   InitEditorVSCode,
   InitEditorVS,
 } from "../question";
@@ -983,7 +982,11 @@ export class Coordinator {
     if (!ctx.tokenProvider) {
       return err(new ObjectIsUndefinedError("tokenProvider"));
     }
+    if (!inputs[CoreQuestionNames.AppPackagePath]) {
+      return err(new ObjectIsUndefinedError("appPackagePath"));
+    }
     const updateRes = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+
     if (updateRes.isErr()) {
       return err(updateRes.error);
     }

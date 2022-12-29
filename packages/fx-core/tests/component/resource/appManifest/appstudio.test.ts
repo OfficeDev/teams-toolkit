@@ -258,6 +258,26 @@ describe("appStudio", () => {
       }
     });
 
+    it("manifest no schema", async () => {
+      const ctx = createContextV3();
+      const json = {};
+      const zip = new AdmZip();
+      zip.addFile("manifest.json", new Buffer(JSON.stringify(json)));
+      const info = zip.toBuffer();
+
+      const inputs: InputsWithProjectPath = {
+        [CoreQuestionNames.AppPackagePath]: info,
+        platform: Platform.VSCode,
+        projectPath: "projectPath",
+      };
+
+      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, "ManifestValidationFailed");
+      }
+    });
+
     it("manifest validation failed", async () => {
       const ctx = createContextV3();
 

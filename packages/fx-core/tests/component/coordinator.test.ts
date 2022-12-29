@@ -2284,6 +2284,17 @@ describe("component coordinator test", () => {
       assert.isTrue(res.isErr());
     });
 
+    it("missing appPackagePath", async () => {
+      const context = createContextV3();
+      context.tokenProvider = undefined;
+      const inputs: InputsWithProjectPath = {
+        platform: Platform.VSCode,
+        projectPath: "project-path",
+      };
+      const res = await coordinator.publishInDeveloperPortal(context, inputs);
+      assert.isTrue(res.isErr());
+    });
+
     it("success", async () => {
       const context = createContextV3();
       context.tokenProvider = {

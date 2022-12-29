@@ -863,7 +863,7 @@ export async function updateTeamsAppV3ForPublish(
     try {
       const manifestString = manifestFile.getData().toString();
       const manifest = JSON.parse(manifestString) as TeamsAppManifest;
-      if (!isUUID(manifest.id)) {
+      if (!manifest.id || !isUUID(manifest.id)) {
         validationError = AppStudioResultFactory.UserError(
           AppStudioError.ValidationFailedError.name,
           AppStudioError.ValidationFailedError.message([

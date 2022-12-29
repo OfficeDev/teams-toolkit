@@ -2286,7 +2286,10 @@ describe("component coordinator test", () => {
 
     it("missing appPackagePath", async () => {
       const context = createContextV3();
-      context.tokenProvider = undefined;
+      context.tokenProvider = {
+        m365TokenProvider: new MockM365TokenProvider(),
+        azureAccountProvider: new MockAzureAccountProvider(),
+      };
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
         projectPath: "project-path",

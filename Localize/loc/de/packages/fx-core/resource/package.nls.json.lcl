@@ -2226,10 +2226,13 @@
       </Item>
       <Item ItemId=";core.deploy.failNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[fail to deploy '%s' to the cloud!]]></Val>
+          <Val><![CDATA[fail to deploy '%s'!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Fehler beim Bereitstellen '%s' in der Cloud!]]></Val>
+            <Val><![CDATA[Fehler beim Bereitstellen von „%s“!]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[fail to deploy '%s' to the cloud!]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2820,13 +2823,22 @@
       </Item>
       <Item ItemId=";core.migrationV3.Message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version < %s]]></Val>
+          <Val><![CDATA[The Teams Toolkit related configurations are older version. Upgrading project is required to continue. Please confirm you are agree to upgrade the TeamsFx configurations.]A;The upgrading will not impact your business source code, but just the configuration used by Teams Toolkit, and backups will be generated for reverting. If you don't agree to upgrade, you can download previouse version %s of Teams Toolkit to continue working with current config. You can also download from this link %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Das Teams-Toolkit führt ein Upgrade der Dateien Ihrer Projektkonfiguration durch, um die neuesten Features zu unterstützen. Durch den Upgrade-Vorgang wird ihr benutzerdefinierter Code nicht geändert und die Sicherungsdateien für den Fall erstellt, dass eine Wiederherstellung erforderlich ist.]A;Beachten Sie, dass dieses Upgrade ein Muss ist, um das Teams-Toolkit der aktuellen Version weiterhin verwenden zu können. Wenn Sie nicht zum Upgrade bereit sind und weiterhin die alte Version verwenden möchten, finden Sie das Teams-Toolkit unter „Erweiterung“ und „Version installieren“ < %s]]></Val>
+            <Val><![CDATA[Bei den auf das Teams-Toolkit bezogenen Konfigurationen handelt es sich um eine ältere Version. Ein Upgrade des Projekts ist erforderlich, um den Vorgang fortzusetzen. Bestätigen Sie, dass Sie dem Upgrade der TeamsFx-Konfigurationen zustimmen.]A;Das Upgrade wirkt sich nicht auf Ihren geschäftlichen Quellcode aus, sondern nur auf die Konfiguration, die vom Teams-Toolkit verwendet wird, und es werden Sicherungen für die Wiederherstellung generiert. Wenn Sie dem Upgrade nicht zustimmen, können Sie die vorherige Version %s des Teams-Toolkit herunterladen, um Ihre Arbeit mit der aktuellen Konfiguration fortzusetzen. Sie können auch über diesen Link %s herunterladen.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version < 5.0.0]]></Val>
+            <Val><![CDATA[Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version < %s]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.migrationV3.VS.Message" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The installed version of Teams Toolkit (%s) requires configuration changes to this project that can be done automatically. Before upgrading, select Learn more to read about the required changes or select Upgrade to perform the changes automatically.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die installierte Version von Teams Toolkit (%s) erfordert Konfigurationsänderungen an diesem Projekt, die automatisch durchgeführt werden können. Wählen Sie vor dem Upgrade „Weitere Informationen“, um über die erforderlichen Änderungen nachzulesen, oder „Upgrade“, um die Änderungen automatisch auszuführen.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4582,6 +4594,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.deploy.zipDeploymentRemoteStartError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Zip Deploy success but remote start failed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Die Zip-Bereitstellung war erfolgreich, der Remotestart ist jedoch fehlgeschlagen.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.env.error.folderNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Folder %s does not exist.]]></Val>
@@ -5658,10 +5679,13 @@
       </Item>
       <Item ItemId=";error.UpgradeV3CanceledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit (version < 5.0.0).]]></Val>
+          <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit in %s based on the project version %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Wenn Sie für Ihr Projekt kein Upgrade durchführen möchten, installieren Sie eine andere Version des Teams-Toolkits (Version <= 5.0.0).]]></Val>
+            <Val><![CDATA[Wenn Sie für Ihr Projekt kein Upgrade durchführen möchten, installieren Sie eine andere Version des Teams-Toolkits in %s basierend auf der Projektversion %s.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit (version < 5.0.0).]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

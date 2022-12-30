@@ -374,6 +374,28 @@ describe("generateAppYml-js/ts", () => {
 
     await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
   });
+
+  it("should success for js webapp bot as resourceId eq botWebAppResourceId", async () => {
+    await copyTestProject("jsWebappBotId", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+  });
+
+  it("should success for ts webapp bot as resourceId eq botWebAppResourceId", async () => {
+    await copyTestProject("jsWebappBotId", projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.programmingLanguage = "typescript";
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+  });
 });
 
 describe("generateAppYml-csharp", () => {

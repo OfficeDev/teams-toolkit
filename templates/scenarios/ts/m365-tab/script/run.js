@@ -23,7 +23,9 @@ async function run() {
   process.env.REACT_APP_START_LOGIN_PAGE_URL = `${envs.TAB_ENDPOINT}/auth-start.html`;
 
   // launch service locally by executing npm command
-  cp.spawn(/^win/.test(process.platform) ? "npm.cmd" : "npm", ["run", "start"], { stdio: "inherit" });
+  cp.spawn(/^win/.test(process.platform) ? "npm.cmd" : "npm", ["run", "start"], {
+    stdio: "inherit",
+  });
 }
 
 run();

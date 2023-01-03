@@ -242,10 +242,6 @@ export class Constants {
   public static readonly PLUGIN_NAME = "AppStudioPlugin";
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
   public static readonly INCLUDE_APP_MANIFEST = "include-app-manifest";
-  public static readonly READ_MORE = getLocalizedString("core.Notification.ReadMore");
-  public static readonly VIEW_DEVELOPER_PORTAL = getLocalizedString(
-    "plugins.appstudio.viewDeveloperPortal"
-  );
   public static readonly DEVELOPER_PORTAL_APP_PACKAGE_URL =
     "https://dev.teams.microsoft.com/apps/%s/app-package?login_hint=%s";
   public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";

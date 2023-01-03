@@ -648,10 +648,13 @@ export async function updateManifest(
         "info",
         getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"),
         false,
-        Constants.VIEW_DEVELOPER_PORTAL
+        getLocalizedString("plugins.appstudio.viewDeveloperPortal")
       )
       .then((res) => {
-        if (res?.isOk() && res.value === Constants.VIEW_DEVELOPER_PORTAL) {
+        if (
+          res?.isOk() &&
+          res.value === getLocalizedString("plugins.appstudio.viewDeveloperPortal")
+        ) {
           ctx.userInteraction.openUrl(
             util.format(Constants.DEVELOPER_PORTAL_APP_PACKAGE_URL, result.value, loginHint)
           );
@@ -823,10 +826,13 @@ export async function updateManifestV3(
           "info",
           getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"),
           false,
-          Constants.VIEW_DEVELOPER_PORTAL
+          getLocalizedString("plugins.appstudio.viewDeveloperPortal")
         )
         .then((res) => {
-          if (res?.isOk() && res.value === Constants.VIEW_DEVELOPER_PORTAL) {
+          if (
+            res?.isOk() &&
+            res.value === getLocalizedString("plugins.appstudio.viewDeveloperPortal")
+          ) {
             ctx.userInteraction.openUrl(url);
           }
         });

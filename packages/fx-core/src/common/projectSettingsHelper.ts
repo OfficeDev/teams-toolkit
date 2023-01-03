@@ -87,17 +87,22 @@ export function isValidProject(workspacePath?: string): boolean {
 
 export function isValidProjectV3(workspacePath: string): boolean {
   const filePath = path.resolve(workspacePath, SettingsFolderName, SettingsFileName);
-  if (!fs.existsSync(filePath)) {
-    return false;
+  if (fs.existsSync(filePath)) {
+    const projectSettings: Settings = fs.readJsonSync(filePath) as Settings;
+    if (!projectSettings.trackingId) {
+      return false;
+    }
+    if (!projectSettings.version) {
+      return false;
+    }
+    return true;
   }
-  const projectSettings: Settings = fs.readJsonSync(filePath) as Settings;
-  if (!projectSettings.trackingId) {
-    return false;
+  const ymlFilePath = path.join(workspacePath, "teamsapp.yml");
+  const localYmlPath = path.join(workspacePath, "teamsapp.local.yml");
+  if (fs.pathExistsSync(ymlFilePath) || fs.pathExistsSync(localYmlPath)) {
+    return true;
   }
-  if (!projectSettings.version) {
-    return false;
-  }
-  return true;
+  return false;
 }
 
 export function isValidProjectV2(workspacePath: string): boolean {

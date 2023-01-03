@@ -11,7 +11,7 @@ const settingsFolderName = "teamsfx";
 const settingsFileName = "settings.json";
 const projectYamlName = "teamsapp.yml";
 
-async function readSettings(filePath: string): Promise<string> {
+async function readTrackingIdFromSettings(filePath: string): Promise<string> {
   if (!(await fs.pathExists(filePath))) {
     throw new Error(`${filePath} does not exist.`);
   }
@@ -20,7 +20,7 @@ async function readSettings(filePath: string): Promise<string> {
   return settings.trackingId;
 }
 
-async function readYaml(filePath: string): Promise<string> {
+async function readProjectIdFromYaml(filePath: string): Promise<string> {
   if (!(await fs.pathExists(filePath))) {
     throw new Error(`${filePath} does not exist.`);
   }
@@ -54,12 +54,12 @@ export async function loadEnv(
   const yamlPath = path.join(projectPath, projectYamlName);
   let projectId = "";
   if (await fs.pathExists(settingsPath)) {
-    projectId = await readSettings(settingsPath);
+    projectId = await readTrackingIdFromSettings(settingsPath);
     if (!projectId) {
       throw new Error(`trackingId is missing in ${settingsFileName}`);
     }
   } else if (await fs.pathExists(yamlPath)) {
-    projectId = await readYaml(yamlPath);
+    projectId = await readProjectIdFromYaml(yamlPath);
     if (!projectId) {
       throw new Error(`projectId is missing in ${projectYamlName}`);
     }

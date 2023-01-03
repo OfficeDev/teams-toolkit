@@ -1537,6 +1537,7 @@ describe("handlers", () => {
       sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
       const result = await handlers.backendExtensionsInstallHandler();
       chai.assert.equal(result, undefined);
+      sinon.restore();
     });
   });
 

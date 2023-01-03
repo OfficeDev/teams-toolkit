@@ -49,6 +49,20 @@
             "suggested": false
         },
         {
+            "id": "todo-list-SPFx",
+            "title": "Todo List with SPFx",
+            "shortDescription": "Todo List app hosting on SharePoint",
+            "fullDescription": "Todo List with SPFx is a Todo List for individuals to manage his/her personal to-do items. This app is hosted on Sharepoint. There is no requirements to deploy Azure resources.",
+            "tags": [
+                "SharePoint",
+                "SPFx",
+                "TS"
+            ],
+            "time": "1hr to run",
+            "configuration": "Manual configurations required",
+            "suggested": false
+        },
+        {
             "id": "hello-world-in-meeting",
             "title": "My First Meeting App",
             "shortDescription": "A template for apps using only in the context of a Teams meeting",

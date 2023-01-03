@@ -89,6 +89,7 @@ describe("ProjectMigratorMW", () => {
       .resolves(ok("Learn more"))
       .onCall(1)
       .resolves(ok("Upgrade"));
+    sandbox.stub(MockUserInteraction.prototype, "openUrl").resolves(ok(true));
     const tools = new MockTools();
     setTools(tools);
     await copyTestProject(Constants.happyPathTestProject, projectPath);

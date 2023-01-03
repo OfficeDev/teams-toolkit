@@ -2278,7 +2278,21 @@ describe("component coordinator test", () => {
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
         projectPath: "project-path",
-        [CoreQuestionNames.ManifestPath]: "manifest-path",
+        [CoreQuestionNames.AppPackagePath]: "path",
+      };
+      const res = await coordinator.publishInDeveloperPortal(context, inputs);
+      assert.isTrue(res.isErr());
+    });
+
+    it("missing appPackagePath", async () => {
+      const context = createContextV3();
+      context.tokenProvider = {
+        m365TokenProvider: new MockM365TokenProvider(),
+        azureAccountProvider: new MockAzureAccountProvider(),
+      };
+      const inputs: InputsWithProjectPath = {
+        platform: Platform.VSCode,
+        projectPath: "project-path",
       };
       const res = await coordinator.publishInDeveloperPortal(context, inputs);
       assert.isTrue(res.isErr());
@@ -2293,12 +2307,12 @@ describe("component coordinator test", () => {
       sandbox
         .stub(context.tokenProvider.m365TokenProvider, "getJsonObject")
         .resolves(ok({ unique_name: "test" }));
-      sandbox.stub(appStudio, "updateManifestV3ForPublish").resolves(ok("appId"));
+      sandbox.stub(appStudio, "updateTeamsAppV3ForPublish").resolves(ok("appId"));
       const openUrl = sandbox.stub(context.userInteraction, "openUrl").resolves(ok(true));
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
         projectPath: "project-path",
-        [CoreQuestionNames.ManifestPath]: "manifest-path",
+        [CoreQuestionNames.AppPackagePath]: "path",
       };
 
       const res = await coordinator.publishInDeveloperPortal(context, inputs);
@@ -2313,12 +2327,12 @@ describe("component coordinator test", () => {
         azureAccountProvider: new MockAzureAccountProvider(),
       };
       sandbox
-        .stub(appStudio, "updateManifestV3ForPublish")
+        .stub(appStudio, "updateTeamsAppV3ForPublish")
         .resolves(err(new UserError("source", "error", "", "")));
       const inputs: InputsWithProjectPath = {
         platform: Platform.VSCode,
         projectPath: "project-path",
-        [CoreQuestionNames.ManifestPath]: "manifest-path",
+        [CoreQuestionNames.AppPackagePath]: "path",
       };
 
       const res = await coordinator.publishInDeveloperPortal(context, inputs);

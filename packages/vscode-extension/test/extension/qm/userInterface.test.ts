@@ -18,9 +18,9 @@ import {
 
 import { SelectFileConfig, SelectFolderConfig, UserCancelError } from "@microsoft/teamsfx-api";
 
-import { FxQuickPickItem, VsCodeUI } from "../../src/qm/vsc_ui";
-import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import { sleep } from "../../src/utils/commonUtils";
+import { FxQuickPickItem, VsCodeUI } from "../../../src/qm/vsc_ui";
+import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
+import { sleep } from "../../../src/utils/commonUtils";
 
 describe("UI Unit Tests", async () => {
   before(() => {
@@ -215,6 +215,80 @@ describe("UI Unit Tests", async () => {
       expect(result.isErr()).is.true;
       if (result.isErr()) {
         expect(result.error).to.equal(UserCancelError);
+      }
+      sinon.restore();
+    });
+
+    it("has returns item in possible files", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const config: SelectFileConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        default: "default folder",
+        possibleFiles: [
+          {
+            id: "1",
+            label: "1",
+          },
+          {
+            id: "2",
+            label: "2",
+          },
+        ],
+      };
+
+      const mockQuickPick = stubInterface<QuickPick<FxQuickPickItem>>();
+      const mockDisposable = stubInterface<Disposable>();
+      let acceptListener: (e: void) => any;
+      mockQuickPick.onDidAccept.callsFake((listener: (e: void) => unknown) => {
+        acceptListener = listener;
+        return mockDisposable;
+      });
+      mockQuickPick.onDidHide.callsFake((listener: (e: void) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.onDidTriggerButton.callsFake((listener: (e: QuickInputButton) => unknown) => {
+        return mockDisposable;
+      });
+      mockQuickPick.show.callsFake(() => {
+        mockQuickPick.selectedItems = [{ id: "1" } as FxQuickPickItem];
+        acceptListener();
+      });
+      sinon.stub(window, "createQuickPick").callsFake(() => {
+        return mockQuickPick;
+      });
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const result = await ui.selectFile(config);
+
+      expect(result.isOk()).is.true;
+      if (result.isOk()) {
+        expect(result.value.result).to.equal("1");
+      }
+      sinon.restore();
+    });
+
+    it("has returns invalid input", async function (this: Mocha.Context) {
+      const ui = new VsCodeUI(<ExtensionContext>{});
+      const config: SelectFileConfig = {
+        name: "name",
+        title: "title",
+        placeholder: "placeholder",
+        default: "default",
+        possibleFiles: [
+          {
+            id: "default",
+            label: "default",
+          },
+        ],
+      };
+
+      const result = await ui.selectFile(config);
+
+      expect(result.isErr()).is.true;
+      if (result.isErr()) {
+        expect(result.error.name).to.equal("InvalidInput");
       }
       sinon.restore();
     });

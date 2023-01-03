@@ -12,11 +12,13 @@ import {
   Platform,
   ResourceContextV3,
   UserError,
+  ManifestUtil,
+  Ok,
 } from "@microsoft/teamsfx-api";
 import {
   checkIfAppInDifferentAcountSameTenant,
   getAppPackage,
-  updateManifestV3ForPublish,
+  updateTeamsAppV3ForPublish,
 } from "../../../../src/component/resource/appManifest/appStudio";
 import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
 import AdmZip from "adm-zip";
@@ -190,7 +192,7 @@ describe("appStudio", () => {
     });
   });
 
-  describe("updateManifestV3ForPublish", () => {
+  describe("updateTeamsAppV3ForPublish", () => {
     let mockedEnvRestore: RestoreFn | undefined;
     afterEach(() => {
       sandbox.restore();
@@ -198,99 +200,200 @@ describe("appStudio", () => {
         mockedEnvRestore();
       }
     });
-    it("success", async () => {
+    it("not valid json", async () => {
       const ctx = createContextV3();
+      const zip = new AdmZip();
+      zip.addFile("manifest.json", new Buffer(""));
+      const info = zip.toBuffer();
+
       const inputs: InputsWithProjectPath = {
-        [CoreQuestionNames.ManifestPath]: "manifest.json",
+        [CoreQuestionNames.AppPackagePath]: info,
         platform: Platform.VSCode,
         projectPath: "projectPath",
       };
-      mockedEnvRestore = mockedEnv({
-        TEAMSFX_ENV: "local",
-        TEAMS_APP_ID: "id",
-      });
-      const createAppDriver = new CreateTeamsAppDriver();
+
+      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, "ManifestValidationFailed");
+      }
+    });
+
+    it("no manifest file", async () => {
+      const ctx = createContextV3();
+      const zip = new AdmZip();
+      const info = zip.toBuffer();
+
+      const inputs: InputsWithProjectPath = {
+        [CoreQuestionNames.AppPackagePath]: info,
+        platform: Platform.VSCode,
+        projectPath: "projectPath",
+      };
+      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, "ManifestValidationFailed");
+      }
+    });
+
+    it("manifest without id", async () => {
+      const ctx = createContextV3();
+      const json = {
+        $schema: "schema",
+      };
+      const zip = new AdmZip();
+      zip.addFile("manifest.json", new Buffer(JSON.stringify(json)));
+      const info = zip.toBuffer();
+
+      const inputs: InputsWithProjectPath = {
+        [CoreQuestionNames.AppPackagePath]: info,
+        platform: Platform.VSCode,
+        projectPath: "projectPath",
+      };
+
+      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, "ManifestValidationFailed");
+      }
+    });
+
+    it("manifest invalid id", async () => {
+      const ctx = createContextV3();
+      const json = {
+        id: "fe58d257",
+      };
+      const zip = new AdmZip();
+      zip.addFile("manifest.json", new Buffer(JSON.stringify(json)));
+      const info = zip.toBuffer();
+
+      const inputs: InputsWithProjectPath = {
+        [CoreQuestionNames.AppPackagePath]: info,
+        platform: Platform.VSCode,
+        projectPath: "projectPath",
+      };
+
+      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        console.log(res.error);
+        chai.assert.equal(res.error.name, "ManifestValidationFailed");
+      }
+    });
+
+    it("manifest no schema", async () => {
+      const ctx = createContextV3();
+      const json = {
+        id: "fe58d257-4ce6-427e-a388-496c89633774",
+      };
+      const zip = new AdmZip();
+      zip.addFile("manifest.json", new Buffer(JSON.stringify(json)));
+      const info = zip.toBuffer();
+
+      const inputs: InputsWithProjectPath = {
+        [CoreQuestionNames.AppPackagePath]: info,
+        platform: Platform.VSCode,
+        projectPath: "projectPath",
+      };
+
+      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, "ManifestValidationFailed");
+      }
+    });
+
+    it("manifest validation failed", async () => {
+      const ctx = createContextV3();
+
+      const json = {
+        $schema: "schema",
+        id: "fe58d257-4ce6-427e-a388-496c89633774",
+      };
+      const zip = new AdmZip();
+      zip.addFile("manifest.json", new Buffer(JSON.stringify(json)));
+      const info = zip.toBuffer();
+
+      const inputs: InputsWithProjectPath = {
+        [CoreQuestionNames.AppPackagePath]: info,
+        platform: Platform.VSCode,
+        projectPath: "projectPath",
+      };
+
+      const errors: string[] = ["error1"];
+      sandbox.stub(ManifestUtil, "validateManifest").resolves(errors);
+
+      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, "ManifestValidationFailed");
+        chai.assert.isTrue(res.error.message.includes("error1"));
+      }
+    });
+
+    it("update teams app error", async () => {
+      const ctx = createContextV3();
+      const json = {
+        $schema: "schema",
+        id: "fe58d257-4ce6-427e-a388-496c89633774",
+      };
+      const zip = new AdmZip();
+      zip.addFile("manifest.json", new Buffer(JSON.stringify(json)));
+      const info = zip.toBuffer();
+      sandbox.stub(ManifestUtil, "validateManifest").resolves([]);
+
+      const inputs: InputsWithProjectPath = {
+        [CoreQuestionNames.AppPackagePath]: info,
+        platform: Platform.VSCode,
+        projectPath: "projectPath",
+      };
       const updateDriver = new ConfigureTeamsAppDriver();
       sandbox.stub(Container, "get").callsFake((name) => {
-        if (name === "teamsApp/zipAppPackage") {
-          return createAppDriver;
-        } else if (name == "teamsApp/update") {
+        if (name === "teamsApp/update") {
           return updateDriver;
         } else {
           throw new Error("not implemented");
         }
       });
-      sandbox.stub(createAppDriver, "run").resolves(ok(new Map([])));
+      sandbox
+        .stub(updateDriver, "run")
+        .resolves(err(new UserError("apiError", "apiError", "", "")));
+
+      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+      chai.assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        chai.assert.equal(res.error.name, "apiError");
+      }
+    });
+
+    it("happy path", async () => {
+      const ctx = createContextV3();
+      const json = {
+        $schema: "schema",
+        id: "fe58d257-4ce6-427e-a388-496c89633774",
+      };
+      const zip = new AdmZip();
+      zip.addFile("manifest.json", new Buffer(JSON.stringify(json)));
+      const info = zip.toBuffer();
+      sandbox.stub(ManifestUtil, "validateManifest").resolves([]);
+
+      const inputs: InputsWithProjectPath = {
+        [CoreQuestionNames.AppPackagePath]: info,
+        platform: Platform.VSCode,
+        projectPath: "projectPath",
+      };
+      const updateDriver = new ConfigureTeamsAppDriver();
+      sandbox.stub(Container, "get").callsFake((name) => {
+        if (name === "teamsApp/update") {
+          return updateDriver;
+        } else {
+          throw new Error("not implemented");
+        }
+      });
       sandbox.stub(updateDriver, "run").resolves(ok(new Map([])));
-      sandbox.stub(envUtil, "readEnv").resolves();
 
-      const res = await updateManifestV3ForPublish(ctx as ResourceContextV3, inputs);
+      const res = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
       chai.assert.isTrue(res.isOk());
-    });
-
-    it("createAppPackage error", async () => {
-      const ctx = createContextV3();
-      const inputs: InputsWithProjectPath = {
-        [CoreQuestionNames.ManifestPath]: "manifest.json",
-        platform: Platform.VSCode,
-        projectPath: "projectPath",
-      };
-      mockedEnvRestore = mockedEnv({
-        TEAMSFX_ENV: "local",
-        TEAMS_APP_ID: "id",
-      });
-      const createAppDriver = new CreateTeamsAppDriver();
-      const updateDriver = new ConfigureTeamsAppDriver();
-      sandbox.stub(Container, "get").callsFake((name) => {
-        if (name === "teamsApp/zipAppPackage") {
-          return createAppDriver;
-        } else if (name == "teamsApp/update") {
-          return updateDriver;
-        } else {
-          throw new Error("not implemented");
-        }
-      });
-      sandbox.stub(createAppDriver, "run").resolves(err(new UserError("error", "error", "", "")));
-
-      const res = await updateManifestV3ForPublish(ctx as ResourceContextV3, inputs);
-
-      chai.assert.isTrue(res.isErr());
-      if (res.isErr()) {
-        chai.assert.equal(res.error.name, "error");
-      }
-    });
-
-    it("update app error", async () => {
-      const ctx = createContextV3();
-      const inputs: InputsWithProjectPath = {
-        [CoreQuestionNames.ManifestPath]: "manifest.json",
-        platform: Platform.VSCode,
-        projectPath: "projectPath",
-      };
-      mockedEnvRestore = mockedEnv({
-        TEAMSFX_ENV: "local",
-        TEAMS_APP_ID: "id",
-      });
-      const createAppDriver = new CreateTeamsAppDriver();
-      const updateDriver = new ConfigureTeamsAppDriver();
-      sandbox.stub(Container, "get").callsFake((name) => {
-        if (name === "teamsApp/zipAppPackage") {
-          return createAppDriver;
-        } else if (name == "teamsApp/update") {
-          return updateDriver;
-        } else {
-          throw new Error("not implemented");
-        }
-      });
-      sandbox.stub(createAppDriver, "run").resolves(ok(new Map([])));
-      sandbox.stub(updateDriver, "run").resolves(err(new UserError("error", "error", "", "")));
-      sandbox.stub(envUtil, "readEnv").resolves();
-
-      const res = await updateManifestV3ForPublish(ctx as ResourceContextV3, inputs);
-      chai.assert.isTrue(res.isErr());
-      if (res.isErr()) {
-        chai.assert.equal(res.error.name, "error");
-      }
     });
   });
 });

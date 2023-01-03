@@ -371,7 +371,7 @@ describe("handlers", () => {
 
       const result = await handlers.selectTutorialsHandler();
 
-      chai.assert.equal(tutorialOptions.length, 14);
+      chai.assert.equal(tutorialOptions.length, 15);
       chai.assert.isTrue(result.isOk());
     });
   });

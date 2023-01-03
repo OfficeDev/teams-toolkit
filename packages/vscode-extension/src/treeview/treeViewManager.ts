@@ -298,7 +298,7 @@ class TreeViewManager {
           localize("teamstoolkit.commandsTreeViewProvider.publishInDevPortalDescription"),
           "fx-extension.publishInDeveloperPortal",
           "publish",
-          { name: "export", custom: false }
+          { name: "teamsfx-developer-portal", custom: false }
         )
       );
     }

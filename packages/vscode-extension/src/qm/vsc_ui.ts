@@ -567,6 +567,19 @@ export class VsCodeUI implements UserInteraction {
     type: "file" | "files",
     defaultValue?: string
   ): Promise<Result<InputResult<string[] | string>, FxError>> {
+    if (config.possibleFiles) {
+      if (config.possibleFiles.find((o) => o.id === "browse" || o.id === "default")) {
+        return Promise.resolve(
+          err(
+            new SystemError(
+              "UI",
+              "InvalidInput",
+              'Possible files should not contain item with id "browse" or "default".'
+            )
+          )
+        );
+      }
+    }
     /// TODO: use generic constraints.
     const disposables: Disposable[] = [];
     try {

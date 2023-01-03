@@ -76,6 +76,7 @@ import {
   migrateNgrokStartCommand,
   migrateBotStart,
   migrateAuthStart,
+  migratePreDebugCheck,
 } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
@@ -585,6 +586,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateFrontendStart,
     migrateAuthStart,
     migrateBotStart,
+    migratePreDebugCheck,
     migrateValidateLocalPrerequisites,
     migrateNgrokStartTask,
     migrateNgrokStartCommand,

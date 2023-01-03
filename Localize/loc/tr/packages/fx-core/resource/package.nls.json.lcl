@@ -2226,10 +2226,13 @@
       </Item>
       <Item ItemId=";core.deploy.failNotice" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[fail to deploy '%s' to the cloud!]]></Val>
+          <Val><![CDATA[fail to deploy '%s'!]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[buluta '%s' dağıtılamadı!]]></Val>
+            <Val><![CDATA['%s'! dağıtılamadı]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[fail to deploy '%s' to the cloud!]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2820,13 +2823,22 @@
       </Item>
       <Item ItemId=";core.migrationV3.Message" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version < %s]]></Val>
+          <Val><![CDATA[The Teams Toolkit related configurations are older version. Upgrading project is required to continue. Please confirm you are agree to upgrade the TeamsFx configurations.]A;The upgrading will not impact your business source code, but just the configuration used by Teams Toolkit, and backups will be generated for reverting. If you don't agree to upgrade, you can download previouse version %s of Teams Toolkit to continue working with current config. You can also download from this link %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Teams Araç Seti, en son özellikleri desteklemek için proje yapılandırma dosyalarınızı yükseltir. Yükseltme işlemi özel kodunuzu değiştirmez ve geri döndürme gerekmesi ihtimaline karşı yedekleme dosyaları oluşturur.]A;Bu yükseltmenin geçerli Teams Araç Seti sürümünü kullanmaya devam etmek için gerekli olduğuna dikkat edin. Yükseltmeye hazır değilseniz ve eski sürümü kullanmaya devam etmek istiyorsanız, lütfen Uzantıda Teams Araç Seti'ni bulun ve %s sürümünden düşük bir sürüm yükleyin]]></Val>
+            <Val><![CDATA[Teams Araç Seti ile ilgili yapılandırmalar daha eski sürümlerdir. Devam etmek için projeyi yükseltmeniz gerekiyor. Lütfen TeamsFx yapılandırmalarını yükseltmeyi kabul ettiğinizi onaylayın.]A;Yükseltme, iş kaynak kodunuzu değil, yalnızca Teams Araç Seti tarafından kullanılan yapılandırmayı etkiler ve geri almak için yedekler oluşturulur. Yükseltmeyi kabul etmiyorsanız, geçerli yapılandırmayla çalışmaya devam etmek için Teams Araç Seti'nin önceki %s sürümünü indirebilirsiniz. Ayrıca bu bağlantıdan da indirebilirsiniz: %s.]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version < 5.0.0]]></Val>
+            <Val><![CDATA[Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.]A;Notice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version < %s]]></Val>
           </Prev>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";core.migrationV3.VS.Message" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The installed version of Teams Toolkit (%s) requires configuration changes to this project that can be done automatically. Before upgrading, select Learn more to read about the required changes or select Upgrade to perform the changes automatically.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Teams Araç Seti'nin (%s) yüklü sürümü, bu projede otomatik olarak yapılabilecek yapılandırma değişiklikleri gerektirir. Yükseltmeden önce Gerekli değişiklikler hakkında daha fazla bilgi edinin'i veya Değişiklikleri otomatik olarak gerçekleştirmek için yükselt'i seçin.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4582,6 +4594,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";driver.deploy.zipDeploymentRemoteStartError" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Zip Deploy success but remote start failed.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Zip Dağıtımı başarılı ancak uzaktan başlatma başarısız oldu.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";driver.env.error.folderNotExist" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Folder %s does not exist.]]></Val>
@@ -5658,10 +5679,13 @@
       </Item>
       <Item ItemId=";error.UpgradeV3CanceledError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit (version < 5.0.0).]]></Val>
+          <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit in %s based on the project version %s.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Projenizi yükseltmek istemiyorsanız lütfen Teams Araç Seti'nin başka bir sürümünü (sürüm < 5.0.0) yükleyin.]]></Val>
+            <Val><![CDATA[Projenizi yükseltmek istemiyorsanız lütfen %s proje sürümüne göre %s içinde Teams Araç Seti'nin başka bir sürümünü yükleyin.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[If you don't want to upgrade your project, please install another version of Teams Toolkit (version < 5.0.0).]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -963,7 +963,7 @@ function generateCreateAppPackageArgs(
   );
 
   return {
-    manifestTemplatePath: manifestTemplatePath,
+    manifestPath: manifestTemplatePath,
     outputZipPath: path.join(
       projectPath,
       BuildFolderName,

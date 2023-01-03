@@ -220,7 +220,7 @@ export class ResourceGroupHelper {
     availableLocations: string[],
     rmClient: ResourceManagementClient
   ): Promise<QTreeNode | undefined> {
-    const selectResourceGroup = QuestionSelectResourceGroup;
+    const selectResourceGroup = QuestionSelectResourceGroup();
     const staticOptions: OptionItem[] = [
       { id: newResourceGroupOption, label: newResourceGroupOption },
     ];
@@ -243,7 +243,7 @@ export class ResourceGroupHelper {
     newResourceGroupNameNode.condition = { equals: newResourceGroupOption };
     node.addChild(newResourceGroupNameNode);
 
-    const selectLocation = QuestionNewResourceGroupLocation;
+    const selectLocation = QuestionNewResourceGroupLocation();
     // TODO: maybe lazily load locations
     selectLocation.staticOptions = availableLocations;
     selectLocation.default = "East US";

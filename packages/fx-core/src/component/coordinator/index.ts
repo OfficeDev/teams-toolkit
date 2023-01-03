@@ -25,7 +25,6 @@ import {
   CoreQuestionNames,
   CreateNewOfficeAddinOption,
   ProjectNamePattern,
-  QuestionRootFolder,
   ScratchOptionNo,
   ScratchOptionYes,
 } from "../../core/question";
@@ -183,14 +182,14 @@ export class Coordinator {
     inputs: Inputs,
     actionContext?: ActionContext
   ): Promise<Result<string, FxError>> {
-    const folder = inputs[QuestionRootFolder.name] as string;
+    const folder = inputs["folder"] as string;
     if (!folder) {
       return err(InvalidInputError("folder is undefined"));
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath = "";
     const automaticNpmInstall = "automaticNpmInstall";
-    if (scratch === ScratchOptionNo.id) {
+    if (scratch === ScratchOptionNo().id) {
       // create from sample
       const sampleId = inputs[CoreQuestionNames.Samples] as string;
       if (!sampleId) {
@@ -209,7 +208,7 @@ export class Coordinator {
       if (res.isErr()) return err(res.error);
 
       await downloadSampleHook(sampleId, projectPath);
-    } else if (!scratch || scratch === ScratchOptionYes.id) {
+    } else if (!scratch || scratch === ScratchOptionYes().id) {
       // create from new
       const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
@@ -252,7 +251,7 @@ export class Coordinator {
         [TelemetryProperty.Feature]: feature,
         [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
       });
-    } else if (scratch === CreateNewOfficeAddinOption.id) {
+    } else if (scratch === CreateNewOfficeAddinOption().id) {
       const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
       const validateResult = jsonschema.validate(appName, {
@@ -307,7 +306,7 @@ export class Coordinator {
     inputs: Inputs,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    if (inputs.proceed === InitOptionNo.id) return err(UserCancelError);
+    if (inputs.proceed === InitOptionNo().id) return err(UserCancelError);
     const projectPath = inputs.projectPath;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is undefined"));
@@ -328,7 +327,7 @@ export class Coordinator {
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
     if (actionContext?.telemetryProps) actionContext.telemetryProps["project-id"] = ensureRes.value;
-    if (editor === InitEditorVS.id) {
+    if (editor === InitEditorVS().id) {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);
     }
@@ -388,7 +387,7 @@ export class Coordinator {
     inputs: Inputs,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    if (inputs.proceed === InitOptionNo.id) return err(UserCancelError);
+    if (inputs.proceed === InitOptionNo().id) return err(UserCancelError);
     const projectPath = inputs.projectPath;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is undefined"));
@@ -402,7 +401,7 @@ export class Coordinator {
     if (!templateName) {
       return err(InvalidInputError("templateName is undefined"));
     }
-    if (editor === InitEditorVSCode.id) {
+    if (editor === InitEditorVSCode().id) {
       const exists = await fs.pathExists(path.join(projectPath, ".vscode"));
       context.templateVariables = { dotVscodeFolderName: exists ? ".vscode-teamsfx" : ".vscode" };
     }
@@ -413,7 +412,7 @@ export class Coordinator {
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
     if (actionContext?.telemetryProps) actionContext.telemetryProps["project-id"] = ensureRes.value;
-    if (editor === InitEditorVS.id) {
+    if (editor === InitEditorVS().id) {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);
     }

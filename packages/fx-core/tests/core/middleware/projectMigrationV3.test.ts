@@ -374,6 +374,28 @@ describe("generateAppYml-js/ts", () => {
 
     await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
   });
+
+  it("should success for js webapp bot as resourceId eq botWebAppResourceId", async () => {
+    await copyTestProject("jsWebappBotId", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "js.app.yml");
+  });
+
+  it("should success for ts webapp bot as resourceId eq botWebAppResourceId", async () => {
+    await copyTestProject("jsWebappBotId", projectPath);
+    const projectSetting = await readOldProjectSettings(projectPath);
+    projectSetting.programmingLanguage = "typescript";
+    await fs.writeJson(
+      path.join(projectPath, Constants.oldProjectSettingsFilePath),
+      projectSetting
+    );
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, "teamsfx/app.yml", "ts.app.yml");
+  });
 });
 
 describe("generateAppYml-csharp", () => {
@@ -1233,6 +1255,37 @@ describe("debugMigration", () => {
         assert.equal(runFunctionScript, await fs.readFile(runFunctionScriptPath, "utf-8"));
       }
     });
+  });
+});
+
+describe("updateGitignore", async () => {
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+  const migrationContext: MigrationContext = await mockMigrationContext(projectPath);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+  });
+
+  it("should update existing gitignore file", async () => {
+    await copyTestProject("happyPath", projectPath);
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, ".gitignore", "whenGitignoreExist");
+  });
+
+  it("should create new gitignore file when no gitignore file exists", async () => {
+    await copyTestProject("happyPath", projectPath);
+    await fs.remove(path.join(projectPath, ".gitignore"));
+
+    await generateAppYml(migrationContext);
+
+    await assertFileContent(projectPath, ".gitignore", "whenGitignoreNotExist");
   });
 });
 

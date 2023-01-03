@@ -72,6 +72,7 @@ import {
   getQuestionsForProvisionV3,
   getQuestionsForPublishInDeveloperPortal,
 } from "../component/question";
+import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -115,7 +116,7 @@ export class FxCoreV3Implement {
     setCurrentStage(Stage.create);
     inputs.stage = Stage.create;
     const context = createContextV3();
-    if (!!inputs.teamsAppFromTdp) {
+    if (isFromDevPortalInVSC(inputs)) {
       // should never happen as we do same check on Developer Portal.
       if (containsUnsupportedFeature(inputs.teamsAppFromTdp)) {
         return err(InvalidInputError("Teams app contains unsupported features"));
@@ -299,13 +300,13 @@ export class FxCoreV3Implement {
     } else if (func.method === "validateManifest") {
       const driver: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
       const args: ValidateTeamsAppArgs = {
-        manifestTemplatePath: func.params.manifestTemplatePath,
+        manifestPath: func.params.manifestTemplatePath,
       };
       res = await driver.run(args, context);
     } else if (func.method === "buildPackage") {
       const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
       const args: CreateAppPackageArgs = {
-        manifestTemplatePath: func.params.manifestTemplatePath,
+        manifestPath: func.params.manifestTemplatePath,
         outputZipPath: func.params.outputZipPath,
         outputJsonPath: func.params.outputJsonPath,
       };
@@ -387,10 +388,6 @@ export class FxCoreV3Implement {
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     if (!ctx || !inputs.projectPath)
       return err(new ObjectIsUndefinedError("createEnv input stuff"));
-    const projectSettings = ctx.projectSettings;
-    if (!projectSettings) {
-      return ok(Void);
-    }
 
     const createEnvCopyInput = await askNewEnvironment(ctx!, inputs);
     if (

@@ -23,7 +23,7 @@ describe("teamsApp/createAppPackage", async () => {
 
   it("should throw error if file not exists", async () => {
     const args: CreateAppPackageArgs = {
-      manifestTemplatePath: "fakepath",
+      manifestPath: "fakepath",
       outputZipPath: "",
       outputJsonPath: "",
     };
@@ -37,7 +37,7 @@ describe("teamsApp/createAppPackage", async () => {
 
   it("happy path", async () => {
     const args: CreateAppPackageArgs = {
-      manifestTemplatePath:
+      manifestPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
       outputZipPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
@@ -61,7 +61,7 @@ describe("teamsApp/createAppPackage", async () => {
 
   it("happy path - withEmptyCapabilities", async () => {
     const args: CreateAppPackageArgs = {
-      manifestTemplatePath:
+      manifestPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
       outputZipPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",

@@ -55,6 +55,7 @@ import {
   BotOptionItem,
   TabNonSsoAndDefaultBotItem,
   DefaultBotAndMessageExtensionItem,
+  DashboardOptionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
@@ -108,6 +109,7 @@ export enum TemplateNames {
   Tab = "non-sso-tab",
   SsoTab = "sso-tab",
   M365Tab = "m365-tab",
+  DashboardTab = "dashboard-tab",
   NotificationRestify = "notification-restify",
   NotificationWebApi = "notification-webapi",
   NotificationHttpTrigger = "notification-http-trigger",
@@ -140,6 +142,7 @@ export const Feature2TemplateName: any = {
   [`${TabOptionItem.id}:undefined`]: TemplateNames.SsoTab,
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
   [`${M365SsoLaunchPageOptionItem.id}:undefined`]: TemplateNames.M365Tab,
+  [`${DashboardOptionItem.id}:undefined`]: TemplateNames.DashboardTab,
   [`${TabNonSsoAndDefaultBotItem.id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${DefaultBotAndMessageExtensionItem.id}:undefined`]: TemplateNames.BotAndMessageExtension,
 };
@@ -210,7 +213,7 @@ export class Coordinator {
       if (res.isErr()) return err(res.error);
 
       await downloadSampleHook(sampleId, projectPath);
-    } else if (scratch === ScratchOptionYes.id) {
+    } else if (!scratch || scratch === ScratchOptionYes.id) {
       // create from new
       const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));

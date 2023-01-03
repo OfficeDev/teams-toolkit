@@ -76,6 +76,7 @@ import {
   migrateNgrokStartCommand,
   migrateBotStart,
   migrateAuthStart,
+  migratePreDebugCheck,
 } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
@@ -115,6 +116,7 @@ const subMigrations: Array<Migration> = [
   updateLaunchJson,
   azureParameterMigration,
   debugMigration,
+  updateGitignore,
 ];
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -259,7 +261,10 @@ export async function generateAppYml(context: MigrationContext): Promise<void> {
   const appYmlString: string = await appYmlGenerator.generateAppYml();
   await context.fsWriteFile(path.join(SettingsFolderName, Constants.appYmlName), appYmlString);
   if (oldProjectSettings.programmingLanguage?.toLowerCase() === "csharp") {
-    const appLocalYmlString: string = await appYmlGenerator.generateAppLocalYml();
+    const placeholderMappings = await getPlaceholderMappings(context);
+    const appLocalYmlString: string = await appYmlGenerator.generateAppLocalYml(
+      placeholderMappings
+    );
     await context.fsWriteFile(
       path.join(SettingsFolderName, Constants.appLocalYmlName),
       appLocalYmlString
@@ -581,6 +586,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateFrontendStart,
     migrateAuthStart,
     migrateBotStart,
+    migratePreDebugCheck,
     migrateValidateLocalPrerequisites,
     migrateNgrokStartTask,
     migrateNgrokStartCommand,
@@ -662,4 +668,21 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
         }
     }
   }
+}
+
+export async function updateGitignore(context: MigrationContext): Promise<void> {
+  const gitignoreFile = ".gitignore";
+  const ignoreFileExist: boolean = await context.backup(gitignoreFile);
+  if (!ignoreFileExist) {
+    context.fsCreateFile(gitignoreFile);
+  }
+
+  let ignoreFileContent: string = await fs.readFile(
+    path.join(context.projectPath, gitignoreFile),
+    "utf8"
+  );
+  ignoreFileContent += EOL + "teamsfx/.env.*";
+  ignoreFileContent += EOL + "teamsfx/backup/*";
+
+  await context.fsWriteFile(gitignoreFile, ignoreFileContent);
 }

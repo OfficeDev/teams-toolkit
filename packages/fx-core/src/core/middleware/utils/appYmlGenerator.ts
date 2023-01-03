@@ -7,6 +7,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
+import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
 
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
@@ -28,6 +29,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     teamsAppName: string | undefined;
     appName: string | undefined;
     isFunctionBot: boolean;
+    isWebAppBot: boolean;
     isTypescript: boolean;
     defaultFunctionName: string | undefined;
   };
@@ -44,6 +46,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
       teamsAppName: undefined,
       appName: undefined,
       isFunctionBot: false,
+      isWebAppBot: false,
       isTypescript: false,
       defaultFunctionName: undefined,
     };
@@ -70,7 +73,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     );
   }
 
-  public async generateAppLocalYml(): Promise<string> {
+  public async generateAppLocalYml(placeholderMappings: DebugPlaceholderMapping): Promise<string> {
+    this.handlebarsContext.placeholderMappings = placeholderMappings as any;
     await this.generateAzureHandlebarsContext();
 
     const solutionSettings = this.oldProjectSettings.solutionSettings as AzureSolutionSettings;
@@ -129,6 +133,15 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     ) {
       this.handlebarsContext.isFunctionBot = true;
     }
+    // isWebAppBot and the resourceId in bicep should be "botWebAppResourceId", then map state.fx-resource-bot.botWebAppResourceId
+    if (
+      pluginSettings &&
+      pluginSettings["fx-resource-bot"] &&
+      pluginSettings["fx-resource-bot"]["host-type"] === "app-service" &&
+      this.bicepContent.includes("botWebAppResourceId")
+    ) {
+      this.handlebarsContext.isWebAppBot = true;
+    }
 
     // placeholders
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.storageResourceId");
@@ -136,6 +149,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.functionAppResourceId");
+    this.setPlaceholderMapping("state.fx-resource-bot.botWebAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionEndpoint");
   }

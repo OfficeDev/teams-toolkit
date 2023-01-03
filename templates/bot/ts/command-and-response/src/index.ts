@@ -1,8 +1,23 @@
 import * as restify from "restify";
-import { commandBot } from "./internal/initialize";
+import { ConversationBot } from "@microsoft/teamsfx";
+import { HelloWorldCommandHandler } from "./helloWorldCommandHandler";
 
-// This template uses `restify` to serve HTTP responses.
-// Create a restify server.
+// The TeamsFx ConservationBot provides a simple way to configure how commands are handled.
+export const commandBot = new ConversationBot({
+  // Configuration for the underlying BotFrameworkAdapter.
+  // By default, BOT_ID and BOT_PASSWORD are set by Teams Toolkit automatically when debugging locally or provisioning.
+  adapterConfig: {
+    appId: process.env.BOT_ID,
+    appPassword: process.env.BOT_PASSWORD,
+  },
+  command: {
+    enabled: true,
+    // Implement and add additional command handlers here as your bots' capabilities grow.
+    commands: [new HelloWorldCommandHandler()],
+  },
+});
+
+// This template uses restify to serve HTTP responses.
 const server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, () => {
   console.log(`\nBot Started, ${server.name} listening to ${server.url}`);

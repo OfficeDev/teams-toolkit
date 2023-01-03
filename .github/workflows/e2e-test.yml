@@ -19,6 +19,7 @@ on:
       - dev
       - ga
       - hotfix/**/*
+      - v3-folder-structure-refactor
     types:
       - assigned
       - opened

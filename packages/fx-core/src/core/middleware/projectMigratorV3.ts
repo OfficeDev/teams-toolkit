@@ -103,6 +103,7 @@ const Constants = {
 };
 
 const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
+const migrationMessageButtons = [learnMoreText, upgradeButton];
 
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
@@ -401,15 +402,14 @@ export async function askUserConfirm(
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
-  const buttons = [upgradeButton, learnMoreText];
-  const res = await TOOLS?.ui.showMessage(
-    "warn",
-    migrationNotificationMessage(versionForMigration),
-    true,
-    ...buttons
-  );
-  const answer = res?.isOk() ? res.value : undefined;
-  if (!answer || !buttons.includes(answer)) {
+  let answer;
+  do {
+    answer = await popupMessage(versionForMigration);
+    if (answer === learnMoreText) {
+      TOOLS?.ui!.openUrl(learnMoreLink);
+    }
+  } while (answer === learnMoreText);
+  if (!answer || !migrationMessageButtons.includes(answer)) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
     });
@@ -421,15 +421,22 @@ export async function askUserConfirm(
     outputCancelMessage(versionForMigration.currentVersion, versionForMigration.platform);
     return false;
   }
-  if (answer === learnMoreText) {
-    TOOLS?.ui!.openUrl(learnMoreLink);
-    ctx.result = ok(undefined);
-    return false;
-  }
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
     [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
   });
   return true;
+}
+
+export async function popupMessage(
+  versionForMigration: VersionForMigration
+): Promise<string | undefined> {
+  const res = await TOOLS?.ui.showMessage(
+    "warn",
+    migrationNotificationMessage(versionForMigration),
+    true,
+    ...migrationMessageButtons
+  );
+  return res?.isOk() ? res.value : undefined;
 }
 
 export async function generateLocalConfig(context: MigrationContext): Promise<void> {

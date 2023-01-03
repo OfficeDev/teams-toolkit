@@ -132,8 +132,8 @@ export class AppStudioError {
   public static readonly ValidationFailedError = {
     name: "ManifestValidationFailed",
     message: (errors: string[]): [string, string] => [
-      getDefaultString("plugins.appstudio.validationFailedNotice") + errors.join("\n"),
-      getLocalizedString("plugins.appstudio.validationFailedNotice") + errors.join("\n"),
+      getDefaultString("plugins.appstudio.validationFailedNotice") + " " + errors.join("\n"),
+      getLocalizedString("plugins.appstudio.validationFailedNotice") + " " + errors.join("\n"),
     ],
   };
 

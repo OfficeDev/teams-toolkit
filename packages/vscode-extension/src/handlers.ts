@@ -1005,7 +1005,57 @@ export async function publishInDeveloperPortalHandler(
     TelemetryEvent.PublishInDeveloperPortalStart,
     getTriggerFromProperty(args)
   );
-  return await runCommand(Stage.publishInDeveloperPortal);
+  const workspacePath = globalVariables.workspaceUri?.fsPath;
+  const zipDefaultFolder: string | undefined = path.join(
+    workspacePath!,
+    BuildFolderName,
+    AppPackageFolderName
+  );
+
+  let files: string[] = [];
+  if (await fs.pathExists(zipDefaultFolder)) {
+    files = await fs.readdir(zipDefaultFolder);
+    files = files
+      .filter((file) => path.extname(file).toLowerCase() === ".zip")
+      .map((file) => {
+        return path.join(zipDefaultFolder, file);
+      });
+  }
+  const selectFileConfig: SelectFileConfig = {
+    name: "appPackagePath",
+    title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
+    placeholder: localize("teamstoolkit.publishInDevPortal.selectFile.placeholder"),
+    filters: {
+      "Zip files": ["zip"],
+    },
+    possibleFiles: files.map((file) => {
+      return {
+        id: file,
+        label: file,
+      };
+    }),
+    default: files.length > 0 ? files[0] : undefined,
+  };
+  const selectFileResult = await VS_CODE_UI.selectFile(selectFileConfig);
+  if (selectFileResult.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.PublishInDeveloperPortal,
+      selectFileResult.error,
+      getTriggerFromProperty(args)
+    );
+    return ok(null);
+  }
+  const inputs = getSystemInputs();
+  inputs["appPackagePath"] = selectFileResult.value.result;
+  const res = await runCommand(Stage.publishInDeveloperPortal, inputs);
+  if (res.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.PublishInDeveloperPortal,
+      res.error,
+      getTriggerFromProperty(args)
+    );
+  }
+  return res;
 }
 
 export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {

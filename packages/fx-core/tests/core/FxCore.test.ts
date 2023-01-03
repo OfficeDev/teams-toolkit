@@ -676,7 +676,7 @@ describe("publishInDeveloperPortal", () => {
       env: "local",
       projectPath: "project-path",
       platform: Platform.VSCode,
-      [CoreQuestionNames.ManifestPath]: "manifest-path",
+      [CoreQuestionNames.AppPackagePath]: "path",
       ignoreLockByUT: true,
     };
     sandbox.stub(fs, "pathExists").resolves(false);

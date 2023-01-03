@@ -80,7 +80,7 @@ export enum CoreQuestionNames {
   SafeProjectName = "safeProjectName",
   ReplaceContentUrl = "replaceContentUrl",
   ReplaceWebsiteUrl = "replaceWebsiteUrl",
-  ManifestPath = "manifestPath",
+  AppPackagePath = "appPackagePath",
   ReplaceBotIds = "replaceBotIds",
 }
 

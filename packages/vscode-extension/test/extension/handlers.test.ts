@@ -1469,12 +1469,15 @@ describe("handlers", () => {
   });
 
   describe("validateAzureDependenciesHandler", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
     it("v3: happy path", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
       sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
       const result = await handlers.validateAzureDependenciesHandler();
       chai.assert.equal(result, undefined);
-      sinon.restore();
     });
 
     it("skip debugging", async () => {
@@ -1482,39 +1485,41 @@ describe("handlers", () => {
       sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(true);
       const result = await handlers.validateAzureDependenciesHandler();
       chai.assert.equal(result, "1");
-      sinon.restore();
     });
 
     it("should not continue", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(false);
       sinon.stub(ExtTelemetry, "sendTelemetryEvent").callsFake(() => {});
+      sinon.stub(debugCommonUtils, "getProjectComponents").returns(Promise.resolve(""));
       sinon.stub(VSCodeDepsChecker.prototype, "resolve").returns(Promise.resolve(false));
       sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
       const result = await handlers.validateAzureDependenciesHandler();
       chai.assert.equal(result, "1");
-      sinon.restore();
     });
 
     it("should continue", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(false);
       sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(false);
       sinon.stub(ExtTelemetry, "sendTelemetryEvent").callsFake(() => {});
+      sinon.stub(debugCommonUtils, "getProjectComponents").returns(Promise.resolve(""));
       sinon.stub(VSCodeDepsChecker.prototype, "resolve").returns(Promise.resolve(true));
       sinon.stub(debugCommonUtils, "getPortsInUse").returns(Promise.resolve([]));
       const result = await handlers.validateAzureDependenciesHandler();
       chai.assert.equal(result, undefined);
-      sinon.restore();
     });
   });
 
   describe("validateLocalPrerequisitesHandler", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
     it("v3: happy path", async () => {
       sinon.stub(commonTools, "isV3Enabled").returns(true);
       sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
       const result = await handlers.validateLocalPrerequisitesHandler();
       chai.assert.equal(result, undefined);
-      sinon.restore();
     });
 
     it("skip debugging", async () => {
@@ -1532,7 +1537,6 @@ describe("handlers", () => {
       sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
       const result = await handlers.backendExtensionsInstallHandler();
       chai.assert.equal(result, undefined);
-      sinon.restore();
     });
   });
 

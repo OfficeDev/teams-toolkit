@@ -1490,7 +1490,6 @@ describe("handlers", () => {
       sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(false);
       sinon.stub(ExtTelemetry, "sendTelemetryEvent").callsFake(() => {});
       sinon.stub(VSCodeDepsChecker.prototype, "resolve").returns(Promise.resolve(false));
-      sinon.stub(vscode.debug, "stopDebugging").callsFake(async () => {});
       sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
       const result = await handlers.validateAzureDependenciesHandler();
       chai.assert.equal(result, "1");

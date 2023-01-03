@@ -23,7 +23,8 @@
   "dependencies": {
     "cryptr": "^6.0.3",
     "dotenv": "^16.0.3",
-    "fs-extra": "^10.1.0"
+    "fs-extra": "^10.1.0",
+    "yaml": "^2.2.0"
   },
   "devDependencies": {
     "@types/cryptr": "^4.0.1",

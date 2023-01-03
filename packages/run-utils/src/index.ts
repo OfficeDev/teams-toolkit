@@ -5,23 +5,29 @@ import Cryptr from "cryptr";
 import * as dotenv from "dotenv";
 import * as fs from "fs-extra";
 import path from "path";
-
-interface Settings {
-  version: string;
-  trackingId: string;
-}
+import { parseDocument } from "yaml";
 
 const settingsFolderName = "teamsfx";
 const settingsFileName = "settings.json";
+const projectYamlName = "teamsapp.yml";
 
-async function readSettings(projectPath: string): Promise<Settings> {
-  const settingsPath = path.join(projectPath, settingsFolderName, settingsFileName);
-  if (!(await fs.pathExists(settingsPath))) {
-    throw new Error(`${settingsPath} does not exist.`);
+async function readSettings(filePath: string): Promise<string> {
+  if (!(await fs.pathExists(filePath))) {
+    throw new Error(`${filePath} does not exist.`);
   }
 
-  const settings: Settings = await fs.readJson(settingsPath);
-  return settings;
+  const settings = await fs.readJson(filePath);
+  return settings.trackingId;
+}
+
+async function readYaml(filePath: string): Promise<string> {
+  if (!(await fs.pathExists(filePath))) {
+    throw new Error(`${filePath} does not exist.`);
+  }
+
+  const yamlFileContent: string = await fs.readFile(filePath, "utf8");
+  const appYaml = parseDocument(yamlFileContent);
+  return appYaml.get("projectId") as string;
 }
 
 /**
@@ -44,13 +50,25 @@ export async function loadEnv(
     throw new Error(`${envPath} does not exist.`);
   }
 
-  const settings = await readSettings(projectPath);
-  if (!settings.trackingId) {
-    throw new Error("trackingId is missing in settings.json");
+  const settingsPath = path.join(projectPath, settingsFolderName, settingsFileName);
+  const yamlPath = path.join(projectPath, projectYamlName);
+  let projectId = "";
+  if (await fs.pathExists(settingsPath)) {
+    projectId = await readSettings(settingsPath);
+    if (!projectId) {
+      throw new Error(`trackingId is missing in ${settingsFileName}`);
+    }
+  } else if (await fs.pathExists(yamlPath)) {
+    projectId = await readYaml(yamlPath);
+    if (!projectId) {
+      throw new Error(`projectId is missing in ${projectYamlName}`);
+    }
+  } else {
+    throw new Error("Not a TeamsFx project.");
   }
 
   const envs = dotenv.parse(await fs.readFile(envPath));
-  const cryptr = new Cryptr(settings.trackingId + "_teamsfx");
+  const cryptr = new Cryptr(projectId + "_teamsfx");
   const secretPrefix = "crypto_";
   Object.keys(envs).forEach((key) => {
     if (key.startsWith("SECRET_") && envs[key].startsWith(secretPrefix)) {

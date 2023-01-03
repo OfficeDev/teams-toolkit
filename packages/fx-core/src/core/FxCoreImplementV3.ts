@@ -300,13 +300,13 @@ export class FxCoreV3Implement {
     } else if (func.method === "validateManifest") {
       const driver: ValidateTeamsAppDriver = Container.get("teamsApp/validate");
       const args: ValidateTeamsAppArgs = {
-        manifestTemplatePath: func.params.manifestTemplatePath,
+        manifestPath: func.params.manifestTemplatePath,
       };
       res = await driver.run(args, context);
     } else if (func.method === "buildPackage") {
       const driver: CreateAppPackageDriver = Container.get("teamsApp/zipAppPackage");
       const args: CreateAppPackageArgs = {
-        manifestTemplatePath: func.params.manifestTemplatePath,
+        manifestPath: func.params.manifestTemplatePath,
         outputZipPath: func.params.outputZipPath,
         outputJsonPath: func.params.outputJsonPath,
       };

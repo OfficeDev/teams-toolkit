@@ -21,7 +21,6 @@ import { merge } from "lodash";
 import { Container } from "typedi";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { InvalidInputError, ObjectIsUndefinedError } from "../../core/error";
-import { getQuestionsForCreateProjectV2 } from "../../core/middleware/questionModel";
 import {
   CoreQuestionNames,
   CreateNewOfficeAddinOption,
@@ -55,14 +54,12 @@ import {
   BotOptionItem,
   TabNonSsoAndDefaultBotItem,
   DefaultBotAndMessageExtensionItem,
+  DashboardOptionItem,
 } from "../constants";
 import { ActionExecutionMW } from "../middleware/actionExecutionMW";
 import {
   getQuestionsForAddFeatureV3,
-  getQuestionsForInit,
-  getQuestionsForProvisionV3,
   InitOptionNo,
-  getQuestionsForPublishInDeveloperPortal,
   InitEditorVSCode,
   InitEditorVS,
 } from "../question";
@@ -108,6 +105,7 @@ export enum TemplateNames {
   Tab = "non-sso-tab",
   SsoTab = "sso-tab",
   M365Tab = "m365-tab",
+  DashboardTab = "dashboard-tab",
   NotificationRestify = "notification-restify",
   NotificationWebApi = "notification-webapi",
   NotificationHttpTrigger = "notification-http-trigger",
@@ -140,6 +138,7 @@ export const Feature2TemplateName: any = {
   [`${TabOptionItem.id}:undefined`]: TemplateNames.SsoTab,
   [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
   [`${M365SsoLaunchPageOptionItem.id}:undefined`]: TemplateNames.M365Tab,
+  [`${DashboardOptionItem.id}:undefined`]: TemplateNames.DashboardTab,
   [`${TabNonSsoAndDefaultBotItem.id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${DefaultBotAndMessageExtensionItem.id}:undefined`]: TemplateNames.BotAndMessageExtension,
 };
@@ -518,13 +517,7 @@ export class Coordinator {
 
     // 1. parse yml to cycles
     const parser = new YamlParser();
-    const templatePath =
-      inputs["workflowFilePath"] ??
-      path.join(
-        ctx.projectPath,
-        SettingsFolderName,
-        process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
-      );
+    const templatePath = this.getYmlFilePath(ctx.projectPath, inputs);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -583,13 +576,7 @@ export class Coordinator {
 
     // 1. parse yml
     const parser = new YamlParser();
-    const templatePath =
-      inputs["workflowFilePath"] ??
-      path.join(
-        ctx.projectPath,
-        SettingsFolderName,
-        process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
-      );
+    const templatePath = this.getYmlFilePath(ctx.projectPath, inputs);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -875,13 +862,7 @@ export class Coordinator {
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
     const parser = new YamlParser();
-    const templatePath =
-      inputs["workflowFilePath"] ??
-      path.join(
-        ctx.projectPath,
-        SettingsFolderName,
-        process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
-      );
+    const templatePath = this.getYmlFilePath(ctx.projectPath, inputs);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -932,11 +913,7 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const parser = new YamlParser();
-    const templatePath = path.join(
-      ctx.projectPath,
-      SettingsFolderName,
-      process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
-    );
+    const templatePath = this.getYmlFilePath(ctx.projectPath);
     const maybeProjectModel = await parser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -995,6 +972,23 @@ export class Coordinator {
       `https://dev.teams.microsoft.com/apps/${updateRes.value}/distributions/app-catalog?login_hint=${loginHint}&referrer=teamstoolkit_${inputs.platform}`
     );
     return ok(Void);
+  }
+
+  getYmlFilePath(projectPath: string, inputs?: InputsWithProjectPath) {
+    if (inputs && inputs["workflowFilePath"]) return inputs["workflowFilePath"];
+    let ymlPath = path.join(
+      projectPath,
+      process.env.TEAMSFX_ENV !== "local" ? "teamsapp.yml" : "teamsapp.local.yml"
+    );
+    if (fs.pathExistsSync(ymlPath)) {
+      return ymlPath;
+    }
+    ymlPath = path.join(
+      projectPath,
+      SettingsFolderName,
+      process.env.TEAMSFX_ENV === "local" ? localWorkflowFileName : workflowFileName
+    );
+    return ymlPath;
   }
 }
 

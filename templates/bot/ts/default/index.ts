@@ -6,7 +6,7 @@ import * as restify from "restify";
 import {
   CloudAdapter,
   ConfigurationServiceClientCredentialFactory,
-  createBotFrameworkAuthenticationFromConfiguration,
+  ConfigurationBotFrameworkAuthentication,
   TurnContext,
 } from "botbuilder";
 
@@ -22,8 +22,8 @@ const credentialsFactory = new ConfigurationServiceClientCredentialFactory({
   MicrosoftAppType: "MultiTenant",
 });
 
-const botFrameworkAuthentication = createBotFrameworkAuthenticationFromConfiguration(
-  null,
+const botFrameworkAuthentication = new ConfigurationBotFrameworkAuthentication(
+  {},
   credentialsFactory
 );
 

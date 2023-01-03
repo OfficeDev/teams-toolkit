@@ -8,7 +8,7 @@ const restify = require("restify");
 const {
   CloudAdapter,
   ConfigurationServiceClientCredentialFactory,
-  createBotFrameworkAuthenticationFromConfiguration,
+  ConfigurationBotFrameworkAuthentication,
 } = require("botbuilder");
 const { TeamsBot } = require("./teamsBot");
 const config = require("./config");
@@ -21,8 +21,8 @@ const credentialsFactory = new ConfigurationServiceClientCredentialFactory({
   MicrosoftAppType: "MultiTenant",
 });
 
-const botFrameworkAuthentication = createBotFrameworkAuthenticationFromConfiguration(
-  null,
+const botFrameworkAuthentication = new ConfigurationBotFrameworkAuthentication(
+  {},
   credentialsFactory
 );
 

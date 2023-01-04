@@ -95,17 +95,6 @@ export class ApimService {
         )
       : undefined;
     const result = [];
-    for await (const page of this.apimClient.api
-      .listByService(resourceGroupName, serviceName, {
-        expandApiVersionSet: true,
-      })
-      .byPage({ maxPageSize: 100 })) {
-      for (const item of page) {
-        if (!!resourceId && item.apiVersionSet?.id === resourceId) {
-          result.push(item);
-        }
-      }
-    }
     try {
       this.logger?.info(LogMessages.operationStarts(Operation.List, AzureResource.API, resourceId));
       Telemetry.sendApimOperationEvent(

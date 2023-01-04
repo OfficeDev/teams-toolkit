@@ -1,0 +1,131 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "TextBlock",
+          "size": "Medium",
+          "weight": "Bolder",
+          "text": "FW: [RC.0 Released] Prerelease - VS 17.5 Preview 3"
+        },
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "type": "Image",
+                  "style": "Person",
+                  "url": "https://avatars.dicebear.com/v2/identicon/6580bcd0-83cf-42d1-8606-1d3970a03992.jpg",
+                  "size": "Small"
+                }
+              ],
+              "width": "auto"
+            },
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "weight": "Bolder",
+                  "text": "Yi Zhang",
+                  "wrap": true
+                },
+                {
+                  "type": "TextBlock",
+                  "spacing": "None",
+                  "text": "Created 2023-01-05T00:33:26.007Z",
+                  "isSubtle": true,
+                  "wrap": true
+                }
+              ],
+              "width": "stretch"
+            }
+          ]
+        },
+        {
+          "type": "ActionSet",
+          "actions": [
+            {
+              "type": "Action.OpenUrl",
+              "title": "View",
+              "url": "https://teams.microsoft.com/l/message/19%3A72d6d8bf47634588938a275642c455a5%40thread.tacv2/1672878806007?groupId=2f792eb6-ce51-4adc-8cd7-48f1c417f8e8&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47&createdTime=1672878806007&parentMessageId=1672878806007"
+            }
+          ]
+        },
+        {
+          "type": "TextBlock",
+          "text": "***",
+          "wrap": true
+        }
+      ]
+    },
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "TextBlock",
+          "size": "Medium",
+          "weight": "Bolder",
+          "text": "FW: [Updated] Product Release Plan in December"
+        },
+        {
+          "type": "ColumnSet",
+          "columns": [
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "type": "Image",
+                  "style": "Person",
+                  "url": "https://avatars.dicebear.com/v2/identicon/6580bcd0-83cf-42d1-8606-1d3970a03992.jpg",
+                  "size": "Small"
+                }
+              ],
+              "width": "auto"
+            },
+            {
+              "type": "Column",
+              "items": [
+                {
+                  "type": "TextBlock",
+                  "weight": "Bolder",
+                  "text": "Yi Zhang",
+                  "wrap": true
+                },
+                {
+                  "type": "TextBlock",
+                  "spacing": "None",
+                  "text": "Created 2023-01-05T00:32:15.258Z",
+                  "isSubtle": true,
+                  "wrap": true
+                }
+              ],
+              "width": "stretch"
+            }
+          ]
+        },
+        {
+          "type": "ActionSet",
+          "actions": [
+            {
+              "type": "Action.OpenUrl",
+              "title": "View",
+              "url": "https://teams.microsoft.com/l/message/19%3A72d6d8bf47634588938a275642c455a5%40thread.tacv2/1672878735258?groupId=2f792eb6-ce51-4adc-8cd7-48f1c417f8e8&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47&createdTime=1672878735258&parentMessageId=1672878735258"
+            }
+          ]
+        },
+        {
+          "type": "TextBlock",
+          "text": "***",
+          "wrap": true
+        }
+      ]
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.2"
+}

@@ -99,6 +99,7 @@ import { Lifecycle } from "../configManager/lifecycle";
 import { SummaryReporter } from "./summary";
 import { EOL } from "os";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
+import { deployUtils } from "../deployUtils";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -166,6 +167,11 @@ const M365Actions = [
   "botFramework/create",
 ];
 const AzureActions = ["arm/deploy"];
+const AzureDeployActions = [
+  "azureAppService/deploy",
+  "azureFunctions/deploy",
+  "azureStorage/deploy",
+];
 const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramework/create"];
 
 export class Coordinator {
@@ -868,6 +874,22 @@ export class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
+      //check whether deploy to azure
+      let containsAzure = false;
+      projectModel.deploy.driverDefs?.forEach((def) => {
+        if (AzureDeployActions.includes(def.uses)) {
+          containsAzure = true;
+        }
+      });
+
+      //consent
+      if (containsAzure) {
+        const consent = await deployUtils.askForDeployConsentV3(ctx);
+        if (consent.isErr()) {
+          return err(consent.error);
+        }
+      }
+
       const summaryReporter = new SummaryReporter([projectModel.deploy], ctx.logProvider);
       try {
         const maybeDescription = summaryReporter.getLifecycleDescriptions();

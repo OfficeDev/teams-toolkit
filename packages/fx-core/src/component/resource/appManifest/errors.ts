@@ -13,14 +13,6 @@ export class AppStudioError {
     ],
   };
 
-  public static readonly NotADirectoryError = {
-    name: "NotADirectory",
-    message: (directoryPath: string): [string, string] => [
-      getDefaultString("error.appstudio.notADirectoryError", directoryPath),
-      getLocalizedString("error.appstudio.notADirectoryError", directoryPath),
-    ],
-  };
-
   public static readonly DeveloperPortalAPIFailedError = {
     name: "DeveloperPortalAPIFailed",
     message: (
@@ -57,38 +49,6 @@ export class AppStudioError {
     ],
   };
 
-  public static readonly RemoteAppIdCreateFailedError = {
-    name: "RemoteAppIdCreateFailed",
-    message: (error?: any): [string, string] => [
-      getDefaultString("error.appstudio.remoteTeamsAppCreateFailed", error?.message),
-      getLocalizedString("error.appstudio.remoteTeamsAppCreateFailed", error?.displayMessage),
-    ],
-  };
-
-  public static readonly RemoteAppIdUpdateFailedError = {
-    name: "RemoteAppIdUpdateFailed",
-    message: (error?: any): [string, string] => [
-      getDefaultString("error.appstudio.remoteTeamsAppUpdateFailed", error?.message),
-      getLocalizedString("error.appstudio.remoteTeamsAppUpdateFailed", error?.displayMessage),
-    ],
-  };
-
-  public static readonly LocalAppIdCreateFailedError = {
-    name: "LocalAppIdCreateFailed",
-    message: (error?: any): [string, string] => [
-      getDefaultString("error.appstudio.localTeamsAppCreateFailed", error?.message),
-      getLocalizedString("error.appstudio.localTeamsAppCreateFailed", error?.displayMessage),
-    ],
-  };
-
-  public static readonly LocalAppIdUpdateFailedError = {
-    name: "LocalAppIdUpdateFailed",
-    message: (error?: any): [string, string] => [
-      getDefaultString("error.appstudio.localTeamsAppUpdateFailed", error?.message),
-      getLocalizedString("error.appstudio.localTeamsAppUpdateFailed", error?.displayMessage),
-    ],
-  };
-
   public static readonly TeamsAppCreateFailedError = {
     name: "TeamsAppCreateFailed",
     message: (error?: any): [string, string] => [
@@ -105,30 +65,6 @@ export class AppStudioError {
     ],
   };
 
-  public static readonly TeamsAppNotFoundError = {
-    name: "TeamsAppNotFound",
-    message: (appId: string): [string, string] => [
-      getDefaultString("error.appstudio.teamsAppNotFound", appId),
-      getLocalizedString("error.appstudio.teamsAppNotFound", appId),
-    ],
-  };
-
-  public static readonly InvalidManifestError = {
-    name: "InvalidManifest",
-    message: (error: any, key?: string): [string, string] => [
-      getDefaultString("error.appstudio.invalidManifest", error, key),
-      getLocalizedString("error.appstudio.invalidManifest", error, key),
-    ],
-  };
-
-  public static readonly ManifestLoadFailedError = {
-    name: "ManifestLoadFailed",
-    message: (error: string): [string, string] => [
-      getDefaultString("error.appstudio.loadManifest", error),
-      getLocalizedString("error.appstudio.loadManifest", error),
-    ],
-  };
-
   public static readonly ValidationFailedError = {
     name: "ManifestValidationFailed",
     message: (errors: string[]): [string, string] => [
@@ -142,14 +78,6 @@ export class AppStudioError {
     message: (error: any): [string, string] => [
       getDefaultString("error.appstudio.getLocalConfigFailed", error.message),
       getLocalizedString("error.appstudio.getLocalConfigFailed", error.message),
-    ],
-  };
-
-  public static readonly IncorrectLocalDebugConfigError = {
-    name: "IncorrectLocalDebugConfig",
-    message: (error: any): [string, string] => [
-      getDefaultString("error.appstudio.incorrectLocalConfig", error.message),
-      getLocalizedString("error.appstudio.incorrectLocalConfig", error.message),
     ],
   };
 
@@ -179,27 +107,11 @@ export class AppStudioError {
     ],
   };
 
-  public static readonly TeamsAppPublishCancelError = {
-    name: "TeamsAppPublishCancelled",
-    message: (name: string): [string, string] => [
-      getDefaultString("error.appstudio.publishCancelled", name),
-      getLocalizedString("error.appstudio.publishCancelled", name),
-    ],
-  };
-
   public static readonly TeamsPackageBuildError = {
     name: "TeamsPackageBuildError",
     message: (error: any): [string, string] => [
       error.message ?? getDefaultString("error.appstudio.buildError"),
       error.displayMessage ?? getLocalizedString("error.appstudio.buildError"),
-    ],
-  };
-
-  public static readonly ScaffoldFailedError = {
-    name: "ScaffoldFailed",
-    message: (error: any): [string, string] => [
-      error.message ?? getDefaultString("error.appstudio.scaffoldFailed"),
-      error.displayMessage ?? getLocalizedString("error.appstudio.scaffoldFailed"),
     ],
   };
 
@@ -282,14 +194,6 @@ export class AppStudioError {
     message: (): [string, string] => [
       getDefaultString("error.appstudio.teamsAppCreateConflictWithPublishedApp"),
       getLocalizedString("error.appstudio.teamsAppCreateConflictWithPublishedApp"),
-    ],
-  };
-
-  public static readonly InvalidInputError = {
-    name: "InvalidInput",
-    message: (key: string, value: string): [string, string] => [
-      getDefaultString("error.appstudio.invalidInput", key, value),
-      getLocalizedString("error.appstudio.invalidInput", key, value),
     ],
   };
 }

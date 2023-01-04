@@ -44,6 +44,7 @@ describe("Multi Env Happy Path for Azure", function () {
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
+  let teamsAppId: string | undefined;
 
   it(
     `Can create/provision/deploy/build/validate/launch remote a azure tab/function/sql/bot project`,
@@ -244,9 +245,9 @@ describe("Multi Env Happy Path for Azure", function () {
           }
           const context = contextResult.value;
           const appStudioObject = AppStudioValidator.init(context);
-          const appId = appStudioObject.teamsAppId;
-          chai.assert.isNotNull(appId);
-          await AppStudioValidator.validatePublish(appId!);
+          teamsAppId = appStudioObject.teamsAppId;
+          chai.assert.isNotNull(teamsAppId);
+          await AppStudioValidator.validatePublish(teamsAppId!);
         }
       } catch (e) {
         console.log("Unexpected exception is thrown when running test: " + e);
@@ -258,6 +259,6 @@ describe("Multi Env Happy Path for Azure", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, true, false, env);
+    await cleanUp(appName, projectPath, true, true, false, env, teamsAppId);
   });
 });

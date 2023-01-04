@@ -166,6 +166,11 @@ const M365Actions = [
   "botFramework/create",
 ];
 const AzureActions = ["arm/deploy"];
+const AzureDeployActions = [
+  "azureAppService/deploy",
+  "azureFunctions/deploy",
+  "azureStorage/deploy",
+];
 const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramework/create"];
 
 export class Coordinator {
@@ -868,6 +873,16 @@ export class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
+      //check whether deploy to azure
+      let containsAzure = false;
+      projectModel.deploy.driverDefs?.forEach((def) => {
+        if (AzureDeployActions.includes(def.uses)) {
+          containsAzure = true;
+        }
+      });
+
+      //TODO consent
+
       const summaryReporter = new SummaryReporter([projectModel.deploy], ctx.logProvider);
       try {
         const maybeDescription = summaryReporter.getLifecycleDescriptions();

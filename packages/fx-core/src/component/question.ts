@@ -759,9 +759,9 @@ export const InitDebugProceedQuestion: SingleSelectQuestion = {
         ? await fs.pathExists(path.join(inputs.projectPath, ".vscode"))
         : false;
       const dotVscodeFolderName = exists ? ".vscode-teamsfx" : ".vscode";
-      fileList = `  teamsfx/\n    - app.local.yml\n    - .env.local\n    - settings.json\n    - run.js\n  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n`;
+      fileList = `  teamsfx/\n    - .env.local\n    - settings.json\n    - run.js\n  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n  - teamsapp.local.yml\n`;
     } else {
-      fileList = "  teamsfx/\n    - app.local.yml\n    - .env.local\n    - settings.json\n";
+      fileList = "  teamsfx/\n    - .env.local\n    - settings.json\n  - teamsapp.local.yml\n";
     }
     return getLocalizedString("core.InitGenerateConfirm", fileList);
   },
@@ -774,10 +774,10 @@ export const InitInfraProceedQuestion: SingleSelectQuestion = {
   title: (inputs: Inputs) => {
     const fileList =
       inputs["capability"] === InitCapabilityBot.id
-        ? "  teamsfx/\n    - app.yml\n    - .env.dev\n    - settings.json\n  infra/\n    botRegistration/\n      - azurebot.bicep\n      - readme.md\n    - azure.bicep\n    - azure.parameters.json\n"
+        ? "  teamsfx/\n    - .env.dev\n    - settings.json\n  infra/\n    botRegistration/\n      - azurebot.bicep\n      - readme.md\n    - azure.bicep\n    - azure.parameters.json\n  - teamsapp.yml\n"
         : inputs["spfx"] === InitOptionYes.id
-        ? "  teamsfx/\n    - app.yml\n    - .env.dev\n    - settings.json\n"
-        : "  teamsfx/\n    - app.yml\n    - .env.dev\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n";
+        ? "  teamsfx/\n    - .env.dev\n    - settings.json\n  - teamsapp.yml\n"
+        : "  teamsfx/\n    - .env.dev\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n  - teamsapp.yml\n";
     return getLocalizedString("core.InitGenerateConfirm", fileList);
   },
   staticOptions: [InitOptionYes, InitOptionNo],

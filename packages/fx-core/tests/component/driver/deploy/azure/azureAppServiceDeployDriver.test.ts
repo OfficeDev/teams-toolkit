@@ -358,7 +358,7 @@ describe("Azure App Service Deploy Driver test", () => {
     assert.equal(res.isErr(), true);
   });
 
-  it("resource id is empty", async () => {
+  it("test dry run", async () => {
     const deploy = new AzureAppServiceDeployDriver();
     const fh = await fs.open(path.join(sysTmp, folder, "test.txt"), "a");
     await fs.close(fh);
@@ -370,6 +370,9 @@ describe("Azure App Service Deploy Driver test", () => {
       workingDirectory: sysTmp,
       distributionPath: `./${folder}`,
       ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+      dryRun: true,
     } as DeployArgs;
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
@@ -407,7 +410,8 @@ describe("Azure App Service Deploy Driver test", () => {
       status: 200,
     });
     sandbox.stub(client.webApps, "restart").resolves();
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isOk(), true);
+    assert.equal(res.summaries[0], "Preparations of deployment are complete. ");
   });
 });

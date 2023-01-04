@@ -9,11 +9,8 @@ import {
   AxiosDeployQueryResult,
   DeployResult,
 } from "../../interface/buildAndDeployArgs";
-import {
-  DeployExternalApiCallError,
-  DeployTimeoutError,
-  DeployUserInputError,
-} from "../../../error/deployError";
+import { checkMissingArgs } from "../../../utils/common";
+import { DeployExternalApiCallError, DeployTimeoutError } from "../../../error/deployError";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import { BaseDeployDriver } from "./baseDeployDriver";
 import { Base64 } from "js-base64";
@@ -60,10 +57,9 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
         this.helpLink
       );
     }
-    const azureResource = args.resourceId ? this.parseResourceId(args.resourceId) : undefined;
-    const azureCredential = args.resourceId
-      ? await getAzureAccountCredential(this.context.azureAccountProvider)
-      : undefined;
+    const resourceId = checkMissingArgs("resourceId", args.resourceId);
+    const azureResource = this.parseResourceId(resourceId);
+    const azureCredential = await getAzureAccountCredential(this.context.azureAccountProvider);
 
     return await this.azureDeploy({ ignoreFile: args.ignoreFile }, azureResource, azureCredential);
   }
@@ -76,8 +72,8 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
    */
   abstract azureDeploy(
     args: DeployStepArgs,
-    azureResource?: AzureResourceInfo,
-    azureCredential?: TokenCredential
+    azureResource: AzureResourceInfo,
+    azureCredential: TokenCredential
   ): Promise<void>;
 
   /**
@@ -99,13 +95,13 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
    */
   public async zipDeploy(
     args: DeployStepArgs,
-    azureResource?: AzureResourceInfo,
-    azureCredential?: TokenCredential
+    azureResource: AzureResourceInfo,
+    azureCredential: TokenCredential
   ): Promise<number> {
     await this.progressBar?.next(ProgressMessages.packingCode);
     const zipBuffer = await this.packageToZip(args, this.context);
-    if (!azureResource || !azureCredential) {
-      throw DeployUserInputError.deployPrepareComplete();
+    if (this.dryRun) {
+      return -1;
     }
     await this.progressBar?.next(ProgressMessages.getAzureAccountInfoForDeploy);
     await this.context.logProvider.debug("Start to get Azure account info for deploy");

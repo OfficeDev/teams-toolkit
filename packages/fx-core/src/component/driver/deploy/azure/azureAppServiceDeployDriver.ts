@@ -8,7 +8,7 @@ import { Service } from "typedi";
 import { DriverContext, AzureResourceInfo } from "../../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
 import { FxError, IProgressHandler, Result, UserInteraction } from "@microsoft/teamsfx-api";
-import { checkMissingArgs, wrapRun, wrapSummary } from "../../../utils/common";
+import { wrapRun, wrapSummary } from "../../../utils/common";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
@@ -33,10 +33,21 @@ export class AzureAppServiceDeployDriver implements StepDriver {
     );
   }
 
-  execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
-    return wrapSummary(this.run.bind(this, args, ctx), [
-      "driver.deploy.azureAppServiceDeploySummary",
-    ]);
+  async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
+    const impl = new AzureAppServiceDeployDriverImpl(args, ctx);
+    const res = await wrapRun(
+      () => impl.run(),
+      () => impl.cleanup(),
+      ctx.logProvider
+    );
+    if (impl.dryRun) {
+      return wrapSummary(async () => {
+        return res;
+      }, ["driver.deploy.notice.deployDryRunComplete"]);
+    }
+    return wrapSummary(async () => {
+      return res;
+    }, ["driver.deploy.azureAppServiceDeploySummary"]);
   }
 }
 
@@ -47,13 +58,17 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
 
   async azureDeploy(
     args: DeployStepArgs,
-    azureResource?: AzureResourceInfo,
-    azureCredential?: TokenCredential
+    azureResource: AzureResourceInfo,
+    azureCredential: TokenCredential
   ): Promise<void> {
     await this.progressBar?.start();
     const cost = await this.zipDeploy(args, azureResource, azureCredential);
+    if (this.dryRun) {
+      await this.progressBar?.end(true);
+      return;
+    }
     await this.progressBar?.next(ProgressMessages.restartAzureService);
-    await this.restartFunctionApp(checkMissingArgs("azureResource", azureResource));
+    await this.restartFunctionApp(azureResource);
     await this.progressBar?.end(true);
     if (cost > DeployConstant.DEPLOY_OVER_TIME) {
       await this.context.logProvider?.info(
@@ -66,9 +81,10 @@ export class AzureAppServiceDeployDriverImpl extends AzureDeployDriver {
   }
 
   createProgressBar(ui?: UserInteraction): IProgressHandler | undefined {
+    const steps = this.dryRun ? 1 : 6;
     return ui?.createProgressBar(
       `Deploying ${this.workingDirectory ?? ""} to Azure App Service`,
-      6
+      steps
     );
   }
 }

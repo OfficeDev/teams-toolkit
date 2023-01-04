@@ -10,6 +10,7 @@ export abstract class BaseDeployStepDriver {
   context: DeployContext;
   workingDirectory: string;
   distDirectory: string;
+  dryRun = false;
   protected progressBar?: IProgressHandler;
 
   constructor(args: unknown, context: DriverContext) {

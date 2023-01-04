@@ -8,7 +8,7 @@ import { DeployConstant } from "../../../constant/deployConstant";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { zipFolderAsync } from "../../../utils/fileOperation";
-import { asFactory, asOptional, asString } from "../../../utils/common";
+import { asBoolean, asFactory, asOptional, asString } from "../../../utils/common";
 import { BaseDeployStepDriver } from "../../interface/baseDeployStepDriver";
 
 export abstract class BaseDeployDriver extends BaseDeployStepDriver {
@@ -19,7 +19,8 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
     workingDirectory: asOptional(asString),
     distributionPath: asString,
     ignoreFile: asOptional(asString),
-    resourceId: asOptional(asString),
+    resourceId: asString,
+    dryRun: asOptional(asBoolean),
   });
 
   async run(): Promise<Map<string, string>> {
@@ -36,6 +37,7 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
     this.distDirectory = path.isAbsolute(deployArgs.distributionPath)
       ? deployArgs.distributionPath
       : path.join(this.workingDirectory, deployArgs.distributionPath);
+    this.dryRun = deployArgs.dryRun ?? false;
     // call real deploy
     await this.wrapErrorHandler(async () => {
       await this.deploy(deployArgs);

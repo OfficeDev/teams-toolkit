@@ -732,7 +732,6 @@ export function InitCapabilityBot(): OptionItem {
     description: getLocalizedString("core.InitCapabilityBot"),
   };
 }
-
 export function InitOptionYes(): OptionItem {
   return {
     id: "true",
@@ -769,44 +768,40 @@ export function InitIsSPFxQuestion(): SingleSelectQuestion {
     staticOptions: [InitOptionNo(), InitOptionYes()],
   };
 }
-export function InitDebugProceedQuestion(): SingleSelectQuestion {
-  return {
-    type: "singleSelect",
-    name: "proceed",
-    title: async (inputs: Inputs) => {
-      let fileList;
-      if (inputs["editor"] === InitEditorVSCode().id) {
-        const exists = inputs.projectPath
-          ? await fs.pathExists(path.join(inputs.projectPath, ".vscode"))
-          : false;
-        const dotVscodeFolderName = exists ? ".vscode-teamsfx" : ".vscode";
-        fileList = `  teamsfx/\n    - app.local.yml\n    - .env.local\n    - settings.json\n    - run.js\n  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n`;
-      } else {
-        fileList = "  teamsfx/\n    - app.local.yml\n    - .env.local\n    - settings.json\n";
-      }
-      return getLocalizedString("core.InitGenerateConfirm", fileList);
-    },
-    staticOptions: [InitOptionYes(), InitOptionNo()],
-    default: InitOptionYes().id,
-  };
-}
-export function InitInfraProceedQuestion(): SingleSelectQuestion {
-  return {
-    type: "singleSelect",
-    name: "proceed",
-    title: (inputs: Inputs) => {
-      const fileList =
-        inputs["capability"] === InitCapabilityBot().id
-          ? "  teamsfx/\n    - app.yml\n    - .env.dev\n    - settings.json\n  infra/\n    botRegistration/\n      - azurebot.bicep\n      - readme.md\n    - azure.bicep\n    - azure.parameters.json\n"
-          : inputs["spfx"] === InitOptionYes().id
-          ? "  teamsfx/\n    - app.yml\n    - .env.dev\n    - settings.json\n"
-          : "  teamsfx/\n    - app.yml\n    - .env.dev\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n";
-      return getLocalizedString("core.InitGenerateConfirm", fileList);
-    },
-    staticOptions: [InitOptionYes(), InitOptionNo()],
-    default: InitOptionYes().id,
-  };
-}
+export const InitDebugProceedQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "proceed",
+  title: async (inputs: Inputs) => {
+    let fileList;
+    if (inputs["editor"] === InitEditorVSCode().id) {
+      const exists = inputs.projectPath
+        ? await fs.pathExists(path.join(inputs.projectPath, ".vscode"))
+        : false;
+      const dotVscodeFolderName = exists ? ".vscode-teamsfx" : ".vscode";
+      fileList = `  teamsfx/\n    - .env.local\n    - settings.json\n    - run.js\n  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n  - teamsapp.local.yml\n`;
+    } else {
+      fileList = "  teamsfx/\n    - .env.local\n    - settings.json\n  - teamsapp.local.yml\n";
+    }
+    return getLocalizedString("core.InitGenerateConfirm", fileList);
+  },
+  staticOptions: [InitOptionYes(), InitOptionNo()],
+  default: InitOptionYes().id,
+};
+export const InitInfraProceedQuestion: SingleSelectQuestion = {
+  type: "singleSelect",
+  name: "proceed",
+  title: (inputs: Inputs) => {
+    const fileList =
+      inputs["capability"] === InitCapabilityBot().id
+        ? "  teamsfx/\n    - .env.dev\n    - settings.json\n  infra/\n    botRegistration/\n      - azurebot.bicep\n      - readme.md\n    - azure.bicep\n    - azure.parameters.json\n  - teamsapp.yml\n"
+        : inputs["spfx"] === InitOptionYes.id
+        ? "  teamsfx/\n    - .env.dev\n    - settings.json\n  - teamsapp.yml\n"
+        : "  teamsfx/\n    - .env.dev\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n  - teamsapp.yml\n";
+    return getLocalizedString("core.InitGenerateConfirm", fileList);
+  },
+  staticOptions: [InitOptionYes(), InitOptionNo()],
+  default: InitOptionYes().id,
+};
 export function getQuestionsForInit(
   type: "debug" | "infra",
   inputs: Inputs

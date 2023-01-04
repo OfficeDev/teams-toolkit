@@ -12,6 +12,7 @@ import {
   SystemError,
   UserCancelError,
   UserError,
+  Void,
 } from "@microsoft/teamsfx-api";
 import "mocha";
 import * as sinon from "sinon";
@@ -34,6 +35,7 @@ import { assert } from "chai";
 import {
   M365SsoLaunchPageOptionItem,
   SolutionError,
+  SolutionSource,
   TabOptionItem,
 } from "../../src/component/constants";
 import { FxCore } from "../../src/core/FxCore";
@@ -65,6 +67,7 @@ import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/
 import { MockedUserInteraction } from "../plugins/solution/util";
 import { SummaryReporter } from "../../src/component/coordinator/summary";
 import * as path from "path";
+import { deployUtils } from "../../src/component/deployUtils";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -1568,7 +1571,7 @@ describe("component coordinator test", () => {
             unresolvedPlaceHolders: [],
           });
         },
-        driverDefs: [],
+        driverDefs: [{ uses: "azureStorage/deploy", with: "" }],
         resolvePlaceholders: () => {
           return [];
         },
@@ -1589,6 +1592,7 @@ describe("component coordinator test", () => {
         return ok({ type: "success", result: "" });
       }
     });
+    sandbox.stub(deployUtils, "askForDeployConsentV3").resolves(ok(Void));
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
@@ -1598,7 +1602,49 @@ describe("component coordinator test", () => {
     const res = await fxCore.deployArtifacts(inputs);
     assert.isTrue(res.isOk());
   });
-
+  it("deploy cancel", async () => {
+    const mockProjectModel: ProjectModel = {
+      deploy: {
+        name: "deploy",
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        driverDefs: [{ uses: "azureStorage/deploy", with: "" }],
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
+      if (config.name === "env") {
+        return ok({ type: "success", result: "dev" });
+      } else {
+        return ok({ type: "success", result: "" });
+      }
+    });
+    sandbox
+      .stub(deployUtils, "askForDeployConsentV3")
+      .resolves(err(new UserError(SolutionSource, "UserCancel", "UserCancel")));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.deployArtifacts(inputs);
+    assert.isTrue(res.isErr());
+  });
   it("deploy happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
       registerApp: {

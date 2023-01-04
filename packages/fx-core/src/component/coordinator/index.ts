@@ -99,6 +99,7 @@ import { Lifecycle } from "../configManager/lifecycle";
 import { SummaryReporter } from "./summary";
 import { EOL } from "os";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
+import { deployUtils } from "../deployUtils";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -881,7 +882,13 @@ export class Coordinator {
         }
       });
 
-      //TODO consent
+      //consent
+      if (containsAzure) {
+        const consent = await deployUtils.askForDeployConsentV3(ctx);
+        if (consent.isErr()) {
+          return err(consent.error);
+        }
+      }
 
       const summaryReporter = new SummaryReporter([projectModel.deploy], ctx.logProvider);
       try {

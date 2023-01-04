@@ -16,6 +16,7 @@
   "core.provision.confirmEnvAndCostNotice": "Cost may incur according to the usage. Do you want to provision resources in %s environment using accounts listed above?",
   "core.provision.confirmEnvOnlyNotice": "Do you want to provision resources in %s environment using the account listed above?",
   "core.deploy.confirmEnvNotice": "Do you want to deploy resources in %s environment?\nAzure account (%s) with subscription (%s) will be used for deployment.",
+  "core.deploy.confirmEnvNoticeV3": "Do you want to deploy resources in %s environment?",
   "core.provision.successAzure": "Azure resources successfully provisioned in the cloud.",
   "core.provision.successNotice": "'%s' successfully provisioned in the cloud.",
   "core.provision.failNotice": "fail to provision '%s' in the cloud!",

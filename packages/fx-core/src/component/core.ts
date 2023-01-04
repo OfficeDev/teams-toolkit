@@ -22,12 +22,7 @@ import fs from "fs-extra";
 import path from "path";
 import "reflect-metadata";
 import { Container, Service } from "typedi";
-import {
-  CoreQuestionNames,
-  ProjectNamePattern,
-  QuestionRootFolder,
-  ScratchOptionNo,
-} from "../core/question";
+import { CoreQuestionNames, ProjectNamePattern, ScratchOptionNo } from "../core/question";
 import { isValidProject, isVSProject, newProjectSettings } from "./../common/projectSettingsHelper";
 import "./bicep";
 import "./code/api/apiCode";
@@ -137,7 +132,7 @@ export class TeamsfxCore {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<string, FxError>> {
-    const folder = inputs[QuestionRootFolder.name] as string;
+    const folder = inputs["folder"] as string;
     if (!folder) {
       return err(InvalidInputError("folder is undefined"));
     }
@@ -145,7 +140,7 @@ export class TeamsfxCore {
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     const automaticNpmInstall = "automaticNpmInstall";
-    if (scratch === ScratchOptionNo.id) {
+    if (scratch === ScratchOptionNo().id) {
       // create from sample
       const downloadRes = await downloadSample(inputs, undefined, context);
       if (downloadRes.isErr()) {

@@ -25,7 +25,6 @@ import {
   CoreQuestionNames,
   CreateNewOfficeAddinOption,
   ProjectNamePattern,
-  QuestionRootFolder,
   ScratchOptionNo,
   ScratchOptionYes,
 } from "../../core/question";
@@ -93,13 +92,14 @@ import { resourceGroupHelper, ResourceGroupInfo } from "../utils/ResourceGroupHe
 import { getResourceGroupInPortal } from "../../common/tools";
 import { getBotTroubleShootMessage } from "../core";
 import { developerPortalScaffoldUtils } from "../developerPortalScaffoldUtils";
-import { updateManifestV3ForPublish } from "../resource/appManifest/appStudio";
+import { updateTeamsAppV3ForPublish } from "../resource/appManifest/appStudio";
 import { AppStudioScopes } from "../resource/appManifest/constants";
 import * as xml2js from "xml2js";
 import { Lifecycle } from "../configManager/lifecycle";
 import { SummaryReporter } from "./summary";
 import { EOL } from "os";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
+import { deployUtils } from "../deployUtils";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -167,6 +167,11 @@ const M365Actions = [
   "botFramework/create",
 ];
 const AzureActions = ["arm/deploy"];
+const AzureDeployActions = [
+  "azureAppService/deploy",
+  "azureFunctions/deploy",
+  "azureStorage/deploy",
+];
 const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramework/create"];
 
 export class Coordinator {
@@ -183,14 +188,14 @@ export class Coordinator {
     inputs: Inputs,
     actionContext?: ActionContext
   ): Promise<Result<string, FxError>> {
-    const folder = inputs[QuestionRootFolder.name] as string;
+    const folder = inputs["folder"] as string;
     if (!folder) {
       return err(InvalidInputError("folder is undefined"));
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath = "";
     const automaticNpmInstall = "automaticNpmInstall";
-    if (scratch === ScratchOptionNo.id) {
+    if (scratch === ScratchOptionNo().id) {
       // create from sample
       const sampleId = inputs[CoreQuestionNames.Samples] as string;
       if (!sampleId) {
@@ -209,7 +214,7 @@ export class Coordinator {
       if (res.isErr()) return err(res.error);
 
       await downloadSampleHook(sampleId, projectPath);
-    } else if (!scratch || scratch === ScratchOptionYes.id) {
+    } else if (!scratch || scratch === ScratchOptionYes().id) {
       // create from new
       const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
@@ -252,7 +257,7 @@ export class Coordinator {
         [TelemetryProperty.Feature]: feature,
         [TelemetryProperty.IsFromTdp]: !!inputs.teamsAppFromTdp,
       });
-    } else if (scratch === CreateNewOfficeAddinOption.id) {
+    } else if (scratch === CreateNewOfficeAddinOption().id) {
       const appName = inputs[CoreQuestionNames.AppName] as string;
       if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
       const validateResult = jsonschema.validate(appName, {
@@ -307,7 +312,7 @@ export class Coordinator {
     inputs: Inputs,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    if (inputs.proceed === InitOptionNo.id) return err(UserCancelError);
+    if (inputs.proceed === InitOptionNo().id) return err(UserCancelError);
     const projectPath = inputs.projectPath;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is undefined"));
@@ -328,7 +333,7 @@ export class Coordinator {
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
     if (actionContext?.telemetryProps) actionContext.telemetryProps["project-id"] = ensureRes.value;
-    if (editor === InitEditorVS.id) {
+    if (editor === InitEditorVS().id) {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);
     }
@@ -388,7 +393,7 @@ export class Coordinator {
     inputs: Inputs,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    if (inputs.proceed === InitOptionNo.id) return err(UserCancelError);
+    if (inputs.proceed === InitOptionNo().id) return err(UserCancelError);
     const projectPath = inputs.projectPath;
     if (!projectPath) {
       return err(InvalidInputError("projectPath is undefined"));
@@ -402,7 +407,7 @@ export class Coordinator {
     if (!templateName) {
       return err(InvalidInputError("templateName is undefined"));
     }
-    if (editor === InitEditorVSCode.id) {
+    if (editor === InitEditorVSCode().id) {
       const exists = await fs.pathExists(path.join(projectPath, ".vscode"));
       context.templateVariables = { dotVscodeFolderName: exists ? ".vscode-teamsfx" : ".vscode" };
     }
@@ -413,7 +418,7 @@ export class Coordinator {
     const ensureRes = await this.ensureTrackingId(projectPath, originalTrackingId);
     if (ensureRes.isErr()) return err(ensureRes.error);
     if (actionContext?.telemetryProps) actionContext.telemetryProps["project-id"] = ensureRes.value;
-    if (editor === InitEditorVS.id) {
+    if (editor === InitEditorVS().id) {
       const ensure = await this.ensureTeamsFxInCsproj(projectPath);
       if (ensure.isErr()) return err(ensure.error);
     }
@@ -869,6 +874,22 @@ export class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
+      //check whether deploy to azure
+      let containsAzure = false;
+      projectModel.deploy.driverDefs?.forEach((def) => {
+        if (AzureDeployActions.includes(def.uses)) {
+          containsAzure = true;
+        }
+      });
+
+      //consent
+      if (containsAzure) {
+        const consent = await deployUtils.askForDeployConsentV3(ctx);
+        if (consent.isErr()) {
+          return err(consent.error);
+        }
+      }
+
       const summaryReporter = new SummaryReporter([projectModel.deploy], ctx.logProvider);
       try {
         const maybeDescription = summaryReporter.getLifecycleDescriptions();
@@ -957,7 +978,11 @@ export class Coordinator {
     if (!ctx.tokenProvider) {
       return err(new ObjectIsUndefinedError("tokenProvider"));
     }
-    const updateRes = await updateManifestV3ForPublish(ctx as ResourceContextV3, inputs);
+    if (!inputs[CoreQuestionNames.AppPackagePath]) {
+      return err(new ObjectIsUndefinedError("appPackagePath"));
+    }
+    const updateRes = await updateTeamsAppV3ForPublish(ctx as ResourceContextV3, inputs);
+
     if (updateRes.isErr()) {
       return err(updateRes.error);
     }

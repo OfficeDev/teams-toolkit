@@ -22,6 +22,7 @@ import {
   TelemetryProperty,
 } from "../../../common/telemetry";
 import { waitSeconds } from "../../../common/tools";
+import { IValidationResult } from "./interfaces/IValidationResult";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -476,6 +477,24 @@ export namespace AppStudioClient {
       }
     } catch (e) {
       const error = wrapException(e, APP_STUDIO_API_NAMES.GET_APP_PACKAGE);
+      throw error;
+    }
+  }
+
+  export async function partnerCenterAppPackageValidation(
+    file: Buffer,
+    appStudioToken: string
+  ): Promise<IValidationResult> {
+    const requester = createRequesterWithToken(appStudioToken, region);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.post("/api/appdefinitions/partnerCenterAppPackageValidation", file, {
+          headers: { "Content-Type": "application/zip" },
+        })
+      );
+      return response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE);
       throw error;
     }
   }

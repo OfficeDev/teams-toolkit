@@ -48,7 +48,7 @@ describe("Core basic APIs - create from sample", () => {
     const inputs: Inputs = {
       platform: Platform.CLI,
       [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC().id,
       [CoreQuestionNames.Samples]: "hello-world-tab",
       stage: Stage.create,
     };
@@ -75,7 +75,7 @@ describe("Core basic APIs - create from sample", () => {
     const inputs: Inputs = {
       platform: Platform.CLI,
       [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC().id,
       [CoreQuestionNames.Samples]: "hello-world-tab",
       stage: Stage.create,
     };

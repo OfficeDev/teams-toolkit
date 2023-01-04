@@ -29,7 +29,7 @@ import {
 } from "../common/telemetry";
 import { FetchSampleError, InvalidInputError, ProjectFolderInvalidError } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
-import { CoreQuestionNames, QuestionRootFolder } from "./question";
+import { CoreQuestionNames } from "./question";
 import { CoreHookContext } from "./types";
 
 export async function fetchCodeZip(
@@ -117,7 +117,7 @@ export async function downloadSample(
     module: "fx-core",
   };
   try {
-    const folder = inputs[QuestionRootFolder.name] as string;
+    const folder = inputs["folder"] as string;
     try {
       await fs.ensureDir(folder);
     } catch (e) {

@@ -15,6 +15,7 @@ import { convertContext } from "../../src/component/resource/aadApp/utils";
 import {
   addFeatureNotify,
   createContextV3,
+  createDriverContext,
   newProjectSettingsV3,
   resetEnvInfoWhenSwitchM365,
   scaffoldRootReadme,
@@ -36,6 +37,7 @@ import { MockedTelemetryReporter, MyTokenCredential } from "../plugins/solution/
 import { expandEnvironmentVariable } from "../../src/component/utils/common";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { TeamsFxTelemetryReporter } from "../../src/component/utils/teamsFxTelemetryReporter";
+import { getLocalizedString } from "../../src/common/localizeUtils";
 
 describe("resetEnvInfoWhenSwitchM365", () => {
   const sandbox = sinon.createSandbox();
@@ -243,6 +245,28 @@ describe("resetEnvInfoWhenSwitchM365", () => {
       tools.tokenProvider.azureAccountProvider,
       envInfo
     );
+    assert.isTrue(res.isErr());
+  });
+  it("askForDeployConsentV3 confirm", async () => {
+    process.env.TEAMSFX_ENV = "dev";
+    const inputs: InputsWithProjectPath = {
+      projectPath: ".",
+      platform: Platform.VSCode,
+    };
+    const ctx = createDriverContext(inputs);
+    sandbox.stub(ctx.ui!, "showMessage").resolves(ok(getLocalizedString("core.option.deploy")));
+    const res = await deployUtils.askForDeployConsentV3(ctx);
+    assert.isTrue(res.isOk());
+  });
+  it("askForDeployConsentV3 cancel", async () => {
+    process.env.TEAMSFX_ENV = "dev";
+    const inputs: InputsWithProjectPath = {
+      projectPath: ".",
+      platform: Platform.VSCode,
+    };
+    const ctx = createDriverContext(inputs);
+    sandbox.stub(ctx.ui!, "showMessage").resolves(ok(undefined));
+    const res = await deployUtils.askForDeployConsentV3(ctx);
     assert.isTrue(res.isErr());
   });
   it("errors", async () => {

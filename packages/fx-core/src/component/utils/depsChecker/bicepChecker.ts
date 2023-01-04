@@ -389,7 +389,7 @@ class BicepChecker {
   }
 
   private getBicepInstallDir(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "bicep");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "bicep", this._version || "");
   }
 
   private async queryVersion(path: string): Promise<string> {

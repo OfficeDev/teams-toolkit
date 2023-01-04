@@ -24,6 +24,7 @@ import {
   Void,
   VsCodeEnv,
   PathNotExistError,
+  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { DepsManager, DepsType } from "@microsoft/teamsfx-core/build/common/deps-checker";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
@@ -1372,23 +1373,51 @@ describe("handlers", () => {
   });
 
   describe("publishInDeveloperPortalHandler", async () => {
+    beforeEach(() => {
+      sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
+    });
+
     afterEach(() => {
       sinon.restore();
     });
 
     it("publish in developer portal", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon
+        .stub(extension.VS_CODE_UI, "selectFile")
+        .resolves(ok({ type: "success", result: "test.zip" }));
       const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(vscode.commands, "executeCommand");
       sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readdir").resolves(["test.zip", "test.json"] as any);
 
       const res = await handlers.publishInDeveloperPortalHandler();
       if (res.isErr()) {
         console.log(res.error);
       }
       chai.assert.isTrue(publish.calledOnce);
+      chai.assert.isTrue(res.isOk());
+    });
+
+    it("select file error", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon.stub(extension.VS_CODE_UI, "selectFile").resolves(err(UserCancelError));
+      const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(vscode.commands, "executeCommand");
+      sinon.stub(vscodeHelper, "checkerEnabled").returns(false);
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readdir").resolves(["test.zip", "test.json"] as any);
+
+      const res = await handlers.publishInDeveloperPortalHandler();
+      chai.assert.isTrue(res.isOk());
+      chai.assert.isFalse(publish.calledOnce);
     });
   });
 

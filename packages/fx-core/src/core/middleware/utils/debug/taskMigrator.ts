@@ -785,7 +785,10 @@ export async function migratePreDebugCheck(context: DebugMigrationContext): Prom
 
     const existingLabels = getLabels(context.tasks);
     const createResourcesLabel = generateLabel("Create resources", existingLabels);
-    const setUpLocalProjectsLabel = generateLabel("Set up local projects", existingLabels);
+    const setUpLocalProjectsLabel = generateLabel(
+      "Install tools and Build project",
+      existingLabels
+    );
     task["dependsOn"] = new CommentArray(createResourcesLabel, setUpLocalProjectsLabel);
     task["dependsOrder"] = "sequence";
     const createResources = createResourcesTask(createResourcesLabel);
@@ -940,8 +943,8 @@ function handleProvisionAndDeploy(
   const createResourcesLabel = generatedBefore || generateLabel("Create resources", existingLabels);
 
   const setUpLocalProjectsLabel =
-    context.generatedLabels.find((value) => value.startsWith("Set up local projects")) ||
-    generateLabel("Set up local projects", existingLabels);
+    context.generatedLabels.find((value) => value.startsWith("Install tools and Build project")) ||
+    generateLabel("Install tools and Build project", existingLabels);
 
   if (!generatedBefore) {
     context.generatedLabels.push(createResourcesLabel);

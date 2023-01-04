@@ -386,9 +386,9 @@ describe("question for v3", () => {
       editor: "vsc",
       projectPath: ".",
     };
-    const res1 = await (InitDebugProceedQuestion as any).title(inputs);
+    const res1 = await (InitDebugProceedQuestion() as any).title(inputs);
     inputs.editor = "vs";
-    const res2 = await (InitDebugProceedQuestion as any).title(inputs);
+    const res2 = await (InitDebugProceedQuestion() as any).title(inputs);
     assert.isDefined(res1);
     assert.isDefined(res2);
   });

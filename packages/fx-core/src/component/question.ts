@@ -5,7 +5,6 @@ import {
   ContextV3,
   DynamicPlatforms,
   err,
-  FolderQuestion,
   FuncQuestion,
   FxError,
   Inputs,
@@ -19,7 +18,6 @@ import {
   QTreeNode,
   ResourceContextV3,
   Result,
-  SingleFileQuestion,
   SingleSelectQuestion,
   Stage,
   TextInputQuestion,
@@ -82,8 +80,8 @@ import {
   getConditionOfNotificationTriggerQuestion,
   showNotificationTriggerCondition,
 } from "./feature/bot/question";
-import { NoCapabilityFoundError, ObjectIsUndefinedError } from "../core/error";
-import { CoreQuestionNames, ProgrammingLanguageQuestion } from "../core/question";
+import { NoCapabilityFoundError } from "../core/error";
+import { ProgrammingLanguageQuestion } from "../core/question";
 import { createContextV3 } from "./utils";
 import {
   isBotNotificationEnabled,
@@ -690,111 +688,134 @@ export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestio
   };
 }
 
-export const SelectEnvQuestion: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: "env",
-  title: getLocalizedString("core.QuestionSelectTargetEnvironment.title"),
-  staticOptions: [],
-  skipSingleOption: true,
-  forgetLastValue: true,
-};
+export function SelectEnvQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: "env",
+    title: getLocalizedString("core.QuestionSelectTargetEnvironment.title"),
+    staticOptions: [],
+    skipSingleOption: true,
+    forgetLastValue: true,
+  };
+}
 
-export const InitEditorVSCode: OptionItem = {
-  id: "vsc",
-  label: getLocalizedString("core.InitEditorVsc"),
-  description: getLocalizedString("core.InitEditorVscDesc"),
-};
+export function InitEditorVSCode(): OptionItem {
+  return {
+    id: "vsc",
+    label: getLocalizedString("core.InitEditorVsc"),
+    description: getLocalizedString("core.InitEditorVscDesc"),
+  };
+}
 
-export const InitEditorVS: OptionItem = {
-  id: "vs",
-  label: getLocalizedString("core.InitEditorVs"),
-  description: getLocalizedString("core.InitEditorVsDesc"),
-};
+export function InitEditorVS(): OptionItem {
+  return {
+    id: "vs",
+    label: getLocalizedString("core.InitEditorVs"),
+    description: getLocalizedString("core.InitEditorVsDesc"),
+  };
+}
 
-export const InitCapabilityTab: OptionItem = {
-  id: "tab",
-  label: "Tab",
-  description: getLocalizedString("core.InitCapabilityTab"),
-};
+export function InitCapabilityTab(): OptionItem {
+  return {
+    id: "tab",
+    label: "Tab",
+    description: getLocalizedString("core.InitCapabilityTab"),
+  };
+}
+export function InitCapabilityBot(): OptionItem {
+  return {
+    id: "bot",
+    label: "Bot",
+    description: getLocalizedString("core.InitCapabilityBot"),
+  };
+}
 
-export const InitCapabilityBot: OptionItem = {
-  id: "bot",
-  label: "Bot",
-  description: getLocalizedString("core.InitCapabilityBot"),
-};
-
-export const InitOptionYes: OptionItem = {
-  id: "true",
-  label: getLocalizedString("core.InitOptionYes"),
-};
-export const InitOptionNo: OptionItem = {
-  id: "false",
-  label: getLocalizedString("core.InitOptionNo"),
-};
-export const InitEditorQuestion: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: "editor",
-  title: getLocalizedString("core.InitEditorTitle"),
-  staticOptions: [InitEditorVSCode, InitEditorVS],
-};
-export const InitCapabilityQuestion: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: "capability",
-  title: getLocalizedString("core.InitCapabilityTitle"),
-  staticOptions: [InitCapabilityTab, InitCapabilityBot],
-};
-export const InitIsSPFxQuestion: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: "spfx",
-  title: getLocalizedString("core.InitIsSPFxTitle"),
-  staticOptions: [InitOptionNo, InitOptionYes],
-};
-export const InitDebugProceedQuestion: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: "proceed",
-  title: async (inputs: Inputs) => {
-    let fileList;
-    if (inputs["editor"] === InitEditorVSCode.id) {
-      const exists = inputs.projectPath
-        ? await fs.pathExists(path.join(inputs.projectPath, ".vscode"))
-        : false;
-      const dotVscodeFolderName = exists ? ".vscode-teamsfx" : ".vscode";
-      fileList = `  teamsfx/\n    - .env.local\n    - settings.json\n    - run.js\n  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n  - teamsapp.local.yml\n`;
-    } else {
-      fileList = "  teamsfx/\n    - .env.local\n    - settings.json\n  - teamsapp.local.yml\n";
-    }
-    return getLocalizedString("core.InitGenerateConfirm", fileList);
-  },
-  staticOptions: [InitOptionYes, InitOptionNo],
-  default: InitOptionYes.id,
-};
-export const InitInfraProceedQuestion: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: "proceed",
-  title: (inputs: Inputs) => {
-    const fileList =
-      inputs["capability"] === InitCapabilityBot.id
-        ? "  teamsfx/\n    - .env.dev\n    - settings.json\n  infra/\n    botRegistration/\n      - azurebot.bicep\n      - readme.md\n    - azure.bicep\n    - azure.parameters.json\n  - teamsapp.yml\n"
-        : inputs["spfx"] === InitOptionYes.id
-        ? "  teamsfx/\n    - .env.dev\n    - settings.json\n  - teamsapp.yml\n"
-        : "  teamsfx/\n    - .env.dev\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n  - teamsapp.yml\n";
-    return getLocalizedString("core.InitGenerateConfirm", fileList);
-  },
-  staticOptions: [InitOptionYes, InitOptionNo],
-  default: InitOptionYes.id,
-};
+export function InitOptionYes(): OptionItem {
+  return {
+    id: "true",
+    label: getLocalizedString("core.InitOptionYes"),
+  };
+}
+export function InitOptionNo(): OptionItem {
+  return {
+    id: "false",
+    label: getLocalizedString("core.InitOptionNo"),
+  };
+}
+export function InitEditorQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: "editor",
+    title: getLocalizedString("core.InitEditorTitle"),
+    staticOptions: [InitEditorVSCode(), InitEditorVS()],
+  };
+}
+export function InitCapabilityQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: "capability",
+    title: getLocalizedString("core.InitCapabilityTitle"),
+    staticOptions: [InitCapabilityTab(), InitCapabilityBot()],
+  };
+}
+export function InitIsSPFxQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: "spfx",
+    title: getLocalizedString("core.InitIsSPFxTitle"),
+    staticOptions: [InitOptionNo(), InitOptionYes()],
+  };
+}
+export function InitDebugProceedQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: "proceed",
+    title: async (inputs: Inputs) => {
+      let fileList;
+      if (inputs["editor"] === InitEditorVSCode().id) {
+        const exists = inputs.projectPath
+          ? await fs.pathExists(path.join(inputs.projectPath, ".vscode"))
+          : false;
+        const dotVscodeFolderName = exists ? ".vscode-teamsfx" : ".vscode";
+        fileList = `  teamsfx/\n    - app.local.yml\n    - .env.local\n    - settings.json\n    - run.js\n  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n`;
+      } else {
+        fileList = "  teamsfx/\n    - app.local.yml\n    - .env.local\n    - settings.json\n";
+      }
+      return getLocalizedString("core.InitGenerateConfirm", fileList);
+    },
+    staticOptions: [InitOptionYes(), InitOptionNo()],
+    default: InitOptionYes().id,
+  };
+}
+export function InitInfraProceedQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: "proceed",
+    title: (inputs: Inputs) => {
+      const fileList =
+        inputs["capability"] === InitCapabilityBot().id
+          ? "  teamsfx/\n    - app.yml\n    - .env.dev\n    - settings.json\n  infra/\n    botRegistration/\n      - azurebot.bicep\n      - readme.md\n    - azure.bicep\n    - azure.parameters.json\n"
+          : inputs["spfx"] === InitOptionYes().id
+          ? "  teamsfx/\n    - app.yml\n    - .env.dev\n    - settings.json\n"
+          : "  teamsfx/\n    - app.yml\n    - .env.dev\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n";
+      return getLocalizedString("core.InitGenerateConfirm", fileList);
+    },
+    staticOptions: [InitOptionYes(), InitOptionNo()],
+    default: InitOptionYes().id,
+  };
+}
 export function getQuestionsForInit(
   type: "debug" | "infra",
   inputs: Inputs
 ): Result<QTreeNode | undefined, FxError> {
   const group = new QTreeNode({ type: "group" });
-  group.addChild(new QTreeNode(InitEditorQuestion));
-  const capabilityNode = new QTreeNode(InitCapabilityQuestion);
+  group.addChild(new QTreeNode(InitEditorQuestion()));
+  const capabilityNode = new QTreeNode(InitCapabilityQuestion());
   group.addChild(capabilityNode);
-  const SPFxNode = new QTreeNode(InitIsSPFxQuestion);
+  const SPFxNode = new QTreeNode(InitIsSPFxQuestion());
   SPFxNode.condition = {
     validFunc: (input: string, inputs?: Inputs) => {
-      if (inputs?.editor === InitEditorVSCode.id && inputs?.capability === InitCapabilityTab.id)
+      if (inputs?.editor === InitEditorVSCode().id && inputs?.capability === InitCapabilityTab().id)
         return undefined;
       return "Not supported";
     },
@@ -802,39 +823,8 @@ export function getQuestionsForInit(
   capabilityNode.addChild(SPFxNode);
   if (inputs.platform !== Platform.CLI_HELP) {
     group.addChild(
-      new QTreeNode(type === "debug" ? InitDebugProceedQuestion : InitInfraProceedQuestion)
+      new QTreeNode(type === "debug" ? InitDebugProceedQuestion() : InitInfraProceedQuestion())
     );
   }
   return ok(group);
 }
-export async function getQuestionsForPublishInDeveloperPortal(
-  inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (!inputs.projectPath) {
-    return err(new ObjectIsUndefinedError("projectPath"));
-  }
-
-  const node = new QTreeNode({ type: "group" });
-  let manifestDefaultPath: string | undefined = path.join(
-    inputs.projectPath,
-    "appPackage",
-    "manifest.template.json"
-  );
-  if (!(await fs.pathExists(manifestDefaultPath))) {
-    manifestDefaultPath = undefined;
-  }
-  node.addChild(new QTreeNode(manifestFileQuestion(manifestDefaultPath)));
-  return ok(node);
-}
-
-const manifestFileQuestion = (defaultFile: string | undefined): SingleFileQuestion => {
-  return {
-    type: "singleFile",
-    name: CoreQuestionNames.ManifestPath,
-    title: getLocalizedString("core.question.manifestForPublishInDeveloperPortal.title"),
-    placeholder: getLocalizedString(
-      "core.question.manifestForPublishInDeveloperPortal.placeholder"
-    ),
-    default: defaultFile,
-  };
-};

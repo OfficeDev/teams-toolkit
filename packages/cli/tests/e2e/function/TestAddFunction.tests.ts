@@ -6,8 +6,8 @@
  */
 
 import * as path from "path";
-
-import { AadValidator, FunctionValidator } from "../../commonlib";
+import * as chai from "chai";
+import { AadValidator, FunctionValidator, AppStudioValidator } from "../../commonlib";
 import { environmentManager, isV3Enabled } from "@microsoft/teamsfx-core";
 import {
   execAsyncWithRetry,
@@ -17,6 +17,7 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   readContextMultiEnv,
+  loadContext,
 } from "../commonUtils";
 import M365Login from "../../../src/commonlib/m365Login";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -30,6 +31,7 @@ describe("Test Add Function", function () {
   let subscription: string;
   let projectPath: string;
   let env: string;
+  let teamsAppId: string | undefined;
 
   // Should succeed on the 3rd try
   this.retries(2);
@@ -45,7 +47,7 @@ describe("Test Add Function", function () {
   afterEach(async () => {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
-    await cleanUp(appName, projectPath, true, false, false);
+    await cleanUp(appName, projectPath, true, false, false, teamsAppId);
   });
 
   it(`Create Tab Then Add Function`, { testPlanCaseId: 10306830 }, async function () {
@@ -110,19 +112,24 @@ describe("Test Add Function", function () {
       /// TODO: add check for package
     }
 
-    /// TODO: Publish broken: https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/9856390
-    // // publish
-    // await execAsyncWithRetry(
-    //   `teamsfx publish`,
-    //   {
-    //     cwd: projectPath,
-    //     env: process.env,
-    //     timeout: 0
-    //   }
-    // );
+    // publish
+    await execAsyncWithRetry(`teamsfx publish`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
-    // {
-    //   /// TODO: add check for publish
-    // }
+    {
+      // Validate publish result
+      const contextResult = await loadContext(projectPath, env);
+      if (contextResult.isErr()) {
+        throw contextResult.error;
+      }
+      const context = contextResult.value;
+      const appStudioObject = AppStudioValidator.init(context);
+      teamsAppId = appStudioObject.teamsAppId;
+      chai.assert.isNotNull(teamsAppId);
+      await AppStudioValidator.validatePublish(teamsAppId!);
+    }
   });
 });

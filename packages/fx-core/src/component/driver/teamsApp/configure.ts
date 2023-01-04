@@ -20,7 +20,7 @@ import { getAbsolutePath } from "../../utils/common";
 
 export const actionName = "teamsApp/update";
 
-const outputNames = {
+export const outputNames = {
   TEAMS_APP_ID: "TEAMS_APP_ID",
   TEAMS_APP_TENANT_ID: "TEAMS_APP_TENANT_ID",
   TEAMS_APP_UPDATE_TIME: "TEAMS_APP_UPDATE_TIME",

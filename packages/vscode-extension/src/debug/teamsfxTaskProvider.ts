@@ -108,16 +108,6 @@ const customTasks = Object.freeze({
   },
 });
 
-async function triggerV3Migration(): Promise<void> {
-  const result = await core.phantomMigrationV3(getSystemInputs());
-  if (result.isErr()) {
-    showError(result.error);
-    return;
-  }
-  // reload window to terminate debugging
-  await VS_CODE_UI.reload();
-}
-
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
 
@@ -156,7 +146,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
       // migrate to v3
       if (isV3Enabled()) {
-        await triggerV3Migration();
+        await commonUtils.triggerV3Migration();
         return ok(undefined);
       }
 
@@ -274,7 +264,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       }
 
       if (needsMigration) {
-        await triggerV3Migration();
+        await commonUtils.triggerV3Migration();
         return undefined;
       }
     }

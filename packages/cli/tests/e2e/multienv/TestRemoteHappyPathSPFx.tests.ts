@@ -8,7 +8,7 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
-import { expect } from "chai";
+import { expect, assert } from "chai";
 
 import {
   cleanUpLocalProject,
@@ -184,7 +184,7 @@ describe("Multi Env Happy Path for SPFx", function () {
         const context = contextResult.value;
         const appStudioObject = AppStudioValidator.init(context);
         teamsAppId = appStudioObject.teamsAppId;
-        chai.assert.isNotNull(teamsAppId);
+        assert.isNotNull(teamsAppId);
         await AppStudioValidator.validatePublish(teamsAppId!);
       }
     }

@@ -147,13 +147,15 @@ export const DefaultAppNameFunc: FuncQuestion = {
   },
 };
 
-export const QuestionRootFolder: FolderQuestion = {
-  type: "folder",
-  name: CoreQuestionNames.Folder,
-  title: getLocalizedString("core.question.workspaceFolder.title"),
-  placeholder: getLocalizedString("core.question.workspaceFolder.placeholder"),
-  default: path.join(os.homedir(), ConstantString.RootFolder),
-};
+export function QuestionRootFolder(): FolderQuestion {
+  return {
+    type: "folder",
+    name: CoreQuestionNames.Folder,
+    title: getLocalizedString("core.question.workspaceFolder.title"),
+    placeholder: getLocalizedString("core.question.workspaceFolder.placeholder"),
+    default: path.join(os.homedir(), ConstantString.RootFolder),
+  };
+}
 
 export const ProgrammingLanguageQuestionForDotNet: SingleSelectQuestion = {
   name: CoreQuestionNames.ProgrammingLanguage,
@@ -492,14 +494,16 @@ export async function onChangeSelectionForCapabilities(
   );
   return result;
 }
-export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.TargetEnvName,
-  title: getLocalizedString("core.QuestionSelectTargetEnvironment.title"),
-  staticOptions: [],
-  skipSingleOption: true,
-  forgetLastValue: true,
-};
+export function QuestionSelectTargetEnvironment(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.TargetEnvName,
+    title: getLocalizedString("core.QuestionSelectTargetEnvironment.title"),
+    staticOptions: [],
+    skipSingleOption: true,
+    forgetLastValue: true,
+  };
+}
 
 export function getQuestionNewTargetEnvironmentName(projectPath: string): TextInputQuestion {
   const WINDOWS_MAX_PATH_LENGTH = 260;
@@ -550,27 +554,30 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
   };
 }
 
-export const QuestionSelectSourceEnvironment: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.SourceEnvName,
-  title: getLocalizedString("core.QuestionSelectSourceEnvironment.title"),
-  staticOptions: [],
-  skipSingleOption: true,
-  forgetLastValue: true,
-};
-
-export const QuestionSelectResourceGroup: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.TargetResourceGroupName,
-  title: getLocalizedString("core.QuestionSelectResourceGroup.title"),
-  staticOptions: [],
-  skipSingleOption: true,
-  forgetLastValue: true,
-};
+export function QuestionSelectSourceEnvironment(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.SourceEnvName,
+    title: getLocalizedString("core.QuestionSelectSourceEnvironment.title"),
+    staticOptions: [],
+    skipSingleOption: true,
+    forgetLastValue: true,
+  };
+}
+export function QuestionSelectResourceGroup(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.TargetResourceGroupName,
+    title: getLocalizedString("core.QuestionSelectResourceGroup.title"),
+    staticOptions: [],
+    skipSingleOption: true,
+    forgetLastValue: true,
+  };
+}
 export function newResourceGroupNameQuestion(
   existingResourceGroupNames: string[]
 ): TextInputQuestion {
-  const question = QuestionNewResourceGroupName;
+  const question = QuestionNewResourceGroupName();
   question.validation = {
     validFunc: (input: string): string | undefined => {
       const name = input as string;
@@ -601,57 +608,72 @@ export function newResourceGroupNameQuestion(
   };
   return question;
 }
-export const QuestionNewResourceGroupName: TextInputQuestion = {
-  type: "text",
-  name: CoreQuestionNames.NewResourceGroupName,
-  title: getLocalizedString("core.QuestionNewResourceGroupName.title"),
-  placeholder: getLocalizedString("core.QuestionNewResourceGroupName.placeholder"),
-  // default resource group name will change with env name
-  forgetLastValue: true,
-};
+export function QuestionNewResourceGroupName(): TextInputQuestion {
+  return {
+    type: "text",
+    name: CoreQuestionNames.NewResourceGroupName,
+    title: getLocalizedString("core.QuestionNewResourceGroupName.title"),
+    placeholder: getLocalizedString("core.QuestionNewResourceGroupName.placeholder"),
+    // default resource group name will change with env name
+    forgetLastValue: true,
+  };
+}
 
-export const QuestionNewResourceGroupLocation: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.NewResourceGroupLocation,
-  title: getLocalizedString("core.QuestionNewResourceGroupLocation.title"),
-  staticOptions: [],
-};
+export function QuestionNewResourceGroupLocation(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.NewResourceGroupLocation,
+    title: getLocalizedString("core.QuestionNewResourceGroupLocation.title"),
+    staticOptions: [],
+  };
+}
 
-export const ScratchOptionYesVSC: OptionItem = {
-  id: "yes",
-  label: `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.label")}`,
-  detail: getLocalizedString("core.ScratchOptionYesVSC.detail"),
-};
+export function ScratchOptionYesVSC(): OptionItem {
+  return {
+    id: "yes",
+    label: `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.label")}`,
+    detail: getLocalizedString("core.ScratchOptionYesVSC.detail"),
+  };
+}
 
-export const ScratchOptionNoVSC: OptionItem = {
-  id: "no",
-  label: `$(heart) ${getLocalizedString("core.ScratchOptionNoVSC.label")}`,
-  detail: getLocalizedString("core.ScratchOptionNoVSC.detail"),
-};
+export function ScratchOptionNoVSC(): OptionItem {
+  return {
+    id: "no",
+    label: `$(heart) ${getLocalizedString("core.ScratchOptionNoVSC.label")}`,
+    detail: getLocalizedString("core.ScratchOptionNoVSC.detail"),
+  };
+}
 
-export const RuntimeOptionNodeJs: OptionItem = {
-  id: "node",
-  label: "Node.js",
-  detail: getLocalizedString("core.RuntimeOptionNodeJS.detail"),
-};
+export function RuntimeOptionNodeJs(): OptionItem {
+  return {
+    id: "node",
+    label: "Node.js",
+    detail: getLocalizedString("core.RuntimeOptionNodeJS.detail"),
+  };
+}
 
-export const RuntimeOptionDotNet: OptionItem = {
-  id: "dotnet",
-  label: ".NET Core",
-  detail: getLocalizedString("core.RuntimeOptionDotNet.detail"),
-};
+export function RuntimeOptionDotNet(): OptionItem {
+  return {
+    id: "dotnet",
+    label: ".NET Core",
+    detail: getLocalizedString("core.RuntimeOptionDotNet.detail"),
+  };
+}
+export function ScratchOptionYes(): OptionItem {
+  return {
+    id: "yes",
+    label: getLocalizedString("core.ScratchOptionYes.label"),
+    detail: getLocalizedString("core.ScratchOptionYes.detail"),
+  };
+}
 
-export const ScratchOptionYes: OptionItem = {
-  id: "yes",
-  label: getLocalizedString("core.ScratchOptionYes.label"),
-  detail: getLocalizedString("core.ScratchOptionYes.detail"),
-};
-
-export const ScratchOptionNo: OptionItem = {
-  id: "no",
-  label: getLocalizedString("core.ScratchOptionNo.label"),
-  detail: getLocalizedString("core.ScratchOptionNo.detail"),
-};
+export function ScratchOptionNo(): OptionItem {
+  return {
+    id: "no",
+    label: getLocalizedString("core.ScratchOptionNo.label"),
+    detail: getLocalizedString("core.ScratchOptionNo.detail"),
+  };
+}
 
 // This question should only exist on CLI
 export function getRuntimeQuestion(): SingleSelectQuestion {
@@ -659,8 +681,8 @@ export function getRuntimeQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     name: CoreQuestionNames.Runtime,
     title: getLocalizedString("core.getRuntimeQuestion.title"),
-    staticOptions: [RuntimeOptionNodeJs, RuntimeOptionDotNet],
-    default: RuntimeOptionNodeJs.id,
+    staticOptions: [RuntimeOptionNodeJs(), RuntimeOptionDotNet()],
+    default: RuntimeOptionNodeJs().id,
     placeholder: getLocalizedString("core.getRuntimeQuestion.placeholder"),
   };
 }
@@ -668,67 +690,71 @@ export function getRuntimeQuestion(): SingleSelectQuestion {
 export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSelectQuestion {
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
-    staticOptions.push(ScratchOptionYesVSC);
+    staticOptions.push(ScratchOptionYesVSC());
     if (isOfficeAddinEnabled()) {
-      staticOptions.push(CreateNewOfficeAddinOption);
+      staticOptions.push(CreateNewOfficeAddinOption());
     }
-    staticOptions.push(ScratchOptionNoVSC);
+    staticOptions.push(ScratchOptionNoVSC());
   } else {
-    staticOptions.push(ScratchOptionYes);
-    staticOptions.push(ScratchOptionNo);
+    staticOptions.push(ScratchOptionYes());
+    staticOptions.push(ScratchOptionNo());
   }
   return {
     type: "singleSelect",
     name: CoreQuestionNames.CreateFromScratch,
     title: getLocalizedString("core.getCreateNewOrFromSampleQuestion.title"),
     staticOptions,
-    default: ScratchOptionYes.id,
+    default: ScratchOptionYes().id,
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     skipSingleOption: true,
     forgetLastValue: true,
   };
 }
 
-export const SampleSelect: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.Samples,
-  title: getLocalizedString("core.SampleSelect.title"),
-  staticOptions: sampleProvider.SampleCollection.samples.map((sample) => {
-    return {
-      id: sample.id,
-      label: sample.title,
-      description: `${sample.time} • ${sample.configuration}`,
-      detail: sample.shortDescription,
-      data: sample.link,
-    } as OptionItem;
-  }),
-  placeholder: getLocalizedString("core.SampleSelect.placeholder"),
-  buttons: [
-    {
-      icon: "library",
-      tooltip: getLocalizedString("core.SampleSelect.buttons.viewSamples"),
-      command: "fx-extension.openSamples",
-    },
-  ],
-};
+export function SampleSelect(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.Samples,
+    title: getLocalizedString("core.SampleSelect.title"),
+    staticOptions: sampleProvider.SampleCollection.samples.map((sample) => {
+      return {
+        id: sample.id,
+        label: sample.title,
+        description: `${sample.time} • ${sample.configuration}`,
+        detail: sample.shortDescription,
+        data: sample.link,
+      } as OptionItem;
+    }),
+    placeholder: getLocalizedString("core.SampleSelect.placeholder"),
+    buttons: [
+      {
+        icon: "library",
+        tooltip: getLocalizedString("core.SampleSelect.buttons.viewSamples"),
+        command: "fx-extension.openSamples",
+      },
+    ],
+  };
+}
 
-export const ExistingTabEndpointQuestion: TextInputQuestion = {
-  type: "text",
-  name: CoreQuestionNames.ExistingTabEndpoint,
-  title: getLocalizedString("core.ExistingTabEndpointQuestion.title"),
-  default: "https://localhost:3000",
-  placeholder: getLocalizedString("core.ExistingTabEndpointQuestion.placeholder"),
-  validation: {
-    validFunc: async (endpoint: string): Promise<string | undefined> => {
-      const match = endpoint.match(/^https:\/\/[\S]+$/i);
-      if (!match) {
-        return getLocalizedString("core.ExistingTabEndpointQuestion.validation");
-      }
+export function ExistingTabEndpointQuestion(): TextInputQuestion {
+  return {
+    type: "text",
+    name: CoreQuestionNames.ExistingTabEndpoint,
+    title: getLocalizedString("core.ExistingTabEndpointQuestion.title"),
+    default: "https://localhost:3000",
+    placeholder: getLocalizedString("core.ExistingTabEndpointQuestion.placeholder"),
+    validation: {
+      validFunc: async (endpoint: string): Promise<string | undefined> => {
+        const match = endpoint.match(/^https:\/\/[\S]+$/i);
+        if (!match) {
+          return getLocalizedString("core.ExistingTabEndpointQuestion.validation");
+        }
 
-      return undefined;
+        return undefined;
+      },
     },
-  },
-};
+  };
+}
 
 export const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
 
@@ -812,11 +838,13 @@ export const botOptionItem = (isMessageExtension: boolean): OptionItem => {
   };
 };
 
-export const CreateNewOfficeAddinOption: OptionItem = {
-  id: "newAddin",
-  label: `$(new-folder) ${getLocalizedString("core.NewOfficeAddinOptionVSC.label")}`,
-  detail: getLocalizedString("core.NewOfficeAddinOptionVSC.detail"),
-};
+export function CreateNewOfficeAddinOption(): OptionItem {
+  return {
+    id: "newAddin",
+    label: `$(new-folder) ${getLocalizedString("core.NewOfficeAddinOptionVSC.label")}`,
+    detail: getLocalizedString("core.NewOfficeAddinOptionVSC.detail"),
+  };
+}
 
 export function createCapabilityForOfficeAddin(): SingleSelectQuestion {
   return {

@@ -114,7 +114,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo.id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo().id,
       [CoreQuestionNames.Samples]: "hello-world-tab",
     };
     const fxCore = new FxCore(tools);
@@ -138,7 +138,7 @@ describe("component coordinator test", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo.id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNo().id,
       [CoreQuestionNames.Samples]: "hello-world-tab",
     };
     const fxCore = new FxCore(tools);
@@ -159,7 +159,7 @@ describe("component coordinator test", () => {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: randomAppName(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes.id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
       [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
     };
@@ -179,7 +179,7 @@ describe("component coordinator test", () => {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: randomAppName(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes.id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
       [CoreQuestionNames.Capabilities]: M365SsoLaunchPageOptionItem.id,
       [CoreQuestionNames.ProgrammingLanguage]: "typescript",
     };
@@ -2403,7 +2403,7 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: randomAppName(),
-      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption.id,
+      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption().id,
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isOk());
@@ -2417,7 +2417,7 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: "__invalid__",
-      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption.id,
+      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption().id,
     };
 
     const res = await coordinator.create(v3ctx, inputs);
@@ -2432,7 +2432,7 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: undefined,
-      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption.id,
+      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption().id,
     };
 
     const res = await coordinator.create(v3ctx, inputs);
@@ -2455,7 +2455,7 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [CoreQuestionNames.AppName]: randomAppName(),
-      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption.id,
+      [CoreQuestionNames.CreateFromScratch]: CreateNewOfficeAddinOption().id,
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr() && res.error.name === "mockedError");

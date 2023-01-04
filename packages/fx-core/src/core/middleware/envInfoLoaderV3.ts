@@ -316,7 +316,7 @@ export async function getQuestionsForTargetEnv(
   }
 
   const envList = reOrderEnvironments(envProfilesResult.value, lastUsed);
-  const selectEnv = QuestionSelectTargetEnvironment;
+  const selectEnv = QuestionSelectTargetEnvironment();
   selectEnv.staticOptions = envList;
 
   const node = new QTreeNode(selectEnv);
@@ -347,7 +347,7 @@ async function getQuestionsForNewEnv(
   }
 
   const envList = reOrderEnvironments(envProfilesResult.value, lastUsed);
-  const selectSourceEnv = QuestionSelectSourceEnvironment;
+  const selectSourceEnv = QuestionSelectSourceEnvironment();
   selectSourceEnv.staticOptions = envList;
   selectSourceEnv.default = lastUsed + lastUsedMark;
 

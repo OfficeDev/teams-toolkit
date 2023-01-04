@@ -83,7 +83,7 @@ describe("Core basic APIs", () => {
         platform: Platform.CLI,
         [CoreQuestionNames.Folder]: os.tmpdir(),
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab"],
         stage: Stage.create,
@@ -99,7 +99,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
@@ -124,7 +124,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: "Tab",
         [CoreQuestionNames.Folder]: os.tmpdir(),
@@ -151,7 +151,7 @@ describe("Core basic APIs", () => {
       platform: Platform.CLI,
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
       [CoreQuestionNames.Capabilities]: "Tab",
       stage: Stage.create,
@@ -198,7 +198,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
@@ -231,7 +231,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
@@ -263,7 +263,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
@@ -301,7 +301,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),

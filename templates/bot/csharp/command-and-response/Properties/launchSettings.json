@@ -1,4 +1,4 @@
-{
+﻿{
   "profiles": {
     // Debug project within Teams
     "Microsoft Teams (browser)": {
@@ -13,7 +13,7 @@
       "hotReloadProfile": "aspnetcore"
     },
     // Debug project only (without launching Teams)
-    "{{ProjectName}}": {
+    "Start Project (not in Teams)": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "applicationUrl": "https://localhost:7130;http://localhost:5130",

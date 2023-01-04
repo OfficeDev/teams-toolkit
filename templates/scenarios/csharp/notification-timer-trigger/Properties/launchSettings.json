@@ -12,7 +12,7 @@
       }
     },
     // Debug project only (without launching Teams)
-    "Start Project (not in Teams)": {
+    "Start (not in Teams)": {
       "commandName": "Project",
       "commandLineArgs": "host start --port 5130 --pause-on-error",
       "dotnetRunMessages": true,

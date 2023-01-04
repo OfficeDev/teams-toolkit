@@ -13,7 +13,7 @@
       "hotReloadProfile": "aspnetcore"
     },
     // Debug project only (without launching Teams)
-    "{%ProjectName%}": {
+    "Start Project (not in Teams)": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

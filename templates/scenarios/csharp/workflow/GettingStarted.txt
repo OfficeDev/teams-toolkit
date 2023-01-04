@@ -7,7 +7,7 @@ Quick Start
 3. Right-click your project and select Teams Toolkit > Prepare Teams app dependencies
 4. If prompted, sign in with an M365 account for the Teams organization you want 
 to install the app to
-5. Press F5, or select the Debug > Start Debugging menu in Visual Studio
+5. Press F5, or select the Debug > Start Debugging menu in Visual Studio (ensure to use launch profile "Microsoft Teams (browser)")
 6. In the launched browser, select the Add button to load the app in Teams
 7. In the chat bar, type and send "helloWorld" to your app to trigger a response
 

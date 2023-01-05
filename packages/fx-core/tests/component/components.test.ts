@@ -179,7 +179,7 @@ describe("Core component test for v3", () => {
     assert.isTrue(res.isOk());
   });
   it("sso.add", async () => {
-    sandbox.stub(context.userInteraction, "showMessage").resolves(ok(AddSsoParameters.LearnMore));
+    sandbox.stub(context.userInteraction, "showMessage").resolves(ok(AddSsoParameters.LearnMore()));
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,

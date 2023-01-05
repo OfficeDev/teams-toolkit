@@ -4,51 +4,51 @@
 import { getDefaultString, getLocalizedString } from "../../localizeUtils";
 
 export const Messages = {
-  learnMoreButtonText: getLocalizedString("depChecker.learnMoreButtonText"),
-  defaultErrorMessage: [
+  // learnMoreButtonText: getLocalizedString("depChecker.learnMoreButtonText"),
+  defaultErrorMessage: () => [
     getDefaultString("error.depChecker.DefaultErrorMessage"),
     getLocalizedString("error.depChecker.DefaultErrorMessage"),
   ],
 
-  startInstallFunctionCoreTool: getLocalizedString("depChecker.startInstallFunctionCoreTool"),
-  finishInstallFunctionCoreTool: getLocalizedString("depChecker.finishInstallFunctionCoreTool"),
-  needReplaceWithFuncCoreToolV3: getLocalizedString("depChecker.needReplaceWithFuncCoreToolV3"),
-  needInstallFuncCoreTool: getLocalizedString("depChecker.needInstallFuncCoreTool"),
-  failToInstallFuncCoreTool: getLocalizedString("depChecker.failToInstallFuncCoreTool"),
-  failToValidateFuncCoreTool: getLocalizedString("depChecker.failToValidateFuncCoreTool"),
-  globalFuncNodeNotMatched: getLocalizedString("depChecker.globalFuncNodeNotMatched"),
-  portableFuncNodeNotMatched: getLocalizedString("depChecker.portableFuncNodeNotMatched"),
+  startInstallFunctionCoreTool: () => getLocalizedString("depChecker.startInstallFunctionCoreTool"),
+  finishInstallFunctionCoreTool: () =>
+    getLocalizedString("depChecker.finishInstallFunctionCoreTool"),
+  // needReplaceWithFuncCoreToolV3: () => getLocalizedString("depChecker.needReplaceWithFuncCoreToolV3"),
+  needInstallFuncCoreTool: () => getLocalizedString("depChecker.needInstallFuncCoreTool"),
+  failToInstallFuncCoreTool: () => getLocalizedString("depChecker.failToInstallFuncCoreTool"),
+  failToValidateFuncCoreTool: () => getLocalizedString("depChecker.failToValidateFuncCoreTool"),
+  globalFuncNodeNotMatched: () => getLocalizedString("depChecker.globalFuncNodeNotMatched"),
+  portableFuncNodeNotMatched: () => getLocalizedString("depChecker.portableFuncNodeNotMatched"),
 
-  startInstallNgrok: getLocalizedString("depChecker.startInstallNgrok"),
-  finishInstallNgrok: getLocalizedString("depChecker.finishInstallNgrok"),
-  needInstallNgrok: getLocalizedString("depChecker.needInstallNgrok"),
-  failToInstallNgrok: getLocalizedString("depChecker.failToInstallNgrok"),
-  failToValidateNgrok: getLocalizedString("depChecker.failToValidateNgrok"),
+  startInstallNgrok: () => getLocalizedString("depChecker.startInstallNgrok"),
+  finishInstallNgrok: () => getLocalizedString("depChecker.finishInstallNgrok"),
+  needInstallNgrok: () => getLocalizedString("depChecker.needInstallNgrok"),
+  failToInstallNgrok: () => getLocalizedString("depChecker.failToInstallNgrok"),
+  failToValidateNgrok: () => getLocalizedString("depChecker.failToValidateNgrok"),
 
-  downloadDotnet: getLocalizedString("depChecker.downloadDotnet"),
-  finishInstallDotnet: getLocalizedString("depChecker.finishInstallDotnet"),
-  useGlobalDotnet: getLocalizedString("depChecker.useGlobalDotnet"),
-  dotnetInstallStderr: getLocalizedString("depChecker.dotnetInstallStderr"),
-  dotnetInstallErrorCode: getLocalizedString("depChecker.dotnetInstallErrorCode"),
-  failToInstallDotnet: getLocalizedString("depChecker.failToInstallDotnet"),
+  downloadDotnet: () => getLocalizedString("depChecker.downloadDotnet"),
+  finishInstallDotnet: () => getLocalizedString("depChecker.finishInstallDotnet"),
+  useGlobalDotnet: () => getLocalizedString("depChecker.useGlobalDotnet"),
+  dotnetInstallStderr: () => getLocalizedString("depChecker.dotnetInstallStderr"),
+  dotnetInstallErrorCode: () => getLocalizedString("depChecker.dotnetInstallErrorCode"),
+  failToInstallDotnet: () => getLocalizedString("depChecker.failToInstallDotnet"),
 
-  NodeNotFound: getLocalizedString("depChecker.NodeNotFound"),
-  NodeNotSupported: getLocalizedString("depChecker.NodeNotSupported"),
-  NodeNotRecommended: getLocalizedString("depChecker.NodeNotRecommended"),
+  NodeNotFound: () => getLocalizedString("depChecker.NodeNotFound"),
+  NodeNotSupported: () => getLocalizedString("depChecker.NodeNotSupported"),
+  NodeNotRecommended: () => getLocalizedString("depChecker.NodeNotRecommended"),
 
-  dotnetNotFound: getLocalizedString("depChecker.dotnetNotFound"),
-  depsNotFound: getLocalizedString("depChecker.depsNotFound"),
+  dotnetNotFound: () => getLocalizedString("depChecker.dotnetNotFound"),
+  // depsNotFound: () => getLocalizedString("depChecker.depsNotFound"),
 
-  failToValidateVxTestAppInstallOptions: getLocalizedString(
-    "depChecker.failToValidateVxTestAppInstallOptions"
-  ),
-  failToValidateVxTestApp: getLocalizedString("depChecker.failToValidateVxTestApp"),
+  failToValidateVxTestAppInstallOptions: () =>
+    getLocalizedString("depChecker.failToValidateVxTestAppInstallOptions"),
+  failToValidateVxTestApp: () => getLocalizedString("depChecker.failToValidateVxTestApp"),
 
-  failToDownloadFromUrl: getLocalizedString("depChecker.failToDownloadFromUrl"),
+  failToDownloadFromUrl: () => getLocalizedString("depChecker.failToDownloadFromUrl"),
 
-  linuxDepsNotFound: getLocalizedString("depChecker.linuxDepsNotFound"),
+  linuxDepsNotFound: () => getLocalizedString("depChecker.linuxDepsNotFound"),
 
-  linuxDepsNotFoundHelpLinkMessage: getLocalizedString(
-    "depChecker.linuxDepsNotFoundHelpLinkMessage"
-  ),
+  // linuxDepsNotFoundHelpLinkMessage: () => getLocalizedString(
+  //   "depChecker.linuxDepsNotFoundHelpLinkMessage"
+  // ),
 };

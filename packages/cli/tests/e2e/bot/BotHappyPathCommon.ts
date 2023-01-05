@@ -98,6 +98,7 @@ export async function happyPathTest(
       : await readContextMultiEnv(projectPath, envName);
     if (isV3Enabled()) {
       teamsAppId = context.TEAMS_APP_ID;
+      AppStudioValidator.setE2ETestProvider();
     } else {
       const appStudio = AppStudioValidator.init(context);
       AppStudioValidator.validateTeamsAppExist(appStudio);

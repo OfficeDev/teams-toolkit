@@ -115,6 +115,7 @@ describe("Start a new project", function () {
         if (isV3Enabled()) {
           assert.exists(context.TEAMS_APP_ID);
           teamsAppId = context.TEAMS_APP_ID;
+          AppStudioValidator.setE2ETestProvider();
         } else {
           const appStudio = AppStudioValidator.init(context);
           AppStudioValidator.validateTeamsAppExist(appStudio);

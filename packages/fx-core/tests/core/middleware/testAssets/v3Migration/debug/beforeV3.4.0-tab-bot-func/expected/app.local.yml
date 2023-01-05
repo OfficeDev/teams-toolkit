@@ -21,6 +21,8 @@ provision:
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
       messagingEndpoint: ${{PROVISIONOUTPUT__BOTOUTPUT__SITEENDPOINT}}/api/messages
       description: ""
+      channels:
+        - name: msteams
 
 configureApp:
   - uses: file/updateEnv

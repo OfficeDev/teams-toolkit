@@ -29,6 +29,11 @@ provision:
       name: $\{{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
       messagingEndpoint: {{messagingEndpoint}}
       description: ""
+      channels:
+        - name: msteams
+        {{#if isM365}}
+        - name: outlook
+        {{/if}}
   {{/bot}}
 
 {{/config.provision}}

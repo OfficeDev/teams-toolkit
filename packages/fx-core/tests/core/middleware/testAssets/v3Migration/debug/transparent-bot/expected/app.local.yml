@@ -16,6 +16,9 @@ provision:
       name: ${{CONFIG__MANIFEST__APPNAME__SHORT}}-bot
       messagingEndpoint: ${{PROVISIONOUTPUT__WEBAPPOUTPUT__SITEENDPOINT}}/api/messages
       description: ""
+      channels:
+        - name: msteams
+        - name: outlook
 
 configureApp:
   - uses: teamsApp/validate

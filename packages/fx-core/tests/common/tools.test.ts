@@ -222,7 +222,7 @@ describe("tools", () => {
         solutionSettings: {
           activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           hostType: "Azure",
-          capabilities: [TabSsoItem.id],
+          capabilities: [TabSsoItem().id],
           azureResources: [],
           name: "test",
         },

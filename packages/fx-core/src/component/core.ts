@@ -163,7 +163,7 @@ export class TeamsfxCore {
       globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
       const features = inputs.capabilities as string;
 
-      const isInitExistingApp = features === ExistingTabOptionItem.id;
+      const isInitExistingApp = features === ExistingTabOptionItem().id;
       if (isInitExistingApp) {
         const folderExist = await fs.pathExists(projectPath);
         if (folderExist) {
@@ -274,7 +274,7 @@ export class TeamsfxCore {
       component = Container.get("api-connector");
     } else if (features === SingleSignOnOptionItem.id) {
       component = Container.get("sso");
-    } else if (features === TabSPFxNewUIItem.id) {
+    } else if (features === TabSPFxNewUIItem().id) {
       component = Container.get(ComponentNames.SPFxTab);
     }
     if (component) {

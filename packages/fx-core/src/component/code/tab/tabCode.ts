@@ -292,7 +292,7 @@ enum Scenario {
 
 const featureToScenario = new Map<string, Scenario>([
   [TabOptionItem().id, Scenario.default],
-  [TabNonSsoItem.id, Scenario.nonSso],
-  [M365SsoLaunchPageOptionItem.id, Scenario.m365],
+  [TabNonSsoItem().id, Scenario.nonSso],
+  [M365SsoLaunchPageOptionItem().id, Scenario.m365],
   [DashboardOptionItem().id, Scenario.dashboard],
 ]);

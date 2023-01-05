@@ -235,11 +235,14 @@ export class Coordinator {
       const feature = inputs.capabilities as string;
       delete inputs.folder;
 
-      if (feature === TabSPFxNewUIItem.id) {
+      if (feature === TabSPFxNewUIItem().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
       } else {
-        if (feature === M365SsoLaunchPageOptionItem.id || feature === M365SearchAppOptionItem.id) {
+        if (
+          feature === M365SsoLaunchPageOptionItem().id ||
+          feature === M365SearchAppOptionItem().id
+        ) {
           context.projectSetting.isM365 = true;
           inputs.isM365 = true;
         }
@@ -482,7 +485,7 @@ export class Coordinator {
       component = Container.get("api-connector");
     } else if (features === SingleSignOnOptionItem.id) {
       component = Container.get("sso");
-    } else if (features === TabSPFxNewUIItem.id) {
+    } else if (features === TabSPFxNewUIItem().id) {
       component = Container.get(ComponentNames.SPFxTab);
     }
     if (component) {

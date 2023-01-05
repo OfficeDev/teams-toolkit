@@ -441,7 +441,7 @@ export function validateCapabilities(inputs: string[]): string | undefined {
     set
   );
   if (result) return result;
-  result = validateConflict([new Set([TabOptionItem().id]), new Set([TabNonSsoItem.id])], set);
+  result = validateConflict([new Set([TabOptionItem().id]), new Set([TabNonSsoItem().id])], set);
   if (result) return result;
   result = validateConflict(
     [

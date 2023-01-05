@@ -272,13 +272,13 @@ async function getOldProjectInfoForTelemetry(
     const hostType = solutionSettings?.hostType;
     const result: { [key: string]: string } = { [TelemetryProperty.HostType]: hostType };
 
-    if (hostType === HostTypeOptionAzure.id || hostType === HostTypeOptionSPFx.id) {
+    if (hostType === HostTypeOptionAzure().id || hostType === HostTypeOptionSPFx().id) {
       result[TelemetryProperty.ActivePlugins] = JSON.stringify(
         solutionSettings!.activeResourcePlugins
       );
       result[TelemetryProperty.Capabilities] = JSON.stringify(solutionSettings!.capabilities);
     }
-    if (hostType === HostTypeOptionAzure.id) {
+    if (hostType === HostTypeOptionAzure().id) {
       const azureSolutionSettings = solutionSettings as AzureSolutionSettings;
       result[TelemetryProperty.AzureResources] = JSON.stringify(
         azureSolutionSettings.azureResources

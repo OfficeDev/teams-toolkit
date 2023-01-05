@@ -144,19 +144,19 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   }
   const spfxNode = await getSPFxScaffoldQuestion();
   if (spfxNode) {
-    spfxNode.condition = { equals: TabSPFxItem.id };
+    spfxNode.condition = { equals: TabSPFxItem().id };
     capNode.addChild(spfxNode);
   }
   // Language
   const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
   if (isPreviewFeaturesEnabled()) {
     programmingLanguage.condition = {
-      notEquals: ExistingTabOptionItem.id,
+      notEquals: ExistingTabOptionItem().id,
     };
   } else {
     programmingLanguage.condition = {
       minItems: 1,
-      excludes: ExistingTabOptionItem.id,
+      excludes: ExistingTabOptionItem().id,
     };
   }
   capNode.addChild(programmingLanguage);
@@ -165,7 +165,7 @@ async function getQuestionsForCreateProjectWithoutDotNet(
   if (isExistingTabAppEnabled()) {
     const existingTabEndpoint = new QTreeNode(ExistingTabEndpointQuestion());
     existingTabEndpoint.condition = {
-      equals: ExistingTabOptionItem.id,
+      equals: ExistingTabOptionItem().id,
     };
     capNode.addChild(existingTabEndpoint);
   }
@@ -233,7 +233,7 @@ async function getQuestionsForCreateProjectWithDotNet(
   }
   const spfxNode = await getSPFxScaffoldQuestion();
   if (spfxNode) {
-    spfxNode.condition = { equals: TabSPFxItem.id };
+    spfxNode.condition = { equals: TabSPFxItem().id };
     dotnetCapNode.addChild(spfxNode);
   }
 

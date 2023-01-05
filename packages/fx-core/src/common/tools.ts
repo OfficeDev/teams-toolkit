@@ -432,13 +432,13 @@ export function isAADEnabled(solutionSettings: AzureSolutionSettings | undefined
 
   if (isAadManifestEnabled()) {
     return (
-      solutionSettings.hostType === HostTypeOptionAzure.id &&
-      (solutionSettings.capabilities.includes(TabSsoItem.id) ||
-        solutionSettings.capabilities.includes(BotSsoItem.id))
+      solutionSettings.hostType === HostTypeOptionAzure().id &&
+      (solutionSettings.capabilities.includes(TabSsoItem().id) ||
+        solutionSettings.capabilities.includes(BotSsoItem().id))
     );
   } else {
     return (
-      solutionSettings.hostType === HostTypeOptionAzure.id &&
+      solutionSettings.hostType === HostTypeOptionAzure().id &&
       // For scaffold, activeResourecPlugins is undefined
       (!solutionSettings.activeResourcePlugins ||
         solutionSettings.activeResourcePlugins?.includes(ResourcePlugins.Aad))
@@ -467,11 +467,11 @@ export function canAddSso(
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (
     isExistingTabApp(projectSettings) &&
-    !(solutionSettings && solutionSettings.capabilities.includes(TabSsoItem.id))
+    !(solutionSettings && solutionSettings.capabilities.includes(TabSsoItem().id))
   ) {
     return ok(Void);
   }
-  if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
+  if (!(solutionSettings.hostType === HostTypeOptionAzure().id)) {
     return returnError
       ? err(
           new SystemError(
@@ -486,7 +486,7 @@ export function canAddSso(
   // Will throw error if only Messaging Extension is selected
   if (
     solutionSettings.capabilities.length === 1 &&
-    solutionSettings.capabilities[0] === MessageExtensionItem.id
+    solutionSettings.capabilities[0] === MessageExtensionItem().id
   ) {
     return returnError
       ? err(
@@ -501,10 +501,10 @@ export function canAddSso(
 
   // Will throw error if bot host type is Azure Function
   if (
-    solutionSettings.capabilities.includes(BotOptionItem.id) &&
+    solutionSettings.capabilities.includes(BotOptionItem().id) &&
     !(
       solutionSettings.capabilities.includes(TabOptionItem().id) &&
-      !solutionSettings.capabilities.includes(TabSsoItem.id)
+      !solutionSettings.capabilities.includes(TabSsoItem().id)
     )
   ) {
     const botHostType = projectSettings.pluginSettings?.[ResourcePlugins.Bot]?.[BotHostTypeName];
@@ -523,10 +523,10 @@ export function canAddSso(
 
   // Check whether SSO is enabled
   const activeResourcePlugins = solutionSettings.activeResourcePlugins;
-  const containTabSsoItem = solutionSettings.capabilities.includes(TabSsoItem.id);
+  const containTabSsoItem = solutionSettings.capabilities.includes(TabSsoItem().id);
   const containTab = solutionSettings.capabilities.includes(TabOptionItem().id);
-  const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem.id);
-  const containBot = solutionSettings.capabilities.includes(BotOptionItem.id);
+  const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem().id);
+  const containBot = solutionSettings.capabilities.includes(BotOptionItem().id);
   const containAadPlugin = activeResourcePlugins.includes(PluginNames.AAD);
   if (
     ((containTabSsoItem && !containBot) ||
@@ -577,7 +577,7 @@ export function canAddApiConnection(solutionSettings?: AzureSolutionSettings): b
 export async function canAddCICDWorkflows(inputs: Inputs, ctx: v2.Context): Promise<boolean> {
   // Not include `Add CICD Workflows` in minimal app case.
   const isExistingApp =
-    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure.id &&
+    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionAzure().id &&
     isMiniApp(ctx.projectSetting as ProjectSettingsV3);
   if (isExistingApp) {
     return false;

@@ -169,12 +169,12 @@ export class ManifestUtils {
               if (inputs.features) {
                 const feature = inputs.features;
                 if (
-                  feature === CommandAndResponseOptionItem.id ||
-                  feature == WorkflowOptionItem.id
+                  feature === CommandAndResponseOptionItem().id ||
+                  feature == WorkflowOptionItem().id
                 ) {
                   // command and response bot or workflow bot
                   appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_COMMAND_AND_RESPONSE_V3);
-                } else if (feature === NotificationOptionItem.id) {
+                } else if (feature === NotificationOptionItem().id) {
                   // notification
                   appManifest.bots = appManifest.bots.concat(BOTS_TPL_FOR_NOTIFICATION_V3);
                 } else {

@@ -133,10 +133,10 @@ export class ApiConnectorImpl {
 
       if (inputs.platform != Platform.CLI) {
         ctx.userInteraction
-          ?.showMessage("info", msg, false, "OK", Notification.READ_MORE)
+          ?.showMessage("info", msg, false, "OK", Notification.READ_MORE())
           .then((result) => {
             const userSelected = result.isOk() ? result.value : undefined;
-            if (userSelected === Notification.READ_MORE) {
+            if (userSelected === Notification.READ_MORE()) {
               ctx.userInteraction?.openUrl(Notification.READ_MORE_URL);
             }
           });

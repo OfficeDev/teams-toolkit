@@ -26,7 +26,9 @@ const templateTagListURL = templateConfig.tagListURL;
 
 function selectTemplateTag(tags: string[]): string | undefined {
   if (preRelease === "alpha") {
-    return templateAlphaVersion;
+    // To avoid incompatible, alpha release does not download latest template.
+    return undefined;
+    // return templateAlphaVersion;
   }
   const versionPattern = preRelease ? `0.0.0-${preRelease}` : templateVersion;
   const versionList = tags.map((tag: string) => tag.replace(templateTagPrefix, ""));

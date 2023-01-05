@@ -282,27 +282,27 @@ function findTabBasedOnName(name: string, tabs: IStaticTab[]): IStaticTab | unde
 export function getTemplateId(teamsApp: AppDefinition): string | undefined {
   // tab with bot, tab with message extension, tab with bot and message extension
   if (needTabAndBotCode(teamsApp)) {
-    return TabNonSsoAndDefaultBotItem.id;
+    return TabNonSsoAndDefaultBotItem().id;
   }
 
   // tab only
   if (needTabCode(teamsApp)) {
-    return TabNonSsoItem.id;
+    return TabNonSsoItem().id;
   }
 
   // bot and message extension
   if (isBotAndMessageExtension(teamsApp)) {
-    return DefaultBotAndMessageExtensionItem.id;
+    return DefaultBotAndMessageExtensionItem().id;
   }
 
   // message extension
   if (isMessageExtension(teamsApp)) {
-    return MessageExtensionNewUIItem.id;
+    return MessageExtensionNewUIItem().id;
   }
 
   // bot
   if (isBot(teamsApp)) {
-    return BotOptionItem.id;
+    return BotOptionItem().id;
   }
 
   return undefined;

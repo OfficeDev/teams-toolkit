@@ -348,7 +348,7 @@ describe("question for v3", () => {
     const res = await getQuestionsForAddFeatureV3(context, inputs);
     assert.isTrue(res.isOk());
     const expectedOptions = [
-      TabNewUIOptionItem,
+      TabNewUIOptionItem(),
       TabNonSsoItem,
       BotNewUIOptionItem,
       AzureResourceFunctionNewUI,

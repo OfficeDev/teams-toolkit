@@ -773,9 +773,9 @@ async function queryProjectStatus(fx: string): Promise<any> {
   const hasFrontend = hasAzureTab(settingsV3);
   const hasBackend = hasApi(settingsV3);
   const hasBot = hasBotV3(settingsV3);
-  const hasBotCapability = settings.solutionSettings!.capabilities.includes(BotOptionItem.id);
+  const hasBotCapability = settings.solutionSettings!.capabilities.includes(BotOptionItem().id);
   const hasMessageExtensionCapability = settings.solutionSettings!.capabilities.includes(
-    MessageExtensionItem.id
+    MessageExtensionItem().id
   );
   const isSPFx = hasSPFxTab(settingsV3);
   const hasProvision = envDefaultJson.solution?.provisionSucceeded as boolean;

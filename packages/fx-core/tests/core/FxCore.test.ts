@@ -389,15 +389,15 @@ describe("Core basic APIs", () => {
 
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: TabOptionItem.id,
+      [CoreQuestionNames.Capabilities]: TabOptionItem().id,
     });
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: BotOptionItem.id,
+      [CoreQuestionNames.Capabilities]: BotOptionItem().id,
     });
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: MessageExtensionItem.id,
+      [CoreQuestionNames.Capabilities]: MessageExtensionItem().id,
     });
 
     function languageAssert(inputs: Inputs) {

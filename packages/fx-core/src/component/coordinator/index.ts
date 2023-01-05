@@ -121,26 +121,26 @@ export enum TemplateNames {
 }
 
 export const Feature2TemplateName: any = {
-  [`${NotificationOptionItem.id}:${AppServiceOptionItem.id}`]: TemplateNames.NotificationRestify,
-  [`${NotificationOptionItem.id}:${AppServiceOptionItemForVS.id}`]:
+  [`${NotificationOptionItem().id}:${AppServiceOptionItem.id}`]: TemplateNames.NotificationRestify,
+  [`${NotificationOptionItem().id}:${AppServiceOptionItemForVS.id}`]:
     TemplateNames.NotificationWebApi,
-  [`${NotificationOptionItem.id}:${FunctionsHttpTriggerOptionItem.id}`]:
+  [`${NotificationOptionItem().id}:${FunctionsHttpTriggerOptionItem.id}`]:
     TemplateNames.NotificationHttpTrigger,
-  [`${NotificationOptionItem.id}:${FunctionsTimerTriggerOptionItem.id}`]:
+  [`${NotificationOptionItem().id}:${FunctionsTimerTriggerOptionItem.id}`]:
     TemplateNames.NotificationTimerTrigger,
-  [`${NotificationOptionItem.id}:${FunctionsHttpAndTimerTriggerOptionItem.id}`]:
+  [`${NotificationOptionItem().id}:${FunctionsHttpAndTimerTriggerOptionItem.id}`]:
     TemplateNames.NotificationHttpTimerTrigger,
-  [`${CommandAndResponseOptionItem.id}:undefined`]: TemplateNames.CommandAndResponse,
-  [`${WorkflowOptionItem.id}:undefined`]: TemplateNames.Workflow,
-  [`${BotOptionItem.id}:undefined`]: TemplateNames.DefaultBot,
-  [`${MessageExtensionItem.id}:undefined`]: TemplateNames.MessageExtension,
-  [`${M365SearchAppOptionItem.id}:undefined`]: TemplateNames.M365MessageExtension,
-  [`${TabOptionItem.id}:undefined`]: TemplateNames.SsoTab,
-  [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
-  [`${M365SsoLaunchPageOptionItem.id}:undefined`]: TemplateNames.M365Tab,
-  [`${DashboardOptionItem.id}:undefined`]: TemplateNames.DashboardTab,
-  [`${TabNonSsoAndDefaultBotItem.id}:undefined`]: TemplateNames.TabAndDefaultBot,
-  [`${DefaultBotAndMessageExtensionItem.id}:undefined`]: TemplateNames.BotAndMessageExtension,
+  [`${CommandAndResponseOptionItem().id}:undefined`]: TemplateNames.CommandAndResponse,
+  [`${WorkflowOptionItem().id}:undefined`]: TemplateNames.Workflow,
+  [`${BotOptionItem().id}:undefined`]: TemplateNames.DefaultBot,
+  [`${MessageExtensionItem().id}:undefined`]: TemplateNames.MessageExtension,
+  [`${M365SearchAppOptionItem().id}:undefined`]: TemplateNames.M365MessageExtension,
+  [`${TabOptionItem().id}:undefined`]: TemplateNames.SsoTab,
+  [`${TabNonSsoItem().id}:undefined`]: TemplateNames.Tab,
+  [`${M365SsoLaunchPageOptionItem().id}:undefined`]: TemplateNames.M365Tab,
+  [`${DashboardOptionItem().id}:undefined`]: TemplateNames.DashboardTab,
+  [`${TabNonSsoAndDefaultBotItem().id}:undefined`]: TemplateNames.TabAndDefaultBot,
+  [`${DefaultBotAndMessageExtensionItem().id}:undefined`]: TemplateNames.BotAndMessageExtension,
 };
 
 export const InitTemplateName: any = {
@@ -464,9 +464,9 @@ export class Coordinator {
   ): Promise<Result<any, FxError>> {
     const features = inputs[AzureSolutionQuestionNames.Features];
     let component;
-    if (BotFeatureIds.includes(features)) {
+    if (BotFeatureIds().includes(features)) {
       component = Container.get(ComponentNames.TeamsBot);
-    } else if (TabFeatureIds.includes(features)) {
+    } else if (TabFeatureIds().includes(features)) {
       component = Container.get(ComponentNames.TeamsTab);
     } else if (features === AzureResourceSQLNewUI.id) {
       component = Container.get("sql");

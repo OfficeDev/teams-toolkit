@@ -131,7 +131,7 @@ export class ManifestUtils {
               appManifest.staticTabs.push(template);
             } else {
               const tabManifest =
-                inputs.features === DashboardOptionItem.id
+                inputs.features === DashboardOptionItem().id
                   ? STATIC_TABS_TPL_V3[1]
                   : STATIC_TABS_TPL_V3[0];
               const template = cloneDeep(tabManifest);

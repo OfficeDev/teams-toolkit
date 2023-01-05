@@ -163,7 +163,7 @@ describe("component coordinator test", () => {
       folder: ".",
       [CoreQuestionNames.AppName]: randomAppName(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
+      [CoreQuestionNames.Capabilities]: [TabOptionItem().id],
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
     };
     const fxCore = new FxCore(tools);

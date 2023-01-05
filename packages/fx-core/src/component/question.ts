@@ -277,7 +277,7 @@ export async function getQuestionsForAddFeatureV3(
     options.push(CommandAndResponseOptionItem);
     options.push(WorkflowOptionItem);
     options.push(BotNewUIOptionItem);
-    options.push(TabNewUIOptionItem, TabNonSsoItem);
+    options.push(TabNewUIOptionItem(), TabNonSsoItem);
     options.push(MessageExtensionNewUIItem);
     options.push(AzureResourceApimNewUI);
     options.push(AzureResourceSQLNewUI);
@@ -319,9 +319,9 @@ export async function getQuestionsForAddFeatureV3(
     }
     if (canAddTab) {
       if (!hasTab(projectSettingsV3)) {
-        options.push(TabNewUIOptionItem, TabNonSsoItem);
+        options.push(TabNewUIOptionItem(), TabNonSsoItem);
       } else {
-        options.push(hasAAD(projectSettingsV3) ? TabNewUIOptionItem : TabNonSsoItem);
+        options.push(hasAAD(projectSettingsV3) ? TabNewUIOptionItem() : TabNonSsoItem);
       }
     }
     if (!botExceedLimit) {
@@ -378,7 +378,7 @@ export async function getQuestionsForAddFeatureV3(
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
         WorkflowOptionItem.id,
-        TabNewUIOptionItem.id,
+        TabNewUIOptionItem().id,
         TabNonSsoItem.id,
         BotNewUIOptionItem.id,
         MessageExtensionItem.id,
@@ -439,7 +439,7 @@ export async function getQuestionsForAddResourceV3(
         NotificationOptionItem.id,
         CommandAndResponseOptionItem.id,
         WorkflowOptionItem.id,
-        TabNewUIOptionItem.id,
+        TabNewUIOptionItem().id,
         TabNonSsoItem.id,
         BotNewUIOptionItem.id,
         MessageExtensionItem.id,
@@ -502,10 +502,10 @@ export async function getQuestionsForAddFeatureSubCommand(
   featureId: FeatureId,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (BotFeatureIds.includes(featureId)) {
+  if (BotFeatureIds().includes(featureId)) {
     return await getNotificationTriggerQuestionNode(inputs);
-  } else if (TabFeatureIds.includes(featureId)) {
-  } else if (featureId === TabSPFxNewUIItem.id) {
+  } else if (TabFeatureIds().includes(featureId)) {
+  } else if (featureId === TabSPFxNewUIItem().id) {
     return ok(new QTreeNode(webpartNameQuestion));
   } else if (featureId === AzureResourceSQLNewUI.id) {
   } else if (
@@ -621,12 +621,12 @@ export function addCapabilityQuestion(
   alreadyHaveBot: boolean
 ): MultiSelectQuestion {
   const options: OptionItem[] = [];
-  if (!alreadyHaveTab) options.push(TabOptionItem);
+  if (!alreadyHaveTab) options.push(TabOptionItem());
   if (!alreadyHaveBot) {
-    options.push(BotOptionItem);
-    options.push(MessageExtensionItem);
-    options.push(NotificationOptionItem);
-    options.push(CommandAndResponseOptionItem);
+    options.push(BotOptionItem());
+    options.push(MessageExtensionItem());
+    options.push(NotificationOptionItem());
+    options.push(CommandAndResponseOptionItem());
   }
   return {
     name: AzureSolutionQuestionNames.Capabilities,

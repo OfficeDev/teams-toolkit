@@ -503,7 +503,7 @@ export function canAddSso(
   if (
     solutionSettings.capabilities.includes(BotOptionItem.id) &&
     !(
-      solutionSettings.capabilities.includes(TabOptionItem.id) &&
+      solutionSettings.capabilities.includes(TabOptionItem().id) &&
       !solutionSettings.capabilities.includes(TabSsoItem.id)
     )
   ) {
@@ -524,7 +524,7 @@ export function canAddSso(
   // Check whether SSO is enabled
   const activeResourcePlugins = solutionSettings.activeResourcePlugins;
   const containTabSsoItem = solutionSettings.capabilities.includes(TabSsoItem.id);
-  const containTab = solutionSettings.capabilities.includes(TabOptionItem.id);
+  const containTab = solutionSettings.capabilities.includes(TabOptionItem().id);
   const containBotSsoItem = solutionSettings.capabilities.includes(BotSsoItem.id);
   const containBot = solutionSettings.capabilities.includes(BotOptionItem.id);
   const containAadPlugin = activeResourcePlugins.includes(PluginNames.AAD);

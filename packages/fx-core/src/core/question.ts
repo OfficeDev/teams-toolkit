@@ -178,7 +178,7 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
       return [{ id: "csharp", label: "C#" }];
     }
     const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem().id))
       return [{ id: "typescript", label: "TypeScript" }];
     return [
       { id: "javascript", label: "JavaScript" },
@@ -189,16 +189,16 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   default: (inputs: Inputs) => {
     if (isPreviewFeaturesEnabled()) {
       const capability = inputs[CoreQuestionNames.Capabilities] as string;
-      if (capability && capability === TabSPFxItem.id) {
+      if (capability && capability === TabSPFxItem().id) {
         return "typescript";
       }
       const feature = inputs[CoreQuestionNames.Features] as string;
-      if (feature && feature === TabSPFxItem.id) {
+      if (feature && feature === TabSPFxItem().id) {
         return "typescript";
       }
     } else {
       const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem().id))
         return "typescript";
     }
     return "javascript";
@@ -206,16 +206,16 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   placeholder: (inputs: Inputs): string => {
     if (isPreviewFeaturesEnabled()) {
       const capability = inputs[CoreQuestionNames.Capabilities] as string;
-      if (capability && capability === TabSPFxItem.id) {
+      if (capability && capability === TabSPFxItem().id) {
         return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
       }
       const feature = inputs[CoreQuestionNames.Features] as string;
-      if (feature && feature === TabSPFxItem.id) {
+      if (feature && feature === TabSPFxItem().id) {
         return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
       }
     } else {
       const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem().id))
         return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
     }
     return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder");
@@ -286,21 +286,25 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
   let staticOptions: StaticOptions;
   if (isBotNotificationEnabled()) {
     // new capabilities question order
-    const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
+    const newBots = [
+      NotificationOptionItem(),
+      CommandAndResponseOptionItem(),
+      WorkflowOptionItem(),
+    ];
 
     staticOptions = [
       ...newBots,
-      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
-      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-      ...[TabNewUIOptionItem, TabSPFxNewUIItem, MessageExtensionNewUIItem],
-      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem] : []),
+      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem()] : []),
+      ...(isAadManifestEnabled() ? [TabNonSsoItem()] : []),
+      ...[TabNewUIOptionItem(), TabSPFxNewUIItem(), MessageExtensionNewUIItem()],
+      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem(), M365SearchAppOptionItem()] : []),
     ];
   } else {
     staticOptions = [
-      ...[TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
-      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
-      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem] : []),
+      ...[TabOptionItem(), BotOptionItem(), MessageExtensionItem(), TabSPFxItem()],
+      ...(isAadManifestEnabled() ? [TabNonSsoItem()] : []),
+      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem()] : []),
+      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem(), M365SearchAppOptionItem()] : []),
     ];
   }
   return {
@@ -310,7 +314,9 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       : getLocalizedString("core.createCapabilityQuestion.title"),
     type: "multiSelect",
     staticOptions: staticOptions,
-    default: isBotNotificationEnabled() ? [CommandAndResponseOptionItem.id] : [TabOptionItem.id],
+    default: isBotNotificationEnabled()
+      ? [CommandAndResponseOptionItem().id]
+      : [TabOptionItem().id],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     validation: {
       validFunc: validateCapabilities,
@@ -321,10 +327,10 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 
 export function createCapabilityForDotNet(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
-    NotificationOptionItem,
-    CommandAndResponseOptionItem,
-    TabOptionItem,
-    MessageExtensionItem,
+    NotificationOptionItem(),
+    CommandAndResponseOptionItem(),
+    TabOptionItem(),
+    MessageExtensionItem(),
   ];
   return {
     name: CoreQuestionNames.Capabilities,
@@ -337,29 +343,33 @@ export function createCapabilityForDotNet(): SingleSelectQuestion {
 
 export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQuestion {
   // AB test for notification/command/workflow bot, dashboard tab template naming
+  const notificationOptionItem = NotificationOptionItem();
+  const commandAndResponseOptionItem = CommandAndResponseOptionItem();
+  const workflowOptionItem = WorkflowOptionItem();
+  const dashboardOptionItem = DashboardOptionItem();
   if (inputs?.taskOrientedTemplateNaming) {
-    NotificationOptionItem.label = `$(hubot) ${getLocalizedString(
+    notificationOptionItem.label = `$(hubot) ${getLocalizedString(
       "core.NotificationOption.label.abTest"
     )}`;
-    NotificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
-    CommandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
+    notificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
+    commandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
       "core.CommandAndResponseOption.label.abTest"
     )}`;
-    CommandAndResponseOptionItem.detail = getLocalizedString(
+    commandAndResponseOptionItem.detail = getLocalizedString(
       "core.CommandAndResponseOption.detail.abTest"
     );
-    WorkflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
-    WorkflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
-    DashboardOptionItem.label = `$(browser) ${getLocalizedString(
+    workflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
+    workflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
+    dashboardOptionItem.label = `$(browser) ${getLocalizedString(
       "core.DashboardOption.label.abTest"
     )}`;
-    DashboardOptionItem.detail = getLocalizedString("core.DashboardOption.detail.abTest");
+    dashboardOptionItem.detail = getLocalizedString("core.DashboardOption.detail.abTest");
   }
 
   // AB test for in product doc
   if (inputs?.inProductDoc) {
-    WorkflowOptionItem.data = "cardActionResponse";
-    WorkflowOptionItem.buttons = [
+    workflowOptionItem.data = "cardActionResponse";
+    workflowOptionItem.buttons = [
       {
         iconPath: "file-code",
         tooltip: getLocalizedString("core.option.inProduct"),
@@ -369,24 +379,24 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
   }
 
   // new capabilities question order
-  const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
+  const newBots = [notificationOptionItem, commandAndResponseOptionItem, workflowOptionItem];
 
-  const newTabs = [DashboardOptionItem];
+  const newTabs = [dashboardOptionItem];
 
   const staticOptions: StaticOptions = [
     ...newBots,
     ...newTabs,
-    TabNewUIOptionItem,
-    TabSPFxNewUIItem,
-    TabNonSsoItem,
-    BotNewUIOptionItem,
-    MessageExtensionNewUIItem,
-    M365SsoLaunchPageOptionItem,
-    M365SearchAppOptionItem,
+    TabNewUIOptionItem(),
+    TabSPFxNewUIItem(),
+    TabNonSsoItem(),
+    BotNewUIOptionItem(),
+    MessageExtensionNewUIItem(),
+    M365SsoLaunchPageOptionItem(),
+    M365SearchAppOptionItem(),
   ];
 
   if (isExistingTabAppEnabled()) {
-    staticOptions.splice(newBots.length, 0, ExistingTabOptionItem);
+    staticOptions.splice(newBots.length, 0, ExistingTabOptionItem());
   }
 
   return {
@@ -407,10 +417,10 @@ export function validateCapabilities(inputs: string[]): string | undefined {
   inputs.forEach((i) => set.add(i));
   let result = validateConflict(
     [
-      new Set([BotOptionItem.id, MessageExtensionItem.id]),
-      new Set([NotificationOptionItem.id]),
-      new Set([CommandAndResponseOptionItem.id]),
-      new Set([WorkflowOptionItem.id]),
+      new Set([BotOptionItem().id, MessageExtensionItem().id]),
+      new Set([NotificationOptionItem().id]),
+      new Set([CommandAndResponseOptionItem().id]),
+      new Set([WorkflowOptionItem().id]),
     ],
     set
   );
@@ -418,36 +428,36 @@ export function validateCapabilities(inputs: string[]): string | undefined {
   result = validateConflict(
     [
       new Set([
-        TabOptionItem.id,
-        TabNonSsoItem.id,
-        BotOptionItem.id,
-        MessageExtensionItem.id,
-        NotificationOptionItem.id,
-        CommandAndResponseOptionItem.id,
-        WorkflowOptionItem.id,
+        TabOptionItem().id,
+        TabNonSsoItem().id,
+        BotOptionItem().id,
+        MessageExtensionItem().id,
+        NotificationOptionItem().id,
+        CommandAndResponseOptionItem().id,
+        WorkflowOptionItem().id,
       ]),
-      new Set([TabSPFxItem.id]),
+      new Set([TabSPFxItem().id]),
     ],
     set
   );
   if (result) return result;
-  result = validateConflict([new Set([TabOptionItem.id]), new Set([TabNonSsoItem.id])], set);
+  result = validateConflict([new Set([TabOptionItem().id]), new Set([TabNonSsoItem.id])], set);
   if (result) return result;
   result = validateConflict(
     [
       new Set([
-        TabOptionItem.id,
-        TabNonSsoItem.id,
-        TabSPFxItem.id,
-        BotOptionItem.id,
-        MessageExtensionItem.id,
-        NotificationOptionItem.id,
-        CommandAndResponseOptionItem.id,
-        WorkflowOptionItem.id,
-        ExistingTabOptionItem.id,
+        TabOptionItem().id,
+        TabNonSsoItem().id,
+        TabSPFxItem().id,
+        BotOptionItem().id,
+        MessageExtensionItem().id,
+        NotificationOptionItem().id,
+        CommandAndResponseOptionItem().id,
+        WorkflowOptionItem().id,
+        ExistingTabOptionItem().id,
       ]),
-      new Set([M365SsoLaunchPageOptionItem.id]),
-      new Set([M365SearchAppOptionItem.id]),
+      new Set([M365SsoLaunchPageOptionItem().id]),
+      new Set([M365SearchAppOptionItem().id]),
     ],
     set
   );
@@ -460,10 +470,10 @@ export async function onChangeSelectionForCapabilities(
 ): Promise<Set<string>> {
   let result = handleSelectionConflict(
     [
-      new Set([BotOptionItem.id, MessageExtensionItem.id]),
-      new Set([NotificationOptionItem.id]),
-      new Set([CommandAndResponseOptionItem.id]),
-      new Set([WorkflowOptionItem.id]),
+      new Set([BotOptionItem().id, MessageExtensionItem().id]),
+      new Set([NotificationOptionItem().id]),
+      new Set([CommandAndResponseOptionItem().id]),
+      new Set([WorkflowOptionItem().id]),
     ],
     previousSelectedIds,
     currentSelectedIds
@@ -471,24 +481,24 @@ export async function onChangeSelectionForCapabilities(
   result = handleSelectionConflict(
     [
       new Set([
-        TabOptionItem.id,
-        TabNonSsoItem.id,
-        BotOptionItem.id,
-        MessageExtensionItem.id,
-        NotificationOptionItem.id,
-        CommandAndResponseOptionItem.id,
-        WorkflowOptionItem.id,
+        TabOptionItem().id,
+        TabNonSsoItem().id,
+        BotOptionItem().id,
+        MessageExtensionItem().id,
+        NotificationOptionItem().id,
+        CommandAndResponseOptionItem().id,
+        WorkflowOptionItem().id,
       ]),
-      new Set([TabSPFxItem.id]),
-      new Set([ExistingTabOptionItem.id]),
-      new Set([M365SsoLaunchPageOptionItem.id]),
-      new Set([M365SearchAppOptionItem.id]),
+      new Set([TabSPFxItem().id]),
+      new Set([ExistingTabOptionItem().id]),
+      new Set([M365SsoLaunchPageOptionItem().id]),
+      new Set([M365SearchAppOptionItem().id]),
     ],
     previousSelectedIds,
     result
   );
   result = handleSelectionConflict(
-    [new Set([TabOptionItem.id]), new Set([TabNonSsoItem.id])],
+    [new Set([TabOptionItem().id]), new Set([TabNonSsoItem().id])],
     previousSelectedIds,
     result
   );

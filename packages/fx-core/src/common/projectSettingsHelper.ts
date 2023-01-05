@@ -32,8 +32,8 @@ export function validateProjectSettings(projectSettings: ProjectSettings): strin
     return `solutionSettings.azureResources validation failed: ${validateRes}`;
   }
   validateRes = validateStringArray(solutionSettings.capabilities, [
-    TabOptionItem.id,
-    BotOptionItem.id,
+    TabOptionItem().id,
+    BotOptionItem().id,
     MessageExtensionItem.id,
     TabSPFxItem.id,
     TabSsoItem.id,

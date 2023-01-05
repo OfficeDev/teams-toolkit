@@ -21,7 +21,7 @@ async function run() {
   process.env.SSL_KEY_FILE = envs.SSL_KEY_FILE;
   process.env.REACT_APP_CLIENT_ID = envs.AAD_APP_CLIENT_ID;
   process.env.REACT_APP_START_LOGIN_PAGE_URL = `${envs.PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT}/auth-start.html`;
-  process.env.REACT_APP_TEAMSFX_ENDPOINT = "https://localhost:55000";
+  process.env.REACT_APP_TEAMSFX_ENDPOINT = "http://localhost:55000";
   process.env.REACT_APP_FUNC_ENDPOINT = "http://localhost:7071";
   process.env.REACT_APP_FUNC_NAME = "getUserProfile";
 

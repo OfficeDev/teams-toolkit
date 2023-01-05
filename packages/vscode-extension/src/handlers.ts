@@ -1423,6 +1423,10 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 }
 
 export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
+  if (isV3Enabled()) {
+    return await commonUtils.triggerV3Migration();
+  }
+
   if (commonUtils.checkAndSkipDebugging()) {
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
@@ -1510,6 +1514,10 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  * Check & install required local prerequisites before local debug.
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
+  if (isV3Enabled()) {
+    return await commonUtils.triggerV3Migration();
+  }
+
   const additionalProperties: { [key: string]: string } = {
     [TelemetryProperty.DebugIsTransparentTask]: "false",
   };
@@ -1609,6 +1617,10 @@ export async function validateGetStartedPrerequisitesHandler(
  * install functions binding before launch local debug
  */
 export async function backendExtensionsInstallHandler(): Promise<string | undefined> {
+  if (isV3Enabled()) {
+    return await commonUtils.triggerV3Migration();
+  }
+
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const backendRoot = await commonUtils.getProjectRoot(
@@ -1676,6 +1688,10 @@ export async function getDotnetPathHandler(): Promise<string> {
  * call localDebug on core
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
+  if (isV3Enabled()) {
+    return await commonUtils.triggerV3Migration();
+  }
+
   const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
   const result = await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPreCheck,

@@ -63,6 +63,7 @@ import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 import { assert } from "console";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
+import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -1492,6 +1493,89 @@ describe("handlers", () => {
       await handlers.checkSideloadingCallback();
 
       chai.expect(showMessageCalledCount).to.be.equal(1);
+      sinon.restore();
+    });
+  });
+
+  describe("validateAzureDependenciesHandler", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, undefined);
+    });
+
+    it("skip debugging", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(true);
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, "1");
+    });
+
+    it("should not continue", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(false);
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").callsFake(() => {});
+      sinon.stub(debugCommonUtils, "getProjectComponents").returns(Promise.resolve(""));
+      sinon.stub(VSCodeDepsChecker.prototype, "resolve").returns(Promise.resolve(false));
+      sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, "1");
+    });
+
+    it("should continue", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(false);
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").callsFake(() => {});
+      sinon.stub(debugCommonUtils, "getProjectComponents").returns(Promise.resolve(""));
+      sinon.stub(VSCodeDepsChecker.prototype, "resolve").returns(Promise.resolve(true));
+      sinon.stub(debugCommonUtils, "getPortsInUse").returns(Promise.resolve([]));
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, undefined);
+    });
+  });
+
+  describe("validateLocalPrerequisitesHandler", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.validateLocalPrerequisitesHandler();
+      chai.assert.equal(result, undefined);
+    });
+
+    it("skip debugging", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(true);
+      const result = await handlers.validateLocalPrerequisitesHandler();
+      chai.assert.equal(result, "1");
+      sinon.restore();
+    });
+  });
+
+  describe("backendExtensionsInstallHandler", () => {
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.backendExtensionsInstallHandler();
+      chai.assert.equal(result, undefined);
+      sinon.restore();
+    });
+  });
+
+  describe("preDebugCheckHandler", () => {
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.preDebugCheckHandler();
+      chai.assert.equal(result, undefined);
       sinon.restore();
     });
   });

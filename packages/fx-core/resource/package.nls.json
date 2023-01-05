@@ -1144,6 +1144,7 @@
   "driver.deploy.error.unknownError": "Unknown error happened: %s",
   "driver.deploy.notice.deployAcceleration": "Deploying to Azure App Service takes a long time. Consider referring to this document to optimize your deployment:",
   "driver.deploy.error.noFileFindInDistributionFolder": "No file is found in distribution folder. Please check if the distribution folder is empty or you have ignored everything.",
+  "driver.deploy.notice.deployDryRunComplete": "Preparations of deployment are complete. ",
   "driver.deploy.azureAppServiceDeploySummary": "Project deployed to Azure App Service successfully.",
   "driver.deploy.azureFunctionsDeploySummary": "Project deployed to Azure Functions successfully.",
   "driver.deploy.azureStorageDeploySummary": "Project deployed to Azure Storage successfully.",

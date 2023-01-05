@@ -66,14 +66,14 @@ export class ComponentsQuestion extends BaseQuestionService implements IQuestion
     this.projectPath = inputs.projectPath as string;
     this.components = [];
     if (inputs.platform === Platform.CLI_HELP) {
-      this.components.push(botOption);
-      this.components.push(functionOption);
+      this.components.push(botOption());
+      this.components.push(functionOption());
     } else {
       if (hasBot(ctx.projectSetting as ProjectSettingsV3)) {
-        this.components.push(botOption);
+        this.components.push(botOption());
       }
       if (hasApi(ctx.projectSetting as ProjectSettingsV3)) {
-        this.components.push(functionOption);
+        this.components.push(functionOption());
       }
 
       if (this.components.length === 0) {
@@ -170,49 +170,56 @@ export class ApiNameQuestion extends BaseQuestionService implements IQuestionSer
   }
 }
 
-export const apiEndpointQuestion: TextInputQuestion = {
-  name: Constants.questionKey.endpoint,
-  title: getLocalizedString("plugins.apiConnector.getQuestionEndpoint.title"),
-  type: "text",
-  placeholder: getLocalizedString("plugins.apiConnector.getQuestionEndpoint.placeholder"), // Use the placeholder to display some description
-  validation: {
-    validFunc: checkHttp,
-  },
-  forgetLastValue: true,
-};
+export function apiEndpointQuestion(): TextInputQuestion {
+  return {
+    name: Constants.questionKey.endpoint,
+    title: getLocalizedString("plugins.apiConnector.getQuestionEndpoint.title"),
+    type: "text",
+    placeholder: getLocalizedString("plugins.apiConnector.getQuestionEndpoint.placeholder"), // Use the placeholder to display some description
+    validation: {
+      validFunc: checkHttp,
+    },
+    forgetLastValue: true,
+  };
+}
 
-export const basicAuthUsernameQuestion: TextInputQuestion = {
-  name: Constants.questionKey.apiUserName,
-  title: getLocalizedString("plugins.apiConnector.getQuestion.basicAuth.userName.title"),
-  type: "text",
-  placeholder: getLocalizedString(
-    "plugins.apiConnector.getQuestion.basicAuth.userName.placeholder"
-  ), // Use the placeholder to display some description
-  validation: {
-    validFunc: checkEmptyValue,
-  },
-};
+export function basicAuthUsernameQuestion(): TextInputQuestion {
+  return {
+    name: Constants.questionKey.apiUserName,
+    title: getLocalizedString("plugins.apiConnector.getQuestion.basicAuth.userName.title"),
+    type: "text",
+    placeholder: getLocalizedString(
+      "plugins.apiConnector.getQuestion.basicAuth.userName.placeholder"
+    ), // Use the placeholder to display some description
+    validation: {
+      validFunc: checkEmptyValue,
+    },
+  };
+}
 
-export const appTenantIdQuestion: TextInputQuestion = {
-  name: Constants.questionKey.apiAppTenentId,
-  title: getLocalizedString("plugins.apiConnector.appTenantId.title"),
-  type: "text",
-  placeholder: getLocalizedString("plugins.apiConnector.appTenantId.placeholder"), // Use the placeholder to display some description
-  validation: {
-    validFunc: checkIsGuid,
-  },
-};
+export function appTenantIdQuestion(): TextInputQuestion {
+  return {
+    name: Constants.questionKey.apiAppTenentId,
+    title: getLocalizedString("plugins.apiConnector.appTenantId.title"),
+    type: "text",
+    placeholder: getLocalizedString("plugins.apiConnector.appTenantId.placeholder"), // Use the placeholder to display some description
+    validation: {
+      validFunc: checkIsGuid,
+    },
+  };
+}
 
-export const appIdQuestion: TextInputQuestion = {
-  name: Constants.questionKey.apiAppId,
-  title: getLocalizedString("plugins.apiConnector.appId.title"),
-  type: "text",
-  placeholder: getLocalizedString("plugins.apiConnector.appId.placeholder"), // Use the placeholder to display some description
-  validation: {
-    validFunc: checkIsGuid,
-  },
-};
-
+export function appIdQuestion(): TextInputQuestion {
+  return {
+    name: Constants.questionKey.apiAppId,
+    title: getLocalizedString("plugins.apiConnector.appId.title"),
+    type: "text",
+    placeholder: getLocalizedString("plugins.apiConnector.appId.placeholder"), // Use the placeholder to display some description
+    validation: {
+      validFunc: checkIsGuid,
+    },
+  };
+}
 export function buildAPIKeyNameQuestion(): TextInputQuestion {
   return {
     name: Constants.questionKey.apiAPIKeyName,
@@ -225,64 +232,85 @@ export function buildAPIKeyNameQuestion(): TextInputQuestion {
   };
 }
 
-export const reuseAppOption: OptionItem = {
-  id: "existing",
-  label: getLocalizedString("plugins.apiConnector.reuseAppOption.title"),
-};
+export function reuseAppOption(): OptionItem {
+  return {
+    id: "existing",
+    label: getLocalizedString("plugins.apiConnector.reuseAppOption.title"),
+  };
+}
 
-export const anotherAppOption: OptionItem = {
-  id: "custom",
-  label: getLocalizedString("plugins.apiConnector.anotherAppOption.title"),
-};
+export function anotherAppOption(): OptionItem {
+  return {
+    id: "custom",
+    label: getLocalizedString("plugins.apiConnector.anotherAppOption.title"),
+  };
+}
+export function requestHeaderOption(): OptionItem {
+  return {
+    id: "header",
+    label: getLocalizedString("plugins.apiConnector.requestHeaderOption.title"),
+  };
+}
 
-export const requestHeaderOption: OptionItem = {
-  id: "header",
-  label: getLocalizedString("plugins.apiConnector.requestHeaderOption.title"),
-};
+export function queryParamsOption(): OptionItem {
+  return {
+    id: "querystring",
+    label: getLocalizedString("plugins.apiConnector.queryParamsOption.title"),
+  };
+}
 
-export const queryParamsOption: OptionItem = {
-  id: "querystring",
-  label: getLocalizedString("plugins.apiConnector.queryParamsOption.title"),
-};
+export function botOption(): OptionItem {
+  return {
+    id: "bot",
+    label: getLocalizedString("plugins.apiConnector.botOption.title"),
+    detail: "./bot",
+  };
+}
 
-export const botOption: OptionItem = {
-  id: "bot",
-  label: getLocalizedString("plugins.apiConnector.botOption.title"),
-  detail: "./bot",
-};
+export function functionOption(): OptionItem {
+  return {
+    id: "api",
+    label: getLocalizedString("plugins.apiConnector.functionOption.title"),
+    detail: "./api",
+  };
+}
 
-export const functionOption: OptionItem = {
-  id: "api",
-  label: getLocalizedString("plugins.apiConnector.functionOption.title"),
-  detail: "./api",
-};
+export function BasicAuthOption(): OptionItem {
+  return {
+    id: AuthType.BASIC,
+    label: "Basic",
+    detail: getLocalizedString("plugins.apiConnector.BasicAuthOption.detail"),
+  };
+}
 
-export const BasicAuthOption: OptionItem = {
-  id: AuthType.BASIC,
-  label: "Basic",
-  detail: getLocalizedString("plugins.apiConnector.BasicAuthOption.detail"),
-};
+export function CertAuthOption(): OptionItem {
+  return {
+    id: AuthType.CERT,
+    label: "Certification",
+    detail: getLocalizedString("plugins.apiConnector.CertAuthOption.detail"),
+  };
+}
 
-export const CertAuthOption: OptionItem = {
-  id: AuthType.CERT,
-  label: "Certification",
-  detail: getLocalizedString("plugins.apiConnector.CertAuthOption.detail"),
-};
+export function AADAuthOption(): OptionItem {
+  return {
+    id: AuthType.AAD,
+    label: "Azure Active Directory",
+    detail: getLocalizedString("plugins.apiConnector.AADAuthOption.detail"),
+  };
+}
 
-export const AADAuthOption: OptionItem = {
-  id: AuthType.AAD,
-  label: "Azure Active Directory",
-  detail: getLocalizedString("plugins.apiConnector.AADAuthOption.detail"),
-};
+export function APIKeyAuthOption(): OptionItem {
+  return {
+    id: AuthType.APIKEY,
+    label: "API Key",
+    detail: getLocalizedString("plugins.apiConnector.APIKeyOption.detail"),
+  };
+}
 
-export const APIKeyAuthOption: OptionItem = {
-  id: AuthType.APIKEY,
-  label: "API Key",
-  detail: getLocalizedString("plugins.apiConnector.APIKeyOption.detail"),
-};
-
-export const ImplementMyselfOption: OptionItem = {
-  id: AuthType.CUSTOM,
-  label: "Custom Auth Implementation",
-  detail: getLocalizedString("plugins.apiConnector.ImplementMyselfOption.detail"),
-};
+export function ImplementMyselfOption(): OptionItem {
+  return {
+    id: AuthType.CUSTOM,
+    label: "Custom Auth Implementation",
+    detail: getLocalizedString("plugins.apiConnector.ImplementMyselfOption.detail"),
+  };
+}

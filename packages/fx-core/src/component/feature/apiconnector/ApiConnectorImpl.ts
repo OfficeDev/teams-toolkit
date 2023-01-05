@@ -259,7 +259,7 @@ export class ApiConnectorImpl {
         const AADConfig = {
           AuthType: AuthType.AAD,
         } as AADAuthConfig;
-        if (inputs[Constants.questionKey.apiAppType] === reuseAppOption.id) {
+        if (inputs[Constants.questionKey.apiAppType] === reuseAppOption().id) {
           AADConfig.ReuseTeamsApp = true;
         } else {
           AADConfig.ReuseTeamsApp = false;
@@ -277,7 +277,7 @@ export class ApiConnectorImpl {
         const APIKeyConfig = {
           AuthType: AuthType.APIKEY,
         } as APIKeyAuthConfig;
-        if (inputs[Constants.questionKey.apiAPIKeyLocation] === requestHeaderOption.id) {
+        if (inputs[Constants.questionKey.apiAPIKeyLocation] === requestHeaderOption().id) {
           APIKeyConfig.Location = KeyLocation.Header;
         } else {
           APIKeyConfig.Location = KeyLocation.QueryParams;
@@ -353,7 +353,7 @@ export class ApiConnectorImpl {
     const question = new QTreeNode({
       type: "group",
     });
-    question.addChild(new QTreeNode(apiEndpointQuestion));
+    question.addChild(new QTreeNode(apiEndpointQuestion()));
     question.addChild(new QTreeNode(whichComponent.getQuestion()));
     question.addChild(new QTreeNode(apiNameQuestion.getQuestion()));
     question.addChild(whichAuthType);
@@ -366,11 +366,11 @@ export class ApiConnectorImpl {
       name: Constants.questionKey.apiType,
       type: "singleSelect",
       staticOptions: [
-        BasicAuthOption,
-        CertAuthOption,
-        AADAuthOption,
-        APIKeyAuthOption,
-        ImplementMyselfOption,
+        BasicAuthOption(),
+        CertAuthOption(),
+        AADAuthOption(),
+        APIKeyAuthOption(),
+        ImplementMyselfOption(),
       ],
       title: getLocalizedString("plugins.apiConnector.whichAuthType.title"),
       placeholder: getLocalizedString("plugins.apiConnector.whichAuthType.placeholder"), // Use the placeholder to display some description
@@ -382,8 +382,8 @@ export class ApiConnectorImpl {
   }
 
   public buildBasicAuthQuestion(): QTreeNode {
-    const node = new QTreeNode(basicAuthUsernameQuestion);
-    node.condition = { equals: BasicAuthOption.id };
+    const node = new QTreeNode(basicAuthUsernameQuestion());
+    node.condition = { equals: BasicAuthOption().id };
     return node;
   }
 
@@ -395,18 +395,18 @@ export class ApiConnectorImpl {
       node = new QTreeNode({
         name: Constants.questionKey.apiAppType,
         type: "singleSelect",
-        staticOptions: [reuseAppOption, anotherAppOption],
+        staticOptions: [reuseAppOption(), anotherAppOption()],
         title: getLocalizedString("plugins.apiConnector.getQuestion.appType.title"),
       });
-      node.condition = { equals: AADAuthOption.id };
-      const tenentQuestionNode = new QTreeNode(appTenantIdQuestion);
-      tenentQuestionNode.condition = { equals: anotherAppOption.id };
-      tenentQuestionNode.addChild(new QTreeNode(appIdQuestion));
+      node.condition = { equals: AADAuthOption().id };
+      const tenentQuestionNode = new QTreeNode(appTenantIdQuestion());
+      tenentQuestionNode.condition = { equals: anotherAppOption().id };
+      tenentQuestionNode.addChild(new QTreeNode(appIdQuestion()));
       node.addChild(tenentQuestionNode);
     } else {
-      node = new QTreeNode(appTenantIdQuestion);
-      node.condition = { equals: AADAuthOption.id };
-      node.addChild(new QTreeNode(appIdQuestion));
+      node = new QTreeNode(appTenantIdQuestion());
+      node.condition = { equals: AADAuthOption().id };
+      node.addChild(new QTreeNode(appIdQuestion()));
     }
     return node;
   }
@@ -415,10 +415,10 @@ export class ApiConnectorImpl {
     const node = new QTreeNode({
       name: Constants.questionKey.apiAPIKeyLocation,
       type: "singleSelect",
-      staticOptions: [requestHeaderOption, queryParamsOption],
+      staticOptions: [requestHeaderOption(), queryParamsOption()],
       title: getLocalizedString("plugins.apiConnector.getQuestion.apiKeyLocation.title"),
     });
-    node.condition = { equals: APIKeyAuthOption.id };
+    node.condition = { equals: APIKeyAuthOption().id };
 
     const keyNameQuestionNode = new QTreeNode(buildAPIKeyNameQuestion());
 

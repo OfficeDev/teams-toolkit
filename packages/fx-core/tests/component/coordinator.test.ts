@@ -183,7 +183,7 @@ describe("component coordinator test", () => {
       folder: ".",
       [CoreQuestionNames.AppName]: randomAppName(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYes().id,
-      [CoreQuestionNames.Capabilities]: M365SsoLaunchPageOptionItem.id,
+      [CoreQuestionNames.Capabilities]: M365SsoLaunchPageOptionItem().id,
       [CoreQuestionNames.ProgrammingLanguage]: "typescript",
     };
     const fxCore = new FxCore(tools);

@@ -190,6 +190,9 @@ export function startAuthTask(label: string): CommentJSONValue {
     isBackground: true,
     options: {
       cwd: "${workspaceFolder}",
+      env: {
+        PATH: "${command:fx-extension.get-dotnet-path}${env:PATH}",
+      },
     },
     problemMatcher: {
       pattern: [

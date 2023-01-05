@@ -114,7 +114,7 @@ export class VSCodeDepsChecker {
       supportedPackages.push(`${dep.name} (${supportedVersions})`);
     }
     const supportedMessage = supportedPackages.join(" and ");
-    return Messages.linuxDepsNotFound.split("@SupportedPackages").join(supportedMessage);
+    return Messages.linuxDepsNotFound().split("@SupportedPackages").join(supportedMessage);
   }
 
   public async display(message: string, link: string): Promise<void> {

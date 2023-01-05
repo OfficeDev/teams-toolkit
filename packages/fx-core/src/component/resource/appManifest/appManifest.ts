@@ -284,9 +284,9 @@ export class AppManifest implements CloudResource {
           appPackagePath.value
         );
         ctx.userInteraction
-          .showMessage("info", msg, false, "OK", Constants.READ_MORE)
+          .showMessage("info", msg, false, "OK", getLocalizedString("core.Notification.ReadMore"))
           .then((value) => {
-            if (value.isOk() && value.value === Constants.READ_MORE) {
+            if (value.isOk() && value.value === getLocalizedString("core.Notification.ReadMore")) {
               ctx.userInteraction.openUrl(Constants.PUBLISH_GUIDE);
             }
           });

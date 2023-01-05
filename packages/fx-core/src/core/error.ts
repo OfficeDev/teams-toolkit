@@ -55,11 +55,12 @@ export function ReadFileError(e: Error): SystemError {
   });
 }
 
-export function MigrationReadFileError(e: Error): UserError {
+export function MigrationReadFileError(e: Error, helpLink?: string): UserError {
   return new UserError({
     name: "MigrationReadFileError",
     source: CoreSource,
     error: e,
+    helpLink: helpLink,
   });
 }
 

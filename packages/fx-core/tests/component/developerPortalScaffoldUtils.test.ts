@@ -801,7 +801,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res, TabNonSsoAndDefaultBotItem.id);
+      chai.assert.equal(res, TabNonSsoAndDefaultBotItem().id);
     });
 
     it("return TabNonSso", () => {
@@ -811,7 +811,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res, TabNonSsoItem.id);
+      chai.assert.equal(res, TabNonSsoItem().id);
     });
 
     it("return DefaultBotAndMessageExtension", () => {
@@ -822,7 +822,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res, DefaultBotAndMessageExtensionItem.id);
+      chai.assert.equal(res, DefaultBotAndMessageExtensionItem().id);
     });
 
     it("return MessageExtension", () => {
@@ -832,7 +832,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res, MessageExtensionNewUIItem.id);
+      chai.assert.equal(res, MessageExtensionNewUIItem().id);
     });
 
     it("return bot", () => {
@@ -842,7 +842,7 @@ describe("developPortalScaffoldUtils", () => {
       };
 
       const res = getTemplateId(appDefinition);
-      chai.assert.equal(res, BotOptionItem.id);
+      chai.assert.equal(res, BotOptionItem().id);
     });
 
     it("return undefined", () => {

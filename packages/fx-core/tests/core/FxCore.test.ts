@@ -381,7 +381,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab"],
         [CoreQuestionNames.Folder]: os.tmpdir(),

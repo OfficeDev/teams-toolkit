@@ -134,7 +134,7 @@ describe("Api Connector scaffold sample code", async () => {
     sandbox
       .stub(MockUserInteraction.prototype, "showMessage")
       .callsFake((level, message, modal, ...items) => {
-        return Promise.resolve(ok(Notification.READ_MORE));
+        return Promise.resolve(ok(Notification.READ_MORE()));
       });
 
     const openUrl = sandbox.stub(MockUserInteraction.prototype, "openUrl").callsFake((url) => {

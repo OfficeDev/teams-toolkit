@@ -147,6 +147,7 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.storageResourceId");
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.endpoint");
     this.setPlaceholderMapping("state.fx-resource-frontend-hosting.resourceId");
+    this.setPlaceholderMapping("state.fx-resource-frontend-hosting.indexPath");
     this.setPlaceholderMapping("state.fx-resource-bot.resourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.functionAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-bot.botWebAppResourceId");

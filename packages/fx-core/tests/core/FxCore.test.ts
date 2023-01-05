@@ -371,6 +371,41 @@ describe("Core basic APIs", () => {
     }
   });
 
+  it("addSso method should exist", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const appName = randomAppName();
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        stage: Stage.create,
+        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+      };
+      const res = await core.createProject(inputs);
+      projectPath = inputs.projectPath!;
+      assert.isTrue(res.isOk() && res.value === projectPath);
+
+      const implement = new FxCoreV3Implement(tools);
+
+      const mockFunc = {
+        namespace: "mock namespace",
+        method: "addSso",
+      };
+
+      const result = await implement.executeUserTask(mockFunc, inputs);
+      assert.isTrue(result.isOk());
+    } finally {
+      restore();
+    }
+  });
+
   it("ProgrammingLanguageQuestion", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,

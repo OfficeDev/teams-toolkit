@@ -1,12 +1,25 @@
 import { FxError, Result, ok, err } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { load } from "js-yaml";
-import { InvalidEnvFieldError, InvalidLifecycleError, YamlParsingError } from "./error";
+import {
+  InvalidEnvFieldError,
+  InvalidEnvFolderPath,
+  InvalidLifecycleError,
+  YamlParsingError,
+} from "./error";
 import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./interface";
 import { Lifecycle } from "./lifecycle";
 
-function parseLifecycles(obj: Record<string, unknown>): Result<RawProjectModel, FxError> {
+const environmentFolderPath = "environmentFolderPath";
+
+function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectModel, FxError> {
   const result: RawProjectModel = {};
+  if (environmentFolderPath in obj) {
+    if (typeof obj[environmentFolderPath] !== "string") {
+      return err(new InvalidEnvFolderPath());
+    }
+    result.environmentFolderPath = obj[environmentFolderPath] as string;
+  }
   for (const name of LifecycleNames) {
     if (name in obj) {
       const value = obj[name];
@@ -57,6 +70,11 @@ export class YamlParser implements IYamlParser {
         }
       }
     }
+
+    if (raw.value.environmentFolderPath) {
+      result.environmentFolderPath = raw.value.environmentFolderPath;
+    }
+
     return ok(result);
   }
 
@@ -69,7 +87,7 @@ export class YamlParser implements IYamlParser {
         return err(new YamlParsingError(path, new Error(`Invalid yaml format: ${str}`)));
       }
       const value = content as unknown as Record<string, unknown>;
-      return parseLifecycles(value);
+      return parseRawProjectModel(value);
     } catch (error) {
       if (error instanceof Error) {
         return err(new YamlParsingError(path, error));

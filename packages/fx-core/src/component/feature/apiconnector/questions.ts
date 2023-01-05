@@ -104,7 +104,7 @@ export class ComponentsQuestion extends BaseQuestionService implements IQuestion
               errMsg,
               false,
               "OK",
-              Notification.READ_MORE
+              Notification.READ_MORE()
             );
             currentSelectedIds.delete(item);
             // this only send on vscode extension

@@ -812,23 +812,25 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async reload(): Promise<Result<boolean, FxError>> {
-    return new Promise(async (resolve) => {
-      // The following code only fixes the bug that cause telemetry event lost for projectMigrator().
-      // When this reload() function has more users, they may need to dispose() more resources that allocated in activate().
-      const extension = extensions.getExtension(`${packageJson.publisher}.${packageJson.name}`);
-      if (!extension?.isActive) {
-        // When our extension is not activated, we can determine this is in the vscode extension activate() context.
-        // Since we are not activated yet, vscode will not deactivate() and dispose() our resourses (which have been allocated in activate()).
-        // This may cause resource leaks.For example, buffered events in TelemetryReporter is not sent.
-        // So manually dispose them.
-        ExtTelemetry.reporter?.dispose();
-      }
+    // The following code only fixes the bug that cause telemetry event lost for projectMigrator().
+    // When this reload() function has more users, they may need to dispose() more resources that allocated in activate().
+    const extension = extensions.getExtension(`${packageJson.publisher}.${packageJson.name}`);
+    if (!extension?.isActive) {
+      // When our extension is not activated, we can determine this is in the vscode extension activate() context.
+      // Since we are not activated yet, vscode will not deactivate() and dispose() our resourses (which have been allocated in activate()).
+      // This may cause resource leaks.For example, buffered events in TelemetryReporter is not sent.
+      // So manually dispose them.
+      ExtTelemetry.reporter?.dispose();
+    }
 
-      commands.executeCommand("workbench.action.reloadWindow").then((v) => {
-        if (v) resolve(ok(v as boolean));
-        else resolve(err(internalUIError));
-      });
-    });
+    // wait 1 second before reloading.
+    await sleep(1000);
+    const success = await commands.executeCommand("workbench.action.reloadWindow");
+    if (success) {
+      return ok(success as boolean);
+    } else {
+      return err(internalUIError);
+    }
   }
 
   async executeFunction(config: ExecuteFuncConfig) {

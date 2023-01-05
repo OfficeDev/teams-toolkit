@@ -374,7 +374,7 @@ describe("Core basic APIs", () => {
   it("ProgrammingLanguageQuestion", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: TabSPFxItem.id,
+      [CoreQuestionNames.Capabilities]: TabSPFxItem().id,
     };
     if (
       ProgrammingLanguageQuestion.dynamicOptions &&

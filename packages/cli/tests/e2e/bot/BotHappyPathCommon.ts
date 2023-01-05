@@ -7,7 +7,7 @@
  **/
 
 import * as path from "path";
-import { BotValidator } from "../../commonlib";
+import { BotValidator, AppStudioValidator } from "../../commonlib";
 import {
   cleanUp,
   execAsync,
@@ -32,6 +32,7 @@ export async function happyPathTest(
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
   const envName = environmentManager.getDefaultEnvName();
+  let teamsAppId: string | undefined;
 
   const env = Object.assign({}, process.env);
   env["TEAMSFX_TEMPLATE_PRERELEASE"] = "alpha";
@@ -95,6 +96,13 @@ export async function happyPathTest(
     const context = isV3Enabled()
       ? await readContextMultiEnvV3(projectPath, envName)
       : await readContextMultiEnv(projectPath, envName);
+    if (isV3Enabled()) {
+      teamsAppId = context.TEAMS_APP_ID;
+    } else {
+      const appStudio = AppStudioValidator.init(context);
+      AppStudioValidator.validateTeamsAppExist(appStudio);
+      teamsAppId = appStudio.teamsAppId;
+    }
 
     // Validate Bot Deploy
     const bot = new BotValidator(context, projectPath, envName);
@@ -115,6 +123,18 @@ export async function happyPathTest(
     timeout: 0,
   });
 
+  // publish
+  await execAsyncWithRetry(`teamsfx publish`, {
+    cwd: projectPath,
+    env: process.env,
+    timeout: 0,
+  });
+
+  {
+    // Validate publish result
+    await AppStudioValidator.validatePublish(teamsAppId!);
+  }
+
   console.log(`[Successfully] start to clean up for ${projectPath}`);
-  await cleanUp(appName, projectPath, false, true, false);
+  await cleanUp(appName, projectPath, false, true, false, teamsAppId);
 }

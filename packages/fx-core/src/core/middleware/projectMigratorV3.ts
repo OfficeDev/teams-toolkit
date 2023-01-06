@@ -30,7 +30,7 @@ import {
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
-import { UpgradeV3CanceledError, MigrationReadFileError } from "../error";
+import { UpgradeV3CanceledError, MigrationReadFileError, TooklitNotSupportError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
@@ -85,9 +85,10 @@ import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionState } from "../../common/versionMetadata";
-import { isSPFxProject } from "../../common/tools";
+import { isMigrationV3Enabled, isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
+import { getLocalizedString } from "../../common/localizeUtils";
 
 const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
@@ -133,6 +134,16 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
     if (!checkUserTasks(ctx)) {
       ctx.result = ok(undefined);
       return;
+    }
+    if (!isMigrationV3Enabled()) {
+      await TOOLS?.ui.showMessage(
+        "warn",
+        getLocalizedString("core.migrationV3.CreateNewProject"),
+        true
+      );
+      ctx.result = err(TooklitNotSupportError());
+      outputCancelMessage(versionForMigration.currentVersion, versionForMigration.platform);
+      return false;
     }
 
     const skipUserConfirm = getParameterFromCxt(ctx, "skipUserConfirm");

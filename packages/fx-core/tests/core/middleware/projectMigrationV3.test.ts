@@ -158,6 +158,52 @@ describe("ProjectMigratorMW", () => {
   });
 });
 
+describe("ProjectMigratorMW with no TEAMSFX_V3_MIGRATION", () => {
+  const sandbox = sinon.createSandbox();
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+    await fs.ensureDir(path.join(projectPath, ".fx"));
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3_MIGRATION: "false",
+    });
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+    mockedEnvRestore();
+  });
+
+  it("TEAMSFX_V3_MIGRATION is false", async () => {
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok(""));
+    const tools = new MockTools();
+    setTools(tools);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    class MyClass {
+      tools = tools;
+      async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+        return ok("");
+      }
+    }
+    hooks(MyClass, {
+      other: [ProjectMigratorMWV3],
+    });
+
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+    inputs.projectPath = projectPath;
+    const my = new MyClass();
+    try {
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr());
+    } finally {
+      await fs.rmdir(inputs.projectPath!, { recursive: true });
+    }
+  });
+});
+
 describe("MigrationContext", () => {
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();

@@ -341,6 +341,15 @@ export function UpgradeV3CanceledError(link: string, version: string): UserError
   );
 }
 
+export function TooklitNotSupportError(): UserError {
+  return new UserError(
+    CoreSource,
+    "ToolkitNotSupport", // @see tools.isUserCancelError()
+    getDefaultString("core.migrationV3.CreateNewProject"),
+    getLocalizedString("core.migrationV3.CreateNewProject")
+  );
+}
+
 export function ConsolidateCanceledError(): UserError {
   return new UserError(
     CoreSource,

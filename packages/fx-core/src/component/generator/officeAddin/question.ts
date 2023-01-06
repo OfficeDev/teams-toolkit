@@ -136,7 +136,7 @@ export const getQuestionsForScaffolding = (): QTreeNode => {
         return "Invalid inputs";
       }
       const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
-      if (cap === ImportAddinProjectItem.id) {
+      if (cap === ImportAddinProjectItem().id) {
         return undefined;
       }
       return "Office Addin is not selected";

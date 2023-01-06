@@ -81,7 +81,7 @@ import * as uuid from "uuid";
 import { settingsUtil } from "../utils/settingsUtil";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { DotenvParseOutput } from "dotenv";
-import { yamlParser, YamlParser } from "../configManager/parser";
+import { yamlParser } from "../configManager/parser";
 import { provisionUtils } from "../provisionUtils";
 import { envUtil } from "../utils/envUtil";
 import { SPFxGenerator } from "../generator/spfxGenerator";

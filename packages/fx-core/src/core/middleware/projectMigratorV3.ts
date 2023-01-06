@@ -142,7 +142,6 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
         true
       );
       ctx.result = err(TooklitNotSupportError());
-      outputCancelMessage(versionForMigration.currentVersion, versionForMigration.platform);
       return false;
     }
 

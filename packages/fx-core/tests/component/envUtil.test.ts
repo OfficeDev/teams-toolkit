@@ -3,6 +3,7 @@ import {
   err,
   FxError,
   Inputs,
+  InputsWithProjectPath,
   ok,
   Platform,
   Result,
@@ -26,6 +27,11 @@ import { environmentManager } from "../../src/core/environment";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { EnvInfoLoaderMW_V3 } from "../../src/core/middleware/envInfoLoaderV3";
 import { FxCore } from "../../src/core/FxCore";
+import { pathUtils, YmlFileName, YmlFileNameOld } from "../../src/component/utils/pathUtils";
+import * as path from "path";
+import { yamlParser } from "../../src/component/configManager/parser";
+import { ProjectModel } from "../../src/component/configManager/interface";
+
 describe("env utils", () => {
   const tools = new MockTools();
   setTools(tools);
@@ -50,6 +56,36 @@ describe("env utils", () => {
       TEAMSFX_V3: "true",
     });
   });
+  it("pathUtils.getYmlFilePath case 1", async () => {
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    process.env.TEAMSFX_ENV = "dev";
+    const res1 = pathUtils.getYmlFilePath(".", "dev");
+    assert.equal(res1, path.join(".", YmlFileName));
+  });
+  it("pathUtils.getYmlFilePath case 2", async () => {
+    sandbox.stub(fs, "pathExistsSync").returns(false);
+    const inputs: InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+    };
+    process.env.TEAMSFX_ENV = "dev";
+    const res1 = pathUtils.getYmlFilePath(".", "dev");
+    assert.equal(res1, path.join(".", "teamsfx", YmlFileNameOld));
+  });
+
+  it("pathUtils.getEnvFolderPath", async () => {
+    const mockProjectModel: ProjectModel = {
+      environmentFolderPath: "/home/envs",
+    };
+    sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+    process.env.TEAMSFX_ENV = "dev";
+    const res = await pathUtils.getEnvFolderPath(".");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.equal(res.value, path.resolve("/home/envs"));
+    }
+  });
+
   it("envUtil.readEnv", async () => {
     const encRes = await cryptoProvider.encrypt(decrypted);
     if (encRes.isErr()) throw encRes.error;

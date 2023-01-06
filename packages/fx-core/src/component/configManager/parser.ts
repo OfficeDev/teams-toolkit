@@ -99,3 +99,5 @@ export class YamlParser implements IYamlParser {
     }
   }
 }
+
+export const yamlParser = new YamlParser();

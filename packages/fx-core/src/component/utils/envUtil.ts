@@ -5,12 +5,14 @@ import { cloneDeep, merge } from "lodash";
 import { settingsUtil } from "./settingsUtil";
 import { LocalCrypto } from "../../core/crypto";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { pathUtils } from "./pathUtils";
 
 export type DotenvOutput = {
   [k: string]: string;
 };
 
 export class EnvUtil {
+  async getEnvFilePath(projectPath: string, env: string) {}
   async readEnv(
     projectPath: string,
     env: string,
@@ -18,7 +20,9 @@ export class EnvUtil {
     silent = false
   ): Promise<Result<DotenvOutput, FxError>> {
     // read
-    const dotEnvFilePath = path.join(projectPath, SettingsFolderName, `.env.${env}`);
+    const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, env);
+    if (dotEnvFilePathRes.isErr()) return err(dotEnvFilePathRes.error);
+    const dotEnvFilePath = dotEnvFilePathRes.value;
     if (!(await fs.pathExists(dotEnvFilePath))) {
       if (silent) {
         return ok({});
@@ -85,7 +89,9 @@ export class EnvUtil {
     }
 
     //replace existing
-    const dotEnvFilePath = path.join(projectPath, SettingsFolderName, `.env.${env}`);
+    const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, env);
+    if (dotEnvFilePathRes.isErr()) return err(dotEnvFilePathRes.error);
+    const dotEnvFilePath = dotEnvFilePathRes.value;
     const parsedDotenv = (await fs.pathExists(dotEnvFilePath))
       ? dotenvUtil.deserialize(await fs.readFile(dotEnvFilePath))
       : { obj: {} };
@@ -100,7 +106,9 @@ export class EnvUtil {
     return ok(undefined);
   }
   async listEnv(projectPath: string): Promise<Result<string[], FxError>> {
-    const folder = path.join(projectPath, SettingsFolderName);
+    const folderRes = await pathUtils.getEnvFolderPath(projectPath);
+    if (folderRes.isErr()) return err(folderRes.error);
+    const folder = folderRes.value;
     const list = await fs.readdir(folder);
     const envs = list
       .filter((fileName) => fileName.startsWith(".env."))

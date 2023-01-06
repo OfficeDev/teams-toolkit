@@ -14,9 +14,8 @@ import projectsJsonData from "./config/projectsJsonData";
 
 const jsonData = new projectsJsonData();
 
-export const OfficeAddinItems: OptionItem[] = jsonData
-  .getProjectTemplateNames()
-  .map((template) => ({
+export const OfficeAddinItems: () => OptionItem[] = () =>
+  jsonData.getProjectTemplateNames().map((template) => ({
     id: template,
     label: jsonData.getProjectDisplayName(template),
     detail: jsonData.getProjectDetails(template),
@@ -24,13 +23,15 @@ export const OfficeAddinItems: OptionItem[] = jsonData
   }));
 
 // TODO: add localization strings
-export const ImportAddinProjectItem: OptionItem = {
-  id: "import-addin-project",
-  label: "Import Add-in",
-  cliName: "import",
-  detail: "Import an office independent add-in project",
-  groupName: getLocalizedString("core.options.separator.addin"),
-};
+export function ImportAddinProjectItem(): OptionItem {
+  return {
+    id: "import-addin-project",
+    label: "Import Add-in",
+    cliName: "import",
+    detail: "Import an office independent add-in project",
+    groupName: getLocalizedString("core.options.separator.addin"),
+  };
+}
 
 export const OfficeAddinItem: OptionItem = {
   id: "office-addin",
@@ -152,7 +153,7 @@ export const getQuestionsForScaffolding = (): QTreeNode => {
       }
       const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string;
       const addinOptionIds: string[] = [
-        ...OfficeAddinItems.map((item) => {
+        ...OfficeAddinItems().map((item) => {
           return item.id;
         }),
       ];

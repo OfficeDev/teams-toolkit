@@ -861,7 +861,7 @@ export function createCapabilityForOfficeAddin(): SingleSelectQuestion {
     name: CoreQuestionNames.Capabilities,
     title: getLocalizedString("core.createCapabilityQuestion.title"),
     type: "singleSelect",
-    staticOptions: [...OfficeAddinItems, ImportAddinProjectItem],
+    staticOptions: [...OfficeAddinItems(), ImportAddinProjectItem()],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     skipSingleOption: true,
   };

@@ -265,7 +265,7 @@ export class AppManifest implements CloudResource {
     TelemetryUtils.init(ctx);
     if (
       inputs.platform === Platform.VSCode &&
-      inputs[Constants.BUILD_OR_PUBLISH_QUESTION] === manuallySubmitOption.id
+      inputs[Constants.BUILD_OR_PUBLISH_QUESTION] === manuallySubmitOption().id
     ) {
       if (actionCtx?.telemetryProps)
         actionCtx.telemetryProps[TelemetryPropertyKey.manual] = String(true);
@@ -718,9 +718,9 @@ export async function publishQuestion(
     const buildOrPublish = new QTreeNode({
       name: Constants.BUILD_OR_PUBLISH_QUESTION,
       type: "singleSelect",
-      staticOptions: [manuallySubmitOption, autoPublishOption],
+      staticOptions: [manuallySubmitOption(), autoPublishOption()],
       title: getLocalizedString("plugins.appstudio.publishTip"),
-      default: autoPublishOption.id,
+      default: autoPublishOption().id,
     });
     return ok(buildOrPublish);
   }

@@ -19,7 +19,7 @@ export const LocalYmlFileName = "teamsapp.local.yml";
 export class PathUtils {
   getYmlFilePath(projectPath: string, env?: string): string {
     const envName = env || process.env.TEAMSFX_ENV;
-    if (!envName) throw new InvalidInputError("util", "env");
+    if (!envName) throw new InvalidInputError("util", "env", "env is undefined");
     let ymlPath = path.join(projectPath, envName === "local" ? LocalYmlFileName : YmlFileName);
     if (fs.pathExistsSync(ymlPath)) {
       return ymlPath;

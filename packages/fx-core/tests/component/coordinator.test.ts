@@ -415,6 +415,7 @@ describe("component coordinator test", () => {
         },
         resolveDriverInstances: mockedResolveDriverInstances,
       },
+      environmentFolderPath: "./envs",
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));

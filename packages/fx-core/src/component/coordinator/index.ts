@@ -519,7 +519,8 @@ export class Coordinator {
     };
 
     // 1. parse yml to cycles
-    const templatePath = inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath);
+    const templatePath =
+      inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
     const maybeProjectModel = await yamlParser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -577,7 +578,8 @@ export class Coordinator {
     const folderName = path.parse(ctx.projectPath).name;
 
     // 1. parse yml
-    const templatePath = inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath);
+    const templatePath =
+      inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
     const maybeProjectModel = await yamlParser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -862,7 +864,8 @@ export class Coordinator {
     actionContext?: ActionContext
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
-    const templatePath = inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath);
+    const templatePath =
+      inputs["workflowFilePath"] || pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
     const maybeProjectModel = await yamlParser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
@@ -928,7 +931,7 @@ export class Coordinator {
     inputs: InputsWithProjectPath,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const templatePath = pathUtils.getYmlFilePath(ctx.projectPath);
+    const templatePath = pathUtils.getYmlFilePath(ctx.projectPath, inputs.env);
     const maybeProjectModel = await yamlParser.parse(templatePath);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);

@@ -1821,8 +1821,12 @@ export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, 
 }
 
 export async function checkUpgrade(args?: any[]) {
-  // just for triggering upgrade check for multi-env && bicep.
-  await runCommand(Stage.listCollaborator);
+  if (isV3Enabled()) {
+    const result = await core.phantomMigrationV3(getSystemInputs());
+  } else {
+    // just for triggering upgrade check for multi-env && bicep.
+    await runCommand(Stage.listCollaborator);
+  }
 }
 
 export async function openSurveyHandler(args?: any[]) {
@@ -3920,4 +3924,8 @@ export async function scaffoldFromDeveloperPortalHandler(
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtal, properties);
   return ok(null);
+}
+
+export async function projectVersionCheck() {
+  return await core.projectVersionCheck(getSystemInputs());
 }

@@ -27,7 +27,7 @@ export class PathUtils {
     ymlPath = path.join(
       projectPath,
       SettingsFolderName,
-      envName === "local" ? YmlFileNameOld : LocalYmlFileNameOld
+      envName === "local" ? LocalYmlFileNameOld : YmlFileNameOld
     );
     return ymlPath;
   }
@@ -39,7 +39,7 @@ export class PathUtils {
     if (!projectModel.environmentFolderPath)
       return err(new InvalidEnvFolderPath("missing field: environmentFolderPath"));
     const envFolderPath = path.isAbsolute(projectModel.environmentFolderPath)
-      ? path.resolve(projectModel.environmentFolderPath)
+      ? projectModel.environmentFolderPath
       : path.join(projectPath, projectModel.environmentFolderPath);
     if (!(await fs.pathExists(envFolderPath)))
       return err(new InvalidEnvFolderPath("environment folder not exist: " + envFolderPath));

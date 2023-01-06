@@ -12,7 +12,6 @@ export type DotenvOutput = {
 };
 
 export class EnvUtil {
-  async getEnvFilePath(projectPath: string, env: string) {}
   async readEnv(
     projectPath: string,
     env: string,

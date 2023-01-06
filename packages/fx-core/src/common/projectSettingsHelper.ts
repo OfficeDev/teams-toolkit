@@ -32,12 +32,12 @@ export function validateProjectSettings(projectSettings: ProjectSettings): strin
     return `solutionSettings.azureResources validation failed: ${validateRes}`;
   }
   validateRes = validateStringArray(solutionSettings.capabilities, [
-    TabOptionItem.id,
-    BotOptionItem.id,
-    MessageExtensionItem.id,
-    TabSPFxItem.id,
-    TabSsoItem.id,
-    BotSsoItem.id,
+    TabOptionItem().id,
+    BotOptionItem().id,
+    MessageExtensionItem().id,
+    TabSPFxItem().id,
+    TabSsoItem().id,
+    BotSsoItem().id,
   ]);
   if (validateRes) {
     return `solutionSettings.capabilities validation failed: ${validateRes}`;
@@ -168,7 +168,7 @@ export function isExistingTabApp(projectSettings: ProjectSettings): boolean {
   // Scenario: SSO is added to existing tab app
   if (
     solutionSettings.capabilities?.length === 1 &&
-    solutionSettings.capabilities.includes(TabSsoItem.id)
+    solutionSettings.capabilities.includes(TabSsoItem().id)
   ) {
     return true;
   }

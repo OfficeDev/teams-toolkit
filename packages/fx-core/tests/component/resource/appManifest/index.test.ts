@@ -82,7 +82,7 @@ describe("App-manifest Component", () => {
 
     const res: SingleSelectResult = {
       type: "success",
-      result: autoPublishOption,
+      result: autoPublishOption(),
     };
     sandbox.stub(context.userInteraction, "selectOption").resolves(ok(res));
 
@@ -638,7 +638,7 @@ describe("App-manifest Component - v3", () => {
 
     const res: SingleSelectResult = {
       type: "success",
-      result: autoPublishOption,
+      result: autoPublishOption(),
     };
     sandbox.stub(context.userInteraction, "selectOption").resolves(ok(res));
 

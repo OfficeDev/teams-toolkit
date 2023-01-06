@@ -60,7 +60,7 @@ describe("Core basic APIs for v3", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
       stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
+      [CoreQuestionNames.Capabilities]: [TabOptionItem().id],
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
     };
     const core = new FxCore(tools);
@@ -76,7 +76,7 @@ describe("Core basic APIs for v3", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
       stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
+      [CoreQuestionNames.Capabilities]: [TabOptionItem().id, BotOptionItem().id],
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
     };
     const core = new FxCore(tools);
@@ -92,7 +92,7 @@ describe("Core basic APIs for v3", () => {
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
       projectPath: projectPath,
       stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
+      [CoreQuestionNames.Capabilities]: [TabOptionItem().id, BotOptionItem().id],
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
     };
     const core = new FxCore(tools);
@@ -108,7 +108,7 @@ describe("Core basic APIs for v3", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
       stage: Stage.create,
-      [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
+      [CoreQuestionNames.Capabilities]: [TabSPFxItem().id],
       [CoreQuestionNames.ProgrammingLanguage]: "typescript",
       [SPFXQuestionNames.framework_type]: "react",
       [SPFXQuestionNames.webpart_name]: "helloworld",

@@ -59,7 +59,7 @@ export async function ensureBicep(
     ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
     if (!(await bicepChecker.isGlobalBicepInstalled())) {
       await displayLearnMore(
-        Messages.failToInstallBicepDialog
+        Messages.failToInstallBicepDialog()
           .split("@NameVersion")
           .join(bicepChecker.getBicepDisplayBicepName()),
         bicepHelpLink,
@@ -92,7 +92,7 @@ export async function ensureBicepForDriver(
   } catch (err) {
     ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
     await displayLearnMore(
-      Messages.failToInstallBicepDialog
+      Messages.failToInstallBicepDialog()
         .split("@NameVersion")
         .join(bicepChecker.getBicepDisplayBicepName()),
       bicepHelpLink,
@@ -112,8 +112,8 @@ function outputErrorMessage(
 ) {
   const message =
     inputs?.platform === Platform.VSCode
-      ? Messages.failToInstallBicepOutputVSC
-      : Messages.failToInstallBicepOutputCLI;
+      ? Messages.failToInstallBicepOutputVSC()
+      : Messages.failToInstallBicepOutputCLI();
   ctx.logProvider?.warning(
     message
       .split("@NameVersion")
@@ -214,7 +214,7 @@ class BicepChecker {
         this._telemetry
       );
       await this._logger?.error(
-        `${Messages.failToInstallBicep
+        `${Messages.failToInstallBicep()
           .split("@NameVersion")
           .join(this.getBicepDisplayBicepName())}, error = '${err}'`
       );
@@ -254,7 +254,7 @@ class BicepChecker {
     const installDir = this.getBicepExecPath();
 
     await this._logger?.info(
-      Messages.downloadBicep
+      Messages.downloadBicep()
         .replace("@NameVersion", `Bicep ${selectedVersion}`)
         .replace("@InstallDir", installDir)
     );
@@ -315,7 +315,7 @@ class BicepChecker {
   private async handleInstallCompleted() {
     this._telemetry?.sendTelemetryEvent(DepsCheckerEvent.bicepInstallCompleted);
     await this._logger?.info(
-      Messages.finishInstallBicep.replace("@NameVersion", this.getBicepDisplayBicepName())
+      Messages.finishInstallBicep().replace("@NameVersion", this.getBicepDisplayBicepName())
     );
   }
 
@@ -325,7 +325,7 @@ class BicepChecker {
     throw new SystemError(
       source,
       DepsCheckerEvent.bicepInstallError,
-      Messages.failToInstallBicep.split("@NameVersion").join(this.getBicepDisplayBicepName())
+      Messages.failToInstallBicep().split("@NameVersion").join(this.getBicepDisplayBicepName())
     );
   }
 
@@ -443,10 +443,10 @@ async function displayLearnMore(
     // no dialog, always continue
     return true;
   }
-  const res = await ui?.showMessage("info", message, true, Messages.learnMoreButtonText);
+  const res = await ui?.showMessage("info", message, true, Messages.learnMoreButtonText());
   const userSelected: string | undefined = res?.isOk() ? res.value : undefined;
 
-  if (userSelected === Messages.learnMoreButtonText) {
+  if (userSelected === Messages.learnMoreButtonText()) {
     telemetryReporter?.sendTelemetryEvent(DepsCheckerEvent.clickLearnMore, getCommonProps());
     ui?.openUrl(link);
     return true;

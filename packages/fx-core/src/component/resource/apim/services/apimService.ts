@@ -16,7 +16,7 @@ import {
   ErrorHandlerResult,
   OpenApiSchemaVersion,
 } from "../constants";
-import { ApimOperationErrorgit, BuildError } from "../error";
+import { ApimOperationError, BuildError } from "../error";
 import { IName } from "../interfaces/IName";
 import { Telemetry } from "../utils/telemetry";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";

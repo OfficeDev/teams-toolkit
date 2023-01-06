@@ -45,7 +45,7 @@ configureApp:
 
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
-      manifestPath: ${{TEAMS_MANIFEST_PATH}} # Path to manifest template
+      manifestPath: ./appPackage/manifest.template.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
   - uses: teamsApp/update # Apply the Teams app manifest to an existing Teams app. Will use the app id in manifest file to determine which Teams app to update.

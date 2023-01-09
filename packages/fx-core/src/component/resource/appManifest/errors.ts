@@ -44,8 +44,16 @@ export class AppStudioError {
   public static readonly AuthServiceAPIFailedError = {
     name: "AuthServiceAPIFailed",
     message: (e: any, requestPath: string, apiName: string): [string, string] => [
-      getDefaultString("", e, requestPath, apiName),
-      getLocalizedString("", e, requestPath, apiName),
+      getDefaultString("error.appstudio.authServiceApiFailed", e.name, e.message, apiName),
+      getLocalizedString("error.appstudio.authServiceApiFailed", e.name, e.message, requestPath),
+    ],
+  };
+
+  public static readonly InvalidParameterError = {
+    name: "InvalidParamError",
+    message: (actionName: string, params: string[]): [string, string] => [
+      getDefaultString("driver.teamsApp.invalidParameter", actionName, params),
+      getLocalizedString("driver.teamsApp.invalidParameter", actionName, params),
     ],
   };
 

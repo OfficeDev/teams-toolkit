@@ -200,6 +200,17 @@ async function updateManifest(
     }
   }
 
+  // manifest: no tab, bot or me selected on TDP before
+  if (!getTemplateId(appDefinition)) {
+    // which means user selects a capability through TTK UI.
+    manifest.bots = existingManifestTemplate.bots;
+    manifest.composeExtensions = existingManifestTemplate.composeExtensions;
+    manifest.staticTabs = existingManifestTemplate.staticTabs;
+    manifest.configurableTabs = existingManifestTemplate.configurableTabs;
+    manifest.permissions = existingManifestTemplate.permissions;
+    manifest.validDomains = existingManifestTemplate.validDomains;
+  }
+
   // manifest: developer
   if (manifest.developer) {
     if (!manifest.developer.websiteUrl) {

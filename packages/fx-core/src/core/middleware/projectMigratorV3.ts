@@ -91,8 +91,8 @@ import { environmentManager } from "../environment";
 const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
-  appYmlName: "app.yml",
-  appLocalYmlName: "app.local.yml",
+  appYmlName: "teamsapp.yml",
+  appLocalYmlName: "teamsapp.local.yml",
   tasksJsonPath: ".vscode/tasks.json",
   reportName: "migrationReport.md",
   envWriteOption: {
@@ -262,16 +262,13 @@ export async function generateAppYml(context: MigrationContext): Promise<void> {
     context.projectPath
   );
   const appYmlString: string = await appYmlGenerator.generateAppYml();
-  await context.fsWriteFile(path.join(SettingsFolderName, Constants.appYmlName), appYmlString);
+  await context.fsWriteFile(Constants.appYmlName, appYmlString);
   if (oldProjectSettings.programmingLanguage?.toLowerCase() === "csharp") {
     const placeholderMappings = await getPlaceholderMappings(context);
     const appLocalYmlString: string = await appYmlGenerator.generateAppLocalYml(
       placeholderMappings
     );
-    await context.fsWriteFile(
-      path.join(SettingsFolderName, Constants.appLocalYmlName),
-      appLocalYmlString
-    );
+    await context.fsWriteFile(Constants.appLocalYmlName, appLocalYmlString);
   }
 }
 
@@ -631,7 +628,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
   );
   const appYmlString: string = await appYmlGenerator.generateAppYml();
   await context.fsEnsureDir(SettingsFolderName);
-  await context.fsWriteFile(path.join(SettingsFolderName, Constants.appLocalYmlName), appYmlString);
+  await context.fsWriteFile(Constants.appLocalYmlName, appYmlString);
 }
 
 export function checkapimPluginExists(pjSettings: any): boolean {

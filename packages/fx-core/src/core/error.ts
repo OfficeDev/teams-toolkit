@@ -55,11 +55,12 @@ export function ReadFileError(e: Error): SystemError {
   });
 }
 
-export function MigrationReadFileError(e: Error): UserError {
+export function MigrationReadFileError(e: Error, helpLink?: string): UserError {
   return new UserError({
     name: "MigrationReadFileError",
     source: CoreSource,
     error: e,
+    helpLink: helpLink,
   });
 }
 
@@ -337,6 +338,15 @@ export function UpgradeV3CanceledError(link: string, version: string): UserError
     "UserCancel", // @see tools.isUserCancelError()
     getDefaultString("error.UpgradeV3CanceledError", link, version),
     getLocalizedString("error.UpgradeV3CanceledError", link, version)
+  );
+}
+
+export function TooklitNotSupportError(): UserError {
+  return new UserError(
+    CoreSource,
+    "ToolkitNotSupport", // @see tools.isUserCancelError()
+    getDefaultString("core.migrationV3.CreateNewProject"),
+    getLocalizedString("core.migrationV3.CreateNewProject")
   );
 }
 

@@ -163,7 +163,7 @@ export class TeamsfxCore {
       globalVars.isVS = inputs[CoreQuestionNames.ProgrammingLanguage] === "csharp";
       const features = inputs.capabilities as string;
 
-      const isInitExistingApp = features === ExistingTabOptionItem.id;
+      const isInitExistingApp = features === ExistingTabOptionItem().id;
       if (isInitExistingApp) {
         const folderExist = await fs.pathExists(projectPath);
         if (folderExist) {
@@ -199,25 +199,25 @@ export class TeamsfxCore {
         }
       } else {
         if (
-          features === M365SsoLaunchPageOptionItem.id ||
-          features === M365SearchAppOptionItem.id
+          features === M365SsoLaunchPageOptionItem().id ||
+          features === M365SearchAppOptionItem().id
         ) {
           context.projectSetting.isM365 = true;
           inputs.isM365 = true;
         }
-        if (BotFeatureIds.includes(features)) {
+        if (BotFeatureIds().includes(features)) {
           inputs[AzureSolutionQuestionNames.Features] = features;
           const component = Container.get(ComponentNames.TeamsBot) as any;
           const res = await component.add(context, inputs);
           if (res.isErr()) return err(res.error);
         }
-        if (TabFeatureIds.includes(features)) {
+        if (TabFeatureIds().includes(features)) {
           inputs[AzureSolutionQuestionNames.Features] = features;
           const component = Container.get(ComponentNames.TeamsTab) as any;
           const res = await component.add(context, inputs);
           if (res.isErr()) return err(res.error);
         }
-        if (features === TabSPFxItem.id) {
+        if (features === TabSPFxItem().id) {
           inputs[AzureSolutionQuestionNames.Features] = features;
           const component = Container.get("spfx-tab") as any;
           const res = await component.add(context, inputs);
@@ -256,9 +256,9 @@ export class TeamsfxCore {
   ): Promise<Result<any, FxError>> {
     const features = inputs[AzureSolutionQuestionNames.Features];
     let component;
-    if (BotFeatureIds.includes(features)) {
+    if (BotFeatureIds().includes(features)) {
       component = Container.get(ComponentNames.TeamsBot);
-    } else if (TabFeatureIds.includes(features)) {
+    } else if (TabFeatureIds().includes(features)) {
       component = Container.get(ComponentNames.TeamsTab);
     } else if (features === AzureResourceSQLNewUI.id) {
       component = Container.get("sql");
@@ -274,7 +274,7 @@ export class TeamsfxCore {
       component = Container.get("api-connector");
     } else if (features === SingleSignOnOptionItem.id) {
       component = Container.get("sso");
-    } else if (features === TabSPFxNewUIItem.id) {
+    } else if (features === TabSPFxNewUIItem().id) {
       component = Container.get(ComponentNames.SPFxTab);
     }
     if (component) {

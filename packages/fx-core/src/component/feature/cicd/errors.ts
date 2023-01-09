@@ -48,7 +48,7 @@ export class InternalError extends PluginError {
       ErrorType.System,
       ErrorNames.INTERNAL_ERROR,
       details,
-      [Suggestions.RETRY_THE_CURRENT_STEP],
+      [Suggestions.RETRY_THE_CURRENT_STEP()],
       innerError
     );
   }
@@ -60,7 +60,7 @@ export class NoProjectOpenedError extends PluginError {
       ErrorType.User,
       ErrorNames.NO_PROJECT_OPENED_ERROR,
       ["No project opened.", "No project opened."],
-      [Suggestions.CREATE_PROJECT_OR_OPEN_EXISTING]
+      [Suggestions.CREATE_PROJECT_OR_OPEN_EXISTING()]
     );
   }
 }
@@ -71,7 +71,7 @@ export class FileSystemError extends PluginError {
       ErrorType.User,
       ErrorNames.FILE_SYSTEM_ERROR,
       details,
-      [Suggestions.CHECK_PERMISSION, Suggestions.RETRY_THE_CURRENT_STEP],
+      [Suggestions.CHECK_PERMISSION(), Suggestions.RETRY_THE_CURRENT_STEP()],
       innerError
     );
   }

@@ -134,13 +134,13 @@ describe("Capability Questions", () => {
     it("notification validation", async () => {
       const cases: [string[], boolean][] = [
         [[], false],
-        [[NotificationOptionItem.id], true],
-        [[NotificationOptionItem.id, BotOptionItem.id], false],
-        [[NotificationOptionItem.id, MessageExtensionItem.id], false],
-        [[BotOptionItem.id, MessageExtensionItem.id], true],
-        [[NotificationOptionItem.id, TabOptionItem.id], true],
-        [[NotificationOptionItem.id, TabSPFxItem.id], false],
-        [[NotificationOptionItem.id, TabOptionItem.id, BotOptionItem.id], false],
+        [[NotificationOptionItem().id], true],
+        [[NotificationOptionItem().id, BotOptionItem().id], false],
+        [[NotificationOptionItem().id, MessageExtensionItem().id], false],
+        [[BotOptionItem().id, MessageExtensionItem().id], true],
+        [[NotificationOptionItem().id, TabOptionItem().id], true],
+        [[NotificationOptionItem().id, TabSPFxItem().id], false],
+        [[NotificationOptionItem().id, TabOptionItem().id, BotOptionItem().id], false],
       ];
 
       // Arrange
@@ -180,17 +180,17 @@ describe("Capability Questions", () => {
       chai.assert.equal(question.type, "singleSelect");
       chai.assert.equal(question.name, "capabilities");
       chai.assert.deepEqual(question.staticOptions, [
-        NotificationOptionItem,
-        CommandAndResponseOptionItem,
-        WorkflowOptionItem,
-        DashboardOptionItem,
-        TabNewUIOptionItem,
-        TabSPFxNewUIItem,
-        TabNonSsoItem,
-        BotNewUIOptionItem,
-        MessageExtensionNewUIItem,
-        M365SsoLaunchPageOptionItem,
-        M365SearchAppOptionItem,
+        NotificationOptionItem(),
+        CommandAndResponseOptionItem(),
+        WorkflowOptionItem(),
+        DashboardOptionItem(),
+        TabNewUIOptionItem(),
+        TabSPFxNewUIItem(),
+        TabNonSsoItem(),
+        BotNewUIOptionItem(),
+        MessageExtensionNewUIItem(),
+        M365SsoLaunchPageOptionItem(),
+        M365SearchAppOptionItem(),
       ]);
     });
   });

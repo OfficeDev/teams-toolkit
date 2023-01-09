@@ -258,8 +258,8 @@ export class TeamsBot {
     {
       const manifestCapability: v3.ManifestCapability = {
         name:
-          inputs[CoreQuestionNames.Features] === MessageExtensionItem.id ||
-          inputs[CoreQuestionNames.Features] === M365SearchAppOptionItem.id
+          inputs[CoreQuestionNames.Features] === MessageExtensionItem().id ||
+          inputs[CoreQuestionNames.Features] === M365SearchAppOptionItem().id
             ? "MessageExtension"
             : "Bot",
       };
@@ -290,24 +290,24 @@ export class TeamsBot {
  *     group=bot, host=app-service, scenario=default
  */
 const featureToCapability: Map<string, string> = new Map([
-  [BotOptionItem.id, BotCapabilities.BOT],
-  [MessageExtensionItem.id, BotCapabilities.MESSAGE_EXTENSION],
-  [M365SearchAppOptionItem.id, BotCapabilities.M365_SEARCH_APP],
-  [CommandAndResponseOptionItem.id, BotCapabilities.COMMAND_AND_RESPONSE],
-  [NotificationOptionItem.id, BotCapabilities.NOTIFICATION],
-  [WorkflowOptionItem.id, BotCapabilities.WORKFLOW],
+  [BotOptionItem().id, BotCapabilities.BOT],
+  [MessageExtensionItem().id, BotCapabilities.MESSAGE_EXTENSION],
+  [M365SearchAppOptionItem().id, BotCapabilities.M365_SEARCH_APP],
+  [CommandAndResponseOptionItem().id, BotCapabilities.COMMAND_AND_RESPONSE],
+  [NotificationOptionItem().id, BotCapabilities.NOTIFICATION],
+  [WorkflowOptionItem().id, BotCapabilities.WORKFLOW],
 ]);
 
 const featureToScenario: Map<string, (triggers?: string) => TemplateProjectsScenarios[]> = new Map([
-  [BotOptionItem.id, () => [TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME]],
-  [NotificationOptionItem.id, (triggers?: string) => resolveNotificationScenario(triggers)],
+  [BotOptionItem().id, () => [TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME]],
+  [NotificationOptionItem().id, (triggers?: string) => resolveNotificationScenario(triggers)],
   [
-    CommandAndResponseOptionItem.id,
+    CommandAndResponseOptionItem().id,
     () => [TemplateProjectsScenarios.COMMAND_AND_RESPONSE_SCENARIO_NAME],
   ],
-  [WorkflowOptionItem.id, () => [TemplateProjectsScenarios.WORKFLOW_SCENARIO_NAME]],
-  [MessageExtensionItem.id, () => [TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME]],
-  [M365SearchAppOptionItem.id, () => [TemplateProjectsScenarios.M365_SCENARIO_NAME]],
+  [WorkflowOptionItem().id, () => [TemplateProjectsScenarios.WORKFLOW_SCENARIO_NAME]],
+  [MessageExtensionItem().id, () => [TemplateProjectsScenarios.DEFAULT_SCENARIO_NAME]],
+  [M365SearchAppOptionItem().id, () => [TemplateProjectsScenarios.M365_SCENARIO_NAME]],
 ]);
 
 const triggersToScenarios: Map<string, TemplateProjectsScenarios[]> = new Map([

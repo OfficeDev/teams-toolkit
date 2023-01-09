@@ -1059,7 +1059,7 @@ function generateRunBackendScript(context: DebugMigrationContext): string {
 const tabSSOSnippet = `
   process.env.REACT_APP_CLIENT_ID = envs.AAD_APP_CLIENT_ID;
   process.env.REACT_APP_START_LOGIN_PAGE_URL = \`\${envs.%s}/auth-start.html\`;
-  process.env.REACT_APP_TEAMSFX_ENDPOINT = "https://localhost:55000";`;
+  process.env.REACT_APP_TEAMSFX_ENDPOINT = "http://localhost:55000";`;
 const tabFunctionSnippet = `
   process.env.REACT_APP_FUNC_ENDPOINT = "http://localhost:7071";
   process.env.REACT_APP_FUNC_NAME = "%s";`;
@@ -1112,18 +1112,18 @@ async function run() {
   const envs = await utils.loadEnv(args[0], args[1]);
 
   // set up environment variables required by teamsfx
-  process.env.CLIENT_ID = envs.CLIENT_ID;
-  process.env.CLIENT_SECRET = envs.CLIENT_SECRET;
-  process.env.IDENTIFIER_URI = \`api://\${envs.%s}/\${envs.CLIENT_ID}\`;
+  process.env.CLIENT_ID = envs.AAD_APP_CLIENT_ID;
+  process.env.CLIENT_SECRET = envs.SECRET_AAD_APP_CLIENT_SECRET;
+  process.env.IDENTIFIER_URI = \`api://\${envs.%s}/\${envs.AAD_APP_CLIENT_ID}\`;
   process.env.AAD_METADATA_ADDRESS = \`\${envs.AAD_APP_OAUTH_AUTHORITY}/v2.0/.well-known/openid-configuration\`;
   process.env.OAUTH_AUTHORITY = envs.AAD_APP_OAUTH_AUTHORITY;
   process.env.TAB_APP_ENDPOINT = envs.%s;
-  process.env.AUTH_ALLOWED_APP_IDS =
+  process.env.ALLOWED_APP_IDS =
     "1fec8e78-bce4-4aaf-ab1b-5451cc387264;5e3ce6c0-2b1f-4285-8d4b-75ee78787346;0ec893e0-5785-4de6-99da-4ed124e5296c;4345a7b9-9a63-4910-a426-35363201d503;4765445b-32c6-49b0-83e6-1d93765276ca;d3590ed6-52b3-4102-aeff-aad2292ab01c;00000002-0000-0ff1-ce00-000000000000;bc59ab01-8403-45c6-8796-ac3ef710b3e3";
   process.env.urls = "http://localhost:55000";
 
   // launch service locally
-  cp.spawn(envs.DOTNET_PATH, ["Microsoft.TeamsFx.SimpleAuth.dll"], {
+  cp.spawn("dotnet", ["Microsoft.TeamsFx.SimpleAuth.dll"], {
     cwd: path.join(os.homedir(), ".fx", "localauth"),
     stdio: "inherit",
   });
@@ -1213,21 +1213,10 @@ async function run() {
     "1fec8e78-bce4-4aaf-ab1b-5451cc387264;5e3ce6c0-2b1f-4285-8d4b-75ee78787346;0ec893e0-5785-4de6-99da-4ed124e5296c;4345a7b9-9a63-4910-a426-35363201d503;4765445b-32c6-49b0-83e6-1d93765276ca;d3590ed6-52b3-4102-aeff-aad2292ab01c;00000002-0000-0ff1-ce00-000000000000;bc59ab01-8403-45c6-8796-ac3ef710b3e3";
 
   // launch service locally
-  cp.spawn(
-    "func",
-    [
-      "start",
-      "--%s",
-      '--language-worker="--inspect=9229"',
-      "--port",
-      '"7071"',
-      "--cors",
-      '"*"',
-    ],
-    {
-      stdio: "inherit",
-    }
-  );
+  cp.spawn(\`func start --%s --language-worker="--inspect=9229" --port "7071" --cors "*"\`, {
+    stdio: "inherit",
+    shell: true,
+  });
 }
 
 run();

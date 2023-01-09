@@ -11,7 +11,8 @@ import {
 } from "botbuilder";
 import { CardActionBot } from "./cardAction";
 import { CommandBot } from "./command";
-import { ConversationOptions, BotSsoExecutionActivityHandler } from "./interface";
+import { BotSsoExecutionActivityHandler } from "../conversation/interface";
+import { ConversationOptions } from "./interface";
 import { NotificationBot } from "./notification";
 import { DefaultBotSsoExecutionActivityHandler } from "../conversation/sso/defaultBotSsoExecutionActivityHandler";
 

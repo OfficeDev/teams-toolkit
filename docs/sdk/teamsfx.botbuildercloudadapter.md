@@ -21,9 +21,6 @@
 
 |  Enumeration | Description |
 |  --- | --- |
-|  [AdaptiveCardResponse](./teamsfx.botbuildercloudadapter.adaptivecardresponse.md) | Options used to control how the response card will be sent to users. |
-|  [InvokeResponseErrorCode](./teamsfx.botbuildercloudadapter.invokeresponseerrorcode.md) | Status code for an <code>application/vnd.microsoft.error</code> invoke response. |
-|  [NotificationTargetType](./teamsfx.botbuildercloudadapter.notificationtargettype.md) | The target type where the notification will be sent to. |
 |  [SearchScope](./teamsfx.botbuildercloudadapter.searchscope.md) | The search scope when calling [NotificationBot.findMember()](./teamsfx.notificationbot.findmember.md) and [NotificationBot.findAllMembers()](./teamsfx.notificationbot.findallmembers.md)<!-- -->. The search scope is a flagged enum and it can be combined with <code>&#124;</code>. For example, to search from personal chat and group chat, use <code>SearchScope.Person &#124; SearchScope.Group</code>. |
 
 ## Functions
@@ -37,23 +34,6 @@
 
 |  Interface | Description |
 |  --- | --- |
-|  [BotSsoConfig](./teamsfx.botbuildercloudadapter.botssoconfig.md) | Interface for SSO configuration for Bot SSO |
-|  [BotSsoExecutionActivityHandler](./teamsfx.botbuildercloudadapter.botssoexecutionactivityhandler.md) | Interface for user to customize SSO execution activity handler |
-|  [CardActionOptions](./teamsfx.botbuildercloudadapter.cardactionoptions.md) | Options to initialize [CardActionBot](./teamsfx.cardactionbot.md)<!-- -->. |
-|  [CommandMessage](./teamsfx.botbuildercloudadapter.commandmessage.md) | Interface for a command message that can handled in a command handler. |
-|  [CommandOptions](./teamsfx.botbuildercloudadapter.commandoptions.md) | Options to initialize [CommandBot](./teamsfx.commandbot.md)<!-- -->. |
 |  [ConversationOptions](./teamsfx.botbuildercloudadapter.conversationoptions.md) | Options to initialize [ConversationBot](./teamsfx.conversationbot.md) |
 |  [NotificationOptions](./teamsfx.botbuildercloudadapter.notificationoptions.md) | Options to initialize [NotificationBot](./teamsfx.notificationbot.md)<!-- -->. |
-|  [NotificationTarget](./teamsfx.botbuildercloudadapter.notificationtarget.md) | Represent a notification target. |
-|  [NotificationTargetStorage](./teamsfx.botbuildercloudadapter.notificationtargetstorage.md) | Interface for a storage provider that stores and retrieves notification target references. |
-|  [TeamsFxAdaptiveCardActionHandler](./teamsfx.botbuildercloudadapter.teamsfxadaptivecardactionhandler.md) | Interface for adaptive card action handler that can process card action invoke and return a response. |
-|  [TeamsFxBotCommandHandler](./teamsfx.botbuildercloudadapter.teamsfxbotcommandhandler.md) | Interface for a command handler that can process command to a TeamsFx bot and return a response. |
-|  [TeamsFxBotSsoCommandHandler](./teamsfx.botbuildercloudadapter.teamsfxbotssocommandhandler.md) | Interface for a command handler that can process sso command to a TeamsFx bot and return a response. |
-
-## Type Aliases
-
-|  Type Alias | Description |
-|  --- | --- |
-|  [BotSsoExecutionDialogHandler](./teamsfx.botbuildercloudadapter.botssoexecutiondialoghandler.md) |  |
-|  [TriggerPatterns](./teamsfx.botbuildercloudadapter.triggerpatterns.md) | The trigger pattern used to trigger a [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) instance. |
 

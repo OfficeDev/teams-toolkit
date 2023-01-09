@@ -10,7 +10,7 @@ import {
   BotSsoExecutionActivityHandler,
   TeamsFxBotCommandHandler,
   TeamsFxBotSsoCommandHandler,
-} from "./interface";
+} from "../conversation/interface";
 import { CommandResponseMiddleware } from "../conversation/middlewares/commandMiddleware";
 
 /**

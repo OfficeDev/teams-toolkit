@@ -1,22 +1,4 @@
-export {
-  AdaptiveCardResponse,
-  CommandMessage,
-  CommandOptions,
-  CardActionOptions,
-  ConversationOptions,
-  NotificationOptions,
-  NotificationTarget,
-  NotificationTargetStorage,
-  NotificationTargetType,
-  InvokeResponseErrorCode,
-  TriggerPatterns,
-  TeamsFxAdaptiveCardActionHandler,
-  TeamsFxBotCommandHandler,
-  TeamsFxBotSsoCommandHandler,
-  BotSsoExecutionActivityHandler,
-  BotSsoConfig,
-  BotSsoExecutionDialogHandler,
-} from "./interface";
+export { ConversationOptions, NotificationOptions } from "./interface";
 export { ConversationBot } from "./conversation.browser";
 export { BotSsoExecutionDialog } from "../conversation/sso/botSsoExecutionDialog.browser";
 export {

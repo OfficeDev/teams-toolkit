@@ -8,7 +8,7 @@ import {
   MockCardActionHandler,
   MockCardActionHandlerWithErrorResponse,
 } from "../conversation/testUtils";
-import { InvokeResponseErrorCode } from "../../../../src/conversationWithCloudAdapter/interface";
+import { InvokeResponseErrorCode } from "../../../../src/conversation/interface";
 
 describe("Card Action Handler - Node", () => {
   it("handler should send text message response correctly", async () => {

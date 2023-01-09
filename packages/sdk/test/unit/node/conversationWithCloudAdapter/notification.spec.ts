@@ -17,7 +17,7 @@ import { Conversations } from "botframework-connector/lib/connectorApi/connector
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
-import { NotificationTargetType } from "../../../../src/conversationWithCloudAdapter/interface";
+import { NotificationTargetType } from "../../../../src/conversation/interface";
 import { NotificationMiddleware } from "../../../../src/conversation/middlewares/notificationMiddleware";
 import {
   Channel,

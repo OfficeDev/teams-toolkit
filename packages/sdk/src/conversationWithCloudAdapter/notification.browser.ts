@@ -11,7 +11,11 @@ import {
 } from "botbuilder";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { formatString } from "../util/utils";
-import { MessageResponse, NotificationTarget, NotificationTargetType } from "./interface";
+import {
+  MessageResponse,
+  NotificationTarget,
+  NotificationTargetType,
+} from "../conversation/interface";
 import { ConversationReferenceStore } from "../conversation/storage";
 
 /**

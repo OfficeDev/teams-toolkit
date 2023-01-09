@@ -17,9 +17,9 @@ import * as path from "path";
 import {
   NotificationTarget,
   NotificationTargetType,
-  NotificationOptions,
   MessageResponse,
-} from "./interface";
+} from "../conversation/interface";
+import { NotificationOptions } from "./interface";
 import { NotificationMiddleware } from "../conversation/middlewares/notificationMiddleware";
 import { ConversationReferenceStore, LocalFileStorage } from "../conversation/storage";
 import * as utils from "../conversation/utils";

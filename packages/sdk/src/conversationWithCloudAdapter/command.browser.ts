@@ -4,7 +4,7 @@
 import { CloudAdapter } from "botbuilder";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { formatString } from "../util/utils";
-import { TeamsFxBotCommandHandler, TeamsFxBotSsoCommandHandler } from "./interface";
+import { TeamsFxBotCommandHandler, TeamsFxBotSsoCommandHandler } from "../conversation/interface";
 import { CommandResponseMiddleware } from "../conversation/middlewares/commandMiddleware";
 
 /**

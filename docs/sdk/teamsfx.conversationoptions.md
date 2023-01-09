@@ -4,6 +4,11 @@
 
 ## ConversationOptions interface
 
+> Warning: This API is now obsolete.
+> 
+> Please use BotBuilderCloudAdapter.ConversationOptions instead.
+> 
+
 Options to initialize [ConversationBot](./teamsfx.conversationbot.md)
 
 <b>Signature:</b>

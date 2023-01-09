@@ -24,6 +24,7 @@ import { ExtensionErrors, ExtensionSource } from "../error";
 import { localize } from "../utils/localizeUtils";
 import * as util from "util";
 import { VS_CODE_UI } from "../extension";
+import * as vscode from "vscode";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -415,7 +416,8 @@ export async function triggerV3Migration(): Promise<string | undefined> {
   const result = await core.phantomMigrationV3(getSystemInputs());
   if (result.isErr()) {
     showError(result.error);
-    return "1";
+    await vscode.debug.stopDebugging();
+    throw result.error;
   }
   // reload window to terminate debugging
   await VS_CODE_UI.reload();

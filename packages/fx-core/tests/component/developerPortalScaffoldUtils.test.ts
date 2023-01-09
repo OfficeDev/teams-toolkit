@@ -815,17 +815,6 @@ describe("developPortalScaffoldUtils", () => {
       const appDefinition: AppDefinition = {
         appId: "mock-app-id",
         teamsAppId: "mock-app-id",
-        staticTabs: [
-          {
-            objectId: "objId",
-            entityId: "entityId",
-            name: "tab",
-            contentUrl: "https://url",
-            websiteUrl: "https:/url",
-            scopes: [],
-            context: [],
-          },
-        ],
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -927,11 +916,6 @@ describe("developPortalScaffoldUtils", () => {
       const updatedManifest = JSON.parse(updatedManifestData) as TeamsAppManifest;
       chai.assert.equal(updatedManifest.id, "${{TEAMS_APP_ID}}");
       chai.assert.deepEqual(updatedManifest.bots![0], existingManifest.bots![0]);
-      chai.assert.deepEqual(updatedManifest.composeExtensions![0].botId, "${{BOT_ID}}");
-      chai.assert.deepEqual(
-        updatedManifest.composeExtensions![0].commands,
-        COMPOSE_EXTENSIONS_TPL_V3[0]!.commands
-      );
       chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);

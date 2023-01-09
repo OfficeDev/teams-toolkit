@@ -17,6 +17,7 @@ import {
   getAppSPFxVersion,
   isVideoFilterProject,
   setRegion,
+  ConvertTokenToJson,
 } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
 import {
@@ -525,6 +526,17 @@ describe("tools", () => {
     it("set region", async () => {
       sinon.stub(AuthSvcClient, "getRegion").resolves("apac");
       await setRegion("fakeToken");
+    });
+  });
+
+  describe("ConvertTokenToJson", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("ConvertTokenToJson", async () => {
+      const res = ConvertTokenToJson("a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c");
+      chai.expect(res["userId"]).equal("test@test.com");
     });
   });
 });

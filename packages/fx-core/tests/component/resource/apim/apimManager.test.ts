@@ -37,8 +37,8 @@ describe("ApimManager", () => {
     const apimPluginConfig = buildApimPluginConfig();
     await apimManager.provision(apimPluginConfig);
 
-    expect(apimPluginConfig.publisherEmail).equal("test@test.com");
-    expect(apimPluginConfig.publisherName).equal("test@test.com");
+    expect(apimPluginConfig.publisherEmail).equal("sample@microsoft.com");
+    expect(apimPluginConfig.publisherName).equal("sample@microsoft.com");
   });
 
   it("deploy", async () => {

@@ -27,8 +27,14 @@ export const ProjectVersionCheckerMW: Middleware = async (
 };
 
 async function needToShowUpdateDialog(ctx: CoreHookContext, versionInfo: VersionInfo) {
-  if (versionInfo && versionInfo.source !== VersionSource.projectSettings) {
-    return true;
+  if (isV3Enabled()) {
+    if (versionInfo.source === VersionSource.teamsapp && semver.gte(versionInfo.version, "2.0.0")) {
+      return true;
+    }
+  } else {
+    if (versionInfo.source !== VersionSource.projectSettings) {
+      return true;
+    }
   }
   return false;
 }

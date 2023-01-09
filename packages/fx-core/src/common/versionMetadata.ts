@@ -2,13 +2,15 @@
 // Licensed under the MIT license.
 
 export const MetadataV3 = {
-  projectVersion: "3.0.0",
+  projectVersion: "1.0.0",
   platformVersion: {
     vs: "17.5.x.x",
     vsc: "5.x.x",
     cli: "2.x.x",
     cli_help: "2.x.x",
   },
+  configFile: "teamsapp.yml",
+  localConfigFile: "teamsapp.local.yml",
 };
 
 export const MetadataV2 = {
@@ -33,4 +35,14 @@ export enum VersionState {
   upgradeable = -1,
   // project version ahead, need update toolkit
   unsupported = 1,
+}
+
+export enum VersionSource {
+  projectSettings,
+  teamsapp,
+  unknown,
+}
+export interface VersionInfo {
+  version: string;
+  source: VersionSource;
 }

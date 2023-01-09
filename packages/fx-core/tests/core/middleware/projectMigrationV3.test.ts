@@ -47,6 +47,7 @@ import {
   Metadata,
   MetadataV2,
   MetadataV3,
+  VersionSource,
   VersionState,
 } from "../../../src/common/versionMetadata";
 import {
@@ -236,7 +237,7 @@ describe("generateSettingsJson", () => {
     );
     const newSettings = await readSettingJson(projectPath);
     assert.equal(newSettings.trackingId, oldProjectSettings.projectId);
-    assert.equal(newSettings.version, "3.0.0");
+    assert.equal(newSettings.version, "1.0.0");
   });
 
   it("no project id", async () => {
@@ -1131,9 +1132,27 @@ describe("Migration utils", () => {
   });
 
   it("getVersionState", () => {
-    assert.equal(getVersionState("2.0.0"), VersionState.upgradeable);
-    assert.equal(getVersionState("3.0.0"), VersionState.compatible);
-    assert.equal(getVersionState("4.0.0"), VersionState.unsupported);
+    assert.equal(
+      getVersionState({
+        version: "2.0.0",
+        source: VersionSource.projectSettings,
+      }),
+      VersionState.upgradeable
+    );
+    assert.equal(
+      getVersionState({
+        version: "1.0.0",
+        source: VersionSource.teamsapp,
+      }),
+      VersionState.compatible
+    );
+    assert.equal(
+      getVersionState({
+        version: "",
+        source: VersionSource.unknown,
+      }),
+      VersionState.unsupported
+    );
   });
 
   it("getDownloadLinkByVersionAndPlatform", () => {

@@ -51,6 +51,7 @@ import {
   migrationNotificationMessage,
   outputCancelMessage,
   getDownloadLinkByVersionAndPlatform,
+  getVersionState,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
 import * as commentJson from "comment-json";
@@ -212,30 +213,15 @@ async function preMigration(context: MigrationContext): Promise<void> {
 }
 
 export async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionForMigration> {
-  const version = (await getProjectVersion(ctx)) || "0.0.0";
+  const versionInfo = await getProjectVersion(ctx);
+  const versionState = getVersionState(versionInfo);
   const platform = getParameterFromCxt(ctx, "platform", Platform.VSCode) as Platform;
-  if (semver.gte(version, MetadataV3.projectVersion)) {
-    return {
-      currentVersion: version,
-      state: VersionState.compatible,
-      platform: platform,
-    };
-  } else if (
-    semver.gte(version, MetadataV2.projectVersion) &&
-    semver.lte(version, MetadataV2.projectMaxVersion)
-  ) {
-    return {
-      currentVersion: version,
-      state: VersionState.upgradeable,
-      platform: platform,
-    };
-  } else {
-    return {
-      currentVersion: version,
-      state: VersionState.unsupported,
-      platform: platform,
-    };
-  }
+
+  return {
+    currentVersion: versionInfo.version,
+    state: versionState,
+    platform: platform,
+  };
 }
 
 export async function generateSettingsJson(context: MigrationContext): Promise<void> {

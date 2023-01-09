@@ -168,4 +168,25 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
       restore();
     }
   });
+
+  it("return error when teamsapp.yml not exists in V3", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+
+    sandbox.restore();
+    // mock behavior that teamsapp.yml not exists
+    sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
+      if (inputs.projectPath === file) return true;
+      return false;
+    });
+
+    try {
+      const my = new MyClass();
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr());
+    } finally {
+      restore();
+    }
+  });
 });

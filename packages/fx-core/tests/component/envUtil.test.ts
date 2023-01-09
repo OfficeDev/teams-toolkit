@@ -31,6 +31,7 @@ import { pathUtils, YmlFileName, YmlFileNameOld } from "../../src/component/util
 import * as path from "path";
 import { yamlParser } from "../../src/component/configManager/parser";
 import { ProjectModel } from "../../src/component/configManager/interface";
+import { PathNotExistError } from "../../src";
 
 describe("env utils", () => {
   const tools = new MockTools();
@@ -517,5 +518,12 @@ describe("env utils", () => {
     });
     const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
     assert.isTrue(res.isOk());
+  });
+
+  it("settingsUtil write", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
+    assert.isTrue(res.isErr());
+    assert.isTrue(res._unsafeUnwrapErr() instanceof PathNotExistError);
   });
 });

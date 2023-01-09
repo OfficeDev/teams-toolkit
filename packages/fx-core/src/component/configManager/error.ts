@@ -51,13 +51,13 @@ export class InvalidLifecycleError extends UserError {
 }
 
 export class InvalidEnvFolderPath extends UserError {
-  constructor() {
+  constructor(reason?: string) {
     const key = "configManager.error.invalidEnvFolderPath";
     const errorOptions: UserErrorOptions = {
       source: component,
       name: "InvalidEnvFolderPathError",
-      message: getDefaultString(key),
-      displayMessage: getLocalizedString(key),
+      message: getDefaultString(key) + `${reason ? "(" + reason + ")" : ""}`,
+      displayMessage: getLocalizedString(key) + `${reason ? "(" + reason + ")" : ""}`,
     };
     errorOptions.helpLink = "https://aka.ms/teamsfx-actions/invalid-env-folder-error";
     super(errorOptions);

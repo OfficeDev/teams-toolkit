@@ -22,6 +22,7 @@ import {
   Metadata,
   MetadataV2,
   MetadataV3,
+  MetadataV3Abandoned,
   VersionInfo,
   VersionSource,
   VersionState,
@@ -158,7 +159,7 @@ export async function getProjectVersionFromPath(projectPath: string): Promise<Ve
     const settings = await fs.readFile(v3path, "utf8");
     const content = load(settings) as any;
     return {
-      version: content.version || MetadataV3.projectVersion,
+      version: content.version || "",
       source: VersionSource.teamsapp,
     };
   }
@@ -168,6 +169,17 @@ export async function getProjectVersionFromPath(projectPath: string): Promise<Ve
     return {
       version: settings.version || "",
       source: VersionSource.projectSettings,
+    };
+  }
+  const abandonedPath = path.resolve(
+    projectPath,
+    MetadataV3Abandoned.folder,
+    MetadataV3Abandoned.configFile
+  );
+  if (await fs.pathExists(abandonedPath)) {
+    return {
+      version: MetadataV3Abandoned.folder,
+      source: VersionSource.settings,
     };
   }
   return {

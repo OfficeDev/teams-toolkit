@@ -30,7 +30,7 @@ import {
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
-import { UpgradeV3CanceledError, MigrationReadFileError } from "../error";
+import { UpgradeV3CanceledError, MigrationReadFileError, AbandonedProjectError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
@@ -84,10 +84,11 @@ import {
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
-import { MetadataV2, MetadataV3, VersionState } from "../../common/versionMetadata";
+import { MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
 import { isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
+import { getLocalizedString } from "../../common/localizeUtils";
 
 const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
@@ -125,7 +126,15 @@ const subMigrations: Array<Migration> = [
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const versionForMigration = await checkVersionForMigration(ctx);
-  if (versionForMigration.state === VersionState.upgradeable && checkMethod(ctx)) {
+  // abandoned v3 project which will not be supported. Show user the message to create new project.
+  if (versionForMigration.source === VersionSource.settings) {
+    await TOOLS?.ui.showMessage(
+      "warn",
+      getLocalizedString("core.migrationV3.abandonedProject"),
+      true
+    );
+    ctx.result = err(AbandonedProjectError());
+  } else if (versionForMigration.state === VersionState.upgradeable && checkMethod(ctx)) {
     if (!checkUserTasks(ctx)) {
       ctx.result = ok(undefined);
       return;
@@ -219,6 +228,7 @@ export async function checkVersionForMigration(ctx: CoreHookContext): Promise<Ve
 
   return {
     currentVersion: versionInfo.version,
+    source: versionInfo.source,
     state: versionState,
     platform: platform,
   };

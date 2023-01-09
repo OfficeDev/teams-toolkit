@@ -24,6 +24,12 @@ export const MetadataV2 = {
   },
 };
 
+export const MetadataV3Abandoned = {
+  projectVersion: "3.0.0",
+  folder: "teamsfx",
+  configFile: "settings.json",
+};
+
 export const Metadata = {
   versionMatchLink: "https://aka.ms/teamsfx-project-toolkit-match",
 };
@@ -38,9 +44,10 @@ export enum VersionState {
 }
 
 export enum VersionSource {
-  projectSettings,
-  teamsapp,
+  projectSettings, // for v2 project
+  teamsapp, // for v3 project
   unknown,
+  settings, // for abandoned v3 project
 }
 export interface VersionInfo {
   version: string;

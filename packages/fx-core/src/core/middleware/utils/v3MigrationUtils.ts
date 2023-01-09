@@ -23,6 +23,7 @@ import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appMa
 import { VersionForMigration } from "../types";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
+import { settingsUtil } from "../../../component/utils/settingsUtil";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -147,8 +148,12 @@ export function outputCancelMessage(version: string, platform: Platform): void {
 export async function getProjectVersionFromPath(projectPath: string): Promise<string> {
   const v3path = getProjectSettingPathV3(projectPath);
   if (await fs.pathExists(v3path)) {
-    const settings = await fs.readJson(v3path);
-    return settings.version || MetadataV3.projectVersion;
+    const readSettingsResult = await settingsUtil.readSettings(projectPath, false);
+    if (readSettingsResult.isOk()) {
+      return readSettingsResult.value.version || MetadataV3.projectVersion;
+    } else {
+      throw readSettingsResult.error;
+    }
   }
   const v2path = getProjectSettingPathV2(projectPath);
   if (await fs.pathExists(v2path)) {

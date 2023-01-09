@@ -1081,7 +1081,9 @@ describe("Migration utils", () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(fs, "readJson").resolves("3.0.0");
+    sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+      return "version: 3.0.0"; // TODO: checkVersionForMigration logic needs update in separate PR
+    });
     const state = await checkVersionForMigration(migrationContext);
     assert.equal(state.state, VersionState.compatible);
   });

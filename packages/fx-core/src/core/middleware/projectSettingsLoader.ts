@@ -45,6 +45,8 @@ import { globalVars } from "../globalVars";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { CoreHookContext } from "../types";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
+import { settingsUtil } from "../../component/utils/settingsUtil";
+
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
@@ -101,19 +103,16 @@ export async function loadProjectSettingsByProjectPath(
 ): Promise<Result<ProjectSettings, FxError>> {
   try {
     if (isV3Enabled()) {
-      const settingsFile = path.resolve(projectPath, SettingsFolderName, SettingsFileName);
-      const settings: Settings = await fs.readJson(settingsFile);
-      const projectSettings: ProjectSettings = {
-        projectId: settings.trackingId,
-        version: settings.version,
-      };
-      if (!projectSettings.projectId) {
-        projectSettings.projectId = uuid.v4();
-        sendTelemetryEvent(Component.core, TelemetryEvent.FillProjectId, {
-          [TelemetryProperty.ProjectId]: projectSettings.projectId,
-        });
+      const readSettingsResult = await settingsUtil.readSettings(projectPath, true);
+      if (readSettingsResult.isOk()) {
+        const projectSettings: ProjectSettings = {
+          projectId: readSettingsResult.value.trackingId,
+          version: readSettingsResult.value.version,
+        };
+        return ok(projectSettings);
+      } else {
+        return err(readSettingsResult.error);
       }
-      return ok(projectSettings);
     } else {
       return await loadProjectSettingsByProjectPathV2(projectPath, isMultiEnvEnabled);
     }
@@ -195,7 +194,7 @@ export function getProjectSettingsPath(projectPath: string): string {
 }
 
 export function getProjectSettingPathV3(projectPath: string): string {
-  return path.resolve(projectPath, SettingsFolderName, SettingsFileName);
+  return path.resolve(projectPath, "teamsapp.yml");
 }
 
 export function getProjectSettingPathV2(projectPath: string): string {

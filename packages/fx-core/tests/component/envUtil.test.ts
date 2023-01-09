@@ -437,7 +437,9 @@ describe("env utils", () => {
 
   it("settingsUtil read and ensure trackingId", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(fs, "readJson").resolves({});
+    sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+      return "version: 1.0.0";
+    });
     sandbox.stub(fs, "writeFile").resolves();
     const res = await settingsUtil.readSettings("abc");
     assert.isTrue(res.isOk());
@@ -448,6 +450,10 @@ describe("env utils", () => {
 
   it("settingsUtil write", async () => {
     sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+      return "version: 1.0.0";
+    });
     const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
     assert.isTrue(res.isOk());
   });

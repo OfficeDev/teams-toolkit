@@ -57,6 +57,12 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     context: WrapDriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     TelemetryUtils.init(context);
+
+    const result = this.validateArgs(args);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
       scopes: AppStudioScopes,
     });
@@ -119,6 +125,24 @@ export class ConfigureTeamsAppDriver implements StepDriver {
           "https://aka.ms/teamsfx-actions/teamsapp-update"
         )
       );
+    }
+  }
+
+  private validateArgs(args: ConfigureTeamsAppArgs): Result<any, FxError> {
+    const invalidParams: string[] = [];
+    if (!args || !args.appPackagePath) {
+      invalidParams.push("appPackagePath");
+    }
+    if (invalidParams.length > 0) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.InvalidParameterError.name,
+          AppStudioError.InvalidParameterError.message(actionName, invalidParams),
+          "https://aka.ms/teamsfx-actions/teamsapp-update"
+        )
+      );
+    } else {
+      return ok(undefined);
     }
   }
 }

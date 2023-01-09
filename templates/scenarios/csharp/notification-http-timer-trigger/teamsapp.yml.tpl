@@ -1,5 +1,7 @@
 version: 1.0.0
 
+environmentFolderPath: ./teamsAppEnv
+
 provision:
   - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
     with:

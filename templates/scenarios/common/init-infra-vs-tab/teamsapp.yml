@@ -1,5 +1,7 @@
 version: 1.0.0
 
+environmentFolderPath: ./teamsAppEnv
+
 provision:
   - uses: arm/deploy # Deploy given ARM templates parallelly.
     with:

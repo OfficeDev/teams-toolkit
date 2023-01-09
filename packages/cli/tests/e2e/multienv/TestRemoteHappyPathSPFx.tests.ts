@@ -8,7 +8,7 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
-import { expect } from "chai";
+import { expect, assert } from "chai";
 
 import {
   cleanUpLocalProject,
@@ -32,6 +32,7 @@ describe("Multi Env Happy Path for SPFx", function () {
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
   const env = "e2e";
   let appId: string;
+  let teamsAppId: string | undefined;
 
   it(
     "Can create/provision/deploy/validate/package/publish an SPFx project",
@@ -167,18 +168,25 @@ describe("Multi Env Happy Path for SPFx", function () {
         expect(await fs.pathExists(file)).to.be.true;
       }
 
-      // Temporarily disable publish
       // publish
-      /*
-    result = await execAsyncWithRetry(`teamsfx publish --env ${env}`, {
-      cwd: projectPath,
-      env: processEnv,
-      timeout: 0,
-    });
- 
-    {
-      expect(result.stderr).to.be.empty;
-    }*/
+      result = await execAsyncWithRetry(`teamsfx publish --env ${env}`, {
+        cwd: projectPath,
+        env: processEnv,
+        timeout: 0,
+      });
+
+      {
+        // Validate publish result
+        const contextResult = await loadContext(projectPath, env);
+        if (contextResult.isErr()) {
+          throw contextResult.error;
+        }
+        const context = contextResult.value;
+        const appStudioObject = AppStudioValidator.init(context);
+        teamsAppId = appStudioObject.teamsAppId;
+        assert.isNotNull(teamsAppId);
+        await AppStudioValidator.validatePublish(teamsAppId!);
+      }
     }
   );
 
@@ -186,5 +194,6 @@ describe("Multi Env Happy Path for SPFx", function () {
     // clean up
     await cleanUpLocalProject(projectPath);
     await cleanupSharePointPackage(appId);
+    await AppStudioValidator.cancelStagedAppInTeamsAppCatalog(teamsAppId);
   });
 });

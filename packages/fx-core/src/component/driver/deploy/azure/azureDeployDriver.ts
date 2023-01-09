@@ -100,6 +100,9 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
   ): Promise<number> {
     await this.progressBar?.next(ProgressMessages.packingCode);
     const zipBuffer = await this.packageToZip(args, this.context);
+    if (this.dryRun) {
+      return -1;
+    }
     await this.progressBar?.next(ProgressMessages.getAzureAccountInfoForDeploy);
     await this.context.logProvider.debug("Start to get Azure account info for deploy");
     const config = await this.createAzureDeployConfig(azureResource, azureCredential);

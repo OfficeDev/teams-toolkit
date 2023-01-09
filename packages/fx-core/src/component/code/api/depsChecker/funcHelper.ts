@@ -41,8 +41,8 @@ export class FuncHelper {
         name: defaultAnchor,
         helpLink: defaultHelpLink,
         error,
-        message: Messages.defaultErrorMessage[0],
-        displayMessage: Messages.defaultErrorMessage[1],
+        message: Messages.defaultErrorMessage()[0],
+        displayMessage: Messages.defaultErrorMessage()[1],
       });
     }
   }

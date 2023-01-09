@@ -47,6 +47,14 @@ export class AppStudioClient {
     return instance;
   }
 
+  /**
+   * Set user region
+   * @param _region e.g. https://dev.teams.microsoft.com/amer
+   */
+  public static setRegion(region: string) {
+    AppStudioClient.baseUrl = region;
+  }
+
   public static async getBotRegistration(
     token: string,
     botId: string

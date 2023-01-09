@@ -18,6 +18,7 @@ export type DeployArgs = {
   distributionPath: string;
   ignoreFile?: string;
   resourceId: string;
+  dryRun?: boolean;
 };
 
 export type DeployStepArgs = {

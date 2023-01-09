@@ -47,7 +47,7 @@ describe("Existing Tab test for v3", () => {
       platform: Platform.VSCode,
       "app-name": appName,
       folder: path.join(os.homedir(), "TeamsApps"),
-      capabilities: ExistingTabOptionItem.id,
+      capabilities: ExistingTabOptionItem().id,
       [CoreQuestionNames.ExistingTabEndpoint]: "https://localhost:3000",
       scratch: "yes",
     };

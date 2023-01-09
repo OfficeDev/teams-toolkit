@@ -100,14 +100,9 @@ export function migrationNotificationMessage(versionForMigration: VersionForMigr
   if (versionForMigration.platform === Platform.VS) {
     return getLocalizedString("core.migrationV3.VS.Message", "Visual Studio 2022 17.5 Preview");
   }
-  const link = getDownloadLinkByVersionAndPlatform(
-    versionForMigration.currentVersion,
-    versionForMigration.platform
-  );
   const res = getLocalizedString(
     "core.migrationV3.Message",
-    MetadataV2.platformVersion[versionForMigration.platform],
-    link
+    MetadataV2.platformVersion[versionForMigration.platform]
   );
   return res;
 }
@@ -120,6 +115,10 @@ export function getDownloadLinkByVersionAndPlatform(version: string, platform: P
     anchorInLink = "cli";
   }
   return `${Metadata.versionMatchLink}#${anchorInLink}`;
+}
+
+export function getMigrationHelpLink(url: string, anchor?: string): string {
+  return `${url}${anchor ? "#" + anchor : ""}`;
 }
 
 export function outputCancelMessage(version: string, platform: Platform): void {

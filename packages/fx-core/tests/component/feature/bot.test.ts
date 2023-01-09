@@ -92,7 +92,7 @@ describe("Bot Feature", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Features]: BotOptionItem.id,
+      [AzureSolutionQuestionNames.Features]: BotOptionItem().id,
       language: "typescript",
       "app-name": appName,
     };
@@ -110,7 +110,7 @@ describe("Bot Feature", () => {
     const inputs2: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Features]: MessageExtensionItem.id,
+      [AzureSolutionQuestionNames.Features]: MessageExtensionItem().id,
       language: "typescript",
       "app-name": appName,
     };
@@ -124,7 +124,7 @@ describe("Bot Feature", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Features]: NotificationOptionItem.id,
+      [AzureSolutionQuestionNames.Features]: NotificationOptionItem().id,
       language: "typescript",
       "app-name": appName,
       [QuestionNames.BOT_HOST_TYPE_TRIGGER]: [AppServiceOptionItem.id],
@@ -158,7 +158,7 @@ describe("Bot Feature", () => {
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Features]: WorkflowOptionItem.id,
+      [AzureSolutionQuestionNames.Features]: WorkflowOptionItem().id,
       language: "typescript",
       "app-name": appName,
     };

@@ -242,10 +242,6 @@ export class Constants {
   public static readonly PLUGIN_NAME = "AppStudioPlugin";
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
   public static readonly INCLUDE_APP_MANIFEST = "include-app-manifest";
-  public static readonly READ_MORE = getLocalizedString("core.Notification.ReadMore");
-  public static readonly VIEW_DEVELOPER_PORTAL = getLocalizedString(
-    "plugins.appstudio.viewDeveloperPortal"
-  );
   public static readonly DEVELOPER_PORTAL_APP_PACKAGE_URL =
     "https://dev.teams.microsoft.com/apps/%s/app-package?login_hint=%s";
   public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";
@@ -283,6 +279,7 @@ export class APP_STUDIO_API_NAMES {
   public static readonly UPDATE_OWNER = "update-owner";
   public static readonly EXISTS_IN_TENANTS = "exists-in-tenant";
   public static readonly GET_APP_PACKAGE = "get-app-package";
+  public static readonly VALIDATE_APP_PACKAGE = "validate-app-package";
 }
 
 /**

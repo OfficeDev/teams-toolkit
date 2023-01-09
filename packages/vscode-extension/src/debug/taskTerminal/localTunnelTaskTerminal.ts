@@ -573,7 +573,7 @@ export class LocalTunnelTaskTerminal extends BaseTaskTerminal {
       ngrokArgs.push("--log-format=logfmt");
     }
 
-    return `${ngrokPath} ${ngrokArgs.join(" ")}`;
+    return `"${ngrokPath}" ${ngrokArgs.join(" ")}`;
   }
 
   private static includeOption(args: string[], option: string): boolean {

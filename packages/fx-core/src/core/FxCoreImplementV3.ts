@@ -23,7 +23,11 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 
-import { AadConstants } from "../component/constants";
+import {
+  AadConstants,
+  AzureSolutionQuestionNames,
+  SingleSignOnOptionItem,
+} from "../component/constants";
 import { environmentManager } from "./environment";
 import {
   ObjectIsUndefinedError,
@@ -67,11 +71,7 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
-import {
-  getQuestionsForInit,
-  getQuestionsForProvisionV3,
-  getQuestionsForPublishInDeveloperPortal,
-} from "../component/question";
+import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/question";
 import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils";
 
 export class FxCoreV3Implement {
@@ -311,17 +311,16 @@ export class FxCoreV3Implement {
         outputJsonPath: func.params.outputJsonPath,
       };
       res = await driver.run(args, context);
+    } else if (func.method === "addSso") {
+      inputs.stage = Stage.addFeature;
+      inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
+      const component = Container.get("sso") as any;
+      res = await component.add(context, inputs as InputsWithProjectPath);
     }
     return res;
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    QuestionMW(getQuestionsForPublishInDeveloperPortal),
-    ConcurrentLockerMW,
-    EnvLoaderMW(false),
-    ContextInjectorMW,
-  ])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextInjectorMW])
   async publishInDeveloperPortal(
     inputs: Inputs,
     ctx?: CoreHookContext

@@ -30,7 +30,7 @@ import {
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
-import { UpgradeV3CanceledError, MigrationReadFileError } from "../error";
+import { UpgradeV3CanceledError, MigrationReadFileError, TooklitNotSupportError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
@@ -51,6 +51,7 @@ import {
   migrationNotificationMessage,
   outputCancelMessage,
   getDownloadLinkByVersionAndPlatform,
+  getMigrationHelpLink,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
 import * as commentJson from "comment-json";
@@ -76,15 +77,18 @@ import {
   migrateNgrokStartCommand,
   migrateBotStart,
   migrateAuthStart,
+  migrateBackendWatch,
+  migrateBackendStart,
   migratePreDebugCheck,
 } from "./utils/debug/taskMigrator";
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionState } from "../../common/versionMetadata";
-import { isSPFxProject } from "../../common/tools";
+import { isMigrationV3Enabled, isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
+import { getLocalizedString } from "../../common/localizeUtils";
 
 const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
@@ -101,6 +105,11 @@ const Constants = {
 };
 
 const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
+const helpLinkAnchors = {
+  appPackageNotExist: "app-package-not-exist",
+  manifestTemplateNotExist: "manifest-template-not-exist",
+};
+const migrationMessageButtons = [learnMoreText, upgradeButton];
 
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
@@ -125,6 +134,15 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
     if (!checkUserTasks(ctx)) {
       ctx.result = ok(undefined);
       return;
+    }
+    if (!isMigrationV3Enabled()) {
+      await TOOLS?.ui.showMessage(
+        "warn",
+        getLocalizedString("core.migrationV3.CreateNewProject"),
+        true
+      );
+      ctx.result = err(TooklitNotSupportError());
+      return false;
     }
 
     const skipUserConfirm = getParameterFromCxt(ctx, "skipUserConfirm");
@@ -302,7 +320,10 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   if (!oldAppPackageFolderBackupRes) {
     // templates/appPackage does not exists
     // invalid teamsfx project
-    throw MigrationReadFileError(new Error("templates/appPackage does not exist"));
+    throw MigrationReadFileError(
+      new Error("templates/appPackage does not exist"),
+      getMigrationHelpLink(learnMoreLink, helpLinkAnchors.appPackageNotExist)
+    ) as UserError;
   }
 
   // Ensure appPackage
@@ -343,7 +364,8 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   } else {
     // templates/appPackage/manifest.template.json does not exist
     throw MigrationReadFileError(
-      new Error("templates/appPackage/manifest.template.json does not exist")
+      new Error("templates/appPackage/manifest.template.json does not exist"),
+      getMigrationHelpLink(learnMoreLink, helpLinkAnchors.manifestTemplateNotExist)
     );
   }
 
@@ -399,15 +421,14 @@ export async function askUserConfirm(
   versionForMigration: VersionForMigration
 ): Promise<boolean> {
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
-  const buttons = [upgradeButton, learnMoreText];
-  const res = await TOOLS?.ui.showMessage(
-    "warn",
-    migrationNotificationMessage(versionForMigration),
-    true,
-    ...buttons
-  );
-  const answer = res?.isOk() ? res.value : undefined;
-  if (!answer || !buttons.includes(answer)) {
+  let answer;
+  do {
+    answer = await popupMessage(versionForMigration);
+    if (answer === learnMoreText) {
+      TOOLS?.ui!.openUrl(learnMoreLink);
+    }
+  } while (answer === learnMoreText);
+  if (!answer || !migrationMessageButtons.includes(answer)) {
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
     });
@@ -419,15 +440,22 @@ export async function askUserConfirm(
     outputCancelMessage(versionForMigration.currentVersion, versionForMigration.platform);
     return false;
   }
-  if (answer === learnMoreText) {
-    TOOLS?.ui!.openUrl(learnMoreLink);
-    ctx.result = ok(undefined);
-    return false;
-  }
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
     [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
   });
   return true;
+}
+
+export async function popupMessage(
+  versionForMigration: VersionForMigration
+): Promise<string | undefined> {
+  const res = await TOOLS?.ui.showMessage(
+    "warn",
+    migrationNotificationMessage(versionForMigration),
+    true,
+    ...migrationMessageButtons
+  );
+  return res?.isOk() ? res.value : undefined;
 }
 
 export async function generateLocalConfig(context: MigrationContext): Promise<void> {
@@ -586,6 +614,8 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     migrateFrontendStart,
     migrateAuthStart,
     migrateBotStart,
+    migrateBackendWatch,
+    migrateBackendStart,
     migratePreDebugCheck,
     migrateValidateLocalPrerequisites,
     migrateNgrokStartTask,

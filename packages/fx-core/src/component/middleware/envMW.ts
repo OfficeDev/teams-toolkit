@@ -52,7 +52,7 @@ export const envLoaderMWImpl = async (
     inputs.env = environmentManager.getDefaultEnvName();
   }
   if (!inputs.env) {
-    const question = SelectEnvQuestion;
+    const question = SelectEnvQuestion();
     const envListRes = await envUtil.listEnv(projectPath);
     if (envListRes.isErr()) {
       ctx.result = err(envListRes.error);

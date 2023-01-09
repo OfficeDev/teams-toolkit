@@ -179,7 +179,7 @@ describe("Core component test for v3", () => {
     assert.isTrue(res.isOk());
   });
   it("sso.add", async () => {
-    sandbox.stub(context.userInteraction, "showMessage").resolves(ok(AddSsoParameters.LearnMore));
+    sandbox.stub(context.userInteraction, "showMessage").resolves(ok(AddSsoParameters.LearnMore()));
     const inputs: InputsWithProjectPath = {
       projectPath: projectPath,
       platform: Platform.VSCode,
@@ -230,7 +230,7 @@ describe("Core component test for v3", () => {
       projectPath: projectPath,
       platform: Platform.VSCode,
       [questionNames.Provider]: githubOption.id,
-      [questionNames.Template]: [ciOption.id],
+      [questionNames.Template]: [ciOption().id],
       [questionNames.Environment]: "dev",
     };
     const component = Container.get("cicd") as any;

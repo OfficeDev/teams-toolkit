@@ -51,6 +51,7 @@ import {
 } from "../../../src/common/versionMetadata";
 import {
   getDownloadLinkByVersionAndPlatform,
+  getMigrationHelpLink,
   getTrackingIdFromPath,
   getVersionState,
   migrationNotificationMessage,
@@ -83,7 +84,13 @@ describe("ProjectMigratorMW", () => {
   });
 
   it("happy path", async () => {
-    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
+    sandbox
+      .stub(MockUserInteraction.prototype, "showMessage")
+      .onCall(0)
+      .resolves(ok("Learn more"))
+      .onCall(1)
+      .resolves(ok("Upgrade"));
+    sandbox.stub(MockUserInteraction.prototype, "openUrl").resolves(ok(true));
     const tools = new MockTools();
     setTools(tools);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
@@ -148,6 +155,52 @@ describe("ProjectMigratorMW", () => {
     };
     const context = await MigrationContext.create(ctx);
     const res = wrapRunMigration(context, migrate);
+  });
+});
+
+describe("ProjectMigratorMW with no TEAMSFX_V3_MIGRATION", () => {
+  const sandbox = sinon.createSandbox();
+  const appName = randomAppName();
+  const projectPath = path.join(os.tmpdir(), appName);
+
+  beforeEach(async () => {
+    await fs.ensureDir(projectPath);
+    await fs.ensureDir(path.join(projectPath, ".fx"));
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3_MIGRATION: "false",
+    });
+  });
+
+  afterEach(async () => {
+    await fs.remove(projectPath);
+    sandbox.restore();
+    mockedEnvRestore();
+  });
+
+  it("TEAMSFX_V3_MIGRATION is false", async () => {
+    sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok(""));
+    const tools = new MockTools();
+    setTools(tools);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    class MyClass {
+      tools = tools;
+      async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+        return ok("");
+      }
+    }
+    hooks(MyClass, {
+      other: [ProjectMigratorMWV3],
+    });
+
+    const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
+    inputs.projectPath = projectPath;
+    const my = new MyClass();
+    try {
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr());
+    } finally {
+      await fs.rmdir(inputs.projectPath!, { recursive: true });
+    }
   });
 });
 
@@ -1171,6 +1224,16 @@ describe("Migration utils", () => {
   it("isMigrationV3Enabled", () => {
     const enabled = isMigrationV3Enabled();
     assert.isFalse(enabled);
+  });
+
+  it("getMigrationHelpLink", () => {
+    const url = "mock.com";
+    let anchor: any = "mock-anchor";
+    let helpLink = getMigrationHelpLink(url, anchor);
+    assert.equal(helpLink, "mock.com#mock-anchor");
+    anchor = undefined;
+    helpLink = getMigrationHelpLink(url, anchor);
+    assert.equal(helpLink, "mock.com");
   });
 });
 

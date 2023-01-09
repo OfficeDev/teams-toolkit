@@ -29,14 +29,14 @@ export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
 export const bicepHelpLink = `${defaultHelpLink}#how-to-install-bicep-cli`;
 
 export const Messages = {
-  learnMoreButtonText: getLocalizedString("core.option.learnMore"),
+  learnMoreButtonText: () => getLocalizedString("core.option.learnMore"),
 
-  downloadBicep: getLocalizedString("depChecker.downloadBicep"),
-  finishInstallBicep: getLocalizedString("depChecker.finishInstallBicep"),
-  failToInstallBicep: getLocalizedString("depChecker.failToInstallBicep"),
-  failToInstallBicepOutputVSC: getLocalizedString("depChecker.failToInstallBicepOutputVSC"),
-  failToInstallBicepOutputCLI: getLocalizedString("depChecker.failToInstallBicepOutputCLI"),
-  failToInstallBicepDialog: getLocalizedString("depChecker.failToInstallBicepDialog"),
+  downloadBicep: () => getLocalizedString("depChecker.downloadBicep"),
+  finishInstallBicep: () => getLocalizedString("depChecker.finishInstallBicep"),
+  failToInstallBicep: () => getLocalizedString("depChecker.failToInstallBicep"),
+  failToInstallBicepOutputVSC: () => getLocalizedString("depChecker.failToInstallBicepOutputVSC"),
+  failToInstallBicepOutputCLI: () => getLocalizedString("depChecker.failToInstallBicepOutputCLI"),
+  failToInstallBicepDialog: () => getLocalizedString("depChecker.failToInstallBicepDialog"),
 };
 
 export enum DepsCheckerEvent {

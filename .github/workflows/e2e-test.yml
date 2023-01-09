@@ -372,7 +372,7 @@ jobs:
             /tmp/.metrics/output.txt
 
   tear-down:
-    if: ${{ always() && github.event_name == 'schedule' }}
+    if: ${{ always() }}
     needs: execute-case
     runs-on: ubuntu-latest
     env:
@@ -413,9 +413,24 @@ jobs:
         run: |
           npm run test:e2e:clean
 
+  rerun:
+    needs: tear-down
+    if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 3 }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        run: |
+          curl \
+           -X POST \
+           -H "Accept: application/vnd.github+json" \
+           -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"\
+           -H "X-GitHub-Api-Version: 2022-11-28" \
+           https://api.github.com/repos/${{ github.repository }}/actions/workflows/rerun.yml/dispatches \
+           -d '{"ref":"'${GITHUB_REF##*/}'","inputs":{"run_id":"${{ github.run_id }}", "max_attempts":"3"}}'
+
   report:
-    if: ${{ always() && github.event_name == 'schedule' }}
     needs: execute-case
+    if: ${{ github.event_name == 'schedule' && (success() || (failure() && github.run_attempt >=3)) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

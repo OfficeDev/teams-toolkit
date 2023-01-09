@@ -64,9 +64,14 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { hasAAD } from "@microsoft/teamsfx-core/build/common/projectSettingsHelperV3";
-import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core/build/common/tools";
+import {
+  AuthSvcScopes,
+  isMigrationV3Enabled,
+  setRegion,
+} from "@microsoft/teamsfx-core/build/common/tools";
 import { UriHandler } from "./uriHandler";
 import { isV3Enabled, isTDPIntegrationEnabled } from "@microsoft/teamsfx-core";
+import { VersionState } from "@microsoft/teamsfx-core/build/common/versionMetadata";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -707,11 +712,24 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
   await setApiV3EnabledContext();
   await setTDPIntegrationEnabledContext();
 
-  await vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.canUpgradeToArmAndMultiEnv",
-    await canUpgradeToArmAndMultiEnv(workspaceUri?.fsPath)
-  );
+  if (isV3Enabled()) {
+    if (isMigrationV3Enabled()) {
+      const versionCheckResult = await handlers.projectVersionCheck();
+      await vscode.commands.executeCommand(
+        "setContext",
+        "fx-extension.canUpgradeV3",
+        versionCheckResult.isOk()
+          ? versionCheckResult.value.isSupport == VersionState.upgradeable
+          : false
+      );
+    }
+  } else {
+    await vscode.commands.executeCommand(
+      "setContext",
+      "fx-extension.canUpgradeToArmAndMultiEnv",
+      await canUpgradeToArmAndMultiEnv(workspaceUri?.fsPath)
+    );
+  }
 }
 
 async function setAadManifestEnabledContext() {

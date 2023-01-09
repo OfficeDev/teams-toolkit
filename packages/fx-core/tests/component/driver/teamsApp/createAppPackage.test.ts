@@ -24,8 +24,8 @@ describe("teamsApp/createAppPackage", async () => {
   it("should throw error if file not exists", async () => {
     const args: CreateAppPackageArgs = {
       manifestPath: "fakepath",
-      outputZipPath: "",
-      outputJsonPath: "",
+      outputZipPath: "fakePath",
+      outputJsonPath: "fakePath",
     };
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);

@@ -100,6 +100,7 @@ import {
   AzureAssignRoleHelpUrl,
   AzurePortalUrl,
   CLI_FOR_M365,
+  DeveloperPortalHomeLink,
   GlobalKey,
   PublishAppLearnMoreLink,
   SpfxManageSiteAdminUrl,
@@ -166,12 +167,6 @@ import { compare } from "./utils/versionUtil";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
-import {
-  isPersonalApp,
-  isGroupApp,
-  isBot,
-  isMessageExtension,
-} from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/utils";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 
 export let core: FxCore;
@@ -2139,7 +2134,14 @@ export async function openSamplesHandler(args?: any[]): Promise<Result<null, FxE
 
 export async function openAppManagement(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageTeamsApp, getTriggerFromProperty(args));
-  return VS_CODE_UI.openUrl("https://dev.teams.microsoft.com/home");
+  const accountRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+
+  if (accountRes.isOk() && accountRes.value.status === signedIn) {
+    const loginHint = accountRes.value.accountInfo?.upn as string;
+    return VS_CODE_UI.openUrl(`${DeveloperPortalHomeLink}?login_hint=${loginHint}`);
+  } else {
+    return VS_CODE_UI.openUrl(DeveloperPortalHomeLink);
+  }
 }
 
 export async function openBotManagement(args?: any[]) {

@@ -35,7 +35,7 @@ import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
 import * as StringResources from "../../package.nls.json";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import M365TokenInstance from "../../src/commonlib/m365Login";
-import { SUPPORTED_SPFX_VERSION } from "../../src/constants";
+import { DeveloperPortalHomeLink, SUPPORTED_SPFX_VERSION } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugCommonUtils from "../../src/debug/commonUtils";
@@ -64,6 +64,7 @@ import { assert } from "console";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
 import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
+import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -1419,6 +1420,55 @@ describe("handlers", () => {
       const res = await handlers.publishInDeveloperPortalHandler();
       chai.assert.isTrue(res.isOk());
       chai.assert.isFalse(publish.calledOnce);
+    });
+  });
+
+  describe("openAppManagement", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("open link with loginHint", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(M365TokenInstance, "getStatus").resolves(
+        ok({
+          status: signedIn,
+          token: undefined,
+          accountInfo: { upn: "test" },
+        })
+      );
+      const openUrl = sinon.stub(extension.VS_CODE_UI, "openUrl").resolves(ok(true));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      const res = await handlers.openAppManagement();
+
+      chai.assert.isTrue(openUrl.calledOnce);
+      chai.assert.isTrue(res.isOk());
+      chai.assert.equal(openUrl.args[0][0], `${DeveloperPortalHomeLink}?login_hint=test`);
+    });
+
+    it("open link without loginHint", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon.stub(M365TokenInstance, "getStatus").resolves(
+        ok({
+          status: signedOut,
+          token: undefined,
+          accountInfo: { upn: "test" },
+        })
+      );
+      const openUrl = sinon.stub(extension.VS_CODE_UI, "openUrl").resolves(ok(true));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      const res = await handlers.openAppManagement();
+
+      chai.assert.isTrue(openUrl.calledOnce);
+      chai.assert.isTrue(res.isOk());
+      chai.assert.equal(openUrl.args[0][0], DeveloperPortalHomeLink);
     });
   });
 

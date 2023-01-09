@@ -3,10 +3,7 @@
 
 import * as sinon from "sinon";
 import "mocha";
-import {
-  AzureAppServiceDeployDriver,
-  AzureAppServiceDeployDriverImpl,
-} from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
+import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
 import { DeployArgs } from "../../../../../src/component/driver/interface/buildAndDeployArgs";
 import * as appService from "@azure/arm-appservice";
 import * as tools from "../../../../../src/common/tools";
@@ -24,6 +21,7 @@ import { MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
+import { AzureZipDeployDriver } from "../../../../../src/component/driver/deploy/azure/AzureZipDeployDriver";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -242,7 +240,7 @@ describe("Azure App Service Deploy Driver test", () => {
       console.log(msg);
       return Promise.resolve(true);
     };
-    const deploy = new AzureAppServiceDeployDriverImpl(args, context);
+    const deploy = new AzureZipDeployDriver(args, context, "", [], []);
     sandbox.stub(deploy, "zipDeploy").resolves(5_000_000);
     await deploy.run();
   });

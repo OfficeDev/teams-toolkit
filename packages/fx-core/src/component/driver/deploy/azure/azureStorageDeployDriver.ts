@@ -28,7 +28,6 @@ import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { DriverContext, AzureResourceInfo } from "../../interface/commonArgs";
 import { createBlobServiceClient } from "../../../utils/azureResourceOperation";
 import { TokenCredential } from "@azure/identity";
-import { wrapRun, wrapSummary } from "../../../utils/common";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
@@ -45,11 +44,13 @@ export class AzureStorageDeployDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     const impl = new AzureStorageDeployDriverImpl(args, context);
-    return wrapRun(() => impl.run(), undefined, context.logProvider);
+    return (await impl.run()).result;
   }
 
+  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
-    return wrapSummary(this.run.bind(this, args, ctx), ["driver.deploy.azureStorageDeploySummary"]);
+    const impl = new AzureStorageDeployDriverImpl(args, ctx);
+    return impl.run();
   }
 }
 
@@ -57,6 +58,8 @@ export class AzureStorageDeployDriver implements StepDriver {
  * deploy to Azure Storage
  */
 export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
+  protected summaries: string[] = [getLocalizedString("driver.deploy.azureStorageDeploySummary")];
+  protected summaryPrepare: string[] = [];
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Storage\/storageAccounts\/([^\/]*)/i;
 

@@ -10,10 +10,14 @@ import * as fs from "fs-extra";
 import { zipFolderAsync } from "../../../utils/fileOperation";
 import { asBoolean, asFactory, asOptional, asString } from "../../../utils/common";
 import { BaseDeployStepDriver } from "../../interface/baseDeployStepDriver";
+import { ExecutionResult } from "../../interface/stepDriver";
+import { ok, err, UserError, SystemError } from "@microsoft/teamsfx-api";
 
 export abstract class BaseDeployDriver extends BaseDeployStepDriver {
   protected static readonly emptyMap = new Map<string, string>();
   protected helpLink: string | undefined = undefined;
+  protected abstract summaries: string[];
+  protected abstract summaryPrepare: string[];
 
   protected static asDeployArgs = asFactory<DeployArgs>({
     workingDirectory: asOptional(asString),
@@ -23,26 +27,25 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
     dryRun: asOptional(asBoolean),
   });
 
-  async run(): Promise<Map<string, string>> {
+  async run(): Promise<ExecutionResult> {
     await this.context.logProvider.debug("start deploy process");
 
-    const deployArgs = BaseDeployDriver.asDeployArgs(this.args, this.helpLink);
-    // if working directory not set, use current working directory
-    deployArgs.workingDirectory = deployArgs.workingDirectory ?? "./";
-    // if working dir is not absolute path, then join the path with project path
-    this.workingDirectory = path.isAbsolute(deployArgs.workingDirectory)
-      ? deployArgs.workingDirectory
-      : path.join(this.workingDirectory, deployArgs.workingDirectory);
-    // if distribution path is not absolute path, then join the path with project path
-    this.distDirectory = path.isAbsolute(deployArgs.distributionPath)
-      ? deployArgs.distributionPath
-      : path.join(this.workingDirectory, deployArgs.distributionPath);
-    this.dryRun = deployArgs.dryRun ?? false;
-    // call real deploy
-    await this.wrapErrorHandler(async () => {
-      await this.deploy(deployArgs);
+    return await this.wrapErrorHandler(async () => {
+      const deployArgs = BaseDeployDriver.asDeployArgs(this.args, this.helpLink);
+      // if working directory not set, use current working directory
+      deployArgs.workingDirectory = deployArgs.workingDirectory ?? "./";
+      // if working dir is not absolute path, then join the path with project path
+      this.workingDirectory = path.isAbsolute(deployArgs.workingDirectory)
+        ? deployArgs.workingDirectory
+        : path.join(this.workingDirectory, deployArgs.workingDirectory);
+      // if distribution path is not absolute path, then join the path with project path
+      this.distDirectory = path.isAbsolute(deployArgs.distributionPath)
+        ? deployArgs.distributionPath
+        : path.join(this.workingDirectory, deployArgs.distributionPath);
+      this.dryRun = deployArgs.dryRun ?? false;
+      // call real deploy
+      return await this.deploy(deployArgs);
     });
-    return BaseDeployDriver.emptyMap;
   }
 
   /**
@@ -89,18 +92,26 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
     return ig;
   }
 
-  protected async wrapErrorHandler<T>(fn: () => T | Promise<T>): Promise<T> {
+  protected async wrapErrorHandler(fn: () => boolean | Promise<boolean>): Promise<ExecutionResult> {
     try {
-      return Promise.resolve(fn());
+      return (await fn())
+        ? { result: ok(BaseDeployDriver.emptyMap), summaries: this.summaries }
+        : { result: ok(BaseDeployDriver.emptyMap), summaries: this.summaryPrepare };
     } catch (e) {
       await this.context.progressBar?.end(false);
       if (e instanceof BaseComponentInnerError) {
         const errorDetail = e.detail ? `Detail: ${e.detail}` : "";
         await this.context.logProvider.error(`${e.message} ${errorDetail}`);
-        throw e.toFxError();
+        return { result: err(e.toFxError()), summaries: [] };
+      } else if (e instanceof UserError || e instanceof SystemError) {
+        await this.context.logProvider.error(`Error occurred: ${e.message}`);
+        return { result: err(e), summaries: [] };
       } else {
         await this.context.logProvider.error(`Unknown error: ${e}`);
-        throw e;
+        return {
+          result: err(BaseComponentInnerError.unknownError("Deploy", e).toFxError()),
+          summaries: [],
+        };
       }
     }
   }
@@ -109,5 +120,5 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
    * real deploy process
    * @param args deploy arguments
    */
-  abstract deploy(args: DeployArgs): Promise<void>;
+  abstract deploy(args: DeployArgs): Promise<boolean>;
 }

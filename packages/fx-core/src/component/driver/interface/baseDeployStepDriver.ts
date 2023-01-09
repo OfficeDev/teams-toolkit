@@ -26,13 +26,5 @@ export abstract class BaseDeployStepDriver {
     };
   }
 
-  /**
-   * call when error happens
-   * do some resource clean up
-   */
-  async cleanup(): Promise<void> {
-    await this.progressBar?.end(false);
-  }
-
   abstract createProgressBar(ui?: UserInteraction): IProgressHandler | undefined;
 }

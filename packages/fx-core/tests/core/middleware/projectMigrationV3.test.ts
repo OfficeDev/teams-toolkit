@@ -46,6 +46,7 @@ import {
   Metadata,
   MetadataV2,
   MetadataV3,
+  VersionSource,
   VersionState,
 } from "../../../src/common/versionMetadata";
 import {
@@ -59,6 +60,7 @@ import { getProjectSettingPathV3 } from "../../../src/core/middleware/projectSet
 import * as debugV3MigrationUtils from "../../../src/core/middleware/utils/debug/debugV3MigrationUtils";
 import { VersionForMigration } from "../../../src/core/middleware/types";
 import { isMigrationV3Enabled } from "../../../src/common/tools";
+import * as loader from "../../../src/core/middleware/projectSettingsLoader";
 
 let mockedEnvRestore: () => void;
 
@@ -1079,9 +1081,21 @@ describe("Migration utils", () => {
     const migrationContext = await mockMigrationContext(projectPath);
     await copyTestProject(Constants.happyPathTestProject, projectPath);
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(fs, "readJson").resolves("3.0.0");
+    sandbox.stub(fs, "readFile").resolves("version: 1.0.0" as any);
     const state = await checkVersionForMigration(migrationContext);
     assert.equal(state.state, VersionState.compatible);
+  });
+
+  it("checkVersionForMigration V3 abandoned", async () => {
+    const migrationContext = await mockMigrationContext(projectPath);
+    await copyTestProject(Constants.happyPathTestProject, projectPath);
+    sandbox.stub(loader, "getProjectSettingPathV2").returns("");
+    sandbox.stub(loader, "getProjectSettingPathV3").returns("");
+    sandbox.stub(fs, "pathExists").callsFake(async (path) => {
+      return path ? true : false;
+    });
+    const state = await checkVersionForMigration(migrationContext);
+    assert.equal(state.state, VersionState.unsupported);
   });
 
   it("checkVersionForMigration empty", async () => {
@@ -1129,9 +1143,27 @@ describe("Migration utils", () => {
   });
 
   it("getVersionState", () => {
-    assert.equal(getVersionState("2.0.0"), VersionState.upgradeable);
-    assert.equal(getVersionState("3.0.0"), VersionState.compatible);
-    assert.equal(getVersionState("4.0.0"), VersionState.unsupported);
+    assert.equal(
+      getVersionState({
+        version: "2.0.0",
+        source: VersionSource.projectSettings,
+      }),
+      VersionState.upgradeable
+    );
+    assert.equal(
+      getVersionState({
+        version: "1.0.0",
+        source: VersionSource.teamsapp,
+      }),
+      VersionState.compatible
+    );
+    assert.equal(
+      getVersionState({
+        version: "",
+        source: VersionSource.unknown,
+      }),
+      VersionState.unsupported
+    );
   });
 
   it("getDownloadLinkByVersionAndPlatform", () => {
@@ -1161,6 +1193,7 @@ describe("Migration utils", () => {
 
     const version: VersionForMigration = {
       currentVersion: "2.0.0",
+      source: VersionSource.projectSettings,
       state: VersionState.upgradeable,
       platform: Platform.VS,
     };

@@ -2,10 +2,11 @@
 // Licensed under the MIT license.
 
 import { Platform } from "@microsoft/teamsfx-api";
-import { VersionState } from "../../common/versionMetadata";
+import { VersionSource, VersionState } from "../../common/versionMetadata";
 
 export interface VersionForMigration {
   currentVersion: string;
+  source: VersionSource;
   state: VersionState;
   platform: Platform;
 }

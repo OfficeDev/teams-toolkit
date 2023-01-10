@@ -45,6 +45,7 @@ import { globalVars } from "../globalVars";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { CoreHookContext } from "../types";
 import { convertProjectSettingsV2ToV3 } from "../../component/migrate";
+import { MetadataV3 } from "../../common/versionMetadata";
 import { settingsUtil } from "../../component/utils/settingsUtil";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
@@ -194,7 +195,7 @@ export function getProjectSettingsPath(projectPath: string): string {
 }
 
 export function getProjectSettingPathV3(projectPath: string): string {
-  return path.resolve(projectPath, "teamsapp.yml");
+  return path.resolve(projectPath, MetadataV3.configFile);
 }
 
 export function getProjectSettingPathV2(projectPath: string): string {

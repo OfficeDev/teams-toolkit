@@ -18,6 +18,7 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
+import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { setTools } from "../../../src/core/globalVars";
 import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
 import { ProjectSettingsWriterMW } from "../../../src/core/middleware/projectSettingsWriter";

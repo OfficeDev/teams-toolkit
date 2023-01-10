@@ -27,11 +27,12 @@ import { environmentManager } from "../../src/core/environment";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { EnvInfoLoaderMW_V3 } from "../../src/core/middleware/envInfoLoaderV3";
 import { FxCore } from "../../src/core/FxCore";
-import { pathUtils, YmlFileName, YmlFileNameOld } from "../../src/component/utils/pathUtils";
+import { pathUtils, YmlFileNameOld } from "../../src/component/utils/pathUtils";
 import * as path from "path";
 import { yamlParser } from "../../src/component/configManager/parser";
 import { ProjectModel } from "../../src/component/configManager/interface";
 import { PathNotExistError } from "../../src";
+import { MetadataV3 } from "../../src/common/versionMetadata";
 
 describe("env utils", () => {
   const tools = new MockTools();
@@ -61,7 +62,7 @@ describe("env utils", () => {
     sandbox.stub(fs, "pathExistsSync").returns(true);
     process.env.TEAMSFX_ENV = "dev";
     const res1 = pathUtils.getYmlFilePath(".", "dev");
-    assert.equal(res1, path.join(".", YmlFileName));
+    assert.equal(res1, path.join(".", MetadataV3.configFile));
   });
   it("pathUtils.getYmlFilePath case 2", async () => {
     sandbox.stub(fs, "pathExistsSync").returns(false);

@@ -96,7 +96,7 @@ const Constants = {
   appLocalYmlName: "teamsapp.local.yml",
   tasksJsonPath: ".vscode/tasks.json",
   reportName: "migrationReport.md",
-  appendWriteOption: {
+  envWriteOption: {
     // .env.{env} file might be already exist, use append mode (flag: a+)
     encoding: "utf8",
     flag: "a+",
@@ -468,7 +468,7 @@ export async function configsMigration(context: MigrationContext): Promise<void>
             await context.fsWriteFile(
               path.join(Constants.environmentFolder, ".env." + envName),
               envData,
-              Constants.appendWriteOption
+              Constants.envWriteOption
             );
           }
         }
@@ -511,7 +511,7 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
             await context.fsWriteFile(
               path.join(Constants.environmentFolder, ".env." + envName),
               envData,
-              Constants.appendWriteOption
+              Constants.envWriteOption
             );
           }
         }
@@ -546,7 +546,7 @@ export async function userdataMigration(context: MigrationContext): Promise<void
           await context.fsWriteFile(
             path.join(Constants.environmentFolder, ".env." + envName),
             envData,
-            Constants.appendWriteOption
+            Constants.envWriteOption
           );
         }
       }
@@ -662,7 +662,7 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
               await context.fsWriteFile(
                 path.join(Constants.environmentFolder, ".env." + envName),
                 apimPluginAppendContent,
-                Constants.appendWriteOption
+                Constants.envWriteOption
               );
             }
           }

@@ -2832,7 +2832,12 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewAadManifestFile, res.error);
     return err(res.error);
   }
-  const manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/aad.${envName}.json`;
+
+  let manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/aad.${envName}.json`;
+
+  if (isV3Enabled()) {
+    manifestFile = `${workspacePath}/${BuildFolderName}/aad.${envName}.json`;
+  }
 
   if (fs.existsSync(manifestFile)) {
     workspace.openTextDocument(manifestFile).then((document) => {

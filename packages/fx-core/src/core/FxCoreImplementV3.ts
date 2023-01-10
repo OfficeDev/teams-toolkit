@@ -212,6 +212,43 @@ export class FxCoreV3Implement {
     }
   }
 
+  @hooks([ErrorHandlerMW, ProjectConsolidateMW, EnvLoaderMW(false)])
+  async previewAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+    setCurrentStage(Stage.deployAad);
+    inputs.stage = Stage.deployAad;
+    const updateAadClient = Container.get<UpdateAadAppDriver>("aadApp/update");
+    // In V3, the aad.template.json exist at .fx folder, and output to root build folder.
+    const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
+      ? inputs.AAD_MANIFEST_FILE
+      : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
+    if (!(await fs.pathExists(manifestTemplatePath))) {
+      return err(new NoAadManifestExistError(manifestTemplatePath));
+    }
+    await fs.ensureDir(path.join(inputs.projectPath!, "build"));
+    const manifestOutputPath: string = path.join(
+      inputs.projectPath!,
+      "build",
+      `aad.${inputs.env}.json`
+    );
+    const inputArgs: UpdateAadAppArgs = {
+      manifestTemplatePath: manifestTemplatePath,
+      outputFilePath: manifestOutputPath,
+      onlyBuild: true,
+    };
+    const contextV3: DriverContext = {
+      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider,
+      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider,
+      ui: TOOLS.ui,
+      logProvider: TOOLS.logProvider,
+      telemetryReporter: TOOLS.telemetryReporter!,
+      projectPath: inputs.projectPath as string,
+      platform: Platform.VSCode,
+    };
+    const res = await updateAadClient.run(inputArgs, contextV3);
+    if (res.isErr()) return err(res.error);
+    return ok(Void);
+  }
+
   @hooks([
     ErrorHandlerMW,
     ProjectMigratorMWV3,
@@ -241,6 +278,7 @@ export class FxCoreV3Implement {
     const inputArgs: UpdateAadAppArgs = {
       manifestTemplatePath: manifestTemplatePath,
       outputFilePath: manifestOutputPath,
+      onlyBuild: false,
     };
     const contextV3: DriverContext = {
       azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider,
@@ -316,6 +354,8 @@ export class FxCoreV3Implement {
       inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
       const component = Container.get("sso") as any;
       res = await component.add(context, inputs as InputsWithProjectPath);
+    } else if (func.method === "buildAadManifest") {
+      res = await this.previewAadManifest(inputs);
     }
     return res;
   }

@@ -86,6 +86,13 @@ export class UpdateAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.outputAadAppManifest, outputFileAbsolutePath)
       );
 
+      if (args.onlyBuild) {
+        return {
+          result: ok(new Map()),
+          summaries: [],
+        };
+      }
+
       // MS Graph API does not allow adding new OAuth permissions and pre authorize it within one request
       // So split update AAD app to two requests:
       // 1. If there's preAuthorizedApplications, remove it temporary and update AAD app to create possible new permission
@@ -108,7 +115,6 @@ export class UpdateAadAppDriver implements StepDriver {
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
-      await progressHandler?.end(true);
 
       return {
         result: ok(
@@ -120,7 +126,6 @@ export class UpdateAadAppDriver implements StepDriver {
         summaries: summaries,
       };
     } catch (error) {
-      await progressHandler?.end(false);
       if (error instanceof UserError || error instanceof SystemError) {
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, error.displayMessage)
@@ -130,7 +135,6 @@ export class UpdateAadAppDriver implements StepDriver {
           summaries: summaries,
         };
       }
-
       if (axios.isAxiosError(error)) {
         const message = JSON.stringify(error.response!.data);
         context.logProvider?.error(
@@ -157,6 +161,8 @@ export class UpdateAadAppDriver implements StepDriver {
         result: err(new UnhandledSystemError(actionName, JSON.stringify(error))),
         summaries: summaries,
       };
+    } finally {
+      await progressHandler?.end(true);
     }
   }
 

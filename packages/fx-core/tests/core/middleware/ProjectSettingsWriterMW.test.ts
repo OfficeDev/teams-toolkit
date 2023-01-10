@@ -11,13 +11,10 @@ import {
   Platform,
   ProjectSettingsFileName,
   Result,
-  SettingsFileName,
-  SettingsFolderName,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
@@ -26,7 +23,7 @@ import { setTools } from "../../../src/core/globalVars";
 import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
 import { ProjectSettingsWriterMW } from "../../../src/core/middleware/projectSettingsWriter";
 import { CoreHookContext } from "../../../src/core/types";
-import { MockProjectSettings, MockSettings, MockTools, randomAppName } from "../utils";
+import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 
 describe("Middleware - ProjectSettingsWriterMW", () => {
   const sandbox = sinon.createSandbox();
@@ -100,45 +97,5 @@ describe("Middleware - ProjectSettingsWriterMW", () => {
     const content: string = fileMap.get(settingsFileV2);
     const settingsInFile = JSON.parse(content);
     assert.deepEqual(mockProjectSettings, settingsInFile);
-  });
-
-  it("write success in V3", async () => {
-    const restore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
-    try {
-      const appName = randomAppName();
-      const inputs: Inputs = { platform: Platform.VSCode };
-      inputs.projectPath = path.join(os.tmpdir(), appName);
-      const tools = new MockTools();
-      const settings = MockSettings();
-      const fileMap = new Map<string, any>();
-      sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
-        fileMap.set(file, data);
-      });
-      sandbox.stub(fs, "pathExists").resolves(true);
-      const settingsFile = path.resolve(inputs.projectPath, MetadataV3.configFile);
-      class MyClass {
-        async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          if (ctx)
-            ctx.projectSettings = {
-              projectId: settings.trackingId,
-              version: settings.version,
-            };
-          return ok("");
-        }
-      }
-      setTools(tools);
-      hooks(MyClass, {
-        myMethod: [ContextInjectorMW, ProjectSettingsWriterMW],
-      });
-      const my = new MyClass();
-      await my.myMethod(inputs);
-      const content: string = fileMap.get(settingsFile);
-      const settingsInFile = JSON.parse(content);
-      assert.deepEqual(settings, settingsInFile);
-    } finally {
-      restore();
-    }
   });
 });

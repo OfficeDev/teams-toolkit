@@ -31,7 +31,7 @@ import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appMa
 import { VersionForMigration } from "../types";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
-import { load } from "js-yaml";
+import { settingsUtil } from "../../../component/utils/settingsUtil";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -160,12 +160,15 @@ export function outputCancelMessage(version: string, platform: Platform): void {
 export async function getProjectVersionFromPath(projectPath: string): Promise<VersionInfo> {
   const v3path = getProjectSettingPathV3(projectPath);
   if (await fs.pathExists(v3path)) {
-    const settings = await fs.readFile(v3path, "utf8");
-    const content = load(settings) as any;
-    return {
-      version: content.version || "",
-      source: VersionSource.teamsapp,
-    };
+    const readSettingsResult = await settingsUtil.readSettings(projectPath, false);
+    if (readSettingsResult.isOk()) {
+      return {
+        version: readSettingsResult.value.version || "",
+        source: VersionSource.teamsapp,
+      };
+    } else {
+      throw readSettingsResult.error;
+    }
   }
   const v2path = getProjectSettingPathV2(projectPath);
   if (await fs.pathExists(v2path)) {

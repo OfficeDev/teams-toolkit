@@ -103,9 +103,6 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
         const errorDetail = e.detail ? `Detail: ${e.detail}` : "";
         await this.context.logProvider.error(`${e.message} ${errorDetail}`);
         return { result: err(e.toFxError()), summaries: [] };
-      } else if (e instanceof UserError || e instanceof SystemError) {
-        await this.context.logProvider.error(`Error occurred: ${e.message}`);
-        return { result: err(e), summaries: [] };
       } else {
         await this.context.logProvider.error(`Unknown error: ${e}`);
         return {

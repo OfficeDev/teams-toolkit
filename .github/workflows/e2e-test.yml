@@ -218,12 +218,8 @@ jobs:
             npm run setup
 
       - name: Package CLI
-        working-directory: packages/cli
         run: |
-          rm -f *.tgz
-          npm pack
-          mv *.tgz teamsfx-cli.tgz
-          npm install -g teamsfx-cli.tgz
+          npm link --force
 
       - name: print system info
         run: |
@@ -297,14 +293,9 @@ jobs:
           command: |
             npm run setup
 
-      - name: Download CLI
-        uses: actions/download-artifact@v3
-        with:
-          name: Teamsfx-cli
-
-      - name: Install CLI
+      - name: Link CLI
         run: |
-          npm install -g teamsfx-cli.tgz
+          npm link --force
 
       - name: print system info
         run: |
@@ -327,7 +318,8 @@ jobs:
         working-directory: packages/cli/tests/e2e
         env:
           TEAMSFX_V3: "true"
-          TEAMSFX_TEMPLATE_PRERELEASE: "alpha"
+          TEAMSFX_DEBUG_TEMPLATE: "true"
+          NODE_ENV: "development"
         run: |
           file=`find . -wholename "${{ matrix.cases }}"`
           if [ -z "$file" ]; then

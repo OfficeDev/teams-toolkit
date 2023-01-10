@@ -67,6 +67,7 @@ import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/
 import { MockedUserInteraction } from "../plugins/solution/util";
 import { SummaryReporter } from "../../src/component/coordinator/summary";
 import { deployUtils } from "../../src/component/deployUtils";
+import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/versionMetadata";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -85,7 +86,11 @@ function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[]
   ]);
 }
 
-const V3Version = "3.0.0";
+const versionInfo: VersionInfo = {
+  version: MetadataV3.projectVersion,
+  source: VersionSource.teamsapp,
+};
+const V3Version = MetadataV3.projectVersion;
 describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -103,7 +108,7 @@ describe("component coordinator test", () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3: "true",
     });
-    sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves(V3Version);
+    sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves(versionInfo);
   });
 
   it("create project from sample", async () => {

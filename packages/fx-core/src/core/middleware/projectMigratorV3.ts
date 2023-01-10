@@ -7,7 +7,6 @@ import {
   FxError,
   ok,
   ProjectSettings,
-  SettingsFileName,
   SettingsFolderName,
   SystemError,
   UserError,
@@ -95,11 +94,12 @@ const Constants = {
   appLocalYmlName: "teamsapp.local.yml",
   tasksJsonPath: ".vscode/tasks.json",
   reportName: "migrationReport.md",
-  envWriteOption: {
+  appendWriteOption: {
     // .env.{env} file might be already exist, use append mode (flag: a+)
     encoding: "utf8",
     flag: "a+",
   },
+  environmentFolder: "teamsAppEnv",
 };
 
 const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
@@ -108,7 +108,6 @@ const migrationMessageButtons = [learnMoreText, upgradeButton];
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [
   preMigration,
-  generateSettingsJson,
   manifestsMigration,
   generateAppYml,
   generateLocalConfig,
@@ -238,21 +237,6 @@ export async function checkVersionForMigration(ctx: CoreHookContext): Promise<Ve
   }
 }
 
-export async function generateSettingsJson(context: MigrationContext): Promise<void> {
-  const oldProjectSettings = await loadProjectSettings(context.projectPath);
-
-  const content = {
-    version: MetadataV3.projectVersion,
-    trackingId: oldProjectSettings.projectId,
-  };
-
-  await context.fsEnsureDir(SettingsFolderName);
-  await context.fsWriteFile(
-    path.join(SettingsFolderName, SettingsFileName),
-    JSON.stringify(content, null, 4)
-  );
-}
-
 export async function generateAppYml(context: MigrationContext): Promise<void> {
   const bicepContent: string = await readBicepContent(context);
   const oldProjectSettings = await loadProjectSettings(context.projectPath);
@@ -271,6 +255,15 @@ export async function generateAppYml(context: MigrationContext): Promise<void> {
     await context.fsWriteFile(Constants.appLocalYmlName, appLocalYmlString);
   }
 }
+
+// export async function generateSettingsJson(context: MigrationContext): Promise<void> {
+//   const oldProjectSettings = await loadProjectSettings(context.projectPath);
+
+//   const content = `settings:\n\tversion: ${MetadataV3.projectVersion}\n\ttrackingId: ${oldProjectSettings.projectId}\n`;
+
+//   await context.fsEnsureDir(Constants.appYmlName);
+//   await context.fsWriteFile(Constants.appYmlName, content, Constants.appendWriteOption);
+// }
 
 export async function updateLaunchJson(context: MigrationContext): Promise<void> {
   const launchJsonPath = path.join(context.projectPath, Constants.launchJsonPath);
@@ -456,9 +449,11 @@ export async function configsMigration(context: MigrationContext): Promise<void>
           // get envName
           const envName = fileNamesArray[2];
           // create .env.{env} file if not exist
-          await context.fsEnsureDir(SettingsFolderName);
-          if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
-            await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+          await context.fsEnsureDir(Constants.environmentFolder);
+          if (
+            !(await context.fsPathExists(path.join(Constants.environmentFolder, ".env." + envName)))
+          )
+            await context.fsCreateFile(path.join(Constants.environmentFolder, ".env." + envName));
           const obj = await readJsonFile(
             context,
             path.join(".fx", "configs", "config." + envName + ".json")
@@ -466,7 +461,9 @@ export async function configsMigration(context: MigrationContext): Promise<void>
           if (obj["manifest"]) {
             const bicepContent = await readBicepContent(context);
             const teamsfx_env = fs
-              .readFileSync(path.join(context.projectPath, SettingsFolderName, ".env." + envName))
+              .readFileSync(
+                path.join(context.projectPath, Constants.environmentFolder, ".env." + envName)
+              )
               .toString()
               .includes("TEAMSFX_ENV=")
               ? ""
@@ -482,9 +479,9 @@ export async function configsMigration(context: MigrationContext): Promise<void>
                 bicepContent
               );
             await context.fsWriteFile(
-              path.join(SettingsFolderName, ".env." + envName),
+              path.join(Constants.environmentFolder, ".env." + envName),
               envData,
-              Constants.envWriteOption
+              Constants.appendWriteOption
             );
           }
         }
@@ -505,9 +502,11 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
           // get envName
           const envName = fileNamesArray[2];
           // create .env.{env} file if not exist
-          await context.fsEnsureDir(SettingsFolderName);
-          if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
-            await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+          await context.fsEnsureDir(Constants.environmentFolder);
+          if (
+            !(await context.fsPathExists(path.join(Constants.environmentFolder, ".env." + envName)))
+          )
+            await context.fsCreateFile(path.join(Constants.environmentFolder, ".env." + envName));
           const obj = await readJsonFile(
             context,
             path.join(".fx", "states", "state." + envName + ".json")
@@ -523,9 +522,9 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
               bicepContent
             );
             await context.fsWriteFile(
-              path.join(SettingsFolderName, ".env." + envName),
+              path.join(Constants.environmentFolder, ".env." + envName),
               envData,
-              Constants.envWriteOption
+              Constants.appendWriteOption
             );
           }
         }
@@ -546,9 +545,11 @@ export async function userdataMigration(context: MigrationContext): Promise<void
           // get envName
           const envName = fileNamesArray[1];
           // create .env.{env} file if not exist
-          await context.fsEnsureDir(SettingsFolderName);
-          if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
-            await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+          await context.fsEnsureDir(Constants.environmentFolder);
+          if (
+            !(await context.fsPathExists(path.join(Constants.environmentFolder, ".env." + envName)))
+          )
+            await context.fsCreateFile(path.join(Constants.environmentFolder, ".env." + envName));
           const bicepContent = await readBicepContent(context);
           const envData = await readAndConvertUserdata(
             context,
@@ -556,9 +557,9 @@ export async function userdataMigration(context: MigrationContext): Promise<void
             bicepContent
           );
           await context.fsWriteFile(
-            path.join(SettingsFolderName, ".env." + envName),
+            path.join(Constants.environmentFolder, ".env." + envName),
             envData,
-            Constants.envWriteOption
+            Constants.appendWriteOption
           );
         }
       }
@@ -627,7 +628,6 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     placeholderMappings
   );
   const appYmlString: string = await appYmlGenerator.generateAppYml();
-  await context.fsEnsureDir(SettingsFolderName);
   await context.fsWriteFile(Constants.appLocalYmlName, appYmlString);
 }
 
@@ -658,18 +658,24 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
             // get envName
             const envName = fileNamesArray[2];
             if (envName != "local") {
-              await context.fsEnsureDir(SettingsFolderName);
-              if (!(await context.fsPathExists(path.join(SettingsFolderName, ".env." + envName))))
-                await context.fsCreateFile(path.join(SettingsFolderName, ".env." + envName));
+              await context.fsEnsureDir(Constants.environmentFolder);
+              if (
+                !(await context.fsPathExists(
+                  path.join(Constants.environmentFolder, ".env." + envName)
+                ))
+              )
+                await context.fsCreateFile(
+                  path.join(Constants.environmentFolder, ".env." + envName)
+                );
               const apimPluginAppendContent =
                 "APIM__PUBLISHEREMAIL= # Teams Toolkit does not record your mail to protect your privacy, please fill your mail address here before provision to avoid failures" +
                 EOL +
                 "APIM__PUBLISHERNAME= # Teams Toolkit does not record your name to protect your privacy, please fill your name here before provision to avoid failures" +
                 EOL;
               await context.fsWriteFile(
-                path.join(SettingsFolderName, ".env." + envName),
+                path.join(Constants.environmentFolder, ".env." + envName),
                 apimPluginAppendContent,
-                Constants.envWriteOption
+                Constants.appendWriteOption
               );
             }
           }

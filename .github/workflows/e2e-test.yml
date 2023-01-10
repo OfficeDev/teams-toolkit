@@ -295,7 +295,7 @@ jobs:
 
       - name: Link CLI
         run: |
-          npm link
+          npm link --force
 
       - name: print system info
         run: |

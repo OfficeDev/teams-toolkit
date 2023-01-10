@@ -29,23 +29,7 @@
             handleAuthError("UnexpectedFailure", hashParams);
           }
         });
-        let hashParams = getHashParameters();
-        if (hashParams["error"]) {
-          // Authentication failed
-          handleAuthError(hashParams["error"], hashParams);
-        } else if (hashParams["code"]) {
-          // Get the stored state parameter and compare with incoming state
-          let expectedState = localStorage.getItem("state");
-          if (expectedState !== hashParams["state"]) {
-            // State does not match, report error
-            handleAuthError("StateDoesNotMatch", hashParams);
-          } else {
-            microsoftTeams.authentication.notifySuccess();
-          }
-        } else {
-          // Unexpected condition: hash does not contain error or access_token parameter
-          handleAuthError("UnexpectedFailure", hashParams);
-        }
+        
         // Parse hash parameters into key-value pairs
         function getHashParameters() {
           let hashParams = {};

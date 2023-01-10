@@ -248,7 +248,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         const projectVersion = await getProjectVersionFromPath(
           globalVariables.workspaceUri!.fsPath
         );
-        if (projectVersion === "2.1.0") {
+        if (projectVersion.version === "2.1.0") {
           needsMigration = true;
         }
       } else if (

@@ -13,7 +13,7 @@
         "@fluentui/react-northstar": "0.62.0",
         "@fluentui/react-theme": "^9.1.3",
         "@microsoft/microsoft-graph-client": "^3.0.1",
-        "@microsoft/teams-js": "^2.2.0",
+        "@microsoft/teams-js": "^2.7.1",
         "@microsoft/teamsfx": "^2.0.1",
         "@microsoft/teamsfx-react": "^2.0.1",
         "@react-hook/resize-observer": "^1.2.6",

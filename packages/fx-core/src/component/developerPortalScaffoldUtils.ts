@@ -209,6 +209,7 @@ async function updateManifest(
     manifest.configurableTabs = existingManifestTemplate.configurableTabs;
     manifest.permissions = existingManifestTemplate.permissions;
     manifest.validDomains = existingManifestTemplate.validDomains;
+    manifest.webApplicationInfo = existingManifestTemplate.webApplicationInfo;
   }
 
   // manifest: developer

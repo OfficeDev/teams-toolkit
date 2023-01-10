@@ -10,6 +10,10 @@ import { formatString } from "../util/utils";
  * @remarks
  * Only work on server side.
  */
+
+/**
+ * @deprecated Use `BotBuilderCloudAdapter.CardActionBot` instead.
+ */
 export class CardActionBot {
   private readonly adapter: BotFrameworkAdapter;
   private middleware: CardActionMiddleware;

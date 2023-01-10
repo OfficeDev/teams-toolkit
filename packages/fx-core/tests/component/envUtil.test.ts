@@ -31,6 +31,7 @@ import { pathUtils, YmlFileNameOld } from "../../src/component/utils/pathUtils";
 import * as path from "path";
 import { yamlParser } from "../../src/component/configManager/parser";
 import { ProjectModel } from "../../src/component/configManager/interface";
+import { PathNotExistError } from "../../src";
 import { MetadataV3 } from "../../src/common/versionMetadata";
 
 describe("env utils", () => {
@@ -499,7 +500,9 @@ describe("env utils", () => {
 
   it("settingsUtil read and ensure trackingId", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(fs, "readJson").resolves({});
+    sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+      return "version: 1.0.0";
+    });
     sandbox.stub(fs, "writeFile").resolves();
     const res = await settingsUtil.readSettings("abc");
     assert.isTrue(res.isOk());
@@ -510,7 +513,18 @@ describe("env utils", () => {
 
   it("settingsUtil write", async () => {
     sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+      return "version: 1.0.0";
+    });
     const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
     assert.isTrue(res.isOk());
+  });
+
+  it("settingsUtil write", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
+    assert.isTrue(res.isErr());
+    assert.isTrue(res._unsafeUnwrapErr() instanceof PathNotExistError);
   });
 });

@@ -218,12 +218,8 @@ jobs:
             npm run setup
 
       - name: Package CLI
-        working-directory: packages/cli
         run: |
-          rm -f *.tgz
-          npm pack
-          mv *.tgz teamsfx-cli.tgz
-          npm install -g teamsfx-cli.tgz
+          npm link --force
 
       - name: print system info
         run: |

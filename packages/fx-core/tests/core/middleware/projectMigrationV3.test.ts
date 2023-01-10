@@ -1238,7 +1238,7 @@ describe("debugMigration", () => {
 
       assert.isTrue(await fs.pathExists(path.join(projectPath, Constants.environmentFolder)));
       assert.equal(
-        await fs.readFile(path.join(projectPath, "app.local.yml"), "utf-8"),
+        await fs.readFile(path.join(projectPath, "teamsapp.local.yml"), "utf-8"),
         await fs.readFile(path.join(projectPath, "expected", "app.local.yml"), "utf-8")
       );
       assert.equal(

@@ -11,7 +11,7 @@ import { zipFolderAsync } from "../../../utils/fileOperation";
 import { asBoolean, asFactory, asOptional, asString } from "../../../utils/common";
 import { BaseDeployStepDriver } from "../../interface/baseDeployStepDriver";
 import { ExecutionResult } from "../../interface/stepDriver";
-import { ok, err, UserError, SystemError } from "@microsoft/teamsfx-api";
+import { ok, err } from "@microsoft/teamsfx-api";
 
 export abstract class BaseDeployDriver extends BaseDeployStepDriver {
   protected static readonly emptyMap = new Map<string, string>();

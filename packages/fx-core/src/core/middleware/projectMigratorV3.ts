@@ -256,15 +256,6 @@ export async function generateAppYml(context: MigrationContext): Promise<void> {
   }
 }
 
-// export async function generateSettingsJson(context: MigrationContext): Promise<void> {
-//   const oldProjectSettings = await loadProjectSettings(context.projectPath);
-
-//   const content = `settings:\n\tversion: ${MetadataV3.projectVersion}\n\ttrackingId: ${oldProjectSettings.projectId}\n`;
-
-//   await context.fsEnsureDir(Constants.appYmlName);
-//   await context.fsWriteFile(Constants.appYmlName, content, Constants.appendWriteOption);
-// }
-
 export async function updateLaunchJson(context: MigrationContext): Promise<void> {
   const launchJsonPath = path.join(context.projectPath, Constants.launchJsonPath);
   if (await fs.pathExists(launchJsonPath)) {

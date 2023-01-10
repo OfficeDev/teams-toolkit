@@ -850,6 +850,9 @@ describe("developPortalScaffoldUtils", () => {
           termsOfUseUrl: "",
           name: "developer-name",
         },
+        webApplicationInfo: {
+          id: "1",
+        },
         bots: [
           {
             botId: "{{BOT_ID}}",
@@ -919,6 +922,10 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
+      chai.assert.deepEqual(
+        updatedManifest.webApplicationInfo,
+        existingManifest.webApplicationInfo
+      );
       chai.assert.isTrue(updatedManifest.validDomains?.includes("valid-domain"));
       chai.assert.isTrue(writeSpy.calledThrice);
       chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));

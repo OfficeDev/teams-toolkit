@@ -5,7 +5,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as constants from "./constants";
-import { ConfigFolderName, InputConfigsFolderName, UserError } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, InputConfigsFolderName, Stage, UserError } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { core, getSystemInputs, showError } from "../handlers";
@@ -413,7 +413,9 @@ export async function getV3TeamsAppId(projectPath: string, env: string): Promise
 }
 
 export async function triggerV3Migration(): Promise<string | undefined> {
-  const result = await core.phantomMigrationV3(getSystemInputs());
+  const inputs = getSystemInputs();
+  inputs.stage = Stage.debug;
+  const result = await core.phantomMigrationV3(inputs);
   if (result.isErr()) {
     showError(result.error);
     await vscode.debug.stopDebugging();

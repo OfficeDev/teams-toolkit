@@ -176,12 +176,12 @@ export async function getProjectVersionFromPath(projectPath: string): Promise<Ve
   }
   const abandonedPath = path.resolve(
     projectPath,
-    MetadataV3Abandoned.folder,
+    MetadataV3Abandoned.configFolder,
     MetadataV3Abandoned.configFile
   );
   if (await fs.pathExists(abandonedPath)) {
     return {
-      version: MetadataV3Abandoned.folder,
+      version: MetadataV3Abandoned.configFolder,
       source: VersionSource.settings,
     };
   }

@@ -8,6 +8,7 @@ import * as fs from "fs-extra";
 import * as handlebars from "handlebars";
 import { getTemplatesFolder } from "../../../folder";
 import { DebugPlaceholderMapping } from "./debug/debugV3MigrationUtils";
+import { MetadataV3 } from "../../../common/versionMetadata";
 
 export abstract class BaseAppYmlGenerator {
   protected abstract handlebarsContext: any;
@@ -153,7 +154,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.setPlaceholderMapping("state.fx-resource-function.functionAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionEndpoint");
     // projectId
-    this.handlebarsContext.placeholderMappings["projectId"] = this.oldProjectSettings.projectId;
+    this.handlebarsContext.placeholderMappings[MetadataV3.projectId] =
+      this.oldProjectSettings.projectId;
   }
 
   private setPlaceholderMapping(placeholder: string): void {

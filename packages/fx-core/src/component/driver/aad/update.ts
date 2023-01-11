@@ -46,7 +46,7 @@ export class UpdateAadAppDriver implements StepDriver {
       await progressHandler?.start();
       await progressHandler?.next(progressBarSettings.stepMessages.shift());
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
-      const state = loadCurrentState();
+      const state = this.loadCurrentState();
 
       this.validateArgs(args);
       const aadAppClient = new AadAppClient(context.m365TokenProvider);

@@ -27,7 +27,7 @@ import { MissingEnvUserError } from "./error/missingEnvError";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
-const ViewAadAppHelpLink = "https://aka.ms/teamsfx-view-aad-app";
+const ViewAadAppHelpLink = "https://aka.ms/teamsfx-view-aad-app-v3";
 const driverConstants = {
   generateManifestFailedMessageKey: "driver.aadApp.error.generateManifestFailed",
 };

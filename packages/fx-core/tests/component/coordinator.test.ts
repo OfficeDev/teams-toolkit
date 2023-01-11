@@ -668,7 +668,7 @@ describe("component coordinator test", () => {
         return ok({ type: "success", result: "" });
       }
     });
-    const stubShowMessage = sinon.stub(tools.ui, "showMessage");
+    const stubShowMessage = sandbox.stub(tools.ui, "showMessage");
 
     const inputs: Inputs = {
       platform: Platform.VSCode,

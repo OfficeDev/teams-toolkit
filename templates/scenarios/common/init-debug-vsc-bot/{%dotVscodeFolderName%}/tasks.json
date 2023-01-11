@@ -101,8 +101,8 @@
                 ],
                 "background": {
                     "activeOnStart": true,
-                    "beginsPattern": "[nodemon] starting",
-                    "endsPattern": "restify listening to|Bot/ME service listening at|[nodemon] app crashed"
+                    "beginsPattern": ".*", // the output/signal that service is starting
+                    "endsPattern": ".*" // the output/signal that service is started
                 }
             }
         }

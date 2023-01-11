@@ -26,10 +26,13 @@ import {
   TaskCommand,
   TaskDefinition,
 } from "@microsoft/teamsfx-core/build/common/local";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import {
+  isValidProject,
+  isValidProjectV3,
+} from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 import VsCodeLogInstance from "../commonlib/log";
-import { core, detectVsCodeEnv, getSystemInputs, showError } from "../handlers";
+import { detectVsCodeEnv, showError } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as commonUtils from "./commonUtils";
@@ -47,8 +50,6 @@ import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTermina
 import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
 import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
 import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
-import { VS_CODE_UI } from "../extension";
-import { getProjectVersionFromPath } from "@microsoft/teamsfx-core/build/core/middleware/utils/v3MigrationUtils";
 import * as globalVariables from "../globalVariables";
 
 const customTasks = Object.freeze({
@@ -247,10 +248,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     if (isV3Enabled()) {
       let needsMigration = false;
       if (task.definition.command === TaskCommand.checkPrerequisites) {
-        const projectVersion = await getProjectVersionFromPath(
-          globalVariables.workspaceUri!.fsPath
-        );
-        if (projectVersion === "2.1.0") {
+        if (!isValidProjectV3(globalVariables.workspaceUri!.fsPath)) {
           needsMigration = true;
         }
       } else if (

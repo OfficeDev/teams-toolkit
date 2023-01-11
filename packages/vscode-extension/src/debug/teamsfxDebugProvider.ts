@@ -4,7 +4,10 @@
 import * as vscode from "vscode";
 
 import { Correlator } from "@microsoft/teamsfx-core/build/common/correlator";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import {
+  isValidProject,
+  isValidProjectV3,
+} from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { AppStudioScopes, isV3Enabled } from "@microsoft/teamsfx-core/build/common/tools";
 import { environmentManager } from "@microsoft/teamsfx-core/build/core/environment";
 
@@ -63,6 +66,12 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
       }
 
       if (!isValidProject(folder.uri.fsPath)) {
+        return debugConfiguration;
+      }
+
+      // migrate to v3
+      if (isV3Enabled() && !isValidProjectV3(folder.uri.fsPath)) {
+        await commonUtils.triggerV3Migration();
         return debugConfiguration;
       }
 

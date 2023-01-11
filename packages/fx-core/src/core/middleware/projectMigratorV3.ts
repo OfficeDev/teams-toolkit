@@ -32,7 +32,12 @@ import {
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
-import { UpgradeV3CanceledError, MigrationReadFileError, TooklitNotSupportError } from "../error";
+import {
+  UpgradeV3CanceledError,
+  MigrationReadFileError,
+  TooklitNotSupportError,
+  AbandonedProjectError,
+} from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
@@ -54,8 +59,8 @@ import {
   outputCancelMessage,
   getDownloadLinkByVersionAndPlatform,
   getMigrationHelpLink,
+  getVersionState,
 } from "./utils/v3MigrationUtils";
-import * as semver from "semver";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
 import {
@@ -86,7 +91,7 @@ import {
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
-import { MetadataV2, MetadataV3, VersionState } from "../../common/versionMetadata";
+import { VersionSource, MetadataV3, VersionState } from "../../common/versionMetadata";
 import { isMigrationV3Enabled, isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
@@ -132,7 +137,15 @@ const subMigrations: Array<Migration> = [
 
 export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const versionForMigration = await checkVersionForMigration(ctx);
-  if (versionForMigration.state === VersionState.upgradeable && checkMethod(ctx)) {
+  // abandoned v3 project which will not be supported. Show user the message to create new project.
+  if (versionForMigration.source === VersionSource.settings) {
+    await TOOLS?.ui.showMessage(
+      "warn",
+      getLocalizedString("core.migrationV3.abandonedProject"),
+      true
+    );
+    ctx.result = err(AbandonedProjectError());
+  } else if (versionForMigration.state === VersionState.upgradeable && checkMethod(ctx)) {
     if (!checkUserTasks(ctx)) {
       ctx.result = ok(undefined);
       return;
@@ -229,30 +242,16 @@ async function preMigration(context: MigrationContext): Promise<void> {
 }
 
 export async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionForMigration> {
-  const version = (await getProjectVersion(ctx)) || "0.0.0";
+  const versionInfo = await getProjectVersion(ctx);
+  const versionState = getVersionState(versionInfo);
   const platform = getParameterFromCxt(ctx, "platform", Platform.VSCode) as Platform;
-  if (semver.gte(version, MetadataV3.projectVersion)) {
-    return {
-      currentVersion: version,
-      state: VersionState.compatible,
-      platform: platform,
-    };
-  } else if (
-    semver.gte(version, MetadataV2.projectVersion) &&
-    semver.lte(version, MetadataV2.projectMaxVersion)
-  ) {
-    return {
-      currentVersion: version,
-      state: VersionState.upgradeable,
-      platform: platform,
-    };
-  } else {
-    return {
-      currentVersion: version,
-      state: VersionState.unsupported,
-      platform: platform,
-    };
-  }
+
+  return {
+    currentVersion: versionInfo.version,
+    source: versionInfo.source,
+    state: versionState,
+    platform: platform,
+  };
 }
 
 export async function generateSettingsJson(context: MigrationContext): Promise<void> {

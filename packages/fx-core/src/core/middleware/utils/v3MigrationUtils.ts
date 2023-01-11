@@ -18,11 +18,20 @@ import {
 import { CoreHookContext } from "../../types";
 import semver from "semver";
 import { getProjectSettingPathV3, getProjectSettingPathV2 } from "../projectSettingsLoader";
-import { Metadata, MetadataV2, MetadataV3, VersionState } from "../../../common/versionMetadata";
+import {
+  Metadata,
+  MetadataV2,
+  MetadataV3,
+  MetadataV3Abandoned,
+  VersionInfo,
+  VersionSource,
+  VersionState,
+} from "../../../common/versionMetadata";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../../component/resource/appManifest/constants";
 import { VersionForMigration } from "../types";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { TOOLS } from "../../globalVars";
+import { load } from "js-yaml";
 
 // read json files in states/ folder
 export async function readJsonFile(context: MigrationContext, filePath: string): Promise<any> {
@@ -91,7 +100,7 @@ export function jsonObjectNamesConvertV3(
   return returnData;
 }
 
-export async function getProjectVersion(ctx: CoreHookContext): Promise<string> {
+export async function getProjectVersion(ctx: CoreHookContext): Promise<VersionInfo> {
   const projectPath = getParameterFromCxt(ctx, "projectPath", "");
   return await getProjectVersionFromPath(projectPath);
 }
@@ -148,18 +157,39 @@ export function outputCancelMessage(version: string, platform: Platform): void {
   }
 }
 
-export async function getProjectVersionFromPath(projectPath: string): Promise<string> {
+export async function getProjectVersionFromPath(projectPath: string): Promise<VersionInfo> {
   const v3path = getProjectSettingPathV3(projectPath);
   if (await fs.pathExists(v3path)) {
-    const settings = await fs.readJson(v3path);
-    return settings.version || MetadataV3.projectVersion;
+    const settings = await fs.readFile(v3path, "utf8");
+    const content = load(settings) as any;
+    return {
+      version: content.version || "",
+      source: VersionSource.teamsapp,
+    };
   }
   const v2path = getProjectSettingPathV2(projectPath);
   if (await fs.pathExists(v2path)) {
     const settings = await fs.readJson(v2path);
-    return settings.version || "";
+    return {
+      version: settings.version || "",
+      source: VersionSource.projectSettings,
+    };
   }
-  return "";
+  const abandonedPath = path.resolve(
+    projectPath,
+    MetadataV3Abandoned.folder,
+    MetadataV3Abandoned.configFile
+  );
+  if (await fs.pathExists(abandonedPath)) {
+    return {
+      version: MetadataV3Abandoned.folder,
+      source: VersionSource.settings,
+    };
+  }
+  return {
+    version: "",
+    source: VersionSource.unknown,
+  };
 }
 
 export async function getTrackingIdFromPath(projectPath: string): Promise<string> {
@@ -178,13 +208,14 @@ export async function getTrackingIdFromPath(projectPath: string): Promise<string
   return "";
 }
 
-export function getVersionState(version: string): VersionState {
+export function getVersionState(info: VersionInfo): VersionState {
   if (
-    semver.gte(version, MetadataV2.projectVersion) &&
-    semver.lte(version, MetadataV2.projectMaxVersion)
+    info.source === VersionSource.projectSettings &&
+    semver.gte(info.version, MetadataV2.projectVersion) &&
+    semver.lte(info.version, MetadataV2.projectMaxVersion)
   ) {
     return VersionState.upgradeable;
-  } else if (version === MetadataV3.projectVersion) {
+  } else if (info.source === VersionSource.teamsapp && info.version === MetadataV3.projectVersion) {
     return VersionState.compatible;
   }
   return VersionState.unsupported;

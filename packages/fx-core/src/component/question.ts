@@ -794,7 +794,7 @@ export const InitInfraProceedQuestion: SingleSelectQuestion = {
     const fileList =
       inputs["capability"] === InitCapabilityBot().id
         ? "  teamsfx/\n    - .env.dev\n    - settings.json\n  infra/\n    botRegistration/\n      - azurebot.bicep\n      - readme.md\n    - azure.bicep\n    - azure.parameters.json\n  - teamsapp.yml\n"
-        : inputs["spfx"] === InitOptionYes.id
+        : inputs["spfx"] === InitOptionYes().id
         ? "  teamsfx/\n    - .env.dev\n    - settings.json\n  - teamsapp.yml\n"
         : "  teamsfx/\n    - .env.dev\n    - settings.json\n  infra/\n    - azure.bicep\n    - azure.parameters.json\n  - teamsapp.yml\n";
     return getLocalizedString("core.InitGenerateConfirm", fileList);
@@ -821,7 +821,7 @@ export function getQuestionsForInit(
   capabilityNode.addChild(SPFxNode);
   if (inputs.platform !== Platform.CLI_HELP) {
     group.addChild(
-      new QTreeNode(type === "debug" ? InitDebugProceedQuestion() : InitInfraProceedQuestion())
+      new QTreeNode(type === "debug" ? InitDebugProceedQuestion : InitInfraProceedQuestion)
     );
   }
   return ok(group);

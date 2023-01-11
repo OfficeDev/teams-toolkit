@@ -21,6 +21,7 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
+import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { setTools } from "../../../src/core/globalVars";
 import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
 import { ProjectSettingsWriterMW } from "../../../src/core/middleware/projectSettingsWriter";
@@ -116,7 +117,7 @@ describe("Middleware - ProjectSettingsWriterMW", () => {
         fileMap.set(file, data);
       });
       sandbox.stub(fs, "pathExists").resolves(true);
-      const settingsFile = path.resolve(inputs.projectPath, SettingsFolderName, SettingsFileName);
+      const settingsFile = path.resolve(inputs.projectPath, MetadataV3.configFile);
       class MyClass {
         async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           if (ctx)

@@ -152,6 +152,8 @@ export class AppYmlGenerator extends BaseAppYmlGenerator {
     this.setPlaceholderMapping("state.fx-resource-bot.botWebAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionAppResourceId");
     this.setPlaceholderMapping("state.fx-resource-function.functionEndpoint");
+    // projectId
+    this.handlebarsContext.placeholderMappings["projectId"] = this.oldProjectSettings.projectId;
   }
 
   private setPlaceholderMapping(placeholder: string): void {

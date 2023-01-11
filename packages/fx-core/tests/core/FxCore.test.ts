@@ -374,6 +374,8 @@ describe("Core basic APIs", () => {
   it("addSso method should exist", async () => {
     const restore = mockedEnv({
       TEAMSFX_V3: "true",
+      TEAMSFX_DEBUG_TEMPLATE: "true", // workaround test failures when template changed but not release to GitHub alpha template
+      NODE_ENV: "development", // workaround test failures when template changed but not release to GitHub alpha template
     });
     try {
       const appName = randomAppName();

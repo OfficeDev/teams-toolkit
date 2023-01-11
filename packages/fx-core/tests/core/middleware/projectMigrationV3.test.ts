@@ -2,16 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import {
-  err,
-  FxError,
-  Inputs,
-  ok,
-  Platform,
-  Result,
-  SettingsFileName,
-  SettingsFolderName,
-} from "@microsoft/teamsfx-api";
+import { err, FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -22,7 +13,10 @@ import * as sinon from "sinon";
 import { MockTools, MockUserInteraction, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
 import { setTools } from "../../../src/core/globalVars";
-import { MigrationContext } from "../../../src/core/middleware/utils/migrationContext";
+import {
+  backupFolder,
+  MigrationContext,
+} from "../../../src/core/middleware/utils/migrationContext";
 import {
   generateAppYml,
   manifestsMigration,
@@ -208,7 +202,7 @@ describe("MigrationContext", () => {
     context.addReport("test report");
     context.addTelemetryProperties({ testProperrty: "test property" });
     await context.restoreBackup();
-    await context.cleanTeamsfx();
+    await context.cleanBackup();
   });
 });
 
@@ -754,9 +748,7 @@ describe("updateLaunchJson", () => {
 
     await updateLaunchJson(migrationContext);
 
-    assert.isTrue(
-      await fs.pathExists(path.join(projectPath, "teamsfx/backup/.vscode/launch.json"))
-    );
+    assert.isTrue(await fs.pathExists(path.join(projectPath, backupFolder, ".vscode/launch.json")));
     const updatedLaunchJson = await fs.readJson(path.join(projectPath, Constants.launchJsonPath));
     assert.equal(
       updatedLaunchJson.configurations[0].url,

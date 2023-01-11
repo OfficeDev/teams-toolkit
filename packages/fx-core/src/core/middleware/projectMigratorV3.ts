@@ -17,7 +17,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
-import { MigrationContext, V2TeamsfxFolder } from "./utils/migrationContext";
+import { backupFolder, MigrationContext } from "./utils/migrationContext";
 import { checkMethod, checkUserTasks, learnMoreText, upgradeButton } from "./projectMigrator";
 import * as path from "path";
 import { loadProjectSettingsByProjectPathV2 } from "./projectSettingsLoader";
@@ -90,8 +90,8 @@ import {
 import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
-import { VersionSource, MetadataV3, VersionState } from "../../common/versionMetadata";
 import { isMigrationV3Enabled, isSPFxProject } from "../../common/tools";
+import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
@@ -216,7 +216,7 @@ export async function wrapRunMigration(
 async function rollbackMigration(context: MigrationContext): Promise<void> {
   await context.cleanModifiedPaths();
   await context.restoreBackup();
-  await context.cleanTeamsfx();
+  await context.cleanBackup();
 }
 
 async function showSummaryReport(context: MigrationContext): Promise<void> {
@@ -235,7 +235,7 @@ export async function migrate(context: MigrationContext): Promise<void> {
 }
 
 async function preMigration(context: MigrationContext): Promise<void> {
-  await context.backup(V2TeamsfxFolder);
+  await context.backup(MetadataV2.configFolder);
 }
 
 export async function checkVersionForMigration(ctx: CoreHookContext): Promise<VersionForMigration> {
@@ -722,7 +722,7 @@ export async function updateGitignore(context: MigrationContext): Promise<void> 
   );
   ignoreFileContent +=
     EOL + path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + "*");
-  ignoreFileContent += EOL + "teamsfx/backup/*";
+  ignoreFileContent += EOL + `${backupFolder}/*`;
 
   await context.fsWriteFile(gitignoreFile, ignoreFileContent);
 }

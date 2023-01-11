@@ -12,6 +12,7 @@ export const MetadataV3 = {
   configFile: "teamsapp.yml",
   localConfigFile: "teamsapp.local.yml",
   defaultEnvironmentFolder: "teamsAppEnv",
+  projectId: "projectId",
 };
 
 export const MetadataV2 = {
@@ -23,11 +24,13 @@ export const MetadataV2 = {
     cli: "1.x.x",
     cli_help: "1.x.x",
   },
+  configFolder: ".fx",
+  configFile: "projectSettings.json",
 };
 
 export const MetadataV3Abandoned = {
   projectVersion: "3.0.0",
-  folder: "teamsfx",
+  configFolder: "teamsfx",
   configFile: "settings.json",
 };
 

@@ -696,7 +696,8 @@ export async function updateGitignore(context: MigrationContext): Promise<void> 
     path.join(context.projectPath, gitignoreFile),
     "utf8"
   );
-  ignoreFileContent += EOL + "teamsfx/.env.*";
+  ignoreFileContent +=
+    EOL + path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + "*");
   ignoreFileContent += EOL + "teamsfx/backup/*";
 
   await context.fsWriteFile(gitignoreFile, ignoreFileContent);

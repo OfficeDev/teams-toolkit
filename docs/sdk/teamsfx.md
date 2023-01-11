@@ -13,19 +13,19 @@
 |  [BasicAuthProvider](./teamsfx.basicauthprovider.md) | Provider that handles Basic authentication |
 |  [BearerTokenAuthProvider](./teamsfx.bearertokenauthprovider.md) | Provider that handles Bearer Token authentication |
 |  [BotSsoExecutionDialog](./teamsfx.botssoexecutiondialog.md) | Sso execution dialog, use to handle sso command |
-|  [CardActionBot](./teamsfx.cardactionbot.md) | A card action bot to respond to adaptive card universal actions. |
+|  [CardActionBot](./teamsfx.cardactionbot.md) |  |
 |  [CertificateAuthProvider](./teamsfx.certificateauthprovider.md) | Provider that handles Certificate authentication |
 |  [Channel](./teamsfx.channel.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team channel. |
-|  [CommandBot](./teamsfx.commandbot.md) | A command bot for receiving commands and sending responses in Teams. |
-|  [ConversationBot](./teamsfx.conversationbot.md) | Provide utilities for bot conversation, including: - handle command and response. - send notification to varies targets (e.g., member, group, channel). |
+|  [CommandBot](./teamsfx.commandbot.md) |  |
+|  [ConversationBot](./teamsfx.conversationbot.md) |  |
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | Error class with code and message thrown by the SDK. |
 |  [InvokeResponseFactory](./teamsfx.invokeresponsefactory.md) | Provides methods for formatting various invoke responses a bot can send to respond to an invoke request. |
 |  [Member](./teamsfx.member.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a team member. |
 |  [MessageBuilder](./teamsfx.messagebuilder.md) | Provides utility method to build bot message with cards that supported in Teams. |
 |  [MsGraphAuthProvider](./teamsfx.msgraphauthprovider.md) | Microsoft Graph auth provider for Teams Framework |
-|  [NotificationBot](./teamsfx.notificationbot.md) | Provide utilities to send notification to varies targets (e.g., member, group, channel). |
+|  [NotificationBot](./teamsfx.notificationbot.md) |  |
 |  [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) | Represent on-behalf-of flow to get user identity, and it is designed to be used in server side. |
-|  [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) | A [NotificationTarget](./teamsfx.notificationtarget.md) that represents a bot installation. Teams Bot could be installed into - Personal chat - Group chat - Team (by default the <code>General</code> channel) |
+|  [TeamsBotInstallation](./teamsfx.teamsbotinstallation.md) |  |
 |  [TeamsBotSsoPrompt](./teamsfx.teamsbotssoprompt.md) | Creates a new prompt that leverage Teams Single Sign On (SSO) support for bot to automatically sign in user and help receive oauth token, asks the user to consent if needed. |
 |  [TeamsFx](./teamsfx.teamsfx.md) | A class providing credential and configuration. |
 |  [TeamsUserCredential](./teamsfx.teamsusercredential.md) | Represent Teams current user's identity, and it is used within Teams client applications. |
@@ -86,6 +86,12 @@
 |  [TeamsFxBotCommandHandler](./teamsfx.teamsfxbotcommandhandler.md) | Interface for a command handler that can process command to a TeamsFx bot and return a response. |
 |  [TeamsFxBotSsoCommandHandler](./teamsfx.teamsfxbotssocommandhandler.md) | Interface for a command handler that can process sso command to a TeamsFx bot and return a response. |
 |  [UserInfo](./teamsfx.userinfo.md) | UserInfo with user displayName, objectId and preferredUserName. |
+
+## Namespaces
+
+|  Namespace | Description |
+|  --- | --- |
+|  [BotBuilderCloudAdapter](./teamsfx.botbuildercloudadapter.md) |  |
 
 ## Type Aliases
 

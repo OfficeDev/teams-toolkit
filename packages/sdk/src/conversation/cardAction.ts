@@ -5,6 +5,10 @@ import { CardActionOptions, TeamsFxAdaptiveCardActionHandler } from "./interface
 /**
  * A card action bot to respond to adaptive card universal actions.
  */
+
+/**
+ * @deprecated Use `BotBuilderCloudAdapter.CardActionBot` instead.
+ */
 export class CardActionBot {
   private readonly adapter: BotFrameworkAdapter;
   private middleware: CardActionMiddleware;

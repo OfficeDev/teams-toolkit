@@ -184,13 +184,13 @@ export class SSO {
       context.userInteraction
         .showMessage(
           "info",
-          getLocalizedString("core.addSso.learnMore", AddSsoParameters.LearnMore),
+          getLocalizedString("core.addSso.learnMore", AddSsoParameters.LearnMore()),
           false,
-          AddSsoParameters.LearnMore
+          AddSsoParameters.LearnMore()
         )
         .then((result) => {
           const userSelected = result.isOk() ? result.value : undefined;
-          if (userSelected === AddSsoParameters.LearnMore) {
+          if (userSelected === AddSsoParameters.LearnMore()) {
             context.userInteraction?.openUrl(AddSsoParameters.LearnMoreUrl);
             context.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddSsoReadme, {
               [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,

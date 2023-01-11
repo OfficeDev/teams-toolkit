@@ -23,7 +23,11 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 
-import { AadConstants } from "../component/constants";
+import {
+  AadConstants,
+  AzureSolutionQuestionNames,
+  SingleSignOnOptionItem,
+} from "../component/constants";
 import { environmentManager } from "./environment";
 import {
   ObjectIsUndefinedError,
@@ -308,6 +312,11 @@ export class FxCoreV3Implement {
         outputJsonPath: func.params.outputJsonPath,
       };
       res = await driver.run(args, context);
+    } else if (func.method === "addSso") {
+      inputs.stage = Stage.addFeature;
+      inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
+      const component = Container.get("sso") as any;
+      res = await component.add(context, inputs as InputsWithProjectPath);
     }
     return res;
   }

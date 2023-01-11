@@ -35,8 +35,8 @@ export class CommonHostingError extends Error {
     this.name = name;
     this.details = details;
     this.suggestions = suggestions ?? [
-      AzureOpsConstant.CHECK_OUTPUT_LOG_AND_TRY_TO_FIX,
-      AzureOpsConstant.RETRY_CURRENT_STEP,
+      AzureOpsConstant.CHECK_OUTPUT_LOG_AND_TRY_TO_FIX(),
+      AzureOpsConstant.RETRY_CURRENT_STEP(),
     ];
     this.innerError = innerError;
   }
@@ -93,7 +93,7 @@ export class ListPublishingCredentialsError extends CommonHostingError {
   constructor(innerError?: InnerError) {
     super(
       ErrorNameConstant.LIST_PUBLISHING_CREDENTIALS_ERROR,
-      AzureOpsConstant.FAIL_TO_LIST_PUBLISHING_CREDENTIALS,
+      AzureOpsConstant.FAIL_TO_LIST_PUBLISHING_CREDENTIALS(),
       innerError
     );
   }
@@ -101,7 +101,7 @@ export class ListPublishingCredentialsError extends CommonHostingError {
 
 export class ZipDeployError extends CommonHostingError {
   constructor(innerError?: InnerError) {
-    super(ErrorNameConstant.ZIP_DEPLOY_ERROR, AzureOpsConstant.FAIL_TO_DO_ZIP_DEPLOY, innerError);
+    super(ErrorNameConstant.ZIP_DEPLOY_ERROR, AzureOpsConstant.FAIL_TO_DO_ZIP_DEPLOY(), innerError);
   }
 }
 
@@ -109,7 +109,7 @@ export class DeployStatusError extends CommonHostingError {
   constructor(innerError?: InnerError) {
     super(
       ErrorNameConstant.DEPLOY_STATUS_ERROR,
-      AzureOpsConstant.FAIL_TO_CHECK_DEPLOY_STATUS,
+      AzureOpsConstant.FAIL_TO_CHECK_DEPLOY_STATUS(),
       innerError
     );
   }
@@ -117,7 +117,7 @@ export class DeployStatusError extends CommonHostingError {
 
 export class DeployTimeoutError extends CommonHostingError {
   constructor() {
-    super(ErrorNameConstant.DEPLOY_TIMEOUT_ERROR, AzureOpsConstant.CHECK_DEPLOY_STATUS_TIMEOUT);
+    super(ErrorNameConstant.DEPLOY_TIMEOUT_ERROR, AzureOpsConstant.CHECK_DEPLOY_STATUS_TIMEOUT());
   }
 }
 
@@ -125,7 +125,7 @@ export class RestartWebAppError extends CommonHostingError {
   constructor(innerError?: InnerError) {
     super(
       ErrorNameConstant.RESTART_WEBAPP_ERROR,
-      AzureOpsConstant.FAIL_TO_RESTART_APP_SERVICE,
+      AzureOpsConstant.FAIL_TO_RESTART_APP_SERVICE(),
       innerError
     );
   }

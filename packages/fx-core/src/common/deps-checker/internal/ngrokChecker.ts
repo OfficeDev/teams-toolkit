@@ -86,7 +86,9 @@ export class NgrokChecker implements DepsChecker {
     }
 
     this._telemetry.sendEvent(DepsCheckerEvent.ngrokInstallCompleted);
-    await this._logger.info(Messages.finishInstallNgrok.replace("@NameVersion", displayNgrokName));
+    await this._logger.info(
+      Messages.finishInstallNgrok().replace("@NameVersion", displayNgrokName)
+    );
   }
 
   public getNgrokBinFolder(): string {
@@ -124,10 +126,10 @@ export class NgrokChecker implements DepsChecker {
     this._telemetry.sendSystemErrorEvent(
       DepsCheckerEvent.ngrokInstallError,
       TelemtryMessages.failedToInstallNgrok,
-      Messages.failToValidateNgrok.replace("@NameVersion", displayNgrokName)
+      Messages.failToValidateNgrok().replace("@NameVersion", displayNgrokName)
     );
     throw new DepsCheckerError(
-      Messages.failToInstallNgrok.split("@NameVersion").join(displayNgrokName),
+      Messages.failToInstallNgrok().split("@NameVersion").join(displayNgrokName),
       ngrokInstallHelpLink
     );
   }
@@ -159,7 +161,7 @@ export class NgrokChecker implements DepsChecker {
   private handleNpmNotFound() {
     this._telemetry.sendEvent(DepsCheckerEvent.npmNotFound);
     throw new DepsCheckerError(
-      Messages.needInstallNgrok.replace("@NameVersion", displayNgrokName),
+      Messages.needInstallNgrok().replace("@NameVersion", displayNgrokName),
       ngrokInstallHelpLink
     );
   }
@@ -262,7 +264,7 @@ export class NgrokChecker implements DepsChecker {
   }
 
   private async doInstallNgrok(): Promise<void> {
-    await this._logger.info(Messages.startInstallNgrok.replace("@NameVersion", displayNgrokName));
+    await this._logger.info(Messages.startInstallNgrok().replace("@NameVersion", displayNgrokName));
 
     try {
       const npmCommand = this.getExecCommand("npm");

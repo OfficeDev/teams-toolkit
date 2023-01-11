@@ -35,7 +35,7 @@ import { CoreHookContext } from "@microsoft/teamsfx-core/build/core/types";
 import * as StringResources from "../../package.nls.json";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import M365TokenInstance from "../../src/commonlib/m365Login";
-import { SUPPORTED_SPFX_VERSION } from "../../src/constants";
+import { DeveloperPortalHomeLink, SUPPORTED_SPFX_VERSION } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugCommonUtils from "../../src/debug/commonUtils";
@@ -63,6 +63,8 @@ import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 import { assert } from "console";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
+import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
+import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -1421,6 +1423,55 @@ describe("handlers", () => {
     });
   });
 
+  describe("openAppManagement", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("open link with loginHint", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(M365TokenInstance, "getStatus").resolves(
+        ok({
+          status: signedIn,
+          token: undefined,
+          accountInfo: { upn: "test" },
+        })
+      );
+      const openUrl = sinon.stub(extension.VS_CODE_UI, "openUrl").resolves(ok(true));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      const res = await handlers.openAppManagement();
+
+      chai.assert.isTrue(openUrl.calledOnce);
+      chai.assert.isTrue(res.isOk());
+      chai.assert.equal(openUrl.args[0][0], `${DeveloperPortalHomeLink}?login_hint=test`);
+    });
+
+    it("open link without loginHint", async () => {
+      sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
+      sinon.stub(M365TokenInstance, "getStatus").resolves(
+        ok({
+          status: signedOut,
+          token: undefined,
+          accountInfo: { upn: "test" },
+        })
+      );
+      const openUrl = sinon.stub(extension.VS_CODE_UI, "openUrl").resolves(ok(true));
+
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+      const res = await handlers.openAppManagement();
+
+      chai.assert.isTrue(openUrl.calledOnce);
+      chai.assert.isTrue(res.isOk());
+      chai.assert.equal(openUrl.args[0][0], DeveloperPortalHomeLink);
+    });
+  });
+
   describe("installAppInTeams", () => {
     beforeEach(() => {
       sinon.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
@@ -1492,6 +1543,89 @@ describe("handlers", () => {
       await handlers.checkSideloadingCallback();
 
       chai.expect(showMessageCalledCount).to.be.equal(1);
+      sinon.restore();
+    });
+  });
+
+  describe("validateAzureDependenciesHandler", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, undefined);
+    });
+
+    it("skip debugging", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(true);
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, "1");
+    });
+
+    it("should not continue", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(false);
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").callsFake(() => {});
+      sinon.stub(debugCommonUtils, "getProjectComponents").returns(Promise.resolve(""));
+      sinon.stub(VSCodeDepsChecker.prototype, "resolve").returns(Promise.resolve(false));
+      sinon.stub(debugCommonUtils, "endLocalDebugSession").callsFake(() => {});
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, "1");
+    });
+
+    it("should continue", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(false);
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent").callsFake(() => {});
+      sinon.stub(debugCommonUtils, "getProjectComponents").returns(Promise.resolve(""));
+      sinon.stub(VSCodeDepsChecker.prototype, "resolve").returns(Promise.resolve(true));
+      sinon.stub(debugCommonUtils, "getPortsInUse").returns(Promise.resolve([]));
+      const result = await handlers.validateAzureDependenciesHandler();
+      chai.assert.equal(result, undefined);
+    });
+  });
+
+  describe("validateLocalPrerequisitesHandler", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.validateLocalPrerequisitesHandler();
+      chai.assert.equal(result, undefined);
+    });
+
+    it("skip debugging", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(false);
+      sinon.stub(debugCommonUtils, "checkAndSkipDebugging").returns(true);
+      const result = await handlers.validateLocalPrerequisitesHandler();
+      chai.assert.equal(result, "1");
+      sinon.restore();
+    });
+  });
+
+  describe("backendExtensionsInstallHandler", () => {
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.backendExtensionsInstallHandler();
+      chai.assert.equal(result, undefined);
+      sinon.restore();
+    });
+  });
+
+  describe("preDebugCheckHandler", () => {
+    it("v3: happy path", async () => {
+      sinon.stub(commonTools, "isV3Enabled").returns(true);
+      sinon.stub(debugCommonUtils, "triggerV3Migration").returns(Promise.resolve(undefined));
+      const result = await handlers.preDebugCheckHandler();
+      chai.assert.equal(result, undefined);
       sinon.restore();
     });
   });

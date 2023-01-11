@@ -206,12 +206,12 @@ describe("question for v3", () => {
         assert.deepEqual(
           options,
           [
-            NotificationOptionItem,
-            CommandAndResponseOptionItem,
-            WorkflowOptionItem,
-            TabNonSsoItem,
-            BotNewUIOptionItem,
-            MessageExtensionNewUIItem,
+            NotificationOptionItem(),
+            CommandAndResponseOptionItem(),
+            WorkflowOptionItem(),
+            TabNonSsoItem(),
+            BotNewUIOptionItem(),
+            MessageExtensionNewUIItem(),
             AzureResourceFunctionNewUI,
             AzureResourceApimNewUI,
             AzureResourceSQLNewUI,
@@ -348,9 +348,9 @@ describe("question for v3", () => {
     const res = await getQuestionsForAddFeatureV3(context, inputs);
     assert.isTrue(res.isOk());
     const expectedOptions = [
-      TabNewUIOptionItem,
-      TabNonSsoItem,
-      BotNewUIOptionItem,
+      TabNewUIOptionItem(),
+      TabNonSsoItem(),
+      BotNewUIOptionItem(),
       AzureResourceFunctionNewUI,
       AzureResourceApimNewUI,
       AzureResourceSQLNewUI,

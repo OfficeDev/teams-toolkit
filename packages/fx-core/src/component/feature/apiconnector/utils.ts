@@ -69,7 +69,7 @@ export function concatLines(line: string[], interval = " "): string {
 }
 
 export class Notification {
-  public static readonly READ_MORE = getLocalizedString("core.Notification.ReadMore");
+  public static readonly READ_MORE = () => getLocalizedString("core.Notification.ReadMore");
   public static readonly READ_MORE_URL = "https://aka.ms/teamsfx-connect-api";
 
   public static GetBasicString(

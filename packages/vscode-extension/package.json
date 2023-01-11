@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -118,6 +118,11 @@
         "view": "teamsfx-empty-project-and-check-upgrade",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-and-check-upgrade.content%",
         "enablement": "fx-extension.initialized"
+      },
+      {
+        "view": "teamsfx-project-and-check-upgradeV3",
+        "contents": "%teamstoolkit.viewsWelcome.teamsfx-project-and-check-upgradeV3.content%",
+        "enablement": "fx-extension.initialized"
       }
     ],
     "views": {
@@ -125,17 +130,17 @@
         {
           "id": "teamsfx-accounts",
           "name": "Accounts",
-          "when": "fx-extension.isTeamsFx"
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
         },
         {
           "id": "teamsfx-environment",
           "name": "Environment",
-          "when": "fx-extension.isTeamsFx && !fx-extension.isV3Enabled && isWorkspaceTrusted"
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && !fx-extension.isV3Enabled && isWorkspaceTrusted"
         },
         {
           "id": "teamsfx-development",
           "name": "Development",
-          "when": "fx-extension.isTeamsFx"
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
         },
         {
           "type": "webview",
@@ -146,7 +151,7 @@
         {
           "id": "teamsfx-deployment",
           "name": "Deployment",
-          "when": "fx-extension.isTeamsFx"
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
         },
         {
           "type": "webview",
@@ -157,7 +162,7 @@
         {
           "id": "teamsfx-help-and-feedback",
           "name": "Help and feedback",
-          "when": "fx-extension.isTeamsFx",
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3",
           "visibility": "visible"
         },
         {
@@ -169,6 +174,11 @@
           "id": "teamsfx-empty-project-and-check-upgrade",
           "name": "Teams Toolkit",
           "when": "!fx-extension.isTeamsFx && fx-extension.canUpgradeToArmAndMultiEnv && isWorkspaceTrusted"
+        },
+        {
+          "id": "teamsfx-project-and-check-upgradeV3",
+          "name": "Teams Toolkit",
+          "when": "fx-extension.isTeamsFx && fx-extension.canUpgradeV3 && isWorkspaceTrusted"
         },
         {
           "id": "teamsfx-empty-project-new-user",
@@ -461,7 +471,7 @@
         },
         {
           "command": "fx-extension.checkProjectUpgrade",
-          "when": "fx-extension.canUpgradeToArmAndMultiEnv"
+          "when": "fx-extension.canUpgradeToArmAndMultiEnv || fx-extension.canUpgradeV3"
         }
       ]
     },
@@ -1471,7 +1481,7 @@
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/teamsfx-api": "^0.22.0",
-    "@microsoft/teamsfx-core": "^1.21.0",
+    "@microsoft/teamsfx-core": "^1.22.0-rc.0",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^0.9.3",

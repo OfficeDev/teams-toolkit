@@ -6,7 +6,7 @@ import express from "express";
 import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { Mutex } from "async-mutex";
+import { Mutex, MutexInterface } from "async-mutex";
 import {
   UserError,
   LogLevel,
@@ -157,10 +157,8 @@ export class CodeFlowLogin {
         .then(async (response) => {
           if (response) {
             if (response.account) {
-              await this.mutex?.runExclusive(async () => {
-                this.account = response.account!;
-                await saveAccountId(this.accountName, this.account.homeAccountId);
-              });
+              this.account = response.account!;
+              await saveAccountId(this.accountName, this.account.homeAccountId);
               await sendFile(
                 res,
                 path.join(__dirname, "./codeFlowResult/index.html"),
@@ -253,16 +251,31 @@ export class CodeFlowLogin {
   }
 
   async logout(): Promise<boolean> {
-    const accountCache = await loadAccountId(this.accountName);
-    if (accountCache) {
-      const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
-      if (dataCache) {
-        this.msalTokenCache?.removeAccount(dataCache);
+    const release = await this.mutex.acquire();
+    try {
+      const accountCache = await loadAccountId(this.accountName);
+      if (accountCache) {
+        const dataCache = await this.msalTokenCache.getAccountByHomeId(accountCache);
+        if (dataCache) {
+          this.msalTokenCache?.removeAccount(dataCache);
+        }
       }
-    }
 
-    await saveAccountId(this.accountName, undefined);
-    return true;
+      await saveAccountId(this.accountName, undefined);
+      this.account = undefined;
+      return true;
+    } finally {
+      release();
+    }
+  }
+
+  // when using command account logout m365, activate will try to get region information at the start time.
+  // In the same time AccountLogout handler will try to logout account.
+  // This will trigger getStatus->logout account->getStatus process switching, and cause silent getting token in logout status issue.
+  // This method provide a way to lock specific method and release to do other work.
+  public async getLock(): Promise<MutexInterface.Releaser> {
+    const release = await this.mutex.acquire();
+    return release;
   }
 
   /**

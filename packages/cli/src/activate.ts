@@ -33,7 +33,7 @@ export default async function activate(
     }
   }
 
-  M365TokenProvider.setStatusChangeMap(
+  await M365TokenProvider.setStatusChangeMap(
     "set-region",
     { scopes: AuthSvcScopes },
     async (status, token, accountInfo) => {

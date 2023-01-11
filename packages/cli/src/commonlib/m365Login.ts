@@ -70,13 +70,18 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
    * Get team access token
    */
   async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
-    await M365Login.codeFlowInstance.reloadCache();
-    const tokenRes = await M365Login.codeFlowInstance.getTokenByScopes(tokenRequest.scopes);
+    const release = await M365Login.codeFlowInstance.getLock();
+    try {
+      await M365Login.codeFlowInstance.reloadCache();
+      const tokenRes = await M365Login.codeFlowInstance.getTokenByScopes(tokenRequest.scopes);
 
-    if (tokenRes.isOk()) {
-      return ok(tokenRes.value);
-    } else {
-      return tokenRes;
+      if (tokenRes.isOk()) {
+        return ok(tokenRes.value);
+      } else {
+        return tokenRes;
+      }
+    } finally {
+      release();
     }
   }
 
@@ -99,30 +104,35 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
   }
 
   async getStatus(tokenRequest: TokenRequest): Promise<Result<LoginStatus, FxError>> {
-    if (!M365Login.codeFlowInstance.account) {
-      await M365Login.codeFlowInstance.reloadCache();
-    }
-    if (M365Login.codeFlowInstance.account) {
-      const tokenRes = await M365Login.codeFlowInstance.getTokenByScopes(
-        tokenRequest.scopes,
-        false
-      );
-      if (tokenRes.isOk()) {
-        const tokenJson = ConvertTokenToJson(tokenRes.value);
-        return ok({ status: signedIn, token: tokenRes.value, accountInfo: tokenJson });
-      } else {
-        if (tokenRes.error.name !== ErrorMessage.checkOnlineFailTitle) {
-          return ok({ status: signedOut, token: undefined, accountInfo: undefined });
-        } else {
-          return ok({
-            status: signedIn,
-            token: undefined,
-            accountInfo: { upn: M365Login.codeFlowInstance.account?.username },
-          });
-        }
+    const release = await M365Login.codeFlowInstance.getLock();
+    try {
+      if (!M365Login.codeFlowInstance.account) {
+        await M365Login.codeFlowInstance.reloadCache();
       }
-    } else {
-      return ok({ status: signedOut, token: undefined, accountInfo: undefined });
+      if (M365Login.codeFlowInstance.account) {
+        const tokenRes = await M365Login.codeFlowInstance.getTokenByScopes(
+          tokenRequest.scopes,
+          false
+        );
+        if (tokenRes.isOk()) {
+          const tokenJson = ConvertTokenToJson(tokenRes.value);
+          return ok({ status: signedIn, token: tokenRes.value, accountInfo: tokenJson });
+        } else {
+          if (tokenRes.error.name !== ErrorMessage.checkOnlineFailTitle) {
+            return ok({ status: signedOut, token: undefined, accountInfo: undefined });
+          } else {
+            return ok({
+              status: signedIn,
+              token: undefined,
+              accountInfo: { upn: M365Login.codeFlowInstance.account?.username },
+            });
+          }
+        }
+      } else {
+        return ok({ status: signedOut, token: undefined, accountInfo: undefined });
+      }
+    } finally {
+      release();
     }
   }
 }

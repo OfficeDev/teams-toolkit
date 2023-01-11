@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Yuqi Zhou <yuqzho@microsoft.com>
+ */
+
 import { AppDefinition } from "./resource/appManifest/interfaces/appDefinition";
 import * as appStudio from "./resource/appManifest/appStudio";
 import * as os from "os";
@@ -227,6 +231,25 @@ async function updateManifest(
     }
   }
 
+  // Adding a feature with groupchat scope in TDP won't pass manifest validation in TTK.
+  // This is a short-term solution to convert the value to what TTK expects.
+  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
+    if (manifest.configurableTabs[0].scopes) {
+      {
+        manifest.configurableTabs[0].scopes = updateScope(
+          manifest.configurableTabs[0].scopes
+        ) as any;
+      }
+    }
+  }
+  if (!!manifest.bots && manifest.bots.length > 0) {
+    if (manifest.bots[0].scopes) {
+      {
+        manifest.bots[0].scopes = updateScope(manifest.bots[0].scopes) as any;
+      }
+    }
+  }
+
   await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, "\t"), "utf-8");
 
   // languages
@@ -318,6 +341,10 @@ export function getTemplateId(teamsApp: AppDefinition): string | undefined {
   }
 
   return undefined;
+}
+
+function updateScope(scopes: string[]): string[] {
+  return scopes.map((o) => o.toLowerCase());
 }
 
 export function isFromDevPortalInVSC(inputs: Inputs): boolean {

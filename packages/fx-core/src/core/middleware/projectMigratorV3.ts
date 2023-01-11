@@ -7,6 +7,7 @@ import {
   FxError,
   ok,
   ProjectSettings,
+  SettingsFolderName,
   SystemError,
   UserError,
   InputConfigsFolderName,

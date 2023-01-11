@@ -99,6 +99,7 @@ const Constants = {
     encoding: "utf8",
     flag: "a+",
   },
+  envFilePrefix: ".env.",
 };
 
 const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
@@ -436,11 +437,11 @@ export async function configsMigration(context: MigrationContext): Promise<void>
           await context.fsEnsureDir(MetadataV3.defaultEnvironmentFolder);
           if (
             !(await context.fsPathExists(
-              path.join(MetadataV3.defaultEnvironmentFolder, ".env." + envName)
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             ))
           )
             await context.fsCreateFile(
-              path.join(MetadataV3.defaultEnvironmentFolder, ".env." + envName)
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             );
           const obj = await readJsonFile(
             context,
@@ -453,7 +454,7 @@ export async function configsMigration(context: MigrationContext): Promise<void>
                 path.join(
                   context.projectPath,
                   MetadataV3.defaultEnvironmentFolder,
-                  ".env." + envName
+                  Constants.envFilePrefix + envName
                 )
               )
               .toString()
@@ -471,7 +472,7 @@ export async function configsMigration(context: MigrationContext): Promise<void>
                 bicepContent
               );
             await context.fsWriteFile(
-              path.join(MetadataV3.defaultEnvironmentFolder, ".env." + envName),
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
               envData,
               Constants.envWriteOption
             );
@@ -497,11 +498,11 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
           await context.fsEnsureDir(MetadataV3.defaultEnvironmentFolder);
           if (
             !(await context.fsPathExists(
-              path.join(MetadataV3.defaultEnvironmentFolder, ".env." + envName)
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             ))
           )
             await context.fsCreateFile(
-              path.join(MetadataV3.defaultEnvironmentFolder, ".env." + envName)
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             );
           const obj = await readJsonFile(
             context,
@@ -518,7 +519,7 @@ export async function statesMigration(context: MigrationContext): Promise<void> 
               bicepContent
             );
             await context.fsWriteFile(
-              path.join(MetadataV3.defaultEnvironmentFolder, ".env." + envName),
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
               envData,
               Constants.envWriteOption
             );
@@ -544,11 +545,11 @@ export async function userdataMigration(context: MigrationContext): Promise<void
           await context.fsEnsureDir(MetadataV3.defaultEnvironmentFolder);
           if (
             !(await context.fsPathExists(
-              path.join(MetadataV3.defaultEnvironmentFolder, ".env." + envName)
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             ))
           )
             await context.fsCreateFile(
-              path.join(MetadataV3.defaultEnvironmentFolder, ".env." + envName)
+              path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
             );
           const bicepContent = await readBicepContent(context);
           const envData = await readAndConvertUserdata(
@@ -557,7 +558,7 @@ export async function userdataMigration(context: MigrationContext): Promise<void
             bicepContent
           );
           await context.fsWriteFile(
-            path.join(MetadataV3.defaultEnvironmentFolder, ".env." + envName),
+            path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
             envData,
             Constants.envWriteOption
           );
@@ -661,11 +662,11 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
               await context.fsEnsureDir(MetadataV3.defaultEnvironmentFolder);
               if (
                 !(await context.fsPathExists(
-                  path.join(MetadataV3.defaultEnvironmentFolder, ".env." + envName)
+                  path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
                 ))
               )
                 await context.fsCreateFile(
-                  path.join(MetadataV3.defaultEnvironmentFolder, ".env." + envName)
+                  path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName)
                 );
               const apimPluginAppendContent =
                 "APIM__PUBLISHEREMAIL= # Teams Toolkit does not record your mail to protect your privacy, please fill your mail address here before provision to avoid failures" +
@@ -673,7 +674,7 @@ export async function generateApimPluginEnvContent(context: MigrationContext): P
                 "APIM__PUBLISHERNAME= # Teams Toolkit does not record your name to protect your privacy, please fill your name here before provision to avoid failures" +
                 EOL;
               await context.fsWriteFile(
-                path.join(MetadataV3.defaultEnvironmentFolder, ".env." + envName),
+                path.join(MetadataV3.defaultEnvironmentFolder, Constants.envFilePrefix + envName),
                 apimPluginAppendContent,
                 Constants.envWriteOption
               );

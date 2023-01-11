@@ -103,7 +103,6 @@ const Constants = {
 
 const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
 const migrationMessageButtons = [learnMoreText, upgradeButton];
-const targetFolder = "";
 
 type Migration = (context: MigrationContext) => Promise<void>;
 const subMigrations: Array<Migration> = [

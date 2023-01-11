@@ -14,7 +14,8 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
-import { buildAadManifest, loadCurrentState } from "./utility/buildAadManifest";
+import { buildAadManifest } from "./utility/buildAadManifest";
+import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -53,7 +54,8 @@ export class UpdateAadAppDriver implements StepDriver {
       const manifest = await buildAadManifest(
         context,
         args.manifestTemplatePath,
-        args.outputFilePath
+        args.outputFilePath,
+        state
       );
 
       // MS Graph API does not allow adding new OAuth permissions and pre authorize it within one request
@@ -150,6 +152,12 @@ export class UpdateAadAppDriver implements StepDriver {
       stepMessages: [
         getLocalizedString("driver.aadApp.progressBar.updateAadAppStepMessage"), // step 1
       ],
+    };
+  }
+
+  private loadCurrentState(): UpdateAadAppOutput {
+    return {
+      AAD_APP_ACCESS_AS_USER_PERMISSION_ID: process.env.AAD_APP_ACCESS_AS_USER_PERMISSION_ID,
     };
   }
 }

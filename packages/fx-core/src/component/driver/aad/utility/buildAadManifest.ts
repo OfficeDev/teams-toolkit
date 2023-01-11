@@ -18,19 +18,12 @@ const driverConstants = {
   generateManifestFailedMessageKey: "driver.aadApp.error.generateManifestFailed",
 };
 
-export function loadCurrentState(): UpdateAadAppOutput {
-  return {
-    AAD_APP_ACCESS_AS_USER_PERMISSION_ID: process.env.AAD_APP_ACCESS_AS_USER_PERMISSION_ID,
-  };
-}
-
 export async function buildAadManifest(
   context: DriverContext,
   manifestTemplatePath: string,
-  outputFilePath: string
+  outputFilePath: string,
+  state?: UpdateAadAppOutput
 ): Promise<AADManifest> {
-  const state = loadCurrentState();
-
   const manifestAbsolutePath = getAbsolutePath(manifestTemplatePath, context.projectPath);
   const manifest = await loadManifest(manifestAbsolutePath, state);
   const warningMessage = AadManifestHelper.validateManifest(manifest);
@@ -73,7 +66,10 @@ function validateManifestString(manifestString: string) {
   }
 }
 
-async function loadManifest(manifestPath: string, state: UpdateAadAppOutput): Promise<AADManifest> {
+async function loadManifest(
+  manifestPath: string,
+  state?: UpdateAadAppOutput
+): Promise<AADManifest> {
   let generatedNewPermissionId = false;
   try {
     const manifestTemplate = await fs.readFile(manifestPath, "utf8");
@@ -85,7 +81,9 @@ async function loadManifest(manifestPath: string, state: UpdateAadAppOutput): Pr
       if (matches) {
         const permissionId = getUuid();
         process.env.AAD_APP_ACCESS_AS_USER_PERMISSION_ID = permissionId;
-        state.AAD_APP_ACCESS_AS_USER_PERMISSION_ID = permissionId;
+        if (state) {
+          state.AAD_APP_ACCESS_AS_USER_PERMISSION_ID = permissionId;
+        }
         generatedNewPermissionId = true;
       }
     }

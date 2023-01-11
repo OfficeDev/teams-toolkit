@@ -51,7 +51,6 @@ import {
 } from "../../../src/common/versionMetadata";
 import {
   getDownloadLinkByVersionAndPlatform,
-  getMigrationHelpLink,
   getTrackingIdFromPath,
   getVersionState,
   migrationNotificationMessage,
@@ -1224,16 +1223,6 @@ describe("Migration utils", () => {
   it("isMigrationV3Enabled", () => {
     const enabled = isMigrationV3Enabled();
     assert.isFalse(enabled);
-  });
-
-  it("getMigrationHelpLink", () => {
-    const url = "mock.com";
-    let anchor: any = "mock-anchor";
-    let helpLink = getMigrationHelpLink(url, anchor);
-    assert.equal(helpLink, "mock.com#mock-anchor");
-    anchor = undefined;
-    helpLink = getMigrationHelpLink(url, anchor);
-    assert.equal(helpLink, "mock.com");
   });
 });
 

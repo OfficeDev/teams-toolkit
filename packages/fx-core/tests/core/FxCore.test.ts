@@ -60,6 +60,7 @@ import {
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { coordinator } from "../../src/component/coordinator";
 import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
+import { pathUtils } from "../../src/component/utils/pathUtils";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -622,16 +623,17 @@ describe("createEnvCopyV3", async () => {
     }
   }
 
-  before(() => {
+  beforeEach(() => {
     sandbox.stub(fs, "readFile").resolves(Buffer.from(sourceEnvStr, "utf8"));
     sandbox.stub<any, any>(fs, "createWriteStream").returns(new MockedWriteStream());
   });
 
-  after(() => {
+  afterEach(() => {
     sandbox.restore();
   });
 
   it("should create new .env file with desired content", async () => {
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("./teamsAppEnv/.env.dev"));
     const core = new FxCore(tools);
     const res = await core.v3Implement.createEnvCopyV3("newEnv", "dev", "./");
     assert(res.isOk());
@@ -656,6 +658,28 @@ describe("createEnvCopyV3", async () => {
       writeStreamContent[5] === `SECRET_KEY3=${os.EOL}`,
       "key not starts with SECRET_ should be copied with empty value"
     );
+  });
+
+  it("should failed case 1", async () => {
+    sandbox
+      .stub(pathUtils, "getEnvFilePath")
+      .onFirstCall()
+      .resolves(err(new UserError({})));
+    const core = new FxCore(tools);
+    const res = await core.v3Implement.createEnvCopyV3("newEnv", "dev", "./");
+    assert(res.isErr());
+  });
+
+  it("should failed case 2", async () => {
+    sandbox
+      .stub(pathUtils, "getEnvFilePath")
+      .onFirstCall()
+      .resolves(ok("./teamsAppEnv"))
+      .onSecondCall()
+      .resolves(err(new UserError({})));
+    const core = new FxCore(tools);
+    const res = await core.v3Implement.createEnvCopyV3("newEnv", "dev", "./");
+    assert(res.isErr());
   });
 });
 

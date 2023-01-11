@@ -2,7 +2,7 @@
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.14/MicrosoftTeams.schema.json",
     "manifestVersion": "1.14",
     "packageName": "com.microsoft.teams.extension",
-    "id": "{{state.fx-resource-appstudio.teamsAppId}}",
+    "id": "${{TEAMS_APP_ID}}",
     "version": "1.0.0",
     "developer": {
         "name": "SPFx + Teams Dev",
@@ -11,12 +11,12 @@
         "termsOfUseUrl": "https://www.microsoft.com/en-us/servicesagreement"
     },
     "name": {
-        "short": "spfx-tab",
-        "full": "Full name for spfx-tab"
+        "short": "${{TEAMS_APP_NAME}}",
+        "full": "Full name for {%appName%}"
     },
     "description": {
-        "short": "Short description of spfx-tab",
-        "full": "Full description of spfx-tab"
+        "short": "Short description of {%appName%}",
+        "full": "Full description of {%appName%}"
     },
     "icons": {
         "color": "resources/color.png",

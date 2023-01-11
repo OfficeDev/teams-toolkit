@@ -11,7 +11,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { AadAppClient } from "./utility/aadAppClient";
 import axios from "axios";
-import { SystemError, UserError, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
+import { SystemError, UserError, ok, err, FxError, Result, Platform } from "@microsoft/teamsfx-api";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import { getUuid } from "../../../common/tools";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
@@ -27,6 +27,7 @@ import { MissingEnvUserError } from "./error/missingEnvError";
 
 const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
+const ViewAadAppHelpLink = "https://aka.ms/teamsfx-view-aad-app";
 const driverConstants = {
   generateManifestFailedMessageKey: "driver.aadApp.error.generateManifestFailed",
 };
@@ -109,7 +110,15 @@ export class UpdateAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
       await progressHandler?.end(true);
-
+      const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
+      context.ui
+        ?.showMessage("info", msg, false, getLocalizedString("core.deploy.aadManifestLearnMore"))
+        .then((result) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
+            context.ui?.openUrl(ViewAadAppHelpLink);
+          }
+        });
       return {
         result: ok(
           new Map(

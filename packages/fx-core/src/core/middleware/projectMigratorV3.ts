@@ -92,8 +92,6 @@ import { getLocalizedString } from "../../common/localizeUtils";
 const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
   launchJsonPath: ".vscode/launch.json",
-  appYmlName: "teamsapp.yml",
-  appLocalYmlName: "teamsapp.local.yml",
   tasksJsonPath: ".vscode/tasks.json",
   reportName: "migrationReport.md",
   envWriteOption: {
@@ -242,13 +240,13 @@ export async function generateAppYml(context: MigrationContext): Promise<void> {
     context.projectPath
   );
   const appYmlString: string = await appYmlGenerator.generateAppYml();
-  await context.fsWriteFile(Constants.appYmlName, appYmlString);
+  await context.fsWriteFile(MetadataV3.configFile, appYmlString);
   if (oldProjectSettings.programmingLanguage?.toLowerCase() === "csharp") {
     const placeholderMappings = await getPlaceholderMappings(context);
     const appLocalYmlString: string = await appYmlGenerator.generateAppLocalYml(
       placeholderMappings
     );
-    await context.fsWriteFile(Constants.appLocalYmlName, appLocalYmlString);
+    await context.fsWriteFile(MetadataV3.localConfigFile, appLocalYmlString);
   }
 }
 
@@ -615,7 +613,7 @@ export async function debugMigration(context: MigrationContext): Promise<void> {
     placeholderMappings
   );
   const appYmlString: string = await appYmlGenerator.generateAppYml();
-  await context.fsWriteFile(Constants.appLocalYmlName, appYmlString);
+  await context.fsWriteFile(MetadataV3.localConfigFile, appYmlString);
 }
 
 export function checkapimPluginExists(pjSettings: any): boolean {

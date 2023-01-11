@@ -270,9 +270,9 @@ export class CodeFlowLogin {
   }
 
   // when using command account logout m365, activate will try to get region information at the start time.
-  // In the same time AccountLogout handler will try to logout account.
-  // This will trigger getStatus->logout account->getStatus process switching, and cause silent getting token in logout status issue.
-  // This method provide a way to lock specific method and release to do other work.
+  // At the same time AccountLogout handler will try to logout account.
+  // This will trigger getStatus->logout account->getStatus process switching and cause silent getting token in logout status issue.
+  // This method provides a way to lock specific method and release to do other work.
   public async getLock(): Promise<MutexInterface.Releaser> {
     const release = await this.mutex.acquire();
     return release;

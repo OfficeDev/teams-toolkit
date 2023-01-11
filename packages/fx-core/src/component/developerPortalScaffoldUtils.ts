@@ -151,6 +151,25 @@ async function updateManifest(
   manifest.icons.color = "resources/color.png";
   manifest.icons.outline = "resources/outline.png";
 
+  // Adding a feature with groupchat scope in TDP won't pass manifest validation in TTK.
+  // This is a short-term solution to convert the value to what TTK expects.
+  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
+    if (manifest.configurableTabs[0].scopes) {
+      {
+        manifest.configurableTabs[0].scopes = updateScope(
+          manifest.configurableTabs[0].scopes
+        ) as any;
+      }
+    }
+  }
+  if (!!manifest.bots && manifest.bots.length > 0) {
+    if (manifest.bots[0].scopes) {
+      {
+        manifest.bots[0].scopes = updateScope(manifest.bots[0].scopes) as any;
+      }
+    }
+  }
+
   // manifest: tab
   const tabs = manifest.staticTabs;
   let needUpdateStaticTabUrls = false;
@@ -228,25 +247,6 @@ async function updateManifest(
 
     if (!manifest.developer.termsOfUseUrl) {
       manifest.developer.termsOfUseUrl = DEFAULT_DEVELOPER.termsOfUseUrl;
-    }
-  }
-
-  // Adding a feature with groupchat scope in TDP won't pass manifest validation in TTK.
-  // This is a short-term solution to convert the value to what TTK expects.
-  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
-    if (manifest.configurableTabs[0].scopes) {
-      {
-        manifest.configurableTabs[0].scopes = updateScope(
-          manifest.configurableTabs[0].scopes
-        ) as any;
-      }
-    }
-  }
-  if (!!manifest.bots && manifest.bots.length > 0) {
-    if (manifest.bots[0].scopes) {
-      {
-        manifest.bots[0].scopes = updateScope(manifest.bots[0].scopes) as any;
-      }
     }
   }
 

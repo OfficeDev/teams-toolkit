@@ -7,27 +7,27 @@ import {
   DeployArgs,
   AxiosDeployQueryResult,
   DeployResult,
-} from "../../interface/buildAndDeployArgs";
-import { checkMissingArgs } from "../../../utils/common";
-import { DeployExternalApiCallError, DeployTimeoutError } from "../../../error/deployError";
+} from "../../../interface/buildAndDeployArgs";
+import { checkMissingArgs } from "../../../../utils/common";
+import { DeployExternalApiCallError, DeployTimeoutError } from "../../../../error/deployError";
 import { LogProvider } from "@microsoft/teamsfx-api";
-import { BaseDeployDriver } from "./baseDeployDriver";
+import { BaseDeployDriverImpl } from "./baseDeployDriverImpl";
 import { Base64 } from "js-base64";
 import * as appService from "@azure/arm-appservice";
-import { DeployConstant, DeployStatus } from "../../../constant/deployConstant";
+import { DeployConstant, DeployStatus } from "../../../../constant/deployConstant";
 import { default as axios } from "axios";
-import { waitSeconds } from "../../../../common/tools";
-import { HttpStatusCode } from "../../../constant/commonConstant";
+import { waitSeconds } from "../../../../../common/tools";
+import { HttpStatusCode } from "../../../../constant/commonConstant";
 import {
   getAzureAccountCredential,
   parseAzureResourceId,
-} from "../../../utils/azureResourceOperation";
-import { AzureResourceInfo } from "../../interface/commonArgs";
+} from "../../../../utils/azureResourceOperation";
+import { AzureResourceInfo } from "../../../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
 import * as fs from "fs-extra";
-import { PrerequisiteError } from "../../../error/componentError";
+import { PrerequisiteError } from "../../../../error/componentError";
 
-export abstract class AzureDeployDriver extends BaseDeployDriver {
+export abstract class AzureDeployDriverImpl extends BaseDeployDriverImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
 
   public static readonly AXIOS_INSTANCE = axios.create();
@@ -60,12 +60,14 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     const azureResource = this.parseResourceId(resourceId);
     const azureCredential = await getAzureAccountCredential(this.context.azureAccountProvider);
     const inputs = { ignoreFile: args.ignoreFile };
+    await this.progressBar?.start();
 
     if (args.dryRun && this.prepare) {
       await this.prepare(inputs);
       return false;
     }
     await this.azureDeploy(inputs, azureResource, azureCredential);
+    await this.progressBar?.end(true);
     return true;
   }
 
@@ -106,7 +108,7 @@ export abstract class AzureDeployDriver extends BaseDeployDriver {
     let res: AxiosDeployQueryResult;
     for (let i = 0; i < DeployConstant.DEPLOY_CHECK_RETRY_TIMES; ++i) {
       try {
-        res = await AzureDeployDriver.AXIOS_INSTANCE.get(location, config);
+        res = await AzureDeployDriverImpl.AXIOS_INSTANCE.get(location, config);
       } catch (e) {
         if (axios.isAxiosError(e)) {
           await logger?.error(

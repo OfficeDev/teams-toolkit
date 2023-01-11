@@ -5,6 +5,7 @@ export enum HttpStatusCode {
   OK = 200,
   CREATED = 201,
   ACCEPTED = 202,
+  INTERNAL_SERVER_ERROR = 500,
 }
 
 export class TelemetryConstant {

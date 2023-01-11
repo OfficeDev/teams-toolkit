@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureDeployDriver } from "./azureDeployDriver";
+import { AzureDeployDriverImpl } from "./impl/azureDeployDriverImpl";
 import { DeployStepArgs } from "../../interface/buildAndDeployArgs";
 import {
   BlobDeleteResponse,
@@ -57,7 +57,7 @@ export class AzureStorageDeployDriver implements StepDriver {
 /**
  * deploy to Azure Storage
  */
-export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
+export class AzureStorageDeployDriverImpl extends AzureDeployDriverImpl {
   protected summaries: string[] = [getLocalizedString("driver.deploy.azureStorageDeploySummary")];
   protected summaryPrepare: string[] = [];
   pattern =
@@ -70,7 +70,6 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<void> {
-    await this.progressBar?.start();
     await this.context.logProvider.debug("Start deploying to Azure Storage Service");
     await this.context.logProvider.debug("Get Azure Storage Service deploy credential");
     await this.progressBar?.next(ProgressMessages.getAzureStorageAccountInfo);
@@ -116,7 +115,6 @@ export class AzureStorageDeployDriverImpl extends AzureDeployDriver {
       );
     }
     await this.context.logProvider.debug("Upload files to Azure Storage Service successfully");
-    await this.progressBar?.end(true);
     return;
   }
 

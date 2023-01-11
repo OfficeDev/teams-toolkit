@@ -9,7 +9,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";
 import { getLocalizedString } from "../../../../common/localizeUtils";
-import { AzureZipDeployDriver } from "./AzureZipDeployDriver";
+import { AzureZipDeployDriverImpl } from "./impl/AzureZipDeployDriverImpl";
 
 const ACTION_NAME = "azureAppService/deploy";
 
@@ -28,10 +28,11 @@ export class AzureAppServiceDeployDriver implements StepDriver {
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
-    const impl = new AzureZipDeployDriver(
+    const impl = new AzureZipDeployDriverImpl(
       args,
       context,
       AzureAppServiceDeployDriver.SERVICE_NAME,
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
       AzureAppServiceDeployDriver.SUMMARY,
       AzureAppServiceDeployDriver.SUMMARY_PREPARE
     );
@@ -40,10 +41,11 @@ export class AzureAppServiceDeployDriver implements StepDriver {
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
-    const impl = new AzureZipDeployDriver(
+    const impl = new AzureZipDeployDriverImpl(
       args,
       ctx,
       AzureAppServiceDeployDriver.SERVICE_NAME,
+      "https://aka.ms/teamsfx-actions/azure-app-service-deploy",
       AzureAppServiceDeployDriver.SUMMARY,
       AzureAppServiceDeployDriver.SUMMARY_PREPARE
     );

@@ -1,27 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureDeployDriver } from "./azureDeployDriver";
+import { AzureDeployDriverImpl } from "./azureDeployDriverImpl";
 import {
   AxiosZipDeployResult,
   AzureUploadConfig,
   DeployStepArgs,
-} from "../../interface/buildAndDeployArgs";
-import { AzureResourceInfo, DriverContext } from "../../interface/commonArgs";
+} from "../../../interface/buildAndDeployArgs";
+import { AzureResourceInfo, DriverContext } from "../../../interface/commonArgs";
 import { TokenCredential } from "@azure/core-auth";
 import { IProgressHandler, LogProvider, UserInteraction } from "@microsoft/teamsfx-api";
-import { getLocalizedMessage, ProgressMessages } from "../../../messages";
-import { DeployConstant } from "../../../constant/deployConstant";
+import { getLocalizedMessage, ProgressMessages } from "../../../../messages";
+import { DeployConstant } from "../../../../constant/deployConstant";
 import { createHash } from "crypto";
 import { default as axios } from "axios";
-import { DeployExternalApiCallError } from "../../../error/deployError";
-import { HttpStatusCode } from "../../../constant/commonConstant";
+import { DeployExternalApiCallError } from "../../../../error/deployError";
+import { HttpStatusCode } from "../../../../constant/commonConstant";
 
-export class AzureZipDeployDriver extends AzureDeployDriver {
+export class AzureZipDeployDriverImpl extends AzureDeployDriverImpl {
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/sites\/([^\/]*)/i;
   private readonly serviceName: string;
-  protected helpLink = "https://aka.ms/teamsfx-actions/azure-app-service-deploy";
+  protected helpLink;
   protected summaries: string[];
   protected summaryPrepare: string[];
   protected zipBuffer: Buffer | undefined;
@@ -30,10 +30,12 @@ export class AzureZipDeployDriver extends AzureDeployDriver {
     args: unknown,
     context: DriverContext,
     serviceName: string,
+    helpLink: string,
     summaries: string[],
     summaryPrepare: string[]
   ) {
     super(args, context);
+    this.helpLink = helpLink;
     this.serviceName = serviceName;
     this.summaries = summaries;
     this.summaryPrepare = summaryPrepare;
@@ -44,11 +46,9 @@ export class AzureZipDeployDriver extends AzureDeployDriver {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<void> {
-    await this.progressBar?.start();
     const cost = await this.zipDeploy(args, azureResource, azureCredential);
     await this.progressBar?.next(ProgressMessages.restartAzureService);
     await this.restartFunctionApp(azureResource);
-    await this.progressBar?.end(true);
     if (cost > DeployConstant.DEPLOY_OVER_TIME) {
       await this.context.logProvider?.info(
         getLocalizedMessage(
@@ -62,6 +62,7 @@ export class AzureZipDeployDriver extends AzureDeployDriver {
   protected prepare: (args: DeployStepArgs) => Promise<void> = async (args: DeployStepArgs) => {
     await this.progressBar?.next(ProgressMessages.packingCode);
     await this.packageToZip(args, this.context);
+    await this.progressBar?.end(true);
   };
 
   /**
@@ -136,12 +137,12 @@ export class AzureZipDeployDriver extends AzureDeployDriver {
     let retryCount = 0;
     while (true) {
       try {
-        res = await AzureDeployDriver.AXIOS_INSTANCE.post(zipDeployEndpoint, zipBuffer, config);
+        res = await AzureDeployDriverImpl.AXIOS_INSTANCE.post(zipDeployEndpoint, zipBuffer, config);
         break;
       } catch (e) {
         if (axios.isAxiosError(e)) {
           // if the error is remote server error, retry
-          if ((e.response?.status ?? 200) >= 500) {
+          if ((e.response?.status ?? HttpStatusCode.OK) >= HttpStatusCode.INTERNAL_SERVER_ERROR) {
             retryCount += 1;
             if (retryCount < DeployConstant.DEPLOY_UPLOAD_RETRY_TIMES) {
               await logger?.warning(

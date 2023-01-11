@@ -1,23 +1,44 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DeployArgs, DeployContext, DeployStepArgs } from "../../interface/buildAndDeployArgs";
-import { BaseComponentInnerError } from "../../../error/componentError";
+import { DeployArgs, DeployContext, DeployStepArgs } from "../../../interface/buildAndDeployArgs";
+import { BaseComponentInnerError } from "../../../../error/componentError";
 import ignore, { Ignore } from "ignore";
-import { DeployConstant } from "../../../constant/deployConstant";
+import { DeployConstant } from "../../../../constant/deployConstant";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { zipFolderAsync } from "../../../utils/fileOperation";
-import { asBoolean, asFactory, asOptional, asString } from "../../../utils/common";
-import { BaseDeployStepDriver } from "../../interface/baseDeployStepDriver";
-import { ExecutionResult } from "../../interface/stepDriver";
-import { ok, err } from "@microsoft/teamsfx-api";
+import { zipFolderAsync } from "../../../../utils/fileOperation";
+import { asBoolean, asFactory, asOptional, asString } from "../../../../utils/common";
+import { ExecutionResult } from "../../../interface/stepDriver";
+import { ok, err, IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
+import { DriverContext } from "../../../interface/commonArgs";
 
-export abstract class BaseDeployDriver extends BaseDeployStepDriver {
+export abstract class BaseDeployDriverImpl {
+  args: unknown;
+  context: DeployContext;
+  workingDirectory: string;
+  distDirectory: string;
+  dryRun = false;
+  protected progressBar?: IProgressHandler;
   protected static readonly emptyMap = new Map<string, string>();
   protected helpLink: string | undefined = undefined;
   protected abstract summaries: string[];
   protected abstract summaryPrepare: string[];
+
+  constructor(args: unknown, context: DriverContext) {
+    this.args = args;
+    this.progressBar = this.createProgressBar(context.ui);
+    this.workingDirectory = context.projectPath;
+    this.distDirectory = "";
+    this.context = {
+      azureAccountProvider: context.azureAccountProvider,
+      progressBar: this.progressBar,
+      logProvider: context.logProvider,
+      telemetryReporter: context.telemetryReporter,
+    };
+  }
+
+  abstract createProgressBar(ui?: UserInteraction): IProgressHandler | undefined;
 
   protected static asDeployArgs = asFactory<DeployArgs>({
     workingDirectory: asOptional(asString),
@@ -31,21 +52,21 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
     await this.context.logProvider.debug("start deploy process");
 
     return await this.wrapErrorHandler(async () => {
-      const deployArgs = BaseDeployDriver.asDeployArgs(this.args, this.helpLink);
+      const deployArgs = BaseDeployDriverImpl.asDeployArgs(this.args, this.helpLink);
       // if working directory not set, use current working directory
       deployArgs.workingDirectory = deployArgs.workingDirectory ?? "./";
       // if working dir is not absolute path, then join the path with project path
-      this.workingDirectory = path.isAbsolute(deployArgs.workingDirectory)
-        ? deployArgs.workingDirectory
-        : path.join(this.workingDirectory, deployArgs.workingDirectory);
+      this.workingDirectory = this.handlePath(deployArgs.workingDirectory, this.workingDirectory);
       // if distribution path is not absolute path, then join the path with project path
-      this.distDirectory = path.isAbsolute(deployArgs.distributionPath)
-        ? deployArgs.distributionPath
-        : path.join(this.workingDirectory, deployArgs.distributionPath);
+      this.distDirectory = this.handlePath(deployArgs.distributionPath, this.workingDirectory);
       this.dryRun = deployArgs.dryRun ?? false;
       // call real deploy
       return await this.deploy(deployArgs);
     });
+  }
+
+  private handlePath(inputPath: string, baseFolder: string): string {
+    return path.isAbsolute(inputPath) ? inputPath : path.join(baseFolder, inputPath);
   }
 
   /**
@@ -95,8 +116,8 @@ export abstract class BaseDeployDriver extends BaseDeployStepDriver {
   protected async wrapErrorHandler(fn: () => boolean | Promise<boolean>): Promise<ExecutionResult> {
     try {
       return (await fn())
-        ? { result: ok(BaseDeployDriver.emptyMap), summaries: this.summaries }
-        : { result: ok(BaseDeployDriver.emptyMap), summaries: this.summaryPrepare };
+        ? { result: ok(BaseDeployDriverImpl.emptyMap), summaries: this.summaries }
+        : { result: ok(BaseDeployDriverImpl.emptyMap), summaries: this.summaryPrepare };
     } catch (e) {
       await this.context.progressBar?.end(false);
       if (e instanceof BaseComponentInnerError) {

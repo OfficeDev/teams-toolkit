@@ -244,15 +244,7 @@ export class FxCoreV3Implement {
       outputFilePath: manifestOutputPath,
       onlyBuild: false,
     };
-    const contextV3: DriverContext = {
-      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider,
-      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider,
-      ui: TOOLS.ui,
-      logProvider: TOOLS.logProvider,
-      telemetryReporter: TOOLS.telemetryReporter!,
-      projectPath: inputs.projectPath as string,
-      platform: Platform.VSCode,
-    };
+    const contextV3: DriverContext = createDriverContext(inputs);
     const res = await updateAadClient.run(inputArgs, contextV3);
     if (res.isErr()) return err(res.error);
     return ok(Void);
@@ -451,15 +443,7 @@ export class FxCoreV3Implement {
       "build",
       `aad.${inputs.env}.json`
     );
-    const contextV3: DriverContext = {
-      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider,
-      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider,
-      ui: TOOLS.ui,
-      logProvider: TOOLS.logProvider,
-      telemetryReporter: TOOLS.telemetryReporter!,
-      projectPath: inputs.projectPath as string,
-      platform: Platform.VSCode,
-    };
+    const contextV3: DriverContext = createDriverContext(inputs);
     await buildAadManifest(contextV3, manifestTemplatePath, manifestOutputPath);
     return ok(Void);
   }

@@ -13,6 +13,8 @@ import {
   UserError,
   InputConfigsFolderName,
   Platform,
+  Inputs,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -136,11 +138,15 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
       return;
     }
     if (!isMigrationV3Enabled()) {
-      await TOOLS?.ui.showMessage(
-        "warn",
-        getLocalizedString("core.migrationV3.CreateNewProject"),
-        true
-      );
+      const lastArg = ctx.arguments[ctx.arguments.length - 1];
+      const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
+      if (inputs.platform !== Platform.VSCode || inputs.stage !== Stage.debug) {
+        await TOOLS?.ui.showMessage(
+          "warn",
+          getLocalizedString("core.migrationV3.CreateNewProject"),
+          true
+        );
+      }
       ctx.result = err(TooklitNotSupportError());
       return false;
     }

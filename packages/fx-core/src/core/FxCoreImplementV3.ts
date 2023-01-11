@@ -70,6 +70,7 @@ import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/question";
 import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils";
 import { VersionSource } from "../common/versionMetadata";
+import { pathUtils } from "../component/utils/pathUtils";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -402,9 +403,13 @@ export class FxCoreV3Implement {
     sourceEnvName: string,
     projectPath: string
   ): Promise<Result<Void, FxError>> {
-    const sourceDotEnvFile = environmentManager.getDotEnvPath(sourceEnvName, projectPath);
+    let res = await pathUtils.getEnvFilePath(projectPath, sourceEnvName);
+    if (res.isErr()) return err(res.error);
+    const sourceDotEnvFile = res.value;
+    res = await pathUtils.getEnvFilePath(projectPath, targetEnvName);
+    if (res.isErr()) return err(res.error);
+    const targetDotEnvFile = res.value;
     const source = await fs.readFile(sourceDotEnvFile);
-    const targetDotEnvFile = environmentManager.getDotEnvPath(targetEnvName, projectPath);
     const writeStream = fs.createWriteStream(targetDotEnvFile);
     source
       .toString()

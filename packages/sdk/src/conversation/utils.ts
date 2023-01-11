@@ -41,7 +41,7 @@ export function getTeamsBotInstallationId(context: TurnContext): string | undefi
   }
 
   // Fallback to use conversation id.
-  // the conversation id is equal to team id only when the bot app is installed into the General channel.
+  // The conversation id is equal to team id only when the bot app is installed into the General channel.
   if (context.activity.conversation.name === undefined) {
     return context.activity.conversation.id;
   }

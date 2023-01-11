@@ -15,12 +15,11 @@ export class DeployStatusConstant {
 }
 
 export class AzureOpsConstant {
-  public static readonly TRY_LOGIN_AZURE = getLocalizedString("plugin.hosting.LoginToAzure");
-  public static readonly CHECK_OUTPUT_LOG_AND_TRY_TO_FIX = getLocalizedString(
-    "plugin.hosting.CheckLogAndFix"
-  );
-  public static readonly RETRY_CURRENT_STEP = getLocalizedString("suggestions.retryTheCurrentStep");
-  public static readonly FAIL_TO_GET_AZURE_CREDENTIALS: [string, string] = [
+  public static TRY_LOGIN_AZURE = () => getLocalizedString("plugin.hosting.LoginToAzure");
+  public static CHECK_OUTPUT_LOG_AND_TRY_TO_FIX = () =>
+    getLocalizedString("plugin.hosting.CheckLogAndFix");
+  public static RETRY_CURRENT_STEP = () => getLocalizedString("suggestions.retryTheCurrentStep");
+  public static FAIL_TO_GET_AZURE_CREDENTIALS: () => [string, string] = () => [
     getDefaultString("plugin.hosting.FailRetrieveAzureCredentials"),
     getLocalizedString("plugin.hosting.FailRetrieveAzureCredentials"),
   ];
@@ -32,27 +31,27 @@ export class AzureOpsConstant {
     getDefaultString("plugin.hosting.FailedToProvision", resource),
     getLocalizedString("plugin.hosting.FailedToProvision", resource),
   ];
-  public static readonly FAIL_TO_LIST_PUBLISHING_CREDENTIALS: [string, string] = [
+  public static readonly FAIL_TO_LIST_PUBLISHING_CREDENTIALS: () => [string, string] = () => [
     getDefaultString("plugin.hosting.FailedListPublishingCredentials"),
     getLocalizedString("plugin.hosting.FailedListPublishingCredentials"),
   ];
-  public static readonly FAIL_TO_DO_ZIP_DEPLOY: [string, string] = [
+  public static readonly FAIL_TO_DO_ZIP_DEPLOY: () => [string, string] = () => [
     getDefaultString("plugin.hosting.FailedDeployZipFile"),
     getLocalizedString("plugin.hosting.FailedDeployZipFile"),
   ];
-  public static readonly FAIL_TO_CHECK_DEPLOY_STATUS: [string, string] = [
+  public static readonly FAIL_TO_CHECK_DEPLOY_STATUS: () => [string, string] = () => [
     // eslint-disable-next-line no-secrets/no-secrets
     getDefaultString("plugin.hosting.FailedCheckDeployStatus"),
     // eslint-disable-next-line no-secrets/no-secrets
     getLocalizedString("plugin.hosting.FailedCheckDeployStatus"),
   ];
-  public static readonly CHECK_DEPLOY_STATUS_TIMEOUT: [string, string] = [
+  public static readonly CHECK_DEPLOY_STATUS_TIMEOUT: () => [string, string] = () => [
     // eslint-disable-next-line no-secrets/no-secrets
     getDefaultString("plugin.hosting.CheckDeployStatusTimeout"),
     // eslint-disable-next-line no-secrets/no-secrets
     getLocalizedString("plugin.hosting.CheckDeployStatusTimeout"),
   ];
-  public static readonly FAIL_TO_RESTART_APP_SERVICE: [string, string] = [
+  public static readonly FAIL_TO_RESTART_APP_SERVICE: () => [string, string] = () => [
     getDefaultString("plugin.hosting.FailedRestartWebApp"),
     getLocalizedString("plugin.hosting.FailedRestartWebApp"),
   ];

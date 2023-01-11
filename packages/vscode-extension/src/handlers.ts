@@ -100,6 +100,7 @@ import {
   AzureAssignRoleHelpUrl,
   AzurePortalUrl,
   CLI_FOR_M365,
+  DeveloperPortalHomeLink,
   GlobalKey,
   PublishAppLearnMoreLink,
   SpfxManageSiteAdminUrl,
@@ -166,12 +167,6 @@ import { compare } from "./utils/versionUtil";
 import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { ConvertTokenToJson } from "./commonlib/codeFlowLogin";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
-import {
-  isPersonalApp,
-  isGroupApp,
-  isBot,
-  isMessageExtension,
-} from "@microsoft/teamsfx-core/build/component/resource/appManifest/utils/utils";
 import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resource/appManifest/appStudioClient";
 
 export let core: FxCore;
@@ -1005,7 +1000,57 @@ export async function publishInDeveloperPortalHandler(
     TelemetryEvent.PublishInDeveloperPortalStart,
     getTriggerFromProperty(args)
   );
-  return await runCommand(Stage.publishInDeveloperPortal);
+  const workspacePath = globalVariables.workspaceUri?.fsPath;
+  const zipDefaultFolder: string | undefined = path.join(
+    workspacePath!,
+    BuildFolderName,
+    AppPackageFolderName
+  );
+
+  let files: string[] = [];
+  if (await fs.pathExists(zipDefaultFolder)) {
+    files = await fs.readdir(zipDefaultFolder);
+    files = files
+      .filter((file) => path.extname(file).toLowerCase() === ".zip")
+      .map((file) => {
+        return path.join(zipDefaultFolder, file);
+      });
+  }
+  const selectFileConfig: SelectFileConfig = {
+    name: "appPackagePath",
+    title: localize("teamstoolkit.publishInDevPortal.selectFile.title"),
+    placeholder: localize("teamstoolkit.publishInDevPortal.selectFile.placeholder"),
+    filters: {
+      "Zip files": ["zip"],
+    },
+    possibleFiles: files.map((file) => {
+      return {
+        id: file,
+        label: file,
+      };
+    }),
+    default: files.length > 0 ? files[0] : undefined,
+  };
+  const selectFileResult = await VS_CODE_UI.selectFile(selectFileConfig);
+  if (selectFileResult.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.PublishInDeveloperPortal,
+      selectFileResult.error,
+      getTriggerFromProperty(args)
+    );
+    return ok(null);
+  }
+  const inputs = getSystemInputs();
+  inputs["appPackagePath"] = selectFileResult.value.result;
+  const res = await runCommand(Stage.publishInDeveloperPortal, inputs);
+  if (res.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.PublishInDeveloperPortal,
+      res.error,
+      getTriggerFromProperty(args)
+    );
+  }
+  return res;
 }
 
 export async function showOutputChannel(args?: any[]): Promise<Result<any, FxError>> {
@@ -1373,6 +1418,10 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 }
 
 export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
+  if (isV3Enabled()) {
+    return await commonUtils.triggerV3Migration();
+  }
+
   if (commonUtils.checkAndSkipDebugging()) {
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
@@ -1460,6 +1509,10 @@ export async function validateSpfxDependenciesHandler(): Promise<string | undefi
  * Check & install required local prerequisites before local debug.
  */
 export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
+  if (isV3Enabled()) {
+    return await commonUtils.triggerV3Migration();
+  }
+
   const additionalProperties: { [key: string]: string } = {
     [TelemetryProperty.DebugIsTransparentTask]: "false",
   };
@@ -1559,6 +1612,10 @@ export async function validateGetStartedPrerequisitesHandler(
  * install functions binding before launch local debug
  */
 export async function backendExtensionsInstallHandler(): Promise<string | undefined> {
+  if (isV3Enabled()) {
+    return await commonUtils.triggerV3Migration();
+  }
+
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const backendRoot = await commonUtils.getProjectRoot(
@@ -1626,6 +1683,10 @@ export async function getDotnetPathHandler(): Promise<string> {
  * call localDebug on core
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
+  if (isV3Enabled()) {
+    return await commonUtils.triggerV3Migration();
+  }
+
   const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
   const result = await localTelemetryReporter.runWithTelemetryProperties(
     TelemetryEvent.DebugPreCheck,
@@ -1755,8 +1816,12 @@ export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, 
 }
 
 export async function checkUpgrade(args?: any[]) {
-  // just for triggering upgrade check for multi-env && bicep.
-  await runCommand(Stage.listCollaborator);
+  if (isV3Enabled()) {
+    const result = await core.phantomMigrationV3(getSystemInputs());
+  } else {
+    // just for triggering upgrade check for multi-env && bicep.
+    await runCommand(Stage.listCollaborator);
+  }
 }
 
 export async function openSurveyHandler(args?: any[]) {
@@ -2073,7 +2138,14 @@ export async function openSamplesHandler(args?: any[]): Promise<Result<null, FxE
 
 export async function openAppManagement(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageTeamsApp, getTriggerFromProperty(args));
-  return VS_CODE_UI.openUrl("https://dev.teams.microsoft.com/home");
+  const accountRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+
+  if (accountRes.isOk() && accountRes.value.status === signedIn) {
+    const loginHint = accountRes.value.accountInfo?.upn as string;
+    return VS_CODE_UI.openUrl(`${DeveloperPortalHomeLink}?login_hint=${loginHint}`);
+  } else {
+    return VS_CODE_UI.openUrl(DeveloperPortalHomeLink);
+  }
 }
 
 export async function openBotManagement(args?: any[]) {
@@ -3376,24 +3448,20 @@ export async function selectTutorialsHandler(args?: any[]): Promise<Result<unkno
           },
         ],
       },
-      ...(isV3Enabled()
-        ? []
-        : [
-            {
-              id: "dashboardApp",
-              label: `${localize("teamstoolkit.guides.dashboardApp.label")}`,
-              detail: localize("teamstoolkit.guides.dashboardApp.detail"),
-              groupName: localize("teamstoolkit.guide.scenario"),
-              data: "https://aka.ms/teamsfx-dashboard-app",
-              buttons: [
-                {
-                  iconPath: "file-symlink-file",
-                  tooltip: localize("teamstoolkit.guide.tooltip.github"),
-                  command: "fx-extension.openTutorial",
-                },
-              ],
-            },
-          ]),
+      {
+        id: "dashboardApp",
+        label: `${localize("teamstoolkit.guides.dashboardApp.label")}`,
+        detail: localize("teamstoolkit.guides.dashboardApp.detail"),
+        groupName: localize("teamstoolkit.guide.scenario"),
+        data: "https://aka.ms/teamsfx-dashboard-app",
+        buttons: [
+          {
+            iconPath: "file-symlink-file",
+            tooltip: localize("teamstoolkit.guide.tooltip.github"),
+            command: "fx-extension.openTutorial",
+          },
+        ],
+      },
       ...(isV3Enabled()
         ? [
             {
@@ -3858,4 +3926,8 @@ export async function scaffoldFromDeveloperPortalHandler(
 
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.HandleUrlFromDeveloperProtal, properties);
   return ok(null);
+}
+
+export async function projectVersionCheck() {
+  return await core.projectVersionCheck(getSystemInputs());
 }

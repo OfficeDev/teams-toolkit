@@ -128,7 +128,7 @@ async function shareMessageCommand(context: TurnContext, action: any): Promise<a
 
   if (
     action.messagePayload &&
-    action.messagePayload.attachment &&
+    action.messagePayload.attachments &&
     action.messagePayload.attachments.length > 0
   ) {
     // This sample does not add the MessagePayload Attachments.  This is left as an

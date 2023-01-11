@@ -26,10 +26,13 @@ import {
   TaskCommand,
   TaskDefinition,
 } from "@microsoft/teamsfx-core/build/common/local";
-import { isValidProject } from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import {
+  isValidProject,
+  isValidProjectV3,
+} from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 import VsCodeLogInstance from "../commonlib/log";
-import { core, detectVsCodeEnv, getSystemInputs, showError } from "../handlers";
+import { detectVsCodeEnv, showError } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as commonUtils from "./commonUtils";
@@ -47,7 +50,7 @@ import { PrerequisiteTaskTerminal } from "./taskTerminal/prerequisiteTaskTermina
 import { SetUpBotTaskTerminal } from "./taskTerminal/setUpBotTaskTerminal";
 import { SetUpSSOTaskTerminal } from "./taskTerminal/setUpSSOTaskTerminal";
 import { SetUpTabTaskTerminal } from "./taskTerminal/setUpTabTaskTerminal";
-import { VS_CODE_UI } from "../extension";
+import * as globalVariables from "../globalVariables";
 
 const customTasks = Object.freeze({
   [TaskCommand.checkPrerequisites]: {
@@ -142,7 +145,9 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
       const workspacePath: string = workspaceFolder.uri.fsPath;
 
+      // migrate to v3
       if (isV3Enabled()) {
+        await commonUtils.triggerV3Migration();
         return ok(undefined);
       }
 
@@ -240,22 +245,26 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     }
 
     // migrate to v3
-    if (
-      isV3Enabled() &&
-      (task.definition.command === TaskCommand.npmInstall ||
+    if (isV3Enabled()) {
+      let needsMigration = false;
+      if (task.definition.command === TaskCommand.checkPrerequisites) {
+        if (!isValidProjectV3(globalVariables.workspaceUri!.fsPath)) {
+          needsMigration = true;
+        }
+      } else if (
+        task.definition.command === TaskCommand.npmInstall ||
         task.definition.command === TaskCommand.setUpTab ||
         task.definition.command === TaskCommand.setUpBot ||
         task.definition.command === TaskCommand.setUpSSO ||
-        task.definition.command === TaskCommand.prepareManifest)
-    ) {
-      const result = await core.phantomMigrationV3(getSystemInputs());
-      if (result.isErr()) {
-        showError(result.error);
+        task.definition.command === TaskCommand.prepareManifest
+      ) {
+        needsMigration = true;
+      }
+
+      if (needsMigration) {
+        await commonUtils.triggerV3Migration();
         return undefined;
       }
-      // reload window to terminate debugging
-      await VS_CODE_UI.reload();
-      return undefined;
     }
 
     const newTask = new vscode.Task(

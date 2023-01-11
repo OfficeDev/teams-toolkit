@@ -24,5 +24,5 @@ static adaptiveCard(card: unknown): InvokeResponse;
 
 InvokeResponse
 
-{<!-- -->InvokeResponse<!-- -->} An InvokeResponse object.
+An `InvokeResponse` object.
 

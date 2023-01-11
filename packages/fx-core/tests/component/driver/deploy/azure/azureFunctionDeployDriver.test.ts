@@ -11,7 +11,7 @@ import * as appService from "@azure/arm-appservice";
 import * as Models from "@azure/arm-appservice/src/models";
 import * as fileOpt from "../../../../../src/component/utils/fileOperation";
 import { AzureDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureDeployDriver";
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import * as fs from "fs-extra";
 import { AzureFunctionDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureFunctionDeployDriver";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
@@ -325,5 +325,56 @@ describe("Azure Function Deploy Driver test", () => {
 
     const res = await deploy.run(args, context);
     expect(res.isErr()).to.equal(true);
+  });
+
+  it("deploy dry run", async () => {
+    const deploy = new AzureFunctionDeployDriver();
+    const args = {
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+      dryRun: true,
+    } as DeployArgs;
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      ui: new MockUserInteraction(),
+      logProvider: new TestLogProvider(),
+    } as DriverContext;
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
+    // ignore file
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").callsFake((file) => {
+      if (file === "ignore") {
+        return Promise.resolve(Buffer.from("node_modules"));
+      }
+      throw new Error("not found");
+    });
+    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
+    sandbox.stub(client.webApps, "restart").resolves();
+    sandbox.stub(appService, "WebSiteManagementClient").returns(client);
+    sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
+      publishingUserName: "test-username",
+      publishingPassword: "test-password",
+    } as Models.WebAppsListPublishingCredentialsResponse);
+    sandbox.stub(fs, "readFileSync").resolves("test");
+    // mock klaw
+    sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
+    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "post").resolves({
+      status: 200,
+      headers: {
+        location: "/api/123",
+      },
+    });
+    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
+      status: 200,
+    });
+    const res = await deploy.execute(args, context);
+
+    assert.equal(res.result.isOk(), true);
+    assert.equal(res.summaries[0], "Preparations of deployment are complete. ");
   });
 });

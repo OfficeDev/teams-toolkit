@@ -19,6 +19,7 @@ import {
 import { AppStudioClient } from "../../../../src/component/resource/appManifest/appStudioClient";
 import { AppDefinition } from "./../../../../src/component/resource/appManifest/interfaces/appDefinition";
 import { Constants } from "./../../../../src/component/resource/appManifest/constants";
+import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 
 describe("teamsApp/create", async () => {
   const teamsAppDriver = new CreateTeamsAppDriver();
@@ -38,6 +39,17 @@ describe("teamsApp/create", async () => {
 
   afterEach(() => {
     sinon.restore();
+  });
+
+  it("invalid param error", async () => {
+    const args: CreateTeamsAppArgs = {
+      name: "",
+    };
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(AppStudioError.InvalidParameterError.name, result.error.name);
+    }
   });
 
   it("happy path", async () => {

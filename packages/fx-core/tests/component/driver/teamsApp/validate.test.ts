@@ -29,7 +29,7 @@ describe("teamsApp/validate", async () => {
 
   it("should throw error if file not exists", async () => {
     const args: ValidateTeamsAppArgs = {
-      manifestTemplatePath: "fakepath",
+      manifestPath: "fakepath",
     };
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);
@@ -39,9 +39,21 @@ describe("teamsApp/validate", async () => {
     }
   });
 
+  it("invalid param error", async () => {
+    const args: ValidateTeamsAppArgs = {
+      manifestPath: "",
+    };
+
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(AppStudioError.InvalidParameterError.name, result.error.name);
+    }
+  });
+
   it("happy path", async () => {
     const args: ValidateTeamsAppArgs = {
-      manifestTemplatePath:
+      manifestPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
     };
 
@@ -53,7 +65,7 @@ describe("teamsApp/validate", async () => {
 
   it("execute", async () => {
     const args: ValidateTeamsAppArgs = {
-      manifestTemplatePath:
+      manifestPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
     };
 
@@ -65,7 +77,7 @@ describe("teamsApp/validate", async () => {
 
   it("happy path - VS", async () => {
     const args: ValidateTeamsAppArgs = {
-      manifestTemplatePath:
+      manifestPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
     };
 

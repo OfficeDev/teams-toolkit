@@ -41,8 +41,8 @@ export class StorageConfig {
   ): Promise<StorageConfig> {
     const credentials = await tokenProvider.getIdentityCredentialAsync();
     if (!credentials) {
-      throw new PreconditionError(AzureOpsConstant.FAIL_TO_GET_AZURE_CREDENTIALS, [
-        AzureOpsConstant.TRY_LOGIN_AZURE,
+      throw new PreconditionError(AzureOpsConstant.FAIL_TO_GET_AZURE_CREDENTIALS(), [
+        AzureOpsConstant.TRY_LOGIN_AZURE(),
       ]);
     }
     const storage = envInfo.state[scenario];

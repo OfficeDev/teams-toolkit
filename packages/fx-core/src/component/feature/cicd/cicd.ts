@@ -85,9 +85,9 @@ export async function addCicdQuestion(
   const whichTemplate: MultiSelectQuestion = {
     name: questionNames.Template,
     type: "multiSelect",
-    staticOptions: [ciOption, cdOption, provisionOption, publishOption],
+    staticOptions: [ciOption(), cdOption(), provisionOption(), publishOption()],
     title: getLocalizedString("plugins.cicd.whichTemplate.title"),
-    default: [ciOption.id],
+    default: [ciOption().id],
   };
 
   // TODO: add support for VS/.Net Projects.

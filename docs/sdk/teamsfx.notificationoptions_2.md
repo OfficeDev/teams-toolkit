@@ -4,6 +4,11 @@
 
 ## NotificationOptions\_2 interface
 
+> Warning: This API is now obsolete.
+> 
+> Please use BotBuilderCloudAdapter.NotificationOptions instead.
+> 
+
 Options to initialize [NotificationBot](./teamsfx.notificationbot.md)<!-- -->.
 
 <b>Signature:</b>

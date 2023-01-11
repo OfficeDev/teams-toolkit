@@ -19,12 +19,7 @@ import * as os from "os";
 import { environmentManager } from "./environment";
 import { ConstantString } from "../common/constants";
 import { sampleProvider } from "../common/samples";
-import {
-  isAadManifestEnabled,
-  isExistingTabAppEnabled,
-  isM365AppEnabled,
-  isV3Enabled,
-} from "../common/tools";
+import { isAadManifestEnabled, isExistingTabAppEnabled, isM365AppEnabled } from "../common/tools";
 import {
   isBotNotificationEnabled,
   isOfficeAddinEnabled,
@@ -85,7 +80,7 @@ export enum CoreQuestionNames {
   SafeProjectName = "safeProjectName",
   ReplaceContentUrl = "replaceContentUrl",
   ReplaceWebsiteUrl = "replaceWebsiteUrl",
-  ManifestPath = "manifestPath",
+  AppPackagePath = "appPackagePath",
   ReplaceBotIds = "replaceBotIds",
 }
 
@@ -152,13 +147,15 @@ export const DefaultAppNameFunc: FuncQuestion = {
   },
 };
 
-export const QuestionRootFolder: FolderQuestion = {
-  type: "folder",
-  name: CoreQuestionNames.Folder,
-  title: getLocalizedString("core.question.workspaceFolder.title"),
-  placeholder: getLocalizedString("core.question.workspaceFolder.placeholder"),
-  default: path.join(os.homedir(), ConstantString.RootFolder),
-};
+export function QuestionRootFolder(): FolderQuestion {
+  return {
+    type: "folder",
+    name: CoreQuestionNames.Folder,
+    title: getLocalizedString("core.question.workspaceFolder.title"),
+    placeholder: getLocalizedString("core.question.workspaceFolder.placeholder"),
+    default: path.join(os.homedir(), ConstantString.RootFolder),
+  };
+}
 
 export const ProgrammingLanguageQuestionForDotNet: SingleSelectQuestion = {
   name: CoreQuestionNames.ProgrammingLanguage,
@@ -181,7 +178,7 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
       return [{ id: "csharp", label: "C#" }];
     }
     const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+    if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem().id))
       return [{ id: "typescript", label: "TypeScript" }];
     return [
       { id: "javascript", label: "JavaScript" },
@@ -192,16 +189,16 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   default: (inputs: Inputs) => {
     if (isPreviewFeaturesEnabled()) {
       const capability = inputs[CoreQuestionNames.Capabilities] as string;
-      if (capability && capability === TabSPFxItem.id) {
+      if (capability && capability === TabSPFxItem().id) {
         return "typescript";
       }
       const feature = inputs[CoreQuestionNames.Features] as string;
-      if (feature && feature === TabSPFxItem.id) {
+      if (feature && feature === TabSPFxItem().id) {
         return "typescript";
       }
     } else {
       const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem().id))
         return "typescript";
     }
     return "javascript";
@@ -209,16 +206,16 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   placeholder: (inputs: Inputs): string => {
     if (isPreviewFeaturesEnabled()) {
       const capability = inputs[CoreQuestionNames.Capabilities] as string;
-      if (capability && capability === TabSPFxItem.id) {
+      if (capability && capability === TabSPFxItem().id) {
         return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
       }
       const feature = inputs[CoreQuestionNames.Features] as string;
-      if (feature && feature === TabSPFxItem.id) {
+      if (feature && feature === TabSPFxItem().id) {
         return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
       }
     } else {
       const capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
-      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem.id))
+      if (capabilities && capabilities.includes && capabilities.includes(TabSPFxItem().id))
         return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder.spfx");
     }
     return getLocalizedString("core.ProgrammingLanguageQuestion.placeholder");
@@ -289,21 +286,25 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
   let staticOptions: StaticOptions;
   if (isBotNotificationEnabled()) {
     // new capabilities question order
-    const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
+    const newBots = [
+      NotificationOptionItem(),
+      CommandAndResponseOptionItem(),
+      WorkflowOptionItem(),
+    ];
 
     staticOptions = [
       ...newBots,
-      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
-      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-      ...[TabNewUIOptionItem, TabSPFxNewUIItem, MessageExtensionNewUIItem],
-      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem] : []),
+      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem()] : []),
+      ...(isAadManifestEnabled() ? [TabNonSsoItem()] : []),
+      ...[TabNewUIOptionItem(), TabSPFxNewUIItem(), MessageExtensionNewUIItem()],
+      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem(), M365SearchAppOptionItem()] : []),
     ];
   } else {
     staticOptions = [
-      ...[TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
-      ...(isAadManifestEnabled() ? [TabNonSsoItem] : []),
-      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem] : []),
-      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem, M365SearchAppOptionItem] : []),
+      ...[TabOptionItem(), BotOptionItem(), MessageExtensionItem(), TabSPFxItem()],
+      ...(isAadManifestEnabled() ? [TabNonSsoItem()] : []),
+      ...(isExistingTabAppEnabled() ? [ExistingTabOptionItem()] : []),
+      ...(isM365AppEnabled() ? [M365SsoLaunchPageOptionItem(), M365SearchAppOptionItem()] : []),
     ];
   }
   return {
@@ -313,7 +314,9 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       : getLocalizedString("core.createCapabilityQuestion.title"),
     type: "multiSelect",
     staticOptions: staticOptions,
-    default: isBotNotificationEnabled() ? [CommandAndResponseOptionItem.id] : [TabOptionItem.id],
+    default: isBotNotificationEnabled()
+      ? [CommandAndResponseOptionItem().id]
+      : [TabOptionItem().id],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     validation: {
       validFunc: validateCapabilities,
@@ -324,10 +327,10 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 
 export function createCapabilityForDotNet(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
-    NotificationOptionItem,
-    CommandAndResponseOptionItem,
-    TabOptionItem,
-    MessageExtensionItem,
+    NotificationOptionItem(),
+    CommandAndResponseOptionItem(),
+    TabOptionItem(),
+    MessageExtensionItem(),
   ];
   return {
     name: CoreQuestionNames.Capabilities,
@@ -340,29 +343,33 @@ export function createCapabilityForDotNet(): SingleSelectQuestion {
 
 export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQuestion {
   // AB test for notification/command/workflow bot, dashboard tab template naming
+  const notificationOptionItem = NotificationOptionItem();
+  const commandAndResponseOptionItem = CommandAndResponseOptionItem();
+  const workflowOptionItem = WorkflowOptionItem();
+  const dashboardOptionItem = DashboardOptionItem();
   if (inputs?.taskOrientedTemplateNaming) {
-    NotificationOptionItem.label = `$(hubot) ${getLocalizedString(
+    notificationOptionItem.label = `$(hubot) ${getLocalizedString(
       "core.NotificationOption.label.abTest"
     )}`;
-    NotificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
-    CommandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
+    notificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
+    commandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
       "core.CommandAndResponseOption.label.abTest"
     )}`;
-    CommandAndResponseOptionItem.detail = getLocalizedString(
+    commandAndResponseOptionItem.detail = getLocalizedString(
       "core.CommandAndResponseOption.detail.abTest"
     );
-    WorkflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
-    WorkflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
-    DashboardOptionItem.label = `$(browser) ${getLocalizedString(
+    workflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
+    workflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
+    dashboardOptionItem.label = `$(browser) ${getLocalizedString(
       "core.DashboardOption.label.abTest"
     )}`;
-    DashboardOptionItem.detail = getLocalizedString("core.DashboardOption.detail.abTest");
+    dashboardOptionItem.detail = getLocalizedString("core.DashboardOption.detail.abTest");
   }
 
   // AB test for in product doc
   if (inputs?.inProductDoc) {
-    WorkflowOptionItem.data = "cardActionResponse";
-    WorkflowOptionItem.buttons = [
+    workflowOptionItem.data = "cardActionResponse";
+    workflowOptionItem.buttons = [
       {
         iconPath: "file-code",
         tooltip: getLocalizedString("core.option.inProduct"),
@@ -372,24 +379,24 @@ export function createCapabilityQuestionPreview(inputs?: Inputs): SingleSelectQu
   }
 
   // new capabilities question order
-  const newBots = [NotificationOptionItem, CommandAndResponseOptionItem, WorkflowOptionItem];
+  const newBots = [notificationOptionItem, commandAndResponseOptionItem, workflowOptionItem];
 
-  const newTabs = isV3Enabled() ? [] : [DashboardOptionItem];
+  const newTabs = [dashboardOptionItem];
 
   const staticOptions: StaticOptions = [
     ...newBots,
     ...newTabs,
-    TabNewUIOptionItem,
-    TabSPFxNewUIItem,
-    TabNonSsoItem,
-    BotNewUIOptionItem,
-    MessageExtensionNewUIItem,
-    M365SsoLaunchPageOptionItem,
-    M365SearchAppOptionItem,
+    TabNewUIOptionItem(),
+    TabSPFxNewUIItem(),
+    TabNonSsoItem(),
+    BotNewUIOptionItem(),
+    MessageExtensionNewUIItem(),
+    M365SsoLaunchPageOptionItem(),
+    M365SearchAppOptionItem(),
   ];
 
   if (isExistingTabAppEnabled()) {
-    staticOptions.splice(newBots.length, 0, ExistingTabOptionItem);
+    staticOptions.splice(newBots.length, 0, ExistingTabOptionItem());
   }
 
   return {
@@ -410,10 +417,10 @@ export function validateCapabilities(inputs: string[]): string | undefined {
   inputs.forEach((i) => set.add(i));
   let result = validateConflict(
     [
-      new Set([BotOptionItem.id, MessageExtensionItem.id]),
-      new Set([NotificationOptionItem.id]),
-      new Set([CommandAndResponseOptionItem.id]),
-      new Set([WorkflowOptionItem.id]),
+      new Set([BotOptionItem().id, MessageExtensionItem().id]),
+      new Set([NotificationOptionItem().id]),
+      new Set([CommandAndResponseOptionItem().id]),
+      new Set([WorkflowOptionItem().id]),
     ],
     set
   );
@@ -421,36 +428,36 @@ export function validateCapabilities(inputs: string[]): string | undefined {
   result = validateConflict(
     [
       new Set([
-        TabOptionItem.id,
-        TabNonSsoItem.id,
-        BotOptionItem.id,
-        MessageExtensionItem.id,
-        NotificationOptionItem.id,
-        CommandAndResponseOptionItem.id,
-        WorkflowOptionItem.id,
+        TabOptionItem().id,
+        TabNonSsoItem().id,
+        BotOptionItem().id,
+        MessageExtensionItem().id,
+        NotificationOptionItem().id,
+        CommandAndResponseOptionItem().id,
+        WorkflowOptionItem().id,
       ]),
-      new Set([TabSPFxItem.id]),
+      new Set([TabSPFxItem().id]),
     ],
     set
   );
   if (result) return result;
-  result = validateConflict([new Set([TabOptionItem.id]), new Set([TabNonSsoItem.id])], set);
+  result = validateConflict([new Set([TabOptionItem().id]), new Set([TabNonSsoItem().id])], set);
   if (result) return result;
   result = validateConflict(
     [
       new Set([
-        TabOptionItem.id,
-        TabNonSsoItem.id,
-        TabSPFxItem.id,
-        BotOptionItem.id,
-        MessageExtensionItem.id,
-        NotificationOptionItem.id,
-        CommandAndResponseOptionItem.id,
-        WorkflowOptionItem.id,
-        ExistingTabOptionItem.id,
+        TabOptionItem().id,
+        TabNonSsoItem().id,
+        TabSPFxItem().id,
+        BotOptionItem().id,
+        MessageExtensionItem().id,
+        NotificationOptionItem().id,
+        CommandAndResponseOptionItem().id,
+        WorkflowOptionItem().id,
+        ExistingTabOptionItem().id,
       ]),
-      new Set([M365SsoLaunchPageOptionItem.id]),
-      new Set([M365SearchAppOptionItem.id]),
+      new Set([M365SsoLaunchPageOptionItem().id]),
+      new Set([M365SearchAppOptionItem().id]),
     ],
     set
   );
@@ -463,10 +470,10 @@ export async function onChangeSelectionForCapabilities(
 ): Promise<Set<string>> {
   let result = handleSelectionConflict(
     [
-      new Set([BotOptionItem.id, MessageExtensionItem.id]),
-      new Set([NotificationOptionItem.id]),
-      new Set([CommandAndResponseOptionItem.id]),
-      new Set([WorkflowOptionItem.id]),
+      new Set([BotOptionItem().id, MessageExtensionItem().id]),
+      new Set([NotificationOptionItem().id]),
+      new Set([CommandAndResponseOptionItem().id]),
+      new Set([WorkflowOptionItem().id]),
     ],
     previousSelectedIds,
     currentSelectedIds
@@ -474,37 +481,39 @@ export async function onChangeSelectionForCapabilities(
   result = handleSelectionConflict(
     [
       new Set([
-        TabOptionItem.id,
-        TabNonSsoItem.id,
-        BotOptionItem.id,
-        MessageExtensionItem.id,
-        NotificationOptionItem.id,
-        CommandAndResponseOptionItem.id,
-        WorkflowOptionItem.id,
+        TabOptionItem().id,
+        TabNonSsoItem().id,
+        BotOptionItem().id,
+        MessageExtensionItem().id,
+        NotificationOptionItem().id,
+        CommandAndResponseOptionItem().id,
+        WorkflowOptionItem().id,
       ]),
-      new Set([TabSPFxItem.id]),
-      new Set([ExistingTabOptionItem.id]),
-      new Set([M365SsoLaunchPageOptionItem.id]),
-      new Set([M365SearchAppOptionItem.id]),
+      new Set([TabSPFxItem().id]),
+      new Set([ExistingTabOptionItem().id]),
+      new Set([M365SsoLaunchPageOptionItem().id]),
+      new Set([M365SearchAppOptionItem().id]),
     ],
     previousSelectedIds,
     result
   );
   result = handleSelectionConflict(
-    [new Set([TabOptionItem.id]), new Set([TabNonSsoItem.id])],
+    [new Set([TabOptionItem().id]), new Set([TabNonSsoItem().id])],
     previousSelectedIds,
     result
   );
   return result;
 }
-export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.TargetEnvName,
-  title: getLocalizedString("core.QuestionSelectTargetEnvironment.title"),
-  staticOptions: [],
-  skipSingleOption: true,
-  forgetLastValue: true,
-};
+export function QuestionSelectTargetEnvironment(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.TargetEnvName,
+    title: getLocalizedString("core.QuestionSelectTargetEnvironment.title"),
+    staticOptions: [],
+    skipSingleOption: true,
+    forgetLastValue: true,
+  };
+}
 
 export function getQuestionNewTargetEnvironmentName(projectPath: string): TextInputQuestion {
   const WINDOWS_MAX_PATH_LENGTH = 260;
@@ -555,27 +564,30 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
   };
 }
 
-export const QuestionSelectSourceEnvironment: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.SourceEnvName,
-  title: getLocalizedString("core.QuestionSelectSourceEnvironment.title"),
-  staticOptions: [],
-  skipSingleOption: true,
-  forgetLastValue: true,
-};
-
-export const QuestionSelectResourceGroup: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.TargetResourceGroupName,
-  title: getLocalizedString("core.QuestionSelectResourceGroup.title"),
-  staticOptions: [],
-  skipSingleOption: true,
-  forgetLastValue: true,
-};
+export function QuestionSelectSourceEnvironment(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.SourceEnvName,
+    title: getLocalizedString("core.QuestionSelectSourceEnvironment.title"),
+    staticOptions: [],
+    skipSingleOption: true,
+    forgetLastValue: true,
+  };
+}
+export function QuestionSelectResourceGroup(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.TargetResourceGroupName,
+    title: getLocalizedString("core.QuestionSelectResourceGroup.title"),
+    staticOptions: [],
+    skipSingleOption: true,
+    forgetLastValue: true,
+  };
+}
 export function newResourceGroupNameQuestion(
   existingResourceGroupNames: string[]
 ): TextInputQuestion {
-  const question = QuestionNewResourceGroupName;
+  const question = QuestionNewResourceGroupName();
   question.validation = {
     validFunc: (input: string): string | undefined => {
       const name = input as string;
@@ -606,57 +618,72 @@ export function newResourceGroupNameQuestion(
   };
   return question;
 }
-export const QuestionNewResourceGroupName: TextInputQuestion = {
-  type: "text",
-  name: CoreQuestionNames.NewResourceGroupName,
-  title: getLocalizedString("core.QuestionNewResourceGroupName.title"),
-  placeholder: getLocalizedString("core.QuestionNewResourceGroupName.placeholder"),
-  // default resource group name will change with env name
-  forgetLastValue: true,
-};
+export function QuestionNewResourceGroupName(): TextInputQuestion {
+  return {
+    type: "text",
+    name: CoreQuestionNames.NewResourceGroupName,
+    title: getLocalizedString("core.QuestionNewResourceGroupName.title"),
+    placeholder: getLocalizedString("core.QuestionNewResourceGroupName.placeholder"),
+    // default resource group name will change with env name
+    forgetLastValue: true,
+  };
+}
 
-export const QuestionNewResourceGroupLocation: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.NewResourceGroupLocation,
-  title: getLocalizedString("core.QuestionNewResourceGroupLocation.title"),
-  staticOptions: [],
-};
+export function QuestionNewResourceGroupLocation(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.NewResourceGroupLocation,
+    title: getLocalizedString("core.QuestionNewResourceGroupLocation.title"),
+    staticOptions: [],
+  };
+}
 
-export const ScratchOptionYesVSC: OptionItem = {
-  id: "yes",
-  label: `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.label")}`,
-  detail: getLocalizedString("core.ScratchOptionYesVSC.detail"),
-};
+export function ScratchOptionYesVSC(): OptionItem {
+  return {
+    id: "yes",
+    label: `$(new-folder) ${getLocalizedString("core.ScratchOptionYesVSC.label")}`,
+    detail: getLocalizedString("core.ScratchOptionYesVSC.detail"),
+  };
+}
 
-export const ScratchOptionNoVSC: OptionItem = {
-  id: "no",
-  label: `$(heart) ${getLocalizedString("core.ScratchOptionNoVSC.label")}`,
-  detail: getLocalizedString("core.ScratchOptionNoVSC.detail"),
-};
+export function ScratchOptionNoVSC(): OptionItem {
+  return {
+    id: "no",
+    label: `$(heart) ${getLocalizedString("core.ScratchOptionNoVSC.label")}`,
+    detail: getLocalizedString("core.ScratchOptionNoVSC.detail"),
+  };
+}
 
-export const RuntimeOptionNodeJs: OptionItem = {
-  id: "node",
-  label: "Node.js",
-  detail: getLocalizedString("core.RuntimeOptionNodeJS.detail"),
-};
+export function RuntimeOptionNodeJs(): OptionItem {
+  return {
+    id: "node",
+    label: "Node.js",
+    detail: getLocalizedString("core.RuntimeOptionNodeJS.detail"),
+  };
+}
 
-export const RuntimeOptionDotNet: OptionItem = {
-  id: "dotnet",
-  label: ".NET Core",
-  detail: getLocalizedString("core.RuntimeOptionDotNet.detail"),
-};
+export function RuntimeOptionDotNet(): OptionItem {
+  return {
+    id: "dotnet",
+    label: ".NET Core",
+    detail: getLocalizedString("core.RuntimeOptionDotNet.detail"),
+  };
+}
+export function ScratchOptionYes(): OptionItem {
+  return {
+    id: "yes",
+    label: getLocalizedString("core.ScratchOptionYes.label"),
+    detail: getLocalizedString("core.ScratchOptionYes.detail"),
+  };
+}
 
-export const ScratchOptionYes: OptionItem = {
-  id: "yes",
-  label: getLocalizedString("core.ScratchOptionYes.label"),
-  detail: getLocalizedString("core.ScratchOptionYes.detail"),
-};
-
-export const ScratchOptionNo: OptionItem = {
-  id: "no",
-  label: getLocalizedString("core.ScratchOptionNo.label"),
-  detail: getLocalizedString("core.ScratchOptionNo.detail"),
-};
+export function ScratchOptionNo(): OptionItem {
+  return {
+    id: "no",
+    label: getLocalizedString("core.ScratchOptionNo.label"),
+    detail: getLocalizedString("core.ScratchOptionNo.detail"),
+  };
+}
 
 // This question should only exist on CLI
 export function getRuntimeQuestion(): SingleSelectQuestion {
@@ -664,8 +691,8 @@ export function getRuntimeQuestion(): SingleSelectQuestion {
     type: "singleSelect",
     name: CoreQuestionNames.Runtime,
     title: getLocalizedString("core.getRuntimeQuestion.title"),
-    staticOptions: [RuntimeOptionNodeJs, RuntimeOptionDotNet],
-    default: RuntimeOptionNodeJs.id,
+    staticOptions: [RuntimeOptionNodeJs(), RuntimeOptionDotNet()],
+    default: RuntimeOptionNodeJs().id,
     placeholder: getLocalizedString("core.getRuntimeQuestion.placeholder"),
   };
 }
@@ -673,67 +700,71 @@ export function getRuntimeQuestion(): SingleSelectQuestion {
 export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSelectQuestion {
   const staticOptions: OptionItem[] = [];
   if (platform === Platform.VSCode) {
-    staticOptions.push(ScratchOptionYesVSC);
+    staticOptions.push(ScratchOptionYesVSC());
     if (isOfficeAddinEnabled()) {
-      staticOptions.push(CreateNewOfficeAddinOption);
+      staticOptions.push(CreateNewOfficeAddinOption());
     }
-    staticOptions.push(ScratchOptionNoVSC);
+    staticOptions.push(ScratchOptionNoVSC());
   } else {
-    staticOptions.push(ScratchOptionYes);
-    staticOptions.push(ScratchOptionNo);
+    staticOptions.push(ScratchOptionYes());
+    staticOptions.push(ScratchOptionNo());
   }
   return {
     type: "singleSelect",
     name: CoreQuestionNames.CreateFromScratch,
     title: getLocalizedString("core.getCreateNewOrFromSampleQuestion.title"),
     staticOptions,
-    default: ScratchOptionYes.id,
+    default: ScratchOptionYes().id,
     placeholder: getLocalizedString("core.getCreateNewOrFromSampleQuestion.placeholder"),
     skipSingleOption: true,
     forgetLastValue: true,
   };
 }
 
-export const SampleSelect: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.Samples,
-  title: getLocalizedString("core.SampleSelect.title"),
-  staticOptions: sampleProvider.SampleCollection.samples.map((sample) => {
-    return {
-      id: sample.id,
-      label: sample.title,
-      description: `${sample.time} • ${sample.configuration}`,
-      detail: sample.shortDescription,
-      data: sample.link,
-    } as OptionItem;
-  }),
-  placeholder: getLocalizedString("core.SampleSelect.placeholder"),
-  buttons: [
-    {
-      icon: "library",
-      tooltip: getLocalizedString("core.SampleSelect.buttons.viewSamples"),
-      command: "fx-extension.openSamples",
-    },
-  ],
-};
+export function SampleSelect(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.Samples,
+    title: getLocalizedString("core.SampleSelect.title"),
+    staticOptions: sampleProvider.SampleCollection.samples.map((sample) => {
+      return {
+        id: sample.id,
+        label: sample.title,
+        description: `${sample.time} • ${sample.configuration}`,
+        detail: sample.shortDescription,
+        data: sample.link,
+      } as OptionItem;
+    }),
+    placeholder: getLocalizedString("core.SampleSelect.placeholder"),
+    buttons: [
+      {
+        icon: "library",
+        tooltip: getLocalizedString("core.SampleSelect.buttons.viewSamples"),
+        command: "fx-extension.openSamples",
+      },
+    ],
+  };
+}
 
-export const ExistingTabEndpointQuestion: TextInputQuestion = {
-  type: "text",
-  name: CoreQuestionNames.ExistingTabEndpoint,
-  title: getLocalizedString("core.ExistingTabEndpointQuestion.title"),
-  default: "https://localhost:3000",
-  placeholder: getLocalizedString("core.ExistingTabEndpointQuestion.placeholder"),
-  validation: {
-    validFunc: async (endpoint: string): Promise<string | undefined> => {
-      const match = endpoint.match(/^https:\/\/[\S]+$/i);
-      if (!match) {
-        return getLocalizedString("core.ExistingTabEndpointQuestion.validation");
-      }
+export function ExistingTabEndpointQuestion(): TextInputQuestion {
+  return {
+    type: "text",
+    name: CoreQuestionNames.ExistingTabEndpoint,
+    title: getLocalizedString("core.ExistingTabEndpointQuestion.title"),
+    default: "https://localhost:3000",
+    placeholder: getLocalizedString("core.ExistingTabEndpointQuestion.placeholder"),
+    validation: {
+      validFunc: async (endpoint: string): Promise<string | undefined> => {
+        const match = endpoint.match(/^https:\/\/[\S]+$/i);
+        if (!match) {
+          return getLocalizedString("core.ExistingTabEndpointQuestion.validation");
+        }
 
-      return undefined;
+        return undefined;
+      },
     },
-  },
-};
+  };
+}
 
 export const defaultTabLocalHostUrl = "https://localhost:53000/index.html#/tab";
 
@@ -817,18 +848,20 @@ export const botOptionItem = (isMessageExtension: boolean): OptionItem => {
   };
 };
 
-export const CreateNewOfficeAddinOption: OptionItem = {
-  id: "newAddin",
-  label: `$(new-folder) ${getLocalizedString("core.NewOfficeAddinOptionVSC.label")}`,
-  detail: getLocalizedString("core.NewOfficeAddinOptionVSC.detail"),
-};
+export function CreateNewOfficeAddinOption(): OptionItem {
+  return {
+    id: "newAddin",
+    label: `$(new-folder) ${getLocalizedString("core.NewOfficeAddinOptionVSC.label")}`,
+    detail: getLocalizedString("core.NewOfficeAddinOptionVSC.detail"),
+  };
+}
 
 export function createCapabilityForOfficeAddin(): SingleSelectQuestion {
   return {
     name: CoreQuestionNames.Capabilities,
     title: getLocalizedString("core.createCapabilityQuestion.title"),
     type: "singleSelect",
-    staticOptions: [...OfficeAddinItems, ImportAddinProjectItem],
+    staticOptions: [...OfficeAddinItems(), ImportAddinProjectItem()],
     placeholder: getLocalizedString("core.createCapabilityQuestion.placeholder"),
     skipSingleOption: true,
   };

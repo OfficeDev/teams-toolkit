@@ -7,6 +7,7 @@ import { Service } from "typedi";
 import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
 import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import Timer from "@dbpiper/timer";
 import { InvalidParameterUserError } from "./error/invalidParameterUserError";
 import { UnhandledSystemError, UnhandledUserError } from "./error/unhandledError";
 import axios from "axios";
@@ -24,6 +25,12 @@ import { progressBarKeys } from "../../resource/botService/botRegistration/const
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
+
+const successRegisterBotAad = `${actionName}/success`;
+const propertyKeys = {
+  reusingExistingBotAad: "reuse-existing-bot-aad",
+  registerBotAadTime: "register-bot-aad-time",
+};
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateBotAadAppDriver implements StepDriver {
@@ -78,6 +85,8 @@ export class CreateBotAadAppDriver implements StepDriver {
       const botRegistration: BotRegistration = new RemoteBotRegistration();
 
       await progressHandler?.next(getLocalizedString(progressBarKeys.creatingBotAadApp));
+      const timer = new Timer();
+      timer.start();
       const createRes = await botRegistration.createBotRegistration(
         context.m365TokenProvider,
         args.name,
@@ -85,10 +94,12 @@ export class CreateBotAadAppDriver implements StepDriver {
         botConfig,
         context.logProvider
       );
+      const timeResult = timer.stop();
       if (createRes.isErr()) {
         throw createRes.error;
       }
 
+      const isReusingExisting = botConfig.botId && botConfig.botPassword;
       const successCreateBotAadLog = getLocalizedString(
         logMessageKeys.successCreateBotAad,
         createRes.value.botId
@@ -97,13 +108,16 @@ export class CreateBotAadAppDriver implements StepDriver {
         logMessageKeys.useExistingBotAad,
         botConfig.botId
       );
-      const summary =
-        botConfig.botId && botConfig.botPassword ? useExistingBotAadLog : successCreateBotAadLog;
+      const summary = isReusingExisting ? useExistingBotAadLog : successCreateBotAadLog;
       context.logProvider?.info(summary);
       await progressHandler?.end(true);
       context.logProvider?.info(
         getLocalizedString(logMessageKeys.successExecuteDriver, actionName)
       );
+      context.telemetryReporter.sendTelemetryEvent(successRegisterBotAad, {
+        [propertyKeys.reusingExistingBotAad]: isReusingExisting,
+        [propertyKeys.registerBotAadTime]: timeResult.milliseconds.toString(),
+      });
       return {
         output: new Map([
           ["BOT_ID", createRes.value.botId],

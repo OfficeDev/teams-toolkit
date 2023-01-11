@@ -23,37 +23,45 @@ export const jenkinsOption: OptionItem = {
 
 export const providerOptions: OptionItem[] = [githubOption, azdoOption, jenkinsOption];
 
-export const ciOption: OptionItem = {
-  id: "ci",
-  label: "CI",
-  detail: getLocalizedString("plugins.cicd.ciOption.detail"),
-};
+export function ciOption(): OptionItem {
+  return {
+    id: "ci",
+    label: "CI",
+    detail: getLocalizedString("plugins.cicd.ciOption.detail"),
+  };
+}
 
-export const cdOption: OptionItem = {
-  id: "cd",
-  label: "CD",
-  detail: getLocalizedString("plugins.cicd.cdOption.detail"),
-};
+export function cdOption(): OptionItem {
+  return {
+    id: "cd",
+    label: "CD",
+    detail: getLocalizedString("plugins.cicd.cdOption.detail"),
+  };
+}
 
-export const provisionOption: OptionItem = {
-  id: "provision",
-  label: "Provision",
-  detail: getLocalizedString("plugins.cicd.provisionOption.detail"),
-};
+export function provisionOption(): OptionItem {
+  return {
+    id: "provision",
+    label: "Provision",
+    detail: getLocalizedString("plugins.cicd.provisionOption.detail"),
+  };
+}
 
-export const publishOption: OptionItem = {
-  id: "publish",
-  label: "Publish to Teams",
-  detail: getLocalizedString("plugins.cicd.publishOption.detail"),
-};
+export function publishOption(): OptionItem {
+  return {
+    id: "publish",
+    label: "Publish to Teams",
+    detail: getLocalizedString("plugins.cicd.publishOption.detail"),
+  };
+}
 
-export const templateOptions: OptionItem[] = [ciOption, provisionOption, cdOption, publishOption];
+export const templateOptions = () => [ciOption(), provisionOption(), cdOption(), publishOption()];
 
 const templateIdLabelMap = new Map<string, string>([
-  [ciOption.id, ciOption.label],
-  [cdOption.id, cdOption.label],
-  [provisionOption.id, provisionOption.label],
-  [publishOption.id, publishOption.label],
+  [ciOption().id, ciOption().label],
+  [cdOption().id, cdOption().label],
+  [provisionOption().id, provisionOption().label],
+  [publishOption().id, publishOption().label],
 ]);
 
 const providerIdLabelMap = new Map<string, string>([

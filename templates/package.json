@@ -1,6 +1,6 @@
 {
     "name": "templates",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "private": "true",
     "license": "MIT",
     "scripts": {
@@ -57,6 +57,7 @@
         "js/m365-tab",
         "js/sso-tab",
         "js/non-sso-tab",
+        "js/dashboard-tab",
         "js/non-sso-tab-default-bot",
         "js/default-bot-message-extension",
         "ts/notification-http-timer-trigger",
@@ -67,6 +68,7 @@
         "ts/m365-tab",
         "ts/sso-tab",
         "ts/non-sso-tab",
+        "ts/dashboard-tab",
         "ts/non-sso-tab-default-bot",
         "ts/default-bot-message-extension",
         "csharp/notification-http-timer-trigger",

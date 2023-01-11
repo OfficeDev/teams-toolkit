@@ -23,9 +23,9 @@ describe("teamsApp/createAppPackage", async () => {
 
   it("should throw error if file not exists", async () => {
     const args: CreateAppPackageArgs = {
-      manifestTemplatePath: "fakepath",
-      outputZipPath: "",
-      outputJsonPath: "",
+      manifestPath: "fakepath",
+      outputZipPath: "fakePath",
+      outputJsonPath: "fakePath",
     };
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);
@@ -35,9 +35,22 @@ describe("teamsApp/createAppPackage", async () => {
     }
   });
 
+  it("invalid param error", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath: "",
+      outputZipPath: "",
+      outputJsonPath: "",
+    };
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(AppStudioError.InvalidParameterError.name, result.error.name);
+    }
+  });
+
   it("happy path", async () => {
     const args: CreateAppPackageArgs = {
-      manifestTemplatePath:
+      manifestPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
       outputZipPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
@@ -61,7 +74,7 @@ describe("teamsApp/createAppPackage", async () => {
 
   it("happy path - withEmptyCapabilities", async () => {
     const args: CreateAppPackageArgs = {
-      manifestTemplatePath:
+      manifestPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
       outputZipPath:
         "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",

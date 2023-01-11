@@ -240,7 +240,7 @@ describe("Azure App Service Deploy Driver test", () => {
       console.log(msg);
       return Promise.resolve(true);
     };
-    const deploy = new AzureZipDeployDriverImpl(args, context, "", [], []);
+    const deploy = new AzureZipDeployDriverImpl(args, context, "", "", [], []);
     sandbox.stub(deploy, "zipDeploy").resolves(5_000_000);
     await deploy.run();
   });

@@ -76,8 +76,8 @@
                 },
                 "background": {
                     "activeOnStart": true,
-                    "beginsPattern": ".*",
-                    "endsPattern": "Compiled|Failed|compiled|failed"
+                    "beginsPattern": ".*", // the output/signal that service is starting
+                    "endsPattern": ".*" // the output/signal that service is started
                 }
             }
         }

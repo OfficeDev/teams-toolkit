@@ -772,13 +772,13 @@ export class Coordinator {
     }
 
     // 8. show provisioned resources
+    const msg = getLocalizedString("core.provision.successNotice", folderName);
     if (azureSubInfo) {
       const url = getResourceGroupInPortal(
         azureSubInfo.subscriptionId,
         azureSubInfo.tenantId,
         process.env.AZURE_RESOURCE_GROUP_NAME
       );
-      const msg = getLocalizedString("core.provision.successNotice", folderName);
       if (url && ctx.platform !== Platform.CLI) {
         const title = getLocalizedString("core.provision.viewResources");
         ctx.ui?.showMessage("info", msg, false, title).then((result: any) => {
@@ -807,8 +807,10 @@ export class Coordinator {
           ctx.ui?.showMessage("info", msg, false);
         }
       }
-      ctx.logProvider.info(msg);
+    } else {
+      ctx.ui?.showMessage("info", msg, false);
     }
+    ctx.logProvider.info(msg);
 
     return ok(output);
   }

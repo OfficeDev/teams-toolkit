@@ -13,6 +13,8 @@ import {
   UserError,
   InputConfigsFolderName,
   Platform,
+  Inputs,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";

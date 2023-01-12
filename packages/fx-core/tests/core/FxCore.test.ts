@@ -375,6 +375,8 @@ describe("Core basic APIs", () => {
   it("buildAadManifest method should exist", async () => {
     const restore = mockedEnv({
       TEAMSFX_V3: "true",
+      TEAMSFX_DEBUG_TEMPLATE: "true", // workaround test failure that when local template not released to GitHub
+      NODE_ENV: "development", // workaround test failure that when local template not released to GitHub
       AAD_APP_OBJECT_ID: getUuid(),
       AAD_APP_CLIENT_ID: getUuid(),
       TAB_DOMAIN: "fake",

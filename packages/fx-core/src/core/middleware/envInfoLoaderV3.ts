@@ -53,11 +53,11 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
       await next();
       return;
     }
-
+    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (isV3Enabled()) {
       const envBefore = _.cloneDeep(process.env);
       try {
-        await envLoaderMWImpl(true, ctx, next);
+        await envLoaderMWImpl(inputs.ignoreLocalEnv ? false : true, ctx, next);
         return;
       } finally {
         const keys = Object.keys(process.env);
@@ -71,7 +71,6 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
       }
     }
 
-    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (!ctx.projectSettings) {
       ctx.result = err(ProjectSettingsUndefinedError());
       return;

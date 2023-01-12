@@ -106,7 +106,7 @@ const Constants = {
 };
 
 const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
-const errorNames = {
+export const errorNames = {
   appPackageNotExist: "AppPackageNotExist",
   manifestTemplateNotExist: "ManifestTemplateNotExist",
 };

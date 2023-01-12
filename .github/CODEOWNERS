@@ -91,6 +91,9 @@
 /packages/fx-core/src/component/code/api @eriolchan @hund030 @IvanJobs
 /packages/fx-core/src/component/code/api/depsChecker @a1exwang @kimizhu @qinezh
 
+/packages/fx-core/src/component/developerPortalScaffoldUtils.ts @yuqizhou77 @nliu-ms @jayzhang
+/packages/fx-core/tests/component/feature/developerPortalScaffoldUtils.test.ts @yuqizhou77 @nliu-ms @jayzhang
+
 /templates/tab @hund030 @eriolchan @IvanJobs
 /templates/function-base @hund030 @eriolchan @IvanJobs
 /templates/function-triggers @hund030 @eriolchan @IvanJobs

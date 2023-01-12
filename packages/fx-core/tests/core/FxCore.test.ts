@@ -23,7 +23,7 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { FxCore } from "../../src";
+import { FxCore, getUuid } from "../../src";
 import * as featureFlags from "../../src/common/featureFlags";
 import { validateProjectSettings } from "../../src/common/projectSettingsHelper";
 import { environmentManager } from "../../src/core/environment";
@@ -369,6 +369,45 @@ describe("Core basic APIs", () => {
       assert.fail("v3 dispatchUserTask matched no implemented method");
     } catch (error) {
       assert.isNotNull(error);
+    }
+  });
+
+  it("buildAadManifest method should exist", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+      AAD_APP_OBJECT_ID: getUuid(),
+      AAD_APP_CLIENT_ID: getUuid(),
+      TAB_DOMAIN: "fake",
+      TAB_ENDPOINT: "fake",
+    });
+    try {
+      const appName = randomAppName();
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        stage: Stage.create,
+        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+      };
+      const res = await core.createProject(inputs);
+      projectPath = inputs.projectPath!;
+      assert.isTrue(res.isOk() && res.value === projectPath);
+
+      const implement = new FxCoreV3Implement(tools);
+
+      const mockFunc = {
+        namespace: "mock namespace",
+        method: "buildAadManifest",
+      };
+
+      const result = await implement.executeUserTask(mockFunc, inputs);
+      assert.isTrue(result.isOk());
+    } finally {
+      restore();
     }
   });
 

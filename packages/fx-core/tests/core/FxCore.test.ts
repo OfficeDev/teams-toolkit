@@ -60,6 +60,7 @@ import {
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { coordinator } from "../../src/component/coordinator";
 import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
+import { MissingEnvInFileUserError } from "../../src/component/driver/aad/error/missingEnvInFileError";
 
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
@@ -278,6 +279,53 @@ describe("Core basic APIs", () => {
       assert.isTrue(res.isErr());
       if (res.isErr()) {
         assert.strictEqual(res.error.message, "fake_err_msg");
+      }
+    } finally {
+      restore();
+    }
+  });
+
+  it("deploy aad manifest with missing env err", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const core = new FxCore(tools);
+      const appName = mockV3Project();
+      const appManifestPath = path.join(
+        os.tmpdir(),
+        appName,
+        "samples-v3",
+        "aad.manifest.template.json"
+      );
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        stage: Stage.deployAad,
+        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+      };
+      sandbox
+        .stub(UpdateAadAppDriver.prototype, "run")
+        .throws(
+          new MissingEnvInFileUserError(
+            "aadApp/update",
+            "AAD_APP_OBJECT_ID",
+            "https://aka.ms/fake",
+            "driver.aadApp.error.generateManifestFailed",
+            "fake path"
+          )
+        );
+      const res = await core.deployAadManifest(inputs);
+      assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        assert.strictEqual(
+          res.error.message,
+          "Failed to generate AAD app manifest. Environment variable AAD_APP_OBJECT_ID referenced in fake path have no values."
+        );
       }
     } finally {
       restore();

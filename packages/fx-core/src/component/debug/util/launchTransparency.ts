@@ -80,8 +80,5 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
 
 export function generateSpfxCompounds(): Record<string, unknown>[] {
   const result = Launch.generateSpfxCompounds();
-  result[0].preLaunchTask = TaskOverallLabel.TransparentDefault;
-  result[1].preLaunchTask = TaskOverallLabel.TransparentDefault;
-  result[2].preLaunchTask = TaskOverallLabel.TransparentM365;
   return result;
 }

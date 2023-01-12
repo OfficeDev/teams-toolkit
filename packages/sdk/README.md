@@ -43,7 +43,7 @@ TeamsFx SDK is built to be used in browser and NodeJS environment. Common scenar
 
 ### Create and authenticate a service using `createMicrosoftGraphClientWithCredential` or `createMicrosoftGraphClient`
 
-> [!NOTE] `createMicrosoftGraphClient` function has been deprecated. Its recommended that you to use `createMicrosoftGraphClientWithCredential` instead, for better coding experience.
+> [!NOTE] `createMicrosoftGraphClient` function has been deprecated. It is recommended that you to use `createMicrosoftGraphClientWithCredential` instead, for better coding experience.
 
 To create a graph client object to access the Microsoft Graph API, you will need the credential to do authentication. The SDK provides APIs to configure for developers. Please choose the proper identity type and follow below steps:
 
@@ -109,7 +109,7 @@ const profile = await graphClient.api("/users/{object_id_of_another_people}").ge
 
 ### TeamsFx class
 
-> [!NOTE] `TeamsFx` class has been deprecated. Its recommended that you to use different credentials (`TeamsUserCredential`, `AppCredential`,  `OnBehalfOfUserCredential`) instead, for better coding experience.
+> [!NOTE] `TeamsFx` class has been deprecated. It is recommended that you to use different credentials (`TeamsUserCredential`, `AppCredential`,  `OnBehalfOfUserCredential`) instead, for better coding experience.
 
 `TeamsFx` class instance reads all TeamsFx settings from environment variables by default. You can also set customized configuration values to override the default values. Please check [Override configuration](#override-configuration) for details.
 

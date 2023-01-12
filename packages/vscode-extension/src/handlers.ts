@@ -2393,11 +2393,9 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
     if (result.isErr()) {
       throw result.error;
     }
-    const grantSucceededMsg = util.format(
-      localize("teamstoolkit.handlers.grantPermissionSucceeded"),
-      inputs.email,
-      env
-    );
+    const grantSucceededMsg = isV3Enabled()
+      ? util.format(localize("teamstoolkit.handlers.grantPermissionSucceededV3"), inputs.email)
+      : util.format(localize("teamstoolkit.handlers.grantPermissionSucceeded"), inputs.email, env);
 
     // Will not show help messages in V3
     if (!isV3Enabled()) {
@@ -2414,6 +2412,9 @@ export async function grantPermission(env?: string): Promise<Result<any, FxError
       VsCodeLogInstance.warning(
         warningMsg + localize("teamstoolkit.handlers.referLinkForMoreDetails") + helpUrl
       );
+    } else {
+      window.showInformationMessage(grantSucceededMsg);
+      VsCodeLogInstance.info(grantSucceededMsg);
     }
   } catch (e) {
     result = wrapError(e);

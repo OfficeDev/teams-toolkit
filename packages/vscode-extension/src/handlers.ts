@@ -370,18 +370,20 @@ export function addFileSystemWatcher(workspacePath: string) {
     await openBackupConfigMd(workspacePath, event.fsPath);
   });
 
-  const packageLockFileWatcher = vscode.workspace.createFileSystemWatcher("**/package-lock.json");
+  if (isValidProject(globalVariables.workspaceUri?.fsPath)) {
+    const packageLockFileWatcher = vscode.workspace.createFileSystemWatcher("**/package-lock.json");
 
-  packageLockFileWatcher.onDidCreate(async (event) => {
-    await sendSDKVersionTelemetry(event.fsPath);
-  });
+    packageLockFileWatcher.onDidCreate(async (event) => {
+      await sendSDKVersionTelemetry(event.fsPath);
+    });
 
-  packageLockFileWatcher.onDidChange(async (event) => {
-    await sendSDKVersionTelemetry(event.fsPath);
-  });
+    packageLockFileWatcher.onDidChange(async (event) => {
+      await sendSDKVersionTelemetry(event.fsPath);
+    });
+  }
 }
 
-async function sendSDKVersionTelemetry(filePath: string) {
+export async function sendSDKVersionTelemetry(filePath: string) {
   const packageLockFile = await fs.readJson(filePath).catch(() => {});
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateSDKPackages, {
     [TelemetryProperty.BotbuilderVersion]: packageLockFile?.dependencies["botbuilder"]?.version,

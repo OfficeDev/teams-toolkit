@@ -25,6 +25,7 @@ import {
   CloudResource,
   InputsWithProjectPath,
   v2,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -57,6 +58,7 @@ import { pick } from "lodash";
 import { convertEnvStateV2ToV3, convertEnvStateV3ToV2 } from "../component/migrate";
 import { LocalCrypto } from "./crypto";
 import { envUtil } from "../component/utils/envUtil";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export interface EnvStateFiles {
   envState: string;
@@ -228,7 +230,10 @@ class EnvironmentManager {
     return ok(envNames);
   }
 
-  public async listRemoteEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
+  public async listRemoteEnvConfigs(
+    projectPath: string,
+    returnErrorIfEmpty = false
+  ): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(new PathNotExistError(projectPath));
     }
@@ -237,6 +242,15 @@ class EnvironmentManager {
       const allEnvsRes = await envUtil.listEnv(projectPath);
       if (allEnvsRes.isErr()) return err(allEnvsRes.error);
       const remoteEnvs = allEnvsRes.value.filter((env) => env !== this.getLocalEnvName());
+      if (returnErrorIfEmpty)
+        return err(
+          new UserError({
+            source: "EnvLoaderMW",
+            name: "NoEnvFilesError",
+            displayMessage: getLocalizedString("core.error.NoEnvFilesError"),
+            message: getDefaultString("core.error.NoEnvFilesError"),
+          })
+        );
       return ok(remoteEnvs);
     }
 
@@ -249,7 +263,15 @@ class EnvironmentManager {
     const envNames = configFiles
       .map((file) => this.getEnvNameFromPath(file))
       .filter((name): name is string => name !== null && name !== this.getLocalEnvName());
-
+    if (returnErrorIfEmpty)
+      return err(
+        new UserError({
+          source: "EnvLoaderMW",
+          name: "NoEnvFilesError",
+          displayMessage: getLocalizedString("core.error.NoEnvFilesError"),
+          message: getDefaultString("core.error.NoEnvFilesError"),
+        })
+      );
     return ok(envNames);
   }
 

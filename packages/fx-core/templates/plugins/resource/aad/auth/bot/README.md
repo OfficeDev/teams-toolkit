@@ -47,7 +47,7 @@ As described above, the Teams Toolkit generated some configuration to set up you
     const path = require("path");
 
     server.get(
-        "/auth-*.html",
+        "/auth-:name(start|end).html",
         restify.plugins.serveStatic({
             directory: path.join(__dirname, "public"),
         })
@@ -340,7 +340,7 @@ To make this work in your application:
     });
 
     server.get(
-      "/auth-*.html",
+      "/auth-:name(start|end).html",
       restify.plugins.serveStatic({
         directory: path.join(__dirname, "public"),
       })

@@ -660,7 +660,7 @@ export class Coordinator {
           cycle.driverDefs?.forEach((driver) => {
             const withObj = driver.with as any;
             if (withObj.subscriptionId && resolvedSubscriptionId === undefined)
-              resolvedSubscriptionId = withObj.subscriptionI;
+              resolvedSubscriptionId = withObj.subscriptionId;
           });
         }
         if (unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME"))
@@ -675,7 +675,7 @@ export class Coordinator {
         } else {
           const ensureRes = await provisionUtils.ensureSubscription(
             ctx.azureAccountProvider,
-            process.env.AZURE_SUBSCRIPTION_ID
+            undefined
           );
           if (ensureRes.isErr()) return err(ensureRes.error);
           const subInfo = ensureRes.value;
@@ -722,7 +722,7 @@ export class Coordinator {
           const ensureRes = await provisionUtils.ensureResourceGroup(
             ctx.azureAccountProvider,
             resolvedSubscriptionId,
-            process.env.AZURE_RESOURCE_GROUP_NAME,
+            undefined,
             defaultRg
           );
           if (ensureRes.isErr()) return err(ensureRes.error);

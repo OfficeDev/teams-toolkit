@@ -13,7 +13,6 @@ import {
   Inputs,
   InputsWithProjectPath,
   ok,
-  Platform,
   ProjectSettingsV3,
   Result,
   Settings,
@@ -242,7 +241,6 @@ export class FxCoreV3Implement {
     const inputArgs: UpdateAadAppArgs = {
       manifestTemplatePath: manifestTemplatePath,
       outputFilePath: manifestOutputPath,
-      onlyBuild: false,
     };
     const contextV3: DriverContext = createDriverContext(inputs);
     const res = await updateAadClient.run(inputArgs, contextV3);

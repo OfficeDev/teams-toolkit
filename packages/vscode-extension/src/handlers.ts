@@ -369,6 +369,27 @@ export function addFileSystemWatcher(workspacePath: string) {
   backupConfigWatcher.onDidCreate(async (event) => {
     await openBackupConfigMd(workspacePath, event.fsPath);
   });
+
+  const packageLockFileWatcher = vscode.workspace.createFileSystemWatcher("**/package-lock.json");
+
+  packageLockFileWatcher.onDidCreate(async (event) => {
+    await sendSDKVersionTelemetry(event.fsPath);
+  });
+
+  packageLockFileWatcher.onDidChange(async (event) => {
+    await sendSDKVersionTelemetry(event.fsPath);
+  });
+}
+
+async function sendSDKVersionTelemetry(filePath: string) {
+  const packageLockFile = await fs.readJson(filePath).catch(() => {});
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateSDKPackages, {
+    [TelemetryProperty.BotbuilderVersion]: packageLockFile?.dependencies["botbuilder"]?.version,
+    [TelemetryProperty.TeamsFxVersion]:
+      packageLockFile?.dependencies["@microsoft/teamsfx"]?.version,
+    [TelemetryProperty.TeamsJSVersion]:
+      packageLockFile?.dependencies["@microsoft/teams-js"]?.version,
+  });
 }
 
 export async function openBackupConfigMd(workspacePath: string, filePath: string) {

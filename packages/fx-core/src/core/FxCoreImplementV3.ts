@@ -13,7 +13,6 @@ import {
   Inputs,
   InputsWithProjectPath,
   ok,
-  Platform,
   ProjectSettingsV3,
   Result,
   Settings,
@@ -73,6 +72,7 @@ import { QuestionMW } from "../component/middleware/questionMW";
 import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/question";
 import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils";
+import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { VersionSource } from "../common/versionMetadata";
 import { pathUtils } from "../component/utils/pathUtils";
 
@@ -244,15 +244,7 @@ export class FxCoreV3Implement {
       manifestTemplatePath: manifestTemplatePath,
       outputFilePath: manifestOutputPath,
     };
-    const contextV3: DriverContext = {
-      azureAccountProvider: TOOLS.tokenProvider.azureAccountProvider,
-      m365TokenProvider: TOOLS.tokenProvider.m365TokenProvider,
-      ui: TOOLS.ui,
-      logProvider: TOOLS.logProvider,
-      telemetryReporter: TOOLS.telemetryReporter!,
-      projectPath: inputs.projectPath as string,
-      platform: Platform.VSCode,
-    };
+    const contextV3: DriverContext = createDriverContext(inputs);
     const res = await updateAadClient.run(inputArgs, contextV3);
     if (res.isErr()) return err(res.error);
     return ok(Void);
@@ -318,6 +310,8 @@ export class FxCoreV3Implement {
       inputs[AzureSolutionQuestionNames.Features] = SingleSignOnOptionItem.id;
       const component = Container.get("sso") as any;
       res = await component.add(context, inputs as InputsWithProjectPath);
+    } else if (func.method === "buildAadManifest") {
+      res = await this.previewAadManifest(inputs);
     }
     return res;
   }
@@ -438,6 +432,24 @@ export class FxCoreV3Implement {
       });
 
     writeStream.end();
+    return ok(Void);
+  }
+
+  async previewAadManifest(inputs: Inputs): Promise<Result<Void, FxError>> {
+    const manifestTemplatePath: string = inputs.AAD_MANIFEST_FILE
+      ? inputs.AAD_MANIFEST_FILE
+      : path.join(inputs.projectPath!, AadConstants.DefaultTemplateFileName);
+    if (!(await fs.pathExists(manifestTemplatePath))) {
+      return err(new NoAadManifestExistError(manifestTemplatePath));
+    }
+    await fs.ensureDir(path.join(inputs.projectPath!, "build"));
+    const manifestOutputPath: string = path.join(
+      inputs.projectPath!,
+      "build",
+      `aad.${inputs.env}.json`
+    );
+    const contextV3: DriverContext = createDriverContext(inputs);
+    await buildAadManifest(contextV3, manifestTemplatePath, manifestOutputPath);
     return ok(Void);
   }
 }

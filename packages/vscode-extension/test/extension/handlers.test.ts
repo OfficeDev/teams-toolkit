@@ -65,6 +65,7 @@ import { AppStudioClient } from "@microsoft/teamsfx-core/build/component/resourc
 import { AppDefinition } from "@microsoft/teamsfx-core/build/component/resource/appManifest/interfaces/appDefinition";
 import { VSCodeDepsChecker } from "../../src/debug/depsChecker/vscodeChecker";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
+import { restore } from "sinon";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -762,7 +763,7 @@ describe("handlers", () => {
   });
 
   it("signOutM365", async () => {
-    const signOut = sinon.stub(M365TokenInstance, "signout");
+    const signOut = sinon.stub(M365TokenInstance, "signout").resolves(true);
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     sinon.stub(envTreeProviderInstance, "reloadEnvironments");
 

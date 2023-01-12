@@ -121,28 +121,28 @@ export function hasMeetingExtension(appDefinition: AppDefinition): boolean {
   );
 }
 
-const groupAppConfigured = (tab?: ConfigurableTab) => {
+const groupAppConfigured = (tab: ConfigurableTab) => {
   const validGroupAppContext =
-    includes(tab?.context, MeetingsContext.ChannelTab) ||
-    includes(tab?.context, MeetingsContext.PrivateChatTab);
-  if (tab?.scopes) {
+    includes(tab.context, MeetingsContext.ChannelTab) ||
+    includes(tab.context, MeetingsContext.PrivateChatTab);
+  if (tab.scopes) {
     tab.scopes = updateScope(tab.scopes);
   }
   const validGroupAppScope =
-    includes(tab?.scopes, CommandScope.GroupChat) || includes(tab?.scopes, CommandScope.Team);
+    includes(tab.scopes, CommandScope.GroupChat) || includes(tab.scopes, CommandScope.Team);
 
   return validGroupAppScope && validGroupAppContext;
 };
 
-const meetingExtensionConfigured = (tab?: ConfigurableTab) => {
+const meetingExtensionConfigured = (tab: ConfigurableTab) => {
   const validMeetingContext =
-    includes(tab?.context, MeetingsContext.SidePanel) ||
-    includes(tab?.context, MeetingsContext.DetailsTab) ||
-    includes(tab?.context, MeetingsContext.ChatTab);
-  if (tab?.scopes) {
+    includes(tab.context, MeetingsContext.SidePanel) ||
+    includes(tab.context, MeetingsContext.DetailsTab) ||
+    includes(tab.context, MeetingsContext.ChatTab);
+  if (tab.scopes) {
     tab.scopes = updateScope(tab.scopes);
   }
-  const validMeetingScope = includes(tab?.scopes, CommandScope.GroupChat);
+  const validMeetingScope = includes(tab.scopes, CommandScope.GroupChat);
 
   return validMeetingScope && validMeetingContext;
 };

@@ -280,6 +280,9 @@ export class APP_STUDIO_API_NAMES {
   public static readonly EXISTS_IN_TENANTS = "exists-in-tenant";
   public static readonly GET_APP_PACKAGE = "get-app-package";
   public static readonly VALIDATE_APP_PACKAGE = "validate-app-package";
+  public static readonly CREATE_BOT = "create-bot";
+  public static readonly GET_BOT = "get-bot";
+  public static readonly UPDATE_BOT = "update-bot";
 }
 
 /**

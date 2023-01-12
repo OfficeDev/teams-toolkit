@@ -29,6 +29,9 @@ export class ErrorNames {
 
   // User Exceptions
   public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";
+  public static readonly ACQUIRE_BOT_FRAMEWORK_TOKEN_ERROR = "AcquireBotFrameworkTokenError";
+  public static readonly FORBIDDEN_RESULT_BOT_FRAMEWORK_ERROR = "ForbiddenResultBotFrameworkError";
+  public static readonly CONFLICT_RESULT_BOT_FRAMEWORK_ERROR = "ConflictResultBotFrameworkError";
 }
 
 export class Links {

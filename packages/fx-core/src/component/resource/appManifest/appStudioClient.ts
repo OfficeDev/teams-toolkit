@@ -56,7 +56,7 @@ export namespace AppStudioClient {
     return instance;
   }
 
-  function wrapException(e: any, apiName: string): Error {
+  export function wrapException(e: any, apiName: string): Error {
     const correlationId = e.response?.headers[Constants.CORRELATION_ID];
     const requestPath = e.request?.path ? `${e.request.method} ${e.request.path}` : "";
     const extraData = e.response?.data ? `data: ${JSON.stringify(e.response.data)}` : "";

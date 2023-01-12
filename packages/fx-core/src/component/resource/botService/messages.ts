@@ -51,4 +51,19 @@ export class Messages {
   public static readonly CheckOutputLogAndTryToFix = getLocalizedString(
     "plugins.bot.CheckLogAndFix"
   );
+
+  public static readonly NotAllowedToAcquireBotFrameworkToken: [string, string] = [
+    getDefaultString("error.appstudio.NotAllowedToAcquireBotFrameworkToken"),
+    getLocalizedString("error.appstudio.NotAllowedToAcquireBotFrameworkToken"),
+  ];
+
+  public static readonly BotProvisionReturnsForbiddenResult: [string, string] = [
+    getDefaultString("error.appstudio.BotProvisionReturnsForbiddenResult"),
+    getLocalizedString("error.appstudio.BotProvisionReturnsForbiddenResult"),
+  ];
+
+  public static readonly BotProvisionReturnsConflictResult: [string, string] = [
+    getDefaultString("error.appstudio.BotProvisionReturnsConflictResult"),
+    getLocalizedString("error.appstudio.BotProvisionReturnsConflictResult"),
+  ];
 }

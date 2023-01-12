@@ -178,6 +178,9 @@ describe("handlers", () => {
     const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
     const createListener = sinon.stub(watcher, "onDidCreate").resolves();
     const changeListener = sinon.stub(watcher, "onDidChange").resolves();
+    const sendTelemetryEventFunc = sinon
+      .stub(ExtTelemetry, "sendTelemetryEvent")
+      .callsFake(() => {});
 
     handlers.addFileSystemWatcher(workspacePath);
 
@@ -188,6 +191,7 @@ describe("handlers", () => {
     createWatcher.restore();
     createListener.restore();
     changeListener.restore();
+    sendTelemetryEventFunc.restore();
   });
 
   it("addFileSystemWatcher in invalid project", async () => {

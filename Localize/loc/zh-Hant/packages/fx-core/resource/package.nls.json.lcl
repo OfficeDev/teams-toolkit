@@ -2512,7 +2512,7 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";core.error.NoEnvFileError" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";core.error.NoYmlFileError" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Failed to find yml files.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">

@@ -30,7 +30,7 @@
   "core.provision.subscription.failToSelect": "Abonelik seçilemedi",
   "core.error.notLoginToAzure": "Azure Hesabı uzantısını kullanarak Azure'da oturum açın",
   "core.error.FailedToCreateResourceGroup.exist": "'%s' kaynak grubu oluşturulamadı: kaynak grubu var",
-  "core.error.NoEnvFileError": "YML dosyaları bulunamadı.",
+  "core.error.NoYmlFileError": "YML dosyaları bulunamadı.",
   "core.error.resourceGroupNotFound": "'%s' kaynak grubu yok, lütfen mevcut bir kaynak grubu belirtin.",
   "core.error.resourceGroupNotFound2": "'%s' kaynak grubu yok, lütfen '%s' dosyasını kontrol edin.",
   "core.error.unresolvedPlaceholders": "Çözümlenmemiş yer tutucular var: seçili yms dosyasında '%s': %s",

@@ -30,7 +30,7 @@
   "core.provision.subscription.failToSelect": "サブスクリプションを選択できませんでした",
   "core.error.notLoginToAzure": "Azure アカウント拡張機能を使用して Azure にログインする",
   "core.error.FailedToCreateResourceGroup.exist": "リソース グループ '%s' を作成できませんでした: リソース グループが存在します",
-  "core.error.NoEnvFileError": "yml ファイルが見つかりませんでした。",
+  "core.error.NoYmlFileError": "yml ファイルが見つかりませんでした。",
   "core.error.resourceGroupNotFound": "リソース グループ '%s' は存在しません。既存のリソース グループを指定してください。",
   "core.error.resourceGroupNotFound2": "リソース グループ '%s' が存在しません。'%s' ファイルを確認してください。",
   "core.error.unresolvedPlaceholders": "未解決のプレースホルダーがあります: 選択した yml ファイル内の '%s': %s",

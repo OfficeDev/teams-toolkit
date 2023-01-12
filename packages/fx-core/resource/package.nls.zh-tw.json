@@ -30,7 +30,7 @@
   "core.provision.subscription.failToSelect": "無法選取訂用帳戶",
   "core.error.notLoginToAzure": "使用 Azure 帳戶延伸模組登入 Azure",
   "core.error.FailedToCreateResourceGroup.exist": "無法建立資源群組 '%s': 資源群組存在",
-  "core.error.NoEnvFileError": "找不到 yml 檔案。",
+  "core.error.NoYmlFileError": "找不到 yml 檔案。",
   "core.error.resourceGroupNotFound": "資源群組 '%s'不存在，請指定現有的資源群組。",
   "core.error.resourceGroupNotFound2": "資源群組 '%s' 不存在，請檢查 '%s' 檔案。",
   "core.error.unresolvedPlaceholders": "選取的 yml 檔案 %s 中有無法解析的預留位置: '%s'",

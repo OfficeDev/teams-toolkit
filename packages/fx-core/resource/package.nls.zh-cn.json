@@ -30,7 +30,7 @@
   "core.provision.subscription.failToSelect": "未能选择订阅",
   "core.error.notLoginToAzure": "使用 Azure 帐户扩展登录到 Azure",
   "core.error.FailedToCreateResourceGroup.exist": "无法创建资源组“%s”: 资源组已存在",
-  "core.error.NoEnvFileError": "找不到 yml 文件。",
+  "core.error.NoYmlFileError": "找不到 yml 文件。",
   "core.error.resourceGroupNotFound": "资源组 \"%s\" 不存在，请指定现有资源组。",
   "core.error.resourceGroupNotFound2": "资源组“%s”不存在，请检查“%s”文件。",
   "core.error.unresolvedPlaceholders": "所选 yml 文件: %s 中有未解析的占位符: \"%s\"",

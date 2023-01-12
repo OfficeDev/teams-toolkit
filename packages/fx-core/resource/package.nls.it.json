@@ -30,7 +30,7 @@
   "core.provision.subscription.failToSelect": "Non è stato possibile selezionare la sottoscrizione",
   "core.error.notLoginToAzure": "Accedere ad Azure con l'estensione Account Azure",
   "core.error.FailedToCreateResourceGroup.exist": "Non è stato possibile creare il gruppo di risorse \"%s\": il gruppo di risorse esiste",
-  "core.error.NoEnvFileError": "Non è stato possibile trovare i file yml.",
+  "core.error.NoYmlFileError": "Non è stato possibile trovare i file yml.",
   "core.error.resourceGroupNotFound": "Il gruppo di risorse '%s' non esiste. Specificare un gruppo di risorse esistente.",
   "core.error.resourceGroupNotFound2": "Il gruppo di risorse '%s' non esiste. Controllare il file '%s'.",
   "core.error.unresolvedPlaceholders": "Segnaposto non risolti: '%s' nel file yml selezionato: %s",

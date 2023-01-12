@@ -30,7 +30,7 @@
   "core.provision.subscription.failToSelect": "Fehler beim Auswählen des Abonnements.",
   "core.error.notLoginToAzure": "Anmelden bei Azure mithilfe der Azure-Kontoerweiterung",
   "core.error.FailedToCreateResourceGroup.exist": "Fehler beim Erstellen der Ressourcengruppe \"%s\": Die Ressourcengruppe ist vorhanden.",
-  "core.error.NoEnvFileError": "Fehler beim Suchen von YML-Dateien.",
+  "core.error.NoYmlFileError": "Fehler beim Suchen von YML-Dateien.",
   "core.error.resourceGroupNotFound": "Die Ressourcengruppe „%s“ existiert nicht, bitte geben Sie eine vorhandene Ressourcengruppe an.",
   "core.error.resourceGroupNotFound2": "Die Ressourcengruppe „%s“ ist nicht vorhanden. Überprüfen Sie Ihre „%s“ Datei.",
   "core.error.unresolvedPlaceholders": "In der ausgewählten YML-Datei „%s“ sind nicht aufgelöste Platzhalter „%s“ vorhanden.",

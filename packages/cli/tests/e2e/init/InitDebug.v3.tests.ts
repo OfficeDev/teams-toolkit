@@ -46,7 +46,11 @@ describe("teamsfx init debug", function () {
     ];
     for (const file of files) {
       const filePath = path.resolve(testFolder, file);
-      chai.assert.isTrue(await fs.pathExists(filePath));
+      const exists = await fs.pathExists(filePath);
+      if (!exists) {
+        console.error(`file not exits: ${filePath}`);
+      }
+      chai.assert.isTrue(exists);
     }
   });
 });

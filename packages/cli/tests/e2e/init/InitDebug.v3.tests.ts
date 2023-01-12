@@ -33,7 +33,7 @@ describe("teamsfx init debug", function () {
     });
   });
 
-  it(`teamsfx init debug (vscode + bot)`, { testPlanCaseId: 16774423 }, async function () {
+  it(`teamsfx init debug (vscode + bot)`, { testPlanCaseId: 16774467 }, async function () {
     await CliHelper.initDebug(appName, testFolder, "vsc", "bot", undefined);
     const files = [
       ".vscode/launch.json",

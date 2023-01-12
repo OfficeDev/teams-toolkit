@@ -659,7 +659,7 @@ export class Coordinator {
         else {
           cycle.driverDefs?.forEach((driver) => {
             const withObj = driver.with as any;
-            if (withObj.subscriptionId && resolvedSubscriptionId === undefined)
+            if (withObj && withObj.subscriptionId && resolvedSubscriptionId === undefined)
               resolvedSubscriptionId = withObj.subscriptionId;
           });
         }

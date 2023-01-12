@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 import { includes } from "lodash";
 import Mustache from "mustache";
+import { updateScope } from "../../../developerPortalScaffoldUtils";
 import { TEAMS_APP_SHORT_NAME_MAX_LENGTH } from "../constants";
 import { AppDefinition } from "../interfaces/appDefinition";
 import { ConfigurableTab } from "../interfaces/configurableTab";
@@ -124,6 +125,9 @@ const groupAppConfigured = (tab?: ConfigurableTab) => {
   const validGroupAppContext =
     includes(tab?.context, MeetingsContext.ChannelTab) ||
     includes(tab?.context, MeetingsContext.PrivateChatTab);
+  if (tab?.scopes) {
+    tab.scopes = updateScope(tab.scopes);
+  }
   const validGroupAppScope =
     includes(tab?.scopes, CommandScope.GroupChat) || includes(tab?.scopes, CommandScope.Team);
 
@@ -135,6 +139,9 @@ const meetingExtensionConfigured = (tab?: ConfigurableTab) => {
     includes(tab?.context, MeetingsContext.SidePanel) ||
     includes(tab?.context, MeetingsContext.DetailsTab) ||
     includes(tab?.context, MeetingsContext.ChatTab);
+  if (tab?.scopes) {
+    tab.scopes = updateScope(tab.scopes);
+  }
   const validMeetingScope = includes(tab?.scopes, CommandScope.GroupChat);
 
   return validMeetingScope && validMeetingContext;

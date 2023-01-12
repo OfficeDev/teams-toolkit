@@ -185,6 +185,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
               } else if (sideloadingType === SideloadingType.v3M365Remote) {
                 const inputs = getSystemInputs();
                 inputs.ignoreEnvInfo = false;
+                inputs.ignoreLocalEnv = true;
                 const envResult = await core.getSelectedEnv(inputs);
                 if (envResult.isErr()) {
                   return undefined;

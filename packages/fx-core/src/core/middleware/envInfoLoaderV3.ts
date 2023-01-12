@@ -47,7 +47,7 @@ export type CreateEnvCopyInput = {
   sourceEnvName: string;
 };
 
-export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
+export function EnvInfoLoaderMW_V3(skip: boolean, ignoreLocalEnv = false): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
     if (shouldIgnored(ctx)) {
       await next();
@@ -57,7 +57,7 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
     if (isV3Enabled()) {
       const envBefore = _.cloneDeep(process.env);
       try {
-        await envLoaderMWImpl(inputs.ignoreLocalEnv ? false : true, ctx, next);
+        await envLoaderMWImpl(inputs.ignoreLocalEnv || ignoreLocalEnv ? false : true, ctx, next);
         return;
       } finally {
         const keys = Object.keys(process.env);

@@ -612,7 +612,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
+    EnvInfoLoaderMW_V3(false, true),
     QuestionModelMW,
     ContextInjectorMW,
   ])
@@ -645,7 +645,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
+    EnvInfoLoaderMW_V3(false, true),
     ContextInjectorMW,
   ])
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -677,7 +677,7 @@ export class FxCore implements v3.ICore {
     AadManifestMigrationMW,
     ProjectVersionCheckerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW_V3(false),
+    EnvInfoLoaderMW_V3(false, true),
     ContextInjectorMW,
   ])
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {

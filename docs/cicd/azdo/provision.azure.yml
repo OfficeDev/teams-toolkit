@@ -40,8 +40,8 @@ steps:
       npx teamsfx account login azure --service-principal --username $(AZURE_SERVICE_PRINCIPAL_NAME) --password $(AZURE_SERVICE_PRINCIPAL_PASSWORD) --tenant $(AZURE_TENANT_ID)
 
       # We suggest to do the `teamsfx provision` step manually or in a separate workflow. The following steps are for your reference.
-      # After provisioning, you should commit necessary files under .fx into the repository. 
-      npx teamsfx provision --subscription $(AZURE_SUBSCRIPTION_ID) --env ${TEAMSFX_ENV_NAME}
+      # After provisioning, you should commit necessary files under teamsfx into the repository.
+      npx teamsfx provision --env ${TEAMSFX_ENV_NAME}
 
       # Commit provision configs if necessary.
       # To enable scripts to run git commands, check https://docs.microsoft.com/en-us/azure/devops/pipelines/scripts/git-commands?view=azure-devops&tabs=yaml

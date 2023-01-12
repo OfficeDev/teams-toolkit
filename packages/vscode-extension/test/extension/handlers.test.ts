@@ -170,16 +170,22 @@ describe("handlers", () => {
   it("addFileSystemWatcher", async () => {
     const workspacePath = "test";
 
-    const watcher = { onDidCreate: () => ({ dispose: () => undefined }) } as any;
+    const watcher = {
+      onDidCreate: () => ({ dispose: () => undefined }),
+      onDidChange: () => ({ dispose: () => undefined }),
+    } as any;
     const createWatcher = sinon.stub(vscode.workspace, "createFileSystemWatcher").returns(watcher);
-    const listener = sinon.stub(watcher, "onDidCreate").resolves();
+    const createListener = sinon.stub(watcher, "onDidCreate").resolves();
+    const changeListener = sinon.stub(watcher, "onDidChange").resolves();
 
     handlers.addFileSystemWatcher(workspacePath);
 
-    chai.assert.isTrue(createWatcher.calledTwice);
-    chai.assert.isTrue(listener.calledTwice);
+    chai.assert.isTrue(createWatcher.calledThrice);
+    chai.assert.isTrue(createListener.calledThrice);
+    chai.assert.isTrue(changeListener.calledOnce);
     createWatcher.restore();
-    listener.restore();
+    createListener.restore();
+    changeListener.restore();
   });
 
   describe("command handlers", function () {

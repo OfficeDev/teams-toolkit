@@ -41,7 +41,7 @@ TeamsFx SDK is built to be used in browser and NodeJS environment. Common scenar
 - Azure Function
 - Teams bot
 
-### Create and authenticate a service like `createMicrosoftGraphClientWithCredential` or `createMicrosoftGraphClient`
+### Create and authenticate a service using `createMicrosoftGraphClientWithCredential` or `createMicrosoftGraphClient`
 
 > [!NOTE] `createMicrosoftGraphClient` function has been deprecated. Its recommended that you to use `createMicrosoftGraphClientWithCredential` instead, for better coding experience.
 
@@ -307,7 +307,7 @@ const authConfig: TeamsUserCredentialAuthConfig = {
 
 const teamsUserCredential = new TeamsUserCredential(authConfig);
 
-// Plt login code in a call-to-action callback function to avoid browser blocking automatically showing up pop-ups.
+// Put login code in a call-to-action callback function to avoid browser blocking automatically showing up pop-ups.
 await teamsUserCredential.login(["User.Read"]); // Login with scope
 
 try {

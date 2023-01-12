@@ -650,10 +650,9 @@ export class Coordinator {
         process.env.RESOURCE_SUFFIX = suffix;
         output.RESOURCE_SUFFIX = suffix;
       }
-      // 4. pre-requisites (subscription and resource group) check
+      // check whether placeholders are resolved
       let subscriptionUnresolved = false;
       let resourceGroupUnresolved = false;
-
       for (const cycle of cycles) {
         const unresolvedPlaceHolders = cycle.resolvePlaceholders();
         if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) subscriptionUnresolved = true;
@@ -668,7 +667,7 @@ export class Coordinator {
           resourceGroupUnresolved = true;
       }
 
-      // ensure subscription
+      // ensure subscription, pop up UI to select if necessary
       if (subscriptionUnresolved) {
         if (inputs["targetSubscriptionId"]) {
           process.env.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
@@ -688,6 +687,7 @@ export class Coordinator {
         resolvedSubscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
       }
 
+      // for azure action, subscription is necessary
       if (!resolvedSubscriptionId) {
         return err(
           new UserError({
@@ -734,7 +734,7 @@ export class Coordinator {
         }
       }
 
-      // consent
+      // consent user
       await ctx.azureAccountProvider.getIdentityCredentialAsync(true); // make sure login if ensureSubScription() is not called.
       try {
         await ctx.azureAccountProvider.setSubscription(resolvedSubscriptionId); //make sure sub is correctly set if ensureSubscription() is not called.
@@ -751,17 +751,15 @@ export class Coordinator {
           )
         );
       }
-      if (azureSubInfo) {
-        const consentRes = await provisionUtils.askForProvisionConsentV3(
-          ctx,
-          m365tenantInfo,
-          azureSubInfo,
-          inputs.env
-        );
-        if (consentRes.isErr()) return err(consentRes.error);
-      }
+      const consentRes = await provisionUtils.askForProvisionConsentV3(
+        ctx,
+        m365tenantInfo,
+        azureSubInfo,
+        inputs.env
+      );
+      if (consentRes.isErr()) return err(consentRes.error);
 
-      // create resource group
+      // create resource group if necessary
       if (targetResourceGroupInfo.createNewResourceGroup) {
         const createRgRes = await resourceGroupHelper.createNewResourceGroup(
           targetResourceGroupInfo.name,

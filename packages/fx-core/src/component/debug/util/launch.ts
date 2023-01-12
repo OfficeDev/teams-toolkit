@@ -153,6 +153,26 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
       },
       internalConsoleOptions: "neverOpen",
     },
+    {
+      name: "Attach to Frontend in Outlook (Edge)",
+      type: "pwa-msedge",
+      request: "launch",
+      url: "https://outlook.office.com/host/${localTeamsAppInternalId}?${account-hint}",
+      webRoot: "${workspaceRoot}/SPFx",
+      sourceMaps: true,
+      sourceMapPathOverrides: {
+        "webpack:///.././src/*": "${webRoot}/src/*",
+        "webpack:///../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../src/*": "${webRoot}/src/*",
+        "webpack:///../../../../../src/*": "${webRoot}/src/*",
+      },
+      postDebugTask: "Terminate All Tasks",
+      presentation: {
+        group: "all",
+        hidden: true,
+      },
+      internalConsoleOptions: "neverOpen",
+    },
   ];
   return configurations;
 }
@@ -183,6 +203,16 @@ export function generateSpfxCompounds(): Record<string, unknown>[] {
       presentation: {
         group: "forteams",
         order: chromeOrder,
+      },
+      stopAll: true,
+    },
+    {
+      name: "Outlook workbench (Edge)",
+      configurations: ["Attach to Frontend in Outlook (Edge)"],
+      preLaunchTask: "prepare dev env",
+      presentation: {
+        group: "forteams",
+        order: edgeOrder + 2,
       },
       stopAll: true,
     }

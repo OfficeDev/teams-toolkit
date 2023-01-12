@@ -712,7 +712,7 @@ export class FxCore implements v3.ICore {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<string | undefined, FxError>> {
-    return ok(ctx?.envInfoV3?.envName);
+    return ok(inputs.env); //work for both v2 and v3
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ProjectSettingsLoaderMW, ContextInjectorMW])

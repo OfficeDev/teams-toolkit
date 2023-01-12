@@ -30,7 +30,7 @@
   "core.provision.subscription.failToSelect": "Не удалось выбрать подписку",
   "core.error.notLoginToAzure": "Вход в Azure с помощью расширения учетной записи Azure",
   "core.error.FailedToCreateResourceGroup.exist": "Не удалось создать группу ресурсов \"%s\": группа ресурсов существует",
-  "core.error.NoYmlFileError": "Не удалось найти YML-файлы.",
+  "core.error.NoEnvFileError": "Не удалось найти YML-файлы.",
   "core.error.resourceGroupNotFound": "Группа ресурсов \"%s\" не существует. Укажите существующую группу ресурсов.",
   "core.error.resourceGroupNotFound2": "Группа ресурсов \"%s\" не существует. Проверьте файл \"%s\".",
   "core.error.unresolvedPlaceholders": "В выбранном файле YML %s есть неразрешенные заполнители: \"%s\"",

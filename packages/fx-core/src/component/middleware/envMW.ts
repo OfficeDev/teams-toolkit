@@ -62,9 +62,9 @@ export const envLoaderMWImpl = async (
       ctx.result = err(
         new UserError({
           source: "EnvLoaderMW",
-          name: "NoYmlFileError",
-          displayMessage: getLocalizedString("core.error.NoYmlFileError"),
-          message: getDefaultString("core.error.NoYmlFileError"),
+          name: "NoEnvFileError",
+          displayMessage: getLocalizedString("core.error.NoEnvFileError"),
+          message: getDefaultString("core.error.NoEnvFileError"),
         })
       );
       return;

@@ -30,7 +30,7 @@
   "core.provision.subscription.failToSelect": "Nie można wybrać subskrypcji",
   "core.error.notLoginToAzure": "Zaloguj się do platformy Azure przy użyciu rozszerzenia konta platformy Azure",
   "core.error.FailedToCreateResourceGroup.exist": "Nie można utworzyć grupy zasobów „%s”: grupa zasobów istnieje",
-  "core.error.NoYmlFileError": "Nie można odnaleźć plików yml.",
+  "core.error.NoEnvFileError": "Nie można odnaleźć plików yml.",
   "core.error.resourceGroupNotFound": "Grupa zasobów „%s” nie istnieje. Określ istniejącą grupę zasobów.",
   "core.error.resourceGroupNotFound2": "Grupa zasobów „%s” nie istnieje. Sprawdź plik „%s”.",
   "core.error.unresolvedPlaceholders": "Istnieją nierozpoznane symbole zastępcze: „%s” w wybranym pliku yml: %s",

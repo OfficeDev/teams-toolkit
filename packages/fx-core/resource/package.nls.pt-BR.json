@@ -30,7 +30,7 @@
   "core.provision.subscription.failToSelect": "Falha ao selecionar assinatura",
   "core.error.notLoginToAzure": "Faça logon no Azure usando a extensão de Conta do Azure",
   "core.error.FailedToCreateResourceGroup.exist": "Falha ao criar grupo de recursos '%s': o grupo de recursos existe",
-  "core.error.NoYmlFileError": "Ocorreu um erro ao encontrar os arquivos yml.",
+  "core.error.NoEnvFileError": "Ocorreu um erro ao encontrar os arquivos yml.",
   "core.error.resourceGroupNotFound": "O grupo de recursos '%s' não existe. Especifique um grupo de recursos existente.",
   "core.error.resourceGroupNotFound2": "O grupo de recursos '%s' não existe. Verifique o arquivo '%s'.",
   "core.error.unresolvedPlaceholders": "Há espaços reservados não resolvidos: '%s' no arquivo yml selecionado: %s",

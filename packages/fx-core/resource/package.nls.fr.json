@@ -30,7 +30,7 @@
   "core.provision.subscription.failToSelect": "Nous n’avons pas pu sélectionner l’abonnement",
   "core.error.notLoginToAzure": "Se connecter à Azure à l’aide de l’extension de compte Azure",
   "core.error.FailedToCreateResourceGroup.exist": "Nous n’avons pas pu créer le groupe de ressources « %s », car ce groupe de ressources existe",
-  "core.error.NoYmlFileError": "Fichiers yml introuvables.",
+  "core.error.NoEnvFileError": "Fichiers yml introuvables.",
   "core.error.resourceGroupNotFound": "Le groupe de ressources '%s' n’existe pas. Spécifiez un groupe de ressources existant.",
   "core.error.resourceGroupNotFound2": "Le groupe de ressources '%s' n’existe pas. Vérifiez le fichier '%s'.",
   "core.error.unresolvedPlaceholders": "Il existe des espaces réservés non résolus : '%s' dans le fichier yml sélectionné : %s",

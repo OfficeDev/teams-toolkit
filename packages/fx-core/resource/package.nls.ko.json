@@ -30,7 +30,7 @@
   "core.provision.subscription.failToSelect": "구독을 선택하지 못했음",
   "core.error.notLoginToAzure": "Azure 계정 확장을 사용하여 Azure에 로그인",
   "core.error.FailedToCreateResourceGroup.exist": "리소스 그룹 \"%s\"을(를) 만들지 못했습니다. 해당 리소스 그룹이 있습니다.",
-  "core.error.NoYmlFileError": "yml 파일을 찾지 못했습니다.",
+  "core.error.NoEnvFileError": "yml 파일을 찾지 못했습니다.",
   "core.error.resourceGroupNotFound": "리소스 그룹 '%s'이(가) 없습니다. 기존 리소스 그룹을 지정하세요.",
   "core.error.resourceGroupNotFound2": "리소스 그룹 '%s'이(가) 존재하지 않습니다. '%s' 파일을 확인하세요.",
   "core.error.unresolvedPlaceholders": "선택한 yml 파일 %s에 해결되지 않은 자리 표시자 '%s'이(가) 있습니다.",

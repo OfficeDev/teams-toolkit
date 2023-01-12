@@ -30,7 +30,7 @@
   "core.provision.subscription.failToSelect": "Nepovedlo se vybrat předplatné.",
   "core.error.notLoginToAzure": "Přihlásit k Azure pomocí rozšíření účtu Azure",
   "core.error.FailedToCreateResourceGroup.exist": "Nepovedlo se vytvořit skupinu prostředků %s: Skupina prostředků existuje.",
-  "core.error.NoYmlFileError": "Nepovedlo se najít soubory yml.",
+  "core.error.NoEnvFileError": "Nepovedlo se najít soubory yml.",
   "core.error.resourceGroupNotFound": "Skupina prostředků %s neexistuje. Zadejte prosím existující skupinu prostředků.",
   "core.error.resourceGroupNotFound2": "Skupina prostředků %s neexistuje. Zkontrolujte soubor %s.",
   "core.error.unresolvedPlaceholders": "Ve vybraném souboru yml jsou nerozpoznané zástupné symboly %s: %s.",

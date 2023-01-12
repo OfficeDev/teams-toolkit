@@ -304,9 +304,6 @@ export enum TelemetryProperty {
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
   NewProjectId = "new-project-id",
-  TeamsFxVersion = "version-teamsfx",
-  TeamsJSVersion = "version-teams-js",
-  BotbuilderVersion = "version-botbuilder",
   // Used with TreeViewCommandConcurrentExecution
   RunningCommand = "running-command",
   BlockedCommand = "blocked-command",

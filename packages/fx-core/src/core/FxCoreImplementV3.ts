@@ -249,9 +249,10 @@ export class FxCoreV3Implement {
     const res = await updateAadClient.run(inputArgs, contextV3);
     if (res.isErr()) {
       if (res.error instanceof MissingEnvInFileUserError) {
-        res.error.message += getDefaultString("error.UpdateAadManifest.MissingEnvHint"); // hint users can run provision/debug to create missing env for our project template
+        res.error.message += " " + getDefaultString("error.UpdateAadManifest.MissingEnvHint"); // hint users can run provision/debug to create missing env for our project template
         if (res.error.displayMessage) {
-          res.error.displayMessage += getLocalizedMessage("error.UpdateAadManifest.MissingEnvHint");
+          res.error.displayMessage +=
+            " " + getLocalizedMessage("error.UpdateAadManifest.MissingEnvHint");
         }
       }
       return err(res.error);

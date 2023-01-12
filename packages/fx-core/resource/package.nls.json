@@ -1065,7 +1065,7 @@
   "error.ComponentNotExist": "Component not found: %s.",
   "error.BadComponent": "Component '%s' lacks of property: %s.",
   "error.InvalidFeature": "This feature is not applicable for your project.",
-  "error.UpdateAadManifest.MissingEnvHint": " If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables.",
+  "error.UpdateAadManifest.MissingEnvHint": "If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables.",
   "driver.aadApp.description.create": "Create an AAD app to authenticate users",
   "driver.aadApp.description.update": "Apply AAD app manifest to an existing AAD app",
   "driver.aadApp.error.invalidParameter": "Following parameter is missing or invalid for %s action: %s.",

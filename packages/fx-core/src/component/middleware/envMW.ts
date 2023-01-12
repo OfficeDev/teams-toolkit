@@ -62,9 +62,9 @@ export const envLoaderMWImpl = async (
       ctx.result = err(
         new UserError({
           source: "EnvLoaderMW",
-          name: "NoEnvFileError",
-          displayMessage: getLocalizedString("core.error.NoEnvFileError"),
-          message: getDefaultString("core.error.NoEnvFileError"),
+          name: "NoEnvFilesError",
+          displayMessage: getLocalizedString("core.error.NoEnvFilesError"),
+          message: getDefaultString("core.error.NoEnvFilesError"),
         })
       );
       return;

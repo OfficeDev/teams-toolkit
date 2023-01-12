@@ -172,6 +172,9 @@ describe("Core basic APIs", () => {
     assert.isTrue(envListResult.value[0] === environmentManager.getDefaultEnvName());
     inputs[CoreQuestionNames.NewTargetEnvName] = newEnvName;
     const createEnvRes = await core.createEnv(inputs);
+    if (createEnvRes.isErr()) {
+      console.error(createEnvRes.error);
+    }
     assert.isTrue(createEnvRes.isOk());
 
     const newEnvListResult = await environmentManager.listRemoteEnvConfigs(projectPath);

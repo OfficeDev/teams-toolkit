@@ -40,6 +40,7 @@ import {
   generateLocalConfig,
   checkapimPluginExists,
   ProjectMigratorMWV3,
+  errorNames,
 } from "../../../src/core/middleware/projectMigratorV3";
 import * as MigratorV3 from "../../../src/core/middleware/projectMigratorV3";
 import { UpgradeCanceledError } from "../../../src/core/error";
@@ -51,7 +52,6 @@ import {
 } from "../../../src/common/versionMetadata";
 import {
   getDownloadLinkByVersionAndPlatform,
-  getMigrationHelpLink,
   getTrackingIdFromPath,
   getVersionState,
   migrationNotificationMessage,
@@ -705,7 +705,7 @@ describe("manifestsMigration", () => {
     try {
       await manifestsMigration(migrationContext);
     } catch (error) {
-      assert.equal(error.name, "MigrationReadFileError");
+      assert.equal(error.name, errorNames.appPackageNotExist);
       assert.equal(error.innerError.message, "templates/appPackage does not exist");
     }
   });
@@ -740,7 +740,7 @@ describe("manifestsMigration", () => {
     try {
       await manifestsMigration(migrationContext);
     } catch (error) {
-      assert.equal(error.name, "MigrationReadFileError");
+      assert.equal(error.name, errorNames.manifestTemplateNotExist);
       assert.equal(
         error.innerError.message,
         "templates/appPackage/manifest.template.json does not exist"
@@ -1224,16 +1224,6 @@ describe("Migration utils", () => {
   it("isMigrationV3Enabled", () => {
     const enabled = isMigrationV3Enabled();
     assert.isFalse(enabled);
-  });
-
-  it("getMigrationHelpLink", () => {
-    const url = "mock.com";
-    let anchor: any = "mock-anchor";
-    let helpLink = getMigrationHelpLink(url, anchor);
-    assert.equal(helpLink, "mock.com#mock-anchor");
-    anchor = undefined;
-    helpLink = getMigrationHelpLink(url, anchor);
-    assert.equal(helpLink, "mock.com");
   });
 });
 

@@ -32,7 +32,7 @@ import {
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
-import { UpgradeV3CanceledError, MigrationReadFileError, TooklitNotSupportError } from "../error";
+import { UpgradeV3CanceledError, MigrationError, ToolkitNotSupportError } from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
@@ -53,7 +53,6 @@ import {
   migrationNotificationMessage,
   outputCancelMessage,
   getDownloadLinkByVersionAndPlatform,
-  getMigrationHelpLink,
 } from "./utils/v3MigrationUtils";
 import * as semver from "semver";
 import * as commentJson from "comment-json";
@@ -107,9 +106,9 @@ const Constants = {
 };
 
 const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
-const helpLinkAnchors = {
-  appPackageNotExist: "app-package-not-exist",
-  manifestTemplateNotExist: "manifest-template-not-exist",
+export const errorNames = {
+  appPackageNotExist: "AppPackageNotExist",
+  manifestTemplateNotExist: "ManifestTemplateNotExist",
 };
 const migrationMessageButtons = [learnMoreText, upgradeButton];
 
@@ -143,7 +142,7 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
         getLocalizedString("core.migrationV3.CreateNewProject"),
         true
       );
-      ctx.result = err(TooklitNotSupportError());
+      ctx.result = err(ToolkitNotSupportError());
       return false;
     }
 
@@ -322,10 +321,11 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   if (!oldAppPackageFolderBackupRes) {
     // templates/appPackage does not exists
     // invalid teamsfx project
-    throw MigrationReadFileError(
+    throw MigrationError(
       new Error("templates/appPackage does not exist"),
-      getMigrationHelpLink(learnMoreLink, helpLinkAnchors.appPackageNotExist)
-    ) as UserError;
+      errorNames.appPackageNotExist,
+      learnMoreLink
+    );
   }
 
   // Ensure appPackage
@@ -365,9 +365,10 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     }
   } else {
     // templates/appPackage/manifest.template.json does not exist
-    throw MigrationReadFileError(
+    throw MigrationError(
       new Error("templates/appPackage/manifest.template.json does not exist"),
-      getMigrationHelpLink(learnMoreLink, helpLinkAnchors.manifestTemplateNotExist)
+      errorNames.manifestTemplateNotExist,
+      learnMoreLink
     );
   }
 

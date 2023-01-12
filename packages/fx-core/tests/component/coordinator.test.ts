@@ -466,6 +466,15 @@ describe("component coordinator test", () => {
     const fxCore = new FxCore(tools);
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isOk());
+    // getSelectedEnv
+    const selectEnvRes = await fxCore.getSelectedEnv(inputs);
+    if (selectEnvRes.isErr()) {
+      console.log(selectEnvRes.error);
+    }
+    assert.isTrue(selectEnvRes.isOk());
+    if (selectEnvRes.isOk()) {
+      assert.equal(selectEnvRes.value, "dev");
+    }
   });
   it("provision happy path from zero case 2", async () => {
     const mockProjectModel: ProjectModel = {

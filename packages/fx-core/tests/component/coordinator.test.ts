@@ -689,6 +689,46 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isOk());
     assert.isTrue(stubShowMessage.calledOnce);
   });
+  it("provision failed when user directly update yml", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: {
+              subscriptionId: "",
+            },
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isErr());
+  });
   it("provision failed with parse error", async () => {
     sandbox.stub(YamlParser.prototype, "parse").resolves(err(new UserError({})));
     const inputs: Inputs = {

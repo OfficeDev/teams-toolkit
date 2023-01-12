@@ -72,6 +72,12 @@ export class CreateTeamsAppDriver implements StepDriver {
     context: WrapDriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     TelemetryUtils.init(context);
+
+    const result = this.validateArgs(args);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
     let create = true;
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
       scopes: AppStudioScopes,
@@ -176,6 +182,24 @@ export class CreateTeamsAppDriver implements StepDriver {
           [outputNames.TEAMS_APP_TENANT_ID, createdAppDefinition!.tenantId!],
         ])
       );
+    }
+  }
+
+  private validateArgs(args: CreateTeamsAppArgs): Result<any, FxError> {
+    const invalidParams: string[] = [];
+    if (!args || !args.name) {
+      invalidParams.push("name");
+    }
+    if (invalidParams.length > 0) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.InvalidParameterError.name,
+          AppStudioError.InvalidParameterError.message(actionName, invalidParams),
+          "https://aka.ms/teamsfx-actions/teamsapp-create"
+        )
+      );
+    } else {
+      return ok(undefined);
     }
   }
 }

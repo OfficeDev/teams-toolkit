@@ -12,11 +12,11 @@
     "test:unit": "nyc mocha \"tests/**/*.test.ts\" "
   },
   "peerDependencies": {
-    "mocha": "^9.2.0",
+    "mocha": "^9.2.2",
     "mochawesome": "^7.0.1"
   },
   "dependencies": {
-    "mocha": "^9.2.0",
+    "mocha": "^9.2.2",
     "mochawesome": "^7.0.1"
   },
   "devDependencies": {

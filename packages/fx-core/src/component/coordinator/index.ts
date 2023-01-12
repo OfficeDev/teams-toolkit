@@ -121,26 +121,26 @@ export enum TemplateNames {
 }
 
 export const Feature2TemplateName: any = {
-  [`${NotificationOptionItem.id}:${AppServiceOptionItem.id}`]: TemplateNames.NotificationRestify,
-  [`${NotificationOptionItem.id}:${AppServiceOptionItemForVS.id}`]:
+  [`${NotificationOptionItem().id}:${AppServiceOptionItem.id}`]: TemplateNames.NotificationRestify,
+  [`${NotificationOptionItem().id}:${AppServiceOptionItemForVS.id}`]:
     TemplateNames.NotificationWebApi,
-  [`${NotificationOptionItem.id}:${FunctionsHttpTriggerOptionItem.id}`]:
+  [`${NotificationOptionItem().id}:${FunctionsHttpTriggerOptionItem.id}`]:
     TemplateNames.NotificationHttpTrigger,
-  [`${NotificationOptionItem.id}:${FunctionsTimerTriggerOptionItem.id}`]:
+  [`${NotificationOptionItem().id}:${FunctionsTimerTriggerOptionItem.id}`]:
     TemplateNames.NotificationTimerTrigger,
-  [`${NotificationOptionItem.id}:${FunctionsHttpAndTimerTriggerOptionItem.id}`]:
+  [`${NotificationOptionItem().id}:${FunctionsHttpAndTimerTriggerOptionItem.id}`]:
     TemplateNames.NotificationHttpTimerTrigger,
-  [`${CommandAndResponseOptionItem.id}:undefined`]: TemplateNames.CommandAndResponse,
-  [`${WorkflowOptionItem.id}:undefined`]: TemplateNames.Workflow,
-  [`${BotOptionItem.id}:undefined`]: TemplateNames.DefaultBot,
-  [`${MessageExtensionItem.id}:undefined`]: TemplateNames.MessageExtension,
-  [`${M365SearchAppOptionItem.id}:undefined`]: TemplateNames.M365MessageExtension,
-  [`${TabOptionItem.id}:undefined`]: TemplateNames.SsoTab,
-  [`${TabNonSsoItem.id}:undefined`]: TemplateNames.Tab,
-  [`${M365SsoLaunchPageOptionItem.id}:undefined`]: TemplateNames.M365Tab,
-  [`${DashboardOptionItem.id}:undefined`]: TemplateNames.DashboardTab,
-  [`${TabNonSsoAndDefaultBotItem.id}:undefined`]: TemplateNames.TabAndDefaultBot,
-  [`${DefaultBotAndMessageExtensionItem.id}:undefined`]: TemplateNames.BotAndMessageExtension,
+  [`${CommandAndResponseOptionItem().id}:undefined`]: TemplateNames.CommandAndResponse,
+  [`${WorkflowOptionItem().id}:undefined`]: TemplateNames.Workflow,
+  [`${BotOptionItem().id}:undefined`]: TemplateNames.DefaultBot,
+  [`${MessageExtensionItem().id}:undefined`]: TemplateNames.MessageExtension,
+  [`${M365SearchAppOptionItem().id}:undefined`]: TemplateNames.M365MessageExtension,
+  [`${TabOptionItem().id}:undefined`]: TemplateNames.SsoTab,
+  [`${TabNonSsoItem().id}:undefined`]: TemplateNames.Tab,
+  [`${M365SsoLaunchPageOptionItem().id}:undefined`]: TemplateNames.M365Tab,
+  [`${DashboardOptionItem().id}:undefined`]: TemplateNames.DashboardTab,
+  [`${TabNonSsoAndDefaultBotItem().id}:undefined`]: TemplateNames.TabAndDefaultBot,
+  [`${DefaultBotAndMessageExtensionItem().id}:undefined`]: TemplateNames.BotAndMessageExtension,
 };
 
 export const InitTemplateName: any = {
@@ -233,11 +233,14 @@ export class Coordinator {
       const feature = inputs.capabilities as string;
       delete inputs.folder;
 
-      if (feature === TabSPFxNewUIItem.id) {
+      if (feature === TabSPFxNewUIItem().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
       } else {
-        if (feature === M365SsoLaunchPageOptionItem.id || feature === M365SearchAppOptionItem.id) {
+        if (
+          feature === M365SsoLaunchPageOptionItem().id ||
+          feature === M365SearchAppOptionItem().id
+        ) {
           context.projectSetting.isM365 = true;
           inputs.isM365 = true;
         }
@@ -462,9 +465,9 @@ export class Coordinator {
   ): Promise<Result<any, FxError>> {
     const features = inputs[AzureSolutionQuestionNames.Features];
     let component;
-    if (BotFeatureIds.includes(features)) {
+    if (BotFeatureIds().includes(features)) {
       component = Container.get(ComponentNames.TeamsBot);
-    } else if (TabFeatureIds.includes(features)) {
+    } else if (TabFeatureIds().includes(features)) {
       component = Container.get(ComponentNames.TeamsTab);
     } else if (features === AzureResourceSQLNewUI.id) {
       component = Container.get("sql");
@@ -480,7 +483,7 @@ export class Coordinator {
       component = Container.get("api-connector");
     } else if (features === SingleSignOnOptionItem.id) {
       component = Container.get("sso");
-    } else if (features === TabSPFxNewUIItem.id) {
+    } else if (features === TabSPFxNewUIItem().id) {
       component = Container.get(ComponentNames.SPFxTab);
     }
     if (component) {
@@ -767,13 +770,13 @@ export class Coordinator {
     }
 
     // 8. show provisioned resources
+    const msg = getLocalizedString("core.provision.successNotice", folderName);
     if (azureSubInfo) {
       const url = getResourceGroupInPortal(
         azureSubInfo.subscriptionId,
         azureSubInfo.tenantId,
         process.env.AZURE_RESOURCE_GROUP_NAME
       );
-      const msg = getLocalizedString("core.provision.successNotice", folderName);
       if (url && ctx.platform !== Platform.CLI) {
         const title = getLocalizedString("core.provision.viewResources");
         ctx.ui?.showMessage("info", msg, false, title).then((result: any) => {
@@ -802,8 +805,10 @@ export class Coordinator {
           ctx.ui?.showMessage("info", msg, false);
         }
       }
-      ctx.logProvider.info(msg);
+    } else {
+      ctx.ui?.showMessage("info", msg, false);
     }
+    ctx.logProvider.info(msg);
 
     return ok(output);
   }

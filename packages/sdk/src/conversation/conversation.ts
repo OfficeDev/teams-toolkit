@@ -59,6 +59,10 @@ import { DefaultBotSsoExecutionActivityHandler } from "./sso/defaultBotSsoExecut
  *
  * For notification, set `notification.storage` in {@link ConversationOptions} to use your own storage implementation.
  */
+
+/**
+ * @deprecated Use `BotBuilderCloudAdapter.ConversationBot` instead.
+ */
 export class ConversationBot {
   /**
    * The bot adapter.

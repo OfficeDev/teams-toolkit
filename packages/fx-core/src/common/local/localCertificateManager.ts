@@ -20,20 +20,21 @@ import * as ps from "./process";
 import { CoreSource } from "../../core/error";
 import { getDefaultString, getLocalizedString } from "../localizeUtils";
 
-const installText = getLocalizedString("debug.install");
-const learnMoreText = getLocalizedString("core.provision.learnMore");
+const installText = () => getLocalizedString("debug.install");
+const learnMoreText = () => getLocalizedString("core.provision.learnMore");
 // TODO(xiaofhua): update help link for v3
 const learnMoreUrl = "https://aka.ms/teamsfx-ca-certificate";
-const warningMessage = getLocalizedString("debug.warningMessage");
-const confirmMessage = warningMessage + getLocalizedString("debug.warningMessage2");
+const warningMessage = () => getLocalizedString("debug.warningMessage");
+const confirmMessage = () => warningMessage() + getLocalizedString("debug.warningMessage2");
 
-const trustCertificateCancelError = new UserError({
-  source: CoreSource,
-  name: "TrustCertificateCancelError",
-  helpLink: learnMoreUrl,
-  message: getDefaultString("error.TrustCertificateCancelError"),
-  displayMessage: getLocalizedString("error.TrustCertificateCancelError"),
-});
+const trustCertificateCancelError = () =>
+  new UserError({
+    source: CoreSource,
+    name: "TrustCertificateCancelError",
+    helpLink: learnMoreUrl,
+    message: getDefaultString("error.TrustCertificateCancelError"),
+    displayMessage: getLocalizedString("error.TrustCertificateCancelError"),
+  });
 export interface LocalCertificate {
   certPath: string;
   keyPath: string;
@@ -306,7 +307,7 @@ export class LocalCertificateManager {
       if (os.type() === "Windows_NT") {
         if (!(await this.waitForUserConfirm())) {
           localCert.isTrusted = false;
-          localCert.error = trustCertificateCancelError;
+          localCert.error = trustCertificateCancelError();
           return;
         }
 
@@ -317,7 +318,7 @@ export class LocalCertificateManager {
       } else if (os.type() === "Darwin") {
         if (!(await this.waitForUserConfirm())) {
           localCert.isTrusted = false;
-          localCert.error = trustCertificateCancelError;
+          localCert.error = trustCertificateCancelError();
           return;
         }
 
@@ -354,17 +355,17 @@ export class LocalCertificateManager {
       do {
         const res = await this.ui.showMessage(
           "info",
-          confirmMessage,
+          confirmMessage(),
           true,
-          learnMoreText,
-          installText
+          learnMoreText(),
+          installText()
         );
         userSelected = res.isOk() ? res.value : undefined;
-        if (userSelected === learnMoreText) {
+        if (userSelected === learnMoreText()) {
           this.ui.openUrl(learnMoreUrl);
         }
-      } while (userSelected === learnMoreText);
-      return userSelected === installText;
+      } while (userSelected === learnMoreText());
+      return userSelected === installText();
     }
 
     // No dialog, always return true;

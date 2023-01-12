@@ -70,9 +70,9 @@ export abstract class NodeChecker implements DepsChecker {
           "Node.js can't be found."
         );
         const error = new NodeNotFoundError(
-          Messages.NodeNotFound.split("@NodeVersion").join(
-            supportedVersions[supportedVersions.length - 1]
-          ),
+          Messages.NodeNotFound()
+            .split("@NodeVersion")
+            .join(supportedVersions[supportedVersions.length - 1]),
           this._nodeNotFoundHelpLink
         );
         return await this.getDepsInfo(false, supportedVersions, undefined, error);
@@ -101,7 +101,8 @@ export abstract class NodeChecker implements DepsChecker {
               supportedVersions,
               currentVersion.version,
               new NodeNotSupportedError(
-                Messages.NodeNotSupported.split("@CurrentVersion")
+                Messages.NodeNotSupported()
+                  .split("@CurrentVersion")
                   .join(currentVersion.version)
                   .split("@SupportedVersions")
                   .join(supportedVersionsString),
@@ -113,7 +114,8 @@ export abstract class NodeChecker implements DepsChecker {
               supportedVersions,
               currentVersion.version,
               new NodeNotRecommendedError(
-                Messages.NodeNotRecommended.split("@CurrentVersion")
+                Messages.NodeNotRecommended()
+                  .split("@CurrentVersion")
                   .join(currentVersion.version)
                   .split("@SupportedVersions")
                   .join(supportedVersionsString),

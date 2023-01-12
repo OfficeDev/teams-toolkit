@@ -23,21 +23,10 @@ async function run() {
     "1fec8e78-bce4-4aaf-ab1b-5451cc387264;5e3ce6c0-2b1f-4285-8d4b-75ee78787346;0ec893e0-5785-4de6-99da-4ed124e5296c;4345a7b9-9a63-4910-a426-35363201d503;4765445b-32c6-49b0-83e6-1d93765276ca;d3590ed6-52b3-4102-aeff-aad2292ab01c;00000002-0000-0ff1-ce00-000000000000;bc59ab01-8403-45c6-8796-ac3ef710b3e3";
 
   // launch service locally
-  cp.spawn(
-    "func",
-    [
-      "start",
-      "--javascript",
-      '--language-worker="--inspect=9229"',
-      "--port",
-      '"7071"',
-      "--cors",
-      '"*"',
-    ],
-    {
-      stdio: "inherit",
-    }
-  );
+  cp.spawn(`func start --javascript --language-worker="--inspect=9229" --port "7071" --cors "*"`, {
+    stdio: "inherit",
+    shell: true,
+  });
 }
 
 run();

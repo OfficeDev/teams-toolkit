@@ -126,6 +126,10 @@ export function getDownloadLinkByVersionAndPlatform(version: string, platform: P
   return `${Metadata.versionMatchLink}#${anchorInLink}`;
 }
 
+export function getMigrationHelpLink(url: string, anchor?: string): string {
+  return `${url}${anchor ? "#" + anchor : ""}`;
+}
+
 export function outputCancelMessage(version: string, platform: Platform): void {
   TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
   const link = getDownloadLinkByVersionAndPlatform(version, platform);

@@ -249,19 +249,22 @@ export async function getQuestionsForAddFeatureV3(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   // AB test for notification/command/workflow bot template naming
+  const notificationOptionItem = NotificationOptionItem();
+  const commandAndResponseOptionItem = CommandAndResponseOptionItem();
+  const workflowOptionItem = WorkflowOptionItem();
   if (inputs?.taskOrientedTemplateNaming) {
-    NotificationOptionItem.label = `$(hubot) ${getLocalizedString(
+    notificationOptionItem.label = `$(hubot) ${getLocalizedString(
       "core.NotificationOption.label.abTest"
     )}`;
-    NotificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
-    CommandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
+    notificationOptionItem.detail = getLocalizedString("core.NotificationOption.detail.abTest");
+    commandAndResponseOptionItem.label = `$(hubot) ${getLocalizedString(
       "core.CommandAndResponseOption.label.abTest"
     )}`;
-    CommandAndResponseOptionItem.detail = getLocalizedString(
+    commandAndResponseOptionItem.detail = getLocalizedString(
       "core.CommandAndResponseOption.detail.abTest"
     );
-    WorkflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
-    WorkflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
+    workflowOptionItem.label = `$(hubot) ${getLocalizedString("core.WorkflowOption.label.abTest")}`;
+    workflowOptionItem.detail = getLocalizedString("core.WorkflowOption.detail.abTest");
   }
 
   const question: SingleSelectQuestion = {
@@ -273,12 +276,12 @@ export async function getQuestionsForAddFeatureV3(
   const options: OptionItem[] = [];
   question.staticOptions = options;
   if (inputs.platform === Platform.CLI_HELP) {
-    options.push(NotificationOptionItem);
-    options.push(CommandAndResponseOptionItem);
-    options.push(WorkflowOptionItem);
-    options.push(BotNewUIOptionItem);
-    options.push(TabNewUIOptionItem, TabNonSsoItem);
-    options.push(MessageExtensionNewUIItem);
+    options.push(notificationOptionItem);
+    options.push(commandAndResponseOptionItem);
+    options.push(workflowOptionItem);
+    options.push(BotNewUIOptionItem());
+    options.push(TabNewUIOptionItem(), TabNonSsoItem());
+    options.push(MessageExtensionNewUIItem());
     options.push(AzureResourceApimNewUI);
     options.push(AzureResourceSQLNewUI);
     options.push(AzureResourceFunctionNewUI);
@@ -313,22 +316,22 @@ export async function getQuestionsForAddFeatureV3(
       teamsBot?.capabilities?.includes("command-response") ||
       teamsBot?.capabilities?.includes("workflow");
     if (!botExceedLimit && !meExceedLimit) {
-      options.push(NotificationOptionItem);
-      options.push(CommandAndResponseOptionItem);
-      options.push(WorkflowOptionItem);
+      options.push(notificationOptionItem);
+      options.push(commandAndResponseOptionItem);
+      options.push(workflowOptionItem);
     }
     if (canAddTab) {
       if (!hasTab(projectSettingsV3)) {
-        options.push(TabNewUIOptionItem, TabNonSsoItem);
+        options.push(TabNewUIOptionItem(), TabNonSsoItem());
       } else {
-        options.push(hasAAD(projectSettingsV3) ? TabNewUIOptionItem : TabNonSsoItem);
+        options.push(hasAAD(projectSettingsV3) ? TabNewUIOptionItem() : TabNonSsoItem());
       }
     }
     if (!botExceedLimit) {
-      options.push(BotNewUIOptionItem);
+      options.push(BotNewUIOptionItem());
     }
     if (!meExceedLimit && !alreadyHasNewBot) {
-      options.push(MessageExtensionNewUIItem);
+      options.push(MessageExtensionNewUIItem());
     }
     // function can always be added
     options.push(AzureResourceFunctionNewUI);
@@ -348,9 +351,9 @@ export async function getQuestionsForAddFeatureV3(
     }
   } else if (
     isSPFxMultiTabEnabled() &&
-    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionSPFx.id
+    ctx.projectSetting.solutionSettings?.hostType === HostTypeOptionSPFx().id
   ) {
-    options.push(TabSPFxNewUIItem);
+    options.push(TabSPFxNewUIItem());
   }
   const isCicdAddable = await canAddCICDWorkflows(inputs, ctx);
   if (isCicdAddable) {
@@ -375,13 +378,13 @@ export async function getQuestionsForAddFeatureV3(
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
     programmingLanguage.condition = {
       enum: [
-        NotificationOptionItem.id,
-        CommandAndResponseOptionItem.id,
-        WorkflowOptionItem.id,
-        TabNewUIOptionItem.id,
-        TabNonSsoItem.id,
-        BotNewUIOptionItem.id,
-        MessageExtensionItem.id,
+        notificationOptionItem.id,
+        commandAndResponseOptionItem.id,
+        workflowOptionItem.id,
+        TabNewUIOptionItem().id,
+        TabNonSsoItem().id,
+        BotNewUIOptionItem().id,
+        MessageExtensionItem().id,
         SingleSignOnOptionItem.id, // adding sso means adding sample codes
       ],
     };
@@ -436,13 +439,13 @@ export async function getQuestionsForAddResourceV3(
     const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
     programmingLanguage.condition = {
       enum: [
-        NotificationOptionItem.id,
-        CommandAndResponseOptionItem.id,
-        WorkflowOptionItem.id,
-        TabNewUIOptionItem.id,
-        TabNonSsoItem.id,
-        BotNewUIOptionItem.id,
-        MessageExtensionItem.id,
+        NotificationOptionItem().id,
+        CommandAndResponseOptionItem().id,
+        WorkflowOptionItem().id,
+        TabNewUIOptionItem().id,
+        TabNonSsoItem().id,
+        BotNewUIOptionItem().id,
+        MessageExtensionItem().id,
         SingleSignOnOptionItem.id, // adding sso means adding sample codes
       ],
     };
@@ -502,10 +505,10 @@ export async function getQuestionsForAddFeatureSubCommand(
   featureId: FeatureId,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (BotFeatureIds.includes(featureId)) {
+  if (BotFeatureIds().includes(featureId)) {
     return await getNotificationTriggerQuestionNode(inputs);
-  } else if (TabFeatureIds.includes(featureId)) {
-  } else if (featureId === TabSPFxNewUIItem.id) {
+  } else if (TabFeatureIds().includes(featureId)) {
+  } else if (featureId === TabSPFxNewUIItem().id) {
     return ok(new QTreeNode(webpartNameQuestion));
   } else if (featureId === AzureResourceSQLNewUI.id) {
   } else if (
@@ -621,12 +624,12 @@ export function addCapabilityQuestion(
   alreadyHaveBot: boolean
 ): MultiSelectQuestion {
   const options: OptionItem[] = [];
-  if (!alreadyHaveTab) options.push(TabOptionItem);
+  if (!alreadyHaveTab) options.push(TabOptionItem());
   if (!alreadyHaveBot) {
-    options.push(BotOptionItem);
-    options.push(MessageExtensionItem);
-    options.push(NotificationOptionItem);
-    options.push(CommandAndResponseOptionItem);
+    options.push(BotOptionItem());
+    options.push(MessageExtensionItem());
+    options.push(NotificationOptionItem());
+    options.push(CommandAndResponseOptionItem());
   }
   return {
     name: AzureSolutionQuestionNames.Capabilities,

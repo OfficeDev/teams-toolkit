@@ -5,7 +5,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as constants from "./constants";
-import { ConfigFolderName, InputConfigsFolderName, UserError } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, InputConfigsFolderName, Stage, UserError } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { core, getSystemInputs, showError } from "../handlers";
@@ -23,6 +23,8 @@ import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { localize } from "../utils/localizeUtils";
 import * as util from "util";
+import { VS_CODE_UI } from "../extension";
+import * as vscode from "vscode";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -408,4 +410,18 @@ export async function getV3TeamsAppId(projectPath: string, env: string): Promise
   }
 
   return teamsAppId;
+}
+
+export async function triggerV3Migration(): Promise<string | undefined> {
+  const inputs = getSystemInputs();
+  inputs.stage = Stage.debug;
+  const result = await core.phantomMigrationV3(inputs);
+  if (result.isErr()) {
+    showError(result.error);
+    await vscode.debug.stopDebugging();
+    throw result.error;
+  }
+  // reload window to terminate debugging
+  await VS_CODE_UI.reload();
+  return undefined;
 }

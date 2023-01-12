@@ -981,6 +981,7 @@ describe("provisionUtils", () => {
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "setSubscription");
       mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(undefined);
       const res = await provisionUtils.ensureResourceGroup(azureAccountProvider, "mockSubId");
       assert(res.isErr());
@@ -990,6 +991,7 @@ describe("provisionUtils", () => {
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "setSubscription");
       mocker
         .stub(resourceGroupHelper, "getResourceGroupInfo")
         .resolves(err(new UserError({ source: "src", name: "TestError", message: "test" })));
@@ -1005,6 +1007,7 @@ describe("provisionUtils", () => {
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "setSubscription");
       mocker.stub(resourceGroupHelper, "getResourceGroupInfo").resolves(
         ok({
           createNewResourceGroup: true,
@@ -1025,6 +1028,7 @@ describe("provisionUtils", () => {
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "setSubscription");
       mocker.stub(resourceGroupHelper, "askResourceGroupInfoV3").resolves(
         ok({
           createNewResourceGroup: true,
@@ -1042,6 +1046,7 @@ describe("provisionUtils", () => {
       mocker
         .stub(azureAccountProvider, "getIdentityCredentialAsync")
         .resolves(new MyTokenCredential());
+      mocker.stub(azureAccountProvider, "setSubscription");
       mocker.stub(resourceGroupHelper, "askResourceGroupInfoV3").resolves(
         ok({
           createNewResourceGroup: true,

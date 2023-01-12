@@ -8,7 +8,7 @@
 
 import * as path from "path";
 
-import { BotValidator } from "../../commonlib";
+import { BotValidator, AppStudioValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import {
   execAsync,
@@ -32,6 +32,7 @@ export function happyPathTest(runtime: Runtime): void {
     const subscription = getSubscriptionId();
     const projectPath = path.resolve(testFolder, appName);
     const envName = environmentManager.getDefaultEnvName();
+    let teamsAppId: string | undefined;
 
     const env = Object.assign({}, process.env);
     env["TEAMSFX_CONFIG_UNIFY"] = "true";
@@ -73,6 +74,14 @@ export function happyPathTest(runtime: Runtime): void {
         const context = isV3Enabled()
           ? await readContextMultiEnvV3(projectPath, envName)
           : await readContextMultiEnv(projectPath, envName);
+        if (isV3Enabled()) {
+          teamsAppId = context.TEAMS_APP_ID;
+          AppStudioValidator.setE2ETestProvider();
+        } else {
+          const appStudio = AppStudioValidator.init(context);
+          AppStudioValidator.validateTeamsAppExist(appStudio);
+          teamsAppId = appStudio.teamsAppId;
+        }
 
         // Validate Bot Provision
         const bot = new BotValidator(context, projectPath, envName);
@@ -118,11 +127,23 @@ export function happyPathTest(runtime: Runtime): void {
         env: env,
         timeout: 0,
       });
+
+      // publish
+      await execAsyncWithRetry(`teamsfx publish`, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      });
+
+      {
+        // Validate publish result
+        await AppStudioValidator.validatePublish(teamsAppId!);
+      }
     });
 
     this.afterEach(async () => {
       console.log(`[Successfully] start to clean up for ${projectPath}`);
-      await cleanUp(appName, projectPath, false, true, false);
+      await cleanUp(appName, projectPath, false, true, false, teamsAppId);
     });
   });
 }

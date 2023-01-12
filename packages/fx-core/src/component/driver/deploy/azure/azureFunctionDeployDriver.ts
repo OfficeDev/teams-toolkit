@@ -33,11 +33,22 @@ export class AzureFunctionDeployDriver implements StepDriver {
     );
   }
 
-  execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
-    return wrapSummary(this.run.bind(this, args, ctx), [
+  async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
+    const impl = new AzureFunctionDeployDriverImpl(args, ctx);
+    const res = await wrapRun(
+      () => impl.run(),
+      () => impl.cleanup(),
+      ctx.logProvider
+    );
+    if (impl.dryRun) {
+      return wrapSummary(async () => {
+        return res;
+      }, ["driver.deploy.notice.deployDryRunComplete"]);
+    }
+    return wrapSummary(async () => {
+      return res;
       // eslint-disable-next-line no-secrets/no-secrets
-      "driver.deploy.azureFunctionsDeploySummary",
-    ]);
+    }, ["driver.deploy.azureFunctionsDeploySummary"]);
   }
 }
 
@@ -56,15 +67,18 @@ export class AzureFunctionDeployDriverImpl extends AzureDeployDriver {
   ): Promise<void> {
     await this.progressBar?.start();
     await this.zipDeploy(args, azureResource, azureCredential);
-    await this.progressBar?.next(ProgressMessages.restartAzureFunctionApp);
-    await this.restartFunctionApp(azureResource);
+    if (!this.dryRun) {
+      await this.progressBar?.next(ProgressMessages.restartAzureFunctionApp);
+      await this.restartFunctionApp(azureResource);
+    }
     await this.progressBar?.end(true);
   }
 
   createProgressBar(ui?: UserInteraction): IProgressHandler | undefined {
+    const steps = this.dryRun ? 1 : 6;
     return ui?.createProgressBar(
       `Deploying ${this.workingDirectory ?? ""} to Azure Function App`,
-      6
+      steps
     );
   }
 }

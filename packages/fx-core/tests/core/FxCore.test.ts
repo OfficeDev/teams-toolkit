@@ -372,10 +372,47 @@ describe("Core basic APIs", () => {
     }
   });
 
+  it("addSso method should exist", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+      TEAMSFX_DEBUG_TEMPLATE: "true", // workaround test failures when template changed but not release to GitHub alpha template
+      NODE_ENV: "development", // workaround test failures when template changed but not release to GitHub alpha template
+    });
+    try {
+      const appName = randomAppName();
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        stage: Stage.create,
+        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+      };
+      const res = await core.createProject(inputs);
+      projectPath = inputs.projectPath!;
+      assert.isTrue(res.isOk() && res.value === projectPath);
+
+      const implement = new FxCoreV3Implement(tools);
+
+      const mockFunc = {
+        namespace: "mock namespace",
+        method: "addSso",
+      };
+
+      const result = await implement.executeUserTask(mockFunc, inputs);
+      assert.isTrue(result.isOk());
+    } finally {
+      restore();
+    }
+  });
+
   it("ProgrammingLanguageQuestion", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: TabSPFxItem.id,
+      [CoreQuestionNames.Capabilities]: TabSPFxItem().id,
     };
     if (
       ProgrammingLanguageQuestion.dynamicOptions &&
@@ -390,15 +427,15 @@ describe("Core basic APIs", () => {
 
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: TabOptionItem.id,
+      [CoreQuestionNames.Capabilities]: TabOptionItem().id,
     });
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: BotOptionItem.id,
+      [CoreQuestionNames.Capabilities]: BotOptionItem().id,
     });
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: MessageExtensionItem.id,
+      [CoreQuestionNames.Capabilities]: MessageExtensionItem().id,
     });
 
     function languageAssert(inputs: Inputs) {

@@ -88,7 +88,7 @@ export class DotnetChecker implements DepsChecker {
     if ((await this.tryAcquireGlobalDotnetSdk()) && (await this.validate())) {
       this._telemetry.sendEvent(DepsCheckerEvent.dotnetAlreadyInstalled);
       await this._logger.info(
-        `${Messages.useGlobalDotnet} '${await this.getDotnetExecPathFromConfig()}'`
+        `${Messages.useGlobalDotnet()} '${await this.getDotnetExecPathFromConfig()}'`
       );
       return await this.getDepsInfo(true);
     }
@@ -122,7 +122,7 @@ export class DotnetChecker implements DepsChecker {
   public async install(): Promise<void> {
     if (isLinux()) {
       throw new LinuxNotSupportedError(
-        Messages.linuxDepsNotFound.split("@SupportedPackages").join(installedNameWithVersion),
+        Messages.linuxDepsNotFound().split("@SupportedPackages").join(installedNameWithVersion),
         dotnetExplanationHelpLink
       );
     }
@@ -134,12 +134,12 @@ export class DotnetChecker implements DepsChecker {
     const installDir = DotnetChecker.getDefaultInstallPath();
     await this._logger.debug(`[start] install dotnet ${installVersion}`);
     await this._logger.debug(
-      Messages.dotnetNotFound
+      Messages.dotnetNotFound()
         .replace("@NameVersion", installedNameWithVersion)
         .replace("@HelpLink", dotnetExplanationHelpLink)
     );
     await this._logger.info(
-      Messages.downloadDotnet
+      Messages.downloadDotnet()
         .replace("@NameVersion", installedNameWithVersion)
         .replace("@InstallDir", installDir)
     );
@@ -155,7 +155,7 @@ export class DotnetChecker implements DepsChecker {
     if (!(await this.validate())) {
       this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallError);
       throw new DepsCheckerError(
-        Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion),
+        Messages.failToInstallDotnet().split("@NameVersion").join(installedNameWithVersion),
         dotnetFailToInstallHelpLink
       );
     }
@@ -214,11 +214,11 @@ export class DotnetChecker implements DepsChecker {
       await DotnetChecker.persistDotnetExecPath(dotnetExecPath);
       await this._logger.debug(`[end] write dotnet path to config`);
       await this._logger.info(
-        Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion)
+        Messages.finishInstallDotnet().replace("@NameVersion", installedNameWithVersion)
       );
     } catch (error) {
       await this._logger.error(
-        `${Messages.failToInstallDotnet
+        `${Messages.failToInstallDotnet()
           .split("@NameVersion")
           .join(installedNameWithVersion)}, error = '${error}'`
       );
@@ -274,11 +274,11 @@ export class DotnetChecker implements DepsChecker {
       const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
 
       if (stderr && stderr.length > 0) {
-        const errorMessage = `${Messages.failToInstallDotnet
+        const errorMessage = `${Messages.failToInstallDotnet()
           .split("@NameVersion")
-          .join(installedNameWithVersion)} ${
-          Messages.dotnetInstallStderr
-        } stdout = '${stdout}', stderr = '${stderr}', timecost = '${timecost}s'`;
+          .join(
+            installedNameWithVersion
+          )} ${Messages.dotnetInstallStderr()} stdout = '${stdout}', stderr = '${stderr}', timecost = '${timecost}s'`;
 
         this._telemetry.sendSystemErrorEvent(
           DepsCheckerEvent.dotnetInstallScriptError,
@@ -292,9 +292,9 @@ export class DotnetChecker implements DepsChecker {
     } catch (error) {
       const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
       const errorMessage =
-        `${Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion)} ${
-          Messages.dotnetInstallErrorCode
-        }, ` +
+        `${Messages.failToInstallDotnet()
+          .split("@NameVersion")
+          .join(installedNameWithVersion)} ${Messages.dotnetInstallErrorCode()}, ` +
         `command = '${command.join(" ")}', options = '${JSON.stringify(
           options
         )}', error = '${error}', stdout = '${error.stdout}', stderr = '${

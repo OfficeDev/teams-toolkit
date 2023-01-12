@@ -12,6 +12,8 @@ import {
   UserError,
   InputConfigsFolderName,
   Platform,
+  Inputs,
+  Stage,
 } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
@@ -29,7 +31,12 @@ import {
 } from "../../common/telemetry";
 import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
-import { UpgradeV3CanceledError, MigrationReadFileError, AbandonedProjectError } from "../error";
+import {
+  UpgradeV3CanceledError,
+  MigrationReadFileError,
+  AbandonedProjectError,
+  TooklitNotSupportError,
+} from "../error";
 import { AppYmlGenerator } from "./utils/appYmlGenerator";
 import * as fs from "fs-extra";
 import { MANIFEST_TEMPLATE_CONSOLIDATE } from "../../component/resource/appManifest/constants";
@@ -51,6 +58,7 @@ import {
   outputCancelMessage,
   getDownloadLinkByVersionAndPlatform,
   getVersionState,
+  getMigrationHelpLink,
 } from "./utils/v3MigrationUtils";
 import * as commentJson from "comment-json";
 import { DebugMigrationContext } from "./utils/debug/debugMigrationContext";
@@ -83,7 +91,7 @@ import { AppLocalYmlGenerator } from "./utils/debug/appLocalYmlGenerator";
 import { EOL } from "os";
 import { getTemplatesFolder } from "../../folder";
 import { MetadataV2, MetadataV3, VersionSource, VersionState } from "../../common/versionMetadata";
-import { isSPFxProject } from "../../common/tools";
+import { isMigrationV3Enabled, isSPFxProject } from "../../common/tools";
 import { VersionForMigration } from "./types";
 import { environmentManager } from "../environment";
 import { getLocalizedString } from "../../common/localizeUtils";
@@ -102,6 +110,10 @@ const Constants = {
 };
 
 const learnMoreLink = "https://aka.ms/teams-toolkit-5.0-upgrade";
+const helpLinkAnchors = {
+  appPackageNotExist: "app-package-not-exist",
+  manifestTemplateNotExist: "manifest-template-not-exist",
+};
 const migrationMessageButtons = [learnMoreText, upgradeButton];
 
 type Migration = (context: MigrationContext) => Promise<void>;
@@ -134,6 +146,15 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
     if (!checkUserTasks(ctx)) {
       ctx.result = ok(undefined);
       return;
+    }
+    if (!isMigrationV3Enabled()) {
+      await TOOLS?.ui.showMessage(
+        "warn",
+        getLocalizedString("core.migrationV3.CreateNewProject"),
+        true
+      );
+      ctx.result = err(TooklitNotSupportError());
+      return false;
     }
 
     const skipUserConfirm = getParameterFromCxt(ctx, "skipUserConfirm");
@@ -279,7 +300,10 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   if (!oldAppPackageFolderBackupRes) {
     // templates/appPackage does not exists
     // invalid teamsfx project
-    throw MigrationReadFileError(new Error("templates/appPackage does not exist"));
+    throw MigrationReadFileError(
+      new Error("templates/appPackage does not exist"),
+      getMigrationHelpLink(learnMoreLink, helpLinkAnchors.appPackageNotExist)
+    ) as UserError;
   }
 
   // Ensure appPackage
@@ -320,7 +344,8 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
   } else {
     // templates/appPackage/manifest.template.json does not exist
     throw MigrationReadFileError(
-      new Error("templates/appPackage/manifest.template.json does not exist")
+      new Error("templates/appPackage/manifest.template.json does not exist"),
+      getMigrationHelpLink(learnMoreLink, helpLinkAnchors.manifestTemplateNotExist)
     );
   }
 

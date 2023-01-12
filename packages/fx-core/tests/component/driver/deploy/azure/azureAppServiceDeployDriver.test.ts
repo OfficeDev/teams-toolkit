@@ -357,4 +357,61 @@ describe("Azure App Service Deploy Driver test", () => {
     const res = await deploy.run(args, context);
     assert.equal(res.isErr(), true);
   });
+
+  it("test dry run", async () => {
+    const deploy = new AzureAppServiceDeployDriver();
+    const fh = await fs.open(path.join(sysTmp, folder, "test.txt"), "a");
+    await fs.close(fh);
+    await fs.writeFile(path.join(sysTmp, folder, "ignore"), "ignore", {
+      encoding: "utf8",
+      flag: "a",
+    });
+    const args = {
+      workingDirectory: sysTmp,
+      distributionPath: `./${folder}`,
+      ignoreFile: "./ignore",
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
+      dryRun: true,
+    } as DeployArgs;
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      logProvider: new TestLogProvider(),
+      ui: new MockUserInteraction(),
+    } as DriverContext;
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
+    // ignore file
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").callsFake((file) => {
+      if (file === "ignore") {
+        return Promise.resolve(Buffer.from("node_modules"));
+      }
+      throw new Error("not found");
+    });
+    const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
+    sandbox.stub(appService, "WebSiteManagementClient").returns(client);
+    sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
+      publishingUserName: "test-username",
+      publishingPassword: "test-password",
+    } as Models.WebAppsListPublishingCredentialsResponse);
+    sandbox.stub(fs, "readFileSync").resolves("test");
+    // mock klaw
+    // sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
+    sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
+    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "post").resolves({
+      status: 200,
+      headers: {
+        location: "/api/123",
+      },
+    });
+    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
+      status: 200,
+    });
+    sandbox.stub(client.webApps, "restart").resolves();
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isOk(), true);
+    assert.equal(res.summaries[0], "Preparations of deployment are complete. ");
+  });
 });

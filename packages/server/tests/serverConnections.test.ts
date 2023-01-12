@@ -7,7 +7,7 @@ import sinon from "sinon";
 import { CancellationToken, createMessageConnection, Event } from "vscode-jsonrpc";
 import ServerConnection from "../src/serverConnection";
 import { Duplex } from "stream";
-import { Inputs, ok, Platform, Stage } from "@microsoft/teamsfx-api";
+import { Inputs, ok, Platform, Stage, Void } from "@microsoft/teamsfx-api";
 import { setFunc } from "../src/customizedFuncAdapter";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 
@@ -328,18 +328,33 @@ describe("serverConnections", () => {
     });
   });
 
-  it("migrateProjectRequest", () => {
+  it("migrateProjectRequest - ok(true)", async () => {
     const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.returns("test");
-    sandbox.replace(connection["core"], "phantomMigrationV3", fake);
+    sandbox.replace(connection["core"], "phantomMigrationV3", sandbox.fake.returns(Void));
+    connection
+      .migrateProjectRequest(
+        {
+          platform: "vs",
+        } as Inputs,
+        {} as CancellationToken
+      )
+      .then((data) => {
+        assert.equal(data, ok(true));
+      });
+  });
 
-    const inputs = {
-      platform: "vs",
-    };
-    const token = {};
-    const res = connection.migrateProjectRequest(inputs as Inputs, token as CancellationToken);
-    res.then((data) => {
-      assert.equal(data, ok(true));
-    });
+  it("migrateProjectRequest - ok(false)", async () => {
+    const connection = new ServerConnection(msgConn);
+    sandbox.replace(connection["core"], "phantomMigrationV3", sandbox.fake.returns("test"));
+    connection
+      .migrateProjectRequest(
+        {
+          platform: "vs",
+        } as Inputs,
+        {} as CancellationToken
+      )
+      .then((data) => {
+        assert.equal(data, ok(false));
+      });
   });
 });

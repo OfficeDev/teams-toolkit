@@ -62,7 +62,7 @@ async function downloadToTempFile(
     response.data.pipe(writer);
     if (response.status !== 200) {
       throw new Error(
-        Messages.failToDownloadFromUrl
+        Messages.failToDownloadFromUrl()
           .replace(/@Url/g, url)
           .replace(/@Status/g, response.status.toString())
       );
@@ -103,7 +103,7 @@ export class VxTestAppChecker implements DepsChecker {
     if (!this.isValidInstallOptions(installOptions)) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
         new VxTestAppCheckError(
-          Messages.failToValidateVxTestAppInstallOptions,
+          Messages.failToValidateVxTestAppInstallOptions(),
           vxTestAppInstallHelpLink
         )
       );
@@ -128,7 +128,7 @@ export class VxTestAppChecker implements DepsChecker {
     // TODO: need to chmod to add executable permission for non-Windows OS
     if (!(await this.isValidInstalltion(projectInstallDir, installOptions.version))) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
-        new VxTestAppCheckError(Messages.failToValidateVxTestApp, vxTestAppInstallHelpLink)
+        new VxTestAppCheckError(Messages.failToValidateVxTestApp(), vxTestAppInstallHelpLink)
       );
     }
 
@@ -150,7 +150,7 @@ export class VxTestAppChecker implements DepsChecker {
     if (!this.isValidInstallOptions(installOptions)) {
       return VxTestAppChecker.newDependencyStatusForInstallError(
         new VxTestAppCheckError(
-          Messages.failToValidateVxTestAppInstallOptions,
+          Messages.failToValidateVxTestAppInstallOptions(),
           vxTestAppInstallHelpLink
         )
       );

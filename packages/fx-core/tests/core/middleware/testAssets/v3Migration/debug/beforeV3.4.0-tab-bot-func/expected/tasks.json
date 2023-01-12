@@ -109,7 +109,10 @@
             "command": "node teamsfx/script/run.auth.js . teamsfx/.env.local",
             "isBackground": true,
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "PATH": "${command:fx-extension.get-dotnet-path}${env:PATH}"
+                }
             },
             "problemMatcher": {
                 "pattern": [

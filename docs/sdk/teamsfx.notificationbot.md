@@ -4,7 +4,10 @@
 
 ## NotificationBot class
 
-Provide utilities to send notification to varies targets (e.g., member, group, channel).
+> Warning: This API is now obsolete.
+> 
+> Use `BotBuilderCloudAdapter.NotificationBot` instead.
+> 
 
 <b>Signature:</b>
 

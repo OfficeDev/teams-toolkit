@@ -17,6 +17,7 @@ import {
   getAppSPFxVersion,
   isVideoFilterProject,
   setRegion,
+  ConvertTokenToJson,
 } from "../../src/common/tools";
 import * as telemetry from "../../src/common/telemetry";
 import {
@@ -222,7 +223,7 @@ describe("tools", () => {
         solutionSettings: {
           activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           hostType: "Azure",
-          capabilities: [TabSsoItem.id],
+          capabilities: [TabSsoItem().id],
           azureResources: [],
           name: "test",
         },
@@ -521,6 +522,17 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     it("set region", async () => {
       sinon.stub(AuthSvcClient, "getRegion").resolves("apac");
       await setRegion("fakeToken");
+    });
+  });
+
+  describe("ConvertTokenToJson", async () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("ConvertTokenToJson", async () => {
+      const res = ConvertTokenToJson("a.eyJ1c2VySWQiOiJ0ZXN0QHRlc3QuY29tIn0=.c");
+      chai.expect(res["userId"]).equal("test@test.com");
     });
   });
 });

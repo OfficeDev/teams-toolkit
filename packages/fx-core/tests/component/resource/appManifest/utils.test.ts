@@ -33,7 +33,7 @@ describe("utils", () => {
     objectId: "objId",
     configurationUrl: "https://url",
     canUpdateConfiguration: false,
-    scopes: [CommandScope.GroupChat],
+    scopes: ["groupchat"],
     context: [MeetingsContext.ChannelTab],
     sharePointPreviewImage: "img",
     supportedSharePointHosts: [],

@@ -192,7 +192,7 @@ const appAuthConfig: AppCredentialAuthConfig = {
 const appCredential = new AppCredential(appAuthConfig);
 ```
 
-Required configurations are authorityHost, tenantId, clientId, clientSecret, or certificateContent which can be found inside type AppCredentialAuthConfig
+Required configurations are authorityHost, tenantId, clientId, clientSecret, or certificateContent which can be found inside type AppCredentialAuthConfig.
 
 ### Bot SSO
 

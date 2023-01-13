@@ -3,12 +3,6 @@
 
 export const MetadataV3 = {
   projectVersion: "1.0.0",
-  platformVersion: {
-    vs: "17.5.x.x",
-    vsc: "5.x.x",
-    cli: "2.x.x",
-    cli_help: "2.x.x",
-  },
   configFile: "teamsapp.yml",
   localConfigFile: "teamsapp.local.yml",
   defaultEnvironmentFolder: "teamsAppEnv",
@@ -18,12 +12,6 @@ export const MetadataV3 = {
 export const MetadataV2 = {
   projectVersion: "2.0.0",
   projectMaxVersion: "2.1.0",
-  platformVersion: {
-    vs: "17.4.x.x",
-    vsc: "4.x.x",
-    cli: "1.x.x",
-    cli_help: "1.x.x",
-  },
   configFolder: ".fx",
   configFile: "projectSettings.json",
 };

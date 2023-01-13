@@ -60,7 +60,7 @@ describe("m365Title/acquire", async () => {
 
     const result = await acquireDriver.run(args, mockedDriverContext);
     chai.assert.isTrue(result.isOk());
-    chai.assert.equal((result as any).value["M365_TITLE_ID"], "test-title-id");
+    chai.assert.equal((result as any).value.get("M365_TITLE_ID"), "test-title-id");
   });
 
   it("execute happy path", async () => {
@@ -73,6 +73,6 @@ describe("m365Title/acquire", async () => {
 
     const result = await acquireDriver.execute(args, mockedDriverContext);
     chai.assert.isTrue(result.result.isOk());
-    chai.assert.equal((result.result as any).value["M365_TITLE_ID"], "test-title-id");
+    chai.assert.equal((result.result as any).value.get("M365_TITLE_ID"), "test-title-id");
   });
 });

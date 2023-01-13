@@ -34,7 +34,8 @@ describe("teamsfx init debug", function () {
   });
 
   it(`teamsfx init debug (vscode + bot)`, { testPlanCaseId: 16774467 }, async function () {
-    await CliHelper.initDebug(appName, testFolder, "vsc", "bot", undefined);
+    await fs.ensureDir(projectPath);
+    await CliHelper.initDebug(appName, projectPath, "vsc", "bot", undefined);
     const files = [
       ".vscode/launch.json",
       ".vscode/settings.json",
@@ -45,7 +46,7 @@ describe("teamsfx init debug", function () {
       "teamsapp.yml",
     ];
     for (const file of files) {
-      const filePath = path.resolve(testFolder, file);
+      const filePath = path.resolve(projectPath, file);
       const exists = await fs.pathExists(filePath);
       if (!exists) {
         console.error(`file not exits: ${filePath}`);

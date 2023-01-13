@@ -105,6 +105,23 @@ describe("tools", () => {
     expect(versionInfo?.trackingId).equals(mockedProjectId);
     expect(versionInfo?.versionSource).equals(VersionSource[VersionSource.settings]);
   });
+
+  it("tryGetVersionInfo failure case", async () => {
+    const mockedError = new Error("mocked error");
+    let versionInfo =
+      (await tryGetVersionInfoV2("")) ||
+      (await tryGetVersionInfoV3("")) ||
+      (await tryGetVersionInfoV3Abandoned(""));
+    expect(versionInfo).equals(undefined);
+
+    sandbox.stub(fs, "readJson").throws(mockedError);
+    sandbox.stub(fs, "readFile").throws(mockedError);
+    versionInfo =
+      (await tryGetVersionInfoV2("")) ||
+      (await tryGetVersionInfoV3("")) ||
+      (await tryGetVersionInfoV3Abandoned(""));
+    expect(versionInfo).equals(undefined);
+  });
 });
 
 describe("redactObject", () => {

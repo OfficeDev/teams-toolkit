@@ -715,6 +715,7 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
   if (isV3Enabled()) {
     if (isMigrationV3Enabled()) {
       const versionCheckResult = await handlers.projectVersionCheck();
+      await handlers.checkUpgrade();
       await vscode.commands.executeCommand(
         "setContext",
         "fx-extension.canUpgradeV3",

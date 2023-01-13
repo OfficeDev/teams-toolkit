@@ -7,7 +7,6 @@ import { AxiosInstance, default as axios } from "axios";
 import {
   BotRegistrationNotFoundError,
   ConfigUpdatingError,
-  MessageEndpointUpdatingError,
   ProvisionError,
   FailedToCreateBotRegistrationError,
   BotFrameworkNotAllowedToAcquireTokenError,
@@ -18,7 +17,7 @@ import { CommonStrings, ConfigNames } from "../strings";
 import { RetryHandler } from "../retryHandler";
 import { Messages } from "../messages";
 import { APP_STUDIO_API_NAMES, getAppStudioEndpoint } from "../../appManifest/constants";
-import { ResourceContextV3 } from "@microsoft/teamsfx-api";
+import { ResourceContextV3, SystemError } from "@microsoft/teamsfx-api";
 import { CheckThrowSomethingMissing } from "../../../error";
 import { FxBotPluginResultFactory } from "../result";
 import { AppStudioClient as AppStudio } from "../../appManifest/appStudioClient";
@@ -79,7 +78,7 @@ export class AppStudioClient {
         } else {
           // Potential live site issue cases.
           e.teamsfxUrlName = "<get-bot-registration>";
-          throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.GET_BOT);
+          throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.GET_BOT) as SystemError;
         }
       }
     }, true);
@@ -118,7 +117,7 @@ export class AppStudioClient {
         //throw new BotFrameworkConflictResultError();
       } else {
         e.teamsfxUrlName = "<create-bot-registration>";
-        throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.CREATE_BOT);
+        throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.CREATE_BOT) as SystemError;
       }
     }
 
@@ -164,7 +163,7 @@ export class AppStudioClient {
         throw new BotFrameworkConflictResultError();
       } else {
         e.teamsfxUrlName = "<update-message-endpoint>";
-        throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.UPDATE_BOT);
+        throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.UPDATE_BOT) as SystemError;
       }
     }
 

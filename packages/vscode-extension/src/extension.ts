@@ -715,13 +715,13 @@ async function initializeContextKey(isTeamsFxProject: boolean) {
   if (isV3Enabled()) {
     if (isMigrationV3Enabled()) {
       const versionCheckResult = await handlers.projectVersionCheck();
-      await vscode.commands.executeCommand(
-        "setContext",
-        "fx-extension.canUpgradeV3",
-        versionCheckResult.isOk()
-          ? versionCheckResult.value.isSupport == VersionState.upgradeable
-          : false
-      );
+      const upgradeable = versionCheckResult.isOk()
+        ? versionCheckResult.value.isSupport == VersionState.upgradeable
+        : false;
+      if (upgradeable) {
+        await handlers.checkUpgrade();
+      }
+      await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
     }
   } else {
     await vscode.commands.executeCommand(

@@ -124,7 +124,7 @@ describe("Core basic APIs for v3", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC().id,
-      [CoreQuestionNames.Samples]: "hello-world-tab",
+      [CoreQuestionNames.Samples]: "todo-list-SPFx",
       [CoreQuestionNames.Folder]: os.tmpdir(),
       stage: Stage.create,
     };

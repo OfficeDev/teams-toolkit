@@ -90,14 +90,7 @@ describe("teamsfx init debug", function () {
       editor: "vs",
       capability: "tab",
       spfx: undefined,
-      files: [
-        ".vscode/launch.json",
-        ".vscode/settings.json",
-        ".vscode/tasks.json",
-        "teamsAppEnv/.env.local",
-        "teamsapp.local.yml",
-        "teamsapp.yml",
-      ],
+      files: ["teamsAppEnv/.env.local", "teamsapp.local.yml", "teamsapp.yml"],
     },
     {
       name: "vs + bot",
@@ -105,14 +98,7 @@ describe("teamsfx init debug", function () {
       editor: "vs",
       capability: "bot",
       spfx: undefined,
-      files: [
-        ".vscode/launch.json",
-        ".vscode/settings.json",
-        ".vscode/tasks.json",
-        "teamsAppEnv/.env.local",
-        "teamsapp.local.yml",
-        "teamsapp.yml",
-      ],
+      files: ["teamsAppEnv/.env.local", "teamsapp.local.yml", "teamsapp.yml"],
     },
   ];
   for (const param of params) {

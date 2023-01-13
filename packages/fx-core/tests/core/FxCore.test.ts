@@ -310,13 +310,15 @@ describe("Core basic APIs", () => {
       };
       sandbox
         .stub(UpdateAadAppDriver.prototype, "run")
-        .throws(
-          new MissingEnvInFileUserError(
-            "aadApp/update",
-            "AAD_APP_OBJECT_ID",
-            "https://aka.ms/fake",
-            "driver.aadApp.error.generateManifestFailed",
-            "fake path"
+        .resolves(
+          err(
+            new MissingEnvInFileUserError(
+              "aadApp/update",
+              "AAD_APP_OBJECT_ID",
+              "https://aka.ms/fake",
+              "driver.aadApp.error.generateManifestFailed",
+              "fake path"
+            )
           )
         );
       const res = await core.deployAadManifest(inputs);
@@ -324,7 +326,7 @@ describe("Core basic APIs", () => {
       if (res.isErr()) {
         assert.strictEqual(
           res.error.message,
-          "Failed to generate AAD app manifest. Environment variable AAD_APP_OBJECT_ID referenced in fake path have no values."
+          "Failed to generate AAD app manifest. Environment variable AAD_APP_OBJECT_ID referenced in fake path have no values. If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables."
         );
       }
     } finally {

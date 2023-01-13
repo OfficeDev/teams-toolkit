@@ -18,6 +18,9 @@ import {
 } from "../plugins/solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
 import * as uuid from "uuid";
+import { load } from "js-yaml";
+import { VersionCheckRes } from "../core/types";
+import { VersionState, VersionSource, MetadataV3, MetadataV3Abandoned } from "./versionMetadata";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -78,6 +81,66 @@ export function isValidProject(workspacePath?: string): boolean {
     return true;
   } catch (e) {
     return false;
+  }
+}
+
+export async function tryGetVersionInfoV2(
+  workspacePath?: string
+): Promise<VersionCheckRes | undefined> {
+  if (!workspacePath) return undefined;
+  try {
+    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`, "configs");
+    const settingsFile = path.resolve(confFolderPath, ProjectSettingsFileName);
+    const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
+    if (validateProjectSettings(projectSettings)) {
+      return undefined;
+    }
+    return {
+      currentVersion: projectSettings.version || "",
+      isSupport: VersionState.compatible,
+      trackingId: projectSettings.projectId,
+      versionSource: VersionSource[VersionSource.projectSettings],
+    };
+  } catch (e) {
+    return undefined;
+  }
+}
+
+export async function tryGetVersionInfoV3(
+  workspacePath?: string
+): Promise<VersionCheckRes | undefined> {
+  if (!workspacePath) return undefined;
+  try {
+    const settingsFile = path.resolve(workspacePath, MetadataV3.configFile);
+    const content = await fs.readFile(settingsFile, "utf8");
+    const projectSettings = load(content) as any;
+    return {
+      currentVersion: projectSettings.version || "",
+      isSupport: VersionState.unsupported,
+      trackingId: projectSettings.projectId,
+      versionSource: VersionSource[VersionSource.teamsapp],
+    };
+  } catch (e) {
+    return undefined;
+  }
+}
+
+export async function tryGetVersionInfoV3Abandoned(
+  workspacePath?: string
+): Promise<VersionCheckRes | undefined> {
+  if (!workspacePath) return undefined;
+  try {
+    const confFolderPath = path.resolve(workspacePath, MetadataV3Abandoned.configFolder);
+    const settingsFile = path.resolve(confFolderPath, MetadataV3Abandoned.configFile);
+    const projectSettings = await fs.readJson(settingsFile);
+    return {
+      currentVersion: projectSettings.version || "",
+      isSupport: VersionState.unsupported,
+      trackingId: projectSettings.trackingId,
+      versionSource: VersionSource[VersionSource.settings],
+    };
+  } catch (e) {
+    return undefined;
   }
 }
 

@@ -13,23 +13,27 @@ import { ExecutionResult } from "../../../interface/stepDriver";
 import { ok, err, IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../../../interface/commonArgs";
 
-export abstract class BaseDeployDriverImpl {
+export abstract class BaseDeployImpl {
   args: unknown;
   context: DeployContext;
   workingDirectory: string;
   distDirectory: string;
   dryRun = false;
+  protected ui?: UserInteraction;
   protected progressBar?: IProgressHandler;
   protected static readonly emptyMap = new Map<string, string>();
   protected helpLink: string | undefined = undefined;
   protected abstract summaries: string[];
   protected abstract summaryPrepare: string[];
+  protected abstract progressNames: string[];
+  protected progressPrepare: string[] = [];
+  protected abstract progressHandler?: AsyncIterableIterator<void>;
 
   constructor(args: unknown, context: DriverContext) {
     this.args = args;
-    this.progressBar = this.createProgressBar(context.ui);
     this.workingDirectory = context.projectPath;
     this.distDirectory = "";
+    this.ui = context.ui;
     this.context = {
       azureAccountProvider: context.azureAccountProvider,
       progressBar: this.progressBar,
@@ -52,7 +56,7 @@ export abstract class BaseDeployDriverImpl {
     await this.context.logProvider.debug("start deploy process");
 
     return await this.wrapErrorHandler(async () => {
-      const deployArgs = BaseDeployDriverImpl.asDeployArgs(this.args, this.helpLink);
+      const deployArgs = BaseDeployImpl.asDeployArgs(this.args, this.helpLink);
       // if working directory not set, use current working directory
       deployArgs.workingDirectory = deployArgs.workingDirectory ?? "./";
       // if working dir is not absolute path, then join the path with project path
@@ -116,8 +120,8 @@ export abstract class BaseDeployDriverImpl {
   protected async wrapErrorHandler(fn: () => boolean | Promise<boolean>): Promise<ExecutionResult> {
     try {
       return (await fn())
-        ? { result: ok(BaseDeployDriverImpl.emptyMap), summaries: this.summaries }
-        : { result: ok(BaseDeployDriverImpl.emptyMap), summaries: this.summaryPrepare };
+        ? { result: ok(BaseDeployImpl.emptyMap), summaries: this.summaries }
+        : { result: ok(BaseDeployImpl.emptyMap), summaries: this.summaryPrepare };
     } catch (e) {
       await this.context.progressBar?.end(false);
       if (e instanceof BaseComponentInnerError) {

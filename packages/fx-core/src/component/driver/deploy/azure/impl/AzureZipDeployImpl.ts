@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureDeployDriverImpl } from "./azureDeployDriverImpl";
+import { AzureDeployImpl } from "./azureDeployImpl";
 import {
   AxiosZipDeployResult,
   AzureUploadConfig,
@@ -10,14 +10,14 @@ import {
 import { AzureResourceInfo, DriverContext } from "../../../interface/commonArgs";
 import { TokenCredential } from "@azure/core-auth";
 import { IProgressHandler, LogProvider, UserInteraction } from "@microsoft/teamsfx-api";
-import { getLocalizedMessage, ProgressMessages } from "../../../../messages";
-import { DeployConstant } from "../../../../constant/deployConstant";
+import { getLocalizedMessage } from "../../../../messages";
+import { DeployConstant, ProgressBarConstant } from "../../../../constant/deployConstant";
 import { createHash } from "crypto";
 import { default as axios } from "axios";
 import { DeployExternalApiCallError } from "../../../../error/deployError";
 import { HttpStatusCode } from "../../../../constant/commonConstant";
 
-export class AzureZipDeployDriverImpl extends AzureDeployDriverImpl {
+export class AzureZipDeployImpl extends AzureDeployImpl {
   pattern =
     /\/subscriptions\/([^\/]*)\/resourceGroups\/([^\/]*)\/providers\/Microsoft.Web\/sites\/([^\/]*)/i;
   private readonly serviceName: string;
@@ -25,6 +25,8 @@ export class AzureZipDeployDriverImpl extends AzureDeployDriverImpl {
   protected summaries: string[];
   protected summaryPrepare: string[];
   protected zipBuffer: Buffer | undefined;
+  protected progressHandler?: AsyncIterableIterator<void>;
+  protected progressNames: string[];
 
   constructor(
     args: unknown,
@@ -39,6 +41,8 @@ export class AzureZipDeployDriverImpl extends AzureDeployDriverImpl {
     this.serviceName = serviceName;
     this.summaries = summaries;
     this.summaryPrepare = summaryPrepare;
+    this.progressNames = ProgressBarConstant.ZIP_DEPLOY_IN_AZURE_PROGRESS;
+    this.progressPrepare = ProgressBarConstant.DRY_RUN_ZIP_DEPLOY_IN_AZURE_PROGRESS;
   }
 
   async azureDeploy(
@@ -47,7 +51,7 @@ export class AzureZipDeployDriverImpl extends AzureDeployDriverImpl {
     azureCredential: TokenCredential
   ): Promise<void> {
     const cost = await this.zipDeploy(args, azureResource, azureCredential);
-    await this.progressBar?.next(ProgressMessages.restartAzureService);
+    await this.progressHandler?.next();
     await this.restartFunctionApp(azureResource);
     if (cost > DeployConstant.DEPLOY_OVER_TIME) {
       await this.context.logProvider?.info(
@@ -60,9 +64,8 @@ export class AzureZipDeployDriverImpl extends AzureDeployDriverImpl {
   }
 
   protected prepare: (args: DeployStepArgs) => Promise<void> = async (args: DeployStepArgs) => {
-    await this.progressBar?.next(ProgressMessages.packingCode);
+    await this.progressHandler?.next();
     await this.packageToZip(args, this.context);
-    await this.progressBar?.end(true);
   };
 
   /**
@@ -78,16 +81,16 @@ export class AzureZipDeployDriverImpl extends AzureDeployDriverImpl {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<number> {
-    await this.progressBar?.next(ProgressMessages.packingCode);
+    await this.progressHandler?.next();
     const zipBuffer = await this.packageToZip(args, this.context);
-    await this.progressBar?.next(ProgressMessages.getAzureAccountInfoForDeploy);
+    await this.progressHandler?.next();
     await this.context.logProvider.debug("Start to get Azure account info for deploy");
     const config = await this.createAzureDeployConfig(azureResource, azureCredential);
     await this.context.logProvider.debug("Get Azure account info for deploy complete");
-    await this.progressBar?.next(ProgressMessages.getAzureUploadEndpoint);
+    await this.progressHandler?.next();
     const endpoint = this.getZipDeployEndpoint(azureResource.instanceId);
     await this.context.logProvider.debug(`Start to upload code to ${endpoint}`);
-    await this.progressBar?.next(ProgressMessages.uploadZipFileToAzure);
+    await this.progressHandler?.next();
     const startTime = Date.now();
     const location = await this.zipDeployPackage(
       endpoint,
@@ -96,7 +99,7 @@ export class AzureZipDeployDriverImpl extends AzureDeployDriverImpl {
       this.context.logProvider
     );
     await this.context.logProvider.debug("Upload code to Azure complete");
-    await this.progressBar?.next(ProgressMessages.checkAzureDeployStatus);
+    await this.progressHandler?.next();
     await this.context.logProvider.debug("Start to check Azure deploy status");
     const deployRes = await this.checkDeployStatus(location, config, this.context.logProvider);
     await this.context.logProvider.debug("Check Azure deploy status complete");
@@ -137,7 +140,7 @@ export class AzureZipDeployDriverImpl extends AzureDeployDriverImpl {
     let retryCount = 0;
     while (true) {
       try {
-        res = await AzureDeployDriverImpl.AXIOS_INSTANCE.post(zipDeployEndpoint, zipBuffer, config);
+        res = await AzureDeployImpl.AXIOS_INSTANCE.post(zipDeployEndpoint, zipBuffer, config);
         break;
       } catch (e) {
         if (axios.isAxiosError(e)) {
@@ -204,10 +207,9 @@ export class AzureZipDeployDriverImpl extends AzureDeployDriverImpl {
   }
 
   createProgressBar(ui?: UserInteraction): IProgressHandler | undefined {
-    const steps = this.dryRun ? 1 : 6;
     return ui?.createProgressBar(
       `Deploying ${this.workingDirectory ?? ""} to ${this.serviceName}`,
-      steps
+      this.progressNames.length
     );
   }
 }

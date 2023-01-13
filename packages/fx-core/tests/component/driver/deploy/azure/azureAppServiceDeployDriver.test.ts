@@ -12,7 +12,7 @@ import { expect, assert } from "chai";
 import * as fs from "fs-extra";
 import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import * as Models from "@azure/arm-appservice/src/models";
-import { AzureDeployDriverImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployDriverImpl";
+import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
 import { DeployConstant } from "../../../../../src/component/constant/deployConstant";
 import * as fileOpt from "../../../../../src/component/utils/fileOperation";
 import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
@@ -21,7 +21,7 @@ import { MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as path from "path";
 import * as uuid from "uuid";
-import { AzureZipDeployDriverImpl } from "../../../../../src/component/driver/deploy/azure/impl/AzureZipDeployDriverImpl";
+import { AzureZipDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/AzureZipDeployImpl";
 
 describe("Azure App Service Deploy Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -86,13 +86,13 @@ describe("Azure App Service Deploy Driver test", () => {
     // mock klaw
     // sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "post").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
       status: 200,
       headers: {
         location: "/api/123",
       },
     });
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "get").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
     sandbox.stub(client.webApps, "restart").resolves();
@@ -158,13 +158,13 @@ describe("Azure App Service Deploy Driver test", () => {
       publishingUserName: "test-username",
       publishingPassword: "test-password",
     } as Models.WebAppsListPublishingCredentialsResponse);
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "post").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
       status: 200,
       headers: {
         location: "/api/123",
       },
     });
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "get").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
     sandbox.stub(client.webApps, "restart").resolves();
@@ -215,8 +215,8 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "post").throws(new Error("test"));
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "get").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").throws(new Error("test"));
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
     const res = await deploy.run(args, context);
@@ -240,7 +240,7 @@ describe("Azure App Service Deploy Driver test", () => {
       console.log(msg);
       return Promise.resolve(true);
     };
-    const deploy = new AzureZipDeployDriverImpl(args, context, "", "", [], []);
+    const deploy = new AzureZipDeployImpl(args, context, "", "", [], []);
     sandbox.stub(deploy, "zipDeploy").resolves(5_000_000);
     await deploy.run();
   });
@@ -279,13 +279,13 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "post").throws({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").throws({
       response: {
         status: 503,
       },
       isAxiosError: true,
     });
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "get").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
     const res = await deploy.run(args, context);
@@ -326,13 +326,13 @@ describe("Azure App Service Deploy Driver test", () => {
     });
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "post").throws({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").throws({
       response: {
         status: 404,
       },
       isAxiosError: true,
     });
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "get").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
     const res = await deploy.run(args, context);
@@ -398,13 +398,13 @@ describe("Azure App Service Deploy Driver test", () => {
     // mock klaw
     // sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "post").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
       status: 200,
       headers: {
         location: "/api/123",
       },
     });
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "get").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
     sandbox.stub(client.webApps, "restart").resolves();
@@ -453,13 +453,13 @@ describe("Azure App Service Deploy Driver test", () => {
     // mock klaw
     // sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "post").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
       status: 200,
       headers: {
         location: "/api/123",
       },
     });
-    sandbox.stub(AzureDeployDriverImpl.AXIOS_INSTANCE, "get").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
     sandbox.stub(client.webApps, "restart").resolves();

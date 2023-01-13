@@ -11,7 +11,7 @@ import {
 import { checkMissingArgs } from "../../../../utils/common";
 import { DeployExternalApiCallError, DeployTimeoutError } from "../../../../error/deployError";
 import { LogProvider } from "@microsoft/teamsfx-api";
-import { BaseDeployDriverImpl } from "./baseDeployDriverImpl";
+import { BaseDeployImpl } from "./baseDeployImpl";
 import { Base64 } from "js-base64";
 import * as appService from "@azure/arm-appservice";
 import { DeployConstant, DeployStatus } from "../../../../constant/deployConstant";
@@ -26,8 +26,9 @@ import { AzureResourceInfo } from "../../../interface/commonArgs";
 import { TokenCredential } from "@azure/identity";
 import * as fs from "fs-extra";
 import { PrerequisiteError } from "../../../../error/componentError";
+import { progressBarHelper } from "./progressBarHelper";
 
-export abstract class AzureDeployDriverImpl extends BaseDeployDriverImpl {
+export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
 
   public static readonly AXIOS_INSTANCE = axios.create();
@@ -60,6 +61,12 @@ export abstract class AzureDeployDriverImpl extends BaseDeployDriverImpl {
     const azureResource = this.parseResourceId(resourceId);
     const azureCredential = await getAzureAccountCredential(this.context.azureAccountProvider);
     const inputs = { ignoreFile: args.ignoreFile };
+
+    if (args.dryRun && this.prepare) {
+      this.progressNames = this.progressPrepare;
+    }
+    this.progressBar = this.createProgressBar(this.ui);
+    this.progressHandler = progressBarHelper(this.progressNames);
     await this.progressBar?.start();
 
     if (args.dryRun && this.prepare) {
@@ -108,7 +115,7 @@ export abstract class AzureDeployDriverImpl extends BaseDeployDriverImpl {
     let res: AxiosDeployQueryResult;
     for (let i = 0; i < DeployConstant.DEPLOY_CHECK_RETRY_TIMES; ++i) {
       try {
-        res = await AzureDeployDriverImpl.AXIOS_INSTANCE.get(location, config);
+        res = await AzureDeployImpl.AXIOS_INSTANCE.get(location, config);
       } catch (e) {
         if (axios.isAxiosError(e)) {
           await logger?.error(

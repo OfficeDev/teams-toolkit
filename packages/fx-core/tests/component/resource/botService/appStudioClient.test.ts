@@ -12,7 +12,7 @@ import {
   PluginError,
 } from "../../../../src/component/resource/botService/errors";
 import { Messages } from "./messages";
-import { UserError } from "@microsoft/teamsfx-api";
+import { SystemError, UserError } from "@microsoft/teamsfx-api";
 
 describe("Test AppStudio APIs", () => {
   afterEach(() => {
@@ -90,9 +90,7 @@ describe("Test AppStudio APIs", () => {
       const retry = sinon
         .stub(RetryHandler, "Retry")
         .onFirstCall()
-        .resolves({
-          status: 404,
-        })
+        .resolves(undefined)
         .onSecondCall()
         .rejects();
 
@@ -101,7 +99,7 @@ describe("Test AppStudio APIs", () => {
         await AppStudioClient.createBotRegistration(accessToken, botReg);
         chai.assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
-        chai.assert.isTrue(e instanceof PluginError);
+        chai.assert.isTrue(e instanceof SystemError);
         chai.assert.isTrue(retry.calledTwice);
       }
     });
@@ -118,13 +116,13 @@ describe("Test AppStudio APIs", () => {
         callingEndpoint: "",
       };
 
-      sinon.stub(RetryHandler, "Retry").resolves({});
+      sinon.stub(RetryHandler, "Retry").resolves(undefined);
 
       // Act
       try {
         await AppStudioClient.createBotRegistration(accessToken, botReg);
       } catch (e) {
-        chai.assert.isTrue(e instanceof PluginError);
+        chai.assert.isTrue(e instanceof SystemError);
         return;
       }
 
@@ -139,6 +137,7 @@ describe("Test AppStudio APIs", () => {
       const accessToken = "anything";
 
       sinon.stub(RetryHandler, "Retry").resolves({
+        status: 200,
         data: {},
       });
       sinon.stub(AppStudioClient, "getBotRegistration").resolves({
@@ -161,7 +160,7 @@ describe("Test AppStudio APIs", () => {
       // Arrange
       const accessToken = "anything";
 
-      sinon.stub(RetryHandler, "Retry").resolves({});
+      sinon.stub(RetryHandler, "Retry").resolves(undefined);
 
       // Act
       try {
@@ -192,7 +191,7 @@ describe("Test AppStudio APIs", () => {
       try {
         await AppStudioClient.updateMessageEndpoint(accessToken, "anything", "anything");
       } catch (e) {
-        chai.assert.isTrue(e instanceof PluginError);
+        chai.assert.isTrue(e instanceof SystemError);
         return;
       }
 

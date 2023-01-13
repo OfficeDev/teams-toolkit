@@ -13,7 +13,7 @@ import { assert } from "chai";
 import "mocha";
 import * as os from "os";
 import * as path from "path";
-import { createSandbox } from "sinon";
+import Sinon, { createSandbox } from "sinon";
 import * as utils from "../../../../src/component/utils";
 import { setTools } from "../../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../../core/utils";
@@ -27,6 +27,8 @@ import { provisionUtils } from "../../../../src/component/provisionUtils";
 import { TelemetryKeys } from "../../../../src/component/resource/botService/constants";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
 import { FailedToCreateBotRegistrationError } from "../../../../src/component/resource/botService/errors";
+import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
+import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 
 describe("Bot service", () => {
   const tools = new MockTools();
@@ -67,9 +69,7 @@ describe("Bot service", () => {
       botId: "",
       botPassword: "botPassword",
     };
-    sandbox.stub(AppStudioClient, "getBotRegistration").rejects({
-      response: { status: 500 },
-    });
+    sandbox.stub(RetryHandler, "Retry").resolves(undefined);
     sandbox.stub(GraphClient, "registerAadApp").resolves({
       clientId: "clientId",
       clientSecret: "clientSecret",
@@ -78,9 +78,7 @@ describe("Bot service", () => {
     assert.isTrue(res.isErr());
     if (res.isErr()) {
       const error = res.error;
-      assert.equal(error.name, "ProvisionError");
-      assert.exists(error.innerError);
-      assert.equal(error.innerError?.response?.status, 500);
+      assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
     }
   });
   it("send telemetry for app studio error when local debug", async () => {
@@ -93,7 +91,7 @@ describe("Bot service", () => {
       clientId: "clientId",
       clientSecret: "clientSecret",
     });
-
+    sandbox.stub(RetryHandler, "Retry").resolves(undefined);
     context.projectSetting.components.push({
       name: ComponentNames.BotService,
       provision: true,
@@ -102,29 +100,16 @@ describe("Bot service", () => {
       botId: "",
       botPassword: "botPassword",
     };
-    sandbox.stub(AppStudioClient, "getBotRegistration").rejects({
-      response: { status: 500 },
-      toJSON: () => ({
-        config: {
-          url: "https://dev.teams.microsoft.com/api/botframework",
-          method: "post",
-        },
-      }),
-    });
+
     const fxComponent = new TeamsfxCore();
     const res = await fxComponent.provision(context as ResourceContextV3, inputs);
     assert.isTrue(res.isErr());
     if (res.isErr()) {
       const error = res.error;
-      assert.equal(error.name, "ProvisionError");
-      assert.exists(error.innerError);
-      assert.equal(error.innerError?.response?.status, 500);
+      assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+      assert.equal(error.innerError.teamsfxUrlName, "<create-bot-registration>");
     }
-    assert.isTrue(telemetryStub.calledTwice);
-    const props = telemetryStub.args[1]?.[1];
-    assert.equal(props?.[TelemetryKeys.StatusCode], "500");
-    assert.equal(props?.[TelemetryKeys.Url], "<create-bot-registration>");
-    assert.equal(props?.[TelemetryKeys.Method], "post");
+    assert.isTrue(telemetryStub.calledOnce);
   });
 
   it("local bot registration error with existing bot id and cannot get bot", async () => {

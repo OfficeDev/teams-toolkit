@@ -101,9 +101,12 @@ export class AppStudioClient {
     }
 
     try {
-      await RetryHandler.Retry(() =>
+      const response = await RetryHandler.Retry(() =>
         axiosInstance.post(`${AppStudioClient.baseUrl}/api/botframework`, registration)
       );
+      if (!response || !response.data || response.status !== 200) {
+        throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION);
+      }
     } catch (e) {
       if (e.response?.status === 401) {
         throw new BotFrameworkNotAllowedToAcquireTokenError();
@@ -146,9 +149,12 @@ export class AppStudioClient {
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     try {
-      await RetryHandler.Retry(() =>
+      const response = await RetryHandler.Retry(() =>
         axiosInstance.post(`${AppStudioClient.baseUrl}/api/botframework/${botReg.botId}`, botReg)
       );
+      if (!response || !response.data || response.status !== 200) {
+        throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT);
+      }
     } catch (e) {
       if (e.response?.status === 401) {
         throw new BotFrameworkNotAllowedToAcquireTokenError();

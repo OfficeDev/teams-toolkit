@@ -69,7 +69,8 @@ export namespace AppStudioClient {
         requestPath,
         apiName,
         extraData
-      )
+      ),
+      e
     );
 
     TelemetryUtils.sendErrorEvent(TelemetryEventName.appStudioApi, error, {

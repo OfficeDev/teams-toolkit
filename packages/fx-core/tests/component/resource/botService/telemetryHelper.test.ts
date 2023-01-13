@@ -25,6 +25,8 @@ import { AppManifest } from "../../../../src/component/resource/appManifest/appM
 import { provisionUtils } from "../../../../src/component/provisionUtils";
 import { TelemetryKeys } from "../../../../src/component/resource/botService/constants";
 import { GraphClient } from "../../../../src/component/resource/botService/botRegistration/graphClient";
+import { RetryHandler } from "../../../../src/component/resource/botService/retryHandler";
+import { AppStudioError } from "../../../../src/component/resource/appManifest/errors";
 
 describe("Bot service telemetry helper", () => {
   const tools = new MockTools();
@@ -65,13 +67,7 @@ describe("Bot service telemetry helper", () => {
       .stub(context.telemetryReporter, "sendTelemetryErrorEvent")
       .resolves();
 
-    sandbox.stub(AppStudioClient, "getBotRegistration").rejects({
-      toJSON: () => ({
-        config: {
-          url: "https://dev.teams.microsoft.com/api/botframework",
-        },
-      }),
-    });
+    sandbox.stub(RetryHandler, "Retry").resolves(undefined);
     sandbox.stub(GraphClient, "registerAadApp").resolves({
       clientId: "clientId",
       clientSecret: "clientSecret",
@@ -82,19 +78,17 @@ describe("Bot service telemetry helper", () => {
     assert.isTrue(res.isErr());
     if (res.isErr()) {
       const error = res.error;
-      assert.equal(error.name, "ProvisionError");
-      assert.exists(error.innerError);
+      assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
+      assert.equal(error.innerError.teamsfxUrlName, "<create-bot-registration>");
     }
-    assert.isTrue(telemetryStub.calledTwice);
-    const props = telemetryStub.args[1]?.[1];
-    assert.equal(props?.[TelemetryKeys.Url], "<create-bot-registration>");
+    assert.isTrue(telemetryStub.calledOnce);
   });
   it("increase ut coverage", async () => {
     const telemetryStub = sandbox
       .stub(context.telemetryReporter, "sendTelemetryErrorEvent")
       .resolves();
 
-    sandbox.stub(AppStudioClient, "getBotRegistration").rejects({});
+    sandbox.stub(RetryHandler, "Retry").resolves(undefined);
     sandbox.stub(GraphClient, "registerAadApp").resolves({
       clientId: "clientId",
       clientSecret: "clientSecret",
@@ -105,9 +99,8 @@ describe("Bot service telemetry helper", () => {
     assert.isTrue(res.isErr());
     if (res.isErr()) {
       const error = res.error;
-      assert.equal(error.name, "ProvisionError");
-      assert.exists(error.innerError);
+      assert.equal(error.name, AppStudioError.DeveloperPortalAPIFailedError.name);
     }
-    assert.isTrue(telemetryStub.calledTwice);
+    assert.isTrue(telemetryStub.calledOnce);
   });
 });

@@ -19,6 +19,7 @@ import { CryptoCachePlugin } from "./cacheAccess";
 import { m365CacheName, signedIn, signedOut } from "./common/constant";
 import { LoginStatus } from "./common/login";
 import M365TokenProviderUserPassword from "./m365LoginUserPassword";
+import { AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core";
 
 const SERVER_PORT = 0;
 
@@ -70,8 +71,25 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
    * Get team access token
    */
   async getAccessToken(tokenRequest: TokenRequest): Promise<Result<string, FxError>> {
-    await M365Login.codeFlowInstance.reloadCache();
+    let needLogin = false;
+    if (!M365Login.codeFlowInstance.account) {
+      await M365Login.codeFlowInstance.reloadCache();
+      if (M365Login.codeFlowInstance.account) {
+        const regionTokenRes = await M365Login.codeFlowInstance.getTokenByScopes(AuthSvcScopes);
+        if (regionTokenRes.isOk()) {
+          setRegion(regionTokenRes.value);
+        }
+      } else {
+        needLogin = true;
+      }
+    }
     const tokenRes = await M365Login.codeFlowInstance.getTokenByScopes(tokenRequest.scopes);
+    if (needLogin == true && M365Login.codeFlowInstance.account) {
+      const regionTokenRes = await M365Login.codeFlowInstance.getTokenByScopes(AuthSvcScopes);
+      if (regionTokenRes.isOk()) {
+        setRegion(regionTokenRes.value);
+      }
+    }
 
     if (tokenRes.isOk()) {
       return ok(tokenRes.value);

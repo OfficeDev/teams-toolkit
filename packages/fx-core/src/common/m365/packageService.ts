@@ -39,7 +39,7 @@ export class PackageService {
     }
   }
 
-  public async sideLoading(token: string, manifestPath: string): Promise<void> {
+  public async sideLoading(token: string, manifestPath: string): Promise<string> {
     try {
       const data = await fs.readFile(manifestPath);
       const content = new FormData();
@@ -114,6 +114,7 @@ export class PackageService {
       );
       this.logger?.debug(JSON.stringify(launchInfo.data));
       this.logger?.info("Sideloading done.");
+      return titleId;
     } catch (error: any) {
       this.logger?.error("Sideloading failed.");
       if (error.response) {

@@ -255,11 +255,9 @@ class EnvironmentManager {
     }
 
     const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
-    if (!(await fs.pathExists(envConfigsFolder))) {
-      return ok([]);
-    }
-
-    const configFiles = await fs.readdir(envConfigsFolder);
+    const configFiles = !(await fs.pathExists(envConfigsFolder))
+      ? []
+      : await fs.readdir(envConfigsFolder);
     const envNames = configFiles
       .map((file) => this.getEnvNameFromPath(file))
       .filter((name): name is string => name !== null && name !== this.getLocalEnvName());

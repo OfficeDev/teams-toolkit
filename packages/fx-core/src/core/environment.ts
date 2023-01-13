@@ -242,7 +242,7 @@ class EnvironmentManager {
       const allEnvsRes = await envUtil.listEnv(projectPath);
       if (allEnvsRes.isErr()) return err(allEnvsRes.error);
       const remoteEnvs = allEnvsRes.value.filter((env) => env !== this.getLocalEnvName());
-      if (returnErrorIfEmpty)
+      if (remoteEnvs.length === 0 && returnErrorIfEmpty)
         return err(
           new UserError({
             source: "EnvLoaderMW",
@@ -263,7 +263,7 @@ class EnvironmentManager {
     const envNames = configFiles
       .map((file) => this.getEnvNameFromPath(file))
       .filter((name): name is string => name !== null && name !== this.getLocalEnvName());
-    if (returnErrorIfEmpty)
+    if (envNames.length === 0 && returnErrorIfEmpty)
       return err(
         new UserError({
           source: "EnvLoaderMW",

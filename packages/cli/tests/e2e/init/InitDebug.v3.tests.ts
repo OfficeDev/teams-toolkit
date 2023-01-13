@@ -32,6 +32,7 @@ describe("teamsfx init debug", function () {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3: "true",
       TEAMSFX_DEBUG_TEMPLATE: "true",
+      NODE_ENV: "development",
     });
   });
 

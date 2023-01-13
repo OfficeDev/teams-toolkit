@@ -36,25 +36,103 @@ describe("teamsfx init debug", function () {
     });
   });
 
-  it(`teamsfx init debug (vscode + bot)`, { testPlanCaseId: 16774467 }, async function () {
-    await fs.ensureDir(projectPath);
-    await CliHelper.initDebug(appName, projectPath, "vsc", "bot", undefined);
-    const files = [
-      ".vscode/launch.json",
-      ".vscode/settings.json",
-      ".vscode/tasks.json",
-      "script/run.js",
-      "teamsAppEnv/.env.local",
-      "teamsapp.local.yml",
-      "teamsapp.yml",
-    ];
-    for (const file of files) {
-      const filePath = path.resolve(projectPath, file);
-      const exists = await fs.pathExists(filePath);
-      if (!exists) {
-        console.error(`file not exits: ${filePath}`);
+  const params = [
+    {
+      name: "vsc + bot",
+      caseId: 16774467,
+      editor: "vsc",
+      capability: "bot",
+      spfx: undefined,
+      files: [
+        ".vscode/launch.json",
+        ".vscode/settings.json",
+        ".vscode/tasks.json",
+        "script/run.js",
+        "teamsAppEnv/.env.local",
+        "teamsapp.local.yml",
+        "teamsapp.yml",
+      ],
+    },
+    {
+      name: "vsc + spfx tab",
+      caseId: 16774613,
+      editor: "vsc",
+      capability: "tab",
+      spfx: "true",
+      files: [
+        ".vscode/launch.json",
+        ".vscode/settings.json",
+        ".vscode/tasks.json",
+        "teamsAppEnv/.env.local",
+        "teamsapp.local.yml",
+        "teamsapp.yml",
+      ],
+    },
+    {
+      name: "vsc + tab",
+      caseId: 16774612,
+      editor: "vsc",
+      capability: "tab",
+      spfx: "false",
+      files: [
+        ".vscode/launch.json",
+        ".vscode/settings.json",
+        ".vscode/tasks.json",
+        "script/run.js",
+        "teamsAppEnv/.env.local",
+        "teamsapp.local.yml",
+        "teamsapp.yml",
+      ],
+    },
+    {
+      name: "vs + tab",
+      caseId: 16774614,
+      editor: "vs",
+      capability: "tab",
+      spfx: undefined,
+      files: [
+        ".vscode/launch.json",
+        ".vscode/settings.json",
+        ".vscode/tasks.json",
+        "teamsAppEnv/.env.local",
+        "teamsapp.local.yml",
+        "teamsapp.yml",
+      ],
+    },
+    {
+      name: "vs + bot",
+      caseId: 16774615,
+      editor: "vs",
+      capability: "bot",
+      spfx: undefined,
+      files: [
+        ".vscode/launch.json",
+        ".vscode/settings.json",
+        ".vscode/tasks.json",
+        "teamsAppEnv/.env.local",
+        "teamsapp.local.yml",
+        "teamsapp.yml",
+      ],
+    },
+  ];
+  for (const param of params) {
+    it(`teamsfx init debug (${param.name})`, { testPlanCaseId: param.caseId }, async function () {
+      await fs.ensureDir(projectPath);
+      await CliHelper.initDebug(
+        appName,
+        projectPath,
+        param.editor as "vsc" | "vs",
+        param.capability as "tab" | "bot",
+        param.spfx as "true" | "false"
+      );
+      for (const file of param.files) {
+        const filePath = path.resolve(projectPath, file);
+        const exists = await fs.pathExists(filePath);
+        if (!exists) {
+          console.error(`file not exits: ${filePath}`);
+        }
+        chai.assert.isTrue(exists);
       }
-      chai.assert.isTrue(exists);
-    }
-  });
+    });
+  }
 });

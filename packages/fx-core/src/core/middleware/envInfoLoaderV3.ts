@@ -309,7 +309,7 @@ export async function getQuestionsForTargetEnv(
     return err(new NoProjectOpenedError());
   }
 
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath, true);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }
@@ -340,7 +340,7 @@ async function getQuestionsForNewEnv(
   const newEnvNameNode = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
   group.addChild(newEnvNameNode);
 
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath, true);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }

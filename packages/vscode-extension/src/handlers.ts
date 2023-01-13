@@ -1912,10 +1912,9 @@ export async function openReadMeHandler(args: any[]) {
         : Uri.file(`${workspacePath}/src/README.md`);
 
       // Always open README.md in current panel instead of side-by-side.
-      workspace.openTextDocument(uri).then(() => {
-        const PreviewMarkdownCommand = "markdown.showPreview";
-        commands.executeCommand(PreviewMarkdownCommand, uri);
-      });
+      await workspace.openTextDocument(uri);
+      const PreviewMarkdownCommand = "markdown.showPreview";
+      await commands.executeCommand(PreviewMarkdownCommand, uri);
     } else {
       let targetFolder: string | undefined;
       if (await getIsFromSample()) {

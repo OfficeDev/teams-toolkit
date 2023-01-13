@@ -36,9 +36,6 @@ describe("teamsfx init debug", function () {
   });
 
   it(`teamsfx init debug (vscode + bot)`, { testPlanCaseId: 16774467 }, async function () {
-    if (isV3Enabled()) {
-      this.skip();
-    }
     await fs.ensureDir(projectPath);
     await CliHelper.initDebug(appName, projectPath, "vsc", "bot", undefined);
     const files = [

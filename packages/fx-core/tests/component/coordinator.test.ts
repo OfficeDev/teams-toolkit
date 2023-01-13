@@ -476,6 +476,72 @@ describe("component coordinator test", () => {
       assert.equal(selectEnvRes.value, "dev");
     }
   });
+  it("provision success with subscriptionId in yml", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: {
+              subscriptionId: "mockSubId",
+            },
+          },
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: ["AZURE_RESOURCE_GROUP_NAME"],
+          });
+        },
+        resolvePlaceholders: () => {
+          return ["AZURE_RESOURCE_GROUP_NAME"];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
+      ok({
+        createNewResourceGroup: true,
+        name: "test-rg",
+        location: "East US",
+      })
+    );
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
+      ok({
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
+      })
+    );
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "mockSubId",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
+    sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isOk());
+  });
   it("provision happy path from zero case 2", async () => {
     const mockProjectModel: ProjectModel = {
       registerApp: {
@@ -688,6 +754,46 @@ describe("component coordinator test", () => {
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isOk());
     assert.isTrue(stubShowMessage.calledOnce);
+  });
+  it("provision failed when user directly update yml with empty subscriptionId", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: {
+              subscriptionId: "",
+            },
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isErr());
   });
   it("provision failed with parse error", async () => {
     sandbox.stub(YamlParser.prototype, "parse").resolves(err(new UserError({})));

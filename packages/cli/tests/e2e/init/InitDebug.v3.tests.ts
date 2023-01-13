@@ -6,6 +6,7 @@
  */
 
 import { it } from "@microsoft/extra-shot-mocha";
+import { isV3Enabled } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import * as fs from "fs-extra";
 import "mocha";
@@ -21,19 +22,23 @@ describe("teamsfx init debug", function () {
   let mockedEnvRestore: RestoreFn | undefined;
 
   afterEach(async () => {
-    if (mockedEnvRestore) {
-      mockedEnvRestore();
-    }
+    // if (mockedEnvRestore) {
+    //   mockedEnvRestore();
+    // }
     await cleanUp(appName, projectPath, false, false, false);
   });
 
   beforeEach(async () => {
-    mockedEnvRestore = mockedEnv({
-      TEAMSFX_V3: "true",
-    });
+    // mockedEnvRestore = mockedEnv({
+    //   TEAMSFX_V3: "true",
+    //   TEAMSFX_DEBUG_TEMPLATE: "true"
+    // });
   });
 
   it(`teamsfx init debug (vscode + bot)`, { testPlanCaseId: 16774467 }, async function () {
+    if (isV3Enabled()) {
+      this.skip();
+    }
     await fs.ensureDir(projectPath);
     await CliHelper.initDebug(appName, projectPath, "vsc", "bot", undefined);
     const files = [

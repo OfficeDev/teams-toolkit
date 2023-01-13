@@ -74,8 +74,7 @@ import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/qu
 import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { MissingEnvInFileUserError } from "../component/driver/aad/error/missingEnvInFileError";
-import { getDefaultString } from "../common/localizeUtils";
-import { getLocalizedMessage } from "../component/messages";
+import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -252,7 +251,7 @@ export class FxCoreV3Implement {
         res.error.message += " " + getDefaultString("error.UpdateAadManifest.MissingEnvHint"); // hint users can run provision/debug to create missing env for our project template
         if (res.error.displayMessage) {
           res.error.displayMessage +=
-            " " + getLocalizedMessage("error.UpdateAadManifest.MissingEnvHint");
+            " " + getLocalizedString("error.UpdateAadManifest.MissingEnvHint");
         }
       }
       return err(res.error);

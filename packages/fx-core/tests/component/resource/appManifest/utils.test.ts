@@ -33,7 +33,7 @@ describe("utils", () => {
     objectId: "objId",
     configurationUrl: "https://url",
     canUpdateConfiguration: false,
-    scopes: [CommandScope.GroupChat],
+    scopes: ["groupchat"],
     context: [MeetingsContext.ChannelTab],
     sharePointPreviewImage: "img",
     supportedSharePointHosts: [],
@@ -61,7 +61,7 @@ describe("utils", () => {
     objectId: "objId",
     configurationUrl: "https://url",
     canUpdateConfiguration: false,
-    scopes: [CommandScope.GroupChat, CommandScope.Team],
+    scopes: ["groupchat", CommandScope.Team],
     context: [MeetingsContext.SidePanel],
     sharePointPreviewImage: "img",
     supportedSharePointHosts: [],
@@ -142,6 +142,25 @@ describe("utils", () => {
         teamsAppId: "mockAppId",
         tenantId: "mockTenantId",
         configurableTabs: [validConfigurableTabForTabCode],
+        bots: [validBot],
+      };
+
+      const needTab = needTabCode(appDefinition);
+
+      chai.assert.isTrue(needTab);
+    });
+
+    it("private chat tab, team scope: returns true", () => {
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mockAppId",
+        tenantId: "mockTenantId",
+        configurableTabs: [
+          {
+            ...validConfigurableTabForTabCode,
+            context: [MeetingsContext.PrivateChatTab],
+            scopes: [CommandScope.Team],
+          },
+        ],
         bots: [validBot],
       };
 
@@ -287,6 +306,26 @@ describe("utils", () => {
       const res = hasMeetingExtension(appDefinition);
 
       chai.assert.isTrue(res);
+    });
+
+    it("missing scope: returns false", () => {
+      const appDefinition: AppDefinition = {
+        teamsAppId: "mockAppId",
+        tenantId: "mockTenantId",
+        configurableTabs: [
+          {
+            ...validConfigurableTabForMeetingExtension,
+            context: [MeetingsContext.DetailsTab],
+            scopes: [],
+          },
+        ],
+        staticTabs: [],
+        bots: [validBot],
+      };
+
+      const res = hasMeetingExtension(appDefinition);
+
+      chai.assert.isFalse(res);
     });
 
     it("chat tab: returns true", () => {

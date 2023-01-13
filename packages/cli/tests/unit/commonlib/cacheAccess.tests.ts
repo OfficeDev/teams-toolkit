@@ -6,6 +6,7 @@ import {
   AccountCrypto,
   AzureSpCrypto,
   CryptoCachePlugin,
+  loadAccountId,
 } from "../../../src/commonlib/cacheAccess";
 import { expect } from "../utils";
 import fs, { WriteFileOptions } from "fs-extra";
@@ -98,5 +99,6 @@ describe("AccountCrypto Service principal Tests", function () {
     expect(checkAzureSp).to.be.true;
     await AzureSpCrypto.loadAzureSP();
     await AzureSpCrypto.clearAzureSP();
+    await loadAccountId("abc");
   });
 });

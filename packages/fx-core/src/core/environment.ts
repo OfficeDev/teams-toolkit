@@ -245,7 +245,7 @@ class EnvironmentManager {
       if (remoteEnvs.length === 0 && returnErrorIfEmpty)
         return err(
           new UserError({
-            source: "EnvLoaderMW",
+            source: "EnvironmentManager",
             name: "NoEnvFilesError",
             displayMessage: getLocalizedString("core.error.NoEnvFilesError"),
             message: getDefaultString("core.error.NoEnvFilesError"),
@@ -266,7 +266,7 @@ class EnvironmentManager {
     if (envNames.length === 0 && returnErrorIfEmpty)
       return err(
         new UserError({
-          source: "EnvLoaderMW",
+          source: "EnvironmentManager",
           name: "NoEnvFilesError",
           displayMessage: getLocalizedString("core.error.NoEnvFilesError"),
           message: getDefaultString("core.error.NoEnvFilesError"),

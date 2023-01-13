@@ -22,17 +22,17 @@ describe("teamsfx init debug", function () {
   let mockedEnvRestore: RestoreFn | undefined;
 
   afterEach(async () => {
-    // if (mockedEnvRestore) {
-    //   mockedEnvRestore();
-    // }
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
     await cleanUp(appName, projectPath, false, false, false);
   });
 
   beforeEach(async () => {
-    // mockedEnvRestore = mockedEnv({
-    //   TEAMSFX_V3: "true",
-    //   TEAMSFX_DEBUG_TEMPLATE: "true"
-    // });
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_V3: "true",
+      TEAMSFX_DEBUG_TEMPLATE: "true",
+    });
   });
 
   it(`teamsfx init debug (vscode + bot)`, { testPlanCaseId: 16774467 }, async function () {

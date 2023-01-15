@@ -17,8 +17,7 @@ import { cleanUp, getTestFolder, getUniqueAppName } from "../commonUtils";
 
 describe("teamsfx init debug", function () {
   const testFolder = getTestFolder();
-  const appName = getUniqueAppName();
-  const projectPath = path.resolve(testFolder, appName);
+  let appName, projectPath;
   let mockedEnvRestore: RestoreFn | undefined;
 
   afterEach(async () => {
@@ -103,6 +102,8 @@ describe("teamsfx init debug", function () {
   ];
   for (const param of params) {
     it(`teamsfx init debug (${param.name})`, { testPlanCaseId: param.caseId }, async function () {
+      appName = getUniqueAppName();
+      projectPath = path.resolve(testFolder, appName);
       await fs.ensureDir(projectPath);
       await CliHelper.initDebug(
         appName,

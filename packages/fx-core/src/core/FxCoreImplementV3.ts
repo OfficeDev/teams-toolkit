@@ -241,7 +241,7 @@ export class FxCoreV3Implement {
       `aad.${inputs.env}.json`
     );
     const inputArgs: UpdateAadAppArgs = {
-      manifestTemplatePath: manifestTemplatePath,
+      manifestPath: manifestTemplatePath,
       outputFilePath: manifestOutputPath,
     };
     const contextV3: DriverContext = createDriverContext(inputs);

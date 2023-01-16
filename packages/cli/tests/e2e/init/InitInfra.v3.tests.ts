@@ -14,7 +14,7 @@ import path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { cleanUp, getTestFolder, getUniqueAppName } from "../commonUtils";
 
-describe("teamsfx init debug", function () {
+describe("teamsfx init infra", function () {
   const testFolder = getTestFolder();
   let appName: string;
   let projectPath: string;
@@ -35,74 +35,75 @@ describe("teamsfx init debug", function () {
   const params = [
     {
       name: "vsc + bot",
-      caseId: 16774467,
+      caseId: 16776698,
       editor: "vsc",
       capability: "bot",
       spfx: undefined,
       files: [
-        ".vscode/launch.json",
-        ".vscode/settings.json",
-        ".vscode/tasks.json",
-        "script/run.js",
-        "teamsAppEnv/.env.local",
-        "teamsapp.local.yml",
+        "infra/botRegistration/azurebot.bicep",
+        "infra/botRegistration/readme.md",
+        "infra/azure.bicep",
+        "infra/azure.parameters.json",
+        "teamsAppEnv/.env.dev",
         "teamsapp.yml",
       ],
     },
     {
       name: "vsc + spfx tab",
-      caseId: 16774613,
+      caseId: 16776696,
       editor: "vsc",
       capability: "tab",
       spfx: "true",
-      files: [
-        ".vscode/launch.json",
-        ".vscode/settings.json",
-        ".vscode/tasks.json",
-        "teamsAppEnv/.env.local",
-        "teamsapp.local.yml",
-        "teamsapp.yml",
-      ],
+      files: ["teamsAppEnv/.env.dev", "teamsapp.yml"],
     },
     {
       name: "vsc + tab",
-      caseId: 16774612,
+      caseId: 16776694,
       editor: "vsc",
       capability: "tab",
       spfx: "false",
       files: [
-        ".vscode/launch.json",
-        ".vscode/settings.json",
-        ".vscode/tasks.json",
-        "script/run.js",
-        "teamsAppEnv/.env.local",
-        "teamsapp.local.yml",
+        "infra/azure.bicep",
+        "infra/azure.parameters.json",
+        "teamsAppEnv/.env.dev",
         "teamsapp.yml",
       ],
     },
     {
       name: "vs + tab",
-      caseId: 16774614,
+      caseId: 16776691,
       editor: "vs",
       capability: "tab",
       spfx: undefined,
-      files: ["teamsAppEnv/.env.local", "teamsapp.local.yml", "teamsapp.yml"],
+      files: [
+        "infra/azure.bicep",
+        "infra/azure.parameters.json",
+        "teamsAppEnv/.env.dev",
+        "teamsapp.yml",
+      ],
     },
     {
       name: "vs + bot",
-      caseId: 16774615,
+      caseId: 16776688,
       editor: "vs",
       capability: "bot",
       spfx: undefined,
-      files: ["teamsAppEnv/.env.local", "teamsapp.local.yml", "teamsapp.yml"],
+      files: [
+        "infra/botRegistration/azurebot.bicep",
+        "infra/botRegistration/readme.md",
+        "infra/azure.bicep",
+        "infra/azure.parameters.json",
+        "teamsAppEnv/.env.dev",
+        "teamsapp.yml",
+      ],
     },
   ];
   for (const param of params) {
-    it(`teamsfx init debug (${param.name})`, { testPlanCaseId: param.caseId }, async function () {
+    it(`teamsfx init infra (${param.name})`, { testPlanCaseId: param.caseId }, async function () {
       appName = getUniqueAppName();
       projectPath = path.resolve(testFolder, appName);
       await fs.ensureDir(projectPath);
-      await CliHelper.initDebug(
+      await CliHelper.initInfra(
         appName,
         projectPath,
         param.editor as "vsc" | "vs",

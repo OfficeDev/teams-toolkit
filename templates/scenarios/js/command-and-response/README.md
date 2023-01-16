@@ -24,6 +24,7 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 
 ## Get Started with the Command bot
 
+>
 > **Prerequisites**
 >
 > To run the command bot template in your local dev machine, you will need:
@@ -34,6 +35,7 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 > **Note**
 >
 > Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-command-response#customize-installation).
+>
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
@@ -47,21 +49,21 @@ The bot will respond to the `helloWorld` command with an Adaptive Card:
 
 ## What's included in the template
 
-| Folder       | Contents                                                            |
-| ------------ | ------------------------------------------------------------------- |
-| `teamsfx`    | Project level settings, configurations, and environment information |
-| `.vscode`    | VSCode files for debugging                                          |
-| `src`        | The source code for the command and response Teams application      |
-| `appPackage` | Templates for the Teams application manifest                        |
-| `infra`      | Templates for provisioning Azure resources                          |
+| Folder | Contents |
+| - | - |
+| `teamsfx` | Project level settings, configurations, and environment information |
+| `.vscode` | VSCode files for debugging |
+| `src` | The source code for the command and response Teams application |
+| `appPackage` | Templates for the Teams application manifest |
+| `infra` | Templates for provisioning Azure resources |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                       | Contents                                                                |
-| ------------------------------------------ | ----------------------------------------------------------------------- |
-| `src/index.js`                             | Application entry point and `restify` handlers for command and response |
-| `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams                         |
-| `src/helloworldCommandHandler.js`          | The business logic to handle a command                                  |
+| File | Contents |
+| - | - |
+| `src/index.js` | Application entry point and `restify` handlers for command and response |
+| `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams |
+| `src/helloworldCommandHandler.js` | The business logic to handle a command |
 
 ## Extend the command bot template with more commands and responses
 
@@ -99,22 +101,22 @@ To respond with an Adaptive Card, define your card in its JSON format. Create a 
 
 ```json
 {
-  "type": "AdaptiveCard",
-  "body": [
-    {
-      "type": "TextBlock",
-      "size": "Medium",
-      "weight": "Bolder",
-      "text": "Your doSomething Command is added!"
-    },
-    {
-      "type": "TextBlock",
-      "text": "Congratulations! Your hello world bot now includes a new DoSomething Command",
-      "wrap": true
-    }
-  ],
-  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-  "version": "1.4"
+    "type": "AdaptiveCard",
+    "body": [
+        {
+            "type": "TextBlock",
+            "size": "Medium",
+            "weight": "Bolder",
+            "text": "Your doSomething Command is added!"
+        },
+        {
+            "type": "TextBlock",
+            "text": "Congratulations! Your hello world bot now includes a new DoSomething Command",
+            "wrap": true
+        }
+    ],
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.4"
 }
 ```
 
@@ -135,25 +137,25 @@ const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
 const { CardFactory, MessageFactory } = require("botbuilder");
 
 class DoSomethingCommandHandler {
-  triggerPatterns = "doSomething";
+    triggerPatterns = "doSomething";
 
-  async handleCommandReceived(context, message) {
-    // verify the command arguments which are received from the client if needed.
-    console.log(`App received message: ${message.text}`);
+    async handleCommandReceived(context, message) {
+        // verify the command arguments which are received from the client if needed.
+        console.log(`App received message: ${message.text}`);
 
-    const cardData = {
-      title: "doSomething command is added",
-      body: "Congratulations! You have responded to doSomething command",
-    };
+        const cardData = {
+          title: "doSomething command is added",
+          body: "Congratulations! You have responded to doSomething command",
+        };
 
-    const cardJson = AdaptiveCards.declare(doSomethingCard).render(cardData);
-    return MessageFactory.attachment(CardFactory.adaptiveCard(cardJson));
-  }
+        const cardJson = AdaptiveCards.declare(doSomethingCard).render(cardData);
+        return MessageFactory.attachment(CardFactory.adaptiveCard(cardJson));
+    }    
 }
 
 module.exports = {
-  DoSomethingCommandHandler,
-};
+    DoSomethingCommandHandler,
+}
 ```
 
 You can customize what the command does here, including calling an API, process data, etc.
@@ -163,17 +165,18 @@ You can customize what the command does here, including calling an API, process 
 Each new command needs to be configured in the `ConversationBot`, which powers the conversational flow of the command bot template. Navigate to the `src/internal/initialize.js` file and update the `commands` array of the `command` property:
 
 ```javascript
-const { BotBuilderCloudAdapter } = require("@microsoft/teamsfx");
-const ConversationBot = BotBuilderCloudAdapter.ConversationBot;
+const { ConversationBot } = require("@microsoft/teamsfx");
 const { HelloWorldCommandHandler } = require("../helloworldCommandHandler");
-const { DoSomethingCommandHandler } = require("../doSomethingCommandHandler");
+const { DoSomethingCommandHandler} = require("../doSomethingCommandHandler")
 
 const commandApp = new ConversationBot({
-  //...
-  command: {
-    enabled: true,
-    commands: [new HelloWorldCommandHandler(), new DoSomethingCommandHandler()],
-  },
+    //...
+    command: {
+        enabled: true,
+        commands: [ 
+            new HelloWorldCommandHandler(), 
+            new DoSomethingCommandHandler() ],
+    },
 });
 
 module.exports = {

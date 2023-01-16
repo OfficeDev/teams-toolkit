@@ -84,7 +84,7 @@ export function containsUnsupportedFeature(appDefinition: AppDefinition): boolea
   const hasConnector = !!appDefinition?.connectors?.length;
   const hasActivies = appDefinition?.activities?.activityTypes?.length;
 
-  return !!hasScene || !!hasConnector || !!hasActivies;
+  return !!hasScene || !!hasConnector || !!hasActivies || hasMeetingExtension(appDefinition);
 }
 
 export function getFeaturesFromAppDefinition(appDefinition: AppDefinition): string[] {

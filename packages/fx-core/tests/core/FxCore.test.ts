@@ -328,7 +328,7 @@ describe("Core basic APIs", () => {
       if (res.isErr()) {
         assert.strictEqual(
           res.error.message,
-          "Failed to generate AAD app manifest. Environment variable AAD_APP_OBJECT_ID referenced in fake path have no values."
+          "Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in fake path have no values."
         );
       }
     } finally {

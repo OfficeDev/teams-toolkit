@@ -244,7 +244,7 @@ describe("aadAppUpdate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(MissingEnvInFileUserError)
       .and.include({
-        message: `Failed to generate AAD app manifest. Environment variable AAD_APP_OBJECT_ID referenced in ${path.resolve(
+        message: `Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in ${path.resolve(
           args.manifestTemplatePath
         )} have no values.`, // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
         source: "aadApp/update",
@@ -261,7 +261,7 @@ describe("aadAppUpdate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(MissingFieldInManifestUserError)
       .and.include({
-        message: "Field id is missing or invalid in AAD app manifest.", // The manifest does not has an id property
+        message: "Field id is missing or invalid in Azure Active Directory app manifest.", // The manifest does not has an id property
         source: "aadApp/update",
       });
   });
@@ -572,7 +572,7 @@ describe("aadAppUpdate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(MissingEnvInFileUserError)
       .and.include({
-        message: `Failed to generate AAD app manifest. Environment variable AAD_APP_NAME, APPLICATION_NAME referenced in ${path.resolve(
+        message: `Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_NAME, APPLICATION_NAME referenced in ${path.resolve(
           args.manifestTemplatePath
         )} have no values.`,
         source: "aadApp/update",

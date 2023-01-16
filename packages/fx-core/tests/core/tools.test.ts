@@ -4,6 +4,8 @@ import { Json } from "@microsoft/teamsfx-api";
 import { ProjectSettings } from "@microsoft/teamsfx-api/build/types";
 import { assert, expect } from "chai";
 import * as dotenv from "dotenv";
+import sinon from "sinon";
+import fs from "fs-extra";
 import "mocha";
 import {
   convertDotenvToEmbeddedJson,
@@ -11,10 +13,27 @@ import {
   newEnvInfo,
   redactObject,
   replaceTemplateWithUserData,
+  tryGetVersionInfoV2,
+  tryGetVersionInfoV3,
+  tryGetVersionInfoV3Abandoned,
   validateProjectSettings,
 } from "../../src";
+import * as ProjectSettingsHelper from "../../src/common/projectSettingsHelper";
 import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
+import {
+  MetadataV2,
+  MetadataV3,
+  MetadataV3Abandoned,
+  VersionSource,
+  VersionState,
+} from "../../src/common/versionMetadata";
 describe("tools", () => {
+  const sandbox = sinon.createSandbox();
+  const mockedProjectId = "00000000-0000-0000-0000-000000000000";
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
   // it("base64 encode", () => {
   //   const source = "Hello, World!";
   //   expect(base64Encode(source)).to.equal("SGVsbG8sIFdvcmxkIQ==");
@@ -46,6 +65,62 @@ describe("tools", () => {
       },
     };
     expect(validateProjectSettings(projectSettings)).is.undefined;
+  });
+
+  it("tryGetVersionInfoV2", async () => {
+    sandbox.stub(fs, "readJson").resolves({
+      version: MetadataV2.projectMaxVersion,
+      projectId: mockedProjectId,
+    } as any);
+    sandbox.stub(ProjectSettingsHelper, "validateProjectSettings").resolves(undefined);
+    const versionInfo = await tryGetVersionInfoV2("mockedPath");
+    expect(versionInfo?.isSupport).equals(VersionState.compatible);
+    expect(versionInfo?.currentVersion).equals(MetadataV2.projectMaxVersion);
+    expect(versionInfo?.trackingId).equals(mockedProjectId);
+    expect(versionInfo?.versionSource).equals(VersionSource[VersionSource.projectSettings]);
+  });
+
+  it("tryGetVersionInfoV3", async () => {
+    sandbox.stub(fs, "readFile").resolves(
+      `
+    version: 1.0.0
+    projectId: ${mockedProjectId}
+    ` as any
+    );
+    const versionInfo = await tryGetVersionInfoV3("mockedPath");
+    expect(versionInfo?.isSupport).equals(VersionState.unsupported);
+    expect(versionInfo?.currentVersion).equals(MetadataV3.projectVersion);
+    expect(versionInfo?.trackingId).equals(mockedProjectId);
+    expect(versionInfo?.versionSource).equals(VersionSource[VersionSource.teamsapp]);
+  });
+
+  it("tryGetVersionInfoV3Abandoned", async () => {
+    sandbox.stub(fs, "readJson").resolves({
+      version: MetadataV3Abandoned.projectVersion,
+      trackingId: mockedProjectId,
+    } as any);
+    const versionInfo = await tryGetVersionInfoV3Abandoned("mockedPath");
+    expect(versionInfo?.isSupport).equals(VersionState.unsupported);
+    expect(versionInfo?.currentVersion).equals(MetadataV3Abandoned.projectVersion);
+    expect(versionInfo?.trackingId).equals(mockedProjectId);
+    expect(versionInfo?.versionSource).equals(VersionSource[VersionSource.settings]);
+  });
+
+  it("tryGetVersionInfo failure case", async () => {
+    const mockedError = new Error("mocked error");
+    let versionInfo =
+      (await tryGetVersionInfoV2("")) ||
+      (await tryGetVersionInfoV3("")) ||
+      (await tryGetVersionInfoV3Abandoned(""));
+    expect(versionInfo).equals(undefined);
+
+    sandbox.stub(fs, "readJson").throws(mockedError);
+    sandbox.stub(fs, "readFile").throws(mockedError);
+    versionInfo =
+      (await tryGetVersionInfoV2("")) ||
+      (await tryGetVersionInfoV3("")) ||
+      (await tryGetVersionInfoV3Abandoned(""));
+    expect(versionInfo).equals(undefined);
   });
 });
 

@@ -3,6 +3,7 @@
 
 import { HookContext } from "@feathersjs/hooks";
 import { Json, ProjectSettings, Solution, SolutionContext, v2, v3 } from "@microsoft/teamsfx-api";
+import { VersionState } from "../common/versionMetadata";
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
   solutionContext?: SolutionContext;
@@ -16,4 +17,11 @@ export interface CoreHookContext extends HookContext {
   //for v3
   envInfoV3?: v3.EnvInfoV3;
   solutionV3?: v3.ISolution;
+}
+
+export interface VersionCheckRes {
+  currentVersion: string;
+  isSupport: VersionState;
+  trackingId: string;
+  versionSource: string;
 }

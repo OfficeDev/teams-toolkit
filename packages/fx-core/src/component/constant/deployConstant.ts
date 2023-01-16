@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ProgressMessages } from "../messages";
+
 export class DeployConstant {
   // deploy error type
   public static readonly DEPLOY_ERROR_TYPE = "DeployError";
@@ -45,4 +47,23 @@ export enum DeployStatus {
   Deploying = 2,
   Failed = 3,
   Success = 4,
+}
+
+export class ProgressBarConstant {
+  public static readonly ZIP_DEPLOY_IN_AZURE_PROGRESS = [
+    ProgressMessages.packingCode,
+    ProgressMessages.getAzureAccountInfoForDeploy,
+    ProgressMessages.getAzureUploadEndpoint,
+    ProgressMessages.uploadZipFileToAzure,
+    ProgressMessages.checkAzureDeployStatus,
+    ProgressMessages.restartAzureFunctionApp,
+  ];
+
+  public static readonly DRY_RUN_ZIP_DEPLOY_IN_AZURE_PROGRESS = [ProgressMessages.packingCode];
+
+  public static readonly UPLOAD_DEPLOY_TO_AZURE_STORAGE_PROGRESS = [
+    ProgressMessages.getAzureStorageAccountInfo,
+    ProgressMessages.clearStorageExistsBlobs,
+    ProgressMessages.uploadFilesToStorage,
+  ];
 }

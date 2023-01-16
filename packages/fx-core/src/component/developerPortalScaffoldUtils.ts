@@ -52,7 +52,7 @@ const appPackageFolderName = "appPackage";
 const resourcesFolderName = "resources";
 const colorFileName = "color.png";
 const outlineFileName = "outline.png";
-const manifestFileName = "manifest.template.json";
+const manifestFileName = "manifest.json";
 
 export const answerToRepaceBotId = "bot";
 export const answerToReplaceMessageExtensionBotId = "messageExtension";

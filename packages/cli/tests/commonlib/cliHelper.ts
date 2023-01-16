@@ -414,7 +414,7 @@ export class CliHelper {
     options = ""
   ) {
     const command = `teamsfx init debug --interactive false --editor ${editor} --capability ${capability} ${
-      capability === "tab" ? "--spfx " + spfx : ""
+      capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
     } ${options}`;
     const timeout = 100000;
     try {

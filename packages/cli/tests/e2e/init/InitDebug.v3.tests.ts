@@ -108,7 +108,7 @@ describe("teamsfx init debug", function () {
         projectPath,
         param.editor as "vsc" | "vs",
         param.capability as "tab" | "bot",
-        param.spfx as "true" | "false"
+        param.spfx as "true" | "false" | undefined
       );
       for (const file of param.files) {
         const filePath = path.resolve(projectPath, file);

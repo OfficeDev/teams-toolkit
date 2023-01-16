@@ -191,7 +191,7 @@ describe("Test AppStudio APIs", () => {
       try {
         await AppStudioClient.updateMessageEndpoint(accessToken, "anything", "anything");
       } catch (e) {
-        chai.assert.isTrue(e instanceof SystemError);
+        chai.assert.isTrue(e instanceof PluginError);
         return;
       }
 

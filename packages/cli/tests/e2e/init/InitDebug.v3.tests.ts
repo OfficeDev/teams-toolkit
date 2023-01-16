@@ -17,16 +17,9 @@ import { cleanUp, getTestFolder, getUniqueAppName } from "../commonUtils";
 
 describe("teamsfx init debug", function () {
   const testFolder = getTestFolder();
-  let appName, projectPath;
+  let appName: string;
+  let projectPath: string;
   let mockedEnvRestore: RestoreFn | undefined;
-
-  afterEach(async () => {
-    if (mockedEnvRestore) {
-      mockedEnvRestore();
-    }
-    await cleanUp(appName, projectPath, false, false, false);
-  });
-
   beforeEach(async () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3: "true",
@@ -34,7 +27,12 @@ describe("teamsfx init debug", function () {
       NODE_ENV: "development",
     });
   });
-
+  afterEach(async () => {
+    if (mockedEnvRestore) {
+      mockedEnvRestore();
+    }
+    await cleanUp(appName, projectPath, false, false, false);
+  });
   const params = [
     {
       name: "vsc + bot",

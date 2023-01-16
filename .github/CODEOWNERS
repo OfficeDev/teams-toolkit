@@ -171,3 +171,6 @@
 
 /packages/run-utils @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
+
+/packages/fx-core/src/component/driver/deploy/azure @siglud @Yukun-dong @hund030 @JerryYangKai @IvanJobs @eriolchan
+/packages/fx-core/src/component/driver/script @siglud @Yukun-dong @hund030 @JerryYangKai @IvanJobs @eriolchan

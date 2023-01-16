@@ -66,8 +66,8 @@ import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/crea
 import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/generator";
 import { MockedUserInteraction } from "../plugins/solution/util";
 import { SummaryReporter } from "../../src/component/coordinator/summary";
-import * as path from "path";
 import { deployUtils } from "../../src/component/deployUtils";
+import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/versionMetadata";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -86,7 +86,11 @@ function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[]
   ]);
 }
 
-const V3Version = "3.0.0";
+const versionInfo: VersionInfo = {
+  version: MetadataV3.projectVersion,
+  source: VersionSource.teamsapp,
+};
+const V3Version = MetadataV3.projectVersion;
 describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -104,7 +108,7 @@ describe("component coordinator test", () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3: "true",
     });
-    sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves(V3Version);
+    sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves(versionInfo);
   });
 
   it("create project from sample", async () => {
@@ -416,6 +420,7 @@ describe("component coordinator test", () => {
         },
         resolveDriverInstances: mockedResolveDriverInstances,
       },
+      environmentFolderPath: "./envs",
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
@@ -2676,35 +2681,5 @@ describe("Office Addin", async () => {
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr() && res.error.name === "mockedError");
-  });
-
-  it("getYmlFilePath case 1", async () => {
-    const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      workflowFilePath: ".",
-    };
-    const res1 = coordinator.getYmlFilePath(".", inputs);
-    assert.equal(res1, inputs.workflowFilePath);
-  });
-  it("getYmlFilePath case 2", async () => {
-    sandbox.stub(fs, "pathExistsSync").returns(true);
-    const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    process.env.TEAMSFX_ENV = "dev";
-    const res1 = coordinator.getYmlFilePath(".", inputs);
-    assert.equal(res1, path.join(".", "teamsapp.yml"));
-  });
-  it("getYmlFilePath case 3", async () => {
-    sandbox.stub(fs, "pathExistsSync").returns(false);
-    const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    process.env.TEAMSFX_ENV = "dev";
-    const res1 = coordinator.getYmlFilePath(".", inputs);
-    assert.equal(res1, path.join(".", "teamsfx", "app.yml"));
   });
 });

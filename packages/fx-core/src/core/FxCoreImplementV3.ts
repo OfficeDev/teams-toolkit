@@ -73,6 +73,8 @@ import { getQuestionsForCreateProjectV2 } from "./middleware/questionModel";
 import { getQuestionsForInit, getQuestionsForProvisionV3 } from "../component/question";
 import { isFromDevPortalInVSC } from "../component/developerPortalScaffoldUtils";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
+import { VersionSource } from "../common/versionMetadata";
+import { pathUtils } from "../component/utils/pathUtils";
 
 export class FxCoreV3Implement {
   tools: Tools;
@@ -346,16 +348,17 @@ export class FxCoreV3Implement {
   async projectVersionCheck(inputs: Inputs): Promise<Result<VersionCheckRes, FxError>> {
     const projectPath = (inputs.projectPath as string) || "";
     if (isValidProjectV3(projectPath) || isValidProjectV2(projectPath)) {
-      const currentVersion = await getProjectVersionFromPath(projectPath);
-      if (!currentVersion) {
+      const versionInfo = await getProjectVersionFromPath(projectPath);
+      if (!versionInfo.version) {
         return err(new InvalidProjectError());
       }
       const trackingId = await getTrackingIdFromPath(projectPath);
-      const isSupport = getVersionState(currentVersion);
+      const isSupport = getVersionState(versionInfo);
       return ok({
-        currentVersion,
+        currentVersion: versionInfo.version,
         trackingId,
         isSupport,
+        versionSource: VersionSource[versionInfo.source],
       });
     } else {
       return err(new InvalidProjectError());
@@ -403,9 +406,13 @@ export class FxCoreV3Implement {
     sourceEnvName: string,
     projectPath: string
   ): Promise<Result<Void, FxError>> {
-    const sourceDotEnvFile = environmentManager.getDotEnvPath(sourceEnvName, projectPath);
+    let res = await pathUtils.getEnvFilePath(projectPath, sourceEnvName);
+    if (res.isErr()) return err(res.error);
+    const sourceDotEnvFile = res.value;
+    res = await pathUtils.getEnvFilePath(projectPath, targetEnvName);
+    if (res.isErr()) return err(res.error);
+    const targetDotEnvFile = res.value;
     const source = await fs.readFile(sourceDotEnvFile);
-    const targetDotEnvFile = environmentManager.getDotEnvPath(targetEnvName, projectPath);
     const writeStream = fs.createWriteStream(targetDotEnvFile);
     source
       .toString()

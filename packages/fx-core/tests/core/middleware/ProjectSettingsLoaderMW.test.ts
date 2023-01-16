@@ -12,8 +12,6 @@ import {
   ProjectSettings,
   ProjectSettingsFileName,
   Result,
-  SettingsFileName,
-  SettingsFolderName,
   Stage,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
@@ -22,14 +20,13 @@ import * as os from "os";
 import * as path from "path";
 import fs from "fs-extra";
 import "mocha";
-import { MockProjectSettings, MockSettings, MockTools, randomAppName } from "../utils";
+import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import { CoreHookContext } from "../../../src/core/types";
 import { ProjectSettingsLoaderMW } from "../../../src/core/middleware/projectSettingsLoader";
 import { ContextInjectorMW } from "../../../src/core/middleware/contextInjector";
 import { NoProjectOpenedError, PathNotExistError } from "../../../src/core/error";
 import { setTools } from "../../../src/core/globalVars";
 import mockedEnv from "mocked-env";
-import { isV3Enabled } from "../../../src";
 
 describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 1", () => {
   class MyClass {
@@ -74,20 +71,18 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
   const sandbox = sinon.createSandbox();
   const appName = randomAppName();
   const projectSettings = MockProjectSettings(appName);
-  const settings = MockSettings();
   const inputs: Inputs = { platform: Platform.VSCode };
   inputs.projectPath = path.join(os.tmpdir(), appName);
   const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-  const settingsFolderPath = path.resolve(inputs.projectPath, SettingsFolderName);
   const settingsFiles = [
     path.resolve(confFolderPath, "settings.json"),
     path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName),
-    path.resolve(settingsFolderPath, SettingsFileName),
+    path.resolve(inputs.projectPath, "teamsapp.yml"),
   ];
 
   beforeEach(() => {
     sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
-      if (settingsFiles.includes(file)) return isV3Enabled() ? settings : projectSettings;
+      if (settingsFiles.includes(file)) return projectSettings;
       return undefined;
     });
     sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
@@ -117,15 +112,79 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
     assert.isTrue(res.isOk() && res.value !== undefined && res.value.appName === appName);
   });
 
-  it("success to load project settings in V3", async () => {
+  it("success load project settings from teamsapp.yml in V3", async () => {
     const restore = mockedEnv({
       TEAMSFX_V3: "true",
+    });
+
+    const mockedYamlFile = `
+    version: 1.0.0
+    projectId: 00000000-0000-0000-0000-000000000000
+    `;
+    sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+      if (file.includes("teamsapp.yml")) return mockedYamlFile;
+      return undefined;
     });
 
     try {
       const my = new MyClass();
       const res = await my.other(inputs);
-      assert.isTrue(res.isOk() && res.value !== undefined);
+      assert.isTrue(res.isOk());
+      const projectSettings = res._unsafeUnwrap();
+      assert.equal(projectSettings.version, "1.0.0");
+      assert.equal(projectSettings.projectId, "00000000-0000-0000-0000-000000000000");
+    } finally {
+      restore();
+    }
+  });
+
+  it("success generate projectId when no projectId in teamsapp.yml in V3", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+
+    const mockedYamlFile = `
+    version: 1.0.0 # this is comment
+    `;
+    let resultFile = "";
+    sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+      if (file.includes("teamsapp.yml")) return mockedYamlFile;
+      return undefined;
+    });
+    sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, content: string) => {
+      resultFile = content;
+    });
+
+    try {
+      const my = new MyClass();
+      const res = await my.other(inputs);
+      assert.isTrue(res.isOk());
+      const projectSettings = res._unsafeUnwrap();
+      assert.equal(projectSettings.version, "1.0.0");
+      assert.exists(projectSettings.projectId);
+      assert.isTrue(resultFile.includes("projectId"));
+      assert.isTrue(resultFile.includes("# this is comment"));
+    } finally {
+      restore();
+    }
+  });
+
+  it("return error when teamsapp.yml not exists in V3", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+
+    sandbox.restore();
+    // mock behavior that teamsapp.yml not exists
+    sandbox.stub<any, any>(fs, "pathExists").callsFake(async (file: string) => {
+      if (inputs.projectPath === file) return true;
+      return false;
+    });
+
+    try {
+      const my = new MyClass();
+      const res = await my.other(inputs);
+      assert.isTrue(res.isErr());
     } finally {
       restore();
     }

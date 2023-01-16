@@ -762,6 +762,55 @@ describe("handlers", () => {
     sendTelemetryEvent.restore();
   });
 
+  it("openReadMeHandler v3", async () => {
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(true);
+    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+    sandbox
+      .stub(vscode.workspace, "workspaceFolders")
+      .value([{ uri: { fsPath: "readmeTestFolder" } }]);
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const openTextDocumentStub = sandbox
+      .stub(vscode.workspace, "openTextDocument")
+      .resolves({} as any as vscode.TextDocument);
+
+    await handlers.openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+    chai.assert.isTrue(openTextDocumentStub.calledOnce);
+    chai.assert.isTrue(executeCommands.calledOnce);
+
+    sandbox.restore();
+  });
+
+  it("openReadMeHandler spfx - v2", async () => {
+    const sandbox = sinon.createSandbox();
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    sandbox.stub(globalVariables, "isTeamsFxProject").value(true);
+    sandbox.stub(globalVariables, "isSPFxProject").value(true);
+    sandbox.stub(commonTools, "isV3Enabled").returns(false);
+    const fake_config_v2 = {
+      isFromSample: false,
+    };
+    sandbox.stub(MockCore.prototype, "getProjectConfig").resolves(ok(fake_config_v2));
+    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+    sandbox
+      .stub(vscode.workspace, "workspaceFolders")
+      .value([{ uri: { fsPath: "readmeTestFolder" } }]);
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const openTextDocumentStub = sandbox
+      .stub(vscode.workspace, "openTextDocument")
+      .resolves({} as any as vscode.TextDocument);
+
+    await handlers.openReadMeHandler([extTelemetryEvents.TelemetryTriggerFrom.Auto]);
+
+    chai.assert.isTrue(openTextDocumentStub.calledOnce);
+    chai.assert.isTrue(executeCommands.calledOnce);
+
+    sandbox.restore();
+  });
+
   it("signOutM365", async () => {
     const signOut = sinon.stub(M365TokenInstance, "signout").resolves(true);
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");

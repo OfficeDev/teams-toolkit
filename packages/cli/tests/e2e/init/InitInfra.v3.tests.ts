@@ -103,7 +103,7 @@ describe("teamsfx init infra", function () {
       appName = getUniqueAppName();
       projectPath = path.resolve(testFolder, appName);
       await fs.ensureDir(projectPath);
-      await CliHelper.initDebug(
+      await CliHelper.initInfra(
         appName,
         projectPath,
         param.editor as "vsc" | "vs",

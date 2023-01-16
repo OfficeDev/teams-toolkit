@@ -1865,7 +1865,7 @@ export async function autoOpenProjectHandler(): Promise<void> {
     showLocalDebugMessage();
     showLocalPreviewMessage();
     await openReadMeHandler([TelemetryTriggerFrom.Auto]);
-    // await globalStateUpdate(GlobalKey.OpenReadMe, "");
+    await globalStateUpdate(GlobalKey.OpenReadMe, "");
   }
   if (isOpenSampleReadMe) {
     showLocalDebugMessage();
@@ -1945,10 +1945,9 @@ export async function openReadMeHandler(args: any[]) {
         : Uri.file(`${targetFolder}/README.md`);
 
       // Always open README.md in current panel instead of side-by-side.
-      workspace.openTextDocument(uri).then(() => {
-        const PreviewMarkdownCommand = "markdown.showPreview";
-        commands.executeCommand(PreviewMarkdownCommand, uri);
-      });
+      await workspace.openTextDocument(uri);
+      const PreviewMarkdownCommand = "markdown.showPreview";
+      await commands.executeCommand(PreviewMarkdownCommand, uri);
     }
   }
 }

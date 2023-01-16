@@ -330,7 +330,7 @@ describe("Core basic APIs", () => {
       if (res.isErr()) {
         assert.strictEqual(
           res.error.message,
-          "Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in fake path have no values."
+          "Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in fake path have no values. If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables."
         );
       }
     } finally {

@@ -22,6 +22,7 @@ import {
 } from "../component/constants";
 import * as uuid from "uuid";
 import { isExistingTabAppEnabled, isV3Enabled } from "./tools";
+import { MetadataV3 } from "./versionMetadata";
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
@@ -86,6 +87,7 @@ export function isValidProject(workspacePath?: string): boolean {
 }
 
 export function isValidProjectV3(workspacePath: string): boolean {
+  // TODO: should be cleaned after v3 folder changed.
   const filePath = path.resolve(workspacePath, SettingsFolderName, SettingsFileName);
   if (fs.existsSync(filePath)) {
     const projectSettings: Settings = fs.readJsonSync(filePath) as Settings;
@@ -97,8 +99,8 @@ export function isValidProjectV3(workspacePath: string): boolean {
     }
     return true;
   }
-  const ymlFilePath = path.join(workspacePath, "teamsapp.yml");
-  const localYmlPath = path.join(workspacePath, "teamsapp.local.yml");
+  const ymlFilePath = path.join(workspacePath, MetadataV3.configFile);
+  const localYmlPath = path.join(workspacePath, MetadataV3.localConfigFile);
   if (fs.pathExistsSync(ymlFilePath) || fs.pathExistsSync(localYmlPath)) {
     return true;
   }

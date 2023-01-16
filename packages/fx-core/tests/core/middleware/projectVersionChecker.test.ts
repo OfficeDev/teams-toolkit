@@ -14,6 +14,7 @@ import { ProjectVersionCheckerMW } from "../../../src/core/middleware/projectVer
 import { assert } from "chai";
 import mockedEnv from "mocked-env";
 import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
+import { MetadataV2, MetadataV3, VersionSource } from "../../../src/common/versionMetadata";
 
 describe("Middleware - projectVersionChecker.test", () => {
   const sandbox = sinon.createSandbox();
@@ -38,10 +39,10 @@ describe("Middleware - projectVersionChecker.test", () => {
     hooks(MyClass, {
       myMethod: [ProjectVersionCheckerMW],
     });
-    const appName = randomAppName();
-    const projectSettings: ProjectSettings = MockProjectSettings(appName);
-    projectSettings.version = "2.1.0";
-    sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSettings));
+    sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves({
+      version: MetadataV2.projectMaxVersion,
+      source: VersionSource.projectSettings,
+    });
 
     const showMessageFunc = sandbox.stub(mockTools.ui, "showMessage");
     const showLog = sandbox.stub(mockTools.logProvider, "warning");
@@ -61,10 +62,10 @@ describe("Middleware - projectVersionChecker.test", () => {
   // To be removed after TEAMSFX_V3 feature flag is cleaned up
   it("Show update dialog or message", async () => {
     const appName = randomAppName();
-    const projectSettings: ProjectSettings = MockProjectSettings(appName);
-    projectSettings.version = "3.0.0";
-    sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSettings));
-    sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves("3.0.0");
+    sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves({
+      version: MetadataV3.projectVersion,
+      source: VersionSource.teamsapp,
+    });
 
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
@@ -109,10 +110,6 @@ describe("Middleware - projectVersionChecker.test", () => {
       hooks(MyClass, {
         myMethod: [ProjectVersionCheckerMW],
       });
-      const appName = randomAppName();
-      const projectSettings: ProjectSettings = MockProjectSettings(appName);
-      projectSettings.version = "3.0.0";
-      sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSettings));
 
       const showMessageFunc = sandbox.stub(mockTools.ui, "showMessage");
       const showLog = sandbox.stub(mockTools.logProvider, "warning");
@@ -139,10 +136,10 @@ describe("Middleware - projectVersionChecker.test", () => {
     });
     try {
       const appName = randomAppName();
-      const projectSettings: ProjectSettings = MockProjectSettings(appName);
-      projectSettings.version = "4.0.0";
-      sandbox.stub(projectSettingsLoader, "loadProjectSettings").resolves(ok(projectSettings));
-      sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves("4.0.0");
+      sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves({
+        version: "2.0.0",
+        source: VersionSource.teamsapp,
+      });
 
       class MyClass {
         async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {

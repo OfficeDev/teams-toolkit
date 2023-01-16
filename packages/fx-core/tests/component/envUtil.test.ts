@@ -3,6 +3,7 @@ import {
   err,
   FxError,
   Inputs,
+  InputsWithProjectPath,
   ok,
   Platform,
   Result,
@@ -26,6 +27,13 @@ import { environmentManager } from "../../src/core/environment";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { EnvInfoLoaderMW_V3 } from "../../src/core/middleware/envInfoLoaderV3";
 import { FxCore } from "../../src/core/FxCore";
+import { pathUtils, YmlFileNameOld } from "../../src/component/utils/pathUtils";
+import * as path from "path";
+import { yamlParser } from "../../src/component/configManager/parser";
+import { ProjectModel } from "../../src/component/configManager/interface";
+import { PathNotExistError } from "../../src";
+import { MetadataV3 } from "../../src/common/versionMetadata";
+
 describe("env utils", () => {
   const tools = new MockTools();
   setTools(tools);
@@ -50,7 +58,47 @@ describe("env utils", () => {
       TEAMSFX_V3: "true",
     });
   });
+  it("pathUtils.getYmlFilePath case 1", async () => {
+    sandbox.stub(fs, "pathExistsSync").returns(true);
+    process.env.TEAMSFX_ENV = "dev";
+    const res1 = pathUtils.getYmlFilePath(".", "dev");
+    assert.equal(res1, path.join(".", MetadataV3.configFile));
+  });
+  it("pathUtils.getYmlFilePath case 2", async () => {
+    sandbox.stub(fs, "pathExistsSync").returns(false);
+    process.env.TEAMSFX_ENV = "dev";
+    const res1 = pathUtils.getYmlFilePath(".", "dev");
+    assert.equal(res1, path.join(".", "teamsfx", YmlFileNameOld));
+  });
+
+  it("pathUtils.getEnvFolderPath", async () => {
+    const mockProjectModel: ProjectModel = {
+      environmentFolderPath: "/home/envs",
+    };
+    sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const res = await pathUtils.getEnvFolderPath(".");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.equal(res.value, "/home/envs");
+    }
+  });
+
+  it("pathUtils.getEnvFilePath", async () => {
+    const mockProjectModel: ProjectModel = {
+      environmentFolderPath: "/home/envs",
+    };
+    sandbox.stub(yamlParser, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const res = await pathUtils.getEnvFilePath(".", "dev");
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.equal(res.value, path.join("/home/envs", ".env.dev"));
+    }
+  });
+
   it("envUtil.readEnv", async () => {
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     const encRes = await cryptoProvider.encrypt(decrypted);
     if (encRes.isErr()) throw encRes.error;
     const encrypted = encRes.value;
@@ -63,6 +111,7 @@ describe("env utils", () => {
   });
   it("envUtil.readEnv silent", async () => {
     sandbox.stub(fs, "pathExists").resolves(false);
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
     sandbox.stub(settingsUtil, "readSettings").resolves(ok(mockSettings));
     const res = await envUtil.readEnv(".", "dev", false, true);
     assert.isTrue(res.isOk());
@@ -71,6 +120,7 @@ describe("env utils", () => {
     }
   });
   it("envUtil.readEnv - loadToProcessEnv false", async () => {
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
     const encRes = await cryptoProvider.encrypt(decrypted);
     if (encRes.isErr()) throw encRes.error;
     const encrypted = encRes.value;
@@ -82,7 +132,9 @@ describe("env utils", () => {
     assert.equal(process.env.SECRET_ABC, decrypted);
   });
 
-  it("envUtil.readEnv fail", async () => {
+  it("envUtil.readEnv fail: read settings.json fail", async () => {
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
+    sandbox.stub(fs, "readFile").resolves("SECRET_ABC=AAA" as any);
     sandbox
       .stub(settingsUtil, "readSettings")
       .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
@@ -90,6 +142,7 @@ describe("env utils", () => {
     assert.isTrue(res.isErr());
   });
   it("envUtil.writeEnv", async () => {
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
     let value = "";
     sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
       value = data as string;
@@ -106,6 +159,7 @@ describe("env utils", () => {
     assert.equal(decRes.value, decrypted);
   });
   it("envUtil.writeEnv failed", async () => {
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
     sandbox
       .stub(settingsUtil, "readSettings")
       .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
@@ -113,6 +167,7 @@ describe("env utils", () => {
     assert.isTrue(res.isErr());
   });
   it("envUtil.listEnv", async () => {
+    sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     sandbox.stub(fs, "readdir").resolves([".env.dev", ".env.prod"] as any);
     const res = await envUtil.listEnv(".");
     assert.isTrue(res.isOk());
@@ -121,6 +176,7 @@ describe("env utils", () => {
     }
   });
   it("environmentManager.listAllEnvConfigs", async () => {
+    sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     sandbox.stub(fs, "readdir").resolves([".env.dev", ".env.prod"] as any);
     const res = await environmentManager.listAllEnvConfigs(".");
     assert.isTrue(res.isOk());
@@ -129,6 +185,7 @@ describe("env utils", () => {
     }
   });
   it("environmentManager.listRemoteEnvConfigs", async () => {
+    sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     sandbox.stub(fs, "readdir").resolves([".env.dev", ".env.prod", ".env.local"] as any);
     const res = await environmentManager.listRemoteEnvConfigs(".");
     assert.isTrue(res.isOk());
@@ -138,6 +195,7 @@ describe("env utils", () => {
   });
 
   it("EnvLoaderMW success", async () => {
+    sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     const encRes = await cryptoProvider.encrypt(decrypted);
     if (encRes.isErr()) throw encRes.error;
     const encrypted = encRes.value;
@@ -174,6 +232,7 @@ describe("env utils", () => {
     assert.isTrue(getDotEnvRes.isOk());
   });
   it("EnvLoaderMW failed: no yml file error", async () => {
+    sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     sandbox.stub(envUtil, "listEnv").resolves(ok([]));
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
@@ -192,6 +251,7 @@ describe("env utils", () => {
     assert.isTrue(res.isErr());
   });
   it("EnvLoaderMW ignoreEnvInfo", async () => {
+    sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     class MyClass {
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
@@ -234,6 +294,7 @@ describe("env utils", () => {
     }
   });
   it("EnvLoaderMW fail with listEnv Error", async () => {
+    sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     sandbox
       .stub(envUtil, "listEnv")
       .resolves(err(new UserError({ source: "test", name: "TestError", message: "message" })));
@@ -303,6 +364,7 @@ describe("env utils", () => {
     assert.isTrue(res.isErr());
   });
   it("EnvInfoLoaderMW_V3 call EnvLoaderMW", async () => {
+    sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     // This is a temporary solution to reduce the effort of adopting new EnvLoaderMW
     const encRes = await cryptoProvider.encrypt(decrypted);
     if (encRes.isErr()) throw encRes.error;
@@ -333,6 +395,7 @@ describe("env utils", () => {
     assert.isUndefined(process.env.SECRET_ABC);
   });
   it("EnvWriterMW success", async () => {
+    sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
     let value = "";
     sandbox.stub(fs, "writeFile").callsFake(async (file: fs.PathLike | number, data: any) => {
       value = data as string;
@@ -438,7 +501,9 @@ describe("env utils", () => {
 
   it("settingsUtil read and ensure trackingId", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(fs, "readJson").resolves({});
+    sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+      return "version: 1.0.0";
+    });
     sandbox.stub(fs, "writeFile").resolves();
     const res = await settingsUtil.readSettings("abc");
     assert.isTrue(res.isOk());
@@ -449,8 +514,19 @@ describe("env utils", () => {
 
   it("settingsUtil write", async () => {
     sandbox.stub(fs, "writeFile").resolves();
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
+      return "version: 1.0.0";
+    });
     const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
     assert.isTrue(res.isOk());
+  });
+
+  it("settingsUtil write", async () => {
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const res = await settingsUtil.writeSettings(".", { trackingId: "123", version: "2" });
+    assert.isTrue(res.isErr());
+    assert.isTrue(res._unsafeUnwrapErr() instanceof PathNotExistError);
   });
 });
 

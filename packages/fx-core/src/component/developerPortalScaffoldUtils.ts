@@ -41,6 +41,7 @@ import {
 import { getLocalizedString } from "../common/localizeUtils";
 import { manifestUtils } from "./resource/appManifest/utils/ManifestUtils";
 import {
+  hasMeetingExtension,
   isBot,
   isBotAndMessageExtension,
   isMessageExtension,
@@ -226,10 +227,15 @@ async function updateManifest(
   // manifest: no tab, bot or me selected on TDP before
   if (!getTemplateId(appDefinition)) {
     // which means user selects a capability through TTK UI.
+    if (!hasMeetingExtension(appDefinition)) {
+      // If user has added meeting extension in TDP, then we should keep it.
+      manifest.configurableTabs = existingManifestTemplate.configurableTabs;
+    }
+
     manifest.bots = existingManifestTemplate.bots;
     manifest.composeExtensions = existingManifestTemplate.composeExtensions;
     manifest.staticTabs = existingManifestTemplate.staticTabs;
-    manifest.configurableTabs = existingManifestTemplate.configurableTabs;
+
     manifest.permissions = existingManifestTemplate.permissions;
     manifest.validDomains = existingManifestTemplate.validDomains;
     manifest.webApplicationInfo = existingManifestTemplate.webApplicationInfo;

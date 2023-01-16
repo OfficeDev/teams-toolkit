@@ -402,7 +402,7 @@ export class WebviewPanel {
   private getWebviewPanelIconPath(panelType: PanelType) {
     if (panelType === PanelType.AccountHelp) {
       return vscode.Uri.file(
-        path.join(globalVariables.context.extensionPath, "img/font/3-m365.svg")
+        path.join(globalVariables.context.extensionPath, "media/itp/m365icon.svg")
       );
     }
     return undefined;

@@ -46,7 +46,7 @@ async function showDialog(ctx: CoreHookContext) {
   if (inputs.platform === Platform.VSCode) {
     await TOOLS?.ui.showMessage(
       "warn",
-      getLocalizedString("core.projectVersionChecker.vscodeUseNewVersion"),
+      getLocalizedString("core.projectVersionChecker.vscodeUseNewVersion", "Teams Toolkit 5.0.0"),
       false,
       "OK"
     );
@@ -55,7 +55,10 @@ async function showDialog(ctx: CoreHookContext) {
   } else if (inputs.platform === Platform.VS) {
     await TOOLS?.ui.showMessage(
       "warn",
-      getLocalizedString("core.projectVersionChecker.vscodeUseNewVersion"),
+      getLocalizedString(
+        "core.projectVersionChecker.vscodeUseNewVersion",
+        "Visual Studio 2022 17.5 Preview"
+      ),
       false,
       "OK"
     );

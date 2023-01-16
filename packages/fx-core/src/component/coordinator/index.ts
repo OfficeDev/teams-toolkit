@@ -163,6 +163,7 @@ const M365Actions = [
   "aadApp/create",
   "aadApp/update",
   "botFramework/create",
+  "m365Title/acquire",
 ];
 const AzureActions = ["arm/deploy"];
 const AzureDeployActions = [
@@ -639,27 +640,41 @@ export class Coordinator {
       location: "",
     };
 
-    // 3. ensure RESOURCE_SUFFIX if containsAzure
+    let resolvedSubscriptionId: string | undefined;
+    let azureSubInfo = undefined;
     if (containsAzure) {
+      //ensure RESOURCE_SUFFIX
       if (!process.env.RESOURCE_SUFFIX) {
         const suffix = process.env.RESOURCE_SUFFIX || uuid.v4().slice(0, 8);
         process.env.RESOURCE_SUFFIX = suffix;
         output.RESOURCE_SUFFIX = suffix;
       }
-    }
+      // check whether placeholders are resolved
+      let subscriptionUnresolved = false;
+      let resourceGroupUnresolved = false;
+      for (const cycle of cycles) {
+        const unresolvedPlaceHolders = cycle.resolvePlaceholders();
+        if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) subscriptionUnresolved = true;
+        else {
+          cycle.driverDefs?.forEach((driver) => {
+            const withObj = driver.with as any;
+            if (withObj && withObj.subscriptionId && resolvedSubscriptionId === undefined)
+              resolvedSubscriptionId = withObj.subscriptionId;
+          });
+        }
+        if (unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME"))
+          resourceGroupUnresolved = true;
+      }
 
-    // 4. pre-requisites check
-    for (const cycle of cycles) {
-      const unresolvedPlaceHolders = cycle.resolvePlaceholders();
-      // ensure subscription id
-      if (unresolvedPlaceHolders.includes("AZURE_SUBSCRIPTION_ID")) {
+      // ensure subscription, pop up UI to select if necessary
+      if (subscriptionUnresolved) {
         if (inputs["targetSubscriptionId"]) {
           process.env.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
           output.AZURE_SUBSCRIPTION_ID = inputs["targetSubscriptionId"];
         } else {
           const ensureRes = await provisionUtils.ensureSubscription(
             ctx.azureAccountProvider,
-            process.env.AZURE_SUBSCRIPTION_ID
+            undefined
           );
           if (ensureRes.isErr()) return err(ensureRes.error);
           const subInfo = ensureRes.value;
@@ -668,13 +683,36 @@ export class Coordinator {
             output.AZURE_SUBSCRIPTION_ID = subInfo.subscriptionId;
           }
         }
+        resolvedSubscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
       }
+
+      // for azure action, subscription is necessary
+      if (!resolvedSubscriptionId) {
+        return err(
+          new UserError({
+            source: "coordinator",
+            name: "UnresolvedPlaceholders",
+            message: getDefaultString(
+              "core.error.unresolvedPlaceholders",
+              "AZURE_SUBSCRIPTION_ID",
+              templatePath
+            ),
+            displayMessage: getLocalizedString(
+              "core.error.unresolvedPlaceholders",
+              "AZURE_SUBSCRIPTION_ID",
+              templatePath
+            ),
+            helpLink: "https://aka.ms/teamsfx-actions",
+          })
+        );
+      }
+
       // ensure resource group
-      if (unresolvedPlaceHolders.includes("AZURE_RESOURCE_GROUP_NAME")) {
+      if (resourceGroupUnresolved) {
         const inputRG = inputs["targetResourceGroupName"];
         const inputLocation = inputs["targetResourceLocationName"];
         if (inputRG && inputLocation) {
-          // targetResourceGroupName is from CLI or VS inputs, which means create resource group if not exists
+          // targetResourceGroupName is from VS inputs, which means create resource group if not exists
           targetResourceGroupInfo.name = inputRG;
           targetResourceGroupInfo.location = inputLocation;
           targetResourceGroupInfo.createNewResourceGroup = true; // create resource group if not exists
@@ -682,8 +720,8 @@ export class Coordinator {
           const defaultRg = `rg-${folderName}${process.env.RESOURCE_SUFFIX}-${inputs.env}`;
           const ensureRes = await provisionUtils.ensureResourceGroup(
             ctx.azureAccountProvider,
-            process.env.AZURE_SUBSCRIPTION_ID!,
-            process.env.AZURE_RESOURCE_GROUP_NAME,
+            resolvedSubscriptionId,
+            undefined,
             defaultRg
           );
           if (ensureRes.isErr()) return err(ensureRes.error);
@@ -694,14 +732,11 @@ export class Coordinator {
           }
         }
       }
-    }
 
-    // 5. consent
-    let azureSubInfo = undefined;
-    if (containsAzure) {
+      // consent user
       await ctx.azureAccountProvider.getIdentityCredentialAsync(true); // make sure login if ensureSubScription() is not called.
       try {
-        await ctx.azureAccountProvider.setSubscription(process.env.AZURE_SUBSCRIPTION_ID!); //make sure sub is correctly set if ensureSubscription() is not called.
+        await ctx.azureAccountProvider.setSubscription(resolvedSubscriptionId); //make sure sub is correctly set if ensureSubscription() is not called.
       } catch (e) {
         return err(assembleError(e));
       }
@@ -715,8 +750,6 @@ export class Coordinator {
           )
         );
       }
-    }
-    if (azureSubInfo) {
       const consentRes = await provisionUtils.askForProvisionConsentV3(
         ctx,
         m365tenantInfo,
@@ -724,26 +757,27 @@ export class Coordinator {
         inputs.env
       );
       if (consentRes.isErr()) return err(consentRes.error);
+
+      // create resource group if necessary
+      if (targetResourceGroupInfo.createNewResourceGroup) {
+        const createRgRes = await resourceGroupHelper.createNewResourceGroup(
+          targetResourceGroupInfo.name,
+          ctx.azureAccountProvider,
+          resolvedSubscriptionId,
+          targetResourceGroupInfo.location
+        );
+        if (createRgRes.isErr()) {
+          const error = createRgRes.error;
+          if (error.name !== "ResourceGroupExists") {
+            return err(error);
+          }
+        }
+        process.env.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
+        output.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
+      }
     }
 
-    // 6. create resource group
-    if (targetResourceGroupInfo.createNewResourceGroup) {
-      const createRgRes = await resourceGroupHelper.createNewResourceGroup(
-        targetResourceGroupInfo.name,
-        ctx.azureAccountProvider,
-        process.env.AZURE_SUBSCRIPTION_ID!,
-        targetResourceGroupInfo.location
-      );
-      if (createRgRes.isErr()) {
-        const error = createRgRes.error;
-        if (error.name !== "ResourceGroupExists") {
-          return err(error);
-        }
-      }
-      process.env.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
-      output.AZURE_RESOURCE_GROUP_NAME = targetResourceGroupInfo.name;
-    }
-    // 7. execute
+    // execute
     const summaryReporter = new SummaryReporter(cycles, ctx.logProvider);
     try {
       const maybeDescription = summaryReporter.getLifecycleDescriptions();
@@ -753,7 +787,6 @@ export class Coordinator {
       ctx.logProvider.info(
         `Executing app registration and provision ${EOL}${EOL}${maybeDescription.value}${EOL}`
       );
-
       for (const [index, cycle] of cycles.entries()) {
         const execRes = await cycle.execute(ctx);
         summaryReporter.updateLifecycleState(index, execRes);
@@ -769,13 +802,13 @@ export class Coordinator {
       ctx.logProvider.info(`Execution summary:${EOL}${EOL}${summary}${EOL}`);
     }
 
-    // 8. show provisioned resources
+    // show provisioned resources
     const msg = getLocalizedString("core.provision.successNotice", folderName);
     if (azureSubInfo) {
       const url = getResourceGroupInPortal(
         azureSubInfo.subscriptionId,
         azureSubInfo.tenantId,
-        process.env.AZURE_RESOURCE_GROUP_NAME
+        resolvedSubscriptionId
       );
       if (url && ctx.platform !== Platform.CLI) {
         const title = getLocalizedString("core.provision.viewResources");

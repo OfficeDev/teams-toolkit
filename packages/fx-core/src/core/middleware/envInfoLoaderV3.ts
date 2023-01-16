@@ -47,7 +47,7 @@ export type CreateEnvCopyInput = {
   sourceEnvName: string;
 };
 
-export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
+export function EnvInfoLoaderMW_V3(skip: boolean, ignoreLocalEnv = false): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
     if (shouldIgnored(ctx)) {
       await next();
@@ -57,7 +57,7 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
     if (isV3Enabled()) {
       const envBefore = _.cloneDeep(process.env);
       try {
-        await envLoaderMWImpl(inputs.ignoreLocalEnv ? false : true, ctx, next);
+        await envLoaderMWImpl(inputs.ignoreLocalEnv || ignoreLocalEnv ? false : true, ctx, next);
         return;
       } finally {
         const keys = Object.keys(process.env);
@@ -309,7 +309,7 @@ export async function getQuestionsForTargetEnv(
     return err(new NoProjectOpenedError());
   }
 
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath, true);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }
@@ -340,7 +340,7 @@ async function getQuestionsForNewEnv(
   const newEnvNameNode = new QTreeNode(getQuestionNewTargetEnvironmentName(inputs.projectPath));
   group.addChild(newEnvNameNode);
 
-  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath);
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(inputs.projectPath, true);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }

@@ -4,7 +4,7 @@
     "samples": [
         {
             "id": "hello-world-tab-with-backend",
-            "title": "Tab App with Azure Backned",
+            "title": "Tab App with Azure Backend",
             "shortDescription": "A Hello World app of Microsoft Teams Tab app which has a backend service",
             "fullDescription": "This is a Hello World app of Microsoft Teams Tab app which accomplishes very simple function like single-sign on. You can run this app locally or deploy it to Microsoft Azure. This app has a Tab frontend and a backend service using Azure Function.",
             "tags": ["Tab", "TS", "Azure function"],

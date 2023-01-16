@@ -165,6 +165,7 @@ const M365Actions = [
   "aadApp/create",
   "aadApp/update",
   "botFramework/create",
+  "m365Title/acquire",
 ];
 const AzureActions = ["arm/deploy"];
 const AzureDeployActions = [

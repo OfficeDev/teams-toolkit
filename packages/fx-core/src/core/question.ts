@@ -541,7 +541,7 @@ export function getQuestionNewTargetEnvironmentName(projectPath: string): TextIn
           );
         }
 
-        const envConfigs = await environmentManager.listRemoteEnvConfigs(projectPath);
+        const envConfigs = await environmentManager.listRemoteEnvConfigs(projectPath, true);
         if (envConfigs.isErr()) {
           return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation4");
         }

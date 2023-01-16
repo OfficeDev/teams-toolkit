@@ -352,6 +352,15 @@ export function ToolkitNotSupportError(): UserError {
   );
 }
 
+export function AbandonedProjectError(): UserError {
+  return new UserError(
+    CoreSource,
+    "AbandonedProject",
+    getDefaultString("core.migrationV3.abandonedProject"),
+    getLocalizedString("core.migrationV3.abandonedProject")
+  );
+}
+
 export function ConsolidateCanceledError(): UserError {
   return new UserError(
     CoreSource,

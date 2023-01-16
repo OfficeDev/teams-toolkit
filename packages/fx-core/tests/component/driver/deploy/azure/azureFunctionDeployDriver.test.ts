@@ -10,7 +10,7 @@ import { TestLogProvider } from "../../../util/logProviderMock";
 import * as appService from "@azure/arm-appservice";
 import * as Models from "@azure/arm-appservice/src/models";
 import * as fileOpt from "../../../../../src/component/utils/fileOperation";
-import { AzureDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureDeployDriver";
+import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
 import { assert, expect } from "chai";
 import * as fs from "fs-extra";
 import { AzureFunctionDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureFunctionDeployDriver";
@@ -78,13 +78,13 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(fs, "readFileSync").resolves("test");
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "post").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
       status: 200,
       headers: {
         location: "/api/123",
       },
     });
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
     const res = await deploy.run(args, context);
@@ -127,13 +127,13 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(fs, "readFileSync").resolves("test");
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "post").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
       status: 200,
       headers: {
         location: "/api/123",
       },
     });
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
     const res = await deploy.run(args, context);
@@ -174,13 +174,13 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(fs, "readFileSync").resolves("test");
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "post").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
       status: 200,
       headers: {
         location: "/api/123",
       },
     });
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
     const res = await deploy.run(args, context);
@@ -221,13 +221,13 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(fs, "readFileSync").resolves("test");
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "post").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
       status: 403,
       headers: {
         location: "/api/123",
       },
     });
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
     const res = await deploy.run(args, context);
@@ -268,13 +268,13 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(fs, "readFileSync").resolves("test");
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "post").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
       status: 200,
       headers: {
         location: "/api/123",
       },
     });
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 403,
     });
     const res = await deploy.run(args, context);
@@ -315,13 +315,13 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(fs, "readFileSync").resolves("test");
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "post").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
       status: 200,
       headers: {
         location: "/api/123",
       },
     });
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").throws(new Error("test"));
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").throws(new Error("test"));
 
     const res = await deploy.run(args, context);
     expect(res.isErr()).to.equal(true);
@@ -363,13 +363,13 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(fs, "readFileSync").resolves("test");
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "post").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
       status: 200,
       headers: {
         location: "/api/123",
       },
     });
-    sandbox.stub(AzureDeployDriver.AXIOS_INSTANCE, "get").resolves({
+    sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
     const res = await deploy.execute(args, context);

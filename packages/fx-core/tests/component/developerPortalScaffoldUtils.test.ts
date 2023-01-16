@@ -356,7 +356,32 @@ describe("developPortalScaffoldUtils", () => {
           throw new Error("not support " + file);
         }
       });
-      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+        ok({
+          manifestVersion: "version",
+          id: "mock-app-id",
+          name: { short: "short-name" },
+          description: { short: "", full: "" },
+          version: "version",
+          icons: { outline: "outline.png", color: "color.png" },
+          accentColor: "#ffffff",
+          developer: {
+            privacyUrl: "",
+            websiteUrl: "",
+            termsOfUseUrl: "",
+            name: "developer-name",
+          },
+          staticTabs: [
+            {
+              name: "name0",
+              entityId: "index0",
+              scopes: ["personal"],
+              contentUrl: "contentUrlnew0",
+              websiteUrl: "websiteUrlnew0",
+            },
+          ],
+        })
+      );
 
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
 
@@ -877,7 +902,23 @@ describe("developPortalScaffoldUtils", () => {
       let updatedManifestData = "";
       sandbox.stub(appStudio, "getAppPackage").resolves(
         ok({
-          manifest: Buffer.from(JSON.stringify(manifest)),
+          manifest: Buffer.from(
+            JSON.stringify({
+              manifestVersion: "version",
+              id: "mock-app-id",
+              name: { short: "short-name" },
+              description: { short: "", full: "" },
+              version: "version",
+              icons: { outline: "outline.png", color: "color.png" },
+              accentColor: "#ffffff",
+              developer: {
+                privacyUrl: "",
+                websiteUrl: "",
+                termsOfUseUrl: "",
+                name: "developer-name",
+              },
+            })
+          ),
           icons: { color: Buffer.from(""), outline: Buffer.from("") },
           languages: { zh: Buffer.from(JSON.stringify({})) },
         })

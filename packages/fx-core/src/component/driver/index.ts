@@ -22,3 +22,4 @@ import "./prerequisite/installDriver";
 import "./file/updateEnv";
 import "./file/appsettingsGenerate";
 import "./botFramework/createOrUpdateBot";
+import "./m365/acquire";

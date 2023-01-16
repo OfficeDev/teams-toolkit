@@ -403,4 +403,76 @@ export class CliHelper {
     }
     return value;
   }
+
+  static async initDebug(
+    appName: string,
+    testFolder: string,
+    editor: "vsc" | "vs",
+    capability: "tab" | "bot",
+    spfx: "true" | "false" | undefined,
+    processEnv?: NodeJS.ProcessEnv,
+    options = ""
+  ) {
+    const command = `teamsfx init debug --interactive false --editor ${editor} --capability ${capability} ${
+      capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
+    } ${options}`;
+    const timeout = 100000;
+    try {
+      const result = await execAsync(command, {
+        cwd: testFolder,
+        env: processEnv ? processEnv : process.env,
+        timeout: timeout,
+      });
+      const message = `teamsfx init debug to ${path.resolve(
+        testFolder,
+        appName
+      )} with editor=${editor}, capability=${capability}, spfx=${spfx}`;
+      if (result.stderr) {
+        console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+      } else {
+        console.log(`[Successfully] ${message}`);
+      }
+    } catch (e) {
+      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
+    }
+  }
+
+  static async initInfra(
+    appName: string,
+    testFolder: string,
+    editor: "vsc" | "vs",
+    capability: "tab" | "bot",
+    spfx: "true" | "false" | undefined,
+    processEnv?: NodeJS.ProcessEnv,
+    options = ""
+  ) {
+    const command = `teamsfx init infra --interactive false --editor ${editor} --capability ${capability} ${
+      capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
+    } ${options}`;
+    const timeout = 100000;
+    try {
+      const result = await execAsync(command, {
+        cwd: testFolder,
+        env: processEnv ? processEnv : process.env,
+        timeout: timeout,
+      });
+      const message = `teamsfx init infra to ${path.resolve(
+        testFolder,
+        appName
+      )} with editor=${editor}, capability=${capability}, spfx=${spfx}`;
+      if (result.stderr) {
+        console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+      } else {
+        console.log(`[Successfully] ${message}`);
+      }
+    } catch (e) {
+      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
+    }
+  }
 }

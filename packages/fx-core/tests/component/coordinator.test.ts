@@ -66,8 +66,8 @@ import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/crea
 import { OfficeAddinGenerator } from "../../src/component/generator/officeAddin/generator";
 import { MockedUserInteraction } from "../plugins/solution/util";
 import { SummaryReporter } from "../../src/component/coordinator/summary";
-import * as path from "path";
 import { deployUtils } from "../../src/component/deployUtils";
+import { MetadataV3, VersionInfo, VersionSource } from "../../src/common/versionMetadata";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -86,7 +86,11 @@ function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[]
   ]);
 }
 
-const V3Version = "3.0.0";
+const versionInfo: VersionInfo = {
+  version: MetadataV3.projectVersion,
+  source: VersionSource.teamsapp,
+};
+const V3Version = MetadataV3.projectVersion;
 describe("component coordinator test", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -104,7 +108,7 @@ describe("component coordinator test", () => {
     mockedEnvRestore = mockedEnv({
       TEAMSFX_V3: "true",
     });
-    sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves(V3Version);
+    sandbox.stub(v3MigrationUtils, "getProjectVersion").resolves(versionInfo);
   });
 
   it("create project from sample", async () => {
@@ -416,6 +420,7 @@ describe("component coordinator test", () => {
         },
         resolveDriverInstances: mockedResolveDriverInstances,
       },
+      environmentFolderPath: "./envs",
     };
     sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
@@ -475,6 +480,72 @@ describe("component coordinator test", () => {
     if (selectEnvRes.isOk()) {
       assert.equal(selectEnvRes.value, "dev");
     }
+  });
+  it("provision success with subscriptionId in yml", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: {
+              subscriptionId: "mockSubId",
+            },
+          },
+          {
+            uses: "teamsApp/create",
+            with: undefined,
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: ["AZURE_RESOURCE_GROUP_NAME"],
+          });
+        },
+        resolvePlaceholders: () => {
+          return ["AZURE_RESOURCE_GROUP_NAME"];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureResourceGroup").resolves(
+      ok({
+        createNewResourceGroup: true,
+        name: "test-rg",
+        location: "East US",
+      })
+    );
+    sandbox.stub(provisionUtils, "getM365TenantId").resolves(
+      ok({
+        tenantIdInToken: "mockM365Tenant",
+        tenantUserName: "mockM365UserName",
+      })
+    );
+    sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
+      subscriptionId: "mockSubId",
+      tenantId: "mockTenantId",
+      subscriptionName: "mockSubName",
+    });
+    sandbox.stub(tools.tokenProvider.azureAccountProvider, "setSubscription").resolves();
+    sandbox.stub(resourceGroupHelper, "createNewResourceGroup").resolves(ok("test-rg"));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isOk());
   });
   it("provision happy path from zero case 2", async () => {
     const mockProjectModel: ProjectModel = {
@@ -688,6 +759,46 @@ describe("component coordinator test", () => {
     const res = await fxCore.provisionResources(inputs);
     assert.isTrue(res.isOk());
     assert.isTrue(stubShowMessage.calledOnce);
+  });
+  it("provision failed when user directly update yml with empty subscriptionId", async () => {
+    const mockProjectModel: ProjectModel = {
+      registerApp: {
+        name: "configureApp",
+        driverDefs: [
+          {
+            uses: "arm/deploy",
+            with: {
+              subscriptionId: "",
+            },
+          },
+        ],
+        run: async (ctx: DriverContext) => {
+          return ok({
+            env: new Map(),
+            unresolvedPlaceHolders: [],
+          });
+        },
+        resolvePlaceholders: () => {
+          return [];
+        },
+        execute: async (ctx: DriverContext): Promise<ExecutionResult> => {
+          return { result: ok(new Map()), summaries: [] };
+        },
+        resolveDriverInstances: mockedResolveDriverInstances,
+      },
+    };
+    sandbox.stub(YamlParser.prototype, "parse").resolves(ok(mockProjectModel));
+    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
+    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: ".",
+      ignoreLockByUT: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.provisionResources(inputs);
+    assert.isTrue(res.isErr());
   });
   it("provision failed with parse error", async () => {
     sandbox.stub(YamlParser.prototype, "parse").resolves(err(new UserError({})));
@@ -2570,35 +2681,5 @@ describe("Office Addin", async () => {
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr() && res.error.name === "mockedError");
-  });
-
-  it("getYmlFilePath case 1", async () => {
-    const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-      workflowFilePath: ".",
-    };
-    const res1 = coordinator.getYmlFilePath(".", inputs);
-    assert.equal(res1, inputs.workflowFilePath);
-  });
-  it("getYmlFilePath case 2", async () => {
-    sandbox.stub(fs, "pathExistsSync").returns(true);
-    const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    process.env.TEAMSFX_ENV = "dev";
-    const res1 = coordinator.getYmlFilePath(".", inputs);
-    assert.equal(res1, path.join(".", "teamsapp.yml"));
-  });
-  it("getYmlFilePath case 3", async () => {
-    sandbox.stub(fs, "pathExistsSync").returns(false);
-    const inputs: InputsWithProjectPath = {
-      platform: Platform.VSCode,
-      projectPath: ".",
-    };
-    process.env.TEAMSFX_ENV = "dev";
-    const res1 = coordinator.getYmlFilePath(".", inputs);
-    assert.equal(res1, path.join(".", "teamsfx", "app.yml"));
   });
 });

@@ -343,7 +343,7 @@ export function getTemplateId(teamsApp: AppDefinition): string | undefined {
   return undefined;
 }
 
-function updateScope(scopes: string[]): string[] {
+export function updateScope(scopes: string[]): string[] {
   return scopes.map((o) => o.toLowerCase());
 }
 

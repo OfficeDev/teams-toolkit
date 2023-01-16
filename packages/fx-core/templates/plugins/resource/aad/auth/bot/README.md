@@ -63,7 +63,7 @@ To make this work in your application:
 
 1. Move `profileSsoCommandHandler` file under `auth/bot/sso` folder to `bot/src`. ProfileSsoCommandHandler class is a sso command handler to get user info with SSO token. You can follow this method and create your own sso command handler.
 
-1. Open `package.json` file, make sure that teamfx SDK version >= 1.2.0
+1. Open `package.json` file, make sure that teamsfx SDK version >= 2.2.0
 1. Execute the following commands under `bot` folder: `npm install isomorphic-fetch --save`
 1. (For ts only) Execute the following commands under `bot` folder: `npm install copyfiles --save-dev` and replace following line in package.json:
 
@@ -318,7 +318,7 @@ After successfully add SSO in your project, you can also add a new sso command.
 <h2 id='3'>Update your business logic for Message Extension</h2>
 
 The sample business logic provides a handler `TeamsBot` extends TeamsActivityHandler and override `handleTeamsMessagingExtensionQuery`. 
-You can update the query logic in the `handleMessageExtensionQueryWithToken` with token which is obtained by using the logged-in Teams user token.
+You can update the query logic in the `handleMessageExtensionQueryWithSSO` with token which is obtained by using the logged-in Teams user token.
 
 To make this work in your application:
 1. Move the `auth/bot/public` folder to `bot`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with AAD, AAD will redirect the user to these pages.
@@ -329,7 +329,7 @@ To make this work in your application:
 
     // Listen for incoming requests.
     server.post("/api/messages", async (req, res) => {
-      await adapter.processActivity(req, res, async (context) => {
+      await adapter.process(req, res, async (context) => {
         await bot.run(context);
       }).catch((err) => {
         // Error message including "412" means it is waiting for user's consent, which is a normal process of SSO, sholdn't throw this error.
@@ -346,8 +346,8 @@ To make this work in your application:
       })
     );
     ```
-1. Override `handleTeamsMessagingExtensionQuery` interface under `bot/teamsBot`. You can follow the sample code in the `handleMessageExtensionQueryWithToken` to do your own query logic.
-1. Open `bot/package.json`, ensure that `@microsoft/teamsfx` version >= 1.2.0
+1. Override `handleTeamsMessagingExtensionQuery` interface under `bot/teamsBot`. You can follow the sample code in the `handleMessageExtensionQueryWithSSO` to do your own query logic.
+1. Open `bot/package.json`, ensure that `@microsoft/teamsfx` version >= 2.2.0
 1. Install `isomorphic-fetch` npm packages in your bot project.
 1. (For ts only) Install `copyfiles` npm packages in your bot project, add or update the `build` script in `bot/package.json` as following
 
@@ -356,7 +356,7 @@ To make this work in your application:
     ```
     By doing this, the HTML pages used for auth redirect will be copied when building this bot project.
 
-1. Update `templates/appPackage/aad.template.json` your scopes which used in `handleMessageExtensionQueryWithToken`.
+1. Update `templates/appPackage/aad.template.json` your scopes which used in `handleMessageExtensionQueryWithSSO`.
     ```json
     "requiredResourceAccess": [
         {

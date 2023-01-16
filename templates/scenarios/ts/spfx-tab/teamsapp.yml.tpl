@@ -1,6 +1,6 @@
 version: 1.0.0
 
-environmentFolderPath: ./teamsAppEnv
+environmentFolderPath: ./env
 
 deploy:
   - uses: cli/runNpmCommand

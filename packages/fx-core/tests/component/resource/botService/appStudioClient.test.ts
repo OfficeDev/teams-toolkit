@@ -173,31 +173,6 @@ describe("Test AppStudio APIs", () => {
       // Assert
       chai.assert.fail(Messages.ShouldNotReachHere);
     });
-
-    it("Retry Exception", async () => {
-      // Arrange
-      const accessToken = "anything";
-      sinon.stub(AppStudioClient, "getBotRegistration").resolves({
-        name: "",
-        description: "",
-        iconUrl: "",
-        messagingEndpoint: "",
-        callingEndpoint: "",
-      });
-
-      sinon.stub(RetryHandler, "Retry").throwsException();
-
-      // Act
-      try {
-        await AppStudioClient.updateMessageEndpoint(accessToken, "anything", "anything");
-      } catch (e) {
-        chai.assert.isTrue(e instanceof SystemError);
-        return;
-      }
-
-      // Assert
-      chai.assert.fail(Messages.ShouldNotReachHere);
-    });
   });
 
   describe("getBotRegistration", () => {

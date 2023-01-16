@@ -27,11 +27,11 @@ provision:
 configureApp:
   - uses: teamsApp/validate
     with:
-      manifestPath: ./appPackage/manifest.template.json # Path to manifest template
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
 
   - uses: teamsApp/zipAppPackage # Build Teams app package with latest env value
     with:
-      manifestPath: ./appPackage/manifest.template.json # Path to manifest template
+      manifestPath: ./appPackage/manifest.json # Path to manifest template
       outputZipPath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./build/appPackage/manifest.${{TEAMSFX_ENV}}.json
 

@@ -20,11 +20,11 @@ const driverConstants = {
 
 export async function buildAadManifest(
   context: DriverContext,
-  manifestTemplatePath: string,
+  manifestPath: string,
   outputFilePath: string,
   state?: UpdateAadAppOutput
 ): Promise<AADManifest> {
-  const manifestAbsolutePath = getAbsolutePath(manifestTemplatePath, context.projectPath);
+  const manifestAbsolutePath = getAbsolutePath(manifestPath, context.projectPath);
   const manifest = await loadManifest(manifestAbsolutePath, state);
   const warningMessage = AadManifestHelper.validateManifest(manifest);
   if (warningMessage) {

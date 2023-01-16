@@ -96,6 +96,9 @@ export class AppStudioClient {
       if (botReg) {
         context?.logProvider?.info(Messages.BotResourceExist("Appstudio"));
         return;
+      } else {
+        // Potential case when developers switched their M365 accounts.
+        throw new FailedToCreateBotRegistrationError();
       }
     }
 
@@ -112,9 +115,7 @@ export class AppStudioClient {
       } else if (e.response?.status === 403) {
         throw new BotFrameworkForbiddenResultError();
       } else if (e.response?.status === 429) {
-        // Handle exception when creating bot failed.
-        throw new FailedToCreateBotRegistrationError(e.innerError);
-        //throw new BotFrameworkConflictResultError();
+        throw new BotFrameworkConflictResultError();
       } else {
         e.teamsfxUrlName = "<create-bot-registration>";
         throw AppStudio.wrapException(e, APP_STUDIO_API_NAMES.CREATE_BOT) as SystemError;

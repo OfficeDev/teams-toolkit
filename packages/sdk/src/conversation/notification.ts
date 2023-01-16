@@ -314,6 +314,10 @@ export class Member implements NotificationTarget {
  * @remarks
  * It's recommended to get bot installations from {@link ConversationBot.installations()}.
  */
+
+/**
+ * @deprecated Use `BotBuilderCloudAdapter.TeamsBotInstallation` instead.
+ */
 export class TeamsBotInstallation implements NotificationTarget {
   /**
    * The bound `BotFrameworkAdapter`.
@@ -479,6 +483,10 @@ export class TeamsBotInstallation implements NotificationTarget {
 
 /**
  * Provide utilities to send notification to varies targets (e.g., member, group, channel).
+ */
+
+/**
+ * @deprecated Use `BotBuilderCloudAdapter.NotificationBot` instead.
  */
 export class NotificationBot {
   private readonly conversationReferenceStore: ConversationReferenceStore;

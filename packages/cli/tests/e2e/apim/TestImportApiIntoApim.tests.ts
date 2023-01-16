@@ -27,6 +27,9 @@ import { it } from "@microsoft/extra-shot-mocha";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 
 describe("Import API into API Management", function () {
+  if (isV3Enabled()) {
+    return;
+  }
   const testProcessEnv = Object.assign({}, process.env);
   testProcessEnv["SIMPLE_AUTH_SKU_NAME"] = "B1";
 
@@ -63,9 +66,6 @@ describe("Import API into API Management", function () {
     `Create a new API version in Azure API Management`,
     { testPlanCaseId: 10107968 },
     async function () {
-      if (isV3Enabled()) {
-        this.skip();
-      }
       await ApimValidator.init(subscriptionId, AzureLogin, M365Login);
       await CliHelper.deployProject(
         ResourceToDeploy.Apim,

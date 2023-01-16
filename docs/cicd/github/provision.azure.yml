@@ -47,7 +47,6 @@ jobs:
         with:
           cli-version: ${{env.TEAMSFX_CLI_VERSION}}
           commands: provision
-          subscription: ${{secrets.AZURE_SUBSCRIPTION_ID}}
           env: ${{env.TEAMSFX_ENV_NAME}}
 
       - name: Commit provision configs if necessary

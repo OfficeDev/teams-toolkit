@@ -70,8 +70,8 @@ export function mergeTemplates(templates: ArmTemplateResult[]): ArmTemplateResul
 async function getAzureAccountCredential(tokenProvider: TokenProvider): Promise<TokenCredential> {
   const credential = await tokenProvider.azureAccountProvider.getIdentityCredentialAsync();
   if (!credential) {
-    throw new PreconditionError(AzureOpsConstant.FAIL_TO_GET_AZURE_CREDENTIALS, [
-      AzureOpsConstant.TRY_LOGIN_AZURE,
+    throw new PreconditionError(AzureOpsConstant.FAIL_TO_GET_AZURE_CREDENTIALS(), [
+      AzureOpsConstant.TRY_LOGIN_AZURE(),
     ]);
   }
   return credential;

@@ -69,6 +69,12 @@ export class PublishAppPackageDriver implements StepDriver {
     context: WrapDriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
     TelemetryUtils.init(context);
+
+    const argsValidationResult = this.validateArgs(args);
+    if (argsValidationResult.isErr()) {
+      return err(argsValidationResult.error);
+    }
+
     const progressHandler = context.ui?.createProgressBar(
       getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppTitle"),
       2
@@ -201,5 +207,23 @@ export class PublishAppPackageDriver implements StepDriver {
       });
     }
     return ok(result);
+  }
+
+  private validateArgs(args: PublishAppPackageArgs): Result<any, FxError> {
+    const invalidParams: string[] = [];
+    if (!args || !args.appPackagePath) {
+      invalidParams.push("appPackagePath");
+    }
+    if (invalidParams.length > 0) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.InvalidParameterError.name,
+          AppStudioError.InvalidParameterError.message(actionName, invalidParams),
+          "https://aka.ms/teamsfx-actions/teamsapp-publish"
+        )
+      );
+    } else {
+      return ok(undefined);
+    }
   }
 }

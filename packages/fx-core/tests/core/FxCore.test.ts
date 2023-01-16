@@ -23,7 +23,7 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { FxCore } from "../../src";
+import { FxCore, getUuid } from "../../src";
 import * as featureFlags from "../../src/common/featureFlags";
 import { validateProjectSettings } from "../../src/common/projectSettingsHelper";
 import { environmentManager } from "../../src/core/environment";
@@ -83,7 +83,7 @@ describe("Core basic APIs", () => {
         platform: Platform.CLI,
         [CoreQuestionNames.Folder]: os.tmpdir(),
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab"],
         stage: Stage.create,
@@ -99,7 +99,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
@@ -124,7 +124,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: "Tab",
         [CoreQuestionNames.Folder]: os.tmpdir(),
@@ -151,7 +151,7 @@ describe("Core basic APIs", () => {
       platform: Platform.CLI,
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
       [CoreQuestionNames.Capabilities]: "Tab",
       stage: Stage.create,
@@ -172,6 +172,9 @@ describe("Core basic APIs", () => {
     assert.isTrue(envListResult.value[0] === environmentManager.getDefaultEnvName());
     inputs[CoreQuestionNames.NewTargetEnvName] = newEnvName;
     const createEnvRes = await core.createEnv(inputs);
+    if (createEnvRes.isErr()) {
+      console.error(createEnvRes.error);
+    }
     assert.isTrue(createEnvRes.isOk());
 
     const newEnvListResult = await environmentManager.listRemoteEnvConfigs(projectPath);
@@ -198,7 +201,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
@@ -231,7 +234,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
@@ -263,7 +266,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
@@ -301,7 +304,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
         [CoreQuestionNames.AppName]: appName,
-        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
         [CoreQuestionNames.ProgrammingLanguage]: "javascript",
         [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
         [CoreQuestionNames.Folder]: os.tmpdir(),
@@ -371,10 +374,84 @@ describe("Core basic APIs", () => {
     }
   });
 
+  it("buildAadManifest method should exist", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+      AAD_APP_OBJECT_ID: getUuid(),
+      AAD_APP_CLIENT_ID: getUuid(),
+      TAB_DOMAIN: "fake",
+      TAB_ENDPOINT: "fake",
+    });
+    try {
+      const appName = randomAppName();
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        stage: Stage.create,
+        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+      };
+      const res = await core.createProject(inputs);
+      projectPath = inputs.projectPath!;
+      assert.isTrue(res.isOk() && res.value === projectPath);
+
+      const implement = new FxCoreV3Implement(tools);
+
+      const mockFunc = {
+        namespace: "mock namespace",
+        method: "buildAadManifest",
+      };
+
+      const result = await implement.executeUserTask(mockFunc, inputs);
+      assert.isTrue(result.isOk());
+    } finally {
+      restore();
+    }
+  });
+
+  it("addSso method should exist", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const appName = randomAppName();
+      const core = new FxCore(tools);
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: ["Tab"],
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        stage: Stage.create,
+        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+      };
+      const res = await core.createProject(inputs);
+      projectPath = inputs.projectPath!;
+      assert.isTrue(res.isOk() && res.value === projectPath);
+
+      const implement = new FxCoreV3Implement(tools);
+
+      const mockFunc = {
+        namespace: "mock namespace",
+        method: "addSso",
+      };
+
+      const result = await implement.executeUserTask(mockFunc, inputs);
+      assert.isTrue(result.isOk());
+    } finally {
+      restore();
+    }
+  });
+
   it("ProgrammingLanguageQuestion", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: TabSPFxItem.id,
+      [CoreQuestionNames.Capabilities]: TabSPFxItem().id,
     };
     if (
       ProgrammingLanguageQuestion.dynamicOptions &&
@@ -389,15 +466,15 @@ describe("Core basic APIs", () => {
 
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: TabOptionItem.id,
+      [CoreQuestionNames.Capabilities]: TabOptionItem().id,
     });
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: BotOptionItem.id,
+      [CoreQuestionNames.Capabilities]: BotOptionItem().id,
     });
     languageAssert({
       platform: Platform.VSCode,
-      [CoreQuestionNames.Capabilities]: MessageExtensionItem.id,
+      [CoreQuestionNames.Capabilities]: MessageExtensionItem().id,
     });
 
     function languageAssert(inputs: Inputs) {
@@ -676,7 +753,7 @@ describe("publishInDeveloperPortal", () => {
       env: "local",
       projectPath: "project-path",
       platform: Platform.VSCode,
-      [CoreQuestionNames.ManifestPath]: "manifest-path",
+      [CoreQuestionNames.AppPackagePath]: "path",
       ignoreLockByUT: true,
     };
     sandbox.stub(fs, "pathExists").resolves(false);

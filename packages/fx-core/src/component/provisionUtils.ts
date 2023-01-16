@@ -494,6 +494,7 @@ export class ProvisionUtils {
         )
       );
     }
+    await azureAccountProvider.setSubscription(subscriptionId);
     const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
     let resourceGroupInfo: ResourceGroupInfo;
     if (givenResourceGroupName) {

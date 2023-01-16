@@ -257,13 +257,6 @@ class TreeViewManager {
         { name: "type-hierarchy", custom: false }
       ),
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitleNew"),
-        localize("teamstoolkit.commandsTreeViewProvider.buildPackageDescription"),
-        "fx-extension.build",
-        "buildPackage",
-        { name: "package", custom: false }
-      ),
-      new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.deployTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.deployDescription"),
         "fx-extension.deploy",
@@ -276,6 +269,13 @@ class TreeViewManager {
         "fx-extension.publish",
         "publish",
         { name: "export", custom: false }
+      ),
+      new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.buildPackageTitleNew"),
+        localize("teamstoolkit.commandsTreeViewProvider.buildPackageDescription"),
+        "fx-extension.build",
+        "buildPackage",
+        { name: "package", custom: false }
       ),
     ];
 

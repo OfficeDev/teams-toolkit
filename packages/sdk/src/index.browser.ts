@@ -87,3 +87,6 @@ export {
   handleMessageExtensionQueryWithSSO,
 } from "./messageExtension/executeWithSSO.browser";
 export { MessageExtensionTokenResponse } from "./messageExtension/teamsMsgExtTokenResponse";
+
+import * as BotBuilderCloudAdapter from "./conversationWithCloudAdapter/conversationWithCloudAdapter.browser";
+export { BotBuilderCloudAdapter };

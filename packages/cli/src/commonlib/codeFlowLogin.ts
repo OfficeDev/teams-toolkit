@@ -262,6 +262,7 @@ export class CodeFlowLogin {
     }
 
     await saveAccountId(this.accountName, undefined);
+    this.account = undefined;
     return true;
   }
 

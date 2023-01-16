@@ -28,6 +28,9 @@ import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
 import { SampleInfo } from "../../../src/common/samples";
+import templateConfig from "../../../src/common/templates-config.json";
+import { version } from "os";
+import { templateAlphaVersion } from "../../../src/component/generator/constant";
 
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
@@ -206,5 +209,18 @@ describe("Generator happy path", async () => {
     }
     assert.isTrue(success);
     mockedEnvRestore();
+  });
+
+  it("alpha release should use fallback", async () => {
+    sandbox.stub(generatorUtils, "templateVersion").resolves(templateAlphaVersion);
+    sandbox.stub(generatorUtils, "fetchTagList").resolves(templateAlphaVersion);
+
+    try {
+      await generatorUtils.fetchTemplateZipUrl("ut");
+    } catch (e) {
+      assert.exists(e);
+      return;
+    }
+    assert.fail("Should not reach here.");
   });
 });

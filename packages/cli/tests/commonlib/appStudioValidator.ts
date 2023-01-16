@@ -61,6 +61,45 @@ export class AppStudioValidator {
     }
   }
 
+  /**
+   * Cancel stagged app from Teams app catalog
+   * The approved Teams app cannot be deleted by this API
+   * @param teamsAppId Teams app id defined in manifest.json file
+   */
+  public static async cancelStagedAppInTeamsAppCatalog(teamsAppId?: string): Promise<void> {
+    if (!teamsAppId) {
+      return;
+    }
+    const appStudioTokenRes = await this.provider.getAccessToken({ scopes: AppStudioScopes });
+    const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
+    chai.assert.isNotEmpty(appStudioToken);
+
+    const requester = AppStudioValidator.createRequesterWithToken(appStudioToken!);
+    try {
+      const response = await requester.get(`/api/publishing/${teamsAppId}`);
+      const results = response?.data?.value as any[];
+      if (results && results.length > 0) {
+        const publishedAppId = results[0].id;
+        const appDefinitionId = results[0].appDefinitions[0]?.id;
+        if (publishedAppId && appDefinitionId) {
+          const response = await requester.delete(
+            `/api/publishing/${publishedAppId}/appdefinitions/${appDefinitionId}`
+          );
+          chai.assert.isTrue(response.status >= 200 && response.status < 300);
+          console.log(`Stagged app ${teamsAppId} has been cacelled.`);
+        } else {
+          console.warn(
+            `Cannot cancel stagged app, published app id: ${publishedAppId} or app definition id: ${appDefinitionId} is undefined.`
+          );
+        }
+      } else {
+        console.warn(`Cannot find stagged app ${teamsAppId} from Teams app catalog`);
+      }
+    } catch (e) {
+      chai.assert.fail(`Failed to cancel stagged app from Teams app catalog, error: ${e}`);
+    }
+  }
+
   private static createRequesterWithToken(appStudioToken: string): AxiosInstance {
     const instance = axios.create({
       baseURL: "https://dev.teams.microsoft.com",

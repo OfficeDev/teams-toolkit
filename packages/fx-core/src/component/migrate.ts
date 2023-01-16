@@ -265,7 +265,7 @@ export function convertProjectSettingsV2ToV3(
       const hostType = settingsV2.pluginSettings?.["fx-resource-bot"]?.["host-type"];
       let botCapabilities = settingsV2.pluginSettings?.["fx-resource-bot"]?.["capabilities"];
       if (
-        solutionSettings.capabilities.includes(MessageExtensionNewUIItem.id) &&
+        solutionSettings.capabilities.includes(MessageExtensionNewUIItem().id) &&
         !botCapabilities?.includes("message-extension")
       ) {
         botCapabilities = botCapabilities || [];
@@ -423,9 +423,9 @@ export function convertProjectSettingsV3ToV2(settingsV3: ProjectSettingsV3): Pro
       }
       if (
         botCapabilities?.includes("message-extension") &&
-        !settingsV2.solutionSettings.capabilities.includes(MessageExtensionNewUIItem.id)
+        !settingsV2.solutionSettings.capabilities.includes(MessageExtensionNewUIItem().id)
       ) {
-        settingsV2.solutionSettings.capabilities.push(MessageExtensionNewUIItem.id);
+        settingsV2.solutionSettings.capabilities.push(MessageExtensionNewUIItem().id);
       }
       settingsV2.solutionSettings.activeResourcePlugins.push("fx-resource-bot");
       const hostType =

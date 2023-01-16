@@ -1572,6 +1572,11 @@ export type SelectFileConfig = UIConfig<string> & {
     filters?: {
         [name: string]: string[];
     };
+    possibleFiles?: {
+        id: string;
+        label: string;
+        description?: string;
+    }[];
 };
 
 // @public (undocumented)

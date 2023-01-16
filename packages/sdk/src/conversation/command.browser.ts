@@ -13,6 +13,10 @@ import { CommandResponseMiddleware } from "./middlewares/commandMiddleware";
  * @remarks
  * Only work on server side.
  */
+
+/**
+ * @deprecated Use `BotBuilderCloudAdapter.CommandBot` instead.
+ */
 export class CommandBot {
   private readonly adapter: BotFrameworkAdapter;
   private readonly middleware: CommandResponseMiddleware;

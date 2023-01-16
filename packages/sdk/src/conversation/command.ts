@@ -19,6 +19,10 @@ import { CommandResponseMiddleware } from "./middlewares/commandMiddleware";
  * @remarks
  * Ensure each command should ONLY be registered with the command once, otherwise it'll cause unexpected behavior if you register the same command more than once.
  */
+
+/**
+ * @deprecated Use `BotBuilderCloudAdapter.CommandBot` instead.
+ */
 export class CommandBot {
   private readonly adapter: BotFrameworkAdapter;
   private readonly middleware: CommandResponseMiddleware;

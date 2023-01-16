@@ -90,10 +90,12 @@ async function publishLocally(
 
     await execAsync(`npm install`, {
       cwd: folder,
+      maxBuffer: 1024 * 1024 * 50,
     });
 
     await execAsync(`npm publish`, {
       cwd: folder,
+      maxBuffer: 1024 * 1024 * 50,
     });
 
     output([`[ DONE ] ${name} ${json.version} published.\n`]);
@@ -102,9 +104,11 @@ async function publishLocally(
       output(name, [`vsce packaging...`]);
       await execAsync(`npm run package`, {
         cwd: folder,
+        maxBuffer: 1024 * 1024 * 50,
       });
       await execAsync(`npx vsce package`, {
         cwd: folder,
+        maxBuffer: 1024 * 1024 * 50,
       });
       output([`[ DONE ] vscode ${json.version} packed`]);
     }

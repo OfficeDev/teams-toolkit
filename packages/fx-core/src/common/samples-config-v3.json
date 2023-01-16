@@ -4,18 +4,8 @@
     "baseFolderName": "TeamsFx-Samples-3",
     "samples": [
         {
-            "id": "hello-world-tab",
-            "title": "Hello World Tab with SSO",
-            "shortDescription": "A Hello World app of Microsoft Teams Tab app",
-            "fullDescription": "This is a Hello World app of Microsoft Teams Tab app which accomplishes very simple function like single-sign on. You can run this app locally or deploy it to Microsoft Azure. This app only has a Tab frontend.",
-            "tags": ["Tab", "TS", "SSO"],
-            "time": "5min to run",
-            "configuration": "Ready for debug",
-            "suggested": true
-        },
-        {
             "id": "hello-world-tab-with-backend",
-            "title": "Hello World Tab with Backend",
+            "title": "Tab App with Azure Backend",
             "shortDescription": "A Hello World app of Microsoft Teams Tab app which has a backend service",
             "fullDescription": "This is a Hello World app of Microsoft Teams Tab app which accomplishes very simple function like single-sign on. You can run this app locally or deploy it to Microsoft Azure. This app has a Tab frontend and a backend service using Azure Function.",
             "tags": ["Tab", "TS", "Azure function"],
@@ -24,18 +14,8 @@
             "suggested": true
         },
         {
-            "id": "hello-world-bot",
-            "title": "Hello World Bot",
-            "shortDescription": "A Hello World app of Microsoft Teams Bot app",
-            "fullDescription": "This is a Hello World app of Microsoft Teams Bot app demonstrating how to create commands and build adaptive cards that best for automation.",
-            "tags": ["Bot", "TS", "Adaptive Cards"],
-            "time": "5min to run",
-            "configuration": "Ready for debug",
-            "suggested": true
-        },
-        {
             "id": "bot-sso",
-            "title": "Hello World Bot with SSO",
+            "title": "Bot App with SSO Enabled",
             "shortDescription": "A Hello World app of Microsoft Teams Bot app with SSO",
             "fullDescription": "This is an extended Hello World app of Microsoft Teams Bot app demonstrating how to integrate with Bot Framework SDK, TeamsFx SDK, and Graph SDK to implement SSO (Single Sign-On) feature that retrieves profile photos for currently signed-in users.",
             "tags": [
@@ -46,6 +26,20 @@
             ],
             "time": "5min to run",
             "configuration": "Ready for debug",
+            "suggested": false
+        },
+        {
+            "id": "todo-list-SPFx",
+            "title": "Todo List with SPFx",
+            "shortDescription": "Todo List app hosting on SharePoint",
+            "fullDescription": "Todo List with SPFx is a Todo List for individuals to manage his/her personal to-do items. This app is hosted on Sharepoint. There is no requirements to deploy Azure resources.",
+            "tags": [
+                "SharePoint",
+                "SPFx",
+                "TS"
+            ],
+            "time": "1hr to run",
+            "configuration": "Manual configurations required",
             "suggested": false
         },
         {
@@ -88,6 +82,16 @@
             "shortDescription": "Keep up to date with the latest stock price in Microsoft Teams.",
             "fullDescription": "This sample demonstrates how a Notification Bot can be used to call an external API using API Key authentication, on a pre-defined schedule of every 30 seconds, to obtain the latest stock information and render the results as an Adaptive Card.",
             "tags": ["Bot", "TS", "Azure function", "API Key"],
+            "time": "5min to run",
+            "configuration": "Ready for debug",
+            "suggested": false
+        },
+        {
+            "id": "query-org-user-with-message-extension-sso",
+            "title": "Org User Search Connector",
+            "shortDescription": "Query Org User with Message Extension SSO",
+            "fullDescription": "This is a simple search-based message extension app demonstrating how to integrate with Bot Framework SDK, TeamsFx SDK and Microsoft Graph API to implement a feature that queries organization's user with single sign on (SSO) capability.",
+            "tags": ["Message extension", "SSO"],
             "time": "5min to run",
             "configuration": "Ready for debug",
             "suggested": false

@@ -16,6 +16,10 @@ import { formatString } from "../util/utils";
  * @remarks
  * Only work on server side.
  */
+
+/**
+ * @deprecated Use `BotBuilderCloudAdapter.ConversationBot` instead.
+ */
 export class ConversationBot {
   /**
    * The bot adapter.

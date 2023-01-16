@@ -52,7 +52,7 @@ export const envLoaderMWImpl = async (
     inputs.env = environmentManager.getDefaultEnvName();
   }
   if (!inputs.env) {
-    const question = SelectEnvQuestion;
+    const question = SelectEnvQuestion();
     const envListRes = await envUtil.listEnv(projectPath);
     if (envListRes.isErr()) {
       ctx.result = err(envListRes.error);
@@ -62,9 +62,9 @@ export const envLoaderMWImpl = async (
       ctx.result = err(
         new UserError({
           source: "EnvLoaderMW",
-          name: "NoYmlFileError",
-          displayMessage: getLocalizedString("core.error.NoYmlFileError"),
-          message: getDefaultString("core.error.NoYmlFileError"),
+          name: "NoEnvFilesError",
+          displayMessage: getLocalizedString("core.error.NoEnvFilesError"),
+          message: getDefaultString("core.error.NoEnvFilesError"),
         })
       );
       return;

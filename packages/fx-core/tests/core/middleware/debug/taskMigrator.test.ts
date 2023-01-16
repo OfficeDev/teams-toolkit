@@ -15,6 +15,7 @@ import {
   migrateNgrokStartTask,
   migrateNgrokStartCommand,
   migrateAuthStart,
+  migrateBackendWatch,
 } from "../../../../src/core/middleware/utils/debug/taskMigrator";
 import { CommentArray, CommentJSONValue, parse, stringify } from "comment-json";
 import { DebugMigrationContext } from "../../../../src/core/middleware/utils/debug/debugMigrationContext";
@@ -646,7 +647,7 @@ describe("debugMigration", () => {
               "Install npm packages",
               "Start local tunnel",
               "Create resources",
-              "Set up local projects",
+              "Install tools and Build project",
               "Set up bot",
               "Set up SSO",
               "Build & upload Teams manifest",
@@ -658,7 +659,7 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       expectedTasks.push(
         debugV3MigrationUtils.createResourcesTask("Create resources"),
-        debugV3MigrationUtils.setUpLocalProjectsTask("Set up local projects")
+        debugV3MigrationUtils.setUpLocalProjectsTask("Install tools and Build project")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;
@@ -741,7 +742,7 @@ describe("debugMigration", () => {
               "Start local tunnel",
               "Set up tab",
               "Create resources",
-              "Set up local projects",
+              "Install tools and Build project",
               "Set up SSO",
               "Build & upload Teams manifest",
               "Start services"
@@ -752,7 +753,7 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       expectedTasks.push(
         debugV3MigrationUtils.createResourcesTask("Create resources"),
-        debugV3MigrationUtils.setUpLocalProjectsTask("Set up local projects")
+        debugV3MigrationUtils.setUpLocalProjectsTask("Install tools and Build project")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;
@@ -934,7 +935,7 @@ describe("debugMigration", () => {
               "Set up tab",
               "Set up bot",
               "Create resources",
-              "Set up local projects",
+              "Install tools and Build project",
               "Build & upload Teams manifest",
               "Start services"
           ],
@@ -944,7 +945,7 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       expectedTasks.push(
         debugV3MigrationUtils.createResourcesTask("Create resources"),
-        debugV3MigrationUtils.setUpLocalProjectsTask("Set up local projects")
+        debugV3MigrationUtils.setUpLocalProjectsTask("Install tools and Build project")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;
@@ -1083,7 +1084,7 @@ describe("debugMigration", () => {
               "Set up bot",
               "Set up SSO",
               "Create resources",
-              "Set up local projects",
+              "Install tools and Build project",
               "Start services"
           ],
           "dependsOrder": "sequence"
@@ -1092,7 +1093,7 @@ describe("debugMigration", () => {
       const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
       expectedTasks.push(
         debugV3MigrationUtils.createResourcesTask("Create resources"),
-        debugV3MigrationUtils.setUpLocalProjectsTask("Set up local projects")
+        debugV3MigrationUtils.setUpLocalProjectsTask("Install tools and Build project")
       );
       const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
       const oldProjectSettings = {} as ProjectSettings;
@@ -1150,6 +1151,64 @@ describe("debugMigration", () => {
         );
         chai.assert.equal(debugContext.appYmlConfig.deploy.npmCommands[0].workingDirectory, ".");
       }
+    });
+  });
+
+  describe("migrateBackendWatch", () => {
+    it("happy path", async () => {
+      const migrationContext = await mockMigrationContext(projectPath);
+      const testTaskContent = `[
+        {
+          "label": "prepare local environment",
+          "type": "shell",
+          "command": "echo \${command:fx-extension.pre-debug-check}"
+        },
+        {
+          "label": "Start Backend",
+          "dependsOn": [
+              "teamsfx: backend watch"
+          ],
+          "dependsOrder": "sequence"
+        }
+      ]`;
+      const content = `[
+        {
+          "label": "prepare local environment",
+          "type": "shell",
+          "command": "echo \${command:fx-extension.pre-debug-check}"
+        },
+        {
+          "label": "Start Backend",
+          "dependsOn": [
+              "Watch backend"
+          ],
+          "dependsOrder": "sequence"
+        },
+        {
+          "label": "Watch backend",
+          "type": "shell",
+          "command": "tsc --watch",
+          "isBackground": true,
+          "options": {
+              "cwd": "\${workspaceFolder}/api"
+          },
+          "problemMatcher": "$tsc-watch",
+          "presentation": {
+              "reveal": "silent"
+          }
+        }
+      ]`;
+      const testTasks = parse(testTaskContent) as CommentArray<CommentJSONValue>;
+      const expectedTasks = parse(content) as CommentArray<CommentJSONValue>;
+      const oldProjectSettings = {} as ProjectSettings;
+      const debugContext = new DebugMigrationContext(
+        migrationContext,
+        testTasks,
+        oldProjectSettings,
+        {}
+      );
+      await migrateBackendWatch(debugContext);
+      chai.assert.equal(stringify(debugContext.tasks, null, 4), stringify(expectedTasks, null, 4));
     });
   });
 

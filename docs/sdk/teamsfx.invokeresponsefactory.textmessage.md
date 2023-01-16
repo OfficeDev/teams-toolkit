@@ -22,5 +22,5 @@ static textMessage(message: string): InvokeResponse;
 
 InvokeResponse
 
-{<!-- -->InvokeResponse<!-- -->} An InvokeResponse object.
+An `InvokeResponse` object.
 

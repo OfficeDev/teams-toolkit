@@ -122,7 +122,7 @@ describe("ApimService", () => {
     });
 
     it("exist user id", async () => {
-      chai.expect(await apimService!.getUserId()).to.equal("test@test.com");
+      chai.expect(await apimService!.getUserId()).to.equal("sample@microsoft.com");
     });
   });
 

@@ -243,11 +243,6 @@ export class M365Login extends YargsCommand {
     await M365TokenProvider.signout();
     await outputM365Info("login");
 
-    const authSvcTokenRes = await M365TokenProvider.getAccessToken({ scopes: AuthSvcScopes });
-    if (authSvcTokenRes.isOk()) {
-      await setRegion(authSvcTokenRes.value);
-    }
-
     return ok(null);
   }
 }

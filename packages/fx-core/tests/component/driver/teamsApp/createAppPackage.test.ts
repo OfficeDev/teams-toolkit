@@ -24,14 +24,27 @@ describe("teamsApp/createAppPackage", async () => {
   it("should throw error if file not exists", async () => {
     const args: CreateAppPackageArgs = {
       manifestPath: "fakepath",
-      outputZipPath: "",
-      outputJsonPath: "",
+      outputZipPath: "fakePath",
+      outputJsonPath: "fakePath",
     };
 
     const result = await teamsAppDriver.run(args, mockedDriverContext);
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.equal(AppStudioError.FileNotFoundError.name, result.error.name);
+    }
+  });
+
+  it("invalid param error", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath: "",
+      outputZipPath: "",
+      outputJsonPath: "",
+    };
+    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.equal(AppStudioError.InvalidParameterError.name, result.error.name);
     }
   });
 

@@ -556,10 +556,30 @@ export class VsCodeUI implements UserInteraction {
     defaultValue?: string
   ): Promise<Result<SelectFilesResult, FxError>>;
   async selectFileInQuickPick(
-    config: UIConfig<any> & { filters?: { [name: string]: string[] } },
+    config: UIConfig<any> & {
+      filters?: { [name: string]: string[] };
+      possibleFiles?: {
+        id: string;
+        label: string;
+        description?: string;
+      }[];
+    },
     type: "file" | "files",
     defaultValue?: string
   ): Promise<Result<InputResult<string[] | string>, FxError>> {
+    if (config.possibleFiles) {
+      if (config.possibleFiles.find((o) => o.id === "browse" || o.id === "default")) {
+        return Promise.resolve(
+          err(
+            new SystemError(
+              "UI",
+              "InvalidInput",
+              'Possible files should not contain item with id "browse" or "default".'
+            )
+          )
+        );
+      }
+    }
     /// TODO: use generic constraints.
     const disposables: Disposable[] = [];
     try {
@@ -577,7 +597,9 @@ export class VsCodeUI implements UserInteraction {
       return await new Promise(async (resolve) => {
         // set options
         quickPick.items = [
-          ...(defaultValue
+          ...(config.possibleFiles
+            ? config.possibleFiles
+            : defaultValue
             ? [
                 {
                   id: "default",
@@ -598,7 +620,7 @@ export class VsCodeUI implements UserInteraction {
             const item = selectedItems[0];
             if (item.id === "default") {
               resolve(ok({ type: "success", result: config.default }));
-            } else {
+            } else if (item.id === "browse") {
               fileSelectorIsOpen = true;
               const uriList: Uri[] | undefined = await window.showOpenDialog({
                 defaultUri: config.default ? Uri.file(config.default) : undefined,
@@ -619,6 +641,13 @@ export class VsCodeUI implements UserInteraction {
               } else {
                 resolve(err(UserCancelError));
               }
+            } else {
+              resolve(
+                ok({
+                  type: "success",
+                  result: config.possibleFiles?.find((f) => f.id === item.id)?.id,
+                })
+              );
             }
           }
         };
@@ -783,23 +812,25 @@ export class VsCodeUI implements UserInteraction {
   }
 
   async reload(): Promise<Result<boolean, FxError>> {
-    return new Promise(async (resolve) => {
-      // The following code only fixes the bug that cause telemetry event lost for projectMigrator().
-      // When this reload() function has more users, they may need to dispose() more resources that allocated in activate().
-      const extension = extensions.getExtension(`${packageJson.publisher}.${packageJson.name}`);
-      if (!extension?.isActive) {
-        // When our extension is not activated, we can determine this is in the vscode extension activate() context.
-        // Since we are not activated yet, vscode will not deactivate() and dispose() our resourses (which have been allocated in activate()).
-        // This may cause resource leaks.For example, buffered events in TelemetryReporter is not sent.
-        // So manually dispose them.
-        ExtTelemetry.reporter?.dispose();
-      }
+    // The following code only fixes the bug that cause telemetry event lost for projectMigrator().
+    // When this reload() function has more users, they may need to dispose() more resources that allocated in activate().
+    const extension = extensions.getExtension(`${packageJson.publisher}.${packageJson.name}`);
+    if (!extension?.isActive) {
+      // When our extension is not activated, we can determine this is in the vscode extension activate() context.
+      // Since we are not activated yet, vscode will not deactivate() and dispose() our resourses (which have been allocated in activate()).
+      // This may cause resource leaks.For example, buffered events in TelemetryReporter is not sent.
+      // So manually dispose them.
+      ExtTelemetry.reporter?.dispose();
+    }
 
-      commands.executeCommand("workbench.action.reloadWindow").then((v) => {
-        if (v) resolve(ok(v as boolean));
-        else resolve(err(internalUIError));
-      });
-    });
+    // wait 1 second before reloading.
+    await sleep(1000);
+    const success = await commands.executeCommand("workbench.action.reloadWindow");
+    if (success) {
+      return ok(success as boolean);
+    } else {
+      return err(internalUIError);
+    }
   }
 
   async executeFunction(config: ExecuteFuncConfig) {

@@ -11,7 +11,7 @@ export const MetadataV3 = {
   },
   configFile: "teamsapp.yml",
   localConfigFile: "teamsapp.local.yml",
-  defaultEnvironmentFolder: "teamsAppEnv",
+  defaultEnvironmentFolder: "env",
   projectId: "projectId",
 };
 

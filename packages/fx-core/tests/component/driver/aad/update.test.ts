@@ -67,11 +67,11 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestTemplatePath, outputFilePath."
+        "Following parameter is missing or invalid for aadApp/update action: manifestPath, outputFilePath."
       );
 
     args = {
-      manifestTemplatePath: "./aad.manifest.json",
+      manifestPath: "./aad.manifest.json",
     };
 
     result = await updateAadAppDriver.execute(args, mockedDriverContext);
@@ -93,7 +93,7 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestTemplatePath."
+        "Following parameter is missing or invalid for aadApp/update action: manifestPath."
       );
   });
 
@@ -109,11 +109,11 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestTemplatePath."
+        "Following parameter is missing or invalid for aadApp/update action: manifestPath."
       );
 
     args = {
-      manifestTemplatePath: "./aad.manifest.json",
+      manifestPath: "./aad.manifest.json",
       outputFilePath: "",
     };
 
@@ -127,7 +127,7 @@ describe("aadAppUpdate", async () => {
       );
 
     args = {
-      manifestTemplatePath: true,
+      manifestPath: true,
       outputFilePath: true,
     };
 
@@ -137,7 +137,7 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(InvalidParameterUserError)
       .and.has.property(
         "message",
-        "Following parameter is missing or invalid for aadApp/update action: manifestTemplatePath, outputFilePath."
+        "Following parameter is missing or invalid for aadApp/update action: manifestPath, outputFilePath."
       );
   });
 
@@ -150,7 +150,7 @@ describe("aadAppUpdate", async () => {
 
     const outputPath = path.join(outputRoot, "manifest.output.json");
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: outputPath,
     };
 
@@ -176,7 +176,7 @@ describe("aadAppUpdate", async () => {
     expect(result.summaries.length).to.equal(1);
     console.log(result.summaries[0]);
     expect(result.summaries).includes(
-      `Applied manifest ${args.manifestTemplatePath} to Azure Active Directory application with object id ${expectedObjectId}`
+      `Applied manifest ${args.manifestPath} to Azure Active Directory application with object id ${expectedObjectId}`
     );
   });
 
@@ -192,7 +192,7 @@ describe("aadAppUpdate", async () => {
       });
 
       const args = {
-        manifestTemplatePath: manifestPath,
+        manifestPath: manifestPath,
         outputFilePath: outputPath,
       };
 
@@ -214,7 +214,7 @@ describe("aadAppUpdate", async () => {
       });
 
       const args = {
-        manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+        manifestPath: path.join(testAssetsRoot, "manifest.json"),
         outputFilePath: path.join(outputRoot, "manifest.output.json"),
       };
 
@@ -233,7 +233,7 @@ describe("aadAppUpdate", async () => {
     });
 
     let args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
@@ -247,7 +247,7 @@ describe("aadAppUpdate", async () => {
     });
 
     args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifestWithoutId.json"),
+      manifestPath: path.join(testAssetsRoot, "manifestWithoutId.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
@@ -276,7 +276,7 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifestWithoutPreAuthorizedApp.json"),
+      manifestPath: path.join(testAssetsRoot, "manifestWithoutPreAuthorizedApp.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
@@ -306,7 +306,7 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
@@ -326,7 +326,7 @@ describe("aadAppUpdate", async () => {
 
     const outputPath = path.join(outputRoot, "manifest.output.json");
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: outputPath,
     };
 
@@ -352,7 +352,7 @@ describe("aadAppUpdate", async () => {
 
     const outputPath = path.join(outputRoot, "manifest.output.json");
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifestWithNoPermissionId.json"),
+      manifestPath: path.join(testAssetsRoot, "manifestWithNoPermissionId.json"),
       outputFilePath: outputPath,
     };
 
@@ -385,7 +385,7 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
@@ -417,7 +417,7 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 
@@ -461,7 +461,7 @@ describe("aadAppUpdate", async () => {
 
     const outputPath = path.join(outputRoot, "manifest.output.json");
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: outputPath,
     };
     const dirverContext: any = {
@@ -525,7 +525,7 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifest.json"),
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
     const dirverContext: any = {
@@ -558,7 +558,7 @@ describe("aadAppUpdate", async () => {
     });
 
     const args = {
-      manifestTemplatePath: path.join(testAssetsRoot, "manifestWithMissingEnv.json"),
+      manifestPath: path.join(testAssetsRoot, "manifestWithMissingEnv.json"),
       outputFilePath: path.join(outputRoot, "manifest.output.json"),
     };
 

@@ -314,13 +314,15 @@ describe("Core basic APIs", () => {
       };
       sandbox
         .stub(UpdateAadAppDriver.prototype, "run")
-        .throws(
-          new MissingEnvInFileUserError(
-            "aadApp/update",
-            "AAD_APP_OBJECT_ID",
-            "https://aka.ms/fake",
-            "driver.aadApp.error.generateManifestFailed",
-            "fake path"
+        .resolves(
+          err(
+            new MissingEnvInFileUserError(
+              "aadApp/update",
+              "AAD_APP_OBJECT_ID",
+              "https://aka.ms/fake",
+              "driver.aadApp.error.generateManifestFailed",
+              "fake path"
+            )
           )
         );
       const res = await core.deployAadManifest(inputs);

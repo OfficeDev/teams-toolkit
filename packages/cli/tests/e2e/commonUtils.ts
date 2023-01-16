@@ -415,7 +415,7 @@ export async function readContext(projectPath: string): Promise<any> {
 }
 
 export async function readContextMultiEnvV3(projectPath: string, envName: string): Promise<any> {
-  const envFilePath = path.join(projectPath, "teamsAppEnv", `.env.${envName}`);
+  const envFilePath = path.join(projectPath, "env", `.env.${envName}`);
   const parseResult = dotenvUtil.deserialize(await fs.readFile(envFilePath, { encoding: "utf8" }));
   return parseResult.obj;
 }

@@ -9,7 +9,7 @@
     "license": "MIT",
     "main": "./src/index.js",
     "scripts": {
-        "dev:teamsfx": "node script/run.js . teamsfx/.env.local",
+        "dev:teamsfx": "node script/run.js . env/.env.local",
         "dev": "nodemon --watch ./src --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./src/index.ts",
         "build": "tsc --build && shx cp -r ./src/adaptiveCards ./lib/src",
         "start": "node ./lib/src/index.js",

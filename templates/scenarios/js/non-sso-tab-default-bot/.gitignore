@@ -1,5 +1,5 @@
 # TeamsFx files
-teamsfx/.env.*
+env/.env.*
 .DS_Store
 build
 

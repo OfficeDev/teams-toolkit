@@ -60,6 +60,7 @@ import {
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { coordinator } from "../../src/component/coordinator";
 import { FxCoreV3Implement } from "../../src/core/FxCoreImplementV3";
+import { MissingEnvInFileUserError } from "../../src/component/driver/aad/error/missingEnvInFileError";
 import { pathUtils } from "../../src/component/utils/pathUtils";
 
 describe("Core basic APIs", () => {
@@ -282,6 +283,55 @@ describe("Core basic APIs", () => {
       assert.isTrue(res.isErr());
       if (res.isErr()) {
         assert.strictEqual(res.error.message, "fake_err_msg");
+      }
+    } finally {
+      restore();
+    }
+  });
+
+  it("deploy aad manifest with missing env err", async () => {
+    const restore = mockedEnv({
+      TEAMSFX_V3: "true",
+    });
+    try {
+      const core = new FxCore(tools);
+      const appName = mockV3Project();
+      const appManifestPath = path.join(
+        os.tmpdir(),
+        appName,
+        "samples-v3",
+        "aad.manifest.template.json"
+      );
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        [CoreQuestionNames.AppName]: appName,
+        [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC().id,
+        [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+        [CoreQuestionNames.Capabilities]: ["Tab", "TabSSO"],
+        [CoreQuestionNames.Folder]: os.tmpdir(),
+        stage: Stage.deployAad,
+        projectPath: path.join(os.tmpdir(), appName, "samples-v3"),
+      };
+      sandbox
+        .stub(UpdateAadAppDriver.prototype, "run")
+        .resolves(
+          err(
+            new MissingEnvInFileUserError(
+              "aadApp/update",
+              "AAD_APP_OBJECT_ID",
+              "https://aka.ms/fake",
+              "driver.aadApp.error.generateManifestFailed",
+              "fake path"
+            )
+          )
+        );
+      const res = await core.deployAadManifest(inputs);
+      assert.isTrue(res.isErr());
+      if (res.isErr()) {
+        assert.strictEqual(
+          res.error.message,
+          "Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in fake path have no values. If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables."
+        );
       }
     } finally {
       restore();

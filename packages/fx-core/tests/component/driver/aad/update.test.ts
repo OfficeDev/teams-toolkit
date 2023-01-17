@@ -24,6 +24,7 @@ import {
 import { InvalidParameterUserError } from "../../../../src/component/driver/aad/error/invalidParameterUserError";
 import { cwd } from "process";
 import { MissingEnvUserError } from "../../../../src/component/driver/aad/error/missingEnvError";
+import { MissingEnvInFileUserError } from "../../../../src/component/driver/aad/error/missingEnvInFileError";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -240,11 +241,14 @@ describe("aadAppUpdate", async () => {
     let result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr()).is.instanceOf(MissingEnvUserError).and.include({
-      message:
-        "Failed to generate AAD app manifest. Environment variable AAD_APP_OBJECT_ID is not set.", // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
-      source: "aadApp/update",
-    });
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(MissingEnvInFileUserError)
+      .and.include({
+        message: `Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_OBJECT_ID referenced in ${path.resolve(
+          args.manifestTemplatePath
+        )} have no values.`, // The env does not have AAD_APP_OBJECT_ID so the id value is invalid
+        source: "aadApp/update",
+      });
 
     args = {
       manifestPath: path.join(testAssetsRoot, "manifestWithoutId.json"),
@@ -257,7 +261,7 @@ describe("aadAppUpdate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(MissingFieldInManifestUserError)
       .and.include({
-        message: "Field id is missing or invalid in AAD app manifest.", // The manifest does not has an id property
+        message: "Field id is missing or invalid in Azure Active Directory app manifest.", // The manifest does not has an id property
         source: "aadApp/update",
       });
   });
@@ -565,10 +569,13 @@ describe("aadAppUpdate", async () => {
     const result = await updateAadAppDriver.execute(args, mockedDriverContext);
 
     expect(result.result.isErr()).to.be.true;
-    expect(result.result._unsafeUnwrapErr()).is.instanceOf(MissingEnvUserError).and.include({
-      message:
-        "Failed to generate AAD app manifest. Environment variable AAD_APP_NAME, APPLICATION_NAME is not set.",
-      source: "aadApp/update",
-    });
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(MissingEnvInFileUserError)
+      .and.include({
+        message: `Failed to generate Azure Active Directory app manifest. Environment variable AAD_APP_NAME, APPLICATION_NAME referenced in ${path.resolve(
+          args.manifestTemplatePath
+        )} have no values.`,
+        source: "aadApp/update",
+      });
   });
 });

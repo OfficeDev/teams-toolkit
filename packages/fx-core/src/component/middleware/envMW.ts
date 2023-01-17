@@ -17,6 +17,8 @@ import { SelectEnvQuestion } from "../question";
 import { envUtil } from "../utils/envUtil";
 import _ from "lodash";
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
+import { pathUtils } from "../utils/pathUtils";
+import fs from "fs-extra";
 
 export function EnvLoaderMW(withLocalEnv: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {
@@ -88,6 +90,21 @@ export const envLoaderMWImpl = async (
       return;
     }
   }
+
+  //for F5 scenario, TTK will create a default .env file if the target env file does not exist
+  if (inputs.isLocalDebug) {
+    const dotEnvFilePathRes = await pathUtils.getEnvFilePath(projectPath, inputs.env);
+    if (dotEnvFilePathRes.isErr()) return err(dotEnvFilePathRes.error);
+    const envFilePath = dotEnvFilePathRes.value;
+    if (!fs.pathExistsSync(envFilePath)) {
+      const defaultEnvContent =
+        `# Built-in environment variables\nTEAMSFX_ENV=${inputs.env}\n` +
+        "# Generated during provision, you can also add your own variables\n\n" +
+        "# Secret. You can add your own secret value, prefixed with SECRET_\n";
+      await fs.writeFile(envFilePath, defaultEnvContent);
+    }
+  }
+
   const res = await envUtil.readEnv(projectPath, inputs.env);
   if (res.isErr()) {
     ctx.result = err(res.error);

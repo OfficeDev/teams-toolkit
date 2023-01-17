@@ -20,7 +20,7 @@
         "@microsoft/teamsfx-run-utils": "alpha"
     },
     "scripts": {
-        "dev:teamsfx": "node script/run.js . teamsfx/.env.local",
+        "dev:teamsfx": "node script/run.js . env/.env.local",
         "start": "react-scripts start",
         "build": "react-scripts build",
         "eject": "react-scripts eject",

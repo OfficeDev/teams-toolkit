@@ -160,7 +160,7 @@ export function startFrontendTask(label: string): CommentJSONValue {
   const task = {
     label,
     type: "shell",
-    command: "node ../teamsfx/script/run.tab.js .. ../teamsfx/.env.local",
+    command: "node ../teamsfx/script/run.tab.js .. ../env/.env.local",
     isBackground: true,
     options: {
       cwd: "${workspaceFolder}/tabs",
@@ -186,7 +186,7 @@ export function startAuthTask(label: string): CommentJSONValue {
   const task = {
     label,
     type: "shell",
-    command: "node teamsfx/script/run.auth.js . teamsfx/.env.local",
+    command: "node teamsfx/script/run.auth.js . env/.env.local",
     isBackground: true,
     options: {
       cwd: "${workspaceFolder}",
@@ -234,7 +234,7 @@ export function startBackendTask(label: string): CommentJSONValue {
   const task = {
     label,
     type: "shell",
-    command: "node ../teamsfx/script/run.api.js .. ../teamsfx/.env.local",
+    command: "node ../teamsfx/script/run.api.js .. ../env/.env.local",
     isBackground: true,
     options: {
       cwd: "${workspaceFolder}/api",
@@ -267,7 +267,7 @@ export function startBotTask(label: string): CommentJSONValue {
   const task = {
     label,
     type: "shell",
-    command: "node ../teamsfx/script/run.bot.js .. ../teamsfx/.env.local",
+    command: "node ../teamsfx/script/run.bot.js .. ../env/.env.local",
     isBackground: true,
     options: {
       cwd: "${workspaceFolder}/bot",

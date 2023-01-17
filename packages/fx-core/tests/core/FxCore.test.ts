@@ -215,7 +215,7 @@ describe("Core basic APIs", () => {
       sandbox.assert.calledOnce(runSpy);
       assert.isNotNull(runSpy.getCall(0).args[0]);
       assert.strictEqual(
-        runSpy.getCall(0).args[0].manifestTemplatePath,
+        runSpy.getCall(0).args[0].manifestPath,
         path.join(os.tmpdir(), appName, "samples-v3", "aad.manifest.template.json")
       );
       runSpy.restore();

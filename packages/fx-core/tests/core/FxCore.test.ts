@@ -714,7 +714,7 @@ describe("createEnvCopyV3", async () => {
   });
 
   it("should create new .env file with desired content", async () => {
-    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("./teamsAppEnv/.env.dev"));
+    sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("./env/.env.dev"));
     const core = new FxCore(tools);
     const res = await core.v3Implement.createEnvCopyV3("newEnv", "dev", "./");
     assert(res.isOk());
@@ -755,7 +755,7 @@ describe("createEnvCopyV3", async () => {
     sandbox
       .stub(pathUtils, "getEnvFilePath")
       .onFirstCall()
-      .resolves(ok("./teamsAppEnv"))
+      .resolves(ok("./env"))
       .onSecondCall()
       .resolves(err(new UserError({})));
     const core = new FxCore(tools);

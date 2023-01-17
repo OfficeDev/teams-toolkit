@@ -1432,5 +1432,5 @@ const Constants = {
   happyPathWithoutPermission: "happyPath_for_needMigrateToAadManifest/happyPath_no_permissionFile",
   happyPathAadPluginNotActive:
     "happyPath_for_needMigrateToAadManifest/happyPath_aadPluginNotActive",
-  environmentFolder: "teamsAppEnv",
+  environmentFolder: "env",
 };

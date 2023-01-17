@@ -34,14 +34,14 @@ describe("Scaffold From Source Code", function () {
     await cleanUpLocalProject(projectPath);
   });
 
-  it(`Assert teamsAppEnv/.env.dev exists for v3`, async function () {
+  it(`Assert env/.env.dev exists for v3`, async function () {
     if (!isV3Enabled()) {
       return;
     }
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab, process.env);
     console.log(`[Successfully] scaffold tab project to ${projectPath}`);
 
-    const envFilePath = path.join(projectPath, "teamsAppEnv", ".env.dev");
+    const envFilePath = path.join(projectPath, "env", ".env.dev");
     fs.access(envFilePath, fs.constants.F_OK, (err) => {
       chai.assert.isNull(err);
     });

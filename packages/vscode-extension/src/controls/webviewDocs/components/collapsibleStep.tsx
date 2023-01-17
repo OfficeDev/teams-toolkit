@@ -58,6 +58,7 @@ export default function CollapsibleStep(props: {
     <Collapsible
       className={["collapsibleStep", `${transitionClassName}`].join(" ")}
       trigger={<StepTitle step={props.step} title={props.title} />}
+      open={true}
       onTriggerOpening={onOpen}
       onClosing={onClosing}
       onClose={onClose}

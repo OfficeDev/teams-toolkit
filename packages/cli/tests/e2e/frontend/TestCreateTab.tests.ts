@@ -59,7 +59,7 @@ describe("Create single tab", function () {
       // Get context
       let context: any = null;
       if (isV3Enabled()) {
-        const envFilePath = path.join(projectPath, "teamsAppEnv", `.env.${env}`);
+        const envFilePath = path.join(projectPath, "env", `.env.${env}`);
         expect(fs.pathExistsSync(envFilePath)).to.be.true;
         const parseResult = dotenvUtil.deserialize(
           await fs.readFile(envFilePath, { encoding: "utf8" })
@@ -90,7 +90,7 @@ describe("Create single tab", function () {
       // Validate deployment
       let context: any = null;
       if (isV3Enabled()) {
-        const envFilePath = path.join(projectPath, "teamsAppEnv", `.env.${env}`);
+        const envFilePath = path.join(projectPath, "env", `.env.${env}`);
         expect(fs.pathExistsSync(envFilePath)).to.be.true;
         const parseResult = dotenvUtil.deserialize(
           await fs.readFile(envFilePath, { encoding: "utf8" })

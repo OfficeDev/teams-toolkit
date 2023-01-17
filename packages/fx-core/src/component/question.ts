@@ -782,9 +782,9 @@ export function InitDebugProceedQuestion(): SingleSelectQuestion {
         const dotVscodeFolderName = exists ? ".vscode-teamsfx" : ".vscode";
         fileList = `  ${dotVscodeFolderName}/\n    - launch.json\n    - settings.json\n    - tasks.json\n${
           inputs["spfx"] === InitOptionYes().id ? "" : "   script/\n    - run.js\n"
-        }   teamsAppEnv/\n    - .env.local\n  - teamsapp.local.yml\n  - teamsapp.yml\n`;
+        }   env/\n    - .env.local\n  - teamsapp.local.yml\n  - teamsapp.yml\n`;
       } else {
-        fileList = "   teamsAppEnv/\n    - .env.local\n  - teamsapp.yml/\n  - teamsapp.local.yml\n";
+        fileList = "   env/\n    - .env.local\n  - teamsapp.yml/\n  - teamsapp.local.yml\n";
       }
       return getLocalizedString("core.InitGenerateConfirm", fileList);
     },
@@ -799,12 +799,12 @@ export function InitInfraProceedQuestion(): SingleSelectQuestion {
     title: (inputs: Inputs) => {
       const fileList =
         inputs["spfx"] === InitOptionYes().id
-          ? "  teamsAppEnv/\n    - .env.dev\n  - teamsapp.yml\n"
+          ? "  env/\n    - .env.dev\n  - teamsapp.yml\n"
           : `  infra/\n${
               inputs["capability"] === InitCapabilityBot().id
                 ? "    botRegistration/\n      - azurebot.bicep\n      - readme.md\n"
                 : ""
-            }    - azure.bicep\n    - azure.parameters.json\n  teamsAppEnv/\n    - .env.dev\n  - teamsapp.yml\n`;
+            }    - azure.bicep\n    - azure.parameters.json\n  env/\n    - .env.dev\n  - teamsapp.yml\n`;
       return getLocalizedString("core.InitGenerateConfirm", fileList);
     },
     staticOptions: [InitOptionYes(), InitOptionNo()],

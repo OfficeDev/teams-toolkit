@@ -15,7 +15,7 @@
         "outline": "resources/outline.png"
     },
     "name": {
-        "short": "${{TEAMS_APP_NAME}}",
+        "short": "{%appName%}-${{TEAMSFX_ENV}}",
         "full": "full name for {%appName%}"
     },
     "description": {

@@ -132,7 +132,7 @@ export function createResourcesTask(label: string): CommentJSONValue {
     type: "teamsfx",
     command: "provision",
     args: {
-      template: "${workspaceFolder}/teamsfx/app.local.yml",
+      template: "${workspaceFolder}/teamsapp.local.yml",
       env: "local",
     },
   };
@@ -149,7 +149,7 @@ export function setUpLocalProjectsTask(label: string): CommentJSONValue {
     type: "teamsfx",
     command: "deploy",
     args: {
-      template: "${workspaceFolder}/teamsfx/app.local.yml",
+      template: "${workspaceFolder}/teamsapp.local.yml",
       env: "local",
     },
   };
@@ -160,7 +160,7 @@ export function startFrontendTask(label: string): CommentJSONValue {
   const task = {
     label,
     type: "shell",
-    command: "node ../teamsfx/script/run.tab.js .. ../teamsfx/.env.local",
+    command: "node ../script/run.tab.js .. ../teamsfx/.env.local",
     isBackground: true,
     options: {
       cwd: "${workspaceFolder}/tabs",
@@ -234,7 +234,7 @@ export function startBackendTask(label: string): CommentJSONValue {
   const task = {
     label,
     type: "shell",
-    command: "node ../teamsfx/script/run.api.js .. ../teamsfx/.env.local",
+    command: "node ../script/run.api.js .. ../teamsfx/.env.local",
     isBackground: true,
     options: {
       cwd: "${workspaceFolder}/api",
@@ -267,7 +267,7 @@ export function startBotTask(label: string): CommentJSONValue {
   const task = {
     label,
     type: "shell",
-    command: "node ../teamsfx/script/run.bot.js .. ../teamsfx/.env.local",
+    command: "node ../script/run.bot.js .. ../teamsfx/.env.local",
     isBackground: true,
     options: {
       cwd: "${workspaceFolder}/bot",
@@ -296,8 +296,8 @@ export async function saveRunScript(
   filename: string,
   script: string
 ): Promise<void> {
-  await context.fsEnsureDir(path.join(SettingsFolderName, "script"));
-  const runScriptPath = path.join(SettingsFolderName, "script", filename);
+  await context.fsEnsureDir(path.join("script"));
+  const runScriptPath = path.join("script", filename);
   if (!(await context.fsPathExists(runScriptPath))) {
     await context.fsCreateFile(runScriptPath);
   }

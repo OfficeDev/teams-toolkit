@@ -83,7 +83,7 @@ Note: This part is for `command and response bot`.
         });
         '''
 
-5. Register your command in the Teams app manifest. Open 'Templates/appPackage/manifest.template.json', and add following lines under `command` in `commandLists` of your bot:
+5. Register your command in the Teams app manifest. Open 'Templates/appPackage/manifest.template.json', and add following lines under `commands` in `commandLists` of your bot:
     '''
     {
       "title": "show",

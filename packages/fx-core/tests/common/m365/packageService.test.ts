@@ -127,7 +127,7 @@ describe("Package Service", () => {
     axiosPostResponses["/dev/v1/users/packages"] = expectedError;
 
     const packageService = new PackageService("test-endpoint");
-    let actualError: Error | undefined;
+    let actualError: any;
     try {
       await packageService.sideLoading("test-token", "test-path");
     } catch (error: any) {
@@ -135,7 +135,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.deepEqual(actualError, expectedError);
+    chai.assert.deepEqual(actualError.innerError, expectedError);
   });
 
   it("retrieveTitleId happy path", async () => {
@@ -191,7 +191,7 @@ describe("Package Service", () => {
     axiosPostResponses["/catalog/v1/users/titles/launchInfo"] = expectedError;
 
     const packageService = new PackageService("test-endpoint");
-    let actualError: Error | undefined;
+    let actualError: any;
     try {
       await packageService.retrieveTitleId("test-token", "test-manifest-id");
     } catch (error: any) {
@@ -199,7 +199,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.deepEqual(actualError, expectedError);
+    chai.assert.deepEqual(actualError.innerError, expectedError);
   });
 
   it("unacquire happy path", async () => {
@@ -254,7 +254,7 @@ describe("Package Service", () => {
     axiosDeleteResponses["/catalog/v1/users/acquisitions/test-title-id"] = expectedError;
 
     const packageService = new PackageService("test-endpoint");
-    let actualError: Error | undefined;
+    let actualError: any;
     try {
       await packageService.unacquire("test-token", "test-title-id");
     } catch (error: any) {
@@ -262,7 +262,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.deepEqual(actualError, expectedError);
+    chai.assert.deepEqual(actualError.innerError, expectedError);
   });
 
   it("getLaunchInfo happy path", async () => {
@@ -316,7 +316,7 @@ describe("Package Service", () => {
     axiosGetResponses["/catalog/v1/users/titles/test-title-id/launchInfo"] = expectedError;
 
     const packageService = new PackageService("test-endpoint");
-    let actualError: Error | undefined;
+    let actualError: any;
     try {
       await packageService.getLaunchInfo("test-token", "test-title-id");
     } catch (error: any) {
@@ -324,7 +324,7 @@ describe("Package Service", () => {
     }
 
     chai.assert.isDefined(actualError);
-    chai.assert.deepEqual(actualError, expectedError);
+    chai.assert.deepEqual(actualError.innerError, expectedError);
   });
 
   it("getTitleServiceUrl throws expected error", async () => {
